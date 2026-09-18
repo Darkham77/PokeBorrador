@@ -13,7 +13,8 @@ Frontend Developers / Systems Engineers.
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
-- **Publish Wizard Layout & Action Hierarchy**: In 2-step publish/selection views (such as `MarketPublish.vue`), secondary action buttons (e.g. "CAMBIAR SELECCIÓN") must be positioned below the primary submission action ("PUBLICAR OFERTA") and use `.btn-vicio-neutral` to establish clear visual hierarchy.
+- **Publish Wizard Layout & Action Hierarchy**: In 2-step publish/selection views (such as `MarketPublish.vue`), secondary action buttons (e.g. "CAMBIAR SELECCIÓN") must be positioned below the primary submission action ("PUBLICAR OFERTA") and use `.btn-vicio-neutral` to establish clear visual hierarchy. Decomposes the left-hand item/Pokémon selection container and pagination controls into `MarketPublishSelector.vue`.
+- **Market Filters Decomposition (`MarketFilters.vue`, `MarketPokemonFiltersGroup.vue`)**: Decomposes tier tag and type tooltip filters into `MarketPokemonFiltersGroup.vue` to maintain minimal template complexity.
 - **Preview Entity Component Reuse**: Selected entities must render canonical visual cards (e.g. `<BoxPokemonCard>`) with click-to-inspect handlers opening details. Empty selection prompts must use flex centering with `margin: auto;`.
 
 ## Verification

@@ -96,6 +96,26 @@ export const personalPvPMatchSummarySchema = object({
   timestamp: string()
 });
 
+export const classDataSchema = object({
+  captureStreak: number(),
+  longestStreak: number(),
+  reputation: number(),
+  blackMarketSales: number(),
+  criminality: number(),
+  blackMarketDaily: optional(object({
+    date: string(),
+    items: array(string()),
+    purchased: array(string())
+  })),
+  activeMission: optional(nullable(activeMissionSchema)),
+  extortedRouteId: optional(nullable(string())),
+  extortedRouteTimestamp: optional(nullable(string())),
+  lastEggScanDate: optional(nullable(string())),
+  officialRouteId: optional(nullable(string())),
+  officialRouteTimestamp: optional(nullable(string())),
+  kitCaptures: optional(number())
+});
+
 export const saveDataSchema = object({
   trainer: string(),
   gender: optional(union([literal('h'), literal('m')])),
@@ -167,25 +187,7 @@ export const saveDataSchema = object({
   playerClass: optional(nullable(union([literal('cazabichos'), literal('criador'), literal('rocket'), literal('entrenador')]))),
   classLevel: number(),
   classXP: number(),
-  classData: object({
-    captureStreak: number(),
-    longestStreak: number(),
-    reputation: number(),
-    blackMarketSales: number(),
-    criminality: number(),
-    blackMarketDaily: optional(object({
-      date: string(),
-      items: array(string()),
-      purchased: array(string())
-    })),
-    activeMission: optional(nullable(activeMissionSchema)),
-    extortedRouteId: optional(nullable(string())),
-    extortedRouteTimestamp: optional(nullable(string())),
-    lastEggScanDate: optional(nullable(string())),
-    officialRouteId: optional(nullable(string())),
-    officialRouteTimestamp: optional(nullable(string())),
-    kitCaptures: optional(number())
-  }),
+  classData: classDataSchema,
   faction: optional(nullable(union([literal('union'), literal('poder')]))),
   warCoins: number(),
   warCoinsSpent: number(),

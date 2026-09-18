@@ -25,6 +25,7 @@ export default defineConfig({
     fileParallelism: true,
     teardownTimeout: 2000,
     include: ['tests/node/**/*.test.ts'],
+    exclude: ['tests/node/**/backup_migration_real.test.ts'],
     setupFiles: ['./tests/vitest.node.setup.ts'],
     testTimeout: 60000,
     coverage: {

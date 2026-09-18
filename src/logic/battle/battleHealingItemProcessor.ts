@@ -8,6 +8,8 @@ import type { LogFn } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { getItemName, type ItemId } from '@/data/inventory/items'
 
+const HEAL_ANIMATION_FALLBACK_DELAY_SEC = 0.6;
+
 export interface HealingItemOptions {
   addLog: LogFn;
   audio: AudioStore;
@@ -36,7 +38,7 @@ export async function executeHealingItemUsage(
         await ctx.animations.handleHealRequest({ side: 'player' })
       } else {
         gameBus.emit('PLAY_HEAL', { side: 'player' })
-        await awaitAnimation(gsap.delayedCall(0.6, () => {}))
+        await awaitAnimation(gsap.delayedCall(HEAL_ANIMATION_FALLBACK_DELAY_SEC, () => {}))
       }
     } else {
       audio.play('heal')

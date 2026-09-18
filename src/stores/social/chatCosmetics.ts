@@ -2,10 +2,10 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
-import { useChatStore } from '@/stores/social/chat.ts'
 import { logger } from '@/logic/utils/logger'
+import { supabase } from '@/logic/db/supabase'
 
-interface ProfileCacheItem {
+export interface ProfileCacheItem {
   username?: string;
   player_class?: string;
   trainer_level?: number;
@@ -28,30 +28,27 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
       gameStore.state.trainerLevel,
       gameStore.state.avatar_style,
       gameStore.state.nick_style,
-      gameStore.state.gender,
-      authStore.user?.id
+      gameStore.state.gender
     ],
     () => {
-      if (authStore.user?.id) {
-        profileCosmetics.value[authStore.user.id] = {
-          username: gameStore.state.trainer || (authStore.user.user_metadata?.username as string) || 'Entrenador',
-          player_class: gameStore.state.playerClass || 'entrenador',
-          trainer_level: gameStore.state.trainerLevel || 1,
-          avatar_style: gameStore.state.avatar_style || '',
-          nick_style: gameStore.state.nick_style || '',
-          gender: gameStore.state.gender || 'h'
-        }
+      if (!authStore.user) return
+      profileCosmetics.value[authStore.user.id] = {
+        username: gameStore.state.trainer || (authStore.user.user_metadata?.username as string) || 'Entrenador',
+        player_class: gameStore.state.playerClass || 'entrenador',
+        trainer_level: gameStore.state.trainerLevel || 1,
+        avatar_style: gameStore.state.avatar_style || '',
+        nick_style: gameStore.state.nick_style || '',
+        gender: gameStore.state.gender || 'h'
       }
     },
-    { immediate: true, deep: true }
+    { immediate: true }
   )
 
-  async function fetchMissingCosmetics(forceIds: string[] = []) {
-    const db = gameStore.db
-    if (!db) return
+  async function fetchMissingCosmetics(targetIds: string[] = []) {
+    if (!authStore.user) return
+    const db = supabase
 
-    // Populate own cosmetics
-    if (authStore.user?.id) {
+    if (!profileCosmetics.value[authStore.user.id]) {
       profileCosmetics.value[authStore.user.id] = {
         username: gameStore.state.trainer || (authStore.user.user_metadata?.username as string) || 'Entrenador',
         player_class: gameStore.state.playerClass || 'entrenador',
@@ -62,16 +59,9 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
       }
     }
 
-    const chatStore = useChatStore()
-
     // Collect all user IDs: global chat + private chat participants
     const uniqueUserIds = new Set<string>()
-    chatStore.globalMessages.forEach(m => { if (m.user_id) uniqueUserIds.add(m.user_id) })
-    Object.keys(chatStore.privateChats).forEach(friendId => {
-      uniqueUserIds.add(friendId)
-      chatStore.privateChats[friendId]?.messages.forEach(m => { if (m.senderId) uniqueUserIds.add(m.senderId) })
-    })
-    forceIds.forEach(id => { if (id) uniqueUserIds.add(id) })
+    targetIds.forEach(id => { if (id) uniqueUserIds.add(id) })
 
     const missingIds = [...uniqueUserIds].filter(id => id && !profileCosmetics.value[id])
     if (missingIds.length === 0) return

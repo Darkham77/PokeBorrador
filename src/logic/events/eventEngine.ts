@@ -176,42 +176,49 @@ export function getSpeciesBoosts(activeEvents: Event[], speciesId: PokemonSpecie
   return { rate: rateMult, shiny: shinyMult };
 }
 
+function applyExplicitMinigameBuffs(buffs: MinigameEventBuffs, mb?: Partial<MinigameEventBuffs>): void {
+  if (!mb) return;
+  if (mb.encounterRateMult) buffs.encounterRateMult = (buffs.encounterRateMult ?? 1) * mb.encounterRateMult;
+  if (mb.successRateMult) buffs.successRateMult = (buffs.successRateMult ?? 1) * mb.successRateMult;
+  if (mb.rareDropMult) buffs.rareDropMult = (buffs.rareDropMult ?? 1) * mb.rareDropMult;
+  if (mb.shinyMult) buffs.shinyMult = (buffs.shinyMult ?? 1) * mb.shinyMult;
+  if (mb.expMult) buffs.expMult = (buffs.expMult ?? 1) * mb.expMult;
+  if (mb.scoreMult) buffs.scoreMult = (buffs.scoreMult ?? 1) * mb.scoreMult;
+}
+
+function applyShortcutMinigameBuffs(buffs: MinigameEventBuffs, minigameId: string, cfg: EventConfig): void { // infra-id-ok: Minigame string identifier
+  if (minigameId === 'fishing' && cfg.fishingMult) {
+    buffs.encounterRateMult = (buffs.encounterRateMult ?? 1) * cfg.fishingMult;
+  }
+  if (minigameId === 'archaeology' && cfg.archaeologyMult) {
+    buffs.rareDropMult = (buffs.rareDropMult ?? 1) * cfg.archaeologyMult;
+  }
+  if (minigameId === 'bug_catching' && cfg.bugCatchingMult) {
+    buffs.encounterRateMult = (buffs.encounterRateMult ?? 1) * cfg.bugCatchingMult;
+  }
+  if (minigameId === 'casino' && cfg.casinoLuckyMult) {
+    buffs.rareDropMult = (buffs.rareDropMult ?? 1) * cfg.casinoLuckyMult;
+  }
+}
+
 /**
  * Calculates aggregated buffs for a specific minigame across all currently active events.
  */
 export function getMinigameBuffs(activeEvents: Event[], minigameId: string): MinigameEventBuffs { // infra-id-ok: Minigame string identifier
-  let encounterRateMult = 1;
-  let successRateMult = 1;
-  let rareDropMult = 1;
-  let shinyMult = 1;
-  let expMult = 1;
-  let scoreMult = 1;
+  const buffs: MinigameEventBuffs = {
+    encounterRateMult: 1,
+    successRateMult: 1,
+    rareDropMult: 1,
+    shinyMult: 1,
+    expMult: 1,
+    scoreMult: 1
+  };
 
   for (const ev of activeEvents) {
     const cfg = safeParse(ev.config) as EventConfig;
-    if (cfg.minigameBuffs && cfg.minigameBuffs[minigameId]) {
-      const mb = cfg.minigameBuffs[minigameId];
-      if (mb.encounterRateMult) encounterRateMult *= mb.encounterRateMult;
-      if (mb.successRateMult) successRateMult *= mb.successRateMult;
-      if (mb.rareDropMult) rareDropMult *= mb.rareDropMult;
-      if (mb.shinyMult) shinyMult *= mb.shinyMult;
-      if (mb.expMult) expMult *= mb.expMult;
-      if (mb.scoreMult) scoreMult *= mb.scoreMult;
-    }
-    // Direct shortcut mappings for standard minigames
-    if (minigameId === 'fishing' && cfg.fishingMult) {
-      encounterRateMult *= cfg.fishingMult;
-    }
-    if (minigameId === 'archaeology' && cfg.archaeologyMult) {
-      rareDropMult *= cfg.archaeologyMult;
-    }
-    if (minigameId === 'bug_catching' && cfg.bugCatchingMult) {
-      encounterRateMult *= cfg.bugCatchingMult;
-    }
-    if (minigameId === 'casino' && cfg.casinoLuckyMult) {
-      rareDropMult *= cfg.casinoLuckyMult;
-    }
+    applyExplicitMinigameBuffs(buffs, cfg.minigameBuffs?.[minigameId]);
+    applyShortcutMinigameBuffs(buffs, minigameId, cfg);
   }
 
-  return { encounterRateMult, successRateMult, rareDropMult, shinyMult, expMult, scoreMult };
+  return buffs;
 }

@@ -10,15 +10,13 @@ import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
-import { formatChatTimestamp } from '@/logic/utils/timeUtils';
-import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay';
-
-function extractBattleCode(message?: string): string | null {
-  if (!message) return null;
-  const match = message.match(BATTLE_CODE_REGEX);
-  return match ? match[0].toUpperCase() : null;
-}
-
+import { MESSAGE_ANIM_DURATION_SEC, MESSAGE_ANIM_OVERSHOOT } from '@/logic/constants/visuals';
+import {
+  GLOBAL_CHAT_MIN_LEVEL,
+  GLOBAL_CHAT_MAX_CHARS,
+  canTrainerParticipateInGlobalChat,
+  resolveChatMessageVisuals
+} from './globalChatHelper';
 
 const chatStore = useChatStore();
 const gameStore = useGameStore();
@@ -34,10 +32,15 @@ const inputField = ref<HTMLInputElement | null>(null);
 const chatPanelRef = ref<HTMLElement | null>(null);
 const chatToggleRef = ref<HTMLButtonElement | null>(null);
 
-const MIN_LEVEL = 10;
-const MAX_CHARS = 100;
+const canWrite = computed(() => canTrainerParticipateInGlobalChat(gameStore.state.trainerLevel));
 
-const canWrite = computed(() => (gameStore.state.trainerLevel || 1) >= MIN_LEVEL);
+const displayMessages = computed(() => {
+  const cosmetics = chatStore.profileCosmetics;
+  return chatStore.globalMessages.map(msg => ({
+    raw: msg,
+    visuals: resolveChatMessageVisuals(msg, cosmetics)
+  }));
+});
 
 function toggleChat() {
   isOpen.value = !isOpen.value;
@@ -91,7 +94,6 @@ function openTrainerProfile(userId?: string) {
   uiStore.open('TrainerProfile', { userId });
 }
 
-import { MESSAGE_ANIM_DURATION_SEC, MESSAGE_ANIM_OVERSHOOT } from '@/logic/constants/visuals';
 
 const onMessageEnter = (el: Element, done: () => void) => {
   gsap.fromTo(el,
@@ -152,35 +154,35 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
             @enter="onMessageEnter"
           >
             <div 
-              v-for="msg in chatStore.globalMessages" 
-              :key="msg.id" 
+              v-for="item in displayMessages" 
+              :key="item.raw.id" 
               class="message-row"
             >
               <TrainerAvatar 
-                :player-class="chatStore.profileCosmetics[msg.user_id || '']?.player_class || msg.player_class" 
-                :level="chatStore.profileCosmetics[msg.user_id || '']?.trainer_level || msg.trainer_level" 
-                :avatar-style="chatStore.profileCosmetics[msg.user_id || '']?.avatar_style || undefined"
-                :gender="chatStore.profileCosmetics[msg.user_id || '']?.gender || msg.gender || 'h'"
+                :player-class="item.visuals.playerClass" 
+                :level="item.visuals.level" 
+                :avatar-style="item.visuals.avatarStyle"
+                :gender="item.visuals.gender"
                 :size="32"
                 class="clickable-avatar"
-                @click.stop="openTrainerProfile(msg.user_id)"
+                @click.stop="openTrainerProfile(item.raw.user_id)"
               />
               <div class="message-content">
                 <div class="message-meta">
                   <span
-                    v-gsap-nick="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
+                    v-gsap-nick="item.visuals.nickStyle"
                     class="username clickable-username"
-                    :class="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
-                    @click.stop="openTrainerProfile(msg.user_id)"
-                  >{{ chatStore.profileCosmetics[msg.user_id || '']?.username || msg.username }}</span>
-                  <span class="time">{{ formatChatTimestamp(msg.created_at) }}</span>
+                    :class="item.visuals.nickStyle"
+                    @click.stop="openTrainerProfile(item.raw.user_id)"
+                  >{{ item.visuals.username }}</span>
+                  <span class="time">{{ item.visuals.time }}</span>
                 </div>
                 <p class="text">
-                  {{ msg.message }}
+                  {{ item.visuals.messageText }}
                 </p>
                 <ChatBattleCodeBadge
-                  v-if="extractBattleCode(msg.message)"
-                  :battle-code="extractBattleCode(msg.message)!"
+                  v-if="item.visuals.battleCode"
+                  :battle-code="item.visuals.battleCode"
                 />
               </div>
             </div>
@@ -193,9 +195,9 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
               ref="inputField"
               v-model="newMessage"
               type="text" 
-              :placeholder="canWrite ? 'Habla con el mundo...' : `Nivel ${MIN_LEVEL} requerido`"
+              :placeholder="canWrite ? 'Habla con el mundo...' : `Nivel ${GLOBAL_CHAT_MIN_LEVEL} requerido`"
               :disabled="!canWrite"
-              :maxlength="MAX_CHARS"
+              :maxlength="GLOBAL_CHAT_MAX_CHARS"
               @keydown.enter="handleSendMessage"
             >
             <button 
@@ -210,13 +212,13 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
             v-if="!canWrite"
             class="hint-error"
           >
-            Subí a nivel {{ MIN_LEVEL }} para participar.
+            Subí a nivel {{ GLOBAL_CHAT_MIN_LEVEL }} para participar.
           </p>
           <p
             v-else
             class="hint"
           >
-            {{ newMessage.length }}/{{ MAX_CHARS }}
+            {{ newMessage.length }}/{{ GLOBAL_CHAT_MAX_CHARS }}
           </p>
         </footer>
       </section>

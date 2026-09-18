@@ -15,46 +15,61 @@ import {
 
 export { getStatusIcon };
 
+const WISH_HEAL_DIVISOR = 2;
+
+async function processWishCondition(
+  pokemon: Pokemon,
+  ctx: BattleContext,
+  side: BattleSide,
+  sideConds: Record<string, { turns?: number }>
+): Promise<void> {
+  delete sideConds['wish'];
+  if (pokemon.hp <= 0) return;
+
+  const healAmt = Math.floor(pokemon.maxHp / WISH_HEAL_DIVISOR);
+  pokemon.hp = Math.min(pokemon.maxHp, pokemon.hp + healAmt);
+  ctx.addLog(`¡Se cumplió el Deseo! ${pokemon.name} recuperó salud.`, 'log-info', pokemon);
+  if (ctx.animations?.handleHealRequest) {
+    await ctx.animations.handleHealRequest({ side });
+  }
+}
+
+async function processSideConditions(
+  pokemon: Pokemon,
+  ctx: BattleContext,
+  role: BattleSide | 'info'
+): Promise<void> {
+  const activeB = ctx.activeBattle.value;
+  if (!activeB) return;
+
+  const side: BattleSide = role === 'player' ? 'player' : 'enemy';
+  const sideConds = role === 'player' ? activeB.playerSideConditions : activeB.enemySideConditions;
+  if (!sideConds) return;
+
+  for (const [key, cond] of Object.entries(sideConds)) {
+    if (!cond || typeof cond.turns !== 'number') continue;
+    cond.turns--;
+    if (cond.turns <= 0 && key === 'wish') {
+      await processWishCondition(pokemon, ctx, side, sideConds);
+    }
+  }
+}
+
 /**
  * Procesa los efectos permanentes y temporales al final del turno.
  * @returns {boolean} True si el Pokémon sigue en combate, False si se debilitó
  */
 export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: BattleSide | 'info' = 'info') {
   if (!pokemon) return false;
-  const addLogFn = ctx.addLog;
-  const side = role === 'player' ? 'player' : 'enemy';
 
   // 0. Procesar Contadores Volátiles (ej: yawn, partiallytrapped)
   await processVolatileCounters(pokemon, ctx, role);
 
   // 0.5 Procesar Condiciones de Bando (ej: wish)
-  const activeB = ctx.activeBattle.value;
-  if (activeB) {
-    const sideConds = role === 'player' ? activeB.playerSideConditions : activeB.enemySideConditions;
-    if (sideConds) {
-      for (const [key, cond] of Object.entries(sideConds)) {
-        if (cond && typeof cond.turns === 'number') {
-          cond.turns--;
-          if (cond.turns <= 0) {
-            if (key === 'wish') {
-              delete sideConds[key];
-              if (pokemon.hp > 0) {
-                const healAmt = Math.floor(pokemon.maxHp / 2);
-                pokemon.hp = Math.min(pokemon.maxHp, pokemon.hp + healAmt);
-                addLogFn(`¡Se cumplió el Deseo! ${pokemon.name} recuperó salud.`, 'log-info', pokemon);
-                if (ctx.animations?.handleHealRequest) {
-                  await ctx.animations.handleHealRequest({ side });
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  await processSideConditions(pokemon, ctx, role);
 
   // 1. Efectos de control temporal (disabled, encore, taunt, thrash)
-  processControlTurns(pokemon, addLogFn);
+  processControlTurns(pokemon, ctx.addLog);
   
   // 2. Estados alterados persistentes (Daño)
   const hasPrimaryDamage = await processPrimaryStatusDamage(pokemon, ctx, role);
@@ -100,11 +115,7 @@ export async function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, ctx: Ba
   return true;
 }
 
-/**
- * Limpia todos los estados temporales/volátiles de un Pokémon al salir o entrar en combate.
- */
-export function clearVolatileStatus(poke: Pokemon) {
-  if (!poke) return;
+function resetBasicVolatiles(poke: Pokemon): void {
   poke.volatileCounters = {};
   poke.lastMove = null;
   poke.confused = 0;
@@ -139,8 +150,9 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.bound = 0;
   poke.identified = false;
   poke.furyCutterCount = 0;
+}
 
-  // Restore transformed original stats/moves
+function restoreTransformedOriginalStats(poke: Pokemon): void {
   if (poke._originalMoves) {
     poke.moves = poke._originalMoves;
     poke._originalMoves = undefined;
@@ -162,36 +174,48 @@ export function clearVolatileStatus(poke: Pokemon) {
     poke.ability = poke._originalAbility;
     poke._originalAbility = undefined;
   }
+}
 
-  // Restore Ditto original stats/moves if it was transformed
-  if (poke.originalDitto) {
-    const orig = poke.originalDitto;
-    poke.id = orig.id || poke.id;
-    poke.name = orig.name || poke.name;
-    poke.type = orig.type || poke.type;
-    poke.type2 = orig.type2;
-    if (orig.atk !== undefined) poke.atk = orig.atk;
-    if (orig.def !== undefined) poke.def = orig.def;
-    if (orig.spa !== undefined) poke.spa = orig.spa;
-    if (orig.spd !== undefined) poke.spd = orig.spd;
-    if (orig.spe !== undefined) poke.spe = orig.spe;
-    if (orig.moves) poke.moves = orig.moves;
-    if (orig.ivs) poke.ivs = orig.ivs;
-    if (orig.isShiny !== undefined) poke.isShiny = orig.isShiny;
-    if (orig.level !== undefined) poke.level = orig.level;
-    if (orig.nature !== undefined) poke.nature = orig.nature;
-    if (orig.ability !== undefined) poke.ability = orig.ability;
-    if (orig.maxHp !== undefined) {
-      poke.maxHp = orig.maxHp;
-      poke.hp = Math.min(poke.hp, orig.maxHp);
-    }
-    poke.originalDitto = undefined;
+function restoreDittoOriginalStats(poke: Pokemon): void {
+  if (!poke.originalDitto) return;
+  const orig = poke.originalDitto;
+  poke.id = orig.id || poke.id;
+  poke.name = orig.name || poke.name;
+  poke.type = orig.type || poke.type;
+  poke.type2 = orig.type2;
+  if (orig.atk !== undefined) poke.atk = orig.atk;
+  if (orig.def !== undefined) poke.def = orig.def;
+  if (orig.spa !== undefined) poke.spa = orig.spa;
+  if (orig.spd !== undefined) poke.spd = orig.spd;
+  if (orig.spe !== undefined) poke.spe = orig.spe;
+  if (orig.moves) poke.moves = orig.moves;
+  if (orig.ivs) poke.ivs = orig.ivs;
+  if (orig.isShiny !== undefined) poke.isShiny = orig.isShiny;
+  if (orig.level !== undefined) poke.level = orig.level;
+  if (orig.nature !== undefined) poke.nature = orig.nature;
+  if (orig.ability !== undefined) poke.ability = orig.ability;
+  if (orig.maxHp !== undefined) {
+    poke.maxHp = orig.maxHp;
+    poke.hp = Math.min(poke.hp, orig.maxHp);
   }
+  poke.originalDitto = undefined;
+}
 
-  // Castform: form is battle-volatile — always revert to Normal on exit
+function revertCastformForm(poke: Pokemon): void {
   if (poke.id === 'castform' && poke.form && poke.form !== 'normal') {
     poke.form = 'normal';
     poke.type = 'normal';
     poke.type2 = undefined;
   }
+}
+
+/**
+ * Limpia todos los estados temporales/volátiles de un Pokémon al salir o entrar en combate.
+ */
+export function clearVolatileStatus(poke: Pokemon) {
+  if (!poke) return;
+  resetBasicVolatiles(poke);
+  restoreTransformedOriginalStats(poke);
+  restoreDittoOriginalStats(poke);
+  revertCastformForm(poke);
 }

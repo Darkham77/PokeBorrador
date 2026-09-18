@@ -11,6 +11,7 @@ import {
 import { getServerTime } from '@/logic/utils/timeUtils'
 import { getPokemonPhysicalHeight, getPokemonPhysicalWeight } from '@/logic/pokemon/physicalDimensionsMath'
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { CompetitionEntry } from '@/types/system/stores'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useAuthStore } from '@/stores/auth.ts'
@@ -45,6 +46,145 @@ export async function fetchUserEntries(ctx: EventEnrollmentContext) {
   }
 }
 
+function validateEligibility(
+  ctx: EventEnrollmentContext,
+  eventId: string,
+  categoryId: string,
+  pokemonUid: string
+): { valid: false } | { valid: true; pokemon: Pokemon; eventCfg: GameEvent | undefined; synchronizedDate: Temporal.Instant } {
+  const { gameStore, authStore, uiStore, allEvents, userEntries } = ctx
+  if (!authStore.user || !gameStore.db) {
+    uiStore.notify('Debes iniciar sesión para participar en eventos.', '⚠️')
+    return { valid: false }
+  }
+
+  if (isPokemonEnrolledInOtherSubCompetition(userEntries.value, eventId, categoryId, pokemonUid)) {
+    uiStore.notify('Este Pokémon ya está participando en otra categoría de este evento.', '⚠️')
+    return { valid: false }
+  }
+
+  const pokemon = gameStore.getPokemonByUid(pokemonUid)
+  if (!pokemon) {
+    uiStore.notify('El Pokémon seleccionado no existe en tu equipo o cajas.', '❌')
+    return { valid: false }
+  }
+
+  const eventCfg = allEvents.value.find(e => e.id === eventId)
+  const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
+
+  if (eventCfg) {
+    const subComps = resolveEventSubCompetitions(eventCfg, synchronizedDate)
+    const subComp = subComps.find(s => s.id === categoryId) || subComps[0]!
+    const eligibility = isPokemonEligibleForSubCompetition(eventCfg, subComp, pokemon, synchronizedDate)
+    if (!eligibility.eligible) {
+      uiStore.notify(eligibility.reason || 'Este Pokémon no cumple con los requisitos del evento.', '⚠️')
+      return { valid: false }
+    }
+  }
+
+  if (typeof pokemon.obtainedAt !== 'number' || isNaN(pokemon.obtainedAt) || pokemon.obtainedAt <= 0) {
+    uiStore.notify('El Pokémon seleccionado no tiene una fecha de captura registrada.', '⚠️')
+    return { valid: false }
+  }
+
+  return { valid: true, pokemon, eventCfg, synchronizedDate }
+}
+
+function buildEntryPayload(
+  ctx: EventEnrollmentContext,
+  eventId: string,
+  categoryId: string,
+  pokemonUid: string,
+  pokemon: Pokemon,
+  eventCfg: GameEvent | undefined,
+  synchronizedDate: Temporal.Instant,
+  existingEntry: CompetitionEntry | null
+): CompetitionEntry {
+  const { authStore, gameStore } = ctx
+  const existingId = existingEntry?.id
+  const totalIvs = calculateTotalIVs(pokemon.ivs)
+
+  const subComps = eventCfg ? resolveEventSubCompetitions(eventCfg, synchronizedDate) : []
+  const subComp = subComps.find(s => s.id === categoryId) || {
+    id: categoryId,
+    name: 'Competición',
+    metric: 'total_ivs' as const
+  }
+  const evalRes = evaluatePokemonForSubCompetition(pokemon, subComp)
+
+  return {
+    ...(existingId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(existingId) ? { id: existingId } : {}),
+    event_id: eventId,
+    category_id: categoryId,
+    player_id: authStore.user!.id,
+    player_name: authStore.user!.user_metadata?.username || authStore.user!.user_metadata?.full_name || authStore.user!.email?.split('@')[0] || 'Entrenador',
+    player_email: authStore.user!.email || '',
+    pokemon_uid: pokemonUid,
+    data: {
+      species: pokemon.id,
+      name: pokemon.name,
+      nickname: pokemon.nickname,
+      level: pokemon.level,
+      score: evalRes.score,
+      total_ivs: totalIvs,
+      ivs: evalRes.ivs || pokemon.ivs,
+      is_shiny: pokemon.isShiny,
+      obtained_at: pokemon.obtainedAt,
+      height: typeof pokemon.height === 'number' ? pokemon.height : Number(getPokemonPhysicalHeight(pokemon).toFixed(1)),
+      weight: typeof pokemon.weight === 'number' ? pokemon.weight : Number(getPokemonPhysicalWeight(pokemon).toFixed(1)),
+      displayValue: evalRes.displayValue,
+      player_class: gameStore.state.playerClass || 'entrenador',
+      trainer_level: gameStore.state.trainerLevel || 1,
+      avatar_style: gameStore.state.avatar_style || '',
+      nick_style: gameStore.state.nick_style || '',
+      gender: gameStore.state.gender || 'h'
+    },
+    submitted_at: Temporal.Now.instant().toString()
+  }
+}
+
+async function applyEnrollmentSuccess(
+  ctx: EventEnrollmentContext,
+  eventId: string,
+  categoryId: string,
+  pokemonUid: string,
+  pokemon: Pokemon,
+  entryData: CompetitionEntry,
+  existingEntry: CompetitionEntry | null,
+  dbAssignedId?: string // uuid-ok: Database generated record UUID
+): Promise<void> {
+  const { gameStore, uiStore, userEntries, authStore } = ctx
+  const assignedId = dbAssignedId || existingEntry?.id || `${eventId}:${categoryId}:${authStore.user!.id}`
+
+  userEntries.value = {
+    ...userEntries.value,
+    [`${eventId}:${categoryId}`]: { ...entryData, id: assignedId },
+    ...(categoryId === 'ivs' ? { [eventId]: { ...entryData, id: assignedId } } : {})
+  }
+
+  if (existingEntry?.pokemon_uid && existingEntry.pokemon_uid !== pokemonUid) {
+    const isPrevEnrolledElsewhere = Object.values(userEntries.value).some(
+      e => e && e.pokemon_uid === existingEntry.pokemon_uid && e.id !== assignedId
+    )
+    if (!isPrevEnrolledElsewhere) {
+      const prevPoke = gameStore.getPokemonByUid(existingEntry.pokemon_uid)
+      if (prevPoke) prevPoke.onEvent = false
+    }
+  }
+
+  pokemon.onEvent = true
+  if (!gameStore.state.stats) {
+    gameStore.state.stats = {}
+  }
+  const activeUserEventIds = new Set(Object.keys(userEntries.value).map(k => k.split(':')[0]).filter(Boolean))
+  gameStore.state.stats.eventParticipations = Math.max(
+    Number(gameStore.state.stats.eventParticipations || 0),
+    activeUserEventIds.size
+  )
+  await gameStore.scheduleSave()
+  uiStore.notify('¡Inscripción al evento guardada con éxito!', '🏆')
+}
+
 export async function submitCompetitionEntry(
   ctx: EventEnrollmentContext,
   eventId: string,
@@ -54,98 +194,22 @@ export async function submitCompetitionEntry(
   const categoryId = typeof maybeUid === 'string' ? categoryIdOrUid : 'ivs'
   const pokemonUid = typeof maybeUid === 'string' ? maybeUid : categoryIdOrUid
 
-  const { gameStore, authStore, uiStore, allEvents, userEntries } = ctx
-  if (!authStore.user || !gameStore.db) {
-    uiStore.notify('Debes iniciar sesión para participar en eventos.', '⚠️')
-    return
-  }
+  const validation = validateEligibility(ctx, eventId, categoryId, pokemonUid)
+  if (!validation.valid) return
 
-  const isCrossEnrolled = isPokemonEnrolledInOtherSubCompetition(
-    userEntries.value,
-    eventId,
-    categoryId,
-    pokemonUid
-  )
-  if (isCrossEnrolled) {
-    uiStore.notify('Este Pokémon ya está participando en otra categoría de este evento.', '⚠️')
-    return
-  }
-
-  const pokemon = gameStore.getPokemonByUid(pokemonUid)
-
-  if (!pokemon) {
-    uiStore.notify('El Pokémon seleccionado no existe en tu equipo o cajas.', '❌')
-    return
-  }
+  const { pokemon, eventCfg, synchronizedDate } = validation
+  const { gameStore, userEntries } = ctx
 
   try {
-    const eventCfg = allEvents.value.find(e => e.id === eventId)
-    const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
+    const existingEntry = userEntries.value[`${eventId}:${categoryId}`] || (categoryId === 'ivs' ? userEntries.value[eventId] : null) || null
+    const entryData = buildEntryPayload(ctx, eventId, categoryId, pokemonUid, pokemon, eventCfg, synchronizedDate, existingEntry)
 
-    if (eventCfg) {
-      const subComps = resolveEventSubCompetitions(eventCfg, synchronizedDate)
-      const subComp = subComps.find(s => s.id === categoryId) || subComps[0]!
-      const eligibility = isPokemonEligibleForSubCompetition(eventCfg, subComp, pokemon, synchronizedDate)
-      if (!eligibility.eligible) {
-        uiStore.notify(eligibility.reason || 'Este Pokémon no cumple con los requisitos del evento.', '⚠️')
-        return
-      }
-    }
-
-    if (typeof pokemon.obtainedAt !== 'number' || isNaN(pokemon.obtainedAt) || pokemon.obtainedAt <= 0) {
-      uiStore.notify('El Pokémon seleccionado no tiene una fecha de captura registrada.', '⚠️')
-      return
-    }
-
-    const totalIvs = calculateTotalIVs(pokemon.ivs)
-
-    const subComps = eventCfg ? resolveEventSubCompetitions(eventCfg, synchronizedDate) : []
-    const subComp = subComps.find(s => s.id === categoryId) || {
-      id: categoryId,
-      name: 'Competición',
-      metric: 'total_ivs' as const
-    }
-    const evalRes = evaluatePokemonForSubCompetition(pokemon, subComp)
-
-    const existingEntry = userEntries.value[`${eventId}:${categoryId}`] || (categoryId === 'ivs' ? userEntries.value[eventId] : null)
-    const existingId = existingEntry?.id
-
-    const entryData: CompetitionEntry = {
-      ...(existingId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(existingId) ? { id: existingId } : {}),
-      event_id: eventId,
-      category_id: categoryId,
-      player_id: authStore.user.id,
-      player_name: authStore.user.user_metadata?.username || authStore.user.user_metadata?.full_name || authStore.user.email?.split('@')[0] || 'Entrenador',
-      player_email: authStore.user.email || '',
-      pokemon_uid: pokemonUid,
-      data: {
-        species: pokemon.id,
-        name: pokemon.name,
-        nickname: pokemon.nickname,
-        level: pokemon.level,
-        score: evalRes.score,
-        total_ivs: totalIvs,
-        ivs: evalRes.ivs || pokemon.ivs,
-        is_shiny: pokemon.isShiny,
-        obtained_at: pokemon.obtainedAt,
-        height: typeof pokemon.height === 'number' ? pokemon.height : Number(getPokemonPhysicalHeight(pokemon).toFixed(1)),
-        weight: typeof pokemon.weight === 'number' ? pokemon.weight : Number(getPokemonPhysicalWeight(pokemon).toFixed(1)),
-        displayValue: evalRes.displayValue,
-        player_class: gameStore.state.playerClass || 'entrenador',
-        trainer_level: gameStore.state.trainerLevel || 1,
-        avatar_style: gameStore.state.avatar_style || '',
-        nick_style: gameStore.state.nick_style || '',
-        gender: gameStore.state.gender || 'h'
-      },
-      submitted_at: Temporal.Now.instant().toString()
-    }
-    
     const res = await gameStore.db.from('competition_entries').upsert(entryData, {
       onConflict: 'event_id, category_id, player_id'
     }).select().single()
     const entry = res.data as { id?: string } | null // domain-ok: Open dynamic text or non-domain string payload
     const error = res.error as { message?: string } | null // domain-ok: Open dynamic text or non-domain string payload
-    
+
     if (error) {
       const dbError = new Error(error.message || 'Error al registrar Pokémon en sub-competencia')
       if (Error.captureStackTrace) {
@@ -155,38 +219,10 @@ export async function submitCompetitionEntry(
         type: 'Competition Entry Database Error',
         source: 'submitCompetitionEntry'
       })
-    } else {
-      const assignedId = entry?.id || existingId || `${eventId}:${categoryId}:${authStore.user.id}`
-      userEntries.value = {
-        ...userEntries.value,
-        [`${eventId}:${categoryId}`]: { ...entryData, id: assignedId },
-        ...(categoryId === 'ivs' ? { [eventId]: { ...entryData, id: assignedId } } : {})
-      }
-      // If replacing an existing entry for this slot, release previous Pokemon if not enrolled elsewhere
-      if (existingEntry && existingEntry.pokemon_uid && existingEntry.pokemon_uid !== pokemonUid) {
-        const isPrevEnrolledElsewhere = Object.values(userEntries.value).some(
-          e => e && e.pokemon_uid === existingEntry.pokemon_uid && e.id !== assignedId
-        )
-        if (!isPrevEnrolledElsewhere) {
-          const prevPoke = gameStore.getPokemonByUid(existingEntry.pokemon_uid)
-          if (prevPoke) {
-            prevPoke.onEvent = false
-          }
-        }
-      }
-
-      pokemon.onEvent = true
-      if (!gameStore.state.stats) {
-        gameStore.state.stats = {}
-      }
-      const activeUserEventIds = new Set(Object.keys(userEntries.value).map(k => k.split(':')[0]).filter(Boolean))
-      gameStore.state.stats.eventParticipations = Math.max(
-        Number(gameStore.state.stats.eventParticipations || 0),
-        activeUserEventIds.size
-      )
-      await gameStore.scheduleSave()
-      uiStore.notify('¡Pokémon registrado exitosamente!', '✅')
+      return
     }
+
+    await applyEnrollmentSuccess(ctx, eventId, categoryId, pokemonUid, pokemon, entryData, existingEntry, entry?.id)
   } catch (e) {
     logger.error('Events', `Error submitting entry: ${(e as Error).message}`)
     useErrorStore().setError(e, {

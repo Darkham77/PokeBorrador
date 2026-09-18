@@ -10,6 +10,7 @@ Frontend Developers / Core Gameplay Engineers.
 
 - **Unified Aggregation**: All reward sources across the game (tournaments, ranked arena milestones, class missions, GTS/trades) must be aggregated reactively through `useUnifiedRewards`.
 - **Zero Duplication**: Components must consume the centralized composable rather than querying domain stores independently for claimable loot.
+- **Decomposed GTS Claim Processing (`gtsRewardClaimHelpers.ts`, `useUnifiedRewards.ts`)**: GTS listing cache, trade claim matching, and money/item/pokemon reward details resolution are isolated into `gtsRewardClaimHelpers.ts` to uphold Fallow code quality governance and minimal cyclomatic complexity.
 
 ## Work Guidance
 

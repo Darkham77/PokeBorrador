@@ -101,6 +101,10 @@ test.describe('Battle Wild Encounter Jump & Shiny Intro Simulations', () => {
     const enemyCombatant = page.locator('#combatant-enemy');
     await expect(enemyCombatant).toBeAttached();
 
+    const enemyImg = page.locator('#combatant-enemy img.pokemon-combat-image');
+    await expect(enemyImg).toHaveClass(/is-silhouette/);
+    await expect(enemyImg).not.toHaveAttribute('style', /filter:\s*none/);
+
     const backBush = page.locator('.back-bush-entity');
     await expect(backBush).toBeAttached();
 

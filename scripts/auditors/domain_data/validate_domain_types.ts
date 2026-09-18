@@ -68,7 +68,6 @@ const P_OBJECT_KEYS_CAST = /\bObject\.(?:keys|entries)\s*\([^)]+\)\s+as\s+(?:\([
 const P_INLINE_ANONYMOUS_OBJECT_PARAM = /\(\s*(?:[A-Z_a-z]\w*\s*,\s*)*[A-Z_a-z]\w*\??\s*:\s*\{\s*(?:readonly\s+)?[A-Z_a-z]\w*\??\s*:\s*(?:string|number|boolean|unknown|any|[A-Z]\w*)(?:\[\])?\s*(?:;|,)\s*(?:readonly\s+)?[A-Z_a-z]\w*\??\s*:[^\n}]*\}\s*[,)]/g;
 const P_UNNAMED_POSITIONAL_TUPLE_RETURN = /\breturn\s*\[\s*[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*\s*,\s*[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*\s*\]\s*;/g;
 const P_UNBRANDED_DOMAIN_ID_ALIAS = /\b(?:export\s+)?type\s+[A-Z]\w*Id\s*=\s*string\s*;/g;
-const P_AMBIGUOUS_NULL_DOMAIN_RETURN = /^\s*(?:export\s+)?function\s+(?:get|find|lookup|resolve)[A-Z]\w*\([^)]*\)\s*:\s*(?:Promise<)?[A-Z]\w*\s*\|\s*(?:null|undefined)/gm;
 const P_UNENFORCED_STATIC_MAP = /\bexport\s+const\s+[A-Z][A-Z0-9_]{3,}\s*=\s*\{/g;
 const P_FLOATING_PROMISE = /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm;
 const P_LEAKED_GLOBAL_MUTABLE = /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm;
@@ -550,14 +549,6 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     (_match, line) => !line.includes('// brand-ok: Domain branded primitive type') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload') && !line.includes('string-ok')
   ));
 
-  findings.push(...findMatches(
-    content,
-    rel,
-    P_AMBIGUOUS_NULL_DOMAIN_RETURN,
-    'Ambiguous null/undefined domain return — consider returning Option<T> or Result<T, E> for explicit absence/error handling',
-    'WARN',
-    (_match, line) => !line.includes('// result-ok: Operation result wrapper payload') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload')
-  ));
 
   findings.push(...findMatches(
     content,

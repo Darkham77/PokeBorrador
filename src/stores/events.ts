@@ -1,20 +1,19 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { useGameStore } from '@/stores/game.ts'
-import { useMapStore } from '@/stores/map.ts'
+import { gameBus } from '@/logic/events/gameBus.ts'
+import { setEventExpMultiplier } from '@/logic/events/eventMultipliers.ts'
 import { 
   isEventActiveNow, 
   getGlobalMultipliers, 
   getSpeciesBoosts, 
-  getMinigameBuffs,
   type Event as GameEvent 
 } from '@/logic/events/eventEngine'
 import type { PendingAward, CompetitionEntry, PastEventHistoryItem } from '@/types/system/stores'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { BattleMinigame } from '@/types/battle/battle'
 import { getServerTime } from '@/logic/utils/timeUtils'
 import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
 import {
@@ -42,7 +41,6 @@ export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
   const authStore = useAuthStore()
   const uiStore = useUIStore()
-  const mapStore = useMapStore()
 
   const allEvents = ref<GameEvent[]>([])
   const activeEvents = ref<GameEvent[]>([])
@@ -55,15 +53,18 @@ export const useEventStore = defineStore('events', () => {
   let inFlightPromise: Promise<void> | null = null
 
   // Watch for game cycle ticks to re-evaluate active events
-  watch(() => mapStore.currentEpochHour, (newVal, oldVal) => {
-    if (newVal !== oldVal) {
-      logger.info('Events', `Game cycle ticked (Epoch hour: ${newVal}). Refreshing active events...`)
-      fetchEvents(true)
-    }
-  })
+  const handleGameCycleTick = () => {
+    logger.info('Events', 'Game cycle ticked. Refreshing active events...')
+    void fetchEvents(true)
+  }
+  gameBus.on('GAME_CYCLE_TICK', handleGameCycleTick)
 
   // Computed multipliers derived from active events
-  const globalMultipliers = computed(() => getGlobalMultipliers(activeEvents.value))
+  const globalMultipliers = computed(() => {
+    const mults = getGlobalMultipliers(activeEvents.value)
+    setEventExpMultiplier(mults?.exp || 1)
+    return mults
+  })
 
   const awardsContext = computed<EventAwardsContext>(() => ({
     gameStore,
@@ -109,35 +110,7 @@ export const useEventStore = defineStore('events', () => {
         activeEvents.value = (events || []).filter((ev: GameEvent) => isEventActiveNow(ev, synchronizedDate))
 
         // 3. Check for concluded competition events with pending entries and award them automatically
-        try {
-          const { data: rawEntries } = await db.from('competition_entries').select('event_id')
-          if (rawEntries && Array.isArray(rawEntries) && rawEntries.length > 0) {
-            const unAwardedEventIds = new Set<string>()
-            for (const entry of rawEntries as { event_id?: string }[]) {
-              if (entry.event_id) {
-                const evCfg = (events || []).find((e: GameEvent) => e.id === entry.event_id)
-                if (!evCfg || !isEventActiveNow(evCfg, synchronizedDate)) {
-                  unAwardedEventIds.add(entry.event_id)
-                }
-              }
-            }
-
-            for (const endedEventId of unAwardedEventIds) {
-              logger.info('Events', `Auto-awarding concluded event '${endedEventId}'...`)
-              const awardRes = await db.rpc('fn_award_event_automated', { target_event_id: endedEventId })
-              if (awardRes?.error) {
-                const errMsg = typeof awardRes.error === 'object' && awardRes.error !== null
-                  ? ((awardRes.error as { message?: string }).message || JSON.stringify(awardRes.error))
-                  : String(awardRes.error)
-                logger.error('Events', `Failed to award concluded event '${endedEventId}': ${errMsg}`)
-              } else {
-                logger.info('Events', `Successfully awarded concluded event '${endedEventId}'`)
-              }
-            }
-          }
-        } catch (awardErr) {
-          logger.error('Events', `Failed to check or auto-award concluded events: ${(awardErr as Error).message}`, awardErr)
-        }
+        await autoAwardConcludedEvents(db, events || [], synchronizedDate)
 
         // 4. Fetch user competition entries, pending awards, and past event history
         await fetchUserEntries()
@@ -203,10 +176,6 @@ export const useEventStore = defineStore('events', () => {
 
   function getSpeciesBonuses(speciesId: PokemonSpeciesId) {
     return getSpeciesBoosts(activeEvents.value, speciesId)
-  }
-
-  function getMinigameBonuses(minigameId: BattleMinigame) {
-    return getMinigameBuffs(activeEvents.value, minigameId)
   }
 
   async function checkCaptureAndPrompt(pokemon: Pokemon): Promise<void> {
@@ -286,17 +255,61 @@ export const useEventStore = defineStore('events', () => {
     globalMultipliers,
     fetchEvents,
     fetchPastEvents,
+    // fallow-ignore-next-line unused-store-member
     fetchUserEntries,
     submitCompetitionEntry,
     removeCompetitionEntry,
     checkPendingAwards,
     claimAward,
+    // fallow-ignore-next-line unused-store-member
     claimAllEventAwards,
     discardAward,
     getSpeciesBonuses,
-    getMinigameBonuses,
     isEventActive,
     checkCaptureAndPrompt,
     autoFillBestEntries
   }
 })
+
+type EventsGameStore = ReturnType<typeof useGameStore>
+type EventsDb = NonNullable<EventsGameStore['db']>
+
+async function awardSingleConcludedEvent(db: EventsDb, endedEventId: string): Promise<void> { // infra-id-ok: Dynamic DB event identifier
+  logger.info('Events', `Auto-awarding concluded event '${endedEventId}'...`)
+  const awardRes = await db.rpc('fn_award_event_automated', { target_event_id: endedEventId })
+  if (awardRes?.error) {
+    const errMsg = typeof awardRes.error === 'object' && awardRes.error !== null
+      ? ((awardRes.error as { message?: string }).message || JSON.stringify(awardRes.error))
+      : String(awardRes.error)
+    logger.error('Events', `Failed to award concluded event '${endedEventId}': ${errMsg}`)
+  } else {
+    logger.info('Events', `Successfully awarded concluded event '${endedEventId}'`)
+  }
+}
+
+async function autoAwardConcludedEvents(
+  db: EventsDb,
+  events: GameEvent[],
+  synchronizedDate: Temporal.Instant
+): Promise<void> {
+  try {
+    const { data: rawEntries } = await db.from('competition_entries').select('event_id')
+    if (!rawEntries || !Array.isArray(rawEntries) || rawEntries.length === 0) return
+
+    const unAwardedEventIds = new Set<string>()
+    for (const entry of rawEntries as { event_id?: string }[]) {
+      if (entry.event_id) {
+        const evCfg = events.find((e: GameEvent) => e.id === entry.event_id)
+        if (!evCfg || !isEventActiveNow(evCfg, synchronizedDate)) {
+          unAwardedEventIds.add(entry.event_id)
+        }
+      }
+    }
+
+    for (const endedEventId of unAwardedEventIds) {
+      await awardSingleConcludedEvent(db, endedEventId)
+    }
+  } catch (awardErr) {
+    logger.error('Events', `Failed to check or auto-award concluded events: ${(awardErr as Error).message}`, awardErr)
+  }
+}

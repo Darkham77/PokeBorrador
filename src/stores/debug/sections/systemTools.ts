@@ -1,4 +1,4 @@
-import type { DebugSystem } from '@/stores/debug'
+import type { DebugSystem } from '@/types/system/debug.ts'
 import type { PokemonStorageLocation } from '@/types/pokemon/pokemon'
 
 import { useGameStore } from '@/stores/game'
@@ -9,6 +9,9 @@ import { useEventStore } from '@/stores/events'
 
 import { logger } from '@/logic/utils/logger'
 import { gsap } from 'gsap'
+
+const DEBUG_MODAL_STACK_DELAY_SEC = 0.5;
+
 export function registerSystemTools(debug: DebugSystem) {
   const game = useGameStore()
   const ui = useUIStore()
@@ -24,7 +27,7 @@ export function registerSystemTools(debug: DebugSystem) {
     action: async (count: number = 5) => {
       for (let i = 1; i <= count; i++) {
         modalStore.open('DebugStackTest', { number: i })
-        if (i < count) await new Promise(resolve => gsap.delayedCall(0.5, resolve))
+        if (i < count) await new Promise(resolve => gsap.delayedCall(DEBUG_MODAL_STACK_DELAY_SEC, resolve))
       }
     },
     description: 'Abre múltiples ventanas modales secuencialmente para probar el sistema de capas.'

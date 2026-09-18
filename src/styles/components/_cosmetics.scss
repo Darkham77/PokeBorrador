@@ -17,7 +17,7 @@
   animation: none !important;
   font-weight: 700 !important;
   font-style: normal !important;
-  filter: none !important;
+  filter: none;
   background: none !important;
   -webkit-text-fill-color: initial !important;
 }
@@ -64,7 +64,7 @@
   color: Rgba(148, 163, 184, 1) !important;
   opacity: 0.7 !important;
   will-change: transform, filter, opacity;
-  filter: Blur(0.5px) !important;
+  filter: Blur(0.5px);
 }
 
 .nt-admin, .nick-style-admin {
@@ -75,7 +75,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   font-weight: 900 !important;
-  filter: Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.5)) Drop-Shadow(0 0 6px Rgba(158, 0, 255, 0.35)) !important;
+  filter: Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.5)) Drop-Shadow(0 0 6px Rgba(158, 0, 255, 0.35));
   display: inline-block !important;
 }
 
@@ -193,14 +193,14 @@
 }
 .av-dark {
   @include make-avatar-frame(#7700bb, null, (#2a0044,#7700bb,#330066,#9900cc,#2a0044), 5s, 50%, -7px, -4px, false, null, dark-av-pulse 4s ease-in-out infinite);
-  filter: Brightness(0.9) contrast(1.1) !important;
+  filter: Brightness(0.9) contrast(1.1);
 }
 .av-ghost {
   @include make-avatar-frame(#8855ff, null, (#440088,#cc88ff,#6622aa,#aa66ff,#440088), 4s, 50%, -7px, -4px, false, ghost-av-phase 2s ease-in-out infinite, ghost-av-pulse 2.5s ease-in-out infinite);
 }
 .av-ice {
   @include make-avatar-frame(#88eeff, null, (#aaf0ff,#0088cc,#ddfaff,#44aaff,#aaf0ff), 6s, 50%, -7px, -4px, true, null, ice-av-pulse 3s ease-in-out infinite);
-  filter: Brightness(1.05) Saturate(0.9) !important;
+  filter: Brightness(1.05) Saturate(0.9);
 }
 .av-dragon {
   @include make-avatar-frame(#4466ff, null, (#4466ff,#ff4400,#6688ff,#ff6600,#4466ff), 1.8s, 50%, -7px, -4px, false, null, dragon-av-pulse 2s ease-in-out infinite);
@@ -210,7 +210,7 @@
 }
 .av-master {
   @include make-avatar-frame(#aaaaaa, null, (#888888,#ffffff,#aaaaaa,#eeeeee,#888888), 5s, 50%, -7px, -4px, false, null, master-av-pulse 3s ease-in-out infinite);
-  filter: Brightness(1.05) !important;
+  filter: Brightness(1.05);
 }
 
 /* --- SQUARE AVATAR FRAMES --- */
@@ -228,14 +228,14 @@
 }
 .av-sq-dark {
   @include make-avatar-frame(#7700bb, null, (#2a0044,#7700bb,#330066,#9900cc,#2a0044), 5s, 8px, -7px, -4px, false, null, dark-av-pulse 4s ease-in-out infinite);
-  filter: Brightness(0.9) contrast(1.1) !important;
+  filter: Brightness(0.9) contrast(1.1);
 }
 .av-sq-ghost {
   @include make-avatar-frame(#8855ff, null, (#440088,#cc88ff,#6622aa,#aa66ff,#440088), 4s, 8px, -7px, -4px, false, ghost-av-phase 2s ease-in-out infinite, ghost-av-pulse 2.5s ease-in-out infinite);
 }
 .av-sq-ice {
   @include make-avatar-frame(#88eeff, null, (#aaf0ff,#0088cc,#ddfaff,#44aaff,#aaf0ff), 6s, 8px, -7px, -4px, true, null, ice-av-pulse 3s ease-in-out infinite);
-  filter: Brightness(1.05) Saturate(0.9) !important;
+  filter: Brightness(1.05) Saturate(0.9);
 }
 .av-sq-dragon {
   @include make-avatar-frame(#4466ff, null, (#4466ff,#ff4400,#6688ff,#ff6600,#4466ff), 1.8s, 8px, -7px, -4px, false, null, dragon-av-pulse 2s ease-in-out infinite);
@@ -245,7 +245,7 @@
 }
 .av-sq-master {
   @include make-avatar-frame(#aaaaaa, null, (#888888,#ffffff,#aaaaaa,#eeeeee,#888888), 5s, 8px, -7px, -4px, false, null, master-av-pulse 3s ease-in-out infinite);
-  filter: Brightness(1.05) !important;
+  filter: Brightness(1.05);
 }
 
 /* --- CLASS EXCLUSIVE FRAMES (CIRCULAR) --- */

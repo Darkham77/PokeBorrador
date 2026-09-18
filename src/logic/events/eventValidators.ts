@@ -47,37 +47,42 @@ export function parseAwardPrize(rawPrize: unknown): ParsedAwardPrize | null {
   return null
 }
 
+function extractSubCompetitionPrizes(subCompetitions: unknown): ParsedAwardPrize[] {
+  if (!Array.isArray(subCompetitions)) return []
+  const list: ParsedAwardPrize[] = []
+  for (const sub of subCompetitions as { prizes?: Record<string, unknown> }[]) {
+    if (sub?.prizes && typeof sub.prizes === 'object') {
+      for (const prizeObj of Object.values(sub.prizes)) {
+        const parsed = parseAwardPrize(prizeObj)
+        if (parsed) list.push(parsed)
+      }
+    }
+  }
+  return list
+}
+
+function extractEventLevelPrizes(prizesObj: unknown): ParsedAwardPrize[] {
+  if (!prizesObj || typeof prizesObj !== 'object') return []
+  const list: ParsedAwardPrize[] = []
+  for (const prizeObj of Object.values(prizesObj as Record<string, unknown>)) { // open-record: Generic key-value data dictionary container
+    const parsed = parseAwardPrize(prizeObj)
+    if (parsed) list.push(parsed)
+  }
+  return list
+}
+
 /**
  * Extracts all configured prize payloads from an event configuration.
  */
-// fallow-ignore-next-line unused-export
 export function getEventConfiguredPrizes(event: GameEvent): ParsedAwardPrize[] {
   const cfg = (typeof event.config === 'string' ? safeParse(event.config) : event.config) as Record<string, unknown> | null // open-record: Generic key-value data dictionary container
   if (!cfg || typeof cfg !== 'object') return []
 
-  const list: ParsedAwardPrize[] = []
+  const list: ParsedAwardPrize[] = [
+    ...extractSubCompetitionPrizes(cfg.subCompetitions),
+    ...extractEventLevelPrizes(cfg.prizes)
+  ]
 
-  // 1. Sub-competitions prizes
-  if (Array.isArray(cfg.subCompetitions)) {
-    for (const sub of cfg.subCompetitions as { prizes?: Record<string, unknown> }[]) {
-      if (sub && sub.prizes && typeof sub.prizes === 'object') {
-        for (const prizeObj of Object.values(sub.prizes)) {
-          const parsed = parseAwardPrize(prizeObj)
-          if (parsed) list.push(parsed)
-        }
-      }
-    }
-  }
-
-  // 2. Event-level prizes (e.g. { first: {...}, second: {...}, third: {...} })
-  if (cfg.prizes && typeof cfg.prizes === 'object') {
-    for (const prizeObj of Object.values(cfg.prizes as Record<string, unknown>)) { // open-record: Generic key-value data dictionary container
-      const parsed = parseAwardPrize(prizeObj)
-      if (parsed) list.push(parsed)
-    }
-  }
-
-  // 3. Single prize (e.g. { prize: {...} })
   if (cfg.prize && typeof cfg.prize === 'object') {
     const parsed = parseAwardPrize(cfg.prize)
     if (parsed) list.push(parsed)
@@ -86,48 +91,69 @@ export function getEventConfiguredPrizes(event: GameEvent): ParsedAwardPrize[] {
   return list
 }
 
+function checkMoneyMatch(awardPrize: ParsedAwardPrize, configuredPrize: ParsedAwardPrize): boolean {
+  const confMoney = typeof configuredPrize.money === 'number' ? configuredPrize.money : (configuredPrize.type === 'money' ? configuredPrize.amount : undefined)
+  const awardMoney = typeof awardPrize.money === 'number' ? awardPrize.money : (awardPrize.type === 'money' ? awardPrize.amount : undefined)
+  return confMoney === undefined || awardMoney === confMoney
+}
+
+function checkBattleCoinsMatch(awardPrize: ParsedAwardPrize, configuredPrize: ParsedAwardPrize): boolean {
+  const confBc = typeof configuredPrize.battleCoins === 'number' ? configuredPrize.battleCoins : (configuredPrize.type === 'bc' ? configuredPrize.amount : undefined)
+  const awardBc = typeof awardPrize.battleCoins === 'number' ? awardPrize.battleCoins : (awardPrize.type === 'bc' ? awardPrize.amount : undefined)
+  return confBc === undefined || awardBc === confBc
+}
+
+function checkItemMatch(awardPrize: ParsedAwardPrize, configuredPrize: ParsedAwardPrize): boolean {
+  if (!configuredPrize.item) return true
+  if (awardPrize.item !== configuredPrize.item) return false
+  const confQty = configuredPrize.qty || configuredPrize.amount || 1
+  const awardQty = awardPrize.qty || awardPrize.amount || 1
+  return awardQty === confQty
+}
+
+function checkMultipleItemsMatch(awardPrize: ParsedAwardPrize, configuredPrize: ParsedAwardPrize): boolean {
+  if (!configuredPrize.items || typeof configuredPrize.items !== 'object') return true
+  if (!awardPrize.items || typeof awardPrize.items !== 'object') return false
+  for (const [k, v] of Object.entries(configuredPrize.items)) {
+    if (awardPrize.items[k] !== v) return false
+  }
+  return true
+}
+
+function checkSpeciesMatch(awardPrize: ParsedAwardPrize, configuredPrize: ParsedAwardPrize): boolean {
+  if (!configuredPrize.species) return true
+  return awardPrize.species === configuredPrize.species
+}
+
+function isValidRankedSeasonPrize(award: PendingAward): boolean {
+  const prize = parseAwardPrize(award.prize)
+  if (!prize) return false
+  return Boolean(
+    prize.type === 'ranked_medal' ||
+    prize.tier ||
+    prize.money ||
+    prize.battleCoins ||
+    prize.item ||
+    prize.items ||
+    prize.species ||
+    prize.type === 'pokemon' ||
+    prize.type === 'bc' ||
+    prize.type === 'item'
+  )
+}
+
 /**
  * Checks if an award prize matches a configured prize definition.
  */
 // fallow-ignore-next-line unused-export
 export function doesPrizeMatchConfig(awardPrize: ParsedAwardPrize, configuredPrize: ParsedAwardPrize): boolean {
-  // 1. Check Money
-  const confMoney = typeof configuredPrize.money === 'number' ? configuredPrize.money : (configuredPrize.type === 'money' ? configuredPrize.amount : undefined)
-  const awardMoney = typeof awardPrize.money === 'number' ? awardPrize.money : (awardPrize.type === 'money' ? awardPrize.amount : undefined)
-  if (confMoney !== undefined && awardMoney !== confMoney) {
-    return false
-  }
-
-  // 2. Check Battle Coins
-  const confBc = typeof configuredPrize.battleCoins === 'number' ? configuredPrize.battleCoins : (configuredPrize.type === 'bc' ? configuredPrize.amount : undefined)
-  const awardBc = typeof awardPrize.battleCoins === 'number' ? awardPrize.battleCoins : (awardPrize.type === 'bc' ? awardPrize.amount : undefined)
-  if (confBc !== undefined && awardBc !== confBc) {
-    return false
-  }
-
-  // 3. Check Single Item
-  if (configuredPrize.item) {
-    if (awardPrize.item !== configuredPrize.item) return false
-    const confQty = configuredPrize.qty || configuredPrize.amount || 1
-    const awardQty = awardPrize.qty || awardPrize.amount || 1
-    if (awardQty !== confQty) return false
-  }
-
-  // 4. Check Multiple Items map
-  if (configuredPrize.items && typeof configuredPrize.items === 'object') {
-    if (!awardPrize.items || typeof awardPrize.items !== 'object') return false
-    const confEntries = Object.entries(configuredPrize.items)
-    for (const [k, v] of confEntries) {
-      if (awardPrize.items[k] !== v) return false
-    }
-  }
-
-  // 5. Check Pokémon species
-  if (configuredPrize.species) {
-    if (awardPrize.species !== configuredPrize.species) return false
-  }
-
-  return true
+  return (
+    checkMoneyMatch(awardPrize, configuredPrize) &&
+    checkBattleCoinsMatch(awardPrize, configuredPrize) &&
+    checkItemMatch(awardPrize, configuredPrize) &&
+    checkMultipleItemsMatch(awardPrize, configuredPrize) &&
+    checkSpeciesMatch(awardPrize, configuredPrize)
+  )
 }
 
 /**
@@ -145,20 +171,7 @@ export function isAwardClaimable(
 
   // 1. Ranked season awards are official periodic arena payout competitions
   if (award.event_id.startsWith('ranked_season_')) {
-    const prize = parseAwardPrize(award.prize)
-    if (!prize) return false
-    return Boolean(
-      prize.type === 'ranked_medal' ||
-      prize.tier ||
-      prize.money ||
-      prize.battleCoins ||
-      prize.item ||
-      prize.items ||
-      prize.species ||
-      prize.type === 'pokemon' ||
-      prize.type === 'bc' ||
-      prize.type === 'item'
-    )
+    return isValidRankedSeasonPrize(award)
   }
 
   // 2. Validate that the event exists in configured events
@@ -167,16 +180,16 @@ export function isAwardClaimable(
     return false
   }
 
-  // 2. Validate prize structure
+  // 3. Validate prize structure
   const prize = parseAwardPrize(award.prize)
   if (!prize) return false
 
-  // 3. Extract configured prizes for this event
+  // 4. Extract configured prizes for this event
   const configuredPrizes = getEventConfiguredPrizes(matchingEvent)
   if (configuredPrizes.length === 0) {
     return false
   }
 
-  // 4. Award MUST match at least one official configured prize of this event
+  // 5. Award MUST match at least one official configured prize of this event
   return configuredPrizes.some((cfgPrize) => doesPrizeMatchConfig(prize, cfgPrize))
 }

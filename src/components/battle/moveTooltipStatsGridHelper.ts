@@ -11,7 +11,7 @@ export function formatPowerDisplay(base: number | string, final: number | string
   return `${base} ➔ ${final}`;
 }
 
-const INFINITE_ACCURACY_VALUE = 1000;
+export const INFINITE_ACCURACY_VALUE = 1000;
 
 export function formatAccuracyValue(val: number): string {
   return val === INFINITE_ACCURACY_VALUE ? '♾️' : `${val}%`;

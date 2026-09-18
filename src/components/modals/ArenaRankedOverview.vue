@@ -6,12 +6,18 @@ import { useLivePvPStore } from "@/stores/livePvP";
 import { useUIStore } from "@/stores/ui";
 import { useModalStore } from "@/stores/modals";
 import { getAssetUrl, ASSET_TYPES } from "@/logic/services/assetService";
-import PokemonTypeTag from "@/components/shared/PokemonTypeTag.vue";
+import SeasonTournamentCard from "@/components/modals/SeasonTournamentCard.vue";
 import { toPokemonType, type PokemonType } from "@/data/battle/types";
 import { getSeasonalThemeForMonth, type RankedTierId } from "@/data/system/rankedData";
 import { validateTeamForRanked, normalizeRankedRules } from "@/logic/pvp/rankedEngine";
 import { GAME_TIMEZONE } from "@/logic/utils/timeUtils";
 import { ARENA_TIER_ICON_FLOAT_Y_PX, TIER_ICON_FLOAT_DURATION_SEC } from "@/logic/constants/animations";
+
+import {
+  resolveSearchMessage,
+  resolveRankedTierDisplay,
+  resolveRankedStatsDisplay
+} from "./arenaRankedOverviewHelper";
 
 const pvp = usePvPStore();
 const livePvP = useLivePvPStore();
@@ -50,13 +56,23 @@ const allowedTypes = computed<PokemonType[]>(() =>
   (pvp.currentSeasonRules?.allowedTypes || currentTheme.value.allowedTypes || []).map(toPokemonType)
 );
 
+const levelCap = computed(() => pvp.currentSeasonRules?.levelCap || '50');
+
+const tierDisplay = computed(() =>
+  resolveRankedTierDisplay(pvp.eloTier, pvp.elo)
+);
+
+const statsDisplay = computed(() =>
+  resolveRankedStatsDisplay(pvp.stats)
+);
+
+const searchMessage = computed(() =>
+  resolveSearchMessage(livePvP.searchPhase, livePvP.searchSecondsRemaining)
+);
+
 const getRankIcon = (tierId?: RankedTierId) => {
   const id = tierId || "bronce";
   return getAssetUrl(ASSET_TYPES.RANK, id);
-};
-
-const getPokemonRewardSprite = (species: string, isShiny = true) => {
-  return getAssetUrl(ASSET_TYPES.POKEMON, species, { isShiny });
 };
 
 const seasonActive = computed(() => {
@@ -123,94 +139,13 @@ function handleEmojiLeave(e: MouseEvent) {
 <template>
   <div class="arena-ranked-overview">
     <!-- 1. Top Section: Seasonal Tournament Banner & Official Rules (EventCard style) -->
-    <section
-      v-gsap-hover
-      class="season-tournament-card"
+    <SeasonTournamentCard
+      :current-theme="currentTheme"
+      :allowed-types="allowedTypes"
+      :level-cap="levelCap"
+      clickable
       @click="handleTournamentCardClick"
-    >
-      <div class="tournament-banner-wrapper">
-        <img
-          :src="getAssetUrl(ASSET_TYPES.BANNER, currentTheme.bannerImage)"
-          :alt="currentTheme.name"
-          class="tournament-banner-img allow-aliasing"
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-        >
-      </div>
-
-      <div class="tournament-details">
-        <div class="tournament-header-row">
-          <span class="season-badge">TORNEO DE TEMPORADA</span>
-          <h3 class="tournament-name text-outline">
-            {{ currentTheme.name }}
-          </h3>
-        </div>
-
-        <p class="tournament-desc">
-          {{ currentTheme.description }}
-        </p>
-
-        <div class="tournament-badges-row">
-          <span class="rule-badge text-outline">
-            <span class="emoji">⚔️</span> 6 vs 6 (Single)
-          </span>
-          <span class="rule-badge text-outline">
-            <span class="emoji">⭐</span> Nivel Máx: {{ pvp.currentSeasonRules?.levelCap || '50' }}
-          </span>
-          <span
-            v-if="currentTheme.isLittleCup"
-            class="rule-badge special-rule text-outline"
-          >
-            <span class="emoji">🐣</span> Little Cup
-          </span>
-          <span
-            v-if="currentTheme.requiresMonotype"
-            class="rule-badge special-rule text-outline"
-          >
-            <span class="emoji">🧬</span> Monotipo
-          </span>
-          <span
-            v-if="currentTheme.requiresDualType"
-            class="rule-badge special-rule text-outline"
-          >
-            <span class="emoji">⚡</span> Doble Tipo
-          </span>
-
-          <!-- Allowed Types Badges -->
-          <div
-            v-if="allowedTypes.length"
-            class="types-pills-row"
-          >
-            <PokemonTypeTag
-              v-for="t in allowedTypes"
-              :key="t"
-              :type="t"
-              size="ssm"
-            />
-          </div>
-          <span
-            v-else
-            class="rule-badge all-types text-outline"
-          >
-            Todos los tipos permitidos
-          </span>
-        </div>
-
-        <!-- Shiny Reward Preview for Diamante / Maestro -->
-        <div class="tournament-reward-preview">
-          <img
-            :src="getPokemonRewardSprite(currentTheme.rewardPokemon.maestro.species, true)"
-            :alt="currentTheme.rewardPokemon.maestro.species"
-            class="reward-sprite pixel-art"
-          >
-          <div class="reward-text-group">
-            <span class="reward-tag text-outline">RECOMPENSA EXCLUSIVA MAESTRO</span>
-            <span class="reward-name text-outline">
-              <span class="emoji">✨</span> {{ currentTheme.rewardPokemon.maestro.species }} SHINY (IVs 31x4)
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
+    />
 
     <!-- 2. Center Section: Rank Medal, ELO & Matchmaking Action Buttons -->
     <section class="rank-card">
@@ -223,45 +158,45 @@ function handleEmojiLeave(e: MouseEvent) {
             <img
               v-if="!imageError"
               :src="getRankIcon(pvp.eloTier?.id)"
-              :alt="pvp.eloTier?.name || 'Bronce'"
+              :alt="tierDisplay.name"
               class="tier-image allow-aliasing"
               @error="imageError = true"
             >
             <div
               v-else
               class="tier-emoji-badge"
-              :style="{ '--tier-color': pvp.eloTier?.color || '#888' }"
+              :style="{ '--tier-color': tierDisplay.color }"
               @mouseenter="handleEmojiEnter"
               @mouseleave="handleEmojiLeave"
             >
-              <span class="emoji">{{ pvp.eloTier?.icon || '🥉' }}</span>
+              <span class="emoji">{{ tierDisplay.icon }}</span>
             </div>
           </div>
           <div class="tier-info">
             <span class="tier-label text-outline">RANGO ACTUAL</span>
             <h2
-              :style="{ color: pvp.eloTier?.color || '#888' }"
+              :style="{ color: tierDisplay.color }"
               class="text-outline"
             >
-              {{ pvp.eloTier?.name || 'Bronce' }}
+              {{ tierDisplay.name }}
             </h2>
             <div class="elo-badge text-outline">
-              {{ pvp.elo || 1000 }} ELO
+              {{ tierDisplay.elo }} ELO
             </div>
           </div>
         </div>
 
         <div class="arena-stats">
           <div class="stat-item">
-            <span class="val text-outline">{{ pvp.stats?.wins || 0 }}</span>
+            <span class="val text-outline">{{ statsDisplay.wins }}</span>
             <span class="lab text-outline">VICTORIAS</span>
           </div>
           <div class="stat-item">
-            <span class="val text-outline">{{ pvp.stats?.losses || 0 }}</span>
+            <span class="val text-outline">{{ statsDisplay.losses }}</span>
             <span class="lab text-outline">DERROTAS</span>
           </div>
           <div class="stat-item">
-            <span class="val text-outline">{{ (pvp.stats?.wins / (pvp.stats?.wins + pvp.stats?.losses || 1) * 100).toFixed(1) }}%</span>
+            <span class="val text-outline">{{ statsDisplay.winRateText }}</span>
             <span class="lab text-outline">WIN RATE</span>
           </div>
         </div>
@@ -274,10 +209,7 @@ function handleEmojiLeave(e: MouseEvent) {
       >
         <span class="emoji icon">⏳</span>
         <span class="status-msg">
-          {{ livePvP.searchPhase === 'passive_fallback' 
-            ? 'Buscando defensa pasiva...' 
-            : `Buscando rival humano... (${livePvP.searchSecondsRemaining}s)` 
-          }}
+          {{ searchMessage }}
         </span>
       </div>
 

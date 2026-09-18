@@ -171,7 +171,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | **Prop-Based UI Testing** | For modern components (e.g., `PVTooltip`), verify **Props/Attributes** instead of searching for nested DOM elements. This avoids breakage when elements are **Teleported** or refactored internally. |
 | **Asset Resolution Parity** | When migrating assets from external to local, ALWAYS update the corresponding unit tests (e.g., `assets.spec.ts`) to verify the new local path resolution and `.webp` extension. |
 | **Sanitization & Recovery** | For "Self-Healing" systems (e.g., legacy data repair), ALWAYS add unit tests that simulate partially corrupt objects to verify successful recovery and prevent reference errors. |
-| **TypeScript Global Declarations** | Const globals defined in config files (like `__APP_VERSION__` in `vite.config.ts`) must be explicitly declared in tests using `declare const VAR: type;` to satisfy the TypeScript compiler during pre-commit checks (`vue-tsc --noEmit`). |
+| **TypeScript Global Declarations** | Const globals defined in config files (like `__APP_VERSION__` in `vite.config.ts`) must be explicitly declared in tests using `declare const VAR: type;` to satisfy the TypeScript compiler during pre-commit checks (`npm run validate:types` / `validate_type_check`). |
 | **Static Imports over Dynamic Require** | In ESM-based test graphs (especially with Vitest or Node.js native test runners containing top-level await), dynamic `require()` statements inside loop blocks or helper files will trigger compiler/execution crashes. Use static `import` at the top of the test file instead. |
 | **Decoupling Integrity Tests** | Verification tests validating static data integrity (e.g., map configurations) should check against explicit/static registries rather than relying on runtime combat-mechanic helpers (which are subject to dynamic rule changes) to avoid flaky assertions. |
 
@@ -211,3 +211,30 @@ When testing `executeSwitch`, always include **all** of these mocks:
 
 Without the `@/stores/ui` mock, the early return inside the trap check never executes,
 causing the switch to proceed and the trap assertion to fail silently.
+
+---
+
+## 12. Poké Vicio Test Architecture & Anti-Fragmentation Governance
+
+### 12.1 Domain-Cohesive Test Suites (300 to 800 lines)
+
+- **Consolidation over Micro-Files**: Group related domain behaviors, fixtures, and regression cases into cohesive test suites (e.g. `battle_helpers_and_actions_suite.spec.ts`, `stores_domain_suite.spec.ts`, `inventory_domain_suite.spec.ts`) instead of scattering assertions across hundreds of micro-files (< 60 lines).
+- **Execution Overhead Elimination**: Spawning hundreds of isolated Vitest test files wastes seconds of thread setup, JSDOM instantiation, and module re-parsing. Domain-cohesive suites reduce total suite runtimes dramatically while preserving 100% of test coverage and assertions.
+
+### 12.2 Anti-Fragmentation Mandate (`validate_test_fragmentation.ts`)
+
+- **60-Line Minimum Floor**: Every test file in `tests/` must have at least 60 lines.
+- **Whitelist Exemption**: Only dedicated standalone process wrappers (e.g. worker thread serialization, Docker Postgres container reuse benchmarks) or pure Vue SFC view mounting specs are exempt via `TEST_FRAGMENTATION_WHITELIST`.
+- **Inline Escape Hatch**: Justified standalone fixtures may use `// test-fragmentation-ok: <justification>`.
+
+### 12.3 Environment Strict Separation (Node vs JSDOM)
+
+| Directory | Target Environment | Scope & Mandate |
+| :--- | :--- | :--- |
+| `tests/node/` | Native Node.js | Pure domain calculations, database schemas/migrations, CLI scripts, auditors. Never use JSDOM here. |
+| `tests/unit/` | JSDOM (inline) | Vue SFC components, modals, Pinia stores with DOM interactions. Use `// @vitest-environment jsdom` or inline environment comment. Pure helpers should run in node. |
+
+### 12.4 Global State Clean Sandbox
+
+- When tests mutate `globalThis.window`, timers, or browser globals in Node or JSDOM, tests **MUST ALWAYS** restore the original state in `afterEach` to prevent silent corruption or race conditions in sibling tests sharing the worker thread.
+

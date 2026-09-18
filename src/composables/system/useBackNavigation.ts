@@ -50,8 +50,8 @@ export function useBackNavigation() {
     try {
       const currentState = (window.history.state as Record<string, unknown> | null) || {} // open-record: Generic key-value data dictionary container
       window.history.pushState({ ...currentState, pokevicioGuard: true }, '', window.location.href)
-    } catch {
-      // Ignore in restricted environments
+    } catch (err) {
+      logger.debug('useBackNavigation', 'Historial restringido en este entorno:', err)
     }
   }
 

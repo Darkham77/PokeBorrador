@@ -12,11 +12,13 @@ import { parseArgs, styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import os from 'node:os';
 
 import {
   type StandardAuditResult,
   type AuditFinding,
   type AuditFamily,
+  type AuditTaskDefinition,
   FAMILY_METADATA,
   AUDIT_FAMILIES
 } from '../lib/auditContract.ts';
@@ -25,10 +27,14 @@ import {
   renderConsolidatedFooter,
   renderMarkdownReport
 } from '../lib/unifiedTheme.ts';
-import { discoverAuditors } from './auditScanner.ts';
+import { discoverAuditors, type AuditPresetName } from './auditScanner.ts';
 import { executeAuditorStreaming, isNodeInternalWarning } from '../lib/streamingRunner.ts';
 
 enableCompileCache();
+
+const CPU_CORE_DIVISOR = 2 as const;
+const MIN_CONCURRENCY = 1 as const;
+const DECIMAL_RADIX = 10 as const;
 
 async function runMasterAudit() {
   const startTime = performance.now();
@@ -40,13 +46,18 @@ async function runMasterAudit() {
     options: {
       family: { type: 'string' },
       task: { type: 'string' },
+      tasks: { type: 'string' },
+      suites: { type: 'string' },
+      preset: { type: 'string' },
+      concurrency: { type: 'string' },
       output: { type: 'string', short: 'o' },
       'changed-since': { type: 'string' },
       'errors-only': { type: 'boolean' },
       all: { type: 'boolean', short: 'a' },
       top: { type: 'string', short: 't' },
       rule: { type: 'string', short: 'r', multiple: true },
-      rules: { type: 'string', multiple: true }
+      rules: { type: 'string', multiple: true },
+      fix: { type: 'boolean' }
     },
     allowPositionals: true,
     strict: false
@@ -85,9 +96,21 @@ async function runMasterAudit() {
   }
 
   // 2. Auto-discover all auditor tasks dynamically from scripts/auditors/
+  const targetPreset = values.preset as AuditPresetName | undefined;
+  let targetSuites: string[] | undefined = undefined; // no-domain: Non-domain utility collection or data structure
+  if (values.suites) {
+    targetSuites = String(values.suites).split(',').map(s => s.trim()).filter(Boolean);
+  } else if (values.tasks) {
+    targetSuites = String(values.tasks).split(',').map(s => s.trim()).filter(Boolean);
+  } else if (typeof values.task === 'string' && values.task.includes(',')) {
+    targetSuites = String(values.task).split(',').map(s => s.trim()).filter(Boolean);
+  }
+
   const tasksToRun = await discoverAuditors({
     family: targetFamily as string | undefined,
-    task: values.task as string | undefined
+    task: targetSuites ? undefined : (values.task as string | undefined),
+    suites: targetSuites,
+    preset: targetPreset
   });
 
   // Sort tasks by canonical family order
@@ -97,9 +120,13 @@ async function runMasterAudit() {
     return orderA - orderB;
   });
 
+  const subtitleDetails: string[] = [`Auto-descubiertas: ${tasksToRun.length} suites`]; // no-domain: Non-domain utility collection or data structure
+  if (targetPreset) subtitleDetails.push(`Preset: ${targetPreset.toUpperCase()}`);
+  if (values.family) subtitleDetails.push(`Familia: ${String(values.family).toUpperCase()}`);
+
   console.log(renderBanner(
     'POKE VICIO - SUITE DE AUDITORÍA GLOBAL Y VALIDACIÓN',
-    `Auto-descubiertas: ${tasksToRun.length} suites${values.family ? `  |  Familia: ${String(values.family).toUpperCase()}` : ''}`
+    subtitleDetails.join('  |  ')
   ));
 
   if (tasksToRun.length === 0) {
@@ -107,42 +134,90 @@ async function runMasterAudit() {
     process.exit(0);
   }
 
-  console.log(styleText('bold', '⏳ Progreso de ejecución de suites:\n'));
+  const availableCpus = os.availableParallelism ? os.availableParallelism() : os.cpus().length;
+  const defaultConcurrency = Math.max(MIN_CONCURRENCY, Math.floor(availableCpus / CPU_CORE_DIVISOR));
+  const concurrencyLimit = values.concurrency
+    ? Math.max(MIN_CONCURRENCY, Number.parseInt(values.concurrency as string, DECIMAL_RADIX) || defaultConcurrency)
+    : defaultConcurrency;
 
-  const results: StandardAuditResult[] = [];
-  const totalTasks = tasksToRun.length;
+  console.log(styleText('bold', `⏳ Progreso de ejecución de suites (Concurrencia: ${concurrencyLimit} workers):\n`));
 
-  for (let i = 0; i < totalTasks; i++) {
-    const task = tasksToRun[i]!;
-    const stepNum = i + 1;
-    const stepStr = String(stepNum).padStart(2, '0');
-    const totalStr = String(totalTasks).padStart(2, '0');
-    const pct = Math.round((stepNum / totalTasks) * 100);
-    const pctStr = `${pct}%`.padStart(4, ' ');
+  class AuditStreamCoordinator {
+    private completedCount = 0;
+    private readonly totalTasks: number;
+    private printLock: Promise<void> = Promise.resolve();
 
-    console.log(`  ${styleText('dim', `[ ${stepStr}/${totalStr} │ ${pctStr} ]`)} ⚙️  ${styleText('cyan', task.name)} ${styleText('dim', `(${task.id})`)}...`);
+    constructor(totalTasks: number) {
+      this.totalTasks = totalTasks;
+    }
 
+    public async onTaskComplete(
+      task: AuditTaskDefinition,
+      subLines: string[],
+      durationMs: number,
+      result: StandardAuditResult
+    ): Promise<void> {
+      const previousLock = this.printLock;
+      let releaseLock: () => void = () => {};
+      this.printLock = new Promise<void>((resolve) => {
+        releaseLock = resolve;
+      });
+
+      await previousLock;
+
+      try {
+        this.completedCount++;
+        const stepStr = String(this.completedCount).padStart(2, '0');
+        const totalStr = String(this.totalTasks).padStart(2, '0');
+        const pct = Math.round((this.completedCount / this.totalTasks) * 100);
+        const pctStr = `${pct}%`.padStart(4, ' ');
+
+        const isSuccess = result.status === 'passed' && (result.summary?.errors === 0);
+        const statusBadge = isSuccess
+          ? ((result.summary?.warnings ?? 0) > 0 ? styleText('yellow', '⚠️ ') : styleText('green', '✅'))
+          : styleText('red', '❌');
+
+        console.log(`  ${styleText('dim', `[ ${stepStr}/${totalStr} │ ${pctStr} ]`)} ⚙️  ${styleText('cyan', task.name)} ${styleText('dim', `(${task.id})`)}... ${statusBadge} ${styleText('dim', `${durationMs}ms`)}`);
+
+        for (const line of subLines) {
+          console.log(`     ${styleText('dim', '│')}  ${styleText('dim', line)}`);
+        }
+
+        if (!isSuccess && result.findings && result.findings.length > 0) {
+          for (const finding of result.findings.slice(0, 3)) {
+            console.log(`     ${styleText('red', '│  ✖')} ${styleText('red', finding.message)}`);
+          }
+        }
+      } finally {
+        releaseLock();
+      }
+    }
+  }
+
+  const coordinator = new AuditStreamCoordinator(tasksToRun.length);
+
+  async function executeSingleTask(task: AuditTaskDefinition): Promise<StandardAuditResult> {
     const taskArgs = [...task.args];
     if (values['errors-only'] && !taskArgs.includes('--errors-only')) taskArgs.push('--errors-only');
     if (formattedRules && !taskArgs.includes('--rule')) taskArgs.push('--rule', formattedRules);
     if (values.top && !taskArgs.includes('--top')) taskArgs.push('--top', values.top as string);
     if (values['changed-since'] && !taskArgs.includes('--changed-since')) taskArgs.push('--changed-since', values['changed-since'] as string);
+    if (values.fix && !taskArgs.includes('fix')) taskArgs.push('fix');
 
+    const subLines: string[] = []; // no-domain: Non-domain utility collection or data structure
     const proc = await executeAuditorStreaming(task, taskArgs, (subLine) => {
-      console.log(`     ${styleText('dim', '│')}  ${styleText('dim', subLine)}`);
+      subLines.push(subLine);
     });
     const taskDuration = proc.durationMs;
 
     let parsedResult: StandardAuditResult | null = null;
     const taskJsonPath = path.join(scratchAuditsDir, task.family, `${task.id}.json`);
 
-    // Try reading the JSON directly written by sub-auditor
     try {
       const fileContent = await fs.readFile(taskJsonPath, 'utf-8');
       parsedResult = JSON.parse(fileContent) as StandardAuditResult;
       parsedResult.durationMs = taskDuration;
     } catch {
-      // Fallback: parse from stdout if file read failed
       if (proc.stdout) {
         try {
           const raw = proc.stdout.trim();
@@ -214,8 +289,23 @@ async function runMasterAudit() {
       };
     }
 
-    results.push(currentResult);
+    await coordinator.onTaskComplete(task, subLines, taskDuration, currentResult);
+    return currentResult;
   }
+
+  const results: StandardAuditResult[] = new Array(tasksToRun.length);
+  let nextTaskIndex = 0;
+
+  async function worker(): Promise<void> {
+    while (nextTaskIndex < tasksToRun.length) {
+      const idx = nextTaskIndex++;
+      results[idx] = await executeSingleTask(tasksToRun[idx]!);
+    }
+  }
+
+  const workerCount = Math.min(concurrencyLimit, tasksToRun.length);
+  const workers = Array.from({ length: workerCount }, () => worker());
+  await Promise.all(workers);
 
   const totalDuration = Math.round(performance.now() - startTime);
   const totalErrors = results.reduce((acc, r) => acc + (r.summary?.errors ?? 0), 0);

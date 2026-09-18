@@ -73,33 +73,78 @@ function filterDuplicateUids(sanitizedData: SaveDataDto): void {
   }
 }
 
+function validateCachedSaveData(data: GameState | SaveDataDto | Record<string, unknown>) {
+  const rawData = typeof data === 'object' && data !== null ? (data as { box?: (Pokemon | null)[] }) : {};
+  const rawBox = Array.isArray(rawData.box) ? rawData.box : [];
+  const currentBoxHash = rawBox.map(p => p ? `${p.uid}_${p.level}_${p.exp}_${p.hp}` : '').join(',');
+  const isBoxDirty = !boxValidationCache.lastBoxHash || currentBoxHash !== boxValidationCache.lastBoxHash || boxValidationCache.lastValidatedBox.length !== rawBox.length;
+
+  if (!isBoxDirty && boxValidationCache.lastValidatedBox.length > 0) {
+    const testData = { ...data, box: [] };
+    const parsedResult = validateSaveData(testData);
+    if (parsedResult.success) {
+      parsedResult.output.box = rawBox as typeof parsedResult.output.box;
+    }
+    return parsedResult;
+  }
+
+  const parsedResult = validateSaveData(data);
+  if (parsedResult.success) {
+    boxValidationCache.lastBoxHash = currentBoxHash;
+    boxValidationCache.lastValidatedBox = parsedResult.output.box as Pokemon[];
+  }
+  return parsedResult;
+}
+
+function sanitizeMarketSoldIds(data: SaveDataDto): void {
+  if (Array.isArray(data.marketSoldSeenIds)) {
+    data.marketSoldSeenIds = [
+      ...new Set(
+        (data.marketSoldSeenIds as (string | number)[])
+          .map((id) => (id !== null && id !== undefined ? String(id).trim() : ''))
+          .filter((id) => id.length > 0 && !id.includes('invalid'))
+      )
+    ];
+  }
+}
+
+function validatePokemonEntry(
+  p: SaveDataDto['team'][number] | null,
+  listName: string,
+  uids: Set<string>,
+  duplicateUids: Set<string>,
+  issues: string[],
+  isDebugMode: boolean
+): void {
+  if (!p) return;
+  if (p.uid) {
+    if (uids.has(p.uid)) {
+      duplicateUids.add(p.uid);
+      issues.push(`Duplicado de UID detectado: ${p.uid} (${p.name}) en ${listName}`);
+    }
+    uids.add(p.uid);
+  }
+
+  const legality = checkPokemonLegality(p as Pokemon, { allowUnreleased: isDebugMode });
+  if (!legality.isLegal) {
+    (p as Pokemon).isIllegal = true;
+    (p as Pokemon).illegalReasons = legality.issues;
+    issues.push(`[SAVE] Pokémon ilegal en ${listName}: ${p.name} (UID: ${p.uid}) - ${legality.issues.join('; ')}`);
+    return;
+  }
+
+  (p as Pokemon).isIllegal = false;
+  (p as Pokemon).illegalReasons = [];
+  validatePokemon(p as Pokemon, isDebugMode);
+}
+
 export function validateAndSanitize(data: GameState | SaveDataDto | Record<string, unknown>): ValidateAndSanitizeResult {
   if (!data) {
     return { valid: false, issues: [], error: 'No data' };
   }
 
   const issues: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  // Calculate box hash to check if it's dirty
-  const rawData = typeof data === 'object' && data !== null ? (data as { box?: (Pokemon | null)[] }) : {};
-  const rawBox = Array.isArray(rawData.box) ? rawData.box : [];
-  const currentBoxHash = rawBox.map(p => p ? `${p.uid}_${p.level}_${p.exp}_${p.hp}` : '').join(',');
-  const isBoxDirty = !boxValidationCache.lastBoxHash || currentBoxHash !== boxValidationCache.lastBoxHash || boxValidationCache.lastValidatedBox.length !== rawBox.length;
-
-  let parsedResult;
-  if (!isBoxDirty && boxValidationCache.lastValidatedBox.length > 0) {
-    const testData = { ...data, box: [] };
-    parsedResult = validateSaveData(testData);
-    if (parsedResult.success) {
-      parsedResult.output.box = rawBox as typeof parsedResult.output.box;
-    }
-  } else {
-    parsedResult = validateSaveData(data);
-    if (parsedResult.success) {
-      boxValidationCache.lastBoxHash = currentBoxHash;
-      boxValidationCache.lastValidatedBox = parsedResult.output.box as Pokemon[];
-    }
-  }
+  const parsedResult = validateCachedSaveData(data);
 
   if (!parsedResult.success) {
     const errorMsg = parsedResult.issues.map(i => `${i.path?.[0]?.key || 'campo'}: ${i.message}`).join(', ');
@@ -115,58 +160,18 @@ export function validateAndSanitize(data: GameState | SaveDataDto | Record<strin
   sanitizedData.team?.forEach(normalizeRuntimePokemonGender);
   sanitizedData.box?.forEach((p) => { if (p) normalizeRuntimePokemonGender(p); });
 
-  if (Array.isArray(sanitizedData.marketSoldSeenIds)) {
-    sanitizedData.marketSoldSeenIds = [
-      ...new Set(
-        (sanitizedData.marketSoldSeenIds as (string | number)[])
-          .map((id) => (id !== null && id !== undefined ? String(id).trim() : ''))
-          .filter((id) => id.length > 0 && !id.includes('invalid'))
-      )
-    ];
-  }
-
+  sanitizeMarketSoldIds(sanitizedData);
   sanitizeNumericFields(sanitizedData, issues);
   sanitizeInventoryQuantities(sanitizedData.inventory, issues);
 
   const uids = new Set<string>();
   const duplicateUids = new Set<string>();
-
-  const checkPoke = (p: SaveDataDto['team'][number] | null, listName: string) => {
-    if (!p || !p.uid) return;
-    if (uids.has(p.uid)) {
-      duplicateUids.add(p.uid);
-      issues.push(`Duplicado de UID detectado: ${p.uid} (${p.name}) en ${listName}`);
-    }
-    uids.add(p.uid);
-  };
-
   const isDebugMode = (typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))) ||
                       (typeof import.meta !== 'undefined' && Boolean(import.meta.env?.DEV));
 
-  const validateSinglePokemon = (p: SaveDataDto['team'][number] | null, listName: string) => {
-    if (!p) return;
-    checkPoke(p, listName);
-
-    const legality = checkPokemonLegality(p as Pokemon, { allowUnreleased: isDebugMode });
-    if (!legality.isLegal) {
-      (p as Pokemon).isIllegal = true;
-      (p as Pokemon).illegalReasons = legality.issues;
-      issues.push(`[SAVE] Pokémon ilegal en ${listName}: ${p.name} (UID: ${p.uid}) - ${legality.issues.join('; ')}`);
-      return;
-    }
-
-    (p as Pokemon).isIllegal = false;
-    (p as Pokemon).illegalReasons = [];
-    validatePokemon(p as Pokemon, isDebugMode);
-  };
-
   try {
-    if (sanitizedData.team) {
-      sanitizedData.team.forEach((p) => validateSinglePokemon(p, 'equipo'));
-    }
-    if (sanitizedData.box) {
-      sanitizedData.box.forEach((p) => validateSinglePokemon(p, 'caja'));
-    }
+    sanitizedData.team?.forEach((p) => validatePokemonEntry(p, 'equipo', uids, duplicateUids, issues, isDebugMode));
+    sanitizedData.box?.forEach((p) => validatePokemonEntry(p, 'caja', uids, duplicateUids, issues, isDebugMode));
   } catch (err) {
     logger.error('SAVE', 'Error crítico en estructura de Pokémon al sanitizar/validar:', err);
     return {

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, type ID } from '@pkmn/sim';
 import type { CertifiedBattleCase } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
-import { statsMap, patchShowdownSpreadModify } from '../../../src/logic/battle/showdownAdapter.ts';
+import { statsMap, patchShowdownSpreadModify } from '../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';

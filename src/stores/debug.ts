@@ -17,19 +17,7 @@ import { registerItemTools } from './debug/sections/itemTools.ts'
 import { registerSystemTools } from './debug/sections/systemTools.ts'
 import { registerBattleTools } from './debug/sections/battleTools.ts'
 
-export interface DebugTool {
-  id: string
-  command: string
-  action: (...args: never[]) => unknown
-  label?: string
-  category?: string
-  description?: string
-}
-
-export interface DebugSystem {
-  register: (config: DebugTool) => void
-  unregister?: (id: string) => void
-}
+import type { DebugTool } from '@/types/system/debug.ts'
 
 
 export const useDebugStore = defineStore('debug', () => {
@@ -115,11 +103,6 @@ export const useDebugStore = defineStore('debug', () => {
   function register(config: DebugTool) {
     if (tools.value.some(t => t.id === config.id)) return
     tools.value.push(config)
-    updateGlobalProxy()
-  }
-
-  function unregister(id: string) {
-    tools.value = tools.value.filter(t => t.id !== id)
     updateGlobalProxy()
   }
 
@@ -216,14 +199,12 @@ export const useDebugStore = defineStore('debug', () => {
     isAdminOrOffline,
     securityCheck,
     register,
-    unregister,
     updateGlobalProxy,
     trainerChance50,
     forceRival,
     forceGuardian80,
     forceShiny100,
     fastRankedDelay,
-    forceEncounterType,
     shinyRateOverride,
     trainerChancePct,
     rivalChancePct,
@@ -231,7 +212,6 @@ export const useDebugStore = defineStore('debug', () => {
     defenderChancePct,
     fishingChancePct,
     archaeologyChancePct,
-    resetSpawnDefaults,
-    debugMultipliers
+    resetSpawnDefaults
   }
 })

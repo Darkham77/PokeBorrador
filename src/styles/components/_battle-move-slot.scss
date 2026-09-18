@@ -95,14 +95,14 @@
     background: none !important;
     border: none !important;
     box-shadow: none !important;
-    transform: none !important;
+    transform: none;
     border-radius: 0 !important;
     overflow: visible !important;
 
     &:hover {
       background: none !important;
       border-color: transparent !important;
-      transform: none !important;
+      transform: none;
       box-shadow: none !important;
 
       &::before {

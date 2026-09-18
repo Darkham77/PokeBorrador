@@ -18,6 +18,7 @@ declare const __APP_VERSION__: string;
 export type { DBCompatibilityResponse };
 
 const MIN_TIMESTAMP_MS_STRING_LENGTH = 10;
+const MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC = 0.01;
 
 /**
  * Unified Data Persistence Layer with Strict Session Isolation.
@@ -252,13 +253,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
             logger.warn('DBRouter', `Realtime update: New server version detected (${newServerVer}) > client (${clientVer}). Emitting PWA_NEED_REFRESH.`);
             import('../events/gameBus.ts').then(({ gameBus }) => {
               gameBus.emit('PWA_NEED_REFRESH');
-            });
-            import('@/stores/update').then(({ useUpdateStore }) => {
-              try {
-                useUpdateStore().notifyOutdatedClient({ client: clientVer, server: newServerVer });
-              } catch {
-                // Pinia might not be ready yet
-              }
+              gameBus.emit('OUTDATED_CLIENT_DETECTED', { client: clientVer, server: newServerVer });
             });
           }
         })
@@ -462,7 +457,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
           return mock as RealtimeChannel;
         },
         subscribe(cb?: (status: REALTIME_SUBSCRIBE_STATES, err?: Error) => void) {
-          if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES));
+          if (cb) gsap.delayedCall(MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC, () => cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES));
           return mock as RealtimeChannel;
         },
         async send(args: unknown) {
@@ -500,7 +495,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
       const noop: Partial<RealtimeChannel> = {
         on() { return noop as RealtimeChannel; },
         subscribe(cb?: (status: REALTIME_SUBSCRIBE_STATES, err?: Error) => void) {
-          if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES));
+          if (cb) gsap.delayedCall(MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC, () => cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES));
           return noop as RealtimeChannel;
         },
         async send() { return 'ok' as const; },
@@ -514,7 +509,6 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
 }
 
 export {
-  CLIENT_DB_VERSION,
   checkDBCompatibility,
   checkAppVersionCompatibility,
   type AppCompatibilityResponse

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { gameBus } from '@/logic/events/gameBus'
 import { logger } from '@/logic/utils/logger'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils'
@@ -9,19 +10,13 @@ import type { Event } from '@/logic/events/eventEngine'
 import type { DayPhase, Season } from '@/logic/utils/timeUtils'
 
 import type { MapRouteId } from '@/data/world/map-assets';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import { registerWeatherResolver, type WeatherId } from '@/logic/weather/weatherRegistry';
 import { requireMapRouteId } from '@/data/world/map-assets';
 import { requireWeatherSeasonId } from '@/data/world/weather-tables';
 import type { DominanceInfo } from '@/types/system/stores';
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
 
 import { gsap } from 'gsap'
-
-export interface PendingAward {
-  id: string;
-  type: string;
-  data: Record<string, unknown>;
-}
 
 export const useMapStore = defineStore('map', () => {
   const gs = useGameStore()
@@ -99,6 +94,18 @@ export const useMapStore = defineStore('map', () => {
     return getRouteWeather(currentMap.value, requireWeatherSeasonId(currentSeason.value.id), currentEpochHour.value, currentCycle.value)
   })
 
+  registerWeatherResolver(() => currentWeather.value)
+
+  watch(currentWeather, (weather) => {
+    gameBus.emit('MAP_WEATHER_CHANGED', { weather, mapId: currentMap.value })
+  }, { immediate: true })
+
+  watch(currentEpochHour, (newHour, oldHour) => {
+    if (newHour !== oldHour) {
+      gameBus.emit('GAME_CYCLE_TICK', { epochHour: newHour })
+    }
+  })
+
   // Sync time on store init (safer than onMounted in a store)
   // syncServerTime() -- DEFERRED to game initialization
   const maps = ref(FIRE_RED_MAPS)
@@ -106,7 +113,6 @@ export const useMapStore = defineStore('map', () => {
   const lastNavigateTime = ref(0)
   const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds)
   const mapWinners = ref<Partial<Record<MapRouteId, DominanceInfo>>>({}) // locId -> winner
-  const pendingAwards = ref<PendingAward[]>([])
   
   const setGlobalSeason = (s: string | null) => {
     if (!s) {
@@ -170,12 +176,16 @@ export const useMapStore = defineStore('map', () => {
     setFreezeClock,
     maps,
     activeEvents,
-    pendingAwards,
     mapWinners,
     setGlobalWeather,
     setGlobalCycle,
     setGlobalSeason,
     navigate,
+    // fallow-ignore-next-line unused-store-member
     triggerArchaeologyRewards
   }
 })
+
+if (typeof window !== 'undefined') {
+  window.__VITE_DEBUG_MAP_STORE_RESOLVER__ = () => useMapStore()
+}

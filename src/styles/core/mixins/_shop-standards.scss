@@ -156,7 +156,7 @@
     }
 
     @include responsive(950px) {
-      transform: none !important;
+      transform: none;
     }
   }
 

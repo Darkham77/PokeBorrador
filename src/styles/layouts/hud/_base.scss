@@ -18,7 +18,7 @@
   overflow: visible !important;
 
   &.hud-hidden {
-    transform: Translatey(calc(-100% - 20px)) Translate3D(0, 0, 0) !important;
+    transform: Translatey(calc(-100% - 20px)) translate3d(0, 0, 0);
     opacity: 0;
     pointer-events: none;
     // Eliminado visibility: hidden para mantener la capa GPU "caliente" y evitar re-paints secuenciales

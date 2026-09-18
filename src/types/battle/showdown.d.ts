@@ -1,4 +1,4 @@
-import '@pkmn/sim';
+import type {} from '@pkmn/sim';
 
 declare module '@pkmn/sim' {
   interface Side {

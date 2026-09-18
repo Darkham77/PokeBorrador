@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
 import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent'
-import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/utils/errorHandler'
-import { checkDBCompatibility, DBRouter, checkAppVersionCompatibility } from '@/logic/db/dbRouter'
 
 const MainGameView = defineResilientAsyncComponent(() => import('@/views/game/MainGameView.vue'))
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
@@ -15,8 +13,8 @@ import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 const BattleArena = defineResilientAsyncComponent(() => import('@/components/battle/BattleArena.vue'))
 import PWAManager from '@/components/common/PWAManager.vue'
 import SVGFilters from '@/components/common/SVGFilters.vue'
-import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
-const VersionLockOverlay = defineResilientAsyncComponent(() => import('@/components/overlays/VersionLockOverlay.vue'))
+import AppLoadingOverlayHost from '@/components/overlays/AppLoadingOverlayHost.vue'
+const AppVersionLockHost = defineResilientAsyncComponent(() => import('@/components/overlays/AppVersionLockHost.vue'))
 const SessionLockOverlay = defineResilientAsyncComponent(() => import('@/components/overlays/SessionLockOverlay.vue'))
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
@@ -28,10 +26,23 @@ import { logger } from '@/logic/utils/logger'
 
 import { useProfileStore } from '@/stores/player/profile'
 import { useSocialStore } from '@/stores/social/social'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useBackNavigation } from '@/composables/system/useBackNavigation'
 import { usePWA } from '@/composables/system/usePWA'
+import { useRetroGamepad } from '@/composables/system/useRetroGamepad'
 import { useUpdateStore } from '@/stores/update'
+import { useAppRouteGate } from '@/composables/system/useAppRouteGate.ts'
+import {
+  resolveAppLoadingInfo,
+  shouldShowLoadingOverlay,
+  resolveUpdateOverlayMessage
+} from '@/composables/system/appLoadingHelper.ts'
+import {
+  checkClientPwaVersion,
+  handleGlobalBlockEvent,
+  shouldInitSession,
+  runSessionInitialization
+} from '@/composables/system/appSessionHelper.ts'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -41,8 +52,9 @@ const socialStore = useSocialStore()
 const battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
 const updateStore = useUpdateStore()
-const route = useRoute()
 const router = useRouter()
+
+const { isLoginPage, isStandaloneDevPage } = useAppRouteGate()
 
 const { 
   needRefresh, 
@@ -50,12 +62,12 @@ const {
   handleUpdate
 } = usePWA()
 
-
 // Initialize back navigation gesture handler for mobile/hardware back button
 useBackNavigation()
+// Initialize retro controller and gamepad support
+useRetroGamepad()
 
 declare const __APP_VERSION__: string
-
 
 const dbIncompatible = computed(() => updateStore.modalType === 'db_outdated')
 const dbVersionInfo = computed(() => updateStore.versionInfo ? { client: updateStore.versionInfo.client, db: updateStore.versionInfo.db || updateStore.versionInfo.server, compatible: false } : null)
@@ -69,76 +81,19 @@ const dismissedLock = computed({
   set: (val) => { uiStore.hasDismissedSessionLock = val }
 })
 
-const isLoginPage = computed(() => {
-  if (typeof window === 'undefined') return false
-  const path = router?.currentRoute?.value?.path || route.path
-  return window.location?.pathname === '/login' || path === '/login'
-})
-
-
-const isAdventureTestPage = computed(() => {
-  if (typeof window === 'undefined') return false
-  const path = router?.currentRoute?.value?.path || route.path
-  return window.location?.pathname === '/test-aventura' || path === '/test-aventura'
-})
-
-const isDevShadowEditorPage = computed(() => {
-  if (typeof window === 'undefined') return false
-  const path = router?.currentRoute?.value?.path || route.path
-  return window.location?.pathname.startsWith('/dev/shadow-editor') || path.startsWith('/dev/shadow-editor')
-})
-
-const isStandaloneDevPage = computed(() => {
-  if (typeof window === 'undefined') return false
-  const path = router?.currentRoute?.value?.path || route.path || ''
-  const winPath = window.location?.pathname || ''
-  return isAdventureTestPage.value || isDevShadowEditorPage.value || winPath.startsWith('/dev/') || path.startsWith('/dev/') || winPath.startsWith('/test-') || path.startsWith('/test-')
-})
-
 const loadingInfo = computed(() => {
-  // 1. Centralized Loading Store (Highest Priority)
-  if (loadingStore.isActive) {
-    const cur = loadingStore.current
-    return { 
-      active: true, 
-      msg: cur?.message || 'Cargando...', 
-      sub: cur?.subMessage || '',
-      global: cur?.isGlobal || false,
-      icon: cur?.icon || '📶'
-    }
-  }
-
-  // 2. Auth Loading
-  if (authStore.loading) {
-    return { active: true, msg: 'Iniciando sesión...', sub: 'Conectando con el servidor', global: false, icon: '📶' }
-  }
-  
-  // 3. Game Data & Engine Boot (ULTRA-STICKY GATE)
-  // No soltamos la pantalla negra hasta que TODO el motor esté listo
-  if (authStore.user && !isLoginPage.value && !isStandaloneDevPage.value && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
-    const msg = !gameStore.isDataLoaded ? 'Cargando datos...' : 'Iniciando motor...'
-    
-    return { 
-      active: true, 
-      msg, 
-      sub: 'Preparando entorno de juego', 
-      global: false,
-      icon: !gameStore.isDataLoaded ? '📂' : '⚙️'
-    }
-  }
-
-  // 4. Manual Overlays
-  if (gameStore.state.isOverlayLoading) {
-    return { 
-      active: true, 
-      msg: gameStore.state.overlayMessage || 'Procesando...', 
-      sub: 'Por favor, no cierres la ventana',
-      global: true,
-      icon: '⏳'
-    }
-  }
-
-  return { active: false, msg: '', sub: '', global: false, icon: '📶' }
+  return resolveAppLoadingInfo({
+    loadingStoreActive: loadingStore.isActive,
+    loadingStoreCurrent: loadingStore.current,
+    authLoading: authStore.loading,
+    hasUser: Boolean(authStore.user),
+    isLoginPage: isLoginPage.value,
+    isStandaloneDevPage: isStandaloneDevPage.value,
+    isDataLoaded: gameStore.isDataLoaded,
+    isEngineReady: gameStore.isEngineReady,
+    isOverlayLoading: gameStore.state.isOverlayLoading,
+    overlayMessage: gameStore.state.overlayMessage
+  })
 })
 
 const isReadyToSeeGame = computed(() => {
@@ -146,90 +101,56 @@ const isReadyToSeeGame = computed(() => {
 })
 
 const showLoadingOverlay = computed(() => {
-  if (updateStore.modalType === 'db_outdated' || updateStore.modalType === 'server_outdated') return false
-  if (isStandaloneDevPage.value) return false
-  // Show global blocking overlay for updates only if the user is currently logged in/playing.
-  // If they are logged out (on the login page), we don't cover the screen with the global loading overlay,
-  // allowing the login view to render and present the update option inline.
-  if (updateStore.isUpdateAvailable && authStore.user) return true
-
-  if (isLoginPage.value) {
-    return loadingInfo.value.active
-  }
-
-  if (authStore.user) {
-    return !gameStore.isReady || !loadingStore.isGateOpen
-  }
-
-  return !loadingStore.isGateOpen
+  return shouldShowLoadingOverlay({
+    updateModalType: updateStore.modalType,
+    isStandaloneDevPage: isStandaloneDevPage.value,
+    isUpdateAvailable: updateStore.isUpdateAvailable,
+    hasUser: Boolean(authStore.user),
+    isLoginPage: isLoginPage.value,
+    loadingActive: loadingInfo.value.active,
+    gameReady: gameStore.isReady,
+    isGateOpen: loadingStore.isGateOpen
+  })
 })
 
+const overlayTitle = computed(() => (needRefresh.value ? 'NUEVA VERSIÓN' : loadingInfo.value.msg))
+const overlayMessage = computed(() => (needRefresh.value ? resolveUpdateOverlayMessage(gameStore.isReady) : loadingInfo.value.sub))
+const overlayStatusText = computed(() => {
+  if (!needRefresh.value) return 'CONECTANDO...'
+  return isUpdating.value ? 'ACTUALIZANDO...' : 'ACTUALIZACIÓN REQUERIDA'
+})
+const overlayIcon = computed(() => (needRefresh.value ? '🔄' : loadingInfo.value.icon))
+const overlayShowSpinner = computed(() => !needRefresh.value || isUpdating.value)
+const overlayTheme = computed<'warning' | 'default'>(() => (needRefresh.value ? 'warning' : 'default'))
+const overlayCardClass = computed(() => (loadingInfo.value.global ? 'global-overlay' : ''))
+
+const showGlobalStars = computed(() => isReadyToSeeGame.value || isLoginPage.value || isStandaloneDevPage.value)
+const showSessionLock = computed(() => Boolean(gameStore.isSaveLocked && !dismissedLock.value))
+
 const initGameSession = async () => {
-  if (isSessionInitializing.value || isStandaloneDevPage.value) return
-  if (authStore.user && !isLoginPage.value && !gameStore.isReady) {
-    isSessionInitializing.value = true
-    try {
-      const comp = await checkDBCompatibility(gameStore.db as DBRouter) // domain-ok: Open dynamic text or non-domain string payload
-      if (!comp.compatible) {
-        updateStore.notifyDbIncompatible({
-          client: String(comp.client || ''),
-          server: String(comp.db || ''),
-          db: comp.db
-        })
-        return
-      }
-
-      const appComp = await checkAppVersionCompatibility(gameStore.db as DBRouter) // domain-ok: Open dynamic text or non-domain string payload
-      if (!appComp.compatible) {
-        if (appComp.error === 'OUTDATED_SERVER') {
-          updateStore.notifyOutdatedServer({
-            client: appComp.client,
-            server: appComp.server
-          })
-          return
-        } else if (appComp.error === 'OUTDATED_CLIENT') {
-          updateStore.notifyOutdatedClient({
-            client: appComp.client,
-            server: appComp.server
-          })
-          return
-        }
-      }
-      
-      await gameStore.loadGame()
-      
-      const hasIllegalInTeam = (gameStore.state.team || []).some((p) => p && p.isIllegal)
-      if (hasIllegalInTeam && gameStore.state.activeBattle) {
-        logger.warn('App', 'Se detectaron Pokémon ilegales en el equipo durante la carga. Abortando combate persistente y regresando al mapa.')
-        gameStore.state.activeBattle = null
-        uiStore.notify('Combate cancelado: se detectaron Pokémon ilegales en tu equipo. Repáralos en el menú de depuración.', '⚠️')
-        router.replace('/game/map')
-      } else if (gameStore.state.activeBattle) {
-        if (gameStore.state.activeBattle.over) {
-          logger.info('App', 'Detectado combate persistente finalizado. Limpiando estado...')
-          gameStore.state.activeBattle = null
-          await gameStore.save(false)
-        } else {
-          logger.info('App', 'Detectado combate persistente. Restaurando estado...')
-          await battleStore.restoreBattle(gameStore.state.activeBattle)
-        }
-      }
-
-      // Check active PvP session in sessionStorage for seamless F5 reconnection
-      const { getActivePvPSession } = await import('@/logic/pvp/pvpReconnectHelper')
-      const activePvPSession = getActivePvPSession()
-      if (activePvPSession) {
-        const { useLivePvPStore } = await import('@/stores/livePvP')
-        const livePvPStore = useLivePvPStore()
-        logger.info('App', `Detectada sesión PvP activa (${activePvPSession.matchId}). Intentando reconexión...`)
-        livePvPStore.reconnectBattle(activePvPSession)
-      }
-      
-      profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
-      socialStore.startPresence()
-    } finally {
-      isSessionInitializing.value = false
-    }
+  if (!shouldInitSession({
+    isInitializing: isSessionInitializing.value,
+    isStandaloneDev: isStandaloneDevPage.value,
+    hasUser: Boolean(authStore.user),
+    isLogin: isLoginPage.value,
+    isGameReady: gameStore.isReady
+  })) {
+    return
+  }
+  isSessionInitializing.value = true
+  try {
+    await runSessionInitialization({
+      gameStore,
+      updateStore,
+      battleStore,
+      router,
+      uiStore,
+      authStore,
+      profileStore,
+      socialStore
+    })
+  } finally {
+    isSessionInitializing.value = false
   }
 }
 
@@ -240,30 +161,8 @@ const updateScrollbarWidth = () => {
 }
 
 const checkPwaVersion = async () => {
-  if (import.meta.env.DEV) return
-  try {
-    const verUrl = new URL(`${import.meta.env.BASE_URL}version.json`, window.location.origin)
-    verUrl.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString())
-    // fallow-ignore-next-line security-sink
-    const response = await fetch(verUrl, {
-      cache: 'no-store'
-    })
-    if (response.ok) {
-      const data = await response.json() as { version?: string }
-      const serverVersion = data.version || ''
-      const clientVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : ''
-      
-      if (clientVersion && serverVersion && clientVersion < serverVersion) {
-        logger.warn('App', `PWA: Client version (${clientVersion}) is older than server version (${serverVersion}). Presentando cartel de actualización manual.`)
-        updateStore.notifyOutdatedClient({
-          client: clientVersion,
-          server: serverVersion
-        })
-      }
-    }
-  } catch (e) {
-    logger.error('App', 'Failed to check PWA version.json', (e as Error).message)
-  }
+  const clientVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : ''
+  await checkClientPwaVersion(clientVersion, updateStore)
 }
 
 useWindowListener('visibilitychange', () => {
@@ -334,40 +233,7 @@ watch(() => authStore.user, (newUser) => {
 
 // Intercept low-level events to prevent them from reaching background interactions when modals are open
 const blockEvents = (e: Event) => {
-  if (isStandaloneDevPage.value) return
-  const target = e.target as HTMLElement | null
-  if (!target || typeof target.closest !== 'function') return
-
-  const isInsideModal = target.closest('.base-modal-root, .base-modal-content, .modal-host')
-  const isScrollable = (el: HTMLElement) => {
-    if (!el || el === document.body || el === document.documentElement) return false
-    const style = window.getComputedStyle(el)
-    const overflow = style.overflow + style.overflowY + style.overflowX
-    return /(auto|scroll)/.test(overflow)
-  }
-
-  // Find the nearest scrollable parent
-  let curr: HTMLElement | null = target
-  let foundScrollable = null
-  while (curr && curr !== document.body) {
-    if (isScrollable(curr)) {
-      foundScrollable = curr
-      break
-    }
-    curr = curr.parentElement
-  }
-
-  // CRITICAL: If we are inside a modal or a scrollable view, STOP propagation
-  if (foundScrollable || isInsideModal) {
-    e.stopPropagation()
-    return
-  }
-
-  // 2. Only block the event entirely if a modal is open AND we are NOT inside it
-  if (uiStore.isAnyBlockingModalOpen) {
-    e.preventDefault()
-    e.stopImmediatePropagation()
-  }
+  handleGlobalBlockEvent(e, uiStore.isAnyBlockingModalOpen, isStandaloneDevPage.value)
 }
 
 // Managed Window Listeners (Safe Lifecycle)
@@ -392,97 +258,52 @@ const handleReclaim = async () => {
   dismissedLock.value = true
 }
 
-// GSAP Transitions for Loading Overlay
-const onLoadingEnter = (el: Element, done: () => void) => {
-  gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none', onComplete: done })
-}
-
-const onLoadingLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: done })
-}
 </script>
 
 <template>
   <div id="vue-app">
     <!-- RESTORE LEGACY BACKGROUND (Only visible when game is fully ready and NOT loading) -->
     <div 
-      v-show="isReadyToSeeGame || isLoginPage || isStandaloneDevPage"
+      v-show="showGlobalStars"
       class="global-background-stars" 
     />
 
     <!-- GLOBAL LOADING OVERLAY -->
-    <Teleport to="body">
-      <Transition
-        appear
-        :css="false"
-        @enter="onLoadingEnter"
-        @leave="onLoadingLeave"
-      >
-        <PVLoadingOverlay
-          v-if="showLoadingOverlay"
-          :title="needRefresh ? 'NUEVA VERSIÓN' : loadingInfo.msg"
-          :message="needRefresh ? (gameStore.isReady ? '¡Hay una nueva versión disponible! Para evitar la corrupción de datos en tu partida guardada, debes cerrar tu sesión e instalar la actualización de forma segura desde la pantalla de inicio.' : '¡Hay una nueva versión disponible! Es necesario cerrar tu sesión para poder instalarla y mantener la compatibilidad con el servidor.') : loadingInfo.sub"
-          :status-text="needRefresh ? (isUpdating ? 'ACTUALIZANDO...' : 'ACTUALIZACIÓN REQUERIDA') : 'CONECTANDO...'"
-          :icon="needRefresh ? '🔄' : loadingInfo.icon"
-          :show-spinner="!needRefresh || isUpdating"
-          :theme="needRefresh ? 'warning' : 'default'"
-          :card-class="loadingInfo.global ? 'global-overlay' : ''"
-        >
-          <template
-            v-if="needRefresh"
-            #actions
-          >
-            <button
-              id="app-loading-overlay-update-btn"
-              class="pv-button-retro"
-              @click.stop="handleUpdate({ forceNoSave: true, targetPath: 'login' })"
-            >
-              CERRAR SESIÓN Y ACTUALIZAR
-            </button>
-          </template>
-        </PVLoadingOverlay>
-      </Transition>
-    </Teleport>
+    <AppLoadingOverlayHost
+      :show="showLoadingOverlay"
+      :title="overlayTitle"
+      :message="overlayMessage"
+      :status-text="overlayStatusText"
+      :icon="overlayIcon"
+      :show-spinner="overlayShowSpinner"
+      :theme="overlayTheme"
+      :card-class="overlayCardClass"
+      :need-refresh="needRefresh"
+      @update="handleUpdate({ forceNoSave: true, targetPath: 'login' })"
+    />
 
     <template v-if="isLoginPage || isStandaloneDevPage">
       <router-view />
     </template>
     
     <template v-else-if="authStore.user">
-      <!-- Bloqueo por Versión Outdated -->
-      <Teleport
-        v-if="dbIncompatible"
-        to="body"
-      >
-        <VersionLockOverlay
-          :client-version="dbVersionInfo?.client"
-          :target-version="dbVersionInfo?.db"
-          lock-type="database"
-          @retry="handleRetry"
-          @logout="handleLogout"
-        />
-      </Teleport>
-
-      <!-- Bloqueo por Versión de Compilación Vieja -->
-      <Teleport
-        v-else-if="appIncompatible"
-        to="body"
-      >
-        <VersionLockOverlay
-          :client-version="appVersionInfo?.client"
-          :target-version="appVersionInfo?.server"
-          lock-type="server"
-          @retry="handleRetry"
-          @logout="handleLogout"
-        />
-      </Teleport>
+      <!-- Bloqueo por Versión (Base de Datos o Servidor) -->
+      <AppVersionLockHost
+        v-if="dbIncompatible || appIncompatible"
+        :db-incompatible="dbIncompatible"
+        :app-incompatible="appIncompatible"
+        :db-version-info="dbVersionInfo"
+        :app-version-info="appVersionInfo"
+        @retry="handleRetry"
+        @logout="handleLogout"
+      />
 
       <template v-else-if="gameStore.isReady">
         <MainGameView v-show="!uiStore.isAnyFullscreenModalOpen" />
 
         <!-- Bloqueo por Sesión (Last-In-Wins) -->
         <Teleport
-          v-if="gameStore.isSaveLocked && !dismissedLock"
+          v-if="showSessionLock"
           to="body"
         >
           <SessionLockOverlay
@@ -495,14 +316,15 @@ const onLoadingLeave = (el: Element, done: () => void) => {
 
     <router-view v-else-if="!authStore.loading" />
 
-
     <!-- Error Global UI -->
     <ErrorOverlay />
-    <ModalHost v-if="!isStandaloneDevPage" />
     <ToastNotification />
-    <ConnectionWarning v-if="!isStandaloneDevPage" />
-    <BattleArena v-if="!isStandaloneDevPage" />
-    <PWAManager v-if="!isStandaloneDevPage" />
+    <template v-if="!isStandaloneDevPage">
+      <ModalHost />
+      <ConnectionWarning />
+      <BattleArena />
+      <PWAManager />
+    </template>
     
     <!-- Optimized SVG Filters for Pixel Art -->
     <SVGFilters />

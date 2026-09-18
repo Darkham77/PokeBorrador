@@ -19,6 +19,70 @@ interface ClaimAssetPayload {
   data: Record<string, unknown> | number | string;
 }
 
+const MAX_MARKET_LISTINGS_PER_USER = 10;
+const BASE_36_RADIX = 36;
+const RANDOM_STRING_SUBSTRING_START = 2;
+const RANDOM_STRING_SUBSTRING_END = 11;
+
+function validatePublishListing(
+  listingType: MarketListingType,
+  assetData: Pokemon | { name: string; qty: number }
+): string | null {
+  if (listingType !== 'pokemon') return null;
+  const poke = assetData as Pokemon;
+  if (isPokemonBusy(poke)) {
+    return 'No puedes publicar un Pokémon que está en misión, evento o guardería.';
+  }
+  const legality = checkPokemonLegality(poke);
+  if (poke.isIllegal || !legality.isLegal) {
+    return `No se puede publicar un Pokémon ilegal en el mercado: ${legality.issues[0] || 'datos no válidos'}.`;
+  }
+  return null;
+}
+
+function removePokemonFromSave(saveObj: OfflineSaveData, uid: string): boolean {
+  const boxLenBefore = saveObj.box?.length || 0;
+  saveObj.box = (saveObj.box || []).filter((p) => p && p.uid !== uid);
+  if (saveObj.box.length < boxLenBefore) return true;
+
+  const teamLenBefore = saveObj.team?.length || 0;
+  saveObj.team = (saveObj.team || []).filter((p) => p && p.uid !== uid);
+  return saveObj.team.length < teamLenBefore;
+}
+
+function removeItemFromSave(saveObj: OfflineSaveData, itemName: string, qty: number): boolean {
+  saveObj.inventory = saveObj.inventory || {};
+  const currentQty = saveObj.inventory[itemName] || 0;
+  if (currentQty < qty) return false;
+
+  saveObj.inventory[itemName] = currentQty - qty;
+  if (saveObj.inventory[itemName]! <= 0) {
+    delete saveObj.inventory[itemName];
+  }
+  return true;
+}
+
+function removePublishedAssetFromSave(
+  saveObj: OfflineSaveData,
+  listingType: MarketListingType,
+  assetData: Pokemon | { name: string; qty: number }
+): string | null {
+  if (listingType === 'pokemon') {
+    const poke = assetData as Pokemon;
+    if (!removePokemonFromSave(saveObj, poke.uid)) {
+      return 'Pokémon no encontrado en tu inventario.';
+    }
+  } else {
+    const itemData = assetData as { name: string; qty?: number };
+    const itemName = itemData.name;
+    const qty = itemData.qty || 1;
+    if (!removeItemFromSave(saveObj, itemName, qty)) {
+      return 'Cantidad insuficiente de objetos.';
+    }
+  }
+  return null;
+}
+
 export async function emulatePublishListing(
   sqliteDb: SQLiteDatabase,
   params: Record<string, unknown>,
@@ -27,21 +91,10 @@ export async function emulatePublishListing(
   const { p_listing_type, p_asset_data, p_price } = params as { p_listing_type: MarketListingType, p_asset_data: Pokemon | { name: string; qty: number }, p_price: number };
   const { userId, username } = context;
 
-  if (p_listing_type === 'pokemon') {
-    const poke = p_asset_data as Pokemon;
-    if (isPokemonBusy(poke)) {
-      return { data: null, error: { message: 'No puedes publicar un Pokémon que está en misión, evento o guardería.' } };
-    }
-    const legality = checkPokemonLegality(poke);
-    if (poke.isIllegal || !legality.isLegal) {
-      return { data: null, error: { message: `No se puede publicar un Pokémon ilegal en el mercado: ${legality.issues[0] || 'datos no válidos'}.` } };
-    }
+  const validationError = validatePublishListing(p_listing_type, p_asset_data);
+  if (validationError) {
+    return { data: null, error: { message: validationError } };
   }
-
-const MAX_MARKET_LISTINGS_PER_USER = 10;
-const BASE_36_RADIX = 36;
-const RANDOM_STRING_SUBSTRING_START = 2;
-const RANDOM_STRING_SUBSTRING_END = 11;
 
   const activeListings = await queryLocal(
     "SELECT id FROM market_listings WHERE seller_id = ? AND status = 'active'",
@@ -55,31 +108,9 @@ const RANDOM_STRING_SUBSTRING_END = 11;
   if (saves.length === 0) return { data: null, error: { message: 'Save not found' } };
   const saveObj = (typeof saves[0]!.save_data === 'string' ? JSON.parse(saves[0]!.save_data as string) : saves[0]!.save_data) as OfflineSaveData;
 
-  if (p_listing_type === 'pokemon') {
-    const poke = p_asset_data as Pokemon;
-    const uid = poke.uid;
-    const boxLenBefore = saveObj.box?.length || 0;
-    saveObj.box = (saveObj.box || []).filter((p) => p && p.uid !== uid);
-    if (saveObj.box.length === boxLenBefore) {
-      const teamLenBefore = saveObj.team?.length || 0;
-      saveObj.team = (saveObj.team || []).filter((p) => p && p.uid !== uid);
-      if (saveObj.team.length === teamLenBefore) {
-        return { data: null, error: { message: 'Pokémon no encontrado en tu inventario.' } };
-      }
-    }
-  } else {
-    const itemData = p_asset_data as { name: string; qty?: number };
-    const itemName = itemData.name;
-    const qty = itemData.qty || 1;
-    saveObj.inventory = saveObj.inventory || {};
-    const currentQty = saveObj.inventory[itemName] || 0;
-    if (currentQty < qty) {
-      return { data: null, error: { message: 'Cantidad insuficiente de objetos.' } };
-    }
-    saveObj.inventory[itemName] = currentQty - qty;
-    if (saveObj.inventory[itemName]! <= 0) {
-      delete saveObj.inventory[itemName];
-    }
+  const removeError = removePublishedAssetFromSave(saveObj, p_listing_type, p_asset_data);
+  if (removeError) {
+    return { data: null, error: { message: removeError } };
   }
 
   const newSaveId = crypto.randomUUID();
@@ -227,6 +258,86 @@ export async function emulateCancelListing(
   return { data: saveObj, error: null };
 }
 
+const CLAIM_BASE_FRIENDSHIP = 70;
+const MAX_TEAM_SIZE_CLAIM = 6;
+
+async function resolveClaimUserSave(
+  userId: string, // uuid-ok: Supabase authentication user UUID identifier
+  claimUserId: string // uuid-ok: Supabase authentication user UUID identifier
+): Promise<{ userSave: OfflineSaveData; resolvedUserUid: string } | null> {
+  let userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves WHERE user_id = ?", [userId]);
+  let resolvedUserUid = userId;
+  if (userSaves.length === 0) {
+    userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves WHERE user_id = ?", [claimUserId]);
+    if (userSaves.length > 0) {
+      resolvedUserUid = claimUserId;
+    } else {
+      userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves LIMIT 1");
+      if (userSaves.length > 0) {
+        resolvedUserUid = String(userSaves[0]!.user_id);
+      }
+    }
+  }
+  if (userSaves.length === 0) return null;
+
+  const rawData = userSaves[0]!.save_data;
+  const userSave = (typeof rawData === 'string' ? JSON.parse(rawData) : rawData) as OfflineSaveData;
+  return { userSave, resolvedUserUid };
+}
+
+function parseClaimAssetPayload(rawAssetData: string | ClaimAssetPayload): ClaimAssetPayload | null {
+  if (typeof rawAssetData !== 'string') {
+    return rawAssetData;
+  }
+  try {
+    return JSON.parse(rawAssetData) as ClaimAssetPayload;
+  } catch {
+    return null;
+  }
+}
+
+function applyClaimPokemonToSave(userSave: OfflineSaveData, assetPayload: ClaimAssetPayload): void {
+  let rawPoke: Record<string, unknown> | null = null; // open-record: Generic key-value data dictionary container
+  if (typeof assetPayload.data === 'string') {
+    try {
+      rawPoke = JSON.parse(assetPayload.data) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    } catch {
+      rawPoke = null;
+    }
+  } else if (typeof assetPayload.data === 'object' && assetPayload.data !== null) {
+    rawPoke = assetPayload.data as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  }
+  const nowMs = Temporal.Now.instant().epochMilliseconds;
+  const poke: Record<string, unknown> = { // open-record: Generic key-value data dictionary container
+    ...(rawPoke || {}),
+    friendship: CLAIM_BASE_FRIENDSHIP,
+    obtainedAt: (rawPoke as { obtainedAt?: number })?.obtainedAt || nowMs,
+    obtainedMethod: (rawPoke as { obtainedMethod?: string })?.obtainedMethod || 'reward',
+  };
+  userSave.team = userSave.team || [];
+  if (userSave.team.length < MAX_TEAM_SIZE_CLAIM) {
+    userSave.team.push(poke);
+  } else {
+    userSave.box = userSave.box || [];
+    userSave.box.push(poke);
+  }
+}
+
+function applyClaimAssetToSave(userSave: OfflineSaveData, assetPayload: ClaimAssetPayload | null): void {
+  if (!assetPayload) return;
+  if (assetPayload.type === 'pokemon') {
+    applyClaimPokemonToSave(userSave, assetPayload);
+  } else if (assetPayload.type === 'money') {
+    userSave.money = (userSave.money || 0) + Number(assetPayload.data);
+  } else if (assetPayload.type === 'item') {
+    userSave.inventory = userSave.inventory || {};
+    const itemData = assetPayload.data as { name: string; qty?: number };
+    const itemName = itemData.name;
+    const qty = Number(itemData.qty || 1);
+    userSave.inventory[itemName] = (userSave.inventory[itemName] || 0) + qty;
+  }
+}
+
 export async function emulateClaimAsset(
   sqliteDb: SQLiteDatabase,
   params: Record<string, unknown>, // open-record: Generic key-value data dictionary container
@@ -239,78 +350,21 @@ export async function emulateClaimAsset(
   if (claims.length === 0) return { data: null, error: { message: 'Reclamo no encontrado.' } };
   const claim = claims[0] as { user_id: string; asset_data: string | ClaimAssetPayload };
 
-  let userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves WHERE user_id = ?", [userId]);
-  let resolvedUserId = userId;
-  if (userSaves.length === 0) {
-    userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves WHERE user_id = ?", [claim.user_id]);
-    if (userSaves.length > 0) {
-      resolvedUserId = claim.user_id;
-    } else {
-      userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves LIMIT 1");
-      if (userSaves.length > 0) {
-        resolvedUserId = String(userSaves[0]!.user_id);
-      }
-    }
-  }
-  if (userSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
+  const resolved = await resolveClaimUserSave(userId, claim.user_id);
+  if (!resolved) return { data: null, error: { message: 'Save not found' } };
+  const { userSave, resolvedUserUid } = resolved;
 
-  if (claim.user_id !== userId && claim.user_id !== resolvedUserId) {
+  if (claim.user_id !== userId && claim.user_id !== resolvedUserUid) {
     return { data: null, error: { message: 'No autorizado.' } };
   }
 
-  const userSave = (typeof userSaves[0]!.save_data === 'string' ? JSON.parse(userSaves[0]!.save_data as string) : userSaves[0]!.save_data) as OfflineSaveData;
-
-  let assetPayload: ClaimAssetPayload | null;
-  if (typeof claim.asset_data === 'string') {
-    try {
-      assetPayload = JSON.parse(claim.asset_data) as ClaimAssetPayload;
-    } catch {
-      assetPayload = null;
-    }
-  } else {
-    assetPayload = claim.asset_data;
-  }
-
-  if (assetPayload && assetPayload.type === 'pokemon') {
-    let rawPoke: Record<string, unknown> | null = null; // open-record: Generic key-value data dictionary container
-    if (typeof assetPayload.data === 'string') {
-      try {
-        rawPoke = JSON.parse(assetPayload.data) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-      } catch {
-        rawPoke = null;
-      }
-    } else if (typeof assetPayload.data === 'object' && assetPayload.data !== null) {
-      rawPoke = assetPayload.data as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    }
-    // Reset friendship to canonical base value (70) upon transferring to a new trainer
-    const nowMs = Temporal.Now.instant().epochMilliseconds;
-    const poke: Record<string, unknown> = { // open-record: Generic key-value data dictionary container
-      ...(rawPoke || {}),
-      friendship: 70,
-      obtainedAt: (rawPoke as { obtainedAt?: number })?.obtainedAt || nowMs,
-      obtainedMethod: (rawPoke as { obtainedMethod?: string })?.obtainedMethod || 'reward',
-    };
-    userSave.team = userSave.team || [];
-    if (userSave.team.length < 6) {
-      userSave.team.push(poke);
-    } else {
-      userSave.box = userSave.box || [];
-      userSave.box.push(poke);
-    }
-  } else if (assetPayload && assetPayload.type === 'money') {
-    userSave.money = (userSave.money || 0) + Number(assetPayload.data);
-  } else if (assetPayload && assetPayload.type === 'item') {
-    userSave.inventory = userSave.inventory || {};
-    const itemData = assetPayload.data as { name: string; qty?: number };
-    const itemName = itemData.name;
-    const qty = Number(itemData.qty || 1);
-    userSave.inventory[itemName] = (userSave.inventory[itemName] || 0) + qty;
-  }
+  const assetPayload = parseClaimAssetPayload(claim.asset_data);
+  applyClaimAssetToSave(userSave, assetPayload);
 
   const newClaimSaveId = crypto.randomUUID();
   sqliteDb.run(
     "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
-    [JSON.stringify(userSave), newClaimSaveId, resolvedUserId]
+    [JSON.stringify(userSave), newClaimSaveId, resolvedUserUid]
   );
 
   sqliteDb.run("DELETE FROM claim_queue WHERE id = ?", [p_claim_id]);
@@ -318,3 +372,4 @@ export async function emulateClaimAsset(
   await persistSQLite();
   return { data: userSave, error: null };
 }
+

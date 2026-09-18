@@ -4,20 +4,15 @@ import { gsap } from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { useGTSStore } from '@/stores/gts';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getItemById } from '@/data/inventory/items';
 import type { ClaimItem } from '@/types/system/game';
-
-interface PokemonAssetData {
-  id: number;
-  name: string;
-  level: number;
-}
-
-interface ItemAssetData {
-  name: string;
-  qty: number;
-}
+import {
+  formatSoldDetails,
+  getFriendlySourceType,
+  getClaimAssetIcon as getAssetIcon,
+  getClaimSpriteUrl as getSpriteUrl,
+  type PokemonAssetData,
+  type ItemAssetData
+} from './claimCardHelper';
 
 const props = defineProps<{
   claim: ClaimItem;
@@ -34,61 +29,9 @@ const pokemonAsset = computed(() => props.claim.asset_data.type === 'pokemon' ? 
 const itemAsset = computed(() => props.claim.asset_data.type === 'item' ? (props.claim.asset_data.data as ItemAssetData) : null);
 const moneyAsset = computed(() => props.claim.asset_data.type === 'money' ? (props.claim.asset_data.data as number) : 0);
 
-const soldDetails = computed(() => {
-  if (props.claim.asset_data.type !== 'money') return null;
-  const soldItem = props.claim.asset_data.sold_item;
-  const soldPoke = props.claim.asset_data.sold_pokemon;
-  if (soldItem?.name) {
-    const dbItem = getItemById(soldItem.name);
-    const name = dbItem?.name || soldItem.name;
-    return `Venta: ${name}${soldItem.qty && soldItem.qty > 1 ? ` x${soldItem.qty}` : ''}`;
-  }
-  if (soldPoke?.name) {
-    return `Venta: ${soldPoke.name}${soldPoke.level ? ` (Nv. ${soldPoke.level})` : ''}`;
-  }
-  const matchingSale = (gtsStore.salesHistory || []).find(s => String(s.id) === String(props.claim.source_id));
-  if (matchingSale) {
-    if (matchingSale.listing_type === 'item') {
-      const itemData = matchingSale.data as { name?: string; qty?: number };
-      const dbItem = getItemById(itemData.name || '');
-      const name = dbItem?.name || itemData.name || 'Artículo';
-      return `Venta: ${name}${itemData.qty && itemData.qty > 1 ? ` x${itemData.qty}` : ''}`;
-    }
-    if (matchingSale.listing_type === 'pokemon') {
-      const pokeData = matchingSale.data as { name?: string; level?: number };
-      return `Venta: ${pokeData.name || 'Pokémon'}${pokeData.level ? ` (Nv. ${pokeData.level})` : ''}`;
-    }
-  }
-  return null;
-});
+const soldDetails = computed(() => formatSoldDetails(props.claim, gtsStore.salesHistory));
 
-const getFriendlySourceType = (sourceType: string) => {
-  switch (sourceType) {
-    case 'trade':
-      return 'Intercambio';
-    case 'gts':
-      return 'Mercado GTS';
-    case 'gts_cancel':
-      return 'Cancelación GTS';
-    default:
-      return sourceType;
-  }
-};
-
-const getAssetIcon = (asset: ClaimItem['asset_data']) => {
-  if (asset.type === 'money') return getAssetUrl(ASSET_TYPES.ITEM, 'nugget');
-  if (asset.type === 'item') {
-    const itemData = asset.data as ItemAssetData;
-    const dbItem = getItemById(itemData.name);
-    const slug = dbItem ? (dbItem.sprite || dbItem.id) : itemData.name;
-    return getAssetUrl(ASSET_TYPES.ITEM, slug);
-  }
-  return getAssetUrl(ASSET_TYPES.ITEM, 'pokeball');
-};
-
-const getSpriteUrl = (id: string | number) => {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id);
-};
+const CLAIM_COOLDOWN_DELAY_SEC = 5;
 
 const onClaim = async () => {
   if (isCooldown.value) {
@@ -102,7 +45,7 @@ const onClaim = async () => {
   if (success) {
     uiStore.notify('¡Activo recibido con éxito!', '🎁');
     isCooldown.value = true;
-    gsap.delayedCall(5, () => { isCooldown.value = false; });
+    gsap.delayedCall(CLAIM_COOLDOWN_DELAY_SEC, () => { isCooldown.value = false; });
   }
   
   isProcessing.value = false;
@@ -116,13 +59,15 @@ const onClaim = async () => {
         <img 
           v-if="claim.asset_data.type === 'pokemon' && pokemonAsset"
           :src="getSpriteUrl(pokemonAsset.id)"
+          :alt="pokemonAsset?.name || 'Pokémon'"
           class="pixel-art pokemon-sprite" 
           @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
         <img
           v-else
           :src="getAssetIcon(claim.asset_data)"
-          class="pixel-art item-sprite"
+          :alt="itemAsset?.name || 'Reclamo'"
+          class="pixel-art item-sprite" 
           @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
       </div>

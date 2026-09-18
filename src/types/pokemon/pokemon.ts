@@ -9,7 +9,7 @@ import type { AbilityId } from '@/data/battle/abilities';
 
 export type { PokemonMoveId };
 
-export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const; // lib-duplicate-ok: Canonical project stat keys matching Pokemon Showdown StatID
 export type PokemonStatKey = (typeof POKEMON_STAT_KEYS)[number];
 export const STAT_BAR_MODES = ['full', 'stat', 'iv'] as const;
 export type StatBarMode = (typeof STAT_BAR_MODES)[number];

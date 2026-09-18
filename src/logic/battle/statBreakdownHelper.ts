@@ -98,6 +98,95 @@ function resolveWeatherModifier(
   return 1.0
 }
 
+interface AbilityContext {
+  isSun: boolean;
+  isRain: boolean;
+  mechWeather: WeatherMechanical;
+  isElectricTerrain: boolean;
+  isGrassyTerrain: boolean;
+}
+
+function resolveAtkAbilityModifier(abId: AbilityId, pokemon: PurePokemon, sources: StatModifierDetail[]): number {
+  if (abId === 'hugepower' || abId === 'purepower') {
+    sources.push({ name: 'Potencia / Energía Pura', mult: HUGE_POWER_ATK_MULTIPLIER, type: 'ability' })
+    return HUGE_POWER_ATK_MULTIPLIER
+  }
+  if (abId === 'guts' && pokemon.status) {
+    sources.push({ name: 'Agallas (Estado)', mult: GUTS_STATUS_ATK_MULTIPLIER, type: 'ability' })
+    return GUTS_STATUS_ATK_MULTIPLIER
+  }
+  if (abId === 'toxicboost' && (pokemon.status === 'psn' || pokemon.status === 'tox')) {
+    sources.push({ name: 'Ímpetu Tóxico (Veneno)', mult: GUTS_STATUS_ATK_MULTIPLIER, type: 'ability' })
+    return GUTS_STATUS_ATK_MULTIPLIER
+  }
+  if (abId === 'hustle') {
+    sources.push({ name: 'Entusiasmo', mult: GUTS_STATUS_ATK_MULTIPLIER, type: 'ability' }) // spanish-ok: UI Spanish text localization label
+    return GUTS_STATUS_ATK_MULTIPLIER
+  }
+  return 1.0
+}
+
+function resolveDefAbilityModifier(abId: AbilityId, pokemon: PurePokemon, isGrassyTerrain: boolean, sources: StatModifierDetail[]): number {
+  if (abId === 'marvelscale' && pokemon.status) {
+    sources.push({ name: 'Escama Especial (Estado)', mult: MARVEL_SCALE_DEF_MULTIPLIER, type: 'ability' })
+    return MARVEL_SCALE_DEF_MULTIPLIER
+  }
+  if (abId === 'grasspelt' && isGrassyTerrain) {
+    sources.push({ name: 'Manto Frondoso (Campo Hierba)', mult: MARVEL_SCALE_DEF_MULTIPLIER, type: 'ability' })
+    return MARVEL_SCALE_DEF_MULTIPLIER
+  }
+  if (abId === 'furcoat') {
+    sources.push({ name: 'Pelaje Recio', mult: HUGE_POWER_ATK_MULTIPLIER, type: 'ability' }) // spanish-ok: UI Spanish text localization label
+    return HUGE_POWER_ATK_MULTIPLIER
+  }
+  return 1.0
+}
+
+function resolveSpaAbilityModifier(abId: AbilityId, pokemon: PurePokemon, isSun: boolean, sources: StatModifierDetail[]): number {
+  if (abId === 'solarpower' && isSun) {
+    sources.push({ name: 'Poder Solar (Sol)', mult: SOLAR_POWER_SPA_MULTIPLIER, type: 'ability' })
+    return SOLAR_POWER_SPA_MULTIPLIER
+  }
+  if (abId === 'flareboost' && pokemon.status === 'brn') {
+    sources.push({ name: 'Ímpetu Ardiente (Quemadura)', mult: SOLAR_POWER_SPA_MULTIPLIER, type: 'ability' })
+    return SOLAR_POWER_SPA_MULTIPLIER
+  }
+  return 1.0
+}
+
+function resolveSpeAbilityModifier(
+  abId: AbilityId,
+  pokemon: PurePokemon,
+  ctx: AbilityContext,
+  sources: StatModifierDetail[]
+): number {
+  if (abId === 'chlorophyll' && ctx.isSun) {
+    sources.push({ name: 'Clorofila (Sol)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
+    return SPEED_BOOST_WEATHER_MULTIPLIER
+  }
+  if (abId === 'swiftswim' && ctx.isRain) {
+    sources.push({ name: 'Nado Rápido (Lluvia)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
+    return SPEED_BOOST_WEATHER_MULTIPLIER
+  }
+  if (abId === 'sandrush' && ctx.mechWeather === 'sandstorm') {
+    sources.push({ name: 'Ímpetu Arena (Arena)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
+    return SPEED_BOOST_WEATHER_MULTIPLIER
+  }
+  if (abId === 'slushrush' && (ctx.mechWeather === 'snow' || ctx.mechWeather === 'hail')) {
+    sources.push({ name: 'Quitanieves (Nieve)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
+    return SPEED_BOOST_WEATHER_MULTIPLIER
+  }
+  if (abId === 'surgesurfer' && ctx.isElectricTerrain) {
+    sources.push({ name: 'Cola Surf (Campo Eléctrico)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
+    return SPEED_BOOST_WEATHER_MULTIPLIER
+  }
+  if (abId === 'quickfeet' && pokemon.status) {
+    sources.push({ name: 'Pies Rápidos (Estado)', mult: GUTS_STATUS_ATK_MULTIPLIER, type: 'ability' })
+    return GUTS_STATUS_ATK_MULTIPLIER
+  }
+  return 1.0
+}
+
 function resolveAbilityModifier(
   statKey: StatIDExceptHP,
   abId: AbilityId,
@@ -109,70 +198,81 @@ function resolveAbilityModifier(
   isGrassyTerrain: boolean,
   sources: StatModifierDetail[]
 ): number {
-  if (statKey === 'atk') {
-    if (abId === 'hugepower' || abId === 'purepower') {
-      sources.push({ name: 'Potencia / Energía Pura', mult: HUGE_POWER_ATK_MULTIPLIER, type: 'ability' })
-      return HUGE_POWER_ATK_MULTIPLIER
-    }
-    if (abId === 'guts' && pokemon.status) {
-      sources.push({ name: 'Agallas (Estado)', mult: GUTS_STATUS_ATK_MULTIPLIER, type: 'ability' })
-      return GUTS_STATUS_ATK_MULTIPLIER
-    }
-    if (abId === 'toxicboost' && (pokemon.status === 'psn' || pokemon.status === 'tox')) {
-      sources.push({ name: 'Ímpetu Tóxico (Veneno)', mult: GUTS_STATUS_ATK_MULTIPLIER, type: 'ability' })
-      return GUTS_STATUS_ATK_MULTIPLIER
-    }
-    if (abId === 'hustle') {
-      sources.push({ name: 'Entusiasmo', mult: GUTS_STATUS_ATK_MULTIPLIER, type: 'ability' }) // spanish-ok: UI Spanish text localization label
-      return GUTS_STATUS_ATK_MULTIPLIER
-    }
-  } else if (statKey === 'def') {
-    if (abId === 'marvelscale' && pokemon.status) {
-      sources.push({ name: 'Escama Especial (Estado)', mult: MARVEL_SCALE_DEF_MULTIPLIER, type: 'ability' })
-      return MARVEL_SCALE_DEF_MULTIPLIER
-    }
-    if (abId === 'grasspelt' && isGrassyTerrain) {
-      sources.push({ name: 'Manto Frondoso (Campo Hierba)', mult: MARVEL_SCALE_DEF_MULTIPLIER, type: 'ability' })
-      return MARVEL_SCALE_DEF_MULTIPLIER
-    }
-    if (abId === 'furcoat') {
-      sources.push({ name: 'Pelaje Recio', mult: HUGE_POWER_ATK_MULTIPLIER, type: 'ability' }) // spanish-ok: UI Spanish text localization label
-      return HUGE_POWER_ATK_MULTIPLIER
-    }
-  } else if (statKey === 'spa') {
-    if (abId === 'solarpower' && isSun) {
-      sources.push({ name: 'Poder Solar (Sol)', mult: SOLAR_POWER_SPA_MULTIPLIER, type: 'ability' })
-      return SOLAR_POWER_SPA_MULTIPLIER
-    }
-    if (abId === 'flareboost' && pokemon.status === 'brn') {
-      sources.push({ name: 'Ímpetu Ardiente (Quemadura)', mult: SOLAR_POWER_SPA_MULTIPLIER, type: 'ability' })
-      return SOLAR_POWER_SPA_MULTIPLIER
-    }
-  } else if (statKey === 'spe') {
-    if (abId === 'chlorophyll' && isSun) {
-      sources.push({ name: 'Clorofila (Sol)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
-      return SPEED_BOOST_WEATHER_MULTIPLIER
-    }
-    if (abId === 'swiftswim' && isRain) {
-      sources.push({ name: 'Nado Rápido (Lluvia)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
-      return SPEED_BOOST_WEATHER_MULTIPLIER
-    }
-    if (abId === 'sandrush' && mechWeather === 'sandstorm') {
-      sources.push({ name: 'Ímpetu Arena (Arena)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
-      return SPEED_BOOST_WEATHER_MULTIPLIER
-    }
-    if (abId === 'slushrush' && (mechWeather === 'snow' || mechWeather === 'hail')) {
-      sources.push({ name: 'Quitanieves (Nieve)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
-      return SPEED_BOOST_WEATHER_MULTIPLIER
-    }
-    if (abId === 'surgesurfer' && isElectricTerrain) {
-      sources.push({ name: 'Cola Surf (Campo Eléctrico)', mult: SPEED_BOOST_WEATHER_MULTIPLIER, type: 'ability' })
-      return SPEED_BOOST_WEATHER_MULTIPLIER
-    }
-    if (abId === 'quickfeet' && pokemon.status) {
-      sources.push({ name: 'Pies Rápidos (Estado)', mult: GUTS_STATUS_ATK_MULTIPLIER, type: 'ability' })
-      return GUTS_STATUS_ATK_MULTIPLIER
-    }
+  if (statKey === 'atk') return resolveAtkAbilityModifier(abId, pokemon, sources)
+  if (statKey === 'def') return resolveDefAbilityModifier(abId, pokemon, isGrassyTerrain, sources)
+  if (statKey === 'spa') return resolveSpaAbilityModifier(abId, pokemon, isSun, sources)
+  if (statKey === 'spe') return resolveSpeAbilityModifier(abId, pokemon, { isSun, isRain, mechWeather, isElectricTerrain, isGrassyTerrain }, sources)
+  return 1.0
+}
+
+function resolveSpeItemModifier(itemId: ItemId, sources: StatModifierDetail[]): number {
+  if (itemId === 'choicescarf') {
+    sources.push({ name: 'Pañuelo Elección', mult: CHOICE_SCARF_SPE_MULTIPLIER, type: 'item' })
+    return CHOICE_SCARF_SPE_MULTIPLIER
+  }
+  if (itemId === 'ironball') {
+    sources.push({ name: 'Brazal Firme / Bola Férrea', mult: IRON_BALL_SPE_MULTIPLIER, type: 'item' })
+    return IRON_BALL_SPE_MULTIPLIER
+  }
+  return 1.0
+}
+
+function resolveAtkItemModifier(itemId: ItemId, pokemon: PurePokemon, sources: StatModifierDetail[]): number {
+  if (itemId === 'choiceband') {
+    sources.push({ name: 'Cinta Elección', mult: CHOICE_BAND_ATK_MULTIPLIER, type: 'item' })
+    return CHOICE_BAND_ATK_MULTIPLIER
+  }
+  if (itemId === 'lightball' && pokemon.id === 'pikachu') {
+    sources.push({ name: 'Bola Luminosa (Pikachu)', mult: LIGHT_BALL_MULTIPLIER, type: 'item' })
+    return LIGHT_BALL_MULTIPLIER
+  }
+  if (itemId === 'thickclub' && (pokemon.id === 'cubone' || pokemon.id === 'marowak')) {
+    sources.push({ name: 'Hueso Grueso', mult: THICK_CLUB_ATK_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
+    return THICK_CLUB_ATK_MULTIPLIER
+  }
+  return 1.0
+}
+
+function resolveSpaItemModifier(itemId: ItemId, pokemon: PurePokemon, sources: StatModifierDetail[]): number {
+  if (itemId === 'choicespecs') {
+    sources.push({ name: 'Gafas Elección', mult: CHOICE_SPECS_SPA_MULTIPLIER, type: 'item' })
+    return CHOICE_SPECS_SPA_MULTIPLIER
+  }
+  if (itemId === 'lightball' && pokemon.id === 'pikachu') {
+    sources.push({ name: 'Bola Luminosa (Pikachu)', mult: LIGHT_BALL_MULTIPLIER, type: 'item' })
+    return LIGHT_BALL_MULTIPLIER
+  }
+  if (itemId === 'deepseatooth' && pokemon.id === 'clamperl') {
+    sources.push({ name: 'Diente Marino', mult: DEEP_SEA_TOOTH_SPA_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
+    return DEEP_SEA_TOOTH_SPA_MULTIPLIER
+  }
+  if (itemId === 'souldew' && (pokemon.id === 'latios' || pokemon.id === 'latias') && ACTIVE_GENERATION <= 6) {
+    sources.push({ name: 'Rocío Bondad', mult: SOUL_DEW_SPECIAL_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
+    return SOUL_DEW_SPECIAL_MULTIPLIER
+  }
+  return 1.0
+}
+
+function resolveSpdItemModifier(itemId: ItemId, pokemon: PurePokemon, sources: StatModifierDetail[]): number {
+  if (itemId === 'eviolite' && pokemon.canEvolve) {
+    sources.push({ name: 'Mineral Evolutivo', mult: EVIOLITE_DEF_SPD_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
+    return EVIOLITE_DEF_SPD_MULTIPLIER
+  }
+  if (itemId === 'deepseascale' && pokemon.id === 'clamperl') {
+    sources.push({ name: 'Escama Marino', mult: DEEP_SEA_SCALE_SPD_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
+    return DEEP_SEA_SCALE_SPD_MULTIPLIER
+  }
+  if (itemId === 'souldew' && (pokemon.id === 'latios' || pokemon.id === 'latias') && ACTIVE_GENERATION <= 6) {
+    sources.push({ name: 'Rocío Bondad', mult: SOUL_DEW_SPECIAL_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
+    return SOUL_DEW_SPECIAL_MULTIPLIER
+  }
+  return 1.0
+}
+
+function resolveDefItemModifier(itemId: ItemId, pokemon: PurePokemon, sources: StatModifierDetail[]): number {
+  if (itemId === 'eviolite' && pokemon.canEvolve) {
+    sources.push({ name: 'Mineral Evolutivo', mult: EVIOLITE_DEF_SPD_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
+    return EVIOLITE_DEF_SPD_MULTIPLIER
   }
   return 1.0
 }
@@ -183,64 +283,11 @@ function resolveItemModifier(
   pokemon: PurePokemon,
   sources: StatModifierDetail[]
 ): number {
-  if (statKey === 'spe') {
-    if (itemId === 'choicescarf') {
-      sources.push({ name: 'Pañuelo Elección', mult: CHOICE_SCARF_SPE_MULTIPLIER, type: 'item' })
-      return CHOICE_SCARF_SPE_MULTIPLIER
-    }
-    if (itemId === 'ironball') {
-      sources.push({ name: 'Brazal Firme / Bola Férrea', mult: IRON_BALL_SPE_MULTIPLIER, type: 'item' })
-      return IRON_BALL_SPE_MULTIPLIER
-    }
-  } else if (statKey === 'atk') {
-    if (itemId === 'choiceband') {
-      sources.push({ name: 'Cinta Elección', mult: CHOICE_BAND_ATK_MULTIPLIER, type: 'item' })
-      return CHOICE_BAND_ATK_MULTIPLIER
-    }
-    if (itemId === 'lightball' && pokemon.id === 'pikachu') {
-      sources.push({ name: 'Bola Luminosa (Pikachu)', mult: LIGHT_BALL_MULTIPLIER, type: 'item' })
-      return LIGHT_BALL_MULTIPLIER
-    }
-    if (itemId === 'thickclub' && (pokemon.id === 'cubone' || pokemon.id === 'marowak')) {
-      sources.push({ name: 'Hueso Grueso', mult: THICK_CLUB_ATK_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
-      return THICK_CLUB_ATK_MULTIPLIER
-    }
-  } else if (statKey === 'spa') {
-    if (itemId === 'choicespecs') {
-      sources.push({ name: 'Gafas Elección', mult: CHOICE_SPECS_SPA_MULTIPLIER, type: 'item' })
-      return CHOICE_SPECS_SPA_MULTIPLIER
-    }
-    if (itemId === 'lightball' && pokemon.id === 'pikachu') {
-      sources.push({ name: 'Bola Luminosa (Pikachu)', mult: LIGHT_BALL_MULTIPLIER, type: 'item' })
-      return LIGHT_BALL_MULTIPLIER
-    }
-    if (itemId === 'deepseatooth' && pokemon.id === 'clamperl') {
-      sources.push({ name: 'Diente Marino', mult: DEEP_SEA_TOOTH_SPA_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
-      return DEEP_SEA_TOOTH_SPA_MULTIPLIER
-    }
-    if (itemId === 'souldew' && (pokemon.id === 'latios' || pokemon.id === 'latias') && ACTIVE_GENERATION <= 6) {
-      sources.push({ name: 'Rocío Bondad', mult: SOUL_DEW_SPECIAL_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
-      return SOUL_DEW_SPECIAL_MULTIPLIER
-    }
-  } else if (statKey === 'spd') {
-    if (itemId === 'eviolite' && pokemon.canEvolve) {
-      sources.push({ name: 'Mineral Evolutivo', mult: EVIOLITE_DEF_SPD_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
-      return EVIOLITE_DEF_SPD_MULTIPLIER
-    }
-    if (itemId === 'deepseascale' && pokemon.id === 'clamperl') {
-      sources.push({ name: 'Escama Marino', mult: DEEP_SEA_SCALE_SPD_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
-      return DEEP_SEA_SCALE_SPD_MULTIPLIER
-    }
-    if (itemId === 'souldew' && (pokemon.id === 'latios' || pokemon.id === 'latias') && ACTIVE_GENERATION <= 6) {
-      sources.push({ name: 'Rocío Bondad', mult: SOUL_DEW_SPECIAL_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
-      return SOUL_DEW_SPECIAL_MULTIPLIER
-    }
-  } else if (statKey === 'def') {
-    if (itemId === 'eviolite' && pokemon.canEvolve) {
-      sources.push({ name: 'Mineral Evolutivo', mult: EVIOLITE_DEF_SPD_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
-      return EVIOLITE_DEF_SPD_MULTIPLIER
-    }
-  }
+  if (statKey === 'spe') return resolveSpeItemModifier(itemId, sources)
+  if (statKey === 'atk') return resolveAtkItemModifier(itemId, pokemon, sources)
+  if (statKey === 'spa') return resolveSpaItemModifier(itemId, pokemon, sources)
+  if (statKey === 'spd') return resolveSpdItemModifier(itemId, pokemon, sources)
+  if (statKey === 'def') return resolveDefItemModifier(itemId, pokemon, sources)
   return 1.0
 }
 
@@ -280,6 +327,37 @@ function resolveFieldModifier(
   return mult
 }
 
+function resolvePurePokemonBaseStat(pokemon: PurePokemon, statKey: StatIDExceptHP): number {
+  let base = (pokemon[statKey as keyof PurePokemon] as number) || DEFAULT_FALLBACK_STAT;
+  if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? DEFAULT_FALLBACK_STAT;
+  if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? DEFAULT_FALLBACK_STAT;
+  if (statKey === 'atk' && !pokemon.atk) base = pokemon.spa ?? DEFAULT_FALLBACK_STAT;
+  if (statKey === 'def' && !pokemon.def) base = pokemon.spd ?? DEFAULT_FALLBACK_STAT;
+  return base;
+}
+
+function resolveStageModifier(
+  statKey: StatIDExceptHP,
+  stages: PureBattleStages,
+  sources: StatModifierDetail[]
+): { stage: number; stageMult: number } {
+  const rawStage = (stages as Record<string, number | undefined>)[statKey] ?? 0; // open-record: Generic key-value data dictionary container
+  const stage = Math.max(-6, Math.min(6, rawStage));
+  const stageMult = (STAGE_MULTIPLIERS_MAP[String(stage)] as number) ?? 1.0;
+  if (stage !== 0) {
+    sources.push({ name: `Nivel de Combate (${stage > 0 ? `+${stage}` : stage})`, mult: stageMult, type: 'stage' });
+  }
+  return { stage, stageMult };
+}
+
+function calculateFinalStatValue(base: number, multipliers: readonly number[]): number {
+  let val = base;
+  for (const m of multipliers) {
+    val = Math.floor(val * m);
+  }
+  return Math.max(1, val);
+}
+
 /**
  * Calculates a complete stat breakdown with all modular modifiers.
  */
@@ -290,60 +368,45 @@ export function calculateDetailedStatBreakdown(
   weather: PureBattleWeather | null = null,
   options: StatBreakdownOptions = {}
 ): DetailedStatBreakdown {
-  const { isGym = false, dayCycle = 'day', sideConditions = {}, fieldConditions = {} } = options
+  const { isGym = false, dayCycle = 'day', sideConditions = {}, fieldConditions = {} } = options;
 
-  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1)
-  const mechWeather = (isGym && !isMoveWeather) ? 'clear' : getMechanicalWeather(weather?.type)
-  const rawWeatherType = weather?.type || 'clear'
+  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+  const mechWeather = (isGym && !isMoveWeather) ? 'clear' : getMechanicalWeather(weather?.type);
+  const rawWeatherType = weather?.type || 'clear';
 
   // 1. Base Stat
-  let base = (pokemon[statKey as keyof PurePokemon] as number) || DEFAULT_FALLBACK_STAT
-  if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? DEFAULT_FALLBACK_STAT
-  if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? DEFAULT_FALLBACK_STAT
-  if (statKey === 'atk' && !pokemon.atk) base = pokemon.spa ?? DEFAULT_FALLBACK_STAT
-  if (statKey === 'def' && !pokemon.def) base = pokemon.spd ?? DEFAULT_FALLBACK_STAT
+  const base = resolvePurePokemonBaseStat(pokemon, statKey);
 
-  const sources: StatModifierDetail[] = []
-  const pTypes = [pokemon.type, pokemon.type2].filter((t): t is PokemonType => Boolean(t))
+  const sources: StatModifierDetail[] = [];
+  const pTypes = [pokemon.type, pokemon.type2].filter((t): t is PokemonType => Boolean(t));
 
   // 2. Weather Multipliers
-  const weatherMult = resolveWeatherModifier(statKey, pTypes, mechWeather, rawWeatherType, sources)
+  const weatherMult = resolveWeatherModifier(statKey, pTypes, mechWeather, rawWeatherType, sources);
 
   // 3. Stage Multiplier (STG)
-  const rawStage = (stages as Record<string, number | undefined>)[statKey] ?? 0; // open-record: Generic key-value data dictionary container
-  const stage = Math.max(-6, Math.min(6, rawStage))
-  const stageMult = (STAGE_MULTIPLIERS_MAP[String(stage)] as number) ?? 1.0
-  if (stage !== 0) {
-    sources.push({ name: `Nivel de Combate (${stage > 0 ? `+${stage}` : stage})`, mult: stageMult, type: 'stage' })
-  }
+  const { stage, stageMult } = resolveStageModifier(statKey, stages, sources);
 
   // 4. Ability Multipliers
-  const isSun = ((!isGym || isMoveWeather) && mechWeather === 'sun') || (dayCycle === 'day' && (!weather || weather.type === 'clear' || weather.type === 'none'))
-  const isRain = (!isGym || isMoveWeather) && mechWeather === 'rain'
-  const isElectricTerrain = Boolean(fieldConditions['electricterrain'])
-  const isGrassyTerrain = Boolean(fieldConditions['grassyterrain'])
+  const isSun = ((!isGym || isMoveWeather) && mechWeather === 'sun') || (dayCycle === 'day' && (!weather || weather.type === 'clear' || weather.type === 'none'));
+  const isRain = (!isGym || isMoveWeather) && mechWeather === 'rain';
+  const isElectricTerrain = Boolean(fieldConditions['electricterrain']);
+  const isGrassyTerrain = Boolean(fieldConditions['grassyterrain']);
   const abilityMult = pokemon.ability ? resolveAbilityModifier(statKey, pokemon.ability, pokemon, isSun, isRain, mechWeather, isElectricTerrain, isGrassyTerrain, sources) : 1.0;
 
   // 5. Held Item Multipliers
   const itemMult = pokemon.heldItem ? resolveItemModifier(statKey, pokemon.heldItem, pokemon, sources) : 1.0;
 
   // 6. Status Penalty Multipliers
-  const statusMult = resolveStatusModifier(statKey, pokemon, sources)
+  const statusMult = resolveStatusModifier(statKey, pokemon, sources);
 
   // 7. Field / Side Multipliers
-  const fieldMult = resolveFieldModifier(statKey, sideConditions, sources)
+  const fieldMult = resolveFieldModifier(statKey, sideConditions, sources);
 
   // 8. Final Stat Value
-  let finalVal = Math.floor(base * weatherMult)
-  finalVal = Math.floor(finalVal * stageMult)
-  finalVal = Math.floor(finalVal * abilityMult)
-  finalVal = Math.floor(finalVal * itemMult)
-  finalVal = Math.floor(finalVal * statusMult)
-  finalVal = Math.floor(finalVal * fieldMult)
-  const final = Math.max(1, finalVal)
+  const final = calculateFinalStatValue(base, [weatherMult, stageMult, abilityMult, itemMult, statusMult, fieldMult]);
 
-  const isUp = final > base || stage > 0
-  const isDown = final < base || stage < 0
+  const isUp = final > base || stage > 0;
+  const isDown = final < base || stage < 0;
 
   return {
     statKey,
@@ -359,5 +422,5 @@ export function calculateDetailedStatBreakdown(
     isUp,
     isDown,
     sources
-  }
+  };
 }

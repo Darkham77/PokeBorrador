@@ -587,6 +587,9 @@ export default defineConfig({
           if (id.includes('node_modules/@pkmn/sim') || id.includes('node_modules/@pkmn/sets') || id.includes('pkmn_sim.js')) {
             return 'worker-vendor-pkmn-sim';
           }
+          if (id.includes('node_modules/@pkmn/randoms')) {
+            return 'worker-vendor-randoms';
+          }
           if (id.includes('src/data/pokemon/')) {
             return 'worker-game-data-pokemon';
           }
@@ -681,14 +684,8 @@ export default defineConfig({
           if (id.includes('node_modules/gsap')) {
             return 'vendor-gsap';
           }
-          if (id.includes('node_modules/@pkmn/randoms')) {
-            return 'vendor-randoms';
-          }
           if (id.includes('node_modules/sql.js')) {
             return 'vendor-sqljs';
-          }
-          if (id.includes('node_modules/@pkmn/sim') || id.includes('node_modules/@pkmn/sets') || id.includes('pkmn_sim.js')) {
-            return 'vendor-pkmn-sim';
           }
           if (id.includes('node_modules/@smogon/calc')) {
             return 'vendor-smogon-calc';

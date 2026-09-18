@@ -5,11 +5,14 @@ import { useGameStore } from '@/stores/game';
 import { gsap } from 'gsap';
 import TradeCard from '@/components/social/TradeCard.vue';
 import ClaimCard from '@/components/social/ClaimCard.vue';
+import SocialTradesSubNav from '@/components/social/SocialTradesSubNav.vue';
 import type { TradeOffer } from '@/types/system/stores';
 import type { ClaimItem } from '@/types/system/game';
-import { isItemId, getItemById } from '@/data/inventory/items';
-
-type SubTab = 'received' | 'sent' | 'claims';
+import {
+  type TradeSubTab,
+  canFulfillTradeOffer,
+  resolveTradeEmptyState
+} from './socialTradesHelper';
 
 const TRADE_CARD_INITIAL_OPACITY = 0;
 const TRADE_CARD_INITIAL_X_OFFSET = -20;
@@ -20,45 +23,23 @@ const TRADE_CARD_ANIM_STAGGER_SEC = 0.05;
 const tradeStore = useTradeStore();
 const gameStore = useGameStore();
 
-const subTab = ref<SubTab>('received');
+const subTab = ref<TradeSubTab>('received');
 const listRef = ref<HTMLElement | null>(null);
 
 /* ── Validation map for incoming offers ── */
 const validationMap = computed(() => {
   const result: Record<string, { can: boolean; reason?: string }> = {};
+  const context = {
+    team: gameStore.state.team,
+    box: gameStore.state.box,
+    money: gameStore.state.money,
+    inventory: gameStore.state.inventory
+  };
   tradeStore.pendingIncoming.forEach((t: TradeOffer) => {
-    result[t.id] = canFulfill(t);
+    result[t.id] = canFulfillTradeOffer(t, context);
   });
   return result;
 });
-
-function canFulfill(t: TradeOffer): { can: boolean; reason?: string } {
-  if (t.request_pokemon) {
-    const all = [...(gameStore.state.team ?? []), ...(gameStore.state.box ?? [])];
-    if (!all.some(p => p && p.uid === t.request_pokemon!.uid)) {
-      return { can: false, reason: `No tenés el Pokémon solicitado: ${t.request_pokemon.name}` };
-    }
-  }
-  if (t.request_money > 0 && gameStore.state.money < t.request_money) {
-    return {
-      can: false,
-      reason: `Créditos insuficientes (tenés ₱${gameStore.state.money.toLocaleString()} de ₱${t.request_money.toLocaleString()})`,
-    };
-  }
-
-  if (t.request_items) {
-    for (const [id, qty] of Object.entries(t.request_items)) {
-      if (isItemId(id) && qty !== undefined && qty > 0) {
-        const owned = gameStore.state.inventory?.[id] ?? 0;
-        if (owned < qty) {
-          const item = getItemById(id);
-          return { can: false, reason: `Objeto insuficiente: ${item.name} (tenés ${owned}/${qty})` };
-        }
-      }
-    }
-  }
-  return { can: true };
-}
 
 /* ── Animation ── */
 function animateCards() {
@@ -81,7 +62,7 @@ function animateCards() {
   });
 }
 
-function switchSubTab(target: SubTab) {
+function switchSubTab(target: TradeSubTab) {
   subTab.value = target;
   animateCards();
 }
@@ -103,6 +84,9 @@ const tradeClaims = computed(() =>
 const receivedCount = computed(() => tradeStore.pendingIncoming.length);
 const sentCount = computed(() => tradeStore.pendingOutgoing.length + tradeStore.pendingAccepted.length);
 const claimsCount = computed(() => tradeClaims.value.length);
+const currentEmptyState = computed(() =>
+  resolveTradeEmptyState(subTab.value, receivedCount.value, sentCount.value, claimsCount.value)
+);
 
 onMounted(async () => {
   await tradeStore.refreshPendingTrades();
@@ -126,69 +110,23 @@ watch(
 <template>
   <div class="social-tab-content">
     <!-- Sub-navigation -->
-    <div class="trades-sub-nav">
-      <button
-        v-gsap-hover
-        :class="{ active: subTab === 'received' }"
-        @click.stop="switchSubTab('received')"
-      >
-        RECIBIDOS
-        <span
-          v-if="receivedCount > 0"
-          class="hud-notification-badge"
-        >{{ receivedCount }}</span>
-      </button>
-      <button
-        v-gsap-hover
-        :class="{ active: subTab === 'sent' }"
-        @click.stop="switchSubTab('sent')"
-      >
-        ENVIADOS
-        <span
-          v-if="sentCount > 0"
-          class="hud-notification-badge gray"
-        >{{ sentCount }}</span>
-      </button>
-      <button
-        v-gsap-hover
-        :class="{ active: subTab === 'claims' }"
-        @click.stop="switchSubTab('claims')"
-      >
-        RECLAMOS
-        <span
-          v-if="claimsCount > 0"
-          class="hud-notification-badge orange"
-        >{{ claimsCount }}</span>
-      </button>
-    </div>
+    <SocialTradesSubNav
+      :sub-tab="subTab"
+      :received-count="receivedCount"
+      :sent-count="sentCount"
+      :claims-count="claimsCount"
+      @switch-sub-tab="switchSubTab"
+    />
 
     <!-- Empty states -->
     <div
-      v-if="subTab === 'received' && receivedCount === 0"
+      v-if="currentEmptyState"
       class="empty-state"
     >
       <div class="icon emoji">
-        📥
+        {{ currentEmptyState.icon }}
       </div>
-      <p>No tenés ofertas de intercambio recibidas.</p>
-    </div>
-    <div
-      v-else-if="subTab === 'sent' && sentCount === 0"
-      class="empty-state"
-    >
-      <div class="icon emoji">
-        📤
-      </div>
-      <p>No tenés ofertas de intercambio enviadas en espera.</p>
-    </div>
-    <div
-      v-else-if="subTab === 'claims' && claimsCount === 0"
-      class="empty-state"
-    >
-      <div class="icon emoji">
-        📦
-      </div>
-      <p>No tenés reclamos pendientes.</p>
+      <p>{{ currentEmptyState.message }}</p>
     </div>
 
     <!-- Card lists -->
@@ -240,51 +178,6 @@ watch(
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
-
-/* ── Sub-navigation ──
-   FIX: border is always 1px solid transparent so switching to .active
-   (which sets a colored border) never changes the element's box-model
-   height → no layout jump.                                              */
-.trades-sub-nav {
-  display: flex;
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px solid Rgba(199, 125, 255, 0.1);
-  padding: 4px;
-  border-radius: 12px;
-  gap: 6px;
-  margin-bottom: 18px;
-
-  button {
-    flex: 1;
-    position: relative;
-    background: transparent;
-    /* KEY FIX: transparent border prevents height shift on .active */
-    border: 1px solid transparent;
-    padding: 8px 12px;
-    color: Rgba(255, 255, 255, 0.5);
-    @include pixelated;
-    font-size: 8px;
-    cursor: pointer;
-    border-radius: 8px;
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-weight: bold;
-
-    &:hover:not(.active) {
-      background: Rgba(255, 255, 255, 0.03);
-      color: Rgba(255, 255, 255, 0.8);
-    }
-
-    &.active {
-      background: Rgba(168, 85, 247, 0.12);
-      color: var(--purple-light);
-      border-color: Rgba(168, 85, 247, 0.25);
-    }
-  }
-}
 
 /* ── Cards list ── */
 .trades-list {

@@ -35,13 +35,13 @@ const togglePerf = () => getDebug().togglePerf()
     <div class="debug-card">
       <label>Rendimiento / Simplificación</label>
       <div class="button-row">
-        <PVTooltip title="Fuerza el modo de alto rendimiento que simplifica el renderizado del mapa.">
+        <PVTooltip title="Fuerza el modo rápido que suspende el renderizado pesado del mapa.">
           <button
             class="small-btn"
-            :class="{ active: ui.isDebugPerformanceMode }"
+            :class="{ active: ui.isDebugFastMode }"
             @click.stop="togglePerf"
           >
-            SIMPLIFICAR MAPA (MODO PERF)
+            MODO RÁPIDO (MAPA)
           </button>
         </PVTooltip>
       </div>

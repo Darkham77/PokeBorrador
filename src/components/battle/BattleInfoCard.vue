@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { gsap } from 'gsap'
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import BattleInfoCardLevelRow from './BattleInfoCardLevelRow.vue'
 import BattleInfoCardStatusContainer from './BattleInfoCardStatusContainer.vue'
 import BattleInfoCardIvRadar from './BattleInfoCardIvRadar.vue'
 import PartyPreviewGrid from './PartyPreviewGrid.vue'
@@ -17,12 +16,6 @@ import { useCombatantStatus } from '@/composables/battle/useCombatantStatus'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
-import { NATURE_DATA, getNatureDataByNameOrId } from '@/data/battle/natures'
-
-const getNatureData = (nat: string | undefined) => {
-  if (!nat) return NATURE_DATA['serious']
-  return getNatureDataByNameOrId(nat) || NATURE_DATA['serious']
-}
 
 interface Props {
   pokemon?: Pokemon | null
@@ -61,6 +54,12 @@ const isAdmin = computed(() => {
 
 const showStatsTable = computed(() => {
   return props.isPlayer || isIvScannerActive.value || isAdmin.value
+})
+
+const isTrainerOrGymOrPvP = computed(() => {
+  return battleStore.uiConfig
+    ? !battleStore.uiConfig.isWild
+    : Boolean(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)
 })
 
 const cardRef = ref<HTMLElement | null>(null)
@@ -179,50 +178,12 @@ const teamBallsStatus = computed(() => {
         :is-player="isPlayer"
         :is-scrambled="isScrambled"
       />
-        
-      <div class="level-row">
-        <div class="poke-level m-badge-level">
-          Nv. {{ isScrambled ? '??' : p.level }}
-        </div>
-        <PVTooltip
-          v-if="!isPlayer && !isScrambled && gameStore.state.playerClass === 'criador'"
-          position="bottom"
-          :title="getNatureData(p.nature)?.name.toUpperCase() || 'SERIA'"
-        >
-          <div class="m-badge-nature">
-            {{ getNatureData(p.nature)?.name || 'Seria' }}
-          </div>
-          <template #content>
-            <div class="nature-pro-tooltip">
-              <div
-                v-if="getNatureData(p.nature)?.up || getNatureData(p.nature)?.down"
-                class="modifiers-row"
-                style="display: flex; gap: 8px; margin: 4px 0;"
-              >
-                <span
-                  v-if="getNatureData(p.nature)?.up"
-                  class="stat-mod mod-up"
-                  style="color: #32d74b; font-weight: bold; font-size: 7.5px;"
-                ><span class="emoji">▲</span> {{ getNatureData(p.nature)?.up?.toUpperCase() }} (+10%)</span>
-                <span
-                  v-if="getNatureData(p.nature)?.down"
-                  class="stat-mod mod-down"
-                  style="color: #ff453a; font-weight: bold; font-size: 7.5px;"
-                ><span class="emoji">▼</span> {{ getNatureData(p.nature)?.down?.toUpperCase() }} (-10%)</span>
-              </div>
-              <p style="margin: 4px 0 0 0; font-size: 8px; color: #aeaebe; line-height: 1.4;">
-                {{ getNatureData(p.nature)?.desc || 'Sin efecto en estadísticas.' }}
-              </p>
-            </div>
-          </template>
-        </PVTooltip>
-        <PokemonTypePills 
-          v-if="!isScrambled"
-          :pokemon="p" 
-          :size="p.type2 ? 'ssm' : 'sm'"
-          class="poke-types"
-        />
-      </div>
+
+      <BattleInfoCardLevelRow
+        :pokemon="p"
+        :is-player="isPlayer"
+        :is-scrambled="isScrambled"
+      />
 
       <!-- Poké Balls Status Row for Trainers/NPCs/PvP -->
       <PartyPreviewGrid
@@ -256,7 +217,7 @@ const teamBallsStatus = computed(() => {
         :is-iv-scanner-active="isIvScannerActive"
         :is-player="isPlayer"
         :is-scrambled="isScrambled"
-        :is-trainer-or-gym-or-pv-p="battleStore.uiConfig ? !battleStore.uiConfig.isWild : !!(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)"
+        :is-trainer-or-gym-or-pv-p="isTrainerOrGymOrPvP"
         :iv-total="ivTotal"
         :pokemon-tier-info="pokemonTierInfo"
         :p="p"

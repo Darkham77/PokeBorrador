@@ -2,13 +2,14 @@
 defineProps<{
   name: string
   desc: string
-  isPerformanceMode: boolean
+  isFastMode?: boolean
+  isPerformanceMode?: boolean
 }>()
 </script>
 
 <template>
   <div
-    v-if="!isPerformanceMode"
+    v-if="!(isFastMode ?? isPerformanceMode)"
     class="location-header"
   >
     <div class="location-name">

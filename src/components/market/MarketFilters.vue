@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useGTSStore } from '@/stores/gts'
 import type { MarketFilters } from '@/logic/economy/market'
+import MarketPokemonFiltersGroup from './MarketPokemonFiltersGroup.vue'
 
 interface Props {
   context: string // 'explore' or 'my-inventory'
@@ -13,14 +14,7 @@ const gtsStore = useGTSStore()
 
 const isExpanded = ref(false)
 
-import { POKEMON_TYPES } from '@/data/battle/types'
-
-const _MARKET_TYPE_FILTERS = ['all', ...POKEMON_TYPES] as const
-type MarketTypeFilter = (typeof _MARKET_TYPE_FILTERS)[number]
-
 const filters = computed(() => gtsStore.filters)
-
-const types = ['all', ...POKEMON_TYPES] as const satisfies readonly MarketTypeFilter[]
 
 const categories = [
   { value: 'all', label: 'Todo' },
@@ -37,8 +31,6 @@ const categories = [
   { value: 'component', label: 'Componente' },
   { value: 'otros', label: 'Otros' }
 ]
-
-const tiers = ['all', 'S+', 'S', 'A', 'B', 'C', 'D', 'F'] as const
 
 const setFilter = <K extends keyof MarketFilters>(key: K, value: MarketFilters[K]) => {
   gtsStore.filters[key] = value
@@ -62,16 +54,6 @@ const resetFilters = () => {
     ivAny31: false,
     itemCat: 'all'
   }
-}
-
-const getTypeEmoji = (type: string) => {
-  const emojis: Record<string, string> = {
-    fire: '🔥', water: '💧', grass: '🌿', electric: '⚡', psychic: '🔮',
-    normal: '🔘', rock: '🪨', ground: '🏜️', poison: '☣️', bug: '🐛',
-    flying: '🦅', ghost: '👻', ice: '❄️', dragon: '🐲', fighting: '🥊',
-    dark: '🌑', steel: '⚙️', all: '📂'
-  }
-  return emojis[type] || '❓'
 }
 </script>
 
@@ -155,47 +137,13 @@ const getTypeEmoji = (type: string) => {
       </div>
 
       <!-- Pokemon Specific -->
-      <template v-if="filters.mode === 'pokemon'">
-        <div class="filter-group">
-          <div class="group-label">
-            Tier
-          </div>
-          <div class="tags-grid">
-            <button
-              v-for="t in tiers"
-              :id="`market-filters-tier-${t}`"
-              :key="t"
-              class="tag-btn"
-              :class="{ active: filters.tier === t }"
-              @click.stop="setFilter('tier', t)"
-            >
-              {{ t === 'all' ? 'X' : t }}
-            </button>
-          </div>
-        </div>
-
-        <div class="filter-group">
-          <div class="group-label">
-            Tipo
-          </div>
-          <div class="types-grid">
-            <PVTooltip
-              v-for="t in types"
-              :key="t"
-              :title="t.toUpperCase()"
-            >
-              <button
-                :id="`market-filters-type-${t}`"
-                class="type-btn"
-                :class="{ active: filters.type === t }"
-                @click.stop="setFilter('type', t)"
-              >
-                <span class="emoji">{{ getTypeEmoji(t) }}</span>
-              </button>
-            </PVTooltip>
-          </div>
-        </div>
-      </template>
+      <MarketPokemonFiltersGroup
+        v-if="filters.mode === 'pokemon'"
+        :current-tier="filters.tier"
+        :current-type="filters.type"
+        @change-tier="setFilter('tier', $event)"
+        @change-type="setFilter('type', $event)"
+      />
 
       <!-- Item Specific -->
       <template v-else>
@@ -427,30 +375,6 @@ const getTypeEmoji = (type: string) => {
   border-color: var(--blue);
   background: Rgba(10, 132, 255, 0.2);
   color: $white;
-}
-
-.types-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.type-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  background: Rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-
-.type-btn.active {
-  border-color: var(--blue);
-  background: Rgba(0, 122, 255, 0.2);
 }
 
 .reset-btn {

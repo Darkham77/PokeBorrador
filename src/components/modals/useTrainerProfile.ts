@@ -18,12 +18,15 @@ import {
   extractRankedMedals,
   resolveFactionLabel,
   resolveFactionColor,
+  mapReplayRows,
+  parseAwardMedalCounts,
+  calculateDistinctEventCount,
+  parseRawSaveData,
   type ProfileRow,
   type SaveStateData
 } from './trainerProfileResolver.ts'
-import type { RankedSeasonMedal, BattleReplayRecord, BattleCode } from '@/types/battle/pvp.ts'
-import { isSeasonalThemeId } from '@/data/system/rankedData'
-import type { SideID } from '@pkmn/sim'
+import type { RankedSeasonMedal, BattleReplayRecord } from '@/types/battle/pvp.ts'
+import { logger } from '@/logic/utils/logger'
 
 export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const gameStore = useGameStore()
@@ -48,6 +51,77 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const rankedMedals = ref<RankedSeasonMedal[]>([])
   const pinnedReplays = ref<BattleReplayRecord[]>([])
 
+  const fetchOwnProfileStats = async (id: string, db: NonNullable<typeof gameStore.db>) => {
+    const [profRes, awardsRes, compEntryRes, replaysRes] = await Promise.all([
+      db.from('profiles').select('*').eq('id', id).maybeSingle(),
+      db.from('awards').select('prize, event_id').eq('winner_id', id),
+      db.from('competition_entries').select('event_id').eq('player_id', id),
+      db.from('battle_replays').select('*').or(`p1_user_id.eq.${id},p2_user_id.eq.${id}`).order('created_at', { ascending: false }).limit(5)
+    ])
+
+    if (profRes.data) {
+      profile.value = profRes.data as ProfileRow
+    }
+    if (replaysRes?.data) {
+      pinnedReplays.value = mapReplayRows(replaysRes.data)
+    }
+    if (awardsRes.data) {
+      rankedMedals.value = extractRankedMedals(awardsRes.data, gameStore.state.rankedMedals)
+      const medalCounts = parseAwardMedalCounts(awardsRes.data)
+      eventMedalsFirstDb.value = medalCounts.first
+      eventMedalsSecondDb.value = medalCounts.second
+      eventMedalsThirdDb.value = medalCounts.third
+    }
+    if (compEntryRes.data) {
+      eventParticipationsDb.value = calculateDistinctEventCount(compEntryRes.data)
+    }
+  }
+
+  const fetchOtherProfileStats = async (id: string, db: NonNullable<typeof gameStore.db>) => {
+    const { data: prof, error: pErr } = await db
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+    if (pErr) throw pErr
+    profile.value = (prof as ProfileRow) || null
+
+    const { data: saveRow, error: sErr } = (await db
+      .from('game_saves')
+      .select('save_data')
+      .eq('user_id', id)
+      .maybeSingle()) as { data: { save_data: unknown } | null; error: Error | null }
+    if (sErr) throw sErr
+
+    if (!profile.value && !saveRow?.save_data) {
+      error.value = 'Perfil de entrenador no encontrado'
+      return
+    }
+
+    if (saveRow?.save_data) {
+      saveState.value = parseRawSaveData(saveRow.save_data)
+    }
+
+    try {
+      const [awardsRes, compEntryRes] = await Promise.all([
+        db.from('awards').select('prize, event_id').eq('winner_id', id),
+        db.from('competition_entries').select('event_id').eq('player_id', id)
+      ])
+      if (awardsRes.data) {
+        rankedMedals.value = extractRankedMedals(awardsRes.data, saveState.value?.rankedMedals)
+        const medalCounts = parseAwardMedalCounts(awardsRes.data)
+        eventMedalsFirstDb.value = medalCounts.first
+        eventMedalsSecondDb.value = medalCounts.second
+        eventMedalsThirdDb.value = medalCounts.third
+      }
+      if (compEntryRes.data) {
+        eventParticipationsDb.value = calculateDistinctEventCount(compEntryRes.data)
+      }
+    } catch (err) {
+      logger.warn('[useTrainerProfile] Error en fetch de participaciones de eventos:', err)
+    }
+  }
+
   const fetchData = async () => {
     const id = userId.value
     if (!id) {
@@ -56,72 +130,20 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
       return
     }
 
+    const db = gameStore.db
+    if (!db) {
+      if (!isOwnProfile.value) error.value = 'Base de datos no disponible'
+      loading.value = false
+      return
+    }
+
     if (isOwnProfile.value) {
-      // For the authenticated user, all state is already present in gameStore.state
       loading.value = false
       error.value = null
-
-      const db = gameStore.db
-      if (!db) return
-
       try {
-        const [profRes, awardsRes, compEntryRes, replaysRes] = await Promise.all([
-          db.from('profiles').select('*').eq('id', id).maybeSingle(),
-          db.from('awards').select('prize, event_id').eq('winner_id', id),
-          db.from('competition_entries').select('event_id').eq('player_id', id),
-          db.from('battle_replays').select('*').or(`p1_user_id.eq.${id},p2_user_id.eq.${id}`).order('created_at', { ascending: false }).limit(5)
-        ])
-
-        if (profRes.data) {
-          profile.value = profRes.data as ProfileRow
-        }
-
-        if (replaysRes?.data && Array.isArray(replaysRes.data)) {
-          pinnedReplays.value = replaysRes.data.map(r => ({
-            id: String(r.id),
-            battleCode: String(r.battle_code || r.battleCode) as BattleCode,
-            seasonId: String(r.season_id || r.seasonId || ''),
-            themeId: isSeasonalThemeId(r.theme_id) ? r.theme_id : (isSeasonalThemeId(r.themeId) ? r.themeId : 'masters_allstars'),
-            p1: typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : (r.p1 || {}),
-            p2: typeof r.p2_data === 'string' ? JSON.parse(r.p2_data) : (r.p2 || {}),
-            turnsCount: Number(r.turns_count ?? r.turnsCount ?? 0),
-            winnerSide: String(r.winner_side || r.winnerSide || 'p1') as SideID,
-            choiceStream: typeof r.choice_stream === 'string' ? JSON.parse(r.choice_stream) : (r.choiceStream || []),
-            initialSeed: typeof r.initial_seed === 'string' ? JSON.parse(r.initial_seed) : (r.initialSeed || [0, 0, 0, 0]),
-            isTop10Archived: Boolean(r.is_top10_archived ?? r.isTop10Archived),
-            viewsCount: Number(r.views_count ?? r.viewsCount ?? 0),
-            createdAt: String(r.created_at || r.createdAt || '')
-          }))
-        }
-
-        if (awardsRes.data && Array.isArray(awardsRes.data)) {
-          rankedMedals.value = extractRankedMedals(awardsRes.data, gameStore.state.rankedMedals)
-          let firstCount = 0
-          let secondCount = 0
-          let thirdCount = 0
-          for (const a of awardsRes.data as { prize?: unknown }[]) {
-            let p = a.prize
-            if (typeof p === 'string') {
-              try { p = JSON.parse(p) } catch { p = null }
-            }
-            if (p && typeof p === 'object' && 'rank' in p) {
-              const r = (p as { rank?: string }).rank
-              if (r === 'first') firstCount++
-              else if (r === 'second') secondCount++
-              else if (r === 'third') thirdCount++
-            }
-          }
-          eventMedalsFirstDb.value = firstCount
-          eventMedalsSecondDb.value = secondCount
-          eventMedalsThirdDb.value = thirdCount
-        }
-
-        if (compEntryRes.data && Array.isArray(compEntryRes.data)) {
-          const distinctEvents = new Set((compEntryRes.data as { event_id?: string }[]).map(e => e.event_id).filter(Boolean))
-          eventParticipationsDb.value = distinctEvents.size
-        }
-      } catch (_e) {
-        // Non-fatal background fetch
+        await fetchOwnProfileStats(id, db)
+      } catch (err) {
+        logger.warn('[useTrainerProfile] Error en background fetch de estadísticas de eventos:', err)
       }
       return
     }
@@ -137,89 +159,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     rankedMedals.value = []
 
     try {
-      const db = gameStore.db
-      if (!db) {
-        error.value = 'Base de datos no disponible'
-        return
-      }
-
-      // 1. Fetch profile
-      const { data: prof, error: pErr } = await db
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle()
-
-      if (pErr) throw pErr
-      profile.value = (prof as ProfileRow) || null
-
-      // 2. Fetch game save
-      const { data: saveRow, error: sErr } = (await db
-        .from('game_saves')
-        .select('save_data')
-        .eq('user_id', id)
-        .maybeSingle()) as { data: { save_data: unknown } | null, error: Error | null }
-
-      if (sErr) throw sErr
-
-      if (!profile.value && !saveRow?.save_data) {
-        error.value = 'Perfil de entrenador no encontrado'
-        return
-      }
-
-      if (saveRow?.save_data) {
-        let rawSave: unknown = saveRow.save_data
-        if (typeof rawSave === 'string') {
-          try {
-            rawSave = JSON.parse(rawSave)
-          } catch (_) {
-            rawSave = null
-          }
-        }
-        saveState.value = rawSave as SaveStateData
-      }
-
-      // 3. Fetch awards & event participations for this user from DB
-      try {
-        const { data: awardsRows } = await db
-          .from('awards')
-          .select('prize, event_id')
-          .eq('winner_id', id)
-
-        if (awardsRows && Array.isArray(awardsRows)) {
-          rankedMedals.value = extractRankedMedals(awardsRows, saveState.value?.rankedMedals)
-          let firstCount = 0
-          let secondCount = 0
-          let thirdCount = 0
-          for (const a of awardsRows as { prize?: unknown }[]) {
-            let p = a.prize
-            if (typeof p === 'string') {
-              try { p = JSON.parse(p) } catch { p = null }
-            }
-            if (p && typeof p === 'object' && 'rank' in p) {
-              const r = (p as { rank?: string }).rank
-              if (r === 'first') firstCount++
-              else if (r === 'second') secondCount++
-              else if (r === 'third') thirdCount++
-            }
-          }
-          eventMedalsFirstDb.value = firstCount
-          eventMedalsSecondDb.value = secondCount
-          eventMedalsThirdDb.value = thirdCount
-        }
-
-        const { data: compEntryRows } = await db
-          .from('competition_entries')
-          .select('event_id')
-          .eq('player_id', id)
-
-        if (compEntryRows && Array.isArray(compEntryRows)) {
-          const distinctEvents = new Set((compEntryRows as { event_id?: string }[]).map(e => e.event_id).filter(Boolean))
-          eventParticipationsDb.value = distinctEvents.size
-        }
-      } catch (_e) {
-        // Non-fatal if offline/no tables
-      }
+      await fetchOtherProfileStats(id, db)
     } catch (e: unknown) {
       const err = e as Error
       error.value = `Error: ${err.message || 'No se pudieron recuperar los datos'}`

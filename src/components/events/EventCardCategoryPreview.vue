@@ -4,14 +4,11 @@ import { useEventStore } from '@/stores/events'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { CompetitionParticipant } from '@/types/system/stores'
 import {
   resolveSubCompetitionDirection,
   getSubCompTitle,
-  getSubCompDescription,
-  getSubCompIcon,
   evaluatePokemonForSubCompetition,
   getEligiblePokemonForSubCompetition,
   isPokemonEnrolledInOtherSubCompetition,
@@ -22,7 +19,9 @@ import {
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getServerInstant } from '@/logic/utils/timeUtils'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import EventCategorySpeciesTabs from './EventCategorySpeciesTabs.vue'
+import EventCategorySlotChip from './EventCategorySlotChip.vue'
+import type { SpeciesTabItem } from './eventCardTypes'
 
 interface Props {
   event: GameEvent
@@ -39,16 +38,6 @@ const eventStore = useEventStore()
 const gameStore = useGameStore()
 const modalStore = useModalStore()
 const uiStore = useUIStore()
-
-interface SpeciesTabItem {
-  id: string
-  species?: PokemonSpeciesId
-  name: string
-  icon?: string
-  totalCount: number
-  enrolledCount: number
-  isComplete: boolean
-}
 
 const getEntryForCategory = (catId: string) => {
   return eventStore.userEntries[`${props.event.id}:${catId}`] || (catId === 'ivs' ? eventStore.userEntries[props.event.id] : undefined)
@@ -107,17 +96,6 @@ const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionPartic
     }
   }
   return null
-}
-
-const formatMetricLabel = (sub: ResolvedSubCompetition | SubCompetitionConfig): string => {
-  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
-  if (sub.metric === 'total_ivs') return 'Mayor IVs'
-  if (sub.metric === 'stat_iv' && sub.targetStat) return `Mayor ${sub.targetStat.toUpperCase()}`
-  if (sub.metric === 'weight') return dir === 'max' ? 'Mayor Peso' : 'Menor Peso'
-  if (sub.metric === 'height') return dir === 'max' ? 'Mayor Altura' : 'Menor Altura'
-  if (sub.metric === 'level') return dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel'
-  if (sub.metric === 'friendship') return dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad'
-  return sub.name
 }
 
 const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
@@ -325,86 +303,25 @@ const activeSubComps = computed<ResolvedSubCompetition[]>(() => {
     </div>
 
     <!-- Species Selection Micro-Tabs (Wrapped into multiple lines if many) -->
-    <div
-      v-if="speciesTabs.length > 1"
-      class="species-tabs-container"
-    >
-      <button
-        v-for="tab in speciesTabs"
-        :id="(idPrefix || '') + 'event-species-tab-' + event.id + '-' + tab.id"
-        :key="tab.id"
-        type="button"
-        class="species-tab-btn pixelated"
-        :class="{
-          active: activeTabId === tab.id,
-          'is-complete': tab.isComplete,
-          'has-enrolled': tab.enrolledCount > 0 && !tab.isComplete
-        }"
-        @click.stop="activeTabId = tab.id"
-      >
-        <img
-          v-if="tab.species"
-          :src="getAssetUrl(ASSET_TYPES.POKEMON, tab.species)"
-          class="tab-poke-sprite"
-          :alt="tab.name"
-          draggable="false"
-        >
-        <span
-          v-else
-          class="tab-global-icon"
-        ><span class="emoji">{{ tab.icon || '🧬' }}</span></span>
-
-        <span class="tab-label">{{ tab.name }}</span>
-
-        <!-- Green Check Pill if Completed -->
-        <span
-          v-if="tab.isComplete"
-          class="tab-check-pill complete"
-          title="Categorías completadas"
-        >
-          <span class="emoji">✓</span>
-        </span>
-        <span
-          v-else-if="tab.enrolledCount > 0"
-          class="tab-check-pill partial"
-        >
-          {{ tab.enrolledCount }}/{{ tab.totalCount }}
-        </span>
-      </button>
-    </div>
+    <EventCategorySpeciesTabs
+      :tabs="speciesTabs"
+      :active-tab-id="activeTabId"
+      :event-id="props.event.id"
+      :id-prefix="props.idPrefix"
+      @select="activeTabId = $event"
+    />
 
     <!-- Active Filtered Categories Grid -->
     <div class="comp-categories-grid">
-      <PVTooltip
+      <EventCategorySlotChip
         v-for="sub in activeSubComps"
         :key="sub.id"
-        :title="getSubCompTitle(event.id, sub)"
-        :description="getSubCompDescription(event.id, sub)"
-        position="top"
-      >
-        <button
-          :id="(idPrefix || '') + 'comp-slot-chip-' + event.id + '-' + sub.id"
-          type="button"
-          class="comp-slot-chip pixelated"
-          :class="{ enrolled: Boolean(getParticipantForCategory(sub)) }"
-          @click.stop="handleSlotChipClick(sub)"
-        >
-          <div class="chip-content">
-            <!-- Metric Icon (🧬 Genética, ⚖️ Peso, 📏 Altura, etc.) -->
-            <span class="chip-metric-icon">
-              <span class="emoji">{{ sub.icon || getSubCompIcon(sub.metric) }}</span>
-            </span>
-            
-            <!-- Clean Metric Name (IVs / Peso / Altura) -->
-            <span class="chip-metric">{{ formatMetricLabel(sub) }}</span>
-          </div>
-
-          <!-- Simple Status Badge (+ or ✓) -->
-          <span class="chip-status-pill">
-            <span class="emoji">{{ getParticipantForCategory(sub) ? '✓' : '+' }}</span>
-          </span>
-        </button>
-      </PVTooltip>
+        :sub="sub"
+        :event-id="props.event.id"
+        :participant="getParticipantForCategory(sub)"
+        :id-prefix="props.idPrefix"
+        @click="handleSlotChipClick"
+      />
     </div>
   </div>
 </template>

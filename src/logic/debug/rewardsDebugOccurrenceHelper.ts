@@ -7,11 +7,101 @@
 import { normalizeZonedDateTime } from '@/logic/utils/timeUtils'
 import { safeParse, isLastSundayOfMonth, isSecondWeekendOfMonth, isLastWeekendOfMonth } from '@/logic/events/eventSchedules'
 import { getEventConfiguredPrizes } from '@/logic/events/eventValidators'
+import { logger } from '@/logic/utils/logger'
 import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine'
 
 export interface PastEventMatch {
   event: GameEvent
   endedAt: Temporal.Instant
+}
+
+const WEEKLY_LOOKBACK_DAYS_LIMIT = -14 as const;
+const MONTHLY_LOOKBACK_DAYS_LIMIT = -45 as const;
+
+function matchStaticEndDate(
+  event: GameEvent,
+  cfg: EventConfig | null,
+  nowInstant: Temporal.Instant
+): PastEventMatch | null {
+  const staticEndStr = event.end_at || cfg?.catchEndDate
+  if (!staticEndStr) return null
+  try {
+    const endInst = Temporal.Instant.from(staticEndStr)
+    if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
+      return { event, endedAt: endInst }
+    }
+  } catch (err) {
+    logger.warn('[rewardsDebugOccurrenceHelper] Error parseando staticEndStr:', staticEndStr, err)
+  }
+  return null
+}
+
+function matchWeeklySchedule(
+  event: GameEvent,
+  sched: Record<string, unknown>,
+  nowZdt: Temporal.ZonedDateTime,
+  nowInstant: Temporal.Instant
+): PastEventMatch | null {
+  if (!Array.isArray(sched.days) && typeof sched.dayOfWeek !== 'number') return null
+  const days = (Array.isArray(sched.days) ? sched.days : [sched.dayOfWeek]) as number[]
+  const startHour = typeof sched.startHour === 'number' ? sched.startHour : 0
+  const endHour = typeof sched.endHour === 'number' ? sched.endHour : 24
+
+  for (let offset = 0; offset >= WEEKLY_LOOKBACK_DAYS_LIMIT; offset--) {
+    const targetDay = nowZdt.add({ days: offset })
+    const jsDay = targetDay.dayOfWeek % 7
+
+    if (days.includes(jsDay)) {
+      const targetBase = startHour < endHour ? targetDay : targetDay.add({ days: 1 })
+      const endZdt = targetBase.with({
+        hour: Math.min(23, Math.floor(endHour)),
+        minute: Math.round((endHour % 1) * 60),
+        second: 0,
+        millisecond: 0
+      })
+      const endInst = endZdt.toInstant()
+      if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
+        return { event, endedAt: endInst }
+      }
+    }
+  }
+  return null
+}
+
+const MONTHLY_TRIGGER_PREDICATES: Record<string, (day: Temporal.ZonedDateTime) => boolean> = {
+  last_sunday: isLastSundayOfMonth,
+  second_weekend: isSecondWeekendOfMonth,
+  last_weekend: isLastWeekendOfMonth
+}
+
+function matchMonthlyTrigger(
+  event: GameEvent,
+  sched: Record<string, unknown>,
+  nowZdt: Temporal.ZonedDateTime,
+  nowInstant: Temporal.Instant
+): PastEventMatch | null {
+  if (typeof sched.trigger !== 'string') return null
+  const predicate = MONTHLY_TRIGGER_PREDICATES[sched.trigger]
+  if (!predicate) return null
+
+  const endHour = typeof sched.endHour === 'number' ? sched.endHour : 24
+
+  for (let offset = 0; offset >= MONTHLY_LOOKBACK_DAYS_LIMIT; offset--) {
+    const targetDay = nowZdt.add({ days: offset })
+    if (predicate(targetDay)) {
+      const endZdt = targetDay.with({
+        hour: Math.min(23, Math.floor(endHour)),
+        minute: Math.round((endHour % 1) * 60),
+        second: 0,
+        millisecond: 0
+      })
+      const endInst = endZdt.toInstant()
+      if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
+        return { event, endedAt: endInst }
+      }
+    }
+  }
+  return null
 }
 
 /**
@@ -32,66 +122,22 @@ export function findLatestPastEvent(
     const cfg = (typeof event.config === 'string' ? safeParse(event.config) : event.config) as EventConfig | null
     const sched = (typeof event.schedule === 'string' ? safeParse(event.schedule) : event.schedule) as Record<string, unknown> | null // open-record: Generic key-value data dictionary container
 
-    // Case 1: Static end_at date
-    const staticEndStr = event.end_at || cfg?.catchEndDate
-    if (staticEndStr) {
-      try {
-        const endInst = Temporal.Instant.from(staticEndStr)
-        if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
-          matches.push({ event, endedAt: endInst })
-          continue
-        }
-      } catch {
-        // ignore parse error
-      }
-    }
-
-    // Case 2: Recurring weekly schedule
-    if (sched && (Array.isArray(sched.days) || typeof sched.dayOfWeek === 'number')) {
-      const days = (Array.isArray(sched.days) ? sched.days : [sched.dayOfWeek]) as number[]
-      const startHour = typeof sched.startHour === 'number' ? sched.startHour : 0
-      const endHour = typeof sched.endHour === 'number' ? sched.endHour : 24
-
-      // Inspect the past 14 days backwards
-      for (let offset = 0; offset >= -14; offset--) {
-        const targetDay = nowZdt.add({ days: offset })
-        const jsDay = targetDay.dayOfWeek % 7
-
-        if (days.includes(jsDay)) {
-          const endZdt = startHour < endHour
-            ? targetDay.with({ hour: Math.min(23, Math.floor(endHour)), minute: Math.round((endHour % 1) * 60), second: 0, millisecond: 0 })
-            : targetDay.add({ days: 1 }).with({ hour: Math.min(23, Math.floor(endHour)), minute: Math.round((endHour % 1) * 60), second: 0, millisecond: 0 })
-
-          const endInst = endZdt.toInstant()
-          if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
-            matches.push({ event, endedAt: endInst })
-            break // Pick the newest occurrence for this event
-          }
-        }
-      }
+    const staticMatch = matchStaticEndDate(event, cfg, nowInstant)
+    if (staticMatch) {
+      matches.push(staticMatch)
       continue
     }
 
-    // Case 3: Monthly trigger schedule (last_sunday, second_weekend, last_weekend)
-    if (sched && typeof sched.trigger === 'string') {
-      const trigger = sched.trigger
-      const endHour = typeof sched.endHour === 'number' ? sched.endHour : 24
+    if (sched) {
+      const weeklyMatch = matchWeeklySchedule(event, sched, nowZdt, nowInstant)
+      if (weeklyMatch) {
+        matches.push(weeklyMatch)
+        continue
+      }
 
-      for (let offset = 0; offset >= -45; offset--) {
-        const targetDay = nowZdt.add({ days: offset })
-        let isMatch = false
-        if (trigger === 'last_sunday') isMatch = isLastSundayOfMonth(targetDay)
-        else if (trigger === 'second_weekend') isMatch = isSecondWeekendOfMonth(targetDay)
-        else if (trigger === 'last_weekend') isMatch = isLastWeekendOfMonth(targetDay)
-
-        if (isMatch) {
-          const endZdt = targetDay.with({ hour: Math.min(23, Math.floor(endHour)), minute: Math.round((endHour % 1) * 60), second: 0, millisecond: 0 })
-          const endInst = endZdt.toInstant()
-          if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
-            matches.push({ event, endedAt: endInst })
-            break
-          }
-        }
+      const monthlyMatch = matchMonthlyTrigger(event, sched, nowZdt, nowInstant)
+      if (monthlyMatch) {
+        matches.push(monthlyMatch)
       }
     }
   }

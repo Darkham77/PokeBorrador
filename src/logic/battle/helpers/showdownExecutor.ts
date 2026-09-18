@@ -60,7 +60,14 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
     p2Statuses: options.p2Statuses,
     weather: options.weather,
     ipbActive: options.isFuzzerSimulation ? true : undefined,
-    certifiedHistoryStep: options.certifiedHistoryStep ?? (Array.isArray(options.history) && typeof options.currentStep === 'number' ? options.history[options.currentStep - 1] : options.currentStep),
+    certifiedHistoryStep: (() => {
+      const candidate = options.certifiedHistoryStep ?? options.currentStep;
+      if (typeof candidate === 'object' && candidate !== null) return candidate;
+      if (Array.isArray(options.history) && typeof candidate === 'number' && candidate >= 1 && candidate <= options.history.length) {
+        return options.history[candidate - 1];
+      }
+      return candidate;
+    })(),
   });
 
   if (options.runner) {

@@ -13,6 +13,14 @@ import {
   grantPokemonAward,
   validateStorageCapacityForAwards
 } from './eventPrizeGrantor.ts'
+import {
+  parseAwardPrizePayload,
+  updateTrophyStats,
+  insertOrUpdatePokemonTrophy,
+  resolvePastEventVisuals,
+  findTargetAward,
+  mutatePastEventsAwards
+} from './eventAwardsHelper.ts'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useAuthStore } from '@/stores/auth.ts'
 import type { useUIStore } from '@/stores/ui.ts'
@@ -34,54 +42,31 @@ function grantTrophyToPokemon(
   trophy: PokemonCompetitionTrophy,
   pokemonUid?: string
 ) {
+  if (!pokemonUid) return
   const { gameStore } = ctx
-  const targetPoke = pokemonUid ? (gameStore.getPokemonByUid(pokemonUid) ?? undefined) : undefined
+  const targetPoke = gameStore.getPokemonByUid(pokemonUid)
+  if (!targetPoke) return
 
-  if (targetPoke) {
-    if (!targetPoke.trophies) {
-      targetPoke.trophies = []
-    }
-    const existingIndex = targetPoke.trophies.findIndex(
-      (t: PokemonCompetitionTrophy) => t.eventId === trophy.eventId && t.categoryId === trophy.categoryId && t.awardedAt === trophy.awardedAt
-    )
-    if (existingIndex >= 0) {
-      targetPoke.trophies[existingIndex] = trophy
-    } else {
-      targetPoke.trophies.push(trophy)
-      if (!gameStore.state.stats) {
-        gameStore.state.stats = {}
-      }
-      if (trophy.rank === 'first') {
-        gameStore.state.stats.eventMedalsFirst = (Number(gameStore.state.stats.eventMedalsFirst) || 0) + 1
-      } else if (trophy.rank === 'second') {
-        gameStore.state.stats.eventMedalsSecond = (Number(gameStore.state.stats.eventMedalsSecond) || 0) + 1
-      } else if (trophy.rank === 'third') {
-        gameStore.state.stats.eventMedalsThird = (Number(gameStore.state.stats.eventMedalsThird) || 0) + 1
-      }
-      gameStore.state.stats.eventMedalsTotal = (Number(gameStore.state.stats.eventMedalsTotal) || 0) + 1
-      logger.info('Events', `Trophy granted to Pokémon ${targetPoke.name} (${targetPoke.uid}): ${trophy.eventName} - ${trophy.categoryName} (${trophy.rank})`)
-      gameStore.save(false).catch(err => logger.warn('Events', 'Failed to auto-save after granting trophy', err))
-    }
+  if (!targetPoke.trophies) {
+    targetPoke.trophies = []
   }
+  const isNew = insertOrUpdatePokemonTrophy(targetPoke.trophies, trophy)
+  if (!isNew) return
+
+  if (!gameStore.state.stats) {
+    gameStore.state.stats = {}
+  }
+  updateTrophyStats(gameStore.state.stats, trophy.rank)
+  logger.info('Events', `Trophy granted to Pokémon ${targetPoke.name} (${targetPoke.uid}): ${trophy.eventName} - ${trophy.categoryName} (${trophy.rank})`)
+  gameStore.save(false).catch(err => logger.warn('Events', 'Failed to auto-save after granting trophy', err))
 }
 
 function applyAwardPrize(ctx: EventAwardsContext, rawPrize: unknown, options: { autoSave?: boolean; silent?: boolean } = {}) {
-  const { gameStore, uiStore } = ctx
-  const autoSave = options.autoSave ?? true
-  const silent = options.silent ?? false
-  if (!rawPrize) return
-  let prize: Record<string, unknown> | null = null // open-record: Generic key-value data dictionary container
-  if (typeof rawPrize === 'string') {
-    try {
-      prize = JSON.parse(rawPrize) as Record<string, unknown> // open-record: Generic key-value data dictionary container
-    } catch {
-      prize = null
-    }
-  } else if (rawPrize && typeof rawPrize === 'object') {
-    prize = rawPrize as Record<string, unknown> // open-record: Generic key-value data dictionary container
-  }
-
+  const prize = parseAwardPrizePayload(rawPrize)
   if (!prize) return
+
+  const { gameStore, uiStore } = ctx
+  const silent = options.silent ?? false
 
   let totalNotified = 0
   totalNotified += grantMoneyAward(gameStore, uiStore, prize, silent)
@@ -93,7 +78,7 @@ function applyAwardPrize(ctx: EventAwardsContext, rawPrize: unknown, options: { 
     uiStore.notify('¡Recompensa reclamada!', '🎁')
   }
 
-  if (autoSave) {
+  if (options.autoSave ?? true) {
     gameStore.save(false).catch(err => logger.warn('Events', 'Failed to auto-save after claiming award', err))
   }
 }
@@ -122,6 +107,167 @@ export async function checkPendingAwards(ctx: EventAwardsContext, notifyOnPendin
   }
 }
 
+interface RawCompetitionResultRow {
+  id: string
+  event_id: string
+  winners: unknown
+  ended_at: string
+}
+
+function parseCompetitionWinners(rawWinners: unknown): PastCompetitionWinner[] {
+  if (typeof rawWinners === 'string') {
+    try {
+      return JSON.parse(rawWinners) as PastCompetitionWinner[]
+    } catch {
+      return []
+    }
+  }
+  if (Array.isArray(rawWinners)) {
+    return rawWinners as PastCompetitionWinner[]
+  }
+  return []
+}
+
+function parseEndedAtDate(endedAt?: string | null): Temporal.ZonedDateTime {
+  if (!endedAt) return getGMT3Date()
+  try {
+    return Temporal.Instant.from(endedAt).toZonedDateTimeISO(GAME_TIMEZONE)
+  } catch {
+    return getGMT3Date()
+  }
+}
+
+function resolveEventDisplayName(
+  eventCfg: GameEvent | undefined,
+  eventId: string,
+  eventDate: Temporal.ZonedDateTime
+): string {
+  const isCustomOrUnknown = !eventCfg || eventId.startsWith('custom_') || (eventCfg.name && eventCfg.name.startsWith('custom_'))
+  if (isCustomOrUnknown || !eventCfg) {
+    return 'Evento desconocido'
+  }
+  return getEventDisplayName(eventCfg, eventDate)
+}
+
+function evaluateUserAwardStatus(matchingAwards: PendingAward[], isWinner: boolean) {
+  const unClaimedAward = matchingAwards.find(a => a.received_at === null)
+  const matchingAward = unClaimedAward || matchingAwards[0] || null
+  const hasUnclaimedAward = matchingAwards.length > 0
+    ? matchingAwards.some(a => a.received_at === null)
+    : isWinner
+  const isClaimed = matchingAwards.length > 0 && matchingAwards.every(a => a.received_at !== null)
+
+  return { matchingAward, hasUnclaimedAward, isClaimed }
+}
+
+function resolveWinnerCategoryName(catId: string, customCategoryName?: string): string {
+  if (customCategoryName) return customCategoryName
+  if (catId.startsWith('weight')) return 'Masa y Peso'
+  if (catId.startsWith('height')) return 'Envergadura y Altura'
+  return 'Genética Superior (IVs)'
+}
+
+function resolveTrophyEventName(
+  eventCfg: GameEvent | undefined,
+  targetPokeName: string | undefined,
+  eventDate: Temporal.ZonedDateTime,
+  fallbackEventName: string
+): string {
+  if (!eventCfg) return fallbackEventName
+  return getEventDisplayName(eventCfg, targetPokeName || eventDate)
+}
+
+function findUserEntryPokemonUid(
+  userEntries: Record<string, CompetitionEntry>,
+  eventId: string,
+  catId: string
+): string | undefined {
+  const specificKey = `${eventId}:${catId}`
+  const entry = userEntries[specificKey] || userEntries[eventId]
+  return entry?.pokemon_uid
+}
+
+function processUserWinnerTrophy(
+  ctx: EventAwardsContext,
+  winner: PastCompetitionWinner,
+  eventId: string,
+  eventEndedAt: string,
+  eventCfg: GameEvent | undefined,
+  eventDate: Temporal.ZonedDateTime,
+  fallbackEventName: string
+) {
+  const { authStore, userEntries, gameStore } = ctx
+  if (!authStore.user || winner.player_id !== authStore.user.id) return
+
+  const catId = winner.category_id || 'ivs'
+  const pokeUid = findUserEntryPokemonUid(userEntries.value, eventId, catId)
+  if (!pokeUid) return
+
+  const targetPoke = gameStore.getPokemonByUid(pokeUid)
+  const resolvedEventName = resolveTrophyEventName(eventCfg, targetPoke?.name, eventDate, fallbackEventName)
+
+  grantTrophyToPokemon(ctx, {
+    eventId,
+    eventName: resolvedEventName,
+    categoryId: catId,
+    categoryName: resolveWinnerCategoryName(catId, winner.category_name),
+    rank: (winner.rank as PokemonCompetitionRank) || 'first',
+    score: winner.score || 0,
+    awardedAt: Temporal.Instant.from(eventEndedAt).epochMilliseconds
+  }, pokeUid)
+}
+
+function processWinnerTrophies(
+  ctx: EventAwardsContext,
+  winners: PastCompetitionWinner[],
+  eventId: string,
+  eventEndedAt: string,
+  eventCfg: GameEvent | undefined,
+  eventDate: Temporal.ZonedDateTime,
+  fallbackEventName: string
+) {
+  if (!ctx.authStore.user) return
+  for (const winner of winners) {
+    processUserWinnerTrophy(ctx, winner, eventId, eventEndedAt, eventCfg, eventDate, fallbackEventName)
+  }
+}
+
+function buildPastEventHistoryItem(
+  res: RawCompetitionResultRow,
+  parsedWinners: PastCompetitionWinner[],
+  eventDate: Temporal.ZonedDateTime,
+  eventCfg: GameEvent | undefined,
+  userAwards: PendingAward[],
+  userId: string | undefined
+): PastEventHistoryItem {
+  const isCustomOrUnknown = !eventCfg || res.event_id.startsWith('custom_') || Boolean(eventCfg.name?.startsWith('custom_'))
+  const eventName = resolveEventDisplayName(eventCfg, res.event_id, eventDate)
+  const visuals = resolvePastEventVisuals(eventCfg, isCustomOrUnknown)
+
+  const matchingAwards = userAwards.filter(a => a.event_id === res.event_id)
+  const isWinner = Boolean(userId && parsedWinners.some(w => w.player_id === userId))
+  const { matchingAward, hasUnclaimedAward, isClaimed } = evaluateUserAwardStatus(matchingAwards, isWinner)
+
+  return {
+    id: res.id,
+    event_id: res.event_id,
+    event_name: eventName,
+    event_icon: visuals.icon,
+    event_description: visuals.description,
+    event_schedule: eventCfg?.schedule,
+    start_at: eventCfg?.start_at,
+    end_at: eventCfg?.end_at,
+    ended_at: res.ended_at,
+    winners: parsedWinners,
+    myAward: matchingAward,
+    myAwards: matchingAwards,
+    isWinner,
+    hasUnclaimedAward,
+    isClaimed,
+    raw_event: eventCfg || null
+  }
+}
+
 export async function fetchPastEvents(ctx: EventAwardsContext) {
   const { gameStore, authStore, allEvents, userEntries, pastEvents } = ctx
   if (!gameStore.db) return
@@ -144,151 +290,109 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
     }
 
     const historyList: PastEventHistoryItem[] = []
-    for (const res of results as { id: string; event_id: string; winners: unknown; ended_at: string }[]) {
+    for (const res of results as RawCompetitionResultRow[]) {
       const eventCfg = allEvents.value.find(e => e.id === res.event_id)
-      const isCustomOrUnknown = !eventCfg || res.event_id.startsWith('custom_') || (eventCfg.name && eventCfg.name.startsWith('custom_'))
-      let eventName = !isCustomOrUnknown && eventCfg?.name ? eventCfg.name : 'Evento desconocido'
-      let parsedWinners: PastCompetitionWinner[] = []
-      if (typeof res.winners === 'string') {
-        try {
-          parsedWinners = JSON.parse(res.winners) as PastCompetitionWinner[]
-        } catch {
-          parsedWinners = []
-        }
-      } else if (Array.isArray(res.winners)) {
-        parsedWinners = res.winners as PastCompetitionWinner[]
-      }
+      const parsedWinners = parseCompetitionWinners(res.winners)
+      const eventDate = parseEndedAtDate(res.ended_at)
+      const historyItem = buildPastEventHistoryItem(res, parsedWinners, eventDate, eventCfg, userAwards, authStore.user?.id)
 
-      let eventDate: Temporal.ZonedDateTime = getGMT3Date()
-      if (res.ended_at) {
-        try {
-          eventDate = Temporal.Instant.from(res.ended_at).toZonedDateTimeISO(GAME_TIMEZONE)
-        } catch {
-          eventDate = getGMT3Date()
-        }
-      }
-
-      if (eventCfg) {
-        eventName = getEventDisplayName(eventCfg, eventDate)
-      }
-
-      const matchingAwards = userAwards.filter(a => a.event_id === res.event_id)
-      const unClaimedAward = matchingAwards.find(a => a.received_at === null)
-      const matchingAward = unClaimedAward || matchingAwards[0] || null
-
-      const isWinner = authStore.user ? parsedWinners.some(w => w.player_id === authStore.user?.id) : false
-      const hasUnclaimedAward = matchingAwards.length > 0
-        ? matchingAwards.some(a => a.received_at === null)
-        : isWinner
-      const isClaimed = matchingAwards.length > 0 && matchingAwards.every(a => a.received_at !== null)
-
-      if (authStore.user) {
-        for (const winner of parsedWinners) {
-          if (winner.player_id === authStore.user.id) {
-            const catId = winner.category_id || 'ivs'
-            const matchingEntry = userEntries.value[`${res.event_id}:${catId}`] || userEntries.value[res.event_id]
-            const pokeUid = matchingEntry?.pokemon_uid
-            if (pokeUid) {
-              const targetPoke = gameStore.getPokemonByUid(pokeUid)
-              const resolvedEventName = eventCfg
-                ? getEventDisplayName(eventCfg, targetPoke ? targetPoke.name : eventDate)
-                : eventName
-              grantTrophyToPokemon(ctx, {
-                eventId: res.event_id,
-                eventName: resolvedEventName,
-                categoryId: catId,
-                categoryName: winner.category_name || (catId.startsWith('weight') ? 'Masa y Peso' : catId.startsWith('height') ? 'Envergadura y Altura' : 'Genética Superior (IVs)'),
-                rank: (winner.rank as PokemonCompetitionRank) || 'first',
-                score: winner.score || 0,
-                awardedAt: Temporal.Instant.from(res.ended_at).epochMilliseconds
-              }, pokeUid)
-            }
-          }
-        }
-      }
-
-      historyList.push({
-        id: res.id,
-        event_id: res.event_id,
-        event_name: eventName,
-        event_icon: (!isCustomOrUnknown && eventCfg?.icon) ? eventCfg.icon : '🏆',
-        event_description: (!isCustomOrUnknown && eventCfg?.description) ? eventCfg.description : '',
-        event_schedule: eventCfg?.schedule,
-        start_at: eventCfg?.start_at,
-        end_at: eventCfg?.end_at,
-        ended_at: res.ended_at,
-        winners: parsedWinners,
-        myAward: matchingAward,
-        myAwards: matchingAwards,
-        isWinner,
-        hasUnclaimedAward,
-        isClaimed,
-        raw_event: eventCfg || null
-      })
+      processWinnerTrophies(ctx, parsedWinners, res.event_id, res.ended_at, eventCfg, eventDate, historyItem.event_name)
+      historyList.push(historyItem)
     }
 
     pastEvents.value = historyList
-    healStuckEventPokemon(gameStore.state.team, gameStore.state.box, allEvents.value, userEntries.value)
+    healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
   } catch (e) {
     logger.warn('Events', `Error fetching past competition results: ${(e as Error).message}`)
   }
 }
 
 function updatePastEventsAwardClaimed(pastEvents: Ref<PastEventHistoryItem[]>, awardId: string, claimedTimestamp: string) {
-  pastEvents.value = pastEvents.value.map(pe => {
-    const hasThisAward = pe.myAward?.id === awardId || (pe.myAwards && pe.myAwards.some(a => a.id === awardId))
-    if (!hasThisAward) return pe
-
-    const currentAwards = pe.myAwards || (pe.myAward ? [pe.myAward] : [])
-    const updatedAwards = currentAwards.map(a => {
-      if (a.id === awardId) {
-        return { ...a, received_at: claimedTimestamp }
-      }
-      return a
-    })
-
-    const hasUnclaimedAward = updatedAwards.some(a => a.received_at === null)
-    const isClaimed = updatedAwards.length > 0 && updatedAwards.every(a => a.received_at !== null)
-    const nextUnclaimed = updatedAwards.find(a => a.received_at === null) || updatedAwards[0] || null
-
-    return {
-      ...pe,
-      myAward: nextUnclaimed,
-      myAwards: updatedAwards,
-      hasUnclaimedAward,
-      isClaimed
-    }
-  })
+  mutatePastEventsAwards(pastEvents, awardId, currentAwards =>
+    currentAwards.map(a => a.id === awardId ? { ...a, received_at: claimedTimestamp } : a)
+  )
 }
 
 function updatePastEventsAwardDiscarded(pastEvents: Ref<PastEventHistoryItem[]>, awardId: string) {
-  pastEvents.value = pastEvents.value.map(pe => {
-    const hasThisAward = pe.myAward?.id === awardId || (pe.myAwards && pe.myAwards.some(a => a.id === awardId))
-    if (!hasThisAward) return pe
+  mutatePastEventsAwards(pastEvents, awardId, currentAwards =>
+    currentAwards.filter(a => a.id !== awardId)
+  )
+}
 
-    const currentAwards = pe.myAwards || (pe.myAward ? [pe.myAward] : [])
-    const updatedAwards = currentAwards.filter(a => a.id !== awardId)
-    const hasUnclaimedAward = updatedAwards.some(a => a.received_at === null)
-    const isClaimed = updatedAwards.length > 0 && updatedAwards.every(a => a.received_at !== null)
-    const nextUnclaimed = updatedAwards.find(a => a.received_at === null) || updatedAwards[0] || null
+function finalizeClaimAward(
+  ctx: EventAwardsContext,
+  awardId: string,
+  targetAward: PendingAward | null,
+  prize: unknown,
+  nowIso: string,
+  options: { autoSave?: boolean; silent?: boolean }
+) {
+  const { pendingAwards, pastEvents, gameStore, allEvents, userEntries } = ctx
+  pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
+  updatePastEventsAwardClaimed(pastEvents, awardId, nowIso)
+  applyAwardPrize(ctx, prize || targetAward?.prize, options)
+  healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
+}
 
-    return {
-      ...pe,
-      myAward: nextUnclaimed,
-      myAwards: updatedAwards,
-      hasUnclaimedAward,
-      isClaimed
+async function claimAwardFallbackUpdate(
+  gameStore: ReturnType<typeof useGameStore>,
+  awardId: string,
+  nowIso: string
+): Promise<boolean> {
+  if (!gameStore.db) return false
+  const { error } = await gameStore.db.from('awards')
+    .update({ received_at: nowIso, claimed: true })
+    .eq('id', awardId)
+  return !error
+}
+
+function isClaimRpcSuccess(
+  error: unknown,
+  claimResult: { ok?: boolean; success?: boolean } | null
+): boolean {
+  if (error || !claimResult) return false
+  return Boolean(claimResult.ok || claimResult.success)
+}
+
+function resolveClaimReturnToken(prize: unknown): string {
+  return typeof prize === 'string' ? prize : 'claimed'
+}
+
+async function executeClaimAwardDbOperation(
+  ctx: EventAwardsContext,
+  awardId: string,
+  targetAward: PendingAward,
+  options: { autoSave?: boolean; silent?: boolean }
+): Promise<string | null> {
+  const { gameStore } = ctx
+  if (!gameStore.db) return null
+
+  try {
+    const nowIso = Temporal.Now.instant().toString()
+    const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
+    const claimResult = data as { ok?: boolean; success?: boolean; prize?: unknown } | null
+
+    if (isClaimRpcSuccess(error, claimResult)) {
+      finalizeClaimAward(ctx, awardId, targetAward, claimResult?.prize, nowIso, options)
+      return resolveClaimReturnToken(claimResult?.prize)
     }
-  })
+
+    const updated = await claimAwardFallbackUpdate(gameStore, awardId, nowIso)
+    if (updated) {
+      finalizeClaimAward(ctx, awardId, targetAward, targetAward.prize, nowIso, options)
+      return 'claimed'
+    }
+  } catch (e) {
+    logger.error('Events', `Error claiming award: ${(e as Error).message}`)
+  }
+  return null
 }
 
 export async function claimAward(ctx: EventAwardsContext, awardId: string, options: { autoSave?: boolean; silent?: boolean } = {}): Promise<string | null> {
-  const { gameStore, pendingAwards, pastEvents, allEvents, userEntries, uiStore } = ctx
+  const { gameStore, pendingAwards, pastEvents, allEvents, uiStore } = ctx
   if (!gameStore.db) return null
-  const targetAward = pendingAwards.value.find(a => a.id === awardId)
-    || pastEvents.value.find(pe => pe.myAwards?.some(a => a.id === awardId))?.myAwards?.find(a => a.id === awardId)
-    || pastEvents.value.find(pe => pe.myAward?.id === awardId)?.myAward
 
+  const targetAward = findTargetAward(awardId, pendingAwards.value, pastEvents.value)
   if (!targetAward || !isAwardClaimable(targetAward, allEvents.value)) {
     if (!options.silent) {
       uiStore.notify('Esta recompensa pertenece a un evento archivado o no es válida. Puedes descartarla.', '⚠️')
@@ -304,34 +408,7 @@ export async function claimAward(ctx: EventAwardsContext, awardId: string, optio
     return null
   }
 
-  try {
-    const nowIso = Temporal.Now.instant().toString()
-    const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
-    const claimResult = data as { ok?: boolean; success?: boolean; prize?: unknown } | null // domain-ok: Open dynamic text or non-domain string payload
-    
-    if (!error && (claimResult?.ok || claimResult?.success)) {
-      pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
-      updatePastEventsAwardClaimed(pastEvents, awardId, nowIso)
-      applyAwardPrize(ctx, claimResult?.prize || targetAward?.prize, options)
-      healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
-      return typeof claimResult?.prize === 'string' ? claimResult.prize : 'claimed'
-    }
-
-    const { error: updateErr } = await gameStore.db.from('awards')
-      .update({ received_at: nowIso, claimed: true })
-      .eq('id', awardId)
-
-    if (!updateErr) {
-      pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
-      updatePastEventsAwardClaimed(pastEvents, awardId, nowIso)
-      applyAwardPrize(ctx, targetAward?.prize, options)
-      healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
-      return 'claimed'
-    }
-  } catch (e) {
-    logger.error('Events', `Error claiming award: ${(e as Error).message}`)
-  }
-  return null
+  return executeClaimAwardDbOperation(ctx, awardId, targetAward, options)
 }
 
 export async function claimAllEventAwards(

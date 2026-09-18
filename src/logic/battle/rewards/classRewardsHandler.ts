@@ -1,6 +1,7 @@
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleState } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MapRouteId } from '@/data/world/map-assets';
 import { getItemById, type ItemId } from '@/data/inventory/items';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { calculateMoneyGain } from '../battleRewards.ts';
@@ -51,60 +52,51 @@ export function handleRivalSpecialDrops(ctx: BattleContext, active: BattleState)
   ctx.uiStore.notify(`¡Recibiste ${rewardedItemName}! 🎁`, '🎁');
 }
 
-export function processCurrencyAndTrainerExp(
-  ctx: BattleContext,
+function calculateSingleCombatantEarnings(
+  e: Pokemon,
   active: BattleState,
-  combatants: Pokemon[],
-  warMods: { moneyMult: number }
-) {
-  const isGymRematch = Boolean(active.isGym && active.gymId && ctx.gs.state.defeatedGyms.includes(active.gymId));
-  let totalMoneyGained = 0;
-  let totalCoinsGained = 0;
-  let totalTrainerExpGained = 0;
+  ctx: BattleContext,
+  warMods: { moneyMult: number },
+  isGymRematch: boolean
+): { money: number; coins: number; exp: number } {
+  let money = calculateMoneyGain(e, {
+    bcMult: ctx.classStore.getModifier('bcMult', { isGym: active.isGym }),
+    totalMoneyMult: warMods.moneyMult + ((ctx.eventStore.globalMultipliers?.money || 1) - 1),
+    isTrainer: active.isTrainer,
+    isGym: active.isGym
+  });
 
-  for (const e of combatants) {
-    let moneyGained = calculateMoneyGain(e, {
-      bcMult: ctx.classStore.getModifier('bcMult', { isGym: active.isGym }),
-      totalMoneyMult: warMods.moneyMult + ((ctx.eventStore.globalMultipliers?.money || 1) - 1),
-      isTrainer: active.isTrainer,
-      isGym: active.isGym
-    });
-
-    if ((ctx.gs.state.amuletCoinSecs || 0) > 0) {
-      moneyGained *= AMULET_COIN_MONEY_MULTIPLIER;
-    }
-
-    totalMoneyGained += moneyGained;
-
-    if ((active.isTrainer || active.isGym) && !isGymRematch) {
-      let coins = Math.floor(e.level * BATTLE_COINS_PER_LEVEL_FACTOR);
-      const bcMult = ctx.classStore.getModifier('bcMult', { isGym: active.isGym });
-      coins = Math.floor(coins * bcMult);
-      const eventMult = ctx.eventStore.globalMultipliers?.bc || 1;
-      coins = Math.floor(coins * eventMult);
-      totalCoinsGained += coins;
-    }
-
-    const trainerExpGain = active.isGym ? (e.level * GYM_EXP_FACTOR_PER_LEVEL) : (e.level * TRAINER_EXP_FACTOR_PER_LEVEL);
-    totalTrainerExpGained += trainerExpGain;
+  if ((ctx.gs.state.amuletCoinSecs || 0) > 0) {
+    money *= AMULET_COIN_MONEY_MULTIPLIER;
   }
 
-  // Rocket extortion multiplier
-  if (ctx.gs.state.playerClass === 'rocket' && ctx.gs.state.classData?.extortedRouteId === active.locationId) {
+  let coins = 0;
+  if ((active.isTrainer || active.isGym) && !isGymRematch) {
+    const rawCoins = Math.floor(e.level * BATTLE_COINS_PER_LEVEL_FACTOR);
+    const bcMult = ctx.classStore.getModifier('bcMult', { isGym: active.isGym });
+    const eventMult = ctx.eventStore.globalMultipliers?.bc || 1;
+    coins = Math.floor(rawCoins * bcMult * eventMult);
+  }
+
+  const exp = active.isGym ? (e.level * GYM_EXP_FACTOR_PER_LEVEL) : (e.level * TRAINER_EXP_FACTOR_PER_LEVEL);
+  return { money, coins, exp };
+}
+
+function applyClassRouteBonuses(ctx: BattleContext, locationId: MapRouteId, baseMoney: number): number {
+  let totalMoney = baseMoney;
+  const now = Temporal.Now.instant().epochMilliseconds;
+
+  if (ctx.gs.state.playerClass === 'rocket' && ctx.gs.state.classData?.extortedRouteId === locationId) {
     const extTimestamp = Number(ctx.gs.state.classData?.extortedRouteTimestamp || 0);
-    const now = Temporal.Now.instant().epochMilliseconds;
     if (now - extTimestamp <= ROCKET_EXTORTION_WINDOW_MS) {
-      const bonusMoney = Math.floor(totalMoneyGained * 0.5);
-      totalMoneyGained += bonusMoney;
+      const bonusMoney = Math.floor(totalMoney * 0.5);
+      totalMoney += bonusMoney;
       ctx.addLog(`¡Extorsión activa (+${ROCKET_EXTORTION_BONUS_PCT_TEXT} ₽)! +₽${bonusMoney}`, 'log-info', 'player');
     }
   }
 
-  // Trainer Official Route bonus
-  if (ctx.gs.state.playerClass === 'entrenador' && ctx.gs.state.classData?.officialRouteId === active.locationId) {
+  if (ctx.gs.state.playerClass === 'entrenador' && ctx.gs.state.classData?.officialRouteId === locationId) {
     const offTimestamp = Number(ctx.gs.state.classData?.officialRouteTimestamp || 0);
-    const now = Temporal.Now.instant().epochMilliseconds;
-
     if (now - offTimestamp <= BUFF_DURATION_30_MIN_SEC * SECONDS_TO_MS_MULTIPLIER) {
       if (!ctx.gs.state.classData) {
         ctx.gs.state.classData = {
@@ -120,6 +112,29 @@ export function processCurrencyAndTrainerExp(
       ctx.addLog('¡Ruta Oficial activa! Ganaste +1 de Reputación.', 'log-success', 'player');
     }
   }
+
+  return totalMoney;
+}
+
+export function processCurrencyAndTrainerExp(
+  ctx: BattleContext,
+  active: BattleState,
+  combatants: Pokemon[],
+  warMods: { moneyMult: number }
+) {
+  const isGymRematch = Boolean(active.isGym && active.gymId && ctx.gs.state.defeatedGyms.includes(active.gymId));
+  let totalMoneyGained = 0;
+  let totalCoinsGained = 0;
+  let totalTrainerExpGained = 0;
+
+  for (const e of combatants) {
+    const earnings = calculateSingleCombatantEarnings(e, active, ctx, warMods, isGymRematch);
+    totalMoneyGained += earnings.money;
+    totalCoinsGained += earnings.coins;
+    totalTrainerExpGained += earnings.exp;
+  }
+
+  totalMoneyGained = applyClassRouteBonuses(ctx, active.locationId, totalMoneyGained);
 
   // Award consolidated rewards
   ctx.gs.state.money += totalMoneyGained;

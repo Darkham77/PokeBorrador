@@ -5,18 +5,34 @@
 // ============================================================
 
 import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
-import type { BattleStages } from '../../../types/battle/battle.ts';
+import type { BattleStages, BattleState } from '../../../types/battle/battle.ts';
 import type { BattleContext } from '../../../types/battle/battleContext.ts';
 import type { CombatAI } from './combatAI.ts';
-import type { AIConfig, HeuristicMoveInfo } from './heuristic/types.ts';
+import type { AIConfig, HeuristicMoveInfo, HeuristicBattleSnapshot } from './heuristic/types.ts';
 import { AI_CONFIG_PRESETS } from './heuristic/types.ts';
 import { HeuristicDamageCalculator } from './heuristic/damageCalculator.ts';
 import { InferenceEngine } from './heuristic/inferenceEngine.ts';
 import { buildSnapshot } from './heuristic/snapshotBuilder.ts';
 import { evaluateStrategicState } from './heuristic/strategyEvaluator.ts';
 import { heuristicDecision, pickBestSwitch, hasViableSwitchCounter, type SwitchEvaluationMode } from './heuristic/heuristicEngine.ts';
-import { useBattleStore } from '@/stores/battle/battle';
 import { getTrainerAIPreset } from '@/data/player/trainerTypes.ts';
+import { getActivePinia } from 'pinia';
+import { ACTIVE_GENERATION } from '../../../data/system/constants.ts';
+import type { GenerationNum } from '@smogon/calc';
+
+interface InternalPiniaStore {
+  state?: {
+    enemyRequest?: BattleState['enemyRequest'];
+  };
+}
+
+interface InternalPiniaWithStores {
+  _s: Map<string, InternalPiniaStore>;
+}
+
+function hasInternalStores(pinia: object | null | undefined): pinia is InternalPiniaWithStores {
+  return Boolean(pinia && '_s' in pinia && (pinia as { _s?: unknown })._s instanceof Map);
+}
 
 const LOW_OFFENSIVE_DAMAGE_THRESHOLD_PERCENT = 30;
 const BASE_SWITCH_THRESHOLD_PERCENT = 50;
@@ -53,7 +69,13 @@ function pickBestMoveByPower(enemy: Pokemon): Move | null {
 }
 
 function getValidMovesFromRequest(enemy: Pokemon, store?: BattleContext): HeuristicMoveInfo[] {
-  const enemyRequest = store?.activeBattle?.value?.enemyRequest ?? useBattleStore().state?.enemyRequest;
+  let enemyRequest = store?.activeBattle?.value?.enemyRequest;
+  if (!enemyRequest) {
+    const pinia = getActivePinia();
+    if (hasInternalStores(pinia)) {
+      enemyRequest = pinia._s.get('battle')?.state?.enemyRequest;
+    }
+  }
   const reqMoves = enemyRequest?.active?.[0]?.moves ?? [];
 
   return enemy.moves
@@ -70,8 +92,112 @@ function getValidMovesFromRequest(enemy: Pokemon, store?: BattleContext): Heuris
     .filter(m => !m.disabled && m.pp > 0);
 }
 
-import { ACTIVE_GENERATION } from '../../../data/system/constants.ts';
-import type { GenerationNum } from '@smogon/calc';
+function tryWildDittoTransform(enemy: Pokemon, isWildBattle: boolean): Move | null {
+  if (isWildBattle && !enemy.isTransformed && enemy.id === 'ditto') {
+    const transformMove = enemy.moves.find(m => m && m.id === 'transform' && m.pp > 0 && !(enemy.disabledMove && m.id === enemy.disabledMove.id));
+    if (transformMove) {
+      return transformMove;
+    }
+  }
+  return null;
+}
+
+function tryPickRandomMove(enemy: Pokemon, validMoves: HeuristicMoveInfo[], errorRate: number): Move | null {
+  const useRandom = Math.random() < errorRate;
+  if (useRandom && validMoves.length > 0) {
+    const randomId = validMoves[Math.floor(Math.random() * validMoves.length)]!.id;
+    return enemy.moves.find(m => m && m.id === randomId) ?? null;
+  }
+  return null;
+}
+
+function extractBattleSnapshot(store: BattleContext | undefined): HeuristicBattleSnapshot | null {
+  if (!store) return null;
+  try {
+    return buildSnapshot(store);
+  } catch (_err) {
+    return null;
+  }
+}
+
+function pickHeuristicMoveChoice(
+  snapshot: HeuristicBattleSnapshot,
+  validMoves: HeuristicMoveInfo[],
+  config: AIConfig,
+  enemy: Pokemon,
+  calc: HeuristicDamageCalculator,
+  inference: InferenceEngine
+): Move | null {
+  if (config.useInference) inference.update(snapshot);
+
+  const inferredMoves = config.useInference ? inference.getActiveOpponentMoves(snapshot) : undefined;
+  const matchup = calc.calcMatchup(snapshot, validMoves, inferredMoves);
+
+  const strategic = config.useStrategicEval
+    ? evaluateStrategicState(snapshot, calc, inference)
+    : { winConditions: [], threats: [], position: { score: 0, factors: { pokemonAdvantage: 0, hpAdvantage: 0, hazardAdvantage: 0, speedAdvantage: 0, typeMatchupAdvantage: 0, statusAdvantage: 0, winConditionViability: 0 } }, sackOrder: [] };
+
+  const switchOptions = snapshot.mySide.pokemon.filter((p) => !p.active && p.hp > 0);
+  const isTrapped = Boolean(snapshot.mySide.activePokemon?.volatiles.has('trapped') || snapshot.mySide.activePokemon?.volatiles.has('ingrain'));
+
+  const decision = heuristicDecision(snapshot, matchup, strategic, validMoves, switchOptions, calc, inference, isTrapped);
+
+  if (!decision || decision.type !== 'move') {
+    const bestDmgMove = matchup.myAttacking[0];
+    if (bestDmgMove !== undefined) {
+      const found = enemy.moves.find((m: Move | null) => m && m.id === bestDmgMove.move);
+      if (found) return found;
+    }
+    return enemy.moves.find((m: Move | null) => Boolean(m)) ?? null;
+  }
+
+  const targetId = decision.moveId;
+  if (!targetId) return enemy.moves.find((m: Move | null) => Boolean(m)) ?? null;
+  return enemy.moves.find((m: Move | null) => m && m.id === targetId)
+    ?? enemy.moves.find((m: Move | null) => Boolean(m))
+    ?? null;
+}
+
+function resolvePokemonActiveTurns(
+  entryTurnByUid: Map<string, number>,
+  activeTurnsByUid: Map<string, number>,
+  currentUid: string,
+  battleTurn?: number
+): number {
+  const cached = activeTurnsByUid.get(currentUid);
+  if (cached !== undefined) return cached;
+  if (typeof battleTurn === 'number') {
+    if (!entryTurnByUid.has(currentUid)) {
+      entryTurnByUid.set(currentUid, battleTurn);
+    }
+    return battleTurn - (entryTurnByUid.get(currentUid) ?? battleTurn);
+  }
+  return 0;
+}
+
+function safeBuildSnapshot(store?: BattleContext): HeuristicBattleSnapshot | null {
+  if (!store) return null;
+  try {
+    return buildSnapshot(store);
+  } catch {
+    return null;
+  }
+}
+
+function shouldSwitchByDamageMatchup(
+  snapshot: HeuristicBattleSnapshot,
+  calc: HeuristicDamageCalculator,
+  config: AIConfig
+): boolean {
+  const activeMoves: HeuristicMoveInfo[] = snapshot.mySide.activePokemon?.moves.map((m) => ({ id: m.id, pp: 1, disabled: false })) ?? [];
+  const matchup = calc.calcMatchup(snapshot, activeMoves);
+  const bestOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
+  const bestMyDmg = matchup.myAttacking[0]?.maxPercent ?? 0;
+
+  // Scale switch threshold by aggressiveness
+  const switchThreshold = BASE_SWITCH_THRESHOLD_PERCENT - config.switchAggressiveness * SWITCH_AGGRESSIVENESS_SCALE;
+  return bestOppDmg > switchThreshold && bestMyDmg < LOW_OFFENSIVE_DAMAGE_THRESHOLD_PERCENT && Math.random() < config.switchAggressiveness;
+}
 
 export class HeuristicAI implements CombatAI {
   private readonly calc = new HeuristicDamageCalculator(ACTIVE_GENERATION as GenerationNum);
@@ -95,78 +221,23 @@ export class HeuristicAI implements CombatAI {
   decideMove(enemy: Pokemon, _player: Pokemon, _playerStages: BattleStages, isWild = false, store?: BattleContext): Move | null {
     const battle = store?.activeBattle?.value ?? null;
     const config = resolveConfig(battle ? { ...battle, isWild } : { isWild });
-
-    // Canonical Wild Ditto Behavior: On Turn 1 (before transforming), wild Ditto MUST unconditionally
-    // use "transform", overriding any heuristics, damage calculations, or AI error rates.
     const isWildBattle = isWild || Boolean(battle && !battle.isTrainer && !battle.isGym && !battle.isPvP);
-    if (isWildBattle && !enemy.isTransformed && enemy.id === 'ditto') {
-      const transformMove = enemy.moves.find(m => m && m.id === 'transform' && m.pp > 0 && !(enemy.disabledMove && m.id === enemy.disabledMove.id));
-      if (transformMove) {
-        return transformMove;
-      }
-    }
 
-    // Wild Pokémon: apply errorRate=50% directly (full random vs heuristic)
-    const useRandom = Math.random() < config.errorRate;
+    const dittoMove = tryWildDittoTransform(enemy, isWildBattle);
+    if (dittoMove) return dittoMove;
+
     const validMoves = getValidMovesFromRequest(enemy, store);
     if (validMoves.length === 0) return null;
 
-    if (useRandom) {
-      const randomId = validMoves[Math.floor(Math.random() * validMoves.length)]!.id;
-      return enemy.moves.find(m => m && m.id === randomId) ?? null;
-    }
+    const randomMove = tryPickRandomMove(enemy, validMoves, config.errorRate);
+    if (randomMove) return randomMove;
 
-    // Build snapshot for heuristic engine.
-    // buildSnapshot throws if playerRequest/enemyRequest is null — expected on turn 1
-    // or during a forced-switch turn before Showdown has emitted the next request.
-    // Degrade gracefully: pick the highest-power non-disabled move available.
-    let snapshot;
-    try {
-      snapshot = store ? buildSnapshot(store) : null;
-    } catch (_err) {
-      return pickBestMoveByPower(enemy);
-    }
-
+    const snapshot = extractBattleSnapshot(store);
     if (!snapshot) {
-      // No store context (e.g. unit test, wild battle init) — pick by power
       return pickBestMoveByPower(enemy);
     }
 
-    // Update inference engine with revealed information
-    if (config.useInference) this.inference.update(snapshot);
-
-    // Calculate damage matchup
-    const inferredMoves = config.useInference ? this.inference.getActiveOpponentMoves(snapshot) : undefined;
-    const matchup = this.calc.calcMatchup(snapshot, validMoves, inferredMoves);
-
-    // Strategic evaluation (win conditions, threats, position, sack order)
-    const strategic = config.useStrategicEval
-      ? evaluateStrategicState(snapshot, this.calc, this.inference)
-      : { winConditions: [], threats: [], position: { score: 0, factors: { pokemonAdvantage: 0, hpAdvantage: 0, hazardAdvantage: 0, speedAdvantage: 0, typeMatchupAdvantage: 0, statusAdvantage: 0, winConditionViability: 0 } }, sackOrder: [] };
-
-    // Alive non-active team members (switch candidates)
-    const switchOptions = snapshot.mySide.pokemon.filter((p) => !p.active && p.hp > 0);
-    const isTrapped = !!(snapshot.mySide.activePokemon?.volatiles.has('trapped') || snapshot.mySide.activePokemon?.volatiles.has('ingrain'));
-
-    // Run heuristic engine
-    const decision = heuristicDecision(snapshot, matchup, strategic, validMoves, switchOptions, this.calc, this.inference, isTrapped);
-
-    if (!decision || decision.type !== 'move') {
-      // No confident move heuristic fired — pick best damage move as emergency fallback
-      const bestDmgMove = matchup.myAttacking[0];
-      if (bestDmgMove !== undefined) {
-        const found = enemy.moves.find((m: Move | null) => m && m.id === bestDmgMove.move);
-        if (found) return found;
-      }
-      return enemy.moves.find((m: Move | null) => !!m) ?? null;
-    }
-
-    // Map decision back to project Move
-    const targetId = decision.moveId;
-    if (!targetId) return enemy.moves.find((m: Move | null) => !!m) ?? null;
-    return enemy.moves.find((m: Move | null) => m && m.id === targetId)
-      ?? enemy.moves.find((m: Move | null) => !!m)
-      ?? null;
+    return pickHeuristicMoveChoice(snapshot, validMoves, config, enemy, this.calc, this.inference);
   }
 
   shouldSwitch(_enemy: Pokemon, _player: Pokemon, enemyTeam: Pokemon[] | undefined, store?: BattleContext): boolean {
@@ -179,32 +250,20 @@ export class HeuristicAI implements CombatAI {
     if (config.switchAggressiveness === 0.0) return false;
 
     // Check anti-ping-pong cooldown: a newly entered Pokémon cannot switch immediately
-    const currentUid = _enemy.uid;
-    let activeTurns = this.activeTurnsByUid.get(currentUid);
-    if (activeTurns === undefined) {
-      const battleTurn = store?.activeBattle?.value?.turnCount;
-      if (typeof battleTurn === 'number') {
-        if (!this.entryTurnByUid.has(currentUid)) {
-          this.entryTurnByUid.set(currentUid, battleTurn);
-        }
-        activeTurns = battleTurn - (this.entryTurnByUid.get(currentUid) ?? battleTurn);
-      } else {
-        activeTurns = 0;
-      }
-    }
+    const activeTurns = resolvePokemonActiveTurns(
+      this.entryTurnByUid,
+      this.activeTurnsByUid,
+      _enemy.uid,
+      store?.activeBattle?.value?.turnCount
+    );
 
     if (activeTurns < config.switchCooldownTurns) return false;
 
-    let snapshot;
-    try {
-      snapshot = store ? buildSnapshot(store) : null;
-    } catch {
-      return false;
-    }
+    const snapshot = safeBuildSnapshot(store);
 
     if (!snapshot) return false;
 
-    const switchOptions = snapshot.mySide.pokemon.filter((p) => !p.active && p.hp > 0);
+    const switchOptions = snapshot.mySide.pokemon.filter((p: HeuristicBattleSnapshot['mySide']['pokemon'][number]) => !p.active && p.hp > 0);
     const oppActive = snapshot.opponentSide.activePokemon;
 
     // Crucial anti-loop gate: NEVER switch if no bench Pokémon is a viable safe counter!
@@ -212,14 +271,7 @@ export class HeuristicAI implements CombatAI {
       return false;
     }
 
-    const activeMoves = snapshot.mySide.activePokemon?.moves.map((m) => ({ id: m.id, pp: 1, disabled: false })) ?? [];
-    const matchup = this.calc.calcMatchup(snapshot, activeMoves);
-    const bestOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
-    const bestMyDmg = matchup.myAttacking[0]?.maxPercent ?? 0;
-
-    // Scale switch threshold by aggressiveness
-    const switchThreshold = BASE_SWITCH_THRESHOLD_PERCENT - config.switchAggressiveness * SWITCH_AGGRESSIVENESS_SCALE;
-    return bestOppDmg > switchThreshold && bestMyDmg < LOW_OFFENSIVE_DAMAGE_THRESHOLD_PERCENT && Math.random() < config.switchAggressiveness;
+    return shouldSwitchByDamageMatchup(snapshot, this.calc, config);
   }
 
   findBestSwitchIndex(

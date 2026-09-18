@@ -375,3 +375,13 @@ export const WEATHER_VISUAL_METADATA: Record<string, { icon: string; label: stri
   Object.fromEntries(
     Object.entries(WEATHER_REGISTRY).map(([k, v]) => [k, { icon: v.icon, label: v.label, description: v.description }])
   );
+
+let activeWeatherResolver: (() => WeatherId) | null = null;
+
+export function registerWeatherResolver(resolver: () => WeatherId): void {
+  activeWeatherResolver = resolver;
+}
+
+export function resolveCurrentWeather(): WeatherId {
+  return activeWeatherResolver ? activeWeatherResolver() : requireWeatherId('clear');
+}

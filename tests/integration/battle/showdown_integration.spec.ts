@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';

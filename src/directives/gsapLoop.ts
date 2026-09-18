@@ -60,6 +60,13 @@ function cleanupAnimation(el: HTMLElement) {
   gsap.set(el, { clearProps: 'transform,rotation,opacity,backgroundColor,boxShadow,y' });
 }
 
+const DEFAULT_BOUNCE_Y_OFFSET = -8 as const;
+const DEFAULT_FLOAT_Y_OFFSET = -6 as const;
+const DEFAULT_FLOAT_ROTATION_DEG = 2 as const;
+const DEFAULT_FLOAT_DURATION_SEC = 3 as const;
+const DEFAULT_BLINK_DIM_COLOR = '#888888' as const;
+const DEFAULT_FALLBACK_TEXT_COLOR = '#ffffff' as const;
+
 interface GsapLoopOptions {
   effect: string
   duration?: number
@@ -74,6 +81,141 @@ interface GsapLoopOptions {
   [key: string]: string | number | boolean | undefined
 }
 
+type AnimationExtraVars = Record<string, string | number | boolean | undefined>;
+
+function extractExtraVars(optObj: GsapLoopOptions): AnimationExtraVars {
+  const extraVars: AnimationExtraVars = { ...optObj };
+  delete extraVars.effect;
+  delete extraVars.duration;
+  delete extraVars.ease;
+  delete extraVars.active;
+  delete extraVars.scale;
+  delete extraVars.color;
+  delete extraVars.boxShadow;
+  delete extraVars.y;
+  delete extraVars.rotation;
+  delete extraVars.opacity;
+  return extraVars;
+}
+
+function isTransformEffect(effect: string): boolean {
+  return effect === 'spin' || effect === 'pulse' || effect === 'bounce' || effect === 'float';
+}
+
+function ensureInlineBlockDisplay(el: HTMLElement, effect: string): void {
+  if (isTransformEffect(effect)) {
+    const computedStyle = window.getComputedStyle(el);
+    if (computedStyle.display === 'inline') {
+      el.style.display = 'inline-block';
+    }
+  }
+}
+
+function buildSpinAnimation(el: HTMLElement, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+  return gsap.to(el, {
+    rotation: SPINNER_FULL_ROTATION_DEG,
+    duration,
+    ease,
+    repeat: -1,
+    ...extraVars
+  });
+}
+
+function buildPulseAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+  return gsap.fromTo(
+    el,
+    { scale: SCALE_DEFAULT_BASE_FACTOR },
+    { scale: optObj.scale || DEFAULT_PULSE_SCALE_BOOST, duration, yoyo: true, repeat: -1, ease, ...extraVars }
+  );
+}
+
+function buildPulseShadowAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, extraVars: AnimationExtraVars): gsap.core.Tween {
+  const shadowColor = optObj.color || 'rgba(59, 130, 246, 0.4)';
+  return gsap.fromTo(
+    el,
+    { boxShadow: `0 0 0 0 ${shadowColor}` },
+    { boxShadow: optObj.boxShadow || '0 0 0 10px rgba(59, 130, 246, 0)', duration, repeat: -1, ease: 'power1.out', ...extraVars }
+  );
+}
+
+function buildBlinkAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+  const hasText = el.innerText && el.innerText.trim().length > 0;
+  if (hasText) {
+    const origColor = window.getComputedStyle(el).color || DEFAULT_FALLBACK_TEXT_COLOR;
+    return gsap.fromTo(
+      el,
+      { color: origColor },
+      { color: DEFAULT_BLINK_DIM_COLOR, duration, yoyo: true, repeat: -1, ease, ...extraVars }
+    );
+  }
+  return gsap.fromTo(
+    el,
+    { opacity: OPACITY_DEFAULT_FULL_LEVEL },
+    { opacity: optObj.opacity !== undefined ? optObj.opacity : DEFAULT_BLINK_MIN_OPACITY, duration, yoyo: true, repeat: -1, ease, ...extraVars }
+  );
+}
+
+function buildBlinkRedAnimation(el: HTMLElement, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+  return gsap.fromTo(
+    el,
+    { backgroundColor: 'rgba(239, 68, 68, 1)', boxShadow: '0 0 20px rgba(239, 68, 68, 1)' },
+    { backgroundColor: 'rgba(153, 27, 27, 1)', boxShadow: '0 0 5px rgba(153, 27, 27, 1)', duration, yoyo: true, repeat: -1, ease, ...extraVars }
+  );
+}
+
+function buildBounceAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, extraVars: AnimationExtraVars): gsap.core.Tween {
+  return gsap.fromTo(
+    el,
+    { y: 0 },
+    { y: optObj.y || DEFAULT_BOUNCE_Y_OFFSET, duration, yoyo: true, repeat: -1, ease: 'power1.inOut', ...extraVars }
+  );
+}
+
+function buildFloatAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+  return gsap.fromTo(
+    el,
+    { y: 0, rotation: 0 },
+    {
+      y: optObj.y || DEFAULT_FLOAT_Y_OFFSET,
+      rotation: optObj.rotation !== undefined ? optObj.rotation : DEFAULT_FLOAT_ROTATION_DEG,
+      duration: duration || DEFAULT_FLOAT_DURATION_SEC,
+      yoyo: true,
+      repeat: -1,
+      ease: ease || 'sine.inOut',
+      ...extraVars
+    }
+  );
+}
+
+function createLoopAnimation(
+  effect: string,
+  el: HTMLElement,
+  optObj: GsapLoopOptions,
+  duration: number,
+  ease: string,
+  extraVars: AnimationExtraVars
+): gsap.core.Tween | gsap.core.Timeline | null {
+  switch (effect) {
+    case 'spin':
+      return buildSpinAnimation(el, duration, ease, extraVars);
+    case 'pulse':
+      return buildPulseAnimation(el, optObj, duration, ease, extraVars);
+    case 'pulse-shadow':
+      return buildPulseShadowAnimation(el, optObj, duration, extraVars);
+    case 'blink':
+      return buildBlinkAnimation(el, optObj, duration, ease, extraVars);
+    case 'blink-red':
+      return buildBlinkRedAnimation(el, duration, ease, extraVars);
+    case 'bounce':
+      return buildBounceAnimation(el, optObj, duration, extraVars);
+    case 'float':
+      return buildFloatAnimation(el, optObj, duration, ease, extraVars);
+    default:
+      console.warn(`[gsapLoop] Unknown effect: ${effect}`);
+      return null;
+  }
+}
+
 function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
   if (!options) return;
 
@@ -85,107 +227,10 @@ function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
 
   if (!active) return;
 
-  // Extract extra vars to pass to GSAP (e.g. delay)
-  const extraVars: Record<string, string | number | boolean | undefined> = { ...optObj };
-  delete extraVars.effect;
-  delete extraVars.duration;
-  delete extraVars.ease;
-  delete extraVars.active;
-  delete extraVars.scale;
-  delete extraVars.color;
-  delete extraVars.boxShadow;
-  delete extraVars.y;
-  delete extraVars.rotation;
-  delete extraVars.opacity;
+  const extraVars = extractExtraVars(optObj);
+  ensureInlineBlockDisplay(el, effect);
 
-  let anim: gsap.core.Tween | gsap.core.Timeline | null = null;
-
-  // Enforce inline-block for transforms to take effect correctly
-  if (['spin', 'pulse', 'bounce', 'float'].includes(effect)) {
-    const computedStyle = window.getComputedStyle(el);
-    if (computedStyle.display === 'inline') {
-      el.style.display = 'inline-block';
-    }
-  }
-
-  switch (effect) {
-    case 'spin':
-      anim = gsap.to(el, {
-        rotation: SPINNER_FULL_ROTATION_DEG,
-        duration,
-        ease,
-        repeat: -1,
-        ...extraVars
-      });
-      break;
-
-    case 'pulse':
-      anim = gsap.fromTo(el,
-        { scale: SCALE_DEFAULT_BASE_FACTOR },
-        { scale: optObj.scale || DEFAULT_PULSE_SCALE_BOOST, duration, yoyo: true, repeat: -1, ease, ...extraVars }
-      );
-      break;
-
-    case 'pulse-shadow': {
-      const shadowColor = optObj.color || 'rgba(59, 130, 246, 0.4)';
-      anim = gsap.fromTo(el,
-        { boxShadow: `0 0 0 0 ${shadowColor}` },
-        { boxShadow: optObj.boxShadow || `0 0 0 10px rgba(59, 130, 246, 0)`, duration, repeat: -1, ease: 'power1.out', ...extraVars }
-      );
-      break;
-    }
-
-    case 'blink': {
-      const hasText = el.innerText && el.innerText.trim().length > 0;
-      if (hasText) {
-        const origColor = window.getComputedStyle(el).color || '#ffffff';
-        anim = gsap.fromTo(el,
-          { color: origColor },
-          { color: '#888888', duration, yoyo: true, repeat: -1, ease, ...extraVars }
-        );
-      } else {
-        anim = gsap.fromTo(el,
-          { opacity: OPACITY_DEFAULT_FULL_LEVEL },
-          { opacity: optObj.opacity !== undefined ? optObj.opacity : DEFAULT_BLINK_MIN_OPACITY, duration, yoyo: true, repeat: -1, ease, ...extraVars }
-        );
-      }
-      break;
-    }
-
-    case 'blink-red':
-      anim = gsap.fromTo(el,
-        { backgroundColor: 'rgba(239, 68, 68, 1)', boxShadow: '0 0 20px rgba(239, 68, 68, 1)' },
-        { backgroundColor: 'rgba(153, 27, 27, 1)', boxShadow: '0 0 5px rgba(153, 27, 27, 1)', duration, yoyo: true, repeat: -1, ease, ...extraVars }
-      );
-      break;
-
-    case 'bounce':
-      anim = gsap.fromTo(el,
-        { y: 0 },
-        { y: optObj.y || -8, duration, yoyo: true, repeat: -1, ease: 'power1.inOut', ...extraVars }
-      );
-      break;
-
-    case 'float':
-      anim = gsap.fromTo(el,
-        { y: 0, rotation: 0 },
-        {
-          y: optObj.y || -6,
-          rotation: optObj.rotation !== undefined ? optObj.rotation : 2,
-          duration: duration || 3,
-          yoyo: true,
-          repeat: -1,
-          ease: ease || 'sine.inOut',
-          ...extraVars
-        }
-      );
-      break;
-
-    default:
-      console.warn(`[gsapLoop] Unknown effect: ${effect}`);
-      break;
-  }
-
+  const anim = createLoopAnimation(effect, el, optObj, duration, ease, extraVars);
   if (anim) {
     activeAnimations.set(el, anim);
     observer.observe(el);

@@ -102,7 +102,7 @@ export class HeuristicDamageCalculator {
 
     const oppAttacking: DamageResult[] = [];
     for (const mv of oppMoves) {
-      try { oppAttacking.push(this.calcDamage(opp, my, mv, snapshot.field)); } catch { /* skip */ }
+      try { oppAttacking.push(this.calcDamage(opp, my, mv, snapshot.field)); } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
     }
 
     myAttacking.sort((a, b) => b.maxPercent - a.maxPercent);

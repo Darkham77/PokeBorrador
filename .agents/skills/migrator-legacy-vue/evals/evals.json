@@ -5,7 +5,7 @@
       "id": 0,
       "name": "migrate-time-logic",
       "prompt": "Migrate the time system from the legacy API style to a Vue Composable in src/composables/useTime.js. Ensure that timezone rules are maintained exactly as before.",
-      "expected_output": "A new src/composables/useTime.js file encapsulating the legacy API logic using Composition API, adhering to the 500-line limit and Vue standards.",
+      "expected_output": "A new src/composables/useTime.js file encapsulating the legacy API logic using Composition API, adhering to Fallow quality standards and Vue standards.",
       "files": []
     },
     {

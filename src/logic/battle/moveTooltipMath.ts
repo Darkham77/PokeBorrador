@@ -1,49 +1,50 @@
-const MIST_ACCURACY_PENALTY_PCT = 0.8
-const FOG_ACCURACY_PENALTY_PCT = 0.6
-const WEATHER_PENALIZED_ACCURACY_TEXT = 'Penalizado por Clima Soleado (Precisión 50%)'
-const WEATHER_ADVERSE_PENALTY_TEXT = 'Penalizado por clima adverso (0.5x y requiere carga)'
-const WEATHER_BALL_BOOST_TEXT = 'Tipo y potencia adaptados al clima (100 BP).'
-const WEATHER_RAIN_PENALTY_TEXT = 'Penalizado por Lluvia (0.5x)'
-const WEATHER_SUN_BOOST_TEXT = 'Potenciado por Sol (1.5x)'
-const WEATHER_SUN_PENALTY_TEXT = 'Penalizado por Sol (0.5x)'
-const WEATHER_RAIN_BOOST_TEXT = 'Potenciado por Lluvia (1.5x)'
-const HELD_ITEM_TYPE_BOOST_MULTIPLIER = 1.2
-const SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER = 0.5
-const STAGE_MATH_BASE = 3
-/** Pokémon Showdown stat stage bounds: stages range from -6 to +6 */
-const STAGE_MIN_BOUND = -6
-const STAGE_MAX_BOUND = 6
-const THICK_FAT_REDUCTION_MULTIPLIER = 0.5
-const STAGE_PRECISION_LIMIT = 100
-const STAGE_PRECISION_FULL = 1000
-const LOW_HP_THIRD_DIVISOR = 3
-const BASE_POWER_MINIMAL_BOUND = 1
-const DEFAULT_WEATHER_NEUTRAL_MULTIPLIER = 1
-const STAGE_PRECISION_SUN_PENALTY = 50
-const CRIT_REDUCTION_ZERO = 0
-const CRIT_PERCENT_SCALE = 100
+/**
+ * src/logic/battle/moveTooltipMath.ts
+ *
+ * Move power, accuracy, crit chance, and damage estimation math for combat tooltips.
+ */
 
-import type { DayPhase } from '@/logic/utils/timeUtils'
-import { getMechanicalWeather, WEATHER_MECHANICAL, isWeatherId, type WeatherId, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
-import { calculateDamageRangePure, type PurePokemon, type PureMove } from '@/logic/battle/battleMath'
-import type { PureBattleWeather, PureDamageOptions } from '@/logic/battle/battleMathTypes'
-import type { Pokemon, Move } from '@/types/pokemon/pokemon'
-import { toPokemonType, type PokemonType } from '@/data/battle/types'
-import { isPokemonMoveId } from '@/data/battle/moves'
-import type { PokemonMoveId } from '@/data/battle/moves'
-import { isItemId, type ItemId } from '@/data/inventory/items'
+import type { DayPhase } from '@/logic/utils/timeUtils.ts';
+import { getMechanicalWeather, WEATHER_MECHANICAL, isWeatherId, type WeatherMechanical } from '@/logic/weather/weatherRegistry.ts';
+import { calculateDamageRangePure, type PurePokemon, type PureMove } from '@/logic/battle/battleMath.ts';
+import type { PureBattleWeather, PureDamageOptions } from '@/logic/battle/battleMathTypes.ts';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon.ts';
+import { toPokemonType, type PokemonType } from '@/data/battle/types.ts';
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves.ts';
+import type { ItemId } from '@/data/inventory/items.ts';
 import {
   STAB_STANDARD_MULTIPLIER,
   STAB_ADAPTABILITY_MULTIPLIER,
-  LOW_HP_ABILITY_MULTIPLIER,
-  TECHNICIAN_POWER_CAP,
-  SAND_FORCE_MULTIPLIER,
   DEFAULT_CRIT_RATE,
   SCOPE_LENS_CRIT_RATE,
   FOCUS_ENERGY_CRIT_RATE
-} from '@/logic/constants/gameplay'
+} from '@/logic/constants/gameplay.ts';
 
-export { parseStatusEffectInfo } from './tooltip/moveTooltipConditions.ts'
+import {
+  WEATHER_RAIN_PENALTY_TEXT,
+  WEATHER_SUN_BOOST_TEXT,
+  WEATHER_SUN_PENALTY_TEXT,
+  WEATHER_RAIN_BOOST_TEXT,
+  STAGE_PRECISION_LIMIT,
+  STAGE_PRECISION_FULL,
+  LOW_HP_THIRD_DIVISOR,
+  BASE_POWER_MINIMAL_BOUND,
+  DEFAULT_WEATHER_NEUTRAL_MULTIPLIER,
+  CRIT_REDUCTION_ZERO,
+  CRIT_PERCENT_SCALE,
+  THICK_FAT_REDUCTION_MULTIPLIER,
+  type PowerContext,
+  getSpecialMoveModifier,
+  applyWeatherPowerMod,
+  resolveAttackerAbilityMultiplier,
+  resolveHeldItemMultiplier,
+  resolveThunderHurricaneAccuracy,
+  resolveBlizzardAccuracy,
+  resolveFogAccuracy,
+  applyStageAccuracyModifier
+} from './tooltip/moveTooltipMathHelper.ts';
+
+export { parseStatusEffectInfo } from './tooltip/moveTooltipConditions.ts';
 
 const HELD_ITEM_TYPE_BOOSTERS_MAP: Readonly<Partial<Record<ItemId, PokemonType>>> = {
   blackbelt: 'fighting',
@@ -64,33 +65,6 @@ const HELD_ITEM_TYPE_BOOSTERS_MAP: Readonly<Partial<Record<ItemId, PokemonType>>
   spelltag: 'ghost',
   twistedspoon: 'psychic'
 } as const;
-
-function getSpecialMoveModifier(
-  moveId: PokemonMoveId,
-  weather: WeatherId | undefined,
-  mechWeather: WeatherMechanical
-): { type: string; text: string } | null {
-  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
-  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN;
-  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL;
-  const isThunderstorm = weather?.toLowerCase() === 'thunderstorm';
-
-  if (moveId === 'thunder' || moveId === 'hurricane') {
-    if (isSunny) return { type: 'penalized', text: WEATHER_PENALIZED_ACCURACY_TEXT };
-    if (isRaining || isThunderstorm) return { type: 'boosted', text: `Potenciado por ${isThunderstorm ? 'Tormenta Eléctrica' : 'Lluvia'} (¡No falla!)` };
-  }
-  if (moveId === 'blizzard' && isSnowing) {
-    return { type: 'boosted', text: 'Potenciado por Granizo/Nieve (¡No falla!)' };
-  }
-  if (moveId === 'solarbeam' || moveId === 'solarblade') {
-    if (isSunny) return { type: 'boosted', text: 'Carga instantánea por Sol.' };
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'penalized', text: WEATHER_ADVERSE_PENALTY_TEXT };
-  }
-  if (moveId === 'weatherball' && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
-    return { type: 'boosted', text: WEATHER_BALL_BOOST_TEXT };
-  }
-  return null;
-}
 
 function getTypeWeatherModifier(
   moveType: PokemonType | undefined,
@@ -137,11 +111,6 @@ export function calculateMoveModifierInfo(
   return getTypeWeatherModifier(move.type, mechWeather);
 }
 
-interface PowerContext {
-  powerList: { label: string; mult: number }[];
-  currentPower: number;
-}
-
 function resolveWeatherBallAdaptation(
   moveType: PokemonType,
   mechWeather: WeatherMechanical,
@@ -166,46 +135,18 @@ function applyStabMultiplier(attacker: PurePokemon | Pokemon | null | undefined,
   }
 }
 
-function applyWeatherPowerMod(moveType: PokemonType, mechWeather: WeatherMechanical, ctx: PowerContext, moveId?: PokemonMoveId): void {
-  if (moveType === 'fire') {
-    if (mechWeather === WEATHER_MECHANICAL.SUN) { ctx.powerList.push({ label: 'Clima (Sol)', mult: 1.5 }); ctx.currentPower *= 1.5; }
-    else if (mechWeather === WEATHER_MECHANICAL.RAIN) { ctx.powerList.push({ label: 'Clima (Lluvia)', mult: 0.5 }); ctx.currentPower *= 0.5; }
-  } else if (moveType === 'water') {
-    if (mechWeather === WEATHER_MECHANICAL.RAIN) { ctx.powerList.push({ label: 'Clima (Lluvia)', mult: 1.5 }); ctx.currentPower *= 1.5; }
-    else if (mechWeather === WEATHER_MECHANICAL.SUN) { ctx.powerList.push({ label: 'Clima (Sol)', mult: 0.5 }); ctx.currentPower *= 0.5; }
-  }
-
-  if (moveId === 'solarbeam' || moveId === 'solarblade') {
-    if (mechWeather !== WEATHER_MECHANICAL.SUN && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
-      ctx.powerList.push({ label: 'Clima Adverso', mult: SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER });
-      ctx.currentPower *= SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER;
-    }
-  }
-}
-
-const LOW_HP_PINCH_ABILITIES: Readonly<Record<string, string>> = {
-  overgrow: 'grass',
-  blaze: 'fire',
-  torrent: 'water',
-  swarm: 'bug'
-};
-
-function applyAttackerAbilityPowerMod(attacker: PurePokemon | Pokemon | null | undefined, moveType: string, basePower: number, mechWeather: string, ctx: PowerContext): void {
-  if (!attacker || !attacker.ability) return;
-  const a = attacker.ability;
+function applyAttackerAbilityPowerMod(
+  attacker: PurePokemon | Pokemon | null | undefined,
+  moveType: string,
+  basePower: number,
+  mechWeather: string,
+  ctx: PowerContext
+): void {
+  if (!attacker?.ability) return;
   const curHp = attacker.hp || 1;
   const maxHp = attacker.maxHp || 1;
   const isLowHp = curHp <= Math.floor(maxHp / LOW_HP_THIRD_DIVISOR);
-
-  let abilMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
-  if (isLowHp && LOW_HP_PINCH_ABILITIES[a] === moveType) {
-    abilMult *= LOW_HP_ABILITY_MULTIPLIER;
-  }
-
-  if (a === 'technician' && basePower <= TECHNICIAN_POWER_CAP) abilMult *= 1.5;
-  if (a === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM && (moveType === 'rock' || moveType === 'ground' || moveType === 'steel')) {
-    abilMult *= SAND_FORCE_MULTIPLIER;
-  }
+  const abilMult = resolveAttackerAbilityMultiplier(attacker.ability, moveType, basePower, mechWeather, isLowHp);
 
   if (abilMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
     ctx.powerList.push({ label: `Habilidad (${attacker.ability})`, mult: abilMult });
@@ -223,18 +164,7 @@ function applyDefenderAbilityPowerMod(defender: PurePokemon | Pokemon | null | u
 function applyHeldItemPowerMod(attacker: PurePokemon | Pokemon | null | undefined, move: Move, moveType: string, ctx: PowerContext): void {
   if (!attacker || !attacker.heldItem) return;
   const h = attacker.heldItem;
-  const canonicalKey = h.replace(/_/g, '');
-  const itemKey: ItemId | null = isItemId(h) ? h : (isItemId(canonicalKey) ? canonicalKey : null);
-  let itemMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
-  if (itemKey && HELD_ITEM_TYPE_BOOSTERS_MAP[itemKey] === moveType) itemMult = HELD_ITEM_TYPE_BOOST_MULTIPLIER;
-  
-  if (h === 'choiceband') {
-    if (move.cat === 'physical') {
-      itemMult = STAB_STANDARD_MULTIPLIER;
-    } else {
-      ctx.powerList.push({ label: 'Objeto (choiceband - Solo Físico)', mult: DEFAULT_WEATHER_NEUTRAL_MULTIPLIER });
-    }
-  }
+  const itemMult = resolveHeldItemMultiplier(h, move, moveType, HELD_ITEM_TYPE_BOOSTERS_MAP, ctx);
 
   if (itemMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
     ctx.powerList.push({ label: `Objeto (${h})`, mult: itemMult });
@@ -285,30 +215,17 @@ function applyWeatherAccuracyOverride(
   accList: { label: string; mult: number | string }[],
   moveId?: PokemonMoveId
 ): number {
-  const isThunderOrHurricane = moveId === 'thunder' || moveId === 'hurricane';
-  if (isThunderOrHurricane) {
-    if (mechWeather === WEATHER_MECHANICAL.RAIN || weather?.type === 'thunderstorm') {
-      accList.push({ label: 'Lluvia (¡No falla!)', mult: '100%' });
-      return STAGE_PRECISION_LIMIT;
-    }
-    if (mechWeather === WEATHER_MECHANICAL.SUN) {
-      accList.push({ label: 'Sol (Precisión 50%)', mult: '0.5' });
-      return STAGE_PRECISION_SUN_PENALTY;
-    }
+  if (moveId === 'thunder' || moveId === 'hurricane') {
+    const res = resolveThunderHurricaneAccuracy(mechWeather, weather, accList);
+    if (res !== null) return res;
   }
 
-  if (moveId === 'blizzard' && (mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW)) {
-    accList.push({ label: 'Nieve (¡No falla!)', mult: '100%' });
-    return STAGE_PRECISION_LIMIT;
+  if (moveId === 'blizzard') {
+    const res = resolveBlizzardAccuracy(mechWeather, accList);
+    if (res !== null) return res;
   }
 
-  if (mechWeather === WEATHER_MECHANICAL.FOG) {
-    const isMist = weather?.type === "mist" || weather?.type === "mist_visual";
-    const factor = isMist ? MIST_ACCURACY_PENALTY_PCT : FOG_ACCURACY_PENALTY_PCT;
-    accList.push({ label: `Niebla/Bruma`, mult: factor });
-    return Math.floor(baseAcc * factor);
-  }
-  return baseAcc;
+  return resolveFogAccuracy(mechWeather, weather, baseAcc, accList);
 }
 
 /**
@@ -328,15 +245,7 @@ export function calculateMoveAccuracy(
 
   if (baseAcc > 0 && baseAcc < STAGE_PRECISION_FULL) {
     currentAcc = applyWeatherAccuracyOverride(weather, mechWeather, baseAcc, accList, move.id);
-
-    const netStage = Math.max(STAGE_MIN_BOUND, Math.min(STAGE_MAX_BOUND, accStage - evaStage));
-    if (netStage !== 0) {
-      const factor = netStage >= 0 
-        ? (STAGE_MATH_BASE + netStage) / STAGE_MATH_BASE
-        : STAGE_MATH_BASE / (STAGE_MATH_BASE - netStage);
-      accList.push({ label: `Modificador Rango (${netStage > 0 ? '+' : ''}${netStage})`, mult: Number(factor.toFixed(3)) });
-      currentAcc *= factor;
-    }
+    currentAcc = applyStageAccuracyModifier(currentAcc, accStage, evaStage, accList);
   }
 
   const finalAccuracy = Math.max(0, Math.min(STAGE_PRECISION_LIMIT, Math.round(currentAcc)));

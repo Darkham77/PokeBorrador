@@ -20,6 +20,7 @@ Frontend Developers.
 ## Child DOX Index
 
 - [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
+- [arena/](./arena/AGENTS.md): Domain module documentation for arena.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [effects/](./effects/AGENTS.md): Domain module documentation for effects.
 - [events/](./events/AGENTS.md): Domain module documentation for events.

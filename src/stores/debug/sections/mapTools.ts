@@ -1,4 +1,4 @@
-import type { DebugSystem } from '@/stores/debug'
+import type { DebugSystem } from '@/types/system/debug.ts'
 
 import { useMapStore } from '@/stores/map'
 import { useUIStore } from '@/stores/ui'
@@ -30,10 +30,10 @@ export function registerMapTools(debug: DebugSystem) {
     command: 'togglePerf',
     category: 'map',
     action: () => {
-      ui.isDebugPerformanceMode = !ui.isDebugPerformanceMode
-      ui.notify(`Modo Perf: ${ui.isDebugPerformanceMode ? 'ON' : 'OFF'}`, '🚀')
+      ui.isDebugFastMode = !ui.isDebugFastMode
+      ui.notify(`Modo Rápido: ${ui.isDebugFastMode ? 'ON' : 'OFF'}`, '🚀')
     },
-    description: 'Activa modo de alto rendimiento en el mapa.'
+    description: 'Activa modo rápido en el mapa.'
   })
 
   debug.register({

@@ -95,87 +95,8 @@ function extractEphemeralKeys(content: string): Set<string> {
   return keys;
 }
 
-function extractSchemaKeys(content: string, schemaVarName: string): Set<string> {
+function parseTopLevelObjectKeys(body: string): Set<string> {
   const keys = new Set<string>();
-  const regex = new RegExp(`export\\s+const\\s+${schemaVarName}\\s*=\\s*object\\s*\\(\\{([\\s\\S]*?)\\n\\}\\);`, 'm');
-  const match = content.match(regex);
-  if (!match || !match[1]) return keys;
-
-  const body = match[1];
-  const lines = body.split('\n');
-  let parenDepth = 0;
-  let braceDepth = 0;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
-
-    if (parenDepth === 0 && braceDepth === 0) {
-      const propMatch = trimmed.match(/^([a-zA-Z0-9_]+)\s*:/);
-      if (propMatch && propMatch[1]) {
-        keys.add(propMatch[1]);
-      }
-    }
-
-    const openParens = (line.match(/\(/g) || []).length;
-    const closeParens = (line.match(/\)/g) || []).length;
-    const openBraces = (line.match(/\{/g) || []).length;
-    const closeBraces = (line.match(/\}/g) || []).length;
-
-    parenDepth += openParens - closeParens;
-    braceDepth += openBraces - closeBraces;
-  }
-
-  return keys;
-}
-
-function extractSerializerKeys(content: string): Set<string> {
-  const keys = new Set<string>();
-  const funcRegex = /function\s+serialize[a-zA-Z0-9_]*[\s\S]*?return\s*\{([\s\S]*?)\n\s*\};/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = funcRegex.exec(content)) !== null) {
-    const body = match[1];
-    if (!body) continue;
-    const lines = body.split('\n');
-    let parenDepth = 0;
-    let braceDepth = 0;
-    let bracketDepth = 0;
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
-
-      if (parenDepth === 0 && braceDepth === 0 && bracketDepth === 0) {
-        const propMatch = trimmed.match(/^([a-zA-Z0-9_]+)\s*:/);
-        if (propMatch && propMatch[1]) {
-          keys.add(propMatch[1]);
-        }
-      }
-
-      const openParens = (line.match(/\(/g) || []).length;
-      const closeParens = (line.match(/\)/g) || []).length;
-      const openBraces = (line.match(/\{/g) || []).length;
-      const closeBraces = (line.match(/\}/g) || []).length;
-      const openBrackets = (line.match(/\[/g) || []).length;
-      const closeBrackets = (line.match(/\]/g) || []).length;
-
-      parenDepth += openParens - closeParens;
-      braceDepth += openBraces - closeBraces;
-      bracketDepth += openBrackets - closeBrackets;
-    }
-  }
-
-  return keys;
-}
-
-function extractInitialStateKeys(content: string): Set<string> {
-  const keys = new Set<string>();
-  const match = content.match(/(?:const\s+INITIAL_STATE(?::\s*GameState)?\s*=|export\s+function\s+createInitialGameState\(\)[^{]*)\s*(?:=>)?\s*\{([\s\S]*?)\n\};/m) ||
-                content.match(/return\s*\{([\s\S]*?)\n\s*\};/m);
-  if (!match || !match[1]) return keys;
-
-  const body = match[1];
   const lines = body.split('\n');
   let parenDepth = 0;
   let braceDepth = 0;
@@ -205,6 +126,36 @@ function extractInitialStateKeys(content: string): Set<string> {
   }
 
   return keys;
+}
+
+function extractSchemaKeys(content: string, schemaVarName: string): Set<string> {
+  const regex = new RegExp(`export\\s+const\\s+${schemaVarName}\\s*=\\s*object\\s*\\(\\{([\\s\\S]*?)\\n\\}\\);`, 'm');
+  const match = content.match(regex);
+  if (!match || !match[1]) return new Set<string>();
+  return parseTopLevelObjectKeys(match[1]);
+}
+
+function extractSerializerKeys(content: string): Set<string> {
+  const keys = new Set<string>();
+  const funcRegex = /function\s+serialize[a-zA-Z0-9_]*[\s\S]*?return\s*\{([\s\S]*?)\n\s*\};/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = funcRegex.exec(content)) !== null) {
+    const body = match[1];
+    if (!body) continue;
+    for (const k of parseTopLevelObjectKeys(body)) {
+      keys.add(k);
+    }
+  }
+
+  return keys;
+}
+
+function extractInitialStateKeys(content: string): Set<string> {
+  const match = content.match(/(?:const\s+INITIAL_STATE(?::\s*GameState)?\s*=|export\s+function\s+createInitialGameState\(\)[^{]*)\s*(?:=>)?\s*\{([\s\S]*?)\n\};/m) ||
+                content.match(/return\s*\{([\s\S]*?)\n\s*\};/m);
+  if (!match || !match[1]) return new Set<string>();
+  return parseTopLevelObjectKeys(match[1]);
 }
 
 function extractNestedClassDataKeys(
@@ -437,7 +388,7 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
         if (fieldName && fieldName !== 'chats') {
           this.addViolation({
             ruleId: 'persistence-domain-type-violation',
-            severity: 'warning',
+            severity: 'error',
             file: 'src/logic/validation/schemas.ts',
             line: 1,
             message: `Campo '${fieldName}' usa unknown() en schemas.ts. Debe tiparse estrictamente con un esquema de dominio.`,

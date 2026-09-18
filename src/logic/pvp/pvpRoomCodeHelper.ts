@@ -4,8 +4,8 @@ import type { PvpRoomCode } from '@/types/battle/pvp';
  * 32-character unambiguous alphanumeric alphabet for Room Codes.
  * Excludes ambiguous glyphs: '0' (zero), 'O' (letter O), '1' (one), 'I' (letter I).
  */
-export const ROOM_CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ' as const;
-export const ROOM_CODE_LENGTH = 4 as const;
+const ROOM_CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ' as const;
+const ROOM_CODE_LENGTH = 4 as const;
 
 const ROOM_CODE_REGEX = /^[2-9A-HJ-NP-Z]{4}$/;
 

@@ -46,6 +46,11 @@ export const MIN_SHADOW_PIXELATION = 6;
 export const MAX_SHADOW_PIXELATION = 50;
 export const SHADOW_PIXELATION_STEP = 1;
 
+export const DEFAULT_SHADOW_SCALE = 1.0;
+export const MIN_SHADOW_SCALE = 0.2;
+export const MAX_SHADOW_SCALE = 3.0;
+export const SHADOW_SCALE_STEP = 0.05;
+
 export const SHADOW_SLIDER_FIELDS = ['x', 'y', 'scale'] as const;
 export type ShadowSliderField = (typeof SHADOW_SLIDER_FIELDS)[number];
 

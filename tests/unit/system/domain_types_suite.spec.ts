@@ -1,0 +1,315 @@
+import { describe, it, expect } from 'vitest'
+import { toBrand, unbrand, type Brand } from '@/types/system/branding'
+import { detectRepeatedStringUnions } from '../../../scripts/auditors/domain_data/validate_domain_types.ts'
+
+type PokemonId = Brand<string, 'PokemonSpeciesId'>
+type ItemId = Brand<string, 'ItemId'>
+
+// Domain Type Audit Regex Patterns
+const P_TYPECAST_READONLY_STRING_ARRAY = /\bas\s+(?:readonly\s+)?string\[\]/g
+const P_TYPECAST_INLINE_DOMAIN_ID = /\bas\s+(?:[A-Z]\w*Id|keyof\s+typeof\s+[A-Z_a-z]\w*)\b/g
+const P_TYPECAST_RECORD_STRING = /\bas\s+Record\s*<\s*string\s*,/g
+const P_TYPECAST_ARRAY_ANY_UNKNOWN = /\bas\s+(?:any|unknown)\[\]/g
+const P_OBJECT_KEYS_CAST = /\bObject\.(?:keys|entries)\s*\([^)]+\)\s+as\s+(?:\([|\w\s]+\)|[A-Za-z]\w*)\[\]/g
+
+const P_BOOLEAN_LITERAL_TYPE_ANNOTATION = /\b(?:(?:export\s+)?const|let|var)\s+[A-Z_a-z]\w*\s*:\s*(?:true|false)\b|\b(?:export\s+)?type\s+[A-Z_a-z]\w*\s*=\s*(?:true|false)\s*;|^\s*(?:readonly\s+)?[A-Z_a-z]\w*\??:\s*(?:true|false)\s*;|\(\s*[A-Z_a-z]\w*\??:\s*(?:true|false)\b/gm
+const P_INLINE_ANONYMOUS_OBJECT_PARAM = /(?:\(|,\s*)[A-Z_a-z]\w*\??\s*:\s*\{[^\n}]*(?:;|,)[^\n}]*\}\s*[,)]/g
+const P_UNNAMED_POSITIONAL_TUPLE_RETURN = /\breturn\s*\[\s*[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*\s*,\s*[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*\s*\]\s*;/g
+
+function isGuardFunctionLine(line: string): boolean {
+  return /\bfunction\s+(?:is|require)[A-Z_a-z]\w*/.test(line) || /\bis[A-Z_a-z]\w*\s*=\s*/.test(line)
+}
+
+function testRegex(pattern: RegExp, input: string): boolean {
+  const re = new RegExp(pattern.source, pattern.flags)
+  return re.test(input)
+}
+
+describe('Domain Types & Auditor Governance Suite', () => {
+  describe('Nominal Branded Types', () => {
+    it('constructs branded nominal types with toBrand', () => {
+      const rawId = 'pikachu'
+      const brandedPikachu: PokemonId = toBrand<string, 'PokemonSpeciesId'>(rawId)
+      expect(brandedPikachu).toBe('pikachu')
+    })
+
+    it('unbrands nominal values back to raw primitives', () => {
+      const item: ItemId = toBrand<string, 'ItemId'>('potion')
+      const rawName = unbrand(item)
+      expect(rawName).toBe('potion')
+      expect(typeof rawName).toBe('string')
+    })
+
+    it('preserves primitive equality under runtime comparison', () => {
+      const p1: PokemonId = toBrand<string, 'PokemonSpeciesId'>('charizard')
+      const p2: PokemonId = toBrand<string, 'PokemonSpeciesId'>('charizard')
+      expect(p1 === p2).toBe(true)
+    })
+  })
+
+  describe('Repeated String Literal Union Auditor Detection', () => {
+    it('flags ad-hoc string literal unions repeated across 2 or more locations', () => {
+      const files = [
+        {
+          file: 'src/moduleA.ts',
+          content: `export function process(side: 'p1' | 'p2') { return side; }`,
+        },
+        {
+          file: 'src/moduleB.ts',
+          content: `const current = target as 'p2' | 'p1';`,
+        },
+      ]
+
+      const repeated = detectRepeatedStringUnions(files)
+      expect(repeated.has('p1|p2')).toBe(true)
+
+      const matches = repeated.get('p1|p2')!
+      expect(matches).toHaveLength(2)
+      expect(matches[0]!.file).toBe('src/moduleA.ts')
+      expect(matches[1]!.file).toBe('src/moduleB.ts')
+    })
+
+    it('normalizes literal order alphabetically so reverse unions match the same signature', () => {
+      const files = [
+        {
+          file: 'src/view.ts',
+          content: `const side: 'player' | 'enemy' = 'player';`,
+        },
+        {
+          file: 'src/store.ts',
+          content: `const target: 'enemy' | 'player' = 'enemy';`,
+        },
+      ]
+
+      const repeated = detectRepeatedStringUnions(files)
+      expect(repeated.has('enemy|player')).toBe(true)
+      expect(repeated.get('enemy|player')).toHaveLength(2)
+    })
+
+    it('does NOT flag single-occurrence literal unions as repeated domain violations', () => {
+      const files = [
+        {
+          file: 'src/isolated.ts',
+          content: `type OneOffMode = 'alpha' | 'beta';`,
+        },
+      ]
+
+      const repeated = detectRepeatedStringUnions(files)
+      expect(repeated.has('alpha|beta')).toBe(false)
+      expect(repeated.size).toBe(0)
+    })
+
+    it('ignores lines annotated with domain-ok or no-domain directives', () => {
+      const files = [
+        {
+          file: 'src/escapedA.ts',
+          content: `const side: 'player' | 'enemy' = 'player'; // domain-ok: Open dynamic text or non-domain string payload`,
+        },
+        {
+          file: 'src/escapedB.ts',
+          content: `const side: 'player' | 'enemy' = 'enemy'; // domain-ok: Open dynamic text or non-domain string payload`,
+        },
+      ]
+
+      const repeated = detectRepeatedStringUnions(files)
+      expect(repeated.has('enemy|player')).toBe(false)
+    })
+
+    it('ignores comment lines containing literal unions', () => {
+      const files = [
+        {
+          file: 'src/commentedA.ts',
+          content: `// Example: side: 'p1' | 'p2'`,
+        },
+        {
+          file: 'src/commentedB.ts',
+          content: `/* side: 'p1' | 'p2' */`,
+        },
+      ]
+
+      const repeated = detectRepeatedStringUnions(files)
+      expect(repeated.size).toBe(0)
+    })
+  })
+
+  describe('Domain Type Audit Pattern Recognition', () => {
+    describe('P_TYPECAST_READONLY_STRING_ARRAY (Inclusion bypass cast)', () => {
+      it('detects illegal array typecasts in business code', () => {
+        const line = "if (!(REPLAY_SEATS as readonly string[]).includes(player))"
+        expect(testRegex(P_TYPECAST_READONLY_STRING_ARRAY, line)).toBe(true)
+        expect(isGuardFunctionLine(line)).toBe(false)
+      })
+
+      it('allows valid typecast inside an explicit isDomainId guard function', () => {
+        const line = "export function isReplaySeat(seat: string): seat is ReplaySeat { return (REPLAY_SEATS as readonly string[]).includes(seat); }"
+        expect(testRegex(P_TYPECAST_READONLY_STRING_ARRAY, line)).toBe(true)
+        expect(isGuardFunctionLine(line)).toBe(true)
+      })
+    })
+
+    describe('P_TYPECAST_INLINE_DOMAIN_ID (Inline domain assertion)', () => {
+      it('detects illegal inline domain casts like "as GymId"', () => {
+        const line = "const gymId = req.params.gym as GymId;"
+        expect(testRegex(P_TYPECAST_INLINE_DOMAIN_ID, line)).toBe(true)
+        expect(isGuardFunctionLine(line)).toBe(false)
+        expect(line.includes('// domain-ok: Open dynamic text or non-domain string payload')).toBe(false)
+      })
+
+      it('detects inline cast to keyof typeof', () => {
+        const line = "const species = rawName as keyof typeof POKEMON_DB;"
+        expect(testRegex(P_TYPECAST_INLINE_DOMAIN_ID, line)).toBe(true)
+      })
+
+      it('allows inline cast when explicitly annotated with domain-ok directive', () => {
+        const line = "const externalTitle = payload.title as DisplayTitleId; // domain-ok: Open dynamic text or non-domain string payload"
+        expect(line.includes('// domain-ok: Open dynamic text or non-domain string payload')).toBe(true)
+      })
+    })
+
+    describe('P_TYPECAST_RECORD_STRING (Record<string, ...> cast)', () => {
+      it('detects illegal cast to Record<string, ...>', () => {
+        const line = "const value = (STORE_MAP as Record<string, Item>)[key];"
+        expect(testRegex(P_TYPECAST_RECORD_STRING, line)).toBe(true)
+        expect(line.includes('// open-record: Generic key-value data dictionary container')).toBe(false)
+      })
+
+      it('allows cast when marked with open-record escape hatch directive', () => {
+        const line = "const rawMap = (data as Record<string, unknown>)[id]; // open-record: Generic key-value data dictionary container"
+        expect(line.includes('// open-record: Generic key-value data dictionary container')).toBe(true)
+      })
+    })
+
+    describe('P_TYPECAST_ARRAY_ANY_UNKNOWN (as any[] / as unknown[])', () => {
+      it('detects array element type erasure with "as any[]"', () => {
+        const line = "const list = (rawPayload as any[]).map(x => x.id);"
+        expect(testRegex(P_TYPECAST_ARRAY_ANY_UNKNOWN, line)).toBe(true)
+      })
+
+      it('detects array element type erasure with "as unknown[]"', () => {
+        const line = "const items = (data as unknown[]).filter(Boolean);"
+        expect(testRegex(P_TYPECAST_ARRAY_ANY_UNKNOWN, line)).toBe(true)
+      })
+    })
+
+    describe('P_OBJECT_KEYS_CAST (Object.keys(...) as DomainId[])', () => {
+      it('detects Object.keys cast to domain array type', () => {
+        const line = "const keys = Object.keys(WEATHER_REGISTRY) as WeatherId[];"
+        expect(testRegex(P_OBJECT_KEYS_CAST, line)).toBe(true)
+      })
+
+      it('detects Object.entries cast', () => {
+        const line = "const entries = Object.entries(ITEMS) as (keyof typeof ITEMS)[];"
+        expect(testRegex(P_OBJECT_KEYS_CAST, line)).toBe(true)
+      })
+    })
+
+    describe('P_BOOLEAN_LITERAL_TYPE_ANNOTATION (noLiteralBooleanType)', () => {
+      it('detects var/let/const typed as literal true or false', () => {
+        expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "var hola: true;")).toBe(true)
+        expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "let active: false;")).toBe(true)
+      })
+
+      it('detects type alias assigned to boolean literal', () => {
+        expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "type Active = true;")).toBe(true)
+      })
+
+      it('allows canonical boolean type annotation', () => {
+        expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "var hola: boolean;")).toBe(false)
+      })
+    })
+
+    describe('P_INLINE_ANONYMOUS_OBJECT_PARAM (noInlineAnonymousObjectType)', () => {
+      it('detects inline anonymous object parameter types', () => {
+        expect(testRegex(P_INLINE_ANONYMOUS_OBJECT_PARAM, "function process(data: { id: string; name: string })")).toBe(true)
+      })
+
+      it('allows named interface / type annotation in parameter', () => {
+        expect(testRegex(P_INLINE_ANONYMOUS_OBJECT_PARAM, "function process(data: UserPayload)")).toBe(false)
+      })
+    })
+
+    describe('P_UNNAMED_POSITIONAL_TUPLE_RETURN (noLoosePositionalTuples)', () => {
+      it('detects unannotated multi-value positional array return', () => {
+        expect(testRegex(P_UNNAMED_POSITIONAL_TUPLE_RETURN, "return [item.id, item.count];")).toBe(true)
+      })
+
+      it('allows tuple return with explicit as const', () => {
+        const line = "return [item.id, item.count] as const;"
+        expect(line.includes('as const')).toBe(true)
+      })
+    })
+
+    describe('P_UNBRANDED_DOMAIN_ID_ALIAS (Unbranded Domain IDs)', () => {
+      it('detects unbranded domain ID type aliases', () => {
+        const P_UNBRANDED_DOMAIN_ID_ALIAS = /\b(?:export\s+)?type\s+[A-Z]\w*Id\s*=\s*string\s*;/g
+        expect(testRegex(P_UNBRANDED_DOMAIN_ID_ALIAS, "type PokemonId = string;")).toBe(true)
+      })
+
+      it('allows branded domain ID type aliases', () => {
+        const P_UNBRANDED_DOMAIN_ID_ALIAS = /\b(?:export\s+)?type\s+[A-Z]\w*Id\s*=\s*string\s*;/g
+        expect(testRegex(P_UNBRANDED_DOMAIN_ID_ALIAS, "type PokemonId = Brand<string, 'PokemonId'>;")).toBe(false)
+      })
+    })
+
+    describe('P_FLOATING_PROMISE (Floating Promise Guard)', () => {
+      it('detects unhandled async function invocations', () => {
+        const P_FLOATING_PROMISE = /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm
+        expect(testRegex(P_FLOATING_PROMISE, "saveStateAsync();")).toBe(true)
+      })
+
+      it('allows handled async calls with void or await', () => {
+        const P_FLOATING_PROMISE = /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm
+        expect(testRegex(P_FLOATING_PROMISE, "void saveStateAsync();")).toBe(false)
+        expect(testRegex(P_FLOATING_PROMISE, "await saveStateAsync();")).toBe(false)
+      })
+    })
+
+    describe('P_LEAKED_GLOBAL_MUTABLE (Leaked Global State)', () => {
+      it('detects top-level let variable declarations at module scope', () => {
+        const P_LEAKED_GLOBAL_MUTABLE = /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm
+        expect(testRegex(P_LEAKED_GLOBAL_MUTABLE, "let activeCache = {};")).toBe(true)
+      })
+
+      it('allows const declarations at module scope', () => {
+        const P_LEAKED_GLOBAL_MUTABLE = /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm
+        expect(testRegex(P_LEAKED_GLOBAL_MUTABLE, "const ACTIVE_CACHE = {};")).toBe(false)
+      })
+    })
+
+    describe('noDomainIdFallbacks (Prohibition on Name & Secondary Property Fallbacks)', () => {
+      const P_NO_DOMAIN_ID_FALLBACKS = /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]|\b(?:id|species|ability|move|item)\s*(?:\|\||\?\?)\s*[^,\n;)]*\bname\b|\bname\s*(?:\|\||\?\?)\s*[^,\n;)]*\b(?:id|species|ability|move|item)\b|toID\s*\([^)]*(?:\|\||\?\?)[^)]*\)/g
+
+      it('detects fallback from m.id to m.name in expressions', () => {
+        const line = "const cleanId = toID(m.id || m.name)"
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true)
+      })
+
+      it('detects fallback from species to name', () => {
+        const line = "const speciesId = poke.species || poke.name;"
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true)
+      })
+
+      it('detects fallback from name to id', () => {
+        const line = "const moveKey = move.name || move.id;"
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true)
+      })
+
+      it('detects toID calls with logical fallbacks', () => {
+        const line = "const id = toID(target || fallback);"
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true)
+      })
+
+      it('detects empty string fallbacks on domain assignments', () => {
+        const line = "const heldItem = item ?? ''"
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true)
+      })
+
+      it('allows clean canonical ID access without fallbacks', () => {
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, "const cleanId = toID(m.id);")).toBe(false)
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, "const species = poke.species;")).toBe(false)
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, "if (m.id && isLegal(m.id))")).toBe(false)
+        expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, "const itemId = requireItemId(p.heldItem);")).toBe(false)
+      })
+    })
+  })
+})

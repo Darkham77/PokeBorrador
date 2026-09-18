@@ -97,6 +97,72 @@ export interface PassiveFallbackResult {
   opponentGender?: GenderId;
 }
 
+const DEFAULT_FALLBACK_ELO = 1000 as const;
+
+interface DefenderProfileDetails {
+  name: string;
+  playerClass?: PlayerClassId;
+  gender?: GenderId;
+}
+
+function validateAndFilterCandidates(
+  candidates: readonly PassiveTeamCandidate[],
+  db: DBRouter,
+  seasonRules?: Record<string, unknown> | null,
+): PassiveTeamCandidate[] {
+  const validCandidates: PassiveTeamCandidate[] = [];
+  for (const candidate of candidates) {
+    if (!candidate || !candidate.team_data) continue;
+    const team = parsePassiveTeamSnapshot(candidate.team_data);
+    if (team.length === 0) continue;
+
+    // Validate that every combatant has required battle properties (species id, ability, valid moves)
+    const hasCorruptPokemon = team.some(p => !p.id || !p.ability || !Array.isArray(p.moves) || p.moves.length === 0);
+    if (hasCorruptPokemon) {
+      if (candidate.user_id) {
+        void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
+      }
+      continue;
+    }
+
+    if (seasonRules) {
+      const hasIneligible = team.some(p => !evaluatePokemonForSeason(p, seasonRules).eligible);
+      if (hasIneligible) {
+        if (candidate.user_id) {
+          void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
+        }
+        continue;
+      }
+    }
+    validCandidates.push(candidate);
+  }
+  return validCandidates;
+}
+
+async function fetchDefenderProfile(db: DBRouter, userId: string): Promise<DefenderProfileDetails> {
+  const defaultDetails: DefenderProfileDetails = { name: 'Entrenador Pasivo' };
+  try {
+    const profileRes = await db
+      .from('profiles')
+      .select('username, player_class, gender')
+      .eq('id', userId)
+      .maybeSingle();
+    const profile = profileRes?.data as {
+      username?: string;
+      player_class?: PlayerClassId;
+      gender?: GenderId;
+    } | null;
+    return {
+      name: profile?.username || defaultDetails.name,
+      playerClass: profile?.player_class,
+      gender: profile?.gender,
+    };
+  } catch (err) {
+    logger.warn('[passiveMatchmakingHelper] Error obteniendo perfil del defensor:', err);
+    return defaultDetails;
+  }
+}
+
 /**
  * Executes query and candidate selection for fallback to passive defense.
  */
@@ -117,34 +183,7 @@ export async function executePassiveMatchmakingFallback(params: {
       .eq('is_active', true);
     const candidates = (res?.data || []) as PassiveTeamCandidate[];
 
-    // Filter candidates by current active season rules, validity, and prune stale/corrupted teams
-    const validCandidates: PassiveTeamCandidate[] = [];
-    for (const candidate of candidates) {
-      if (!candidate || !candidate.team_data) continue;
-      const team = parsePassiveTeamSnapshot(candidate.team_data);
-      if (team.length === 0) continue;
-
-      // Validate that every combatant has required battle properties (species id, ability, valid moves)
-      const hasCorruptPokemon = team.some(p => !p.id || !p.ability || !Array.isArray(p.moves) || p.moves.length === 0);
-      if (hasCorruptPokemon) {
-        if (candidate.user_id) {
-          void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
-        }
-        continue;
-      }
-
-      if (seasonRules) {
-        const hasIneligible = team.some(p => !evaluatePokemonForSeason(p, seasonRules).eligible);
-        if (hasIneligible) {
-          if (candidate.user_id) {
-            void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
-          }
-          continue;
-        }
-      }
-      validCandidates.push(candidate);
-    }
-
+    const validCandidates = validateAndFilterCandidates(candidates, db, seasonRules);
     const selected = selectPassiveOpponent(validCandidates, myElo, userUid);
     if (!selected) {
       notify('No hay jugadores disponibles en la arena ranked en este momento. Por favor, intenta más tarde.', '🛡️');
@@ -157,41 +196,16 @@ export async function executePassiveMatchmakingFallback(params: {
       return null;
     }
 
-    let defenderName = 'Entrenador Pasivo';
-    let defenderClass: PlayerClassId | undefined;
-    let defenderGender: GenderId | undefined;
-    try {
-      const profileRes = await db
-        .from('profiles')
-        .select('username, player_class, gender')
-        .eq('id', selected.user_id)
-        .maybeSingle();
-      const profile = profileRes?.data as {
-        username?: string;
-        player_class?: PlayerClassId;
-        gender?: GenderId;
-      } | null;
-      if (profile?.username) {
-        defenderName = profile.username;
-      }
-      if (profile?.player_class) {
-        defenderClass = profile.player_class;
-      }
-      if (profile?.gender) {
-        defenderGender = profile.gender;
-      }
-    } catch {
-      // Keep default
-    }
+    const defenderProfile = await fetchDefenderProfile(db, selected.user_id);
+    const opponentElo = selected.elo_rating || DEFAULT_FALLBACK_ELO;
 
-    const opponentElo = selected.elo_rating || 1000;
     return {
       opponentId: selected.user_id,
-      opponentName: defenderName,
+      opponentName: defenderProfile.name,
       opponentElo,
       enemyTeam,
-      opponentClass: defenderClass,
-      opponentGender: defenderGender
+      opponentClass: defenderProfile.playerClass,
+      opponentGender: defenderProfile.gender,
     };
   } catch (err) {
     logger.error('PassiveMatchmaking', `Error in executePassiveMatchmakingFallback: ${(err as Error).message}`);

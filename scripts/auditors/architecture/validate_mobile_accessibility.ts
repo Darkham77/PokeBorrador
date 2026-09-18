@@ -133,7 +133,7 @@ export class MobileAccessibilityAuditor extends BaseAuditor<MobileAccessibilityR
 
         this.addViolation({
           ruleId: 'img-alt-required',
-          severity: 'warning',
+          severity: 'error',
           file: relFile,
           line,
           message: `<img> tag is missing an 'alt' or ':alt' attribute for screen reader accessibility.`,
@@ -176,7 +176,7 @@ export class MobileAccessibilityAuditor extends BaseAuditor<MobileAccessibilityR
 
         this.addViolation({
           ruleId: 'icon-button-accessible-label',
-          severity: 'warning',
+          severity: 'error',
           file: relFile,
           line,
           message: `Icon-only button has no accessible label. Add 'aria-label', 'title', or wrap with 'PVTooltip'.`,

@@ -61,6 +61,183 @@ export interface AssetOptions {
  * Global Asset Service / Router
  * Centralizes asset path construction and LOD application.
  */
+function resolvePokemonAsset(
+  id: string | number,
+  options: AssetOptions,
+  extension: string,
+  isShiny: boolean,
+  isBack: boolean
+): string {
+  const stringId = String(id).toLowerCase() // text-ok: UI text display localization string
+  if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`) // text-ok: UI text display localization string
+
+  const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] ?? id // open-record: Generic key-value data dictionary container
+  
+  if (options.isAnimated || options.animated) {
+    const sideDir = isBack ? 'Back' : 'Front'
+    const shinyDir = isShiny ? ' shiny' : ''
+    return resolveAsset(`/assets/sprites/pokemon/animated/${sideDir}${shinyDir}/${num}${extension}`)
+  }
+
+  const folder = isShiny ? 'shiny/' : ''
+  const back = isBack ? 'back/' : ''
+  return resolveAsset(`${POKEAPI_BASE}${back}${folder}${num}${extension}`)
+}
+
+const MAP_CYCLE_SUFFIXES: Record<string, string> = {
+  morning: '_amanecer',
+  day: '_dia',
+  dusk: '_atardecer',
+  night: '_noche'
+}
+
+function resolveMapAsset(
+  id: string | number,
+  options: AssetOptions,
+  extension: string
+): string {
+  let finalId = id
+  if (options.cycle && isMapWithCycleId(String(id))) {
+    finalId = `${id}${MAP_CYCLE_SUFFIXES[options.cycle] || '_dia'}`
+  }
+  if (options.isLowPower) {
+    finalId = `${finalId}_mobile`
+  }
+  return resolveAsset(`/assets/maps/${finalId}${extension}`)
+}
+
+const TRAINER_LEGACY_MAPPING: Record<string, string> = {
+  'caza_bichos': 'cazabichos',
+  'ornitologo': 'entrenador',
+  'cientifico': 'criador',
+  'luchador': 'entrenador',
+  'pescador': 'tamer',
+  'nadador': 'tamer',
+  'domador': 'tamer',
+  'medium': 'entrenador',
+  'motorista': 'teamrocket',
+  'montanero': 'tamer',
+  'rocket': 'rocket',
+  'cazador': 'cazabichos'
+}
+
+const TRAINER_NPC_MAPPING: Record<string, string> = {
+  'brock': 'brock',
+  'misty': 'misty',
+  'ltsurge': 'ltsurge',
+  'erika': 'erika',
+  'koga': 'koga',
+  'sabrina': 'sabrina',
+  'blaine': 'blaine',
+  'giovanni': 'giovanni',
+  'blue': 'blue-gen3',
+  'youngster': 'youngster',
+  'lass': 'lass',
+  'picnicker': 'picnicker',
+  'camper': 'camper_b',
+  'hiker': 'hiker',
+  'sailor': 'sailor',
+  'scientist': 'scientist',
+  'juggler': 'juggler',
+  'blackbelt': 'blackbelt',
+  'swimmer': 'swimmer',
+  'tamer': 'tamer-gen3',
+  'birdkeeper': 'birdkeeper',
+  'psychic': 'psychic',
+  'gentleman': 'gentleman',
+  'richboy': 'richboy',
+  'tuber': 'tuber',
+  'cyclist': 'cyclist',
+  'roughneck': 'roughneck',
+  'biker': 'biker',
+  'teamrocket': 'teamrocket',
+  'beauty': 'beauty',
+  'supernerd': 'supernerd',
+  'burglar': 'burglar',
+  'dragontamer': 'dragontamer',
+  'acetrainer': 'acetrainer',
+  'veteran': 'veteran'
+}
+
+function resolveTrainerAsset(
+  id: string | number,
+  options: AssetOptions,
+  extension: string,
+  isBack: boolean
+): string {
+  const idStr = String(id)
+  if (idStr.startsWith('http')) return idStr
+
+  const sanitizedId = idStr.toLowerCase().replace(/[\s.]/g, '') // text-ok: UI text display localization string
+  const finalId = TRAINER_LEGACY_MAPPING[sanitizedId] || sanitizedId
+
+  if (isPlayerClassId(finalId)) {
+    const suffix = options.trainerSuffix || (isBack ? 'back' : 'front')
+    const gender = options.gender || 'h'
+    return resolveAsset(`/assets/sprites/trainers/${finalId}_${gender}_${suffix}${extension}`)
+  }
+
+  const npcId = TRAINER_NPC_MAPPING[finalId] || finalId
+  return resolveAsset(`/assets/sprites/npc/${npcId}${extension}`)
+}
+
+function resolveBannerAsset(id: string | number, extension: string): string {
+  const idStr = String(id)
+  if (idStr.startsWith('pokecenter_')) {
+    const cleanId = idStr.replace('pokecenter_', '')
+    return resolveAsset(`/assets/ui/pokecenter/${cleanId}${extension}`)
+  }
+  const cleanBannerId = idStr.replace(/^\/?(?:public\/)?assets\/ui\/events\//, '')
+  return resolveAsset(`/assets/ui/events/${cleanBannerId}${extension}`)
+}
+
+function getSafeShopItem(idStr: string): ReturnType<typeof getItemById> | null {
+  try {
+    return getItemById(idStr);
+  } catch {
+    return null;
+  }
+}
+
+function resolveItemAsset(id: string | number, extension: string): string {
+  const idStr = String(id).toLowerCase();
+  if (idStr.includes('/')) {
+    return resolveAsset(`/assets/sprites/${idStr}${extension}`);
+  }
+  const shopItem = getSafeShopItem(idStr);
+  if (shopItem?.sprite) {
+    return resolveAsset(`/assets/sprites/${shopItem.sprite}${extension}`);
+  }
+  return resolveAsset(`/assets/sprites/crafting/tier3/${idStr}${extension}`);
+}
+
+type AssetResolverFn = (
+  id: string | number,
+  options: AssetOptions,
+  extension: string,
+  isShiny: boolean,
+  isBack: boolean
+) => string
+
+const ASSET_RESOLVERS: Record<string, AssetResolverFn> = {
+  [ASSET_TYPES.POKEMON]: resolvePokemonAsset,
+  [ASSET_TYPES.MAP]: (id, options, ext) => resolveMapAsset(id, options, ext),
+  [ASSET_TYPES.TRAINER]: (id, options, ext, _, isBack) => resolveTrainerAsset(id, options, ext, isBack),
+  [ASSET_TYPES.ENVIRONMENT]: (id) => resolveAsset(`/assets/environment/${id}.webp`),
+  [ASSET_TYPES.FX]: (id) => resolveAsset(`/assets/fx/${id}.webp`),
+  [ASSET_TYPES.BANNER]: (id, _, ext) => resolveBannerAsset(id, ext),
+  [ASSET_TYPES.BATTLE_BG]: (id, _, ext) => resolveAsset(`/assets/maps_battle/${id}${ext}`),
+  [ASSET_TYPES.UI]: (id, _, ext) => resolveAsset(`/assets/ui/${id}${ext}`),
+  [ASSET_TYPES.VFX]: (id, _, ext) => resolveAsset(`/assets/ui/${id}${ext}`),
+  [ASSET_TYPES.ATLAS]: (id, _, ext) => resolveAsset(`/assets/ui/${id}${ext}`),
+  [ASSET_TYPES.FACTION]: (id, _, ext) => resolveAsset(`/assets/factions/${id}${ext}`),
+  [ASSET_TYPES.RANK]: (id, _, ext) => resolveAsset(`/assets/sprites/ranked_medals/${id}${ext}`),
+  [ASSET_TYPES.ICON]: (id, _, ext) => resolveAsset(`/assets/ui/icons/${id}${ext}`),
+  [ASSET_TYPES.DATA]: (id) => resolveAsset(`/assets/data/${id}.json`),
+  [ASSET_TYPES.ITEM]: (id, _, ext) => resolveItemAsset(id, ext),
+  [ASSET_TYPES.BADGE]: (id, _, ext) => resolveAsset(`/assets/sprites/badges/${id}${ext}`)
+}
+
 export function getAssetUrl(type: typeof ASSET_TYPES.ITEM, rawId: ItemId, options?: AssetOptions): string;
 export function getAssetUrl(type: typeof ASSET_TYPES.POKEMON, rawId: PokemonSpeciesId | number, options?: AssetOptions): string;
 export function getAssetUrl(type: typeof ASSET_TYPES.MAP, rawId: MapRouteId, options?: AssetOptions): string;
@@ -72,15 +249,8 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
   if (!rawId) {
     throw new Error(`[assetService] Cannot resolve asset URL for type '${type}': rawId is required and cannot be empty.`);
   }
-  const { 
-    isShiny: isShinyPrimary,
-    shiny: isShinyLegacy,
-    isBack: isBackPrimary,
-    back: isBackLegacy
-  } = options;
-
-  const isShiny = isShinyPrimary ?? isShinyLegacy ?? false;
-  const isBack = isBackPrimary ?? isBackLegacy ?? false;
+  const isShiny = options.isShiny ?? options.shiny ?? false;
+  const isBack = options.isBack ?? options.back ?? false;
 
   // If it's already a full URL or local test path, return it
   if (typeof rawId === 'string' && (rawId.startsWith('http') || rawId.startsWith('data:') || rawId.startsWith('/test aventura/'))) {
@@ -94,184 +264,13 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
 
   const extension = (typeof rawId === 'string' && rawId.endsWith('.json')) ? '.json' : '.webp';
 
-  switch (type) {
-    case ASSET_TYPES.POKEMON: {
-      const stringId = String(id).toLowerCase(); // text-ok: UI text display localization string
-      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`); // text-ok: UI text display localization string
-
-      const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] ?? id; // open-record: Generic key-value data dictionary container
-      
-      if (options.isAnimated || options.animated) {
-        const sideDir = isBack ? 'Back' : 'Front';
-        const shinyDir = isShiny ? ' shiny' : '';
-        return resolveAsset(`/assets/sprites/pokemon/animated/${sideDir}${shinyDir}/${num}${extension}`);
-      }
-
-      const folder = isShiny ? 'shiny/' : '';
-      const back = isBack ? 'back/' : '';
-      return resolveAsset(`${POKEAPI_BASE}${back}${folder}${num}${extension}`);
-    }
-
-    case ASSET_TYPES.MAP: {
-      let finalId = id;
-      
-      // Aplicar sufijos de ciclo horario si el mapa lo soporta
-      if (options.cycle && isMapWithCycleId(String(id))) {
-        const suffixes: Record<string, string> = {
-          morning: '_amanecer',
-          day: '_dia',
-          dusk: '_atardecer',
-          night: '_noche'
-        };
-        finalId = `${id}${suffixes[options.cycle] || '_dia'}`;
-      }
-
-      if (options.isLowPower) {
-        finalId = `${finalId}_mobile`;
-      }
-
-      const mapPath = `/assets/maps/${finalId}${extension}`;
-      return resolveAsset(mapPath);
-    }
-
-
-    case ASSET_TYPES.TRAINER: {
-      // Legacy mapping for mission keys (if trainerType was used as spriteId)
-      const LEGACY_MAPPING: Record<string, string> = {
-        'caza_bichos': 'cazabichos',
-        'ornitologo': 'entrenador',
-        'cientifico': 'criador',
-        'luchador': 'entrenador',
-        'pescador': 'tamer',
-        'nadador': 'tamer',
-        'domador': 'tamer',
-        'medium': 'entrenador',
-        'motorista': 'teamrocket',
-        'montanero': 'tamer',
-        'rocket': 'rocket',
-        'cazador': 'cazabichos'
-      };
-
-      // Sanitize ID: remove spaces and dots (e.g., "Lt. Surge" -> "ltsurge")
-      const idStr = String(id);
-      const sanitizedId = idStr.toLowerCase().replace(/[\s.]/g, ''); // text-ok: UI text display localization string
-      const finalId = LEGACY_MAPPING[sanitizedId] || sanitizedId;
-
-      // Other remote URLs fallback
-      if (idStr.startsWith('http')) return idStr;
-      
-      if (isPlayerClassId(finalId)) {
-        const suffix = options.trainerSuffix || (isBack ? 'back' : 'front');
-        const gender = options.gender || 'h';
-        return resolveAsset(`/assets/sprites/trainers/${finalId}_${gender}_${suffix}${extension}`);
-      }
-
-      const NPC_MAPPING: Record<string, string> = {
-        'brock': 'brock',
-        'misty': 'misty',
-        'ltsurge': 'ltsurge',
-        'erika': 'erika',
-        'koga': 'koga',
-        'sabrina': 'sabrina',
-        'blaine': 'blaine',
-        'giovanni': 'giovanni',
-        'blue': 'blue-gen3',
-        'youngster': 'youngster',
-        'lass': 'lass',
-        'picnicker': 'picnicker',
-        'camper': 'camper_b',
-        'hiker': 'hiker',
-        'sailor': 'sailor',
-        'scientist': 'scientist',
-        'juggler': 'juggler',
-        'blackbelt': 'blackbelt',
-        'swimmer': 'swimmer',
-        'tamer': 'tamer-gen3',
-        'birdkeeper': 'birdkeeper',
-        'psychic': 'psychic',
-        'gentleman': 'gentleman',
-        'richboy': 'richboy',
-        'tuber': 'tuber',
-        'cyclist': 'cyclist',
-        'roughneck': 'roughneck',
-        'biker': 'biker',
-        'teamrocket': 'teamrocket',
-        'beauty': 'beauty',
-        'supernerd': 'supernerd',
-        'burglar': 'burglar',
-        'dragontamer': 'dragontamer',
-        'acetrainer': 'acetrainer',
-        'veteran': 'veteran'
-      };
-
-      const npcId = NPC_MAPPING[finalId] || finalId;
-      return resolveAsset(`/assets/sprites/npc/${npcId}${extension}`);
-    }
-
-    case ASSET_TYPES.ENVIRONMENT:
-      return resolveAsset(`/assets/environment/${id}.webp`);
-
-    case ASSET_TYPES.FX:
-      return resolveAsset(`/assets/fx/${id}.webp`);
-
-    case ASSET_TYPES.BANNER: {
-      const idStr = String(id);
-      if (idStr.startsWith('pokecenter_')) {
-        const cleanId = idStr.replace('pokecenter_', '');
-        return resolveAsset(`/assets/ui/pokecenter/${cleanId}${extension}`);
-      }
-      const cleanBannerId = idStr.replace(/^\/?(?:public\/)?assets\/ui\/events\//, '');
-      return resolveAsset(`/assets/ui/events/${cleanBannerId}${extension}`);
-    }
-
-    case ASSET_TYPES.BATTLE_BG:
-      return resolveAsset(`/assets/maps_battle/${id}${extension}`);
-
-    case ASSET_TYPES.UI:
-    case ASSET_TYPES.VFX:
-    case ASSET_TYPES.ATLAS:
-      return resolveAsset(`/assets/ui/${id}${extension}`);
-
-    case ASSET_TYPES.FACTION:
-      return resolveAsset(`/assets/factions/${id}${extension}`);
-
-    case ASSET_TYPES.RANK:
-      return resolveAsset(`/assets/sprites/ranked_medals/${id}${extension}`);
-
-    case ASSET_TYPES.ICON:
-      return resolveAsset(`/assets/ui/icons/${id}${extension}`);
-
-    case ASSET_TYPES.DATA:
-      return resolveAsset(`/assets/data/${id}.json`);
-
-    case ASSET_TYPES.ITEM: {
-      const idStr = String(id).toLowerCase();
-      
-      // Direct matching if they passed a relative sprite path with category folder
-      if (idStr.includes('/')) {
-        return resolveAsset(`/assets/sprites/${idStr}${extension}`);
-      }
-      
-      let shopItem: ReturnType<typeof getItemById> | null;
-      try {
-        shopItem = getItemById(idStr);
-      } catch {
-        shopItem = null;
-      }
-      if (shopItem?.sprite) {
-        return resolveAsset(`/assets/sprites/${shopItem.sprite}${extension}`);
-      }
-      
-      return resolveAsset(`/assets/sprites/crafting/tier3/${idStr}${extension}`);
-    }
-
-    case ASSET_TYPES.BADGE:
-      return resolveAsset(`/assets/sprites/badges/${id}${extension}`);
-
-    default:
-      return String(id);
+  const resolver = ASSET_RESOLVERS[type];
+  if (resolver) {
+    return resolver(id, options, extension, isShiny, isBack);
   }
-};
+
+  return String(id);
+}
 
 export function useAssets() {
   return { getAssetUrl, ASSET_TYPES };

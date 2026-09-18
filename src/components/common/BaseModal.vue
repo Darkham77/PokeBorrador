@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, watch, computed, inject, onUnmounted, type Ref } from 'vue'
+import { ref, watch, computed, inject, onUnmounted, useSlots, type Ref } from 'vue'
 import { gsap } from 'gsap'
 import { useBodyClass } from '@/composables/ui/useBodyClass'
 import { useUIStore } from '@/stores/ui'
@@ -8,13 +8,21 @@ import { useModalStore } from '@/stores/modals'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { ANIM_TIMINGS, ANIM_EASES } from '@/logic/utils/animationRegistry'
 
+import {
+  resolveModalPositionMode,
+  resolveModalCorners,
+  resolveModalCardStyles,
+  getModalTweenPosition
+} from './baseModalHelper'
+import BaseModalHeader from './BaseModalHeader.vue'
+import BaseModalFooter from './BaseModalFooter.vue'
+import BaseModalOverlay from './BaseModalOverlay.vue'
+
 const MODAL_UNREGISTER_DELAY_SEC = 0.6
-const MODAL_ANIM_INITIAL_SCALE_MIN = 0.9
-const MODAL_ANIM_INITIAL_Y_OFFSET = 20
 
 const uiStore = useUIStore()
 const modalStore = useModalStore()
-const isSimplified = inject<Ref<boolean>>('isModalPerformanceMode', ref(false))
+const isSimplified = inject<Ref<boolean> | null>('isModalFastMode', null) ?? inject<Ref<boolean>>('isModalPerformanceMode', ref(false))
 const injectedModalId = inject<string | null>('modalId', null)
 
 defineOptions({
@@ -120,17 +128,6 @@ onUnmounted(() => {
 useBodyClass('modal-open', computed(() => props.show && props.lockScroll))
 
 // GSAP Animation Hooks
-const onOverlayEnter = (el: Element, done: () => void) => {
-  gsap.fromTo(el, 
-    { opacity: 0 }, 
-    { opacity: 1, duration: ANIM_TIMINGS.MODAL_OPEN, ease: 'none', onComplete: done }
-  )
-}
-
-const onOverlayLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 0, duration: ANIM_TIMINGS.MODAL_CLOSE, ease: 'none', onComplete: done })
-}
-
 const onContentEnter = (el: Element, done: () => void) => {
   const duration = ANIM_TIMINGS.MODAL_OPEN || 0.4
   const ease = ANIM_EASES.OUT_SOFT || 'power2.out'
@@ -146,15 +143,10 @@ const onContentEnter = (el: Element, done: () => void) => {
     onComplete: done 
   }
 
-  // Adjust starting position based on modal type
-  if (props.type === 'down') fromVars.y = '100%'
-  else if (props.type === 'top') fromVars.y = '-100%'
-  else if (props.type === 'left' || props.type === 'side-left') fromVars.x = '-100%'
-  else if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') fromVars.x = '100%'
-  else {
-    fromVars.scale = MODAL_ANIM_INITIAL_SCALE_MIN
-    fromVars.y = MODAL_ANIM_INITIAL_Y_OFFSET
-  }
+  const pos = getModalTweenPosition(props.type, true)
+  if (pos.x !== undefined) fromVars.x = pos.x
+  if (pos.y !== undefined) fromVars.y = pos.y
+  if (pos.scale !== undefined) fromVars.scale = pos.scale
 
   const resolvedId = props.id || injectedModalId || ''
 
@@ -177,14 +169,10 @@ const onContentLeave = (el: Element, done: () => void) => {
     ease: 'power2.in'
   }
 
-  if (props.type === 'down') toVars.y = '100%'
-  else if (props.type === 'top') toVars.y = '-100%'
-  else if (props.type === 'left' || props.type === 'side-left') toVars.x = '-100%'
-  else if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') toVars.x = '100%'
-  else {
-    toVars.scale = MODAL_ANIM_INITIAL_SCALE_MIN
-    toVars.y = MODAL_ANIM_INITIAL_Y_OFFSET
-  }
+  const pos = getModalTweenPosition(props.type, false)
+  if (pos.x !== undefined) toVars.x = pos.x
+  if (pos.y !== undefined) toVars.y = pos.y
+  if (pos.scale !== undefined) toVars.scale = pos.scale
 
   const resolvedId = props.id || injectedModalId || ''
 
@@ -198,81 +186,79 @@ const onContentLeave = (el: Element, done: () => void) => {
   })
 }
 
+const computedPositionMode = computed(() => resolveModalPositionMode(props.positionMode, props.type))
+const computedCorners = computed(() => resolveModalCorners(props.corners, computedPositionMode.value, props.type))
 
+const cardStyles = computed(() => resolveModalCardStyles({
+  type: props.type,
+  id: props.id,
+  maxWidth: props.maxWidth,
+  height: props.height,
+  maxHeight: props.maxHeight,
+  accentColor: props.accentColor,
+  disableZoom: props.disableZoom,
+  disableAutoGrow: props.disableAutoGrow,
+  appZoom: uiStore.appZoom || 1,
+  positionMode: computedPositionMode.value
+}))
 
-const LARGE_SCREEN_HEIGHT_MIN_PX = 900
-const LARGE_MODAL_HEIGHT_PCT = 80
-const LARGE_MODAL_MAX_HEIGHT_PCT = 90
-const VIEWPORT_CLAMP_MAX_PCT = 95
+const isOverlayTransparent = computed(() => props.overlay === 'none')
+const isOverlayNoBlur = computed(() => !props.blurOverlay || isSimplified.value)
+const isOverlayNoPointerEvents = computed(() => props.overlay === 'none' && !props.closeOnClickOutside)
+const contentPaddingClass = computed(() => (props.padding === 'raw' ? 'padding-raw' : 'padding-standard'))
 
-const cardStyles = computed(() => {
-  if (props.type === 'fullscreen') return {}
-  
-  const zoomFactor = props.disableZoom ? 1 : (uiStore.appZoom || 1)
+const overlayClasses = computed(() => ({
+  transparent: isOverlayTransparent.value,
+  'no-blur': isOverlayNoBlur.value
+}))
 
-  const isLargeModal = !props.disableAutoGrow && (
-                        (props.id === 'inventory' && props.maxWidth !== '480px') || 
-                        props.id === 'shop' || 
-                        props.id === 'bc-shop' || 
-                        props.id === 'war-shop' || 
-                        props.id === 'market' ||
-                        props.id === 'box' ||
-                        props.maxWidth === '900px' || 
-                        props.maxWidth === '850px' ||
-                        props.maxWidth === '800px'
-                      )
+const teleportWrapperClasses = computed(() => [
+  { 'no-pointer-events': isOverlayNoPointerEvents.value },
+  `type-${props.type}`,
+  `position-${computedPositionMode.value}`
+])
 
-  // If it's a large non-combat modal and the viewport height is significant, expand dimensions
-  const useLargeScreenRules = isLargeModal && typeof window !== 'undefined' && window.innerHeight >= LARGE_SCREEN_HEIGHT_MIN_PX
+const modalCardClasses = computed(() => [
+  contentPaddingClass.value,
+  `variant-${props.variant}`,
+  `corners-${computedCorners.value}`,
+  {
+    'is-fast-mode': isSimplified.value,
+    'is-performance-mode': isSimplified.value,
+    'no-border': !props.showBorder,
+    'yellow-border': props.yellowBorder
+  },
+  props.customClass
+])
 
-  // We scale the dvh/vh height target under the zoom so the physical screen occupancy remains constant
-  const resolvedHeight = useLargeScreenRules ? `${LARGE_MODAL_HEIGHT_PCT / zoomFactor}dvh` : props.height
-  const resolvedMaxHeight = useLargeScreenRules ? `${LARGE_MODAL_MAX_HEIGHT_PCT / zoomFactor}dvh` : props.maxHeight
-  const resolvedMaxWidth = useLargeScreenRules ? '1100px' : props.maxWidth
-  
-  // Clamping physical sizes to maximum 95% of screen viewport
-  const styles: Record<string, string> = { 
-    width: '100%',
-    maxWidth: `min(${resolvedMaxWidth}, ${VIEWPORT_CLAMP_MAX_PCT / zoomFactor}dvw)`,
-    height: resolvedHeight,
-    maxHeight: `min(${resolvedMaxHeight}, ${VIEWPORT_CLAMP_MAX_PCT / zoomFactor}dvh)`,
-    '--modal-accent': props.accentColor
-  }
+const scrollableContentClasses = computed(() => [
+  contentPaddingClass.value,
+  `variant-${props.variant}`,
+  { 'no-scroll': props.noScroll }
+])
 
-  // Si es un panel lateral, el maxWidth también controla el width base
-  if (['left', 'right', 'side', 'side-left', 'side-right'].includes(props.type)) {
-    styles.width = `min(${resolvedMaxWidth}, ${VIEWPORT_CLAMP_MAX_PCT / zoomFactor}dvw)`
-    
-    // Si está pegado al borde, forzamos altura completa (clamped if needed, stuck matches screen height)
-    if (computedPositionMode.value === 'stuck') {
-      styles.height = `${100 / zoomFactor}dvh`
-      styles.maxHeight = `${100 / zoomFactor}dvh`
-    }
-  }
+const headerIconEmoji = computed(() => props.emoji || props.icon)
+const headerStyles = computed(() => ({ background: props.headerBackground }))
+const titleStyles = computed(() => ({ color: props.titleColor }))
 
-  return styles
-})
+const closeBtnClass = computed(() => ({
+  'is-solid': props.closeButtonVariant === 'solid',
+  'is-yellow-solid': props.closeButtonVariant === 'yellow-solid'
+}))
 
-const computedPositionMode = computed(() => {
-  if (props.positionMode) return props.positionMode
-  if (['left', 'right', 'side', 'side-left', 'side-right', 'fullscreen'].includes(props.type)) return 'stuck'
-  return 'floating'
-})
+const resolvedCloseBtnId = computed(() => props.closeBtnId || (props.id ? `${props.id}-close-btn` : undefined))
+const resolvedFloatingCloseBtnId = computed(() => (props.id ? `${props.id}-close-btn` : undefined))
+const resolvedDomId = computed(() => props.id || undefined)
 
-const computedCorners = computed(() => {
-  if (props.corners) return props.corners
-  
-  // If floating, usually all corners are rounded
-  if (computedPositionMode.value === 'floating') return 'all'
+const slots = useSlots()
+const hasHeaderSlot = computed(() => Boolean(slots.header))
+const hasHeaderIconSlot = computed(() => Boolean(slots['header-icon']))
+const hasFooterSlot = computed(() => Boolean(slots.footer))
 
-  if (props.type === 'center') return 'all'
-  if (props.type === 'top') return 'bottom'
-  if (props.type === 'down') return 'top'
-  if (props.type === 'left' || props.type === 'side-left') return 'right'
-  if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') return 'left'
-  if (props.type === 'fullscreen') return 'none'
-  return 'none'
-})
+const modalRootStyle = computed(() => ({
+  zIndex: computedZIndex.value,
+  '--modal-zoom': props.disableZoom ? 1 : (uiStore.appZoom || 1)
+}))
 </script>
 
 <template>
@@ -280,35 +266,19 @@ const computedCorners = computed(() => {
     <div
       v-if="localShow"
       class="base-modal-root"
-      :style="{ zIndex: computedZIndex, '--modal-zoom': disableZoom ? 1 : (uiStore.appZoom || 1) }"
+      :style="modalRootStyle"
     >
       <!-- Background Overlay -->
-      <Transition
-        appear
-        :css="false"
-        @enter="onOverlayEnter"
-        @leave="onOverlayLeave"
-      >
-        <div 
-          v-if="show" 
-          class="modal-overlay" 
-          :class="{ 
-            'transparent': overlay === 'none',
-            'no-blur': !blurOverlay || isSimplified
-          }"
-          @click.stop="handleOverlayClick" 
-        />
-      </Transition>
+      <BaseModalOverlay
+        :show="show"
+        :overlay-classes="overlayClasses"
+        @click="handleOverlayClick"
+      />
       
       <!-- Content Wrapper -->
       <div 
-        v-if="localShow"
         class="base-modal-teleport-wrapper" 
-        :class="[
-          { 'no-pointer-events': overlay === 'none' && !closeOnClickOutside }, 
-          `type-${type}`,
-          `position-${computedPositionMode}`
-        ]"
+        :class="teleportWrapperClasses"
       >
         <Transition 
           appear
@@ -317,102 +287,53 @@ const computedCorners = computed(() => {
           @leave="onContentLeave"
         >
           <div 
-            v-if="show"
-            :id="id || undefined"
+            v-if="show" 
+            :id="resolvedDomId"
             class="modal-content-premium base-modal-card"
-            :class="[
-              padding === 'raw' ? 'padding-raw' : 'padding-standard', 
-              `variant-${variant}`,
-              `corners-${computedCorners}`,
-              { 
-                'is-performance-mode': isSimplified,
-                'no-border': !showBorder,
-                'yellow-border': yellowBorder
-              },
-              customClass
-            ]"
+            :class="modalCardClasses"
             :style="cardStyles"
             @click.stop
           >
-            <!-- Header -->
-            <header
-              v-if="!hideHeader"
-              class="modal-header-premium"
-              :style="{ background: headerBackground }"
+            <!-- Header & Floating Close Button -->
+            <BaseModalHeader
+              :hide-header="hideHeader"
+              :title="title"
+              :header-icon-emoji="headerIconEmoji"
+              :header-styles="headerStyles"
+              :title-styles="titleStyles"
+              :show-close-button="showCloseButton"
+              :close-btn-id="resolvedCloseBtnId"
+              :floating-close-btn-id="resolvedFloatingCloseBtnId"
+              :close-btn-class="closeBtnClass"
+              :prevent-close="preventClose"
+              @close="handleClose"
             >
-              <template v-if="$slots.header">
+              <template
+                v-if="hasHeaderSlot"
+                #header
+              >
                 <slot name="header" />
               </template>
-              <template v-else>
-                <div class="modal-header-left">
-                  <slot name="header-icon">
-                    <span
-                      v-if="emoji || icon"
-                      class="emoji modal-header-emoji"
-                    >{{ emoji || icon }}</span>
-                  </slot>
-                  <div class="modal-title-stack">
-                    <h2 
-                      class="modal-title-text"
-                      :style="{ color: titleColor }"
-                    >
-                      {{ title }}
-                    </h2>
-                  </div>
-                </div>
-              </template>
-              
-              <button
-                v-if="showCloseButton"
-                :id="closeBtnId || (id ? `${id}-close-btn` : undefined)"
-                class="modal-close-btn"
-                :class="{ 
-                  'is-solid': closeButtonVariant === 'solid',
-                  'is-yellow-solid': closeButtonVariant === 'yellow-solid' 
-                }"
-                :disabled="preventClose"
-                @click.stop="handleClose"
+              <template
+                v-if="hasHeaderIconSlot"
+                #header-icon
               >
-                <div class="close-icon-wrapper" />
-              </button>
-            </header>
-
-
+                <slot name="header-icon" />
+              </template>
+            </BaseModalHeader>
 
             <!-- Content -->
             <div 
               class="modal-scrollable-content"
-              :class="[
-                padding === 'raw' ? 'padding-raw' : 'padding-standard',
-                `variant-${variant}`,
-                { 'no-scroll': noScroll }
-              ]"
+              :class="scrollableContentClasses"
             >
               <slot />
             </div>
 
             <!-- Footer -->
-            <footer
-              v-if="$slots.footer"
-              class="modal-footer-premium"
-            >
+            <BaseModalFooter v-if="hasFooterSlot">
               <slot name="footer" />
-            </footer>
-
-            <!-- Floating Close Button -->
-            <button
-              v-if="hideHeader && showCloseButton"
-              :id="id ? `${id}-close-btn` : undefined"
-              class="modal-close-btn-floating"
-              :class="{ 
-                'is-solid': closeButtonVariant === 'solid',
-                'is-yellow-solid': closeButtonVariant === 'yellow-solid' 
-              }"
-              :disabled="preventClose"
-              @click.stop="handleClose"
-            >
-              <div class="close-icon-wrapper" />
-            </button>
+            </BaseModalFooter>
           </div>
         </Transition>
       </div>

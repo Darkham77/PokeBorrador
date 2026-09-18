@@ -26,6 +26,7 @@
     }
   }
 
+  &.fast-mode,
   &.performance-mode {
     background: Rgba(30, 41, 59, 0.95) !important;
     box-shadow: none !important;
@@ -33,7 +34,7 @@
     will-change: opacity;
 
     &:hover {
-      transform: none !important;
+      transform: none;
       background: Rgba(30, 41, 59, 0.9) !important;
     }
 
@@ -42,8 +43,8 @@
     
     & .box-card-sprite {
       will-change: transform, filter, opacity;
-      filter: none !important;
-      transform: none !important;
+      filter: none;
+      transform: none;
     }
   }
 

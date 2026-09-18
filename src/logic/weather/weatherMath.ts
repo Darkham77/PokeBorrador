@@ -24,9 +24,9 @@ export type { DayPhase };
  * Cycle is 8 hours: 0-1=morning, 2-3=day, 4-5=dusk, 6-7=night.
  */
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
+import { SECONDS_PER_HOUR } from '@/logic/constants/gameplay'
 
 const DAY_CYCLE_TOTAL_HOURS = 8;
-const SECONDS_PER_HOUR = 3600;
 export const PROBABILITY_PERCENT_SCALE = 100;
 const WEATHER_SESSION_SEED_RANGE = 1000;
 

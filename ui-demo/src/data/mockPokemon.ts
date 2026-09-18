@@ -55,7 +55,7 @@ function createDemoPokemon(config: {
   }
 }
 
-export const thunderboltMove: Move = {
+const thunderboltMove: Move = {
   id: 'thunderbolt',
   name: 'Rayo',
   type: 'electric',
@@ -67,7 +67,7 @@ export const thunderboltMove: Move = {
   desc: 'Fuerte descarga eléctrica que puede paralizar.'
 }
 
-export const surfMove: Move = {
+const surfMove: Move = {
   id: 'surf',
   name: 'Surf',
   type: 'water',
@@ -79,7 +79,7 @@ export const surfMove: Move = {
   desc: 'Ola gigante que inunda el campo de batalla.'
 }
 
-export const flamethrowerMove: Move = {
+const flamethrowerMove: Move = {
   id: 'flamethrower',
   name: 'Lanzallamas',
   type: 'fire',
@@ -91,7 +91,7 @@ export const flamethrowerMove: Move = {
   desc: 'Llama abrasadora que puede causar quemaduras.'
 }
 
-export const shadowballMove: Move = {
+const shadowballMove: Move = {
   id: 'shadowball',
   name: 'Bola Sombra',
   type: 'ghost',

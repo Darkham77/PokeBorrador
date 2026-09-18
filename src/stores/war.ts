@@ -5,28 +5,36 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
-import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES, DAILY_COIN_CAP, WAR_POINTS_PER_COIN, GUARDIAN_DEFEAT_POINTS_MULTIPLIER, FACTION_VICTORY_BONUS_COINS } from '@/logic/war/warEngine'
+import {
+  getWeekId,
+  getPreviousWeekId,
+  isDisputePhase,
+  FACTION_CHANGE_COST
+} from '@/logic/war/warEngine'
 import { getGuardianData } from '@/logic/war/guardianEngine'
-import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay'
-import { logger } from '@/logic/utils/logger.ts'
 
 import type { DominanceInfo } from '@/types/system/stores'
 import { requireFactionId, requireISODateKey, FACTION_IDS, type FactionId } from '@/types/system/game'
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
-
-interface WarPointsRecord {
-  map_id: MapRouteId
-  faction: FactionId
-  points: number
-}
+import {
+  calculateWarCoinsAwarded,
+  calculateAllowedMapPoints,
+  parsePointsToDominance,
+  mergeSettledWinners,
+  fetchUserWeeklyProgress,
+  registerGuardianLockout,
+  calculateGuardianRewardPoints,
+  persistGuardianCapture,
+  resolveRewardPoints,
+  executeResolveWeekDominance,
+  fetchWeeklyRewardCalculation,
+  formatWeeklyRewardNotification,
+  type WarPointsRecord,
+  type DominanceRecord
+} from './war/warStoreHelpers.ts'
 
 export const WAR_WINNER_FACTIONS = [...FACTION_IDS, 'tie'] as const
 export type WarWinnerFaction = (typeof WAR_WINNER_FACTIONS)[number]
-
-interface DominanceRecord {
-  map_id: MapRouteId
-  winner_faction: WarWinnerFaction | null
-}
 
 export const useWarStore = defineStore('war', () => {
   const gameStore = useGameStore()
@@ -67,35 +75,19 @@ export const useWarStore = defineStore('war', () => {
 
         // 2. Load Individual Weekly Progress
         if (authStore.user && gameStore.db) {
-          const { data: pts } = await gameStore.db.from('war_user_points')
-            .select('points')
-            .eq('user_id', authStore.user.id)
-            .eq('week_id', currentWeekId.value)
-          
-          weeklyPoints.value = (pts as { points: number }[] | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0
-
-          // 3. Load Guardian Captures for today (isolated world)
           const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
-          const { data: guardians } = await gameStore.db.from('guardian_captures')
-            .select('map_id')
-            .eq('user_id', authStore.user.id)
-            .eq('capture_date', today)
-          
-          const typedGuardians = guardians as { map_id: MapRouteId }[] | null;
-          dailyGuardianCaptures.value = typedGuardians?.map(g => requireMapRouteId(g.map_id)) || []
-
-          if (typedGuardians && Array.isArray(typedGuardians)) {
-            if (!gameStore.state.guardianCaptures) {
-              gameStore.state.guardianCaptures = {}
-            }
-            typedGuardians.forEach(g => {
-              const routeId = requireMapRouteId(g.map_id)
-              gameStore.state.guardianCaptures![routeId] = today
-            })
-          }
+          const progress = await fetchUserWeeklyProgress(
+            gameStore.db,
+            authStore.user.id,
+            currentWeekId.value,
+            gameStore.state,
+            today
+          )
+          weeklyPoints.value = progress.weeklyPoints
+          dailyGuardianCaptures.value = progress.guardianRoutes
         }
 
-        // 4. Load Dominance Data
+        // 3. Load Dominance Data
         await fetchMapDominance()
         isLoaded.value = true
       } finally {
@@ -114,26 +106,15 @@ export const useWarStore = defineStore('war', () => {
     const routeId = requireMapRouteId(mapId)
     if (!faction.value || !isDisputeActive.value || !gameStore.db) return 0
     
-    // 1. Calculate points from Engine or use custom override
-    const pts = customPoints !== undefined ? customPoints : getPointReward(eventType, success)
+    const pts = resolveRewardPoints(eventType, success, customPoints)
     if (pts <= 0) return 0
 
-    // 2. Daily PT Cap Check (Isolated by World)
     const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     if (!gameStore.state.warDailyCap) gameStore.state.warDailyCap = {}
     
-    const dailyCap = gameStore.state.warDailyCap
-    if (!dailyCap[today]) dailyCap[today] = {}
-    
-    const currentMapPts = dailyCap[today]?.[routeId] || 0
-    if (currentMapPts >= DAILY_MAP_CAP) {
-      // Only notify once per map session
-      return 0
-    }
+    const allowedPts = calculateAllowedMapPoints(gameStore.state.warDailyCap, today, routeId, pts)
+    if (allowedPts <= 0) return 0
 
-    const allowedPts = Math.min(pts, DAILY_MAP_CAP - currentMapPts)
-    
-    // 3. Registration via DBRouter (Handles RPC online or SQL local)
     const { error } = await gameStore.db.rpc('add_war_points', {
       p_week_id: currentWeekId.value,
       p_map_id: routeId,
@@ -141,17 +122,15 @@ export const useWarStore = defineStore('war', () => {
       p_points: allowedPts
     })
 
-    if (!error) {
-       weeklyPoints.value += allowedPts
-       dailyCap[today]![routeId] = currentMapPts + allowedPts
-       
-       // Handle War Coins (1 coin per 10 PT)
-       handleWarCoins(allowedPts)
-       
-       await fetchMapDominance()
-       return allowedPts
-    }
-    return 0
+    if (error) return 0
+
+    weeklyPoints.value += allowedPts
+    const currentMapPts = gameStore.state.warDailyCap[today]![routeId] || 0
+    gameStore.state.warDailyCap[today]![routeId] = currentMapPts + allowedPts
+    
+    handleWarCoins(allowedPts)
+    await fetchMapDominance()
+    return allowedPts
   }
 
   /**
@@ -163,23 +142,23 @@ export const useWarStore = defineStore('war', () => {
     if (!gameStore.state.warDailyCoins) gameStore.state.warDailyCoins = {}
     
     const dailyCoins = gameStore.state.warDailyCoins as Record<string, number> // open-record: Generic key-value data dictionary container
-    if (!dailyCoins[today]) dailyCoins[today] = 0
-    if (!gameStore.state.warPointsAccumulator) gameStore.state.warPointsAccumulator = 0
+    const currentDailyCoins = dailyCoins[today] ?? 0
+    const currentAccumulator = gameStore.state.warPointsAccumulator || 0
 
-    if ((dailyCoins[today] ?? 0) >= DAILY_COIN_CAP) return
+    const { allowedCoins, nextAccumulator, nextDailyCoins } = calculateWarCoinsAwarded(
+      currentDailyCoins,
+      currentAccumulator,
+      pts
+    )
 
-    gameStore.state.warPointsAccumulator += pts
-    if (gameStore.state.warPointsAccumulator >= WAR_POINTS_PER_COIN) {
-      const newCoins = Math.floor(gameStore.state.warPointsAccumulator / WAR_POINTS_PER_COIN)
-      const allowedCoins = Math.min(newCoins, DAILY_COIN_CAP - (dailyCoins[today] ?? 0))
-      
-      if (allowedCoins > 0) {
-        warCoins.value += allowedCoins
-        gameStore.state.warCoins = (gameStore.state.warCoins || 0) + allowedCoins
-        dailyCoins[today] = (dailyCoins[today] ?? 0) + allowedCoins
-        uiStore.notify(`¡Ganaste ${allowedCoins} Moneda${allowedCoins > 1 ? 's' : ''} de Guerra!`, '⚡')
-      }
-      gameStore.state.warPointsAccumulator %= WAR_POINTS_PER_COIN
+    gameStore.state.warPointsAccumulator = nextAccumulator
+    dailyCoins[today] = nextDailyCoins
+
+    if (allowedCoins > 0) {
+      warCoins.value += allowedCoins
+      gameStore.state.warCoins = (gameStore.state.warCoins || 0) + allowedCoins
+      const coinSuffix = allowedCoins > 1 ? 's' : ''
+      uiStore.notify(`¡Ganaste ${allowedCoins} Moneda${coinSuffix} de Guerra!`, '⚡')
     }
   }
 
@@ -227,37 +206,30 @@ export const useWarStore = defineStore('war', () => {
     const routeId = requireMapRouteId(mapId)
     const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     
-    // Save to user account state immediately for local lockout persistence
-    if (!gameStore.state.guardianCaptures) {
-      gameStore.state.guardianCaptures = {}
-    }
-    gameStore.state.guardianCaptures[routeId] = today
+    registerGuardianLockout(gameStore.state, dailyGuardianCaptures.value, routeId, today)
     await gameStore.save()
-
-    if (!dailyGuardianCaptures.value.includes(routeId)) {
-      dailyGuardianCaptures.value.push(routeId)
-    }
 
     if (!authStore.user || !gameStore.db) return
     
     const guardian = getGuardianData(routeId, []) // In real use we pass map list
     if (!guardian) return
 
-    const ptsAwarded = isDefeat ? Math.floor(guardian.pts * GUARDIAN_DEFEAT_POINTS_MULTIPLIER) : guardian.pts
+    const ptsAwarded = calculateGuardianRewardPoints(guardian.pts, isDefeat)
+    const success = await persistGuardianCapture(
+      gameStore.db,
+      authStore.user.id,
+      routeId,
+      today,
+      faction.value,
+      ptsAwarded
+    )
 
-    const { error } = await gameStore.db.from('guardian_captures').insert({
-      capture_date: today,
-      map_id: routeId,
-      user_id: authStore.user.id,
-      winner_faction: faction.value || null,
-      pts_awarded: ptsAwarded
-    })
-
-    if (!error) {
+    if (success) {
       if (faction.value) {
         await addPoints(routeId, 'GUARDIAN', true, ptsAwarded) // Points logic handles Coins/State
       }
-      uiStore.notify(`¡Guardián ${isDefeat ? 'Derrotado' : 'Capturado'}! +${ptsAwarded} PT.`, '🏆')
+      const actionText = isDefeat ? 'Derrotado' : 'Capturado'
+      uiStore.notify(`¡Guardián ${actionText}! +${ptsAwarded} PT.`, '🏆')
     }
   }
 
@@ -272,13 +244,7 @@ export const useWarStore = defineStore('war', () => {
       .select('map_id, faction, points')
       .eq('week_id', currentWeekId.value)
 
-    const newDom: Partial<Record<MapRouteId, DominanceInfo>> = {}
-    ;(points as WarPointsRecord[] | null)?.forEach(row => {
-      const routeId = requireMapRouteId(row.map_id)
-      const factionId = requireFactionId(row.faction)
-      if (!newDom[routeId]) newDom[routeId] = { union: 0, poder: 0, winner: null }
-      newDom[routeId]![factionId] = row.points
-    })
+    const newDom = parsePointsToDominance(points as WarPointsRecord[] | null)
 
     // 2. Fetch settled winners if not in dispute phase
     if (!isDisputeActive.value) {
@@ -286,26 +252,10 @@ export const useWarStore = defineStore('war', () => {
         .select('map_id, winner_faction')
         .eq('week_id', currentWeekId.value)
       
-      ;(dom as DominanceRecord[] | null)?.forEach(row => {
-        const routeId = requireMapRouteId(row.map_id)
-        if (!newDom[routeId]) newDom[routeId] = { union: 0, poder: 0, winner: null }
-        newDom[routeId]!.winner = (!row.winner_faction || row.winner_faction === 'tie') ? null : requireFactionId(row.winner_faction)
-      })
+      mergeSettledWinners(newDom, dom as DominanceRecord[] | null)
     }
 
     mapDominance.value = newDom
-  }
-
-  /**
-   * Triggers a guardian appearance check.
-   */
-  function checkGuardian(mapId: MapRouteId, allMapIds: MapRouteId[]) {
-    const routeId = requireMapRouteId(mapId)
-    const routeIds = allMapIds.map(id => requireMapRouteId(id))
-    if (dailyGuardianCaptures.value.includes(routeId)) return null
-    if (Math.random() > GUARDIAN_ENCOUNTER_CHANCE_PERCENT) return null
-
-    return getGuardianData(routeId, routeIds)
   }
 
   /**
@@ -313,59 +263,8 @@ export const useWarStore = defineStore('war', () => {
    */
   async function resolveWeekIfNeeded() {
     if (!gameStore.db) return
-
     const prevWeek = getPreviousWeekId()
-
-    // 1. Check if previous week dominance has already been recorded
-    const { data: existingDom } = await gameStore.db.from('war_dominance')
-      .select('map_id')
-      .eq('week_id', prevWeek)
-
-    if (existingDom && (existingDom as Array<{ map_id: MapRouteId }>).length > 0) {
-      return
-    }
-
-    // 2. Fetch all points earned during previous week
-    const { data: pointsData } = await gameStore.db.from('war_points')
-      .select('map_id, faction, points')
-      .eq('week_id', prevWeek)
-
-    const pointsList = pointsData as WarPointsRecord[] | null
-    if (!pointsList || pointsList.length === 0) return
-
-    // 3. Group points by map and faction
-    const mapTotals: Partial<Record<MapRouteId, { union: number; poder: number }>> = {}
-    pointsList.forEach(row => {
-      const routeId = requireMapRouteId(row.map_id)
-      const factionId = requireFactionId(row.faction)
-      if (!mapTotals[routeId]) mapTotals[routeId] = { union: 0, poder: 0 }
-      mapTotals[routeId]![factionId] += row.points
-    })
-
-    // 4. Prepare dominance insert/upsert payload
-    const dominanceRows = Object.entries(mapTotals).map(([map_id, totals]) => {
-      let winner_faction = 'tie'
-      if (totals.union > totals.poder) winner_faction = 'union'
-      else if (totals.poder > totals.union) winner_faction = 'poder'
-
-      return {
-        week_id: prevWeek,
-        map_id,
-        winner_faction
-      }
-    })
-
-    if (dominanceRows.length > 0) {
-      try {
-        const { error } = await gameStore.db.from('war_dominance').upsert(dominanceRows)
-        if (error) {
-          const errMsg = (error as { message?: string })?.message || String(error)
-          logger.warn('WarStore', `Failed to upsert war dominance: ${errMsg}`)
-        }
-      } catch (err) {
-        logger.warn('WarStore', `Error resolving weekly dominance: ${(err as Error).message}`)
-      }
-    }
+    await executeResolveWeekDominance(gameStore.db, prevWeek)
   }
 
   /**
@@ -377,55 +276,18 @@ export const useWarStore = defineStore('war', () => {
     const prevWeek = getPreviousWeekId()
     if (gameStore.state.lastResolvedWeek === prevWeek) return
 
-    // 1. Fetch user's PT from previous week
-    const { data: ptsData } = await gameStore.db.from('war_user_points')
-      .select('points')
-      .eq('user_id', authStore.user.id)
-      .eq('week_id', prevWeek)
+    const reward = await fetchWeeklyRewardCalculation(gameStore.db, authStore.user.id, prevWeek, faction.value)
+    if (!reward) return
 
-    const userPts = (ptsData as { points: number }[] | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0
-    if (userPts <= 0) return
+    warCoins.value += reward.totalReward
+    gameStore.state.warCoins = (gameStore.state.warCoins || 0) + reward.totalReward
+    gameStore.state.lastResolvedWeek = prevWeek
+    await gameStore.save()
 
-    // 2. Calculate milestone coins
-    let milestoneCoins = 0
-    for (const milestone of WEEKLY_REWARD_MILESTONES) {
-      if (userPts >= milestone.pt) {
-        milestoneCoins = milestone.coins
-      }
-    }
-
-    // 3. Check faction majority bonus (+50 coins)
-    const { data: domData } = await gameStore.db.from('war_dominance')
-      .select('winner_faction')
-      .eq('week_id', prevWeek)
-
-    let victoryBonus = 0
-    if (domData && Array.isArray(domData)) {
-      let unionWins = 0
-      let poderWins = 0
-      ;(domData as DominanceRecord[]).forEach(d => {
-        if (d.winner_faction === 'union') unionWins++
-        else if (d.winner_faction === 'poder') poderWins++
-      })
-
-      const winningFaction = unionWins > poderWins ? 'union' : poderWins > unionWins ? 'poder' : null
-      if (winningFaction && winningFaction === faction.value) {
-        victoryBonus = FACTION_VICTORY_BONUS_COINS
-      }
-    }
-
-    const totalReward = milestoneCoins + victoryBonus
-    if (totalReward > 0) {
-      warCoins.value += totalReward
-      gameStore.state.warCoins = (gameStore.state.warCoins || 0) + totalReward
-      gameStore.state.lastResolvedWeek = prevWeek
-      await gameStore.save()
-
-      uiStore.notify(
-        `¡Recompensa semanal recibida! ⚡+${totalReward} Monedas de Guerra (${milestoneCoins} por hitos${victoryBonus > 0 ? ` + ${FACTION_VICTORY_BONUS_COINS} por victoria de facción` : ''}).`,
-        '🎁'
-      )
-    }
+    uiStore.notify(
+      formatWeeklyRewardNotification(reward.milestoneCoins, reward.victoryBonus, reward.totalReward),
+      '🎁'
+    )
   }
 
   return {
@@ -439,7 +301,6 @@ export const useWarStore = defineStore('war', () => {
     isLoaded,
     loadWarData,
     addPoints,
-    checkGuardian,
     chooseFaction,
     claimGuardian,
     resolveWeekIfNeeded,

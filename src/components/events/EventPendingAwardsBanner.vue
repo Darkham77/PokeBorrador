@@ -7,7 +7,9 @@ import { isAwardClaimable } from '@/logic/events/eventValidators'
 import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine'
 import { resolveAwardCategory } from '@/logic/events/eventCompetitions'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
+import { logger } from '@/logic/utils/logger'
 import type { PendingAward } from '@/types/system/stores'
+import { parsePrize } from '@/composables/events/usePastEventAwards'
 import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
 
 const eventStore = useEventStore()
@@ -21,8 +23,8 @@ const getEventDisplayName = (eventId: string, awardedAt?: string): string => {
     try {
       const awardedZdt = Temporal.Instant.from(awardedAt).toZonedDateTimeISO(GAME_TIMEZONE)
       return getEventDisplayNameCore(ev, awardedZdt)
-    } catch {
-      // fallback
+    } catch (err) {
+      logger.warn('[EventPendingAwardsBanner] Error parseando awardedAt:', err)
     }
   }
   return getEventDisplayNameCore(ev)
@@ -53,32 +55,6 @@ const getCategoryBadge = (award: PendingAward): { icon: string; name: string } |
     return { icon: cat.icon, name: cat.categoryTitle }
   }
   return null
-}
-
-const prizeStringCache = new Map<string, Record<string, unknown>>()
-const prizeObjectCache = new WeakMap<object, Record<string, unknown>>()
-
-const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
-  if (!rawPrize) return {}
-  if (typeof rawPrize === 'string') {
-    const cached = prizeStringCache.get(rawPrize)
-    if (cached) return cached
-    try {
-      const parsed = JSON.parse(rawPrize) as Record<string, unknown> // open-record: Generic key-value data dictionary container
-      prizeStringCache.set(rawPrize, parsed)
-      return parsed
-    } catch {
-      return {}
-    }
-  }
-  if (typeof rawPrize === 'object') {
-    const cached = prizeObjectCache.get(rawPrize)
-    if (cached) return cached
-    const obj = rawPrize as Record<string, unknown> // open-record: Generic key-value data dictionary container
-    prizeObjectCache.set(rawPrize, obj)
-    return obj
-  }
-  return {}
 }
 
 const checkIfClaimable = (award: PendingAward): boolean => {

@@ -1,0 +1,127 @@
+@use "@/styles/core/tools" as *;
+@use "@/styles/core/mixins" as *;
+
+.rank-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  will-change: transform, background-color, border-color;
+
+  // Top 3 distinct backgrounds
+  &.rank-1 {
+    background: linear-gradient(90deg, Rgba(251, 191, 36, 0.1), Rgba(0, 0, 0, 0));
+    border-color: Rgba(251, 191, 36, 0.35);
+  }
+  &.rank-2 {
+    background: linear-gradient(90deg, Rgba(148, 163, 184, 0.1), Rgba(0, 0, 0, 0));
+    border-color: Rgba(148, 163, 184, 0.35);
+  }
+  &.rank-3 {
+    background: linear-gradient(90deg, Rgba(180, 83, 9, 0.1), Rgba(0, 0, 0, 0));
+    border-color: Rgba(180, 83, 9, 0.35);
+  }
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: auto;
+  min-width: 32px;
+  flex-shrink: 0;
+
+  .crown {
+    font-size: 16px;
+  }
+
+  .generic-rank {
+    @include pixelated;
+    font-size: 8px;
+    color: #94a3b8;
+
+    &.top-1 { color: #f59e0b; }
+    &.top-2 { color: #cbd5e1; }
+    &.top-3 { color: #b45309; }
+  }
+
+  .ranked-medal-mini {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    @include pixelated;
+  }
+}
+
+.avatar-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.player-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  .player-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .player-name-text {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--white);
+    }
+
+    .faction-tag-badge {
+      font-size: 6px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      color: white;
+      text-transform: uppercase;
+      @include pixelated;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .player-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: #94a3b8;
+
+    .player-class-info {
+      text-transform: capitalize;
+    }
+
+    .divider {
+      color: Rgba(255, 255, 255, 0.4);
+    }
+  }
+}
+
+.score-badge {
+  text-align: right;
+  flex-shrink: 0;
+
+  .score-value {
+    @include pixelated;
+    font-size: 8px;
+    color: var(--yellow);
+    background: Rgba(251, 191, 36, 0.08);
+    border: 1px solid Rgba(251, 191, 36, 0.15);
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+}

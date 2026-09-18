@@ -1,6 +1,5 @@
 
 /**
- * @vitest-environment jsdom
  * tests/unit/buffsStore.spec.js
  * Unit tests for the Global Buffs and Timers Store
  */

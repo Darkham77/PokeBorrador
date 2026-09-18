@@ -1,6 +1,6 @@
 import type { Battle, SideID } from '@pkmn/sim';
 import { findPokemonByShowdownName } from '../showdownUidMapper.ts';
-import { statsMap } from '../showdownAdapter.ts';
+import { statsMap } from '../engine/showdownSpreadModifyHelper.ts';
 
 export interface ShowdownRequestPokemon {
   ident?: string;

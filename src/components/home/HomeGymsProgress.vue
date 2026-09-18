@@ -170,48 +170,22 @@ const openGyms = () => {
 @use "@/styles/core/_mixins" as *;
 
 .home-gyms-progress {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px 16px;
-  box-sizing: border-box;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  @include home-section-card;
 }
 
 .card-header-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
-  gap: 8px;
+  @include home-card-header-bar;
 }
 
 .title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
+  @include home-card-title-wrap;
 
   .card-icon {
-    font-size: 20px;
-    line-height: 1 !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    flex-shrink: 0;
   }
 
   .title-text-group {
-    display: flex;
-    flex-direction: column;
     gap: 3px;
-    min-width: 0;
   }
 
   .card-title {

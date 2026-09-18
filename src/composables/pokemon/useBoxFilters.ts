@@ -2,15 +2,12 @@ import { ref, computed, type Ref } from 'vue'
 import { useStorage, refDebounced } from '@vueuse/core'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { FRIENDSHIP_SEAL_TIERS } from '@/types/pokemon/friendship'
-import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
-import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
-import { matchesAllBoxFilters } from './boxFilterPredicates.ts'
+import { matchesAllBoxFilters, checkHasActiveFilters } from './boxFilterPredicates.ts'
+import { sortBoxItems } from './boxSortComparators.ts'
 import type { PokemonFilterTagId } from '@/logic/constants/tags'
 
 export const FRIENDSHIP_SEAL_TIER_FILTERS = ['all', ...FRIENDSHIP_SEAL_TIERS] as const
-export type FriendshipSealTierFilter = (typeof FRIENDSHIP_SEAL_TIER_FILTERS)[number]
+type FriendshipSealTierFilter = (typeof FRIENDSHIP_SEAL_TIER_FILTERS)[number]
 
 interface FilterState {
   tier: string
@@ -99,16 +96,7 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
     ? refDebounced(computed(() => filters.value.search), debounceDuration)
     : computed(() => filters.value.search)
 
-  const hasActiveFilters = computed(() => {
-    const f = filters.value
-    return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < MAX_POKEMON_LEVEL_CONST ||
-           f.friendshipMin > 0 || f.friendshipMax < MAX_POKEMON_FRIENDSHIP_CONST ||
-           f.ivTotalMin > 0 || f.ivTotalMax < MAX_TOTAL_IVS || f.ivAny31 || f.search !== '' ||
-           f.bstMin > 0 || f.bstMax < MAX_BST_FILTER || f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 ||
-           f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 || f.ivMin > 0 || f.ivMax < MAX_SINGLE_IV ||
-           f.evHP > 0 || f.evATK > 0 || f.evDEF > 0 || f.evSPA > 0 || f.evSPD > 0 || f.evSPE > 0 ||
-           (f.tags && f.tags.length > 0) || f.friendshipSealTier !== 'all' || f.friendshipEvoReady || f.friendshipMaxOnly
-  })
+  const hasActiveFilters = computed(() => checkHasActiveFilters(filters.value))
 
   const processedBoxList = computed(() => {
     if (!box.value) return []
@@ -127,46 +115,7 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
 
     // Apply Sorting
     if (sortMode.value !== 'none') {
-      list.sort((a: { p: Pokemon | null; index: number }, b: { p: Pokemon | null; index: number }) => {
-        const pA = a.p as Pokemon;
-        const pB = b.p as Pokemon;
-        
-        let result = 0
-        if (sortMode.value === 'level') result = pB.level - pA.level;
-        else if (sortMode.value === 'tier' || sortMode.value === 'ivs') result = getPokemonTier(pB).total - getPokemonTier(pA).total;
-        else if (sortMode.value === 'friendship') {
-          result = (pB.friendship ?? 70) - (pA.friendship ?? 70);
-        }
-        else if (sortMode.value === 'bst' || sortMode.value === 'tot' || sortMode.value === 'TOT') {
-          result = calculateTotalPower(pB) - calculateTotalPower(pA);
-        }
-        else if (sortMode.value === 'type') result = pA.type.localeCompare(pB.type);
-        else if (sortMode.value === 'recent') {
-          const tA = pA.obtainedAt || a.index || 0;
-          const tB = pB.obtainedAt || b.index || 0;
-          result = tB - tA;
-        }
-        else if (sortMode.value === 'pokedex' || sortMode.value === 'pdex') {
-          const indexA = getPokedexOrderIndex(requirePokemonSpeciesId(pA.id));
-          const indexB = getPokedexOrderIndex(requirePokemonSpeciesId(pB.id));
-          const idxA = indexA === -1 ? 9999 : indexA;
-          const idxB = indexB === -1 ? 9999 : indexB;
-          result = idxB - idxA;
-        }
-        else if (sortMode.value === 'hatched' || sortMode.value === 'egg') {
-          const hA = pA.obtainedMethod === 'egg' ? 1 : 0;
-          const hB = pB.obtainedMethod === 'egg' ? 1 : 0;
-          result = hB - hA;
-        }
-        else if (sortMode.value === 'weight') {
-          result = getPokemonPhysicalWeight(pB) - getPokemonPhysicalWeight(pA);
-        }
-        else if (sortMode.value === 'height') {
-          result = getPokemonPhysicalHeight(pB) - getPokemonPhysicalHeight(pA);
-        }
-        
-        return sortDirection.value === 'asc' ? -result : result
-      })
+      list = sortBoxItems(list, sortMode.value, sortDirection.value)
     }
 
     return list

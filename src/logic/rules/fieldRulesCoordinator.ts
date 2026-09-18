@@ -48,6 +48,55 @@ const CAZABICHOS_IV_FLOOR_PER_STREAK = 5;
 const CAZABICHOS_STREAK_SHINY_STEP = 0.75;
 const DOMINANCE_IV_FLOOR = 15;
 const DOMINANCE_SHINY_MULT = 1.3;
+const ARCHAEOLOGY_EQUIPPED_TOOL_MULTIPLIER = 1.5 as const;
+const DEFAULT_TOOL_MULTIPLIER = 1.0 as const;
+const MAX_CAZABICHOS_SHINY_STREAK = 4 as const;
+const MIN_CAZABICHOS_SHINY_STREAK = 0 as const;
+const DEFAULT_SHINY_BONUS = 1 as const;
+const DEFAULT_GLOBAL_SHINY = 1 as const;
+const DEFAULT_IV_FLOOR = 0 as const;
+const PIDGEY_SPECIES_KEY = 'pidgey' as const;
+
+function resolveNatureAndGender(
+  leader: Pokemon | null | undefined,
+  ctx: FieldEncounterContext,
+  gen: number,
+  rand: () => number
+): { natureOverride: NatureId | null; genderOverride: PokemonGender | null } {
+  const natureOverride = resolveSynchronizeNature(leader, gen, rand);
+  const targetSpeciesForGender = (ctx.loc.wild?.day?.[0] && isPokemonSpeciesId(ctx.loc.wild.day[0]))
+    ? ctx.loc.wild.day[0]
+    : requirePokemonSpeciesId(PIDGEY_SPECIES_KEY);
+  const genderOverride = resolveCuteCharmGender(leader, targetSpeciesForGender, gen, rand);
+  return { natureOverride, genderOverride };
+}
+
+function calculateIvFloor(ctx: FieldEncounterContext, isDominant: boolean): number {
+  let ivFloor: number = DEFAULT_IV_FLOOR;
+  if (ctx.playerClass === 'cazabichos') {
+    const streak = ctx.classData?.captureStreak || 0;
+    ivFloor = Math.max(ivFloor, Math.min(MAX_CAZABICHOS_IV_FLOOR, streak * CAZABICHOS_IV_FLOOR_PER_STREAK));
+  }
+  if (isDominant) {
+    ivFloor = Math.max(ivFloor, DOMINANCE_IV_FLOOR);
+  }
+  return ivFloor;
+}
+
+function calculateShinyMultiplier(ctx: FieldEncounterContext, isDominant: boolean): number {
+  let totalShinyBonus = ctx.options?.shinyMultiplier ?? DEFAULT_SHINY_BONUS;
+  const activeEvents = ctx.activeEvents || [];
+  const globalMults = getGlobalMultipliers(activeEvents);
+  totalShinyBonus *= (globalMults.shiny || DEFAULT_GLOBAL_SHINY);
+  if (ctx.playerClass === 'cazabichos') {
+    const streak = Math.max(MIN_CAZABICHOS_SHINY_STREAK, Math.min(MAX_CAZABICHOS_SHINY_STREAK, ctx.classData?.captureStreak || 0));
+    totalShinyBonus *= (DEFAULT_SHINY_BONUS + CAZABICHOS_STREAK_SHINY_STEP * streak);
+  }
+  if (isDominant) {
+    totalShinyBonus *= DOMINANCE_SHINY_MULT;
+  }
+  return totalShinyBonus;
+}
 
 // --- ENCOUNTER CONTEXT & MODIFIERS ---
 
@@ -98,11 +147,7 @@ export function resolveFieldEncounterModifiers(ctx: FieldEncounterContext): Reso
   const leaderAbility = getEffectiveLeaderAbility(ctx.team, gen);
 
   // 1. Nature and Gender resolution
-  const natureOverride = resolveSynchronizeNature(leader, gen, rand);
-  const targetSpeciesForGender = (ctx.loc.wild?.day?.[0] && isPokemonSpeciesId(ctx.loc.wild.day[0]))
-    ? ctx.loc.wild.day[0]
-    : requirePokemonSpeciesId('pidgey');
-  const genderOverride = resolveCuteCharmGender(leader, targetSpeciesForGender, gen, rand);
+  const { natureOverride, genderOverride } = resolveNatureAndGender(leader, ctx, gen, rand);
 
   // 2. Wild Held Item rates
   const heldItemRates = getWildHeldItemRates(leaderAbility);
@@ -111,41 +156,25 @@ export function resolveFieldEncounterModifiers(ctx: FieldEncounterContext): Reso
   const attractionType = resolveElementalAttractionType(leaderAbility, gen, rand);
 
   // 4. Rate Multipliers (Abilities + Cleanse Tag + Repels)
-  const baseEncounterRate = getEncounterRateMultiplier(leaderAbility, ctx.weather);
-  const encounterRateMultiplier = baseEncounterRate;
+  const encounterRateMultiplier = getEncounterRateMultiplier(leaderAbility, ctx.weather);
 
   // 5. Fishing & Archaeology Multipliers (Abilities + Tools)
-  const abilityFishingMult = getFishingWeightMultiplier(leaderAbility);
-  const fishingWeightMultiplier = abilityFishingMult;
-  const archaeologyWeightMultiplier = ((ctx.pickaxeSecs || 0) > 0 || (ctx.brushSecs || 0) > 0) ? 1.5 : 1.0;
+  const fishingWeightMultiplier = getFishingWeightMultiplier(leaderAbility);
+  const archaeologyWeightMultiplier = ((ctx.pickaxeSecs || 0) > 0 || (ctx.brushSecs || 0) > 0)
+    ? ARCHAEOLOGY_EQUIPPED_TOOL_MULTIPLIER
+    : DEFAULT_TOOL_MULTIPLIER;
 
   // 6. Level Filtering (Intimidate / Keen Eye vs Pressure / Vital Spirit / Hustle)
   const forceMaxLevel = shouldForceMaxRouteLevel(leaderAbility, rand);
   const shouldAvoidLowLevel = (wildLv: number) => shouldAvoidLowLevelWild(leader, wildLv, gen, rand);
 
+  const isDominant = Boolean(ctx.faction && ctx.dominanceData && ctx.dominanceData[ctx.mapId]?.winner === ctx.faction);
+
   // 7. IV Floor (Cazabichos class + Dominance)
-  let ivFloor = 0;
-  if (ctx.playerClass === 'cazabichos') {
-    const streak = ctx.classData?.captureStreak || 0;
-    ivFloor = Math.max(ivFloor, Math.min(MAX_CAZABICHOS_IV_FLOOR, streak * CAZABICHOS_IV_FLOOR_PER_STREAK));
-  }
-  const isDominant = ctx.faction && ctx.dominanceData && ctx.dominanceData[ctx.mapId]?.winner === ctx.faction;
-  if (isDominant) {
-    ivFloor = Math.max(ivFloor, DOMINANCE_IV_FLOOR);
-  }
+  const ivFloor = calculateIvFloor(ctx, isDominant);
 
   // 8. Shiny Multiplier (Events + Dominance + Options + Cazabichos Streak)
-  let totalShinyBonus = ctx.options?.shinyMultiplier ?? 1;
-  const activeEvents = ctx.activeEvents || [];
-  const globalMults = getGlobalMultipliers(activeEvents);
-  totalShinyBonus *= (globalMults.shiny || 1);
-  if (ctx.playerClass === 'cazabichos') {
-    const streak = Math.max(0, Math.min(4, ctx.classData?.captureStreak || 0));
-    totalShinyBonus *= (1.0 + CAZABICHOS_STREAK_SHINY_STEP * streak);
-  }
-  if (isDominant) {
-    totalShinyBonus *= DOMINANCE_SHINY_MULT;
-  }
+  const shinyMultiplier = calculateShinyMultiplier(ctx, isDominant);
 
   return {
     leaderAbility,
@@ -159,7 +188,7 @@ export function resolveFieldEncounterModifiers(ctx: FieldEncounterContext): Reso
     shouldAvoidLowLevel,
     forceMaxLevel,
     ivFloor,
-    shinyMultiplier: totalShinyBonus
+    shinyMultiplier
   };
 }
 

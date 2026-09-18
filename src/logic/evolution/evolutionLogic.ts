@@ -120,75 +120,96 @@ export function checkTradeEvolution(pokemon: Pokemon): PokemonSpeciesId | null {
   return toId;
 }
 
-/**
- * Obtiene la forma evolucionada ideal para un nivel dado (backtracking hasta base).
- */
-export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
-  // 1. Build reverse map to find base form
-  const PRE_EVO: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = {};
+function buildPreEvoMap(): Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> {
+  const preEvo: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = {};
   for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
     if (!data) continue;
     const targets = Array.isArray(data) ? data : [data];
     for (const target of targets) {
       if (target && target.to) {
-        PRE_EVO[requirePokemonSpeciesId(target.to)] = requirePokemonSpeciesId(from);
+        preEvo[requirePokemonSpeciesId(target.to)] = requirePokemonSpeciesId(from);
       }
     }
   }
   for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
     const to = requirePokemonSpeciesId(data.to);
     const baseFrom = from.startsWith('eevee_') ? 'eevee' : (from.split('_')[0] || from);
-    if (!PRE_EVO[to]) PRE_EVO[to] = requirePokemonSpeciesId(baseFrom);
+    if (!preEvo[to]) preEvo[to] = requirePokemonSpeciesId(baseFrom);
   }
   for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
-     const targetSpeciesId = requirePokemonSpeciesId(to);
-     if (!PRE_EVO[targetSpeciesId]) PRE_EVO[targetSpeciesId] = requirePokemonSpeciesId(from);
+    const targetSpeciesId = requirePokemonSpeciesId(to);
+    if (!preEvo[targetSpeciesId]) preEvo[targetSpeciesId] = requirePokemonSpeciesId(from);
   }
+  return preEvo;
+}
 
-  // 2. Backtrack to the very first base form
+const PRE_EVO_MAP: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = buildPreEvoMap();
+
+function backtrackToBaseSpecies(id: string): PokemonSpeciesId {
   let current = requirePokemonSpeciesId(id);
-  while (PRE_EVO[current]) {
-    current = PRE_EVO[current] || current;
+  while (PRE_EVO_MAP[current]) {
+    current = PRE_EVO_MAP[current] || current;
+  }
+  return current;
+}
+
+const EEVEE_EVOLUTIONS = ['vaporeon', 'jolteon', 'flareon'] as const satisfies readonly PokemonSpeciesId[];
+
+function tryLevelEvolution(evolved: PokemonSpeciesId, level: number): PokemonSpeciesId | null {
+  const levelEvo = getLevelEvolution(evolved);
+  if (levelEvo && level >= levelEvo.level && isEnabledPokemonId(levelEvo.to)) {
+    return levelEvo.to;
+  }
+  return null;
+}
+
+function tryStoneEvolution(evolved: PokemonSpeciesId, level: number): PokemonSpeciesId | null {
+  if (level < WILD_STONE_EVO_MIN_LEVEL || Math.random() >= 0.5) return null;
+
+  if (evolved === 'eevee') {
+    return EEVEE_EVOLUTIONS[Math.floor(Math.random() * EEVEE_EVOLUTIONS.length)] || evolved;
   }
 
-  // 3. Evolve forward as much as level permits
-  let evolved: PokemonSpeciesId = current;
+  const stoneEvo = getStoneEvolution(evolved);
+  if (stoneEvo && isEnabledPokemonId(stoneEvo.to)) {
+    return stoneEvo.to;
+  }
+  return null;
+}
+
+function tryTradeEvolution(evolved: PokemonSpeciesId, level: number): PokemonSpeciesId | null {
+  if (level < WILD_TRADE_EVO_MIN_LEVEL || Math.random() >= 0.5) return null;
+
+  const tradeEvo = getTradeEvolution(evolved);
+  if (tradeEvo && isEnabledPokemonId(tradeEvo)) {
+    return tradeEvo;
+  }
+  return null;
+}
+
+function advanceWildEvolution(evolved: PokemonSpeciesId, level: number): PokemonSpeciesId | null {
+  const levelNext = tryLevelEvolution(evolved, level);
+  if (levelNext) return levelNext;
+
+  const stoneNext = tryStoneEvolution(evolved, level);
+  if (stoneNext) return stoneNext;
+
+  return tryTradeEvolution(evolved, level);
+}
+
+/**
+ * Obtiene la forma evolucionada ideal para un nivel dado (backtracking hasta base).
+ */
+export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
+  let evolved = backtrackToBaseSpecies(id);
   let canEvolve = true;
   while (canEvolve) {
-    let changed = false;
-
-    // Level Evolution
-    const levelEvo = getLevelEvolution(evolved);
-    if (levelEvo && level >= levelEvo.level && isEnabledPokemonId(levelEvo.to)) {
-      evolved = levelEvo.to;
-      changed = true;
-    } 
-    
-    // Stone Evolution (50% chance if level >= 30)
-    if (!changed && level >= WILD_STONE_EVO_MIN_LEVEL && Math.random() < 0.5) {
-      if (evolved === 'eevee') {
-        const options = ['vaporeon', 'jolteon', 'flareon'] as const satisfies readonly PokemonSpeciesId[];
-        evolved = options[Math.floor(Math.random() * options.length)] || evolved;
-        changed = true;
-      } else {
-        const stoneEvo = getStoneEvolution(evolved);
-        if (stoneEvo && isEnabledPokemonId(stoneEvo.to)) {
-          evolved = stoneEvo.to;
-          changed = true;
-        }
-      }
+    const next = advanceWildEvolution(evolved, level);
+    if (next) {
+      evolved = next;
+    } else {
+      canEvolve = false;
     }
-
-    // Trade Evolution (50% chance if level >= 32)
-    if (!changed && level >= WILD_TRADE_EVO_MIN_LEVEL && Math.random() < 0.5) {
-      const tradeEvo = getTradeEvolution(evolved);
-      if (tradeEvo && isEnabledPokemonId(tradeEvo)) {
-        evolved = tradeEvo;
-        changed = true;
-      }
-    }
-
-    if (!changed) canEvolve = false;
   }
   return evolved;
 }

@@ -16,6 +16,8 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 
 enableCompileCache();
@@ -175,6 +177,53 @@ export const LATEST_MIGRATION_ID = '${latestId}';
   console.log(`⚡ [Migrations Generator] Generadas ${migrations.length} migraciones en ${relOutputDir}`);
 }
 
+async function runDirectCliPipeline(): Promise<void> {
+  await generateMigrations();
+
+  const skipTests = process.argv.includes('--no-test') || process.argv.includes('skip-test=true');
+  if (skipTests) {
+    console.log(styleText('yellow', '\n⚠️  [Migrations Generator] Pruebas de migración omitidas por flag explícito (--no-test).'));
+    return;
+  }
+
+  console.log(styleText('bold', '\n══════════════════════════════════════════════════════════════════════'));
+  console.log(styleText('bold', styleText('cyan', '🔍 PASO 1/2: Validando sintaxis, monotonicidad y timestamps SQL...')));
+  console.log(styleText('bold', '══════════════════════════════════════════════════════════════════════\n'));
+
+  const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
+  const validateProc = spawnSync(npmCmd, ['run', 'validate:sql'], {
+    stdio: 'inherit'
+  });
+
+  if (validateProc.status !== 0) {
+    console.error(styleText('bold', styleText('red', '\n❌ [Migrations Generator] ERROR: Las migraciones fallaron la validación estática de SQL.')));
+    console.error(styleText('red', '👉 Corrige los errores señalados arriba antes de aprobar la migración.\n'));
+    process.exit(1);
+  }
+
+  console.log(styleText('bold', '\n══════════════════════════════════════════════════════════════════════'));
+  console.log(styleText('bold', styleText('cyan', '🧪 PASO 2/2: Ejecutando test obligatorio contra respaldo real de producción...')));
+  console.log(styleText('bold', '══════════════════════════════════════════════════════════════════════\n'));
+
+  const testProc = spawnSync(npmCmd, ['run', 'test:migrations'], {
+    stdio: 'inherit'
+  });
+
+  if (testProc.status !== 0) {
+    console.error(styleText('bold', styleText('red', '\n❌ [Migrations Generator] ERROR: Las migraciones NO pasaron la prueba de compatibilidad con el respaldo real.')));
+    console.error(styleText('red', '👉 La migración ha sido RECHAZADA. Revisa los errores del test backup_migration_real.\n'));
+    process.exit(1);
+  }
+
+  console.log(styleText('bold', '\n══════════════════════════════════════════════════════════════════════'));
+  console.log(styleText('bold', styleText('green', '✨ [Migrations Generator] MIGRACIONES CERTIFICADAS Y APROBADAS CON ÉXITO.')));
+  console.log(styleText('green', '   - Manifiesto generado en src/logic/db/migrations_data.ts'));
+  console.log(styleText('green', '   - Paridad y sintaxis SQL: PASS'));
+  console.log(styleText('green', '   - Compatibilidad con respaldo real de producción: PASS'));
+  console.log(styleText('bold', '══════════════════════════════════════════════════════════════════════\n'));
+}
+
 // Support running directly
 const isDirectRun = process.argv[1] && (
   process.argv[1].endsWith('generate_migrations.ts') ||
@@ -182,5 +231,8 @@ const isDirectRun = process.argv[1] && (
 );
 
 if (isDirectRun) {
-  generateMigrations().catch(console.error);
+  runDirectCliPipeline().catch((err: unknown) => {
+    console.error(styleText('red', `❌ [Migrations Generator] Error fatal: ${(err as Error).message}`));
+    process.exit(1);
+  });
 }

@@ -50,11 +50,11 @@
       background-repeat: no-repeat;
       background-position: center;
       background-color: transparent;
-      filter: none !important;
+      filter: none;
     }
 
     &.is-low-power {
-      filter: none !important;
+      filter: none;
     }
   }
 
@@ -74,11 +74,11 @@
       background-repeat: no-repeat;
       background-position: center;
       background-color: transparent;
-      filter: none !important;
+      filter: none;
     }
 
     &.is-low-power {
-      filter: none !important;
+      filter: none;
     }
   }
 }

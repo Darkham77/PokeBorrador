@@ -1,17 +1,19 @@
 <script setup lang="ts">
 // [PureVue-Ignore-Length]
 const MAP_CARD_HOVER_Y_OFFSET_PX = -8
-const POKEBALL_TRIGGER_HOVER_OFFSET_PX = -8
 const MAP_CARD_BG_SCALE_HOVER = 1.08
-const POKEBALL_TRIGGER_HOVER_SCALE = 1.35
 const GSAP_TRANSITION_DURATION_SEC = 0.25
 const DEFAULT_OVERLAY_OPACITY = 0.35
 import { computed, ref, watch } from 'vue'
 import { gsap } from 'gsap'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import MapCardHeader from './MapCardHeader.vue'
 import MapCardSpawns from './MapCardSpawns.vue'
+import MapCardGuardianBadge from './MapCardGuardianBadge.vue'
+import MapCardLeftPills from './MapCardLeftPills.vue'
+import MapCardCyclePill from './MapCardCyclePill.vue'
+import MapCardSpawnsTrigger from './MapCardSpawnsTrigger.vue'
+import MapCardLockOverlay from './MapCardLockOverlay.vue'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
@@ -83,14 +85,14 @@ const modalStore = useModalStore()
 const cardRef = ref<HTMLElement | null>(null)
 const bgRef = ref<HTMLElement | null>(null)
 const overlayRef = ref<HTMLElement | null>(null)
-const pokeballTriggerRef = ref<HTMLElement | null>(null)
 
 // Animation DOM references
 const spawnsRef = ref<InstanceType<typeof MapCardSpawns> | null>(null)
 
-const isPerformanceMode = computed(() => {
-  return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
+const isFastMode = computed(() => {
+  return uiStore.isFastMode || battleStore.isBattleActive
 })
+const isPerformanceMode = isFastMode
 
 const windowWidthRef = computed(() => uiStore.windowWidth)
 
@@ -133,7 +135,7 @@ const openRouteSpawnsModal = () => {
 // Hover effects
 const isHovered = ref(false)
 const onMouseEnter = () => {
-  if (isCardLocked.value || uiStore.isLowPowerActive || isPerformanceMode.value) return
+  if (isCardLocked.value || uiStore.isLowPowerActive || isFastMode.value) return
   isHovered.value = true
   
   gsap.to(cardRef.value, {
@@ -215,43 +217,6 @@ const onMouseLeave = () => {
   }
 }
 
-const onPokeballMouseEnter = () => {
-  if (uiStore.isLowPowerActive) return
-  if (pokeballTriggerRef.value) {
-    gsap.to(pokeballTriggerRef.value, {
-      x: POKEBALL_TRIGGER_HOVER_OFFSET_PX,
-      y: POKEBALL_TRIGGER_HOVER_OFFSET_PX,
-      scale: POKEBALL_TRIGGER_HOVER_SCALE,
-      duration: GSAP_TRANSITION_DURATION_SEC,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    })
-  }
-}
-
-const onPokeballMouseLeave = () => {
-  if (uiStore.isLowPowerActive) {
-    if (pokeballTriggerRef.value) {
-      gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
-    }
-    return
-  }
-  if (pokeballTriggerRef.value) {
-    gsap.to(pokeballTriggerRef.value, {
-      x: 0,
-      y: 0,
-      scale: 1,
-      duration: GSAP_TRANSITION_DURATION_SEC,
-      ease: 'power2.out',
-      overwrite: 'auto',
-      onComplete: () => {
-        if (pokeballTriggerRef.value) {
-          gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
-        }
-      }
-    })
-  }
-}
 
 // 2. Sprites & Auras Processing
 const { processedSprites, guardianProcessedSprite, processedRareAura, processedAtmosAura } = useMapCardSprites(
@@ -269,6 +234,7 @@ useMapCardAnimations({
   cardRef,
   spawnGridRef: spawnGridHtmlRef,
   isVisible,
+  isFastMode,
   isPerformanceMode,
   isLowPowerActive: computed(() => uiStore.isLowPowerActive),
   computedWeather,
@@ -295,41 +261,60 @@ watch(
   },
   { immediate: true }
 )
+
+function handleCardClick() {
+  logger.debug('MapCard', `Click detected. isLocked: ${isCardLocked.value}, isFastMode: ${isFastMode.value}`)
+  if (!isCardLocked.value && !isFastMode.value) {
+    emit('navigate', props.map)
+  } else {
+    logger.warn('MapCard', 'Navigation blocked:', {
+      isLocked: isCardLocked.value,
+      isFastMode: isFastMode.value,
+      isBattleActive: battleStore.isBattleActive,
+      isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen
+    })
+  }
+}
+
+const isAnyLocked = computed(() => isCardLocked.value || Boolean(props.isSafariLocked))
+const showGuardianBadge = computed(() => Boolean(processedGuardian.value) && !isAnyLocked.value && isVisible.value)
+const showSpawnsTrigger = computed(() => !isAnyLocked.value && !isFastMode.value)
+
+const cardDynamicClasses = computed(() => [
+  'location-card map-card legacy-panel',
+  {
+    locked: isCardLocked.value,
+    'safari-locked': Boolean(props.isSafariLocked),
+    'is-low-power': uiStore.isLowPowerActive,
+    'fast-mode': isFastMode.value,
+    'performance-mode': isFastMode.value,
+    'is-hovered': isHovered.value,
+    'is-rocket-extorted': Boolean(props.isRocketExtorted)
+  }
+])
+
+const cardDynamicStyles = computed(() => ({
+  '--weather-only-filter': weatherOnlyFilter.value,
+  '--bg-image': showBg.value ? `url('${imgPath.value}')` : 'none',
+  '--flare-1-url': showBg.value ? `url('${flare1Url}')` : 'none',
+  '--flare-2-url': showBg.value ? `url('${flare2Url}')` : 'none',
+  '--pre-rendered-rare-aura': processedRareAura.value ? `url('${processedRareAura.value}')` : 'none',
+  '--pre-rendered-atmos-aura': processedAtmosAura.value ? `url('${processedAtmosAura.value}')` : 'none'
+}))
 </script>
 
 <template>
   <div
     :id="`map-card-${map.id}`"
     class="map-card-wrapper"
-    @click.stop="() => {
-      logger.debug('MapCard', `Click detected. isLocked: ${isCardLocked}, isPerformanceMode: ${isPerformanceMode}`);
-      if (!isCardLocked && !isPerformanceMode) {
-        emit('navigate', props.map);
-      } else {
-        logger.warn('MapCard', 'Navigation blocked:', { isLocked: isCardLocked, isPerformanceMode, isBattleActive: battleStore.isBattleActive, isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen });
-      }
-    }"
+    @click.stop="handleCardClick"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
     <div
       ref="cardRef"
-      :class="['location-card map-card legacy-panel', {
-        locked: isCardLocked,
-        'safari-locked': isSafariLocked,
-        'is-low-power': uiStore.isLowPowerActive,
-        'performance-mode': isPerformanceMode,
-        'is-hovered': isHovered,
-        'is-rocket-extorted': isRocketExtorted
-      }]"
-      :style="{ 
-        '--weather-only-filter': weatherOnlyFilter,
-        '--bg-image': showBg ? `url('${imgPath}')` : 'none',
-        '--flare-1-url': showBg ? `url('${flare1Url}')` : 'none',
-        '--flare-2-url': showBg ? `url('${flare2Url}')` : 'none',
-        '--pre-rendered-rare-aura': processedRareAura ? `url('${processedRareAura}')` : 'none',
-        '--pre-rendered-atmos-aura': processedAtmosAura ? `url('${processedAtmosAura}')` : 'none'
-      }"
+      :class="cardDynamicClasses"
+      :style="cardDynamicStyles"
     >
       <!-- Background and overlay -->
       <div 
@@ -345,137 +330,58 @@ watch(
         :weather="computedWeather"
         :cycle="cycle"
         :season="currentWeatherSeason"
+        :is-fast-mode="isFastMode"
         :is-performance-mode="isPerformanceMode"
         :is-low-power="uiStore.isLowPowerActive"
         :is-visible="isVisible"
-        :is-locked="isCardLocked || isSafariLocked"
+        :is-locked="isAnyLocked"
         :anim-seed="getWeatherAnimSeed(props.map.id)"
         :z-index="'var(--z-map-weather)'"
       />
 
-      <div
-        v-if="isCardLocked || isSafariLocked"
-        class="lock-overlay"
-      >
-        <span class="lock-text">{{ lockReason }}</span>
-      </div>
+      <MapCardLockOverlay
+        :is-locked="isAnyLocked"
+        :lock-reason="lockReason"
+      />
 
       <!-- 1. Guardian (Top Left) -->
-      <PVTooltip
-        v-if="processedGuardian && !isCardLocked && !isSafariLocked && isVisible"
-        class="guardian-status-badge"
-        :title="!processedGuardian.isSeen ? 'POKÉMON DESCONOCIDO' : (processedGuardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN')"
-        :description="processedGuardian.captured 
-          ? 'El protector de esta ruta ha sido vencido, permitiendo que una facción tome el control total.' 
-          : `Un Pokémon poderoso que protege la ruta. ${processedGuardian.isSeen ? 'Es un ' + processedGuardian.name + ' (' + processedGuardian.typeInfo + '). ' : ''}Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.`"
-        position="top"
-      >
-        <div class="spawn-atmosphere-wrapper">
-          <img 
-            :src="guardianProcessedSprite || processedGuardian.sprite" 
-            class="guardian-mini-sprite" 
-            :class="{ 
-              captured: processedGuardian.captured, 
-              'spawn-silhouette': !guardianProcessedSprite && !processedGuardian.isCaught,
-              'is-pre-rendered': !!guardianProcessedSprite 
-            }"
-            :style="{ '--spawn-seed': processedGuardian.seed }"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-          >
-        </div>
-        <span :class="['guardian-label', { captured: processedGuardian.captured }]">
-          {{ processedGuardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
-        </span>
-      </PVTooltip>
+      <MapCardGuardianBadge
+        v-if="processedGuardian && showGuardianBadge"
+        :guardian="processedGuardian"
+        :processed-sprite="guardianProcessedSprite"
+      />
 
       <!-- 2. Cycle Pill (Top Right) -->
-      <PVTooltip
-        ref="locationTagRef"
-        :class="['location-tag', (isCardLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild']"
-        :title="(isCardLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
-        :description="(isCardLocked || isSafariLocked) ? lockDescription : `Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}${weatherModifiersDescription}`"
-        position="top"
-      >
-        <span class="emoji pill-content weather-emoji">
-          {{ (isCardLocked || isSafariLocked) ? '🔒' : (cycleEmoji + seasonEmoji + weatherEmoji) }}
-        </span>
-      </PVTooltip>
+      <MapCardCyclePill
+        :is-locked="isAnyLocked"
+        :lock-description="lockDescription"
+        :cycle-name="cycleName"
+        :season-name="seasonName"
+        :weather-name="weatherName"
+        :weather-modifiers-description="weatherModifiersDescription"
+        :cycle-emoji="cycleEmoji"
+        :season-emoji="seasonEmoji"
+        :weather-emoji="weatherEmoji"
+      />
 
       <!-- 4. Bottom Left Actions — all 4 left pills in one container (grows upward from bottom) -->
-      <!-- DOM order (column-reverse): fishing → archaeology → faction → crown -->
-      <!-- Visual order from bottom: fishing, archaeology, faction, crown -->
-      <div class="map-left-pills-container">
-        <!-- Fishing Icon -->
-        <PVTooltip
-          v-if="map.fishing && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
-          class="fishing-pill-standalone"
-          title="PESCA"
-          description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
-          position="top"
-        >
-          <div 
-            ref="fishingPillRef"
-            :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
-          >
-            <span class="emoji pill-icon">🎣</span>
-          </div>
-        </PVTooltip>
-
-        <!-- Archaeology Icon -->
-        <PVTooltip
-          v-if="map.archaeology && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
-          class="archaeology-pill-standalone"
-          title="ARQUEOLOGÍA"
-          description="¡Esta zona tiene rocas antiguas! Puedes excavar fósiles y minerales aquí."
-          position="top"
-        >
-          <div 
-            ref="archaeologyPillRef"
-            :class="['interactive-pill archaeology-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
-          >
-            <span class="emoji pill-icon">⛏️</span>
-          </div>
-        </PVTooltip>
-
-        <!-- Faction Status Pill -->
-        <PVTooltip
-          v-if="dominance?.winner && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
-          ref="factionPillRef"
-          class="faction-status-pill"
-          title="DOMINIO FACCIÓN"
-          :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
-          position="top"
-        >
-          <div class="pill-content">
-            <span class="emoji faction-emoji">
-              {{ dominance.winner === 'union' ? '⭐' : '✊' }}
-            </span>
-          </div>
-        </PVTooltip>
-
-        <!-- Winner Crown -->
-        <PVTooltip
-          v-if="isPlayerWinner && !isPerformanceMode && !isCardLocked && !isSafariLocked"
-          ref="crownRef"
-          class="dom-badge winning"
-          title="DOMINADO"
-          description="¡Bonus de captura activo por dominio de facción!"
-          position="top"
-        >
-          <div class="crown-glow-wrapper">
-            <div 
-              v-if="!uiStore.isLowPowerActive" 
-              class="crown-shine-aura" 
-            />
-            <span class="emoji pill-content icon">👑</span>
-          </div>
-        </PVTooltip>
-      </div>
+      <MapCardLeftPills
+        :map="map"
+        :is-fast-mode="isFastMode"
+        :is-performance-mode="isPerformanceMode"
+        :is-card-locked="isCardLocked"
+        :is-safari-locked="isSafariLocked"
+        :is-visible="isVisible"
+        :is-low-power="uiStore.isLowPowerActive"
+        :dominance="dominance"
+        :is-player-winner="isPlayerWinner"
+      />
 
       <!-- 5. Spawns Grid (Rendered using MapCardSpawns subcomponent) -->
       <MapCardSpawns
         ref="spawnsRef"
         :is-locked="isCardLocked"
+        :is-fast-mode="isFastMode"
         :is-performance-mode="isPerformanceMode"
         :is-visible="isVisible"
         :hide-map-pokemon="uiStore.hideMapPokemon"
@@ -492,35 +398,15 @@ watch(
       <MapCardHeader
         :name="map.name"
         :desc="map.desc || ''"
+        :is-fast-mode="isFastMode"
         :is-performance-mode="isPerformanceMode"
       />
 
       <!-- 8. Spawns Report Pokéball Trigger (Bottom Right Corner) -->
-      <PVTooltip
-        v-if="!isCardLocked && !isSafariLocked && !isPerformanceMode"
-        title="REPORTE DE ENCUENTROS"
-        description="Ver probabilidades en tiempo real de todos los Pokémon."
-        position="top"
-        class="pokeball-route-tooltip"
-      >
-        <div
-          class="pokeball-route-trigger"
-          @click.stop.prevent="openRouteSpawnsModal"
-          @mouseenter="onPokeballMouseEnter"
-          @mouseleave="onPokeballMouseLeave"
-        >
-          <div
-            ref="pokeballTriggerRef"
-            class="pokeball-icon-wrapper"
-          >
-            <img
-              :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
-              class="pokeball-icon"
-              alt="Spawns"
-            >
-          </div>
-        </div>
-      </PVTooltip>
+      <MapCardSpawnsTrigger
+        v-if="showSpawnsTrigger"
+        @click="openRouteSpawnsModal"
+      />
     </div>
   </div>
 </template>

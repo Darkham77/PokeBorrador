@@ -33,6 +33,13 @@ export const TEXTURE_TILE_SIZE_LARGE = 512;
 /** Huge noise/mist texture tile dimension in pixels. */
 export const TEXTURE_TILE_SIZE_HUGE = 1024;
 
+/** Single-tile dimensions for atmospheric precipitation layer looping. */
+export const WEATHER_TILE_SNOW_L1_PX = 256;
+export const WEATHER_TILE_SNOW_L2_PX = 128;
+export const WEATHER_TILE_HAIL_L1_PX = 128;
+export const WEATHER_TILE_HAIL_L2_PX = 64;
+export const WEATHER_TILE_SANDSTORM_PX = 512;
+
 /** Base speed variance factor for Web Worker atmosphere rendering. */
 export const ATMOSPHERE_SPEED_VAR_BASE = 0.8;
 
@@ -130,6 +137,12 @@ export const WEATHER_EFFECT_PRESETS = {
   SNOW_BRIGHTNESS: 0.85,
   SNOW_SATURATE: 0.5,
   SNOW_CONTRAST: 1.2,
+  BLIZZARD_BRIGHTNESS: 0.95,
+  BLIZZARD_SATURATE: 0.65,
+  BLIZZARD_CONTRAST: 1.15,
+  HAIL_BRIGHTNESS: 0.90,
+  HAIL_SATURATE: 0.70,
+  HAIL_CONTRAST: 1.15,
   RAIN_HEAVY_BRIGHTNESS: 0.65,
   RAIN_STANDARD_BRIGHTNESS: 0.8,
   RAIN_HEAVY_SATURATE: 0.5,

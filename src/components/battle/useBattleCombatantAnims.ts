@@ -5,41 +5,21 @@ import type { BattleCombatantProps } from '@/types/battle/battle';
 import { isFlying } from '@/composables/battle/useBattleShadows';
 import { buildFaintTimeline, buildAttackTimeline } from './helpers/combatantActionAnims.ts';
 import {
-  POKEBALL_BLINK_BRIGHTNESS,
-  POKEBALL_BLINK_HUE_ROTATE_DEG,
-  POKEBALL_BLINK_DURATION_SEC,
-  SCALE_ZERO,
-  OPACITY_FULL,
-} from '@/logic/constants/animations';
-import {
   animateCombatantEmerging,
   animateCombatantHeal,
   animateCombatantRecoil,
-  animatePokeballWobble,
-  animatePokeballBlink,
-  animateSpriteShake,
-  animateSpriteBlink,
   animateStatusFlash,
-  executeCatchingTween,
-  executeReleasingTween
+  dispatchBallAnimation,
+  handleCombatantShake,
+  handleCombatantBlink,
+  togglePokeballCaptureSuccess,
+  prepareBallTransition
 } from './helpers/combatantFeedbackAnims.ts';
 
 import {
   isIdleSuppressed,
-  getIdleFloatingConfig,
-  getIdleGroundedConfig
+  runCombatantIdleAnimation
 } from './helpers/combatantIdleAnims.ts';
-
-import {
-  onSparkleEnter,
-  onBallEnter,
-  onBallLeave,
-  onCriticalBannerEnter
-} from './helpers/combatantSparkleBallHooks.ts';
-
-export { onSparkleEnter, onBallEnter, onBallLeave, onCriticalBannerEnter };
-
-const POKEBALL_SEPIA_RATIO = 0.5;
 
 export function useBattleCombatantAnims(
   props: BattleCombatantProps,
@@ -61,26 +41,15 @@ export function useBattleCombatantAnims(
   });
 
   const initIdleAnim = () => {
-    if (!idleWrapperRef.value || !props.pokemon) return;
+    const el = idleWrapperRef.value;
+    const poke = props.pokemon;
+    if (!el || !poke) return;
     if (idleTween) {
       idleTween.kill();
       idleTween = null;
     }
-
-    gsap.killTweensOf(idleWrapperRef.value);
-
-    if (isIdleSuppressed(props.pokemon.status, props.pokemon.confused, props.animState)) {
-      gsap.set(idleWrapperRef.value, { y: 0, rotation: 0, scaleX: 1, scaleY: 1 });
-      return;
-    }
-
-    if (isFloating.value) {
-      gsap.set(idleWrapperRef.value, { scaleX: 1, scaleY: 1 });
-      idleTween = gsap.to(idleWrapperRef.value, getIdleFloatingConfig());
-    } else {
-      gsap.set(idleWrapperRef.value, { y: 0 });
-      idleTween = gsap.to(idleWrapperRef.value, getIdleGroundedConfig());
-    }
+    const suppressed = isIdleSuppressed(poke.status, poke.confused, props.animState);
+    idleTween = runCombatantIdleAnimation(el, suppressed, isFloating.value);
   };
 
   watch(() => [props.pokemon?.status, props.pokemon?.confused, props.animState, isFloating.value], () => {
@@ -92,80 +61,57 @@ export function useBattleCombatantAnims(
   });
 
   let activeBallAnim: string | null = null;
+  const resetActiveBall = () => {
+    activeBallAnim = null;
+  };
+
+  const canAnimateBall = (sprite: HTMLElement | null, val: string): sprite is HTMLElement => {
+    if (!sprite) {
+      resetActiveBall();
+      return false;
+    }
+    if (activeBallAnim === val) return false;
+    activeBallAnim = val;
+    return true;
+  };
 
   const triggerBallAnimation = (val: string | null) => {
-    if (!spriteRef.value || !val) {
-      activeBallAnim = null;
+    const sprite = spriteRef.value;
+    if (!val || (val !== 'catching' && val !== 'releasing')) {
+      if (val !== 'trapped') {
+        resetActiveBall();
+      }
       return;
     }
-    if (activeBallAnim === val) return;
-    activeBallAnim = val;
+    if (!canAnimateBall(sprite, val)) return;
 
-    const origin = getSpriteFeetOrigin();
-    const coords = getBallTargetCoords();
-    const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`;
-
-    if (val === 'catching') {
-      const tween = executeCatchingTween(
-        spriteRef.value,
-        shadowWrapperRef.value,
-        spriteRotationRef.value,
-        origin,
-        coords,
-        () => { activeBallAnim = null; }
-      );
-      gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
-    } else if (val === 'releasing') {
-      const pokeId = props.pokemon?.id;
-      const tween = executeReleasingTween(
-        spriteRef.value,
-        shadowWrapperRef.value,
-        spriteRotationRef.value,
-        origin,
-        coords,
-        pokeId,
-        () => { activeBallAnim = null; }
-      );
-      gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
-    }
+    dispatchBallAnimation(val, props.side, props.pokemon, {
+      sprite,
+      shadow: shadowWrapperRef.value,
+      rotation: spriteRotationRef.value,
+      origin: getSpriteFeetOrigin(),
+      coords: getBallTargetCoords(),
+      onDone: resetActiveBall
+    });
   };
 
   watch(() => props.animState, (val) => {
-    if ((val === 'releasing' || val === 'catching') && spriteRef.value) {
+    const sprite = spriteRef.value;
+    if ((val === 'releasing' || val === 'catching') && sprite) {
       const origin = getSpriteFeetOrigin();
       const coords = getBallTargetCoords();
-      if (spriteRotationRef.value) {
-        gsap.set(spriteRotationRef.value, { rotation: 0, clearProps: 'transform,rotation' });
-      }
-      if (shadowWrapperRef.value) {
-        gsap.set(shadowWrapperRef.value, { display: 'none' });
-      }
-      if (val === 'releasing') {
-        gsap.set(spriteRef.value, {
-          transformOrigin: origin,
-          x: coords.x,
-          y: coords.y,
-          scale: SCALE_ZERO,
-          opacity: OPACITY_FULL,
-          filter: 'url(#pixel-energy-optimized)'
-        });
-      } else if (val === 'catching') {
-        gsap.set(spriteRef.value, {
-          transformOrigin: origin,
-          x: 0,
-          y: 0,
-          scale: 1,
-          opacity: OPACITY_FULL,
-          filter: 'url(#pixel-energy-optimized)'
-        });
+      prepareBallTransition(sprite, spriteRotationRef.value, shadowWrapperRef.value, origin, coords, val === 'releasing');
+      nextTick(() => triggerBallAnimation(val));
+    } else {
+      if (val !== 'trapped') {
+        resetActiveBall();
       }
     }
-    nextTick(() => triggerBallAnimation(val || null));
   }, { immediate: true });
 
   watch(spriteRef, (newEl) => {
-    if (newEl && props.animState) {
-      nextTick(() => triggerBallAnimation(props.animState || null));
+    if (newEl && (props.animState === 'catching' || props.animState === 'releasing')) {
+      nextTick(() => triggerBallAnimation(props.animState ?? null));
     }
   });
 
@@ -177,13 +123,15 @@ export function useBattleCombatantAnims(
   });
 
   watch(() => props.isFainting, (val) => {
-    if (val && spriteRef.value) {
-      buildFaintTimeline(spriteRef.value, props.pokemon, shadowWrapperRef.value);
-    } else if (!val && spriteRef.value) {
-      gsap.set(spriteRef.value, { clearProps: 'opacity,y,transition' });
-      if (shadowWrapperRef.value) {
-        gsap.set(shadowWrapperRef.value, { clearProps: 'display' });
-      }
+    const sprite = spriteRef.value;
+    if (!sprite) return;
+    if (val) {
+      buildFaintTimeline(sprite, props.pokemon, shadowWrapperRef.value);
+      return;
+    }
+    gsap.set(sprite, { clearProps: 'opacity,y,transition' });
+    if (shadowWrapperRef.value) {
+      gsap.set(shadowWrapperRef.value, { clearProps: 'display' });
     }
   });
 
@@ -201,34 +149,23 @@ export function useBattleCombatantAnims(
   });
 
   watch(() => props.pokemon?.status, (newS, oldS) => {
-    if (!spriteRotationRef.value) return;
+    const rot = spriteRotationRef.value;
+    if (!rot || newS === oldS) return;
 
-    if (newS && newS !== oldS) {
-      animateStatusFlash(spriteRotationRef.value, newS);
-    } else if (!newS && oldS) {
-      gsap.killTweensOf(spriteRotationRef.value, 'filter');
-      gsap.set(spriteRotationRef.value, { clearProps: 'filter' });
+    if (newS) {
+      animateStatusFlash(rot, newS);
+    } else {
+      gsap.killTweensOf(rot, 'filter');
+      gsap.set(rot, { clearProps: 'filter' });
     }
   });
 
   watch(() => props.isShaking, (shaking) => {
-    if (pokeballImgRef.value) {
-      if (shaking) animatePokeballWobble(pokeballImgRef.value);
-    } else if (!props.isCaptureSuccess) {
-      if (shaking && spriteRef.value) {
-        animateSpriteShake(spriteRef.value, props.side === 'player');
-      }
-    }
+    handleCombatantShake(pokeballImgRef.value, spriteRef.value, Boolean(props.isCaptureSuccess), props.side === 'player', Boolean(shaking));
   });
 
   watch(() => props.isBlinking, (blinking) => {
-    if (pokeballImgRef.value) {
-      if (blinking) animatePokeballBlink(pokeballImgRef.value);
-    } else if (!props.isCaptureSuccess) {
-      if (blinking && spriteRef.value) {
-        animateSpriteBlink(spriteRef.value, props.side === 'player');
-      }
-    }
+    handleCombatantBlink(pokeballImgRef.value, spriteRef.value, Boolean(props.isCaptureSuccess), props.side === 'player', Boolean(blinking));
   });
 
   watch(() => props.isHealing, (val) => {
@@ -241,19 +178,9 @@ export function useBattleCombatantAnims(
     if (success) {
       wasCaptured.value = true;
     }
-    if (!pokeballImgRef.value) return;
-    if (success) {
-      successBlinkTween = gsap.fromTo(pokeballImgRef.value,
-        { filter: 'Brightness(1)' },
-        { filter: `Brightness(${POKEBALL_BLINK_BRIGHTNESS}) Sepia(${POKEBALL_SEPIA_RATIO}) Hue-Rotate(${POKEBALL_BLINK_HUE_ROTATE_DEG}deg)`, duration: POKEBALL_BLINK_DURATION_SEC, yoyo: true, repeat: -1, ease: 'power1.inOut' }
-      );
-    } else {
-      if (successBlinkTween) {
-        successBlinkTween.kill();
-        successBlinkTween = null;
-      }
-      gsap.set(pokeballImgRef.value, { clearProps: 'filter' });
-    }
+    const ball = pokeballImgRef.value;
+    if (!ball) return;
+    successBlinkTween = togglePokeballCaptureSuccess(ball, Boolean(success), successBlinkTween);
   });
 
   const onRecoilEvent = (e: Event) => {

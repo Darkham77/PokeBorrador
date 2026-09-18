@@ -197,7 +197,7 @@ const handleSwitch = (index: number) => {
     box-shadow: 
       0 0 20px Rgba(var(--tier-color-rgb), 0.4),
       inset 0 0 10px Rgba(var(--tier-color-rgb), 0.2) !important;
-    transform: Scale(0.98) !important;
+    transform: Scale(0.98);
   }
 
   &.is-fainted {

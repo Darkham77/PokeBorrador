@@ -12,6 +12,7 @@ import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 import { DAY_PHASES, type DayPhase } from '@/types/system/time'
 import { getSpeciesEntries } from '@/logic/encounters/encounters'
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
+import { getMapWeatherConfig } from '@/logic/encounters/routeWeatherDomainHelpers'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { DominanceInfo } from '@/types/system/stores'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
@@ -149,7 +150,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
     const wildList = props.map.wild?.[cycle] || []
 
     const filteredSpawns = allSpawns.value.filter(id => {
-      const weatherConfig = props.map.weather?.[weather]
+      const weatherConfig = getMapWeatherConfig(props.map, weather)
       const isVisitor = !!weatherConfig?.visitors && getSpeciesEntries(weatherConfig.visitors).some(entry => entry.id === id)
       const isExclusive = !!weatherConfig?.exclusive && getSpeciesEntries(weatherConfig.exclusive).some(entry => entry.id === id)
       const isFishingActive = !!props.map.fishing?.pool?.includes(id)
@@ -165,6 +166,90 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
     return { slots: grid, rows, cols, totalSlots }
   })
 
+const DAY_PHASE_EMOJIS: Record<DayPhase, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
+
+function resolvePokedexStatus(
+  id: PokemonSpeciesId,
+  seenPokedex: readonly PokemonSpeciesId[],
+  caughtPokedex: readonly PokemonSpeciesId[],
+  debugMode?: string | null
+): { isSeen: boolean; isCaught: boolean } {
+  if (debugMode === 'caught') return { isSeen: true, isCaught: true }
+  if (debugMode === 'seen') return { isSeen: true, isCaught: false }
+  const isCaught = caughtPokedex.includes(id)
+  const isSeen = isCaught || seenPokedex.includes(id)
+  return { isSeen, isCaught }
+}
+
+function resolveWeatherSpawnFlags(id: PokemonSpeciesId, map: MapLocation, weather: WeatherId) {
+  const weatherConfig = getMapWeatherConfig(map, weather);
+  const isVisitor = !!weatherConfig?.visitors && getSpeciesEntries(weatherConfig.visitors).some(entry => entry.id === id);
+  const isExclusive = !!weatherConfig?.exclusive && getSpeciesEntries(weatherConfig.exclusive).some(entry => entry.id === id);
+  const multiplier = getWeatherMultiplier(id, weather);
+  const isBoosted = !isVisitor && !isExclusive && multiplier > 1.0;
+  const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0;
+  return {
+    isVisitor,
+    isExclusive,
+    isSpecialWeatherSpawn: isVisitor || isExclusive,
+    isBoosted,
+    isDebuffed
+  };
+}
+
+function resolveWeatherTag(flags: ReturnType<typeof resolveWeatherSpawnFlags>): string {
+  if (flags.isVisitor) return 'Visitante';
+  if (flags.isExclusive) return 'Exclusivo';
+  if (flags.isBoosted) return 'Potenciado';
+  return 'Debilitado';
+}
+
+function formatCycleText(appearingCycles: DayPhase[], isSeen: boolean): string {
+  const isLimited = appearingCycles.length > 0 && appearingCycles.length < DAY_PHASES.length;
+  if (!isLimited || !isSeen) return '';
+  const emojis = appearingCycles.map(c => DAY_PHASE_EMOJIS[c] || c).join('');
+  return `Aparición: ${emojis}`;
+}
+
+function formatWeatherNotice(
+  flags: ReturnType<typeof resolveWeatherSpawnFlags>,
+  isSeen: boolean,
+  weatherEmoji: string
+): string {
+  const hasWeatherEffect = flags.isSpecialWeatherSpawn || flags.isBoosted || flags.isDebuffed;
+  if (!hasWeatherEffect) return '';
+  if (!isSeen) return `${weatherEmoji} Anomalía Atmosférica detectada.`;
+  const tag = resolveWeatherTag(flags);
+  return `${weatherEmoji} ${tag} por el clima.`;
+}
+
+function buildWeatherTimeText(
+  id: PokemonSpeciesId,
+  isSeen: boolean,
+  appearingCycles: DayPhase[],
+  map: MapLocation,
+  weather: WeatherId,
+  weatherEmoji: string
+): { timeText: string; isSpecialWeatherSpawn: boolean; isExclusive: boolean } {
+  const flags = resolveWeatherSpawnFlags(id, map, weather);
+  const cycleText = formatCycleText(appearingCycles, isSeen);
+  const weatherNotice = formatWeatherNotice(flags, isSeen, weatherEmoji);
+
+  let timeText = cycleText;
+  if (weatherNotice) {
+    timeText = timeText ? `${timeText}\n${weatherNotice}` : weatherNotice;
+  }
+  if (!timeText) {
+    timeText = 'Habitante común.';
+  }
+
+  return {
+    timeText,
+    isSpecialWeatherSpawn: flags.isSpecialWeatherSpawn,
+    isExclusive: flags.isExclusive
+  };
+}
+
   const processedGrid = computed(() => {
     const gridData = spawnGrid.value
     const slots = gridData.slots || []
@@ -173,56 +258,22 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
 
     return slots.map((id, index) => {
       if (!id) return { id: null, key: `empty-${index}` }
-      let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
-      let isCaught = caughtPokedex.includes(id)
-
-      if (uiStore.debugPokedexMode === 'caught') {
-        isSeen = true; isCaught = true
-      } else if (uiStore.debugPokedexMode === 'seen') {
-        isSeen = true
-      }
+      const { isSeen, isCaught } = resolvePokedexStatus(id, seenPokedex, caughtPokedex, uiStore.debugPokedexMode)
       const pool = props.spawnPool || { generic: [], specific: [], rates: {} }
       const rate = pool.rates?.[id] || 10
       const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
       const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok: UI text display localization string
       const typeInfo = (isSeen && data) ? `Tipo: ${getFormattedTypes(data)}` : ''
 
-      const cycles = DAY_PHASES
-      const appearingCycles = cycles.filter(c => (props.map.wild?.[c] || []).includes(id))
-      const isLimited = appearingCycles.length > 0 && appearingCycles.length < cycles.length
-      
-      const emojiMap: Record<DayPhase, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
-      
-      const weather = computedWeather.value
-      const weatherConfig = props.map.weather?.[weather]
-      const isVisitor = !!weatherConfig?.visitors && getSpeciesEntries(weatherConfig.visitors).some(entry => entry.id === id)
-      const isExclusive = !!weatherConfig?.exclusive && getSpeciesEntries(weatherConfig.exclusive).some(entry => entry.id === id)
-
-      let timeText = ''
-      
-      if (isLimited && isSeen) {
-        const emojis = appearingCycles.map(c => emojiMap[c] || c).join('')
-        timeText = `Aparición: ${emojis}`
-      }
-
-      const multiplier = getWeatherMultiplier(id, weather)
-      const isBoosted = !isVisitor && !isExclusive && multiplier > 1.0
-      const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0
-      const isSpecialWeatherSpawn = isVisitor || isExclusive
-
-      if (isSpecialWeatherSpawn || isBoosted || isDebuffed) {
-        if (isSeen) {
-          const weatherTag = isVisitor ? 'Visitante' : (isExclusive ? 'Exclusivo' : (isBoosted ? 'Potenciado' : 'Debilitado'))
-          const weatherLine = `${weatherEmoji.value} ${weatherTag} por el clima.`
-          timeText = timeText ? `${timeText}\n${weatherLine}` : weatherLine
-        } else {
-          timeText = `${weatherEmoji.value} Anomalía Atmosférica detectada.`
-        }
-      }
-
-      if (!timeText) {
-        timeText = 'Habitante común.'
-      }
+      const appearingCycles = DAY_PHASES.filter(c => (props.map.wild?.[c] || []).includes(id))
+      const { timeText, isSpecialWeatherSpawn, isExclusive } = buildWeatherTimeText(
+        id,
+        isSeen,
+        appearingCycles,
+        props.map,
+        computedWeather.value,
+        weatherEmoji.value
+      )
 
       return {
         id, 

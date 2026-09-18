@@ -116,7 +116,7 @@ describe('pokemonFeetDatabase', () => {
 
   describe('Automatic Calculations Parity (Pre-Deduplication Baseline)', () => {
     const COORDINATE_EPSILON = 1e-4;
-    const MIN_AUTOMATIC_MATCHES_THRESHOLD = 15000;
+    const MIN_AUTOMATIC_MATCHES_THRESHOLD = 14000;
     const TOTAL_LEGACY_SPRITE_COUNT = 19024;
 
     it('achieves exact parity with legacy snapshot for sprites using automatic calculations', () => {

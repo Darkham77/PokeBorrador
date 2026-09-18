@@ -64,6 +64,16 @@
     overflow: visible;
   }
 
+  .pokemon-combat-image-wrapper {
+    width: 100%;
+    height: 100%;
+    overflow: hidden !important;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
   // Debug: radio centrado en el propio sprite (dentro de pokemon-atmosphere-wrapper)
   .debug-poke-radius-sprite {
     position: absolute;
@@ -263,7 +273,7 @@
   pointer-events: none;
   z-index: var(--z-low);
   overflow: visible;
-  filter: var(--weather-filter, none);
+  filter: none;
 
   &.standalone {
     top: 45%;
@@ -302,7 +312,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  filter: var(--weather-filter, none);
+  filter: none;
 }
 
 .ground-fx {
@@ -316,6 +326,30 @@
       display: inline-block;
       will-change: transform, filter, opacity;
       filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
+    }
+  }
+
+  &.stealthrock {
+    transform: Translatey(-8px);
+    gap: 12px;
+
+    .rock-item {
+      font-size: calc(var(--fx-scale, 1) * 24px);
+      display: inline-block;
+      will-change: transform, filter, opacity;
+      filter: Drop-Shadow(0 2px 3px Rgba(0, 0, 0, 0.5));
+    }
+  }
+
+  &.toxicspikes {
+    transform: Translatey(8px);
+    gap: 10px;
+
+    .toxic-spike-item {
+      font-size: calc(var(--fx-scale, 1) * 22px);
+      display: inline-block;
+      will-change: transform, filter, opacity;
+      filter: Drop-Shadow(0 0 4px Rgba(168, 85, 247, 0.7));
     }
   }
   
@@ -335,7 +369,7 @@
   pointer-events: none;
   z-index: var(--z-map-ui);
   overflow: visible;
-  filter: var(--weather-filter, none);
+  filter: none;
 }
 
 .smoke-particle {

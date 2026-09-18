@@ -20,10 +20,34 @@ import {
   calculateEscapeChancePure as pureCalculateEscapeChance
 } from './battleCatchMath.ts';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { BattleStages, BattleWeather } from '@/types/battle/battle';
+import type { BattleStages, BattleWeather, BattleConditionKey, BattleTimedCondition } from '@/types/battle/battle';
 import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { ItemId } from '@/data/inventory/items';
-import { useBattleStore } from '@/stores/battle/battle';
+import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath';
+
+export interface BattleFormulasContext {
+  isGym?: boolean;
+  fieldConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
+}
+
+type BattleFormulasResolver = () => BattleFormulasContext | null | undefined;
+
+let contextResolver: BattleFormulasResolver | null = null; // singleton-ok: Singleton instance state container
+
+export function registerBattleFormulasContextResolver(resolver: BattleFormulasResolver): void {
+  contextResolver = resolver;
+}
+
+function getAmbientBattleContext(): BattleFormulasContext | null { // result-ok: Operation result wrapper payload
+  if (contextResolver) {
+    try {
+      return contextResolver() ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 
 export interface DamageOptions {
   atkStages?: number;
@@ -77,17 +101,13 @@ function toPureWeather(w: BattleWeather | null | undefined): PureBattleWeather |
 export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
   let activeWeather = weather;
   let isGym = false;
-  try {
-    const battleStore = useBattleStore();
-    const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
-    if (battleStore.state?.isGym && !isMoveWeather) {
-      activeWeather = null;
-      isGym = true;
-    } else if (battleStore.state?.isGym) {
-      isGym = true;
-    }
-  } catch {
-    // Pinia not initialized or similar
+  const ambient = getAmbientBattleContext();
+  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+  if (ambient?.isGym && !isMoveWeather) {
+    activeWeather = null;
+    isGym = true;
+  } else if (ambient?.isGym) {
+    isGym = true;
   }
 
   return pureGetEffectiveStat(
@@ -100,27 +120,22 @@ export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stage
   );
 }
 
-import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath';
 import { calculateDetailedStatBreakdown } from './statBreakdownHelper.ts';
 
 export function getStatBreakdown(pokemon: Pokemon, statKey: StatIDExceptHP | keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
   let activeWeather = weather
   let isGym = false
   let fieldConditions: Record<string, unknown> = {}
-  try {
-    const battleStore = useBattleStore()
-    const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1)
-    if (battleStore.state?.isGym && !isMoveWeather) {
-      activeWeather = null
-      isGym = true
-    } else if (battleStore.state?.isGym) {
-      isGym = true
-    }
-    if (battleStore.state?.fieldConditions) {
-      fieldConditions = battleStore.state.fieldConditions
-    }
-  } catch {
-    // Pinia not initialized
+  const ambient = getAmbientBattleContext()
+  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1)
+  if (ambient?.isGym && !isMoveWeather) {
+    activeWeather = null
+    isGym = true
+  } else if (ambient?.isGym) {
+    isGym = true
+  }
+  if (ambient?.fieldConditions) {
+    fieldConditions = ambient.fieldConditions
   }
 
   const validStatKey: StatIDExceptHP = typeof statKey === 'string' && isStatIdExceptHP(statKey)
@@ -157,15 +172,11 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: StatIDExceptHP | key
 
 export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Partial<Move>, ctx: DamageOptions = {}) {
   let activeWeather = ctx.weather;
-  let isGym = false;
-  try {
-    const battleStore = useBattleStore();
-    if (battleStore.state?.isGym) {
-      activeWeather = null;
-      isGym = true;
-    }
-  } catch {
-    // Pinia not initialized
+  let isGym = ctx.isGym ?? false;
+  const ambient = getAmbientBattleContext();
+  if (ambient?.isGym) {
+    activeWeather = null;
+    isGym = true;
   }
 
   const pureRes = calculateDamagePure(
@@ -190,13 +201,9 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
 
 export function calculateCatchRate(pokemon: Pokemon, rawBallType: ItemId = 'pokeball', eventCatchMult = 1, ctx: CatchOptions = {}) {
   let activeWeather = ctx.weather;
-  try {
-    const battleStore = useBattleStore();
-    if (battleStore.state?.isGym) {
-      activeWeather = null;
-    }
-  } catch {
-    // Pinia not initialized
+  const ambient = getAmbientBattleContext();
+  if (ambient?.isGym) {
+    activeWeather = null;
   }
 
   return pureCalculateCatchRate(
@@ -219,13 +226,9 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType: ItemId = 'poke
 
 export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, attempts: number, ctx: EscapeOptions = {}) {
   let activeWeather = ctx.weather;
-  try {
-    const battleStore = useBattleStore();
-    if (battleStore.state?.isGym) {
-      activeWeather = null;
-    }
-  } catch {
-    // Pinia not initialized
+  const ambient = getAmbientBattleContext();
+  if (ambient?.isGym) {
+    activeWeather = null;
   }
 
   return pureCalculateEscapeChance(

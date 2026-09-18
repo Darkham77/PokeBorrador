@@ -12,8 +12,16 @@ import { gsap } from 'gsap';
 import CombatShadow from '@/components/battle/CombatShadow.vue';
 import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import { getShadowWidth } from '@/composables/battle/useBattleShadows';
-import type { EditorEntity, SpriteShadowOverride, GlobalShadowConfig, ShadowSliderField } from '@/types/pokemon/spriteShadows';
-import animDbJson from '@/data/pokemon/animatedSpriteDatabase.json' with { type: 'json' };
+import {
+  type EditorEntity,
+  type SpriteShadowOverride,
+  type GlobalShadowConfig,
+  type ShadowSliderField,
+  MIN_SHADOW_SCALE,
+  MAX_SHADOW_SCALE,
+  SHADOW_SCALE_STEP
+} from '@/types/pokemon/spriteShadows';
+import { ANIMATED_SPRITE_DATABASE, hasAnimatedSpriteId } from '@/data/pokemon/animatedSpriteDatabase';
 import { DEFAULT_FRAME_SIZE_PX, POKEMON_SPRITE_IDLE_FPS } from '@/logic/constants/animations';
 import { copySliderValue, readSliderValue, copyAllValues, readAllValues } from '../utils/shadowEditorClipboard';
 
@@ -39,15 +47,11 @@ const emit = defineEmits<{
   (e: 'resetOverride', key: string): void;
 }>();
 
-const RAW = animDbJson.RAW as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
 
 const MIN_COORDINATE = 0;
 const MAX_COORDINATE = 1;
 const COORDINATE_STEP = 0.005;
 
-const MIN_SHADOW_SCALE = 0.2;
-const MAX_SHADOW_SCALE = 3.0;
-const SHADOW_SCALE_STEP = 0.05;
 
 // Current values (override || default)
 const currentFeetX = computed(() => props.override?.feetX ?? props.entity.defaultFeetX);
@@ -86,9 +90,9 @@ const getAnimSpriteKey = (url: string): string | null => {
 };
 
 const animKey = computed(() => getAnimSpriteKey(props.entity.spriteUrl));
-const animData = computed(() => (animKey.value && RAW[animKey.value]) ? RAW[animKey.value] : null);
-const isAnimated = computed(() => Boolean(animData.value && animData.value.length > 0));
-const frameCount = computed(() => (animData.value && animData.value.length > 0) ? (animData.value[0] ?? 1) : 1);
+const animData = computed(() => (animKey.value && hasAnimatedSpriteId(animKey.value)) ? (ANIMATED_SPRITE_DATABASE[animKey.value] ?? null) : null);
+const isAnimated = computed(() => Boolean(animData.value));
+const frameCount = computed(() => animData.value?.frames ?? 1);
 
 // DOM refs & responsive sizing
 const spriteFrameRef = ref<HTMLElement | null>(null);
@@ -97,12 +101,7 @@ const isDragging = ref(false);
 let animTween: gsap.core.Tween | null = null;
 
 // Extract native pixel frame size (e.g. 40px Bulbasaur, 60px Ivysaur, 88px Venusaur)
-const nativeFrameSize = computed(() => {
-  if (animData.value && animData.value.length > 1) {
-    return animData.value[1] ?? DEFAULT_FRAME_SIZE_PX;
-  }
-  return DEFAULT_FRAME_SIZE_PX;
-});
+const nativeFrameSize = computed(() => animData.value?.size ?? DEFAULT_FRAME_SIZE_PX);
 
 // Virtual sprite size: proportional to actual sprite dimensions, scaled directly by the zoom prop
 const containerSize = computed(() => {
@@ -242,7 +241,7 @@ const handlePointerUp = (e: PointerEvent) => {
     isDragging.value = false;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch (_err) {
+    } catch (_err) { // catch-ok: Pointer capture might already be released or lost by the browser
       // Ignored if capture lost
     }
 

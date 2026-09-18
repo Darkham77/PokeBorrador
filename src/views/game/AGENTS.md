@@ -12,6 +12,7 @@ Core Frontend / Gameplay Engineers.
 - **Home Dashboard Continuous Flow**: `HomeView.vue` coordinates widgets into continuous main and sidebar streams, enforcing main column ordering (Events -> Gyms -> Missions -> Class Mastery), sidebar ordering (Breeding -> GTS Market -> Buffs -> Faction War -> Notifications), and prioritized mobile sequence (Events [1] -> Breeding [2] -> GTS Market [3] -> Faction War [4] -> Missions [5] -> Gyms [6] -> Active Buffs [7] -> Class Specialization & Levels [8, penultimate] -> Notifications [9, last]).
 - **View-Level Entrance Animation Orchestration**: View entrance animations (e.g. GSAP fadeIn/slideUp) must be orchestrated exclusively at the container view level (`HomeView.vue`) rather than instantiating redundant GSAP lifecycle hooks within individual child widgets.
 - **Map View Header Layout Pairing**: In `MapView.vue`, the top navigation bar pairs `MapPokemonCenterBanner` with `HomeBreedingWidget :columns="3"` using centered flexbox (`display: flex; justify-content: center; align-items: stretch; gap: 16px; flex-wrap: wrap;`), preventing cards from stretching across ultrawide monitors and aligning heights harmoniously above the region route grid.
+- **Main Game Tabs Content Delegation**: Tab content rendering in `MainGameView.vue` is delegated to `MainGameTabsContent.vue`, preserving `<KeepAlive>` state for core views while maintaining low cyclomatic complexity in the shell layout.
 
 ## Child DOX Index
 

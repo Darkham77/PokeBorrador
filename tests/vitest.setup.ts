@@ -1,5 +1,8 @@
 import { vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
+import { setupTestTeamGenerators, setupTemporalMock } from './helpers/setupTestEnvironment.ts'
+
+setupTestTeamGenerators()
 
 /**
  * tests/vitest.setup.ts
@@ -29,30 +32,8 @@ afterEach(() => {
 })
 
 // Mock Temporal.Now to work with Vitest fake timers (which mock Date.now)
-if (typeof globalThis.Temporal !== 'undefined') {
-  const originalNow = globalThis.Temporal.Now;
-  const mockedNow = {
-    ...originalNow,
-    instant: () => globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now()),
-    zonedDateTimeISO: (tz?: string) => {
-      const instant = globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now());
-      return instant.toZonedDateTimeISO(tz || 'UTC');
-    },
-    plainDateTimeISO: (tz?: string) => {
-      const instant = globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now());
-      return instant.toZonedDateTimeISO(tz || 'UTC').toPlainDateTime();
-    },
-    plainDateISO: (tz?: string) => {
-      const instant = globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now());
-      return instant.toZonedDateTimeISO(tz || 'UTC').toPlainDate();
-    }
-  };
-  Object.defineProperty(globalThis.Temporal, 'Now', {
-    value: mockedNow,
-    writable: true,
-    configurable: true
-  });
-}
+setupTemporalMock()
+
 
 // Mock ResizeObserver (Missing in JSDOM)
 class ResizeObserverMock {
@@ -141,42 +122,34 @@ if (typeof window !== 'undefined' && window.location) {
 // GSAP Global Mock for stable unit testing
 // This prevents infinite loops in JSDOM while adhering to the project's GSAP MANDATE.
 vi.mock('gsap', () => {
+  const createMockTween = () => ({
+    kill: vi.fn(),
+    eventCallback: vi.fn().mockReturnThis(),
+    progress: vi.fn().mockReturnValue(1),
+    isActive: vi.fn().mockReturnValue(false),
+    totalDuration: vi.fn().mockReturnValue(0.01),
+    pause: vi.fn().mockReturnThis(),
+    play: vi.fn().mockReturnThis()
+  });
+
+  const triggerSyncComplete = (vars: Record<string, unknown>) => {
+    if (typeof vars.onComplete === 'function' && (!vars.duration || Number(vars.duration) < 5)) {
+      vars.onComplete();
+    }
+  };
+
   const gsapMock = {
     to: (_target: unknown, vars: Record<string, unknown>) => {
-      if (typeof vars.onComplete === 'function' && (!vars.duration || Number(vars.duration) < 5)) vars.onComplete();
-      return { 
-        kill: vi.fn(), 
-        eventCallback: vi.fn().mockReturnThis(),
-        progress: vi.fn().mockReturnValue(1),
-        isActive: vi.fn().mockReturnValue(false),
-        totalDuration: vi.fn().mockReturnValue(0.01),
-        pause: vi.fn().mockReturnThis(),
-        play: vi.fn().mockReturnThis()
-      };
+      triggerSyncComplete(vars);
+      return createMockTween();
     },
     fromTo: (_target: unknown, _fromVars: Record<string, unknown>, toVars: Record<string, unknown>) => {
-      if (typeof toVars.onComplete === 'function' && (!toVars.duration || Number(toVars.duration) < 5)) toVars.onComplete();
-      return { 
-        kill: vi.fn(), 
-        eventCallback: vi.fn().mockReturnThis(),
-        progress: vi.fn().mockReturnValue(1),
-        isActive: vi.fn().mockReturnValue(false),
-        totalDuration: vi.fn().mockReturnValue(0.01),
-        pause: vi.fn().mockReturnThis(),
-        play: vi.fn().mockReturnThis()
-      };
+      triggerSyncComplete(toVars);
+      return createMockTween();
     },
     from: (_target: unknown, vars: Record<string, unknown>) => {
-      if (typeof vars.onComplete === 'function' && (!vars.duration || Number(vars.duration) < 5)) vars.onComplete();
-      return { 
-        kill: vi.fn(), 
-        eventCallback: vi.fn().mockReturnThis(),
-        progress: vi.fn().mockReturnValue(1),
-        isActive: vi.fn().mockReturnValue(false),
-        totalDuration: vi.fn().mockReturnValue(0.01),
-        pause: vi.fn().mockReturnThis(),
-        play: vi.fn().mockReturnThis()
-      };
+      triggerSyncComplete(vars);
+      return createMockTween();
     },
     delayedCall: (delay: number, callback: () => void) => {
       let timerId: NodeJS.Timeout | number | null = null

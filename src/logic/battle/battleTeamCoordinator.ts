@@ -61,6 +61,48 @@ function sanitizeCombatantForCompetitive(mon: Pokemon): Pokemon {
   };
 }
 
+const PVP_3V3_TEAM_SIZE = 3 as const;
+const PVP_6V6_TEAM_SIZE = 6 as const;
+
+function resolvePvpStartingTeam(
+  format: PvpMatchFormat,
+  uids: string[],
+  byUid: Map<string, Pokemon>,
+  allAvailable: Pokemon[]
+): Pokemon[] {
+  const resolved: Pokemon[] = [];
+  for (const uid of uids) {
+    const mon = byUid.get(uid);
+    if (mon) resolved.push(cloneReactive(mon));
+  }
+  const targetCount = format === '3v3' ? PVP_3V3_TEAM_SIZE : PVP_6V6_TEAM_SIZE;
+  if (resolved.length < targetCount) {
+    for (const p of allAvailable) {
+      if (resolved.length >= targetCount) break;
+      if (!resolved.some(r => r.uid === p.uid)) {
+        resolved.push(cloneReactive(p));
+      }
+    }
+  }
+  return resolved.map(sanitizeCombatantForCompetitive);
+}
+
+function resolveFactionWarStartingTeam(
+  uids: string[],
+  byUid: Map<string, Pokemon>,
+  fallbackTeam: (Pokemon | null)[]
+): Pokemon[] {
+  const resolved: Pokemon[] = [];
+  for (const uid of uids) {
+    const mon = byUid.get(uid);
+    if (mon) resolved.push(cloneReactive(mon));
+  }
+  if (resolved.length === 0) {
+    resolved.push(...fallbackTeam.filter((p): p is Pokemon => p !== null).map(cloneReactive));
+  }
+  return resolved.map(sanitizeCombatantForCompetitive);
+}
+
 /**
  * Resolves the starting roster for a battle mode, ensuring strict format isolation,
  * cloning, and competitive sanitization.
@@ -88,34 +130,12 @@ export function resolveStartingTeamForMode(
 
   if (mode === 'pvp_ranked' || mode === 'pvp_casual') {
     const uids = format === '3v3' ? (saveData.pvpTeam || []) : (saveData.pvpTeam6 || []);
-    const resolved: Pokemon[] = [];
-    for (const uid of uids) {
-      const mon = byUid.get(uid);
-      if (mon) resolved.push(cloneReactive(mon));
-    }
-    const targetCount = format === '3v3' ? 3 : 6;
-    if (resolved.length < targetCount) {
-      for (const p of allAvailable) {
-        if (resolved.length >= targetCount) break;
-        if (!resolved.some(r => r.uid === p.uid)) {
-          resolved.push(cloneReactive(p));
-        }
-      }
-    }
-    return resolved.map(sanitizeCombatantForCompetitive);
+    return resolvePvpStartingTeam(format, uids, byUid, allAvailable);
   }
 
   if (mode === 'faction_war') {
     const uids = saveData.warTeam || saveData.pvpTeam6 || [];
-    const resolved: Pokemon[] = [];
-    for (const uid of uids) {
-      const mon = byUid.get(uid);
-      if (mon) resolved.push(cloneReactive(mon));
-    }
-    if (resolved.length === 0) {
-      resolved.push(...(saveData.team || []).filter((p): p is Pokemon => p !== null).map(cloneReactive));
-    }
-    return resolved.map(sanitizeCombatantForCompetitive);
+    return resolveFactionWarStartingTeam(uids, byUid, saveData.team || []);
   }
 
   return (saveData.team || []).filter((p): p is Pokemon => p !== null).map(cloneReactive);
@@ -152,19 +172,53 @@ export function canSwitchInCombat(ctx: BattleContext): boolean {
  * Checks whether natural map weather is permissible in the given physical arena location.
  * Natural weather is strictly forbidden in Gyms, Caves, Crystal Caves, and Indoors.
  */
+interface LocationEnvironmentFlags {
+  isGym?: boolean;
+  isIndoors?: boolean;
+  isCave?: boolean;
+  isCrystalCave?: boolean;
+}
+
+function isLocationGym(
+  battleState?: LocationEnvironmentFlags | null,
+  gymConfig?: object | null,
+  mapConfig?: LocationEnvironmentFlags | null,
+  locationId?: MapRouteId
+): boolean {
+  return Boolean(battleState?.isGym || gymConfig || mapConfig?.isGym || locationId === 'gym');
+}
+
+function isLocationCave(
+  battleState?: LocationEnvironmentFlags | null,
+  mapConfig?: LocationEnvironmentFlags | null
+): boolean {
+  return Boolean(battleState?.isCave || battleState?.isCrystalCave || mapConfig?.isCave || mapConfig?.isCrystalCave);
+}
+
+function isLocationIndoors(
+  battleState?: LocationEnvironmentFlags | null,
+  mapConfig?: LocationEnvironmentFlags | null
+): boolean {
+  return Boolean(battleState?.isIndoors || mapConfig?.isIndoors);
+}
+
+function selectAvailableCycle(locationId?: MapRouteId, currentMapCycle: DayPhase = 'day'): DayPhase | null {
+  if (typeof locationId !== 'string' || !isMapRouteId(locationId)) return null;
+  const available = getAvailableCyclesForMap(locationId);
+  if (available.length <= 1) return null;
+  return available.includes(currentMapCycle) ? currentMapCycle : (available[0] || 'day');
+}
+
 export function isNaturalWeatherAllowedInLocation(
   locationId?: MapRouteId,
-  mapConfig?: { isGym?: boolean; isIndoors?: boolean; isCave?: boolean; isCrystalCave?: boolean; weatherEnabled?: boolean } | null,
+  mapConfig?: (LocationEnvironmentFlags & { weatherEnabled?: boolean }) | null,
   gymConfig?: { id?: string; fixedCycle?: DayPhase; isGym?: boolean } | null,
-  battleState?: { isGym?: boolean; isIndoors?: boolean; isCave?: boolean; isCrystalCave?: boolean; locationId?: MapRouteId } | null
+  battleState?: (LocationEnvironmentFlags & { locationId?: MapRouteId }) | null
 ): boolean {
-  if (battleState?.isGym || battleState?.isIndoors || battleState?.isCave || battleState?.isCrystalCave) {
+  if (isLocationGym(battleState, gymConfig, mapConfig, locationId) || battleState?.locationId === 'gym') {
     return false;
   }
-  if (locationId === 'gym' || battleState?.locationId === 'gym') {
-    return false;
-  }
-  if (Boolean(gymConfig) || mapConfig?.isGym || mapConfig?.isIndoors || mapConfig?.isCave || mapConfig?.isCrystalCave) {
+  if (isLocationIndoors(battleState, mapConfig) || isLocationCave(battleState, mapConfig)) {
     return false;
   }
   if (mapConfig?.weatherEnabled === false) {
@@ -179,28 +233,21 @@ export function isNaturalWeatherAllowedInLocation(
  */
 export function resolveEffectiveCycleForLocation(
   locationId?: MapRouteId,
-  mapConfig?: { isGym?: boolean; isIndoors?: boolean; isCave?: boolean; isCrystalCave?: boolean } | null,
+  mapConfig?: LocationEnvironmentFlags | null,
   gymConfig?: { fixedCycle?: DayPhase; isGym?: boolean } | null,
-  battleState?: { fixedCycle?: DayPhase; isGym?: boolean; isIndoors?: boolean; isCave?: boolean; isCrystalCave?: boolean; locationId?: MapRouteId } | null,
+  battleState?: (LocationEnvironmentFlags & { fixedCycle?: DayPhase; locationId?: MapRouteId }) | null,
   currentMapCycle: DayPhase = 'day'
 ): DayPhase {
   if (battleState?.fixedCycle) return battleState.fixedCycle;
   if (gymConfig?.fixedCycle) return gymConfig.fixedCycle;
 
-  const isGym = battleState?.isGym || Boolean(gymConfig) || mapConfig?.isGym || locationId === 'gym';
-  if (isGym) return 'day';
+  if (isLocationGym(battleState, gymConfig, mapConfig, locationId)) return 'day';
 
-  const available = typeof locationId === 'string' && isMapRouteId(locationId) ? getAvailableCyclesForMap(locationId) : [];
-  if (available.length > 1) {
-    if (available.includes(currentMapCycle)) return currentMapCycle;
-    return available[0] || 'day';
-  }
+  const mapCycle = selectAvailableCycle(locationId, currentMapCycle);
+  if (mapCycle) return mapCycle;
 
-  const isCave = battleState?.isCave || battleState?.isCrystalCave || mapConfig?.isCave || mapConfig?.isCrystalCave;
-  if (isCave) return 'night';
-
-  const isIndoors = battleState?.isIndoors || mapConfig?.isIndoors;
-  if (isIndoors) return 'day';
+  if (isLocationCave(battleState, mapConfig)) return 'night';
+  if (isLocationIndoors(battleState, mapConfig)) return 'day';
 
   return currentMapCycle;
 }

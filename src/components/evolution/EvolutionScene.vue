@@ -6,6 +6,9 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { gsap } from 'gsap';
 import { gameBus } from '@/logic/events/gameBus';
+import type { EvolutionStep } from './evolutionTypes';
+import EvolutionSpriteStage from './EvolutionSpriteStage.vue';
+import EvolutionDialogInfo from './EvolutionDialogInfo.vue';
 
 defineOptions({
   inheritAttrs: false
@@ -16,7 +19,7 @@ defineEmits<{
 }>();
 
 const evolutionStore = useEvolutionStore();
-const step = ref('intro'); // intro | flashing | transformed | final | cancelled
+const step = ref<EvolutionStep>('intro');
 const oldName = ref('');
 const newName = ref('');
 const fromSprite = ref('');
@@ -237,6 +240,7 @@ const close = () => {
   <Teleport to="body">
     <div
       v-if="evolutionStore.isEvolving"
+      id="evolution-modal"
       class="evolution-overlay"
     >
       <div 
@@ -268,80 +272,26 @@ const close = () => {
           />
         </div>
 
-        <!-- Sprites -->
-        <div class="sprite-stage">
-          <div
-            class="glow-bg"
-            :class="step"
-          />
-          
-          <img 
-            v-if="currentShowingSprite === 'from' || step === 'cancelled'"
-            :src="fromSprite"
-            class="pokemon-sprite from" 
-            :class="{ flashing: step === 'flashing', 'flash-on': flashesDone % 2 !== 0 }" 
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-          >
+        <!-- Sprites Stage -->
+        <EvolutionSpriteStage
+          :step="step"
+          :current-showing-sprite="currentShowingSprite"
+          :from-sprite="fromSprite"
+          :to-sprite="toSprite"
+          :old-name="oldName"
+          :new-name="newName"
+          :flashes-done="flashesDone"
+        />
 
-          <img 
-            v-if="currentShowingSprite === 'to' && step !== 'cancelled'"
-            :src="toSprite"
-            class="pokemon-sprite to" 
-            :class="{ 'scale-in': step === 'transformed', flashing: step === 'flashing', 'flash-on': flashesDone % 2 !== 0 }"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-          >
-        </div>
-
-        <!-- Text Info -->
-        <div class="evolution-info">
-          <p
-            v-if="step === 'intro' || step === 'flashing'"
-            class="status-text"
-          >
-            ¡{{ oldName }} está evolucionando!
-          </p>
-
-          <div
-            v-if="step === 'cancelled'"
-            class="result-text"
-          >
-            <p class="status-text">
-              ¿Eh? ¡{{ oldName }} ha dejado de evolucionar!
-            </p>
-            <button
-              class="btn-confirm"
-              @click.stop="close"
-            >
-              CONTINUAR
-            </button>
-          </div>
-          
-          <div
-            v-if="step === 'final'"
-            class="result-text"
-          >
-            <p>¡{{ oldName }} evolucionó a <span class="highlight">{{ newName }}</span>!</p>
-            <button
-              class="btn-confirm"
-              @click.stop="close"
-            >
-              CONTINUAR
-            </button>
-          </div>
-
-          <!-- Botón de cancelar evolución premium respetando el estándar -->
-          <div
-            v-if="(step === 'intro' || step === 'flashing') && isCancelable"
-            class="cancel-container"
-          >
-            <button
-              class="btn-vicio-secondary"
-              @click.stop="cancelEvolution"
-            >
-              <span class="emoji">❌</span> CANCELAR EVOLUCIÓN
-            </button>
-          </div>
-        </div>
+        <!-- Text Info & Actions -->
+        <EvolutionDialogInfo
+          :step="step"
+          :old-name="oldName"
+          :new-name="newName"
+          :is-cancelable="isCancelable"
+          @close="close"
+          @cancel="cancelEvolution"
+        />
       </div>
     </div>
   </Teleport>

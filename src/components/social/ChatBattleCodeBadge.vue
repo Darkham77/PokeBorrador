@@ -3,14 +3,7 @@ import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useUIStore } from '@/stores/ui'
-import type {
-  BattleReplayRecord,
-  BattleCode,
-  ReplayCombatantSummary,
-  ReplayChoiceStep
-} from '@/types/battle/pvp'
-import { isSeasonalThemeId } from '@/data/system/rankedData'
-import type { SideID } from '@pkmn/sim'
+import { mapDbRecordToBattleReplay } from './chatBattleCodeHelper'
 
 interface Props {
   battleCode: string
@@ -23,17 +16,6 @@ const livePvPStore = useLivePvPStore()
 const uiStore = useUIStore()
 
 const loading = ref(false)
-
-function parseJsonSafe<T>(val: unknown, fallback: T): T {
-  if (typeof val === 'string') {
-    try {
-      return JSON.parse(val) as T
-    } catch {
-      return fallback
-    }
-  }
-  return (val as T) || fallback
-}
 
 async function handleWatch() {
   if (loading.value) return
@@ -56,30 +38,7 @@ async function handleWatch() {
       return
     }
 
-    const raw = data as Record<string, unknown> // open-record: Generic key-value data dictionary container
-    const defaultCombatant: ReplayCombatantSummary = {
-      userId: '',
-      username: '',
-      tier: 'bronce',
-      elo: 1000,
-      team: []
-    }
-    const record: BattleReplayRecord = {
-      id: String(raw.id || ''),
-      battleCode: String(raw.battle_code || raw.battleCode || '') as BattleCode,
-      seasonId: String(raw.season_id || raw.seasonId || ''),
-      themeId: isSeasonalThemeId(raw.theme_id) ? raw.theme_id : (isSeasonalThemeId(raw.themeId) ? raw.themeId : 'masters_allstars'),
-      p1: parseJsonSafe(raw.p1_data, (raw.p1 as ReplayCombatantSummary) || defaultCombatant),
-      p2: parseJsonSafe(raw.p2_data, (raw.p2 as ReplayCombatantSummary) || defaultCombatant),
-      turnsCount: Number(raw.turns_count ?? raw.turnsCount ?? 0),
-      winnerSide: String(raw.winner_side || raw.winnerSide || 'p1') as SideID,
-      choiceStream: parseJsonSafe(raw.choice_stream, (raw.choiceStream as ReplayChoiceStep[]) || []),
-      initialSeed: parseJsonSafe(raw.initial_seed, (raw.initialSeed as [number, number, number, number]) || [0, 0, 0, 0]),
-      isTop10Archived: Boolean(raw.is_top10_archived ?? raw.isTop10Archived),
-      viewsCount: Number(raw.views_count ?? raw.viewsCount ?? 0),
-      createdAt: String(raw.created_at || raw.createdAt || '')
-    }
-
+    const record = mapDbRecordToBattleReplay(data)
     livePvPStore.watchReplay(record)
   } catch {
     uiStore.notify('Error al cargar la repetición', '❌')

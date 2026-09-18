@@ -5,7 +5,7 @@ import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { Inventory, Item as ItemData, ItemCategory, BagMainTab } from '@/types/inventory/items';
 
-export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: ItemId): ItemId | null { // domain-ok: Open dynamic text or non-domain string payload
+function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: ItemId): ItemId | null { // domain-ok: Open dynamic text or non-domain string payload
   if (!id) return null;
   const inv = gameStore.state.inventory || {};
   if (isItemId(id) && inv[id] !== undefined) return id;

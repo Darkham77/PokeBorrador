@@ -100,7 +100,7 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
 
             this.addViolation({
               ruleId: 'spanish-logic-id',
-              severity: 'warning',
+              severity: 'error',
               file: relPath,
               line: index + 1,
               message: `Uso de nombre en español en contexto de lógica: '${match[1]}'`,

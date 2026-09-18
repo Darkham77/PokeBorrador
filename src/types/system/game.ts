@@ -22,6 +22,9 @@ export type TrainerAssetView = (typeof TRAINER_ASSET_VIEWS)[number];
 export const COMPONENT_PILL_SIZES = ['ssm', 'sm', 'md', 'lg'] as const;
 export type ComponentPillSize = (typeof COMPONENT_PILL_SIZES)[number];
 
+export const CARDINAL_DIRECTIONS = ['left', 'top', 'bottom', 'right'] as const;
+export type CardinalDirection = (typeof CARDINAL_DIRECTIONS)[number];
+
 export interface NotificationItem {
   id: string; // domain-ok: Open dynamic text or non-domain string payload
   type: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -122,6 +125,8 @@ export function requireGenderId(value: unknown, fallback: GenderId = 'h'): Gende
 export type LowPowerModeSetting = 'auto' | 'enabled' | 'disabled';
 export type SortOrder = 'asc' | 'desc';
 export type ItemSortKey = 'name' | 'price' | 'rarity';
+const _RANKING_SORT_KEYS = ['elo_rating', 'trainer_level', 'badges'] as const;
+export type RankingSortKey = (typeof _RANKING_SORT_KEYS)[number];
 export type PillFxType = 'glow' | 'drift' | 'shake' | '';
 
 export interface GameState {

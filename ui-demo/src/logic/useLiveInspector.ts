@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-export interface InspectorLogEntry {
+interface InspectorLogEntry {
   id: number
   time: string
   message: string
@@ -41,7 +41,7 @@ export function updateSerializedFormData(data: Record<string, unknown>): void {
   serializedData.value = { ...data }
 }
 
-export function clearInspectorLogs(): void {
+function clearInspectorLogs(): void {
   logs.value = []
   serializedData.value = {
     status: 'consola_limpia',

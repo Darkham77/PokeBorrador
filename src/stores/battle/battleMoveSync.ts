@@ -1,78 +1,77 @@
 import type { Move } from '@/types/pokemon/pokemon'
-import type { BattleState, BattleSide } from '@/types/battle/battle'
+import type { BattleState, BattleSide, ShowdownPlayerRequest } from '@/types/battle/battle'
 import type { MoveCategory } from '@/data/battle/moves'
 import { getActivePinia } from 'pinia'
 import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
-export function syncActiveMovesFromRequest(active: BattleState | null, side: BattleSide) {
-  if (!active) return
+type RequestMoveItem = NonNullable<NonNullable<ShowdownPlayerRequest['active']>[number]['moves']>[number]
 
-  const request = side === 'player' ? active.playerRequest : active.enemyRequest
-  const poke = side === 'player' ? active.player : active.enemy
-  if (!poke || !request?.active?.[0]?.moves) return
+const MAX_ACTIVE_MOVES = 4
 
-  // Strict UID verification: if the request belongs to another team member, do not apply its moves
-  const activeReqMon = request.side?.pokemon?.find(p => p && p.active) || request.side?.pokemon?.[0]
-  if (activeReqMon && (activeReqMon as { uid?: string }).uid && (activeReqMon as { uid?: string }).uid !== poke.uid) {
-    console.debug(`[syncActiveMovesFromRequest] Bypassed stale request for ${poke.name} (${poke.uid}): request belongs to ${(activeReqMon as { uid?: string }).uid}`)
-    return
-  }
+function isStaleRequest(request: BattleState['playerRequest'], pokeUid: string): boolean {
+  const activeReqMon = request?.side?.pokemon?.find(p => p && p.active) || request?.side?.pokemon?.[0]
+  const monUid = (activeReqMon as { uid?: string } | undefined)?.uid
+  return Boolean(monUid && monUid !== pokeUid)
+}
 
-  const reqMoves = request.active[0].moves
-  const currentMoves = poke.moves || []
-
-  // Case A: Pokemon is transformed (e.g. Ditto) - moves are replaced in memory by target's moves
-  if (poke.isTransformed) {
-    const transformedMoves: Move[] = []
-    for (const reqMove of reqMoves) {
-      if (!reqMove || !reqMove.id) continue
-      const md = pokemonDataProvider.getMoveData(reqMove.id)
-      if (md && md.name) {
-        transformedMoves.push({
-          id: reqMove.id,
-          name: md.name,
-          type: md.type || 'normal',
-          cat: (md.cat || 'physical') as MoveCategory,
-          power: md.power,
-          acc: md.acc,
-          pp: reqMove.pp ?? 5,
-          maxPP: reqMove.maxpp ?? 5,
-          priority: md.priority || 0,
-          effect: md.effect as Move['effect'],
-          target: undefined,
-          disabled: reqMove.disabled === true
-        })
-      }
+function buildTransformedMoves(reqMoves: readonly RequestMoveItem[]): Move[] {
+  const transformedMoves: Move[] = []
+  for (const reqMove of reqMoves) {
+    if (!reqMove?.id) continue
+    const md = pokemonDataProvider.getMoveData(reqMove.id)
+    if (md && md.name) {
+      transformedMoves.push({
+        id: reqMove.id,
+        name: md.name,
+        type: md.type || 'normal',
+        cat: (md.cat || 'physical') as MoveCategory,
+        power: md.power,
+        acc: md.acc,
+        pp: reqMove.pp ?? 5,
+        maxPP: reqMove.maxpp ?? 5,
+        priority: md.priority || 0,
+        effect: md.effect as Move['effect'],
+        target: undefined,
+        disabled: Boolean(reqMove.disabled)
+      })
     }
-    poke.moves = transformedMoves
-    return
+  }
+  return transformedMoves
+}
+
+function updateExistingMovesInPlace(
+  currentMoves: (Move | null)[],
+  reqMoves: readonly RequestMoveItem[],
+  seenIds: Set<string>
+): void {
+  const reqMap = new Map<string, RequestMoveItem>()
+  for (const rm of reqMoves) {
+    if (rm?.id) reqMap.set(rm.id, rm)
   }
 
-  // Case B: Standard Pokemon - PRESERVE permanent moveset without truncating during lockedmove/twoturn/recharge/choice
-  const seenIds = new Set<string>() // runtime-set: Fast O(1) membership lookup set
-
-  // 1. Update in-place all existing moves in poke.moves
   for (const move of currentMoves) {
-    if (!move || !move.id) continue
+    if (!move?.id) continue
     seenIds.add(move.id)
 
-    const matchingReq = reqMoves.find(rm => rm && rm.id === move.id)
+    const matchingReq = reqMap.get(move.id)
     if (matchingReq) {
       move.pp = matchingReq.pp ?? move.pp
       move.maxPP = matchingReq.maxpp ?? move.maxPP
-      move.disabled = matchingReq.disabled === true
+      move.disabled = Boolean(matchingReq.disabled)
     } else {
-      // If Showdown omitted this move from request (e.g. Outrage/Thrash lockedmove, recharge, encore),
-      // mark it disabled for this turn without deleting it from the Pokemon's moveset!
       move.disabled = true
     }
   }
+}
 
-  // 2. If Showdown provided new moves not present in poke.moves (e.g. Struggle or incomplete initial array)
-  // only append up to 4 moves total without dropping existing ones
+function appendMissingShowdownMoves(
+  currentMoves: (Move | null)[],
+  reqMoves: readonly RequestMoveItem[],
+  seenIds: Set<string>
+): void {
   for (const reqMove of reqMoves) {
-    if (!reqMove || !reqMove.id || seenIds.has(reqMove.id) || currentMoves.length >= 4) continue
+    if (!reqMove?.id || seenIds.has(reqMove.id) || currentMoves.length >= MAX_ACTIVE_MOVES) continue
     const md = pokemonDataProvider.getMoveData(reqMove.id)
     if (md && md.name) {
       currentMoves.push({
@@ -87,25 +86,54 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: Bat
         priority: md.priority || 0,
         effect: md.effect as Move['effect'],
         target: undefined,
-        disabled: reqMove.disabled === true
+        disabled: Boolean(reqMove.disabled)
       })
       seenIds.add(reqMove.id)
     }
   }
+}
+
+function syncPlayerTeamMoves(pokeUid: string, moves: (Move | null)[]): void {
+  if (!getActivePinia()) return
+  try {
+    const team = useGameStore().state?.team
+    if (!team) return
+    const teamMon = team.find(p => p && p.uid === pokeUid)
+    if (teamMon) {
+      teamMon.moves = moves
+    }
+  } catch (_err) { // catch-ok: Ignored if gameStore is not yet initialized during test or bootstrap
+    // Ignored if gameStore is not yet initialized
+  }
+}
+
+export function syncActiveMovesFromRequest(active: BattleState | null, side: BattleSide) {
+  if (!active) return
+
+  const request = side === 'player' ? active.playerRequest : active.enemyRequest
+  const poke = side === 'player' ? active.player : active.enemy
+  if (!poke || !request?.active?.[0]?.moves) return
+
+  if (isStaleRequest(request, poke.uid)) {
+    console.debug(`[syncActiveMovesFromRequest] Bypassed stale request for ${poke.name} (${poke.uid})`)
+    return
+  }
+
+  const reqMoves = request.active[0].moves
+
+  if (poke.isTransformed) {
+    poke.moves = buildTransformedMoves(reqMoves)
+    return
+  }
+
+  const currentMoves = poke.moves || []
+  const seenIds = new Set<string>() // runtime-set: Fast O(1) membership lookup set
+  updateExistingMovesInPlace(currentMoves, reqMoves, seenIds)
+  appendMissingShowdownMoves(currentMoves, reqMoves, seenIds)
 
   poke.moves = currentMoves
-  if (side === 'player' && getActivePinia()) {
-    try {
-      const team = useGameStore().state?.team
-      if (team) {
-        const teamMon = team.find(p => p && p.uid === poke.uid)
-        if (teamMon && teamMon !== poke) {
-          teamMon.moves = currentMoves
-        }
-      }
-    } catch {
-      // Ignored if gameStore is not yet initialized
-    }
+  if (side === 'player') {
+    syncPlayerTeamMoves(poke.uid, currentMoves)
   }
   console.debug(`[useBattleStore] Sync'd ${side} moves from request:`, JSON.stringify(poke.moves.map(m => m ? `${m.id} (pp: ${m.pp}/${m.maxPP}, dis: ${m.disabled})` : '')))
 }

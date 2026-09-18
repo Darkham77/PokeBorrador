@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
-import { generateMission, validateMissionPokemon } from '@/logic/breeding/missionEngine';
+import { generateMission, validateMissionPokemon, isPokemonEligibleForMission } from '@/logic/breeding/missionEngine';
 import { getItemById, isItemId } from '@/data/inventory/items';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { logger } from '@/logic/utils/logger';
@@ -51,23 +51,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     const box = gameStore.state.box || [];
     const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null); // o1-ok: O(1) data structure exception
     
-    return missions.filter(mission => {
-      const targetId = mission.targetId;
-      return allPokes.some(p => {
-        if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal) return false;
-        if (p.id !== targetId) return false;
-        
-        const req = mission.requirement || { type: 'level', minLevel: 0 };
-        if (req.type === 'level') return p.level >= (req.minLevel || 0);
-        if (req.type === 'iv_total') {
-          const total = (p.ivs?.hp || 0) + (p.ivs?.atk || 0) + (p.ivs?.def || 0) + (p.ivs?.spa || 0) + (p.ivs?.spd || 0) + (p.ivs?.spe || 0);
-          return total >= (req.minIvTotal || 0);
-        }
-        if (req.type === 'nature') return p.nature === req.nature;
-        if (req.type === 'iv_31') return p.ivs?.[req.stat31 as keyof Pokemon['ivs']] === 31;
-        return true;
-      });
-    }).length;
+    return missions.filter(mission => allPokes.some(p => isPokemonEligibleForMission(p, mission))).length;
   });
 
   function checkDailyReset() {

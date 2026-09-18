@@ -10,22 +10,13 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-
-import PokemonSummaryTab from '@/components/pokemon-detail/PokemonSummaryTab.vue'
-import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
-import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue'
-import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
-import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
-import PokemonTrophiesTab from '@/components/pokemon-detail/PokemonTrophiesTab.vue'
+import PokemonDetailHeader from '@/components/pokemon-detail/PokemonDetailHeader.vue'
+import PokemonDetailTabContent from '@/components/pokemon-detail/PokemonDetailTabContent.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
 import type { Pokemon, PokemonStorageLocation, PokemonSelectionSource } from '@/types/pokemon/pokemon'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { PokemonTagId } from '@/logic/constants/tags'
 
-
-const NATIONAL_ID_PADDING_LENGTH = 3;
 
 interface Props {
   show?: boolean
@@ -173,57 +164,12 @@ const handleReorderMoves = (from: number, to: number) => {
       }"
     >
       <!-- Custom Content Header -->
-      <header class="pdex-custom-header">
-        <div
-          class="poke-identity"
-          :class="{ 'has-nickname': targetPokemon?.nickname }"
-        >
-          <span class="p-id">#{{ species.nationalId.padStart(NATIONAL_ID_PADDING_LENGTH, '0') }}</span>
-          <div
-            class="name-with-edit"
-            style="display: flex; align-items: center; gap: 8px;"
-          >
-            <button 
-              v-if="isInstance" 
-              class="edit-nick-btn" 
-              style="font-size: 10px; padding: 0; opacity: 0.5; cursor: pointer; flex-shrink: 0;"
-              @click.stop="handleEditNickname"
-            >
-              <span class="emoji">✏️</span>
-            </button>
-            <PVGenderBadge
-              v-if="targetPokemon?.gender"
-              :gender="targetPokemon.gender"
-              size="sm"
-            />
-            <div class="name-container">
-              <span
-                v-if="targetPokemon?.nickname"
-                class="p-nickname-prefix"
-              >
-                {{ targetPokemon.nickname }}
-              </span>
-              <h2
-                class="p-name"
-                style="margin: 0;"
-              >
-                {{ species.name.toUpperCase() }}
-              </h2>
-            </div>
-          </div>
-        </div>
-
-        <div class="header-right">
-          <div class="p-types">
-            <PokemonTypeTag
-              v-for="t in species.type"
-              :key="t"
-              :type="t"
-              size="md"
-            />
-          </div>
-        </div>
-      </header>
+      <PokemonDetailHeader
+        :species="species"
+        :target-pokemon="targetPokemon"
+        :is-instance="isInstance"
+        @edit-nickname="handleEditNickname"
+      />
 
       <!-- TOP DISPLAY -->
       <div class="upd-main-display">
@@ -234,6 +180,7 @@ const handleReorderMoves = (from: number, to: number) => {
           >
             <img
               :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
+              :alt="targetPokemon?.nickname || species?.name || 'Pokémon'"
               class="main-sprite"
               @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
             >
@@ -276,59 +223,22 @@ const handleReorderMoves = (from: number, to: number) => {
       </nav>
 
       <!-- TAB BODY -->
-      <div class="upd-core-body">
-        <!-- Summary Tab -->
-        <PokemonSummaryTab
-          v-if="activeTab === 'summary'"
-          :species="species"
-          :clean-category="cleanCategory"
-          :is-instance="isInstance"
-          :instance-physical-data="instancePhysicalData"
-          :target-pokemon="targetPokemon || null"
-          :context="context"
-          :target-species-id="targetSpeciesId"
-          :capture-date-formatted="captureDateFormatted"
-        />
-
-        <!-- Stats Tab -->
-        <PokemonStatsTab
-          v-if="activeTab === 'stats'"
-          :display-stats="displayStats"
-          :species="species"
-          :is-instance="isInstance"
-          :pokemon="targetPokemon"
-        />
-
-        <!-- Moves Tab -->
-        <PokemonMovesTab
-          v-if="activeTab === 'moves'"
-          :is-instance="isInstance"
-          :current-moves="currentMoves"
-          :move-details="moveDetails"
-          @reorder-moves="handleReorderMoves"
-        />
-
-        <!-- TMs Tab -->
-        <PokemonTmsTab
-          v-if="activeTab === 'tms'"
-          :species-id="targetSpeciesId"
-        />
-
-        <!-- Evolution Tab -->
-        <PokemonEvolutionsTab
-          v-if="activeTab === 'evolve'"
-          :evolutions="evolutions"
-          :species-name="species.name"
-          :species-id="targetSpeciesId"
-        />
-
-        <!-- Trophies Tab -->
-        <PokemonTrophiesTab
-          v-if="activeTab === 'trophies'"
-          :trophies="targetPokemon?.trophies"
-          :species-id="targetSpeciesId"
-        />
-      </div>
+      <PokemonDetailTabContent
+        :active-tab="activeTab"
+        :species="species"
+        :clean-category="cleanCategory"
+        :is-instance="isInstance"
+        :instance-physical-data="instancePhysicalData"
+        :target-pokemon="targetPokemon || null"
+        :context="context"
+        :target-species-id="targetSpeciesId"
+        :capture-date-formatted="captureDateFormatted"
+        :display-stats="displayStats"
+        :current-moves="currentMoves"
+        :move-details="moveDetails"
+        :evolutions="evolutions"
+        @reorder-moves="handleReorderMoves"
+      />
 
       <PokemonActionFooter
         v-if="isInstance"

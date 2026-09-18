@@ -8,7 +8,7 @@ vi.mock('@/logic/encounters/encounters', () => ({
 }))
 
 vi.mock('@/stores/ui', () => ({
-  useUIStore: vi.fn(() => ({ activeTab: 'battle' }))
+  useUIStore: vi.fn(() => ({ activeTab: 'battle', setBattleActive: vi.fn(), isBattleActive: false }))
 }))
 
 vi.mock('@/stores/map', () => ({

@@ -153,7 +153,7 @@ npm run audit:dox
 ### Full Project Audit (Errors Only Filter)
 Alternatively, execute the project-wide audit filtered for errors:
 ```bash
-npm run audit --errors-only
+npm run audit:errors
 ```
 
 ### What the Audit Detects:

@@ -53,13 +53,13 @@
     cursor: pointer;
 
     :deep(.list-item) {
-      transform: none !important;
+      transform: none;
       border: none !important;
       box-shadow: none !important;
       background: transparent !important;
 
       &:hover {
-        transform: none !important;
+        transform: none;
         border: none !important;
         box-shadow: none !important;
         background: transparent !important;

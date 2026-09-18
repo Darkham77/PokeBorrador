@@ -339,7 +339,7 @@ async function onClaim() {
     border-color: Rgba(255, 255, 255, 0.1) !important;
     color: Rgba(255, 255, 255, 0.2) !important;
     box-shadow: none !important;
-    transform: none !important;
+    transform: none;
   }
 
   .cancel-btn, .claim-notif-btn { flex: none; width: 100%; }

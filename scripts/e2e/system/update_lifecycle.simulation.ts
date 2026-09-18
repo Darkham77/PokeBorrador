@@ -55,6 +55,25 @@ export class UpdateLifecycleSimulation extends BaseE2ESimulation {
   }
 }
 
+async function assertActionRedirectsToLogin(page: Page, sim: UpdateLifecycleSimulation, buttonSelector: string): Promise<void> {
+  const actionBtn = page.locator(buttonSelector);
+  await actionBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await actionBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+  await page.waitForURL(url => url.pathname.endsWith('/login'), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+  expect(page.url()).toContain('/login');
+  const isUserLoggedIn = await sim.isUserLoggedIn();
+  expect(isUserLoggedIn).toBe(false);
+
+  const localTab = page.locator('#server-tab-local');
+  await expect(localTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+}
+
+async function assertUpdateOverlayRedirectsToLogin(page: Page, sim: UpdateLifecycleSimulation): Promise<void> {
+  await assertActionRedirectsToLogin(page, sim, '#app-loading-overlay-update-btn');
+}
+
 test.describe('System Update Lifecycle & Version Compatibility Simulation', () => {
   test('should display update overlay when client is outdated, log out on click, and navigate to /login', async ({ page }) => {
     const sim = new UpdateLifecycleSimulation(page, 'UpdateTestUser1');
@@ -63,19 +82,7 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await waitForStoreReady(page);
 
     await sim.notifyOutdatedClient('v0.4.0', 'v0.5.0');
-
-    const updateBtn = page.locator('#app-loading-overlay-update-btn');
-    await updateBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await updateBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    await page.waitForURL(url => url.pathname.endsWith('/login'), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    expect(page.url()).toContain('/login');
-    const isUserLoggedIn = await sim.isUserLoggedIn();
-    expect(isUserLoggedIn).toBe(false);
-
-    const localTab = page.locator('#server-tab-local');
-    await expect(localTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await assertUpdateOverlayRedirectsToLogin(page, sim);
   });
 
   test('should display database lock overlay when db is incompatible and exit cleanly to /login', async ({ page }) => {
@@ -85,19 +92,7 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await waitForStoreReady(page);
 
     await sim.notifyDbIncompatible('20240416000001', '20260417200000', '20260417200000');
-
-    const logoutBtn = page.locator('#version-lock-logout-btn');
-    await logoutBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await logoutBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    await page.waitForURL(url => url.pathname.endsWith('/login'), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    expect(page.url()).toContain('/login');
-    const isUserLoggedIn = await sim.isUserLoggedIn();
-    expect(isUserLoggedIn).toBe(false);
-
-    const localTab = page.locator('#server-tab-local');
-    await expect(localTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await assertActionRedirectsToLogin(page, sim, '#version-lock-logout-btn');
   });
 
   test('should display server lock overlay when server is outdated and exit cleanly to /login', async ({ page }) => {
@@ -107,19 +102,7 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await waitForStoreReady(page);
 
     await sim.notifyOutdatedServer('v2.0.0', 'v1.0.0');
-
-    const logoutBtn = page.locator('#version-lock-logout-btn');
-    await logoutBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await logoutBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    await page.waitForURL(url => url.pathname.endsWith('/login'), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    expect(page.url()).toContain('/login');
-    const isUserLoggedIn = await sim.isUserLoggedIn();
-    expect(isUserLoggedIn).toBe(false);
-
-    const localTab = page.locator('#server-tab-local');
-    await expect(localTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await assertActionRedirectsToLogin(page, sim, '#version-lock-logout-btn');
   });
 
   test('should handle live Service Worker update during gameplay and cleanly redirect to /login', async ({ page }) => {
@@ -129,19 +112,7 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await waitForStoreReady(page);
 
     await sim.emitPwaNeedRefresh();
-
-    const updateBtn = page.locator('#app-loading-overlay-update-btn');
-    await updateBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await updateBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    await page.waitForURL(url => url.pathname.endsWith('/login'), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    expect(page.url()).toContain('/login');
-    const isUserLoggedIn = await sim.isUserLoggedIn();
-    expect(isUserLoggedIn).toBe(false);
-
-    const localTab = page.locator('#server-tab-local');
-    await expect(localTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await assertUpdateOverlayRedirectsToLogin(page, sim);
   });
 
   test('should display update overlay when chunk load error occurs and navigate cleanly to /login', async ({ page }) => {
@@ -151,19 +122,7 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await waitForStoreReady(page);
 
     await sim.notifyChunkLoadError();
-
-    const updateBtn = page.locator('#app-loading-overlay-update-btn');
-    await updateBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await updateBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    await page.waitForURL(url => url.pathname.endsWith('/login'), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    expect(page.url()).toContain('/login');
-    const isUserLoggedIn = await sim.isUserLoggedIn();
-    expect(isUserLoggedIn).toBe(false);
-
-    const localTab = page.locator('#server-tab-local');
-    await expect(localTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await assertUpdateOverlayRedirectsToLogin(page, sim);
   });
 
   test('should allow executing update from login screen via update button without loop', async ({ page }) => {

@@ -46,6 +46,7 @@ const handleForget = () => {
 
 <template>
   <BaseModal
+    :id="id || 'move-learning-modal'"
     :show="show && !!currentData"
     title="NUEVO MOVIMIENTO"
     max-width="640px"
@@ -90,6 +91,7 @@ const handleForget = () => {
 
       <div class="actions-footer">
         <button
+          id="btn-move-learn-cancel"
           class="forget-btn"
           @click.stop="handleForget"
         >

@@ -56,6 +56,9 @@ export type TrackedActionSource = (typeof TRACKED_ACTION_SOURCES)[number];
 export const COMBATANT_ANIM_TRIGGERS = ['attack', 'faint', 'damage'] as const;
 export type CombatantAnimTrigger = (typeof COMBATANT_ANIM_TRIGGERS)[number];
 
+export const COMBATANT_SPRITE_MODES = ['idle', 'variation'] as const;
+export type CombatantSpriteMode = (typeof COMBATANT_SPRITE_MODES)[number];
+
 export const BATTLE_ESCAPE_TYPES = ['flee', 'teleport', 'whirlwind', 'knockback', 'withdraw'] as const;
 export type BattleEscapeType = (typeof BATTLE_ESCAPE_TYPES)[number];
 export type BattleParticipantUid = Pokemon['uid'];
@@ -233,6 +236,7 @@ export interface BattleState {
   p1SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
   p2SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
   switchingToEnemy?: Pokemon | null;
+  rawShowdownLogs?: string[]; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export type BattleSource = Pokemon | string;
@@ -305,6 +309,7 @@ export interface BattleCombatantProps {
   hasSeat?: boolean;
   stages?: Partial<BattleStages>;
   zIndex?: StyleZIndex;
+  hideStatusOverlay?: boolean;
 }
 
 export interface ShowdownPlayerRequest {

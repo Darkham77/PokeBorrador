@@ -38,6 +38,10 @@ export const MAX_LEARNED_MOVES_SLOTS = 4;
 /** Default starting ELO for new competitive trainers. */
 export const DEFAULT_INITIAL_ELO = 1000;
 
+/** Canonical battle terrains recognized by the engine. */
+export const CANONICAL_TERRAINS = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'] as const;
+export type CanonicalTerrain = (typeof CANONICAL_TERRAINS)[number];
+
 /** Default starting friendship value for newly caught Pokémon. */
 export const DEFAULT_FRIENDSHIP_VALUE = 70;
 
@@ -61,6 +65,9 @@ export const MIN_TRAINER_LEVEL = 1;
 
 /** Maximum trainer level. */
 export const MAX_TRAINER_LEVEL = 100;
+
+/** Maximum trainer rank progression level (caps at 30 in TRAINER_RANKS). */
+export const MAX_TRAINER_RANK_LEVEL = 30;
 
 /** Default fallback base stat when undefined (100). */
 export const DEFAULT_FALLBACK_BASE_STAT = 100;
@@ -412,9 +419,9 @@ export const CHAT_DEDUP_TIME_WINDOW_MS = 2000;
 export const CHAT_PRUNE_MESSAGES_LIMIT = 1000;
 
 // --- Time Units Constants ---
-// fallow-ignore-next-line unused-export
 export const SECONDS_PER_MINUTE = 60;
 export const MINUTES_PER_HOUR = 60;
+export const SECONDS_PER_HOUR = 3600;
 export const HOURS_PER_DAY = 24;
 export const MINUTES_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR;
 export const MILLISECONDS_PER_HOUR = 1000 * SECONDS_PER_MINUTE * MINUTES_PER_HOUR;

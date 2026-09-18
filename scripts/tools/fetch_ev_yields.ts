@@ -11,13 +11,13 @@ import { resolve } from 'node:path';
 import { toID } from '@pkmn/sim';
 import metadataJson from '../../src/data/pokemon/speciesMetadata.json' with { type: 'json' };
 
-type StatKey = 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe';
+type StatKey = 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'; // lib-duplicate-ok: Canonical stat keys matching Pokemon Showdown StatID
 type EvYield = Partial<Record<StatKey, number>>;
 
 const POKEMONDB_URL = 'https://pokemondb.net/ev/all';
 const BULBAPEDIA_URL = 'https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_effort_value_yield_in_Generation_IX';
 
-const STAT_COLUMNS_POKEMONDB: readonly StatKey[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+const STAT_COLUMNS_POKEMONDB: readonly StatKey[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']; // lib-duplicate-ok: Canonical stat keys matching Pokemon Showdown StatID
 
 async function fetchHtml(url: string): Promise<string | null> {
   try {

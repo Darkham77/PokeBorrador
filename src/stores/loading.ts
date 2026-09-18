@@ -101,7 +101,6 @@ export const useLoadingStore = defineStore('loading', () => {
   })
 
   return {
-    // fallow-ignore-next-line unused-store-member
     stack,
     current,
     isActive,

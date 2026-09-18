@@ -15,6 +15,7 @@ Frontend Developers / Systems Engineers.
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
+- `routeSpawnsArchaeologyHelpers.ts`: Helper module for `useRouteSpawnsArchaeology.ts`, isolating fossil and static category reward construction and detailed tooltip calculation.
 
 ## Verification
 

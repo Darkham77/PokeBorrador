@@ -6,15 +6,7 @@ import { GAME_UI_EVENTS } from '@/types/system/gameEvents.ts'
 import { useWindowListener } from '@/composables/ui/useWindowListener'
 
 // Sub-components
-import DebugStatsTab from './debug/DebugStatsTab.vue'
-import DebugClassTab from './debug/DebugClassTab.vue'
-import DebugItemsTab from './debug/DebugItemsTab.vue'
-import DebugPokemonTab from './debug/DebugPokemonTab.vue'
-import DebugTimeTab from './debug/DebugTimeTab.vue'
-import DebugModalsTab from './debug/DebugModalsTab.vue'
-import DebugMapTab from './debug/DebugMapTab.vue'
-import DebugMissionsTab from './debug/DebugMissionsTab.vue'
-import DebugTrainersTab from './debug/DebugTrainersTab.vue'
+import LocalDebugTabContent from './LocalDebugTabContent.vue'
 import { DEBUG_PANEL_CATEGORIES } from './debug/debugPanelCategories.ts'
 
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -123,40 +115,10 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
           </PVTooltip>
         </nav>
 
-        <main 
-          class="debug-content"
-          @wheel.stop
-        >
-          <DebugStatsTab
-            v-if="selectedCategory === 'stats'"
-          />
-          <DebugClassTab
-            v-if="selectedCategory === 'class'"
-          />
-          <DebugItemsTab
-            v-if="selectedCategory === 'items'"
-          />
-          <DebugTimeTab
-            v-if="selectedCategory === 'time'"
-          />
-          <DebugModalsTab
-            v-if="selectedCategory === 'modals'"
-          />
-          
-          <DebugPokemonTab
-            v-if="selectedCategory === 'pokes'"
-          />
-          <DebugTrainersTab
-            v-if="selectedCategory === 'trainers'"
-            @close="isOpen = false"
-          />
-          <DebugMapTab
-            v-if="selectedCategory === 'map'"
-          />
-          <DebugMissionsTab
-            v-if="selectedCategory === 'missions'"
-          />
-        </main>
+        <LocalDebugTabContent
+          :selected-category="selectedCategory"
+          @close="isOpen = false"
+        />
       </div>
     </BaseModal>
   </div>
@@ -264,13 +226,6 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
   }
 }
 
-.debug-content {
-  flex: 1;
-  padding: 20px 16px;
-  overflow-y: auto;
-  min-height: 0;
-  overscroll-behavior: contain;
-}
 </style>
 
 <style lang="scss">

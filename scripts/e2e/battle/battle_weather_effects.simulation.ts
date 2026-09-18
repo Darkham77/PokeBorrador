@@ -22,6 +22,19 @@ class WeatherSimWrapper extends BaseBattleSimulation {
     await awaitBattleReadyForInput(this.page);
   }
 
+  public async setupStormScenario(): Promise<void> {
+    await this.disableAutoMode();
+    await openDebugTab(this.page, 'tiempo');
+    await this.page.locator('#debug-weather-btn-storm').click();
+    await openDebugTab(this.page, 'pokes');
+    await this.page.locator('#debug-input-especie').fill('snorlax');
+    await this.page.locator('#option-snorlax').click();
+    await this.page.locator('#debug-input-level').fill('5');
+    await armBattleReadyForInput(this.page);
+    await this.page.locator('#debug-btn-encounter').click();
+    await awaitBattleReadyForInput(this.page);
+  }
+
   public async setupSandstormScenario(): Promise<void> {
     await this.disableAutoMode();
     await openDebugTab(this.page, 'tiempo');
@@ -50,8 +63,33 @@ test.describe('Weather Effects Verification Simulation', () => {
     await sim.setup();
     await sim.setupRainScenario();
 
-    const atmosphere = page.locator('.battle-arena .atmosphere-container, .battle-arena canvas').first();
-    await expect(atmosphere).toBeAttached();
+    const ambientOverlay = page.locator('.battle-arena .weather-overlay.is-ambient-layer');
+    await expect(ambientOverlay).toBeVisible();
+
+    const particlesOverlay = page.locator('.battle-arena .weather-overlay.is-particles-layer');
+    await expect(particlesOverlay).toBeVisible();
+
+    const rainLayer = page.locator('.battle-arena .rain-layer.layer-1');
+    await expect(rainLayer).toBeVisible();
+
+    await sim.forceFleeDebugger();
+  });
+
+  test('should render storm weather with visible rain layers in battle', async ({ page }) => {
+    const sim = new WeatherSimWrapper(page, 'TestWeatherStorm');
+    await sim.setup();
+    await sim.setupStormScenario();
+
+    const ambientOverlay = page.locator('.battle-arena .weather-overlay.is-ambient-layer');
+    await expect(ambientOverlay).toBeVisible();
+
+    const particlesOverlay = page.locator('.battle-arena .weather-overlay.is-particles-layer');
+    await expect(particlesOverlay).toBeVisible();
+
+    const rainLayer = page.locator('.battle-arena .rain-layer.layer-1');
+    await expect(rainLayer).toBeVisible();
+
+    await page.screenshot({ path: 'scratch/storm_battle_actual.png' });
 
     await sim.forceFleeDebugger();
   });

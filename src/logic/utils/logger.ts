@@ -36,52 +36,92 @@ if (isNode) {
     const nodeUtil = 'node:util';
     const util = await import(/* @vite-ignore */ nodeUtil) as { styleText: StyleTextFn };
     styleText = util.styleText;
-  } catch (_e) {
+  } catch (_e) { // catch-ok: Fallback when node:util is unavailable in non-node runtimes
     // Graceful fallback without crashing
   }
 }
 
 export const logger = {
-  info(tag: string, message: string, ...args: unknown[]) {
+  info(tag: string, message?: unknown, ...args: unknown[]) {
     if (isProduction) return;
     if (isBrowser) {
-      console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', ...args);
+      if (typeof message === 'string') {
+        console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', ...args);
+      } else {
+        console.log(`%c[${tag}]%c`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', message, ...args);
+      }
     } else {
-      console.log(`[${styleText('blue', tag)}] ${message}`, ...args);
+      if (typeof message === 'string') {
+        console.log(`[${styleText('blue', tag)}] ${message}`, ...args);
+      } else {
+        console.log(`[${styleText('blue', tag)}]`, message, ...args);
+      }
     }
   },
 
-  success(tag: string, message: string, ...args: unknown[]) {
+  success(tag: string, message?: unknown, ...args: unknown[]) {
     if (isProduction) return;
     if (isBrowser) {
-      console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, ...args);
+      if (typeof message === 'string') {
+        console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, ...args);
+      } else {
+        console.log(`%c[${tag}]%c`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, message, ...args);
+      }
     } else {
-      console.log(`[${styleText('green', tag)}] ${message}`, ...args);
+      if (typeof message === 'string') {
+        console.log(`[${styleText('green', tag)}] ${message}`, ...args);
+      } else {
+        console.log(`[${styleText('green', tag)}]`, message, ...args);
+      }
     }
   },
 
-  warn(tag: string, message: string, ...args: unknown[]) {
+  warn(tag: string, message?: unknown, ...args: unknown[]) {
     if (isBrowser) {
-      console.warn(`%c[${tag}]%c ${message}`, `color: ${COLORS.warn}; font-weight: bold;`, 'color: inherit;', ...args);
+      if (typeof message === 'string') {
+        console.warn(`%c[${tag}]%c ${message}`, `color: ${COLORS.warn}; font-weight: bold;`, 'color: inherit;', ...args);
+      } else {
+        console.warn(`%c[${tag}]%c`, `color: ${COLORS.warn}; font-weight: bold;`, 'color: inherit;', message, ...args);
+      }
     } else {
-      console.warn(`[${styleText('yellow', tag)}] ${message}`, ...args);
+      if (typeof message === 'string') {
+        console.warn(`[${styleText('yellow', tag)}] ${message}`, ...args);
+      } else {
+        console.warn(`[${styleText('yellow', tag)}]`, message, ...args);
+      }
     }
   },
 
-  error(tag: string, message: string, ...args: unknown[]) {
+  error(tag: string, message?: unknown, ...args: unknown[]) {
     if (isBrowser) {
-      console.error(`%c[${tag}]%c ${message}`, `color: ${COLORS.error}; font-weight: bold;`, 'color: inherit;', ...args);
+      if (typeof message === 'string') {
+        console.error(`%c[${tag}]%c ${message}`, `color: ${COLORS.error}; font-weight: bold;`, 'color: inherit;', ...args);
+      } else {
+        console.error(`%c[${tag}]%c`, `color: ${COLORS.error}; font-weight: bold;`, 'color: inherit;', message, ...args);
+      }
     } else {
-      console.error(`[${styleText('red', tag)}] ${message}`, ...args);
+      if (typeof message === 'string') {
+        console.error(`[${styleText('red', tag)}] ${message}`, ...args);
+      } else {
+        console.error(`[${styleText('red', tag)}]`, message, ...args);
+      }
     }
   },
 
-  debug(tag: string, message: string, ...args: unknown[]) {
+  debug(tag: string, message?: unknown, ...args: unknown[]) {
     if (isProduction) return;
     if (isBrowser) {
-      console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', ...args);
+      if (typeof message === 'string') {
+        console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', ...args);
+      } else {
+        console.log(`%c[${tag}]%c`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', message, ...args);
+      }
     } else {
-      console.log(`[${styleText('gray', tag)}] ${message}`, ...args);
+      if (typeof message === 'string') {
+        console.log(`[${styleText('gray', tag)}] ${message}`, ...args);
+      } else {
+        console.log(`[${styleText('gray', tag)}]`, message, ...args);
+      }
     }
   }
 };

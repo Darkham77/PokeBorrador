@@ -3,6 +3,8 @@ import { safeStorage } from '@/logic/utils/storage.ts';
 import { logger } from '@/logic/utils/logger.ts';
 import { setServerTimeOffsetNanoseconds, setServerTimeSynced } from '@/logic/utils/timeUtils.ts';
 
+const SERVER_SYNC_TIMEOUT_SEC = 3;
+
 export async function syncServerTime(): Promise<void> {
   if (typeof window !== 'undefined' && safeStorage.getItem('pokevicio_session_mode') === 'offline') {
     setServerTimeSynced(true);
@@ -13,7 +15,7 @@ export async function syncServerTime(): Promise<void> {
     const { supabase } = await import('@/logic/db/supabase.ts');
     const result = await Promise.race([
       supabase.rpc('fn_get_server_time'),
-      new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('FETCH_TIMEOUT'))))
+      new Promise((_, reject) => gsap.delayedCall(SERVER_SYNC_TIMEOUT_SEC, () => reject(new Error('FETCH_TIMEOUT'))))
     ]);
 
     const { data: serverTime, error } = result as { data: string | null; error: { message: string } | null };

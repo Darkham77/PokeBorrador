@@ -9,6 +9,7 @@ import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { isGymId, type GymId } from '@/data/world/gyms'
 import { DURATION_24_HOURS_MS, BUFF_DURATION_30_MIN_MS } from '@/logic/constants/items.ts'
+import { MAX_NOTIFICATION_HISTORY_ITEMS } from '@/logic/constants/gameplay.ts'
 
 
 // Actions Modules
@@ -21,6 +22,8 @@ import { useTeamActions } from '@/stores/game/actions/teamActions.ts'
 import { DBRouter } from '@/logic/db/dbRouter'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEvents.ts'
+import { gameBus } from '@/logic/events/gameBus.ts'
+import { saveCoordinator } from '@/logic/auth/saveCoordinator.ts'
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore()
@@ -58,6 +61,11 @@ export const useGameStore = defineStore('game', () => {
     isSandboxActive
   )
 
+  saveCoordinator.setPreLogoutHandler(async () => {
+    const store = useGameStore()
+    await store.save(false, true, true)
+  })
+
   // 2. Team Actions (Special teams management)
   const {
     autoFillPvpTeam,
@@ -83,6 +91,20 @@ export const useGameStore = defineStore('game', () => {
   // 5. Breeding Actions
   const { executeHatch } = useBreedingActions(state, scheduleSave, addPokemon)
 
+  gameBus.on('NOTIFICATION_RECORDED', (e: Event) => {
+    const detail = (e as CustomEvent).detail
+    if (detail && state) {
+      if (!state.notificationHistory) {
+        state.notificationHistory = []
+      }
+      state.notificationHistory.push(detail)
+      if (state.notificationHistory.length > MAX_NOTIFICATION_HISTORY_ITEMS) {
+        state.notificationHistory.shift()
+      }
+      void scheduleSave()
+    }
+  })
+
   // Wrapper for LoadGame to manage local state
   async function loadGame(): Promise<void> {
     const res = await rawLoad()
@@ -102,37 +124,6 @@ export const useGameStore = defineStore('game', () => {
       checkRouteExpirations()
 
       // Parallel Boot Coordinator for child stores
-      const prefetchPromises: Promise<unknown>[] = []
-
-      // 1. War Data
-      prefetchPromises.push(
-        import('@/stores/war.ts').then(({ useWarStore }) => useWarStore().loadWarData()).catch(e => {
-          logger.warn('Boot', `War data prefetch failed: ${(e as Error).message}`)
-        })
-      )
-
-      // 2. Events Data
-      prefetchPromises.push(
-        import('@/stores/events.ts').then(({ useEventStore }) => useEventStore().fetchEvents()).catch(e => {
-          logger.warn('Boot', `Events prefetch failed: ${(e as Error).message}`)
-        })
-      )
-
-      // 3. Daycare Data
-      prefetchPromises.push(
-        import('@/stores/breeding.ts').then(({ useBreedingStore }) => useBreedingStore().loadDaycare()).catch(e => {
-          logger.warn('Boot', `Daycare prefetch failed: ${(e as Error).message}`)
-        })
-      )
-
-      // 4. GTS Listings
-      prefetchPromises.push(
-        import('@/stores/gts.ts').then(({ useGTSStore }) => useGTSStore().fetchListings()).catch(e => {
-          logger.warn('Boot', `GTS prefetch failed: ${(e as Error).message}`)
-        })
-      )
-
-      // 5. Social & Session Hub
       if (authStore.user) {
         const { initSessionHub } = await import('@/logic/auth/sessionHub')
         initSessionHub(authStore.user.id)
@@ -144,23 +135,9 @@ export const useGameStore = defineStore('game', () => {
         window.addEventListener('pv-save-unlock', () => {
           isSaveLocked.value = false
         })
-
-        prefetchPromises.push(
-          import('@/stores/social/social.ts').then(async ({ useSocialStore }) => {
-            const socialStore = useSocialStore()
-            await socialStore.loadSocialData()
-            if (socialStore.pendingRequests.length > 0) {
-              const { useUIStore } = await import('./ui.ts')
-              const uiStore = useUIStore()
-              uiStore.notify(`¡Tenés ${socialStore.pendingRequests.length} solicitud(es) de amistad pendiente(s)!`, '🤝')
-            }
-          }).catch(err => {
-            logger.error('Social', `Error al cargar notificaciones iniciales: ${(err as Error).message}`)
-          })
-        )
       }
 
-      await Promise.allSettled(prefetchPromises)
+      gameBus.emit('GAME_DATA_LOADED', { userId: authStore.user?.id })
     }
   }
 
@@ -384,6 +361,7 @@ export const useGameStore = defineStore('game', () => {
     addPokemon,
     removePokemon,
     autoFillPvpTeam,
+    // fallow-ignore-next-line unused-store-member
     autoFillPvpTeam6,
     swapPvpSlot,
     swapPvp6Slot,

@@ -17,6 +17,9 @@ import type { GenderId } from '@/types/system/game';
 import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
 
+const BROADCAST_TEAM_INITIAL_DELAY_SEC = 0.5;
+const BROADCAST_TEAM_RETRY_DELAY_SEC = 2.0;
+
 export interface LiveBattleState extends PvPBattleState {
   active: boolean;
   opponentId: string | null;
@@ -326,8 +329,8 @@ export function executeStartBattle(
       });
     }
   };
-  gsap.delayedCall(0.5, broadcastTeam);
-  gsap.delayedCall(2.0, broadcastTeam);
+  gsap.delayedCall(BROADCAST_TEAM_INITIAL_DELAY_SEC, broadcastTeam);
+  gsap.delayedCall(BROADCAST_TEAM_RETRY_DELAY_SEC, broadcastTeam);
 }
 
 export interface SetupBattleChannelContext {

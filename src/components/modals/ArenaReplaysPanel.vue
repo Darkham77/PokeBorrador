@@ -5,6 +5,7 @@ import { useLivePvPStore } from '@/stores/livePvP';
 import { useUIStore } from '@/stores/ui';
 import type { BattleReplayRecord } from '@/types/battle/pvp';
 import { parseBattleReplayRecord } from '@/logic/pvp/replayCodeGenerator';
+import { logger } from '@/logic/utils/logger';
 import ArenaMatchHistorySection from './ArenaMatchHistorySection.vue';
 
 const gameStore = useGameStore();
@@ -30,8 +31,8 @@ async function loadReplays() {
     if (data && Array.isArray(data)) {
       recentReplays.value = data.map(parseBattleReplayRecord);
     }
-  } catch {
-    // Ignore offline query errors
+  } catch (err) {
+    logger.warn('[ArenaReplaysPanel] Error cargando repeticiones:', err);
   }
 }
 

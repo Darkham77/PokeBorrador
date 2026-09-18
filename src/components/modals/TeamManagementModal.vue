@@ -4,7 +4,8 @@ import gsap from 'gsap'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import TournamentRulesHeader from '@/components/team/TournamentRulesHeader.vue'
+import TeamManagementHeaderTabs from '@/components/team/TeamManagementHeaderTabs.vue'
 import type { TeamManagementTab } from '@/types/battle/pvp'
 import { useTeamManagement } from '@/composables/team/useTeamManagement'
 
@@ -59,87 +60,30 @@ const {
   unequipItem,
   sendToBox
 } = useTeamManagement(props)
+
+const modalType = computed(() => (isSmallScreen.value ? 'fullscreen' : 'center'))
+const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
 </script>
 
 <template>
   <BaseModal
     show
     header-background="transparent"
-    :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100dvw' : '940px'"
+    :type="modalType"
+    :max-width="modalMaxWidth"
     padding="standard"
     @close="uiStore.toggleTeamManagement"
   >
     <template #header>
-      <div class="team-header-tabs">
-        <PVTooltip 
-          title="EQUIPO DE AVENTURA"
-          description="Tu equipo principal para viajar por el mapa y enfrentarte a gimnasios."
-          position="top"
-        >
-          <button 
-            id="team-management-tab-adventure-btn"
-            class="tm-tab" 
-            :class="{ active: activeTab === 'adventure' }"
-            @click="activeTab = 'adventure'"
-          >
-            <span class="emoji">🎒</span>
-            <span>AVENTURA</span>
-            <span class="tab-count">{{ adventureCount }}/6</span>
-          </button>
-        </PVTooltip>
-
-        <PVTooltip 
-          title="EQUIPO PVP 3v3"
-          description="Selecciona tus 3 Pokémon para combates online 3v3 contra otros jugadores."
-          position="top"
-        >
-          <button 
-            id="team-management-tab-pvp-btn"
-            class="tm-tab" 
-            :class="{ active: activeTab === 'pvp' }"
-            @click="activeTab = 'pvp'"
-          >
-            <span class="emoji">⚔️</span>
-            <span>PVP 3v3</span>
-            <span class="tab-count">{{ pvpCount }}/3</span>
-          </button>
-        </PVTooltip>
-
-        <PVTooltip 
-          title="EQUIPO PVP 6v6"
-          description="Selecciona tus 6 Pokémon para combates online 6v6 contra otros jugadores."
-          position="top"
-        >
-          <button 
-            id="team-management-tab-pvp6-btn"
-            class="tm-tab" 
-            :class="{ active: activeTab === 'pvp6' }"
-            @click="activeTab = 'pvp6'"
-          >
-            <span class="emoji">⚔️</span>
-            <span>PVP 6v6</span>
-            <span class="tab-count">{{ pvp6Count }}/6</span>
-          </button>
-        </PVTooltip>
-
-        <PVTooltip 
-          title="EQUIPO DE GUERRA"
-          description="Tus Pokémon asignados para defender y atacar en Guerras de Clanes."
-          position="top"
-        >
-          <button 
-            id="team-management-tab-war-btn"
-            class="tm-tab" 
-            :class="{ active: activeTab === 'war' }"
-            @click="activeTab = 'war'"
-          >
-            <span class="emoji">🛡️</span>
-            <span>GUERRA</span>
-            <span class="tab-count">{{ warCount }}/{{ maxWarSlots }}</span>
-          </button>
-        </PVTooltip>
-      </div>
+      <TeamManagementHeaderTabs
+        :active-tab="activeTab"
+        :adventure-count="adventureCount"
+        :pvp-count="pvpCount"
+        :pvp6-count="pvp6Count"
+        :war-count="warCount"
+        :max-war-slots="maxWarSlots"
+        @select-tab="(tab) => activeTab = tab"
+      />
     </template>
 
     <!-- ADVENTURE SECTION -->
@@ -182,43 +126,14 @@ const {
         v-if="activeTab === 'pvp'"
         class="tm-section-container"
       >
-        <!-- Tournament Rules & Auto-Adjust Action Header -->
-        <div class="tournament-rules-header">
-          <div class="rules-info">
-            <div class="rules-title">
-              <span class="emoji">🏆</span>
-              <span class="theme-name text-outline">{{ tournamentThemeName }}</span>
-            </div>
-            <div class="rules-badges">
-              <span
-                v-if="tournamentLevelCap"
-                class="rule-badge text-outline"
-              >
-                Nv. Máx {{ tournamentLevelCap }}
-              </span>
-              <span
-                v-if="tournamentIsLittleCup"
-                class="rule-badge little-cup text-outline"
-              >
-                <span class="emoji">🍼</span> Little Cup
-              </span>
-              <span
-                v-if="tournamentAllowedTypes"
-                class="rule-badge types text-outline"
-              >
-                Tipos: {{ tournamentAllowedTypes }}
-              </span>
-            </div>
-          </div>
-          <button
-            v-gsap-hover
-            class="auto-adjust-btn"
-            @click="runAutoFillTeam('pvp')"
-          >
-            <span class="emoji">⚡</span>
-            <span>AUTO-AJUSTAR</span>
-          </button>
-        </div>
+        <TournamentRulesHeader
+          :theme-name="tournamentThemeName"
+          :level-cap="tournamentLevelCap"
+          :is-little-cup="tournamentIsLittleCup"
+          :allowed-types="tournamentAllowedTypes"
+          mode="pvp"
+          @auto-adjust="runAutoFillTeam"
+        />
 
         <div class="slots-grid">
           <UnifiedTeamSlot
@@ -253,43 +168,14 @@ const {
         v-if="activeTab === 'pvp6'"
         class="tm-section-container"
       >
-        <!-- Tournament Rules & Auto-Adjust Action Header -->
-        <div class="tournament-rules-header">
-          <div class="rules-info">
-            <div class="rules-title">
-              <span class="emoji">🏆</span>
-              <span class="theme-name text-outline">{{ tournamentThemeName }}</span>
-            </div>
-            <div class="rules-badges">
-              <span
-                v-if="tournamentLevelCap"
-                class="rule-badge text-outline"
-              >
-                Nv. Máx {{ tournamentLevelCap }}
-              </span>
-              <span
-                v-if="tournamentIsLittleCup"
-                class="rule-badge little-cup text-outline"
-              >
-                <span class="emoji">🍼</span> Little Cup
-              </span>
-              <span
-                v-if="tournamentAllowedTypes"
-                class="rule-badge types text-outline"
-              >
-                Tipos: {{ tournamentAllowedTypes }}
-              </span>
-            </div>
-          </div>
-          <button
-            v-gsap-hover
-            class="auto-adjust-btn"
-            @click="runAutoFillTeam('pvp6')"
-          >
-            <span class="emoji">⚡</span>
-            <span>AUTO-AJUSTAR</span>
-          </button>
-        </div>
+        <TournamentRulesHeader
+          :theme-name="tournamentThemeName"
+          :level-cap="tournamentLevelCap"
+          :is-little-cup="tournamentIsLittleCup"
+          :allowed-types="tournamentAllowedTypes"
+          mode="pvp6"
+          @auto-adjust="runAutoFillTeam"
+        />
 
         <div class="slots-grid">
           <UnifiedTeamSlot

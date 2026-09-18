@@ -36,6 +36,78 @@ export function calculateStabMultiplier(
   return stab
 }
 
+const PINCH_ABILITIES_MAP: Readonly<Record<string, PokemonType>> = {
+  blaze: 'fire',
+  torrent: 'water',
+  overgrow: 'grass',
+  swarm: 'bug',
+}
+
+function resolveSunMultiplier(moveType: PokemonType, wType: string): number {
+  if (moveType === 'fire') return BASE_STAB_MULT
+  if (moveType === 'water') return wType === 'heatwave' ? 0 : HALF_DAMAGE_MULTIPLIER
+  return 1
+}
+
+function resolveRainMultiplier(moveType: PokemonType): number {
+  if (moveType === 'water') return BASE_STAB_MULT
+  if (moveType === 'fire') return HALF_DAMAGE_MULTIPLIER
+  return 1
+}
+
+function resolveWeatherElementalMultiplier(
+  mechWeather: WeatherMechanical,
+  wType: string,
+  moveType: PokemonType
+): number {
+  if (mechWeather === WEATHER_MECHANICAL.SUN) {
+    return resolveSunMultiplier(moveType, wType)
+  }
+  if (mechWeather === WEATHER_MECHANICAL.RAIN) {
+    return resolveRainMultiplier(moveType)
+  }
+  if (wType === 'thunderstorm' && (moveType === 'electric' || moveType === 'dragon')) {
+    return BASE_STAB_MULT
+  }
+  return 1
+}
+
+function isSolarbeamReducedInWeather(
+  weather: PureBattleWeather,
+  mechWeather: WeatherMechanical
+): boolean {
+  if (weather.turns === 0) return false
+  const isSun = mechWeather === WEATHER_MECHANICAL.SUN
+  const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR && weather.type !== 'thunderstorm'
+  return !isSun && !isClear
+}
+
+function calculateDirectWeatherMultiplier(
+  moveType: PokemonType,
+  moveId?: PokemonMoveId,
+  weather?: PureBattleWeather | null,
+  mechWeather: WeatherMechanical = WEATHER_MECHANICAL.CLEAR
+): number {
+  if (!weather || weather.turns === 0) return 1
+  const wType = weather.type || weather.visual || 'clear'
+  let weatherMult = resolveWeatherElementalMultiplier(mechWeather, wType, moveType)
+
+  if (moveId === 'solarbeam' && isSolarbeamReducedInWeather(weather, mechWeather)) {
+    weatherMult *= HALF_DAMAGE_MULTIPLIER
+  }
+
+  return weatherMult
+}
+
+function calculateDayCycleMultiplier(
+  moveType: PokemonType,
+  cycle?: DayPhase
+): number {
+  if ((cycle === 'day' || cycle === 'morning') && moveType === 'fire') return DAY_CYCLE_BOOST_MULTIPLIER
+  if ((cycle === 'night' || cycle === 'dusk') && moveType === 'water') return DAY_CYCLE_BOOST_MULTIPLIER
+  return 1
+}
+
 export function calculateWeatherAndCyclePowerMultiplier(
   moveType: PokemonType,
   moveId?: PokemonMoveId,
@@ -43,55 +115,25 @@ export function calculateWeatherAndCyclePowerMultiplier(
   mechWeather: WeatherMechanical = WEATHER_MECHANICAL.CLEAR,
   cycle?: DayPhase
 ): number {
-  let weatherMult = 1
-
-  if (weather && weather.turns !== 0) {
-    const wType = weather.type || weather.visual || 'clear'
-    if (mechWeather === WEATHER_MECHANICAL.SUN) {
-      if (moveType === 'fire') weatherMult = BASE_STAB_MULT
-      if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : HALF_DAMAGE_MULTIPLIER
-    } else if (mechWeather === WEATHER_MECHANICAL.RAIN) {
-      if (moveType === 'water') weatherMult = BASE_STAB_MULT
-      if (moveType === 'fire') weatherMult = HALF_DAMAGE_MULTIPLIER
-    } else if (wType === 'thunderstorm') {
-      if (moveType === 'electric' || moveType === 'dragon') weatherMult = BASE_STAB_MULT
-    }
-  }
-
-  // Solar Beam reduction in non-sun/non-clear weather
-  if (moveId === 'solarbeam' && weather && weather.turns !== 0) {
-    const isSun = mechWeather === WEATHER_MECHANICAL.SUN
-    const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR && weather.type !== 'thunderstorm'
-    if (!isSun && !isClear) {
-      weatherMult *= HALF_DAMAGE_MULTIPLIER
-    }
-  }
-
-  // Day cycle bonus
+  const weatherMult = calculateDirectWeatherMultiplier(moveType, moveId, weather, mechWeather)
   if (weatherMult === 1 && (mechWeather === WEATHER_MECHANICAL.CLEAR || !weather)) {
-    if ((cycle === 'day' || cycle === 'morning') && moveType === 'fire') weatherMult = DAY_CYCLE_BOOST_MULTIPLIER
-    if ((cycle === 'night' || cycle === 'dusk') && moveType === 'water') weatherMult = DAY_CYCLE_BOOST_MULTIPLIER
+    return calculateDayCycleMultiplier(moveType, cycle)
   }
-
   return weatherMult
 }
 
-export function calculateAbilityPowerMultiplier(
+function calculateAttackerAbilityMultiplier(
   moveType: PokemonType,
   movePower: number,
   attacker: Pokemon,
-  defender: Pokemon | null | undefined,
   weather: { type?: string; turns?: number } | null | undefined,
   mechWeather: string
 ): number {
   let abilMult = 1
   const isLowHp = attacker.hp <= (attacker.maxHp / LOW_HP_PINCH_RATIO_ONE_THIRD)
 
-  if (isLowHp) {
-    if (attacker.ability === 'blaze' && moveType === 'fire') abilMult = BASE_STAB_MULT
-    if (attacker.ability === 'torrent' && moveType === 'water') abilMult = BASE_STAB_MULT
-    if (attacker.ability === 'overgrow' && moveType === 'grass') abilMult = BASE_STAB_MULT
-    if (attacker.ability === 'swarm' && moveType === 'bug') abilMult = BASE_STAB_MULT
+  if (isLowHp && attacker.ability && PINCH_ABILITIES_MAP[attacker.ability] === moveType) {
+    abilMult = BASE_STAB_MULT
   }
 
   if (attacker.ability === 'technician' && movePower <= TECHNICIAN_MAX_POWER_CAP) {
@@ -103,6 +145,19 @@ export function calculateAbilityPowerMultiplier(
       abilMult *= SAND_FORCE_MULTIPLIER
     }
   }
+
+  return abilMult
+}
+
+export function calculateAbilityPowerMultiplier(
+  moveType: PokemonType,
+  movePower: number,
+  attacker: Pokemon,
+  defender: Pokemon | null | undefined,
+  weather: { type?: string; turns?: number } | null | undefined,
+  mechWeather: string
+): number {
+  let abilMult = calculateAttackerAbilityMultiplier(moveType, movePower, attacker, weather, mechWeather)
 
   if (defender && defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
     abilMult *= HALF_DAMAGE_MULTIPLIER

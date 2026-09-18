@@ -87,7 +87,7 @@
 
 @mixin pokemon-silhouette($outline-color: Rgba(255, 255, 255, 0.6)) {
   will-change: transform, filter, opacity;
-  filter: pokemon-silhouette-optimized() !important;
+  filter: pokemon-silhouette-optimized();
   opacity: 1 !important;
 }
 

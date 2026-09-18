@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 interface ActiveAdventureEvent {
@@ -8,7 +9,7 @@ interface ActiveAdventureEvent {
   type?: string
 }
 
-defineProps<{
+const props = defineProps<{
   activeEvent: ActiveAdventureEvent | null
   activeHMs: Set<string>
 }>()
@@ -17,6 +18,26 @@ const emit = defineEmits<{
   (e: 'resolve'): void
   (e: 'resume'): void
 }>()
+
+interface EventTypeAction {
+  emoji: string
+  label: string
+}
+
+const EVENT_TYPE_ACTIONS: Readonly<Record<string, EventTypeAction>> = {
+  obstacle_rock_smash: { emoji: '⛏️', label: ' Excavar Fósil' },
+  fishing: { emoji: '🎣', label: ' Lanzar Caña' },
+  obstacle_cut: { emoji: '✂️', label: ' Cortar Arbusto' },
+  obstacle_strength: { emoji: '💪', label: ' Empujar Roca' }
+}
+
+const DEFAULT_EVENT_ACTION: Readonly<EventTypeAction> = { emoji: '⚔️', label: ' Combatir' }
+
+const eventAction = computed<EventTypeAction>(() => {
+  const type = props.activeEvent?.type
+  if (!type) return DEFAULT_EVENT_ACTION
+  return EVENT_TYPE_ACTIONS[type] ?? DEFAULT_EVENT_ACTION
+})
 </script>
 
 <template>
@@ -66,8 +87,8 @@ const emit = defineEmits<{
           style="width: 100%; padding: 10px; font-size: 8px;"
           @click="emit('resolve')"
         >
-          <span class="emoji">{{ activeEvent.type === 'obstacle_rock_smash' ? '⛏️' : activeEvent.type === 'fishing' ? '🎣' : activeEvent.type === 'obstacle_cut' ? '✂️' : activeEvent.type === 'obstacle_strength' ? '💪' : '⚔️' }}</span>
-          {{ activeEvent.type === 'obstacle_rock_smash' ? ' Excavar Fósil' : activeEvent.type === 'fishing' ? ' Lanzar Caña' : activeEvent.type === 'obstacle_cut' ? ' Cortar Arbusto' : activeEvent.type === 'obstacle_strength' ? ' Empujar Roca' : ' Combatir' }}
+          <span class="emoji">{{ eventAction.emoji }}</span>
+          {{ eventAction.label }}
         </button>
         <button
           v-else

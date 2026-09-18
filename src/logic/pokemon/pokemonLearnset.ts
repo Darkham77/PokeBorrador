@@ -3,10 +3,10 @@ import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
-import { POKEMON_DB, isPokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
+import { POKEMON_DB, isPokemonDbSpeciesId, type PokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
 import { getSpeciesEggMoves } from '@/data/pokemon/eggMoves';
 
-const MAX_LEGAL_RANDOM_MOVE_SLOTS = 4;
+const MAX_LEGAL_RANDOM_MOVE_SLOTS = 4 as const;
 
 /**
  * Verifica si un Pokémon puede aprender un determinado movimiento según la base de datos precomputada.
@@ -46,6 +46,32 @@ export function canLearnMove(speciesId: PokemonSpeciesId, moveId: PokemonMoveId,
   return false;
 }
 
+function collectSpeciesStaticMoves(
+  spId: PokemonDbSpeciesId,
+  targetLevel: number | undefined,
+  dest: Set<PokemonMoveId>
+): void {
+  const staticData = POKEMON_DB[spId];
+  if (staticData.learnset) {
+    for (const m of staticData.learnset) {
+      if (targetLevel === undefined || m.lv <= targetLevel) {
+        dest.add(m.id);
+      }
+    }
+  }
+
+  if (staticData.compatMoves) {
+    for (const mId of staticData.compatMoves) {
+      dest.add(mId);
+    }
+  }
+
+  const eggMoves = getSpeciesEggMoves(spId);
+  for (const em of eggMoves) {
+    dest.add(em);
+  }
+}
+
 /**
  * Obtiene la lista completa de movimientos legales para una especie dada y un nivel opcional.
  * Incluye movimientos aprendidos a través de pre-evoluciones y movimientos compatibles.
@@ -59,26 +85,8 @@ export function getLegalSpeciesMoves(speciesId: PokemonSpeciesId, level?: number
   const targetSpecies = history.length > 0 ? history : [speciesId];
 
   for (const spId of targetSpecies) {
-    if (!isPokemonDbSpeciesId(spId)) continue;
-    const staticData = POKEMON_DB[spId];
-
-    if (staticData.learnset) {
-      for (const m of staticData.learnset) {
-        if (targetLevel === undefined || m.lv <= targetLevel) {
-          legalMoveIds.add(m.id);
-        }
-      }
-    }
-
-    if (staticData.compatMoves) {
-      for (const mId of staticData.compatMoves) {
-        legalMoveIds.add(mId);
-      }
-    }
-
-    const eggMoves = getSpeciesEggMoves(spId);
-    for (const em of eggMoves) {
-      legalMoveIds.add(em);
+    if (isPokemonDbSpeciesId(spId)) {
+      collectSpeciesStaticMoves(spId, targetLevel, legalMoveIds);
     }
   }
 

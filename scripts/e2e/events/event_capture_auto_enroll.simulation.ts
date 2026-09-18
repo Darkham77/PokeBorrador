@@ -16,7 +16,12 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { awaitBattleReadyForInput, clickResilient } from '../e2e_helpers.ts';
+import {
+  armBattleFlowCompletion,
+  awaitBattleFlowCompletion,
+  awaitBattleReadyForInput,
+  clickResilient
+} from '../e2e_helpers.ts';
 
 const MOCK_SNORLAX_WEIGHT_KG = 460;
 const MOCK_SNORLAX_LEVEL = 5;
@@ -32,9 +37,15 @@ class CaptureAutoEnrollSimWrapper extends BaseBattleSimulation {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useEventStore } = await import('../../../src/stores/events.ts');
       const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
+      const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requireItemId } = await import('../../../src/data/inventory/items.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+
+      const gameStore = useGameStore();
+      const starter = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: 25 });
+      gameStore.state.team = [starter];
+      gameStore.state.starterChosen = true;
 
       const invStore = useInventoryStore();
       await invStore.addItem(requireItemId('masterball'), 5);
@@ -99,15 +110,13 @@ class CaptureAutoEnrollSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Post-Capture Event Auto-Enrollment & Home Auto-Fill Simulation', () => {
-  test.describe.configure({ mode: 'serial' });
-
   test('prompts auto-enroll modal upon catching high-record Pokémon and confirms enrollment', async ({ page }) => {
     const sim = new CaptureAutoEnrollSimWrapper(page, 'EventCaptureSim');
     await sim.setup();
     await sim.setupActiveCompetitionAndBattle();
 
-    // 1. Capture wild Snorlax using Master Ball
-    await sim.throwBall('masterball', { expectCapture: true });
+    // 1. Capture wild Snorlax using Master Ball (modal intercepts flow before exit)
+    await sim.throwBall('masterball', { expectCapture: true, awaitFlowCompletion: false });
 
     // 2. The Auto-Enroll Modal must be displayed
     const modal = page.locator('#event-auto-enroll-modal');
@@ -117,11 +126,13 @@ test.describe('Post-Capture Event Auto-Enrollment & Home Auto-Fill Simulation', 
     const confirmBtn = page.locator('#btn-enroll-confirm');
     await expect(confirmBtn).toBeVisible();
 
-    // 4. Confirm enrollment
+    // 4. Arm flow completion and confirm enrollment
+    await armBattleFlowCompletion(page);
     await clickResilient(confirmBtn);
 
-    // 5. Modal should close
+    // 5. Modal should close and battle flow complete back to map
     await expect(modal).not.toBeVisible({ timeout: 10000 });
+    await awaitBattleFlowCompletion(page);
 
     // 6. Verify entry was recorded in eventStore
     const hasEntry = await page.evaluate(async () => {

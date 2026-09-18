@@ -5,6 +5,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useGameStore } from '@/stores/game';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { gameBus } from '@/logic/events/gameBus';
 
 interface EvolutionCompletePayload {
   pokemon: Pokemon;
@@ -84,17 +85,25 @@ export const useEvolutionStore = defineStore('evolution', () => {
         });
       }
     }
+    gameBus.emit('EVOLUTION_FINISHED');
     sourcePokemon.value = null;
     targetId.value = null;
     onComplete.value = null;
   }
+
+  const handleStartEvolutionFlow = (e: Event) => {
+    const detail = (e as CustomEvent<{ pokemon?: Pokemon; targetSpeciesId?: PokemonSpeciesId; itemName?: string }>).detail;
+    if (detail?.pokemon && detail.targetSpeciesId) {
+      startEvolution(detail.pokemon, detail.targetSpeciesId, detail.itemName || '');
+    }
+  };
+  gameBus.on('START_EVOLUTION_FLOW', handleStartEvolutionFlow);
 
   return {
     isEvolving,
     sourcePokemon,
     targetId,
     itemName,
-    pendingMoves,
     startEvolution,
     evolve,
     finishEvolution

@@ -106,6 +106,7 @@ onMounted(() => {
           <img
             v-else-if="log.icon"
             :src="log.icon"
+            alt="Icono de registro"
             class="log-icon"
             loading="lazy"
             @error="handleImgError"
@@ -202,9 +203,9 @@ onMounted(() => {
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
-        transform: Translate(-50%, -50%) !important;
+        transform: Translate(-50%, -50%);
         will-change: transform, filter, opacity;
-        filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4)) !important;
+        filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
         border-radius: 0;
         border: none !important;
         background: transparent !important;
@@ -222,9 +223,9 @@ onMounted(() => {
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
-        transform: Translate(-50%, -50%) !important;
+        transform: Translate(-50%, -50%);
         will-change: transform, filter, opacity;
-        filter: none !important;
+        filter: none;
         border-radius: 4px;
         border: 1px solid Rgba(255, 255, 255, 0.1);
         background-color: var(--player-class-color, Rgba(0, 0, 0, 0.2)) !important;
@@ -239,7 +240,7 @@ onMounted(() => {
         position: relative !important;
         top: auto !important;
         left: auto !important;
-        transform: none !important;
+        transform: none;
       }
     }
     
@@ -275,7 +276,7 @@ onMounted(() => {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
-    transform: Translate(-50%, -50%) !important;
+    transform: Translate(-50%, -50%);
   }
 
   .log-text {

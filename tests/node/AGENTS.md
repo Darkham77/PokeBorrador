@@ -22,12 +22,12 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [admin/](./admin/AGENTS.md): Domain module documentation for admin.
 - [assets/](./assets/AGENTS.md): Domain module documentation for assets.
 - [auditors/](./auditors/AGENTS.md): Domain module documentation for auditors.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [box/](./box/AGENTS.md): Domain module documentation for box.
 - [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [debug/](./debug/AGENTS.md): Domain module documentation for debug.
 - [e2e/](./e2e/AGENTS.md): Domain module documentation for e2e.
 - [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
 - [events/](./events/AGENTS.md): Domain module documentation for events.

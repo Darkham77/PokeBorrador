@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, toValue } from 'vue'
 import { useBattleStore } from '@/stores/battle/battle'
 import { gameBus } from '@/logic/events/gameBus'
 import DebugActionList from './DebugActionList.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { requireBattleConditionKey } from '@/types/battle/battle'
+import { isDebugEffectActive } from './debugAudioAnimHelper';
 
 import { 
   DEBUG_SOUNDS, 
@@ -93,24 +92,18 @@ const isEffectActive = (type: string, category: string) => {
     ? battleStore.state?.player 
     : battleStore.state?.enemy
   const stages = side === 'player' ? battleStore.playerStages : battleStore.enemyStages
+  const sideConditions = side === 'player' 
+    ? battleStore.state?.playerSideConditions 
+    : battleStore.state?.enemySideConditions
 
-  if (category === 'status') return (poke as Pokemon | undefined)?.status === type
-  if (category === 'secondary') {
-    const p = poke as (Pokemon & Record<string, unknown>) | undefined // open-record: Generic key-value data dictionary container
-    if (!p) return false
-    return ((p.volatileCounters as Record<string, number>)?.[type] || 0) > 0 || !!p[type] // open-record: Generic key-value data dictionary container
-  }
-  if (category === 'field') {
-    const key = requireBattleConditionKey(type)
-    const cond = battleStore.state?.fieldConditions?.[key]
-    const sideCond = (side === 'player' ? battleStore.state?.playerSideConditions : battleStore.state?.enemySideConditions)?.[key]
-    const stageKey = key === 'lightscreen' ? 'lightScreen' : key
-    const stageVal = (stages as Record<string, number>)?.[stageKey] // open-record: Generic key-value data dictionary container
-    return !!cond || !!sideCond || (stageVal !== undefined && stageVal > 0)
-  }
-  if (category === 'weather') return battleStore.state?.weather?.type === type
-
-  return false
+  return isDebugEffectActive(category, type, {
+    poke,
+    stages: toValue(stages),
+    fieldConditions: battleStore.state?.fieldConditions,
+    sideConditions,
+    weatherType: battleStore.state?.weather?.type,
+    terrain: battleStore.state?.terrain
+  })
 }
 </script>
 

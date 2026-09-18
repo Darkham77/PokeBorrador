@@ -41,6 +41,7 @@ State & Type Architects.
 - [auth/](./auth/AGENTS.md): Domain module documentation for auth.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [database/](./database/AGENTS.md): Domain module documentation for database.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [rewards/](./rewards/AGENTS.md): Domain module documentation for rewards.

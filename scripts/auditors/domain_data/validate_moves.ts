@@ -93,7 +93,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
       if (!hasMoveTranslation(moveId)) {
         this.addViolation({
           ruleId: 'move-missing-translation',
-          severity: 'warning',
+          severity: 'error',
           file: 'src/data/battle/moves.ts',
           line: 1,
           message: `${tag} Missing official Spanish translation in moves.ts.`,

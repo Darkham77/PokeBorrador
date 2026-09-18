@@ -138,29 +138,42 @@ function applyCopyBoost(ctx: SBCtx): boolean {
   return true;
 }
 
-function applyClearDirectionalBoost(ctx: SBCtx, direction: 'positive' | 'negative'): boolean {
-  const { store, parts, line, getPoke } = ctx;
-  if (line.includes('[silent]')) return true;
-  const target = getPoke(parts[2] || '');
-  if (target) {
-    const stages = getTargetStages(ctx, target);
-    let cleared = false;
-    if (stages) {
-      for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
-        const val = stages[key] || 0;
-        if ((direction === 'positive' && val > 0) || (direction === 'negative' && val < 0)) {
-          stages[key] = 0;
-          cleared = true;
-        }
-      }
-    }
-    if (cleared) {
-      const msg = direction === 'positive'
-        ? `¡Los aumentos de ${target.name} fueron robados!`
-        : `¡Las bajadas de stats de ${target.name} fueron eliminadas!`;
-      store.addLog(msg, 'log-info', target);
+const _BOOST_DIRECTIONS = ['positive', 'negative'] as const;
+type BoostDirection = (typeof _BOOST_DIRECTIONS)[number];
+
+function clearDirectionalStages(
+  stages: Record<ShowdownBoostStatKey, number> | undefined,
+  direction: BoostDirection
+): boolean {
+  if (!stages) return false;
+  let cleared = false;
+  for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
+    const val = stages[key] || 0;
+    const shouldClear = direction === 'positive' ? val > 0 : val < 0;
+    if (shouldClear) {
+      stages[key] = 0;
+      cleared = true;
     }
   }
+  return cleared;
+}
+
+function applyClearDirectionalBoost(ctx: SBCtx, direction: BoostDirection): boolean {
+  const { store, parts, line, getPoke } = ctx;
+  if (line.includes('[silent]')) return true;
+
+  const target = getPoke(parts[2] || '');
+  if (!target) return true;
+
+  const stages = getTargetStages(ctx, target);
+  const cleared = clearDirectionalStages(stages, direction);
+  if (cleared) {
+    const msg = direction === 'positive'
+      ? `¡Los aumentos de ${target.name} fueron robados!`
+      : `¡Las bajadas de stats de ${target.name} fueron eliminadas!`;
+    store.addLog(msg, 'log-info', target);
+  }
+
   return true;
 }
 

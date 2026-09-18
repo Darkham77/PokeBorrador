@@ -6,7 +6,7 @@ import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdown
 import { parseToNumericSeed, formatToShowdownSeed } from '../../../src/logic/battle/battleSeedManager.ts';
 import { resetDeterministicMathRandom } from '../../../src/logic/battle/helpers/seedInitializer.ts';
 import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
-import { patchShowdownSpreadModify } from '../../../src/logic/battle/showdownAdapter.ts';
+import { patchShowdownSpreadModify } from '../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import type { CertifiedBattleCase } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
 
 describe('Reproduce Fuzzer Case 664353a0040c (Lote #20)', () => {

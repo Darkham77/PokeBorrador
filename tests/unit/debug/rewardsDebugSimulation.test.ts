@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
+// jsdom-ok: Requires browser localStorage and navigator.storage for debug simulation
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { findLatestPastEvent } from '@/logic/debug/rewardsDebugOccurrenceHelper'
 import {
-  findLatestPastEvent,
   simulatePastEventAndMissionsReward,
   clearDebugSimulatedRewards
 } from '@/logic/debug/rewardsDebugSimulation'

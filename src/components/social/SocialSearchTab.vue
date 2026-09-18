@@ -3,6 +3,7 @@ import { ref, onMounted, watch, nextTick } from 'vue'
 import { useSocialStore } from '@/stores/social/social'
 import { useUIStore } from '@/stores/ui'
 import TrainerCard from './TrainerCard.vue'
+import SocialSearchResultActions from './SocialSearchResultActions.vue'
 import { gsap } from 'gsap'
 
 const socialStore = useSocialStore()
@@ -182,41 +183,11 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
         @click-profile="openTrainerProfile"
       >
         <template #actions>
-          <div class="search-actions">
-            <button 
-              v-if="player.status === 'none'" 
-              :id="`social-search-send-btn-${player.id}`"
-              v-gsap-hover
-              class="btn-vicio-secondary btn-vicio-sm" 
-              @click.stop="socialStore.sendFriendRequest(player.id)"
-            >
-              <span class="emoji">➕</span> ENVIAR
-            </button>
-            
-            <button 
-              v-else-if="player.status === 'pending' && !player.isRequester"
-              :id="`social-search-accept-btn-${player.id}`"
-              v-gsap-hover
-              class="btn-vicio-success btn-vicio-sm" 
-              @click.stop="player.relId && socialStore.respondRequest(player.relId, 'accepted')"
-            >
-              <span class="emoji">✓</span> ACEPTAR
-            </button>
-
-            <span
-              v-else-if="player.status === 'pending' && player.isRequester"
-              class="status-badge pending"
-            >
-              <span class="emoji">⏳</span> ENVIADA
-            </span>
-
-            <span
-              v-else-if="player.status === 'accepted'"
-              class="status-badge friend"
-            >
-              <span class="emoji">✅</span> AMIGO
-            </span>
-          </div>
+          <SocialSearchResultActions
+            :player="player"
+            @send-request="socialStore.sendFriendRequest"
+            @respond-request="(relId) => socialStore.respondRequest(relId, 'accepted')"
+          />
         </template>
       </TrainerCard>
     </div>
@@ -370,34 +341,6 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   &:hover {
     text-decoration: underline;
     opacity: 0.85;
-  }
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-family: var(--font-pixel), "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  font-size: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  @include pixelated;
-  gap: 6px;
-  line-height: 1.5;
-  
-  &.pending {
-    background: #475569;
-    color: #facc15;
-    border: 1px solid Rgba(250, 204, 21, 0.25);
-    box-shadow: 0 3px 0 #334155;
-  }
-  
-  &.friend {
-    background: #1e293b;
-    color: #4ade80;
-    border: 1px solid Rgba(74, 222, 128, 0.25);
-    box-shadow: 0 3px 0 #0f172a;
   }
 }
 

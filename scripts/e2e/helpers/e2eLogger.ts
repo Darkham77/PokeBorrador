@@ -65,10 +65,6 @@ export async function clickResilient(locator: Locator, options: { timeout?: numb
   try {
     await locator.click({ timeout: initialTimeout });
   } catch (_err) {
-    try {
-      await locator.click({ force: true, timeout: fallbackTimeout });
-    } catch {
-      await locator.evaluate((el: HTMLElement) => el.click(), undefined, { timeout: fallbackTimeout });
-    }
+    await locator.evaluate((el: HTMLElement) => el.click(), undefined, { timeout: fallbackTimeout });
   }
 }

@@ -7,65 +7,41 @@ import { resetActiveBattleState } from '../orchestratorStateHelper.ts'
 import { processRocketStealMechanics } from '../orchestratorRocketHelper.ts'
 import { initWorkerForBattle } from '../orchestratorWorkerInitHelper.ts'
 import type { BattleOptions } from '../orchestrator.ts'
-import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import {
   runTrainerIntroSequence,
   runWildSearchIntroSequence,
   runWildGrassIntroSequence
 } from './battleIntroSequencer.ts'
 
-/**
- * Visual initialization and first turn setup.
- */
-export async function initBattleSequence(
+function resolveInitialCombatants(
   ctx: BattleContext,
   options?: Partial<BattleOptions & { initialEnemy: Pokemon | null; initialPlayer: Pokemon | null }>
-) {
+): { initialPlayer: Pokemon | null; initialEnemy: Pokemon | null } {
   const initialEnemy = options?.initialEnemy || ctx.activeBattle.value?.enemy || ctx.activeBattle.value?.enemyTeam?.[0] || null
   const initialPlayer = options?.initialPlayer || ctx.activeBattle.value?.player || ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0) || ctx.gs.state.team[0] || null
-  if (!initialPlayer || !initialEnemy) return
-  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
-  const fsm = ctx.fsm
+  return { initialPlayer, initialEnemy }
+}
 
-  const battleState = ctx.activeBattle.value
-  if (!battleState?.locationId) {
-    throw new Error('[Battle] Active battle locationId is missing during initialization')
-  }
-  const locationId = requireMapRouteId(battleState.locationId)
-  const isTrainer = !!battleState?.isTrainer
-  const isGym = !!battleState?.isGym
-  const wasSearching = options?.wasSearching !== undefined ? !!options.wasSearching : !!battleState?.wasSearching
-  const trainerName = battleState?.trainerName
-
-  await resetActiveBattleState(ctx, initialPlayer, isGym)
-  if (ctx.activeBattle.value) {
-    ctx.activeBattle.value.enemy = (!isTrainer && !isGym) ? initialEnemy : null
-    ctx.activeBattle.value.wasSearching = wasSearching
-    if (!isTrainer && !isGym && !ctx.activeBattle.value.isPvP) {
-      ctx.activeBattle.value.enemyTeam = [initialEnemy]
-    }
-  }
-  if (!wasSearching && ctx.animations?.resetAll) {
-    ctx.animations.resetAll()
-  }
-
-  // Inicialización del Web Worker de Showdown en paralelo con la intro visual
-  const workerInitPromise = initWorkerForBattle(ctx, initialPlayer, initialEnemy)
-
-  // Clear volatile status on all player team members and the initial enemy
+function clearBattleVolatiles(ctx: BattleContext, initialEnemy: Pokemon | null): void {
   ctx.gs.state.team.forEach((p: Pokemon) => {
     if (p) ctx.clearVolatileStatus(p)
   })
   if (initialEnemy) {
     ctx.clearVolatileStatus(initialEnemy)
   }
+}
 
-  ctx.isIntroAnimating.value = true
-  if (!wasSearching) {
-    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS)
-    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENTRY_ANIM)
-  }
-
+async function executeIntroByMode(
+  ctx: BattleContext,
+  initialPlayer: Pokemon,
+  initialEnemy: Pokemon,
+  isTrainer: boolean,
+  wasSearching: boolean,
+  trainerName: string | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  battleState: any
+): Promise<void> {
   const currentPlayer = ctx.activeBattle.value?.player
   const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
 
@@ -76,30 +52,105 @@ export async function initBattleSequence(
   } else {
     await runWildGrassIntroSequence(ctx, initialPlayer, initialEnemy, needsCall)
   }
+}
 
-  await fsm.transition(BATTLE_STATES.REORDER_TEAM, null)
-  
+function setupActiveBattleEnemy(
+  ctx: BattleContext,
+  initialEnemy: Pokemon,
+  isTrainer: boolean,
+  isGym: boolean,
+  wasSearching: boolean
+): void {
+  const activeBattle = ctx.activeBattle.value
+  if (!activeBattle) return
+
+  activeBattle.enemy = (!isTrainer && !isGym) ? initialEnemy : null
+  activeBattle.wasSearching = wasSearching
+  if (!isTrainer && !isGym && !activeBattle.isPvP) {
+    activeBattle.enemyTeam = [initialEnemy]
+  }
+}
+
+async function runPreIntroTransitions(ctx: BattleContext, wasSearching: boolean): Promise<void> {
+  ctx.isIntroAnimating.value = true
+  if (!wasSearching) {
+    await ctx.fsm.transition(ctx.BATTLE_STATES.INITIALIZING, ctx.BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS)
+    await ctx.fsm.transition(ctx.BATTLE_STATES.FIRST_INTRO, ctx.BATTLE_SUBSTATES.ENTRY_ANIM)
+  }
+}
+
+async function applyPostIntroSetup(
+  ctx: BattleContext,
+  initialPlayer: Pokemon,
+  initialEnemy: Pokemon,
+  locationId: MapRouteId,
+  isTrainer: boolean,
+  isGym: boolean,
+  trainerName: string | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  battleState: any
+): Promise<void> {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('resize'))
   }
-  
+
   ctx.attackerSide.value = null
   ctx.activeMove.value = null
-  
+
   const { activeBiome, mapTags } = getMapBiomeAndTags(locationId)
   logger.info('Orchestrator', `Combat started in biome: ${activeBiome} (Tags: ${mapTags.join(', ') || 'ninguno'}) for location: ${locationId}`)
-  
+
   handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog, ctx.activeBattle.value?.weather?.type)
-  
+
   if (isTrainer) await ctx.gs.scheduleSave()
 
   await processRocketStealMechanics(ctx, isTrainer, isGym, trainerName || '', battleState)
+}
 
-  // Esperar a que el worker esté listo (generalmente resuelto desde antes de que termine el salto)
+async function finalizeBattleInitialization(ctx: BattleContext, workerInitPromise: Promise<void>): Promise<void> {
   await workerInitPromise
-
   ctx.isIntroAnimating.value = false
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT)
   if (ctx.persistBattle) ctx.persistBattle()
   ctx.isIntroAnimating.value = false
+}
+
+/**
+ * Visual initialization and first turn setup.
+ */
+export async function initBattleSequence(
+  ctx: BattleContext,
+  options?: Partial<BattleOptions & { initialEnemy: Pokemon | null; initialPlayer: Pokemon | null }>
+) {
+  const { initialPlayer, initialEnemy } = resolveInitialCombatants(ctx, options)
+  if (!initialPlayer || !initialEnemy) return
+
+  const battleState = ctx.activeBattle.value
+  if (!battleState?.locationId) {
+    throw new Error('[Battle] Active battle locationId is missing during initialization')
+  }
+  const locationId = requireMapRouteId(battleState.locationId)
+  const isTrainer = !!battleState.isTrainer
+  const isGym = !!battleState.isGym
+  const wasSearching = options?.wasSearching !== undefined ? !!options.wasSearching : !!battleState.wasSearching
+  const trainerName = battleState.trainerName
+
+  await resetActiveBattleState(ctx, initialPlayer, isGym)
+  setupActiveBattleEnemy(ctx, initialEnemy, isTrainer, isGym, wasSearching)
+
+  if (!wasSearching && ctx.animations?.resetAll) {
+    ctx.animations.resetAll()
+  }
+
+  // Inicialización del Web Worker de Showdown en paralelo con la intro visual
+  const workerInitPromise = initWorkerForBattle(ctx, initialPlayer, initialEnemy)
+
+  clearBattleVolatiles(ctx, initialEnemy)
+
+  await runPreIntroTransitions(ctx, wasSearching)
+  await executeIntroByMode(ctx, initialPlayer, initialEnemy, isTrainer, wasSearching, trainerName, battleState)
+  await ctx.fsm.transition(ctx.BATTLE_STATES.REORDER_TEAM, null)
+
+  await applyPostIntroSetup(ctx, initialPlayer, initialEnemy, locationId, isTrainer, isGym, trainerName, battleState)
+  await finalizeBattleInitialization(ctx, workerInitPromise)
 }

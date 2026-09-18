@@ -39,6 +39,44 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
         ><span class="emoji">🌵</span></span>
       </div>
     </Transition>
+
+    <!-- Trampa Rocas -->
+    <Transition
+      :css="false"
+      @enter="onGroundPopEnter"
+      @leave="onGroundPopLeave"
+    >
+      <div
+        v-if="(stages.stealthrock || 0) > 0"
+        :key="`stealthrock-${side}-${stages.stealthrock || 0}`"
+        class="ground-fx stealthrock"
+      >
+        <span
+          v-for="i in 3"
+          :key="i"
+          class="rock-item"
+        ><span class="emoji">🪨</span></span>
+      </div>
+    </Transition>
+
+    <!-- Púas Tóxicas -->
+    <Transition
+      :css="false"
+      @enter="onGroundPopEnter"
+      @leave="onGroundPopLeave"
+    >
+      <div
+        v-if="(stages.toxicspikes || 0) > 0"
+        :key="`toxicspikes-${side}-${stages.toxicspikes || 0}`"
+        class="ground-fx toxicspikes"
+      >
+        <span
+          v-for="i in 3"
+          :key="i"
+          class="toxic-spike-item"
+        ><span class="emoji">☠️</span></span>
+      </div>
+    </Transition>
     
     <!-- Arraigo -->
     <Transition

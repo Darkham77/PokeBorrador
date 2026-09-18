@@ -9,7 +9,8 @@ import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
 import { isWeatherId } from '@/logic/weather/weatherRegistry'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
-import type { DebugSystem } from '@/stores/debug'
+import type { DebugSystem } from '@/types/system/debug.ts'
+import { CANONICAL_TERRAINS } from '@/logic/constants/gameplay'
 
 const DEBUG_FIELD_WEATHER_IDS = ['sun', 'rain', 'hail', 'sandstorm', 'snow', 'fog', 'clear', 'storm', 'blizzard', 'heatwave'] as const satisfies readonly WeatherId[]
 type DebugFieldWeatherId = (typeof DEBUG_FIELD_WEATHER_IDS)[number]
@@ -17,6 +18,177 @@ const DEBUG_FIELD_WEATHER_IDS_SET: ReadonlySet<string> = new Set(DEBUG_FIELD_WEA
 
 function isDebugFieldWeatherId(value: WeatherId): value is DebugFieldWeatherId {
   return DEBUG_FIELD_WEATHER_IDS_SET.has(value)
+}
+
+const DEFAULT_SECONDARY_TURNS = 4 as const
+const DEFAULT_ATTACK_LOCK_TURNS = 3 as const
+
+interface BattleStatusHolder {
+  confused?: number
+  disabledTurns?: number
+  tauntTurns?: number
+  encoreTurns?: number
+  perishSongCount?: number
+  bound?: number
+  substitute?: number
+  attracted?: boolean
+  cursed?: boolean
+  seeded?: boolean
+  trapped?: boolean
+  ingrain?: boolean
+  protect?: boolean
+  endure?: boolean
+  focusEnergy?: boolean
+  lockOn?: boolean
+  volatileCounters?: Record<string, number>
+}
+
+const DEFAULT_SUBSTITUTE_HP = 25 as const
+
+const SECONDARY_STATUS_TOGGLERS: Record<string, (poke: BattleStatusHolder) => void> = {
+  confusion: (p) => {
+    const active = (Number(p.confused) || 0) > 0
+    p.confused = active ? 0 : DEFAULT_SECONDARY_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.confusion = active ? 0 : DEFAULT_SECONDARY_TURNS
+  },
+  confused: (p) => {
+    const active = (Number(p.confused) || 0) > 0
+    p.confused = active ? 0 : DEFAULT_SECONDARY_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.confusion = active ? 0 : DEFAULT_SECONDARY_TURNS
+  },
+  taunt: (p) => {
+    const active = (Number(p.tauntTurns) || 0) > 0
+    p.tauntTurns = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.taunt = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+  },
+  tauntTurns: (p) => {
+    const active = (Number(p.tauntTurns) || 0) > 0
+    p.tauntTurns = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.taunt = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+  },
+  substitute: (p) => {
+    const active = (Number(p.substitute) || 0) > 0
+    p.substitute = active ? 0 : DEFAULT_SUBSTITUTE_HP
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.substitute = active ? 0 : DEFAULT_SUBSTITUTE_HP
+  },
+  disable: (p) => {
+    const active = (Number(p.disabledTurns) || 0) > 0
+    p.disabledTurns = active ? 0 : DEFAULT_SECONDARY_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.disable = active ? 0 : DEFAULT_SECONDARY_TURNS
+  },
+  disabledTurns: (p) => {
+    const active = (Number(p.disabledTurns) || 0) > 0
+    p.disabledTurns = active ? 0 : DEFAULT_SECONDARY_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.disable = active ? 0 : DEFAULT_SECONDARY_TURNS
+  },
+  encore: (p) => {
+    const active = (Number(p.encoreTurns) || 0) > 0
+    p.encoreTurns = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.encore = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+  },
+  encoreTurns: (p) => {
+    const active = (Number(p.encoreTurns) || 0) > 0
+    p.encoreTurns = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.encore = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+  },
+  perishsong: (p) => {
+    const active = (Number(p.perishSongCount) || 0) > 0
+    p.perishSongCount = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.perishsong = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+  },
+  perishSongCount: (p) => {
+    const active = (Number(p.perishSongCount) || 0) > 0
+    p.perishSongCount = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.perishsong = active ? 0 : DEFAULT_ATTACK_LOCK_TURNS
+  },
+  bound: (p) => {
+    const active = (Number(p.bound) || 0) > 0
+    p.bound = active ? 0 : DEFAULT_SECONDARY_TURNS
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.bound = active ? 0 : DEFAULT_SECONDARY_TURNS
+    p.volatileCounters.partiallytrapped = active ? 0 : DEFAULT_SECONDARY_TURNS
+  },
+  attract: (p) => {
+    p.attracted = !p.attracted
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.attract = p.attracted ? 1 : 0
+  },
+  attracted: (p) => {
+    p.attracted = !p.attracted
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.attract = p.attracted ? 1 : 0
+  },
+  curse: (p) => {
+    p.cursed = !p.cursed
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.curse = p.cursed ? 1 : 0
+  },
+  cursed: (p) => {
+    p.cursed = !p.cursed
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.curse = p.cursed ? 1 : 0
+  },
+  leechseed: (p) => {
+    p.seeded = !p.seeded
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.leechseed = p.seeded ? 1 : 0
+  },
+  seeded: (p) => {
+    p.seeded = !p.seeded
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.leechseed = p.seeded ? 1 : 0
+  },
+  trapped: (p) => {
+    p.trapped = !p.trapped
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.trapped = p.trapped ? 1 : 0
+  },
+  ingrain: (p) => {
+    p.ingrain = !p.ingrain
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.ingrain = p.ingrain ? 1 : 0
+  },
+  protect: (p) => {
+    p.protect = !p.protect
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.protect = p.protect ? 1 : 0
+  },
+  endure: (p) => {
+    p.endure = !p.endure
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.endure = p.endure ? 1 : 0
+  },
+  focusenergy: (p) => {
+    p.focusEnergy = !p.focusEnergy
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.focusenergy = p.focusEnergy ? 1 : 0
+  },
+  focus_energy: (p) => {
+    p.focusEnergy = !p.focusEnergy
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.focusenergy = p.focusEnergy ? 1 : 0
+  },
+  lockon: (p) => {
+    p.lockOn = !p.lockOn
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.lockon = p.lockOn ? 1 : 0
+  },
+  lock_on: (p) => {
+    p.lockOn = !p.lockOn
+    if (!p.volatileCounters) p.volatileCounters = {}
+    p.volatileCounters.lockon = p.lockOn ? 1 : 0
+  }
 }
 
 export function registerBattleTools(debug: DebugSystem) {
@@ -77,94 +249,103 @@ export function registerBattleTools(debug: DebugSystem) {
     }
   })
 
+const DEBUG_ANIM_EVENT_MAP: Readonly<Record<string, string>> = {
+  release: 'PLAY_RELEASE_ENERGY',
+  catch: 'PLAY_CATCH_ENERGY',
+  critical_capture_fx: 'CRITICAL_CAPTURE_FX',
+  shake: 'CATCH_SHAKE',
+  shake_damage: 'PLAY_DAMAGE',
+  recoil_rebound: 'PLAY_RECOIL',
+  blink: 'PLAY_BLINK',
+  heal: 'PLAY_HEAL',
+  success: 'CATCH_SUCCESS',
+  faint: 'POKEMON_FAINT',
+  attack: 'PLAY_ATTACK_ANIM',
+  emergence: 'START_BATTLE',
+  reveal: 'START_BATTLE',
+  encounter: 'ENCOUNTER_ANIM',
+  bush_wiggle: 'WIGGLE_BUSH'
+} as const;
+
+const DEBUG_UI_ANIM_TYPES = ['trainer_in', 'trainer_out', 'levelUp'] as const;
+type DebugUiAnimType = typeof DEBUG_UI_ANIM_TYPES[number];
+const DEBUG_UI_ANIM_TYPES_SET: ReadonlySet<DebugUiAnimType> = new Set(DEBUG_UI_ANIM_TYPES);
+
+function handleDebugAttackAnim(side: string, options: Record<string, unknown>): string {
+  const battle = useBattleStore();
+  battle.attackerSide = side as BattleSide;
+  battle.activeMove = {
+    name: options.cat === 'selfKO' ? 'Autodestrucción' : (options.cat === 'recoil' ? 'Retroceso' : 'Ataque Debug'), // spanish-ok: UI Spanish text localization label
+    cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
+    selfKO: options.cat === 'selfKO',
+    recoil: options.cat === 'recoil' ? true : undefined,
+    pp: 5,
+    maxPP: 5
+  };
+
+  if (battle.animations?.awaitTween) {
+    battle.animations.awaitTween(`attack-${side}`).then(() => {
+      battle.attackerSide = null;
+      battle.activeMove = null;
+    });
+  } else {
+    battle.attackerSide = null;
+    battle.activeMove = null;
+  }
+  return `Animación de ataque debug iniciada para ${side}.`;
+}
+
+function handleDebugEscapeAnim(side: string, type: string): string {
+  const escapeType = type === 'escape_teleport' ? 'teleport' : 'flee';
+  const battle = useBattleStore();
+  const pokemon = side === 'player'
+    ? (battle.state?.player as Pokemon | null | undefined)
+    : (battle.state?.enemy as Pokemon | null | undefined);
+  gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon, type: escapeType });
+  return `Efecto de escape ${escapeType} emitido para ${side}`;
+}
+
+function handleDebugUiAnim(side: string, type: string): string {
+  const battle = useBattleStore();
+  if (type === 'trainer_in') battle.trainerAnimState = 'in';
+  if (type === 'trainer_out') battle.trainerAnimState = 'out';
+  if (type === 'levelUp') {
+    const p = side === 'player' ? battle.state?.player : battle.state?.enemy;
+    if (p && p.level < MAX_POKEMON_LEVEL) {
+      levelUpPokemon(p);
+    }
+  }
+  return `Animación de UI ${type} disparada.`;
+}
+
   debug.register({
     id: 'trigger_anim',
     command: 'triggerAnim',
     description: 'Disparar una animación de combate via Bus.',
     action: (type: string, side = 'enemy', options: Record<string, unknown> = {}) => {
       if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.triggerAnim && (type === 'full_catch_normal' || type === 'full_catch_critical')) {
-        window.__VITE_DEBUG__.triggerAnim(type, side, options)
-        return
+        window.__VITE_DEBUG__.triggerAnim(type, side, options);
+        return;
       }
-      const eventMap: Record<string, string> = {
-        'release': 'PLAY_RELEASE_ENERGY',
-        'catch': 'PLAY_CATCH_ENERGY',
-        'critical_capture_fx': 'CRITICAL_CAPTURE_FX',
-        'shake': 'CATCH_SHAKE',
-        'shake_damage': 'PLAY_DAMAGE',
-        'recoil_rebound': 'PLAY_RECOIL',
-        'blink': 'PLAY_BLINK',
-        'heal': 'PLAY_HEAL',
-        'success': 'CATCH_SUCCESS',
-        'faint': 'POKEMON_FAINT',
-        'attack': 'PLAY_ATTACK_ANIM',
-        'emergence': 'START_BATTLE',
-        'reveal': 'START_BATTLE',
-        'encounter': 'ENCOUNTER_ANIM',
-        'bush_wiggle': 'WIGGLE_BUSH'
-      }
-      
-      const event = eventMap[type] || type
-      const payload: Record<string, unknown> = { side, ...options }
-      
-      // Manejo especial para animación de ataque (incluyendo physical, special, status, selfKO y recoil)
       if (type === 'attack') {
-        const battle = useBattleStore()
-        battle.attackerSide = side as BattleSide
-        battle.activeMove = {
-          name: options.cat === 'selfKO' ? 'Autodestrucción' : (options.cat === 'recoil' ? 'Retroceso' : 'Ataque Debug'), // spanish-ok: UI Spanish text localization label
-          cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
-          selfKO: options.cat === 'selfKO',
-          recoil: options.cat === 'recoil' ? true : undefined,
-          pp: 5,
-          maxPP: 5
-        }
-        
-        if (battle.animations?.awaitTween) {
-          battle.animations.awaitTween(`attack-${side}`).then(() => {
-            battle.attackerSide = null
-            battle.activeMove = null
-          })
-        } else {
-          battle.attackerSide = null
-          battle.activeMove = null
-        }
-        return `Animación de ataque debug iniciada para ${side}.`
+        return handleDebugAttackAnim(side, options);
       }
-
-      // Manejo especial para escape de pokemon (teleport y flee)
       if (type === 'escape_teleport' || type === 'escape_flee') {
-        const escapeType = type === 'escape_teleport' ? 'teleport' : 'flee'
-        const battle = useBattleStore()
-        const pokemon = side === 'player'
-          ? (battle.state?.player as Pokemon | null | undefined)
-          : (battle.state?.enemy as Pokemon | null | undefined)
-        gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon, type: escapeType })
-        return `Efecto de escape ${escapeType} emitido para ${side}`
+        return handleDebugEscapeAnim(side, type);
+      }
+      if (DEBUG_UI_ANIM_TYPES_SET.has(type as DebugUiAnimType)) {
+        return handleDebugUiAnim(side, type);
       }
 
-      // Manejo especial para START_BATTLE (Introducciones)
-      if (type === 'emergence') payload.animationPhase = 1
-      if (type === 'reveal') payload.animationPhase = 3
+      const event = DEBUG_ANIM_EVENT_MAP[type] || type;
+      const payload: Record<string, unknown> = { side, ...options };
+      if (type === 'emergence') payload.animationPhase = 1;
+      if (type === 'reveal') payload.animationPhase = 3;
 
-      // Manejo especial para animaciones de UI / Store
-      if (['trainer_in', 'trainer_out', 'levelUp'].includes(type)) {
-        const battle = useBattleStore()
-        if (type === 'trainer_in') battle.trainerAnimState = 'in'
-        if (type === 'trainer_out') battle.trainerAnimState = 'out'
-        if (type === 'levelUp') {
-          const p = side === 'player' ? battle.state?.player : battle.state?.enemy
-          if (p && p.level < MAX_POKEMON_LEVEL) {
-            levelUpPokemon(p)
-          }
-        }
-        return `Animación de UI ${type} disparada.`
-      }
-
-      gameBus.emit(event, payload)
-      return `Evento emitido: ${event} para ${side}`
+      gameBus.emit(event, payload);
+      return `Evento emitido: ${event} para ${side}`;
     }
-  })
+  });
 
   debug.register({
     id: 'toggle_silhouette',
@@ -218,24 +399,13 @@ export function registerBattleTools(debug: DebugSystem) {
         const battle = useBattleStore()
         const poke = (side === 'player' 
           ? battle.state?.player 
-          : battle.state?.enemy) as (Pokemon & Record<string, unknown>) | undefined
+          : battle.state?.enemy) as (Pokemon & BattleStatusHolder) | undefined
 
         if (poke) {
-          if (type === 'confused') poke.confused = (poke.confused || 0) > 0 ? 0 : 4
-          if (type === 'disabledTurns') poke.disabledTurns = (poke.disabledTurns || 0) > 0 ? 0 : 4
-          if (type === 'tauntTurns') poke.tauntTurns = (poke.tauntTurns || 0) > 0 ? 0 : 3
-          if (type === 'encoreTurns') poke.encoreTurns = (poke.encoreTurns || 0) > 0 ? 0 : 3
-          if (type === 'perishSongCount') poke.perishSongCount = (poke.perishSongCount || 0) > 0 ? 0 : 3
-          if (type === 'bound') poke.bound = (poke.bound || 0) > 0 ? 0 : 4
-          if (type === 'attracted') poke.attracted = !poke.attracted
-          if (type === 'cursed') poke.cursed = !poke.cursed
-          if (type === 'seeded') poke.seeded = !poke.seeded
-          if (type === 'trapped') (poke as Pokemon & { trapped: boolean }).trapped = !(poke as Pokemon & { trapped: boolean }).trapped
-          if (type === 'ingrain') poke.ingrain = !poke.ingrain
-          if (type === 'protect') poke.protect = !poke.protect
-          if (type === 'endure') poke.endure = !poke.endure
-          if (type === 'focus_energy') poke.focusEnergy = !poke.focusEnergy
-          if (type === 'lock_on') poke.lockOn = !poke.lockOn
+          const toggler = SECONDARY_STATUS_TOGGLERS[type]
+          if (toggler) {
+            toggler(poke)
+          }
 
           // Force Reactivity
           if (side === 'player' && battle.state) {
@@ -249,6 +419,69 @@ export function registerBattleTools(debug: DebugSystem) {
     }
   })
 
+const DEFAULT_STAGE_EFFECT_DURATION = 5 as const
+const INFINITE_WEATHER_TURNS = -1 as const
+const MIN_STAT_STAGE = -6 as const
+const MAX_STAT_STAGE = 6 as const
+const RADIX_DECIMAL = 10 as const
+const STAGE_EFFECT_KEYS = ['reflect', 'lightScreen', 'safeguard', 'mist', 'spikes', 'stealthrock', 'toxicspikes'] as const
+const STAGE_EFFECT_SET: ReadonlySet<string> = new Set(STAGE_EFFECT_KEYS)
+
+const CANONICAL_TERRAINS_SET: ReadonlySet<string> = new Set(CANONICAL_TERRAINS)
+
+function clampStatStage(current: number, val: number, isAbsolute: boolean): number {
+  const target = isAbsolute ? val : current + val
+  return Math.max(MIN_STAT_STAGE, Math.min(MAX_STAT_STAGE, target))
+}
+
+function applyBattleStageEffect(stages: Record<string, number> | undefined, effect: string, val: string): void {
+  if (!stages) return
+  const stageKey = effect === 'lightscreen' ? 'lightScreen' : effect
+  if (!STAGE_EFFECT_SET.has(stageKey as (typeof STAGE_EFFECT_KEYS)[number])) return
+  // Lógica FLIP: si ya tiene el efecto (>0), lo quitamos (0). Si no, lo ponemos (val o 5).
+  stages[stageKey] = (stages[stageKey] || 0) > 0 ? 0 : (parseInt(val, RADIX_DECIMAL) || DEFAULT_STAGE_EFFECT_DURATION)
+}
+
+function applyBattleWeatherEffect(battleState: ReturnType<typeof useBattleStore>['state'], effect: string, val: string): void {
+  if (!battleState || !isWeatherId(effect) || !isDebugFieldWeatherId(effect)) return
+  const current = battleState.weather?.type
+  // Lógica FLIP: si el clima actual es el mismo que tocamos, lo limpiamos.
+  if (current === effect && effect !== 'clear') {
+    battleState.weather = { type: 'clear', visual: 'clear', turns: INFINITE_WEATHER_TURNS }
+  } else {
+    battleState.weather = {
+      type: effect,
+      visual: effect,
+      turns: effect === 'clear' ? INFINITE_WEATHER_TURNS : (parseInt(val, RADIX_DECIMAL) || DEFAULT_STAGE_EFFECT_DURATION)
+    }
+  }
+}
+
+function applyBattleTerrainOrFieldEffect(battleState: ReturnType<typeof useBattleStore>['state'], effect: string, val: string): void {
+  if (!battleState) return
+  const updatedConditions: Record<string, { turns: number }> = { ...(battleState.fieldConditions || {}) }
+  const isTerrain = CANONICAL_TERRAINS_SET.has(effect)
+  let newTerrain: string | null = battleState.terrain ?? null
+
+  if (updatedConditions[effect]) {
+    delete updatedConditions[effect]
+    if (isTerrain && newTerrain === effect) {
+      newTerrain = null
+    }
+  } else {
+    if (isTerrain) {
+      CANONICAL_TERRAINS.forEach(t => {
+        delete updatedConditions[t]
+      })
+      newTerrain = effect
+    }
+    updatedConditions[effect] = { turns: parseInt(val, RADIX_DECIMAL) || DEFAULT_STAGE_EFFECT_DURATION }
+  }
+
+  battleState.fieldConditions = updatedConditions
+  battleState.terrain = newTerrain
+}
+
   debug.register({
     id: 'set_stat_stage',
     command: 'setStatStage',
@@ -259,7 +492,7 @@ export function registerBattleTools(debug: DebugSystem) {
         const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record: Generic key-value data dictionary container
         const sKey = stat
         if (stages && stages[sKey] !== undefined) {
-          stages[sKey] = Math.max(-6, Math.min(6, parseInt(val)))
+          stages[sKey] = clampStatStage(stages[sKey], parseInt(val, RADIX_DECIMAL), true)
           // Force reactivity for ref objects
           if (side === 'player') battle.playerStages = { ...battle.playerStages }
           else battle.enemyStages = { ...battle.enemyStages }
@@ -279,7 +512,7 @@ export function registerBattleTools(debug: DebugSystem) {
         const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record: Generic key-value data dictionary container
         const sKey = stat
         if (stages && stages[sKey] !== undefined) {
-          stages[sKey] = Math.max(-6, Math.min(6, (stages[sKey] || 0) + parseInt(delta)))
+          stages[sKey] = clampStatStage(stages[sKey] || 0, parseInt(delta, RADIX_DECIMAL), false)
           // Force reactivity for ref objects
           if (side === 'player') battle.playerStages = { ...battle.playerStages }
           else battle.enemyStages = { ...battle.enemyStages }
@@ -292,37 +525,29 @@ export function registerBattleTools(debug: DebugSystem) {
   debug.register({
     id: 'set_field_effect',
     command: 'setFieldEffect',
-    description: 'Activar efecto de campo (screens, weather). Toggle automático.',
+    description: 'Activar efecto de campo (screens, weather, terrains). Toggle automático.',
     action: (side: string, effect: string, val: string) => {
       import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
         const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record: Generic key-value data dictionary container
-        
-        // Screens & Hazards (Stage based)
-        const isStageEffect = (['reflect', 'lightScreen', 'safeguard', 'mist', 'spikes'] as const).includes(effect as 'reflect')
-        if (isStageEffect && stages) {
-          // Lógica FLIP: si ya tiene el efecto (>0), lo quitamos (0). Si no, lo ponemos (val o 5).
-          stages[effect] = (stages[effect] || 0) > 0 ? 0 : (parseInt(val) || 5)
-        }
-        
-        // Weather (Context based)
-        if (isWeatherId(effect) && isDebugFieldWeatherId(effect)) {
-          if (battle.state) {
-            const current = battle.state?.weather?.type
-            // Lógica FLIP: si el clima actual es el mismo que tocamos, lo limpiamos.
-            if (current === effect && effect !== 'clear') {
-              if (battle.state) battle.state.weather = { type: 'clear', visual: 'clear', turns: -1 }
-            } else {
-              if (battle.state) {
-                battle.state.weather = { 
-                  type: effect, 
-                  visual: effect,
-                  turns: effect === 'clear' ? -1 : (parseInt(val) || 5) 
-                }
-              }
-            }
+        applyBattleStageEffect(stages, effect, val)
+        applyBattleWeatherEffect(battle.state, effect, val)
+        applyBattleTerrainOrFieldEffect(battle.state, effect, val)
+        if (battle.state) {
+          const sideConds = side === 'player'
+            ? (battle.state.playerSideConditions ??= {})
+            : (battle.state.enemySideConditions ??= {})
+          const stageKey = effect === 'lightscreen' ? 'lightScreen' : effect
+          const turnsVal = stages[stageKey]
+          if ((turnsVal || 0) > 0) {
+            sideConds[effect as import('@/types/battle/battle').BattleConditionKey] = { turns: turnsVal || 1 }
+          } else {
+            delete sideConds[effect as import('@/types/battle/battle').BattleConditionKey]
           }
+          battle.state = { ...battle.state }
         }
+        if (side === 'player') battle.playerStages = { ...battle.playerStages }
+        else battle.enemyStages = { ...battle.enemyStages }
       })
       return `setFieldEffect(${side}, ${effect}, ${val})`
     }

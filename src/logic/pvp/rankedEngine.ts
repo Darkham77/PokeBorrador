@@ -1,7 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { isPokemonType } from '@/data/battle/types';
-import { Dex } from '@pkmn/sim';
+import { getPokemonGeneration } from '@/logic/pokemon/pokemonSpeciesHelper.ts';
 
 export interface EloTier {
   id: RankedTierId;
@@ -23,7 +23,6 @@ export interface RankedRules {
 }
 
 import {
-  RANKED_TIER_ORDER,
   RANKED_TIER_INDEX_MAP,
   RANKED_MEDAL_CONFIGS,
   SPANISH_MONTH_NAMES,
@@ -35,18 +34,17 @@ import {
   type RankedTierName,
   type SeasonalThemeId
 } from '@/data/system/rankedData.ts'
-export { RANKED_TIER_ORDER, RANKED_TIER_INDEX_MAP, type RankedTierId, type RankedTierName }
 export type RankedTierCode = 'BRONCE' | 'PLATA' | 'ORO' | 'PLATINO' | 'DIAMANTE' | 'MAESTRO';
 import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
 import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils.ts';
 import { toID } from '@/logic/utils/strings.ts';
 const RANKED_MAX_TIER_GAP = 1;
 
-export const ELO_THRESHOLD_PLATA = 1200;
-export const ELO_THRESHOLD_ORO = 1600;
-export const ELO_THRESHOLD_PLATINO = 2100;
-export const ELO_THRESHOLD_DIAMANTE = 2700;
-export const ELO_THRESHOLD_MAESTRO = 3400;
+const ELO_THRESHOLD_PLATA = 1200;
+const ELO_THRESHOLD_ORO = 1600;
+const ELO_THRESHOLD_PLATINO = 2100;
+const ELO_THRESHOLD_DIAMANTE = 2700;
+const ELO_THRESHOLD_MAESTRO = 3400;
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
@@ -203,8 +201,7 @@ export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedR
   }
 
   if (rules.allowedGenerations && rules.allowedGenerations.length > 0) {
-    const spec = Dex.species.get(pokemon.id);
-    const monGen = spec.gen || 1;
+    const monGen = getPokemonGeneration(pokemon.id);
     if (!rules.allowedGenerations.includes(monGen)) {
       return { ok: false, reason: `${pokemon.name} pertenece a una generación no permitida (Gen ${monGen}).` };
     }

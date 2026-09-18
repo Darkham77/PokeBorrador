@@ -7,9 +7,41 @@ import { useModalStore } from "@/stores/modals";
 import { useGTSStore } from "@/stores/gts";
 import { useBreedingStore } from "@/stores/breeding";
 import { useGymsStore } from "@/stores/gyms";
-import { getItemById } from "@/data/inventory/items";
+import { getItemById, isItemId } from "@/data/inventory/items";
 import { useUnifiedRewards } from "@/composables/rewards/useUnifiedRewards";
+import { categorizeHomeRewards, formatHomeTooltip } from "./homeTooltipFormatter.ts";
 import type { ClaimItem } from "@/types/system/game";
+
+const TAB_MODAL_MAP: Readonly<Record<string, string>> = {
+  bag: "Inventory",
+  market: "Shop",
+  "online-market": "GlobalMarket",
+  "trainer-shop": "BCShop",
+  "reputation-shop": "ReputationShop",
+  "black-market": "BlackMarket",
+  "war-shop": "WarShop",
+  team: "TeamManagement",
+  daycare: "Daycare",
+  missions: "EventMissions",
+  ranking: "Ranking",
+  arena: "Arena",
+} as const;
+
+interface SocialNotificationsSummary {
+  trades: number;
+  chats: number;
+  friends: number;
+}
+
+function resolveSocialInitialTab(notifications: SocialNotificationsSummary): string {
+  if (notifications.trades > 0 && (notifications.chats + notifications.friends) === 0) {
+    return "trades";
+  }
+  if (notifications.friends > 0 && notifications.chats === 0) {
+    return "requests";
+  }
+  return "friends";
+}
 
 const HUD_NAV_ENTER_Y_OFFSET_PX = 20;
 const HUD_NAV_LEAVE_Y_OFFSET_PX = 15;
@@ -40,81 +72,14 @@ export function useNavigationState() {
 
   const homeTooltipDescription = computed(() => {
     const allRewards = unifiedRewards.value || [];
-    const claimables = allRewards.filter(r => r.isClaimable);
-    const discardables = allRewards.filter(r => r.isLegacy);
-    
-    const eventsAndRanked = claimables.filter(r => r.source === 'event' || r.source === 'ranked_milestone').length;
-    const legacyToDiscard = discardables.length;
-    const gtsSales = claimables.filter(r => r.source === 'gts_claim' && (r.title.toLowerCase().includes('venta') || (r.prize && 'money' in r.prize))).length;
-    const gtsPurchases = claimables.filter(r => r.source === 'gts_claim' && r.title.toLowerCase().includes('compra')).length;
-    const gtsReturns = claimables.filter(r => r.source === 'gts_claim' && (r.title.toLowerCase().includes('devolución') || r.title.toLowerCase().includes('devolucion'))).length;
-    const gtsTrades = claimables.filter(r => r.source === 'gts_claim' && (r.title.toLowerCase().includes('intercambio') || r.title.toLowerCase().includes('recepción') || r.title.toLowerCase().includes('recepcion'))).length;
-    const gtsOther = claimables.filter(r => r.source === 'gts_claim' && !(
-      r.title.toLowerCase().includes('venta') || (r.prize && 'money' in r.prize) ||
-      r.title.toLowerCase().includes('compra') ||
-      r.title.toLowerCase().includes('devolución') || r.title.toLowerCase().includes('devolucion') ||
-      r.title.toLowerCase().includes('intercambio') || r.title.toLowerCase().includes('recepción') || r.title.toLowerCase().includes('recepcion')
-    )).length;
-    const classLoot = claimables.filter(r => r.source === 'class_mission').length;
-    const dailyMissions = totalActionableMissions.value;
-    const classDeploy = isClassMissionReadyToDeploy.value ? 1 : 0;
-    const readyEggs = readyEggsCount.value;
-
-    const total = totalHomeNotifications.value;
-    if (total === 0) {
-      return "Panel central con eventos mundiales, crianza, mercado y misiones activas.\n\nHaz clic para ir a Inicio.";
-    }
-
-    const lines: string[] = []; // text-ok: UI text display localization string
-    lines.push(`Novedades pendientes (${total}):`);
-
-    if (eventsAndRanked > 0) {
-      lines.push(`• ${eventsAndRanked} ${eventsAndRanked === 1 ? 'recompensa' : 'recompensas'}`);
-    }
-    if (legacyToDiscard > 0) {
-      lines.push(`• ${legacyToDiscard} ${legacyToDiscard === 1 ? 'recompensa para descartar' : 'recompensas para descartar'}`);
-    }
-    if (readyEggs > 0) {
-      lines.push(`• ${readyEggs} ${readyEggs === 1 ? 'huevo listo para eclosionar' : 'huevos listos para eclosionar'}`);
-    }
-    if (gtsSales > 0) {
-      lines.push(`• ${gtsSales} ${gtsSales === 1 ? 'venta en GTS' : 'ventas en GTS'}`);
-    }
-    if (gtsPurchases > 0) {
-      lines.push(`• ${gtsPurchases} ${gtsPurchases === 1 ? 'compra en GTS' : 'compras en GTS'}`);
-    }
-    if (gtsReturns > 0) {
-      lines.push(`• ${gtsReturns} ${gtsReturns === 1 ? 'devolución de GTS' : 'devoluciones de GTS'}`);
-    }
-    if (gtsTrades > 0) {
-      lines.push(`• ${gtsTrades} ${gtsTrades === 1 ? 'intercambio pendiente' : 'intercambios pendientes'}`);
-    }
-    if (gtsOther > 0) {
-      lines.push(`• ${gtsOther} ${gtsOther === 1 ? 'reclamo de mercado pendiente' : 'reclamos de mercado pendientes'}`);
-    }
-    if (classLoot > 0) {
-      lines.push(`• ${classLoot} ${classLoot === 1 ? 'botín de clase para reclamar' : 'botines de clase para reclamar'}`);
-    }
-    if (dailyMissions > 0) {
-      lines.push(`• ${dailyMissions} ${dailyMissions === 1 ? 'misión diaria para entregar' : 'misiones diarias para entregar'}`);
-    }
-    if (classDeploy > 0) {
-      lines.push("• 1 misión de clase para desplegar");
-    }
-    const rematches = gymsStore.availableRematchesCount;
-    if (rematches > 0) {
-      lines.push(`• ${rematches} ${rematches === 1 ? 'revancha diaria de líder disponible' : 'revanchas diarias de líderes disponibles'} 🔥`);
-    }
-
-    const accounted = eventsAndRanked + legacyToDiscard + classLoot + gtsSales + gtsPurchases + gtsReturns + gtsTrades + gtsOther;
-    const unaccounted = allRewards.length - accounted;
-    if (unaccounted > 0) {
-      lines.push(`• ${unaccounted} ${unaccounted === 1 ? 'otra novedad pendiente' : 'otras novedades pendientes'}`);
-    }
-
-    lines.push("");
-    lines.push("Haz clic para ir a Inicio.");
-    return lines.join("\n");
+    const counts = {
+      ...categorizeHomeRewards(allRewards),
+      dailyMissions: totalActionableMissions.value,
+      classDeploy: isClassMissionReadyToDeploy.value ? 1 : 0,
+      readyEggs: readyEggsCount.value,
+      rematches: gymsStore.availableRematchesCount,
+    };
+    return formatHomeTooltip(counts, totalHomeNotifications.value);
   });
 
   const activeTab = computed({
@@ -138,12 +103,7 @@ export function useNavigationState() {
       .map(([name, qty]) => {
         const count = qty as number;
         if (count <= 0) return null;
-        let found = null;
-        try {
-          found = getItemById(name);
-        } catch {
-          // ignore
-        }
+        const found = isItemId(name) ? getItemById(name) : null;
         if (found?.cat === "pokeballs" || name.toLowerCase().includes("ball")) {
           return { name: found?.name || name, qty: count };
         }
@@ -159,12 +119,7 @@ export function useNavigationState() {
     for (const [key, qty] of Object.entries(inventory)) {
       const count = qty as number;
       if (count <= 0) continue;
-      let found = null;
-      try {
-        found = getItemById(key);
-      } catch {
-        // ignore
-      }
+      const found = isItemId(key) ? getItemById(key) : null;
       if (found) {
         let tier: number | null = null;
         if (found.cat === "raw_material" || found.sprite?.includes("crafting/tier0/")) {
@@ -315,73 +270,14 @@ export function useNavigationState() {
   };
 
   const handleTabChange = (tab: string, _event?: Event) => {
-    if (tab === "bag") {
-      modalStore.open("Inventory");
+    const modalName = TAB_MODAL_MAP[tab];
+    if (modalName) {
+      modalStore.open(modalName);
       return;
     }
 
-    if (tab === "market") {
-      modalStore.open("Shop");
-      return;
-    }
-
-    if (tab === "online-market") {
-      modalStore.open("GlobalMarket");
-      return;
-    }
-
-    if (tab === "trainer-shop") {
-      modalStore.open("BCShop");
-      return;
-    }
-
-    if (tab === "reputation-shop") {
-      modalStore.open("ReputationShop");
-      return;
-    }
-
-    if (tab === "black-market") {
-      modalStore.open("BlackMarket");
-      return;
-    }
-
-    if (tab === "war-shop") {
-      modalStore.open("WarShop");
-      return;
-    }
-
-    if (tab === "team") {
-      modalStore.open("TeamManagement");
-      return;
-    }
-
-    if (tab === "daycare") {
-      modalStore.open("Daycare");
-      return;
-    }
-
-    if (["social", "friends"].includes(tab)) {
-      const initialTab = (socialStore.notifications.trades > 0 && (socialStore.notifications.chats + socialStore.notifications.friends) === 0)
-        ? "trades"
-        : (socialStore.notifications.friends > 0 && socialStore.notifications.chats === 0)
-          ? "requests"
-          : "friends";
-      modalStore.open("SocialCenter", { initialTab });
-      return;
-    }
-
-    if (tab === "missions") {
-      modalStore.open("EventMissions");
-      return;
-    }
-
-    if (tab === "ranking") {
-      modalStore.open("Ranking");
-      return;
-    }
-
-    if (tab === "arena") {
-      modalStore.open("Arena");
+    if (tab === "social" || tab === "friends") {
+      modalStore.open("SocialCenter", { initialTab: resolveSocialInitialTab(socialStore.notifications) });
       return;
     }
     

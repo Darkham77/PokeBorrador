@@ -56,7 +56,7 @@ priority: CRITICAL
 | **Guard Clauses** | Early returns for edge cases |
 | **Flat > Nested** | Avoid deep nesting (max 2 levels) |
 | **Composition** | Small functions composed together |
-| **Modularity** | **300/500 Rule**: Warning at 300 SLOC, Error at 500 SLOC. Modularize via Composables. |
+| **Modularity** | **Fallow Quality Governance**: Keep functions concise (≤ 60 LOC), maintain low cognitive and cyclomatic complexity, and follow Fallow refactoring targets. Modularize based on Single Responsibility, eliminating arbitrary file line limits. |
 | **Colocation** | Keep related code close |
 | **Layout Centering** | Use `display: flex` + `justify-content` + `align-items` for centering. Avoid `position: absolute` with `translate(-50%, -50%)` as it creates sub-pixel blurring and breaks layout flow. |
 | **Stable Sorting** | When using `Array.prototype.sort()`, ensure the comparison function returns stable and predictable values (1, -1, 0). Use a unique identifier (like `uid`) as a final tie-breaker. ALWAYS filter out null/undefined slots BEFORE sorting to prevent runtime type errors. |
@@ -177,7 +177,7 @@ File to edit: UserService.ts
 | **database-architect** | Schema Validate | `python .agents/skills/database-design/scripts/schema_validator.py .` |
 | **security-auditor** | Security Scan | `python .agents/skills/vulnerability-scanner/scripts/security_scan.py .` |
 | **test-engineer** | Playwright | `python .agents/skills/webapp-testing/scripts/playwright_runner.py <url>` |
-| **Any agent** | Lint & Types | `npm run lint` (includes type-check via `vue-tsc`) |
+| **Any agent** | Lint & Types | `npm run lint` (runs `npm run audit:lint` executing 10 core sub-auditors in parallel) |
 | **Any agent** | Unified Audit | `npm run audit` (Terminal summary + full JSON in `scratch/audits/latest_audit.json`) |
 
 > ❌ **WRONG:** `test-engineer` running `security_scan.py`

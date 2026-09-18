@@ -1,0 +1,399 @@
+<script setup lang="ts">
+/**
+ * src/components/modals/class/ClassSelectionCard.vue
+ *
+ * Dedicated interactive card for trainer class preview and selection.
+ */
+
+import { gsap } from 'gsap';
+import { type PlayerClassId } from '@/data/player/playerClasses';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import type { RenderPlayerClass } from './classSelectionTypes.ts';
+
+interface Props {
+  cls: RenderPlayerClass;
+  isCurrent: boolean;
+  currentPlayerClass: PlayerClassId | null;
+}
+
+defineProps<Props>();
+
+defineEmits<{
+  (e: 'select', id: PlayerClassId): void;
+}>();
+
+const CLASS_CARD_HOVER_Y_OFFSET_PX = -10;
+const CLASS_HOVER_ROTATE_X_DEG = 2;
+const CLASS_HOVER_SPRITE_SCALE = 1.1;
+const GSAP_CARD_HOVER_DURATION_SEC = 0.25;
+const GLOW_ACTIVE_OPACITY = 0.2;
+const GLOW_BASE_OPACITY = 0.05;
+
+function splitLeadingEmoji(text: string): { emoji: string | null; text: string } {
+  const match = text.match(/^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*(.*)$/u);
+  if (match) {
+    return { emoji: match[1] ?? null, text: match[2] ?? '' };
+  }
+  return { emoji: null, text };
+}
+
+const getTrainerSprite = (id: string) => {
+  return getAssetUrl(ASSET_TYPES.TRAINER, id, { trainerSuffix: 'avatar' });
+};
+
+const getButtonVariant = (clsId: PlayerClassId) => {
+  switch (clsId) {
+    case 'rocket': return 'danger';
+    case 'cazabichos': return 'success';
+    case 'entrenador': return 'info';
+    case 'criador': return 'secondary';
+    default: return 'primary';
+  }
+};
+
+const handleImageError = (e: Event) => {
+  if (e.target) {
+    (e.target as HTMLImageElement).style.display = 'none';
+  }
+};
+
+const onCardHover = (event: MouseEvent, isEntering: boolean) => {
+  const card = event.currentTarget as HTMLElement;
+  if (!card) return;
+  const glow = card.querySelector('.card-glow');
+  const sprite = card.querySelector('.trainer-pixel-art');
+
+  if (isEntering) {
+    gsap.to(card, {
+      y: CLASS_CARD_HOVER_Y_OFFSET_PX,
+      rotateX: CLASS_HOVER_ROTATE_X_DEG,
+      borderColor: 'var(--yellow)',
+      duration: GSAP_CARD_HOVER_DURATION_SEC,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    });
+    if (glow) {
+      gsap.to(glow, {
+        opacity: GLOW_ACTIVE_OPACITY,
+        duration: GSAP_CARD_HOVER_DURATION_SEC,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      });
+    }
+    if (sprite) {
+      gsap.to(sprite, {
+        scale: CLASS_HOVER_SPRITE_SCALE,
+        duration: GSAP_CARD_HOVER_DURATION_SEC,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      });
+    }
+  } else {
+    gsap.to(card, {
+      y: 0,
+      rotateX: 0,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      duration: GSAP_CARD_HOVER_DURATION_SEC,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'transform,borderColor'
+    });
+    if (glow) {
+      gsap.to(glow, {
+        opacity: GLOW_BASE_OPACITY,
+        duration: GSAP_CARD_HOVER_DURATION_SEC,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        clearProps: 'opacity'
+      });
+    }
+    if (sprite) {
+      gsap.to(sprite, {
+        scale: 1,
+        duration: GSAP_CARD_HOVER_DURATION_SEC,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        clearProps: 'transform'
+      });
+    }
+  }
+};
+</script>
+
+<template>
+  <div
+    class="class-card-premium"
+    :style="{ '--cls-color': cls.color }"
+    :class="{ 'is-current': isCurrent }"
+    @mouseenter="onCardHover($event, true)"
+    @mouseleave="onCardHover($event, false)"
+  >
+    <div class="card-glow" />
+
+    <div class="avatar-circle-wrap">
+      <div class="avatar-circle">
+        <img
+          :src="getTrainerSprite(cls.spriteId)"
+          :alt="cls.name || 'Entrenador'"
+          class="trainer-pixel-art"
+          @error="handleImageError"
+        >
+      </div>
+    </div>
+
+    <h2 class="class-title">
+      {{ cls.name }}
+    </h2>
+    <div class="class-desc">
+      <span>{{ cls.description }}</span>
+    </div>
+
+    <div class="stats-comparison">
+      <div class="stats-section pros">
+        <h3><span class="emoji">✅</span> VENTAJAS</h3>
+        <ul>
+          <li
+            v-for="(bonus, idx) in cls.bonuses"
+            :key="idx"
+          >
+            <PVTooltip
+              :description="cls.technicalBonuses?.[idx] || 'Información no disponible.'"
+              position="top"
+              :delay="100"
+              style="cursor: help;"
+            >
+              <span class="bullet-item-flex">
+                <span
+                  v-if="splitLeadingEmoji(bonus).emoji"
+                  class="emoji bullet-icon"
+                >{{ splitLeadingEmoji(bonus).emoji }}</span>
+                <span class="bullet-text">{{ splitLeadingEmoji(bonus).text }}</span>
+              </span>
+            </PVTooltip>
+          </li>
+        </ul>
+      </div>
+
+      <div class="stats-section cons">
+        <h3><span class="emoji">❌</span> PENALIZACIONES</h3>
+        <ul>
+          <li
+            v-for="(penalty, idx) in cls.penalties"
+            :key="idx"
+          >
+            <PVTooltip
+              :description="cls.technicalPenalties?.[idx] || 'Información no disponible.'"
+              position="top"
+              :delay="100"
+              style="cursor: help;"
+            >
+              <span class="bullet-item-flex">
+                <span
+                  v-if="splitLeadingEmoji(penalty).emoji"
+                  class="emoji bullet-icon"
+                >{{ splitLeadingEmoji(penalty).emoji }}</span>
+                <span class="bullet-text">{{ splitLeadingEmoji(penalty).text }}</span>
+              </span>
+            </PVTooltip>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <button
+      :class="['btn-vicio-' + getButtonVariant(cls.id), 'btn-vicio-full']"
+      :disabled="isCurrent"
+      @click.stop="$emit('select', cls.id)"
+    >
+      <div class="btn-label-stack">
+        <span class="btn-label">
+          {{ isCurrent ? 'CLASE ACTUAL' : (currentPlayerClass ? 'CAMBIAR' : 'ELEGIR') }}
+        </span>
+        <span
+          v-if="currentPlayerClass && !isCurrent"
+          class="btn-price"
+        >10,000 BC</span>
+      </div>
+    </button>
+  </div>
+</template>
+
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/tools" as *;
+
+.class-card-premium {
+  position: relative;
+  background: Rgba(30, 41, 59, 0.4);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  overflow: hidden;
+
+  @include hover-neon-yellow(1px);
+
+  &.is-current {
+    border-color: Rgba(34, 197, 94, 1);
+    &::after {
+      content: 'ACTUAL';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 8px;
+      @include pixelated;
+      color: Rgba(34, 197, 94, 1);
+    }
+  }
+
+  .card-glow {
+    position: absolute;
+    inset: 0;
+    background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 70%);
+    opacity: 0.05;
+    pointer-events: none;
+  }
+}
+
+.avatar-circle-wrap {
+  margin-bottom: 20px;
+  .avatar-circle {
+    width: 90px;
+    height: 90px;
+    background: Rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--cls-color);
+    box-shadow: 0 0 20px var(--cls-color)66;
+    overflow: hidden;
+  }
+  .trainer-pixel-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    @include sprite-render;
+  }
+}
+
+.class-title {
+  @include pixelated;
+  font-size: 14px;
+  color: var(--cls-color);
+  margin-bottom: 16px;
+  text-align: center;
+  line-height: 1.3;
+  text-shadow: 0 0 10px var(--cls-color)66;
+}
+
+.class-desc {
+  font-size: 12px;
+  color: Rgba(255, 255, 255, 0.6);
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-comparison {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex: 1;
+  padding-right: 4px;
+
+  .stats-section {
+    h3 {
+      font-size: 9px;
+      @include pixelated;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    &.pros h3 { color: Rgba(34, 197, 94, 1); }
+    &.cons h3 { color: Rgba(239, 68, 68, 1); }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      li {
+        font-size: 11px;
+        color: Rgba(255, 255, 255, 0.85);
+        line-height: 1.4;
+        position: relative;
+        padding: 0;
+
+        :deep(.pv-tooltip-wrapper) {
+          display: flex !important;
+          width: 100%;
+          line-height: 1.4 !important;
+        }
+
+        .bullet-item-flex {
+          display: flex;
+          align-items: flex-start;
+          gap: 6px;
+          line-height: 1.4;
+          width: 100%;
+
+          .bullet-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            line-height: 1.4;
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+          }
+
+          .bullet-text {
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Standardized Button Overrides for Price Labels
+[class^="btn-vicio-"] {
+  width: 100%;
+
+  .btn-price {
+    font-size: 8px;
+    opacity: 0.8;
+  }
+}
+
+@media (max-width: 950px) {
+  .class-card-premium {
+    padding: 24px 16px;
+
+    .class-desc {
+      height: auto;
+      margin-bottom: 16px;
+    }
+  }
+}
+</style>

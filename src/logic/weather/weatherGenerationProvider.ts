@@ -1,4 +1,5 @@
 import { toID } from '@/logic/utils/strings.ts';
+import { isWeatherId, type WeatherId, type ShowdownWeatherId } from './weatherRegistry.ts';
 
 /**
  * Weather Generation Provider
@@ -6,65 +7,38 @@ import { toID } from '@/logic/utils/strings.ts';
  * based on the active generation ruleset, and provides localized names.
  */
 
-/**
- * Maps a Poké Vicio visual weather ID to its official Showdown weather ID
- * for a specific generation.
- */
-import { isWeatherId, type WeatherId, type ShowdownWeatherId } from './weatherRegistry.ts';
-
 const PALDEA_GENERATION_NUM = 9;
 const KALOS_GENERATION_NUM = 6;
 const SINNOH_GENERATION_NUM = 4;
+
+type WeatherOfficialResolver = (gen: number) => ShowdownWeatherId;
+
+const WEATHER_OFFICIAL_MAP: Partial<Record<WeatherId, WeatherOfficialResolver>> = {
+  heavy_rain: (gen) => (gen >= KALOS_GENERATION_NUM ? 'primordialsea' : 'raindance'),
+  intense_sun: (gen) => (gen >= KALOS_GENERATION_NUM ? 'desolateland' : 'sunnyday'),
+  strong_winds: (gen) => (gen >= KALOS_GENERATION_NUM ? 'deltastream' : 'none'),
+  rain: () => 'raindance',
+  storm: () => 'raindance',
+  sun: () => 'sunnyday',
+  heatwave: () => 'sunnyday',
+  sandstorm: () => 'sandstorm',
+  dust_storm: () => 'sandstorm',
+  snow: (gen) => (gen >= PALDEA_GENERATION_NUM ? 'snow' : 'hail'),
+  hail: (gen) => (gen >= PALDEA_GENERATION_NUM ? 'snow' : 'hail'),
+  blizzard: (gen) => (gen >= PALDEA_GENERATION_NUM ? 'snow' : 'hail'),
+  cold: (gen) => (gen >= PALDEA_GENERATION_NUM ? 'snow' : 'hail'),
+  coldwave: (gen) => (gen >= PALDEA_GENERATION_NUM ? 'snow' : 'hail'),
+  fog: (gen) => (gen >= SINNOH_GENERATION_NUM ? 'fog' : 'none'),
+  mist: (gen) => (gen >= SINNOH_GENERATION_NUM ? 'fog' : 'none'),
+};
 
 export function mapVisualToOfficialWeather(visualWeather: string | null | undefined, gen: number): ShowdownWeatherId {
   if (!visualWeather) return 'none';
   const lower = isWeatherId(visualWeather) ? visualWeather : null;
   if (!lower) return 'none';
 
-  // Gen 9 Mapping
-  if (gen >= PALDEA_GENERATION_NUM) {
-    if (lower === 'heavy_rain') return 'primordialsea';
-    if (lower === 'intense_sun') return 'desolateland';
-    if (lower === 'strong_winds') return 'deltastream';
-    if (['rain', 'storm'].includes(lower)) return 'raindance';
-    if (['sun', 'heatwave'].includes(lower)) return 'sunnyday';
-    if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
-    if (['snow', 'hail', 'blizzard', 'cold', 'coldwave'].includes(lower)) return 'snow';
-    if (['fog', 'mist'].includes(lower)) return 'fog';
-    return 'none';
-  }
-
-  // Gen 6 - 8 Mapping
-  if (gen >= KALOS_GENERATION_NUM) {
-    if (lower === 'heavy_rain') return 'primordialsea';
-    if (lower === 'intense_sun') return 'desolateland';
-    if (lower === 'strong_winds') return 'deltastream';
-    if (['rain', 'storm'].includes(lower)) return 'raindance';
-    if (['sun', 'heatwave'].includes(lower)) return 'sunnyday';
-    if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
-    if (['snow', 'hail', 'blizzard', 'cold', 'coldwave'].includes(lower)) return 'hail';
-    if (['fog', 'mist'].includes(lower)) return 'fog';
-    return 'none';
-  }
-
-  // Gen 4 - 5 Mapping
-  if (gen >= SINNOH_GENERATION_NUM) {
-    if (['rain', 'storm', 'heavy_rain'].includes(lower)) return 'raindance';
-    if (['sun', 'heatwave', 'intense_sun'].includes(lower)) return 'sunnyday';
-    if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
-    if (['snow', 'hail', 'blizzard', 'cold', 'coldwave'].includes(lower)) return 'hail';
-    if (['fog', 'mist'].includes(lower)) return 'fog';
-    return 'none';
-  }
-
-  // Gen 3 Mapping (Gen 3 Default)
-  if (['rain', 'storm', 'heavy_rain'].includes(lower)) return 'raindance';
-  if (['sun', 'heatwave', 'intense_sun'].includes(lower)) return 'sunnyday';
-  if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
-  if (['snow', 'hail', 'blizzard', 'cold', 'coldwave'].includes(lower)) return 'hail';
-  if (['fog', 'mist'].includes(lower)) return 'none'; // Niebla/Bruma no tienen efecto de combate en Gen 3 (Fog se introdujo en Gen 4)
-
-  return 'none';
+  const resolver = WEATHER_OFFICIAL_MAP[lower];
+  return resolver ? resolver(gen) : 'none';
 }
 
 /**
@@ -79,7 +53,7 @@ export function getLocalizedWeatherName(officialWeatherId: ShowdownWeatherId | W
     sunnyday: 'Sol',
     raindance: 'Lluvia',
     sandstorm: 'T. Arena',
-    hail: gen >= 9 ? 'Nieve' : 'Granizo', // spanish-ok: UI Spanish text localization label
+    hail: gen >= PALDEA_GENERATION_NUM ? 'Nieve' : 'Granizo', // spanish-ok: UI Spanish text localization label
     snow: 'Nieve',
     desolateland: 'Sol Abrasador',
     primordialsea: 'Lluvia Torrencial',
@@ -89,6 +63,22 @@ export function getLocalizedWeatherName(officialWeatherId: ShowdownWeatherId | W
   return localizedMap[lower] || 'Despejado';
 }
 
+const COMBAT_DESCRIPTIONS: Record<string, (gen: number) => string> = {
+  raindance: () => '▲ Potencia Agua (x1.5)\n▼ Debilita Fuego (x0.5)\n• Efecto: Trueno 100% precisión',
+  sunnyday: () => '▲ Potencia Fuego (x1.5)\n▼ Debilita Agua (x0.5)\n• Efecto: Rayo Solar sin carga',
+  sandstorm: (gen) => (gen >= SINNOH_GENERATION_NUM
+    ? '▲ Potencia Especial Roca (x1.5)\n▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'
+    : '▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'),
+  hail: () => '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión',
+  snow: () => '▲ Potencia Defensa Hielo (x1.5)\n• Efecto: Ventisca 100% precisión',
+  desolateland: () => '▲ Potencia Fuego (x1.5)\n▼ Bloquea Agua (x0)\n• Efecto: Rayo Solar sin carga',
+  primordialsea: () => '▲ Potencia Agua (x1.5)\n▼ Bloquea Fuego (x0)\n• Efecto: Trueno 100% precisión',
+  deltastream: () => '▲ Bloquea debilidades Volador',
+  fog: (gen) => (gen >= SINNOH_GENERATION_NUM
+    ? '▼ Reduce la precisión de todos los movimientos (x0.6)\n• Efecto: Meteorobola dobla potencia'
+    : 'Sin efectos en combate.')
+};
+
 /**
  * Returns the combat description dynamically based on the mapped Showdown weather and generation rules.
  */
@@ -96,42 +86,27 @@ export function getWeatherCombatDescription(visualWeather: string | null | undef
   const officialWeather = mapVisualToOfficialWeather(visualWeather, gen);
   const lower = toID(officialWeather);
 
-  if (lower === 'raindance') {
-    return '▲ Potencia Agua (x1.5)\n▼ Debilita Fuego (x0.5)\n• Efecto: Trueno 100% precisión';
-  }
-  if (lower === 'sunnyday') {
-    return '▲ Potencia Fuego (x1.5)\n▼ Debilita Agua (x0.5)\n• Efecto: Rayo Solar sin carga';
-  }
-  if (lower === 'sandstorm') {
-    if (gen >= 4) {
-      return '▲ Potencia Especial Roca (x1.5)\n▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)';
-    }
-    return '▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)';
-  }
-  if (lower === 'hail') {
-    return '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión';
-  }
-  if (lower === 'snow') {
-    return '▲ Potencia Defensa Hielo (x1.5)\n• Efecto: Ventisca 100% precisión';
-  }
-  if (lower === 'desolateland') {
-    return '▲ Potencia Fuego (x1.5)\n▼ Bloquea Agua (x0)\n• Efecto: Rayo Solar sin carga';
-  }
-  if (lower === 'primordialsea') {
-    return '▲ Potencia Agua (x1.5)\n▼ Bloquea Fuego (x0)\n• Efecto: Trueno 100% precisión';
-  }
-  if (lower === 'deltastream') {
-    return '▲ Bloquea debilidades Volador';
-  }
-  if (lower === 'fog') {
-    if (gen >= 4) {
-      return '▼ Reduce la precisión de todos los movimientos (x0.6)\n• Efecto: Meteorobola dobla potencia';
-    }
-    return 'Sin efectos en combate.';
-  }
-
-  return 'Sin efectos en combate.';
+  const descFn = COMBAT_DESCRIPTIONS[lower];
+  return descFn ? descFn(gen) : 'Sin efectos en combate.';
 }
+
+const OFFICIAL_TO_VISUAL_MAP: Record<string, (gen: number) => string> = {
+  raindance: () => 'rain',
+  rain: () => 'rain',
+  sunnyday: () => 'sun',
+  sun: () => 'sun',
+  sandstorm: () => 'sandstorm',
+  hail: (gen) => (gen >= PALDEA_GENERATION_NUM ? 'snow' : 'hail'),
+  snowscape: () => 'snow', // spanish-ok: UI Spanish text localization label
+  snow: () => 'snow',
+  desolateland: () => 'intense_sun',
+  intensesun: () => 'intense_sun',
+  primordialsea: () => 'heavy_rain',
+  heavyrain: () => 'heavy_rain',
+  deltastream: () => 'strong_winds',
+  strongwinds: () => 'strong_winds',
+  fog: () => 'fog'
+};
 
 /**
  * Maps an official Showdown weather ID back to a Poké Vicio visual/environmental weather ID.
@@ -140,17 +115,6 @@ export function mapOfficialToVisualWeather(officialWeather: string | null | unde
   if (!officialWeather) return 'clear';
   const lower = toID(officialWeather);
 
-  if (lower === 'raindance' || lower === 'rain') return 'rain';
-  if (lower === 'sunnyday' || lower === 'sun') return 'sun';
-  if (lower === 'sandstorm') return 'sandstorm';
-  if (lower === 'hail') return gen >= 9 ? 'snow' : 'hail';
-  if (lower === 'snowscape' || lower === 'snow') return 'snow'; // spanish-ok: UI Spanish text localization label
-  if (lower === 'desolateland' || lower === 'intensesun') return 'intense_sun';
-  if (lower === 'primordialsea' || lower === 'heavyrain') return 'heavy_rain';
-  if (lower === 'deltastream' || lower === 'strongwinds') return 'strong_winds';
-  if (lower === 'fog') return 'fog';
-
-  return 'clear';
+  const visualFn = OFFICIAL_TO_VISUAL_MAP[lower];
+  return visualFn ? visualFn(gen) : 'clear';
 }
-
-

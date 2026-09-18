@@ -1,41 +1,36 @@
-// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { useAuthStore } from '@/stores/auth.ts';
 import { useEventStore } from '@/stores/events.ts';
-import gsap from 'gsap';
-import { 
-  checkCompatibility, 
-  calculateInheritance, 
-  inheritNature,
-  inheritMoves,
-  inheritAbility,
-  calculateShinyChance,
-} from '@/logic/breeding/breedingEngine';
+import { gameBus } from '@/logic/events/gameBus.ts';
+import { checkCompatibility } from '@/logic/breeding/breedingEngine';
 import { eggFactory } from '@/logic/breeding/eggFactory';
-import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { NATURES, isNatureId } from '@/data/battle/natures';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import type { BreedingActivitySource } from '@/types/breeding/breeding';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
 import { getHatchSpeedMultiplier } from '@/logic/pokemon/pokemonFieldAbilities';
 import { HATCH_STEP_REDUCTION_CRIADOR } from '@/logic/player/classDeploymentEngine';
-import {
-  isBabyPokemonSpeciesId,
-  isFossilPokemonSpeciesId,
-  isLegendaryPokemonSpeciesId,
-  requirePokemonSpeciesId,
-} from '@/data/pokemon/pokedex';
-import { calculateBreedingCost, executeCloneFossil } from '@/stores/breedingActions.ts';
+import { executeCloneFossil } from '@/stores/breedingActions.ts';
 import type { ItemId } from '@/data/inventory/items';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon';
-import { BASE_SHINY_DENOMINATOR, EGG_SCANNER_MIN_CLASS_LEVEL, EGG_POLLER_INTERVAL_SEC, MAX_CARRIED_EGGS } from '@/logic/constants/gameplay';
-import { isEnabledPokemonId } from '@/data/system/constants';
+import { MAX_CARRIED_EGGS, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay';
+import {
+  calculateNextEggTime,
+  restoreWarehouseEggs,
+  restoreDaycareSlots,
+  validateDaycareDeposit,
+  movePokemonFromTeamToBoxIfPresent,
+  canGenerateEgg,
+  isEggSpeciesEligible,
+  checkParentVigorDepleted,
+  buildDaycareEgg,
+  applyEggGenerationSideEffects,
+  validateEggScanEligibility,
+  executeEggScan
+} from './breeding/breedingStoreHelpers.ts';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
@@ -75,8 +70,6 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   // --- GETTERS ---
-  const fulfillableMissionsCount = computed(() => daycareMissionsStore.fulfillableMissionsCount);
-
   const isBreeding = computed(() => slots.value.length === 2 && !!slots.value[0]?.pokemon && !!slots.value[1]?.pokemon);
   
   const compatibility = computed<BreedingCompatibility>(() => {
@@ -90,22 +83,7 @@ export const useBreedingStore = defineStore('breeding', () => {
   });
   
   const nextEggTime = computed(() => {
-    const level = compatibility.value.level;
-    if (level === 0) return null;
-    const interval = (EGG_SPAWN_INTERVAL_MS as Record<number, number>)[level];
-    if (!interval) return null;
-    
-    if (!slots.value[0]?.deposited_at || !slots.value[1]?.deposited_at) return null;
-
-    const pA = slots.value[0]?.pokemon;
-    const pB = slots.value[1]?.pokemon;
-    if (!pA || !pB || (pA.vigor || 0) <= 0 || (pB.vigor || 0) <= 0) return null;
-
-    const depA = Temporal.Instant.from(slots.value[0].deposited_at).epochMilliseconds;
-    const depB = Temporal.Instant.from(slots.value[1].deposited_at).epochMilliseconds;
-    const earliest = Math.max(depA, depB);
-    
-    return earliest + interval;
+    return calculateNextEggTime(compatibility.value.level, slots.value[0], slots.value[1]);
   });
 
   // --- ACTIONS ---
@@ -121,56 +99,14 @@ export const useBreedingStore = defineStore('breeding', () => {
           { pokemon: null, slotIndex: 1, deposited_at: null }
         ];
 
-        // Restore eggs from gameStore.state.daycareWarehouse (single source of truth)
-        // or recover from LocalStorage if upgrading/migrating
         const userId = authStore.user?.id || 'default';
-        if (Array.isArray(gameStore.state.daycareWarehouse) && gameStore.state.daycareWarehouse.length > 0) {
-          warehouseEggs.value = gameStore.state.daycareWarehouse.filter((e): e is DaycareEgg => 'isEgg' in e && Boolean(e.isEgg));
-          if (typeof localStorage !== 'undefined') {
-            localStorage.setItem(`daycare_warehouse_eggs_${userId}`, JSON.stringify(warehouseEggs.value));
-          }
-        } else {
-          const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(`daycare_warehouse_eggs_${userId}`) : null;
-          if (stored) {
-            try {
-              warehouseEggs.value = JSON.parse(stored) as DaycareEgg[];
-              gameStore.state.daycareWarehouse = [...warehouseEggs.value];
-              gameStore.scheduleSave();
-            } catch {
-              warehouseEggs.value = [];
-            }
-          } else {
-            warehouseEggs.value = [];
-          }
+        warehouseEggs.value = restoreWarehouseEggs(gameStore.state.daycareWarehouse, userId);
+        if (gameStore.state.daycareWarehouse?.length !== warehouseEggs.value.length) {
+          gameStore.state.daycareWarehouse = [...warehouseEggs.value];
+          gameStore.scheduleSave();
         }
 
-        const team = gameStore.state.team || [];
-        const box = gameStore.state.box || [];
-        const all = [...team, ...box];
-        const deposited = all.filter((p): p is Pokemon => p != null && !!p.inDaycare);
-        
-        let needsSave = false;
-        deposited.forEach(p => {
-          let idx = typeof p.daycareSlot === 'number' ? p.daycareSlot : -1;
-          if (idx === -1) {
-            idx = slots.value.findIndex(s => s.pokemon === null);
-            if (idx === -1) idx = 0;
-            p.daycareSlot = idx;
-            needsSave = true;
-          }
-          // If daycareDepositedAt is missing (save predates this feature),
-          // assign it now and mark for save so it persists on future loads
-          if (!p.daycareDepositedAt) {
-            p.daycareDepositedAt = Temporal.Now.instant().toString();
-            needsSave = true;
-          }
-          slots.value[idx] = {
-            pokemon: p,
-            slotIndex: idx,
-            deposited_at: p.daycareDepositedAt
-          };
-        });
-
+        const needsSave = restoreDaycareSlots(gameStore.state.team || [], gameStore.state.box || [], slots.value);
         if (needsSave) {
           gameStore.scheduleSave();
         }
@@ -186,51 +122,19 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   async function deposit(pokemon: Pokemon, slotIndex: number) {
-    if (pokemon.hp <= 0) {
-      uiStore.notify('No puedes depositar un Pokémon debilitado en la Guardería.', '⚠️');
-      return false;
-    }
-
-    const isFossil = isFossilPokemonSpeciesId(pokemon.id);
-    const isLegendary = isLegendaryPokemonSpeciesId(pokemon.id);
-    const isBaby = isBabyPokemonSpeciesId(pokemon.id);
-    const maxVig = pokemon.maxVigor !== undefined ? pokemon.maxVigor : 10;
-    
-    if (maxVig <= 0 || isFossil || isLegendary) {
-      uiStore.notify('Este Pokémon no tiene vigor y no puede reproducirse en la Guardería.', '⚠️');
-      return false;
-    }
-
-    if (isBaby) {
-      uiStore.notify('Los Pokémon bebé no pueden reproducirse en la Guardería.', '⚠️');
-      return false;
-    }
-
     const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
-    if (pokemon.isIllegal || !checkPokemonLegality(pokemon, { allowUnreleased: isDebugMode }).isLegal) {
-      pokemon.isIllegal = true;
-      uiStore.notify('No puedes depositar un Pokémon ilegal en la Guardería.', '⚠️');
+    const validation = validateDaycareDeposit(pokemon, isDebugMode);
+    if (!validation.canDeposit) {
+      uiStore.notify(validation.reason!, validation.icon || '⚠️');
       return false;
     }
 
-    if (pokemon.onMission || pokemon.onDefense) {
-      uiStore.notify('Este Pokémon está ocupado.', '⚠️');
+    const moveResult = movePokemonFromTeamToBoxIfPresent(gameStore.state.team, gameStore.state.box, pokemon.uid);
+    if (!moveResult.success) {
+      uiStore.notify(moveResult.errorReason!, '⚠️');
       return false;
     }
-
-    // Move to box if it was in the active team
-    const teamIdx = gameStore.state.team.findIndex((p: Pokemon | null) => p && p.uid === pokemon.uid);
-    if (teamIdx !== -1) {
-      if (gameStore.state.team.length <= 1) {
-        uiStore.notify('No puedes depositar a tu único Pokémon del equipo.', '⚠️');
-        return false;
-      }
-      const p = gameStore.state.team.splice(teamIdx, 1)[0];
-      if (p) {
-        gameStore.state.box.push(p);
-        gameStore.autoFillPvpTeam();
-      }
-    }
+    gameStore.autoFillPvpTeam();
 
     pokemon.inDaycare = true;
     pokemon.daycareSlot = slotIndex;
@@ -269,72 +173,39 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   async function checkAndGenerateEgg() {
-    if (!isBreeding.value || compatibility.value.level === 0) return;
-    if (!slots.value[0]?.pokemon || !slots.value[1]?.pokemon) return;
-    if (!nextEggTime.value) return;
-    
-    const now = Temporal.Now.instant().epochMilliseconds;
-    if (now < nextEggTime.value) return;
-
-    const pA = slots.value[0].pokemon as Pokemon;
-    const pB = slots.value[1].pokemon as Pokemon;
-    const compat = compatibility.value;
-
-    if ((pA.vigor || 0) <= 0 || (pB.vigor || 0) <= 0) {
+    const nowEpoch = Temporal.Now.instant().epochMilliseconds;
+    if (!canGenerateEgg(isBreeding.value, compatibility.value.level, slots.value[0], slots.value[1], nextEggTime.value, nowEpoch)) {
       return;
     }
+
+    const pA = slots.value[0]!.pokemon as Pokemon;
+    const pB = slots.value[1]!.pokemon as Pokemon;
+    const compat = compatibility.value;
 
     if (!compat.eggSpecies) {
       throw new Error('[breeding] Cannot generate an egg without a valid egg species.');
     }
-    const eggSpecies = compat.eggSpecies;
-    const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
-    if (!isEnabledPokemonId(eggSpecies) && !isDebugMode) {
+
+    if (!isEggSpeciesEligible(compat.eggSpecies)) {
       return;
     }
-    const itemA = pA.heldItem || '';
-    const itemB = pB.heldItem || '';
-    const playerClass = classStore.playerClass as string;
 
-    const abilityName = inheritAbility(pA, pB);
-    const abilityIndex = abilityName ? 1 : 0;
-
-    const breedingCost = calculateBreedingCost(pA, pB);
-    const inheritedNature = inheritNature(pA, pB, itemA, itemB);
-    const chosenNature = (inheritedNature && isNatureId(inheritedNature))
-      ? inheritedNature 
-      : (NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious');
-
-    const egg = eggFactory.createDaycareEgg({
-      species: eggSpecies,
-      motherId: compat.motherId ? requirePokemonSpeciesId(compat.motherId) : eggSpecies,
-      ivs: calculateInheritance(pA, pB, itemA, itemB, playerClass),
-      nature: chosenNature,
-      movesAtBirth: inheritMoves(pA, pB, eggSpecies),
-      abilityIndex: abilityIndex,
-      isShiny: Math.random() < calculateShinyChance(pA, pB, 1/BASE_SHINY_DENOMINATOR, eventStore.globalMultipliers?.shiny || 1),
-      cost: breedingCost
+    const egg = buildDaycareEgg({
+      pA,
+      pB,
+      compat,
+      playerClass: classStore.playerClass as string,
+      shinyMultiplier: eventStore.globalMultipliers?.shiny ?? 1
     });
-
-    // Consume parent vigor by 1 point
-    pA.vigor = Math.max(0, (pA.vigor || 0) - 1);
-    pB.vigor = Math.max(0, (pB.vigor || 0) - 1);
 
     warehouseEggs.value.push(egg);
     saveWarehouseEggs();
-    
+
     const isoNow = Temporal.Now.instant().toString();
-    if (slots.value[0]) {
-      slots.value[0].deposited_at = isoNow;
-      pA.daycareDepositedAt = isoNow;
-    }
-    if (slots.value[1]) {
-      slots.value[1].deposited_at = isoNow;
-      pB.daycareDepositedAt = isoNow;
-    }
+    applyEggGenerationSideEffects(pA, pB, slots.value[0]!, slots.value[1]!, isoNow);
 
     uiStore.notify(' ¡Apareció un huevo en la Guardería!', '🥚');
-    if ((pA.vigor || 0) <= 0 || (pB.vigor || 0) <= 0) {
+    if (checkParentVigorDepleted(pA, pB)) {
       uiStore.notify('¡Uno de los padres se ha quedado sin vigor! Consigue Caramelos de vigor o Restauradores de vigor para continuar criando.', '💤');
     }
     gameStore.scheduleSave();
@@ -382,47 +253,26 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   function scanEgg(eggId: string) {
-    if (classStore.playerClass !== 'criador') {
-      uiStore.notify('Solo los Criadores pueden escanear huevos.', '🔒');
+    const classLevel = gameStore.state.classLevel ?? 1;
+    const validation = validateEggScanEligibility(
+      classStore.playerClass,
+      classLevel,
+      gameStore.state.classData?.lastEggScanDate
+    );
+    if (!validation.canScan) {
+      uiStore.notify(validation.reason ?? '', validation.icon ?? '🔒');
       return;
     }
-    if ((gameStore.state.classLevel || 1) < EGG_SCANNER_MIN_CLASS_LEVEL) {
-      uiStore.notify(`Necesitas nivel ${EGG_SCANNER_MIN_CLASS_LEVEL} de Criador para usar el escáner.`, '🔒');
-      return;
-    }
-    
-    // Cooldown diario
-    const lastScan = gameStore.state.classData?.lastEggScanDate;
-    const todayStr = Temporal.Now.instant().toString().split('T')[0] || '';
-    if (lastScan && lastScan.startsWith(todayStr)) {
-      uiStore.notify('Ya has usado el escáner de IVs hoy.', '⚠️');
-      return;
-    }
-    
-    const egg = warehouseEggs.value.find((e) => e.id === eggId);
-    if (!egg) return;
 
-    if (egg.ivs) {
-      if (!egg.inherited_ivs) egg.inherited_ivs = { };
-      egg.inherited_ivs._scanned = true;
-      
-      if (!gameStore.state.classData) {
-        gameStore.state.classData = {
-          captureStreak: 0,
-          longestStreak: 0,
-          reputation: 0,
-          blackMarketSales: 0,
-          criminality: 0,
-          blackMarketDaily: { date: '', items: [], purchased: [] }
-        };
-      }
-      gameStore.state.classData.lastEggScanDate = Temporal.Now.instant().toString();
-      
-      saveWarehouseEggs();
-      const name = POKEMON_DB[egg.species]?.name || 'Huevo';
-      uiStore.notify(`¡Huevo de ${name} escaneado!`, '🔍');
-      gameStore.scheduleSave();
-    }
+    const egg = warehouseEggs.value.find((e) => e.id === eggId);
+    if (!egg || !egg.ivs) return;
+
+    const { speciesName, updatedClassData } = executeEggScan(egg, gameStore.state.classData);
+    gameStore.state.classData = updatedClassData;
+
+    saveWarehouseEggs();
+    uiStore.notify(`¡Huevo de ${speciesName} escaneado!`, '🔍');
+    gameStore.scheduleSave();
   }
 
   function checkDailyReset() {
@@ -484,35 +334,25 @@ export const useBreedingStore = defineStore('breeding', () => {
     return executeCloneFossil(fossilId, extraQty, warehouseEggs, saveWarehouseEggs);
   }
 
-  let bgPoller: gsap.core.Tween | null = null;
-
-  function initBackgroundPoller() {
-    if (bgPoller) bgPoller.kill();
-
-    const poll = async () => {
-      if (isBreeding.value && nextEggTime.value) {
-        const nowMs = Temporal.Now.instant().epochMilliseconds;
-        if (nowMs >= nextEggTime.value) {
-          await checkAndGenerateEgg();
-        }
+  const handleCriadorVigor = () => {
+    const healthyParents = slots.value.filter(s => s && s.pokemon);
+    if (healthyParents.length > 0) {
+      const chosenSlot = healthyParents[Math.floor(Math.random() * healthyParents.length)];
+      if (chosenSlot && chosenSlot.pokemon) {
+        const parent = chosenSlot.pokemon;
+        const prevVigor = parent.vigor ?? MAX_POKEMON_VIGOR;
+        const VIGOR_RECOVERY_BONUS = 5;
+        parent.vigor = Math.min(MAX_POKEMON_VIGOR, prevVigor + VIGOR_RECOVERY_BONUS);
+        useUIStore().notify(`¡Eclosión Vigorosa! Su progenitor ${parent.name} recuperó +${VIGOR_RECOVERY_BONUS} de vigor.`, '❤️');
       }
-      bgPoller = gsap.delayedCall(EGG_POLLER_INTERVAL_SEC, poll);
-    };
-    bgPoller = gsap.delayedCall(EGG_POLLER_INTERVAL_SEC, poll);
-  }
-
-  function cleanupBackgroundPoller() {
-    if (bgPoller) {
-      bgPoller.kill();
-      bgPoller = null;
     }
-  }
+  };
+  gameBus.on('CRIADOR_ECLOSION_VIGOR', handleCriadorVigor);
 
   return {
     slots,
     warehouseEggs,
     dailyMissions,
-    fulfillableMissionsCount,
     missionRefreshes,
     isBreeding,
     compatibility,
@@ -530,8 +370,6 @@ export const useBreedingStore = defineStore('breeding', () => {
     checkAndGenerateEgg,
     deleteEgg,
     cloneFossil,
-    initBackgroundPoller,
-    cleanupBackgroundPoller,
     saveWarehouseEggs
   };
 });

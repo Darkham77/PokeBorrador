@@ -1,6 +1,7 @@
-import { useDebugStore, type DebugSystem } from '@/stores/debug'
+import type { DebugSystem } from '@/types/system/debug.ts'
 import { GYM_IDS, isGymId, requireGymId, type GymId } from '@/data/world/gyms'
 
+import { logger } from '@/logic/utils/logger'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useProfileStore } from '@/stores/player/profile'
@@ -20,10 +21,9 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'toggleFastRankedDelay',
     category: 'stats',
     action: () => {
-      const debugStore = useDebugStore()
-      debugStore.fastRankedDelay = !debugStore.fastRankedDelay
-      ui.notify(`Debug: Demora Ranked ${debugStore.fastRankedDelay ? '5s' : '60s'}`, '⏱️')
-      return debugStore.fastRankedDelay
+      debug.fastRankedDelay = !debug.fastRankedDelay
+      ui.notify(`Debug: Demora Ranked ${debug.fastRankedDelay ? '5s' : '60s'}`, '⏱️')
+      return debug.fastRankedDelay
     },
     description: 'Alterna la demora para entrar a Ranked entre 5s y 60s.'
   })
@@ -310,7 +310,7 @@ export function registerStatsTools(debug: DebugSystem) {
             localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
           }
         } catch (_e: unknown) {
-          /* ignored */
+          logger.warn('Failed to clean last_renamed_at from local user', _e);
         }
       }
 

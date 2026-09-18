@@ -19,7 +19,8 @@
 }
 
 .battle-arena-content { position: absolute; inset: 0; overflow: hidden; @include pixelated; }
-.battle-sprites { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 10); }
+.battle-sprites { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 5); }
+.battle-status-layer { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 25); }
 
 .battle-info-container {
   position: absolute; inset: 0; z-index: calc(var(--z-base) + 30);

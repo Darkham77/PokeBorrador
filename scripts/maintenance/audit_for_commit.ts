@@ -19,6 +19,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import os from 'node:os';
 
 import { type AuditSeverity } from './audit_rules.ts';
 import { type StandardAuditResult } from '../lib/auditContract.ts';
@@ -28,6 +29,9 @@ import { executeAuditorStreaming } from '../lib/streamingRunner.ts';
 
 enableCompileCache();
 
+const CPU_CORE_DIVISOR = 2 as const;
+const MIN_CONCURRENCY = 1 as const;
+const DEFAULT_TIMEOUT_MS = 60000 as const;
 const ESLINT_STDIN_MAX_BUFFER_BYTES = 50 * 1024 * 1024;
 
 export interface Violation {
@@ -68,8 +72,7 @@ export function isSubAuditorRule(ruleId?: string, suiteId?: string): boolean {
          ruleId.startsWith('o1-') ||
          ruleId === 'spanish-logic-id' ||
          ruleId.startsWith('validate_') ||
-         ruleId.startsWith('audit_') ||
-         ruleId.startsWith('Largo de archivo');
+         ruleId.startsWith('audit_');
 }
 
 export function filterNewWarnings(
@@ -95,22 +98,6 @@ export function filterNewWarnings(
     if (originContent === null) {
       // Archivo nuevo -> todas las advertencias en él son nuevas
       const copy = { ...violation, isNew: true };
-      result.push(copy);
-      continue;
-    }
-
-    // Regla de mantenibilidad 500/1000: si el archivo en origin/main ya superaba 500 líneas, es advertencia heredada.
-    // Si el archivo supera 500 líneas habiendo estado por debajo (o siendo nuevo), se eleva a error bloqueante.
-    if (violation.message.includes('Mantenibilidad (500/1000 Rule)') || 
-        violation.message.includes('Mantenibilidad (Fallow 500/1000 Rule)') ||
-        violation.message.includes('Largo de archivo (>300/500 líneas)')) {
-      const originLines = originContent ? originContent.split('\n').length : 0;
-      const isNewViolation = originLines <= 500;
-      const copy = { 
-        ...violation, 
-        isNew: isNewViolation,
-        severity: (isNewViolation ? 'error' : 'warning') as AuditSeverity
-      };
       result.push(copy);
       continue;
     }
@@ -185,35 +172,6 @@ async function getOriginFileContent(filePath: string): Promise<string | null> {
   }
 }
 
-async function runProjectEslint(): Promise<Violation[]> {
-  const violations: Violation[] = [];
-  try {
-    const eslintProc = spawnSync('npx', ['eslint', '--config', 'eslint.config.js', '--cache', '--format', 'json', '.'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
-    const output = eslintProc.stdout ? eslintProc.stdout.trim() : '';
-    if (!output) return [];
-
-    const results = JSON.parse(output) as EslintFileResult[];
-    for (const fileResult of results) {
-      const relPath = path.relative(process.cwd(), fileResult.filePath);
-      if (relPath.includes('node_modules') || relPath.startsWith('dist/') || relPath.startsWith('dev-dist/') || relPath.startsWith('scratch/')) {
-        continue;
-      }
-      for (const msg of fileResult.messages) {
-        violations.push({
-          file: relPath,
-          line: msg.line || 0,
-          message: msg.message || '',
-          context: msg.source || '',
-          severity: msg.severity === 2 ? 'error' : 'warning',
-          ruleId: msg.ruleId || 'eslint-rule'
-        });
-      }
-    }
-  } catch (err) {
-    console.error(styleText('yellow', `⚠️ Advertencia al correr ESLint en el proyecto: ${(err as Error).message}`));
-  }
-  return violations;
-}
 
 async function runOriginEslint(filePath: string, content: string): Promise<Violation[]> {
   const violations: Violation[] = [];
@@ -245,46 +203,6 @@ async function runOriginEslint(filePath: string, content: string): Promise<Viola
   return violations;
 }
 
-async function runTypeChecking(): Promise<Violation[]> {
-  const violations: Violation[] = [];
-  try {
-    const tscProc = spawnSync('npx', ['vue-tsc', '--noEmit'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
-    const output = tscProc.stdout ? tscProc.stdout.trim() : '';
-    if (!output) return [];
-
-    const lines = output.split('\n');
-    for (const line of lines) {
-      const match = line.match(/^([^(]+)\((\d+),(\d+)\):\s+(error\s+TS\d+):\s+(.+)$/);
-      if (match) {
-        const file = match[1]?.trim() || '';
-        const lineNum = parseInt(match[2] || '0', 10);
-        const code = match[4] || '';
-        const message = match[5] || '';
-        violations.push({
-          file: path.relative(process.cwd(), file),
-          line: lineNum,
-          message: `${code}: ${message}`,
-          context: 'typescript',
-          severity: 'error',
-          ruleId: 'typescript-tsc'
-        });
-      } else if (line.includes('error TS')) {
-        violations.push({
-          file: 'tsconfig.json',
-          line: 0,
-          message: line.trim(),
-          context: 'typescript',
-          severity: 'error',
-          ruleId: 'typescript-tsc'
-        });
-      }
-    }
-  } catch (err) {
-    console.error(styleText('yellow', `⚠️ Advertencia al correr vue-tsc: ${(err as Error).message}`));
-  }
-  return violations;
-}
-
 async function main() {
   console.log(renderBanner(
     'POKE VICIO - WARNINGS DIFF & PRE-COMMIT GATEKEEPER',
@@ -305,45 +223,90 @@ async function main() {
     console.log('');
   }
 
-  // 1. Ejecutar ESLint en todo el proyecto
-  console.log(styleText('dim', '[ 1/3 ] 🔍 Ejecutando ESLint con caché en todo el proyecto...'));
-  const eslintViolations = await runProjectEslint();
-
-  // 2. Ejecutar Type Checking (vue-tsc)
-  console.log(styleText('dim', '[ 2/3 ] 🔍 Ejecutando comprobación de tipos TypeScript (vue-tsc)...'));
-  const typeErrors = await runTypeChecking();
-
-  // 3. Ejecutar dinámicamente 100% de sub-auditores descubiertos en scripts/auditors/
-  console.log(styleText('dim', '[ 3/3 ] 🔍 Ejecutando todas las suites de auditoría descubiertas...'));
+  // Ejecutar dinámicamente el 100% de sub-auditores descubiertos en scripts/auditors/ (incluye validate_eslint y validate_type_check)
   const discoveredTasks = await discoverAuditors();
-  const subAuditorViolations: Violation[] = [];
-  const totalTasks = discoveredTasks.length;
+  const availableCpus = os.availableParallelism ? os.availableParallelism() : os.cpus().length;
+  const concurrencyLimit = Math.max(MIN_CONCURRENCY, Math.floor(availableCpus / CPU_CORE_DIVISOR));
+  const workerCount = Math.min(concurrencyLimit, discoveredTasks.length);
 
-  for (let i = 0; i < totalTasks; i++) {
-    const task = discoveredTasks[i]!;
-    const stepNum = i + 1;
-    const stepStr = String(stepNum).padStart(2, '0');
-    const totalStr = String(totalTasks).padStart(2, '0');
-    const pct = Math.round((stepNum / totalTasks) * 100);
-    const pctStr = `${pct}%`.padStart(4, ' ');
+  console.log(styleText('bold', `⏳ Progreso de ejecución de suites (Concurrencia: ${workerCount} workers):\n`));
 
-    console.log(`     ${styleText('dim', `[ ${stepStr}/${totalStr} │ ${pctStr} ]`)} ⚙️  ${styleText('cyan', task.name)} ${styleText('dim', `(${task.id})`)}...`);
+  class CommitStreamCoordinator {
+    private completedCount = 0;
+    private readonly totalTasks: number;
+    private printLock: Promise<void> = Promise.resolve();
 
+    constructor(totalTasks: number) {
+      this.totalTasks = totalTasks;
+    }
+
+    public async onTaskComplete(
+      taskName: string,
+      taskId: string,
+      subLines: string[],
+      durationMs: number,
+      isSuccess: boolean,
+      findingsSummary?: { errors: number; warnings: number }
+    ): Promise<void> {
+      const previousLock = this.printLock;
+      let releaseLock: () => void = () => {};
+      this.printLock = new Promise<void>((resolve) => {
+        releaseLock = resolve;
+      });
+
+      await previousLock;
+
+      try {
+        this.completedCount++;
+        const stepStr = String(this.completedCount).padStart(2, '0');
+        const totalStr = String(this.totalTasks).padStart(2, '0');
+        const pct = Math.round((this.completedCount / this.totalTasks) * 100);
+        const pctStr = `${pct}%`.padStart(4, ' ');
+
+        const statusBadge = isSuccess
+          ? ((findingsSummary?.warnings ?? 0) > 0 ? styleText('yellow', '⚠️ ') : styleText('green', '✅'))
+          : styleText('red', '❌');
+
+        console.log(`     ${styleText('dim', `[ ${stepStr}/${totalStr} │ ${pctStr} ]`)} ⚙️  ${styleText('cyan', taskName)} ${styleText('dim', `(${taskId})`)}... ${statusBadge} ${styleText('dim', `${durationMs}ms`)}`);
+
+        for (const line of subLines) {
+          console.log(`        ${styleText('dim', '│')}  ${styleText('dim', line)}`);
+        }
+      } finally {
+        releaseLock();
+      }
+    }
+  }
+
+  const coordinator = new CommitStreamCoordinator(discoveredTasks.length);
+  const taskViolations: Violation[][] = new Array(discoveredTasks.length);
+  let nextTaskIndex = 0;
+
+  async function executeTask(taskIndex: number): Promise<void> {
+    const task = discoveredTasks[taskIndex]!;
+    const subLines: string[] = []; // no-domain: Non-domain utility collection or data structure
     const proc = await executeAuditorStreaming(task, task.args, (subLine) => {
-      console.log(`        ${styleText('dim', '│')}  ${styleText('dim', subLine)}`);
+      subLines.push(subLine);
     });
 
+    const localViolations: Violation[] = [];
     const jsonPath = path.resolve(process.cwd(), 'scratch/audits', task.family, `${task.id}.json`);
+    let findingsSummary: { errors: number; warnings: number } | undefined;
+
     try {
       const data = await fs.readFile(jsonPath, 'utf-8');
       const parsed = JSON.parse(data) as StandardAuditResult;
+      findingsSummary = {
+        errors: parsed.summary?.errors ?? 0,
+        warnings: parsed.summary?.warnings ?? 0
+      };
+
       for (const finding of parsed.findings || []) {
         if (finding.severity === 'info') continue;
         const targetFile = finding.file ? path.relative(process.cwd(), finding.file) : '';
-        // Advertencias sin archivo objetivo no son regresiones en archivos fuente modificados
         if (!targetFile && finding.severity === 'warning') continue;
 
-        subAuditorViolations.push({
+        localViolations.push({
           file: targetFile || task.scriptPath,
           line: finding.line || 1,
           message: finding.message,
@@ -357,10 +320,10 @@ async function main() {
       }
     } catch {
       if (proc.timedOut) {
-        subAuditorViolations.push({
+        localViolations.push({
           file: task.scriptPath,
           line: 1,
-          message: `Timeout excedido (${task.timeoutMs ?? 60000}ms) en ejecución de la suite.`,
+          message: `Timeout excedido (${task.timeoutMs ?? DEFAULT_TIMEOUT_MS}ms) en ejecución de la suite.`,
           context: task.name,
           severity: 'error',
           ruleId: task.id,
@@ -369,14 +332,23 @@ async function main() {
         });
       }
     }
+
+    const isSuccess = localViolations.filter(v => v.severity === 'error').length === 0;
+    await coordinator.onTaskComplete(task.name, task.id, subLines, proc.durationMs, isSuccess, findingsSummary);
+    taskViolations[taskIndex] = localViolations;
   }
 
-  // Combinar todas las violaciones del proyecto sin duplicaciones
-  const allViolations = [
-    ...eslintViolations,
-    ...typeErrors,
-    ...subAuditorViolations
-  ];
+  async function worker(): Promise<void> {
+    while (nextTaskIndex < discoveredTasks.length) {
+      const idx = nextTaskIndex++;
+      await executeTask(idx);
+    }
+  }
+
+  const workers = Array.from({ length: workerCount }, () => worker());
+  await Promise.all(workers);
+
+  const allViolations = taskViolations.flat();
 
   // Separar en errores (globales) y warnings (filtrados por modificados)
   const projectErrors: Violation[] = [];

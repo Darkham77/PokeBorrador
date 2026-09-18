@@ -36,11 +36,12 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
         class="m-status-tag"
         :class="[status.class, { 'is-boosted': status.isBoosted }]"
       >
-        <span class="emoji">{{ status.emoji }}</span><span 
+        <span class="emoji">{{ status.emoji }}</span>
+        <span 
           v-if="status.stageValue !== undefined" 
-          class="stage-arrow emoji"
+          class="stage-arrow"
           :class="status.stageValue > 0 ? 'up' : 'down'"
-        >{{ status.stageValue > 0 ? '▲' : '▼' }}{{ Math.abs(status.stageValue) }}</span>
+        ><span class="stage-glyph emoji">{{ status.stageValue > 0 ? '▲' : '▼' }}</span><span class="stage-num">{{ Math.abs(status.stageValue) }}</span></span>
         <span
           v-if="status.count"
           class="status-counter"
@@ -82,13 +83,17 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
 .status-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 3px;
+  margin-top: 4px;
+  width: 100%;
+  clear: both;
+  min-height: 20px;
   position: relative;
 
   @media (max-width: 600px) {
-    gap: 4px;
-    margin-top: 6px;
+    gap: 2px;
+    margin-top: 3px;
+    min-height: 16px;
   }
 }
 

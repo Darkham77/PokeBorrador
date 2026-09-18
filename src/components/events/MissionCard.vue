@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { gsap } from 'gsap'
-import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import type { ItemId } from '@/data/inventory/items'
+import MissionCardRulesBox from './MissionCardRulesBox.vue'
+import MissionCardActiveOperation from './MissionCardActiveOperation.vue'
+import MissionCardRewards from './MissionCardRewards.vue'
 import type { DetailedMissionReward } from '@/logic/player/classMissionsData'
 
 const cardRef = ref<HTMLElement | null>(null)
@@ -64,44 +65,7 @@ defineEmits<{
   (e: 'action'): void
 }>()
 
-const rewardSpriteUrl = computed(() => {
-  if (props.rewardId && isItemId(props.rewardId)) {
-    return getAssetUrl(ASSET_TYPES.ITEM, props.rewardId)
-  }
-  return null
-})
 
-const computedRewardTooltipTitle = computed(() => {
-  if (props.rewardTooltipTitle) return props.rewardTooltipTitle
-  if (props.rewardId && isItemId(props.rewardId)) {
-    const item = getItemById(props.rewardId)
-    if (item) return item.name
-  }
-  return props.rewardLabel
-})
-
-const computedRewardTooltipDescription = computed(() => {
-  if (props.rewardTooltipDescription) return props.rewardTooltipDescription
-  if (props.rewardId && isItemId(props.rewardId)) {
-    const item = getItemById(props.rewardId)
-    if (item) return item.desc
-  }
-  
-  // Fallback static descriptions for general rewards
-  const labelLower = props.rewardLabel.toLowerCase()
-  const valLower = props.rewardVal.toLowerCase()
-  if (labelLower.includes('peso') || props.rewardIcon === '₱' || valLower.includes('peso')) {
-    return 'Poké-Pesos (₱). Moneda principal del juego.'
-  }
-  if (labelLower.includes('exp') || labelLower.includes('experiencia') || valLower.includes('exp') || valLower.includes('experiencia')) {
-    return 'Puntos de experiencia para subir el nivel y rango de tu clase.'
-  }
-  if (labelLower.includes('bc') || labelLower.includes('battle coin') || valLower.includes('bc') || valLower.includes('battle coin')) {
-    return 'Battle Coins (BC). Moneda especial de batallas.'
-  }
-  
-  return `Recompensa: ${props.rewardVal}`
-})
 
 const GSAP_HOVER_SPRITE_SCALE = 1.15
 const GSAP_HOVER_SPRITE_Y_OFFSET_PX = -6
@@ -220,6 +184,7 @@ const handleImgError = (e: Event) => {
         <img 
           v-if="isAvatarUrl"
           :src="avatar" 
+          :alt="title || 'Avatar de misión'"
           class="pixelated"
           @error="handleImgError"
         >
@@ -243,40 +208,11 @@ const handleImgError = (e: Event) => {
     </div>
 
     <!-- Deployment Requirement & Reward Conditions Box -->
-    <div
-      v-if="activationReq || rewardConditions || rulesText"
-      class="rules-box"
-    >
-      <div
-        v-if="activationReq"
-        class="rules-section-block"
-      >
-        <span class="rules-badge deploy-badge">REQUISITO DE DESPLIEGUE</span>
-        <p class="rules-desc">
-          {{ activationReq }}
-        </p>
-      </div>
-
-      <div
-        v-if="rewardConditions"
-        class="rules-section-block"
-      >
-        <span class="rules-badge reward-badge">CÓMO SE GANAN LAS RECOMPENSAS</span>
-        <p class="rules-desc">
-          {{ rewardConditions }}
-        </p>
-      </div>
-
-      <div
-        v-else-if="rulesText"
-        class="rules-section-block"
-      >
-        <span class="rules-badge">REGLAS / REQUISITOS</span>
-        <p class="rules-desc">
-          {{ rulesText }}
-        </p>
-      </div>
-    </div>
+    <MissionCardRulesBox
+      :activation-req="activationReq"
+      :reward-conditions="rewardConditions"
+      :rules-text="rulesText"
+    />
 
     <!-- Unmet requirement banner -->
     <div
@@ -297,116 +233,26 @@ const handleImgError = (e: Event) => {
     </div>
 
     <!-- Active Operation Summary & Single Countdown Box -->
-    <div
-      v-if="isActiveMission"
-      class="active-operation-box mission-active-progress"
-      :class="{ 'is-done': isCompleted }"
-    >
-      <div class="operation-header-row">
-        <span class="operation-status-title">
-          {{ isCompleted ? '¡OPERACIÓN COMPLETADA!' : 'OPERACIÓN EN CURSO' }}
-        </span>
-        <span class="operation-timer-text">
-          {{ remainingTimeText }}
-        </span>
-      </div>
-
-      <!-- In-card active deployment progress bar -->
-      <div class="operation-progress-track">
-        <div
-          class="operation-progress-fill"
-          :style="{ width: Math.min(100, Math.max(0, progressPercent || 0)) + '%' }"
-        />
-      </div>
-
-      <div
-        v-if="activePokemonInfo"
-        class="operation-detail-row"
-      >
-        <span class="detail-label">ASIGNADO:</span>
-        <span class="detail-val">{{ activePokemonInfo }}</span>
-      </div>
-
-      <div
-        v-if="activeGuaranteedReward && (!rewardsList || rewardsList.length === 0)"
-        class="operation-detail-row"
-      >
-        <span class="detail-label">BOTÍN FIJADO:</span>
-        <span class="detail-val is-reward">{{ activeGuaranteedReward }}</span>
-      </div>
-    </div>
+    <MissionCardActiveOperation
+      :is-active-mission="isActiveMission"
+      :is-completed="isCompleted"
+      :remaining-time-text="remainingTimeText"
+      :progress-percent="progressPercent"
+      :active-pokemon-info="activePokemonInfo"
+      :active-guaranteed-reward="activeGuaranteedReward"
+      :has-rewards-list="Boolean(rewardsList && rewardsList.length > 0)"
+    />
 
     <div class="reward-section">
-      <!-- Multi-Reward Grid (e.g. Class Deployments) -->
-      <div
-        v-if="rewardsList && rewardsList.length > 0"
-        class="rewards-multi-list"
-      >
-        <div class="rewards-header-label">
-          RECOMPENSAS DETALLADAS
-        </div>
-        <div class="rewards-multi-grid">
-          <PVTooltip
-            v-for="(rew, rIdx) in rewardsList"
-            :key="rIdx"
-            :title="rew.tooltipTitle || rew.label"
-            :description="rew.tooltipDesc || rew.val"
-            position="top"
-            style="width: 100%;"
-          >
-            <div class="reward-tag mini-tag">
-              <div
-                v-if="rew.isItem && rew.id && isItemId(rew.id)"
-                class="reward-sprite-wrap"
-              >
-                <img
-                  :src="getAssetUrl(ASSET_TYPES.ITEM, rew.id)"
-                  :alt="rew.label"
-                  class="reward-sprite-img pixelated"
-                >
-              </div>
-              <span
-                v-else
-                class="emoji reward-icon"
-              >{{ rew.icon || '🎁' }}</span>
-              <div class="reward-info">
-                <span class="label">{{ rew.label }}</span>
-                <span class="val">{{ rew.val }}</span>
-              </div>
-            </div>
-          </PVTooltip>
-        </div>
-      </div>
-
-      <!-- Single Reward Tag (e.g. Daily Delivery Missions) -->
-      <PVTooltip
-        v-else
-        :title="computedRewardTooltipTitle"
-        :description="computedRewardTooltipDescription"
-        position="top"
-        style="width: 100%;"
-      >
-        <div class="reward-tag">
-          <div
-            v-if="rewardSpriteUrl"
-            class="reward-sprite-wrap"
-          >
-            <img
-              :src="rewardSpriteUrl"
-              :alt="computedRewardTooltipTitle"
-              class="reward-sprite-img pixelated"
-            >
-          </div>
-          <span
-            v-else
-            class="emoji reward-icon"
-          >{{ rewardIcon }}</span>
-          <div class="reward-info">
-            <span class="label">{{ rewardLabel }}</span>
-            <span class="val">{{ rewardVal }}</span>
-          </div>
-        </div>
-      </PVTooltip>
+      <MissionCardRewards
+        :rewards-list="rewardsList"
+        :reward-id="rewardId"
+        :reward-icon="rewardIcon"
+        :reward-label="rewardLabel"
+        :reward-val="rewardVal"
+        :reward-tooltip-title="rewardTooltipTitle"
+        :reward-tooltip-description="rewardTooltipDescription"
+      />
 
       <button 
         :id="'deliver-btn-' + (id || 'default')"

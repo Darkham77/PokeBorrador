@@ -136,3 +136,6 @@ export const PERCENTAGE_MULTIPLIER_FACTOR = 100;
 
 /** Debug move base power (40). */
 export const DEBUG_MOVE_BASE_POWER = 40;
+
+/** Scale factor used to convert spawn and archaeology percentages to UI progress bar widths. */
+export const PROBABILITY_BAR_SCALE_FACTOR = 2.5;

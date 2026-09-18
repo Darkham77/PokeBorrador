@@ -19,10 +19,11 @@ import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../../../src/logic/battle/showdownBridge.ts';
 import { fuzzerMemoryStore } from './fuzzerMemoryStore.ts';
 // Aplicar el monkey-patch unificado de Showdown
-import { resolveBaseStats, statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { resolveBaseStats } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import { BattleAgent, classifyRequest, type ChoiceRequest } from './fuzzer_agent.ts';
 import { syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
-import { PokemonLegalityValidator } from '../../../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
+import { PokemonLegalityValidator } from '../../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
 
 // Force inMemory SQLite and Offline DB mode for maximum speed and zero I/O overhead
 Reflect.set(globalThis, '__E2E__', true);

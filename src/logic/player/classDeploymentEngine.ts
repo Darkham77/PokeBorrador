@@ -12,7 +12,7 @@ import type { PlayerClassId, MissionId } from '@/data/player/playerClasses';
 import type { Pokemon, PokemonStatKey } from '@/types/pokemon/pokemon';
 import type { ItemId } from '@/data/inventory/itemIds';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon';
@@ -119,39 +119,79 @@ export function calcRocketSacrificeMoney(pokemon: Pokemon | null, missionId: Mis
   return Math.min(range.max, Math.max(range.min, money));
 }
 
+interface BugExpeditionCandidate {
+  readonly id: PokemonSpeciesId;
+  readonly lvMin: number;
+  readonly lvMax: number;
+}
+
+const FALLBACK_BUG_SPECIES = ['caterpie', 'weedle', 'paras', 'venonat', 'scyther', 'pinsir'] as const;
+const FALLBACK_BUG_LV_MIN = 10 as const;
+const FALLBACK_BUG_LV_MAX = 30 as const;
+
+function isBugSpecies(speciesId: unknown): speciesId is PokemonSpeciesId {
+  if (typeof speciesId !== 'string' || !isPokemonSpeciesId(speciesId)) return false;
+  const pData = POKEMON_DB[speciesId];
+  return Boolean(pData && (pData.type === 'bug' || pData.type2 === 'bug'));
+}
+
+function resolveMapLevelRange(map: (typeof FIRE_RED_MAPS)[number]): { lvMin: number; lvMax: number } {
+  const lv0 = map.lv?.[0] ?? 5;
+  const lv1 = map.lv?.[1] ?? 15;
+  return {
+    lvMin: Math.min(lv0, lv1),
+    lvMax: Math.max(lv0, lv1)
+  };
+}
+
+function collectBugsFromMap(
+  map: (typeof FIRE_RED_MAPS)[number],
+  discoveredIds: Set<PokemonSpeciesId>,
+  destination: BugExpeditionCandidate[]
+): void {
+  const allWild = Object.values(map.wild || {}).flat();
+  const range = resolveMapLevelRange(map);
+
+  for (const speciesId of allWild) {
+    if (!isBugSpecies(speciesId) || discoveredIds.has(speciesId)) continue;
+    discoveredIds.add(speciesId);
+    destination.push({
+      id: speciesId,
+      lvMin: range.lvMin,
+      lvMax: range.lvMax
+    });
+  }
+}
+
+function getFallbackBugPool(): BugExpeditionCandidate[] {
+  return FALLBACK_BUG_SPECIES.map(id => ({
+    id,
+    lvMin: FALLBACK_BUG_LV_MIN,
+    lvMax: FALLBACK_BUG_LV_MAX
+  }));
+}
+
+function collectAccessibleBugPool(badgeCount: number): BugExpeditionCandidate[] {
+  const accessibleBugs: BugExpeditionCandidate[] = [];
+  const discoveredIds = new Set<PokemonSpeciesId>(); // runtime-set: Fast O(1) membership lookup set
+
+  for (const map of FIRE_RED_MAPS) {
+    if ((map.badges ?? 0) > badgeCount) continue;
+    collectBugsFromMap(map, discoveredIds, accessibleBugs);
+  }
+
+  if (accessibleBugs.length === 0) {
+    return getFallbackBugPool();
+  }
+
+  return accessibleBugs;
+}
+
 /**
  * Generates 3 Bug-type Pokémon for Cazabichos expeditions based on accessible routes.
  */
 export function generateBugExpeditionPokemon(missionId: MissionId, badgeCount = 8): Pokemon[] {
-  const accessibleBugs: { id: string; lvMin: number; lvMax: number }[] = [];
-
-  for (const map of FIRE_RED_MAPS) {
-    if ((map.badges ?? 0) > badgeCount) continue;
-    const allWild = Object.values(map.wild || {}).flat();
-    for (const speciesId of allWild) {
-      if (!isPokemonSpeciesId(speciesId)) continue;
-      const pData = POKEMON_DB[speciesId];
-      if (pData && (pData.type === 'bug' || pData.type2 === 'bug')) {
-        if (!accessibleBugs.some(b => b.id === speciesId)) {
-          const lv0 = map.lv?.[0] ?? 5;
-          const lv1 = map.lv?.[1] ?? 15;
-          accessibleBugs.push({
-            id: speciesId,
-            lvMin: Math.min(lv0, lv1),
-            lvMax: Math.max(lv0, lv1)
-          });
-        }
-      }
-    }
-  }
-
-  // Guaranteed fallback pool if no maps matched
-  if (accessibleBugs.length === 0) {
-    ['caterpie', 'weedle', 'paras', 'venonat', 'scyther', 'pinsir'].forEach(id => {
-      accessibleBugs.push({ id, lvMin: 10, lvMax: 30 });
-    });
-  }
-
+  const accessibleBugs = collectAccessibleBugPool(badgeCount);
   const ivFloor = BUG_IV_FLOORS[missionId] || 5;
   const shinyDiv = BUG_SHINY_DIVISORS[missionId] || 2;
   const results: Pokemon[] = [];
@@ -163,7 +203,7 @@ export function generateBugExpeditionPokemon(missionId: MissionId, badgeCount = 
     const poke = makePokemon(pick.id, level, {
       ivFloor,
       shinyMultiplier: shinyDiv,
-      obtainedMethod: 'reward'
+      obtainedMethod: 'reward',
     });
 
     if (poke) {
@@ -221,6 +261,139 @@ export function getCazabichosStreakMultipliers(streak: number): { ivFloor: numbe
   };
 }
 
+function createEmptyDeploymentRewards(): ResolvedDeploymentRewards {
+  return {
+    money: 0,
+    battleCoins: 0,
+    items: [],
+    classXP: 0,
+    criminality: 0,
+    generatedPokemon: [],
+    shouldSacrifice: false,
+    expGained: 0,
+    bonusLevels: 0,
+    ivIncrements: [],
+    vigorConsumed: 0
+  };
+}
+
+function resolveRocketDeployment(
+  missionId: MissionId,
+  targetPokemon: Pokemon | null,
+  extraData: Record<string, unknown>
+): ResolvedDeploymentRewards {
+  const projected = Number(extraData.projectedReward);
+  const money = Number.isFinite(projected) && projected > 0
+    ? projected
+    : calcRocketSacrificeMoney(targetPokemon, missionId);
+
+  const config = missionId === 'mission_6h'
+    ? { item: 'nugget' as const, qty: 1, xp: 50, crim: 5 }
+    : missionId === 'mission_12h'
+      ? { item: 'bignugget' as const, qty: 1, xp: 250, crim: 10 }
+      : { item: 'masterball' as const, qty: 1, xp: 600, crim: 20 };
+
+  return {
+    ...createEmptyDeploymentRewards(),
+    shouldSacrifice: true,
+    money,
+    items: [{ id: config.item, qty: config.qty }],
+    classXP: config.xp,
+    criminality: config.crim
+  };
+}
+
+function resolveBugCatcherDeployment(
+  missionId: MissionId,
+  extraData: Record<string, unknown>
+): ResolvedDeploymentRewards {
+  const badges = typeof extraData.badgeCount === 'number' ? extraData.badgeCount : 8;
+  const generatedPokemon = generateBugExpeditionPokemon(missionId, badges);
+
+  const config = missionId === 'mission_6h'
+    ? { item: 'netball' as const, qty: 3, xp: 50 }
+    : missionId === 'mission_12h'
+      ? { item: 'silverpowder' as const, qty: 1, xp: 250 }
+      : { item: 'focussash' as const, qty: 1, xp: 600 };
+
+  return {
+    ...createEmptyDeploymentRewards(),
+    generatedPokemon,
+    items: [{ id: config.item, qty: config.qty }],
+    classXP: config.xp
+  };
+}
+
+function resolveTrainerDeployment(
+  missionId: MissionId,
+  targetPokemon: Pokemon | null
+): ResolvedDeploymentRewards {
+  const level = targetPokemon?.level || 1;
+  const baseExp = 25000 + (level * 1000);
+
+  if (missionId === 'mission_6h') {
+    return {
+      ...createEmptyDeploymentRewards(),
+      battleCoins: 50,
+      expGained: baseExp,
+      classXP: 50
+    };
+  }
+  if (missionId === 'mission_12h') {
+    return {
+      ...createEmptyDeploymentRewards(),
+      battleCoins: 150,
+      expGained: baseExp * 2,
+      items: [{ id: 'rarecandy', qty: 1 }],
+      classXP: 250
+    };
+  }
+  return {
+    ...createEmptyDeploymentRewards(),
+    battleCoins: 400,
+    expGained: baseExp * 4,
+    items: [{ id: 'rarecandy', qty: 3 }],
+    bonusLevels: 1,
+    classXP: 600
+  };
+}
+
+function resolveBreederDeployment(
+  missionId: MissionId,
+  targetPokemon: Pokemon | null
+): ResolvedDeploymentRewards {
+  const config = missionId === 'mission_6h'
+    ? { item: 'everstone' as const, qty: 1, xp: 50, blocks: 1, baseVigor: 5 }
+    : missionId === 'mission_12h'
+      ? { item: 'destinyknot' as const, qty: 1, xp: 250, blocks: 2, baseVigor: 10 }
+      : { item: 'goldbottlecap' as const, qty: 1, xp: 600, blocks: 4, baseVigor: 15 };
+
+  const saveVigor = missionId === 'mission_24h' && Math.random() < 0.10;
+  const vigorConsumed = saveVigor ? 0 : config.baseVigor;
+
+  const ivIncrements: PokemonStatKey[] = [];
+  if (targetPokemon) {
+    const pIvs = targetPokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+    for (let b = 0; b < config.blocks; b++) {
+      const eligibleStats = POKEMON_STAT_KEYS.filter(stat => (pIvs[stat] || 0) < MAX_SINGLE_STAT_IV);
+      if (eligibleStats.length > 0) {
+        const chosen = eligibleStats[Math.floor(Math.random() * eligibleStats.length)];
+        if (chosen) {
+          ivIncrements.push(chosen);
+        }
+      }
+    }
+  }
+
+  return {
+    ...createEmptyDeploymentRewards(),
+    items: [{ id: config.item, qty: config.qty }],
+    classXP: config.xp,
+    vigorConsumed,
+    ivIncrements
+  };
+}
+
 /**
  * Pure resolution of deployment rewards for any class.
  */
@@ -230,126 +403,47 @@ export function resolveDeploymentRewards(
   targetPokemon: Pokemon | null,
   extraData: Record<string, unknown> = {}
 ): ResolvedDeploymentRewards {
-  let money = 0;
-  let battleCoins = 0;
-  const items: DeploymentItemReward[] = [];
-  let classXP = 0;
-  let criminality = 0;
-  let generatedPokemon: Pokemon[] = [];
-  let shouldSacrifice = false;
-  let expGained = 0;
-  let bonusLevels = 0;
-  const ivIncrements: PokemonStatKey[] = [];
-  let vigorConsumed = 0;
-
-  if (classId === 'rocket') {
-    shouldSacrifice = true;
-    const projected = Number(extraData.projectedReward);
-    money = Number.isFinite(projected) && projected > 0
-      ? projected
-      : calcRocketSacrificeMoney(targetPokemon, missionId);
-
-    if (missionId === 'mission_6h') {
-      items.push({ id: 'nugget', qty: 1 });
-      classXP = 50;
-      criminality = 5;
-    } else if (missionId === 'mission_12h') {
-      items.push({ id: 'bignugget', qty: 1 });
-      classXP = 250;
-      criminality = 10;
-    } else {
-      items.push({ id: 'masterball', qty: 1 });
-      classXP = 600;
-      criminality = 20;
-    }
-  } else if (classId === 'cazabichos') {
-    const badges = typeof extraData.badgeCount === 'number' ? extraData.badgeCount : 8;
-    generatedPokemon = generateBugExpeditionPokemon(missionId, badges);
-
-    if (missionId === 'mission_6h') {
-      items.push({ id: 'netball', qty: 3 });
-      classXP = 50;
-    } else if (missionId === 'mission_12h') {
-      items.push({ id: 'silverpowder', qty: 1 });
-      classXP = 250;
-    } else {
-      items.push({ id: 'focussash', qty: 1 });
-      classXP = 600;
-    }
-  } else if (classId === 'entrenador') {
-    const level = targetPokemon?.level || 1;
-    const baseExp = 25000 + (level * 1000);
-
-    if (missionId === 'mission_6h') {
-      battleCoins = 50;
-      expGained = baseExp;
-      classXP = 50;
-    } else if (missionId === 'mission_12h') {
-      battleCoins = 150;
-      expGained = baseExp * 2;
-      items.push({ id: 'rarecandy', qty: 1 });
-      classXP = 250;
-    } else {
-      battleCoins = 400;
-      expGained = baseExp * 4;
-      items.push({ id: 'rarecandy', qty: 3 });
-      bonusLevels = 1;
-      classXP = 600;
-    }
-  } else if (classId === 'criador') {
-    let blocks: number;
-    let baseVigorCost: number;
-
-    if (missionId === 'mission_6h') {
-      items.push({ id: 'everstone', qty: 1 });
-      classXP = 50;
-      blocks = 1;
-      baseVigorCost = 5;
-    } else if (missionId === 'mission_12h') {
-      items.push({ id: 'destinyknot', qty: 1 });
-      classXP = 250;
-      blocks = 2;
-      baseVigorCost = 10;
-    } else {
-      items.push({ id: 'goldbottlecap', qty: 1 });
-      classXP = 600;
-      blocks = 4;
-      baseVigorCost = 15;
-    }
-
-    // 10% chance to save vigor on 24h mission
-    const saveVigor = missionId === 'mission_24h' && Math.random() < 0.10;
-    vigorConsumed = saveVigor ? 0 : baseVigorCost;
-
-    if (targetPokemon) {
-      const pIvs = targetPokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-      for (let b = 0; b < blocks; b++) {
-        // Find non-31 stats
-        const eligibleStats = POKEMON_STAT_KEYS.filter(stat => (pIvs[stat] || 0) < MAX_SINGLE_STAT_IV);
-        if (eligibleStats.length > 0) {
-          const chosen = eligibleStats[Math.floor(Math.random() * eligibleStats.length)];
-          if (chosen) {
-            ivIncrements.push(chosen);
-          }
-        }
-      }
-    }
+  switch (classId) {
+    case 'rocket':
+      return resolveRocketDeployment(missionId, targetPokemon, extraData);
+    case 'cazabichos':
+      return resolveBugCatcherDeployment(missionId, extraData);
+    case 'entrenador':
+      return resolveTrainerDeployment(missionId, targetPokemon);
+    case 'criador':
+      return resolveBreederDeployment(missionId, targetPokemon);
+    default:
+      return createEmptyDeploymentRewards();
   }
-
-  return {
-    money,
-    battleCoins,
-    items,
-    classXP,
-    criminality,
-    generatedPokemon,
-    shouldSacrifice,
-    expGained,
-    bonusLevels,
-    ivIncrements,
-    vigorConsumed
-  };
 }
+
+export interface ProjectedMissionRewards {
+  readonly projectedReward?: number;
+  readonly rewards?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+}
+
+const ROCKET_PROJECTED_ITEMS: Readonly<Record<MissionId, ItemId>> = {
+  mission_6h: 'nugget',
+  mission_12h: 'bignugget',
+  mission_24h: 'masterball',
+};
+const CAZABICHOS_BALL_QTYS: Readonly<Record<MissionId, number>> = {
+  mission_6h: 5,
+  mission_12h: 10,
+  mission_24h: 20,
+};
+const TRAINER_COINS_AND_ITEMS: Readonly<Record<MissionId, { coins: number; item: ItemId }>> = {
+  mission_6h: { coins: 30, item: 'rarecandy' },
+  mission_12h: { coins: 75, item: 'protein' },
+  mission_24h: { coins: 200, item: 'choiceband' },
+};
+const BREEDER_ITEMS: Readonly<Record<MissionId, ItemId>> = {
+  mission_6h: 'everstone',
+  mission_12h: 'destinyknot',
+  mission_24h: 'goldbottlecap',
+};
+
+const ROCKET_DEFAULT_SACRIFICE_MONEY = 15000 as const;
 
 /**
  * Returns the projected initial rewards structure to store on activeMission
@@ -359,33 +453,26 @@ export function getInitialProjectedRewards(
   cls: PlayerClassId,
   missionId: MissionId,
   pokemon?: Pokemon | null
-): { projectedReward?: number; rewards?: Record<string, unknown> } {
+): ProjectedMissionRewards {
   if (cls === 'rocket') {
-    const proj = pokemon ? calcRocketSacrificeMoney(pokemon, missionId) : 15000;
-    const itemId: ItemId = missionId === 'mission_6h' ? 'nugget' : missionId === 'mission_12h' ? 'bignugget' : 'masterball';
+    const proj = pokemon ? calcRocketSacrificeMoney(pokemon, missionId) : ROCKET_DEFAULT_SACRIFICE_MONEY;
+    const itemId = ROCKET_PROJECTED_ITEMS[missionId] || 'nugget';
     return {
       projectedReward: proj,
       rewards: { money: proj, [itemId]: 1 }
     };
   }
   if (cls === 'cazabichos') {
-    const ballQty = missionId === 'mission_6h' ? 5 : missionId === 'mission_12h' ? 10 : 20;
-    return {
-      rewards: { pokeball: ballQty }
-    };
+    const ballQty = CAZABICHOS_BALL_QTYS[missionId] || 5;
+    return { rewards: { pokeball: ballQty } };
   }
   if (cls === 'entrenador') {
-    const bc = missionId === 'mission_6h' ? 30 : missionId === 'mission_12h' ? 75 : 200;
-    const itemId: ItemId = missionId === 'mission_6h' ? 'rarecandy' : missionId === 'mission_12h' ? 'protein' : 'choiceband';
-    return {
-      rewards: { battleCoins: bc, [itemId]: 1 }
-    };
+    const config = TRAINER_COINS_AND_ITEMS[missionId] || { coins: 30, item: 'rarecandy' };
+    return { rewards: { battleCoins: config.coins, [config.item]: 1 } };
   }
   if (cls === 'criador') {
-    const itemId: ItemId = missionId === 'mission_6h' ? 'everstone' : missionId === 'mission_12h' ? 'destinyknot' : 'goldbottlecap';
-    return {
-      rewards: { [itemId]: 1 }
-    };
+    const itemId = BREEDER_ITEMS[missionId] || 'everstone';
+    return { rewards: { [itemId]: 1 } };
   }
   return {};
 }

@@ -10,6 +10,7 @@ import { useUIStore } from '@/stores/ui.ts'
 import { usePvPStore } from '@/stores/pvp.ts'
 import { useModalStore } from '@/stores/modals.ts'
 import { useBattleStore } from '@/stores/battle/battle.ts'
+import { gameBus } from '@/logic/events/gameBus.ts'
 import type { PvPAction } from '@/types/battle/pvp'
 import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -30,6 +31,11 @@ import {
   joinRoomAction
 } from '@/logic/pvp/pvpRoomActionsHelper'
 import { getMatchmakingTimeoutSec } from '@/logic/pvp/livePvPMatchmakingHandler.ts'
+
+const INVITE_POLL_INTERVAL_SEC = 4;
+const SEARCH_COUNTDOWN_TICK_SEC = 1;
+const MATCHMAKING_POLL_INTERVAL_SEC = 3;
+
 import {
   executeForfeit,
   executeEndBattle
@@ -48,7 +54,6 @@ import {
 } from '@/logic/pvp/livePvPPassiveFallbackHandler'
 import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import {
-  checkUserOnline as checkUserOnlineHelper,
   executePollMatchmaking,
   executeInitInvitePoller,
   executeStartSearch,
@@ -69,7 +74,6 @@ import {
 import {
   resolvePvpTeam as resolvePvpTeamHelper,
   executeStartBattle,
-  executeConfirmTeamPreview,
   executeHandleOpponentTeam,
   executeHandleOpponentTeamOrder,
   executeSetupBattleChannel,
@@ -129,10 +133,6 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   let invitePoller: DelayedCall | null = null
   let matchmakingPoller: DelayedCall | null = null
 
-  async function checkUserOnline(userId: string): Promise<boolean> {
-    return checkUserOnlineHelper(gameStore.db, userId)
-  }
-
   function handleTurnTimeout(isForfeit: boolean) {
     executeHandleTurnTimeout(isForfeit, {
       uiStore,
@@ -171,7 +171,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       activeInvite,
       killSearchCountdown: () => { if (searchCountdownTween) searchCountdownTween.kill() },
       onAcceptRankedInvite: (id) => acceptInvite(id, true),
-      scheduleNext: (cb) => gsap.delayedCall(4, cb)
+      scheduleNext: (cb) => gsap.delayedCall(INVITE_POLL_INTERVAL_SEC, cb)
     })
   }
 
@@ -181,7 +181,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       isSearching,
       searchSecondsRemaining,
       fallbackToPassiveBattle: _fallbackToPassiveBattle,
-      scheduleNext: (cb) => gsap.delayedCall(1, cb)
+      scheduleNext: (cb) => gsap.delayedCall(SEARCH_COUNTDOWN_TICK_SEC, cb)
     })
   }
 
@@ -200,7 +200,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       searchPhase,
       startSearchCountdown: _startSearchCountdown,
       pollMatchmaking: _pollMatchmaking,
-      scheduleMatchmakingPoll: (cb) => gsap.delayedCall(3, cb)
+      scheduleMatchmakingPoll: (cb) => gsap.delayedCall(MATCHMAKING_POLL_INTERVAL_SEC, cb)
     })
   }
 
@@ -291,6 +291,29 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     }, isManual)
   }
 
+  const handlePvpCommitPickEvent = (e: Event) => {
+    const pick = (e as CustomEvent<PvPAction>).detail
+    if (pick) {
+      void _commitPick(pick)
+    }
+  }
+  gameBus.on('PVP_COMMIT_PICK', handlePvpCommitPickEvent)
+
+  const handlePvpReconnectBattleEvent = (e: Event) => {
+    const detail = (e as CustomEvent<unknown>).detail
+    if (detail) {
+      reconnectBattle(detail)
+    }
+  }
+  gameBus.on('PVP_RECONNECT_BATTLE', handlePvpReconnectBattleEvent)
+
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      gameBus.off('PVP_COMMIT_PICK', handlePvpCommitPickEvent)
+      gameBus.off('PVP_RECONNECT_BATTLE', handlePvpReconnectBattleEvent)
+    })
+  }
+
   function _checkReadyToResolve() {
     executeCheckReadyToResolve(battleState, useBattleStore(), resolveTurn)
   }
@@ -327,10 +350,6 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       endBattle,
       resolveTurnRecursion: resolveTurn
     })
-  }
-
-  function selectFaintReplacement(switchIndex: number) {
-    _commitPick({ type: 'switch', switchIndex, choiceString: `switch ${switchIndex + 1}` })
   }
 
   function resolvePvpTeam(format?: string): Pokemon[] {
@@ -373,16 +392,6 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   function handleOpponentTeam({ payload }: { payload: OpponentTeamBroadcastPayload }) {
     executeHandleOpponentTeam(payload, battleState, {
-      timerManager,
-      battleStore: useBattleStore()
-    })
-  }
-
-  function confirmTeamPreview(orderedPicks: Pokemon[]) {
-    executeConfirmTeamPreview(orderedPicks, {
-      battleState,
-      myTeamConfirmed,
-      enemyTeamConfirmed,
       timerManager,
       battleStore: useBattleStore()
     })
@@ -453,11 +462,11 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   }
 
   function handleSpectateJoin() {
-    executeHandleSpectateJoin({ battleState })
+    executeHandleSpectateJoin({ battleState, battleStore: useBattleStore() })
   }
 
   function handleSpectateSync({ payload }: { payload: PvpSpectateSyncPayload }) {
-    executeHandleSpectateSync(payload, isSpectator.value)
+    executeHandleSpectateSync(payload, isSpectator.value, useBattleStore())
   }
 
   function handleOpponentReconnect({ payload }: { payload: PvpReconnectPayload }) {
@@ -509,14 +518,12 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     battleState,
     activeInvite,
     activeRoomCode,
-    isSpectator,
     turnSecondsRemaining,
     reconnectSecondsRemaining,
     afkStrikes,
     isReconnecting,
     activeReplay,
     watchReplay,
-    checkUserOnline,
     initInvitePoller,
     sendInvite,
     acceptInvite,
@@ -525,18 +532,17 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     reconnectBattle,
     startSearch,
     cancelSearch,
-    _fallbackToPassiveBattle,
     resolvePvpTeam,
     createRoom,
     cancelRoom,
     joinRoom,
     spectateMatch,
-    confirmTeamPreview,
-    selectFaintReplacement,
     _commitPick,
-    _forfeit,
     handleOpponentPick,
     _checkPostTurn,
+    // fallow-ignore-next-line unused-store-member
+    _forfeit,
+    // fallow-ignore-next-line unused-store-member
     endBattle
   }
 })

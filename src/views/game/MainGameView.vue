@@ -25,15 +25,7 @@ import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
 import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue'
 const LocalDebugPanel = defineResilientAsyncComponent(() => import('@/components/admin/LocalDebugPanel.vue'))
 
-// Tab components
-const BoxView = defineResilientAsyncComponent(() => import('@/components/box/BoxView.vue'))
-
-// Views
-import HomeView from '@/views/game/HomeView.vue'
-const PokedexView = defineResilientAsyncComponent(() => import('@/views/pokemon/PokedexView.vue'))
-const MapView = defineResilientAsyncComponent(() => import('@/views/game/MapView.vue'))
-const GymsView = defineResilientAsyncComponent(() => import('@/views/game/GymsView.vue'))
-const BagView = defineResilientAsyncComponent(() => import('@/views/inventory/BagView.vue'))
+import MainGameTabsContent from './MainGameTabsContent.vue'
 
 const GlobalChat = defineResilientAsyncComponent(() => import('@/components/social/GlobalChat.vue'))
 const DirectChatWindow = defineResilientAsyncComponent(() => import('@/components/social/DirectChatWindow.vue'))
@@ -101,7 +93,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   logger.info('MainGameView', 'UNMOUNTED.')
-  breedingStore.cleanupBackgroundPoller()
 })
 
 watch(() => gs.value.starterChosen, (val) => {
@@ -167,63 +158,7 @@ watch(() => gs.value.starterChosen, (val) => {
           '--hud-bottom-padding': (hudBottomHeight > 0 ? (hudBottomHeight + 20) : 0) + 'px'
         }"
       >
-        <!-- CORE VIEWS (KEPT ALIVE) -->
-        <KeepAlive :include="['HomeView', 'MapView', 'PokedexView', 'BagView', 'BoxView']">
-          <div
-            v-if="activeTab === 'home'"
-            key="home"
-            class="tab-content"
-          >
-            <HomeView />
-            <div class="hud-spacer-bottom" />
-          </div>
-
-          <div
-            v-else-if="activeTab === 'map'"
-            key="map"
-            class="tab-content"
-          >
-            <MapView />
-            <div class="hud-spacer-bottom" />
-          </div>
-
-          <div
-            v-else-if="activeTab === 'pokedex'"
-            key="pokedex"
-            class="tab-content"
-          >
-            <PokedexView />
-            <div class="hud-spacer-bottom" />
-          </div>
-
-          <div
-            v-else-if="activeTab === 'bag'"
-            key="bag"
-            class="tab-content"
-          >
-            <BagView />
-            <div class="hud-spacer-bottom" />
-          </div>
-
-          <div
-            v-else-if="activeTab === 'box'"
-            key="box"
-            class="tab-content"
-          >
-            <BoxView />
-            <div class="hud-spacer-bottom" />
-          </div>
-        </KeepAlive>
-
-        <!-- SECONDARY VIEWS -->
-        <div
-          v-if="activeTab === 'gyms'"
-          key="gyms"
-          class="tab-content"
-        >
-          <GymsView />
-          <div class="hud-spacer-bottom" />
-        </div>
+        <MainGameTabsContent :active-tab="activeTab" />
       </div>
 
       <!-- HUD SIDEBAR (HERRAMIENTAS IZQUIERDA) -->

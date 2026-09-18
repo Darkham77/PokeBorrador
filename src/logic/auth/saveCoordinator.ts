@@ -13,8 +13,8 @@ import { logger } from '@/logic/utils/logger';
 
 export type SaveExecutor = () => Promise<unknown>;
 
-export const DEFAULT_SAVE_DEBOUNCE_MS = 1500 as const;
-export const CLOUD_SAVE_THROTTLE_MS = 60_000 as const;
+const DEFAULT_SAVE_DEBOUNCE_MS = 1500 as const;
+const CLOUD_SAVE_THROTTLE_MS = 60_000 as const;
 
 export class SaveCoordinator {
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -31,11 +31,23 @@ export class SaveCoordinator {
   private cloudTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingCloudSaveFn: SaveExecutor | null = null;
   private cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS;
+  private preLogoutHandler: (() => Promise<void>) | null = null;
 
   constructor(delayMs: number = DEFAULT_SAVE_DEBOUNCE_MS, cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS) {
     this.defaultDelayMs = delayMs;
     this.cloudThrottleMs = cloudThrottleMs;
     this.registerUnloadHandler();
+  }
+
+  public setPreLogoutHandler(handler: (() => Promise<void>) | null): void {
+    this.preLogoutHandler = handler;
+  }
+
+  public async executePreLogoutSave(): Promise<void> {
+    await this.flushPendingSave();
+    if (this.preLogoutHandler) {
+      await this.preLogoutHandler();
+    }
   }
 
   public setTimeProvider(provider: () => number): void {

@@ -25,56 +25,16 @@ const gameStore = useGameStore()
 const modalStore = useModalStore()
 const livePvP = useLivePvPStore()
 
+import {
+  isControlsDisabledState,
+  isAutoBattleSubstate,
+  isFinishOverlaySearchSubstate,
+  resolveForcedMoveIndex
+} from './battleArenaControlsHelper.ts';
+
 const battle = computed(() => battleStore.state)
 const player = computed(() => battle.value?.player)
 const gs = computed(() => gameStore.state)
-
-const CONTROLS_DISABLED_STATES: ReadonlySet<string> = new Set<string>(['INITIALIZING', 'FIRST_INTRO', 'LEVEL_UP_MODAL', 'REWARDS_PHASE']); // runtime-set: Fast O(1) membership lookup set
-const AUTO_BATTLE_SUBSTATES: ReadonlySet<string> = new Set<string>(['COMBAT_OR_FLEE', 'SILHOUETTE_MODE']); // runtime-set: Fast O(1) membership lookup set
-const FINISH_OVERLAY_SEARCH_SUBSTATES: ReadonlySet<string> = new Set<string>(['WAIT_INPUT', 'COMBAT_OR_FLEE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2']); // runtime-set: Fast O(1) membership lookup set
-
-function resolveForcedMoveIndex(
-  subState: string | null | undefined,
-  isProcessing: boolean,
-  p: Pokemon | null | undefined,
-  reqMoves?: { id?: string; move?: string; disabled?: boolean | 'pp' }[]
-): number | null {
-  if (String(subState) !== 'WAIT_INPUT' || isProcessing || !p) return null;
-
-  const nonDisabledReqMoves = reqMoves ? reqMoves.filter(m => !m.disabled) : undefined;
-  if (nonDisabledReqMoves && nonDisabledReqMoves.length > 1) {
-    if (p.volatileCounters?.['lockedmove']) {
-      delete p.volatileCounters['lockedmove'];
-    }
-    return null;
-  }
-
-  const hasRecharge = (p.volatileCounters?.['mustrecharge'] ?? 0) > 0 || (reqMoves && reqMoves.length === 1 && (reqMoves[0]?.id === 'recharge' || reqMoves[0]?.move === 'Recharge'));
-  if (hasRecharge) return 0;
-
-  if (reqMoves && reqMoves.length === 1 && reqMoves[0]?.id) {
-    const forcedIdx = p.moves.findIndex(m => m?.id === reqMoves[0]?.id);
-    if (forcedIdx !== -1) return forcedIdx;
-  }
-
-  const hasLockedMove = (p.volatileCounters?.['lockedmove'] ?? 0) > 0;
-  const hasTwoTurn = (p.volatileCounters?.['twoturnmove'] ?? 0) > 0;
-  const hasThrash = (p.thrashTurns ?? 0) > 0;
-
-  if (hasLockedMove || hasTwoTurn || hasThrash) {
-    const targetId = (reqMoves && reqMoves.length === 1 ? reqMoves[0]?.id : undefined) || p.lastMove?.id;
-    if (targetId) {
-      const forcedIdx = p.moves.findIndex(m => m?.id === targetId);
-      if (forcedIdx !== -1) return forcedIdx;
-    }
-    if (hasThrash) {
-      const thrashIdx = p.moves.findIndex(m => m?.id === 'thrash');
-      if (thrashIdx !== -1) return thrashIdx;
-    }
-  }
-
-  return null;
-}
 
 const isControlsDisabled = computed(() => {
   const s = toValue(battleStore.currentFsmState);
@@ -83,7 +43,7 @@ const isControlsDisabled = computed(() => {
          battleStore.isFinishing ||
          battleStore.isSearching ||
          battle.value?.over ||
-         (s && CONTROLS_DISABLED_STATES.has(s)));
+         isControlsDisabledState(s));
 });
 
 const isRewardsWait = computed(() => 
@@ -94,7 +54,7 @@ const isRewardsWait = computed(() =>
 const isFinishOverlayVisible = computed(() => {
   if (battleStore.isProcessing) return false;
   const sub = String(battleStore.currentSubState);
-  const isSearchValid = battleStore.isSearching && FINISH_OVERLAY_SEARCH_SUBSTATES.has(sub);
+  const isSearchValid = battleStore.isSearching && isFinishOverlaySearchSubstate(sub);
   return isSearchValid || battleStore.isReadyToExit || isRewardsWait.value;
 });
 
@@ -202,7 +162,7 @@ watch(() => [
     isSearching &&
     !isIntroAnimating &&
     !isProcessing &&
-    AUTO_BATTLE_SUBSTATES.has(String(subState))
+    isAutoBattleSubstate(String(subState))
   ) {
     const isNpcEncounter = Boolean(isTrainer || isGym);
     const delay = isNpcEncounter ? AUTO_BATTLE_NPC_DIALOG_DELAY_SEC : 0;
@@ -215,7 +175,7 @@ watch(() => [
           battleStore.isSearching &&
           !battleStore.isIntroAnimating &&
           !battleStore.isProcessing &&
-          AUTO_BATTLE_SUBSTATES.has(String(toValue(battleStore.currentSubState)))
+          isAutoBattleSubstate(String(toValue(battleStore.currentSubState)))
         ) {
           battleStore.startEncounter();
         }

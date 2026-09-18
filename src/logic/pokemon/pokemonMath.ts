@@ -63,7 +63,7 @@ export function getMoveDescriptionPure(_name: string, md: MoveBaseData | null): 
     const cleanId = toID(md.id);
     const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record: Generic key-value data dictionary container
     if (translated.desc) return translated.desc;
-  } catch {
+  } catch (_err) { // catch-ok: Fallback to generic description if translation lookup fails
     // Graceful fallback
   }
 

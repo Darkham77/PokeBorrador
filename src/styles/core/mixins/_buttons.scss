@@ -143,11 +143,11 @@
       0 $depth 1.5px $shadow,
       0 0 15px Rgba($base-color, 0.4);
     border: 2px solid Rgba(255, 255, 255, 0.8);
-    transform: none !important;
+    transform: none;
     
     &:hover:not(:disabled) {
       background: color.scale($base-color, $lightness: 20%);
-      transform: Translatey(-1px) !important;
+      transform: Translatey(-1px);
       box-shadow: 0 ($depth + 1px) 1.5px $shadow, 0 0 20px Rgba($base-color, 0.6);
     }
   }

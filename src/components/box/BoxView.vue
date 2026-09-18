@@ -13,6 +13,7 @@ import BoxHeader from './BoxHeader.vue'
 import BoxTabs from './BoxTabs.vue'
 import BoxFilters from './BoxFilters.vue'
 import BoxGrid from './BoxGrid.vue'
+import BoxModeActionsBar from './BoxModeActionsBar.vue'
 
 const gameStore = useGameStore()
 const boxStore = useBoxStore()
@@ -27,6 +28,9 @@ const isRocket = computed(() => classStore.playerClass === 'rocket')
 const currentBoxIndex = computed(() => boxStore.currentBoxIndex)
 const isRocketMode = computed(() => boxStore.boxRocketMode)
 const rocketSelection = computed(() => boxStore.boxRocketSelected)
+const activeModeSelectedCount = computed(() => {
+  return isRocketMode.value ? boxStore.boxRocketSelected.length : boxStore.boxReleaseSelected.length
+})
 
 // ----- ESTADO Y FILTROS -----
 const { 
@@ -206,51 +210,15 @@ const handlePokemonClick = (index: number) => {
     />
 
     <!-- Barra de Acciones de Modo (Venta/Liberación) -->
-    <div
+    <BoxModeActionsBar
       v-if="isRocketMode || boxStore.boxReleaseMode"
-      class="mode-actions-bar glass-morphism"
-    >
-      <div class="selection-info">
-        <span class="count">{{ isRocketMode ? boxStore.boxRocketSelected.length : boxStore.boxReleaseSelected.length }}</span>
-        <span class="label">{{ isRocketMode ? 'PARA MERCADO NEGRO' : 'PARA LIBERAR' }}</span>
-        
-        <div
-          v-if="isRocketMode"
-          class="earnings"
-        >
-          <span class="currency">₽</span>
-          <span class="value">{{ boxStore.getRocketSellValue().toLocaleString() }}</span>
-        </div>
-      </div>
-
-      <div class="action-buttons">
-        <button
-          id="box-view-cancel-mode-btn"
-          class="btn-cancel"
-          @click.stop="isRocketMode ? toggleRocketMode() : toggleReleaseMode()"
-        >
-          CANCELAR
-        </button>
-        <button 
-          v-if="isRocketMode"
-          id="box-view-confirm-rocket-btn"
-          class="btn-confirm-rocket" 
-          :disabled="boxStore.boxRocketSelected.length === 0"
-          @click.stop="handleConfirmRocketSell"
-        >
-          <span class="emoji">💀</span> VENDER LOTE
-        </button>
-        <button 
-          v-else
-          id="box-view-confirm-release-btn"
-          class="btn-confirm-release" 
-          :disabled="boxStore.boxReleaseSelected.length === 0"
-          @click.stop="handleConfirmRelease"
-        >
-          <span class="emoji">⚡</span> LIBERAR LOTE
-        </button>
-      </div>
-    </div>
+      :is-rocket-mode="isRocketMode"
+      :selected-count="activeModeSelectedCount"
+      :rocket-sell-value="boxStore.getRocketSellValue()"
+      @cancel="isRocketMode ? toggleRocketMode() : toggleReleaseMode()"
+      @confirm-rocket="handleConfirmRocketSell"
+      @confirm-release="handleConfirmRelease"
+    />
 
     <BoxGrid
       :display-list="displayList"
@@ -280,57 +248,5 @@ const handlePokemonClick = (index: number) => {
 .release-trigger-btn {
   @include btn-vicio('secondary', 'sm');
 }
-
-.mode-actions-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  border-radius: 16px;
-  margin: 0 12px 16px 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(15, 23, 42, 0.8);
-  box-shadow: 0 8px 32px Rgba(0, 0, 0, 0.4);
-
-  .selection-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    .count {
-      font-size: 16px;
-      color: var(--yellow);
-      @include pixelated;
-    }
-
-    .label {
-      font-size: 8px;
-      color: Rgba(255, 255, 255, 0.6);
-      @include pixelated;
-    }
-
-    .earnings {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-left: 12px;
-      padding-left: 12px;
-      border-left: 1px solid Rgba(255, 255, 255, 0.1);
-
-      .currency { font-family: sans-serif; color: var(--green); }
-      .value { color: var(--white); @include pixelated; font-size: 10px; }
-    }
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 12px;
-
-    .btn-cancel { @include btn-vicio('neutral', 'sm'); }
-    .btn-confirm-rocket { @include btn-vicio('danger', 'sm'); }
-    .btn-confirm-release { @include btn-vicio('success', 'sm'); }
-  }
-}
-
 </style>
 

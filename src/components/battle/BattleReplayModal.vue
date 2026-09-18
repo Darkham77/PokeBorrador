@@ -2,6 +2,7 @@
 import { ref, shallowRef, computed, watch } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import BattleTacticalReplayer from './BattleTacticalReplayer.vue'
+import BattleReplayCombatantPod from './BattleReplayCombatantPod.vue'
 import { TacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts'
 import { useLivePvPStore } from '@/stores/livePvP.ts'
 import { useModalStore } from '@/stores/modals.ts'
@@ -103,118 +104,16 @@ function handleClose() {
       <!-- MAIN ARENA STAGE -->
       <div class="replay-battlefield">
         <!-- P2 (Opponent / Top Right) -->
-        <div class="combatant-pod enemy-pod">
-          <div class="pod-header">
-            <span class="pod-species">
-              {{ p2State.activePokemon?.name || p2State.activePokemon?.id || '???' }}
-            </span>
-            <span class="pod-lvl">LV. {{ p2State.activePokemon?.level || 50 }}</span>
-          </div>
-
-          <div class="team-balls-row">
-            <span
-              v-for="(p, idx) in p2State.pokemonList"
-              :key="idx"
-              class="ball-pip emoji"
-              :class="{ fainted: p.isFainted, active: p.isActive }"
-              :title="p.name"
-            >
-              <span class="emoji">{{ p.isFainted ? '💀' : (p.isActive ? '⭐' : '⚪') }}</span>
-            </span>
-          </div>
-
-          <div class="pokemon-sprite-wrap">
-            <img
-              v-if="p2State.activePokemon?.sprite"
-              :src="p2State.activePokemon.sprite"
-              :alt="p2State.activePokemon.name"
-              class="combatant-sprite enemy-sprite"
-            >
-            <span
-              v-else
-              class="sprite-placeholder emoji"
-            >❓</span>
-          </div>
-
-          <!-- P2 Fog-of-War Revealed Details -->
-          <div class="fog-inspect-card">
-            <div class="fog-detail-row">
-              <span class="fog-lbl">OBJETO:</span>
-              <span class="fog-val">{{ p2State.activePokemon?.revealedItem || '???' }}</span>
-            </div>
-            <div class="fog-detail-row">
-              <span class="fog-lbl">HABILIDAD:</span>
-              <span class="fog-val">{{ p2State.activePokemon?.revealedAbility || '???' }}</span>
-            </div>
-            <div class="fog-moves-grid">
-              <span
-                v-for="(_, mIdx) in 4"
-                :key="mIdx"
-                class="revealed-move-chip"
-                :class="{ unknown: !p2State.activePokemon?.revealedMoves[mIdx] }"
-              >
-                {{ p2State.activePokemon?.revealedMoves[mIdx] || '???' }}
-              </span>
-            </div>
-          </div>
-        </div>
+        <BattleReplayCombatantPod
+          :state="p2State"
+          :is-player="false"
+        />
 
         <!-- P1 (Challenger / Bottom Left) -->
-        <div class="combatant-pod player-pod">
-          <div class="pokemon-sprite-wrap">
-            <img
-              v-if="p1State.activePokemon?.sprite"
-              :src="p1State.activePokemon.sprite"
-              :alt="p1State.activePokemon.name"
-              class="combatant-sprite player-sprite"
-            >
-            <span
-              v-else
-              class="sprite-placeholder emoji"
-            >❓</span>
-          </div>
-
-          <div class="pod-header">
-            <span class="pod-species">
-              {{ p1State.activePokemon?.name || p1State.activePokemon?.id || '???' }}
-            </span>
-            <span class="pod-lvl">LV. {{ p1State.activePokemon?.level || 50 }}</span>
-          </div>
-
-          <div class="team-balls-row">
-            <span
-              v-for="(p, idx) in p1State.pokemonList"
-              :key="idx"
-              class="ball-pip emoji"
-              :class="{ fainted: p.isFainted, active: p.isActive }"
-              :title="p.name"
-            >
-              <span class="emoji">{{ p.isFainted ? '💀' : (p.isActive ? '⭐' : '⚪') }}</span>
-            </span>
-          </div>
-
-          <!-- P1 Fog-of-War Revealed Details -->
-          <div class="fog-inspect-card">
-            <div class="fog-detail-row">
-              <span class="fog-lbl">OBJETO:</span>
-              <span class="fog-val">{{ p1State.activePokemon?.revealedItem || '???' }}</span>
-            </div>
-            <div class="fog-detail-row">
-              <span class="fog-lbl">HABILIDAD:</span>
-              <span class="fog-val">{{ p1State.activePokemon?.revealedAbility || '???' }}</span>
-            </div>
-            <div class="fog-moves-grid">
-              <span
-                v-for="(_, mIdx) in 4"
-                :key="mIdx"
-                class="revealed-move-chip"
-                :class="{ unknown: !p1State.activePokemon?.revealedMoves[mIdx] }"
-              >
-                {{ p1State.activePokemon?.revealedMoves[mIdx] || '???' }}
-              </span>
-            </div>
-          </div>
-        </div>
+        <BattleReplayCombatantPod
+          :state="p1State"
+          :is-player="true"
+        />
 
         <!-- TURN LOGS PANEL -->
         <div class="turn-logs-box custom-scrollbar">

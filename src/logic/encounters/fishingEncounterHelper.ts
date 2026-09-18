@@ -7,24 +7,21 @@ import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { resolveFieldEncounterModifiers } from '@/logic/rules/fieldRulesCoordinator'
 
-export function generateFishingEncounter(
-  loc: MapLocation,
+const DEFAULT_FISHING_POOL_WEIGHT = 10 as const;
+const DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET = -10 as const;
+const DEFAULT_FISHING_EXCLUSIVE_WEIGHT = 5 as const;
+const DEFAULT_FISHING_MIN_LV = 10 as const;
+const DEFAULT_FISHING_MAX_LV = 20 as const;
+const SUPER_ROD_SHINY_MULT = 1.5 as const;
+const STANDARD_ROD_SHINY_MULT = 1.0 as const;
+const PERCENTAGE_FACTOR = 100 as const;
+
+function applyWeatherFishingSpawns(
+  pool: PokemonSpeciesId[],
+  rates: number[],
   weather: WeatherId,
-  state: EncounterState,
-  options: EncounterOptions
-): Encounter | null {
-  if (!loc.fishing) return null
-  const pool = [...loc.fishing.pool]
-  const rates = [...loc.fishing.rates]
-
-const DEFAULT_FISHING_POOL_WEIGHT = 10;
-const DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET = -10;
-
-  while (rates.length < pool.length) rates.push(DEFAULT_FISHING_POOL_WEIGHT)
-
-  const fishingType = state.fishingRodType || 'standard'
-  applyFishingRodBudget(rates, pool, fishingType)
-
+  loc: MapLocation
+): void {
   const wConfig = loc.weather?.[weather]
   if (weather && weather !== 'clear' && wConfig) {
     if (wConfig.fishingExclusive) {
@@ -32,7 +29,7 @@ const DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET = -10;
       exclusives.forEach(({ id, weight }) => {
         if (!pool.includes(id)) {
           pool.push(id)
-          rates.push(weight ?? 5)
+          rates.push(weight ?? DEFAULT_FISHING_EXCLUSIVE_WEIGHT)
         }
       })
     }
@@ -53,16 +50,34 @@ const DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET = -10;
       : []
     redistributeWeatherSpawns(rates, pool, weather, exclusives)
   }
+}
+
+export function generateFishingEncounter(
+  loc: MapLocation,
+  weather: WeatherId,
+  state: EncounterState,
+  options: EncounterOptions
+): Encounter | null {
+  if (!loc.fishing) return null
+  const pool = [...loc.fishing.pool]
+  const rates = [...loc.fishing.rates]
+
+  while (rates.length < pool.length) rates.push(DEFAULT_FISHING_POOL_WEIGHT)
+
+  const fishingType = state.fishingRodType || 'standard'
+  applyFishingRodBudget(rates, pool, fishingType)
+
+  applyWeatherFishingSpawns(pool, rates, weather, loc)
 
   clampLegendaryRates(pool, rates)
   const selectedId = selectFromPool(pool, rates)
-  const minLv = loc.fishing.lv[0] || 10
-  const maxLv = loc.fishing.lv[1] || 20
+  const minLv = loc.fishing.lv[0] || DEFAULT_FISHING_MIN_LV
+  const maxLv = loc.fishing.lv[1] || DEFAULT_FISHING_MAX_LV
   const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv
   const totalRate = rates.reduce((a, b) => a + b, 0)
   const rateIdx = pool.indexOf(selectedId)
   const rateVal = rates[rateIdx]
-  const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * 100
+  const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * PERCENTAGE_FACTOR
 
   const modifiers = resolveFieldEncounterModifiers({
     team: state.team,
@@ -76,7 +91,7 @@ const DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET = -10;
     options
   })
 
-  const shinyMult = (options.shinyMultiplier || 1) * (fishingType === 'super' ? 1.5 : 1.0) * (modifiers.shinyMultiplier || 1)
+  const shinyMult = (options.shinyMultiplier || 1) * (fishingType === 'super' ? SUPER_ROD_SHINY_MULT : STANDARD_ROD_SHINY_MULT) * (modifiers.shinyMultiplier || 1)
   const pokemon = makePokemon(selectedId, level, {
     nature: modifiers.natureOverride ?? undefined,
     gender: modifiers.genderOverride ?? undefined,

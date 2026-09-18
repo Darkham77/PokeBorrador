@@ -19,6 +19,11 @@ interface Props {
 defineProps<Props>()
 
 const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
+
+const getEvolutionName = (evo: Evolution): string => {
+  if (!evo.isSeen) return 'Desconocido'
+  return pokemonDataProvider.getPokemonData(evo.to.toLowerCase())?.name || evo.to
+}
 </script>
 
 <template>
@@ -35,6 +40,7 @@ const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
         <div class="evo-from">
           <img
             :src="getSprite(speciesId)"
+            :alt="speciesName"
             class="evo-sprite"
             @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
@@ -49,6 +55,7 @@ const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
             <template v-if="evo.isSeen">
               <img
                 :src="getSprite(evo.to.toLowerCase())"
+                :alt="getEvolutionName(evo)"
                 class="evo-sprite"
                 :class="{ 'silhouette': !evo.isCaught }"
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
@@ -62,7 +69,7 @@ const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
             </div>
           </div>
           <span class="evo-target-name">
-            {{ evo.isSeen ? (pokemonDataProvider.getPokemonData(evo.to.toLowerCase())?.name || evo.to) : 'Desconocido' }}
+            {{ getEvolutionName(evo) }}
           </span>
         </div>
       </div>

@@ -181,14 +181,14 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 
 #### 🔄 Flujo de Verificación Recomendado
 
-- **Durante el Desarrollo Activo**: Ejecuta `npm run lint` (~3-5 segundos) para comprobaciones rápidas de sintaxis, tipos TypeScript (`vue-tsc`), tipos de dominio, estructuras $O(1)$, estilos y ESLint con `.eslintcache`.
+- **Durante el Desarrollo Activo**: Ejecuta `npm run lint` (~10 segundos) para comprobaciones unificadas ejecutando los 10 sub-auditores centrales en paralelo (`npm run audit:lint`): tipos de dominio, $O(1)$, estilos de componentes, suite de inteligencia Fallow, higiene SFC de Vue, limpieza de consola, directivas de auditoría, verificación de tipos TypeScript (`vue-tsc`), markdownlint y ESLint.
 - **Workflow de Safe-Commit**: El pipeline de safe-commit utiliza internamente `npm run audit:for-commit` para comparar advertencias nuevas contra `origin/main`.
 
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run lint` | **Fast Developer Lint**: Ejecuta validación de tipos de dominio, $O(1)$, estilos, `vue-tsc`, ESLint con caché y Markdownlint. |
-| `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint. |
-| `npm run lint:summary` | **Resumen de Linter**: Muestra un resumen estructurado con el recuento de advertencias y errores en consola. |
+| `npm run lint` | **Fast Developer Lint**: Ejecuta las 10 suites esenciales de calidad en paralelo mediante `npm run audit:lint`. |
+| `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint (`npm run audit:lint fix`). |
+| `npm run audit:summary` | **Resumen de Auditoría**: Muestra un resumen estructurado con el recuento de advertencias y errores en consola desde `scratch/audits/latest_audit.json`. |
 | `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores dinámicamente, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. Soporta `rule=<regla>` para ejecución selectiva ultrarrápida (ej. `npm run audit rule=DOX,z-index`, `npm run audit rule=dupes`). |
 | `npm run audit:for-commit` | **Safe-Commit Diff Gatekeeper**: Compara cambios contra `origin/main` en el flujo de safe-commit exigiendo 0 errores en el repositorio y 0 advertencias nuevas en archivos modificados. |
 | `npm run audit:changed` | **Auditoría de Archivos Modificados**: Ejecuta las suites de auditoría exclusivamente sobre los archivos modificados desde `main`. |
@@ -215,7 +215,7 @@ Herramientas independientes de validación estricta ejecutadas bajo el modelo de
 | :-- | :-- |
 | `npm run validate:domain-types` | **Domain Types Audit**: Audita el cumplimiento estricto de tipos de dominio y uniones canónicas derivadas (sin `any` ni strings libres). |
 | `npm run validate:o1` | **$O(1)$ Optimization Audit**: Garantiza que los accesos en rutas críticas de combate, IA e inventario usen diccionarios y conjuntos $O(1)$. |
-| `npm run validate:types` | **Type-Checking**: Ejecuta `vue-tsc --noEmit` para verificar la integridad de tipos en todos los componentes y archivos TypeScript. |
+| `npm run validate:types` | **Type-Checking**: Ejecuta el sub-auditor `validate_type_check.ts` (`vue-tsc --noEmit`) para verificar la integridad de tipos en todos los componentes y archivos TypeScript. |
 | `npm run validate:component-styles` | **Component Styles Audit**: Verifica el uso de mixins SASS estandarizados, tokens de color y reglas visuales retro-modernas. |
 | `npm run validate:sql` | **SQL Integrity**: Valida la sintaxis y ejecución de migraciones SQL contra el motor SQLite nativo (`node:sqlite`). |
 | `npm run validate:save-migrations` | **Save Migrations**: Valida las transformaciones de partidas guardadas contra el Dex de Showdown. |

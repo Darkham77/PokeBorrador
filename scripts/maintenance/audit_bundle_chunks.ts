@@ -148,6 +148,11 @@ function auditBundle(): void {
       if (shouldDisplay || f.includes('auth') || f.includes('sqlite') || f.includes('migration') || f.includes('game-data') || f.includes('pkmn')) {
         console.log(`  ${status} ${sizeKB.padStart(8)} KB │ ${f}${note}`);
       }
+
+      if (f.startsWith('vendor-pkmn-sim-') || f.startsWith('vendor-randoms-')) {
+        console.error(`\x1b[31m  ❌ Architectural violation: Showdown chunk "${f}" detected in client bundle (dist/assets).\x1b[0m`);
+        hasErrors = true;
+      }
     }
     console.log('─'.repeat(TABLE_SEPARATOR_WIDTH));
   }

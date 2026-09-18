@@ -26,6 +26,7 @@
     @include pokemon-card-premium-tier;
   }
 
+  &.is-fast-mode,
   &.is-performance-mode {
     background: Rgba(30, 41, 59, 0.6) !important;
     border: 1px solid var(--tier-color) !important;
@@ -38,15 +39,15 @@
     & .pokemon-sprite {
       -webkit-will-change: transform, filter, opacity;
       will-change: transform, filter, opacity;
-      filter: none !important;
-      transform: none !important;
+      filter: none;
+      transform: none;
     }
 
     & .card-tier-badge {
       box-shadow: none !important;
       -webkit-will-change: transform, filter, opacity;
       will-change: transform, filter, opacity;
-      filter: none !important;
+      filter: none;
     }
   }
 
@@ -426,7 +427,7 @@
 
         &.is-shiny {
           font-size: 9px !important;
-          transform: none !important;
+          transform: none;
         }
         &.is-iv31 {
           font-size: 7px !important;
@@ -434,27 +435,27 @@
         }
         &.is-fav {
           font-size: 9px !important;
-          transform: none !important;
+          transform: none;
         }
         &.is-breed {
           font-size: 9px !important;
-          transform: none !important;
+          transform: none;
         }
         &.is-competitive {
           font-size: 9px !important;
-          transform: none !important;
+          transform: none;
         }
         &.is-box {
           font-size: 9px !important;
-          transform: none !important;
+          transform: none;
         }
         &.is-trade {
           font-size: 9px !important;
-          transform: none !important;
+          transform: none;
         }
 
         .badge-item-img {
-          transform: Scale(1.1) !important;
+          transform: Scale(1.1);
         }
       }
 

@@ -5,6 +5,7 @@ import { gsap } from 'gsap'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import { resolveDropSlotIndex, hasExceededTouchThreshold } from './battleMovesTouchHelper';
 
 interface Props {
   moves: (Move | null)[]
@@ -153,30 +154,16 @@ function handleTouchMove(e: TouchEvent) {
   if (isTouchDragging.value && draggedIndex.value !== null) {
     touchDeltaX.value = touch.clientX - touchStartX.value
     touchDeltaY.value = touch.clientY - touchStartY.value
-    
     const el = moveRefs.value[draggedIndex.value]
-    if (el) el.style.pointerEvents = 'none'
-    
-    const target = document.elementFromPoint(touch.clientX, touch.clientY)
-    const slot = target?.closest('.move-slot-wrapper') as HTMLElement | null
-    
-    if (el) el.style.pointerEvents = 'auto'
-    
-    if (slot) {
-      const targetIndex = moveRefs.value.indexOf(slot)
-      if (targetIndex !== -1) {
-        dragOverIndex.value = targetIndex
-      } else {
-        dragOverIndex.value = null
-      }
-    } else {
-      dragOverIndex.value = null
-    }
+    dragOverIndex.value = resolveDropSlotIndex(touch.clientX, touch.clientY, moveRefs.value, el)
   } else {
-    const deltaX = Math.abs(touch.clientX - touchStartX.value)
-    const deltaY = Math.abs(touch.clientY - touchStartY.value)
-    if (deltaX > TOUCH_MOVE_CANCEL_THRESHOLD_PX || deltaY > TOUCH_MOVE_CANCEL_THRESHOLD_PX) {
-      if (touchTimer.value) touchTimer.value.kill()
+    const exceeded = hasExceededTouchThreshold(
+      touch.clientX - touchStartX.value,
+      touch.clientY - touchStartY.value,
+      TOUCH_MOVE_CANCEL_THRESHOLD_PX
+    )
+    if (exceeded && touchTimer.value) {
+      touchTimer.value.kill()
     }
   }
 }
@@ -186,25 +173,15 @@ function handleTouchEnd(e: TouchEvent) {
   if (isTouchDragging.value && draggedIndex.value !== null) {
     const el = moveRefs.value[draggedIndex.value]
     if (el) el.style.touchAction = ''
-    
-    if (el) el.style.pointerEvents = 'none'
-    
+
     const touch = e.changedTouches?.[0]
-    let slot: HTMLElement | null = null
     if (touch) {
-      const target = document.elementFromPoint(touch.clientX, touch.clientY)
-      slot = target?.closest('.move-slot-wrapper') as HTMLElement | null
-    }
-    
-    if (el) el.style.pointerEvents = 'auto'
-    
-    if (slot) {
-      const targetIndex = moveRefs.value.indexOf(slot)
-      if (targetIndex !== -1 && targetIndex !== draggedIndex.value) {
+      const targetIndex = resolveDropSlotIndex(touch.clientX, touch.clientY, moveRefs.value, el)
+      if (targetIndex !== null && targetIndex !== draggedIndex.value) {
         emit('reorder-moves', draggedIndex.value, targetIndex)
       }
     }
-    
+
     isTouchDragging.value = false
     draggedIndex.value = null
     isDragging.value = false

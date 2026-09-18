@@ -10,6 +10,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import type { MapLocation } from '@/types/pokemon/encounters'
+import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
 import { BUFF_DURATION_30_MIN_MS, DURATION_24_HOURS_MS, ONE_HOUR_MS, ONE_MINUTE_MS } from '@/logic/constants/items'
 
@@ -45,14 +46,15 @@ export function useRoutePerks(params: UseRoutePerksParams) {
     return (now - timestamp) <= DURATION_24_HOURS_MS
   })
 
-  const activeExtortedRouteId = computed(() => {
+  const activeExtortedRouteId = computed<MapRouteId | null>(() => {
     if (playerClass.value !== 'rocket') return null
     const classData = gameStore.state.classData || {}
     if (!classData.extortedRouteId) return null
     const now = Temporal.Now.instant().epochMilliseconds
     const timestamp = Number(classData.extortedRouteTimestamp || 0)
     if ((now - timestamp) > DURATION_24_HOURS_MS) return null
-    return classData.extortedRouteId
+    const routeId = String(classData.extortedRouteId)
+    return isMapRouteId(routeId) ? routeId : null
   })
 
   const isOfficialRouteOnCooldown = computed(() => {
@@ -115,7 +117,8 @@ export function useRoutePerks(params: UseRoutePerksParams) {
       gameStore.checkRouteExpirations()
     }
 
-    timerTween = gsap.delayedCall(1, tickTime)
+    const PERK_TICK_INTERVAL_SEC = 1
+    timerTween = gsap.delayedCall(PERK_TICK_INTERVAL_SEC, tickTime)
   }
 
   onMounted(() => {

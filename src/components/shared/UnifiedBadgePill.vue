@@ -99,6 +99,7 @@ const handleItemImageError = (e: Event) => {
             <img 
               v-if="!itemImageError"
               :src="getAssetUrl(ASSET_TYPES.ITEM, badge.itemId || '')" 
+              :alt="badge.label || 'Objeto'"
               class="badge-item-img"
               @error="handleItemImageError"
             >
@@ -156,7 +157,7 @@ const handleItemImageError = (e: Event) => {
       &.is-text { font-size: 6px; }
 
       .badge-item-img {
-        transform: Scale(1.0) !important; // Slightly larger than other sm icons
+        transform: Scale(1.0); // Slightly larger than other sm icons
       }
 
       &.is-item {
@@ -284,7 +285,7 @@ const handleItemImageError = (e: Event) => {
       cursor: pointer;
       
       &:active {
-        transform: Scale(0.9) !important;
+        transform: Scale(0.9);
       }
     }
 

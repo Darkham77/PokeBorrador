@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
+import RouteSpawnsWeatherEffectsCard from './spawns/RouteSpawnsWeatherEffectsCard.vue'
 import { useModalStore } from '@/stores/modals'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { DayPhase } from '@/logic/utils/timeUtils'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { toPokemonType } from '@/data/battle/types'
-import { isMapExtortable } from '@/logic/map/mapCardHelper'
 import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation'
 import { useRoutePerks } from '@/composables/modals/useRoutePerks'
 import RouteSpawnsTable from './RouteSpawnsTable.vue'
@@ -113,245 +111,29 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
       </div>
 
       <!-- Terrain / Map features and Weather Effects card -->
-      <div class="weather-effects-card">
-        <!-- Left panel: Weather description & Type modifiers -->
-        <div class="weather-panel-details">
-          <div class="weather-header-line">
-            <span class="weather-title-badge"><span class="emoji">{{ weatherEmoji }}</span> EFECTOS EN COMBATE</span>
-            <div
-              v-if="parsedDescriptionLines.length"
-              class="weather-desc-lines"
-            >
-              <div
-                v-for="(line, lineIdx) in parsedDescriptionLines"
-                :key="lineIdx"
-                :class="['weather-desc-line', line.typeClass]"
-              >
-                <!-- Si tiene label/acción, lo mostramos con estilo de pill/label pixelado -->
-                <div
-                  v-if="line.label"
-                  class="desc-line-label"
-                >
-                  <span class="emoji desc-line-icon">
-                    <template v-if="line.icon === 'block'">🚫 </template>
-                    <template v-else>{{ line.icon }}</template>
-                  </span>
-                  <span class="desc-line-text">{{ line.label }}</span>
-                </div>
-
-                <div :class="[line.label ? 'desc-line-value' : 'desc-line-full']">
-                  <template
-                    v-for="(segment, idx) in line.segments"
-                    :key="idx"
-                  >
-                    <PokemonTypeTag
-                      v-if="segment.isType"
-                      :type="toPokemonType(segment.type)"
-                      size="ssm"
-                      class="inline-type-tag"
-                    />
-                    <span v-else>{{ segment.text }}</span>
-                  </template>
-                </div>
-              </div>
-            </div>
-            <span
-              v-else
-              class="weather-desc-line"
-            >
-              Sin efectos climáticos especiales en combate.
-            </span>
-          </div>
-
-          <!-- Type modifiers tags lists (Map Spawns) -->
-          <div
-            v-if="weatherDetails?.modifiers"
-            class="weather-modifiers-section"
-          >
-            <span class="weather-title-badge"><span class="emoji">⛅</span> APARICIÓN DE CLIMA</span>
-            <div class="weather-type-modifiers">
-              <div 
-                v-if="weatherDetails.modifiers.boost?.length" 
-                class="modifier-group boost"
-              >
-                <span class="group-label"><span class="emoji">▲</span> BONIFICACIÓN:</span>
-                <div class="tags-row">
-                  <PokemonTypeTag
-                    v-for="t in weatherDetails.modifiers.boost"
-                    :key="t"
-                    :type="t"
-                    size="ssm"
-                  />
-                </div>
-              </div>
-
-              <div 
-                v-if="weatherDetails.modifiers.debuff?.length" 
-                class="modifier-group debuff"
-              >
-                <span class="group-label"><span class="emoji">▼</span> PENALIZACIÓN:</span>
-                <div class="tags-row">
-                  <PokemonTypeTag
-                    v-for="t in weatherDetails.modifiers.debuff"
-                    :key="t"
-                    :type="t"
-                    size="ssm"
-                  />
-                </div>
-              </div>
-
-              <div 
-                v-if="weatherDetails.modifiers.block?.length" 
-                class="modifier-group block"
-              >
-                <span class="group-label"><span class="emoji">🚫</span> BLOQUEADO:</span>
-                <div class="tags-row">
-                  <PokemonTypeTag
-                    v-for="t in weatherDetails.modifiers.block"
-                    :key="t"
-                    :type="t"
-                    size="ssm"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right panel: Terrain and features -->
-        <div class="terrain-panel-details">
-          <span class="terrain-title-badge"><span class="emoji">🗺️</span> CARACTERÍSTICAS</span>
-          <div class="terrain-items">
-            <div class="terrain-item">
-              <span class="label">Entorno:</span>
-              <span class="value">
-                {{ terrainTags }}
-              </span>
-            </div>
-            
-            <!-- Active special route bonus indicators in route stats -->
-            <div
-              v-if="isOfficialRouteActive"
-              class="terrain-item benefit-active-item"
-            >
-              <span class="label text-primary"><span class="emoji">📍</span> Ruta Oficial:</span>
-              <span class="value text-primary font-bold">
-                +1 REP por victoria (Restan: {{ timeRemainingText }})
-              </span>
-            </div>
-            <div
-              v-if="isExtortedRouteActive"
-              class="terrain-item benefit-active-item"
-            >
-              <span class="label text-danger"><span class="emoji">🏴‍☠️</span> Extorsionada:</span>
-              <span class="value text-danger font-bold">
-                x1.5 ₽ por victoria (Restan: {{ timeRemainingText }})
-              </span>
-            </div>
-
-            <div class="terrain-item">
-              <span class="label">Caminar:</span>
-              <span class="value">
-                <span class="emoji">🚶</span> Caminando —
-                <b :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance)">{{ activeTerrestrialChance }}%</b>
-                <span
-                  style="font-size: 9px; margin-left: 4px;"
-                  :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance) || 'gray-text'"
-                >
-                  (Base: {{ baseTerrestrialChance }}%)
-                </span>
-              </span>
-            </div>
-            <div
-              v-if="map.fishing"
-              class="terrain-item"
-            >
-              <span class="label">Pesca:</span>
-              <span class="value">
-                <span class="emoji">🎣</span> Nv. {{ map.fishing.lv[0] }}-{{ map.fishing.lv[1] }} —
-                <b :class="getProbClass(activeFishingChance, baseFishingChance)">{{ activeFishingChance }}%</b>
-                <span
-                  style="font-size: 9px; margin-left: 4px;"
-                  :class="getProbClass(activeFishingChance, baseFishingChance) || 'gray-text'"
-                >
-                  (Base: {{ baseFishingChance }}%)
-                </span>
-              </span>
-            </div>
-            <div
-              v-else
-              class="terrain-item"
-            >
-              <span class="label">Pesca:</span>
-              <span class="value gray-text"><span class="emoji">❌</span> No disponible</span>
-            </div>
-
-            <div
-              v-if="map.archaeology"
-              class="terrain-item"
-            >
-              <span class="label">Arqueología:</span>
-              <span class="value">
-                <span class="emoji">⛏️</span> Nv. {{ map.archaeology.lv[0] }}-{{ map.archaeology.lv[1] }} —
-                <b :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)">{{ activeArchaeologyChance }}%</b>
-                <span
-                  style="font-size: 9px; margin-left: 4px;"
-                  :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance) || 'gray-text'"
-                >
-                  (Base: {{ baseArchaeologyChance }}%)
-                </span>
-              </span>
-            </div>
-            <div
-              v-else
-              class="terrain-item"
-            >
-              <span class="label">Arqueología:</span>
-              <span class="value gray-text"><span class="emoji">❌</span> No disponible</span>
-            </div>
-
-            <!-- Class specific button actions in RouteSpawnsModal -->
-            <div
-              v-if="isMapExtortable(map)"
-              class="class-actions-container"
-            >
-              <!-- Entrenador activation action -->
-              <template v-if="playerClass === 'entrenador'">
-                <div
-                  v-if="isOfficialRouteOnCooldown && !isOfficialRouteActive"
-                  class="cooldown-tag"
-                >
-                  <span class="emoji">📍</span> Cooldown Oficial: {{ cooldownRemainingText }}
-                </div>
-                <button
-                  v-else-if="!isOfficialRouteActive"
-                  class="btn-vicio-info btn-vicio-sm w-full btn-establish-route"
-                  @click.stop="toggleOfficialRoute"
-                >
-                  <span class="emoji">📍</span> MARCAR RUTA OFICIAL
-                </button>
-              </template>
-
-              <!-- Rocket activation action -->
-              <template v-if="playerClass === 'rocket'">
-                <div
-                  v-if="activeExtortedRouteId && activeExtortedRouteId !== map.id"
-                  class="cooldown-tag"
-                >
-                  <span class="emoji">🏴‍☠️</span> Ya extorsionaste otra ruta hoy
-                </div>
-                <button
-                  v-else-if="!isExtortedRouteActive"
-                  class="btn-vicio-danger btn-vicio-sm w-full btn-establish-route"
-                  @click.stop="toggleExtortion"
-                >
-                  <span class="emoji">🏴‍☠️</span> EXTORSIONAR RUTA
-                </button>
-              </template>
-            </div>
-          </div>
-        </div>
-      </div>
+      <RouteSpawnsWeatherEffectsCard
+        :map="map"
+        :weather-emoji="weatherEmoji"
+        :parsed-description-lines="parsedDescriptionLines"
+        :weather-details="weatherDetails"
+        :terrain-tags="terrainTags"
+        :is-official-route-active="isOfficialRouteActive"
+        :is-extorted-route-active="isExtortedRouteActive"
+        :time-remaining-text="timeRemainingText"
+        :active-terrestrial-chance="activeTerrestrialChance"
+        :base-terrestrial-chance="baseTerrestrialChance"
+        :active-fishing-chance="activeFishingChance"
+        :base-fishing-chance="baseFishingChance"
+        :active-archaeology-chance="activeArchaeologyChance"
+        :base-archaeology-chance="baseArchaeologyChance"
+        :get-prob-class="getProbClass"
+        :player-class="playerClass"
+        :is-official-route-on-cooldown="isOfficialRouteOnCooldown"
+        :cooldown-remaining-text="cooldownRemainingText"
+        :active-extorted-route-id="activeExtortedRouteId"
+        @toggle-official-route="toggleOfficialRoute"
+        @toggle-extortion="toggleExtortion"
+      />
 
       <!-- Terrestrial Spawns List -->
       <RouteSpawnsTable

@@ -11,11 +11,13 @@
 
 .leaf-element {
   position: absolute;
+  top: -100px;
+  left: -100px;
   width: 8px;
   height: 6px;
   background: linear-gradient(135deg, #4ade80, #166534);
   border-radius: 50% 0 50% 0;
-  opacity: 0.8;
+  opacity: 0; // Default invisible until explicitly animated by GSAP
   pointer-events: none;
   z-index: calc(var(--z-low) * 1); // Asegurar visibilidad sobre la lluvia
   will-change: transform, opacity;
@@ -59,7 +61,7 @@
 
 .weather-canvas {
   position: absolute;
-  inset: -100px;
+  inset: var(--weather-mist-bleed, -100px);
   width: calc(100% + 200px);
   height: calc(100% + 200px);
   pointer-events: none;
@@ -80,6 +82,17 @@
     filter: sepia(1) Saturate(1.9) Brightness(0.68) contrast(1.55);
   }
   &.strong_winds .weather-canvas {
-    filter: sepia(1) Saturate(1.5) Brightness(0.8) contrast(1.1) Blur(2px);
+    filter: sepia(1) Saturate(1.5) Brightness(0.8) contrast(1.1);
+  }
+
+  // Sandwich Architecture: Pure particles layer without background tint or shadows
+  &.is-particles-layer {
+    background: transparent !important;
+    box-shadow: none !important;
+
+    &::before,
+    &::after {
+      display: none !important;
+    }
   }
 }

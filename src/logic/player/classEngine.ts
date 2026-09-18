@@ -10,39 +10,47 @@ export interface ModifierContext {
   isGym?: boolean;
 }
 
+const DEFAULT_NEUTRAL_MODIFIER = 1.0 as const;
+const DEFAULT_DISCOUNT_MODIFIER = 0 as const;
+
+function resolveExpMultiplier(
+  modifiers: Record<string, number>,
+  playerClass: string,
+  isTrainer?: boolean
+): number {
+  if (playerClass === 'cazabichos' && isTrainer) {
+    return modifiers.expMultTrainer ?? DEFAULT_NEUTRAL_MODIFIER;
+  }
+  return modifiers.expMult ?? DEFAULT_NEUTRAL_MODIFIER;
+}
+
+function resolveBcMultiplier(
+  modifiers: Record<string, number>,
+  playerClass: string,
+  isGym?: boolean
+): number {
+  if (playerClass === 'entrenador' && isGym) {
+    return modifiers.bcGymMult ?? DEFAULT_NEUTRAL_MODIFIER;
+  }
+  return modifiers.bcMult ?? DEFAULT_NEUTRAL_MODIFIER;
+}
+
 /**
  * Returns the processed modifier for a specific type and context.
  */
 export function getClassModifier(playerClass: string, type: string, context: ModifierContext = {}): number {
-  // PvP Balance: No advantages allowed during PvP
-  if (context.isPvP) {
-    if (type === 'shopDiscount') return 0;
-    return 1.0;
-  }
+  const fallback = type === 'shopDiscount' ? DEFAULT_DISCOUNT_MODIFIER : DEFAULT_NEUTRAL_MODIFIER;
+  if (context.isPvP) return fallback;
 
   const cls = (PLAYER_CLASSES as Record<string, { modifiers: Record<string, number> }>)[playerClass]; // open-record: Generic key-value data dictionary container
-  if (!cls) return type === 'shopDiscount' ? 0 : 1.0;
+  if (!cls) return fallback;
 
   const m = cls.modifiers;
+  if (type === 'expMult') return resolveExpMultiplier(m, playerClass, context.isTrainer);
+  if (type === 'bcMult') return resolveBcMultiplier(m, playerClass, context.isGym);
+  if (type === 'shopDiscount') return m.shopDiscount ?? DEFAULT_DISCOUNT_MODIFIER;
 
-  switch (type) {
-    case 'expMult':
-      if (playerClass === 'cazabichos' && context.isTrainer) return m.expMultTrainer || 1.0;
-      return m.expMult || 1.0;
-    case 'bcMult':
-      if (playerClass === 'entrenador' && context.isGym) return m.bcGymMult || 1.0;
-      return m.bcMult || 1.0;
-    case 'healCostMult':
-      return m.healCostMult || 1.0;
-    case 'daycareCostMult':
-      return m.daycareCostMult || 1.0;
-    case 'catchMult':
-      return m.catchMult || 1.0;
-    case 'shopDiscount':
-      return m.shopDiscount || 0;
-    default:
-      return 1.0;
-  }
+  return m[type] ?? DEFAULT_NEUTRAL_MODIFIER;
 }
 
 const CAZABICHOS_MISSION_DATA: Record<string, Record<string, unknown>> = {

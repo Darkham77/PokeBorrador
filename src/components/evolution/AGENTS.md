@@ -9,6 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Evolution Scene Decomposition (`EvolutionScene.vue`, `EvolutionSpriteStage.vue`, `EvolutionDialogInfo.vue`, `evolutionTypes.ts`)**: Encapsulates the stage sprites, glow backgrounds, flashing cycles, and image error handling into `EvolutionSpriteStage.vue`, and the dialogue announcements, completion messages, and cancellation controls into `EvolutionDialogInfo.vue`. Strictly types evolution progress states via canonical tuple union `EvolutionStep` in `evolutionTypes.ts`.
 
 ## Work Guidance
 

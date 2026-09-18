@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useInputAnimations } from '@/composables/ui/useInputAnimations'
 import { queryLocal } from '@/logic/db/sqliteEngine'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { logger } from '@/logic/utils/logger'
 
 interface Props {
   loading: boolean
@@ -29,8 +30,8 @@ onMounted(async () => {
   try {
     const rows = await queryLocal('SELECT username FROM profiles WHERE username IS NOT NULL ORDER BY username ASC')
     availableProfiles.value = rows.map(r => String(r.username)).filter(Boolean)
-  } catch {
-    // Ignore if not initialized yet
+  } catch (err) {
+    logger.debug('AuthLocalLogin', 'DB no inicializada o sin perfiles aún:', err)
   }
 })
 </script>

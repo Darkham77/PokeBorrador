@@ -9,6 +9,7 @@ import { requireCertifiedBagItemResponse } from './certifiedBagItemActionResolve
 import { ShowdownBattleRunner } from './showdownBattleRunner.ts'
 import { handleForceSwitch } from '../resolution.ts'
 import { isRevivingForceSwitchRequest } from './requestHelper.ts'
+import type { SideID } from '@pkmn/sim'
 
 function resolveEnemySwitchUid(store: BattleContext, p: Pokemon, e: Pokemon, isWild: boolean): string {
   if (isWild || !store.activeBattle.value) return '';
@@ -54,6 +55,76 @@ async function resolveEnemyTurnChoice(
   return { p2Choice, p2Skip };
 }
 
+interface ShowdownMoveRequest {
+  id?: string;
+  move?: string;
+  disabled?: boolean;
+}
+
+interface ShowdownPlayerRequest {
+  active?: { moves?: ShowdownMoveRequest[] }[];
+}
+
+function resolveFallbackEnemyMoveChoice(enemyRequest?: ShowdownPlayerRequest): string {
+  if (!enemyRequest?.active?.[0]?.moves) return '';
+  const validMove = enemyRequest.active[0].moves.find((m: ShowdownMoveRequest) => !m.disabled);
+  return validMove?.id ? `move ${validMove.id}` : '';
+}
+
+function resolveCertifiedReplayBagResponse(
+  replayDebug: NonNullable<typeof window.__VITE_DEBUG__> | undefined,
+  bagAction?: CertifiedBattleGameAction
+): string {
+  if (!bagAction) {
+    throw new Error('[BattleTurn] A certified replay bag response requires the visible bag action context.');
+  }
+  if (!replayDebug) {
+    throw new Error('[BattleTurn] Certified replay state disappeared before the bag response.');
+  }
+  return requireCertifiedBagItemResponse(replayDebug, bagAction.itemId, bagAction.targetSlot);
+}
+
+async function executeWorkerEnemyAction(
+  store: BattleContext,
+  initialP2Choice: string,
+  p2Skip: boolean,
+  isCertifiedReplay: boolean,
+  replayDebug: NonNullable<typeof window.__VITE_DEBUG__> | undefined,
+  bagAction?: CertifiedBattleGameAction
+): Promise<void> {
+  const active = store.activeBattle.value;
+  const enemyRequest = active?.enemyRequest as ShowdownPlayerRequest | undefined;
+  let p2Choice = initialP2Choice;
+
+  if (!p2Choice && p2Skip) {
+    p2Choice = resolveFallbackEnemyMoveChoice(enemyRequest);
+  }
+
+  if (isCertifiedReplay) {
+    p2Choice = resolveCertifiedReplayBagResponse(replayDebug, bagAction);
+  }
+
+  console.debug(`[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`);
+
+  const result = await executeTurnInWorker('', p2Choice, true, p2Skip, true);
+  if (isCertifiedReplay) {
+    if (!replayDebug) {
+      throw new Error('[BattleTurn] Certified replay state disappeared before advancing the history cursor.');
+    }
+    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(replayDebug);
+  }
+  if (active) {
+    active.playerRequest = result.p1Request;
+    active.enemyRequest = result.p2Request;
+  }
+  const filteredLogs = filterShowdownLogs(result.logs);
+  await parseLogsWithSkip(store, filteredLogs, true, p2Skip);
+
+  await syncTeamsFromLastWorkerState();
+
+  await resolvePostTurnSwitchesAndFaints(store, result);
+}
+
 export async function runEnemyAction(store: BattleContext, bagAction?: CertifiedBattleGameAction) {
   const p = store.activeBattle.value?.player;
   const e = store.activeBattle.value?.enemy;
@@ -68,61 +139,12 @@ export async function runEnemyAction(store: BattleContext, bagAction?: Certified
     store.activeBattle.value.enemyUsedItem = false;
   }
 
-  const { p2Choice: initialP2Choice, p2Skip } = isCertifiedReplay
+  const { p2Choice, p2Skip } = isCertifiedReplay
     ? { p2Choice: '', p2Skip: false }
     : await resolveEnemyTurnChoice(store, p, e, isWild);
-  let p2Choice = initialP2Choice;
 
   if (getShowdownWorker()) {
-    interface ShowdownMoveRequest {
-      id?: string;
-      move?: string;
-      disabled?: boolean;
-    }
-    interface ShowdownPlayerRequest {
-      active?: { moves?: ShowdownMoveRequest[] }[];
-    }
-
-    const active = store.activeBattle.value;
-    const enemyRequest = active?.enemyRequest as ShowdownPlayerRequest | undefined;
-    const p1Choice = '';
-
-    if (!p2Choice && p2Skip && enemyRequest?.active?.[0]?.moves) {
-      const validMove = enemyRequest.active[0].moves.find((m: ShowdownMoveRequest) => !m.disabled);
-      if (validMove) {
-        p2Choice = `move ${validMove.id}`;
-      }
-    }
-
-    if (isCertifiedReplay) {
-      if (!bagAction) {
-        throw new Error('[BattleTurn] A certified replay bag response requires the visible bag action context.');
-      }
-      if (!replayDebug) {
-        throw new Error('[BattleTurn] Certified replay state disappeared before the bag response.');
-      }
-      p2Choice = requireCertifiedBagItemResponse(replayDebug, bagAction.itemId, bagAction.targetSlot);
-    }
-    
-    console.debug(`[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`);
-
-    const result = await executeTurnInWorker(p1Choice, p2Choice, true, p2Skip, true);
-    if (isCertifiedReplay) {
-      if (!replayDebug) {
-        throw new Error('[BattleTurn] Certified replay state disappeared before advancing the history cursor.');
-      }
-      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(replayDebug);
-    }
-    if (active) {
-      active.playerRequest = result.p1Request;
-      active.enemyRequest = result.p2Request;
-    }
-    const filteredLogs = filterShowdownLogs(result.logs);
-    await parseLogsWithSkip(store, filteredLogs, true, p2Skip);
-
-    await syncTeamsFromLastWorkerState();
-
-    await resolvePostTurnSwitchesAndFaints(store, result);
+    await executeWorkerEnemyAction(store, p2Choice, p2Skip, isCertifiedReplay, replayDebug, bagAction);
   }
 }
 
@@ -131,26 +153,38 @@ interface SkipTracker {
   skipP2: boolean;
 }
 
+function evaluateSideSkip(
+  type: string | undefined,
+  target: string | undefined,
+  sidePrefix: SideID,
+  oppPrefix: SideID,
+  isSkipping: boolean
+): { shouldSkip: boolean; nextSkipping: boolean } {
+  if (type === 'move' && target?.startsWith(sidePrefix)) {
+    return { shouldSkip: true, nextSkipping: true };
+  }
+  if (isSkipping) {
+    if (type === '-damage' && target?.startsWith(oppPrefix)) {
+      return { shouldSkip: true, nextSkipping: true };
+    }
+    if (type === 'move' && !target?.startsWith(sidePrefix)) {
+      return { shouldSkip: false, nextSkipping: false };
+    }
+    return { shouldSkip: false, nextSkipping: true };
+  }
+  return { shouldSkip: false, nextSkipping: false };
+}
+
 function shouldSkipLogLine(type: string | undefined, target: string | undefined, p1Skip: boolean, p2Skip: boolean, tracker: SkipTracker): boolean {
   if (p1Skip) {
-    if (type === 'move' && target?.startsWith('p1')) {
-      tracker.skipP1 = true;
-      return true;
-    }
-    if (tracker.skipP1) {
-      if (type === '-damage' && target?.startsWith('p2')) return true;
-      if (type === 'move' && !target?.startsWith('p1')) tracker.skipP1 = false;
-    }
+    const res = evaluateSideSkip(type, target, 'p1', 'p2', tracker.skipP1);
+    tracker.skipP1 = res.nextSkipping;
+    if (res.shouldSkip) return true;
   }
   if (p2Skip) {
-    if (type === 'move' && target?.startsWith('p2')) {
-      tracker.skipP2 = true;
-      return true;
-    }
-    if (tracker.skipP2) {
-      if (type === '-damage' && target?.startsWith('p1')) return true;
-      if (type === 'move' && !target?.startsWith('p2')) tracker.skipP2 = false;
-    }
+    const res = evaluateSideSkip(type, target, 'p2', 'p1', tracker.skipP2);
+    tracker.skipP2 = res.nextSkipping;
+    if (res.shouldSkip) return true;
   }
   return false;
 }
@@ -178,7 +212,8 @@ async function handlePostTurnFaints(store: BattleContext, playerFainted: boolean
   if (playerFainted) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ);
     await store.handleFaint('player');
-  } else if (enemyFainted) {
+  }
+  if (enemyFainted) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ);
     await store.handleFaint('enemy');
   }

@@ -10,11 +10,16 @@ import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 import { getItemById } from '@/data/inventory/items'
-import { isValidTarget } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '@/logic/providers/itemProvider'
 import { isEquippableHeldItem, mapInventoryToItems, type Item as InventoryListItem } from '@/stores/inventory/inventoryHelpers'
+import {
+  filterBattleItemsByCategoryAndQuery,
+  filterUtilizableBattleItems,
+  calculateEstimatedGain,
+  resolveValidPokemonTargets,
+} from './inventoryModalHelper'
+import type { Item, ItemDiscardAction } from '@/types/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ItemDiscardAction } from '@/types/inventory/items'
 
 // Sub-components
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
@@ -90,30 +95,16 @@ const filteredItems = computed<InventoryListItem[]>(() => {
     let items = mapInventoryToItems(inventory, isBattleActive, battleActiveMainTab.value)
 
     if (battleActiveCategory.value === 'utilizables') {
-      const target = uiStore.inventoryTarget
-      const isBattleActive = useBattleStore().isBattleActive
-      if (target) {
-        const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
-        const pokemon = list[target.index]
-        if (pokemon) {
-          items = items.filter(item => {
-            const dbItem = getItemById(item.id)
-            if (isBattleActive && dbItem?.nonCombat) return false
-            return isValidTarget(item.id, pokemon)
-          })
-        }
-      }
+      items = [...filterUtilizableBattleItems(
+        items,
+        uiStore.inventoryTarget,
+        gameStore.state.team,
+        gameStore.state.box,
+        isBattleActive,
+      )]
     }
 
-    // Filter items first
-    let result = items.filter(item => {
-      if (item.qty <= 0) return false
-      const resolvedCat = item.cat || 'otros'
-      if (battleActiveCategory.value !== 'todos' && battleActiveCategory.value !== 'utilizables' && resolvedCat !== battleActiveCategory.value) return false
-      if (battleSearchQuery.value && !item.name.toLowerCase().includes(battleSearchQuery.value.toLowerCase())) return false
-      return true
-    })
-    return result
+    return filterBattleItemsByCategoryAndQuery(items, battleActiveCategory.value, battleSearchQuery.value)
   }
   
   return inventoryStore.bagItems || []
@@ -240,107 +231,94 @@ const handleItemClick = (item: InventoryListItem) => {
   itemActionMenu.value = item
 }
 
+function applyTargetedItem(dbItem: Item, target: NonNullable<typeof uiStore.inventoryTarget>) {
+  if (isEquippableHeldItem(dbItem)) {
+    const success = inventoryStore.equipItem(dbItem.id, target.context, target.index)
+    if (success) {
+      uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
+      uiStore.toggleInventory()
+    } else {
+      uiStore.notify('No se pudo equipar', '⚠️')
+    }
+  } else {
+    const res = inventoryStore.useItem(dbItem.id, target.context, target.index)
+    uiStore.notify(res.message, res.success ? '✨' : '⚠️')
+  }
+}
+
+function openTargetSelectionModal(dbItem: Item, validTargets: Pokemon[]) {
+  const isHeld = isEquippableHeldItem(dbItem)
+  const battleStore = useBattleStore()
+  modalStore.open('PokemonSelection', {
+    title: isHeld ? `EQUIPAR ${dbItem.name?.toUpperCase()}` : `USAR ${dbItem.name?.toUpperCase()}`,
+    isBattleSwitch: false,
+    includeTeam: true,
+    allowDead: dbItem.name?.toLowerCase().includes('revivir') || !props.battleMode,
+    allowedIds: validTargets.map((p: Pokemon) => p.uid),
+    activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
+    onConfirm: (selected: Pokemon[]) => {
+      if (!selected || selected.length === 0) return
+      const index = (gameStore.state.team || []).findIndex((p: Pokemon) => p.uid === selected[0]!.uid)
+      if (index === -1) return
+      if (isHeld) {
+        const success = inventoryStore.equipItem(dbItem.id, 'team', index)
+        uiStore.notify(success ? `¡${dbItem.name} equipado!` : 'No se pudo equipar', success ? '🎒' : '⚠️')
+      } else {
+        const res = inventoryStore.useItem(dbItem.id, 'team', index)
+        uiStore.notify(res.message, res.success ? '✨' : '⚠️')
+        if (res.success && props.battleMode) close()
+      }
+    }
+  })
+}
+
+function executeItemUse(item: InventoryListItem) {
+  const dbItem = getItemById(item.id)
+  if (!dbItem) {
+    uiStore.notify(`Error: Objeto "${item.name}" no reconocido.`, '⚠️')
+    return
+  }
+
+  if (props.battleMode && dbItem.cat === 'pokeballs') {
+    useBattleStore().useItemInBattle(dbItem.id)
+    close()
+    return
+  }
+
+  if (uiStore.inventoryTarget) {
+    applyTargetedItem(dbItem, uiStore.inventoryTarget)
+    return
+  }
+
+  if (isGlobalItem(dbItem.id)) {
+    const res = inventoryStore.useItem(dbItem.id)
+    uiStore.notify(res.message, res.success ? '✨' : '⚠️')
+    return
+  }
+
+  const validTargets = resolveValidPokemonTargets(dbItem, gameStore.state.team || [])
+  if (validTargets.length === 0) {
+    const isHeld = isEquippableHeldItem(dbItem)
+    uiStore.notify(
+      isHeld ? 'No tienes ningún Pokémon en tu equipo para equipar este objeto' : 'Este objeto no tiene objetivos válidos en tu equipo',
+      isHeld ? '⚠️' : '🎒'
+    )
+    return
+  }
+
+  openTargetSelectionModal(dbItem, validTargets)
+}
+
 const handleActionSelect = (type: string) => {
   const item = itemActionMenu.value
   if (!item) return
-  
+  itemActionMenu.value = null
+
   if (type === 'use') {
-    const dbItem = getItemById(item.id)
-    
-    if (!dbItem) {
-      uiStore.notify(`Error: Objeto "${item.name}" no reconocido.`, '⚠️')
-      itemActionMenu.value = null
-      return
-    }
-    
-    // Battle Mode: Handle Pokeballs directly
-    if (props.battleMode && dbItem.cat === 'pokeballs') {
-      const battleStore = useBattleStore()
-      battleStore.useItemInBattle(dbItem.id)
-      itemActionMenu.value = null
-      close()
-      return
-    }
-
-    if (uiStore.inventoryTarget) {
-      // Logic for pre-selected target
-      if (isEquippableHeldItem(dbItem)) {
-        const success = inventoryStore.equipItem(dbItem.id, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
-        if (success) {
-          uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
-          uiStore.toggleInventory() // Close inventory after equipping
-        }
-        else uiStore.notify(`No se pudo equipar`, '⚠️')
-      } else {
-        const res = inventoryStore.useItem(dbItem.id, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
-        if (res.success) uiStore.notify(res.message, '✨')
-        else uiStore.notify(res.message, '⚠️')
-      }
-      
-      itemActionMenu.value = null
-      return
-    }
-
-    // Outside combat targetless actions
-    if (isGlobalItem(dbItem.id)) {
-      const res = inventoryStore.useItem(dbItem.id)
-      if (res.success) uiStore.notify(res.message, '✨')
-      else uiStore.notify(res.message, '⚠️')
-      itemActionMenu.value = null
-      return
-    }
-
-    const isHeld = isEquippableHeldItem(dbItem)
-    const validTargets = isHeld
-      ? (gameStore.state.team || [])
-      : (gameStore.state.team || []).filter((p: Pokemon) => isValidTarget(dbItem.id, p))
-    
-    if (validTargets.length === 0) {
-      if (isHeld) {
-        uiStore.notify(`No tienes ningún Pokémon en tu equipo para equipar este objeto`, '⚠️')
-      } else {
-        uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
-      }
-      itemActionMenu.value = null
-      return
-    }
-
-    const battleStore = useBattleStore()
-    modalStore.open('PokemonSelection', {
-      title: isHeld ? `EQUIPAR ${dbItem.name?.toUpperCase()}` : `USAR ${dbItem.name?.toUpperCase()}`,
-      isBattleSwitch: false, // Permitir seleccionar al activo para curaciones
-      includeTeam: true,
-      allowDead: dbItem.name?.toLowerCase().includes('revivir') || !props.battleMode,
-      allowedIds: validTargets.map((p: Pokemon) => p.uid), // ONLY show valid targets
-      activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
-      onConfirm: (selected: Pokemon[]) => {
-        if (selected && selected.length > 0) {
-          const index = (gameStore.state.team || []).findIndex((p: Pokemon) => p.uid === selected[0]!.uid)
-          if (index !== -1) {
-            if (isHeld) {
-              const success = inventoryStore.equipItem(dbItem.id, 'team', index)
-              if (success) uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
-              else uiStore.notify(`No se pudo equipar`, '⚠️')
-            } else {
-              const res = inventoryStore.useItem(dbItem.id, 'team', index)
-              if (res.success) {
-                uiStore.notify(res.message, '✨')
-                if (props.battleMode) close() // Close inventory ONLY on success in battle
-              } else {
-                uiStore.notify(res.message, '⚠️')
-                // Keep inventory open on failure
-              }
-            }
-          }
-        }
-      }
-    })
-    itemActionMenu.value = null
+    executeItemUse(item)
   } else {
-    // Open quantity modal for sell/release
     multiSelectMode.value = type
     quantitySelectionItem.value = item
-    itemActionMenu.value = null
   }
 }
 
@@ -348,35 +326,25 @@ const handleMultiExecute = async () => {
   if (selectedItems.size === 0) return
   const mode = multiSelectMode.value
   if (!mode) return
-  
-  let estimatedGain = 0
-  if (mode === 'sell') {
-    for (const [id, qty] of selectedItems.entries()) {
-      const itemInfo = getItemById(id)
-      if (itemInfo) estimatedGain += Math.floor((itemInfo.price || 0) * 0.5) * qty
-    }
-  }
 
+  const estimatedGain = mode === 'sell' ? calculateEstimatedGain(selectedItems) : 0
   const totalQty = Array.from(selectedItems.values()).reduce((s, v) => s + v, 0)
   const itemsText = totalQty === 1 ? '1 objeto' : `${totalQty} objetos`
-  
-  const message = mode === 'sell' 
+
+  const message = mode === 'sell'
     ? `¿Estás seguro que deseas vender ${itemsText} por un total de ₱${estimatedGain.toLocaleString()}?`
     : `¿Estás seguro que deseas tirar ${itemsText}?`
-  
+
   uiStore.openConfirm({
-    title: `CONFIRMAR ACCIÓN`, 
+    title: 'CONFIRMAR ACCIÓN',
     message,
     confirmText: mode === 'sell' ? 'VENDER' : 'TIRAR',
     onConfirm: async () => {
       const totalGain = await inventoryStore.processBatchAction(selectedItems, mode as ItemDiscardAction)
-
-      if (mode === 'sell') {
-        uiStore.notify(`Venta realizada: +₱${totalGain.toLocaleString()}`, '💰')
-      } else {
-        uiStore.notify('Objetos eliminados correctamente', '🗑️')
-      }
-
+      uiStore.notify(
+        mode === 'sell' ? `Venta realizada: +₱${totalGain.toLocaleString()}` : 'Objetos eliminados correctamente',
+        mode === 'sell' ? '💰' : '🗑️'
+      )
       selectedItems.clear()
       multiSelectMode.value = null
     }

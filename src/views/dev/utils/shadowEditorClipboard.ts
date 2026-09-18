@@ -1,4 +1,9 @@
 import type { ShadowCalibrationSnapshot } from '@/types/pokemon/spriteShadows';
+import {
+  DEFAULT_SHADOW_SCALE,
+  MIN_SHADOW_SCALE,
+  MAX_SHADOW_SCALE
+} from '@/types/pokemon/spriteShadows';
 
 let sharedMemoryClipboard: number | null = null;
 let sharedMemoryCalibration: ShadowCalibrationSnapshot | null = null;
@@ -12,7 +17,7 @@ export async function copySliderValue(value: number): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(value.toString());
       return true;
-    } catch {
+    } catch { // catch-ok: Clipboard permission denied or unavailable, fallback to memory
       // In-memory fallback is active
     }
   }
@@ -34,7 +39,7 @@ export async function readSliderValue(): Promise<number | null> {
           return num;
         }
       }
-    } catch {
+    } catch { // catch-ok: Clipboard permission denied or unavailable, fallback to memory
       // Clipboard permission denied or unavailable, fall back to memory
     }
   }
@@ -50,11 +55,54 @@ export async function copyAllValues(snapshot: ShadowCalibrationSnapshot): Promis
     try {
       await navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
       return true;
-    } catch {
+    } catch { // catch-ok: Clipboard permission denied or unavailable, fallback to memory
       // Memory fallback active
     }
   }
   return true;
+}
+
+const MIN_FEET_COORD = 0;
+const MAX_FEET_COORD = 1;
+const COORD_DECIMALS = 3;
+const SCALE_DECIMALS = 2;
+
+function parseRawNumber(val: unknown): number {
+  if (typeof val === 'number') return val;
+  return parseFloat(String(val ?? ''));
+}
+
+function clampCoordinate(val: number): number {
+  return Math.max(MIN_FEET_COORD, Math.min(MAX_FEET_COORD, Number(val.toFixed(COORD_DECIMALS))));
+}
+
+function clampShadowScale(val: number): number {
+  if (isNaN(val)) return DEFAULT_SHADOW_SCALE;
+  return Math.max(MIN_SHADOW_SCALE, Math.min(MAX_SHADOW_SCALE, Number(val.toFixed(SCALE_DECIMALS))));
+}
+
+function parseCalibrationJson(text: string): ShadowCalibrationSnapshot | null {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(trimmed) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    const rawX = parseRawNumber(parsed.feetX);
+    const rawY = parseRawNumber(parsed.feetY);
+    if (isNaN(rawX) || isNaN(rawY)) {
+      return null;
+    }
+    const rawScale = parseRawNumber(parsed.shadowScale);
+    return {
+      feetX: clampCoordinate(rawX),
+      feetY: clampCoordinate(rawY),
+      isFlying: Boolean(parsed.isFlying),
+      shadowScale: clampShadowScale(rawScale),
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -64,24 +112,11 @@ export async function readAllValues(): Promise<ShadowCalibrationSnapshot | null>
   if (typeof navigator !== 'undefined' && navigator.clipboard?.readText) {
     try {
       const text = await navigator.clipboard.readText();
-      if (text && typeof text === 'string') {
-        const trimmed = text.trim();
-        if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-          const parsed = JSON.parse(trimmed) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-          const rawX = typeof parsed.feetX === 'number' ? parsed.feetX : parseFloat(String(parsed.feetX ?? ''));
-          const rawY = typeof parsed.feetY === 'number' ? parsed.feetY : parseFloat(String(parsed.feetY ?? ''));
-          const rawScale = typeof parsed.shadowScale === 'number' ? parsed.shadowScale : parseFloat(String(parsed.shadowScale ?? ''));
-
-          if (!isNaN(rawX) && !isNaN(rawY)) {
-            const feetX = Math.max(0, Math.min(1, Number(rawX.toFixed(3))));
-            const feetY = Math.max(0, Math.min(1, Number(rawY.toFixed(3))));
-            const shadowScale = isNaN(rawScale) ? 1.0 : Math.max(0.2, Math.min(3.0, Number(rawScale.toFixed(2))));
-            const isFlying = Boolean(parsed.isFlying);
-            return { feetX, feetY, isFlying, shadowScale };
-          }
-        }
+      if (typeof text === 'string') {
+        const parsed = parseCalibrationJson(text);
+        if (parsed) return parsed;
       }
-    } catch {
+    } catch { // catch-ok: Clipboard permission denied or invalid JSON, fallback to memory
       // Permission or parse error, fall back to memory
     }
   }

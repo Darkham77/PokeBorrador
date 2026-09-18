@@ -12,7 +12,7 @@ import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
 import { toPokemonType, type PokemonType } from '../../../../src/data/battle/types.ts';
 import type { FuzzerPokemonSet, TestBatch } from './fuzzer_team_generator.ts';
 import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
-import { PokemonLegalityValidator } from '../../../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
+import { PokemonLegalityValidator } from '../../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
 
 export interface ItemTestBatch extends Pick<TestBatch,
   'playerTeam' | 'enemyTeam' | 'seed' | 'playerChoices' | 'enemyChoices' | 'history' | 'steps' | 'ended' | 'winner' | 'finalState'> {

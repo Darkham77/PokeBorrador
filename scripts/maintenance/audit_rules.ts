@@ -71,7 +71,22 @@ export const FALLOW_SUITE_DESCRIPTORS: Record<'dupes' | 'security' | 'dead-code'
     id: 'fallow:dead-code',
     name: 'Fallow Dead Code, Circular Dependencies & Unused',
     category: 'Fallow: Archivos huérfanos',
-    aliases: ['dead-code', 'deadcode', 'codigo-muerto', 'circular', 'huérfano', 'unused', 'fallow:dead-code', 'fallow-dead-code', 'fallow']
+    aliases: [
+      'dead-code',
+      'deadcode',
+      'codigo-muerto',
+      'circular',
+      'huérfano',
+      'unused',
+      'fallow:dead-code',
+      'fallow-dead-code',
+      'fallow',
+      'store-members',
+      'class-members',
+      'types',
+      'emits',
+      'unlisted'
+    ]
   },
   health: {
     id: 'fallow:health',
@@ -433,18 +448,6 @@ export const functionCallsInTemplates: AuditRule = {
   fixable: false
 };
 
-export const fileLength: AuditRule = {
-  id: 'fileLength',
-  name: 'File Length 500/1000',
-  category: 'Largo de archivo (>300/500 líneas)',
-  aliases: ['sloc', 'length', 'filelength', '500', '1000', 'modularity', 'file-length'],
-  regex: /(?!.*)/,
-  message: () => `Archivo demasiado largo.`,
-  maxLines: 500,
-  ignorePattern: /\[PureVue-Ignore-Length\]/,
-  exemptConfigFiles: /^(vite|vitest|playwright|eslint)\.config\./i
-};
-
 export const zIndexAudit: AuditRule = {
   id: 'zIndexAudit',
   name: 'Z-Index Audit',
@@ -777,7 +780,7 @@ export const noInlineAnonymousObjectType: AuditRule = {
 export const noFloatingPromises: AuditRule = {
   regex: /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm,
   message: (match: string) => `Promesa flotante detectada: '${match.trim()}'. Toda llamada a función asíncrona debe ser manejada explícitamente con await, void o .catch().`,
-  severity: 'warning',
+  severity: 'error',
   check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// promise-ok: Background promise handler']),
   fixable: true,
   fix: (content: string) => content.replace(/^\s*([a-z]\w*Async\s*\([^)]*\)\s*;)/gm, 'void $1')
@@ -786,7 +789,7 @@ export const noFloatingPromises: AuditRule = {
 export const noLeakedGlobalState: AuditRule = {
   regex: /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm,
   message: (match: string) => `Variable mutable global detectada a nivel de módulo: '${match.trim()}'. Encapsula el estado dentro de un Pinia store, clase o marca // singleton-ok: Singleton instance state container.`,
-  severity: 'warning',
+  severity: 'error',
   check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// singleton-ok:']),
   fixable: false
 };
@@ -1029,7 +1032,7 @@ export const noHardcodedShowdownGen: AuditRule = {
   category: 'Showdown Parity',
   regex: /\b(?:Dex|dex)\.forGen\(\s*([1-8])\s*\)/g,
   message: (match: string) => `Generación Showdown hardcodeada detectada: '${match}'. Utiliza la constante canónica ACTIVE_GENERATION (9) desde '@/data/system/constants'.`,
-  severity: 'warning',
+  severity: 'error',
   fixable: false,
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return true;
@@ -1044,7 +1047,7 @@ export const noRawJsonImportsOutsideData: AuditRule = {
   category: 'Optimización de Bundle',
   regex: /\bimport\s+[^;]+\s+from\s+['"][^'"]+\.json['"]/g,
   message: (match: string) => `Importación estática de JSON fuera de src/data/ o scripts/: '${match}'. Centraliza catálogos en src/data/ o usa importación dinámica para prevenir empaquetado redundante.`,
-  severity: 'warning',
+  severity: 'error',
   fixable: false,
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return true;
@@ -1059,7 +1062,7 @@ export const noSassAtImport: AuditRule = {
   category: 'SASS Migrator',
   regex: /@import\s+['"][^'"]+['"]/g,
   message: (match: string) => `Regla obsoleta '@import' detectada en Sass: '${match}'. Dart Sass requiere migrar a '@use' o '@forward'.`,
-  severity: 'warning',
+  severity: 'error',
   fixable: false,
   check: (content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return true;
@@ -1134,7 +1137,7 @@ export const namedTimerConstants: AuditRule = {
   aliases: ['timer-constants', 'named-timer-constants', 'timer_constants', 'delayedcall-magic', 'gsap-delay-constants'],
   regex: /\b(?:gsap\.)?delayedCall\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*,|\bgsapSleep\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*\)/g,
   message: (match: string) => `Número mágico detectado en retardo de animación GSAP: '${match.trim()}'. Define y usa una constante semántica con sufijo '_SEC' (segundos), ej. 'ANIMATION_DELAY_SEC'. Recuerda que en src/ los timers nativos (setTimeout/setInterval) están TERMINANTEMENTE PROHIBIDOS (regla manualTimersFrontend) y debe usarse ÚNICAMENTE GSAP.`,
-  severity: 'warning',
+  severity: 'error',
   check: (content: string, match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
     const norm = normalizeFilePath(filePath);
@@ -1158,7 +1161,7 @@ export const namedTimerConstants: AuditRule = {
 };
 
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps,
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps,
   noImportantOnTransforms, noImportantOnFilters, noHardcodedShowdownGen, noRawJsonImportsOutsideData, noSassAtImport, overscrollBehaviorLock,
   noLayoutAnimationInGsap, namedTimerConstants
 };

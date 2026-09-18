@@ -32,6 +32,37 @@ interface EvolutionEntry {
   isCaught: boolean;
 }
 
+type PokemonDetailGameStore = ReturnType<typeof useGameStore>
+
+function getStorageList(gameStore: PokemonDetailGameStore, context: string): (Pokemon | null)[] {
+  if (context === 'team') return gameStore.state.team || []
+  if (context === 'box') return gameStore.state.box || []
+  return []
+}
+
+function resolveReactivePokemon(
+  gameStore: PokemonDetailGameStore,
+  context: string,
+  index: number,
+  directPokemon?: Pokemon | null
+): Pokemon | null {
+  const list = getStorageList(gameStore, context)
+
+  if (directPokemon) {
+    if (index > -1 && list[index]?.uid === directPokemon.uid) {
+      return list[index] ?? null
+    }
+    const realMon = list.find(p => p?.uid === directPokemon.uid)
+    return realMon ?? directPokemon
+  }
+
+  if (index > -1) {
+    return list[index] ?? null
+  }
+
+  return null
+}
+
 export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unknown>>) {
   const gameStore = useGameStore()
   const modalStore = useModalStore()
@@ -56,31 +87,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
 
   const targetPokemon = computed(() => {
     const directPokemon = getProp<Pokemon>('pokemon') || uiData.value.pokemon
-    if (directPokemon) {
-      if (finalIndex.value > -1) {
-        if (finalContext.value === 'team') {
-          const teamMon = gameStore.state.team[finalIndex.value]
-          if (teamMon?.uid === directPokemon.uid) return teamMon
-        } else if (finalContext.value === 'box') {
-          const boxMon = gameStore.state.box[finalIndex.value]
-          if (boxMon?.uid === directPokemon.uid) return boxMon
-        }
-      }
-      // If index in storage has a different Pokémon, look up the real storage slot to preserve reactivity:
-      if (finalContext.value === 'team') {
-        const realIdx = (gameStore.state.team || []).findIndex(p => p?.uid === directPokemon.uid)
-        if (realIdx !== -1) return gameStore.state.team[realIdx]
-      } else if (finalContext.value === 'box') {
-        const realIdx = (gameStore.state.box || []).findIndex(p => p?.uid === directPokemon.uid)
-        if (realIdx !== -1) return gameStore.state.box[realIdx]
-      }
-      return directPokemon
-    }
-    if (finalIndex.value > -1) {
-      if (finalContext.value === 'team') return gameStore.state.team[finalIndex.value]
-      if (finalContext.value === 'box') return gameStore.state.box[finalIndex.value]
-    }
-    return directPokemon
+    return resolveReactivePokemon(gameStore, finalContext.value, finalIndex.value, directPokemon)
   })
 
   const isInstance = computed(() => !!targetPokemon.value)
@@ -203,13 +210,18 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     if (!isInstance.value || !targetPokemon.value?.moves) return []
     return targetPokemon.value.moves.map((m: Pokemon['moves'][number]) => {
       if (!m) return null
-      const resolvedId = m.id || ''
+      const resolvedId = (typeof m === 'string' ? m : m.id) || ''
+      if (!resolvedId) return null
       const data = pokemonDataProvider.getMoveData(resolvedId)
+      const basePP = (typeof m === 'object' && m?.pp) ? m.pp : (data?.pp || 35)
+      const maxPP = (typeof m === 'object' && m?.maxPP) ? m.maxPP : basePP
       return {
-        ...m,
+        ...(typeof m === 'object' ? m : {}),
         ...(data || {}),
-        type: toPokemonType(data?.type || m.type || 'normal'),
-        cat: requireMoveCategory(data?.cat || m.cat),
+        pp: basePP,
+        maxPP,
+        type: toPokemonType(data?.type || (typeof m === 'object' ? m.type : undefined) || 'normal'),
+        cat: requireMoveCategory(data?.cat || (typeof m === 'object' ? m.cat : undefined)),
       }
     }).filter((m: unknown): m is (Pokemon['moves'][number] & Partial<MoveBaseData>) => m !== null)
   })

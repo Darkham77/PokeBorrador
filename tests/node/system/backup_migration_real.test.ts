@@ -18,6 +18,17 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
     const fixturePath = path.resolve(fixtureRelPath);
     assert.ok(fs.existsSync(fixturePath), `Fixture backup file must exist at ${fixtureRelPath}`);
 
+    // Verify that all physical .sql files in database/migrations/ are present in DATABASE_MIGRATIONS
+    const migrationsDir = path.resolve('database/migrations');
+    const physicalSqlFiles = fs.readdirSync(migrationsDir)
+      .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'));
+
+    for (const physicalFile of physicalSqlFiles) {
+      const migrationId = physicalFile.replace(/\.sql$/, '');
+      const registered = DATABASE_MIGRATIONS.some(m => m.id === migrationId);
+      assert.ok(registered, `La migración física '${physicalFile}' no está registrada en src/logic/db/migrations_data.ts. Ejecuta 'npm run database:generate-migrations'.`);
+    }
+
     // Set process.argv to invoke upgradeBackup on the fixture
     const originalArgv = process.argv;
     process.argv = ['node', 'scripts/database/upgrade_backup.ts', `file=${fixturePath}`];

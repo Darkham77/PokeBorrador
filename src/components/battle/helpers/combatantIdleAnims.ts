@@ -5,6 +5,7 @@
  */
 
 
+import { gsap } from 'gsap';
 import {
   COMBATANT_IDLE_FLOAT_BASE_Y_PERCENT,
   COMBATANT_IDLE_FLOAT_VAR_Y_PERCENT,
@@ -61,4 +62,22 @@ export function getIdleGroundedConfig(): gsap.TweenVars {
     repeatRefresh: true,
     ease: 'sine.inOut'
   }
+}
+
+export function runCombatantIdleAnimation(
+  wrapper: HTMLElement,
+  isSuppressed: boolean,
+  isFloating: boolean
+): gsap.core.Tween | null {
+  gsap.killTweensOf(wrapper);
+  if (isSuppressed) {
+    gsap.set(wrapper, { y: 0, rotation: 0, scaleX: 1, scaleY: 1 });
+    return null;
+  }
+  if (isFloating) {
+    gsap.set(wrapper, { scaleX: 1, scaleY: 1 });
+    return gsap.to(wrapper, getIdleFloatingConfig());
+  }
+  gsap.set(wrapper, { y: 0 });
+  return gsap.to(wrapper, getIdleGroundedConfig());
 }

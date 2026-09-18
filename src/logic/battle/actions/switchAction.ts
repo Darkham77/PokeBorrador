@@ -1,4 +1,5 @@
 import type { BattleContext } from '@/types/battle/battleContext'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
 import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts'
 import { getActiveCombatTeam } from '../battleTeamCoordinator.ts'
@@ -26,55 +27,136 @@ export async function executeSwitch(ctx: BattleContext, targetIdentifier: number
   }
 }
 
-async function runSwitchSequence(ctx: BattleContext, targetIdentifier: number | string, isForced = false) {
-  const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, playerStages, persistBattle } = ctx
-
-  const oldPoke = activeBattle.value?.player
-  const req = activeBattle.value?.playerRequest
-  const isRevivingTarget = isRevivingForceSwitchRequest(req)
+function isSwitchActionReallyForced(
+  ctx: BattleContext,
+  isForced: boolean,
+  oldPoke: Pokemon | null | undefined,
+  isRevivingTarget: boolean
+): boolean {
+  const req = ctx.activeBattle.value?.playerRequest
   const forceSw = req?.forceSwitch
   const isForceBool = typeof forceSw === 'boolean' && forceSw
   const isForceArr = Array.isArray(forceSw) && forceSw.some(Boolean)
   const hasForceSwitch = !isRevivingTarget && (isForceBool || isForceArr)
-  const isFaintState = (fsm.currentState?.value as string) === 'PLAYER_FAINT_SEQ'
-    || (fsm.currentSubState?.value as string) === 'PLAYER_FAINT_SEQ'
-    || (fsm.currentSubState?.value as string) === 'SWITCH_MENU'
+
+  const fsmState = ctx.fsm.currentState?.value as string
+  const fsmSubState = ctx.fsm.currentSubState?.value as string
+  const isFaintState = fsmState === 'PLAYER_FAINT_SEQ'
+    || fsmSubState === 'PLAYER_FAINT_SEQ'
+    || fsmSubState === 'SWITCH_MENU'
     || ctx.uiStore?.isBattleSwitchForced === true
     || !oldPoke
     || (oldPoke && oldPoke.hp <= 0)
-  const reallyForced = isForced || hasForceSwitch || isFaintState
 
-  if (!reallyForced) {
-    const { isPlayerTrappedInWorker } = await import('../orchestrator.ts')
-    const isTrapped = await isPlayerTrappedInWorker()
-    if (isTrapped) {
-      const { useUIStore } = await import('@/stores/ui')
-      useUIStore().notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-      return
-    }
-  }
+  return isForced || hasForceSwitch || Boolean(isFaintState)
+}
 
-  await fsm.transition(BATTLE_STATES.REORDER_TEAM)
-  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
-  
+function resolveSwitchTarget(
+  ctx: BattleContext,
+  targetIdentifier: number | string
+): { targetMon: Pokemon | undefined; teamIndex: number } {
   const combatTeam = getActiveCombatTeam(ctx)
-  const resolvedTarget = typeof targetIdentifier === 'string'
+  const isStringId = typeof targetIdentifier === 'string'
+  const targetMon = isStringId
     ? combatTeam.find(p => p && p.uid === targetIdentifier)
     : combatTeam[targetIdentifier]
   const resolvedIndex = typeof targetIdentifier === 'number'
     ? targetIdentifier
     : combatTeam.findIndex(p => p && p.uid === targetIdentifier)
-
-  const targetMon = resolvedTarget
   const teamIndex = resolvedIndex !== -1 ? resolvedIndex : 0
-  const newPoke = targetMon
+  return { targetMon, teamIndex }
+}
+
+async function checkSwitchTrapBlocked(ctx: BattleContext): Promise<boolean> {
+  const { isPlayerTrappedInWorker } = await import('../orchestrator.ts')
+  const isTrapped = await isPlayerTrappedInWorker()
+  if (isTrapped) {
+    const { useUIStore } = await import('@/stores/ui')
+    useUIStore().notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
+    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT)
+    return true
+  }
+  return false
+}
+
+async function executeSwitchAnimationsAndRegistration(
+  ctx: BattleContext,
+  oldPoke: Pokemon | null | undefined,
+  newPoke: Pokemon,
+  teamIndex: number,
+  reallyForced: boolean
+): Promise<void> {
+  if (oldPoke && oldPoke.hp > 0 && !reallyForced) {
+    const { processSwitchSwapAnimations } = await import('./switchSequenceHelper.ts')
+    await processSwitchSwapAnimations(ctx, oldPoke, newPoke, teamIndex)
+  } else {
+    const { processSwitchCallAnimations } = await import('./switchSequenceHelper.ts')
+    await processSwitchCallAnimations(ctx, newPoke, teamIndex)
+  }
+
+  if (!ctx.activeBattle.value) return
+
+  if (!ctx.activeBattle.value.participants) {
+    ctx.activeBattle.value.participants = []
+  }
+  if (!ctx.activeBattle.value.participants.includes(newPoke.uid)) {
+    ctx.activeBattle.value.participants.push(newPoke.uid)
+  }
+
+  ctx.playerStages.value = resetPlayerStages(ctx.playerStages.value)
+  Reflect.set(ctx.activeBattle.value, '_playerSwitchLogged', true)
+  ctx.addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
+  ctx.persistBattle()
+}
+
+async function finalizeSwitchTurn(
+  ctx: BattleContext,
+  newPoke: Pokemon,
+  oldPoke: Pokemon | null | undefined,
+  reallyForced: boolean
+): Promise<void> {
+  if (!reallyForced) {
+    const { processNonForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts')
+    await processNonForcedSwitchWorkerTurn(ctx, newPoke, oldPoke || null)
+  } else {
+    await processForcedSwitchWorkerTurn(ctx, newPoke)
+  }
+
+  const { useUIStore } = await import('@/stores/ui')
+  const { useModalStore } = await import('@/stores/modals')
+  useModalStore().close('PokemonSelection')
+
+  if (newPoke.hp > 0 && !ctx.activeBattle.value?.over) {
+    useUIStore().isBattleSwitchForced = false
+    ctx.persistBattle()
+    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT)
+  } else {
+    ctx.persistBattle()
+  }
+}
+
+async function runSwitchSequence(ctx: BattleContext, targetIdentifier: number | string, isForced = false) {
+  const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, persistBattle } = ctx
+
+  const oldPoke = activeBattle.value?.player
+  const req = activeBattle.value?.playerRequest
+  const isRevivingTarget = isRevivingForceSwitchRequest(req)
+  const reallyForced = isSwitchActionReallyForced(ctx, isForced, oldPoke, isRevivingTarget)
+
+  if (!reallyForced && await checkSwitchTrapBlocked(ctx)) {
+    return
+  }
+
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM)
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
+
+  const { targetMon: newPoke, teamIndex } = resolveSwitchTarget(ctx, targetIdentifier)
   if (!newPoke || (newPoke.hp <= 0 && !isRevivingTarget)) {
-    console.warn(`[switchAction] Cannot switch to fainted or missing Pokémon: ${newPoke?.name ?? 'unknown'}`);
+    console.warn(`[switchAction] Cannot switch to fainted or missing Pokémon: ${newPoke?.name ?? 'unknown'}`)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }
-  
+
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
   if (!activeBattle.value) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
@@ -87,7 +169,7 @@ async function runSwitchSequence(ctx: BattleContext, targetIdentifier: number | 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }
-  
+
   if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke as { volatileCounters?: Record<string, number> })) { // domain-ok: Open dynamic text or non-domain string payload
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
@@ -98,46 +180,8 @@ async function runSwitchSequence(ctx: BattleContext, targetIdentifier: number | 
     return
   }
 
-  if (oldPoke && oldPoke.hp > 0 && !reallyForced) {
-    const { processSwitchSwapAnimations } = await import('./switchSequenceHelper.ts')
-    await processSwitchSwapAnimations(ctx, oldPoke, newPoke, teamIndex)
-  } else {
-    const { processSwitchCallAnimations } = await import('./switchSequenceHelper.ts')
-    await processSwitchCallAnimations(ctx, newPoke, teamIndex)
-  }
-  
-  if (!activeBattle.value.participants) {
-    activeBattle.value.participants = []
-  }
-  if (!activeBattle.value.participants.includes(newPoke.uid)) {
-    activeBattle.value.participants.push(newPoke.uid)
-  }
-  
-  playerStages.value = resetPlayerStages(playerStages.value)
-  
-  Reflect.set(activeBattle.value, '_playerSwitchLogged', true)
-  addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
-
-  persistBattle()
-  
-  if (!reallyForced) {
-    const { processNonForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts')
-    await processNonForcedSwitchWorkerTurn(ctx, newPoke, oldPoke || null)
-  } else {
-    await processForcedSwitchWorkerTurn(ctx, newPoke)
-  }
-
-  const { useUIStore } = await import('@/stores/ui')
-  const { useModalStore } = await import('@/stores/modals')
-  useModalStore().close('PokemonSelection')
-
-  if (newPoke.hp > 0 && !activeBattle.value?.over) {
-    useUIStore().isBattleSwitchForced = false
-    persistBattle()
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-  } else {
-    persistBattle()
-  }
+  await executeSwitchAnimationsAndRegistration(ctx, oldPoke, newPoke, teamIndex, reallyForced)
+  await finalizeSwitchTurn(ctx, newPoke, oldPoke, reallyForced)
 }
 
 async function processForcedSwitchWorkerTurn(

@@ -19,9 +19,8 @@ description: E2E test orchestrator. Delegates environment and simulation protoco
 After verifying behavior in the browser, you **MUST** run the full verification flow to ensure no side effects or type regressions were introduced:
 
 ```bash
-npm run validate:types
-npm run validate:sql
 npm run lint
+npm run validate:sql
 npm run test
 npm run build
 ```

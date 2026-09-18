@@ -7,6 +7,7 @@ import type { ItemId } from '@/data/inventory/items';
 import type { SeatState } from '@/composables/battle/useBattleSeats';
 
 import type { BattleUiConfig } from '@/types/battle/battleConfig';
+import type { PostBattleSequenceCoordinator } from '@/logic/battle/postBattleSequenceCoordinator';
 
 export type BattleSeatId = 'seat1' | 'seat2' | 'seat3' | 'seat4';
 
@@ -51,6 +52,7 @@ export interface BattleContext {
   processBattleEndRewards?: () => Promise<void>;
   completeBattleFlow: (option?: string) => Promise<void>;
   persistBattle: () => void;
+  postBattleCoordinator?: PostBattleSequenceCoordinator;
   waitForLogs: () => Promise<void>;
   clearLogs: () => void;
   clearVolatileStatus: (p: Pokemon) => void;

@@ -79,11 +79,6 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function toggleSelection(index: number) {
-    if (boxReleaseMode.value) toggleBoxReleaseSelect(index)
-    else if (boxRocketMode.value) toggleBoxRocketSelect(index)
-  }
-
   function toggleBoxRocketSelect(index: number) {
     const p = gameStore.state.box[index]
     if (!p || isPokemonBusy(p)) return
@@ -265,7 +260,6 @@ export const useBoxStore = defineStore('box', () => {
     doBoxRelease,
     toggleBoxRocketMode,
     toggleBoxRocketSelect,
-    toggleSelection,
     getRocketSellValue,
     doBoxRocketSell,
     movePokemonToBox,

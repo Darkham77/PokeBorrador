@@ -14,13 +14,19 @@ import {
   type AnimatedVariationId,
 } from '@/data/pokemon/animatedSpriteDatabase';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { BattleCombatantProps } from '@/types/battle/battle';
+import type { BattleSide } from '@/types/battle/battle';
 import {
   COMBATANT_DISPLAY_SIZE_ENEMY_MULT,
   COMBATANT_DISPLAY_SIZE_PLAYER_MULT,
   DEFAULT_FRAME_SIZE_PX
 } from '@/logic/constants/animations';
 import { toPokemonType, type PokemonType } from '@/data/battle/types';
+
+export interface CombatantVisualSpriteProps {
+  pokemon?: Pokemon | null;
+  side: BattleSide;
+  baseSize: number;
+}
 
 const COMBATANT_SCALE_FACTOR_BASE = 1.0;
 const SINGLE_FRAME_FALLBACK = 1;
@@ -76,7 +82,7 @@ function determineIdleSpriteKey(spriteKeyVal: string, isPlayerSide: boolean, gen
   return null;
 }
 
-export function useCombatantVisualSprite(props: BattleCombatantProps) {
+export function useCombatantVisualSprite(props: CombatantVisualSpriteProps) {
   const isFloating = computed(() => checkPokemonFloating(props.pokemon));
   const isPlayer = computed(() => props.side === 'player');
   const isEnemy = computed(() => props.side === 'enemy');

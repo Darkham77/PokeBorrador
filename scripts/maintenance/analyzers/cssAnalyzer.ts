@@ -100,7 +100,7 @@ export async function runCssChecker(
       line: 0,
       message: `Aviso: 'css-checker' no está disponible o no se encuentra el binario ejecutable. Omitiendo análisis de CSS duplicados.`,
       context: 'instalación css-checker',
-      severity: 'warning',
+      severity: 'error',
       fixable: false
     });
     return violations;
@@ -181,7 +181,7 @@ export async function runCssChecker(
           line: 0,
           message: `Aviso ejecutando css-checker: ${err.message || String(e)}. Omitiendo análisis de CSS duplicados.`,
           context: 'css-checker',
-          severity: 'warning',
+          severity: 'error',
           fixable: false
         });
         return violations;
@@ -228,7 +228,7 @@ export async function runCssChecker(
       line: 0,
       message: `Aviso ejecutando css-checker: ${(err as Error).message || String(err)}. Omitiendo análisis de CSS duplicados.`,
       context: 'css-checker',
-      severity: 'warning',
+      severity: 'error',
       fixable: false
     });
   } finally {

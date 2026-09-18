@@ -10,6 +10,7 @@ Frontend Developers / Event Gameplay Engineers.
 
 - **Domain Integrity**: Composables in this directory must consume canonical event models (`Event`, `PastEventHistoryItem`, `PendingAward`) without modifying raw event records directly.
 - **Zero Duplication**: Shared calculations for event bonuses, schedules, prizes, and category grouping must be centralized here.
+- **Past Event Schedule & Category Formatting (`pastEventFormatHelpers.ts`)**: Event date ranges, weekly schedule object windows, category icons, and dynamic metric titles are parsed and formatted in `pastEventFormatHelpers.ts` to uphold modularity and minimal cyclomatic complexity.
 
 ## Work Guidance
 

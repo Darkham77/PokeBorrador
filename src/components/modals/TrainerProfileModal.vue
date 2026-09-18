@@ -10,6 +10,7 @@ import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
+import ProfileBadgesCard from '@/components/profile/ProfileBadgesCard.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
 import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
@@ -22,7 +23,6 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import type { BattleReplayRecord } from '@/types/battle/pvp'
 import { useTrainerProfile } from './useTrainerProfile.ts'
 import { useStatHover } from '@/composables/ui/useStatHover'
-import type { GymId } from '@/data/world/gyms'
 
 interface Props {
   show?: boolean
@@ -110,18 +110,6 @@ const openRename = () => {
   modalStore.open('Rename')
 }
 
-// Badges
-const GYM_BADGES = [
-  { id: 'pewter', name: 'Roca' },
-  { id: 'cerulean', name: 'Cascada' },
-  { id: 'vermilion', name: 'Trueno' },
-  { id: 'celadon', name: 'Arcoíris' },
-  { id: 'fuchsia', name: 'Alma' },
-  { id: 'saffron', name: 'Marsh' },
-  { id: 'cinnabar', name: 'Volcán' },
-  { id: 'viridian', name: 'Tierra' }
-] as const satisfies readonly { id: GymId; name: string }[]
-
 const formatNum = (num: unknown) => formatCurrency(Number(num || 0))
 
 const close = () => {
@@ -175,6 +163,26 @@ const handleWatchReplay = (replay: BattleReplayRecord) => {
   livePvPStore.watchReplay(replay)
   close()
 }
+const CLASS_HEADER_BG_MAP: Record<string, string> = {
+  rocket: 'rgba(239, 68, 68, 0.15)',
+  cazabichos: 'rgba(34, 197, 94, 0.15)',
+  entrenador: 'rgba(59, 130, 246, 0.15)',
+  criador: 'rgba(168, 85, 247, 0.15)'
+}
+const DEFAULT_HEADER_BG = 'rgba(15, 23, 42, 0.8)'
+
+const headerBackground = computed(() => {
+  return (playerClass.value && CLASS_HEADER_BG_MAP[playerClass.value]) || DEFAULT_HEADER_BG
+})
+
+const hasValidFaction = computed(() => {
+  return Boolean(faction.value && faction.value !== 'null' && faction.value !== 'undefined' && faction.value.trim() !== '')
+})
+
+const factionAssetUrl = computed(() => {
+  if (!hasValidFaction.value || !faction.value) return ''
+  return getAssetUrlLocal(ASSET_TYPES.FACTION, faction.value)
+})
 </script>
 
 <template>
@@ -182,7 +190,7 @@ const handleWatchReplay = (replay: BattleReplayRecord) => {
     :show="show"
     title="PERFIL DE ENTRENADOR"
     title-color="var(--yellow)"
-    :header-background="playerClass === 'rocket' ? 'rgba(239, 68, 68, 0.15)' : (playerClass === 'cazabichos' ? 'rgba(34, 197, 94, 0.15)' : (playerClass === 'entrenador' ? 'rgba(59, 130, 246, 0.15)' : (playerClass === 'criador' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(15, 23, 42, 0.8)')))"
+    :header-background="headerBackground"
     type="side-right"
     max-width="420px"
     :show-close-button="true"
@@ -270,8 +278,9 @@ const handleWatchReplay = (replay: BattleReplayRecord) => {
               :style="{ color: factionColor }"
             >
               <img
-                v-if="faction && faction !== 'null' && faction !== 'undefined' && faction.trim() !== ''"
-                :src="getAssetUrlLocal(ASSET_TYPES.FACTION, faction)"
+                v-if="hasValidFaction"
+                :src="factionAssetUrl"
+                :alt="factionLabel || 'Bando'"
                 class="faction-img"
                 @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
               >
@@ -281,26 +290,10 @@ const handleWatchReplay = (replay: BattleReplayRecord) => {
         </div>
 
         <!-- Badges Showcase -->
-        <div class="profile-section-card badges-card">
-          <div class="section-label">
-            MEDALLAS DE KANTO ({{ badgesCount }}/8)
-          </div>
-          <div class="badges-shelf">
-            <div 
-              v-for="badge in GYM_BADGES" 
-              :key="badge.id"
-              class="badge-item"
-              :title="badge.name"
-            >
-              <img 
-                :src="getAssetUrlLocal(ASSET_TYPES.BADGE, badge.id)" 
-                class="badge-img"
-                :class="{ 'locked-badge': !isGymDefeated(badge.id) }"
-              >
-              <span class="badge-title">{{ badge.name }}</span>
-            </div>
-          </div>
-        </div>
+        <ProfileBadgesCard
+          :badges-count="badgesCount"
+          :is-gym-defeated="isGymDefeated"
+        />
 
         <!-- Experiencia -->
         <ProfileXpCard 

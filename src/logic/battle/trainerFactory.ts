@@ -74,14 +74,13 @@ export async function buildTrainerTeam(
   }
 
   const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-  const { TrainerTeamGenerator } = await import('./rivalTeamGenerator');
+  const { requestTrainerTeam } = await import('./showdownWorkerClient');
   const { requirePokemonSpeciesId } = await import('@/data/pokemon/pokedex');
 
-  const poolSet = new Set(pool); // runtime-set: Fast O(1) membership lookup set
-  const generatedSets = TrainerTeamGenerator.generateTeam({
+  const generatedSets = await requestTrainerTeam({
     level: trainerLv,
     teamSize,
-    allowedSpecies: poolSet
+    allowedSpecies: pool
   });
 
   const enemyTeam: Pokemon[] = [];

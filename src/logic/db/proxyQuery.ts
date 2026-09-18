@@ -5,8 +5,86 @@ import type { DBRouter } from './dbRouter.ts';
 import type { DBResponse, ProxyQueryChainItem, SqlProxyAction, SqlProxyCountMode } from '@/types/system/database';
 import { logger } from '../utils/logger.ts';
 import { isLanDevPvP, executeLanDev } from './proxyQueryLanDev.ts';
+import {
+  hydrateLocalRows,
+  buildSelectWhereAndParams,
+  buildOrderAndLimit,
+  extractSelectOptions,
+  formatLocalResult,
+  executeAllUpsertRows,
+  resolveUpsertSelectResult
+} from './proxyQueryHelpers.ts';
 
 export type DBQueryResultShape = 'single' | 'maybeSingle';
+
+type Callable = (...args: unknown[]) => unknown;
+
+function initOnlineActionQuery(
+  q: unknown,
+  action: SqlProxyAction,
+  actionData: unknown,
+  actionOpts: unknown
+): unknown {
+  if (action === 'upsert') {
+    const fn = Reflect.get(q as object, 'upsert') as Callable;
+    return Reflect.apply(fn, q, [actionData, actionOpts]);
+  }
+  if (action === 'insert') {
+    const fn = Reflect.get(q as object, 'insert') as Callable;
+    return Reflect.apply(fn, q, [actionData]);
+  }
+  if (action === 'update') {
+    const updateFn = Reflect.get(q as object, 'update') as Callable;
+    return Reflect.apply(updateFn, q, [actionData]);
+  }
+  if (action === 'delete') {
+    const deleteFn = Reflect.get(q as object, 'delete') as Callable;
+    return Reflect.apply(deleteFn, q, []);
+  }
+  return q;
+}
+
+function applyOnlineQueryChain(
+  query: unknown,
+  chain: ProxyQueryChainItem[]
+): unknown {
+  let curQ = query;
+  for (const s of chain) {
+    if (curQ && typeof curQ === 'object') {
+      const fn = Reflect.get(curQ, s.type) as Callable | undefined;
+      if (fn) {
+        curQ = Reflect.apply(fn, curQ, s.args);
+      }
+    }
+  }
+  return curQ;
+}
+
+function applyOnlineFinal(
+  query: unknown,
+  final: DBQueryResultShape | null,
+  action: SqlProxyAction
+): unknown {
+  if (!final || action === 'update' || action === 'delete') {
+    return query;
+  }
+  if (query && typeof query === 'object') {
+    const finalFn = Reflect.get(query, final) as Callable | undefined;
+    if (finalFn) {
+      return Reflect.apply(finalFn, query, []);
+    }
+  }
+  return query;
+}
+
+function notifyOnlineNetworkError(err: unknown) {
+  const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('failed to fetch')) {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('db-connection-error'));
+    }
+  }
+}
 
 /**
  * Chainable Query Builder for SQLite that mimics Supabase/PostgREST API.
@@ -87,101 +165,27 @@ export class ProxyQuery {
   }
 
   async execute(final: DBQueryResultShape | null = null): Promise<DBResponse> {
-    // If router is Online, use Supabase
     if (this.router.mode === 'online') {
-      const client = this.router.realClient;
-      if (!client) throw new Error('[DBRouter] Online client not available.');
-
-      try {
-        type Callable = (...args: unknown[]) => unknown;
-        const q = client.from(this.table);
-
-        if (this.action === 'upsert') {
-          const fn = Reflect.get(q, 'upsert') as Callable;
-          let upsQ: unknown = Reflect.apply(fn, q, [this.actionData, this.actionOpts]);
-          for (const s of this.chain) {
-            if (upsQ && typeof upsQ === 'object') {
-              const chainFn = Reflect.get(upsQ, s.type) as Callable | undefined;
-              if (chainFn) upsQ = Reflect.apply(chainFn, upsQ, s.args);
-            }
-          }
-          if (final && upsQ && typeof upsQ === 'object') {
-            const finalFn = Reflect.get(upsQ, final) as Callable | undefined;
-            if (finalFn) upsQ = Reflect.apply(finalFn, upsQ, []);
-          }
-          return await (upsQ as Promise<DBResponse>);
-        }
-        if (this.action === 'insert') {
-          const fn = Reflect.get(q, 'insert') as Callable;
-          let insQ: unknown = Reflect.apply(fn, q, [this.actionData]);
-          for (const s of this.chain) {
-            if (insQ && typeof insQ === 'object') {
-              const chainFn = Reflect.get(insQ, s.type) as Callable | undefined;
-              if (chainFn) insQ = Reflect.apply(chainFn, insQ, s.args);
-            }
-          }
-          if (final && insQ && typeof insQ === 'object') {
-            const finalFn = Reflect.get(insQ, final) as Callable | undefined;
-            if (finalFn) insQ = Reflect.apply(finalFn, insQ, []);
-          }
-          return await (insQ as Promise<DBResponse>);
-        }
-
-
-        if (this.action === 'update') {
-          const updateFn = Reflect.get(q, 'update') as Callable;
-          let updQ: unknown = Reflect.apply(updateFn, q, [this.actionData]);
-          for (const s of this.chain) {
-            if (updQ && typeof updQ === 'object') {
-              const fn = Reflect.get(updQ, s.type) as Callable | undefined;
-              if (fn) updQ = Reflect.apply(fn, updQ, s.args);
-            }
-          }
-          return await (updQ as Promise<DBResponse>);
-        }
-
-        if (this.action === 'delete') {
-          const deleteFn = Reflect.get(q, 'delete') as Callable;
-          let delQ: unknown = Reflect.apply(deleteFn, q, []);
-          for (const s of this.chain) {
-            if (delQ && typeof delQ === 'object') {
-              const fn = Reflect.get(delQ, s.type) as Callable | undefined;
-              if (fn) delQ = Reflect.apply(fn, delQ, s.args);
-            }
-          }
-          return await (delQ as Promise<DBResponse>);
-        }
-
-        // Default: select
-        let selQ: unknown = q;
-        for (const s of this.chain) {
-          if (selQ && typeof selQ === 'object') {
-            const fn = Reflect.get(selQ, s.type) as Callable | undefined;
-            if (fn) selQ = Reflect.apply(fn, selQ, s.args);
-          }
-        }
-        if (final && selQ && typeof selQ === 'object') {
-          const finalFn = Reflect.get(selQ, final) as Callable | undefined;
-          if (finalFn) return await (Reflect.apply(finalFn, selQ, []) as Promise<DBResponse>);
-        }
-        return await (selQ as Promise<DBResponse>);
-      } catch (err: unknown) {
-        logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);
-        
-        // Detect network errors (fetch failures)
-        const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-        if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('failed to fetch')) {
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('db-connection-error'));
-          }
-        }
-        
-        throw err;
-      }
+      return this.executeOnline(final);
     }
-
-    // Otherwise, use SQLite
     return this.executeLocal(final);
+  }
+
+  private async executeOnline(final: DBQueryResultShape | null = null): Promise<DBResponse> {
+    const client = this.router.realClient;
+    if (!client) throw new Error('[DBRouter] Online client not available.');
+
+    try {
+      const q = client.from(this.table);
+      const actionQ = initOnlineActionQuery(q, this.action, this.actionData, this.actionOpts);
+      const chainedQ = applyOnlineQueryChain(actionQ, this.chain);
+      const finalQ = applyOnlineFinal(chainedQ, final, this.action);
+      return await (finalQ as Promise<DBResponse>);
+    } catch (err: unknown) {
+      logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);
+      notifyOnlineNetworkError(err);
+      throw err;
+    }
   }
 
   async executeLocal(final: DBQueryResultShape | null = null): Promise<DBResponse> {
@@ -193,150 +197,13 @@ export class ProxyQuery {
       const sqliteDb = await initSQLite();
       if (!sqliteDb) return { data: null, error: 'Database not initialized' };
       
-      if (this.action === 'upsert') return await this._executeLocalUpsert(sqliteDb, final);
-      if (this.action === 'insert') return await this._executeLocalUpsert(sqliteDb, final); // Reusing upsert for simplicity in local mode
+      if (this.action === 'upsert' || this.action === 'insert') {
+        return await this._executeLocalUpsert(sqliteDb, final);
+      }
       if (this.action === 'update') return await this._executeLocalUpdate(sqliteDb);
       if (this.action === 'delete') return await this._executeLocalDelete(sqliteDb);
 
-      // Default: select
-      let sql = `SELECT * FROM ${this.table}`; // Simplistic, cols not used yet
-      const where: string[] = []; // no-domain: Non-domain utility collection or data structure
-      const params: unknown[] = [];
-
-      this.chain.forEach(s => {
-        if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
-        if (s.type === 'neq') { where.push(`${s.args[0]} != ?`); params.push(s.args[1]); }
-        if (s.type === 'gt') { where.push(`${s.args[0]} > ?`); params.push(s.args[1]); }
-        if (s.type === 'lt') { where.push(`${s.args[0]} < ?`); params.push(s.args[1]); }
-        if (s.type === 'gte') { where.push(`${s.args[0]} >= ?`); params.push(s.args[1]); }
-        if (s.type === 'lte') { where.push(`${s.args[0]} <= ?`); params.push(s.args[1]); }
-        if (s.type === 'in') {
-          const arr = (s.args[1] as unknown[]) || []; // open-record: Generic key-value data dictionary container
-          const marks = arr.map(() => '?').join(',');
-          where.push(`${s.args[0]} IN (${marks})`);
-          params.push(...arr);
-        }
-        if (s.type === 'is') {
-          if (s.args[1] === null) where.push(`${s.args[0]} IS NULL`);
-          else { where.push(`${s.args[0]} IS ?`); params.push(s.args[1]); }
-        }
-        if (s.type === 'not') {
-          const [colNot, opNot, valNot] = s.args as [string, string, unknown];
-          if (opNot === 'eq') {
-            where.push(`${colNot} <> ?`);
-            params.push(valNot);
-          } else if (opNot === 'is' && valNot === null) {
-            where.push(`${colNot} IS NOT NULL`);
-          }
-        }
-        if (s.type === 'match') {
-          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record: Generic key-value data dictionary container
-            where.push(`${k} = ?`);
-            params.push(v);
-          });
-        }
-        if (s.type === 'ilike') {
-          where.push(`${s.args[0]} LIKE ?`);
-          params.push((s.args[1] as string).replace(/\*/g, '%'));
-        }
-        if (s.type === 'or') {
-          const filterStr = s.args[0] as string;
-          if (filterStr.includes('and(')) {
-            const clauses = filterStr.split(/\),?/);
-            const orClauses: string[] = []; // no-domain: Non-domain utility collection or data structure
-            clauses.forEach(clause => {
-              const cleanClause = clause.replace(/and\(/g, '').trim();
-              if (!cleanClause) return;
-              const subFilters = cleanClause.split(',');
-              const andClauses: string[] = []; // no-domain: Non-domain utility collection or data structure
-              subFilters.forEach(f => {
-                const parts = f.split('.');
-                if (parts.length >= 3) {
-                  const col = parts[0];
-                  const op = parts[1];
-                  const val = parts.slice(2).join('.');
-                  if (op === 'eq') {
-                    andClauses.push(`${col} = ?`);
-                    params.push(val);
-                  }
-                }
-              });
-              if (andClauses.length > 0) {
-                orClauses.push(`(${andClauses.join(' AND ')})`);
-              }
-            });
-            if (orClauses.length > 0) {
-              where.push(`(${orClauses.join(' OR ')})`);
-            }
-          } else {
-            const subFilters = filterStr.split(',');
-            const subClauses: string[] = []; // no-domain: Non-domain utility collection or data structure
-            subFilters.forEach(f => {
-              const parts = f.split('.');
-              if (parts.length >= 3) {
-                const col = parts[0];
-                const op = parts[1];
-                const val = parts.slice(2).join('.');
-                if (op === 'eq') {
-                  subClauses.push(`${col} = ?`);
-                  params.push(val);
-                } else if (op === 'neq') {
-                  subClauses.push(`${col} != ?`);
-                  params.push(val);
-                }
-              }
-            });
-            if (subClauses.length > 0) {
-              where.push(`(${subClauses.join(' OR ')})`);
-            }
-          }
-        }
-      });
-
-      if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
-      
-      // Order and Limit
-      this.chain.forEach(s => {
-        if (s.type === 'order') {
-          const opts = s.args[1] as { ascending?: boolean };
-          sql += ` ORDER BY ${s.args[0]} ${opts.ascending ? 'ASC' : 'DESC'}`;
-        }
-        if (s.type === 'limit') sql += ` LIMIT ${s.args[0]}`;
-      });
-
-      let count: number | undefined = undefined;
-      const selectItem = this.chain.find(s => s.type === 'select');
-      const selectOpts = (selectItem?.args[1] as { count?: string, head?: boolean }) || {};
-
-      if (selectOpts.count) {
-        let countSql = `SELECT COUNT(*) as total FROM ${this.table}`;
-        if (where.length > 0) countSql += ` WHERE ${where.join(' AND ')}`;
-        const countRes = await queryLocal(countSql, params);
-        count = (countRes[0] as { total: number })?.total || 0;
-      }
-
-      if (selectOpts.head) {
-        return { data: [], error: null, count };
-      }
-
-      const data = await queryLocal(sql, params);
-      
-      // Auto-parse JSON fields (known to be JSON in this project)
-      data.forEach((row: Record<string, unknown>) => {
-        if (this.table === 'battle_invites' && row.id !== undefined && row.id !== null) {
-          row.id = String(row.id);
-        }
-        if (row.save_data && typeof row.save_data === 'string') try { row.save_data = JSON.parse(row.save_data); } catch(_e){ /* ignore */ }
-        if (row.team_data && typeof row.team_data === 'string') try { row.team_data = JSON.parse(row.team_data); } catch(_e){ /* ignore */ }
-        if (row.data && typeof row.data === 'string') try { row.data = JSON.parse(row.data); } catch(_e){ /* ignore */ }
-        if (row.config && typeof row.config === 'string') try { row.config = JSON.parse(row.config); } catch(_e){ /* ignore */ }
-        if (row.schedule && typeof row.schedule === 'string') try { row.schedule = JSON.parse(row.schedule); } catch(_e){ /* ignore */ }
-        if (row.asset_data && typeof row.asset_data === 'string') try { row.asset_data = JSON.parse(row.asset_data); } catch(_e){ /* ignore */ }
-      });
-
-      if (final === 'single') return { data: data[0] || null, error: data.length === 0 ? { message: 'Not found' } : null, count };
-      if (final === 'maybeSingle') return { data: data[0] || null, error: null, count };
-      return { data, error: null, count };
+      return await this._executeLocalSelect(final);
     } catch (e: unknown) {
       const errorMsg = e instanceof Error ? e.message : String(e);
       logger.error('ProxyQuery', `executeLocal critical failure: ${errorMsg}`);
@@ -344,44 +211,37 @@ export class ProxyQuery {
     }
   }
 
+  private async _executeLocalSelect(final: DBQueryResultShape | null): Promise<DBResponse> {
+    const { where, params } = buildSelectWhereAndParams(this.chain);
+    let sql = `SELECT * FROM ${this.table}`;
+    if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
+    sql += buildOrderAndLimit(this.chain);
+
+    const selectOpts = extractSelectOptions(this.chain);
+    let count: number | undefined = undefined;
+
+    if (selectOpts.count) {
+      let countSql = `SELECT COUNT(*) as total FROM ${this.table}`;
+      if (where.length > 0) countSql += ` WHERE ${where.join(' AND ')}`;
+      const countRes = await queryLocal(countSql, params);
+      count = (countRes[0] as { total: number })?.total || 0;
+    }
+
+    if (selectOpts.head) {
+      return { data: [], error: null, count };
+    }
+
+    const data = await queryLocal(sql, params);
+    hydrateLocalRows(this.table, data);
+    return formatLocalResult(data, final, count);
+  }
+
   async _executeLocalUpsert(sqliteDb: SQLiteDatabase, final: DBQueryResultShape | null = null): Promise<DBResponse> {
     try {
-      const values = Array.isArray(this.actionData) ? this.actionData : [this.actionData];
-      let lastInsertedRowId: unknown = null;
-      for (const row of values) {
-        if (typeof row !== 'object' || row === null) continue;
-        const r = row as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-        const cols = Object.keys(r);
-        const marks = cols.map(() => '?').join(',');
-        const vals = cols.map(c => r[c] === undefined || r[c] === null ? null : typeof r[c] === 'object' ? JSON.stringify(r[c]) : r[c]);
-        sqliteDb.run(`INSERT OR REPLACE INTO ${this.table} (${cols.join(',')}) VALUES (${marks})`, vals);
-        const idRes = sqliteDb.exec('SELECT last_insert_rowid()');
-        lastInsertedRowId = idRes[0]?.values[0]?.[0];
+      const lastInsertedRowId = await executeAllUpsertRows(sqliteDb, this.table, this.actionData);
+      if (this.chain.some(s => s.type === 'select')) {
+        return await resolveUpsertSelectResult(this.table, lastInsertedRowId, final, this.actionData);
       }
-      await persistSQLite();
-
-      const hasSelect = this.chain.some(s => s.type === 'select');
-      if (hasSelect) {
-        const rows = lastInsertedRowId !== null && lastInsertedRowId !== undefined
-          ? await queryLocal(`SELECT * FROM ${this.table} WHERE rowid = ?`, [lastInsertedRowId])
-          : [];
-        rows.forEach((row: Record<string, unknown>) => {
-          if (this.table === 'battle_invites' && row.id !== undefined && row.id !== null) {
-            row.id = String(row.id);
-          }
-          if (row.save_data && typeof row.save_data === 'string') try { row.save_data = JSON.parse(row.save_data); } catch(_e){ /* ignore */ }
-          if (row.team_data && typeof row.team_data === 'string') try { row.team_data = JSON.parse(row.team_data); } catch(_e){ /* ignore */ }
-          if (row.data && typeof row.data === 'string') try { row.data = JSON.parse(row.data); } catch(_e){ /* ignore */ }
-          if (row.config && typeof row.config === 'string') try { row.config = JSON.parse(row.config); } catch(_e){ /* ignore */ }
-          if (row.schedule && typeof row.schedule === 'string') try { row.schedule = JSON.parse(row.schedule); } catch(_e){ /* ignore */ }
-          if (row.asset_data && typeof row.asset_data === 'string') try { row.asset_data = JSON.parse(row.asset_data); } catch(_e){ /* ignore */ }
-        });
-
-        if (final === 'single') return { data: rows[0] || null, error: rows.length === 0 ? { message: 'Not found' } : null };
-        if (final === 'maybeSingle') return { data: rows[0] || null, error: null };
-        return { data: Array.isArray(this.actionData) ? rows : (rows[0] || null), error: null };
-      }
-
       return { data: this.actionData, error: null };
     } catch (e: unknown) {
       const errorMsg = e instanceof Error ? e.message : String(e);

@@ -78,7 +78,7 @@ function validateSet(set: PokemonSet): string[] {
 }
 
 import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { getRandomSetForSpecies } from '@/logic/battle/rivalTeamGenerator';
+import { getRandomSetForSpecies } from '@/logic/battle/engine/rivalTeamGenerator.ts';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 // ─────────────────────────────────────────────────────────────────────────────

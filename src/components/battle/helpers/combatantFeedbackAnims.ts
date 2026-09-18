@@ -1,5 +1,6 @@
 import { gsap } from 'gsap';
 import { gameBus } from '@/logic/events/gameBus';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   POKEBALL_SHAKE_DISTANCE_PX,
   BALL_TRANSITION_DURATION_SEC,
@@ -35,6 +36,9 @@ import {
   POKEBALL_WOBBLE_STEP2_SEC,
   POKEBALL_WOBBLE_STEP34_SEC,
   POKEBALL_SPRITE_SHAKE_REPEAT,
+  POKEBALL_BLINK_BRIGHTNESS,
+  POKEBALL_BLINK_HUE_ROTATE_DEG,
+  POKEBALL_BLINK_DURATION_SEC,
   SCALE_FULL,
   SCALE_ZERO,
   OPACITY_FULL,
@@ -300,4 +304,132 @@ export function animateCombatantTransform(
 
   return tl;
 }
+
+const POKEBALL_SEPIA_RATIO = 0.5;
+
+export function handleCombatantShake(
+  pokeballEl: HTMLElement | null,
+  spriteEl: HTMLElement | null,
+  isCaptureSuccess: boolean,
+  isPlayerSide: boolean,
+  shaking: boolean
+): void {
+  if (!shaking) return;
+  if (pokeballEl) {
+    animatePokeballWobble(pokeballEl);
+    return;
+  }
+  if (!isCaptureSuccess && spriteEl) {
+    animateSpriteShake(spriteEl, isPlayerSide);
+  }
+}
+
+export function handleCombatantBlink(
+  pokeballEl: HTMLElement | null,
+  spriteEl: HTMLElement | null,
+  isCaptureSuccess: boolean,
+  isPlayerSide: boolean,
+  blinking: boolean
+): void {
+  if (!blinking) return;
+  if (pokeballEl) {
+    animatePokeballBlink(pokeballEl);
+    return;
+  }
+  if (!isCaptureSuccess && spriteEl) {
+    animateSpriteBlink(spriteEl, isPlayerSide);
+  }
+}
+
+export function togglePokeballCaptureSuccess(
+  ball: HTMLElement,
+  success: boolean,
+  currentTween: gsap.core.Tween | null
+): gsap.core.Tween | null {
+  if (currentTween) {
+    currentTween.kill();
+  }
+  if (success) {
+    return gsap.fromTo(
+      ball,
+      { filter: 'Brightness(1)' },
+      {
+        filter: `Brightness(${POKEBALL_BLINK_BRIGHTNESS}) Sepia(${POKEBALL_SEPIA_RATIO}) Hue-Rotate(${POKEBALL_BLINK_HUE_ROTATE_DEG}deg)`,
+        duration: POKEBALL_BLINK_DURATION_SEC,
+        yoyo: true,
+        repeat: -1,
+        ease: 'power1.inOut'
+      }
+    );
+  }
+  gsap.set(ball, { clearProps: 'filter' });
+  return null;
+}
+
+export function prepareBallTransition(
+  sprite: HTMLElement,
+  rotation: HTMLElement | null,
+  shadow: HTMLElement | null,
+  origin: string,
+  coords: { x: number; y: number },
+  isReleasing: boolean
+): void {
+  if (rotation) {
+    gsap.set(rotation, { rotation: 0, clearProps: 'transform,rotation' });
+  }
+  if (shadow) {
+    gsap.set(shadow, { display: 'none' });
+  }
+  if (isReleasing) {
+    gsap.set(sprite, {
+      transformOrigin: origin,
+      x: coords.x,
+      y: coords.y,
+      scale: SCALE_ZERO,
+      opacity: OPACITY_FULL,
+      filter: 'url(#pixel-energy-optimized)'
+    });
+  } else {
+    gsap.set(sprite, {
+      transformOrigin: origin,
+      x: 0,
+      y: 0,
+      scale: 1,
+      opacity: OPACITY_FULL,
+      filter: 'url(#pixel-energy-optimized)'
+    });
+  }
+}
+
+export interface DispatchBallTweenParams {
+  sprite: HTMLElement;
+  shadow: HTMLElement | null;
+  rotation: HTMLElement | null;
+  origin: string;
+  coords: { x: number; y: number };
+  onDone: () => void;
+}
+
+function resolveCombatantAnimKey(side: string, pokeUid?: string): string {
+  if (!pokeUid) return `${side}-active`;
+  return `${side}-${pokeUid}`;
+}
+
+export function dispatchBallAnimation(
+  val: string,
+  side: string,
+  pokemon: { uid?: string; id?: PokemonSpeciesId } | null | undefined,
+  params: DispatchBallTweenParams
+): void {
+  if (val !== 'catching' && val !== 'releasing') return;
+  const animKey = resolveCombatantAnimKey(side, pokemon?.uid);
+  const tween = val === 'catching'
+    ? executeCatchingTween(params.sprite, params.shadow, params.rotation, params.origin, params.coords, params.onDone)
+    : executeReleasingTween(params.sprite, params.shadow, params.rotation, params.origin, params.coords, pokemon?.id, params.onDone);
+
+  gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
+}
+
+
+
 

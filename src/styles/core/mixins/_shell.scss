@@ -39,6 +39,38 @@
   width: 100%;
 }
 
+@mixin home-card-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
+  gap: 8px;
+}
+
+@mixin home-card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+
+  .card-icon {
+    font-size: 20px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .title-text-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+}
+
 @mixin empty-state-card {
   display: flex;
   align-items: center;
@@ -92,7 +124,7 @@
 @mixin shell-hover-blue {
   background: Rgba(30, 41, 59, 0.4) !important;
   border-color: transparent !important;
-  transform: none !important; // NO displacement to avoid stuck hovers
+  transform: none; // NO displacement to avoid stuck hovers
   box-shadow: 
     Inset 0 0 0 4px var(--blue),
     0 10px 25px Rgba(0, 0, 0, 0.3), 

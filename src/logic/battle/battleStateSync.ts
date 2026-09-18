@@ -1,6 +1,6 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ShowdownPlayerRequest } from '@/types/battle/battle'
+import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle'
 import { isMatchingUid } from './showdownUidMapper.ts'
 import { isBattleMinigame } from './battleMinigames.ts'
 
@@ -23,46 +23,51 @@ export function parseCondition(cond: string): { hp: number; status: Pokemon['sta
   return { hp, status }
 }
 
-export function syncTeamHP(ctx: BattleContext) {
-  const active = ctx.activeBattle.value
-  if (!active) return
-
-  if (active.playerUsedItem) {
-    console.debug('[SYNC-TEAM-HP] Player used an item. Skipping sync from outdated playerRequest.')
-    return
-  }
-  
-  console.debug(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`)
-  
-  if (active.playerRequest?.side?.pokemon) {
-    active.playerRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
-      if (reqPoke && reqPoke.uid) {
-        const teamPoke = !active.isPvP && ctx.gs.state.team
-          ? ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
-          : undefined
-        const battlePoke = active.playerTeam?.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
-
-        const { hp, status } = parseCondition(reqPoke.condition || '')
-
-        if (teamPoke) {
-          const old = teamPoke.hp
-          teamPoke.hp = hp
-          teamPoke.status = status
-          teamPoke.fainted = hp <= 0
-          console.debug(`[SYNC-TEAM-HP] Player GS Poké ${teamPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`)
-        }
-
-        if (battlePoke) {
-          const old = battlePoke.hp
-          battlePoke.hp = hp
-          battlePoke.status = status
-          battlePoke.fainted = hp <= 0
-          console.debug(`[SYNC-TEAM-HP] Player Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`)
-        }
+function syncMovesPP(sourceMoves: Pokemon['moves'], targetMoves: Pokemon['moves']): void {
+  if (!Array.isArray(sourceMoves) || !Array.isArray(targetMoves)) return;
+  for (const am of sourceMoves) {
+    if (!am || !am.id) continue;
+    const tm = targetMoves.find(m => m && m.id === am.id);
+    if (tm && typeof am.pp === 'number') {
+      tm.pp = am.pp;
+      if (typeof am.maxPP === 'number') {
+        tm.maxPP = am.maxPP;
       }
-    })
+    }
   }
+}
 
+function syncPlayerRequestPokemon(active: BattleState, ctx: BattleContext): void {
+  if (!active.playerRequest?.side?.pokemon) return;
+
+  active.playerRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
+    if (!reqPoke || !reqPoke.uid) return;
+
+    const teamPoke = !active.isPvP && ctx.gs.state.team
+      ? ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
+      : undefined;
+    const battlePoke = active.playerTeam?.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid));
+    const { hp, status } = parseCondition(reqPoke.condition || '');
+
+    if (teamPoke) {
+      const old = teamPoke.hp;
+      teamPoke.hp = hp;
+      teamPoke.status = status;
+      teamPoke.fainted = hp <= 0;
+      console.debug(`[SYNC-TEAM-HP] Player GS Poké ${teamPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
+    }
+
+    if (battlePoke) {
+      const old = battlePoke.hp;
+      battlePoke.hp = hp;
+      battlePoke.status = status;
+      battlePoke.fainted = hp <= 0;
+      console.debug(`[SYNC-TEAM-HP] Player Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
+    }
+  });
+}
+
+function syncEnemyTeamState(active: BattleState): void {
   const enemyTeam = active.enemyTeam;
   if (active.enemy && enemyTeam) {
     const activeEnemyInTeam = enemyTeam.find((p: Pokemon) => p && isMatchingUid(p.uid, active.enemy?.uid));
@@ -81,53 +86,53 @@ export function syncTeamHP(ctx: BattleContext) {
     });
   }
 
-  if (!active.isPvP && active.player && ctx.gs.state.team) {
-    const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, active.player?.uid))
-    if (teamPoke) {
-      active.player.hp = teamPoke.hp
-      active.player.status = teamPoke.status
-      if (Array.isArray(active.player.moves) && Array.isArray(teamPoke.moves)) {
-        for (const am of active.player.moves) {
-          if (!am || !am.id) continue
-          const tm = teamPoke.moves.find(m => m && m.id === am.id)
-          if (tm && typeof am.pp === 'number') {
-            tm.pp = am.pp
-            if (typeof am.maxPP === 'number') {
-              tm.maxPP = am.maxPP
-            }
-          }
-        }
-      }
-    }
-  }
-
-  if (!active.isPvP && Array.isArray(active.playerTeam) && Array.isArray(ctx.gs.state.team)) {
-    active.playerTeam.forEach((battlePoke: Pokemon) => {
-      if (!battlePoke || !battlePoke.uid) return
-      const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, battlePoke.uid))
-      if (teamPoke && Array.isArray(battlePoke.moves) && Array.isArray(teamPoke.moves)) {
-        for (const am of battlePoke.moves) {
-          if (!am || !am.id) continue
-          const tm = teamPoke.moves.find(m => m && m.id === am.id)
-          if (tm && typeof am.pp === 'number') {
-            tm.pp = am.pp
-            if (typeof am.maxPP === 'number') {
-              tm.maxPP = am.maxPP
-            }
-          }
-        }
-      }
-    })
-  }
-
   if (active.enemy && active.enemyTeam) {
-    const enemyPoke = active.enemyTeam.find((p: Pokemon) => p && isMatchingUid(p.uid, active.enemy?.uid))
+    const enemyPoke = active.enemyTeam.find((p: Pokemon) => p && isMatchingUid(p.uid, active.enemy?.uid));
     if (enemyPoke) {
-      active.enemy.hp = enemyPoke.hp
-      active.enemy.status = enemyPoke.status
+      active.enemy.hp = enemyPoke.hp;
+      active.enemy.status = enemyPoke.status;
     }
-    active.enemyTeam = [...active.enemyTeam]
+    active.enemyTeam = [...active.enemyTeam];
   }
+}
+
+function syncPlayerStateToGameState(active: BattleState, ctx: BattleContext): void {
+  if (active.isPvP || !ctx.gs.state.team) return;
+
+  if (active.player) {
+    const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, active.player?.uid));
+    if (teamPoke) {
+      active.player.hp = teamPoke.hp;
+      active.player.status = teamPoke.status;
+      syncMovesPP(active.player.moves, teamPoke.moves);
+    }
+  }
+
+  if (Array.isArray(active.playerTeam)) {
+    active.playerTeam.forEach((battlePoke: Pokemon) => {
+      if (!battlePoke || !battlePoke.uid) return;
+      const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, battlePoke.uid));
+      if (teamPoke) {
+        syncMovesPP(battlePoke.moves, teamPoke.moves);
+      }
+    });
+  }
+}
+
+export function syncTeamHP(ctx: BattleContext) {
+  const active = ctx.activeBattle.value;
+  if (!active) return;
+
+  if (active.playerUsedItem) {
+    console.debug('[SYNC-TEAM-HP] Player used an item. Skipping sync from outdated playerRequest.');
+    return;
+  }
+  
+  console.debug(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`);
+  
+  syncPlayerRequestPokemon(active, ctx);
+  syncEnemyTeamState(active);
+  syncPlayerStateToGameState(active, ctx);
 }
 
 export function syncAndPersist(ctx: BattleContext) {

@@ -13,12 +13,10 @@ import {
   RANKED_REWARD_MILESTONES, 
   RANKED_REWARD_MILESTONES_BY_ID, 
   isRankedRewardMilestoneId,
-  getSeasonalThemeForMonth,
   type RankedRewardMilestoneId
 } from '@/data/system/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
-import type { Pokemon } from '@/types/pokemon/pokemon'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS } from '@/logic/constants/gameplay.ts'
 import { calculateEloDelta, applyEloDelta } from '@/logic/pvp/eloRatingMath.ts'
@@ -35,24 +33,19 @@ export const RANKED_REWARD_TIER_MARKS = [
 ]
 
 import type {
-  PassiveBattleResult,
   PersonalPvPMatchSummary,
   PassiveBattleReport,
-  PassiveBattleReportData,
-  PassiveOpponentProfile,
   PvPStats,
   SeasonRules
 } from '@/types/battle/pvp'
-export type {
-  PassiveBattleResult,
-  PassiveBattleReport,
-  PassiveBattleReportData,
-  PassiveOpponentProfile,
-  PvPStats,
-  SeasonRules
-}
-import { fetchOnlineMatchHistory, recordLocalMatch, mergeMatchHistories } from '@/logic/pvp/pvpMatchHistoryHelper'
+import { recordLocalMatch } from '@/logic/pvp/pvpMatchHistoryHelper'
 import { fetchAndFormatDefenseReports } from '@/logic/pvp/pvpDefenseReportsHelper'
+import {
+  fetchProfilePvPData,
+  fetchActiveSeasonRules,
+  findInvalidDefendingPokemon,
+  syncPvPPersonalHistory
+} from './pvpDataHelper.ts'
 
 /**
  * usePvPStore - Gestor de Arena Clasificatoria y Defensa Pasiva.
@@ -102,60 +95,18 @@ export const usePvPStore = defineStore('pvp', () => {
   async function loadPvPData() {
     if (!authStore.user || !gameStore.db) return
 
-    interface ProfileRow {
-      elo_rating: number;
-      pvp_wins: number;
-      pvp_losses: number;
-      pvp_draws: number;
-      role: string;
-    }
-    const { data: profile } = await gameStore.db.from('profiles')
-      .select('elo_rating, pvp_wins, pvp_losses, pvp_draws, role')
-      .eq('id', authStore.user.id)
-      .single() as { data: ProfileRow | null }
-
-    if (profile) {
-      elo.value = profile.elo_rating || DEFAULT_INITIAL_ELO
-      stats.value = { 
-        wins: profile.pvp_wins || 0, 
-        losses: profile.pvp_losses || 0, 
-        draws: profile.pvp_draws || 0 
-      }
+    const profileData = await fetchProfilePvPData(gameStore.db, authStore.user.id)
+    if (profileData) {
+      elo.value = profileData.elo
+      stats.value = profileData.stats
       maxElo.value = Math.max(maxElo.value, elo.value)
     }
 
-    // Load active seasonal rules from database
-    try {
-      const { data: rulesConfig } = await gameStore.db
-        .from('ranked_rules_config')
-        .select('*')
-        .eq('id', 'current')
-        .maybeSingle() as { data: { season_name?: string; config?: SeasonRules } | null }
-
-      if (rulesConfig && rulesConfig.config) {
-        const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)
-        const endStr = rulesConfig.config.endDate || rulesConfig.config.seasonEndDate
-        const isExpired = endStr ? Temporal.ZonedDateTime.compare(parseZonedTime(endStr, now.toString()), now) <= 0 : false
-
-        if (!isExpired) {
-          currentSeasonRules.value = rulesConfig.config
-        } else {
-          // Stale database record from a past expired season; fall back to annual calendar theme
-          const currentTheme = getSeasonalThemeForMonth(now.month)
-          currentSeasonRules.value = {
-            name: currentTheme.name,
-            levelCap: 50,
-            maxPokemon: 6,
-            allowedTypes: currentTheme.allowedTypes ? [...currentTheme.allowedTypes] : [],
-            bannedPokemonIds: currentTheme.bannedPokemonIds ? [...currentTheme.bannedPokemonIds] : []
-          }
-        }
-      }
-    } catch (err) {
-      console.error('[loadPvPData Rules Error]', err)
+    const rules = await fetchActiveSeasonRules(gameStore.db)
+    if (rules) {
+      currentSeasonRules.value = rules
     }
 
-    // Sync maxElo from game state for rewards
     maxElo.value = (gameStore.state.rankedMaxElo as number) || elo.value
     rewardsClaimed.value = gameStore.state.rankedRewardsClaimed ?? []
 
@@ -167,20 +118,9 @@ export const usePvPStore = defineStore('pvp', () => {
     passiveTeamActive.value = Boolean(passive?.is_active)
     gameStore.state.passiveTeamActive = passiveTeamActive.value
 
-    // Validate defending team eligibility against active season rules
     const defendingTeam = resolveDefendingTeam(gameStore.state)
     if (passiveTeamActive.value && currentSeasonRules.value && defendingTeam.length > 0) {
-      let firstInvalid: { mon: Pokemon; reason: string } | null = null
-      for (const mon of defendingTeam) {
-        const check = evaluatePokemonForSeason(mon, currentSeasonRules.value)
-        if (!check.eligible) {
-          firstInvalid = {
-            mon,
-            reason: check.reason || 'no cumple las reglas de la temporada'
-          }
-          break
-        }
-      }
+      const firstInvalid = findInvalidDefendingPokemon(defendingTeam, currentSeasonRules.value)
       if (firstInvalid) {
         await deactivatePassiveDefense(
           `Defensa Pasiva desactivada: ${firstInvalid.mon.name} no cumple las reglas de la temporada (${firstInvalid.reason}).`
@@ -188,27 +128,21 @@ export const usePvPStore = defineStore('pvp', () => {
       }
     }
 
-    // Login reminder toast if defense is disabled and pending flag is present
     if (!passiveTeamActive.value && typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_login_reminder_pending') === 'true') {
       sessionStorage.removeItem('pvp_login_reminder_pending')
       uiStore.notify('Recuerda activar tu Defensa Pasiva en el Home para proteger tu ELO.', '🛡️')
     }
 
-    // Fetch Passive Defense Reports
     await fetchDefenseReports()
 
-    // Fetch and sync Personal Match History
     if (gameStore.db && authStore.user) {
-      const onlineHistory = await fetchOnlineMatchHistory(gameStore.db, authStore.user.id)
-      if (onlineHistory.length > 0) {
-        gameStore.state.pvpMatchHistory = mergeMatchHistories(
-          gameStore.state.pvpMatchHistory,
-          onlineHistory
-        )
-      }
+      gameStore.state.pvpMatchHistory = await syncPvPPersonalHistory(
+        gameStore.db,
+        authStore.user.id,
+        gameStore.state.pvpMatchHistory || []
+      )
     }
 
-    // Check end-of-season rollover and grant rewards if season has transitioned
     checkSeasonRollover()
   }
 
@@ -490,14 +424,11 @@ export const usePvPStore = defineStore('pvp', () => {
     recordMatchResult,
     passiveTeamActive,
     defenseReports,
-    fetchDefenseReports,
     currentSeasonRules,
     seasonRange,
     loadPvPData,
-    checkSeasonRollover,
     togglePassiveTeam,
     deactivatePassiveDefense,
-    syncDefendingTeamSnapshot,
     scheduleDefenseSnapshotSync,
     flushPendingDefenseSnapshotSync,
     claimReward,

@@ -4,9 +4,14 @@ import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { useAudioStore } from '@/stores/audio.ts'
-import { useSocialStore } from '@/stores/social/social.ts'
 import { logger } from '@/logic/utils/logger'
 import type { RealtimeChannel } from '@supabase/supabase-js'
+
+let activeFriendIdsProvider: (() => string[]) | null = null
+
+export function registerFriendIdsProvider(provider: () => string[]): void {
+  activeFriendIdsProvider = provider
+}
 import { CHAT_DEDUP_TIME_WINDOW_MS, PRIVATE_CHAT_MAX_MESSAGES, CHAT_PRUNE_MESSAGES_LIMIT, CHAT_THROTTLE_INTERVAL_MS, PRIVATE_CHAT_MAX_MESSAGE_LENGTH } from '@/logic/constants/gameplay.ts'
 
 export interface ChatMessage {
@@ -26,6 +31,83 @@ export interface ChatMessage {
 
 import { parseInstantEpoch } from './chatDateHelper.ts'
 import { sanitizePrivateChats, type PrivateChat } from './chatSanitizer.ts'
+
+const DEFAULT_TRAINER_NAME = 'Entrenador' as const
+const EMPTY_STRING = '' as const
+
+interface ChatRowMeta {
+  senderId: string
+  senderName: string
+  message: string
+  createdAt: string
+  isIncoming: boolean
+  friendId: string
+}
+
+function extractChatRowMeta(row: Record<string, unknown>, myUid: string): ChatRowMeta | null {
+  const senderId = (row.senderId as string) || (row.senderid as string) || EMPTY_STRING
+  const typeStr = (row.type as string) || EMPTY_STRING
+  const isIncoming = senderId !== myUid
+  const friendId = isIncoming ? senderId : typeStr.replace('private:', EMPTY_STRING)
+  if (!friendId) return null
+
+  const senderName = (row.senderName as string) || (row.sendername as string) || DEFAULT_TRAINER_NAME
+  const message = (row.message as string) || EMPTY_STRING
+  const createdAt = (row.created_at as string) || Temporal.Now.instant().toString()
+
+  return {
+    senderId,
+    senderName,
+    message,
+    createdAt,
+    isIncoming,
+    friendId
+  }
+}
+
+function ensurePrivateChatRecord(
+  privateChats: Record<string, PrivateChat>,
+  chatKey: string,
+  isIncoming: boolean,
+  senderName: string,
+  initialLastInteractions: Record<string, number>
+): PrivateChat {
+  if (!privateChats[chatKey]) {
+    privateChats[chatKey] = {
+      username: isIncoming ? senderName : DEFAULT_TRAINER_NAME,
+      messages: [],
+      unreadCount: 0,
+      isCollapsed: true,
+      lastInteraction: 0
+    }
+    initialLastInteractions[chatKey] = 0
+  }
+  return privateChats[chatKey]
+}
+
+function appendChatMessageIfUnique(
+  chat: PrivateChat,
+  msg: ChatMessage,
+  msgEpoch: number,
+  isIncoming: boolean,
+  baselineTime: number
+): void {
+  const isDup = chat.messages.some((m: ChatMessage) => {
+    return m.text === msg.text && Math.abs(parseInstantEpoch(m.timestamp) - msgEpoch) < CHAT_DEDUP_TIME_WINDOW_MS
+  })
+
+  if (isDup) return
+
+  chat.messages.push(msg)
+  if (chat.messages.length > PRIVATE_CHAT_MAX_MESSAGES) {
+    chat.messages.shift()
+  }
+  chat.lastInteraction = msgEpoch
+
+  if (isIncoming && chat.isCollapsed && baselineTime > 0 && msgEpoch > baselineTime) {
+    chat.unreadCount++
+  }
+}
 
 export const useChatPrivateStore = defineStore('chatPrivate', () => {
   const authStore = useAuthStore()
@@ -86,69 +168,32 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
       const initialLastInteractions: Record<string, number> = {} // open-record: Generic key-value data dictionary container
 
       data.forEach((row: Record<string, unknown>) => {
-        const senderId = (row.senderId as string) || (row.senderid as string) || ''
-        const typeStr = (row.type as string) || ''
-        const isIncoming = senderId !== myId
-        const friendId = isIncoming ? senderId : typeStr.replace('private:', '')
-        if (!friendId) return
+        const meta = extractChatRowMeta(row, myId)
+        if (!meta) return
 
-        if (privateChats[friendId] && initialLastInteractions[friendId] === undefined) {
-          initialLastInteractions[friendId] = privateChats[friendId].lastInteraction || 0
+        const friendChat = privateChats[meta.friendId]
+        if (friendChat && initialLastInteractions[meta.friendId] === undefined) {
+          initialLastInteractions[meta.friendId] = friendChat.lastInteraction || 0
         }
       })
 
       data.forEach((row: Record<string, unknown>) => {
-        const senderId = (row.senderId as string) || (row.senderid as string) || ''
-        const senderName = (row.senderName as string) || (row.sendername as string) || 'Entrenador'
-        const message = (row.message as string) || ''
-        const typeStr = (row.type as string) || ''
-        const createdAt = (row.created_at as string) || Temporal.Now.instant().toString()
+        const meta = extractChatRowMeta(row, myId)
+        if (!meta) return
 
-        const isIncoming = senderId !== myId
-        const friendId = isIncoming ? senderId : typeStr.replace('private:', '')
-        if (!friendId) return
-
-        const chatKey = friendId
-
-        if (!privateChats[chatKey]) {
-          privateChats[chatKey] = {
-            username: isIncoming ? senderName : 'Entrenador',
-            messages: [],
-            unreadCount: 0,
-            isCollapsed: true,
-            lastInteraction: 0
-          }
-          initialLastInteractions[chatKey] = 0
+        const chat = ensurePrivateChatRecord(privateChats, meta.friendId, meta.isIncoming, meta.senderName, initialLastInteractions)
+        const msgObj: ChatMessage = {
+          senderId: meta.senderId,
+          senderName: meta.senderName,
+          text: meta.message,
+          timestamp: meta.createdAt
         }
-        const chat = privateChats[chatKey]
-        if (chat) {
-          const msgObj: ChatMessage = {
-            senderId,
-            senderName,
-            text: message,
-            timestamp: createdAt
-          }
 
-          const msgEpoch = parseInstantEpoch(createdAt)
-          const isDup = chat.messages.some((m: ChatMessage) => {
-            return m.text === message && Math.abs(parseInstantEpoch(m.timestamp) - msgEpoch) < CHAT_DEDUP_TIME_WINDOW_MS
-          })
+        const msgEpoch = parseInstantEpoch(meta.createdAt)
+        const initialLast = initialLastInteractions[meta.friendId] || 0
+        const baselineTime = initialLast > 0 ? initialLast : lastSaveTime
 
-          if (!isDup) {
-            chat.messages.push(msgObj)
-            if (chat.messages.length > PRIVATE_CHAT_MAX_MESSAGES) {
-              chat.messages.shift()
-            }
-            chat.lastInteraction = msgEpoch
-
-            const initialLast = initialLastInteractions[chatKey] || 0
-            const baselineTime = initialLast > 0 ? initialLast : lastSaveTime
-
-            if (isIncoming && chat.isCollapsed && baselineTime > 0 && msgEpoch > baselineTime) {
-              chat.unreadCount++
-            }
-          }
-        }
+        appendChatMessageIfUnique(chat, msgObj, msgEpoch, meta.isIncoming, baselineTime)
       })
       gameStore.state.chats = { ...privateChats }
       pruneOldMessages()
@@ -332,10 +377,10 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
 
 
   const totalUnreadChats = computed(() => {
-    const socialStore = useSocialStore()
-    const activeFriendIds = new Set((socialStore.friends || []).map(f => f.id))
+    const friendIds = activeFriendIdsProvider ? activeFriendIdsProvider() : []
+    const activeFriendIds = new Set(friendIds)
     return Object.entries(privateChats).reduce((sum, [friendId, chat]) => {
-      if (!activeFriendIds.has(friendId)) return sum
+      if (activeFriendIds.size > 0 && !activeFriendIds.has(friendId)) return sum
       return sum + chat.unreadCount
     }, 0)
   })
@@ -344,7 +389,6 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     activeChatId,
     privateChats,
     totalUnreadChats,
-    initPrivateInbox,
     sendPrivateMessage,
     openChat,
     closeChat

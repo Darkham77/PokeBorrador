@@ -1,4 +1,5 @@
 /** @vitest-environment jsdom */
+// jsdom-ok: Requires browser environment for local storage, OPFS persistence, and offline DBRouter mode
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useLivePvPStore } from '@/stores/livePvP.ts'

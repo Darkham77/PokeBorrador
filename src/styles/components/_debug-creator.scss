@@ -101,7 +101,7 @@
     outline: none !important;
     box-sizing: border-box !important;
     padding: 0 !important;
-    transform: none !important;
+    transform: none;
 
     &:hover {
       border-color: #a78bfa !important;
@@ -109,7 +109,7 @@
     }
 
     &:active {
-      transform: Translatey(2px) !important;
+      transform: Translatey(2px);
       box-shadow: none !important;
     }
 
@@ -124,7 +124,7 @@
       }
 
       &:active {
-        transform: Translatey(2px) !important;
+        transform: Translatey(2px);
         box-shadow: none !important;
       }
     }
@@ -143,7 +143,7 @@
       }
 
       &:active {
-        transform: Translatey(3px) !important;
+        transform: Translatey(3px);
         box-shadow: none !important;
       }
     }

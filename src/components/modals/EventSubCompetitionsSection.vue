@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { ResolvedSubCompetition, SubCompetitionConfig } from '@/logic/events/eventEngine'
-import { resolveSubCompetitionDirection } from '@/logic/events/eventEngine'
-import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
 import type { EventRewardType } from '@/types/system/stores'
+import { getSubCompDefaultIcon, getSubCompTitle } from './eventSubCompHelper'
+import EventPodiumPrizesList from './EventPodiumPrizesList.vue'
 
 interface Prize extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
   type?: EventRewardType
@@ -24,39 +24,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
-const getSubCompDefaultIcon = (catId: string) => {
-  if (catId.startsWith('ivs')) return '🧬'
-  if (catId.startsWith('weight')) return '⚖️'
-  if (catId.startsWith('height')) return '📏'
-  if (catId.startsWith('level')) return '📈'
-  if (catId.startsWith('friendship')) return '💖'
-  return '🏆'
-}
-
-const getSubCompTitle = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
-  const dir = resolveSubCompetitionDirection(props.eventId, sub.id, sub.order)
-  const speciesSuffix = ('targetSpecies' in sub && sub.targetSpecies) ? ` (${sub.targetSpecies.toUpperCase()})` : '' // domain-ok: Open dynamic text or non-domain string payload
-  if (sub.metric === 'total_ivs') {
-    return 'Mayor cantidad de IVs totales (0 a 186)'
-  }
-  if (sub.metric === 'stat_iv' && sub.targetStat) {
-    return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}` // domain-ok: Open dynamic text or non-domain string payload
-  }
-  if (sub.metric === 'weight') {
-    return (dir === 'max' ? 'Mayor Peso' : 'Menor Peso') + speciesSuffix
-  }
-  if (sub.metric === 'height') {
-    return (dir === 'max' ? 'Mayor Altura' : 'Menor Altura') + speciesSuffix
-  }
-  if (sub.metric === 'level') {
-    return (dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel') + speciesSuffix
-  }
-  if (sub.metric === 'friendship') {
-    return (dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad') + speciesSuffix
-  }
-  return sub.description || sub.name || 'Criterio de evaluación'
-}
 
 const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: Prize, third?: Prize } | null => {
   if (sub.prizes && (sub.prizes.first || sub.prizes.second || sub.prizes.third)) {
@@ -87,51 +54,14 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
       >
         <div class="sub-comp-header">
           <span class="emoji sub-comp-icon">{{ sub.icon || getSubCompDefaultIcon(sub.id) }}</span>
-          <span class="sub-comp-name pixelated">{{ getSubCompTitle(sub) }}</span>
+          <span class="sub-comp-name pixelated">{{ getSubCompTitle(props.eventId, sub) }}</span>
         </div>
 
         <!-- Prizes for this sub-competition -->
-        <div 
-          v-if="getSubCompPrizes(sub)" 
-          class="sub-prizes-list"
-        >
-          <div 
-            v-if="getSubCompPrizes(sub)?.first" 
-            class="sub-prize-row gold"
-          >
-            <div class="rank-badge pixelated">
-              <span class="emoji medal">🥇</span> 1°
-            </div>
-            <RewardPillsGroup
-              :prize="getSubCompPrizes(sub)!.first"
-              size="sm"
-            />
-          </div>
-          <div 
-            v-if="getSubCompPrizes(sub)?.second" 
-            class="sub-prize-row silver"
-          >
-            <div class="rank-badge pixelated">
-              <span class="emoji medal">🥈</span> 2°
-            </div>
-            <RewardPillsGroup
-              :prize="getSubCompPrizes(sub)!.second"
-              size="sm"
-            />
-          </div>
-          <div 
-            v-if="getSubCompPrizes(sub)?.third" 
-            class="sub-prize-row bronze"
-          >
-            <div class="rank-badge pixelated">
-              <span class="emoji medal">🥉</span> 3°
-            </div>
-            <RewardPillsGroup
-              :prize="getSubCompPrizes(sub)!.third"
-              size="sm"
-            />
-          </div>
-        </div>
+        <EventPodiumPrizesList
+          :prizes="getSubCompPrizes(sub)"
+          container-class="sub-prizes-list"
+        />
       </div>
     </div>
   </div>
@@ -144,44 +74,10 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
     <div class="section-tag">
       <span class="emoji">🏆</span> PREMIOS DEL PODIO
     </div>
-    <div class="prizes-container">
-      <div 
-        v-if="prizes.first" 
-        class="sub-prize-row gold"
-      >
-        <div class="rank-badge pixelated">
-          <span class="emoji medal">🥇</span> 1°
-        </div>
-        <RewardPillsGroup
-          :prize="prizes.first"
-          size="sm"
-        />
-      </div>
-      <div 
-        v-if="prizes.second" 
-        class="sub-prize-row silver"
-      >
-        <div class="rank-badge pixelated">
-          <span class="emoji medal">🥈</span> 2°
-        </div>
-        <RewardPillsGroup
-          :prize="prizes.second"
-          size="sm"
-        />
-      </div>
-      <div 
-        v-if="prizes.third" 
-        class="sub-prize-row bronze"
-      >
-        <div class="rank-badge pixelated">
-          <span class="emoji medal">🥉</span> 3°
-        </div>
-        <RewardPillsGroup
-          :prize="prizes.third"
-          size="sm"
-        />
-      </div>
-    </div>
+    <EventPodiumPrizesList
+      :prizes="props.prizes"
+      container-class="prizes-container"
+    />
   </div>
 </template>
 

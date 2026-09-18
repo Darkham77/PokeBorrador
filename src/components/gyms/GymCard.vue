@@ -5,9 +5,16 @@ import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import GymRewardPanel from './GymRewardPanel.vue'
-import { toPokemonType, type PokemonType } from '@/data/battle/types'
+import { toPokemonType } from '@/data/battle/types'
 import type { Gym } from '@/data/world/gyms'
 import { BATTLE_DIFFICULTIES, type BattleDifficulty } from '@/types/battle/battle'
+import {
+  getPokemonTypeIcon,
+  formatDifficultyLabel,
+  resolveGymButtonGradient,
+  resolveGymButtonShadow,
+  resolveGymHeaderGradient
+} from './gymCardHelper'
 
 const GYM_CARD_HOVER_BG_OPACITY_PERCENT = 0.05
 const GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT = 0.15
@@ -55,17 +62,22 @@ const handleRematch = () => {
   gymsStore.challengeRematch(props.gym.id)
 }
 
-const typeIcon = computed(() => {
-  const icons: Partial<Record<PokemonType, string>> = {
-    rock: '🪨', water: '💧', electric: '⚡', grass: '🌿',
-    poison: '☠️', psychic: '🔮', fire: '🔥', ground: '🌍'
-  }
-  return icons[props.gym.type] || '🏆'
-})
+const typeIcon = computed(() => getPokemonTypeIcon(props.gym.type))
 
 const leaderSpriteUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.TRAINER, props.gym.leader.toLowerCase())
 })
+
+const headerBgStyle = computed(() => ({ background: resolveGymHeaderGradient(props.gym.typeColor) }))
+const challengeBtnStyle = computed(() => ({
+  background: resolveGymButtonGradient(props.gym.typeColor),
+  boxShadow: resolveGymButtonShadow(props.gym.typeColor)
+}))
+const isHardDefeated = computed(() => gymsStore.isDifficultyDefeated(props.gym.id, 'hard'))
+const isRematchAvailable = computed(() => gymsStore.isRematchAvailable(props.gym.id))
+const isRematchDone = computed(() => gymsStore.isRematchDoneToday(props.gym.id))
+const currentDifficultyLabel = computed(() => formatDifficultyLabel(selectedDifficulty.value))
+const cardClasses = computed(() => ({ defeated: props.isDefeated, locked: props.isLocked }))
 
 const handleMouseEnter = () => {
   if (props.isLocked || !cardRef.value) return
@@ -136,14 +148,14 @@ const handleBtnLeave = (e: MouseEvent) => {
   <div
     ref="cardRef"
     class="pv-gym-card"
-    :class="{ defeated: isDefeated, locked: isLocked }"
+    :class="cardClasses"
     :style="{ '--gym-color': gym.typeColor }"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
     <div
       class="pv-card-header"
-      :style="{ background: `linear-gradient(180deg, ${gym.typeColor}15 0%, transparent 100%)` }"
+      :style="headerBgStyle"
     >
       <div class="header-main">
         <div class="leader-info">
@@ -217,7 +229,7 @@ const handleBtnLeave = (e: MouseEvent) => {
               @mouseenter="handleBtnEnter"
               @mouseleave="handleBtnLeave"
             >
-              {{ d === 'easy' ? 'FÁCIL' : d === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
+              {{ formatDifficultyLabel(d) }}
               <span
                 v-if="gymsStore.isDifficultyDefeated(gym.id, d)"
                 class="won-dot"
@@ -229,13 +241,13 @@ const handleBtnLeave = (e: MouseEvent) => {
             v-if="isDefeated"
             class="won-tag"
           >
-            <span class="emoji">✅</span> VICTORIA OBTENIDA en {{ selectedDifficulty === 'easy' ? 'FÁCIL' : selectedDifficulty === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
+            <span class="emoji">✅</span> VICTORIA OBTENIDA en {{ currentDifficultyLabel }}
           </div>
 
           <!-- Revancha Diaria (desbloqueada tras vencer modo Difícil) -->
-          <template v-if="gymsStore.isDifficultyDefeated(gym.id, 'hard')">
+          <template v-if="isHardDefeated">
             <button
-              v-if="gymsStore.isRematchAvailable(gym.id)"
+              v-if="isRematchAvailable"
               :id="'btn-rematch-' + gym.id"
               class="rematch-challenge-btn"
               @click.stop="handleRematch"
@@ -243,7 +255,7 @@ const handleBtnLeave = (e: MouseEvent) => {
               <span class="emoji">🔥</span> REVANCHA DIARIA (Lv 70-80)
             </button>
             <div
-              v-else-if="gymsStore.isRematchDoneToday(gym.id)"
+              v-else-if="isRematchDone"
               class="rematch-completed-tag"
             >
               <span class="emoji">✓</span> Revancha Diaria Completada Hoy
@@ -252,10 +264,7 @@ const handleBtnLeave = (e: MouseEvent) => {
 
           <button
             class="pv-challenge-btn"
-            :style="{ 
-              background: `Linear-Gradient(135deg, ${gym.typeColor} 0%, ${gym.typeColor}dd 100%)`,
-              boxShadow: `0 8px 25px ${gym.typeColor}44`
-            }"
+            :style="challengeBtnStyle"
             @click.stop="handleChallenge"
           >
             <span class="emoji">⚔️</span> {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR LÍDER' }}

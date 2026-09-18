@@ -131,7 +131,7 @@ export class TemplateIdAuditor extends FileScanAuditor<TemplateIdRuleId> {
           if (occ && firstOcc && occ.file !== firstOcc.file) {
             this.addViolation({
               ruleId: 'template-shared-static-id',
-              severity: 'warning',
+              severity: 'error',
               file: occ.file,
               line: occ.line,
               message: `Static id '${id}' is shared across multiple components (${distinctFiles.slice(0, 3).map(f => path.basename(f)).join(', ')}${distinctFiles.length > 3 ? '...' : ''}). Prefix with component name to avoid E2E locator collisions.`,

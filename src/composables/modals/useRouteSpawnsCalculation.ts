@@ -1,10 +1,8 @@
 import { computed } from 'vue'
-import { TYPE_TRANSLATIONS, type PokemonType } from '@/data/battle/types'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
 import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationProvider'
 import type { MapLocation } from '@/types/pokemon/encounters'
-import { GAME_RATIOS } from '@/data/system/constants'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { getNpcEncounterChances } from '@/logic/weather/weatherUtils'
@@ -16,21 +14,12 @@ import { useRouteSpawnsWild } from './useRouteSpawnsWild.ts'
 import { useRouteSpawnsFishing } from './useRouteSpawnsFishing.ts'
 import { useRouteSpawnsArchaeology } from './useRouteSpawnsArchaeology.ts'
 
-const ARCHAEOLOGY_CAVE_BASE_WEIGHT = 10;
-const ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT = 5;
-const RAINY_FISHING_CLIMATE_MULTIPLIER = 1.20;
-const EQUIPPED_TOOL_WEIGHT_BONUS = 600;
-
-interface ExtendedMapLocation extends MapLocation {
-  isVolcanic?: boolean
-  isSwamp?: boolean
-  isArctic?: boolean
-  isForest?: boolean
-  isCoastal?: boolean
-  isMountain?: boolean
-  isPlains?: boolean
-  isUrban?: boolean
-}
+import {
+  computeActiveWeights,
+  parseWeatherDescription,
+  formatTerrainTags,
+  type ExtendedMapLocation,
+} from './routeSpawnsCalculationHelper.ts'
 
 export interface RouteSpawnsProps {
   map: MapLocation;
@@ -69,77 +58,9 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     }
   })
 
-  const SPANISH_TYPE_ENTRIES = Object.entries(TYPE_TRANSLATIONS) as [PokemonType, string][]
-  const SPANISH_TYPE_MAP: Record<string, PokemonType> = Object.fromEntries([
-    ...SPANISH_TYPE_ENTRIES.map(([eng, esp]) => [esp.toLowerCase(), eng]), // text-ok: UI text display localization string
-    ['electrico', 'electric'],
-    ['dragon', 'dragon'],
-    ['psiquico', 'psychic']
-  ])
-
-  const SPANISH_TYPES_REGEX = /\b(normal|fuego|agua|planta|eléctrico|electrico|hielo|lucha|veneno|tierra|volador|psíquico|psiquico|bicho|roca|fantasma|dragón|dragon|siniestro|acero|hada)\b/gi
-
   const parsedDescriptionLines = computed(() => {
     const desc = weatherDetails.value?.description || ''
-    if (!desc) return []
-
-    const sentences = desc.split(/\n|\.\s+/).map(s => s.trim()).filter(Boolean)
-    return sentences.map(sentence => {
-      // Sanitizar indicadores de viñeta manual si existen (por ej. ▲, ▼, •)
-      const cleanSentence = sentence.endsWith('.') ? sentence : sentence
-      const currentSentence = cleanSentence.replace(/^[▲▼•]\s*/u, '').trim()
-      const lowerSentence = currentSentence.toLowerCase() // text-ok: UI text display localization string
-
-      let typeClass = ''
-      let icon = ''
-      let label = ''
-      let restOfSentence = currentSentence
-
-      if (lowerSentence.startsWith('potencia')) {
-        typeClass = 'boost'
-        icon = '▲ '
-        label = 'POTENCIA:'
-        restOfSentence = currentSentence.substring(8).trim()
-      } else if (lowerSentence.startsWith('debilita')) {
-        typeClass = 'debuff'
-        icon = '▼ '
-        label = 'DEBILITA:'
-        restOfSentence = currentSentence.substring(8).trim()
-      } else if (lowerSentence.startsWith('penaliza')) {
-        typeClass = 'debuff'
-        icon = '▼ '
-        label = 'PENALIZA:'
-        restOfSentence = currentSentence.substring(8).trim()
-      } else if (lowerSentence.startsWith('bloquea')) {
-        typeClass = 'block'
-        icon = 'block'
-        label = 'BLOQUEA:'
-        restOfSentence = currentSentence.substring(7).trim()
-      } else if (lowerSentence.startsWith('efecto:')) {
-        typeClass = 'effect'
-        icon = '⚡ '
-        label = 'EFECTO:'
-        restOfSentence = currentSentence.substring(7).trim()
-      }
-
-      const parts = restOfSentence.split(SPANISH_TYPES_REGEX)
-      const segments = parts.filter(Boolean).map(part => {
-        const lower = part.toLowerCase() // text-ok: UI text display localization string
-        const typeKey = SPANISH_TYPE_MAP[lower]
-        return {
-          text: part,
-          isType: !!typeKey,
-          type: typeKey || ''
-        }
-      })
-
-      return {
-        segments,
-        typeClass,
-        icon,
-        label
-      }
-    })
+    return parseWeatherDescription(desc)
   })
 
   const getStatusTooltip = (type: string) => {
@@ -182,75 +103,21 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
   }
 
   const terrainTags = computed(() => {
-    const m = props.map as ExtendedMapLocation
-    const tags: string[] = [] // no-domain: Non-domain utility collection or data structure
-    if (m.isCrystalCave) tags.push('💎 Cueva de Cristal')
-    if (m.isCave) tags.push('🧗 Cueva')
-    if (m.isVolcanic) tags.push('🌋 Volcánico')
-    if (m.isSwamp) tags.push('🐊 Pantano')
-    if (m.isArctic) tags.push('❄️ Ártico')
-    if (m.isForest) tags.push('🌲 Bosque')
-    if (m.isCoastal) tags.push('🏖️ Costa')
-    if (m.isMountain) tags.push('⛰️ Montaña')
-    if (m.isPlains) tags.push('🌾 Llanura')
-    if (m.isUrban) tags.push('🏙️ Urbano')
-    if (m.isIndoors) tags.push('🏠 Interior')
-    
-    if (tags.length === 0) tags.push('🌲 Exterior')
-    return tags.join(', ')
+    return formatTerrainTags(props.map as ExtendedMapLocation)
   })
 
   const activeWeights = computed(() => {
-    const weather = props.weather || 'clear'
-    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok: UI text display localization string
-    const climateFishingMultiplier = isRainy ? RAINY_FISHING_CLIMATE_MULTIPLIER : 1.0
-    const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
-    const fishingBonus = eventFishingBonus * climateFishingMultiplier
+    const hasFishingRod = (gameStore.state.fishingRodSecs ?? 0) > 0
+    const hasPickaxeOrBrush = (gameStore.state.pickaxeSecs ?? 0) > 0 || (gameStore.state.brushSecs ?? 0) > 0
+    const eventFishingBonus = eventStore.globalMultipliers?.fishing ?? 1
 
-    const groundWeight = 100
-    
-    let fishingWeight = 0
-    if (props.map.fishing) {
-      fishingWeight = GAME_RATIOS.encounters.fishing * 100 * fishingBonus
-      if ((gameStore.state.fishingRodSecs || 0) > 0) {
-        fishingWeight += EQUIPPED_TOOL_WEIGHT_BONUS
-      }
-    }
-
-    let archWeight = 0
-    if (props.map.archaeology) {
-      const isCave = !!props.map.isCave
-      const isMountain = !!props.map.isMountain
-      archWeight = isCave ? ARCHAEOLOGY_CAVE_BASE_WEIGHT : (isMountain ? ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT : 0)
-      if ((gameStore.state.pickaxeSecs || 0) > 0 || (gameStore.state.brushSecs || 0) > 0) {
-        archWeight += EQUIPPED_TOOL_WEIGHT_BONUS
-      }
-    }
-
-    const totalWeight = groundWeight + fishingWeight + archWeight
-
-    let baseFishingWeight = 0
-    if (props.map.fishing) {
-      baseFishingWeight = GAME_RATIOS.encounters.fishing * 100
-    }
-    let baseArchWeight = 0
-    if (props.map.archaeology) {
-      const isCave = !!props.map.isCave
-      const isMountain = !!props.map.isMountain
-      baseArchWeight = isCave ? ARCHAEOLOGY_CAVE_BASE_WEIGHT : (isMountain ? ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT : 0)
-    }
-    const baseTotalWeight = groundWeight + baseFishingWeight + baseArchWeight
-
-    return {
-      ground: groundWeight,
-      fishing: fishingWeight,
-      archaeology: archWeight,
-      total: totalWeight,
-      baseGround: groundWeight,
-      baseFishing: baseFishingWeight,
-      baseArchaeology: baseArchWeight,
-      baseTotal: baseTotalWeight
-    }
+    return computeActiveWeights(
+      props.map as ExtendedMapLocation,
+      props.weather,
+      hasFishingRod,
+      hasPickaxeOrBrush,
+      eventFishingBonus
+    )
   })
 
   const activeFishingChance = computed(() => {

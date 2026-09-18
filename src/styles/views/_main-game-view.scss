@@ -56,7 +56,7 @@
   // Estado inicial Móvil: siempre visible
   @include responsive(hud-mobile) {
     bottom: 0;
-    transform: Translatey(0) !important;
+    transform: Translatey(0);
     opacity: 1 !important;
     pointer-events: auto !important;
     display: flex;

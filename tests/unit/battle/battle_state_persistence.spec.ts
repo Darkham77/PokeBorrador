@@ -6,6 +6,7 @@ import type { BattleContext } from '@/types/battle/battleContext';
 
 vi.mock('@/logic/weather/weatherRegistry', () => ({
   requireWeatherId: vi.fn((id: string) => id),
+  resolveCurrentWeather: vi.fn(() => 'clear'),
 }));
 
 vi.mock('@/logic/weather/weatherGenerationProvider', () => ({

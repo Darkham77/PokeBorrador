@@ -7,6 +7,7 @@ let activeTooltipHide: ((immediate?: boolean) => void) | null = null; // singlet
 import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
 import { useTooltipPosition } from '@/composables/ui/useTooltipPosition'
+import PVTooltipDescriptionLine from '@/components/common/PVTooltipDescriptionLine.vue'
 
 const DEFAULT_TOOLTIP_DELAY_MS = 500
 const TOUCH_DRAG_THRESHOLD_PX = 15
@@ -25,7 +26,7 @@ const props = defineProps({
   touchInstant: { type: Boolean, default: false }
 })
 
-const isSimplified = inject('isModalPerformanceMode', ref(false))
+const isSimplified = inject('isModalFastMode', null) ?? inject('isModalPerformanceMode', ref(false))
 const isVisible = ref(false)
 const trigger = ref<HTMLElement | null>(null)
 const tooltip = ref<HTMLElement | null>(null)
@@ -139,10 +140,11 @@ const handleTouchStart = (e: TouchEvent) => {
     tooltipState.touchTimeout = null
   }
   
+  const TOUCH_LONG_PRESS_DELAY_SEC = 0.5;
   if (props.touchInstant) {
     show(true)
   } else {
-    tooltipState.touchTimeout = gsap.delayedCall(0.5, () => {
+    tooltipState.touchTimeout = gsap.delayedCall(TOUCH_LONG_PRESS_DELAY_SEC, () => {
       show(true)
       tooltipState.touchTimeout = null
     })
@@ -383,35 +385,11 @@ onUnmounted(() => {
                 v-if="description"
                 class="pv-tooltip-desc"
               >
-                <div
+                <PVTooltipDescriptionLine
                   v-for="(line, idx) in descriptionLines"
                   :key="idx"
-                  :class="[
-                    line.isDivider ? 'tooltip-divider-line' : 'tooltip-line',
-                    { 
-                      'has-bullet': line.hasBullet,
-                      'is-boost': line.isBoost,
-                      'is-debuff': line.isDebuff,
-                      'is-neutral': line.isNeutral,
-                      'is-quote': line.isQuote
-                    }
-                  ]"
-                >
-                  <hr
-                    v-if="line.isDivider"
-                    class="tooltip-divider"
-                  >
-                  <template v-else>
-                    <span
-                      v-if="line.hasBullet"
-                      class="emoji bullet-icon"
-                    >{{ line.bullet }}</span>
-                    <span 
-                      class="line-text"
-                      :class="{ 'is-quote': line.isQuote }"
-                    >{{ line.text }}</span>
-                  </template>
-                </div>
+                  :line="line"
+                />
               </span>
               <slot name="content" />
             </div>

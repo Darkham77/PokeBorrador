@@ -76,18 +76,18 @@
   &.is-low-power {
     &.is-hovered {
       .map-card-bg {
-        filter: var(--weather-only-filter, Brightness(1) contrast(1)) !important;
+        filter: var(--weather-only-filter, Brightness(1) contrast(1));
       }
     }
   }
 
   &.locked, &.safari-locked {
     will-change: transform, filter, opacity;
-    filter: none !important;
+    filter: none;
     opacity: 1 !important;
 
     .map-card-bg { 
-      filter: Grayscale(1) Brightness(0.4) !important; 
+      filter: Grayscale(1) Brightness(0.4); 
     }
     
     .location-header, .location-spawns, .guardian-status-badge, .faction-dominance {
@@ -233,13 +233,14 @@
     }
 
     &.spawn-silhouette:not(.is-pre-rendered) {
-      filter: pokemon-silhouette-optimized() !important;
+      filter: pokemon-silhouette-optimized();
       opacity: 1 !important;
     }
 
-    // Performance mode toggle
+    // Fast mode toggle
+    .fast-mode &,
     .performance-mode & {
-      filter: none !important;
+      filter: none;
     }
     
     &:hover {

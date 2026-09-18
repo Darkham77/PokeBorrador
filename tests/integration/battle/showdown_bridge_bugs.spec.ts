@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { createMockBattleContext } from '../../../scripts/e2e/fuzzer/core/fuzzer_mock_battle_store.ts';
 import { parseShowdownLogLine } from '../../../src/logic/battle/showdownBridge.ts';

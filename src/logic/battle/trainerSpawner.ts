@@ -107,9 +107,9 @@ export interface RivalEncounter {
 export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalEncounter> {
   const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
   const { getSpritesForArchetype } = await import('@/logic/utils/npcSpriteRouter');
-  const { toID } = await import('@pkmn/sim');
+  const { toID } = await import('@/logic/utils/strings');
   const { isEnabledPokemonId, MAX_POKEMON_LEVEL } = await import('@/data/system/constants');
-  const { RivalTeamGenerator } = await import('./rivalTeamGenerator');
+  const { requestRivalTeam } = await import('./showdownWorkerClient');
   const { applyCompetitiveSet } = await import('./trainerFactory');
 
   const availableSprites = getSpritesForArchetype('rival');
@@ -135,7 +135,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
   const aceSpeciesId = rivalPool[Math.floor(Math.random() * rivalPool.length)] || 'dragonite';
 
   // 2. Generate full balanced team using native Showdown engine rules
-  const generatedSets = RivalTeamGenerator.generateTeam({
+  const generatedSets = await requestRivalTeam({
     level: rivalLevel,
     teamSize: targetTeamSize,
     aceSpeciesId

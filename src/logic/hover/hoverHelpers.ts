@@ -53,72 +53,68 @@ export function hasVisualBorders(el: HTMLElement): boolean {
   return false
 }
 
+const DEFAULT_FALLBACK_COLOR = '#0a84ff';
+
+const FALLBACK_CSS_COLORS: Record<string, string> = {
+  'var(--blue)': '#0a84ff',
+  'var(--red)': '#ff453a',
+  'var(--yellow)': '#ffd60a',
+  'var(--green)': '#32d74b',
+  'var(--purple)': '#bf5af2',
+  'var(--coin-gold)': '#FFD700',
+  'var(--pokecenter-pink)': '#ff3366',
+  'var(--text)': '#f5f5f7',
+  'var(--gray)': '#86868b',
+  '--blue': '#0a84ff',
+  '--red': '#ff453a',
+  '--yellow': '#ffd60a',
+  '--green': '#32d74b',
+  '--purple': '#bf5af2',
+  '--coin-gold': '#FFD700',
+  '--pokecenter-pink': '#ff3366',
+  '--text': '#f5f5f7',
+  '--gray': '#86868b',
+  'blue': '#0a84ff',
+  'red': '#ff453a',
+  'yellow': '#ffd60a',
+  'green': '#32d74b',
+  'purple': '#bf5af2'
+};
+
+function extractVarName(color: string): string | null {
+  if (color.startsWith('var(')) {
+    const match = color.match(/var\(([^)]+)\)/);
+    return match?.[1]?.trim() ?? null;
+  }
+  if (color.startsWith('--')) {
+    return color;
+  }
+  return null;
+}
+
+function queryDomCssVariable(varName: string, element?: HTMLElement): string {
+  if (typeof window === 'undefined') return '';
+  const target = element ?? document.documentElement;
+  return window.getComputedStyle(target).getPropertyValue(varName).trim();
+}
+
 /**
  * Resolves a CSS variable string like var(--blue) to its corresponding hex/rgb color code.
  * Falls back to local Pokevicio theme standard colors if DOM queries fail.
  */
 export function resolveCssColor(colorStr: string, element?: HTMLElement): string {
-  if (!colorStr) return '#0a84ff'
-  const color = colorStr.trim()
+  if (!colorStr) return DEFAULT_FALLBACK_COLOR;
+  const color = colorStr.trim();
 
-  if (color.startsWith('var(')) {
-    const match = color.match(/var\(([^)]+)\)/)
-    if (match && match[1]) {
-      const varName = match[1].trim()
-      let value = ''
-      if (typeof window !== 'undefined') {
-        if (element) {
-          value = window.getComputedStyle(element).getPropertyValue(varName).trim()
-        } else {
-          value = window.getComputedStyle(document.documentElement).getPropertyValue(varName).trim()
-        }
-      }
-      if (value) {
-        return resolveCssColor(value, element)
-      }
+  const varName = extractVarName(color);
+  if (varName) {
+    const value = queryDomCssVariable(varName, element);
+    if (value) {
+      return resolveCssColor(value, element);
     }
   }
 
-  if (color.startsWith('--')) {
-    let value = ''
-    if (typeof window !== 'undefined') {
-      if (element) {
-        value = window.getComputedStyle(element).getPropertyValue(color).trim()
-      } else {
-        value = window.getComputedStyle(document.documentElement).getPropertyValue(color).trim()
-      }
-    }
-    if (value) return resolveCssColor(value, element)
-  }
-
-  const fallbackColors: Record<string, string> = {
-    'var(--blue)': '#0a84ff',
-    'var(--red)': '#ff453a',
-    'var(--yellow)': '#ffd60a',
-    'var(--green)': '#32d74b',
-    'var(--purple)': '#bf5af2',
-    'var(--coin-gold)': '#FFD700',
-    'var(--pokecenter-pink)': '#ff3366',
-    'var(--text)': '#f5f5f7',
-    'var(--gray)': '#86868b',
-    '--blue': '#0a84ff',
-    '--red': '#ff453a',
-    '--yellow': '#ffd60a',
-    '--green': '#32d74b',
-    '--purple': '#bf5af2',
-    '--coin-gold': '#FFD700',
-    '--pokecenter-pink': '#ff3366',
-    '--text': '#f5f5f7',
-    '--gray': '#86868b',
-    'blue': '#0a84ff',
-    'red': '#ff453a',
-    'yellow': '#ffd60a',
-    'green': '#32d74b',
-    'purple': '#bf5af2'
-  }
-
-  if (fallbackColors[color]) return fallbackColors[color]
-  return color
+  return FALLBACK_CSS_COLORS[color] ?? color;
 }
 
 /**

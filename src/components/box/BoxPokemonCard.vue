@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch, onUnmounted, type Ref } from 'vue'
 import { gsap } from 'gsap'
-import { getPokemonTier, calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -12,6 +12,16 @@ import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
+import { resolveCardStatusIndicators } from '@/components/pokemon/pokemonDisplayCardHelper'
+import {
+  resolveBoxCardClasses,
+  resolveHpRatio,
+  resolveStatColor,
+  resolveBoxTierInfo,
+  resolveComputedTypePillSize,
+  resolveCardAuraClass
+} from './boxPokemonCardHelper'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ComponentPillSize } from '@/types/system/game'
@@ -23,25 +33,25 @@ const props = withDefaults(defineProps<{
   index: number
   isSelected?: boolean
   selectionType?: string | null
-  isPerformanceMode?: boolean
+  isFastMode?: boolean
   hideStats?: boolean
   typePillSize?: ComponentPillSize
 }>(), {
   isSelected: false,
   selectionType: null,
-  isPerformanceMode: false,
+  isFastMode: false,
   hideStats: false,
   typePillSize: 'sm'
 })
 
-const isModalPerformance = inject<Ref<boolean> | null>('isModalPerformanceMode', null)
-const isPerformanceActive = computed(() => {
-  if (props.isPerformanceMode || uiStore.isSimplifiedModalsMode) return true
+const isModalFast = inject<Ref<boolean> | null>('isModalFastMode', null) ?? inject<Ref<boolean> | null>('isModalPerformanceMode', null)
+const isFastActive = computed(() => {
+  if (props.isFastMode || uiStore.isSimplifiedModalsMode) return true
   
-  if (isModalPerformance !== null) {
-    return isModalPerformance.value
+  if (isModalFast !== null) {
+    return isModalFast.value
   } else {
-    return uiStore.isAnyBlockingModalOpen
+    return uiStore.isFastMode
   }
 })
 
@@ -51,30 +61,13 @@ const cardEmit = defineEmits<{
 
 const visualBadges = computed(() => props.pokemon ? getPokemonVisualBadges(props.pokemon) : [])
 const numBadges = computed(() => visualBadges.value.length)
-const hasBadges = computed(() => numBadges.value > 0)
-const hasManyBadges = computed(() => numBadges.value > 3)
-const tierInfo = computed(() => props.pokemon ? getPokemonTier(props.pokemon) : { tier: '?', color: 'var(--gray)', rgb: '30, 41, 59', bg: 'rgba(255, 255, 255, 0.05)' })
+const tierInfo = computed(() => resolveBoxTierInfo(props.pokemon))
 const spriteUrl = computed(() => props.pokemon ? getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
   isShiny: props.pokemon.isShiny 
 }) : '')
 
-const hpRatio = computed(() => {
-  const p = props.pokemon
-  if (!p) return 0
-  const hp = p.hp !== undefined ? p.hp : (p.maxHp || 100)
-  const maxHp = p.maxHp || 100
-  if (maxHp === 0) return 0
-  return Math.max(0, Math.min(1, hp / maxHp))
-})
-
-const statColor = computed(() => {
-  const ratio = hpRatio.value
-  if (ratio > 0.5) return 'var(--green)'
-  if (ratio > 0.2) return 'var(--yellow)'
-  return 'var(--red)'
-})
-
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
+const hpRatio = computed(() => resolveHpRatio(props.pokemon?.hp, props.pokemon?.maxHp))
+const statColor = computed(() => resolveStatColor(hpRatio.value))
 
 const totalIvs = computed(() => {
   if (props.hideStats || !props.pokemon) return 0
@@ -87,17 +80,23 @@ const totalPower = computed(() => {
 })
 
 const fieldPassive = computed(() => props.pokemon ? getFieldPassiveBadges(props.pokemon) : null)
+const statusIndicators = computed(() => props.pokemon ? resolveCardStatusIndicators(props.pokemon, fieldPassive.value) : [])
 
-const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+'))
+const computedTypePillSize = computed(() => resolveComputedTypePillSize(props.pokemon, props.typePillSize))
+const auraClass = computed(() => resolveCardAuraClass(props.pokemon?.aura, isFastActive.value))
 
-const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
+const cardClasses = computed(() => resolveBoxCardClasses({
+  isSelected: props.isSelected,
+  selectionType: props.selectionType,
+  numBadges: numBadges.value,
+  isFastActive: isFastActive.value,
+  isPremium: tierInfo.value.isPremium,
+  pokemon: props.pokemon
+}))
 
-const computedTypePillSize = computed(() => {
-  if (props.pokemon && props.pokemon.type && props.pokemon.type2) {
-    return 'ssm'
-  }
-  return props.typePillSize
-})
+const handleSpriteError = (e: Event) => {
+  (e.target as HTMLImageElement).style.display = 'none'
+}
 
 // --- ANIMACIONES DE GSAP ---
 const animatedHpRatio = ref(hpRatio.value)
@@ -178,23 +177,10 @@ onUnmounted(() => {
 
 <template>
   <div
-    :class="[
-      'box-pokemon-card', 
-      { 
-        selected: props.isSelected, 
-        [`mode-${props.selectionType}`]: !!props.selectionType,
-        'with-badges': hasBadges, 
-        'many-badges': hasManyBadges,
-        'performance-mode': isPerformanceActive,
-        'is-premium-tier': isPremiumTier,
-        'is-on-mission': props.pokemon?.onMission,
-        'is-on-event': props.pokemon?.onEvent,
-        'is-busy': props.pokemon?.onMission || props.pokemon?.onEvent || props.pokemon?.inDaycare || props.pokemon?.onDefense
-      }
-    ]"
+    :class="cardClasses"
     :style="{ 
       '--tier-color': tierInfo.color,
-      '--tier-color-rgb': tierColorRgb
+      '--tier-color-rgb': tierInfo.rgb
     }"
     @click.stop="cardEmit('click', $event, props.index)"
   >
@@ -213,48 +199,13 @@ onUnmounted(() => {
           size="sm"
         />
         <PVTooltip
-          v-if="fieldPassive"
-          :title="`HABILIDAD: ${fieldPassive.label.toUpperCase()}`"
-          :description="fieldPassive.desc"
+          v-for="indicator in statusIndicators"
+          :key="indicator.key"
+          :title="indicator.title"
+          :description="indicator.description"
         >
-          <div class="status-indicator field-passive">
-            <span class="emoji">{{ fieldPassive.icon }}</span>
-          </div>
-        </PVTooltip>
-        <PVTooltip
-          v-if="props.pokemon.onMission"
-          title="Misión"
-          description="Este Pokémon está en una misión activa."
-        >
-          <div class="status-indicator mission">
-            <span class="emoji">🧭</span>
-          </div>
-        </PVTooltip>
-        <PVTooltip
-          v-if="props.pokemon.onEvent"
-          title="Evento"
-          description="Este Pokémon está participando en un evento o concurso activo."
-        >
-          <div class="status-indicator event">
-            <span class="emoji">🏆</span>
-          </div>
-        </PVTooltip>
-        <PVTooltip
-          v-if="props.pokemon.inDaycare"
-          title="Guardería"
-          description="Este Pokémon está en la guardería."
-        >
-          <div class="status-indicator daycare">
-            <span class="emoji">🥚</span>
-          </div>
-        </PVTooltip>
-        <PVTooltip
-          v-if="props.pokemon.onDefense"
-          title="Defensa"
-          description="Este Pokémon está asignado a la defensa."
-        >
-          <div class="status-indicator defense">
-            <span class="emoji">🛡️</span>
+          <div :class="['status-indicator', indicator.cssClass]">
+            <span class="emoji">{{ indicator.icon }}</span>
           </div>
         </PVTooltip>
       </div>
@@ -282,14 +233,14 @@ onUnmounted(() => {
         :is-guardian="props.pokemon.isGuardian"
         :sparkle-count="5"
         :sprite-scale="1.3"
-        :enabled="!isPerformanceActive"
+        :enabled="!isFastActive"
       >
         <img
           :src="spriteUrl"
           class="box-card-sprite"
-          :class="[(props.pokemon.aura && !isPerformanceActive) ? `aura-${props.pokemon.aura}-mini` : '']"
+          :class="[auraClass]"
           alt="pokemon"
-          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+          @error="handleSpriteError"
         >
       </PVSpriteFX>
     </div>
@@ -483,7 +434,8 @@ onUnmounted(() => {
     }
   }
 
-  // --- PERFORMANCE MODE OVERRIDES ---
+  // --- FAST / PERFORMANCE MODE OVERRIDES ---
+  &.fast-mode,
   &.performance-mode {
     
     will-change: auto; 
@@ -493,7 +445,7 @@ onUnmounted(() => {
       &::before { opacity: 0 !important; }
       
       :deep(.box-card-sprite) {
-        transform: Translatey(-4px) !important;
+        transform: Translatey(-4px);
       }
     }
 

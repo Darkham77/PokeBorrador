@@ -1,10 +1,11 @@
 import { toID } from '@/logic/utils/strings.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move, Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
-import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
+import { requirePokemonMoveId, type MoveCategory, type PokemonMoveId } from '@/data/battle/moves';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
 import type { BattleContext } from '../../types/battle/battleContext.ts';
+import type { BattleSide } from '../../types/battle/battle.ts';
 
 function syncMatchingPokemon(team: (Pokemon | null)[] | undefined, target: Pokemon) {
   if (!team) return;
@@ -64,27 +65,33 @@ const CURE_STATUS_MESSAGES: Record<string, string> = {
   par: 'se curó de la parálisis!',
 };
 
+const RADIX_DECIMAL = 10 as const;
+const DEFAULT_FALLBACK_HP = 0 as const;
+
+function parseShowdownHp(hpString: string, currentMaxHp: number): number {
+  const [hpRatio] = hpString.trim().split(' ');
+  if (!hpRatio) return DEFAULT_FALLBACK_HP;
+
+  const hpParts = hpRatio.split('/');
+  const parsedHp = parseInt(hpParts[0] || '0', RADIX_DECIMAL);
+  if (isNaN(parsedHp)) return DEFAULT_FALLBACK_HP;
+
+  if (hpParts[1]) {
+    const parsedMax = parseInt(hpParts[1], RADIX_DECIMAL);
+    if (!isNaN(parsedMax) && parsedMax > 0) {
+      const realMax = currentMaxHp || parsedMax;
+      return Math.round((parsedHp / parsedMax) * realMax);
+    }
+  }
+  return parsedHp;
+}
+
 async function handleDamageToken(ctx: SBCtx): Promise<boolean> {
   const { store, parts, line, p, getPoke } = ctx;
   const victim = getPoke(parts[2] || '');
   const hpString = parts[3] || '';
   if (victim && hpString) {
-    const [hpRatio] = hpString.trim().split(' ');
-    if (hpRatio) {
-      const hpParts = hpRatio.split('/');
-      const parsedHp = parseInt(hpParts[0] || '0', 10);
-      if (hpParts[1]) {
-        const parsedMax = parseInt(hpParts[1], 10);
-        if (!isNaN(parsedMax) && parsedMax > 0) {
-          const realMax = victim.maxHp || parsedMax;
-          victim.hp = Math.round((parsedHp / parsedMax) * realMax);
-        } else {
-          victim.hp = parsedHp;
-        }
-      } else {
-        victim.hp = parsedHp;
-      }
-    }
+    victim.hp = parseShowdownHp(hpString, victim.maxHp);
     const fromClause = parts.find(part => part.startsWith('[from]'));
     const isSilent = line.includes('[silent]');
     if (!isSilent) {
@@ -105,22 +112,7 @@ function handleHealToken(ctx: SBCtx): boolean {
   const target = getPoke(parts[2] || '');
   const hpString = parts[3] || '';
   if (target && hpString) {
-    const [hpRatio] = hpString.trim().split(' ');
-    if (hpRatio) {
-      const hpParts = hpRatio.split('/');
-      const parsedHp = parseInt(hpParts[0] || '0', 10);
-      if (hpParts[1]) {
-        const parsedMax = parseInt(hpParts[1], 10);
-        if (!isNaN(parsedMax) && parsedMax > 0) {
-          const realMax = target.maxHp || parsedMax;
-          target.hp = Math.round((parsedHp / parsedMax) * realMax);
-        } else {
-          target.hp = parsedHp;
-        }
-      } else {
-        target.hp = parsedHp;
-      }
-    }
+    target.hp = parseShowdownHp(hpString, target.maxHp);
     if (target.hp > 0) {
       target.fainted = false;
     }
@@ -184,6 +176,81 @@ function handleCureStatusToken(ctx: SBCtx): boolean {
   return true;
 }
 
+function updateAttackerMoveVolatiles(
+  attacker: Pokemon,
+  side: BattleSide,
+  cleanMoveId: PokemonMoveId,
+  translatedName: string,
+  moveData: ReturnType<typeof pokemonDataProvider.getMoveData>,
+  turnLogs?: string[],
+  getSide?: (id: string) => BattleSide | null
+): void {
+  const lastMove: Move = {
+    id: cleanMoveId,
+    name: translatedName,
+    pp: 0,
+    maxPP: 0
+  };
+  attacker.lastMove = lastMove;
+
+  const hasPrepareThisTurn = turnLogs?.some(l => {
+    const lp = l.split('|').map(x => x.trim());
+    return lp[1] === '-prepare' && getSide?.(lp[2] || '') === side;
+  });
+
+  if (!hasPrepareThisTurn && attacker.volatileCounters) {
+    delete attacker.volatileCounters['twoturnmove'];
+  }
+
+  const isLockedMove = moveData?.self?.volatileStatus === 'lockedmove';
+  if (isLockedMove) {
+    if (!attacker.volatileCounters) attacker.volatileCounters = {};
+    attacker.volatileCounters['lockedmove'] = 1;
+  }
+
+  if (attacker.disabledTurns) {
+    attacker.disabledTurns = Math.max(0, attacker.disabledTurns - 1);
+    if (attacker.disabledTurns === 0) {
+      attacker.disabledMove = null;
+      if (attacker.moves) {
+        attacker.moves.forEach(m => { if (m) m.disabled = false; });
+      }
+    }
+  }
+}
+
+async function playMoveAnimationSequence(
+  store: SBCtx['store'],
+  side: BattleSide,
+  cleanMoveId: PokemonMoveId,
+  translatedName: string,
+  moveData: ReturnType<typeof pokemonDataProvider.getMoveData>
+): Promise<void> {
+  if (store.attackerSide) store.attackerSide.value = side;
+  if (store.activeMove) {
+    store.activeMove.value = {
+      id: cleanMoveId,
+      name: translatedName,
+      type: moveData?.type || 'normal',
+      cat: (moveData?.cat || 'physical') as MoveCategory,
+      power: moveData?.power,
+      acc: moveData?.acc,
+      pp: 0,
+      maxPP: 0,
+      priority: moveData?.priority || 0,
+      effect: moveData?.effect,
+      target: ((moveData as { target?: string })?.target || 'normal') as 'enemy' | 'self' | 'all'
+    };
+  }
+
+  if (store.animations?.awaitTween) {
+    await store.animations.awaitTween(`attack-${side}`);
+  }
+
+  if (store.attackerSide) store.attackerSide.value = null;
+  if (store.activeMove) store.activeMove.value = null;
+}
+
 async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
   const { store, parts, line, p, getPoke, getSide, turnLogs } = ctx;
   const side = getSide(parts[2] || '');
@@ -199,63 +266,10 @@ async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
     store.addLog(`¡${attacker.name} usó ${translatedName}!${isFromEffect ? ' (efecto)' : ''}`, style, attacker);
     const cleanMoveId = requirePokemonMoveId(toID(moveId));
 
-    const lastMove: Move = {
-      id: cleanMoveId,
-      name: translatedName,
-      pp: 0,
-      maxPP: 0
-    };
-    attacker.lastMove = lastMove;
-
-    const hasPrepareThisTurn = turnLogs?.some(l => {
-      const lp = l.split('|').map(x => x.trim());
-      return lp[1] === '-prepare' && getSide(lp[2] || '') === side;
-    });
-
-    if (!hasPrepareThisTurn && attacker.volatileCounters) {
-      delete attacker.volatileCounters['twoturnmove'];
-    }
-
-    const isLockedMove = moveData?.self?.volatileStatus === 'lockedmove';
-    if (isLockedMove && attacker) {
-      if (!attacker.volatileCounters) attacker.volatileCounters = {};
-      attacker.volatileCounters['lockedmove'] = 1;
-    }
-
-    if (attacker.disabledTurns) {
-      attacker.disabledTurns = Math.max(0, attacker.disabledTurns - 1);
-      if (attacker.disabledTurns === 0) {
-        attacker.disabledMove = null;
-        if (attacker.moves) {
-          attacker.moves.forEach(m => { if (m) m.disabled = false; });
-        }
-      }
-    }
+    updateAttackerMoveVolatiles(attacker, side, cleanMoveId, translatedName, moveData, turnLogs, getSide);
 
     if (!isMissed) {
-      if (store.attackerSide) store.attackerSide.value = side;
-      if (store.activeMove) {
-        store.activeMove.value = {
-          id: cleanMoveId,
-          name: translatedName,
-          type: moveData?.type || 'normal',
-          cat: (moveData?.cat || 'physical') as MoveCategory,
-          power: moveData?.power,
-          acc: moveData?.acc,
-          pp: 0,
-          maxPP: 0,
-          priority: moveData?.priority || 0,
-          effect: moveData?.effect,
-          target: ((moveData as { target?: string })?.target || 'normal') as 'enemy' | 'self' | 'all'
-        };
-      }
-
-      if (store.animations?.awaitTween) {
-        await store.animations.awaitTween(`attack-${side}`);
-      }
-
-      if (store.attackerSide) store.attackerSide.value = null;
-      if (store.activeMove) store.activeMove.value = null;
+      await playMoveAnimationSequence(store, side, cleanMoveId, translatedName, moveData);
     }
   }
   return true;
@@ -310,15 +324,7 @@ function handleSetHpToken(ctx: SBCtx): boolean {
   const target = getPoke(parts[2] || '');
   const hpString = parts[3] || '';
   if (target && hpString) {
-    const parsed = hpString.split('/').map(n => parseInt(n || '0', 10));
-    const cur = parsed[0] ?? 0;
-    const max = parsed[1] ?? 0;
-    if (!isNaN(max) && max > 0) {
-      const realMax = target.maxHp || max;
-      target.hp = Math.round((cur / max) * realMax);
-    } else if (!isNaN(cur)) {
-      target.hp = cur;
-    }
+    target.hp = parseShowdownHp(hpString, target.maxHp);
     syncCombatantToTeam(store, target);
   }
   return true;
@@ -382,6 +388,13 @@ const CORE_EVENT_DISPATCHER: Record<string, (ctx: SBCtx) => Promise<boolean> | b
   clearpoke: () => true,
 };
 
+const IGNORED_ENEMY_LOG_TOKENS = [
+  'move', '-damage', '-heal', '-status', '-curestatus', '-sethp', 'faint'
+] as const;
+type IgnoredEnemyLogToken = typeof IGNORED_ENEMY_LOG_TOKENS[number];
+
+const IGNORED_ENEMY_LOG_TYPES: ReadonlySet<IgnoredEnemyLogToken> = new Set(IGNORED_ENEMY_LOG_TOKENS);
+
 /**
  * Dispatches core combat events (move, damage, heal, faint, status, etc.) via Strategy Action Map.
  */
@@ -389,7 +402,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
   const { store, type } = ctx;
 
   if (store.activeBattle.value && Reflect.get(store.activeBattle.value, 'ignoreEnemyLogs')) {
-    if (type === 'move' || type === '-damage' || type === '-heal' || type === '-status' || type === '-curestatus' || type === '-sethp' || type === 'faint') {
+    if (IGNORED_ENEMY_LOG_TYPES.has(type as IgnoredEnemyLogToken)) {
       return true;
     }
   }

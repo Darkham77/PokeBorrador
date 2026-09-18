@@ -64,6 +64,8 @@ Whenever asked to "actualiza el entorno de trabajo", "actualizar el entorno de t
 
 - **Update Tools & Clean Dependencies (Single Command)**: `./setup-linux.sh` (Linux/macOS) / `.\setup-windows.ps1` (Windows)
 - **Verify Build Tools**: `npm run validate:tools` (verifies and compiles native binary `css-checker-kit`)
+- **Build & Bundle Analysis**: `npm run build:analyze` (builds production bundle with `ANALYZE='true'`, generates visual interactive treemap in `scratch/bundle_stats.html`)
+- **Audit Bundle Chunks & Budgets**: `npm run audit:bundle` (verifies bundle chunk sizes and critical budget limits)
 - **Verify Vulnerabilities**: `npm audit`
 - **Clean Cache**: `npm cache clean --force`
 - **Clean Reinstall (Manual)**: `rm -rf node_modules package-lock.json && npm install`

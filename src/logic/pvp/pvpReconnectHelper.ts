@@ -10,6 +10,7 @@ import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 import type { PvPAction } from '@/types/battle/pvp';
 import { PVP_RECONNECT_WINDOW_SEC } from '@/types/battle/pvp';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import { logger } from '@/logic/utils/logger';
 
 export const PVP_ACTIVE_MATCH_STORAGE_KEY = 'pvp_active_match';
 
@@ -46,8 +47,8 @@ export function clearActivePvPSession(): void {
   if (typeof window === 'undefined' || !window.sessionStorage) return;
   try {
     window.sessionStorage.removeItem(PVP_ACTIVE_MATCH_STORAGE_KEY);
-  } catch {
-    /* ignore storage errors */
+  } catch (err) {
+    logger.warn('[pvpReconnectHelper] Error eliminando sesión activa de sessionStorage:', err);
   }
 }
 

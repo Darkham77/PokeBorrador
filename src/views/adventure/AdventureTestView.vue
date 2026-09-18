@@ -7,9 +7,10 @@ import MapCard from '@/components/map/MapCard.vue'
 import ArchaeologyModal from '@/components/modals/ArchaeologyModal.vue'
 import FishingModal from '@/components/modals/FishingModal.vue'
 import PreTravelModal from '@/components/adventure/PreTravelModal.vue'
-import AdventureCheatPanel from '@/components/adventure/AdventureCheatPanel.vue'
+import AdventureManualSidebar from '@/components/adventure/AdventureManualSidebar.vue'
 import AdventureDirectionPad from '@/components/adventure/AdventureDirectionPad.vue'
 import type { MapLocation } from '@/types/pokemon/encounters'
+import type { GraphEdge, AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import AdventureEventModal from '@/components/adventure/AdventureEventModal.vue'
 
@@ -116,6 +117,49 @@ onMounted(() => {
     jumpToPoint(originPos.x + CARD_W / 2, originPos.y + CARD_H / 2)
   }
 })
+
+const MO_EMOJI_MAP: Record<string, string> = {
+  surf: '🌊',
+  cut: '🌳',
+  strength: '🪨',
+  rock_smash: '🧱'
+}
+
+function getMoEmoji(mo?: string): string {
+  return (mo && MO_EMOJI_MAP[mo]) || '🔑'
+}
+
+function getMoTooltipTitle(mo: string): string {
+  // domain-ok: UI display label for MO
+  return `Requisito: MO ${mo.toUpperCase()} (${moLabels[mo] || mo})`
+}
+
+function getMoTooltipDesc(mo: string): string {
+  return activeHMs.value.has(mo)
+    ? '▲ ¡Desbloqueado! Puedes transitar.'
+    : '▼ Falta MO activada en tu equipo para pasar.'
+}
+
+function isMoUnlocked(mo: string): boolean {
+  return activeHMs.value.has(mo)
+}
+
+function getEdgeClass(edge: GraphEdge): Record<string, boolean> {
+  return {
+    'edge-on-path': isEdgeOnPath(edge.from, edge.to),
+    'edge-blocked': !isEdgeTraversable(edge),
+    'edge-mo': Boolean(edge.mo)
+  }
+}
+
+function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
+  return {
+    'is-origin': nodeId === originMap.value,
+    'is-destination': nodeId === destinationMap.value,
+    'is-on-path': pathSet.value.has(nodeId),
+    'is-current': nodeId === currentMapId.value && isTraveling.value
+  }
+}
 </script>
 
 <template>
@@ -157,109 +201,20 @@ onMounted(() => {
         />
 
         <!-- Sidebar for Logs & MOs (inside top half, right side) -->
-        <div class="adv-manual-sidebar">
-          <div class="adv-panel adv-column adv-inventory-column">
-            <h3 class="adv-pixel-text adv-column-title">
-              MOs e Items
-            </h3>
-            <label class="adv-toggle-control">
-              <input
-                v-model="isBikeActive"
-                type="checkbox"
-              >
-              <span class="adv-toggle-label"><span class="emoji">🚲</span> Bicicleta</span>
-            </label>
-            <div class="adv-hm-list">
-              <button
-                v-for="hm in ['cut', 'surf', 'strength', 'flash', 'rock_smash', 'waterfall', 'fly']"
-                :key="hm"
-                :class="['adv-hm-btn', { active: activeHMs.has(hm) }]"
-                @click="toggleHM(hm)"
-              >
-                {{ (moLabels[hm] || hm) }}
-              </button>
-            </div>
-          </div>
-          
-          <div
-            class="adv-panel adv-column adv-team-passives-column"
-            style="display: flex; flex-direction: column; gap: 8px;"
-          >
-            <h3
-              class="adv-pixel-text adv-column-title"
-              style="margin-bottom: 2px;"
-            >
-              Pasivas y Acciones
-            </h3>
-            <!-- Active Passives List -->
-            <div
-              class="adv-passives-list"
-              style="display: flex; flex-direction: column; gap: 4px; font-size: 8px; font-family: var(--font-pixel);"
-            >
-              <div
-                v-for="passive in activeTeamPassives.list"
-                :key="passive.label"
-                style="background: rgba(76,175,80,0.15); border: 1px solid #4caf50; padding: 4px; border-radius: 4px; display: flex; flex-direction: column; gap: 2px;"
-              >
-                <span style="color: #4caf50; font-weight: bold;"><span class="emoji">🌟</span> {{ passive.label }}</span>
-                <span style="font-size: 6px; color: #ccc;">{{ passive.desc }}</span>
-              </div>
-              <div
-                v-if="activeTeamPassives.list.length === 0"
-                style="color: #888; font-size: 6px; text-align: center; padding: 6px;"
-              >
-                No hay pasivas de equipo activas.
-              </div>
-            </div>
-
-            <!-- Active Field Moves Buttons -->
-            <div
-              class="adv-active-moves-list"
-              style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;"
-            >
-              <button
-                v-for="move in availableActiveMoves"
-                :key="move.pokemonUid + move.moveName"
-                class="adv-hm-btn"
-                style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; font-family: var(--font-pixel); padding: 4px 6px; width: 100%; text-align: left;"
-                :disabled="move.pp <= 0"
-                @click="useActiveRouteMove(move.pokemonUid, move.moveName)"
-              >
-                <span><span class="emoji">{{ move.moveName.toLowerCase().includes('tele') ? '🔮' : '🌸' }}</span> {{ move.moveName }} ({{ move.pokemonName }})</span>
-                <span :style="{ color: move.pp > 0 ? '#ffcb05' : '#ef5350' }">PP {{ move.pp }}/{{ move.maxPP }}</span>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Sandbox Cheat Panel -->
-          <AdventureCheatPanel
-            v-model:injected-items="injectedItems"
-            @add-log="(msg) => travelLog.push(msg)"
-          />
-          
-          <div class="adv-panel adv-column adv-console-column">
-            <h3 class="adv-pixel-text adv-column-title">
-              Logs
-            </h3>
-            <div class="adv-log-lines">
-              <div
-                v-for="(log, idx) in travelLog"
-                :key="idx"
-                class="adv-log-line"
-              >
-                {{ log }}
-              </div>
-            </div>
-            <button
-              v-if="isTraveling"
-              class="adv-btn-danger"
-              style="margin-top: 10px; width: 100%; padding: 8px; font-family: var(--font-pixel); font-size: 8px;"
-              @click="cancelTravel"
-            >
-              Cancelar Viaje <span class="emoji">🛑</span>
-            </button>
-          </div>
-        </div>
+        <AdventureManualSidebar
+          v-model:is-bike-active="isBikeActive"
+          v-model:injected-items="injectedItems"
+          :active-h-ms="activeHMs"
+          :mo-labels="moLabels"
+          :active-team-passives="activeTeamPassives"
+          :available-active-moves="availableActiveMoves"
+          :travel-log="travelLog"
+          :is-traveling="isTraveling"
+          @toggle-hm="toggleHM"
+          @use-move="useActiveRouteMove"
+          @add-log="(msg) => travelLog.push(msg)"
+          @cancel-travel="cancelTravel"
+        />
       </div>
 
       <!-- Lower Section: Camera Viewport with MapCard Canvas (50%) -->
@@ -324,14 +279,7 @@ onMounted(() => {
                   :y1="nodePositions[edge.from]!.y + CARD_H / 2"
                   :x2="nodePositions[edge.to]!.x + CARD_W / 2"
                   :y2="nodePositions[edge.to]!.y + CARD_H / 2"
-                  :class="[
-                    'edge-line',
-                    {
-                      'edge-on-path': isEdgeOnPath(edge.from, edge.to),
-                      'edge-blocked': !isEdgeTraversable(edge),
-                      'edge-mo': !!edge.mo,
-                    }
-                  ]"
+                  :class="['edge-line', getEdgeClass(edge)]"
                 />
               </template>
             </svg>
@@ -351,16 +299,16 @@ onMounted(() => {
                 }"
               >
                 <PVTooltip
-                  :title="`Requisito: MO ${edge.mo.toUpperCase()} (${moLabels[edge.mo] || edge.mo})`"
-                  :description="activeHMs.has(edge.mo) ? '▲ ¡Desbloqueado! Puedes transitar.' : '▼ Falta MO activada en tu equipo para pasar.'"
+                  :title="getMoTooltipTitle(edge.mo)"
+                  :description="getMoTooltipDesc(edge.mo)"
                   position="top"
                 >
                   <div
                     v-gsap-hover
                     class="adv-mo-icon-bubble"
-                    :class="{ 'mo-unlocked': activeHMs.has(edge.mo) }"
+                    :class="{ 'mo-unlocked': isMoUnlocked(edge.mo) }"
                   >
-                    <span class="bubble-emoji">{{ edge.mo === 'surf' ? '🌊' : edge.mo === 'cut' ? '🌳' : edge.mo === 'strength' ? '🪨' : edge.mo === 'rock_smash' ? '🧱' : '🔑' }}</span> <!-- // text-ok: UI text display localization string -->
+                    <span class="bubble-emoji">{{ getMoEmoji(edge.mo) }}</span>
                   </div>
                 </PVTooltip>
               </div>
@@ -393,12 +341,7 @@ onMounted(() => {
               v-for="nodeId in validNodeIds"
               :key="nodeId"
               class="adv-map-card-node clickable-node"
-              :class="{
-                'is-origin': nodeId === originMap,
-                'is-destination': nodeId === destinationMap,
-                'is-on-path': pathSet.has(nodeId),
-                'is-current': nodeId === currentMapId && isTraveling,
-              }"
+              :class="getNodeClass(nodeId)"
               :style="{
                 left: `${nodePositions[nodeId]!.x}px`,
                 top: `${nodePositions[nodeId]!.y}px`,

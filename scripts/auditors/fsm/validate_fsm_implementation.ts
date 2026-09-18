@@ -241,7 +241,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
         if (!isAtomic) {
           this.addViolation({
             ruleId: 'fsm-non-atomic-timer',
-            severity: 'warning',
+            severity: 'error',
             file: path.relative(process.cwd(), file.path).replace(/\\/g, '/'),
             line: idx + 1,
             message: `[CHECK 4] setTimeout no atómico en ${path.basename(file.path)}:${idx + 1}: ${t.slice(0, LOG_PREVIEW_TRUNCATE_LENGTH)}`,
@@ -269,7 +269,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
       if (found && unawaited) {
         this.addViolation({
           ruleId: 'fsm-unawaited-substate',
-          severity: 'warning',
+          severity: 'error',
           file: 'src/logic/battle/battleStateMachine.ts',
           line: 1,
           message: `[CHECK 5] '${sub}' exige await según manual.`,

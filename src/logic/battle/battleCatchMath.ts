@@ -56,14 +56,11 @@ import {
   TRAINER_IV_PENALTY_RATE
 } from '@/logic/constants/gameplay.ts';
 
-export function calculateCatchRatePure(
-  pokemon: PurePokemon,
-  rawBallType: ItemId = 'pokeball',
-  eventCatchMult = 1,
-  ctx: PureCatchOptions = {}
-): CatchRateResult {
-  const behavior = BALL_BEHAVIORS[rawBallType] ?? { mult: 1.0 }
-
+function calculateClassMultiplier(ctx: PureCatchOptions): {
+  classMultiplier: number;
+  bugSynergyBonus: number;
+  trainerIvPenaltyApplied: boolean;
+} {
   let classMultiplier = 1.0;
   let bugSynergyBonus = 0;
   let trainerIvPenaltyApplied = false;
@@ -79,45 +76,69 @@ export function calculateCatchRatePure(
     classMultiplier = Math.max(0.1, classMultiplier - TRAINER_IV_PENALTY_RATE);
   }
 
+  return { classMultiplier, bugSynergyBonus, trainerIvPenaltyApplied };
+}
+
+function resolveBallMultiplier(rawBallType: ItemId, pokemon: PurePokemon, ctx: PureCatchOptions): number {
+  const behavior = BALL_BEHAVIORS[rawBallType];
+  if (!behavior) return 1.0;
+  if (typeof behavior.mult === 'function') return behavior.mult(pokemon, ctx);
+  return behavior.mult ?? 1.0;
+}
+
+function resolveStatusMultiplier(status?: string | null): number {
+  if (status === 'slp' || status === 'frz') return 2.0;
+  return status ? 1.5 : 1.0;
+}
+
+function rollShakes(b: number): number {
+  let shakes = 0;
+  for (let i = 0; i < 4; i++) {
+    if (Math.random() * CATCH_MATH_65535_MAX < b) shakes++;
+    else break;
+  }
+  return shakes;
+}
+
+export function calculateCatchRatePure(
+  pokemon: PurePokemon,
+  rawBallType: ItemId = 'pokeball',
+  eventCatchMult = 1,
+  ctx: PureCatchOptions = {}
+): CatchRateResult {
+  const behavior = BALL_BEHAVIORS[rawBallType] ?? { mult: 1.0 };
+  const { classMultiplier, bugSynergyBonus, trainerIvPenaltyApplied } = calculateClassMultiplier(ctx);
+
   if (behavior.guaranteed) {
-    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: false, bugSynergyBonus, trainerIvPenaltyApplied }
+    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: false, bugSynergyBonus, trainerIvPenaltyApplied };
   }
 
-  let ballMult = 1.0
-  if (typeof behavior.mult === 'function') ballMult = behavior.mult(pokemon, ctx)
-  else if (behavior.mult) ballMult = behavior.mult
+  const ballMult = resolveBallMultiplier(rawBallType, pokemon, ctx);
+  const currenthp = pokemon.hp ?? 10;
+  const maxHp = pokemon.maxHp ?? 10;
+  const hpFactor = (3 * maxHp - 2 * currenthp) / (3 * maxHp);
+  const catchRate = pokemon.catchRate ?? 45;
 
-  const currenthp = pokemon.hp ?? 10
-  const maxHp = pokemon.maxHp ?? 10
-  const hpFactor = (3 * maxHp - 2 * currenthp) / (3 * maxHp)
-  const catchRate = pokemon.catchRate ?? 45
+  const statusMult = resolveStatusMultiplier(pokemon.status);
+  const eventBonus = eventCatchMult - 1;
+  const ballbonus = Math.max(0.1, ballMult + eventBonus);
+  const totalMult = ballbonus * classMultiplier;
 
-  // Status multiplier: 2.0 for Sleep/Freeze, 1.5 for Paralyzed/Burn/Poison, 1.0 without status
-  const statusMult = (pokemon.status === 'slp' || pokemon.status === 'frz') ? 2.0 : 
-                     (pokemon.status ? 1.5 : 1.0)
+  const rawRate = Math.floor(catchRate * totalMult * hpFactor * statusMult);
+  const statusApplied = statusMult > 1.0;
 
-  const eventBonus = eventCatchMult - 1
-  const ballbonus = Math.max(0.1, ballMult + eventBonus)
-  const totalMult = ballbonus * classMultiplier
-
-  const rawRate = Math.floor(catchRate * totalMult * hpFactor * statusMult)
-  const statusApplied = statusMult > 1.0
-
-  // 06_captura.md: If a >= 255, captured automatically without checking shakes
   if (rawRate >= CATCH_MATH_255_MAX) {
-    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: statusApplied, bugSynergyBonus, trainerIvPenaltyApplied }
+    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: statusApplied, bugSynergyBonus, trainerIvPenaltyApplied };
   }
 
-  const finalRate = Math.max(1, rawRate)
-  const b = Math.floor(CATCH_MATH_65535_MAX * Math.pow(finalRate / CATCH_MATH_255_MAX, 0.25))
+  const finalRate = Math.max(1, rawRate);
+  const b = Math.floor(CATCH_MATH_65535_MAX * Math.pow(finalRate / CATCH_MATH_255_MAX, 0.25));
 
-  // Critical Capture Roll
-  const pokedexCount = ctx.pokedexCount ?? 0
-  const ccThreshold = calculateCriticalCaptureThreshold(finalRate, pokedexCount)
-  const isCritical = !!ctx.forceCritical || (ccThreshold > 0 && Math.random() * CATCH_MATH_256_MAX < ccThreshold)
+  const pokedexCount = ctx.pokedexCount ?? 0;
+  const ccThreshold = calculateCriticalCaptureThreshold(finalRate, pokedexCount);
+  const isCritical = !!ctx.forceCritical || (ccThreshold > 0 && Math.random() * CATCH_MATH_256_MAX < ccThreshold);
 
   if (isCritical) {
-    // Canonical Modern Critical Capture: Exactly 1 visual wobble and 100% guaranteed catch
     return {
       caught: true,
       shakes: 1,
@@ -125,15 +146,10 @@ export function calculateCatchRatePure(
       statusMultiplierApplied: statusApplied,
       bugSynergyBonus,
       trainerIvPenaltyApplied
-    }
+    };
   }
 
-  // Standard 4 shakes loop
-  let shakes = 0
-  for (let i = 0; i < 4; i++) {
-    if (Math.random() * CATCH_MATH_65535_MAX < b) shakes++
-    else break
-  }
+  const shakes = rollShakes(b);
 
   return {
     caught: shakes === 4,
@@ -142,7 +158,7 @@ export function calculateCatchRatePure(
     statusMultiplierApplied: statusApplied,
     bugSynergyBonus,
     trainerIvPenaltyApplied
-  }
+  };
 }
 
 export function calculateEscapeChancePure(

@@ -5,13 +5,11 @@ import { useUIStore } from '@/stores/ui.ts'
 import { safeStorage } from '@/logic/utils/storage'
 import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts'
-import { useBattleStore } from '@/stores/battle/battle.ts'
 import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
 import type { ItemEffectResult, BagMainTab, ItemDiscardAction } from '@/types/inventory/items'
 import type { SortOrder, ItemSortKey } from '@/types/system/game'
 import { executeUseItem } from '@/stores/inventory/inventoryUseAction.ts'
 import {
-  findInventoryKey as helperFindInventoryKey,
   isEquippableHeldItem,
   isItemUsableOn as helperIsItemUsableOn,
   mapInventoryToItems,
@@ -73,19 +71,14 @@ export const useInventoryStore = defineStore('inventory', () => {
     safeStorage.setItem('inventory_last_tab', newVal)
   })
 
-  function findInventoryKey(id: ItemId): ItemId | null { // domain-ok: Open dynamic text or non-domain string payload
-    return helperFindInventoryKey(gameStore, id)
-  }
-
   // --- GETTERS ---
   const bagItems = computed<Item[]>(() => {
     const inventory = gameStore.state.inventory || {}
-    const isBattleActive = useBattleStore().isBattleActive
+    const isBattleActive = uiStore.isBattleActive
     let items = mapInventoryToItems(inventory, isBattleActive, activeMainTab.value)
 
     if (activeCategory.value === 'utilizables') {
       const target = uiStore.inventoryTarget
-      const isBattleActive = useBattleStore().isBattleActive
       if (target) {
         const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
         const pokemon = list[target.index]
@@ -142,25 +135,6 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     return result
   })
-
-  const CATEGORY_LABELS = {
-    utilizables: 'Utilizables',
-    todos: 'Todos',
-    // Materiales
-    raw_material: 'Materia Prima',
-    refined_material: 'Materia Refinada',
-    component: 'Componentes',
-    // Productos
-    pokeballs: 'Pokéballs',
-    potions: 'Curativos',
-    stones: 'Piedras',
-    combat_held: 'Equipables',
-    breeding_held: 'Crianza',
-    machinery: 'Maquinaria',
-    tools: 'Herramientas',
-    tms: 'Discos MT',
-    otros: 'Otros'
-  }
 
   // --- BAG ACTIONS ---
   function toggleBagSellMode() {
@@ -339,14 +313,12 @@ export const useInventoryStore = defineStore('inventory', () => {
     currentSort,
     currentSortOrder,
     bagItems,
-    CATEGORY_LABELS,
     toggleBagSellMode,
     toggleBagSellItem,
     toggleBagSellSelect: toggleBagSellItem,
     updateBagSellQty,
     getBagSellTotalGain,
     confirmBagSell,
-    findInventoryKey,
     // Items
     useItem,
     equipItem,

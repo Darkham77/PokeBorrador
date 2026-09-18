@@ -25,11 +25,12 @@ let classMissionTicker: gsap.core.Tween | null = null
 
 onMounted(() => {
   buffsStore.initTick()
+  const TICK_INTERVAL_SEC = 1
   const tickNow = () => {
     now.value = Temporal.Now.instant().epochMilliseconds
-    classMissionTicker = gsap.delayedCall(1, tickNow)
+    classMissionTicker = gsap.delayedCall(TICK_INTERVAL_SEC, tickNow)
   }
-  classMissionTicker = gsap.delayedCall(1, tickNow)
+  classMissionTicker = gsap.delayedCall(TICK_INTERVAL_SEC, tickNow)
 })
 
 onUnmounted(() => {

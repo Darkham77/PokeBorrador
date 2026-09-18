@@ -2,8 +2,13 @@
 import { computed } from 'vue'
 import { useModalStore, type Modal } from '@/stores/modals'
 import ModalHierarchyProvider from '@/components/common/ModalHierarchyProvider.vue'
+import { MODAL_REGISTRY, type ModalRegistryKey } from '@/logic/modals/registry'
 
 const modalStore = useModalStore()
+
+const resolveModalComponent = (modal: Modal) => {
+  return modal.component || (modal.name in MODAL_REGISTRY ? MODAL_REGISTRY[modal.name as ModalRegistryKey] : null)
+}
 
 /**
  * El modal que se considera "Superior" para restaurar efectos.
@@ -39,7 +44,7 @@ const blockingModalIndex = computed(() => {
       :is-simplified="Number(index) < blockingModalIndex"
     >
       <component
-        :is="modal.component"
+        :is="resolveModalComponent(modal)"
         v-bind="modal.props"
         :show="!modal.closing"
         @close="modalStore.close(modal.id)"

@@ -22,7 +22,7 @@ import type { Pokemon, PokemonGenderName } from '../../src/types/pokemon/pokemon
 import type { NpcSpriteId } from '../../src/data/pokemon/npcSpriteCatalog.ts';
 import type { NumericSeed } from '../../src/types/battle/battle.ts';
 import { createCertifiedBattleInventory } from './fuzzer/core/certifiedBattleInventory.ts';
-import { PokemonLegalityValidator } from '../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
+import { PokemonLegalityValidator } from '../../src/logic/battle/engine/pokemonLegalityValidator.ts';
 
 const DEFAULT_SCENARIO_POKEMON_LEVEL = 50;
 
@@ -1171,15 +1171,26 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * garantizando que el elemento esté habilitado (:not(.is-disabled)) y coordinando
    * los eventos de sincronización FSM / battle-ready.
    */
-  public async throwBall(ballId: string, options: { expectCapture?: boolean; timeout?: number } = {}): Promise<void> {
-    const { expectCapture = false, timeout = MAX_PER_ACTION_TIMEOUT_MS * 2 } = options;
+  public async throwBall(
+    ballId: string,
+    options: { expectCapture?: boolean; timeout?: number; awaitFlowCompletion?: boolean } = {}
+  ): Promise<void> {
+    const {
+      expectCapture = false,
+      timeout = MAX_PER_ACTION_TIMEOUT_MS * 2,
+      awaitFlowCompletion = true
+    } = options;
     const ballCard = this.page.locator(`.quick-item-card[data-item-id="${ballId}"]:not(.is-disabled)`).first();
     await ballCard.waitFor({ state: 'visible', timeout });
 
     if (expectCapture) {
-      await armBattleFlowCompletion(this.page);
-      await clickResilient(ballCard, { timeout });
-      await awaitBattleFlowCompletion(this.page);
+      if (awaitFlowCompletion) {
+        await armBattleFlowCompletion(this.page);
+        await clickResilient(ballCard, { timeout });
+        await awaitBattleFlowCompletion(this.page);
+      } else {
+        await clickResilient(ballCard, { timeout });
+      }
     } else {
       await armBattleReadyForInput(this.page, timeout);
       await clickResilient(ballCard, { timeout });

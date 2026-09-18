@@ -1,4 +1,5 @@
 import './logic/utils/temporal-init.ts'
+import '@/logic/system/gamePrefetchCoordinator.ts'
 import { createApp } from 'vue'
 
 import { createPinia, type Pinia } from 'pinia'

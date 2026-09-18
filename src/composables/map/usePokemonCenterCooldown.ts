@@ -23,9 +23,10 @@ export function usePokemonCenterCooldown() {
     );
   };
 
+  const COOLDOWN_TICK_INTERVAL_SEC = 1;
   const tickCooldown = () => {
     updateCooldown();
-    cooldownTween = gsap.delayedCall(1, tickCooldown);
+    cooldownTween = gsap.delayedCall(COOLDOWN_TICK_INTERVAL_SEC, tickCooldown);
   };
 
   const handleCooldownClick = () => {

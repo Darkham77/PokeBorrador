@@ -21,52 +21,53 @@ const LUCKY_EGG_EXP_BOOST_PCT = 50
 const BUFF_DURATION_30_MIN_MIN = 30
 const INFINITE_EVENT_SECS_FALLBACK = 86400
 
+const EVENT_MULTIPLIER_CONFIGS = [
+  { key: 'speciesRateMult', icon: '🎯', label: 'Aparición' },
+  { key: 'fishingMult', icon: '🎣', label: 'Pesca' },
+  { key: 'expMult', icon: '⚡', label: 'EXP' },
+  { key: 'moneyMult', icon: '💰', label: 'Dinero' },
+  { key: 'bcMult', icon: '🪙', label: 'Battle Coins' },
+  { key: 'archaeologyMult', icon: '⛏️', label: 'Arqueología' },
+  { key: 'bugCatchingMult', icon: '🦗', label: 'Caza Bichos' },
+  { key: 'casinoLuckyMult', icon: '🎰', label: 'Suerte Casino' },
+  { key: 'hatchMult', icon: '🥚', label: 'Velocidad Eclosión' }
+] as const satisfies readonly { key: keyof EventConfig; icon: string; label: string }[]
+
+function formatSpeciesBonus(rawSpecies?: string): string | null {
+  if (!rawSpecies || rawSpecies === '*') return null
+  const speciesNames = rawSpecies
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+    .join(', ')
+  return speciesNames ? `Especies: ${speciesNames}` : null
+}
+
+function formatShinyBonus(cfg: EventConfig): string | null {
+  const mult = (cfg.speciesShinyMult && cfg.speciesShinyMult > 1) ? cfg.speciesShinyMult : ((cfg.shinyMult && cfg.shinyMult > 1) ? cfg.shinyMult : 0)
+  return mult > 1 ? `✨ x${mult} Shiny` : null
+}
+
 export function formatEventBonusDescription(cfg: EventConfig, ev: GameEvent, rotation: { title?: string; species?: string } | null): string {
   const bonusParts: string[] = [] // domain-ok: Open dynamic text or non-domain string payload
-  const rawSpecies = rotation?.species || cfg.species
-  if (rawSpecies && rawSpecies !== '*') {
-    const speciesNames = rawSpecies
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean)
-      .map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
-      .join(', ')
-    if (speciesNames) {
-      bonusParts.push(`Especies: ${speciesNames}`)
+  const speciesPart = formatSpeciesBonus(rotation?.species || cfg.species)
+  if (speciesPart) {
+    bonusParts.push(speciesPart)
+  }
+
+  const shinyPart = formatShinyBonus(cfg)
+  if (shinyPart) {
+    bonusParts.push(shinyPart)
+  }
+
+  for (const item of EVENT_MULTIPLIER_CONFIGS) {
+    const val = cfg[item.key]
+    if (typeof val === 'number' && val > 1) {
+      bonusParts.push(`${item.icon} x${val} ${item.label}`)
     }
   }
-  if (cfg.speciesShinyMult && cfg.speciesShinyMult > 1) {
-    bonusParts.push(`✨ x${cfg.speciesShinyMult} Shiny`)
-  } else if (cfg.shinyMult && cfg.shinyMult > 1) {
-    bonusParts.push(`✨ x${cfg.shinyMult} Shiny`)
-  }
-  if (cfg.speciesRateMult && cfg.speciesRateMult > 1) {
-    bonusParts.push(`🎯 x${cfg.speciesRateMult} Aparición`)
-  }
-  if (cfg.fishingMult && cfg.fishingMult > 1) {
-    bonusParts.push(`🎣 x${cfg.fishingMult} Pesca`)
-  }
-  if (cfg.expMult && cfg.expMult > 1) {
-    bonusParts.push(`⚡ x${cfg.expMult} EXP`)
-  }
-  if (cfg.moneyMult && cfg.moneyMult > 1) {
-    bonusParts.push(`💰 x${cfg.moneyMult} Dinero`)
-  }
-  if (cfg.bcMult && cfg.bcMult > 1) {
-    bonusParts.push(`🪙 x${cfg.bcMult} Battle Coins`)
-  }
-  if (cfg.archaeologyMult && cfg.archaeologyMult > 1) {
-    bonusParts.push(`⛏️ x${cfg.archaeologyMult} Arqueología`)
-  }
-  if (cfg.bugCatchingMult && cfg.bugCatchingMult > 1) {
-    bonusParts.push(`🦗 x${cfg.bugCatchingMult} Caza Bichos`)
-  }
-  if (cfg.casinoLuckyMult && cfg.casinoLuckyMult > 1) {
-    bonusParts.push(`🎰 x${cfg.casinoLuckyMult} Suerte Casino`)
-  }
-  if (cfg.hatchMult && cfg.hatchMult > 1) {
-    bonusParts.push(`🥚 x${cfg.hatchMult} Velocidad Eclosión`)
-  }
+
   if (ev.type === 'competition') {
     bonusParts.push('🏆 Competición Activa')
   }
@@ -120,8 +121,115 @@ export function buildActiveEventBuffs(
   return list
 }
 
+interface ToolTierConfig {
+  name: string;
+  itemId: ItemId;
+  desc: string;
+}
+
+const FISHING_ROD_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
+  standard: {
+    name: 'Caña de pescar', // spanish-ok: UI Spanish text localization label
+    itemId: 'fishingrod',
+    desc: `Sube mucho la pesca por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
+  },
+  good: {
+    name: 'Caña Buena', // spanish-ok: UI Spanish text localization label
+    itemId: 'fishingrodgood',
+    desc: 'Sube la pesca y bonifica a los Pokémon raros (+500 pts).'
+  },
+  super: {
+    name: 'Supercaña', // spanish-ok: UI Spanish text localization label
+    itemId: 'fishingrodsuper',
+    desc: 'Sube la pesca y bonifica a los Pokémon raros (+1000 pts). Aumenta chance de Shiny x1.5.'
+  }
+};
+
+const PICKAXE_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
+  standard: {
+    name: 'Pico de excavación', // spanish-ok: UI Spanish text localization label
+    itemId: 'pickaxe',
+    desc: `Sube la arqueología por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
+  },
+  good: {
+    name: 'Pico Bueno', // spanish-ok: UI Spanish text localization label
+    itemId: 'pickaxesilver',
+    desc: 'Sube la arqueología y bonifica minerales y gemas (+500 pts).'
+  },
+  super: {
+    name: 'Superpico', // spanish-ok: UI Spanish text localization label
+    itemId: 'pickaxegold',
+    desc: 'Sube la arqueología y bonifica minerales y gemas (+1000 pts).'
+  }
+};
+
+const BRUSH_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
+  standard: {
+    name: 'Pincel de excavación', // spanish-ok: UI Spanish text localization label
+    itemId: 'brush',
+    desc: `Sube la arqueología por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
+  },
+  good: {
+    name: 'Pincel Bueno', // spanish-ok: UI Spanish text localization label
+    itemId: 'brushgood',
+    desc: 'Sube la arqueología y bonifica fósiles (+500 pts).'
+  },
+  super: {
+    name: 'Superpincel', // spanish-ok: UI Spanish text localization label
+    itemId: 'brushsuper',
+    desc: 'Sube la arqueología y bonifica fósiles (+1000 pts).'
+  }
+};
+
+function buildToolBuff(
+  id: string,
+  secs: number,
+  type: ToolQualityTier | null | undefined,
+  emoji: string,
+  configs: Record<ToolQualityTier, ToolTierConfig>
+): ActiveBuffItem {
+  const resolvedType: ToolQualityTier = type || 'standard';
+  const config = configs[resolvedType] || configs.standard;
+  return {
+    id,
+    secs,
+    name: `${emoji} ${config.name}`,
+    desc: config.desc,
+    icon: getAssetUrl(ASSET_TYPES.ITEM, config.itemId),
+    tier: resolvedType
+  };
+}
+
+interface SimpleBuffDef {
+  key: keyof GameState;
+  id: string;
+  name: string;
+  desc: string;
+  itemId: ItemId;
+}
+
+const SIMPLE_BUFF_DEFS: readonly SimpleBuffDef[] = [
+  { key: 'shinyBoostSecs', id: 'shiny', name: '✨ Ticket Shiny', desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.', itemId: 'ticketshiny' }, // spanish-ok: UI Spanish text localization label
+  { key: 'amuletCoinSecs', id: 'amulet', name: '💰 Moneda Amuleto', desc: 'Duplica el dinero ganado en combate.', itemId: 'amuletcoin' }, // spanish-ok: UI Spanish text localization label
+  { key: 'luckyEggSecs', id: 'lucky-egg', name: '🥚 Huevo Suerte Pequeño', desc: `Aumenta la EXP ganada en un ${LUCKY_EGG_EXP_BOOST_PCT}% durante ${BUFF_DURATION_30_MIN_MIN} minutos.`, itemId: 'luckyegg' }, // spanish-ok: UI Spanish text localization label
+  { key: 'safariTicketSecs', id: 'safari', name: '🎫 Ticket Safari', desc: 'Permite entrar a la Zona Safari.', itemId: 'ticketsafari' }, // spanish-ok: UI Spanish text localization label
+  { key: 'ceruleanTicketSecs', id: 'cerulean', name: '🌀 Ticket Cueva Celeste', desc: 'Permite entrar a la Cueva Celeste.', itemId: 'ticketcerulean' }, // spanish-ok: UI Spanish text localization label
+  { key: 'articunoTicketSecs', id: 'articuno', name: '❄️ Ticket Articuno', desc: 'Permite entrar a las Islas Espuma.', itemId: 'ticketarticuno' }, // spanish-ok: UI Spanish text localization label
+  { key: 'mewtwoTicketSecs', id: 'mewtwo', name: '🧬 Ticket Mewtwo', desc: 'Permite entrar a la Cueva Celeste (Mewtwo).', itemId: 'ticketmewtwo' }, // spanish-ok: UI Spanish text localization label
+  { key: 'ivScannerSecs', id: 'iv-scanner', name: '🔍 Escáner de IVs', desc: 'Muestra los IVs totales de Pokémon salvajes.', itemId: 'ivscanner' } // spanish-ok: UI Spanish text localization label
+] as const;
+
+const INCENSE_TYPES_MAP: Partial<Record<ItemId, string>> = {
+  incensefire: 'Fuego',
+  incensewater: 'Agua',
+  incensegrass: 'Planta',
+  incensenormal: 'Normal',
+  incenseghost: 'Fantasma',
+  incensepsychic: 'Psíquico' // spanish-ok: UI Spanish text localization label
+};
+
 export function buildActivePlayerItemBuffs(s: GameState): ActiveBuffItem[] {
-  const list: ActiveBuffItem[] = []
+  const list: ActiveBuffItem[] = [];
 
   if (s.repelSecs > 0) {
     list.push({
@@ -130,96 +238,44 @@ export function buildActivePlayerItemBuffs(s: GameState): ActiveBuffItem[] {
       name: 'Repelente', // spanish-ok: UI Spanish text localization label
       desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo.',
       icon: getAssetUrl(ASSET_TYPES.ITEM, 'repel')
-    })
+    });
   }
 
   if (s.fishingRodSecs > 0) {
-    const type = s.fishingRodType || 'standard'
-    const names: Record<string, string> = { standard: 'Caña de pescar', good: 'Caña Buena', super: 'Supercaña' } // spanish-ok: UI Spanish text localization label
-    const budgets: Record<string, number> = { standard: 0, good: 500, super: 1000 }
-    const rodItemIds: Record<string, ItemId> = { standard: 'fishingrod', good: 'fishingrodgood', super: 'fishingrodsuper' }
-    const fName = names[type] || 'Caña de pescar' // spanish-ok: UI Spanish text localization label
-    const fBudget = budgets[type] || 0
-    const descText = type === 'standard'
-      ? `Sube mucho la pesca por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
-      : `Sube la pesca y bonifica a los Pokémon raros (+${fBudget} pts).` + (type === 'super' ? ' Aumenta chance de Shiny x1.5.' : '')
-    list.push({
-      id: 'fishing-rod',
-      secs: s.fishingRodSecs,
-      name: `🎣 ${fName}`,
-      desc: descText,
-      icon: getAssetUrl(ASSET_TYPES.ITEM, rodItemIds[type] || 'fishingrod'),
-      tier: type
-    })
+    list.push(buildToolBuff('fishing-rod', s.fishingRodSecs, s.fishingRodType, '🎣', FISHING_ROD_CONFIGS));
   }
 
   if (s.pickaxeSecs > 0) {
-    const type = s.pickaxeType || 'standard'
-    const names: Record<string, string> = { standard: 'Pico de excavación', good: 'Pico Bueno', super: 'Superpico' } // spanish-ok: UI Spanish text localization label
-    const budgets: Record<string, number> = { standard: 0, good: 500, super: 1000 }
-    const pickaxeItemIds: Record<string, ItemId> = { standard: 'pickaxe', good: 'pickaxesilver', super: 'pickaxegold' }
-    const pName = names[type] || 'Pico de excavación' // spanish-ok: UI Spanish text localization label
-    const pBudget = budgets[type] || 0
-    const descText = type === 'standard'
-      ? `Sube la arqueología por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
-      : `Sube la arqueología y bonifica minerales y gemas (+${pBudget} pts).`
-    list.push({
-      id: 'pickaxe',
-      secs: s.pickaxeSecs,
-      name: `⛏️ ${pName}`,
-      desc: descText,
-      icon: getAssetUrl(ASSET_TYPES.ITEM, pickaxeItemIds[type] || 'pickaxe'),
-      tier: type
-    })
+    list.push(buildToolBuff('pickaxe', s.pickaxeSecs, s.pickaxeType, '⛏️', PICKAXE_CONFIGS));
   }
 
   if (s.brushSecs > 0) {
-    const type = s.brushType || 'standard'
-    const names: Record<string, string> = { standard: 'Pincel de excavación', good: 'Pincel Bueno', super: 'Superpincel' } // spanish-ok: UI Spanish text localization label
-    const budgets: Record<string, number> = { standard: 0, good: 500, super: 1000 }
-    const brushItemIds: Record<string, ItemId> = { standard: 'brush', good: 'brushgood', super: 'brushsuper' }
-    const bName = names[type] || 'Pincel de excavación' // spanish-ok: UI Spanish text localization label
-    const bBudget = budgets[type] || 0
-    const descText = type === 'standard'
-      ? `Sube la arqueología por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
-      : `Sube la arqueología y bonifica fósiles (+${bBudget} pts).`
-    list.push({
-      id: 'brush',
-      secs: s.brushSecs,
-      name: `🖌️ ${bName}`,
-      desc: descText,
-      icon: getAssetUrl(ASSET_TYPES.ITEM, brushItemIds[type] || 'brush'),
-      tier: type
-    })
+    list.push(buildToolBuff('brush', s.brushSecs, s.brushType, '🖌️', BRUSH_CONFIGS));
   }
 
-  if (s.shinyBoostSecs > 0) list.push({ id: 'shiny', secs: s.shinyBoostSecs, name: '✨ Ticket Shiny', desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'ticketshiny') }) // spanish-ok: UI Spanish text localization label
-  if (s.amuletCoinSecs > 0) list.push({ id: 'amulet', secs: s.amuletCoinSecs, name: '💰 Moneda Amuleto', desc: 'Duplica el dinero ganado en combate.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'amuletcoin') }) // spanish-ok: UI Spanish text localization label
-  if (s.luckyEggSecs > 0) list.push({ id: 'lucky-egg', secs: s.luckyEggSecs, name: '🥚 Huevo Suerte Pequeño', desc: `Aumenta la EXP ganada en un ${LUCKY_EGG_EXP_BOOST_PCT}% durante ${BUFF_DURATION_30_MIN_MIN} minutos.`, icon: getAssetUrl(ASSET_TYPES.ITEM, 'luckyegg') }) // spanish-ok: UI Spanish text localization label
-  if (s.safariTicketSecs > 0) list.push({ id: 'safari', secs: s.safariTicketSecs, name: '🎫 Ticket Safari', desc: 'Permite entrar a la Zona Safari.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'ticketsafari') }) // spanish-ok: UI Spanish text localization label
-  if (s.ceruleanTicketSecs > 0) list.push({ id: 'cerulean', secs: s.ceruleanTicketSecs, name: '🌀 Ticket Cueva Celeste', desc: 'Permite entrar a la Cueva Celeste.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'ticketcerulean') }) // spanish-ok: UI Spanish text localization label
-  if (s.articunoTicketSecs > 0) list.push({ id: 'articuno', secs: s.articunoTicketSecs, name: '❄️ Ticket Articuno', desc: 'Permite entrar a las Islas Espuma.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'ticketarticuno') }) // spanish-ok: UI Spanish text localization label
-  if (s.mewtwoTicketSecs > 0) list.push({ id: 'mewtwo', secs: s.mewtwoTicketSecs, name: '🧬 Ticket Mewtwo', desc: 'Permite entrar a la Cueva Celeste (Mewtwo).', icon: getAssetUrl(ASSET_TYPES.ITEM, 'ticketmewtwo') }) // spanish-ok: UI Spanish text localization label
-  if (s.ivScannerSecs > 0) list.push({ id: 'iv-scanner', secs: s.ivScannerSecs, name: '🔍 Escáner de IVs', desc: 'Muestra los IVs totales de Pokémon salvajes.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'ivscanner') }) // spanish-ok: UI Spanish text localization label
+  for (const def of SIMPLE_BUFF_DEFS) {
+    const secs = s[def.key] as number;
+    if (secs > 0) {
+      list.push({
+        id: def.id,
+        secs,
+        name: def.name,
+        desc: def.desc,
+        icon: getAssetUrl(ASSET_TYPES.ITEM, def.itemId)
+      });
+    }
+  }
 
   if (s.incenseSecs > 0) {
-    const types: Partial<Record<ItemId, string>> = {
-      incensefire: 'Fuego',
-      incensewater: 'Agua',
-      incensegrass: 'Planta',
-      incensenormal: 'Normal',
-      incenseghost: 'Fantasma',
-      incensepsychic: 'Psíquico', // spanish-ok: UI Spanish text localization label
-    }
-    const tName = (s.incenseType && isItemId(s.incenseType) ? types[s.incenseType] : undefined) || 'Desconocido'
+    const tName = (s.incenseType && isItemId(s.incenseType) ? INCENSE_TYPES_MAP[s.incenseType] : undefined) || 'Desconocido';
     list.push({
       id: 'incense',
       secs: s.incenseSecs,
       name: `💨 Incienso ${tName}`,
       desc: `Atrae Pokémon de tipo ${tName}.`,
       icon: getAssetUrl(ASSET_TYPES.ITEM, 'luck_incense')
-    })
+    });
   }
 
-  return list
+  return list;
 }

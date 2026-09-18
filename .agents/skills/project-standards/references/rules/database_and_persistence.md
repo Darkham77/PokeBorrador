@@ -49,6 +49,8 @@
 - **Strict Column Name Parity**: In database query proxies (`ProxyQuery`, `DBRouter`), JavaScript payload keys translate directly into SQL column identifiers. All database operations MUST use canonical `snake_case` keys matching the SQL schema. CamelCase keys are strictly forbidden in database table payloads.
 - **Wasm SQLite Bind Parameter Normalization**: WebAssembly SQLite engines (`sql.js`) reject `undefined` parameter values. Query builders MUST sanitize all bind parameters, converting `undefined` to `null` before dispatching to SQLite.
 - **Real-Schema Integration Testing**: Persistence synchronization helpers (`syncUserProfileData`, save handlers) MUST be verified with integration tests running against actual SQLite schemas (`DatabaseSync` / `:memory:`) to guarantee column parity.
+- **Debug & Simulation Fixture Column Parity**: Any test utility, debug helper, or mock seeder that injects simulated data directly into database tables (such as `market_listings`, `claim_queue`, `passive_teams`) MUST strictly use the canonical column names and data structures defined in the SQL schema (e.g. `listing_type: 'item'`, `data: { name, qty }`). Ad-hoc or legacy column names (such as `currency`, `category`, `item_data`) are strictly prohibited and must fail loudly at the insertion boundary.
+- **Save Queue Options Merging Protocol**: In concurrent save calls where a subsequent save request is queued (`PendingSaveRequest`), high-priority options (such as `forceRemote: true`) must be merged into the pending request rather than discarded, guaranteeing that remote persistence is never downgraded by an in-flight unforced save.
 
 ## 8. Anti-Cheat Combat Persistence & Minigame Exclusion Protocol
 

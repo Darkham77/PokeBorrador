@@ -149,35 +149,14 @@ const getListingTitle = (listing: MarketListing): string => {
 }
 
 .card-header-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
-  gap: 8px;
+  @include home-card-header-bar;
 }
 
 .title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-
-  .card-icon {
-    font-size: 20px;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
+  @include home-card-title-wrap;
 
   .title-text-group {
-    display: flex;
-    flex-direction: column;
     gap: 3px;
-    min-width: 0;
   }
 
   .card-title {

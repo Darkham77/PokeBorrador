@@ -41,6 +41,57 @@ export function extractTeamHpAndStatus(team: Array<MinimalPokemonState | null>):
 
 import { findMatchingValue } from '../showdownUidMapper.ts';
 
+function syncFaintedPokemon(side: Side, p: NonNullable<Side['pokemon'][number]>): void {
+  p.hp = 0;
+  p.fainted = true;
+  p.status = 'fnt' as ID;
+  Reflect.set(p, 'faintQueued', false);
+  clearPokemonFromFaintQueue(side, p);
+}
+
+function syncPokemonStatus(
+  p: NonNullable<Side['pokemon'][number]>,
+  uid: string,
+  statuses?: Record<string, string>
+): void {
+  const rawStatus = statuses ? findMatchingValue(uid, statuses) : undefined;
+  if (rawStatus !== undefined) {
+    const targetStatus = (rawStatus || '') as ID;
+    console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} (uid:${uid}), current status: "${p.status}", targetStatus: "${targetStatus}"`);
+    const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
+    if (targetStatus === '' && typeof cureFn === 'function') {
+      cureFn.call(p, true);
+    } else {
+      p.status = targetStatus;
+    }
+    console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} status after sync: "${p.status}"`);
+  } else if (p.status === 'fnt') {
+    const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
+    const setFn = Reflect.get(p, 'setStatus') as ((s: string) => boolean) | undefined;
+    if (typeof cureFn === 'function') {
+      cureFn.call(p, true);
+    } else if (typeof setFn === 'function') {
+      setFn.call(p, '');
+    } else {
+      p.status = '' as ID;
+    }
+  }
+}
+
+function syncLivingPokemon(
+  side: Side,
+  p: NonNullable<Side['pokemon'][number]>,
+  uid: string,
+  clientHp: number,
+  statuses?: Record<string, string>
+): void {
+  p.hp = Math.min(clientHp, p.maxhp);
+  p.fainted = false;
+  Reflect.set(p, 'faintQueued', false);
+  clearPokemonFromFaintQueue(side, p);
+  syncPokemonStatus(p, uid, statuses);
+}
+
 /**
  * Helper to synchronize HP, statuses, fainted states, and active counts for a battle side.
  * Shared between showdownExecutor.ts and showdown.worker.ts to guarantee 100% algorithm parity.
@@ -52,47 +103,15 @@ export function syncSidePokemon(
 ): void {
   console.debug(`[SYNC-SIDE] Side ${side.id}: before sync, pokemon:`, side.pokemon.map(p => `${p?.name} (uid:${p ? Reflect.get(p, 'uid') : undefined}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`));
   side.pokemon.forEach(p => {
-    if (p) {
-      const uid = Reflect.get(p, 'uid') as string | undefined;
-      const clientHp = uid ? findMatchingValue(uid, hps) : undefined;
-      if (clientHp !== undefined) {
+    if (!p) return;
+    const uid = Reflect.get(p, 'uid') as string | undefined;
+    const clientHp = uid ? findMatchingValue(uid, hps) : undefined;
+    if (clientHp === undefined) return;
 
-
-        if (clientHp <= 0) {
-          p.hp = 0;
-          p.fainted = true;
-          p.status = 'fnt' as ID;
-          Reflect.set(p, 'faintQueued', false);
-          clearPokemonFromFaintQueue(side, p);
-        } else {
-          p.hp = Math.min(clientHp, p.maxhp);
-          p.fainted = false;
-          Reflect.set(p, 'faintQueued', false);
-          clearPokemonFromFaintQueue(side, p);
-          const rawStatus = uid && statuses ? findMatchingValue(uid, statuses) : undefined;
-          if (rawStatus !== undefined) {
-            const targetStatus = (rawStatus || '') as ID;
-            console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} (uid:${uid}), current status: "${p.status}", targetStatus: "${targetStatus}"`);
-            const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
-            if (targetStatus === '' && typeof cureFn === 'function') {
-              cureFn.call(p, true);
-            } else {
-              p.status = targetStatus;
-            }
-            console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} status after sync: "${p.status}"`);
-          } else if (p.status === 'fnt') {
-            const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
-            const setFn = Reflect.get(p, 'setStatus') as ((s: string) => boolean) | undefined;
-            if (typeof cureFn === 'function') {
-              cureFn.call(p, true);
-            } else if (typeof setFn === 'function') {
-              setFn.call(p, '');
-            } else {
-              p.status = '' as ID;
-            }
-          }
-        }
-      }
+    if (clientHp <= 0) {
+      syncFaintedPokemon(side, p);
+    } else {
+      syncLivingPokemon(side, p, uid!, clientHp, statuses);
     }
   });
   console.debug(`[SYNC-SIDE] Side ${side.id}: after sync, pokemon:`, side.pokemon.map(p => `${p?.name} (uid:${p ? Reflect.get(p, 'uid') : undefined}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`));

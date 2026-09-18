@@ -151,12 +151,12 @@ function triggerSampleError() {
     <div class="debug-group">
       <label>RENDIMIENTO GLOBALES</label>
       <div class="button-column">
-        <PVTooltip title="Simula el renderizado ligero en el MAPA (oculta spawns y climas).">
+        <PVTooltip title="Simula el renderizado ligero en el MAPA (suspende spawns y climas).">
           <button
-            :class="uiStore.isDebugPerformanceMode ? 'btn-vicio-danger btn-vicio-sm' : 'btn-vicio-primary btn-vicio-sm'"
-            @click.stop="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
+            :class="uiStore.isDebugFastMode ? 'btn-vicio-danger btn-vicio-sm' : 'btn-vicio-primary btn-vicio-sm'"
+            @click.stop="uiStore.isDebugFastMode = !uiStore.isDebugFastMode"
           >
-            {{ uiStore.isDebugPerformanceMode ? 'DESACTIVAR PERF. MAPA' : 'ACTIVAR PERF. MAPA' }}
+            {{ uiStore.isDebugFastMode ? 'DESACTIVAR MODO RÁPIDO' : 'ACTIVAR MODO RÁPIDO' }}
           </button>
         </PVTooltip>
 

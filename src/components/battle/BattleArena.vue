@@ -25,9 +25,12 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getEncounterPool, getSpeciesEntries } from '@/logic/encounters/encounters'
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts'
 import { requireWeatherSeasonId } from '@/data/world/weather-tables'
-import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { requireDayPhase } from '@/logic/utils/timeUtils'
-import type { MapLocation } from '@/types/pokemon/encounters'
+import type { DayPhase } from '@/types/system/time'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { MapLocation, EncounterState } from '@/types/pokemon/encounters'
+import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing'
 import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsArchaeology'
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
@@ -117,6 +120,131 @@ const routeSpawnsProps = reactive({
 const { fishingSpawns } = useRouteSpawnsFishing(routeSpawnsProps)
 const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps)
 
+interface FishingSpawnItem {
+  id: string;
+  name: string;
+  percentage: number;
+}
+
+interface ArchaeologyRewardItem {
+  name: string;
+  percentage: number;
+}
+
+function adjustWildRatesForWeather(
+  pool: readonly PokemonSpeciesId[],
+  rates: number[],
+  loc: MapLocation,
+  weather: WeatherId
+): void {
+  if (!weather || weather === 'clear') return
+  const visitorIndices = rates.map((r, i) => (r < 0 ? i : -1)).filter(i => i !== -1)
+  const nativeIndices = rates.map((r, i) => (r >= 0 ? i : -1)).filter(i => i !== -1)
+
+  let wConfig = loc.weather?.[weather]
+  if (!wConfig && weather) {
+    const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>
+    if (family && loc.weather?.[family]) {
+      wConfig = loc.weather[family]
+    }
+  }
+  const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : []
+
+  nativeIndices.forEach(idx => {
+    const spId = pool[idx]
+    if (spId && !exclusives.includes(spId)) {
+      rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather)
+    }
+  })
+
+  if (visitorIndices.length > 0) {
+    const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0)
+    const visitorQuota = totalNativeWeight / 9
+    const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0)
+
+    visitorIndices.forEach(idx => {
+      const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1)
+      rates[idx] = visitorQuota * relativeWeight
+    })
+  }
+}
+
+function buildWildEncounterDebugLines(
+  loc: MapLocation,
+  cycle: DayPhase,
+  weather: WeatherId,
+  activeEvents: GameEvent[]
+): string[] {
+  if (!loc.wild) return []
+  const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents)
+  const poolCopy = [...pool]
+  const ratesCopy = [...rates]
+
+  adjustWildRatesForWeather(poolCopy, ratesCopy, loc, weather)
+
+  const totalRate = ratesCopy.reduce((sum, r) => sum + r, 0)
+  if (totalRate <= 0) return []
+
+  const lines: string[] = [] // text-ok: UI text display localization string
+  lines.push('---', 'Chances actuales (Hierba/Tierra):')
+  let wConfig = loc.weather?.[weather]
+  if (!wConfig && weather) {
+    const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>
+    if (family && loc.weather?.[family]) {
+      wConfig = loc.weather[family]
+    }
+  }
+  const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : []
+  const visitors = wConfig?.visitors ? getSpeciesEntries(wConfig.visitors).map(entry => entry.id) : []
+
+  poolCopy.forEach((spId, idx) => {
+    const rateVal = ratesCopy[idx] || 0
+    const pct = (rateVal / totalRate) * 100
+    const name = spId.charAt(0).toUpperCase() + spId.slice(1)
+    let tag = ''
+    if (exclusives.includes(spId)) {
+      tag = ' (Exclusivo)'
+    } else if (visitors.includes(spId)) {
+      tag = ' (Visitante)'
+    }
+    lines.push(`• ${name}: ${pct.toFixed(1)}%${tag}`)
+  })
+  return lines
+}
+
+function buildFishingDebugLines(spawns?: FishingSpawnItem[]): string[] {
+  if (!spawns || spawns.length === 0) return []
+  const lines: string[] = [] // text-ok: UI text display localization string
+  lines.push('---', '🎣 Pesca:')
+  spawns.forEach((fs) => {
+    const realName = pokemonDataProvider.getPokemonData(fs.id)?.name || fs.name
+    lines.push(`• ${realName}: ${fs.percentage.toFixed(1)}%`)
+  })
+  return lines
+}
+
+function buildArchaeologyDebugLines(rewards?: ArchaeologyRewardItem[]): string[] {
+  if (!rewards || rewards.length === 0) return []
+  const lines: string[] = [] // text-ok: UI text display localization string
+  lines.push('---', '⛏️ Arqueología:')
+  rewards.forEach((ar) => {
+    lines.push(`• ${ar.name}: ${ar.percentage.toFixed(1)}%`)
+  })
+  return lines
+}
+
+function buildNpcDebugLines(locId: MapRouteId, gameState: EncounterState, mapIds: readonly MapRouteId[]): string[] {
+  const npcChances = getNpcEncounterChances(locId, gameState, {}, mapIds)
+  if (!npcChances || npcChances.length === 0) return []
+  const lines: string[] = [] // text-ok: UI text display localization string
+  lines.push('---', '👥 Encuentros Especiales:')
+  npcChances.forEach(npc => {
+    const details = npc.details ? ` (${npc.details})` : ''
+    lines.push(`• ${npc.name}: ${npc.chance.toFixed(1)}%${details}`)
+  })
+  return lines
+}
+
 const weatherTooltipDescription = computed(() => {
   const weatherKey = computedWeather.value
   const desc = getWeatherCombatDescription(weatherKey, ACTIVE_GENERATION)
@@ -132,112 +260,14 @@ const weatherTooltipDescription = computed(() => {
   const weather = computedWeather.value
   const activeEvents = mapStore.activeEvents || []
 
-  const lines: string[] = [] // text-ok: UI text display localization string
+  const lines: string[] = [
+    ...buildWildEncounterDebugLines(loc, cycle, weather, activeEvents),
+    ...buildFishingDebugLines(fishingSpawns.value),
+    ...buildArchaeologyDebugLines(archaeologyRewards.value),
+    ...buildNpcDebugLines(requireMapRouteId(locId), gameStore.state, mapsList.value.map(m => requireMapRouteId(m.id)))
+  ]
 
-  // 1. Wild Spawns
-  if (loc.wild) {
-    const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents)
-    const poolCopy = [...pool]
-    const ratesCopy = [...rates]
-
-    if (weather && weather !== 'clear') {
-      const visitorIndices = ratesCopy.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1)
-      const nativeIndices = ratesCopy.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1)
-
-      let wConfig = loc.weather?.[weather]
-      if (!wConfig && weather) {
-        const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>
-        if (family && loc.weather?.[family]) {
-          wConfig = loc.weather[family]
-        }
-      }
-      const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : []
-
-      nativeIndices.forEach(idx => {
-        const spId = poolCopy[idx]
-        if (spId) {
-          const isExclusive = exclusives.includes(spId)
-          if (!isExclusive) {
-            ratesCopy[idx] = (ratesCopy[idx] || 0) * getWeatherMultiplier(spId, weather)
-          }
-        }
-      })
-
-      if (visitorIndices.length > 0) {
-        const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (ratesCopy[idx] || 0), 0)
-        const visitorQuota = totalNativeWeight / 9
-        const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(ratesCopy[idx] || 0), 0)
-        
-        visitorIndices.forEach(idx => {
-          const relativeWeight = Math.abs(ratesCopy[idx] || 0) / (sumRelativeWeights || 1)
-          ratesCopy[idx] = visitorQuota * relativeWeight
-        })
-      }
-    }
-
-    const totalRate = ratesCopy.reduce((sum, r) => sum + r, 0)
-    if (totalRate > 0) {
-      lines.push('---')
-      lines.push('Chances actuales (Hierba/Tierra):')
-      let wConfig = loc.weather?.[weather]
-      if (!wConfig && weather) {
-        const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>
-        if (family && loc.weather?.[family]) {
-          wConfig = loc.weather[family]
-        }
-      }
-      const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : []
-      const visitors = wConfig?.visitors ? getSpeciesEntries(wConfig.visitors).map(entry => entry.id) : []
-
-      poolCopy.forEach((spId, idx) => {
-        const rateVal = ratesCopy[idx] || 0
-        const pct = (rateVal / totalRate) * 100
-        const name = spId.charAt(0).toUpperCase() + spId.slice(1)
-        
-        let tag = ''
-        if (exclusives.includes(spId)) {
-          tag = ' (Exclusivo)'
-        } else if (visitors.includes(spId)) {
-          tag = ' (Visitante)'
-        }
-        
-        lines.push(`• ${name}: ${pct.toFixed(1)}%${tag}`)
-      })
-    }
-  }
-
-  // 2. Fishing Spawns
-  if (fishingSpawns.value && fishingSpawns.value.length > 0) {
-    lines.push('---')
-    lines.push('🎣 Pesca:')
-    fishingSpawns.value.forEach((fs: { id: string; name: string; percentage: number }) => { // type-ok: Type contract declaration
-      const realName = pokemonDataProvider.getPokemonData(fs.id)?.name || fs.name
-      lines.push(`• ${realName}: ${fs.percentage.toFixed(1)}%`)
-    })
-  }
-
-  // 3. Archaeology Rewards
-  if (archaeologyRewards.value && archaeologyRewards.value.length > 0) {
-    lines.push('---')
-    lines.push('⛏️ Arqueología:')
-    archaeologyRewards.value.forEach((ar: { name: string; percentage: number }) => { // type-ok: Type contract declaration
-      lines.push(`• ${ar.name}: ${ar.percentage.toFixed(1)}%`)
-    })
-  }
-
-  // 4. NPC / Special Encounters
-  const mapIds = mapsList.value.map(m => m.id)
-  const npcChances = getNpcEncounterChances(locId, gameStore.state, {}, mapIds)
-  if (npcChances && npcChances.length > 0) {
-    lines.push('---')
-    lines.push('👥 Encuentros Especiales:')
-    npcChances.forEach(npc => {
-      const details = npc.details ? ` (${npc.details})` : ''
-      lines.push(`• ${npc.name}: ${npc.chance.toFixed(1)}%${details}`)
-    })
-  }
-
-  return baseDesc + '\n' + lines.join('\n')
+  return lines.length > 0 ? `${baseDesc}\n${lines.join('\n')}` : baseDesc
 })
 
 import type { ComponentPublicInstance } from 'vue'
@@ -251,7 +281,7 @@ const initBattlePillAnimation = () => {
     pillContext = null
   }
 
-  if (!battleStore.isBattleActive || uiStore.isPerformanceMode || uiStore.isLowPowerActive) {
+  if (!battleStore.isBattleActive || uiStore.isFastMode || uiStore.isLowPowerActive) {
     return
   }
 
@@ -345,7 +375,7 @@ watch(
   [
     () => battleStore.isBattleActive,
     computedWeather,
-    () => uiStore.isPerformanceMode,
+    () => uiStore.isFastMode,
     () => uiStore.isLowPowerActive
   ],
   () => {
@@ -374,6 +404,28 @@ const handleClose = () => {
     battleStore.flee()
   }
 }
+
+const allowFlee = computed(() => {
+  if (battleStore.uiConfig) return battleStore.uiConfig.allowFlee
+  const s = battleStore.state
+  return !s?.isTrainer && !s?.isGym && !s?.isPvP
+})
+
+const showCloseButton = computed(() => {
+  return allowFlee.value || battleStore.isFinishing
+})
+
+const preventClose = computed(() => {
+  if (battleStore.isProcessing) return true
+  if (!allowFlee.value && !battleStore.isFinishing) return true
+  if (!battleStore.isFinishing && isPokemonLocked(battleStore.state?.player)) return true
+  return false
+})
+
+const showEnvironmentPill = computed(() => {
+  if (battleStore.uiConfig) return battleStore.uiConfig.showEnvironmentPill
+  return !battleStore.state?.isPvP
+})
 </script>
 
 <template>
@@ -387,8 +439,8 @@ const handleClose = () => {
     variant="modern"
     overlay="dark"
     close-button-variant="yellow-solid"
-    :prevent-close="battleStore.isProcessing || (!(battleStore.uiConfig ? battleStore.uiConfig.allowFlee : !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.isPvP) && !battleStore.isFinishing) || (!battleStore.isFinishing && isPokemonLocked(battleStore.state?.player))"
-    :show-close-button="(battleStore.uiConfig ? battleStore.uiConfig.allowFlee : !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.isPvP) || battleStore.isFinishing"
+    :prevent-close="preventClose"
+    :show-close-button="showCloseButton"
     :close-on-click-outside="false"
     :hide-header="true"
     padding="raw"
@@ -398,7 +450,7 @@ const handleClose = () => {
     @close="handleClose"
   >
     <div
-      v-if="battleStore.uiConfig ? battleStore.uiConfig.showEnvironmentPill : !battleStore.state?.isPvP"
+      v-if="showEnvironmentPill"
       class="battle-header-actions"
     >
       <!-- Showdown Canonical Animation Registration Tokens: frz drag brn psn tox slp par confusion flinch attract taunt substitute raindance sunnyday sandstorm hail snow electricterrain grassyterrain mistyterrain psychicterrain trickroom gravity stealthrock spikes toxicspikes mega primal terastallize dynamax -->

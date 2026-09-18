@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
+import { computed } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
+import EventDetailShowcase from './EventDetailShowcase.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { normalizeZonedDateTime, getGMT3Date } from '@/logic/utils/timeUtils'
+import { logger } from '@/logic/utils/logger'
 import {
   resolveWeeklyRotation,
   getEventDisplayName,
@@ -24,23 +25,27 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 interface Props {
   show?: boolean
   event: GameEvent
-  occurrence?: UpcomingEventOccurrence
+  occurrence?: UpcomingEventOccurrence | null
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  show: false,
-  occurrence: undefined
-})
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
 const cfg = computed<ExtendedEventConfig>(() => {
-  if (typeof props.event.config === 'string') {
-    try { return JSON.parse(props.event.config) as ExtendedEventConfig } catch (_e) { return {} }
-  } else if (props.event.config && typeof props.event.config === 'object') {
+  if (!props.event) return {}
+  if (typeof props.event.config === 'object' && props.event.config !== null) {
     return props.event.config as ExtendedEventConfig
+  }
+  if (typeof props.event.config === 'string') {
+    try {
+      return JSON.parse(props.event.config) as ExtendedEventConfig
+    } catch (err) {
+      logger.warn('[EventDetailModal] Error parseando props.event.config:', err)
+      return {}
+    }
   }
   return {}
 })
@@ -52,8 +57,8 @@ const targetZdt = computed<Temporal.ZonedDateTime>(() => {
   if (props.event.start_at) {
     try {
       return normalizeZonedDateTime(Temporal.Instant.from(props.event.start_at))
-    } catch (_e) {
-      // ignore parse error, fallback below
+    } catch (err) {
+      logger.warn('[EventDetailModal] Error parseando props.event.start_at:', err)
     }
   }
   return getGMT3Date()
@@ -86,41 +91,10 @@ const {
   cfg,
   targetZdt,
   effectiveSpeciesString,
-  props.occurrence
+  props.occurrence ?? undefined
 )
 
-const currentSpeciesIndex = ref(0)
-let cycleTween: gsap.core.Tween | null = null
 
-const startSpeciesCycle = () => {
-  if (cycleTween) {
-    cycleTween.kill()
-    cycleTween = null
-  }
-  if (involvedSpecies.value.length > 1) {
-    cycleTween = gsap.delayedCall(2.5, () => {
-      currentSpeciesIndex.value = (currentSpeciesIndex.value + 1) % involvedSpecies.value.length
-      startSpeciesCycle()
-    })
-  }
-}
-
-watch(involvedSpecies, () => {
-  currentSpeciesIndex.value = 0
-  startSpeciesCycle()
-}, { immediate: true })
-
-onUnmounted(() => {
-  if (cycleTween) {
-    cycleTween.kill()
-    cycleTween = null
-  }
-})
-
-const currentSpecies = computed<PokemonSpeciesId | null>(() => {
-  if (involvedSpecies.value.length === 0) return null
-  return involvedSpecies.value[currentSpeciesIndex.value] || involvedSpecies.value[0] || null
-})
 
 const bannerUrl = computed<string | null>(() => {
   const bannerKey = effectiveBanner.value
@@ -149,59 +123,15 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
     @close="emit('close')"
   >
     <div class="event-detail-modal">
-      <!-- Banner Header Image (100% visible, sin recortes ni gradientes que lo tapen) -->
-      <div
-        v-if="bannerUrl"
-        class="event-banner-header"
-      >
-        <img
-          :src="bannerUrl"
-          :alt="effectiveTitle"
-          class="event-banner-img allow-aliasing"
-          @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
-        >
-      </div>
-
-      <!-- Pokémon showcase (only when no banner image) -->
-      <div
-        v-else-if="involvedSpecies.length > 0"
-        class="event-pokemon-showcase clickable"
-        :title="currentSpecies ? `Ver datos de la Pokédex para ${currentSpecies}` : undefined"
-        role="button"
-        tabindex="0"
-        @click="currentSpecies && openSpeciesDetail(currentSpecies)"
-        @keydown.enter="currentSpecies && openSpeciesDetail(currentSpecies)"
-      >
-        <PVSpriteFX
-          :is-shiny="Boolean(cfg.speciesShinyMult || cfg.shinyMult)"
-          :sparkle-count="3"
-        >
-          <img
-            v-if="currentSpecies"
-            :key="currentSpecies"
-            :src="getAssetUrl(ASSET_TYPES.POKEMON, currentSpecies, { isShiny: Boolean(cfg.speciesShinyMult || cfg.shinyMult) })"
-            :alt="currentSpecies"
-            class="pixelated event-pokemon-sprite"
-          >
-        </PVSpriteFX>
-        <div
-          v-if="involvedSpecies.length > 1"
-          class="showcase-dots"
-        >
-          <span
-            v-for="(sp, idx) in involvedSpecies"
-            :key="sp"
-            class="dot"
-            :class="{ active: idx === currentSpeciesIndex }"
-          />
-        </div>
-      </div>
-      <div
-        v-else-if="!bannerUrl && event.icon"
-        class="emoji event-main-icon"
-      >
-        {{ event.icon }}
-      </div>
+      <!-- Banner Header / Pokémon showcase / Fallback icon -->
+      <EventDetailShowcase
+        :banner-url="bannerUrl"
+        :effective-title="effectiveTitle"
+        :involved-species="involvedSpecies"
+        :icon="event.icon"
+        :is-shiny="Boolean(cfg.speciesShinyMult || cfg.shinyMult)"
+        @select-species="openSpeciesDetail"
+      />
 
       <!-- Título y Descripción -->
       <div class="event-header">

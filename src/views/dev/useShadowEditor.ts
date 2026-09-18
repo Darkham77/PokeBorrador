@@ -14,17 +14,15 @@ import type {
 import {
   DEFAULT_SHADOW_WIDTH_RATIO,
   DEFAULT_SHADOW_HEIGHT_RATIO,
-  DEFAULT_SHADOW_PIXELATION,
-  parseTrainerSpriteKey
+  DEFAULT_SHADOW_PIXELATION
 } from '@/types/pokemon/spriteShadows';
 import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase';
-import feetDbJson from '@/data/pokemon/pokemonFeetDatabase.json' with { type: 'json' };
-import { POKEMON_SPRITE_IDS, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { NPC_SPRITE_TO_ARCHETYPE_MAP, isNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import { FEET_COORDINATES_DATA } from '@/data/pokemon/feetCoordinatesData';
+import { buildFullEditorCatalog } from './utils/shadowEditorCatalogHelpers.ts';
 import type { GenderName } from '@pkmn/types';
 import gsap from 'gsap';
-
-const DEFAULT_PAGE_SIZE = 50;
+import { logger } from '@/logic/utils/logger';
+import { DEFAULT_PAGE_SIZE } from './devShadowMathHelper.ts';
 const DEFAULT_COLUMNS = 4;
 const DEFAULT_FEET_Y = 0.9;
 const DEFAULT_FEET_X = 0.5;
@@ -35,19 +33,7 @@ export const MIN_SPRITE_ZOOM = 0.8;
 export const MAX_SPRITE_ZOOM = 4.0;
 export const SPRITE_ZOOM_STEP = 0.1;
 
-function getPokemonGen(dexNumber: number): number {
-  if (dexNumber <= 151) return 1;
-  if (dexNumber <= 251) return 2;
-  if (dexNumber <= 386) return 3;
-  if (dexNumber <= 493) return 4;
-  if (dexNumber <= 649) return 5;
-  if (dexNumber <= 721) return 6;
-  if (dexNumber <= 809) return 7;
-  if (dexNumber <= 905) return 8;
-  return 9;
-}
-
-export function getNonShinyPath(fullPath: string): string {
+function getNonShinyPath(fullPath: string): string {
   return fullPath
     .replace('/Back shiny/', '/Back/')
     .replace('/Front shiny/', '/Front/')
@@ -84,7 +70,7 @@ export function useShadowEditor() {
         const num = parseFloat(val);
         if (!isNaN(num) && num > 0) return num;
       }
-    } catch {
+    } catch { // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
       // sessionStorage unavailable
     }
     return fallback;
@@ -94,7 +80,7 @@ export function useShadowEditor() {
     if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return;
     try {
       sessionStorage.setItem(key, val);
-    } catch {
+    } catch { // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
       // sessionStorage unavailable
     }
   };
@@ -160,9 +146,9 @@ export function useShadowEditor() {
 
   // Extract base feet data from precalculated static DB in O(1)
   const getPrecalculatedFeet = (fullPath: string): { feetY: number; feetX: number; isFlying: boolean; shadowScale: number } => {
-    const pGroup = feetDbJson.p as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-    const nGroup = feetDbJson.n as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-    const tGroup = feetDbJson.t as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+    const pGroup = (FEET_COORDINATES_DATA.p ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+    const nGroup = (FEET_COORDINATES_DATA.n ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+    const tGroup = (FEET_COORDINATES_DATA.t ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
 
     let tuple: readonly number[] | undefined;
     if (fullPath.startsWith('/assets/sprites/pokemon/')) {
@@ -194,193 +180,11 @@ export function useShadowEditor() {
   };
 
   const buildCatalog = () => {
-    const list: EditorEntity[] = [];
-    const seenKeys = new Set<string>();
-    const addEntity = (entity: EditorEntity) => {
-      if (seenKeys.has(entity.key)) return;
-      seenKeys.add(entity.key);
-      list.push(entity);
-    };
-
-    const pGroup = feetDbJson.p as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-
-    // 1. Extract canonical species map in exact National Dex order (1 to 1025)
-    // Eliminating duplicate forms/cosplays so each National Dex species appears once
-    const canonicalSpeciesMap = new Map<number, string>();
-    for (const [speciesName, num] of Object.entries(POKEMON_SPRITE_IDS)) {
-      const dexNum = parseInt(String(num), 10);
-      if (!isNaN(dexNum) && !canonicalSpeciesMap.has(dexNum)) {
-        canonicalSpeciesMap.set(dexNum, speciesName);
-      }
-    }
-
-    const sortedDexNumbers = Array.from(canonicalSpeciesMap.keys()).sort((a, b) => a - b);
-    const shinyFolderSuffix = isShiny.value ? ' shiny' : '';
-
-    // Intercalate Front and Back for every Pokémon
-    for (const numVal of sortedDexNumbers) {
-      const speciesName = canonicalSpeciesMap.get(numVal)!;
-      let validSpeciesId;
-      try {
-        validSpeciesId = requirePokemonSpeciesId(speciesName);
-      } catch {
-        continue;
-      }
-
-      const gen = getPokemonGen(numVal);
-
-      // FRONT (♂ M / Base)
-      const frontAnimSubKey = `animated/Front${shinyFolderSuffix}/${numVal}i`;
-      const baseFrontAnimSubKey = `animated/Front/${numVal}i`;
-      const hasFrontAnim = Object.hasOwn(pGroup, frontAnimSubKey) || Object.hasOwn(pGroup, baseFrontAnimSubKey);
-      const frontPath = hasFrontAnim
-        ? `/assets/sprites/pokemon/${frontAnimSubKey}.webp`
-        : `/assets/sprites/pokemon/Front${shinyFolderSuffix}/${numVal}.webp`;
-      const frontCoords = getPrecalculatedFeet(frontPath);
-
-      addEntity({
-        key: frontPath,
-        category: 'pokemon',
-        name: `#${String(numVal).padStart(3, '0')} ${speciesName.toUpperCase()}`,
-        spriteUrl: frontPath,
-        defaultFeetX: frontCoords.feetX,
-        defaultFeetY: frontCoords.feetY,
-        defaultIsFlying: frontCoords.isFlying,
-        defaultShadowScale: frontCoords.shadowScale,
-        pokemonSpeciesId: validSpeciesId,
-        dexNumber: numVal,
-        gender: 'M',
-        gen,
-        view: 'front'
-      });
-
-      // BACK (♂ M / Base) - Intercalated immediately following Front
-      const backAnimSubKey = `animated/Back${shinyFolderSuffix}/${numVal}i`;
-      const baseBackAnimSubKey = `animated/Back/${numVal}i`;
-      const hasBackAnim = Object.hasOwn(pGroup, backAnimSubKey) || Object.hasOwn(pGroup, baseBackAnimSubKey);
-      const backPath = hasBackAnim
-        ? `/assets/sprites/pokemon/${backAnimSubKey}.webp`
-        : `/assets/sprites/pokemon/Back${shinyFolderSuffix}/${numVal}.webp`;
-      const backCoords = getPrecalculatedFeet(backPath);
-
-      addEntity({
-        key: backPath,
-        category: 'pokemon',
-        name: `#${String(numVal).padStart(3, '0')} ${speciesName.toUpperCase()}`,
-        spriteUrl: backPath,
-        defaultFeetX: backCoords.feetX,
-        defaultFeetY: backCoords.feetY,
-        defaultIsFlying: backCoords.isFlying,
-        defaultShadowScale: backCoords.shadowScale,
-        pokemonSpeciesId: validSpeciesId,
-        dexNumber: numVal,
-        gender: 'M',
-        gen,
-        view: 'back'
-      });
-
-      // Check for female variant (e.g. animated/Front/25i_f.webp) in O(1)
-      const femaleFrontSubKey = `animated/Front${shinyFolderSuffix}/${numVal}i_f`;
-      const baseFemaleFrontSubKey = `animated/Front/${numVal}i_f`;
-      const hasFemaleFrontAnim = Object.hasOwn(pGroup, femaleFrontSubKey) || Object.hasOwn(pGroup, baseFemaleFrontSubKey);
-
-      if (hasFemaleFrontAnim) {
-        const femaleFrontPath = `/assets/sprites/pokemon/${femaleFrontSubKey}.webp`; // asset-url-ok: dev sprite catalog key
-        const femaleFrontCoords = getPrecalculatedFeet(femaleFrontPath);
-
-        addEntity({
-          key: femaleFrontPath,
-          category: 'pokemon',
-          name: `#${String(numVal).padStart(3, '0')} ${speciesName.toUpperCase()} ♀`,
-          spriteUrl: femaleFrontPath,
-          defaultFeetX: femaleFrontCoords.feetX,
-          defaultFeetY: femaleFrontCoords.feetY,
-          defaultIsFlying: femaleFrontCoords.isFlying,
-          defaultShadowScale: femaleFrontCoords.shadowScale,
-          pokemonSpeciesId: validSpeciesId,
-          dexNumber: numVal,
-          gender: 'F',
-          gen,
-          view: 'front'
-        });
-
-        const femaleBackSubKey = `animated/Back${shinyFolderSuffix}/${numVal}i_f`;
-        const baseFemaleBackSubKey = `animated/Back/${numVal}i_f`;
-        const hasFemaleBackAnim = Object.hasOwn(pGroup, femaleBackSubKey) || Object.hasOwn(pGroup, baseFemaleBackSubKey);
-
-        if (hasFemaleBackAnim) {
-          const femaleBackPath = `/assets/sprites/pokemon/${femaleBackSubKey}.webp`; // asset-url-ok: dev sprite catalog key
-          const femaleBackCoords = getPrecalculatedFeet(femaleBackPath);
-
-          addEntity({
-            key: femaleBackPath,
-            category: 'pokemon',
-            name: `#${String(numVal).padStart(3, '0')} ${speciesName.toUpperCase()} ♀`,
-            spriteUrl: femaleBackPath,
-            defaultFeetX: femaleBackCoords.feetX,
-            defaultFeetY: femaleBackCoords.feetY,
-            defaultIsFlying: femaleBackCoords.isFlying,
-            defaultShadowScale: femaleBackCoords.shadowScale,
-            pokemonSpeciesId: validSpeciesId,
-            dexNumber: numVal,
-            gender: 'F',
-            gen,
-            view: 'back'
-          });
-        }
-      }
-    }
-
-    // 2. NPC entities with O(1) archetype resolution (Full-body only)
-    const nGroup = feetDbJson.n as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-    const npcSpriteNames = Object.keys(nGroup).sort();
-
-    for (const name of npcSpriteNames) {
-      const fullPath = `/assets/sprites/npc/${name}.webp`; // asset-url-ok: dev sprite catalog key
-      const baseCoords = getPrecalculatedFeet(fullPath);
-      const validNpcId = isNpcSpriteId(name) ? name : undefined;
-      const archetype = validNpcId ? NPC_SPRITE_TO_ARCHETYPE_MAP[validNpcId] : 'cientifico';
-
-      addEntity({
-        key: fullPath,
-        category: 'npc',
-        name: `NPC: ${name}`,
-        spriteUrl: fullPath,
-        defaultFeetX: baseCoords.feetX,
-        defaultFeetY: baseCoords.feetY,
-        defaultIsFlying: baseCoords.isFlying,
-        defaultShadowScale: baseCoords.shadowScale,
-        npcSpriteId: validNpcId,
-        archetype
-      });
-    }
-
-    // 3. Trainer / Player entities (FULL BODY ONLY: 'front' | 'back', strictly excluding 'avatar')
-    const tGroup = feetDbJson.t as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-    const trainerSpriteNames = Object.keys(tGroup).sort();
-
-    for (const name of trainerSpriteNames) {
-      const fullPath = `/assets/sprites/trainers/${name}.webp`; // asset-url-ok: dev sprite catalog key
-      const baseCoords = getPrecalculatedFeet(fullPath);
-      const parsed = parseTrainerSpriteKey(name);
-      if (!parsed) continue; // Excludes avatar icons
-
-      addEntity({
-        key: fullPath,
-        category: 'trainer',
-        name: `TRAINER: ${name}`,
-        spriteUrl: fullPath,
-        defaultFeetX: baseCoords.feetX,
-        defaultFeetY: baseCoords.feetY,
-        defaultIsFlying: baseCoords.isFlying,
-        defaultShadowScale: baseCoords.shadowScale,
-        trainerClass: parsed.trainerClass,
-        gender: parsed.gender,
-        view: parsed.view
-      });
-    }
-
-    allEntities.value = list;
+    allEntities.value = buildFullEditorCatalog(
+      FEET_COORDINATES_DATA,
+      isShiny.value,
+      getPrecalculatedFeet
+    );
   };
 
   const loadOverrides = async () => {
@@ -548,8 +352,8 @@ export function useShadowEditor() {
             showToast('⚡ Base de datos estática recompilada con éxito.');
             resolve(true);
           }
-        } catch {
-          // JSON parse error
+        } catch (err) {
+          logger.warn('ShadowEditor', 'Failed to parse SSE dev rebuild event data', err);
         }
       };
 

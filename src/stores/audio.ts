@@ -7,6 +7,32 @@ import { getPokemonCryFilename } from '@/data/pokemon/pokemonCriesDatabase.ts';
 import { toID } from '@/logic/utils/strings.ts';
 import { AUDIO_MASTER_GAIN_VOLUME } from '@/logic/constants/audio';
 
+type SoundDispatcher = (eng: typeof engine, ctx: AudioContext, dest: AudioNode) => void;
+
+const SOUND_DISPATCH_MAP: Record<string, SoundDispatcher> = {
+  shiny: (eng, ctx, dest) => eng.playShinySound(ctx, dest),
+  rival: (eng, ctx, dest) => eng.playRivalEncounterSound(ctx, dest),
+  levelUp: (eng, ctx, dest) => eng.playLevelUpSound(ctx, dest),
+  evolution: (eng, ctx, dest) => eng.playEvolutionSound(ctx, dest),
+  caught: (eng, ctx, dest) => eng.playCaptureSuccessSound(ctx, dest),
+  flee: (eng, ctx, dest) => eng.playFleeSound(ctx, dest),
+  item: (eng, ctx, dest) => eng.playItemSound(ctx, dest),
+  sentMsg: (eng, ctx, dest) => eng.playMessageSentSound(ctx, dest),
+  receivedMsg: (eng, ctx, dest) => eng.playMessageReceivedSound(ctx, dest),
+  money: (eng, ctx, dest) => eng.playMoneySound(ctx, dest),
+  heal: (eng, ctx, dest) => eng.playHealSound(ctx, dest),
+  faint: (eng, ctx, dest) => eng.playFaintSound(ctx, dest),
+  wobble: (eng, ctx, dest) => eng.playWobbleSound(ctx, dest),
+  ballHit: (eng, ctx, dest) => eng.playBallHitSound(ctx, dest),
+  statusDamage: (eng, ctx, dest) => eng.playStatusDamageSound(ctx, dest),
+  victoryTrainer: (eng, ctx, dest) => eng.playVictoryTrainerSound(ctx, dest),
+  defeat: (eng, ctx, dest) => eng.playDefeatSound(ctx, dest),
+  steal: (eng, ctx, dest) => eng.playStealSound(ctx, dest),
+  siren: (eng, ctx, dest) => eng.playSirenSound(ctx, dest),
+  pvpChallenge: (eng, ctx, dest) => eng.playPvPChallengeSound(ctx, dest),
+  criticalThrow: (eng, ctx, dest) => eng.playCriticalThrowSound(ctx, dest),
+};
+
 /**
  * AudioStore
  * Handles 8-bit sound synthesis using Web Audio API via audioEngine logic.
@@ -143,33 +169,13 @@ export const useAudioStore = defineStore('audio', () => {
     const dest = masterGain.value;
     if (!ctx || !dest) return;
 
-    switch (type) {
-      case 'shiny': engine.playShinySound(ctx, dest); break;
-      case 'rival': engine.playRivalEncounterSound(ctx, dest); break;
-      case 'levelUp': engine.playLevelUpSound(ctx, dest); break;
-      case 'evolution': engine.playEvolutionSound(ctx, dest); break;
-      case 'caught': engine.playCaptureSuccessSound(ctx, dest); break;
-      case 'flee': engine.playFleeSound(ctx, dest); break;
-      case 'item': engine.playItemSound(ctx, dest); break;
-      case 'sentMsg': engine.playMessageSentSound(ctx, dest); break;
-      case 'receivedMsg': engine.playMessageReceivedSound(ctx, dest); break;
-      case 'money': engine.playMoneySound(ctx, dest); break;
-      case 'heal': engine.playHealSound(ctx, dest); break;
-      case 'faint': engine.playFaintSound(ctx, dest); break;
-      case 'wobble': engine.playWobbleSound(ctx, dest); break;
-      case 'ballHit': engine.playBallHitSound(ctx, dest); break;
-      case 'statusDamage': engine.playStatusDamageSound(ctx, dest); break;
-      case 'victoryTrainer': engine.playVictoryTrainerSound(ctx, dest); break;
-      case 'defeat': engine.playDefeatSound(ctx, dest); break;
-      case 'steal': engine.playStealSound(ctx, dest); break;
-      case 'siren': engine.playSirenSound(ctx, dest); break;
-      case 'pvpChallenge': engine.playPvPChallengeSound(ctx, dest); break;
-      case 'criticalThrow': engine.playCriticalThrowSound(ctx, dest); break;
+    const dispatcher = SOUND_DISPATCH_MAP[type];
+    if (dispatcher) {
+      dispatcher(engine, ctx, dest);
     }
   };
 
   return {
-    isInitialized,
     init,
     resume,
     play,

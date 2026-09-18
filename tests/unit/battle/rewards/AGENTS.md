@@ -9,4 +9,4 @@ Unit tests for battle rewards distribution, experience calculations, money multi
 
 ## Test Index
 
-- [npc_baby_egg_rewards.spec.ts](./npc_baby_egg_rewards.spec.ts): Unit tests verifying NPC (2%) and Rival (5%) baby egg rewards, Gym/PvP exclusions, incubator slot limits (7 total, 1 NPC egg max), and full wild vigor (3-6).
+- [battle_rewards_distribution_suite.spec.ts](./battle_rewards_distribution_suite.spec.ts): Cohesive domain suite consolidating battle rewards distribution (EXP, money, TMs, Gym badges) and NPC/Rival baby egg reward mechanisms (drop rates, Gym/PvP exclusions, incubator limits, full wild vigor).

@@ -128,6 +128,7 @@ const getPokemonName = (id: string) => {
             <img 
               v-if="getStoneInfo(opt.stone).sprite && !stoneHasError(opt.stone)"
               :src="getAssetUrl(ASSET_TYPES.ITEM, getStoneInfo(opt.stone).sprite!)" 
+              :alt="getStoneInfo(opt.stone).name || 'Piedra evolutiva'"
               class="stone-sprite" 
               @error="handleImageError(opt.stone)"
             >

@@ -13,21 +13,6 @@ const DPAD_LEFT_INDEX = 14
 const DPAD_RIGHT_INDEX = 15
 const ANALOG_THRESHOLD = 0.5
 
-export interface RetroGamepadState {
-  readonly isSupported: boolean
-  readonly isConnected: boolean
-  readonly dpadUp: boolean
-  readonly dpadDown: boolean
-  readonly dpadLeft: boolean
-  readonly dpadRight: boolean
-  readonly buttonA: boolean
-  readonly buttonB: boolean
-  readonly buttonX: boolean
-  readonly buttonY: boolean
-  readonly start: boolean
-  readonly select: boolean
-}
-
 /**
  * useRetroGamepad
  * Reactive composable to interact with retro gamepads and standard controllers.

@@ -1,15 +1,84 @@
-import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
+import {
+  computeSnowLayer1Config,
+  computeSnowLayer2Config,
+  computeHailLayer1Config,
+  computeHailLayer2Config,
+  applySnowLayerAnimation
+} from './atmosphereSnowHelper.ts'
+
+import { WEATHER_TILE_HAIL_L1_PX, WEATHER_TILE_HAIL_L2_PX } from '@/logic/constants/visuals'
+
+type GsapTimeline = ReturnType<typeof import('gsap').gsap.timeline>
 
 const SNOW_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['snow', 'blizzard', 'hail']) // runtime-set: Fast O(1) membership lookup set
-const HAIL_VERTICAL_DRIFT_PX = 512
 
 export function useAtmosphereSnowAnim(
   layer1Ref: Ref<HTMLElement | null>,
   layer2Ref: Ref<HTMLElement | null>,
-  applyParallaxLayer: (layer: HTMLElement | null, startX: number, startY: number, moveX: number, moveY: number, duration: number) => void
+  _applyParallaxLayer?: unknown
 ) {
+  function handleSnowLayers(
+    weatherTimeline: GsapTimeline,
+    seed1: number,
+    seed2: number,
+    isBlizzard: boolean,
+    isLowPower: boolean,
+    speedVar: number
+  ): void {
+    if (layer1Ref.value) {
+      const config1 = computeSnowLayer1Config(seed1, isBlizzard, speedVar)
+      applySnowLayerAnimation(weatherTimeline, layer1Ref.value, config1, seed1)
+
+      if (layer2Ref.value && !isLowPower) {
+        const config2 = computeSnowLayer2Config(seed2, isBlizzard, speedVar)
+        applySnowLayerAnimation(weatherTimeline, layer2Ref.value, config2, seed2)
+      }
+    }
+  }
+
+  function handleHailLayers(
+    weatherTimeline: GsapTimeline,
+    seed1: number,
+    seed2: number,
+    animSeed: number,
+    isLowPower: boolean,
+    speedVar: number
+  ): void {
+    if (layer1Ref.value) {
+      const { duration: dur1 } = computeHailLayer1Config(seed1, speedVar)
+      weatherTimeline.fromTo(
+        layer1Ref.value,
+        { x: 0, y: -WEATHER_TILE_HAIL_L1_PX },
+        {
+          x: 0,
+          y: 0,
+          duration: dur1,
+          repeat: -1,
+          ease: 'none'
+        },
+        0
+      ).progress(seed1 % 1)
+    }
+
+    if (layer2Ref.value && !isLowPower) {
+      const { duration: dur2 } = computeHailLayer2Config(seed2, animSeed)
+      weatherTimeline.fromTo(
+        layer2Ref.value,
+        { x: 0, y: -WEATHER_TILE_HAIL_L2_PX },
+        {
+          x: 0,
+          y: 0,
+          duration: dur2,
+          repeat: -1,
+          ease: 'none'
+        },
+        0
+      ).progress(seed2 % 1)
+    }
+  }
+
   const initSnowAnim = (
     w: WeatherId,
     seed1: number,
@@ -17,75 +86,14 @@ export function useAtmosphereSnowAnim(
     animSeed: number,
     isLowPower: boolean,
     speedVar: number,
-    weatherTimeline: gsap.core.Timeline | null
+    weatherTimeline: GsapTimeline | null
   ) => {
     if (!SNOW_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return
 
-    const isBlizzard = w === 'blizzard'
-    const isHail = w === 'hail'
-
-    if (!isHail) {
-      if (layer1Ref.value) {
-        const s1X = (seed1 * 1500) % 256
-        const s1Y = (seed1 * 2500) % 256
-        const drift1X = isBlizzard ? -512 : 0
-        const dur1 = (isBlizzard ? 3.0 : 18.0) / speedVar
-
-        gsap.set(layer1Ref.value, { x: s1X, y: s1Y })
-
-        weatherTimeline.to(layer1Ref.value,
-          {
-            x: s1X + drift1X,
-            y: s1Y + 1024,
-            duration: dur1,
-            repeat: -1,
-            ease: 'none',
-            modifiers: {
-              x: gsap.utils.unitize(x => parseFloat(x) % 1024),
-              y: gsap.utils.unitize(y => parseFloat(y) % 1024)
-            }
-          },
-          0
-        )
-
-        if (layer2Ref.value && !isLowPower) {
-          const s2X = (seed2 * 3500) % 192
-          const s2Y = (seed2 * 4500) % 192
-          const drift2X = isBlizzard ? 768 : 0
-          const dur2 = (isBlizzard ? 9.0 : 54.0) / speedVar
-
-          gsap.set(layer2Ref.value, { x: s2X, y: s2Y })
-
-          weatherTimeline.to(layer2Ref.value,
-            {
-              x: s2X + drift2X,
-              y: s2Y + 1536,
-              duration: dur2,
-              repeat: -1,
-              ease: 'none',
-              modifiers: {
-                x: gsap.utils.unitize(x => parseFloat(x) % 1536),
-                y: gsap.utils.unitize(y => parseFloat(y) % 1536)
-              }
-            },
-            0
-          )
-        }
-      }
-
+    if (w !== 'hail') {
+      handleSnowLayers(weatherTimeline, seed1, seed2, w === 'blizzard', isLowPower, speedVar)
     } else {
-      if (layer1Ref.value) {
-        const s1X = (seed1 * 1200) % 128
-        const s1Y = (seed1 * 2200) % 128
-        applyParallaxLayer(layer1Ref.value, s1X, s1Y, 0, HAIL_VERTICAL_DRIFT_PX, 1.0 / speedVar)
-      }
-
-      if (layer2Ref.value && !isLowPower) {
-        const speedVar2 = 0.9 + (animSeed * 0.2)
-        const s2X = (seed2 * 2800) % 64
-        const s2Y = (seed2 * 3800) % 64
-        applyParallaxLayer(layer2Ref.value, s2X, s2Y, 0, HAIL_VERTICAL_DRIFT_PX, 1.5 / speedVar2)
-      }
+      handleHailLayers(weatherTimeline, seed1, seed2, animSeed, isLowPower, speedVar)
     }
   }
 

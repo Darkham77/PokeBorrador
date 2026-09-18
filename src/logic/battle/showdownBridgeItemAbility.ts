@@ -22,9 +22,46 @@ function isItemUsedDuringFlinch(target: Pokemon | null | undefined, p: Pokemon |
   return Boolean(isPlayer ? activeBattle?.playerUsedItem : activeBattle?.enemyUsedItem);
 }
 
+function applyFlinchStateAndAnimation(
+  target: Pokemon,
+  targetIdent: string,
+  getSide: SBCtx['getSide'],
+  store: SBCtx['store']
+): void {
+  if (!target.volatileCounters) target.volatileCounters = {};
+  target.volatileCounters['flinch'] = 1;
+  const side = getSide(targetIdent);
+  if (side && store.animations?.triggerFlinchAnim) {
+    void store.animations.triggerFlinchAnim(side);
+  }
+}
+
+function resolveCantHint(cleanReason: string): string {
+  return CANT_MESSAGES[cleanReason] ?? (cleanReason.includes('truant') ? 'está haraganeando (Truant)' : 'no puede moverse');
+}
+
+function applyCantEffects(
+  target: Pokemon,
+  reason: string,
+  targetIdent: string,
+  ctx: SBCtx
+): void {
+  if (target.volatileCounters) {
+    delete target.volatileCounters['twoturnmove'];
+  }
+  const cleanReason = reason.toLowerCase(); // text-ok: UI text display localization string
+  if (cleanReason === 'flinch') {
+    applyFlinchStateAndAnimation(target, targetIdent, ctx.getSide, ctx.store);
+  }
+  const style = target === ctx.p ? 'log-player' : 'log-enemy';
+  const hint = resolveCantHint(cleanReason);
+  ctx.store.addLog(`¡${target.name} ${hint}!`, style, target);
+}
+
 function handleCantToken(ctx: SBCtx): boolean {
-  const { store, parts, p, getPoke, getSide } = ctx;
-  const target = getPoke(parts[2] || '');
+  const { store, parts, p, getPoke } = ctx;
+  const targetIdent = parts[2] || '';
+  const target = getPoke(targetIdent);
   const reason = parts[3] || '';
   
   if (reason === 'flinch' && isItemUsedDuringFlinch(target, p, store)) {
@@ -32,21 +69,7 @@ function handleCantToken(ctx: SBCtx): boolean {
   }
   
   if (target) {
-    if (target.volatileCounters) {
-      delete target.volatileCounters['twoturnmove'];
-    }
-    const cleanReason = reason.toLowerCase(); // text-ok: UI text display localization string
-    if (cleanReason === 'flinch') {
-      if (!target.volatileCounters) target.volatileCounters = {};
-      target.volatileCounters['flinch'] = 1;
-      const side = getSide(parts[2] || '');
-      if (side && store.animations?.triggerFlinchAnim) {
-        void store.animations.triggerFlinchAnim(side);
-      }
-    }
-    const style = target === p ? 'log-player' : 'log-enemy';
-    const hint = CANT_MESSAGES[cleanReason] ?? (cleanReason.includes('truant') ? 'está haraganeando (Truant)' : 'no puede moverse');
-    store.addLog(`¡${target.name} ${hint}!`, style, target);
+    applyCantEffects(target, reason, targetIdent, ctx);
   }
   return true;
 }

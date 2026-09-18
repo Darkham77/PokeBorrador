@@ -26,13 +26,16 @@ import { useBattleArenaCoordinator } from '@/composables/battle/useBattleArenaCo
 import { useBattleCombatants } from '@/composables/battle/useBattleCombatants'
 import { useBattleTrainerVisuals } from '@/composables/battle/useBattleTrainerVisuals'
 import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere'
+import type { BattleSide } from '@/types/battle/battle'
 import { createBattleAnimationsBridge } from './helpers/battleAnimationsBridge.ts'
 
 // Componentes
 import VirtualSpace from './VirtualSpace.vue'
 import VirtualEntity from './VirtualEntity.vue'
 import BattleEnvironment from './BattleEnvironment.vue'
-import BattleCombatant from './BattleCombatant.vue'
+import BattleArenaEnemyCombatant from './BattleArenaEnemyCombatant.vue'
+import BattleArenaPlayerCombatant from './BattleArenaPlayerCombatant.vue'
+import BattleCombatantStatusOverlay from './BattleCombatantStatusOverlay.vue'
 import CombatGrass from './CombatGrass.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import CameraZoomControls from './CameraZoomControls.vue'
@@ -67,6 +70,7 @@ const atmosphereSeed = computed(() => {
 
 // Forzar Alta Fidelidad en el Combate
 provide('forceHighFidelity', true)
+provide('isModalFastMode', computed(() => false))
 provide('isModalPerformanceMode', computed(() => false))
 
 const arenaRef = ref<HTMLElement | null>(null)
@@ -286,6 +290,59 @@ watch(() => battleStore.isBattleActive, (active) => {
 })
 
 // Zoom controls are now managed by CameraZoomControls component
+const isGrassVisible = computed(() => shouldShowEncounterLayers.value && !enemyIsFloating.value)
+const enemySparkles = computed(() => catchSparkles.value.filter(s => s.side === 'enemy'))
+const playerSparkles = computed(() => catchSparkles.value.filter(s => s.side === 'player'))
+
+function isEnemyAttacker(uid?: string): boolean {
+  return battleStore.attackerSide === 'enemy' && uid === enemy.value?.uid
+}
+
+function isPlayerAttacker(uid?: string): boolean {
+  return battleStore.attackerSide === 'player' && uid === player.value?.uid
+}
+
+function isEnemyFainting(uid?: string): boolean {
+  return isFaintInProgress.value &&
+    faintedPokemonSnapshot.value?.side === 'enemy' &&
+    battleStore.uiConfig.isWild &&
+    faintedPokemonSnapshot.value?.uid === uid
+}
+
+function isCombatantFainting(side: BattleSide, uid?: string): boolean {
+  return isFaintInProgress.value &&
+    faintedPokemonSnapshot.value?.side === side &&
+    (uid === undefined || faintedPokemonSnapshot.value?.uid === uid)
+}
+
+function isEnemyHidden(uid?: string): boolean {
+  if (isEnemyTechnicalHidden.value || !activeEnemyData.value) return true
+  return activeEnemyData.value.uid ? uid !== activeEnemyData.value.uid : false
+}
+
+function isPlayerHidden(uid?: string): boolean {
+  return isPlayerTechnicalHidden.value && uid === player.value?.uid
+}
+
+const isTrainerSpeechBubbleVisible = computed(() => {
+  if (!battleStore.uiConfig.isNpc) return false
+  const state = battleStore.currentFsmState
+  const sub = battleStore.currentSubState
+  return (state === 'FIRST_INTRO' && sub === 'SHOW_DIALOGS') ||
+         (state === 'SEARCH_PHASE' && sub === 'COMBAT_OR_FLEE')
+})
+
+const showFloatingControls = computed(() => {
+  const cfg = battleStore.uiConfig
+  return cfg.showTurnTimer || cfg.showSpectatorBadge || cfg.showReplayControls
+})
+
+const isFxSuppressed = computed(() => isSearching.value || isIntroInProgress.value)
+const currentTrainerName = computed(() => battle.value?.trainerName || 'Entrenador')
+
+function getCombatantKey(prefix: string, uid?: string, id?: string): string {
+  return `${prefix}-${uid ?? id ?? 'active'}`
+}
 </script>
 
 <template>
@@ -315,6 +372,20 @@ watch(() => battleStore.isBattleActive, (active) => {
           :current-cycle="effectiveCycle"
         />
 
+        <!-- Sándwich Clima: Capa Trasera (Ambiente, Tinte de Cielo y Bruma cubriendo a los sprites) -->
+        <AtmosphereLayer
+          layer="ambient"
+          :weather="computedWeather"
+          :cycle="effectiveCycle"
+          :season="currentWeatherSeason"
+          :is-fast-mode="uiStore.isFastMode"
+          :is-performance-mode="uiStore.isFastMode"
+          :is-low-power="uiStore.isLowPowerActive"
+          :z-index="'calc(var(--z-base) + 15)'"
+          :anim-seed="atmosphereSeed"
+          :is-visible="isAtmosphereLayerVisible"
+        />
+
         <div class="battle-sprites">
           <!-- Arbustos Atrás -->
           <VirtualEntity
@@ -329,7 +400,7 @@ watch(() => battleStore.isBattleActive, (active) => {
               :location-id="battle?.locationId"
               :ground-y="enemyGroundY"
               :seed="grassSeed"
-              :visible="shouldShowEncounterLayers && !enemyIsFloating"
+              :visible="isGrassVisible"
               :instant="isInstantBush"
               :hide-instant="enemyIsFloating"
             />
@@ -355,36 +426,34 @@ watch(() => battleStore.isBattleActive, (active) => {
           />
 
           <!-- Enemigo -->
-          <BattleCombatant
+          <BattleArenaEnemyCombatant
             v-for="p in enemyCombatants"
-            :key="`enemy-seat-${p.uid || 'active'}`"
-            side="enemy"
+            :key="getCombatantKey('enemy-seat', p.uid, p.id)"
             :pokemon="p"
-            :position="p2Pos"
-            :target-position="p1Pos"
+            :p2-pos="p2Pos"
+            :p1-pos="p1Pos"
             :base-size="BASE_ENTITY_SIZE_ENEMY"
             :ground-y="enemyGroundY"
             :shadow-key="currentEnemyShadowKey"
-            :z-index="'calc(var(--z-map-spawns) + 2)'"
             :anim-state="getPokemonAnimState('enemy', p)"
             :ball-id="getPokemonBallId('enemy', p)"
             :is-shaking="getPokemonIsShaking('enemy', p)"
             :is-blinking="getPokemonIsBlinking('enemy', p)"
             :is-healing="getPokemonIsHealing('enemy', p)"
             :is-silhouette="activeEnemyIsSilhouette"
-            :is-attacking="battleStore.attackerSide === 'enemy' && p.uid === enemy?.uid"
-            :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'enemy', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name, selfKO: battleStore.activeMove.selfKO, recoil: battleStore.activeMove.recoil } : null"
+            :silhouette-opacity="silhouetteOpacity"
+            :is-attacker="isEnemyAttacker(p.uid)"
+            :active-move="battleStore.activeMove"
             :show-guides="showGuides"
             :is-capture-success="getPokemonCaptureActive('enemy', p)"
             :is-critical-capture="!!isCriticalCaptureActive.enemy"
-            :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
-            :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy' && battleStore.uiConfig.isWild && faintedPokemonSnapshot?.uid === p.uid"
+            :sparkles="enemySparkles"
+            :is-fainting="isEnemyFainting(p.uid)"
             :is-emerging="enemyIsJumping"
-            :suppress-fx="isSearching || isIntroInProgress"
+            :suppress-fx="isFxSuppressed"
             :stages="battleStore.enemyStages"
-            :hidden="isEnemyTechnicalHidden || !activeEnemyData || (activeEnemyData?.uid ? p.uid !== activeEnemyData.uid : false)"
-            :has-seat="true"
-            :style="{ opacity: activeEnemyIsSilhouette ? silhouetteOpacity : 1 }"
+            :is-hidden="isEnemyHidden(p.uid)"
+            :hide-status-overlay="true"
           />
 
           <!-- Arbustos Adelante -->
@@ -401,70 +470,98 @@ watch(() => battleStore.isBattleActive, (active) => {
               :location-id="battle?.locationId"
               :ground-y="enemyGroundY"
               :seed="grassSeed"
-              :visible="shouldShowEncounterLayers && !enemyIsFloating"
+              :visible="isGrassVisible"
               :instant="isInstantBush"
               :hide-instant="enemyIsFloating"
             />
           </VirtualEntity>
 
           <!-- Jugador -->
-          <BattleCombatant
+          <BattleArenaPlayerCombatant
             v-for="p in playerCombatants"
-            :key="`player-seat-${p.uid || 'active'}`"
-            side="player"
+            :key="getCombatantKey('player-seat', p.uid, p.id)"
             :pokemon="p"
-            :position="p1Pos"
-            :target-position="p2Pos"
+            :p1-pos="p1Pos"
+            :p2-pos="p2Pos"
             :base-size="BASE_ENTITY_SIZE_PLAYER"
             :ground-y="playerGroundY"
             :shadow-key="currentPlayerShadowKey"
-            :z-index="'calc(var(--z-map-spawns) + 4)'"
             :anim-state="getPokemonAnimState('player', p)"
             :ball-id="getPokemonBallId('player', p)"
             :is-shaking="getPokemonIsShaking('player', p)"
             :is-blinking="getPokemonIsBlinking('player', p)"
             :is-healing="getPokemonIsHealing('player', p)"
-            :is-attacking="battleStore.attackerSide === 'player' && p.uid === player?.uid"
-            :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'player', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name, selfKO: battleStore.activeMove.selfKO, recoil: battleStore.activeMove.recoil } : null"
+            :is-attacker="isPlayerAttacker(p.uid)"
+            :active-move="battleStore.activeMove"
             :show-guides="showGuides"
             :is-capture-success="getPokemonCaptureActive('player', p)"
             :is-critical-capture="!!isCriticalCaptureActive.player"
-            :sparkles="catchSparkles.filter(s => s.side === 'player')"
+            :sparkles="playerSparkles"
             :stages="battleStore.playerStages"
-            :is-fainting="false"
-            :hidden="isPlayerTechnicalHidden && p.uid === player?.uid"
-            :has-seat="true"
+            :is-hidden="isPlayerHidden(p.uid)"
+            :hide-status-overlay="true"
           />
         </div>
 
-        <!-- Atmósfera (Clima: por encima de los Pokémon pero por debajo del cartel / diálogo) -->
-        <AtmosphereLayer
-          :weather="computedWeather"
-          :cycle="effectiveCycle"
-          :season="currentWeatherSeason"
-          :is-performance-mode="uiStore.isPerformanceMode"
-          :is-low-power="uiStore.isLowPowerActive"
-          :z-index="'calc(var(--z-base) + 20)'"
-          :anim-seed="atmosphereSeed"
-          :is-visible="isAtmosphereLayerVisible"
-        />
+        <!-- Capa de Efectos de Estado y Auras (Layer 4 - Sobre la Bruma Ambiental) -->
+        <div class="battle-status-layer">
+          <!-- Status Overlay Enemigo (4-Seat Compatible) -->
+          <BattleCombatantStatusOverlay
+            v-for="p in enemyCombatants"
+            :key="getCombatantKey('enemy-status', p.uid, p.id)"
+            side="enemy"
+            :pokemon="p"
+            :position="p2Pos"
+            :base-size="BASE_ENTITY_SIZE_ENEMY"
+            :ground-y="enemyGroundY"
+            :stages="battleStore.enemyStages"
+            :anim-state="getPokemonAnimState('enemy', p)"
+            :suppress-fx="isFxSuppressed"
+            :is-hidden="isEnemyHidden(p.uid)"
+            :is-fainting="isCombatantFainting('enemy', p.uid)"
+          />
+
+          <!-- Status Overlay Jugador (4-Seat Compatible) -->
+          <BattleCombatantStatusOverlay
+            v-for="p in playerCombatants"
+            :key="getCombatantKey('player-status', p.uid, p.id)"
+            side="player"
+            :pokemon="p"
+            :position="p1Pos"
+            :base-size="BASE_ENTITY_SIZE_PLAYER"
+            :ground-y="playerGroundY"
+            :stages="battleStore.playerStages"
+            :anim-state="getPokemonAnimState('player', p)"
+            :suppress-fx="isFxSuppressed"
+            :is-hidden="isPlayerHidden(p.uid)"
+            :is-fainting="isCombatantFainting('player', p.uid)"
+          />
+        </div>
 
         <!-- Globo de diálogo en la zona del jugador (P1 ANCHOR) - Por encima del clima, mismo que el HUD -->
         <BattleTrainerSpeechBubble
           :position="p1Pos"
           :base-size="BASE_ENTITY_SIZE_PLAYER"
-          :visible="!!(battleStore.uiConfig.isNpc && (
-            (battleStore.currentFsmState === 'FIRST_INTRO' && (
-              battleStore.currentSubState === 'SHOW_DIALOGS'
-            )) ||
-            (battleStore.currentFsmState === 'SEARCH_PHASE' && (
-              battleStore.currentSubState === 'COMBAT_OR_FLEE'
-            ))
-          ))"
-          :trainer-name="battle?.trainerName || 'Entrenador'"
+          :visible="isTrainerSpeechBubbleVisible"
+          :trainer-name="currentTrainerName"
           :dialog-text="trainerDialogText"
         />
       </VirtualSpace>
+
+      <!-- Sándwich Clima: Capa Delantera A NIVEL DE CÁMARA (Precipitación y Partículas sin tinte oscurecedor) -->
+      <!-- Sigue a la cámara (100% del viewport visible), inmune al zoom del escenario -->
+      <AtmosphereLayer
+        layer="particles"
+        :weather="computedWeather"
+        :cycle="effectiveCycle"
+        :season="currentWeatherSeason"
+        :is-fast-mode="uiStore.isFastMode"
+        :is-performance-mode="uiStore.isFastMode"
+        :is-low-power="uiStore.isLowPowerActive"
+        :z-index="'calc(var(--z-base) + 30)'"
+        :anim-seed="atmosphereSeed"
+        :is-visible="isAtmosphereLayerVisible"
+      />
     </div>
 
     <!-- HUD Genérico (4-Seat Compatible) -->
@@ -483,7 +580,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 
     <!-- Controles Flotantes PvP, Replay y Espectador (Flotando sobre el suelo del viewport sin reducir la cámara) -->
     <div
-      v-if="battleStore.uiConfig.showTurnTimer || battleStore.uiConfig.showSpectatorBadge || battleStore.uiConfig.showReplayControls"
+      v-if="showFloatingControls"
       class="battle-arena-floating-controls"
     >
       <PvPTurnTimerClock v-if="battleStore.uiConfig.showTurnTimer && !battleStore.isIntroAnimating" />

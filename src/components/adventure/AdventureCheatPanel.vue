@@ -5,6 +5,7 @@ import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useShopStore } from '@/stores/inventory/shop'
 import { ITEMS_BY_ID, isItemId, type ItemId } from '@/data/inventory/items'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
+import AdventureCheatTeamCard from './AdventureCheatTeamCard.vue'
 
 interface Props {
   injectedItems: Set<ItemId>
@@ -117,48 +118,11 @@ const healActiveTeam = () => {
         class="adv-team-scroll"
         style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;"
       >
-        <div 
-          v-for="pkmn in gameStore.state.team" 
+        <AdventureCheatTeamCard
+          v-for="pkmn in gameStore.state.team"
           :key="pkmn.uid"
-          class="adv-team-pkmn-card"
-          style="border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 4px;"
-        >
-          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 8px;">
-            <span style="font-weight: bold; color: #ffcb05;">{{ pkmn.name }}</span>
-            <span style="color: #aaa;">Nv {{ pkmn.level }}</span>
-          </div>
-
-          <div style="display: flex; flex-direction: column; gap: 2px;">
-            <div style="display: flex; justify-content: space-between; font-size: 6px; color: #ccc;">
-              <span>HP</span>
-              <span>{{ pkmn.hp }} / {{ pkmn.maxHp }}</span>
-            </div>
-            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; border: 1px solid rgba(0,0,0,0.5);">
-              <div 
-                :style="{ 
-                  width: `${Math.max(0, Math.min(100, (pkmn.hp / pkmn.maxHp) * 100))}%`, 
-                  backgroundColor: (pkmn.hp / pkmn.maxHp) > 0.5 ? '#4caf50' : (pkmn.hp / pkmn.maxHp) > 0.2 ? '#ff9800' : '#f44336' 
-                }"
-                style="height: 100%;"
-              />
-            </div>
-          </div>
-
-          <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px;">
-            <template
-              v-for="(move, idx) in pkmn.moves"
-              :key="move ? move.name : idx"
-            >
-              <div 
-                v-if="move"
-                style="font-size: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px; display: flex; justify-content: space-between; gap: 6px; width: 100%;"
-              >
-                <span style="color: #dfcbb5;">{{ move.name }}</span>
-                <span :style="{ color: move.pp > 0 ? '#ffcb05' : '#ef5350' }">{{ move.pp }}/{{ move.maxPP }}</span>
-              </div>
-            </template>
-          </div>
-        </div>
+          :pokemon="pkmn"
+        />
 
         <div 
           v-if="!gameStore.state.team || gameStore.state.team.length === 0"

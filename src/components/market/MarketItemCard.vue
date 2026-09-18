@@ -72,6 +72,7 @@ const tierColor = computed(() => {
         <div class="item-bg-glow" />
         <img 
           :src="_getAssetUrl(ASSET_TYPES.ITEM, item.id)" 
+          :alt="item.name || 'Objeto'"
           class="i-sprite pixelated"
           @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(ASSET_TYPES.ITEM, 'potion')"
         >

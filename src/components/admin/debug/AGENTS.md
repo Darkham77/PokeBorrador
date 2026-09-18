@@ -12,6 +12,7 @@ Backend and Systems Developers.
 - All code must execute safely and must not impact production performance.
 - **Contextual Debug Segregation**: Battle-specific tools (e.g., combat animations, live sprite effects, combat audio) must be restricted to in-combat debug tools (`BattleDebugTools.vue`) and excluded from overworld panels (`LocalDebugPanel.vue`).
 - **Debug Legality Guard & Modal Blocking**: Admin and debug creation panels (`DebugPokemonCreator.vue`, `DebugTrainersTab.vue`) MUST validate complete Pokémon legality (`checkPokemonLegality` / `validatePokemonLegality`) before executing actions (creation, encounter, catching, or starting simulated combat). If any Pokémon or move is illegal for its species/level, action execution MUST be blocked loudly by displaying the reusable `DebugIllegalModal.vue` explaining all reasons.
+- **Debug Trainer Tab Modularization (`DebugTrainerGenSettings.vue`, `DebugTrainerMetaCard.vue`, `DebugTrainerBattleLauncher.vue`)**: The trainer combat testing tab (`DebugTrainersTab.vue`) decomposes generation parameters, trainer identity/criminality controls, and battle encounter launchers into dedicated child SFCs to keep cyclomatic and cognitive complexity minimal.
 
 ## Child DOX Index
 

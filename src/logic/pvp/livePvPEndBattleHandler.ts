@@ -42,6 +42,72 @@ export function executeForfeit(ctx: {
   ctx.endBattle(false, 'Te has rendido.');
 }
 
+const DEFAULT_TURNS_COUNT = 1 as const;
+const DEFAULT_OPPONENT_NAME = 'Rival' as const;
+const DEFAULT_OPPONENT_ID = 'trainer' as const;
+const DEFAULT_PVP_FORMAT = '3v3' as const;
+const MATCH_ID_SLICE_START = 2 as const;
+const MATCH_ID_SLICE_END = 7 as const;
+
+function resetPvPBattleSession(
+  battleState: EndBattleStateLike,
+  timerManager: PvPTimerManager,
+  isReconnecting: Ref<boolean>
+): void {
+  timerManager.stopTurnTimer();
+  timerManager.stopReconnectCountdown();
+  isReconnecting.value = false;
+  battleState.active = false;
+  battleState.phase = 'over';
+  if (battleState.ch) battleState.ch.unsubscribe();
+}
+
+async function processRankedResult(
+  won: boolean,
+  battleState: EndBattleStateLike,
+  pvpStore: ReturnType<typeof usePvPStore>,
+  gameStore: ReturnType<typeof useGameStore>,
+  authStore: ReturnType<typeof useAuthStore>
+): Promise<number> {
+  if (!battleState.isRanked) return 0;
+  const eloDelta = await pvpStore.updateElo(won, battleState.opponentElo);
+  if (battleState.opponentId && battleState.config?.isAsynchronous && gameStore.db) {
+    const defenderDelta = -eloDelta;
+    await gameStore.db.rpc('record_passive_battle_result', {
+      p_defender_id: battleState.opponentId,
+      p_result: won ? 'defeat' : 'victory',
+      p_delta_elo: defenderDelta,
+      p_report_data: {
+        opponent: authStore.user?.user_metadata?.username || gameStore.state.trainer || DEFAULT_OPPONENT_NAME,
+        turns: battleState.logs.length,
+        endedAt: Temporal.Now.instant().toString()
+      }
+    });
+  }
+  return eloDelta;
+}
+
+function recordPersonalMatchHistory(
+  won: boolean,
+  eloDelta: number,
+  battleState: EndBattleStateLike,
+  pvpStore: ReturnType<typeof usePvPStore>
+): void {
+  const battleCode = generateBattleCode();
+  pvpStore.recordMatchResult({
+    id: `match_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(MATCH_ID_SLICE_START, MATCH_ID_SLICE_END)}`,
+    battleCode,
+    opponentId: battleState.opponentId || DEFAULT_OPPONENT_ID,
+    opponentName: battleState.opponentName || DEFAULT_OPPONENT_NAME,
+    format: (battleState.config?.format || DEFAULT_PVP_FORMAT) as PvpMatchFormat,
+    isRanked: !!battleState.isRanked,
+    result: won ? 'victory' : 'defeat',
+    deltaElo: eloDelta,
+    turnsCount: battleState.logs.length || DEFAULT_TURNS_COUNT,
+    timestamp: Temporal.Now.instant().toString()
+  });
+}
+
 export async function executeEndBattle(
   won: boolean,
   reason: string,
@@ -56,50 +122,16 @@ export async function executeEndBattle(
     battleStore: ReturnType<typeof useBattleStore>;
   }
 ): Promise<void> {
-  ctx.timerManager.stopTurnTimer();
-  ctx.timerManager.stopReconnectCountdown();
-  ctx.isReconnecting.value = false;
-  ctx.battleState.active = false;
-  ctx.battleState.phase = 'over';
-  if (ctx.battleState.ch) ctx.battleState.ch.unsubscribe();
+  resetPvPBattleSession(ctx.battleState, ctx.timerManager, ctx.isReconnecting);
 
-  let eloDelta = 0;
-  if (ctx.battleState.isRanked) {
-    eloDelta = await ctx.pvpStore.updateElo(won, ctx.battleState.opponentElo);
-    if (ctx.battleState.opponentId && ctx.battleState.config?.isAsynchronous && ctx.gameStore.db) {
-      const defenderDelta = -eloDelta;
-      await ctx.gameStore.db.rpc('record_passive_battle_result', {
-        p_defender_id: ctx.battleState.opponentId,
-        p_result: won ? 'defeat' : 'victory',
-        p_delta_elo: defenderDelta,
-        p_report_data: {
-          opponent: ctx.authStore.user?.user_metadata?.username || ctx.gameStore.state.trainer || 'Rival',
-          turns: ctx.battleState.logs.length,
-          endedAt: Temporal.Now.instant().toString()
-        }
-      });
-    }
-  }
+  const eloDelta = await processRankedResult(won, ctx.battleState, ctx.pvpStore, ctx.gameStore, ctx.authStore);
 
   ctx.uiStore.notify(
     `${reason || (won ? '¡Has ganado!' : 'Has perdido.')}${eloDelta !== 0 ? ` (${eloDelta > 0 ? '+' : ''}${eloDelta} ELO)` : ''}`,
     won ? '🏆' : '💀'
   );
 
-  // Record to personal match history
-  const battleCode = generateBattleCode();
-  ctx.pvpStore.recordMatchResult({
-    id: `match_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2, 7)}`,
-    battleCode,
-    opponentId: ctx.battleState.opponentId || 'trainer',
-    opponentName: ctx.battleState.opponentName || 'Rival',
-    format: (ctx.battleState.config?.format || '3v3') as PvpMatchFormat,
-    isRanked: !!ctx.battleState.isRanked,
-    result: won ? 'victory' : 'defeat',
-    deltaElo: eloDelta,
-    turnsCount: ctx.battleState.logs.length || 1,
-    timestamp: Temporal.Now.instant().toString()
-  });
+  recordPersonalMatchHistory(won, eloDelta, ctx.battleState, ctx.pvpStore);
 
   if (ctx.gameStore.state) {
     ctx.gameStore.state.activeBattle = null;

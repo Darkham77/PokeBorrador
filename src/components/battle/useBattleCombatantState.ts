@@ -2,12 +2,12 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import gsap from 'gsap';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
 import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import { useBattleStore } from '@/stores/battle/battle';
 import { gameBus } from '@/logic/events/gameBus';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import type { BattleCombatantProps, BattleEscapeType } from '@/types/battle/battle';
+import type { ItemId } from '@/data/inventory/items';
 import {
   POKEBALL_SHADOW_CANVAS_WIDTH_PX,
   POKEBALL_SHADOW_CANVAS_HEIGHT_PX,
@@ -20,10 +20,7 @@ import {
   useCombatantVisualSprite
 } from './useCombatantVisualSprite.ts';
 import { animateCombatantTransform } from './helpers/combatantFeedbackAnims.ts';
-import { logger } from '@/logic/utils/logger';
-
-const DEFAULT_FEET_X_RATIO = 0.5;
-const DEFAULT_FEET_Y_RATIO = 0.9;
+import { resolveCombatantFeetPoints } from './helpers/combatantFeetHelper.ts';
 
 const SMOKE_BASE_SPEED = 1.5;
 const SMOKE_SPEED_VARIANCE = 3;
@@ -82,45 +79,9 @@ export function useBattleCombatantState(
     imageUrl
   } = useCombatantVisualSprite(props);
 
-  const feetPoints = computed(() => {
-    const url = imageUrl.value;
-    if (url) {
-      let key = url;
-      const base = import.meta.env.BASE_URL || '/';
-      if (base !== '/' && url.startsWith(base)) {
-        key = url.slice(base.length - 1);
-      }
-      try {
-        key = decodeURIComponent(key);
-      } catch (e) {
-        throw new Error(`[useBattleCombatantState] Error decoding sprite URL '${key}': ${String(e)}`, { cause: e });
-      }
-
-      try {
-        const dbPoints = requireFeetPoints(key);
-        return {
-          feetX: dbPoints.feetX,
-          feetY: dbPoints.feetY,
-          isFlying: dbPoints.isFlying,
-          shadowScale: dbPoints.shadowScale ?? 1.0
-        };
-      } catch (err) {
-        logger.warn('CombatantState', `requireFeetPoints not found for '${key}', falling back:`, (err as Error).message);
-        // Fall back to animatedMeta if not in static DB
-      }
-    }
-
-    if (isAnimated.value && animatedMeta.value) {
-      return {
-        feetX: animatedMeta.value.feetX ?? DEFAULT_FEET_X_RATIO,
-        feetY: animatedMeta.value.feetY ?? DEFAULT_FEET_Y_RATIO,
-        isFlying: undefined,
-        shadowScale: 1.0
-      };
-    }
-
-    return { feetX: DEFAULT_FEET_X_RATIO, feetY: DEFAULT_FEET_Y_RATIO, isFlying: undefined, shadowScale: 1.0 };
-  });
+  const feetPoints = computed(() =>
+    resolveCombatantFeetPoints(imageUrl.value, isAnimated.value, animatedMeta.value)
+  );
 
   const resolvedIsFloating = computed(() => {
     if (feetPoints.value.isFlying !== undefined) {
@@ -203,7 +164,7 @@ const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
   });
 
   const wasCaptured = ref(false);
-  const internalBallId = ref('pokeball');
+  const internalBallId = ref<ItemId>('pokeball');
   const memorizedBallCoords = ref({ top: '90%', left: '50%' });
 
   const pokeballSize = computed(() => {

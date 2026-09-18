@@ -190,7 +190,7 @@ const selectTab = (tabId: string) => {
       padding: 10px 14px;
       margin-bottom: 0;
       margin-right: 8px;
-      transform: none !important;
+      transform: none;
     }
   }
 }

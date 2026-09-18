@@ -1,9 +1,10 @@
-import { getItemName } from '@/data/inventory/items'
+import { getItemName, isItemId, type ItemId } from '@/data/inventory/items'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
 import { isNatureId } from '@/data/battle/natures'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useUIStore } from '@/stores/ui.ts'
 import type { PendingAward } from '@/types/system/stores.ts'
@@ -99,65 +100,96 @@ export function grantBattleCoinsAward(gameStore: EventPrizeGameStore, uiStore: E
   return 0
 }
 
-export function grantItemsAward(gameStore: EventPrizeGameStore, uiStore: EventPrizeUIStore, prize: Record<string, unknown>, silent = false): number {
-  let notified = 0
-  if ((prize.type === 'item' && prize.item) || (typeof prize.item === 'string' && prize.item)) {
-    const itemId = String(prize.item)
-    const qty = Number(prize.qty || 1)
-    if (!gameStore.state.inventory) gameStore.state.inventory = {}
-    incrementRecordKey(gameStore.state.inventory, itemId, qty)
-    const itemName = getItemName(itemId) || itemId
-    if (!silent) uiStore.notify(`¡Obtuviste ${itemName}${qty > 1 ? ` x${qty}` : ''}!`, '🎒')
-    notified++
+function grantSingleItem(
+  gameStore: EventPrizeGameStore,
+  uiStore: EventPrizeUIStore,
+  itemId: ItemId,
+  qty: number,
+  silent: boolean
+): void {
+  if (!gameStore.state.inventory) {
+    gameStore.state.inventory = {};
   }
+  incrementRecordKey(gameStore.state.inventory, itemId, qty);
+  const itemName = getItemName(itemId) || itemId;
+  if (!silent) {
+    uiStore.notify(`¡Obtuviste ${itemName}${qty > 1 ? ` x${qty}` : ''}!`, '🎒');
+  }
+}
 
-  if (prize.items && typeof prize.items === 'object') {
-    if (!gameStore.state.inventory) gameStore.state.inventory = {}
-    for (const [k, v] of Object.entries(prize.items as Record<string, number>)) { // open-record: Generic key-value data dictionary container
-      if (v && v > 0) {
-        incrementRecordKey(gameStore.state.inventory, k, v)
-        const itemName = getItemName(k) || k
-        if (!silent) uiStore.notify(`¡Obtuviste ${itemName}${v > 1 ? ` x${v}` : ''}!`, '🎒')
-        notified++
-      }
+function grantSingleItemEntry(
+  gameStore: EventPrizeGameStore,
+  uiStore: EventPrizeUIStore,
+  prize: Record<string, unknown>,
+  silent: boolean
+): number {
+  const rawItem = (prize.type === 'item' && prize.item) ? prize.item : (typeof prize.item === 'string' ? prize.item : null);
+  if (!rawItem || !isItemId(rawItem)) return 0;
+  const qty = Number(prize.qty || 1);
+  grantSingleItem(gameStore, uiStore, rawItem, qty, silent);
+  return 1;
+}
+
+function grantMultipleItemsEntry(
+  gameStore: EventPrizeGameStore,
+  uiStore: EventPrizeUIStore,
+  prize: Record<string, unknown>,
+  silent: boolean
+): number {
+  if (!prize.items || typeof prize.items !== 'object') return 0;
+  let count = 0;
+  for (const [key, qty] of Object.entries(prize.items as Record<string, number>)) { // open-record: Generic key-value data dictionary container
+    if (isItemId(key) && qty && qty > 0) {
+      grantSingleItem(gameStore, uiStore, key, qty, silent);
+      count++;
     }
   }
-  return notified
+  return count;
+}
+
+export function grantItemsAward(gameStore: EventPrizeGameStore, uiStore: EventPrizeUIStore, prize: Record<string, unknown>, silent = false): number {
+  return grantSingleItemEntry(gameStore, uiStore, prize, silent) +
+         grantMultipleItemsEntry(gameStore, uiStore, prize, silent);
+}
+
+function applyCustomIvs(poke: Pokemon, rawIvs: Record<string, number> | null): void {
+  if (!rawIvs) return;
+  for (const s of POKEMON_STAT_KEYS) {
+    if (typeof rawIvs[s] === 'number') {
+      poke.ivs[s] = rawIvs[s];
+    }
+  }
+  recalcPokemonStats(poke);
+}
+
+function parsePokemonPrizeOptions(prize: Record<string, unknown>) {
+  const rawSpecies = String(prize.species || '');
+  if (!rawSpecies || !pokemonDataProvider.getPokemonData(rawSpecies)) return null;
+  const speciesId = requirePokemonSpeciesId(rawSpecies);
+  const level = Number(prize.level || 5);
+  const isShiny = Boolean(prize.shiny);
+  const nature = typeof prize.nature === 'string' && isNatureId(prize.nature) ? prize.nature : undefined;
+  const rawIvs = (prize.ivs && typeof prize.ivs === 'object') ? (prize.ivs as Record<string, number>) : null; // open-record: Generic key-value data dictionary container
+  const ivFloor = rawIvs ? Math.min(...Object.values(rawIvs).filter((v: number) => typeof v === 'number')) : 0;
+  return { speciesId, level, isShiny, nature, rawIvs, ivFloor: Number.isFinite(ivFloor) ? ivFloor : 0 };
 }
 
 export function grantPokemonAward(gameStore: EventPrizeGameStore, uiStore: EventPrizeUIStore, prize: Record<string, unknown>, silent = false): number {
-  if (prize.type === 'pokemon' || prize.species) {
-    const rawSpecies = String(prize.species || '')
-    if (rawSpecies && pokemonDataProvider.getPokemonData(rawSpecies)) {
-      const speciesId = requirePokemonSpeciesId(rawSpecies)
-      const level = Number(prize.level || 5)
-      const isShiny = Boolean(prize.shiny)
-      const nature = typeof prize.nature === 'string' && isNatureId(prize.nature) ? prize.nature : undefined
-      const rawIvs = (prize.ivs && typeof prize.ivs === 'object') ? (prize.ivs as Record<string, number>) : null // open-record: Generic key-value data dictionary container
-      const ivFloor = rawIvs ? Math.min(...Object.values(rawIvs).filter((v: number) => typeof v === 'number')) : 0
+  if (prize.type !== 'pokemon' && !prize.species) return 0;
+  const opts = parsePokemonPrizeOptions(prize);
+  if (!opts) return 0;
 
-      const createdPoke = makePokemon(speciesId, level, {
-        isShiny,
-        nature,
-        ivFloor: Number.isFinite(ivFloor) ? ivFloor : 0,
-        obtainedMethod: 'reward'
-      })
+  const createdPoke = makePokemon(opts.speciesId, opts.level, {
+    isShiny: opts.isShiny,
+    nature: opts.nature,
+    ivFloor: opts.ivFloor,
+    obtainedMethod: 'reward'
+  });
 
-      if (createdPoke) {
-        if (rawIvs) {
-          if (typeof rawIvs.hp === 'number') createdPoke.ivs.hp = rawIvs.hp
-          if (typeof rawIvs.atk === 'number') createdPoke.ivs.atk = rawIvs.atk
-          if (typeof rawIvs.def === 'number') createdPoke.ivs.def = rawIvs.def
-          if (typeof rawIvs.spa === 'number') createdPoke.ivs.spa = rawIvs.spa
-          if (typeof rawIvs.spd === 'number') createdPoke.ivs.spd = rawIvs.spd
-          if (typeof rawIvs.spe === 'number') createdPoke.ivs.spe = rawIvs.spe
-          recalcPokemonStats(createdPoke)
-        }
-        gameStore.addPokemon(createdPoke, { notify: false })
-        if (!silent) uiStore.notify(`¡Obtuviste a ${createdPoke.name}${isShiny ? ' ✨' : ''}!`, '🎁')
-        return 1
-      }
-    }
-  }
-  return 0
+  if (!createdPoke) return 0;
+
+  applyCustomIvs(createdPoke, opts.rawIvs);
+  gameStore.addPokemon(createdPoke, { notify: false });
+  if (!silent) uiStore.notify(`¡Obtuviste a ${createdPoke.name}${opts.isShiny ? ' ✨' : ''}!`, '🎁');
+  return 1;
 }

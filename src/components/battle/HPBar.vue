@@ -177,13 +177,17 @@ const getHpClass = (pct: number) => {
 
 .hp-values {
   @include pixelated;
+  display: block;
+  width: 100%;
   font-size: 8px;
   text-align: right;
+  margin-bottom: 4px;
   opacity: 1;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 
   @media (max-width: 600px) {
     font-size: 7px;
+    margin-bottom: 2px;
   }
 }
 </style>

@@ -5,9 +5,12 @@ const CRIT_ROLL_DENOMINATOR_GEN6_BASE = 24;
 const CRIT_ROLL_DENOMINATOR_GEN5_BASE = 16;
 const DAMAGE_ROLL_MIN_INT = 85;
 const DAMAGE_ROLL_RANGE_INT = 16;
+const WEATHER_BOOST_MULTIPLIER = 1.5;
+const WEATHER_REDUCTION_MULTIPLIER = 0.5;
+const DAY_CYCLE_BOOST_MULTIPLIER = 1.2;
 import type { DayPhase } from '@/logic/utils/timeUtils';
-import type { PokemonMoveId } from '@/data/battle/moves';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
+import type { PokemonMoveId } from '@/data/battle/moves';
 import type {
   PurePokemon,
   PureMove,
@@ -76,6 +79,30 @@ export function getMoveCategory(move: PureMove): MoveCategory {
   return move.cat ?? 'physical';
 }
 
+const PINCH_ABILITY_TYPES: Readonly<Record<string, string>> = {
+  blaze: 'fire',
+  torrent: 'water',
+  overgrow: 'grass',
+  swarm: 'bug',
+};
+const PINCH_MULTIPLIER = 1.5 as const;
+const TECHNICIAN_MULTIPLIER = 1.5 as const;
+const SAND_FORCE_MULTIPLIER = 1.3 as const;
+const LOW_HP_DIVISOR = 3 as const;
+
+function isSandForceType(type: string): boolean {
+  return type === 'ground' || type === 'rock' || type === 'steel';
+}
+
+function checkPinchAbilityBoost(ab: string | null | undefined, moveType: string, hp: number, maxHp: number): boolean {
+  return hp <= (maxHp / LOW_HP_DIVISOR) && Boolean(ab && PINCH_ABILITY_TYPES[ab] === moveType);
+}
+
+function checkSandForceBoost(ab: string | null | undefined, moveType: string, weather?: PureBattleWeather | null): boolean {
+  if (!weather || weather.turns === 0 || ab !== 'sandforce') return false;
+  return getMechanicalWeather(weather.type) === WEATHER_KEYS.SANDSTORM && isSandForceType(moveType);
+}
+
 export function getAbilityMultiplierPure(attacker: PurePokemon, move: PureMove, weather?: PureBattleWeather | null): { mult: number; triggeredAbility: string | null } {
   let mult = 1;
   let triggeredAbility: string | null = null;
@@ -83,27 +110,21 @@ export function getAbilityMultiplierPure(attacker: PurePokemon, move: PureMove, 
   const power = move.power ?? 0;
   const moveType = move.type ?? 'normal';
 
-  const isLowHp = (attacker.hp ?? 0) <= ((attacker.maxHp ?? 1) / 3);
-  if (isLowHp) {
-    if (ab === 'blaze' && moveType === 'fire')  { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'torrent'   && moveType === 'water') { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'overgrow'   && moveType === 'grass') { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'swarm'   && moveType === 'bug')   { mult *= 1.5; triggeredAbility = ab; }
+  if (checkPinchAbilityBoost(ab, moveType, attacker.hp ?? 0, attacker.maxHp ?? 1)) {
+    mult *= PINCH_MULTIPLIER;
+    triggeredAbility = ab!;
   }
   if (ab === 'guts' && attacker.status && getMoveCategory(move) === 'physical') {
-    mult *= GUTS_STATUS_ATK_MULTIPLIER; triggeredAbility = ab;
+    mult *= GUTS_STATUS_ATK_MULTIPLIER;
+    triggeredAbility = ab;
   }
   if (ab === 'technician' && power > 0 && power <= TECHNICIAN_MAX_POWER_LIMIT) {
-    mult *= 1.5; triggeredAbility = ab;
+    mult *= TECHNICIAN_MULTIPLIER;
+    triggeredAbility = ab;
   }
-
-  if (weather && weather.turns !== 0) {
-    const mech = getMechanicalWeather(weather.type);
-    if (ab === 'sandforce' && mech === WEATHER_KEYS.SANDSTORM) {
-      if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
-        mult *= 1.3; triggeredAbility = ab;
-      }
-    }
+  if (checkSandForceBoost(ab, moveType, weather)) {
+    mult *= SAND_FORCE_MULTIPLIER;
+    triggeredAbility = ab!;
   }
 
   return { mult, triggeredAbility };
@@ -154,55 +175,82 @@ function calculateHeldItemDamageMultiplier(heldItem: string | undefined, moveTyp
   return 1;
 }
 
+function calculateSunWeatherBonus(weatherType: string, moveType: string): number {
+  if (moveType === 'fire') return WEATHER_BOOST_MULTIPLIER;
+  if (moveType === 'water') {
+    return (weatherType === 'intense_sun' || weatherType === 'heatwave') ? 0 : WEATHER_REDUCTION_MULTIPLIER;
+  }
+  return 1;
+}
+
+function calculateRainWeatherBonus(weatherType: string, moveType: string): number {
+  if (moveType === 'water') return WEATHER_BOOST_MULTIPLIER;
+  if (moveType === 'fire') {
+    return (weatherType === 'heavy_rain' || weatherType === 'storm') ? 0 : WEATHER_REDUCTION_MULTIPLIER;
+  }
+  return 1;
+}
+
+function calculateThunderstormBonus(moveType: string): number {
+  if (moveType === 'electric' || moveType === 'dragon') return WEATHER_BOOST_MULTIPLIER;
+  if (moveType === 'fire') return WEATHER_REDUCTION_MULTIPLIER;
+  return 1;
+}
+
+function calculateActiveWeatherBonus(weather: PureBattleWeather, mechWeather: string, moveType: string): number {
+  if (mechWeather === WEATHER_KEYS.SUN) {
+    return calculateSunWeatherBonus(weather.type, moveType);
+  }
+  if (mechWeather === WEATHER_KEYS.RAIN) {
+    return calculateRainWeatherBonus(weather.type, moveType);
+  }
+  if (weather.type === 'thunderstorm') {
+    return calculateThunderstormBonus(moveType);
+  }
+  return 1;
+}
+
+function calculateDayCycleBonus(dayCycle: DayPhase | undefined, moveType: string): number {
+  if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire') return DAY_CYCLE_BOOST_MULTIPLIER;
+  if ((dayCycle === 'night' || dayCycle === 'dusk') && moveType === 'water') return DAY_CYCLE_BOOST_MULTIPLIER;
+  return 1;
+}
+
+function calculateSolarMovePenalty(
+  isSolarMove: boolean,
+  weather: PureBattleWeather | null | undefined,
+  mechWeather: string,
+  isGym: boolean,
+  isMoveWeather: boolean
+): number {
+  if (!isSolarMove) return 1;
+  if (!weather || weather.turns === 0) return 1;
+  const isSun = mechWeather === WEATHER_KEYS.SUN;
+  const isClear = (mechWeather === WEATHER_KEYS.CLEAR || weather.type === 'clear' || weather.type === 'none') && weather.type !== 'thunderstorm';
+  if ((!isGym || isMoveWeather) && !isSun && !isClear) {
+    return WEATHER_REDUCTION_MULTIPLIER;
+  }
+  return 1;
+}
+
 function calculateWeatherDamageMultiplier(
   weather: PureBattleWeather | null | undefined,
   mechWeather: string,
   moveType: string,
   isGym: boolean,
   isMoveWeather: boolean,
-  cleanMoveId?: PokemonMoveId,
+  isSolarMove = false,
   dayCycle?: DayPhase
 ): number {
   let weatherMult = 1;
   if ((!isGym || isMoveWeather) && weather && weather.turns !== 0) {
-    if (mechWeather === WEATHER_KEYS.SUN) {
-      if (moveType === 'fire') weatherMult = 1.5;
-      if (moveType === 'water') {
-        weatherMult = (weather.type === 'intense_sun' || weather.type === 'heatwave') ? 0 : 0.5;
-      }
-    } else if (mechWeather === WEATHER_KEYS.RAIN) {
-      if (moveType === 'water') weatherMult = 1.5;
-      if (moveType === 'fire') {
-        weatherMult = (weather.type === 'heavy_rain' || weather.type === 'storm') ? 0 : 0.5;
-      }
-    } else if (weather.type === 'thunderstorm') {
-      if (moveType === 'electric' || moveType === 'dragon') {
-        weatherMult = 1.5;
-      } else if (moveType === 'fire') {
-        weatherMult = 0.5;
-      }
-    }
+    weatherMult = calculateActiveWeatherBonus(weather, mechWeather, moveType);
+  } else if (!isGym && (!weather || weather.type === 'clear' || weather.type === 'none')) {
+    weatherMult = calculateDayCycleBonus(dayCycle, moveType);
   }
 
-  // Ciclos implícitos (cuando el clima está despejado o no hay clima)
-  if (!isGym && (!weather || weather.type === 'clear' || weather.type === 'none')) {
-    if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire') {
-      weatherMult = 1.2;
-    } else if ((dayCycle === 'night' || dayCycle === 'dusk') && moveType === 'water') {
-      weatherMult = 1.2;
-    }
-  }
-
-  const isSolarMove = cleanMoveId === 'solarbeam' || cleanMoveId === 'solarblade';
-  if (isSolarMove && weather && weather.turns !== 0) {
-    const isSun = mechWeather === WEATHER_KEYS.SUN;
-    const isClear = (mechWeather === WEATHER_KEYS.CLEAR || weather.type === 'clear' || weather.type === 'none') && weather.type !== 'thunderstorm';
-    if ((!isGym || isMoveWeather) && !isSun && !isClear) {
-      weatherMult *= 0.5;
-    }
-  }
-
-  return weatherMult;
+  const solarPenalty = calculateSolarMovePenalty(isSolarMove, weather, mechWeather, isGym, isMoveWeather);
+  return weatherMult * solarPenalty;
 }
 
 function calculateDeltaStreamTypeEff(eff: number, defender: PurePokemon, moveType: string, isStrongWinds: boolean): number {
@@ -281,6 +329,104 @@ function calculateKoChanceText(normalMin: number, normalMax: number, targetHp: n
   return '4+ HKO probable';
 }
 
+function tryGetFixedDamage(move: PureMove, attacker: PurePokemon, defender: PurePokemon): PureDamageResult | null {
+  if (move.fixedDmg !== undefined) return { dmg: move.fixedDmg, eff: 1, isNoEffect: false };
+  if (move.levelDmg) return { dmg: attacker.level, eff: 1, isNoEffect: false };
+  if (move.halfHP) {
+    const dmg = Math.max(1, Math.floor((defender.hp ?? 1) / 2));
+    return { dmg, eff: 1, isNoEffect: false };
+  }
+  return null;
+}
+
+function adjustCritStages(aStages: PureBattleStages, dStages: PureBattleStages, isPhysical: boolean): void {
+  const aKey = isPhysical ? 'atk' : 'spa';
+  const dKey = isPhysical ? 'def' : 'spd';
+  if ((aStages[aKey as keyof PureBattleStages] ?? 0) < 0) aStages[aKey as keyof PureBattleStages] = 0;
+  if ((dStages[dKey as keyof PureBattleStages] ?? 0) > 0) dStages[dKey as keyof PureBattleStages] = 0;
+}
+
+function calculateAppliedFinalDamage(
+  baseDamage: number,
+  critMult: number,
+  randomInt: number,
+  stab: number,
+  modifiers: number,
+  isBurnedPhysical: boolean
+): number {
+  let dmg = Math.max(1, Math.floor(
+    Math.floor(
+      Math.floor(
+        Math.floor(
+          Math.floor(baseDamage * critMult) * randomInt
+        ) / 100
+      ) * stab
+    ) * modifiers
+  ));
+  if (isBurnedPhysical) {
+    dmg = Math.floor(dmg * 0.5);
+  }
+  return dmg;
+}
+
+function resolveAbilitiesMultiplier(
+  attacker: PurePokemon,
+  defender: PurePokemon,
+  moveData: PureMove & { cat: string },
+  moveType: string,
+  weather: PureBattleWeather | null | undefined
+): { finalAbilityMult: number; triggeredAbility?: string | null } {
+  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplierPure(attacker, moveData, weather);
+  if (defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
+    finalAbilityMult *= 0.5;
+    triggeredAbility = 'thickfat';
+  }
+  return { finalAbilityMult, triggeredAbility };
+}
+
+function resolveTerrainMultiplier(terrain: string | null | undefined, moveType: string, cleanMoveId: PokemonMoveId): number {
+  if (terrain === 'grassyterrain' && moveType === 'ground' && (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')) {
+    return 0.5;
+  }
+  return 1;
+}
+
+function resolveDamageRandomInt(randomFactor?: number): number {
+  return randomFactor !== undefined
+    ? Math.min(100, Math.round(randomFactor * 100))
+    : Math.min(100, DAMAGE_ROLL_MIN_INT + Math.floor(Math.random() * DAMAGE_ROLL_RANGE_INT));
+}
+
+const DAMAGE_FORMULA_DIVISOR = 50 as const;
+const DAMAGE_FORMULA_BASE_ADDEND = 2 as const;
+const DAMAGE_FORMULA_LEVEL_DIVISOR = 5 as const;
+
+function calculateBaseDamageFormula(level: number, power: number, a: number, d: number): number {
+  return Math.floor(Math.floor(Math.floor((2 * level) / DAMAGE_FORMULA_LEVEL_DIVISOR + DAMAGE_FORMULA_BASE_ADDEND) * power * a / d) / DAMAGE_FORMULA_DIVISOR) + DAMAGE_FORMULA_BASE_ADDEND;
+}
+
+function resolveEnvironmentModifiers(
+  weather: PureBattleWeather | null,
+  mechWeather: string | undefined,
+  moveType: string,
+  move: PureMove,
+  isGym: boolean,
+  dayCycle: DayPhase,
+  terrain: string | null | undefined,
+  eff: number,
+  defender: PurePokemon,
+): { weatherMult: number; finalEff: number; terrainMult: number } {
+  const isMoveWeather = Boolean(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+  const isSolarMove = move.id === 'solarbeam' || move.id === 'solarblade';
+  const weatherMult = calculateWeatherDamageMultiplier(weather, mechWeather || '', moveType, isGym, isMoveWeather, isSolarMove, dayCycle);
+
+  const isStrongWinds = Boolean((!isGym || isMoveWeather) && weather && weather.turns !== 0 && weather.type === 'strong_winds');
+  const finalEff = calculateDeltaStreamTypeEff(eff, defender, moveType, isStrongWinds);
+  const terrainMult = move.id ? resolveTerrainMultiplier(terrain, moveType, move.id) : 1;
+
+  return { weatherMult, finalEff, terrainMult };
+}
+
 export function calculateDamagePure(
   attacker: PurePokemon,
   defender: PurePokemon,
@@ -299,12 +445,8 @@ export function calculateDamagePure(
   const moveType = move.type  ?? 'normal';
   const moveCat  = getMoveCategory({ ...move, type: moveType });
 
-  if (move.fixedDmg !== undefined) return { dmg: move.fixedDmg, eff: 1, isNoEffect: false };
-  if (move.levelDmg)               return { dmg: attacker.level, eff: 1, isNoEffect: false };
-  if (move.halfHP) {
-    const dmg = Math.max(1, Math.floor((defender.hp ?? 1) / 2));
-    return { dmg, eff: 1, isNoEffect: false };
-  }
+  const fixedResult = tryGetFixedDamage(move, attacker, defender);
+  if (fixedResult) return fixedResult;
 
   const eff = getCombinedEff(moveType, defender, attacker, weather?.type);
 
@@ -320,10 +462,7 @@ export function calculateDamagePure(
   const { isCrit, critMult } = calculateCritOutcome(attacker, defender, gen, forceCrit);
 
   if (isCrit) {
-    const aKey = isPhysical ? 'atk' : 'spa';
-    const dKey = isPhysical ? 'def' : 'spd';
-    if ((aStages[aKey as keyof PureBattleStages] ?? 0) < 0) aStages[aKey as keyof PureBattleStages] = 0;
-    if ((dStages[dKey as keyof PureBattleStages] ?? 0) > 0) dStages[dKey as keyof PureBattleStages] = 0;
+    adjustCritStages(aStages, dStages, isPhysical);
   }
 
   const isGym = ctx.isGym || false;
@@ -331,51 +470,37 @@ export function calculateDamagePure(
   const D = getEffectiveStatPure(defender, isPhysical ? 'def' : 'spd', dStages, weather, dayCycle, isGym);
 
   // Damage formula matching Showdown's exact integer arithmetic (floor at each step)
-  const baseDamage = Math.floor(Math.floor(Math.floor(2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
+  const baseDamage = calculateBaseDamageFormula(attacker.level, power, A, D);
 
-  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplierPure(attacker, { ...move, type: moveType, power, cat: moveCat }, weather);
-
-  if (defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
-    finalAbilityMult *= 0.5;
-    triggeredAbility = 'thickfat';
-  }
+  const { finalAbilityMult, triggeredAbility } = resolveAbilitiesMultiplier(
+    attacker,
+    defender,
+    { ...move, type: moveType, power, cat: moveCat },
+    moveType,
+    weather
+  );
 
   const itemMult = calculateHeldItemDamageMultiplier(attacker.heldItem ?? undefined, moveType, moveCat);
   const stab = calculateStabMultiplier(attacker, moveType);
+  const { weatherMult, finalEff, terrainMult } = resolveEnvironmentModifiers(
+    weather,
+    mechWeather,
+    moveType,
+    move,
+    isGym,
+    dayCycle,
+    ctx.terrain,
+    eff,
+    defender,
+  );
+  const randomInt = resolveDamageRandomInt(randomFactor);
 
-  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
-  const cleanMoveId = move.id;
-  const weatherMult = calculateWeatherDamageMultiplier(weather, mechWeather, moveType, isGym, isMoveWeather, cleanMoveId, dayCycle);
+  const totalModifiers = finalEff * finalAbilityMult * weatherMult * itemMult * terrainMult;
+  const isBurnedPhysical = attacker.status === 'brn' && isPhysical && attacker.ability !== 'guts';
 
-  const isStrongWinds = Boolean((!isGym || isMoveWeather) && weather && weather.turns !== 0 && weather.type === 'strong_winds');
-  const finalEff = calculateDeltaStreamTypeEff(eff, defender, moveType, isStrongWinds);
-
-  let terrainMult = 1;
-  if (ctx.terrain === 'grassyterrain' && moveType === 'ground' && (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')) {
-    terrainMult = 0.5;
-  }
-
-  // Random damage roll: Showdown uses integer 85-100 divided by 100 with floor (not a float multiply)
-  const randomInt = randomFactor !== undefined
-    ? Math.min(100, Math.round(randomFactor * 100))
-    : Math.min(100, DAMAGE_ROLL_MIN_INT + Math.floor(Math.random() * DAMAGE_ROLL_RANGE_INT));
-
-  // Apply modifiers sequentially with floor at each step
-  let finalDmg = (power > 0 && finalEff > 0 && weatherMult > 0)
-    ? Math.max(1, Math.floor(
-        Math.floor(
-          Math.floor(
-            Math.floor(
-              Math.floor(baseDamage * critMult) * randomInt
-            ) / 100
-          ) * stab
-        ) * finalEff * finalAbilityMult * weatherMult * itemMult * terrainMult
-      ))
+  const finalDmg = (power > 0 && finalEff > 0 && weatherMult > 0)
+    ? calculateAppliedFinalDamage(baseDamage, critMult, randomInt, stab, totalModifiers, isBurnedPhysical)
     : 0;
-
-  if (attacker.status === 'brn' && moveCat === 'physical' && attacker.ability !== 'guts') {
-    finalDmg = Math.floor(finalDmg * 0.5);
-  }
 
   return {
     dmg: finalDmg,

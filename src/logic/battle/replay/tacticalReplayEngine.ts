@@ -53,6 +53,127 @@ export interface ITacticalReplayEngine {
   getFogOfWarState(side: SideID): FogOfWarSideState;
 }
 
+function createInitialFogOfWarPokemonStates(summary: ReplayCombatantSummary): FogOfWarPokemonState[] {
+  return summary.team.map((poke, index) => {
+    const legacyPoke = poke as { id?: PokemonSpeciesId; speciesId?: PokemonSpeciesId };
+    const resolvedId = legacyPoke.id ?? legacyPoke.speciesId;
+    return {
+      id: (resolvedId ?? poke.id),
+      name: poke.name || resolvedId || '',
+      level: poke.level,
+      sprite: poke.sprite || (resolvedId ? getAssetUrl(ASSET_TYPES.POKEMON, resolvedId) : ''),
+      revealedMoves: poke.revealedMoves ? [...poke.revealedMoves] : [],
+      revealedItem: poke.revealedItem,
+      revealedAbility: poke.revealedAbility,
+      isFainted: false,
+      isActive: index === 0 // Lead pokemon starts active
+    };
+  });
+}
+
+function buildPokeLookupMap(pokemonStates: FogOfWarPokemonState[]): Map<string, FogOfWarPokemonState> {
+  const map = new Map<string, FogOfWarPokemonState>();
+  for (const p of pokemonStates) {
+    if (p.name) map.set(p.name.toLowerCase(), p);
+    if (p.id) map.set(String(p.id).toLowerCase(), p);
+  }
+  return map;
+}
+
+function handleFogOfWarMoveMatch(
+  trimmed: string,
+  sideNum: string,
+  pokeByName: Map<string, FogOfWarPokemonState>
+): boolean {
+  const match = trimmed.match(MOVE_LOG_REGEX);
+  if (!match || match[1] !== sideNum || !match[2] || !match[3]) return false;
+  const pokeName = match[2].trim().toLowerCase();
+  const moveName = match[3].trim();
+  const poke = pokeByName.get(pokeName);
+  if (poke && !poke.revealedMoves.includes(moveName)) {
+    poke.revealedMoves.push(moveName);
+  }
+  return true;
+}
+
+function handleFogOfWarAbilityMatch(
+  trimmed: string,
+  sideNum: string,
+  pokeByName: Map<string, FogOfWarPokemonState>
+): boolean {
+  const match = trimmed.match(ABILITY_LOG_REGEX);
+  if (!match || match[1] !== sideNum || !match[2] || !match[3]) return false;
+  const pokeName = match[2].trim().toLowerCase();
+  const abilityName = match[3].trim();
+  const poke = pokeByName.get(pokeName);
+  if (poke && !poke.revealedAbility) {
+    poke.revealedAbility = abilityName;
+  }
+  return true;
+}
+
+function handleFogOfWarItemMatch(
+  trimmed: string,
+  sideNum: string,
+  pokeByName: Map<string, FogOfWarPokemonState>
+): boolean {
+  const match = trimmed.match(ITEM_LOG_REGEX);
+  if (!match || match[1] !== sideNum || !match[2] || !match[3]) return false;
+  const pokeName = match[2].trim().toLowerCase();
+  const itemName = match[3].trim();
+  const poke = pokeByName.get(pokeName);
+  if (poke && !poke.revealedItem) {
+    poke.revealedItem = itemName;
+  }
+  return true;
+}
+
+function handleFogOfWarFaintMatch(
+  trimmed: string,
+  sideNum: string,
+  pokeByName: Map<string, FogOfWarPokemonState>
+): boolean {
+  const match = trimmed.match(FAINT_LOG_REGEX);
+  if (!match || match[1] !== sideNum || !match[2]) return false;
+  const pokeName = match[2].trim().toLowerCase();
+  const poke = pokeByName.get(pokeName);
+  if (poke) {
+    poke.isFainted = true;
+    poke.isActive = false;
+  }
+  return true;
+}
+
+function handleFogOfWarSwitchMatch(
+  trimmed: string,
+  sideNum: string,
+  pokemonStates: FogOfWarPokemonState[]
+): boolean {
+  const match = trimmed.match(SWITCH_LOG_REGEX);
+  if (!match || match[1] !== sideNum || !match[2]) return false;
+  const switchedInName = match[2].trim().toLowerCase();
+  for (const p of pokemonStates) {
+    p.isActive = Boolean(
+      (p.name && p.name.toLowerCase() === switchedInName) ||
+      (p.id && String(p.id).toLowerCase() === switchedInName)
+    );
+  }
+  return true;
+}
+
+function applyFogOfWarLogLine(
+  trimmed: string,
+  sideNum: string,
+  pokeByName: Map<string, FogOfWarPokemonState>,
+  pokemonStates: FogOfWarPokemonState[]
+): void {
+  if (handleFogOfWarMoveMatch(trimmed, sideNum, pokeByName)) return;
+  if (handleFogOfWarAbilityMatch(trimmed, sideNum, pokeByName)) return;
+  if (handleFogOfWarItemMatch(trimmed, sideNum, pokeByName)) return;
+  if (handleFogOfWarFaintMatch(trimmed, sideNum, pokeByName)) return;
+  handleFogOfWarSwitchMatch(trimmed, sideNum, pokemonStates);
+}
+
 export class TacticalReplayEngine implements ITacticalReplayEngine {
   private readonly record: BattleReplayRecord;
   private currentTurnIndex: number = 0; // 0 = initial preview, 1..N = after turn N choices
@@ -147,89 +268,12 @@ export class TacticalReplayEngine implements ITacticalReplayEngine {
     const summary: ReplayCombatantSummary = side === 'p1' ? this.record.p1 : this.record.p2;
     const sideNum = side === 'p1' ? '1' : '2';
 
-    // Map initial unrevealed list
-    const pokemonStates: FogOfWarPokemonState[] = summary.team.map((poke, index) => {
-      const legacyPoke = poke as { id?: PokemonSpeciesId; speciesId?: PokemonSpeciesId };
-      const resolvedId = legacyPoke.id ?? legacyPoke.speciesId;
-      return {
-        id: (resolvedId ?? poke.id),
-        name: poke.name || resolvedId || '',
-        level: poke.level,
-        sprite: poke.sprite || (resolvedId ? getAssetUrl(ASSET_TYPES.POKEMON, resolvedId) : ''),
-        revealedMoves: poke.revealedMoves ? [...poke.revealedMoves] : [],
-        revealedItem: poke.revealedItem,
-        revealedAbility: poke.revealedAbility,
-        isFainted: false,
-        isActive: index === 0 // Lead pokemon starts active
-      };
-    });
-
-    const pokeByName = new Map<string, FogOfWarPokemonState>();
-    for (const p of pokemonStates) {
-      if (p.name) pokeByName.set(p.name.toLowerCase(), p);
-      if (p.id) pokeByName.set(String(p.id).toLowerCase(), p);
-    }
-
+    const pokemonStates = createInitialFogOfWarPokemonStates(summary);
+    const pokeByName = buildPokeLookupMap(pokemonStates);
     const processedLogs = this.getAllLogsUpToCurrentTurn();
 
     for (const line of processedLogs) {
-      const trimmed = line.trim();
-
-      // 1. Move revealed
-      const moveMatch = trimmed.match(MOVE_LOG_REGEX);
-      if (moveMatch && moveMatch[1] === sideNum && moveMatch[2] && moveMatch[3]) {
-        const pokeName = moveMatch[2].trim().toLowerCase();
-        const moveName = moveMatch[3].trim();
-        const poke = pokeByName.get(pokeName);
-        if (poke && !poke.revealedMoves.includes(moveName)) {
-          poke.revealedMoves.push(moveName);
-        }
-      }
-
-      // 2. Ability revealed
-      const abilityMatch = trimmed.match(ABILITY_LOG_REGEX);
-      if (abilityMatch && abilityMatch[1] === sideNum && abilityMatch[2] && abilityMatch[3]) {
-        const pokeName = abilityMatch[2].trim().toLowerCase();
-        const abilityName = abilityMatch[3].trim();
-        const poke = pokeByName.get(pokeName);
-        if (poke && !poke.revealedAbility) {
-          poke.revealedAbility = abilityName;
-        }
-      }
-
-      // 3. Item revealed
-      const itemMatch = trimmed.match(ITEM_LOG_REGEX);
-      if (itemMatch && itemMatch[1] === sideNum && itemMatch[2] && itemMatch[3]) {
-        const pokeName = itemMatch[2].trim().toLowerCase();
-        const itemName = itemMatch[3].trim();
-        const poke = pokeByName.get(pokeName);
-        if (poke && !poke.revealedItem) {
-          poke.revealedItem = itemName;
-        }
-      }
-
-      // 4. Faint detected
-      const faintMatch = trimmed.match(FAINT_LOG_REGEX);
-      if (faintMatch && faintMatch[1] === sideNum && faintMatch[2]) {
-        const pokeName = faintMatch[2].trim().toLowerCase();
-        const poke = pokeByName.get(pokeName);
-        if (poke) {
-          poke.isFainted = true;
-          poke.isActive = false;
-        }
-      }
-
-      // 5. Switch detected
-      const switchMatch = trimmed.match(SWITCH_LOG_REGEX);
-      if (switchMatch && switchMatch[1] === sideNum && switchMatch[2]) {
-        const switchedInName = switchMatch[2].trim().toLowerCase();
-        for (const p of pokemonStates) {
-          p.isActive = Boolean(
-            (p.name && p.name.toLowerCase() === switchedInName) ||
-            (p.id && String(p.id).toLowerCase() === switchedInName)
-          );
-        }
-      }
+      applyFogOfWarLogLine(line.trim(), sideNum, pokeByName, pokemonStates);
     }
 
     const activePoke = pokemonStates.find(p => p.isActive && !p.isFainted) ?? null;

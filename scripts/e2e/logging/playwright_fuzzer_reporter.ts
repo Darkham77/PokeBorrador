@@ -87,6 +87,16 @@ export default class PlaywrightFuzzerReporter implements Reporter {
         const errorLines = result.error.message.split('\n').slice(0, 10).join('\n   ');
         errSync(`   Error: ${errorLines}`);
       }
+      if (result.stdout?.length) {
+        for (const out of result.stdout) {
+          logSync(typeof out === 'string' ? out : out.toString('utf-8'));
+        }
+      }
+      if (result.stderr?.length) {
+        for (const err of result.stderr) {
+          errSync(typeof err === 'string' ? err : err.toString('utf-8'));
+        }
+      }
 
       try {
         if (test.location?.file) {

@@ -1,63 +1,59 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip'
+import MoveTooltipCombatStatBox from './MoveTooltipCombatStatBox.vue'
+import MoveTooltipPowerAccuracyBox from './MoveTooltipPowerAccuracyBox.vue'
 import {
   formatPowerDisplay,
   formatAccuracyDisplay,
-  formatStatValueDisplay,
   getArrowForClass,
-  getArrowForStage
+  INFINITE_ACCURACY_VALUE
 } from './moveTooltipStatsGridHelper.ts'
 
-defineProps<{
+const props = defineProps<{
   activeDetails: ActiveMoveDetails
 }>()
+
+const powerData = computed(() => {
+  const p = props.activeDetails.power
+  if (props.activeDetails.isStatus || p.base === 0) return { isDash: true }
+  return {
+    isDash: false,
+    text: formatPowerDisplay(p.base, p.final),
+    arrow: getArrowForClass(p.class)
+  }
+})
+
+const accuracyData = computed(() => {
+  const a = props.activeDetails.accuracy
+  if (a.base === INFINITE_ACCURACY_VALUE && a.final === INFINITE_ACCURACY_VALUE) return { isInfinity: true }
+  return {
+    isInfinity: false,
+    text: formatAccuracyDisplay(a.base, a.final),
+    arrow: getArrowForClass(a.class)
+  }
+})
 </script>
 
 <template>
   <div class="combat-stats-grid">
     <!-- Power Box -->
-    <div class="stat-box">
-      <span class="stat-lbl">POTENCIA</span>
-      <span
-        class="stat-val"
-        :class="activeDetails.power.class"
-      >
-        <span
-          v-if="activeDetails.isStatus || activeDetails.power.base === 0"
-          class="dash-val"
-        >-</span>
-        <template v-else>
-          {{ formatPowerDisplay(activeDetails.power.base, activeDetails.power.final) }}
-          <span
-            v-if="getArrowForClass(activeDetails.power.class).show"
-            class="emoji arrow"
-            :class="getArrowForClass(activeDetails.power.class).isUp ? 'up' : 'down'"
-          >{{ getArrowForClass(activeDetails.power.class).isUp ? '▲' : '▼' }}</span>
-        </template>
-      </span>
-    </div>
+    <MoveTooltipPowerAccuracyBox
+      label="POTENCIA"
+      :css-class="activeDetails.power.class"
+      :is-dash="powerData.isDash"
+      :text="powerData.text"
+      :arrow="powerData.arrow"
+    />
     
     <!-- Accuracy Box -->
-    <div class="stat-box">
-      <span class="stat-lbl">PRECISIÓN</span>
-      <span
-        class="stat-val"
-        :class="activeDetails.accuracy.class"
-      >
-        <span
-          v-if="activeDetails.accuracy.base === 1000 && activeDetails.accuracy.final === 1000"
-          class="emoji infinity-val"
-        >♾️</span>
-        <template v-else>
-          {{ formatAccuracyDisplay(activeDetails.accuracy.base, activeDetails.accuracy.final) }}
-          <span
-            v-if="getArrowForClass(activeDetails.accuracy.class).show"
-            class="emoji arrow"
-            :class="getArrowForClass(activeDetails.accuracy.class).isUp ? 'up' : 'down'"
-          >{{ getArrowForClass(activeDetails.accuracy.class).isUp ? '▲' : '▼' }}</span>
-        </template>
-      </span>
-    </div>
+    <MoveTooltipPowerAccuracyBox
+      label="PRECISIÓN"
+      :css-class="activeDetails.accuracy.class"
+      :is-infinity="accuracyData.isInfinity"
+      :text="accuracyData.text"
+      :arrow="accuracyData.arrow"
+    />
 
     <!-- Effectiveness Box -->
     <div
@@ -93,42 +89,16 @@ defineProps<{
     </div>
 
     <!-- Attacker Stat Box -->
-    <div
+    <MoveTooltipCombatStatBox
       v-if="activeDetails.attackerStat"
-      class="stat-box"
-    >
-      <span class="stat-lbl">{{ activeDetails.attackerStat.name }}</span>
-      <span
-        class="stat-val"
-        :class="activeDetails.attackerStat.class"
-      >
-        {{ formatStatValueDisplay(activeDetails.attackerStat.base, activeDetails.attackerStat.final) }}
-        <span
-          v-if="getArrowForStage(activeDetails.attackerStat.stage).show"
-          class="emoji arrow"
-          :class="getArrowForStage(activeDetails.attackerStat.stage).isUp ? 'up' : 'down'"
-        >{{ getArrowForStage(activeDetails.attackerStat.stage).isUp ? '▲' : '▼' }}</span>
-      </span>
-    </div>
+      :stat="activeDetails.attackerStat"
+    />
 
     <!-- Defender Stat Box -->
-    <div
+    <MoveTooltipCombatStatBox
       v-if="activeDetails.defenderStat"
-      class="stat-box"
-    >
-      <span class="stat-lbl">{{ activeDetails.defenderStat.name }}</span>
-      <span
-        class="stat-val"
-        :class="activeDetails.defenderStat.class"
-      >
-        {{ formatStatValueDisplay(activeDetails.defenderStat.base, activeDetails.defenderStat.final) }}
-        <span
-          v-if="getArrowForStage(activeDetails.defenderStat.stage).show"
-          class="emoji arrow"
-          :class="getArrowForStage(activeDetails.defenderStat.stage).isUp ? 'up' : 'down'"
-        >{{ getArrowForStage(activeDetails.defenderStat.stage).isUp ? '▲' : '▼' }}</span>
-      </span>
-    </div>
+      :stat="activeDetails.defenderStat"
+    />
   </div>
 </template>
 
@@ -138,9 +108,5 @@ defineProps<{
 
 .combat-stats-grid {
   @include combat-stats-grid-mixin;
-}
-
-.arrow {
-  @include arrow-mixin;
 }
 </style>

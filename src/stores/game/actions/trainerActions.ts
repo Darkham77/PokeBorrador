@@ -1,13 +1,15 @@
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/player/trainer'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { OBEY_LEVEL_BY_BADGES } from '@/logic/constants/gameplay'
+import { OBEY_LEVEL_BY_BADGES, MAX_TRAINER_RANK_LEVEL } from '@/logic/constants/gameplay'
 import { gsap } from 'gsap'
 import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
 import { useUIStore, type LearnItem } from '@/stores/ui'
-import { useEventStore } from '@/stores/events'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
+import { getEventExpMultiplier } from '@/logic/events/eventMultipliers.ts'
+import { gameBus } from '@/logic/events/gameBus.ts'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+
+const MARKET_UNLOCK_NOTIFICATION_DELAY_SEC = 1.5;
 
 export function useTrainerActions(state: GameState, scheduleSave: () => Promise<void>) {
   function getTrainerRank() {
@@ -17,23 +19,18 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
 
   function addTrainerExp(amount: number) {
     const uiStore = useUIStore()
-    const eventStore = useEventStore()
-    const evBonus = (eventStore.globalMultipliers?.exp || 1) - 1
-    const totalMult = 1 + evBonus
+    const totalMult = getEventExpMultiplier() || 1
     if (totalMult > 1) amount = Math.round(amount * totalMult)
     
     state.trainerExp += amount
     
-    // Sumar XP a la clase activa también
-    const classStore = usePlayerClassStore()
-    classStore.addXP(amount)
-    
-    const MAX_LEVEL = 30
+    // Sumar XP a la clase activa también via bus
+    gameBus.emit('TRAINER_EXP_GAINED', { amount })
     
     let currentRank = getTrainerRank()
     if (!currentRank) return
 
-    while (state.trainerExp >= (currentRank?.expNeeded || 0) && state.trainerLevel < MAX_LEVEL) {
+    while (state.trainerExp >= (currentRank?.expNeeded || 0) && state.trainerLevel < MAX_TRAINER_RANK_LEVEL) {
       state.trainerExp -= (currentRank?.expNeeded || 0)
       state.trainerLevel++
       
@@ -44,7 +41,7 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
       
       const unlocks = (MARKET_UNLOCKS as Record<number, readonly string[]>)[state.trainerLevel]
       if (unlocks) {
-        gsap.delayedCall(1.5, () => uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒'))
+        gsap.delayedCall(MARKET_UNLOCK_NOTIFICATION_DELAY_SEC, () => uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒'))
       }
     }
 

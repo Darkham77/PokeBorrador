@@ -1,16 +1,56 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip'
 
-defineProps<{
+const props = defineProps<{
   activeDetails: ActiveMoveDetails
 }>()
+
+function getModifierClass(mult: number | string): string {
+  if (typeof mult === 'number') {
+    if (mult > 1) return 'boosted'
+    if (mult < 1) return 'penalized'
+    return ''
+  }
+  return mult === '100%' ? 'boosted' : ''
+}
+
+function getModifierIcon(mult: number | string): string {
+  if (typeof mult === 'number') {
+    if (mult > 1) return '▲'
+    if (mult < 1) return '▼'
+    return '•'
+  }
+  return mult === '100%' ? '▲' : '•'
+}
+
+function formatMultiplier(mult: number | string): string {
+  if (typeof mult === 'number') {
+    return `x${mult.toFixed(2).replace('.00', '')}`
+  }
+  return mult
+}
+
+const showModifiersSection = computed(() => {
+  return !props.activeDetails.isStatus && (props.activeDetails.power.list.length > 0 || props.activeDetails.accuracy.list.length > 0)
+})
+
+const showFormulaSection = computed(() => {
+  return !props.activeDetails.isStatus && props.activeDetails.power.base > 0
+})
+
+const totalCalculatedPower = computed(() => {
+  const finalVal = props.activeDetails.power.final === '-' ? 0 : Number(props.activeDetails.power.final)
+  const eff = props.activeDetails.effectiveness?.value ?? 1
+  return Math.floor(finalVal * eff)
+})
 </script>
 
 <template>
   <div class="move-tooltip-modifiers-wrapper">
     <!-- Active Modifiers Section -->
     <div 
-      v-if="!activeDetails.isStatus && (activeDetails.power.list.length > 0 || activeDetails.accuracy.list.length > 0)" 
+      v-if="showModifiersSection" 
       class="modifiers-section"
     >
       <div class="calc-section-title">
@@ -24,11 +64,11 @@ defineProps<{
         >
           <span
             class="emoji"
-            :class="item.mult > 1 ? 'boosted' : (item.mult < 1 ? 'penalized' : '')"
+            :class="getModifierClass(item.mult)"
           >
-            {{ item.mult > 1 ? '▲' : (item.mult < 1 ? '▼' : '•') }}
+            {{ getModifierIcon(item.mult) }}
           </span>
-          POT: {{ item.label }} <span :class="item.mult > 1 ? 'boosted' : (item.mult < 1 ? 'penalized' : '')">x{{ item.mult.toFixed(2).replace('.00', '') }}</span>
+          POT: {{ item.label }} <span :class="getModifierClass(item.mult)">{{ formatMultiplier(item.mult) }}</span>
         </div>
         <div
           v-for="item in activeDetails.accuracy.list"
@@ -37,12 +77,12 @@ defineProps<{
         >
           <span
             class="emoji"
-            :class="((typeof item.mult === 'number' && item.mult > 1) || item.mult === '100%') ? 'boosted' : (typeof item.mult === 'number' && item.mult < 1 ? 'penalized' : '')"
+            :class="getModifierClass(item.mult)"
           >
-            {{ ((typeof item.mult === 'number' && item.mult > 1) || item.mult === '100%') ? '▲' : (typeof item.mult === 'number' && item.mult < 1 ? '▼' : '•') }}
+            {{ getModifierIcon(item.mult) }}
           </span>
-          PREC: {{ item.label }} <span :class="(typeof item.mult === 'number' && item.mult > 1) || item.mult === '100%' ? 'boosted' : (typeof item.mult === 'number' && item.mult < 1 ? 'penalized' : '')">
-            {{ typeof item.mult === 'number' ? `x${item.mult.toFixed(2).replace('.00', '')}` : item.mult }}
+          PREC: {{ item.label }} <span :class="getModifierClass(item.mult)">
+            {{ formatMultiplier(item.mult) }}
           </span>
         </div>
       </div>
@@ -50,7 +90,7 @@ defineProps<{
 
     <!-- Live Equation Breakdown -->
     <div 
-      v-if="!activeDetails.isStatus && activeDetails.power.base > 0"
+      v-if="showFormulaSection"
       class="formula-breakdown-box"
     >
       <div class="calc-section-title">
@@ -62,12 +102,12 @@ defineProps<{
           v-for="item in activeDetails.power.list"
           :key="item.label"
         >
-          x <span :class="{ 'boosted': item.mult > 1, 'penalized': item.mult < 1 }">{{ item.label.split(' ')[0] }} (x{{ item.mult.toFixed(2).replace('.00', '') }})</span>
+          x <span :class="getModifierClass(item.mult)">{{ item.label.split(' ')[0] }} ({{ formatMultiplier(item.mult) }})</span>
         </template>
         <span v-if="activeDetails.effectiveness">
-          x <span :class="{ 'boosted': activeDetails.effectiveness.value > 1, 'penalized': activeDetails.effectiveness.value < 1 }">Ef. (x{{ activeDetails.effectiveness.value }})</span>
+          x <span :class="getModifierClass(activeDetails.effectiveness.value)">Ef. (x{{ activeDetails.effectiveness.value }})</span>
         </span>
-        = <strong class="total-result">{{ Math.floor((activeDetails.power.final === '-' ? 0 : Number(activeDetails.power.final)) * (activeDetails.effectiveness?.value ?? 1)) }}</strong>
+        = <strong class="total-result">{{ totalCalculatedPower }}</strong>
       </div>
     </div>
   </div>

@@ -80,118 +80,137 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }, { deep: true })
 
-  async function checkSession() {
-    if (sessionStorage.getItem('block_autologin') === 'true') {
-      sessionStorage.removeItem('block_autologin')
-      user.value = null
-      session.value = null
-      loading.value = false
-      return
+  function tryRestoreE2EPostgresSession(): AuthUser | null {
+    const isE2EPostgres = (typeof window !== 'undefined' && (window as { __E2E_DRIVER__?: string }).__E2E_DRIVER__ === 'postgres');
+    if (!isE2EPostgres) return null;
+    const localUser = safeStorage.getItem('pokevicio_local_user');
+    if (localUser) {
+      return JSON.parse(localUser) as AuthUser;
+    }
+    return null;
+  }
+
+  async function resolveOnlineAuthSession(
+    onlineSession: Session | null,
+    currentSessionId: string
+  ): Promise<{ user: AuthUser; session: Session | null; isBanned?: boolean; banMsg?: string; sessionInvalid?: boolean } | null> {
+    if (!onlineSession?.user) return null;
+    const rawUser = onlineSession.user as AuthUser;
+    const isLocalId = rawUser?.id === 'local_user' || rawUser?.id?.startsWith('local_');
+
+    let sessionValid = true;
+    if (!isLocalId) {
+      sessionValid = await recordSessionIdInProfile(rawUser.id, currentSessionId);
     }
 
-    loading.value = true
-    useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false, '📶')
+    const profileData = isLocalId ? {
+      dbVersion: 1,
+      userGender: requireGenderId('h'),
+      userRole: undefined,
+      isUserBanned: false,
+      banMsg: 'Uso indebido de la plataforma',
+      sessionValid: true,
+    } : await fetchProfileMetadata(rawUser.id);
+
+    if (profileData.isUserBanned) {
+      return { user: rawUser, session: onlineSession, isBanned: true, banMsg: profileData.banMsg };
+    }
+
+    if ((!sessionValid || !profileData.sessionValid) && !isLocalId) {
+      return { user: rawUser, session: onlineSession, sessionInvalid: true };
+    }
+
+    return { user: enrichAuthUser(rawUser, profileData), session: onlineSession };
+  }
+
+  function markPvPSessionInitialized() {
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_session_initialized') !== 'true') {
+      sessionStorage.setItem('pvp_session_initialized', 'true');
+      sessionStorage.setItem('pvp_login_reminder_pending', 'true');
+    }
+  }
+
+  function restoreOfflineUserSession(): AuthUser | null {
+    const localUser = safeStorage.getItem('pokevicio_local_user');
+    if (localUser) {
+      const parsed = JSON.parse(localUser) as AuthUser;
+      if (!parsed.db_version) parsed.db_version = 1;
+      markPvPSessionInitialized();
+      return parsed;
+    }
+    return null;
+  }
+
+  function applyOfflineSession(): boolean {
+    const offlineUser = restoreOfflineUserSession();
+    if (!offlineUser) return false;
+    user.value = offlineUser;
+    sessionMode.value = 'offline';
+    if (supabase && typeof supabase.setMode === 'function') supabase.setMode('offline');
+    return true;
+  }
+
+  async function applyOnlineAuthResult(onlineResult: NonNullable<Awaited<ReturnType<typeof resolveOnlineAuthSession>>>): Promise<boolean> {
+    if (onlineResult.isBanned) {
+      isBanned.value = true;
+      banReason.value = onlineResult.banMsg || '';
+      await logout();
+      return true;
+    }
+    if (onlineResult.sessionInvalid) {
+      logger.error('Auth', 'Session validation failed. Forcing logout with warning.');
+      sessionStorage.setItem('pokevicio_logout_reason', 'session_invalidated');
+      await logout();
+      return true;
+    }
+    user.value = onlineResult.user;
+    session.value = onlineResult.session;
+    sessionMode.value = 'online';
+    markPvPSessionInitialized();
+    startSessionMonitoring();
+    syncServerTime();
+    return true;
+  }
+
+  async function checkSession() {
+    if (sessionStorage.getItem('block_autologin') === 'true') {
+      sessionStorage.removeItem('block_autologin');
+      user.value = null;
+      session.value = null;
+      loading.value = false;
+      return;
+    }
+
+    loading.value = true;
+    useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false, '📶');
     try {
-      const isE2EPostgres = (typeof window !== 'undefined' && (window as { __E2E_DRIVER__?: string }).__E2E_DRIVER__ === 'postgres');
-      if (isE2EPostgres) {
-        const localUser = safeStorage.getItem('pokevicio_local_user')
-        if (localUser) {
-          user.value = JSON.parse(localUser) as AuthUser
-          sessionMode.value = 'online'
-          if (supabase && typeof supabase.setMode === 'function') {
-            supabase.setMode('online')
-          }
-          loading.value = false
-          useLoadingStore().finish('auth_init')
-          return
-        }
+      const e2eUser = tryRestoreE2EPostgresSession();
+      if (e2eUser) {
+        user.value = e2eUser;
+        sessionMode.value = 'online';
+        if (supabase && typeof supabase.setMode === 'function') supabase.setMode('online');
+        return;
       }
 
       if (sessionMode.value === 'online') {
-        // Sincronizar el enrutador en modo online antes de pedir la sesión
-        if (supabase && typeof supabase.setMode === 'function') {
-          supabase.setMode('online')
-        }
-
-        const onlineSession = await fetchOnlineSessionWithRetry(2)
-        
-        if (onlineSession?.user) {
-          const rawUser = onlineSession.user as AuthUser
-          const isLocalId = rawUser?.id === 'local_user' || rawUser?.id?.startsWith('local_')
-          
-          let sessionValid = true
-          if (!isLocalId) {
-            sessionValid = await recordSessionIdInProfile(rawUser.id, sessionId.value)
-          }
-
-          const profileData = isLocalId ? {
-            dbVersion: 1,
-            userGender: requireGenderId('h'),
-            userRole: undefined,
-            isUserBanned: false,
-            banMsg: 'Uso indebido de la plataforma',
-            sessionValid: true,
-          } : await fetchProfileMetadata(rawUser.id)
-
-          if (profileData.isUserBanned) {
-            isBanned.value = true
-            banReason.value = profileData.banMsg
-            await logout()
-            return
-          }
-
-          if ((!sessionValid || !profileData.sessionValid) && !isLocalId) {
-            logger.error('Auth', 'Session validation failed. Forcing logout with warning.')
-            sessionStorage.setItem('pokevicio_logout_reason', 'session_invalidated')
-            await logout()
-            return
-          }
-
-          user.value = enrichAuthUser(rawUser, profileData)
-          session.value = onlineSession
-          sessionMode.value = 'online'
-
-          if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_session_initialized') !== 'true') {
-            sessionStorage.setItem('pvp_session_initialized', 'true')
-            sessionStorage.setItem('pvp_login_reminder_pending', 'true')
-          }
-
-          startSessionMonitoring()
-          syncServerTime()
-          return // Finalizamos con éxito online
+        if (supabase && typeof supabase.setMode === 'function') supabase.setMode('online');
+        const onlineSession = await fetchOnlineSessionWithRetry();
+        const onlineResult = await resolveOnlineAuthSession(onlineSession, sessionId.value);
+        if (onlineResult && await applyOnlineAuthResult(onlineResult)) {
+          return;
         }
       }
 
-      // Si llegamos aquí, o estamos en modo offline o falló la sesión online
-      // 2. Si no hay sesión online, buscar local
-      const localUser = safeStorage.getItem('pokevicio_local_user')
-      if (localUser) {
-        user.value = JSON.parse(localUser) as AuthUser
-        sessionMode.value = 'offline'
-        if (supabase && typeof supabase.setMode === 'function') {
-          supabase.setMode('offline')
-        }
-        if (user.value && !user.value.db_version) user.value.db_version = 1
-        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_session_initialized') !== 'true') {
-          sessionStorage.setItem('pvp_session_initialized', 'true')
-          sessionStorage.setItem('pvp_login_reminder_pending', 'true')
-        }
-      }
+      applyOfflineSession();
     } catch (e) {
-      logger.warn('Auth', `CheckSession failed or timed out: ${(e as Error).message}`)
-      // En caso de error/timeout, si hay usuario local, lo mantenemos como fallback
-      const localUser = safeStorage.getItem('pokevicio_local_user')
-      if (localUser && !user.value) {
-        user.value = JSON.parse(localUser) as AuthUser
-        sessionMode.value = 'offline'
-        if (supabase && typeof supabase.setMode === 'function') {
-          supabase.setMode('offline')
-        }
+      logger.warn('Auth', `CheckSession failed or timed out: ${(e as Error).message}`);
+      if (!user.value) {
+        applyOfflineSession();
       }
     } finally {
-      loading.value = false
-      useLoadingStore().finish('auth_init')
-      logger.debug('Auth', `CheckSession finished. Loading: ${loading.value}`)
+      loading.value = false;
+      useLoadingStore().finish('auth_init');
+      logger.debug('Auth', `CheckSession finished. Loading: ${loading.value}`);
     }
   }
 
@@ -377,14 +396,9 @@ export const useAuthStore = defineStore('auth', () => {
     // Safe preventative save if game is active and not explicitly prevented
     if (!preventSave) {
       try {
-        const { useGameStore } = await import('./game.ts')
         const { saveCoordinator } = await import('@/logic/auth/saveCoordinator.ts')
-        const gameStore = useGameStore()
-        if (gameStore.isReady && gameStore.save) {
-          logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')
-          await saveCoordinator.flushPendingSave()
-          await gameStore.save(false, true, true)
-        }
+        logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')
+        await saveCoordinator.executePreLogoutSave()
       } catch (e) {
         logger.warn('AuthStore', `Error al guardar antes de cerrar sesión: ${(e as Error).message}`)
       }
@@ -421,6 +435,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!preventReload && import.meta.env.MODE !== 'test') {
       const baseUrl = import.meta.env.BASE_URL || '/'
       const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+      // security-ok: Same-origin redirect to internal /login route
       window.location.replace(`${window.location.origin}${cleanBase}login`)
     }
   }

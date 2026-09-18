@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { safeStorage } from '@/logic/utils/storage';
+import { logger } from '@/logic/utils/logger';
 
 export const HOME_WIDGET_IDS = [
   'pending_rewards',
@@ -61,8 +62,8 @@ function loadInitialState(): Record<HomeWidgetId, boolean> {
         }
       }
     }
-  } catch {
-    // Fallback to default in case of corrupted JSON
+  } catch (err) {
+    logger.warn('[useHomeWidgetsCollapse] JSON corrupto en localStorage, usando estado por defecto:', err);
   }
 
   return initial;

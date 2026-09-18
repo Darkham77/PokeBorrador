@@ -5,6 +5,7 @@ This directory contains modular Vue components that render the Home Hub dashboar
 ## Directory Structure
 
 - `HomePendingRewardsWidget.vue`: Centralized universal pending rewards card aggregating claimable prizes from global events, ranked arena milestones, completed class deployments, and GTS market sales with bulk 'RECLAMAR TODO' support.
+- `HomePendingRewardItem.vue`: Atomic card rendering an individual claimable reward with source badge, title, category, reward pills, and claim/discard actions.
 - `HomeEventsSection.vue`: Active global events single-row grid, dynamic slot upcoming event filling via canonical `EventCard`, and collapsible schedule / past events archive.
 - `HomeBreedingWidget.vue`: Daycare incubator egg cards with live progress bars and daycare quick action.
 - `HomeGymsProgress.vue`: Kanto's 8 gym badges visual progression bar with conquered state and challenge shortcut.
@@ -15,6 +16,7 @@ This directory contains modular Vue components that render the Home Hub dashboar
 - `HomeFactionWar.vue`: Territorial dominance status bar (Unión vs Poder), war points, war coins, and war shop shortcut.
 - `HomeRankedWidget.vue`: Compact competitive ranked season widget rendering active seasonal tournament rules, player rank medal badge, and side-by-side combat performance stats (Wins, Losses, Win Rate) with direct matchmaking search trigger.
 - `HomePassiveDefenseWidget.vue`: Passive defense status monitor rendering the current 6-Pokémon defending team, live protection toggle, seasonal eligibility validation, ineligible infraction warnings, auto-deactivation on rule violation, and recent defense battle history feed with opponent trainer avatars and ELO deltas.
+- `PassiveDefenseHistoryRow.vue`: Atomic battle report card rendering opponent trainer avatar, faction badge, elapsed battle turns, formatted timestamp, victory/defeat banner, and ELO delta score.
 - `HomeNotificationsFeed.vue`: Activity feed for game notifications and combat logs with vertical scrollbar after 10 items.
 
 ## Local Contracts

@@ -8,14 +8,31 @@
 import type { Pokemon, PokemonStatKey, PokemonGender } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { hashString, mulberry32 } from '@/logic/utils/math.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
-import { getPokemonPhysicalWeight, getPokemonPhysicalHeight, getPhysicalDimensionTier } from '@/logic/pokemon/physicalDimensionsMath.ts';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine.ts';
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath.ts';
 import { normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
 import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
 import type { Event, EventConfig } from './eventEngine.ts';
+import {
+  resolveSubCompetitionDirection,
+  evaluateIvsMetric,
+  evaluateDimensionMetric,
+  evaluateStatMetric,
+  getSubCompIcon,
+  getSubCompTitle,
+  getSubCompDescription,
+  parseEntryScore,
+  parseEntryIsShiny,
+  parseEntryObtainedAt,
+  parseAwardPrizePayload,
+  resolveAwardCategoryId,
+  resolveAwardCategoryDetails
+} from './eventCompetitionsHelper.ts';
+
+export {
+  resolveSubCompetitionDirection,
+  getSubCompIcon,
+  getSubCompTitle,
+  getSubCompDescription
+};
 
 // Re-export eligibility functions and types
 export * from './eventEligibility.ts';
@@ -113,24 +130,6 @@ export function getDefaultSubCompetitions(event: Event): SubCompetitionConfig[] 
 }
 
 /**
- * Resolves the deterministic direction ('max' | 'min') for a sub-competition.
- */
-export function resolveSubCompetitionDirection(
-  eventId: string,
-  categoryId: string,
-  configuredOrder?: SubCompetitionOrder,
-  epochSeed: number = 0
-): ResolvedSubCompetitionOrder {
-  if (configuredOrder === 'min') return 'min';
-  if (configuredOrder === 'max') return 'max';
-  if (categoryId === 'ivs') return 'max';
-
-  const hash = hashString(`${eventId}:${categoryId}:${epochSeed}`);
-  const prng = mulberry32(hash);
-  return prng() >= 0.5 ? 'max' : 'min';
-}
-
-/**
  * Evaluates a Pokémon instance against a sub-competition metric.
  */
 export function evaluatePokemonForSubCompetition(
@@ -142,74 +141,16 @@ export function evaluatePokemonForSubCompetition(
     return { score: 0, displayValue: '0' };
   }
 
-  if (subComp.metric === 'total_ivs') {
-    const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-    const totalIvs = calculateTotalIVs(pokemon.ivs);
-    const tier = getPokemonTier(pokemon);
-    return {
-      score: totalIvs,
-      displayValue: `${totalIvs} / 186 (${tier.tier})`,
-      ivs,
-      tierLabel: tier.tier
-    };
+  if (subComp.metric === 'total_ivs' || subComp.metric === 'stat_iv') {
+    return evaluateIvsMetric(pokemon, subComp);
   }
 
-  if (subComp.metric === 'stat_iv' && subComp.targetStat) {
-    const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-    const statVal = ivs[subComp.targetStat] || 0;
-    return {
-      score: statVal,
-      displayValue: `${statVal} / 31`,
-      ivs
-    };
+  if (subComp.metric === 'weight' || subComp.metric === 'height') {
+    return evaluateDimensionMetric(pokemon, subComp.metric, _resolvedOrder);
   }
 
-  if (subComp.metric === 'weight') {
-    const weightNum = getPokemonPhysicalWeight(pokemon);
-    const spec = pokemonDataProvider.getPokemonData(pokemon.id, true);
-    const baseWeight = spec?.weight || null;
-    const tier = getPhysicalDimensionTier(weightNum, baseWeight);
-    const maxTarget = baseWeight ? (baseWeight * 1.15).toFixed(1) : null;
-    const minTarget = baseWeight ? (baseWeight * 0.85).toFixed(1) : null;
-    const targetRef = _resolvedOrder === 'min' ? minTarget : maxTarget;
-    const targetStr = targetRef ? ` / ${targetRef} kg` : '';
-    return {
-      score: Number(weightNum.toFixed(1)),
-      displayValue: `${weightNum.toFixed(1)} kg${targetStr} (${tier.label} · ${tier.name})`,
-      tierLabel: `${tier.label} · ${tier.name}`
-    };
-  }
-
-  if (subComp.metric === 'height') {
-    const heightNum = getPokemonPhysicalHeight(pokemon);
-    const spec = pokemonDataProvider.getPokemonData(pokemon.id, true);
-    const baseHeight = spec?.height || null;
-    const tier = getPhysicalDimensionTier(heightNum, baseHeight);
-    const maxTarget = baseHeight ? (baseHeight * 1.15).toFixed(1) : null;
-    const minTarget = baseHeight ? (baseHeight * 0.85).toFixed(1) : null;
-    const targetRef = _resolvedOrder === 'min' ? minTarget : maxTarget;
-    const targetStr = targetRef ? ` / ${targetRef} m` : '';
-    return {
-      score: Number(heightNum.toFixed(1)),
-      displayValue: `${heightNum.toFixed(1)} m${targetStr} (${tier.label} · ${tier.name})`,
-      tierLabel: `${tier.label} · ${tier.name}`
-    };
-  }
-
-  if (subComp.metric === 'level') {
-    const lvl = pokemon.level || 1;
-    return {
-      score: lvl,
-      displayValue: `Nv. ${lvl} / 100`
-    };
-  }
-
-  if (subComp.metric === 'friendship') {
-    const friendship = pokemon.friendship || 0;
-    return {
-      score: friendship,
-      displayValue: `${friendship} / 255`
-    };
+  if (subComp.metric === 'level' || subComp.metric === 'friendship') {
+    return evaluateStatMetric(pokemon, subComp.metric);
   }
 
   return {
@@ -228,46 +169,9 @@ export function isNewEntryBetter(
   order: ResolvedSubCompetitionOrder = 'max'
 ): boolean {
   if (!existingData) return true;
-  
-  const toRecord = (obj: unknown): Record<string, unknown> | null => {
-    return (obj && typeof obj === 'object') ? (obj as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
-  };
 
-  const getVal = (obj: unknown, path: string): number => {
-    const rec = toRecord(obj);
-    if (!rec) return 0;
-
-    const directVal = path.split('.').reduce((acc: unknown, part: string) => toRecord(acc)?.[part], rec) as number | undefined;
-    if (typeof directVal === 'number' && !isNaN(directVal)) return directVal;
-
-    const strippedPath = path.startsWith('data.') ? path.slice(5) : path;
-    const strippedVal = strippedPath.split('.').reduce((acc: unknown, part: string) => toRecord(acc)?.[part], rec) as number | undefined;
-    if (typeof strippedVal === 'number' && !isNaN(strippedVal)) return strippedVal;
-
-    const dataRec = toRecord(rec.data);
-    const scoreVal = (rec.score ?? dataRec?.score ?? rec.total_ivs ?? dataRec?.total_ivs) as number | undefined;
-    if (typeof scoreVal === 'number' && !isNaN(scoreVal)) return scoreVal;
-
-    return 0;
-  };
-
-  const getIsShiny = (obj: unknown): boolean => {
-    const rec = toRecord(obj);
-    if (!rec) return false;
-    const dataRec = toRecord(rec.data);
-    return Boolean(rec.is_shiny ?? dataRec?.is_shiny ?? rec.isShiny);
-  };
-
-  const getObtainedAt = (obj: unknown): number => {
-    const rec = toRecord(obj);
-    if (!rec) return Infinity;
-    const dataRec = toRecord(rec.data);
-    const val = (rec.obtained_at ?? dataRec?.obtained_at ?? rec.obtainedAt) as number | null | undefined;
-    return typeof val === 'number' && !isNaN(val) && val > 0 ? val : Infinity;
-  };
-
-  const oldScore = getVal(existingData, sortBy);
-  const newScore = getVal(newData, sortBy);
+  const oldScore = parseEntryScore(existingData, sortBy);
+  const newScore = parseEntryScore(newData, sortBy);
 
   // 1. Primary: Score comparison based on order
   if (order === 'min') {
@@ -279,17 +183,16 @@ export function isNewEntryBetter(
   }
 
   // 2. Tiebreaker 1: Shiny advantage (Shiny always beats non-Shiny)
-  const oldShiny = getIsShiny(existingData);
-  const newShiny = getIsShiny(newData);
-  if (newShiny && !oldShiny) return true;
-  if (!newShiny && oldShiny) return false;
+  const oldShiny = parseEntryIsShiny(existingData);
+  const newShiny = parseEntryIsShiny(newData);
+  if (newShiny !== oldShiny) {
+    return newShiny;
+  }
 
   // 3. Tiebreaker 2: Older capture date (lower timestamp beats higher timestamp)
-  const oldObtainedAt = getObtainedAt(existingData);
-  const newObtainedAt = getObtainedAt(newData);
-  if (newObtainedAt < oldObtainedAt) return true;
-
-  return false;
+  const oldObtainedAt = parseEntryObtainedAt(existingData);
+  const newObtainedAt = parseEntryObtainedAt(newData);
+  return newObtainedAt < oldObtainedAt;
 }
 
 /**
@@ -358,71 +261,6 @@ export function resolveEventSubCompetitions(
   return resolved;
 }
 
-export function getSubCompIcon(metric: string): string {
-  if (metric === 'total_ivs' || metric === 'stat_iv') return '🧬';
-  if (metric === 'weight') return '⚖️';
-  if (metric === 'height') return '📏';
-  if (metric === 'level') return '⭐';
-  if (metric === 'friendship') return '💖';
-  return '🏆';
-}
-
-export function getSubCompTitle(eventId: string, sub: SubCompetitionConfig): string {
-  const dir = resolveSubCompetitionDirection(eventId, sub.id, sub.order);
-  const speciesSuffix = sub.targetSpecies ? ` (${sub.targetSpecies.toUpperCase()})` : '';
-  if (sub.metric === 'total_ivs') {
-    return `Mayor IVs${speciesSuffix}`;
-  }
-  if (sub.metric === 'stat_iv' && sub.targetStat) {
-    return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}`; // domain-ok: Open dynamic text or non-domain string payload
-  }
-  if (sub.metric === 'weight') {
-    return (dir === 'max' ? 'Mayor Peso' : 'Menor Peso') + speciesSuffix;
-  }
-  if (sub.metric === 'height') {
-    return (dir === 'max' ? 'Mayor Altura' : 'Menor Altura') + speciesSuffix;
-  }
-  if (sub.metric === 'level') {
-    return (dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel') + speciesSuffix;
-  }
-  if (sub.metric === 'friendship') {
-    return (dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad') + speciesSuffix;
-  }
-  return (sub.name || 'Categoría') + speciesSuffix;
-}
-
-export function getSubCompDescription(eventId: string, sub: SubCompetitionConfig): string {
-  const dir = resolveSubCompetitionDirection(eventId, sub.id, sub.order);
-  const speciesText = sub.targetSpecies ? ` para ${sub.targetSpecies.toUpperCase()}` : '';
-  if (sub.metric === 'total_ivs') {
-    return `Premia al Pokémon con mayor suma total de IVs (0 a 186)${speciesText}.`;
-  }
-  if (sub.metric === 'stat_iv' && sub.targetStat) {
-    return `Premia al Pokémon con mayor IV en ${sub.targetStat.toUpperCase()} (0 a 31)${speciesText}.`;
-  }
-  if (sub.metric === 'weight') {
-    return dir === 'max'
-      ? `Premia al Pokémon con Mayor Peso (kg)${speciesText}.`
-      : `Premia al Pokémon con Menor Peso (kg)${speciesText}.`;
-  }
-  if (sub.metric === 'height') {
-    return dir === 'max'
-      ? `Premia al Pokémon con Mayor Altura (m)${speciesText}.`
-      : `Premia al Pokémon con Menor Altura (m)${speciesText}.`;
-  }
-  if (sub.metric === 'level') {
-    return dir === 'max'
-      ? `Premia al Pokémon con Mayor Nivel${speciesText}.`
-      : `Premia al Pokémon con Menor Nivel${speciesText}.`;
-  }
-  if (sub.metric === 'friendship') {
-    return dir === 'max'
-      ? `Premia al Pokémon con Mayor Amistad (0 a 255)${speciesText}.`
-      : `Premia al Pokémon con Menor Amistad${speciesText}.`;
-  }
-  return sub.description || `Compite por el mejor puntaje en ${sub.name}.`;
-}
-
 export interface ResolvedAwardCategory {
   categoryId: string;
   categoryTitle: string;
@@ -438,95 +276,14 @@ export function resolveAwardCategory( // result-ok: Operation result wrapper pay
   event?: Event | null,
   winners?: PastCompetitionWinner[]
 ): ResolvedAwardCategory | null {
-  let parsedPrize: Record<string, unknown> = {};
-  if (typeof award.prize === 'string') {
-    try {
-      parsedPrize = JSON.parse(award.prize) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    } catch {
-      parsedPrize = {};
-    }
-  } else if (typeof award.prize === 'object' && award.prize !== null) {
-    parsedPrize = award.prize as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-  }
-
-  let catId = (award.category_id || (parsedPrize.category_id as string | undefined) || '') as string;
-
-  if (!catId && event) {
-    const subComps = getDefaultSubCompetitions(event);
-    const prizeItems = (parsedPrize.items || {}) as Record<string, number>; // open-record: Generic key-value data dictionary container
-    const prizeItemKeys = Object.keys(prizeItems);
-
-    if (prizeItemKeys.length > 0) {
-      for (const sub of subComps) {
-        if (!sub.prizes) continue;
-        for (const rankKey of ['first', 'second', 'third'] as const) {
-          const candidatePrize = sub.prizes[rankKey] as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
-          if (!candidatePrize) continue;
-          const candidateItems = (candidatePrize.items || {}) as Record<string, number>; // open-record: Generic key-value data dictionary container
-          const candidateKeys = Object.keys(candidateItems);
-          if (candidateKeys.length > 0 && candidateKeys.every(k => k in prizeItems)) {
-            catId = sub.id;
-            break;
-          }
-        }
-        if (catId) break;
-      }
-    }
-  }
-
-  if (!catId && winners && winners.length > 0) {
-    const userWinners = award.winner_id ? winners.filter(w => w.player_id === award.winner_id) : winners;
-    if (userWinners.length === 1 && userWinners[0]?.category_id) {
-      catId = userWinners[0].category_id;
-    }
-  }
-
-  if (!catId && award.id && award.id.startsWith('award_')) {
-    const parts = award.id.split('_');
-    if (parts.length >= 3 && parts[2]) {
-      catId = parts[2];
-    }
-  }
-
+  const parsedPrize = parseAwardPrizePayload(award.prize);
+  const subComps = event ? getDefaultSubCompetitions(event) : [];
+  const catId = resolveAwardCategoryId(award, parsedPrize, subComps, winners);
   if (!catId) return null;
 
   const eventId = award.event_id || event?.id || '';
-  const subComp = event ? getDefaultSubCompetitions(event).find(s => s.id === catId || catId.startsWith(s.id)) : null;
+  const subComp = subComps.find(s => s.id === catId || catId.startsWith(s.id)) || null;
 
-  let categoryTitle: string;
-  if (subComp) {
-    categoryTitle = getSubCompTitle(eventId, subComp);
-  } else if (catId.startsWith('weight')) {
-    categoryTitle = getSubCompTitle(eventId, { id: catId, metric: 'weight', order: 'auto', name: 'Peso' });
-  } else if (catId.startsWith('height')) {
-    categoryTitle = getSubCompTitle(eventId, { id: catId, metric: 'height', order: 'auto', name: 'Altura' });
-  } else if (catId.startsWith('level')) {
-    categoryTitle = 'Mayor Nivel';
-  } else if (catId.startsWith('friendship')) {
-    categoryTitle = 'Mayor Amistad';
-  } else {
-    categoryTitle = 'Mayor IVs';
-  }
-
-  let icon = '🏆';
-  if (subComp) {
-    icon = subComp.icon || getSubCompIcon(subComp.metric);
-  } else if (catId.startsWith('weight')) {
-    icon = '⚖️';
-  } else if (catId.startsWith('height')) {
-    icon = '📏';
-  } else if (catId.startsWith('friendship')) {
-    icon = '💖';
-  } else if (catId.startsWith('level')) {
-    icon = '⭐';
-  } else if (catId.startsWith('ivs')) {
-    icon = '🧬';
-  }
-
-  return {
-    categoryId: catId,
-    categoryTitle,
-    icon
-  };
+  return resolveAwardCategoryDetails(catId, eventId, subComp);
 }
 

@@ -5,9 +5,8 @@ import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useModalStore } from '@/stores/modals'
 import { formatBattleCodeInput } from '@/logic/pvp/replayCodeGenerator'
-import { isBattleCode, type BattleReplayRecord, type BattleCode } from '@/types/battle/pvp'
-import { isSeasonalThemeId } from '@/data/system/rankedData'
-import type { SideID } from '@pkmn/sim'
+import { isBattleCode, type BattleReplayRecord } from '@/types/battle/pvp'
+import { parseReplayRow } from './socialTheaterHelper'
 import { logger } from '@/logic/utils/logger'
 
 const emit = defineEmits<{
@@ -84,28 +83,6 @@ async function fetchFeaturedReplays() {
   }
 }
 
-function parseReplayRow(r: Record<string, unknown>): BattleReplayRecord {
-  const p1 = typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : (r.p1 || r.p1_data || {})
-  const p2 = typeof r.p2_data === 'string' ? JSON.parse(r.p2_data) : (r.p2 || r.p2_data || {})
-  const choiceStream = typeof r.choice_stream === 'string' ? JSON.parse(r.choice_stream) : (r.choiceStream || r.choice_stream || [])
-  const initialSeed = typeof r.initial_seed === 'string' ? JSON.parse(r.initial_seed) : (r.initialSeed || r.initial_seed || [0, 0, 0, 0])
-
-  return {
-    id: String(r.id || ''),
-    battleCode: String(r.battleCode || r.battle_code || '') as BattleCode,
-    seasonId: String(r.seasonId || r.season_id || ''),
-    themeId: isSeasonalThemeId(r.themeId) ? r.themeId : (isSeasonalThemeId(r.theme_id) ? r.theme_id : 'masters_allstars'),
-    p1,
-    p2,
-    turnsCount: Number(r.turnsCount ?? r.turns_count ?? 0),
-    winnerSide: String(r.winnerSide || r.winner_side || 'p1') as SideID,
-    choiceStream,
-    initialSeed,
-    isTop10Archived: Boolean(r.isTop10Archived ?? r.is_top10_archived),
-    viewsCount: Number(r.viewsCount ?? r.views_count ?? 0),
-    createdAt: String(r.createdAt || r.created_at || '')
-  }
-}
 
 function playReplay(replay: BattleReplayRecord) {
   emit('watch-replay', replay)

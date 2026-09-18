@@ -340,17 +340,6 @@ function processBattleEvent(payload: BattleDamagePayload): void {
   export const makePokemonSpeciesId = (raw: string): PokemonSpeciesId => toBrand(requirePokemonSpeciesId(raw));
   ```
 
-## Result & Option Monad Standard (`Result<T, E>` / `Option<T>`)
-
-- **Zero Null-Ambiguity Mandate**: Domain boundary functions performing fallible computations or lookups SHOULD consume or return `Option<T>` or `Result<T, E>` from `@/types/system/result` and `@/logic/utils/resultUtils`.
-- **Example**:
-  ```ts
-  import { ok, err, type Result } from '@/logic/utils/resultUtils';
-  export function parseItemQuantity(raw: unknown): Result<number, string> {
-    const num = Number(raw);
-    return !isNaN(num) && num > 0 ? ok(num) : err('Cantidad inválida');
-  }
-  ```
 
 ## Floating Promise & Architecture Rules (`noFloatingPromises`, `noLeakedGlobalState`, `noDynamicImportInHotPath`)
 

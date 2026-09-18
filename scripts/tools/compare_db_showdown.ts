@@ -37,7 +37,7 @@ const TYPE_MAP: Record<string, string> = {
   dragon: 'Dragón'
 };
 
-const STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+const STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const; // lib-duplicate-ok: Canonical stat keys matching Pokemon Showdown StatID
 
 interface ShowdownPokeSpec {
   baseStats: Record<string, number>;

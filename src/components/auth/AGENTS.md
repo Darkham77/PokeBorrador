@@ -13,6 +13,7 @@ Frontend Developers / Systems Engineers.
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
+- **Login Banner Modularization (`LoginExpiredNotice.vue`, `LoginPwaUpdateBanner.vue`)**: Encapsulates the session-expired alert and the PWA version update banner (with GSAP progress bar animation) into standalone auth subcomponents to minimize `LoginView.vue` template rendering complexity.
 
 ## Verification
 

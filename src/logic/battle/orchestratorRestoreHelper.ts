@@ -6,180 +6,234 @@ import { isMatchingUid } from './showdownUidMapper.ts'
 import { initWorkerForBattle } from './orchestratorWorkerInitHelper.ts'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { isBattleMinigame } from './battleMinigames.ts'
+import { gameBus } from '@/logic/events/gameBus'
+
+type RestorableBattlePayload = Partial<
+  BattleState & {
+    playerStages: BattleStages
+    enemyStages: BattleStages
+    battleLogs: BattleLog[]
+    inSearchPhase?: boolean
+    fsmState?: string
+  }
+>
+
+interface RestoredEnemyResult {
+  enemyPoke: Pokemon | null
+  enemyTeamIndex: number
+  allEnemiesFainted: boolean
+}
+
+async function exitAndClearBattle(ctx: BattleContext, shouldSave = false): Promise<void> {
+  ctx.activeBattle.value = null
+  ctx.gs.state.activeBattle = null
+  await ctx.fsm.transition(ctx.BATTLE_STATES.EXIT_BATTLE)
+  if (shouldSave) {
+    await ctx.gs.save?.(false)
+  }
+}
+
+function resolveSourceTeam(ctx: BattleContext, d: RestorableBattlePayload): Pokemon[] {
+  if (d.isPvP && Array.isArray(d.playerTeam) && d.playerTeam.length > 0) {
+    return d.playerTeam
+  }
+  return ctx.gs.state.team
+}
+
+function isAvailableForBattle(p: Pokemon | null | undefined): p is Pokemon {
+  return Boolean(p && p.hp > 0 && !p.onMission && !p.onDefense)
+}
+
+function pickRestoredPlayerPokemon(sourceTeam: Pokemon[], desiredIndex: number): Pokemon | null {
+  const candidate = desiredIndex >= 0 && desiredIndex < sourceTeam.length ? sourceTeam[desiredIndex] : null
+  if (isAvailableForBattle(candidate)) {
+    return candidate
+  }
+  return sourceTeam.find(isAvailableForBattle) || null
+}
+
+function isRestorableSearchPhase(d: RestorableBattlePayload): boolean {
+  if (d.inSearchPhase === true || d.fsmState === 'SEARCH_PHASE') {
+    return true
+  }
+  return Boolean(d.wasSearching && !d.isTrainer && !d.isGym && !d.isPvP && d.turnCount === 0 && !d.battleHistory?.length)
+}
+
+function isHealthyEnemy(p: Pokemon | null | undefined): p is Pokemon {
+  return Boolean(p && p.hp > 0 && !p.fainted)
+}
+
+function resolveEnemyFromTeam(enemyTeam: Pokemon[], desiredEnemyIndex: number): RestoredEnemyResult {
+  const hasAlive = enemyTeam.some(isHealthyEnemy)
+  if (!hasAlive) {
+    return { enemyPoke: null, enemyTeamIndex: 0, allEnemiesFainted: true }
+  }
+
+  const candidate = desiredEnemyIndex >= 0 && desiredEnemyIndex < enemyTeam.length ? enemyTeam[desiredEnemyIndex] : null
+  if (isHealthyEnemy(candidate)) {
+    return { enemyPoke: candidate, enemyTeamIndex: desiredEnemyIndex, allEnemiesFainted: false }
+  }
+
+  const aliveIdx = enemyTeam.findIndex(isHealthyEnemy)
+  const enemyTeamIndex = aliveIdx !== -1 ? aliveIdx : 0
+  return { enemyPoke: enemyTeam[enemyTeamIndex] || null, enemyTeamIndex, allEnemiesFainted: false }
+}
+
+function resolveRestoredEnemyPokemon(d: RestorableBattlePayload): RestoredEnemyResult {
+  if (d.enemyTeam && Array.isArray(d.enemyTeam) && d.enemyTeam.length > 0) {
+    const desiredIndex = typeof d.enemyTeamIndex === 'number' ? d.enemyTeamIndex : -1
+    return resolveEnemyFromTeam(d.enemyTeam, desiredIndex)
+  }
+
+  const candidate = d.enemy || d._initialEnemy || null
+  if (isHealthyEnemy(candidate)) {
+    return { enemyPoke: candidate, enemyTeamIndex: 0, allEnemiesFainted: false }
+  }
+  return { enemyPoke: null, enemyTeamIndex: 0, allEnemiesFainted: false }
+}
+
+function populateInitialEnemyTracking(d: RestorableBattlePayload, enemyPoke: Pokemon): void {
+  if (!d._initialEnemy) {
+    d._initialEnemy = cloneReactive(enemyPoke)
+  }
+  if (!d._initialEnemies && enemyPoke.uid) {
+    d._initialEnemies = { [enemyPoke.uid]: cloneReactive(enemyPoke) }
+  }
+}
+
+function populateRestoredTeamAndIndices(
+  d: RestorableBattlePayload,
+  playerPoke: Pokemon,
+  enemyPoke: Pokemon,
+  sourceTeam: Pokemon[],
+  desiredIndex: number,
+  enemyTeamIndex: number
+): void {
+  d.player = playerPoke
+  d.enemy = enemyPoke
+  populateInitialEnemyTracking(d, enemyPoke)
+  d.playerTeam = sourceTeam
+
+  const matchedIndex = sourceTeam.findIndex((p: Pokemon) => p && isMatchingUid(p.uid, playerPoke.uid))
+  d.playerTeamIndex = matchedIndex !== -1 ? matchedIndex : (desiredIndex !== -1 ? desiredIndex : 0)
+  d.enemyTeamIndex = enemyTeamIndex
+  d.participants = Array.isArray(d.participants) && d.participants.length > 0 ? d.participants : [playerPoke.uid]
+}
+
+function populateRestoredFieldConditions(d: RestorableBattlePayload): void {
+  d.weather = d.weather || { type: 'clear', visual: 'clear', turns: -1 }
+  d.initialMapWeather = d.initialMapWeather || null
+  d.terrain = d.terrain || null
+  d.fieldConditions = d.fieldConditions || {}
+  d.playerSideConditions = d.playerSideConditions || {}
+  d.enemySideConditions = d.enemySideConditions || {}
+  d.pendingSlotEffects = Array.isArray(d.pendingSlotEffects) ? d.pendingSlotEffects : []
+}
+
+function populateRestoredProgressFlags(d: RestorableBattlePayload): void {
+  d.turnCount = typeof d.turnCount === 'number' ? d.turnCount : 1
+  d.over = false
+  d.escapeAttempts = typeof d.escapeAttempts === 'number' ? d.escapeAttempts : 0
+
+  const isSpecialLock = Boolean(d.isTrainer || d.isGym || d.isPvP || d.isGuardian)
+  d.cannotEscape = isSpecialLock ? Boolean(d.cannotEscape) : false
+  d.enemyInventory = d.enemyInventory ? { ...d.enemyInventory } : {}
+  d.stolenResources = d.stolenResources || { money: 0, items: {} }
+}
+
+function populateRestoredEnvironmentFlags(d: RestorableBattlePayload): void {
+  d.wasSearching = Boolean(d.wasSearching)
+  d.isRival = Boolean(d.isRival || d.trainerArchetype === 'rival')
+  d.minigame = d.minigame ?? null
+  d.isCave = Boolean(d.isCave)
+  d.isIndoors = Boolean(d.isIndoors)
+  d.isCrystalCave = Boolean(d.isCrystalCave)
+}
+
+function populateRestoredBattleDefaults(
+  d: RestorableBattlePayload,
+  playerPoke: Pokemon,
+  enemyPoke: Pokemon,
+  sourceTeam: Pokemon[],
+  desiredIndex: number,
+  enemyTeamIndex: number
+): void {
+  populateRestoredTeamAndIndices(d, playerPoke, enemyPoke, sourceTeam, desiredIndex, enemyTeamIndex)
+  populateRestoredFieldConditions(d)
+  populateRestoredProgressFlags(d)
+  populateRestoredEnvironmentFlags(d)
+}
+
+async function activateRestoredBattle(
+  ctx: BattleContext,
+  d: RestorableBattlePayload,
+  playerPoke: Pokemon,
+  enemyPoke: Pokemon
+): Promise<void> {
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+  ctx.activeBattle.value = d as BattleState
+  if (d.playerStages) ctx.playerStages.value = d.playerStages
+  if (d.enemyStages) ctx.enemyStages.value = d.enemyStages
+  if (d.battleLogs && Array.isArray(d.battleLogs)) {
+    ctx.battleLogs.value = [...d.battleLogs]
+  }
+
+  ctx.isProcessing.value = true
+  await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+  await initWorkerForBattle(ctx, playerPoke, enemyPoke)
+  ctx.isProcessing.value = false
+
+  if (d.isPvP) {
+    gameBus.emit('PVP_RECONNECT_BATTLE', d)
+  }
+}
 
 /**
  * Restores a battle state from saved data upon page refresh (F5).
  * Faithfully resumes the active combat at the exact turn, HP, and log history.
  */
-export async function restoreBattleState(ctx: BattleContext, battleData: unknown) {
-  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+export async function restoreBattleState(ctx: BattleContext, battleData: unknown): Promise<void> {
   if (!battleData) {
-    ctx.activeBattle.value = null
-    await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+    await exitAndClearBattle(ctx, false)
     return
   }
-  const d = battleData as Partial<BattleState & { playerStages: BattleStages; enemyStages: BattleStages; battleLogs: BattleLog[] }>
-  
+  const d = battleData as RestorableBattlePayload
   if (d.over) {
-    ctx.activeBattle.value = null
-    ctx.gs.state.activeBattle = null
-    await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-    await ctx.gs.save?.(false)
+    await exitAndClearBattle(ctx, true)
     return
   }
 
-  // 1. Identify active player Pokemon
-  const sourceTeam = (d.isPvP && Array.isArray(d.playerTeam) && d.playerTeam.length > 0)
-    ? d.playerTeam
-    : ctx.gs.state.team
-  const desiredIndex = typeof d.playerTeamIndex === 'number' && d.playerTeamIndex >= 0 && d.playerTeamIndex < sourceTeam.length ? d.playerTeamIndex : -1
-  const candidatePoke = desiredIndex !== -1 ? sourceTeam[desiredIndex] : null
-  const playerPoke = (candidatePoke && candidatePoke.hp > 0 && !candidatePoke.onMission && !candidatePoke.onDefense)
-    ? candidatePoke
-    : sourceTeam.find((p: Pokemon) => p && p.hp > 0 && !p.onMission && !p.onDefense)
+  const sourceTeam = resolveSourceTeam(ctx, d)
+  const desiredIndex = typeof d.playerTeamIndex === 'number' ? d.playerTeamIndex : -1
+  const playerPoke = pickRestoredPlayerPokemon(sourceTeam, desiredIndex)
 
-  // 2. Minigames (Fishing / Archaeology) are never restored to prevent reset cheating — return directly to search loop
-  if (isBattleMinigame(d)) {
-    await resumeSearchMode(ctx, d)
-    return
-  }
-
-  // 3. Search phase (bush mode) — resume searching without launching active combat
-  const isSearchPhase = Boolean(
-    (d as { inSearchPhase?: boolean }).inSearchPhase === true ||
-    (d as { fsmState?: string }).fsmState === 'SEARCH_PHASE' ||
-    (d.wasSearching && !d.isTrainer && !d.isGym && !d.isPvP && (!d.turnCount || d.turnCount === 0) && !d.battleHistory?.length)
-  );
-  if (isSearchPhase) {
+  if (isBattleMinigame(d) || isRestorableSearchPhase(d)) {
     await resumeSearchMode(ctx, d)
     return
   }
 
   if (!playerPoke) {
-    ctx.activeBattle.value = null
-    ctx.gs.state.activeBattle = null
-    await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-    await ctx.gs.save?.(false)
+    await exitAndClearBattle(ctx, true)
     return
   }
 
-  // 4. Identify active enemy Pokemon & check if enemy team is completely fainted
-  let enemyTeamIndex = 0
-  let enemyPoke: Pokemon | null = null
-
-  if (d.enemyTeam && Array.isArray(d.enemyTeam) && d.enemyTeam.length > 0) {
-    const hasAliveEnemy = d.enemyTeam.some((p: Pokemon) => p && p.hp > 0 && !p.fainted)
-    if (!hasAliveEnemy) {
-      ctx.activeBattle.value = null
-      ctx.gs.state.activeBattle = null
-      await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-      await ctx.gs.save?.(false)
-      return
-    }
-
-    const desiredEnemyIndex = typeof d.enemyTeamIndex === 'number' && d.enemyTeamIndex >= 0 && d.enemyTeamIndex < d.enemyTeam.length
-      ? d.enemyTeamIndex
-      : -1
-    const candidateEnemy = desiredEnemyIndex !== -1 ? d.enemyTeam[desiredEnemyIndex] : null
-    if (candidateEnemy && candidateEnemy.hp > 0 && !candidateEnemy.fainted) {
-      enemyTeamIndex = desiredEnemyIndex
-      enemyPoke = candidateEnemy
-    } else {
-      const aliveIdx = d.enemyTeam.findIndex((p: Pokemon) => p && p.hp > 0 && !p.fainted)
-      enemyTeamIndex = aliveIdx !== -1 ? aliveIdx : 0
-      enemyPoke = d.enemyTeam[enemyTeamIndex] || null
-    }
-  } else {
-    // Single / Wild enemy
-    const candidateEnemy = d.enemy || d._initialEnemy || null
-    if (candidateEnemy && candidateEnemy.hp > 0 && !candidateEnemy.fainted) {
-      enemyPoke = candidateEnemy
-      enemyTeamIndex = 0
-    }
+  const { enemyPoke, enemyTeamIndex, allEnemiesFainted } = resolveRestoredEnemyPokemon(d)
+  if (allEnemiesFainted) {
+    await exitAndClearBattle(ctx, true)
+    return
   }
 
-  if (!enemyPoke || enemyPoke.hp <= 0 || enemyPoke.fainted) {
+  if (!enemyPoke) {
     if (d.wasSearching) {
       await resumeSearchMode(ctx, d)
       return
     }
-    ctx.activeBattle.value = null
-    ctx.gs.state.activeBattle = null
-    await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-    await ctx.gs.save?.(false)
+    await exitAndClearBattle(ctx, true)
     return
   }
 
-  // 5. If an active battle with combatants was in progress, restore it faithfully
-  const isActualCombatInProgress = Boolean(
-    !isSearchPhase &&
-    ((d.turnCount && d.turnCount > 0) || d.isTrainer || d.isGym || d.isPvP || (!d.wasSearching && enemyPoke))
-  );
-
-  if (playerPoke && enemyPoke && isActualCombatInProgress) {
-    d.player = playerPoke
-    d.enemy = enemyPoke
-    if (!d._initialEnemy) {
-      d._initialEnemy = cloneReactive(enemyPoke)
-    }
-    if (!d._initialEnemies && enemyPoke?.uid) {
-      d._initialEnemies = { [enemyPoke.uid]: cloneReactive(enemyPoke) }
-    }
-    d.playerTeam = sourceTeam
-    const matchedIndex = sourceTeam.findIndex((p: Pokemon) => p && isMatchingUid(p.uid, playerPoke.uid))
-    d.playerTeamIndex = matchedIndex !== -1 ? matchedIndex : (desiredIndex !== -1 ? desiredIndex : 0)
-    d.enemyTeamIndex = enemyTeamIndex
-    d.participants = Array.isArray(d.participants) && d.participants.length > 0 ? d.participants : [playerPoke.uid]
-    d.turnCount = typeof d.turnCount === 'number' ? d.turnCount : 1
-    d.over = false
-    d.escapeAttempts = typeof d.escapeAttempts === 'number' ? d.escapeAttempts : 0
-    const isSpecialLock = Boolean(d.isTrainer || d.isGym || d.isPvP || d.isGuardian)
-    d.cannotEscape = isSpecialLock ? Boolean(d.cannotEscape) : false
-    d.weather = d.weather || { type: 'clear', visual: 'clear', turns: -1 }
-    d.initialMapWeather = d.initialMapWeather || null
-    d.terrain = d.terrain || null
-    d.fieldConditions = d.fieldConditions || {}
-    d.playerSideConditions = d.playerSideConditions || {}
-    d.enemySideConditions = d.enemySideConditions || {}
-    d.pendingSlotEffects = Array.isArray(d.pendingSlotEffects) ? d.pendingSlotEffects : []
-    d.enemyInventory = d.enemyInventory ? { ...d.enemyInventory } : {}
-    d.stolenResources = d.stolenResources || { money: 0, items: {} }
-    d.wasSearching = Boolean(d.wasSearching)
-    d.isRival = Boolean(d.isRival || d.trainerArchetype === 'rival')
-    d.minigame = d.minigame ?? null
-    d.isCave = Boolean(d.isCave)
-    d.isIndoors = Boolean(d.isIndoors)
-    d.isCrystalCave = Boolean(d.isCrystalCave)
-
-    ctx.activeBattle.value = d as BattleState
-    if (d.playerStages) ctx.playerStages.value = d.playerStages
-    if (d.enemyStages) ctx.enemyStages.value = d.enemyStages
-    if (d.battleLogs && Array.isArray(d.battleLogs)) {
-      ctx.battleLogs.value = [...d.battleLogs]
-    }
-
-    // Re-initialize Showdown Worker with the restored teams and active Pokemon
-    await initWorkerForBattle(ctx, playerPoke, enemyPoke)
-    await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-    ctx.isProcessing.value = false
-
-    if (d.isPvP) {
-      const { useLivePvPStore } = await import('@/stores/livePvP')
-      useLivePvPStore().reconnectBattle(d)
-    }
-    return
-  }
-
-  // 5. If in search mode without an active enemy yet, continue in SEARCH_PHASE
-  if (d.wasSearching) {
-    await resumeSearchMode(ctx, d)
-    return
-  }
-
-  ctx.activeBattle.value = null
-  ctx.gs.state.activeBattle = null
-  await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-  await ctx.gs.save?.(false)
+  populateRestoredBattleDefaults(d, playerPoke, enemyPoke, sourceTeam, desiredIndex, enemyTeamIndex)
+  await activateRestoredBattle(ctx, d, playerPoke, enemyPoke)
 }
 
 async function resumeSearchMode(ctx: BattleContext, d: Partial<BattleState>): Promise<void> {

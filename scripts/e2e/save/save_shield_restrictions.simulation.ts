@@ -38,7 +38,7 @@ class SaveShieldSimulation extends BaseE2ESimulation {
 
 test.describe('Save Shield Integration & Security Simulation', () => {
   test('should block saving the game when Pokemon count is 0', async ({ page }) => {
-    const sim = new SaveShieldSimulation(page, 'SaveShieldUser');
+    const sim = new SaveShieldSimulation(page, 'SaveShieldUserZeroPoke');
 
     await sim.setup();
     await waitForStoreReady(page);
@@ -50,7 +50,7 @@ test.describe('Save Shield Integration & Security Simulation', () => {
   });
 
   test('should block saving the game when starterChosen is false', async ({ page }) => {
-    const sim = new SaveShieldSimulation(page, 'SaveShieldUser');
+    const sim = new SaveShieldSimulation(page, 'SaveShieldUserNoStarter');
 
     await sim.setup();
     await waitForStoreReady(page);

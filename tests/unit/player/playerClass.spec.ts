@@ -1,8 +1,5 @@
 
 
-/**
- * @vitest-environment jsdom
- */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { usePlayerClassStore } from '@/stores/player/playerClass'

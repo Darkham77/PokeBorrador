@@ -9,7 +9,7 @@ const DEFAULT_RADIUS_PX = 40
  * Orquestador centralizado para efectos visuales en sprites de Pokémon.
  * MIGRACIÓN 1:1 - Modularizado pero con idéntica lógica.
  */
-import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted } from 'vue'
+import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted, type PropType } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
 import { gsap } from 'gsap'
@@ -18,25 +18,14 @@ import PVAuraFX from './PVAuraFX.vue'
 import { resolveEffectSettings } from '@/data/battle/fx-configs'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
+import {
+  applyVolatileFXTweens,
+  applyStatusFXTweens,
+  applyGuardianFXTween
+} from './spritePersistentFXHelpers.ts'
+
 const MAX_PERSISTENT_FX_RETRIES = 3
 const PERSISTENT_FX_RETRY_DELAY_SEC = 0.1
-
-const CURSED_FX_DURATION_SEC = 1.25
-const CONFUSED_FX_DURATION_SEC = 0.15
-const TAUNTED_FX_DURATION_SEC = 0.4
-const FLINCHED_FX_DURATION_SEC = 0.05
-const DISABLED_FX_DURATION_SEC = 1
-const ENCORED_FX_DURATION_SEC = 0.8
-const FOCUS_ENERGY_FX_DURATION_SEC = 0.75
-const ENDURING_FX_DURATION_SEC = 1.5
-const BURN_FX_DURATION_SEC = 1
-const POISON_FX_DURATION_SEC = 2
-const PARALYZE_FX_DURATION_SEC = 0.04
-const SLEEP_FX_DURATION_SEC = 2
-const GUARDIAN_FX_DURATION_SEC = 2
-
-const FLINCHED_FX_REPEATS = 10
-const GUARDIAN_DELAY_MULTIPLIER = -2
 
 interface FXData {
   type: string;
@@ -72,6 +61,8 @@ const props = defineProps({
   hasSafeguard: { type: Boolean, default: false },
   hasMist: { type: Boolean, default: false },
   hasSpikes: { type: Boolean, default: false },
+  hasStealthRock: { type: Boolean, default: false },
+  hasToxicSpikes: { type: Boolean, default: false },
   isIngrained: { type: Boolean, default: false },
   isPerishSong: { type: Boolean, default: false },
   sparkleCount: { type: Number, default: DEFAULT_SPARKLE_COUNT },
@@ -81,19 +72,21 @@ const props = defineProps({
   radius: { type: Number, default: DEFAULT_RADIUS_PX },
   spriteScale: { type: Number, default: 1 },
   pokeScale: { type: Number, default: 1 },
-  animState: { type: String, default: null },
-  isBattle: { type: Boolean, default: false }
+  animState: { type: String as PropType<string | null>, default: null },
+  isBattle: { type: Boolean, default: false },
+  hideStatusOverlay: { type: Boolean, default: false },
+  overlayOnly: { type: Boolean, default: false }
 })
 
-const isModalPerformance = inject<Ref<boolean> | null>('isModalPerformanceMode', null)
+const isModalFast = inject<Ref<boolean> | null>('isModalFastMode', null) ?? inject<Ref<boolean> | null>('isModalPerformanceMode', null)
 const forceHighFidelity = inject<boolean>('forceHighFidelity', false)
 
 const isSimplified = computed(() => {
   if (props.isSilhouette) return true
   if (forceHighFidelity) return false
   if (!props.enabled || uiStore.isSimplifiedModalsMode) return true
-  if (isModalPerformance !== null) return isModalPerformance.value
-  return uiStore.isAnyBlockingModalOpen
+  if (isModalFast !== null) return isModalFast.value
+  return uiStore.isFastMode
 })
 
 const animSeed = Math.random()
@@ -118,39 +111,54 @@ const wrapperClasses = computed(() => ({
   'is-lock-on': props.isLockOn && !isSimplified.value
 }))
 
-const secondaryEffects = computed(() => [
-  { active: props.isShiny, emoji: '⭐', type: 'shiny' },
-  { active: props.isConfused, emoji: '💫', type: 'confused' },
-  { active: props.isTaunted, emoji: '💢', type: 'taunted' },
-  { active: props.isSubstitute, emoji: '🧸', type: 'substitute' },
-  { active: props.isFlinched, emoji: '💥', type: 'flinched' },
-  { active: props.isDisabled, emoji: '🔒', type: 'disabled' },
-  { active: props.isEncored, emoji: '🔄', type: 'encored' },
-  { active: props.isCursed, emoji: '👻', type: 'cursed' },
-  { active: props.attracted, emoji: '💖', type: 'attracted' },
-  { active: props.isSeeded, emoji: '🌱', type: 'seeded' },
-  { active: props.isTrapped, emoji: '🕸️', type: 'trapped' },
-  { active: props.isIngrained, emoji: '🌳', type: 'ingrained' },
-  { active: props.isPerishSong, emoji: '⏳', type: 'perishsong' }
-].filter(e => e.active))
+const isAnimStateHidden = computed(() =>
+  props.animState === 'trapped' || props.animState === 'releasing'
+)
 
-const tacticalEffects = computed(() => [
-  { active: props.isProtected, emoji: '🛡️', type: 'protected' },
-  { active: props.isEnduring, emoji: '✊', type: 'enduring' },
-  { active: props.isFocusEnergy, emoji: '🎯', type: 'focus' },
-  { active: props.isLockOn, emoji: '👁️', type: 'lockon' }
-].filter(e => e.active))
+const secondaryEffects = computed(() => {
+  if (isAnimStateHidden.value) return []
+  return [
+    { active: props.isShiny, emoji: '⭐', type: 'shiny' },
+    { active: props.isConfused, emoji: '💫', type: 'confused' },
+    { active: props.isTaunted, emoji: '💢', type: 'taunted' },
+    { active: props.isSubstitute, emoji: '🧸', type: 'substitute' },
+    { active: props.isFlinched, emoji: '💥', type: 'flinched' },
+    { active: props.isDisabled, emoji: '🔒', type: 'disabled' },
+    { active: props.isEncored, emoji: '🔄', type: 'encored' },
+    { active: props.isCursed, emoji: '👻', type: 'cursed' },
+    { active: props.attracted, emoji: '💖', type: 'attracted' },
+    { active: props.isSeeded, emoji: '🌱', type: 'seeded' },
+    { active: props.isTrapped, emoji: '🕸️', type: 'trapped' },
+    { active: props.isIngrained, emoji: '🌳', type: 'ingrained' },
+    { active: props.isPerishSong, emoji: '⏳', type: 'perishsong' }
+  ].filter(e => e.active)
+})
 
-const fieldEffects = computed(() => [
-  { active: props.hasReflect, emoji: '🧱', type: 'reflect' },
-  { active: props.hasLightScreen, emoji: '🕯️', type: 'lightscreen' },
-  { active: props.hasSafeguard, emoji: '🛡️', type: 'safeguard' },
-  { active: props.hasMist, emoji: '☁️', type: 'mist' },
-  { active: props.hasSpikes, emoji: '🌵', type: 'spikes' }
-].filter(e => e.active))
+const tacticalEffects = computed(() => {
+  if (isAnimStateHidden.value) return []
+  return [
+    { active: props.isProtected, emoji: '🛡️', type: 'protected' },
+    { active: props.isEnduring, emoji: '✊', type: 'enduring' },
+    { active: props.isFocusEnergy, emoji: '🎯', type: 'focus' },
+    { active: props.isLockOn, emoji: '👁️', type: 'lockon' }
+  ].filter(e => e.active)
+})
+
+const fieldEffects = computed(() => {
+  if (isAnimStateHidden.value) return []
+  return [
+    { active: props.hasReflect, emoji: '🧱', type: 'reflect' },
+    { active: props.hasLightScreen, emoji: '🕯️', type: 'lightscreen' },
+    { active: props.hasSafeguard, emoji: '🛡️', type: 'safeguard' },
+    { active: props.hasMist, emoji: '☁️', type: 'mist' },
+    { active: props.hasSpikes, emoji: '🌵', type: 'spikes' },
+    { active: props.hasStealthRock, emoji: '🪨', type: 'stealthrock' },
+    { active: props.hasToxicSpikes, emoji: '☠️', type: 'toxicspikes' }
+  ].filter(e => e.active)
+})
 
 const activeStatusEffects = computed(() => {
-  if (!props.status || isSimplified.value) return []
+  if (!props.status || isSimplified.value || isAnimStateHidden.value) return []
   const map: Record<string, string> = { brn: '🔥', psn: '☠️', slp: '💤', par: '⚡', frz: '❄️', tox: '☠️' }
   return [{ type: props.status, emoji: map[props.status] || '' }]
 })
@@ -159,7 +167,7 @@ const spriteLayerRef = ref<HTMLElement | null>(null)
 const activeTweens: gsap.core.Tween[] = []
 
 const refreshPersistentFX = (retryCount = 0) => {
-  if (!spriteLayerRef.value) return
+  if (props.overlayOnly || !spriteLayerRef.value) return
   const statusWrapper = spriteLayerRef.value.querySelector('.pokemon-sprite-status-wrapper') as HTMLElement
   const img = spriteLayerRef.value.querySelector('img') as HTMLElement
   const target = statusWrapper || img
@@ -177,62 +185,11 @@ const refreshPersistentFX = (retryCount = 0) => {
 
   const isImmobilized = props.status === 'frz' || props.isTrapped || props.animState === 'catching'
 
-  if (props.isCursed) {
-    activeTweens.push(gsap.to(target, {
-      filter: 'Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8)) Brightness(0.6) contrast(1.2) Saturate(0.5)',
-      duration: CURSED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut'
-    }))
-  }
-  if (props.isConfused && !isImmobilized) {
-    activeTweens.push(gsap.to(target, { x: 2, rotation: 1, duration: CONFUSED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
-  }
-  if (props.isTaunted) {
-    activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 12px Rgba(255, 0, 0, 0.9)) Brightness(1.2)', duration: TAUNTED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
-  }
-  if (props.isFlinched && !isImmobilized) {
-    activeTweens.push(gsap.to(target, { x: 4, duration: FLINCHED_FX_DURATION_SEC, yoyo: true, repeat: FLINCHED_FX_REPEATS, ease: 'none' }))
-  }
-  if (props.isDisabled) {
-    activeTweens.push(gsap.to(target, { filter: 'Grayscale(0.8) Brightness(0.7) Drop-Shadow(0 0 8px Rgba(100, 100, 100, 0.8))', duration: DISABLED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
-  }
-  if (props.isEncored) {
-    activeTweens.push(gsap.to(target, { filter: 'Hue-Rotate(90deg) Drop-Shadow(0 0 10px Rgba(0, 255, 255, 0.8))', duration: ENCORED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
-  }
-  if (props.isFocusEnergy) {
-    activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.3)', duration: FOCUS_ENERGY_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
-  }
-  if (props.isEnduring || props.isSeeded) {
-    activeTweens.push(gsap.to(target, { y: -3, duration: ENDURING_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
-  }
-  if (props.status === 'brn') {
-    activeTweens.push(gsap.fromTo(target, 
-      { filter: 'Drop-Shadow(0 0 25px #ff4500) Brightness(1) Saturate(1.2)' },
-      { filter: 'Drop-Shadow(0 0 40px #ff8c00) Brightness(1.4) Saturate(2.2)', duration: BURN_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
-    ))
-  }
-  if (props.status === 'psn' || props.status === 'tox') {
-    activeTweens.push(gsap.fromTo(target, 
-      { filter: 'Drop-Shadow(0 0 2px #9400d3) Brightness(1) Saturate(1)' },
-      { filter: 'Drop-Shadow(0 0 12px #9400d3) Brightness(0.8) Saturate(1.4) hue-rotate(10deg)', duration: POISON_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
-    ))
-  }
-const GSAP_PARALYZE_X_OFFSET_PX = 3
-  if ((props.status === 'par') && !isImmobilized) {
-    activeTweens.push(gsap.fromTo(target, { filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)', x: -GSAP_PARALYZE_X_OFFSET_PX }, { filter: 'Drop-Shadow(0 0 10px #ffd700) Brightness(1.5) contrast(1.3)', x: GSAP_PARALYZE_X_OFFSET_PX, duration: PARALYZE_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'none' }))
-  }
-  if (props.status === 'frz') {
-    activeTweens.push(gsap.set(target, { 
-      filter: 'Brightness(1.6) contrast(0.7) Saturate(0.3) url(#pixel-outline-ice) Drop-Shadow(0 0 20px #00ffff)' 
-    }))
-  }
-  if (props.status === 'sleep') {
-    activeTweens.push(gsap.fromTo(target, { filter: 'Brightness(1) Saturate(1)' }, { filter: 'Brightness(0.5) contrast(0.8) Saturate(0.5)', duration: SLEEP_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
-  }
-  if (props.isGuardian && !props.status) {
-    const isVibrant = props.vibrant
-    const baseFilter = isVibrant ? 'Drop-Shadow(0 0 15px white) Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.8))' : 'Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.8))'
-    const pulseFilter = isVibrant ? 'Drop-Shadow(0 0 40px white) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.9))' : 'Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.8))'
-    activeTweens.push(gsap.fromTo(spriteLayerRef.value, { filter: baseFilter }, { filter: pulseFilter, duration: GUARDIAN_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: animSeed * GUARDIAN_DELAY_MULTIPLIER }))
+  applyVolatileFXTweens(target, props, isImmobilized, activeTweens)
+  applyStatusFXTweens(target, props.status, isImmobilized, activeTweens)
+
+  if (props.isGuardian && !props.status && spriteLayerRef.value) {
+    applyGuardianFXTween(spriteLayerRef.value, Boolean(props.vibrant), animSeed, activeTweens)
   }
 }
 
@@ -246,7 +203,7 @@ onUnmounted(() => {
 
 // --- DEBUG OVERLAY (1:1 Logic) ---
 const allActiveFXDebug = computed(() => {
-  if (!battleStore.debugShowFxRadius) return []
+  if (!battleStore.debugShowFxRadius || props.hideStatusOverlay) return []
   const effects = [...activeStatusEffects.value, ...secondaryEffects.value, ...tacticalEffects.value, ...fieldEffects.value]
   return effects.map((fx: FXData) => {
     const settings = resolveEffectSettings(fx.type, props.radius, { isField: fx.isField, isSimplified: isSimplified.value, isBattle: props.isBattle, spriteScale: props.spriteScale, pokeScale: props.pokeScale })
@@ -280,6 +237,7 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
     :style="{ '--fx-seed': animSeed, '--fx-radius': radius }"
   >
     <div
+      v-if="!overlayOnly"
       ref="spriteLayerRef"
       class="pv-fx-sprite-layer"
       :class="{ 'is-guardian': isGuardian && !status && !isSimplified }"
@@ -287,32 +245,34 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
       <slot />
     </div>
 
-    <PVAuraFX
-      :is-shiny="isShiny"
-      :is-guardian="isGuardian"
-      :has-reflect="hasReflect"
-      :has-light-screen="hasLightScreen"
-      :has-safeguard="hasSafeguard"
-      :sparkle-count="sparkleCount"
-      :radius="radius"
-      :anim-seed="animSeed"
-      :sprite-scale="spriteScale"
-      :enabled="!isSimplified"
-    />
+    <template v-if="!hideStatusOverlay">
+      <PVAuraFX
+        :is-shiny="isShiny"
+        :is-guardian="isGuardian"
+        :has-reflect="hasReflect"
+        :has-light-screen="hasLightScreen"
+        :has-safeguard="hasSafeguard"
+        :sparkle-count="sparkleCount"
+        :radius="radius"
+        :anim-seed="animSeed"
+        :sprite-scale="spriteScale"
+        :enabled="!isSimplified"
+      />
 
-    <PVStatusFX
-      :active-status-effects="activeStatusEffects"
-      :secondary-effects="secondaryEffects"
-      :tactical-effects="tacticalEffects"
-      :field-effects="fieldEffects"
-      :radius="radius"
-      :anim-seed="animSeed"
-      :sprite-scale="spriteScale"
-      :poke-scale="pokeScale"
-      :enabled="!isSimplified"
-      :is-simplified="isSimplified"
-      :is-battle="isBattle"
-    />
+      <PVStatusFX
+        :active-status-effects="activeStatusEffects"
+        :secondary-effects="secondaryEffects"
+        :tactical-effects="tacticalEffects"
+        :field-effects="fieldEffects"
+        :radius="radius"
+        :anim-seed="animSeed"
+        :sprite-scale="spriteScale"
+        :poke-scale="pokeScale"
+        :enabled="!isSimplified"
+        :is-simplified="isSimplified"
+        :is-battle="isBattle"
+      />
+    </template>
 
     <!-- DEBUG GUIDES (FX radii only — Pokémon body radius is rendered inside BattleCombatant) -->
     <template v-if="battleStore.debugShowFxRadius">
@@ -344,11 +304,11 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
   display: flex; align-items: center; justify-content: center;
 
   &.is-simplified {
-    :deep(img), :deep(.sprite-layer), :deep(.pokemon-sprite) {
+    :deep(img:not(.is-silhouette)), :deep(.sprite-layer), :deep(.pokemon-sprite:not(.is-silhouette)) {
       will-change: filter, transform, opacity;
-      filter: none !important;
+      filter: none;
       animation: none !important;
-      transform: none !important;
+      transform: none;
     }
   }
 

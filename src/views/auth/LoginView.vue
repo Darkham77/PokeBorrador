@@ -14,14 +14,22 @@ import { switchServer } from '@/logic/db/supabase'
 import { safeStorage } from '@/logic/utils/storage'
 import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors'
 import { useLoginHandlers } from '@/views/auth/useLoginHandlers'
+import {
+  resolveActiveAuthForm,
+  parseBanStatus,
+  resolveStandardErrorMessage
+} from '@/views/auth/authFormHelper'
 
 import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
 import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue'
 import AuthOnlineSignup from '@/components/auth/AuthOnlineSignup.vue'
 import AuthLocalLogin from '@/components/auth/AuthLocalLogin.vue'
 import AuthLocalSignup from '@/components/auth/AuthLocalSignup.vue'
+import LoginExpiredNotice from '@/components/auth/LoginExpiredNotice.vue'
+import LoginPwaUpdateBanner from '@/components/auth/LoginPwaUpdateBanner.vue'
 
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
+const logoUrl = computed(() => getAssetUrl(ASSET_TYPES.UI, '../fondo/logo 1'))
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -54,6 +62,9 @@ const serverStatusDetail = ref('')
 const selectedServerId = ref('')
 const isOnline = computed(() => authStore.isOnline)
 const sessionExpired = ref(false)
+const activeAuthForm = computed(() => resolveActiveAuthForm(serverMode.value, authTab.value))
+const banStatus = computed(() => parseBanStatus(error.value))
+const standardError = computed(() => resolveStandardErrorMessage(error.value))
 
 const appVersion = __APP_VERSION__
 
@@ -249,7 +260,7 @@ const handleServerChange = () => {
     
     <div class="login-header-logo">
       <img
-        :src="getAssetUrl(ASSET_TYPES.UI, '../fondo/logo 1')"
+        :src="logoUrl"
         alt="Poké Vicio Logo"
       >
     </div>
@@ -260,68 +271,19 @@ const handleServerChange = () => {
       </div>
 
       <!-- CARTEL DE SESIÓN EXPIRADA / RESTAURADA -->
-      <div
+      <LoginExpiredNotice
         v-if="sessionExpired"
-        class="auth-pwa-update-panel"
-        style="background: rgba(255, 68, 68, 0.1); border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.2);"
-      >
-        <div class="update-icon emoji">
-          ⚠️
-        </div>
-        <div
-          class="update-title"
-          style="color: #ff4444; text-shadow: 0 0 5px rgba(255, 68, 68, 0.4);"
-        >
-          SESIÓN EXPIRADA
-        </div>
-        <div class="update-message">
-          Tu sesión ha expirado o la base de datos fue restaurada. Es necesario reiniciar la sesión para continuar jugando de forma segura.
-        </div>
-        <button 
-          class="pv-button-retro update-btn" 
-          style="background: #ff4444; color: white; box-shadow: 0 4px 0 #b30000;"
-          @click.stop="sessionExpired = false"
-        >
-          INICIAR SESIÓN
-        </button>
-      </div>
+        @dismiss="sessionExpired = false"
+      />
 
       <!-- CARTEL DE ACTUALIZACIÓN MANUAL EN LOGIN -->
-      <div
+      <LoginPwaUpdateBanner
         v-else-if="needRefresh"
-        class="auth-pwa-update-panel"
-      >
-        <div class="update-icon emoji">
-          🔄
-        </div>
-        <div class="update-title">
-          NUEVA VERSIÓN
-        </div>
-        <div class="update-message">
-          ¡Hay una nueva actualización disponible! Es necesario actualizar para mantener la compatibilidad con el servidor.
-        </div>
-        
-        <div
-          v-if="isUpdating"
-          class="pwa-progress-wrapper"
-        >
-          <div class="pwa-progress-container">
-            <div
-              class="pwa-progress-bar"
-              :style="{ width: `${animatedProgress}%` }"
-            />
-          </div>
-          <span class="pwa-progress-text">{{ progressText }}</span>
-        </div>
-        <button 
-          v-else
-          id="login-pwa-update-btn" 
-          class="pv-button-retro update-btn" 
-          @click.stop="() => handleUpdate({ forceNoSave: true })"
-        >
-          ACTUALIZAR AHORA
-        </button>
-      </div>
+        :is-updating="isUpdating"
+        :animated-progress="animatedProgress"
+        :progress-text="progressText"
+        @update="handleUpdate({ forceNoSave: true })"
+      />
 
       <template v-else>
         <div class="auth-tabs">
@@ -348,21 +310,21 @@ const handleServerChange = () => {
         </div>
 
         <div
-          v-if="error && !error.startsWith('BAN:')"
+          v-if="standardError"
           class="auth-error show"
         >
-          {{ error }}
+          {{ standardError }}
         </div>
 
         <div
-          v-if="error && error.startsWith('BAN:')"
+          v-if="banStatus.isBanned"
           class="auth-ban-card show"
         >
           <div class="ban-title">
             <span class="emoji">🚫</span> ACCESO DENEGADO
           </div>
           <div class="ban-reason">
-            {{ error.split(':')[1] }}
+            {{ banStatus.reason }}
           </div>
           <div class="ban-hint">
             Si crees que esto es un error, contacta al soporte.
@@ -384,7 +346,7 @@ const handleServerChange = () => {
         <div class="auth-forms">
           <!-- ONLINE LOGIN -->
           <AuthOnlineLogin
-            v-if="serverMode === 'online' && authTab === 'login'"
+            v-if="activeAuthForm === 'online-login'"
             v-model:selected-server-id="selectedServerId"
             v-model:email-value="email"
             v-model:password-value="password"
@@ -399,7 +361,7 @@ const handleServerChange = () => {
 
           <!-- LOCAL LOGIN -->
           <AuthLocalLogin
-            v-if="serverMode === 'local' && authTab === 'login'"
+            v-else-if="activeAuthForm === 'local-login'"
             v-model:username-value="username"
             :loading="loading"
             @local-login="handleLocalLogin"
@@ -407,7 +369,7 @@ const handleServerChange = () => {
 
           <!-- LOCAL SIGNUP -->
           <AuthLocalSignup
-            v-if="serverMode === 'local' && authTab === 'signup'"
+            v-else-if="activeAuthForm === 'local-signup'"
             v-model:username-value="username"
             v-model:gender-value="gender"
             :loading="loading"
@@ -416,7 +378,7 @@ const handleServerChange = () => {
 
           <!-- SIGNUP -->
           <AuthOnlineSignup
-            v-if="serverMode === 'online' && authTab === 'signup'"
+            v-else-if="activeAuthForm === 'online-signup'"
             v-model:username-value="username"
             v-model:email-value="email"
             v-model:password-value="password"

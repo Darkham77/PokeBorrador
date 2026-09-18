@@ -6,7 +6,7 @@ import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { GymId } from '@/data/world/gyms';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { WeatherId, WeatherMechanical } from '@/logic/weather/weatherRegistry';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { FactionId, PlayerClassId, PlayerClassState } from '@/types/system/game';
 import type { ItemId } from '@/data/inventory/items';
@@ -26,6 +26,13 @@ export interface Encounter {
   rarity?: number;
   pts?: number;
   faction?: FactionId;
+}
+
+export interface MapLocationWeatherConfig {
+  exclusive?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+  visitors?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+  fishingExclusive?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+  fishingVisitors?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
 }
 
 export interface MapLocation {
@@ -71,14 +78,7 @@ export interface MapLocation {
     rates: number[];
     lv: number[];
   };
-  weather?: {
-    [K in WeatherId]?: {
-      exclusive?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
-      visitors?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
-      fishingExclusive?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
-      fishingVisitors?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
-    };
-  };
+  weather?: Partial<Record<WeatherId | WeatherMechanical, MapLocationWeatherConfig>>;
   trainerChances?: Partial<Record<NpcArchetype, number>>;
 }
 

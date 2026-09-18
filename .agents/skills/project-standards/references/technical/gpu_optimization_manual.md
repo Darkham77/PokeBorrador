@@ -71,10 +71,12 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 
 The modal system must optimize resources by managing visibility and layering.
 
-### Performance Mode Lifecycle
+### Fast Mode Lifecycle (Modo Rápido - isFastMode)
 
-- **Entrance**: Activate background simplification **IMMEDIATELY** when a modal that obscures the screen begins to open. This avoids visual noise during the transition.
+- **Official Terminology**: Consistently named **Modo Rápido** (`isFastMode`).
+- **Entrance**: Activate background simplification **IMMEDIATELY** when a modal that obscures the screen begins to open. This suspends animations, unmounts heavy decorative nodes (e.g. falling leaves via `v-if="!isFastModeActive"`), and disables weather rendering on background cards.
 - **Exit**: Restore full background fidelity **IMMEDIATELY** when the last modal begins its `close` animation. This allows the user to see the world return through the fading overlay.
+- **Foreground Scoping**: Foreground active combat MUST NOT enter `isFastMode` for itself. Only views underneath combat (such as `MapCard.vue`) enter fast mode independently.
 
 ### Immersion and Overflow (Clipping FX)
 
@@ -133,3 +135,23 @@ For SVG-based atmospheric effects (e.g., lightning bolts, storm flashes) that mu
 - **Use preserveAspectRatio="none"**: Without this attribute, the SVG viewport scales uniformly and may introduce top/bottom padding, causing effects to appear detached from the screen edge.
 - **Scope is narrow**: Only apply to SVGs whose sole job is covering the full parent height (e.g., AtmosphereLayer lightning). Never apply to game sprites, icons, or any SVG with meaningful proportions.
 - **Other effects unaffected**: Modifying preserveAspectRatio on one SVG does not affect sibling CSS overlays, canvas layers, or other weather FX — they remain independent.
+ 
+---
+ 
+## 11. Render Performance & Weather Optimization Rules (validate_render_performance.ts)
+ 
+Enforced by the static AST/CSS auditor `scripts/auditors/architecture/validate_render_performance.ts`:
+ 
+1. **Banned `mix-blend-mode` in Weather Layers (`render-banned-mix-blend-mode`)**:
+   - `mix-blend-mode: screen` and complex blend modes force Chromium to perform synchronous framebuffer readbacks on every frame.
+   - Must use direct RGBA opacity and translucent pixel art layers instead.
+2. **Banned Heavy Filters in Weather & Flashes (`render-banned-filter-in-weather`)**:
+   - `filter: drop-shadow(...)` and `filter: blur(...)` require real-time Gaussian convolution across the viewport.
+   - For lightning bolts and flashes, use layered SVG strokes with varying widths and opacities (0ms convolution overhead).
+3. **Clamped Atmospheric Insets (`render-excessive-atmospheric-inset`)**:
+   - Atmospheric overlays (`Fog`, `Rain`, `Snow`, `Sandstorm`) must clamp negative insets to a maximum of `-128px`.
+   - Insets exceeding `-128px` (e.g. `-512px`) quadruple the fragment fill-rate on large screens.
+4. **Banned Per-Frame GSAP Modifiers (`render-gsap-cpu-modifier`)**:
+   - Per-frame JavaScript modifier closures (`modifiers: { x: unitize(...), y: unitize(...) }`) force main-thread CPU evaluation, float parsing, and string concatenation 60 times per second.
+   - Must use GPU-accelerated native `fromTo` loops (`xPercent`, `yPercent`) with compositor hardware offloading.
+

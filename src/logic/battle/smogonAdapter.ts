@@ -20,6 +20,7 @@ import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { toID } from '@/logic/utils/strings.ts';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { requireItemId } from '@/data/inventory/items';
+import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 
 const GEN = Generations.get(ACTIVE_GENERATION as GenerationNum);
 
@@ -277,9 +278,83 @@ function getEffectiveSpeed(
 export interface TooltipStateCtx {
   weather?: { type: string; turns: number } | null;
   terrain?: string | null;
-  playerSideConditions?: Record<string, { turns: number; [key: string]: unknown }>;
-  enemySideConditions?: Record<string, { turns: number; [key: string]: unknown }>;
+  playerSideConditions?: Partial<Record<string, { turns: number }>>;
+  enemySideConditions?: Partial<Record<string, { turns: number }>>;
   isGym?: boolean;
+}
+
+function translateRecoilText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/recoil damage/gi, 'daño por retroceso')
+    .replace(/recoil/gi, 'retroceso')
+    .replace(/crash damage/gi, 'daño por colisión');
+}
+
+function translateRecoveryText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/recovered/gi, 'vida recuperada')
+    .replace(/absorbed HP/gi, 'PS absorbidos')
+    .replace(/recovery/gi, 'recuperación'); // spanish-ok: UI Spanish text localization label
+}
+
+function buildTooltipCacheKey(
+  attacker: Pokemon,
+  defender: Pokemon,
+  moveId: PokemonMoveId,
+  state: TooltipStateCtx,
+  playerStages: Partial<BattleStages>,
+  enemyStages: Partial<BattleStages>
+): string {
+  return [
+    attacker.uid, attacker.hp, attacker.status ?? '',
+    JSON.stringify(playerStages),
+    defender.uid, defender.hp, defender.status ?? '',
+    JSON.stringify(enemyStages),
+    moveId,
+    state.weather?.type ?? '', state.terrain ?? '',
+    state.isGym ? '1' : '0',
+    JSON.stringify(state.playerSideConditions ?? {}),
+    JSON.stringify(state.enemySideConditions ?? {}),
+  ].join('|');
+}
+
+function evaluateTerrainReductions(
+  terrain: string | null | undefined,
+  moveType: string | undefined,
+  moveId: PokemonMoveId,
+  priority: number,
+  atkPkmn: SmogonPokemon,
+  defPkmn: SmogonPokemon
+): string[] {
+  const terrainReductions: string[] = []; // no-domain: Non-domain utility collection or data structure
+  if (!terrain) return terrainReductions;
+
+  const normTerrain = terrain.toLowerCase(); // text-ok: UI text display localization string
+  const normMoveType = (moveType ?? '').toLowerCase(); // text-ok: UI text display localization string
+  const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok: UI text display localization string
+  const isDefGrounded = !defTypes.includes('flying') && defPkmn.ability !== 'Levitate' && defPkmn.item !== 'airballoon' && defPkmn.item !== 'Air Balloon';
+  const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok: UI text display localization string
+  const isAtkGrounded = !atkTypes.includes('flying') && atkPkmn.ability !== 'Levitate' && atkPkmn.item !== 'airballoon' && atkPkmn.item !== 'Air Balloon';
+
+  if (isDefGrounded && normTerrain.includes('grassy') && (moveId === 'earthquake' || moveId === 'bulldoze' || moveId === 'magnitude')) {
+    terrainReductions.push('Daño de Terremoto/Terratemblor/Magnitud reducido a la mitad por Terreno de Hierba');
+  }
+  if (isDefGrounded && normTerrain.includes('misty') && normMoveType === 'dragon') {
+    terrainReductions.push('Daño Dragón reducido a la mitad por Terreno de Niebla');
+  }
+  if (isAtkGrounded && normTerrain.includes('psychic') && priority > 0) {
+    terrainReductions.push('Prioridad bloqueada por Terreno Psíquico');
+  }
+  return terrainReductions;
+}
+
+function resolveRecoilBounds(recoil: { recoil?: unknown }, atkMaxHp: number): { rclMin: number; rclMax: number } {
+  const rcl = recoil.recoil;
+  const rclMin = Array.isArray(rcl) ? (atkMaxHp * Number(rcl[0])) / 100 : (atkMaxHp * Number(rcl)) / 100;
+  const rclMax = Array.isArray(rcl) ? (atkMaxHp * Number(rcl[1])) / 100 : (atkMaxHp * Number(rcl)) / 100;
+  return { rclMin, rclMax };
 }
 
 /**
@@ -297,20 +372,9 @@ export function calculateDamageForTooltip(
   enemyStages:  Partial<BattleStages>
 ): SmogonTooltipResult | null {
   if (!move.id) throw new Error(`[smogonAdapter] Move missing immutable ID for move '${move.name}' on ${attacker.name}`);
-  const moveId = toID(move.id);
+  const moveId = requirePokemonMoveId(toID(move.id));
 
-  const cacheKey = [
-    attacker.uid, attacker.hp, attacker.status ?? '',
-    JSON.stringify(playerStages),
-    defender.uid, defender.hp, defender.status ?? '',
-    JSON.stringify(enemyStages),
-    moveId,
-    state.weather?.type ?? '', state.terrain ?? '',
-    state.isGym ? '1' : '0',
-    JSON.stringify(state.playerSideConditions ?? {}),
-    JSON.stringify(state.enemySideConditions ?? {}),
-  ].join('|');
-
+  const cacheKey = buildTooltipCacheKey(attacker, defender, moveId, state, playerStages, enemyStages);
   const cached = cache.get(cacheKey);
   if (cached) return cached;
 
@@ -341,10 +405,7 @@ export function calculateDamageForTooltip(
     const atkMaxHp = attacker.maxHp;
     const recMin = typeof recovery.recovery[0] === 'number' ? recovery.recovery[0] : 0;
     const recMax = typeof recovery.recovery[1] === 'number' ? recovery.recovery[1] : 0;
-    // recoil.recoil can be a number (%) or [min%, max%]; normalize to HP values
-    const rcl = recoil.recoil;
-    const rclMin = Array.isArray(rcl) ? (atkMaxHp * Number(rcl[0])) / 100 : (atkMaxHp * Number(rcl)) / 100;
-    const rclMax = Array.isArray(rcl) ? (atkMaxHp * Number(rcl[1])) / 100 : (atkMaxHp * Number(rcl)) / 100;
+    const { rclMin, rclMax } = resolveRecoilBounds(recoil, atkMaxHp);
 
     // Advanced speed calculations
     const attackerSpeed = getEffectiveSpeed(atkPkmn, field.attackerSide, field);
@@ -355,42 +416,14 @@ export function calculateDamageForTooltip(
     const hasAssaultVest = defPkmn.item === 'Assault Vest';
     const hasEviolite = defPkmn.item === 'Eviolite';
 
-    // Terrain interactions
-    const terrainReductions: string[] = []; // no-domain: Non-domain utility collection or data structure
-    if (state.terrain) {
-      const normTerrain = state.terrain.toLowerCase(); // text-ok: UI text display localization string
-      const normMoveType = (move.type ?? '').toLowerCase(); // text-ok: UI text display localization string
-      const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok: UI text display localization string
-      const isDefGrounded = !defTypes.includes('flying') && defPkmn.ability !== 'Levitate' && defPkmn.item !== 'airballoon' && defPkmn.item !== 'Air Balloon';
-      const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok: UI text display localization string
-      const isAtkGrounded = !atkTypes.includes('flying') && atkPkmn.ability !== 'Levitate' && atkPkmn.item !== 'airballoon' && atkPkmn.item !== 'Air Balloon';
-
-      if (isDefGrounded && normTerrain.includes('grassy') && ['earthquake', 'bulldoze', 'magnitude'].includes(moveId)) {
-        terrainReductions.push('Daño de Terremoto/Terratemblor/Magnitud reducido a la mitad por Terreno de Hierba');
-      }
-      if (isDefGrounded && normTerrain.includes('misty') && normMoveType === 'dragon') {
-        terrainReductions.push('Daño Dragón reducido a la mitad por Terreno de Niebla');
-      }
-      if (isAtkGrounded && normTerrain.includes('psychic') && smMove.priority > 0) {
-        terrainReductions.push('Prioridad bloqueada por Terreno Psíquico');
-      }
-    }
-
-function translateRecoilText(text: string): string {
-  if (!text) return '';
-  return text
-    .replace(/recoil damage/gi, 'daño por retroceso')
-    .replace(/recoil/gi, 'retroceso')
-    .replace(/crash damage/gi, 'daño por colisión');
-}
-
-function translateRecoveryText(text: string): string {
-  if (!text) return '';
-  return text
-    .replace(/recovered/gi, 'vida recuperada')
-    .replace(/absorbed HP/gi, 'PS absorbidos')
-    .replace(/recovery/gi, 'recuperación'); // spanish-ok: UI Spanish text localization label
-}
+    const terrainReductions = evaluateTerrainReductions(
+      state.terrain,
+      move.type,
+      moveId,
+      smMove.priority,
+      atkPkmn,
+      defPkmn
+    );
 
     const out: SmogonTooltipResult = {
       minDmg,

@@ -7,15 +7,8 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'
 import AvatarFrameSelector from '@/components/modals/AvatarFrameSelector.vue'
+import CosmeticsNickStyleCard from './CosmeticsNickStyleCard.vue'
 
-interface NickStyle {
-  id: string
-  name: string
-  class: string
-  requiredRole?: string
-  requiredClass?: string
-  requiredFaction?: string
-}
 
 interface Props {
   id?: string
@@ -47,59 +40,39 @@ const closeCosmetics = () => {
   emit('close')
 }
 
-// Check if the current context is local development
+import {
+  isCosmeticStyleLocked,
+  resolveCosmeticLockNotification,
+  checkIsLocalEnvironment,
+  type LockableCosmeticStyle,
+  type CosmeticPlayerContext
+} from './cosmeticsFilterHelper'
+
 const isLocal = computed(() => {
-  if (import.meta.env.DEV) return true
-  if (typeof window !== 'undefined') {
-    const hn = window.location.hostname
-    return hn === 'localhost' || hn === '127.0.0.1' || hn.endsWith('.local')
-  }
-  return false
+  const hn = typeof window !== 'undefined' ? window.location.hostname : undefined
+  return checkIsLocalEnvironment(import.meta.env.DEV, hn)
 })
 
-// Check if user is admin (local development counts as admin)
 const isAdmin = computed(() => {
   return authStore.user?.role === 'admin' || isLocal.value
 })
 
-const UNLOCK_MIN_CLASS_LEVEL = 25
+const playerContext = computed<CosmeticPlayerContext>(() => ({
+  playerClass: gameStore.state.playerClass,
+  classLevel: gameStore.state.classLevel,
+  trainerLevel: gameStore.state.trainerLevel,
+  faction: gameStore.state.faction,
+  isAdmin: isAdmin.value
+}))
 
-const isNickLocked = (style: NickStyle) => {
-  if (style.requiredRole === 'admin' && !isAdmin.value) {
-    return true
-  }
-  if (style.requiredClass) {
-    if (gameStore.state.playerClass !== style.requiredClass) {
-      return true
-    }
-    const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
-    if (currentLevel < UNLOCK_MIN_CLASS_LEVEL) {
-      return true
-    }
-  }
-  if (style.requiredFaction && gameStore.state.faction !== style.requiredFaction) {
-    return true
-  }
-  return false
+const isNickLocked = (style: LockableCosmeticStyle) => {
+  return isCosmeticStyleLocked(style, playerContext.value)
 }
 
-const selectNick = (style: NickStyle) => {
-  if (isNickLocked(style)) {
-    if (style.requiredRole) {
-      uiStore.notify('Este estilo es exclusivo para Administradores', '🔒')
-    } else if (style.requiredClass) {
-      const className = style.requiredClass.toUpperCase()
-const NICK_STYLE_REQUIRED_CLASS_LEVEL = 25
-
-      if (gameStore.state.playerClass !== style.requiredClass) {
-        uiStore.notify(`Este estilo es exclusivo para la profesión ${className}`, '🔒')
-      } else {
-        uiStore.notify(`Este estilo requiere profesión ${className} Nivel ${NICK_STYLE_REQUIRED_CLASS_LEVEL}`, '🔒')
-      }
-    } else if (style.requiredFaction) {
-      const factionName = style.requiredFaction === 'union' ? 'UNIÓN' : 'PODER'
-      uiStore.notify(`Este estilo es exclusivo para miembros del Team ${factionName}`, '🔒')
-    }
+const selectNick = (style: LockableCosmeticStyle) => {
+  const lockNotice = resolveCosmeticLockNotification(style, 'estilo', playerContext.value)
+  if (lockNotice) {
+    uiStore.notify(lockNotice, '🔒')
     return
   }
   cosmeticsStore.equipNickStyle(style.id)
@@ -128,47 +101,15 @@ const NICK_STYLE_REQUIRED_CLASS_LEVEL = 25
         </p>
         
         <div class="styles-grid">
-          <div
+          <CosmeticsNickStyleCard
             v-for="style in cosmeticsStore.allNickStyles"
             :key="style.id"
-            class="style-card"
-            :class="{ 
-              active: cosmeticsStore.equippedNickStyle === style.id,
-              locked: isNickLocked(style),
-              unlocked: !isNickLocked(style) && (style.requiredRole || style.requiredClass || style.requiredFaction)
-            }"
-            @click.stop="selectNick(style)"
-          >
-            <div class="preview-area">
-              <span
-                v-gsap-nick="style.class"
-                class="preview-nick"
-                :class="style.class"
-              >{{ previewUsername }}</span>
-            </div>
-            <div class="style-meta">
-              <span class="style-name">{{ style.name }}</span>
-              <span
-                v-if="isNickLocked(style)"
-                class="lock-tag locked"
-                :class="[style.requiredClass, style.requiredFaction]"
-              >
-                <span class="emoji">🔒</span> {{ style.requiredRole ? 'ADMIN' : (style.requiredClass ? `${style.requiredClass.toUpperCase()} (NIVEL 25)` : (style.requiredFaction ? `TEAM ${style.requiredFaction.toUpperCase()}` : '')) }}
-              </span>
-              <span
-                v-else-if="style.requiredRole || style.requiredClass || style.requiredFaction"
-                v-gsap-loop="{ effect: 'pulse-shadow', color: 'rgba(74, 222, 128, 0.4)', boxShadow: '0 0 8px rgba(74, 222, 128, 0.5)', duration: 2 }"
-                class="lock-tag unlocked"
-                :class="[style.requiredClass, style.requiredFaction]"
-              >
-                <span class="emoji">🔓</span> {{ style.requiredRole ? 'ADMIN' : (style.requiredClass ? `${style.requiredClass.toUpperCase()} (NIVEL 25)` : (style.requiredFaction ? `TEAM ${style.requiredFaction.toUpperCase()}` : '')) }}
-              </span>
-              <span
-                v-if="cosmeticsStore.equippedNickStyle === style.id"
-                class="status-tag"
-              >EQUIPADO</span>
-            </div>
-          </div>
+            :style-data="style"
+            :preview-username="previewUsername"
+            :is-active="cosmeticsStore.equippedNickStyle === style.id"
+            :is-locked="isNickLocked(style)"
+            @select="selectNick(style)"
+          />
         </div>
       </section>
 

@@ -20,16 +20,35 @@ const DEFAULT_TIMEOUT_MS = 60000;
 const HEAVY_TIMEOUT_MS = 180000; // 3 minutes for full repo AST / DB migration validation
 
 function getTimeoutForTask(filename: string): number {
-  if (filename.includes('audit_project')) {
+  if (filename.includes('audit_project') || filename.includes('validate_type_check') || filename.includes('validate_eslint')) {
     return HEAVY_TIMEOUT_MS;
   }
   return DEFAULT_TIMEOUT_MS;
 }
 
+export const AUDIT_PRESETS = {
+  lint: [
+    'validate_domain_types',
+    'validate_o1_data_structures',
+    'validate_component_styles',
+    'audit_project',
+    'validate_vue_sfc_hygiene',
+    'validate_console_cleanliness',
+    'validate_audit_headers',
+    'validate_type_check',
+    'validate_markdown_lint',
+    'validate_eslint'
+  ]
+} as const;
+
+export type AuditPresetName = keyof typeof AUDIT_PRESETS;
+
 export interface DiscoveryOptions {
   baseDir?: string;
   family?: string;
   task?: string;
+  suites?: string[];
+  preset?: string;
   fastOnly?: boolean;
 }
 
@@ -66,6 +85,18 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
   const baseDir = options.baseDir || DEFAULT_AUDITORS_DIR;
   const discovered: AuditTaskDefinition[] = [];
 
+  // Resolve target suites from options.suites, options.task (comma-separated), or options.preset
+  let targetSuiteIds: Set<string> | null = null;
+  if (options.preset && options.preset in AUDIT_PRESETS) {
+    targetSuiteIds = new Set(AUDIT_PRESETS[options.preset as AuditPresetName]);
+  }
+  if (options.suites && options.suites.length > 0) {
+    targetSuiteIds = new Set([...(targetSuiteIds ?? []), ...options.suites]);
+  } else if (options.task && options.task.includes(',')) {
+    const list = options.task.split(',').map(s => s.trim()).filter(Boolean);
+    targetSuiteIds = new Set([...(targetSuiteIds ?? []), ...list]);
+  }
+
   async function scanDirectory(currentDir: string) {
     let entries: string[]; // no-domain: Non-domain utility collection or data structure
     try {
@@ -101,12 +132,18 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
         const isFast = family === 'architecture' || filename.includes('domain_types');
 
         // Check if filter matches
+        if (targetSuiteIds && !targetSuiteIds.has(id)) continue;
         if (options.family && options.family !== family) continue;
-        if (options.task && options.task !== id && !filename.includes(options.task)) continue;
+        if (options.task && !options.task.includes(',') && options.task !== id && !filename.includes(options.task)) continue;
         if (options.fastOnly && !isFast) continue;
 
         const relScriptPath = path.relative(process.cwd(), fullPath).replace(/\\/g, '/');
         const taskPermissions = getPermissionsForTask(filename);
+        const taskArgs = [...taskPermissions, relScriptPath, '--json'];
+
+        if (options.preset === 'lint' && id === 'audit_project') {
+          taskArgs.push('--rule', 'fallow');
+        }
 
         discovered.push({
           id,
@@ -114,7 +151,7 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
           family,
           scriptPath: relScriptPath,
           command: 'node',
-          args: [...taskPermissions, relScriptPath, '--json'],
+          args: taskArgs,
           fast: isFast,
           timeoutMs: getTimeoutForTask(filename),
           order: FAMILY_METADATA[family]?.order ?? 99

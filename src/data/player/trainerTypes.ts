@@ -31,7 +31,7 @@ export const TRAINER_TYPE_KEYS = [
 ] as const;
 
 export type TrainerTypeKey = (typeof TRAINER_TYPE_KEYS)[number];
-export const TRAINER_TYPE_KEYS_SET: ReadonlySet<string> = new Set(TRAINER_TYPE_KEYS); // runtime-set: Fast O(1) membership lookup set
+const TRAINER_TYPE_KEYS_SET: ReadonlySet<string> = new Set(TRAINER_TYPE_KEYS); // runtime-set: Fast O(1) membership lookup set
 
 export function isTrainerTypeKey(raw: string): raw is TrainerTypeKey {
   return TRAINER_TYPE_KEYS_SET.has(raw);
@@ -66,11 +66,11 @@ export interface TrainerTypeRawConfig {
   readonly pool?: readonly PokemonSpeciesId[];
 }
 
-export const EXCLUDED_LEGENDARY_IDS = [
+const EXCLUDED_LEGENDARY_IDS = [
   'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
   'raikou', 'entei', 'suicune', 'lugia', 'hooh', 'celebi'
 ] as const;
-export const EXCLUDED_LEGENDARY_IDS_SET: ReadonlySet<string> = new Set(EXCLUDED_LEGENDARY_IDS); // runtime-set: Fast O(1) membership lookup set
+const EXCLUDED_LEGENDARY_IDS_SET: ReadonlySet<string> = new Set(EXCLUDED_LEGENDARY_IDS); // runtime-set: Fast O(1) membership lookup set
 
 const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   'caza_bichos': {
@@ -223,82 +223,95 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   }
 };
 
+function speciesMatchesTrainerType(
+  specTypes: readonly PokemonType[],
+  allowedTypes: Set<PokemonType>,
+  mode: TrainerTypeMatchMode
+): boolean {
+  if (mode === 'pure_type') {
+    return specTypes.length === 1 && allowedTypes.has(specTypes[0]!)
+  }
+  if (mode === 'primary_type') {
+    return Boolean(specTypes[0] && allowedTypes.has(specTypes[0]))
+  }
+  return specTypes.some(t => allowedTypes.has(t))
+}
+
+function filterSpeciesForTrainer(
+  speciesId: PokemonSpeciesId,
+  allowedTypes: Set<PokemonType>,
+  excluded: Set<PokemonSpeciesId>,
+  mode: TrainerTypeMatchMode
+): boolean {
+  if (excluded.has(speciesId) || EXCLUDED_LEGENDARY_IDS_SET.has(speciesId)) return false
+  if (!isPokemonDbSpeciesId(speciesId)) return false
+  const baseData = POKEMON_DB[speciesId]
+  if (!baseData) return false
+
+  const specTypes: readonly PokemonType[] = baseData.type2 ? [baseData.type, baseData.type2] : [baseData.type]
+  return speciesMatchesTrainerType(specTypes, allowedTypes, mode)
+}
+
+function resolveTrainerPool(
+  def: TrainerTypeRawConfig,
+  enabledList: readonly PokemonSpeciesId[],
+  enabledSet: ReadonlySet<string>
+): readonly PokemonSpeciesId[] {
+  if (def.pool && def.pool.length > 0) {
+    return Object.freeze(def.pool.filter((id: PokemonSpeciesId) => enabledSet.has(id)))
+  }
+
+  const matched = new Set<PokemonSpeciesId>() // runtime-set: Fast O(1) membership lookup set
+  const allowedTypes = new Set<PokemonType>(def.types ? def.types : []) // runtime-set: Fast O(1) membership lookup set
+  const excluded = new Set<PokemonSpeciesId>(def.excludedSpecies ? def.excludedSpecies : []) // runtime-set: Fast O(1) membership lookup set
+  const mode = def.matchMode ?? 'any_type'
+
+  if (allowedTypes.size > 0) {
+    for (const speciesId of enabledList) {
+      if (filterSpeciesForTrainer(speciesId, allowedTypes, excluded, mode)) {
+        matched.add(speciesId)
+      }
+    }
+  }
+
+  if (def.extraPool) {
+    for (const extraId of def.extraPool) {
+      if (enabledSet.has(extraId) && !excluded.has(extraId) && !EXCLUDED_LEGENDARY_IDS_SET.has(extraId)) {
+        matched.add(extraId)
+      }
+    }
+  }
+
+  if (matched.size === 0) {
+    matched.add('rattata')
+  }
+
+  return Object.freeze([...matched])
+}
+
 /**
  * Precomputes an O(1) immutable dictionary of valid Pokémon species for each trainer archetype
  * based on elemental types, match criteria, and extra thematic pools filtered by enabled species.
  */
 function computeTrainerTypes(): Record<TrainerTypeKey, TrainerTypeDefinition> {
-  const result: Partial<Record<TrainerTypeKey, TrainerTypeDefinition>> = {};
+  const result: Partial<Record<TrainerTypeKey, TrainerTypeDefinition>> = {}
 
   const enabledList: readonly PokemonSpeciesId[] = (typeof ENABLED_POKEMON_IDS !== 'undefined' && Array.isArray(ENABLED_POKEMON_IDS))
     ? ENABLED_POKEMON_IDS
-    : ['rattata', 'pidgey', 'caterpie', 'weedle'];
+    : ['rattata', 'pidgey', 'caterpie', 'weedle']
   const enabledSet: ReadonlySet<string> = (typeof ENABLED_POKEMON_IDS_SET !== 'undefined' && ENABLED_POKEMON_IDS_SET instanceof Set)
     ? ENABLED_POKEMON_IDS_SET
-    : new Set(enabledList);
+    : new Set(enabledList)
 
   for (const key of TRAINER_TYPE_KEYS) {
-    const def = RAW_TRAINER_CONFIGS[key];
-    if (def.pool && def.pool.length > 0) {
-      result[key] = {
-        ...def,
-        pool: Object.freeze(def.pool.filter(id => enabledSet.has(id)))
-      };
-      continue;
-    }
-
-    const matched = new Set<PokemonSpeciesId>();
-    const allowedTypes = new Set<PokemonType>(def.types ? def.types : []); // runtime-set: Fast O(1) membership lookup set
-    const excluded = new Set<PokemonSpeciesId>(def.excludedSpecies ? def.excludedSpecies : []); // runtime-set: Fast O(1) membership lookup set
-    const mode = def.matchMode ?? 'any_type';
-
-    if (allowedTypes.size > 0) {
-      for (const speciesId of enabledList) {
-        if (excluded.has(speciesId)) continue;
-        if (EXCLUDED_LEGENDARY_IDS_SET.has(speciesId)) continue;
-
-        if (!isPokemonDbSpeciesId(speciesId)) continue;
-        const baseData = POKEMON_DB[speciesId];
-        if (!baseData) continue;
-
-        const specTypes: readonly PokemonType[] = baseData.type2 ? [baseData.type, baseData.type2] : [baseData.type];
-
-        if (mode === 'pure_type') {
-          if (specTypes.length === 1 && allowedTypes.has(specTypes[0]!)) {
-            matched.add(speciesId);
-          }
-        } else if (mode === 'primary_type') {
-          if (specTypes[0] && allowedTypes.has(specTypes[0])) {
-            matched.add(speciesId);
-          }
-        } else {
-          if (specTypes.some(t => allowedTypes.has(t))) {
-            matched.add(speciesId);
-          }
-        }
-      }
-    }
-
-    if (def.extraPool) {
-      for (const extraId of def.extraPool) {
-        if (enabledSet.has(extraId) && !excluded.has(extraId) && !EXCLUDED_LEGENDARY_IDS_SET.has(extraId)) {
-          matched.add(extraId);
-        }
-      }
-    }
-
-    // Fallback if matched set is empty
-    if (matched.size === 0) {
-      matched.add('rattata');
-    }
-
+    const def = RAW_TRAINER_CONFIGS[key]
     result[key] = {
       ...def,
-      pool: Object.freeze([...matched])
-    };
+      pool: resolveTrainerPool(def, enabledList, enabledSet)
+    }
   }
 
-  return Object.freeze(result as Record<TrainerTypeKey, TrainerTypeDefinition>);
+  return Object.freeze(result as Record<TrainerTypeKey, TrainerTypeDefinition>)
 }
 
 export const TRAINER_TYPES: Record<TrainerTypeKey, TrainerTypeDefinition> = computeTrainerTypes();

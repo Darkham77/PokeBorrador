@@ -102,9 +102,18 @@ In specific boss battle encounters, specialized floor-wide environmental overrid
 *   **Magma**: Exclusive to Groudon boss fights. Any non-Fire-type Pokémon that touches the floor becomes Burned. Displaced or cleared only by Kyogre's `Primordial Sea`.
 *   **Flooded**: Exclusive to Kyogre boss fights. All non-Water-type Pokémon suffer a Speed stage penalty (Slow state). Displaced or cleared only by Groudon's `Desolate Land`.
 *   **Gust**: Exclusive to Rayquaza boss fights. Periodically displaces Pokémon and deals minor typeless residual damage.
-### 8. Arena Layering & Legibility Standards
+### 8. 6-Tier Combat Depth Hierarchy & Arena Layering Standards
 
-*   **Atmosphere vs Dialogue & HUD**: The weather particle container (`AtmosphereLayer`) operates at `z-index: calc(var(--z-base) + 20)`. To guarantee visual legibility under heavy weather effects (such as Dense Fog, Thunderstorms, or Sandstorms), all speech bubbles (`BattleTrainerSpeechBubble`), dialogue banners (`.retro-battle-dialog`), and combatant HUD cards (`BattleArenaHud`) MUST share the elevated `z-index: calc(var(--z-base) + 30)`.
+In order to provide retro-modern cinematic immersion while preserving strict legibility, in-combat layers follow a strictly monotonic 6-tier depth hierarchy from back to front:
+
+1. **Level 1 (`calc(var(--z-base) + 1)`) - Environment Base**: `BattleEnvironment` (background panorama, floor terrain, battle platforms).
+2. **Level 2 (`calc(var(--z-base) + 5)`) - Physical Actors**: `.battle-sprites` containing Pokémon sprites (`BattleArenaEnemyCombatant`, `BattleArenaPlayerCombatant`), trainers/NPCs (`BattleTrainerEntities`), and combat grass (`CombatGrass`). **Physical actors MUST be BEHIND the climate ambient layer** so ambient fog, dust, and tint naturally shroud them without applying artificial CSS `filter: sepia(...)` on character sprites.
+3. **Level 3 (`calc(var(--z-base) + 15)`) - Weather Ambient Layer**: `AtmosphereLayer layer="ambient"` rendering sky tint, environmental fog canvas, drifting sandstorm clouds, and mist behind the particle layer.
+4. **Level 4 (`calc(var(--z-base) + 25)`) - Status FX & Auras Layer**: `.battle-status-layer` hosting `BattleCombatantStatusOverlay.vue` with `PVStatusFX` (burn 🔥, poison ☠️, paralysis ⚡, freeze ❄️, sleep 💤) and `PVAuraFX` (reflect, light screen, safeguard, shiny sparkles). **Status FX MUST sit ABOVE the ambient haze** so status badges and ailments remain sharp, vibrant, and not dimmed by weather fog.
+5. **Level 5 (`calc(var(--z-base) + 30)`) - Weather Precipitation Layer**: `AtmosphereLayer layer="particles"` rendering falling snowflakes, rain streaks, hail chunks, and storm leaves. **Precipitation particles MUST pass ON TOP OF Status FX**, providing 3D depth.
+6. **Level 6 (`calc(var(--z-base) + 40)` / `--z-hud`) - Dialogue & HUD**: `BattleTrainerSpeechBubble` and `BattleArenaHud` (HP bars, move selection grid, action buttons) in the absolute foreground.
+
+*   **Deterministic Map-to-Battle Seed Synchronization**: Atmospheric animations in `BattleArenaView.vue` and `MapCard.vue` MUST consume the exact same pseudo-random seed via `getWeatherAnimSeed(mapId)`. Secondary layers compute `(animSeed * 1.618) % 1`. This guarantees identical wind drift, particle frequency, and visual continuity when transitioning between map exploration and combat.
 *   **Viewport Encapsulation**: Atmospheric and virtual combat entities MUST remain encapsulated within the single `.battle-arena-content` viewport to prevent flexbox layout fracturing.
 
 ---

@@ -59,6 +59,7 @@ const handleConfirm = () => {
         <img 
           v-if="item.sprite"
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
+          :alt="item.name || 'Objeto'"
           class="item-mini-sprite"
           @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
         >

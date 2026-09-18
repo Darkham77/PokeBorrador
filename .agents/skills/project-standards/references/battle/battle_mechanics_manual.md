@@ -54,6 +54,7 @@ When executing turns and team swaps in battles coordinated by the Showdown worke
 *   **Mandatory Recharge Clamping**: During turns following `Blast Burn`, `Hyper Beam`, or `Giga Impact`, Showdown emits an active request with `moves: [{ id: 'recharge', move: 'Recharge' }]`. Move choices submitted during this state are clamped to `move 1` (`Recharge`) exclusively, preserving normal move selections in standard turns.
 *   **Atomic Stream Consumption (`ShowdownBattleRunner`)**: Choice streams in automated replays are consumed directly from `choicesBySeat` without transient engine instantiations. P1 `teamPreview` requests resolve to `'team 1'` without advancing choice stream indices.
 *   **Post-Switch FSM Transition Guard (`switchAction.ts`)**: When resolving any switch sequence (voluntary, forced, or replacement), if the entering Pokémon faints on entry (e.g. from *Stealth Rock*, *Spikes*, or entry poison damage: `newPoke.hp <= 0`) or if the battle ends (`activeBattle.over`), the FSM MUST NOT transition back to `WAIT_INPUT` or reset `isBattleSwitchForced = false`. The FSM MUST remain in `SWITCH_MENU` (or the defeat / termination state) with `isBattleSwitchForced = true` so the UI presents the replacement menu and does not lock up with an empty/fainted combatant.
+*   **Client Decoupling & RPC Team Generation Protocol**: Client UI and combat orchestration modules in `src/` must NEVER directly import `@pkmn/sim` or `@pkmn/randoms`. All Showdown execution is isolated to `showdown.worker.ts`. Team generation for trainers and rivals executes via asynchronous RPC messages (`requestTrainerTeam`, `requestRivalTeam` in `showdownWorkerClient.ts`). For headless test environments (Vitest/Node) without a worker runtime, test fixtures register generation handlers via `registerTeamGeneratorHandler()`.
 
 ### 5. Multi-Turn Forced & Locked Moves Lifecycle
 
@@ -868,7 +869,20 @@ stateDiagram-v2
 
     note right of CHECK_OUTCOME: Skips XP and Level-up if enemy fled
     note right of CHECK_PERSISTENCE: isSingle is true when persistenceMode=='SINGLE' OR isGym==true OR isPvP==true. isSingle battles SKIP the animated team reorder sequence and park the FSM at EMPTY_WAIT. The overlay shows the 'VOLVER A GIMNASIOS' / 'VOLVER AL MAPA' button. completeBattleFlow('map') is called ONLY when the player clicks the button — never automatically. Route Trainer Battles in search mode (PERSISTENT, wasSearching==true) call completeBattleFlow('search') after the animated reorder and an explicit 1.5s GSAP timer (AUTO_BATTLE_REWARDS_DELAY_SEC) when autoBattle is active so players can read final combat logs.
+```
 
+#### Post-Battle Sequence Coordinator Queue Architecture
+
+All interactive post-battle modals are orchestrated strictly in series via `PostBattleSequenceCoordinator` before finalizing battle flow:
+
+```mermaid
+flowchart TD
+    subgraph POST_BATTLE_SEQUENCE_QUEUE ["Post-Battle Sequence Queue (Coordinator)"]
+        EXEC_MOVE_LEARNING["Step 1: MoveLearning (Priority 100)"] --> EXEC_EVOLUTION["Step 2: Evolution (Priority 80)"]
+        EXEC_EVOLUTION --> EXEC_EVENT_ENROLL["Step 3: EventAutoEnroll (Priority 60)"]
+        EXEC_EVENT_ENROLL --> EXEC_CUSTOM_TASKS["Step 4: Custom Tasks (Priority 40)"]
+        EXEC_CUSTOM_TASKS --> SEQUENCE_COMPLETED["All Modals Resolved -> Resume Battle Flow"]
+    end
 ```
 
 #### Experience Cap at Maximum Level
@@ -1013,6 +1027,20 @@ stateDiagram-v2
     }
     note right of DEFEAT_SCREEN: endBattle - Return to Map
 ```
+
+#### Combatant Status Overlay & Particle Lifecycle across Defeat & Deployments
+
+To ensure visual immersion and eliminate intermediate particle leaks during combatant fainting and recall transitions:
+
+1. **Defeat In-Progress Stage**:
+   - Wild Faint (`isFainting: true`): Status particles (emojis and auras) MUST stay visible during the downward sinking translation until the sprite fully submerges.
+   - Trainer Recall (`animState: 'catching'`): Status particles MUST stay visible while the red energy beam pulls the combatant into the Pokéball.
+2. **Defeat Completed Stage**:
+   - Pokéball Snapped (`animState: 'trapped'`): Status particles extinguish immediately when the Pokémon enters the ball.
+   - Post-Defeat Field Idle (`hp <= 0` with `!isFainting` and `animState !== 'catching'`): Status particles MUST remain completely suppressed during vacant field transitions, dialogue bubbles, and AI counter-pick intervals.
+3. **Send-Out & Emergence (`animState: 'releasing'` -> `null`)**:
+   - Status overlays are suppressed while the replacement Pokémon expands from energy burst scale 0.
+   - Status particles only mount once the replacement Pokémon fully materializes on stage.
 
 ### 11. Modular Animation Components
 

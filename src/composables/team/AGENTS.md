@@ -9,7 +9,7 @@ Frontend Developers / Team Management Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
-- Adhere strictly to the 500/1000 SLOC Single Responsibility Principle (SRP).
+- Adhere strictly to Fallow code quality governance and the Single Responsibility Principle (SRP).
 
 ## Work Guidance
 

@@ -11,6 +11,110 @@ interface PurchaseCandidate {
   type: BattleItemEffectKind;
 }
 
+function getUnlockedCandidates(maxLevel: number): PurchaseCandidate[] {
+  const candidates: PurchaseCandidate[] = [
+    { id: 'potion', price: ITEM_PRICES.potion!, type: 'heal' },
+    { id: 'antidote', price: ITEM_PRICES.antidote!, type: 'cure' },
+    { id: 'paralyzeheal', price: ITEM_PRICES.paralyzeheal!, type: 'cure' },
+    { id: 'burnheal', price: ITEM_PRICES.burnheal!, type: 'cure' },
+    { id: 'awakening', price: ITEM_PRICES.awakening!, type: 'cure' },
+    { id: 'iceheal', price: ITEM_PRICES.iceheal!, type: 'cure' }
+  ];
+
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.SUPER_TIER) {
+    candidates.push(
+      { id: 'superpotion', price: ITEM_PRICES.superpotion!, type: 'heal' },
+      { id: 'fullheal', price: ITEM_PRICES.fullheal!, type: 'cure' }
+    );
+  }
+
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.HYPER_TIER) {
+    candidates.push(
+      { id: 'hyperpotion', price: ITEM_PRICES.hyperpotion!, type: 'heal' },
+      { id: 'revive', price: ITEM_PRICES.revive!, type: 'revive' }
+    );
+  }
+
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.VETERAN_TIER) {
+    candidates.push(
+      { id: 'maxpotion', price: ITEM_PRICES.maxpotion!, type: 'heal' },
+      { id: 'fullrestore', price: ITEM_PRICES.fullrestore!, type: 'heal' },
+      { id: 'revivemax', price: ITEM_PRICES.revivemax!, type: 'revive' }
+    );
+  }
+
+  return candidates;
+}
+
+function pickCandidateByRoll(affordable: readonly PurchaseCandidate[]): PurchaseCandidate | null {
+  const roll = Math.random();
+  if (roll < POKEBALL_BUDGET_HALF_RATIO) {
+    return affordable.find(c => c.type === 'heal') || affordable[0] || null;
+  }
+  if (roll < CURE_PURCHASE_ROLL_THRESHOLD) {
+    return affordable.find(c => c.type === 'cure') || affordable[0] || null;
+  }
+  return affordable.find(c => c.type === 'revive') || affordable[0] || null;
+}
+
+function purchaseConsumables(
+  recoveryBudget: number,
+  maxItems: number,
+  candidates: readonly PurchaseCandidate[],
+  inventory: Record<string, number>
+): number {
+  let currentSpent = 0;
+  let itemCount = 0;
+  const sortedCandidates = [...candidates].sort((a, b) => b.price - a.price);
+
+  while (itemCount < maxItems) {
+    const affordable = sortedCandidates.filter(c => (recoveryBudget - currentSpent) >= c.price);
+    if (affordable.length === 0) break;
+
+    const selected = pickCandidateByRoll(affordable);
+    if (!selected) break;
+
+    inventory[selected.id] = (inventory[selected.id] || 0) + 1;
+    currentSpent += selected.price;
+    itemCount++;
+  }
+
+  return currentSpent;
+}
+
+function getPokeballCandidates(maxLevel: number): { id: string; price: number }[] {
+  const candidates: { id: string; price: number }[] = [
+    { id: 'pokeball', price: ITEM_PRICES.pokeball! }
+  ];
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.SUPER_TIER) {
+    candidates.push({ id: 'greatball', price: ITEM_PRICES.greatball! });
+  }
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.ULTRA_BALL_TIER) {
+    candidates.push({ id: 'ultraball', price: ITEM_PRICES.ultraball! });
+  }
+  return candidates;
+}
+
+function purchasePokeballs(
+  maxLevel: number,
+  pokeballBudget: number,
+  inventory: Record<string, number>
+): number {
+  let spentPokeball = 0;
+  const sortedPBs = getPokeballCandidates(maxLevel).sort((a, b) => b.price - a.price);
+
+  while (true) {
+    const affordable = sortedPBs.filter(c => (pokeballBudget - spentPokeball) >= c.price);
+    if (affordable.length === 0) break;
+
+    const selected = affordable[0]!;
+    inventory[selected.id] = (inventory[selected.id] || 0) + 1;
+    spentPokeball += selected.price;
+  }
+
+  return spentPokeball;
+}
+
 /**
  * Genera un inventario de consumibles para un NPC o Líder de Gimnasio basado en su nivel,
  * dificultad y rol.
@@ -32,99 +136,18 @@ export function generateNPCInventory(
   const maxItems = calculateNPCMaxItems(maxLevel, difficulty, isGym, isSpecial);
 
   // 3. Definir candidatos de compra desbloqueados por nivel
-  const candidates: PurchaseCandidate[] = [];
+  const candidates = getUnlockedCandidates(maxLevel);
 
-  // Nivel 1+: Poción común y curas de estado específicas
-  candidates.push({ id: 'potion', price: ITEM_PRICES.potion!, type: 'heal' });
-  candidates.push({ id: 'antidote', price: ITEM_PRICES.antidote!, type: 'cure' });
-  candidates.push({ id: 'paralyzeheal', price: ITEM_PRICES.paralyzeheal!, type: 'cure' });
-  candidates.push({ id: 'burnheal', price: ITEM_PRICES.burnheal!, type: 'cure' });
-  candidates.push({ id: 'awakening', price: ITEM_PRICES.awakening!, type: 'cure' });
-  candidates.push({ id: 'iceheal', price: ITEM_PRICES.iceheal!, type: 'cure' });
-
-  // Nivel 15+: Súper Poción y Cura Total
-  if (maxLevel >= INVENTORY_LEVEL_TIERS.SUPER_TIER) {
-    candidates.push({ id: 'superpotion', price: ITEM_PRICES.superpotion!, type: 'heal' });
-    candidates.push({ id: 'fullheal', price: ITEM_PRICES.fullheal!, type: 'cure' });
-  }
-
-  // Nivel 30+: Hiper Poción y Revivir
-  if (maxLevel >= INVENTORY_LEVEL_TIERS.HYPER_TIER) {
-    candidates.push({ id: 'hyperpotion', price: ITEM_PRICES.hyperpotion!, type: 'heal' });
-    candidates.push({ id: 'revive', price: ITEM_PRICES.revive!, type: 'revive' });
-  }
-
-  // Nivel 50+: Poción Máxima, Restaurar Todo y Revivir Máximo
-  if (maxLevel >= INVENTORY_LEVEL_TIERS.VETERAN_TIER) {
-    candidates.push({ id: 'maxpotion', price: ITEM_PRICES.maxpotion!, type: 'heal' });
-    candidates.push({ id: 'fullrestore', price: ITEM_PRICES.fullrestore!, type: 'heal' }); // actúa como heal/cure híbrido
-    candidates.push({ id: 'revivemax', price: ITEM_PRICES.revivemax!, type: 'revive' });
-  }
-
-  // 4. Realizar compras inteligentes iterativamente hasta agotar el presupuesto o alcanzar el límite de objetos
+  // 4. Realizar compras inteligentes iterativamente
   const inventory: Record<string, number> = {};
-  let currentSpent = 0;
-  let itemCount = 0;
-
   let pokeballBudget = Math.floor(budget * 0.5);
-  // Priorizar pokebolas si no alcanza para el mínimo (200)
   if (pokeballBudget < ITEM_PRICES.pokeball! && budget >= ITEM_PRICES.pokeball!) {
     pokeballBudget = ITEM_PRICES.pokeball!;
   }
   const recoveryBudget = budget - pokeballBudget;
 
-  // Ordenar candidatos por precio descendente para intentar comprar la mejor calidad posible primero (Greedy)
-  const sortedCandidates = [...candidates].sort((a, b) => b.price - a.price);
-
-  while (itemCount < maxItems) {
-    // Encontrar el mejor candidato que podamos pagar
-    const affordable = sortedCandidates.filter(c => (recoveryBudget - currentSpent) >= c.price);
-    if (affordable.length === 0) break;
-
-    // Decisión de compra priorizada:
-    // 50% de chance de comprar un curativo, 30% cura de estado (si no tiene full_heal), 20% revivir (si es alto nivel)
-    const roll = Math.random();
-    let selected: PurchaseCandidate | null;
-
-    if (roll < POKEBALL_BUDGET_HALF_RATIO) {
-      selected = affordable.find(c => c.type === 'heal') || affordable[0] || null;
-    } else if (roll < CURE_PURCHASE_ROLL_THRESHOLD) {
-      selected = affordable.find(c => c.type === 'cure') || affordable[0] || null;
-    } else {
-      selected = affordable.find(c => c.type === 'revive') || affordable[0] || null;
-    }
-
-    if (selected) {
-      inventory[selected.id] = (inventory[selected.id] || 0) + 1;
-      currentSpent += selected.price;
-      itemCount++;
-    } else {
-      break;
-    }
-  }
-
-  // 5. Comprar Pokéballs usando la otra mitad del presupuesto
-  let spentPokeball = 0;
-  const pbCandidates: { id: string; price: number }[] = [
-    { id: 'pokeball', price: ITEM_PRICES.pokeball! }
-  ];
-  if (maxLevel >= INVENTORY_LEVEL_TIERS.SUPER_TIER) {
-    pbCandidates.push({ id: 'greatball', price: ITEM_PRICES.greatball! });
-  }
-  if (maxLevel >= INVENTORY_LEVEL_TIERS.ULTRA_BALL_TIER) {
-    pbCandidates.push({ id: 'ultraball', price: ITEM_PRICES.ultraball! });
-  }
-
-  const sortedPBs = pbCandidates.sort((a, b) => b.price - a.price);
-
-  while (true) {
-    const affordable = sortedPBs.filter(c => (pokeballBudget - spentPokeball) >= c.price);
-    if (affordable.length === 0) break;
-
-    const selected = affordable[0]!;
-    inventory[selected.id] = (inventory[selected.id] || 0) + 1;
-    spentPokeball += selected.price;
-  }
+  const currentSpent = purchaseConsumables(recoveryBudget, maxItems, candidates, inventory);
+  const spentPokeball = purchasePokeballs(maxLevel, pokeballBudget, inventory);
 
   return { inventory, remainingMoney: budget - currentSpent - spentPokeball };
 }

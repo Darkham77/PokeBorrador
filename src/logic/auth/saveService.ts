@@ -26,7 +26,7 @@ export interface SaveResult {
   lastSaveId?: string;
 }
 
-export const saveOperationState = {
+const saveOperationState = {
   isSaving: false,
   isRollingBack: false,
 };
@@ -45,6 +45,8 @@ export function resetSaveOperationState(): void {
   saveOperationState.isSaving = false;
   saveOperationState.isRollingBack = false;
   latestCommittedSaveId = null;
+  activeSavePromise = null;
+  pendingQueue = [];
 }
 
 export interface SaveOptions {
@@ -140,6 +142,7 @@ async function performRemoteSave(
 
     return {
       success: true,
+      remote: true,
       sanitized: hadDuplicates,
       migrated,
       lastSaveId: resData?.last_save_id
@@ -151,36 +154,82 @@ async function performRemoteSave(
   }
 }
 
+interface PendingSaveRequest {
+  resolve: (result: SaveResult | null) => void;
+  options: SaveOptions;
+}
+
 let activeSavePromise: Promise<SaveResult | null> | null = null;
-let pendingResolvers: ((result: SaveResult | null) => void)[] = [];
+let pendingQueue: PendingSaveRequest[] = [];
+
+function validateStateForSave(
+  state: GameState,
+  showNotif?: boolean,
+  notifyFn?: (msg: string, icon?: string) => void,
+): Extract<ReturnType<typeof validateAndSanitize>, { valid: true }> | null {
+  const raw_data = serializeState(state);
+  const validation = validateAndSanitize(raw_data);
+
+  if (!validation.valid || !validation.data) {
+    logger.error('SAVE', 'Abortando proceso de guardado por estado de datos erróneo:', validation.error || validation.issues);
+    if (showNotif && notifyFn) {
+      notifyFn(`Error al guardar: ${validation.error || 'Datos corruptos o inválidos'}`, '🔴');
+    }
+    return null;
+  }
+  return validation;
+}
+
+function checkDatabaseSaveSkipped(
+  db: DBRouter | undefined,
+  user: AuthUser,
+  options: SaveOptions,
+): boolean {
+  const isOnlineLocalUser = Boolean(db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_')));
+  if (!db || options.skipRemote || isOnlineLocalUser) {
+    if (options.skipRemote || isOnlineLocalUser) {
+      logger.info('SAVE', `Database save skipped (${isOnlineLocalUser ? 'Local User in Online Mode' : 'Session Locked'}). Local storage only.`);
+    } else {
+      logger.warn('SAVE', 'No DBRouter instance provided. Skipping DB save.');
+    }
+
+    if (options.showNotif && options.notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user' && !user.id.startsWith('local_')) {
+      options.notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
+    }
+    return true;
+  }
+  return false;
+}
+
+function scheduleThrottledCloudSave(state: GameState, user: AuthUser, options: SaveOptions): void {
+  saveCoordinator.markCloudDirty(async () => {
+    await saveGame(state, user, {
+      ...options,
+      forceRemote: true,
+      showNotif: false,
+      lastSaveId: latestCommittedSaveId || undefined,
+    });
+  });
+  logger.debug('SAVE', 'Remote cloud save throttled (60s window). Local progress cached cleanly.');
+}
 
 async function executeSaveDirect(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<SaveResult | null> {
-  const { showNotif = true, notifyFn, db } = options;
+  const { db } = options;
   saveOperationState.isSaving = true;
   try {
-    const raw_data = serializeState(state);
-    const validation = validateAndSanitize(raw_data);
-
-    if (!validation.valid) {
-      logger.error('SAVE', 'Abortando proceso de guardado por estado de datos erróneo:', validation.error || validation.issues);
-      if (showNotif && notifyFn) {
-        notifyFn(`Error al guardar: ${validation.error || 'Datos corruptos o inválidos'}`, '🔴');
-      }
-      return { success: false, error: validation.error || 'Datos corruptos o inválidos' };
+    const validation = validateStateForSave(state, options.showNotif ?? true, options.notifyFn);
+    if (!validation) {
+      return { success: false, error: 'Datos corruptos o inválidos' };
     }
 
     const save_data = validation.data;
     const hadDuplicates = validation.hadDuplicates;
-    const issues = validation.issues;
-
     const currentVersion = options.userVersion || 1;
     const isLegacy = currentVersion < 3;
 
     if (hadDuplicates && db && db.mode === 'online' && !isLegacy) {
-      return await handleDuplicatesRollback(db, user.id, issues);
+      return await handleDuplicatesRollback(db, user.id, validation.issues);
     }
-
-    const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
 
     (save_data as { _last_updated?: number })._last_updated = Temporal.Now.instant().epochMilliseconds;
     const persistedSaveData = serializeSaveGenderCodes(save_data);
@@ -188,36 +237,19 @@ async function executeSaveDirect(state: GameState, user: AuthUser, options: Save
     // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
     await persistSaveLocally(persistedSaveData, user.id);
 
-    // 2. Database
-    if (!db || options.skipRemote || isOnlineLocalUser) {
-      if (options.skipRemote || isOnlineLocalUser) {
-        logger.info('SAVE', `Database save skipped (${isOnlineLocalUser ? 'Local User in Online Mode' : 'Session Locked'}). Local storage only.`);
-      } else {
-        logger.warn('SAVE', 'No DBRouter instance provided. Skipping DB save.');
-      }
-
-      if (showNotif && notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user' && !user.id.startsWith('local_')) {
-        notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
-      }
+    // 2. Database eligibility
+    if (checkDatabaseSaveSkipped(db, user, options)) {
       return { success: true, remote: false };
     }
 
     // Tier 2: Cloud Throttle Gatekeeper (The 60-Second Principle)
     const canSaveCloud = options.forceRemote || saveCoordinator.shouldExecuteCloudSave();
     if (!canSaveCloud) {
-      saveCoordinator.markCloudDirty(async () => {
-        await saveGame(state, user, {
-          ...options,
-          forceRemote: true,
-          showNotif: false,
-          lastSaveId: latestCommittedSaveId || undefined
-        });
-      });
-      logger.debug('SAVE', 'Remote cloud save throttled (60s window). Local progress cached cleanly.');
+      scheduleThrottledCloudSave(state, user, options);
       return { success: true, remote: false };
     }
 
-    const remoteResult = await performRemoteSave(db, user, persistedSaveData, save_data, options, hadDuplicates);
+    const remoteResult = await performRemoteSave(db!, user, persistedSaveData, save_data, options, hadDuplicates);
     if (remoteResult.success) {
       saveCoordinator.notifyCloudSaveSuccess();
     }
@@ -237,7 +269,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
 
   if (activeSavePromise) {
     return new Promise<SaveResult | null>((resolve) => {
-      pendingResolvers.push(resolve);
+      pendingQueue.push({ resolve, options });
     });
   }
 
@@ -246,11 +278,23 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       return await executeSaveDirect(state, user, options);
     } finally {
       activeSavePromise = null;
-      if (pendingResolvers.length > 0) {
-        const waiting = pendingResolvers;
-        pendingResolvers = [];
-        const followUp = await saveGame(state, user, { ...options, showNotif: false, lastSaveId: latestCommittedSaveId || undefined });
-        waiting.forEach(r => r(followUp));
+      if (pendingQueue.length > 0) {
+        const waiting = pendingQueue;
+        pendingQueue = [];
+        const mergedOptions: SaveOptions = {
+          ...options,
+          showNotif: waiting.some(w => Boolean(w.options.showNotif)),
+          forceRemote: waiting.some(w => Boolean(w.options.forceRemote)),
+          skipRemote: waiting.every(w => Boolean(w.options.skipRemote)),
+          lastSaveId: latestCommittedSaveId || undefined
+        };
+        for (const w of waiting) {
+          if (w.options.notifyFn) mergedOptions.notifyFn = w.options.notifyFn;
+          if (w.options.db) mergedOptions.db = w.options.db;
+          if (w.options.userVersion) mergedOptions.userVersion = w.options.userVersion;
+        }
+        const followUp = await saveGame(state, user, mergedOptions);
+        waiting.forEach(w => w.resolve(followUp));
       }
     }
   };

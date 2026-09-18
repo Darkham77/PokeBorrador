@@ -10,6 +10,7 @@ Frontend Developers / State Architects.
 
 - Test reactive helpers, box filter predicates, and UI state composables under jsdom.
 - `test_box_filter_predicates.spec.ts`: Unit tests verifying pure predicates for IV/EV/tags/friendship box filtering.
+- `pastEventFormatHelpers.spec.ts`: Unit tests verifying date parsing, schedule window formatting, category icons, and sub-competition metric titles.
 
 ## Verification
 

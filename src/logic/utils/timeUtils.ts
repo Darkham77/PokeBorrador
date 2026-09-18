@@ -1,6 +1,6 @@
 import { logger } from './logger.ts';
 import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
-export { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
+export type { DayPhase };
 
 export const GAME_TIMEZONE = (
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TIMEZONE) ||
@@ -167,6 +167,47 @@ export function formatTime(ts: string | number | Date | null | undefined): strin
   }
 }
 
+const MIN_EPOCH_TIMESTAMP_DIGITS = 8 as const;
+
+function parseTimestampToInstant(ts: string | number | Date): Temporal.Instant | null {
+  if (ts instanceof Date) {
+    return Temporal.Instant.fromEpochMilliseconds(ts.getTime());
+  }
+  if (typeof ts === 'number') {
+    return Temporal.Instant.fromEpochMilliseconds(ts);
+  }
+  const trimmed = ts.trim();
+  if (!trimmed) return null;
+  const num = Number(trimmed);
+  if (!isNaN(num) && trimmed.length > MIN_EPOCH_TIMESTAMP_DIGITS) {
+    return Temporal.Instant.fromEpochMilliseconds(num);
+  }
+  let isoStr = trimmed;
+  if (isoStr.includes(' ') && !isoStr.includes('T')) {
+    isoStr = isoStr.replace(' ', 'T');
+  }
+  const hasTimezoneOffset = isoStr.endsWith('Z') || isoStr.includes('+') || isoStr.includes('-', ISO_DATE_LENGTH);
+  if (!hasTimezoneOffset) {
+    isoStr += 'Z';
+  }
+  return Temporal.Instant.from(isoStr);
+}
+
+function resolveReferenceZonedDateTime(
+  nowReference?: Temporal.ZonedDateTime | Temporal.Instant | number
+): Temporal.ZonedDateTime {
+  if (nowReference instanceof Temporal.ZonedDateTime) {
+    return nowReference;
+  }
+  if (nowReference instanceof Temporal.Instant) {
+    return nowReference.toZonedDateTimeISO(GAME_TIMEZONE);
+  }
+  if (typeof nowReference === 'number') {
+    return Temporal.Instant.fromEpochMilliseconds(nowReference).toZonedDateTimeISO(GAME_TIMEZONE);
+  }
+  return getGMT3Date();
+}
+
 /**
  * Formats a chat message timestamp for display:
  * - If the message is from today (in GAME_TIMEZONE), formats as 'HH:mm' (e.g. '14:46').
@@ -179,42 +220,11 @@ export function formatChatTimestamp(
 ): string {
   if (!ts) return '';
   try {
-    let instant: Temporal.Instant;
-    if (ts instanceof Date) {
-      instant = Temporal.Instant.fromEpochMilliseconds(ts.getTime());
-    } else if (typeof ts === 'number') {
-      instant = Temporal.Instant.fromEpochMilliseconds(ts);
-    } else {
-      const trimmed = ts.trim();
-      if (!trimmed) return '';
-      const num = Number(trimmed);
-      if (!isNaN(num) && trimmed.length > 8) {
-        instant = Temporal.Instant.fromEpochMilliseconds(num);
-      } else {
-        let isoStr = trimmed;
-        if (isoStr.includes(' ') && !isoStr.includes('T')) {
-          isoStr = isoStr.replace(' ', 'T');
-        }
-        const hasTimezoneOffset = isoStr.endsWith('Z') || isoStr.includes('+') || isoStr.includes('-', ISO_DATE_LENGTH);
-        if (!hasTimezoneOffset) {
-          isoStr += 'Z';
-        }
-        instant = Temporal.Instant.from(isoStr);
-      }
-    }
+    const instant = parseTimestampToInstant(ts);
+    if (!instant) return '';
 
     const msgZdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
-
-    let nowZdt: Temporal.ZonedDateTime;
-    if (nowReference instanceof Temporal.ZonedDateTime) {
-      nowZdt = nowReference;
-    } else if (nowReference instanceof Temporal.Instant) {
-      nowZdt = nowReference.toZonedDateTimeISO(GAME_TIMEZONE);
-    } else if (typeof nowReference === 'number') {
-      nowZdt = Temporal.Instant.fromEpochMilliseconds(nowReference).toZonedDateTimeISO(GAME_TIMEZONE);
-    } else {
-      nowZdt = getGMT3Date();
-    }
+    const nowZdt = resolveReferenceZonedDateTime(nowReference);
 
     const hour = String(msgZdt.hour).padStart(2, '0');
     const min = String(msgZdt.minute).padStart(2, '0');

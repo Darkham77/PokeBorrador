@@ -3,6 +3,37 @@ import type { BattleLog, BattleSource, BattleState, BattleSide } from '@/types/b
 import { formatBattleLog } from '@/logic/battle/battleLogger'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
+const LOG_PROCESSING_POLL_INTERVAL_MS = 100;
+
+const MAX_BATTLE_LOG_ENTRIES = 1000;
+const BATCH_SIZE_HIGH = 3;
+const BATCH_SIZE_MED = 2;
+const BATCH_SIZE_LOW = 1;
+const DELAY_DRAINING_MS = 100;
+const DELAY_FINAL_MS = 350;
+
+function resolveLogBatchSize(queueLength: number): number {
+  if (queueLength > 6) return BATCH_SIZE_HIGH;
+  if (queueLength > 3) return BATCH_SIZE_MED;
+  return BATCH_SIZE_LOW;
+}
+
+function drainSingleLogBatch(
+  queue: BattleLog[],
+  logs: BattleLog[],
+  maxEntries: number
+): void {
+  const batchSize = resolveLogBatchSize(queue.length);
+  for (let i = 0; i < batchSize; i++) {
+    if (queue.length === 0) break;
+    const nextItem = queue.shift();
+    if (nextItem) {
+      logs.push(nextItem);
+      if (logs.length > maxEntries) logs.shift();
+    }
+  }
+}
+
 export function createBattleLoggerHelper(
   gs: { state: { playerClass: string | null; avatar_style?: string | null; team: Pokemon[] } },
   activeBattle: { value: unknown },
@@ -37,31 +68,13 @@ export function createBattleLoggerHelper(
     if (isProcessingLogs.value) return 
     isProcessingLogs.value = true
 
-    while (true) {
-      if (logQueue.value.length === 0) {
-        isProcessingLogs.value = false
-        if (logQueue.value.length > 0) {
-          isProcessingLogs.value = true
-          continue
-        }
-        break
-      }
-
-      const batchSize = logQueue.value.length > 6 ? 3 : (logQueue.value.length > 3 ? 2 : 1)
-      const MAX_BATTLE_LOG_ENTRIES = 1000
-      
-      for (let i = 0; i < batchSize; i++) {
-        if (logQueue.value.length === 0) break
-        const nextItem = logQueue.value.shift()
-        if (nextItem) {
-          battleLogs.value.push(nextItem)
-          if (battleLogs.value.length > MAX_BATTLE_LOG_ENTRIES) battleLogs.value.shift()
-        }
-      }
-
-      const delay = logQueue.value.length > 0 ? 100 : 350
+    while (logQueue.value.length > 0) {
+      drainSingleLogBatch(logQueue.value, battleLogs.value, MAX_BATTLE_LOG_ENTRIES)
+      const delay = logQueue.value.length > 0 ? DELAY_DRAINING_MS : DELAY_FINAL_MS
       await gsapSleep(delay)
     }
+
+    isProcessingLogs.value = false
   }
 
   const clearLogs = () => {
@@ -76,7 +89,7 @@ export function createBattleLoggerHelper(
 
   const waitForLogs = async () => {
     while (isProcessingLogs.value || logQueue.value.length > 0) {
-      await gsapSleep(100)
+      await gsapSleep(LOG_PROCESSING_POLL_INTERVAL_MS)
     }
   }
 

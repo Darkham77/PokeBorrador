@@ -11,16 +11,16 @@ const uiStore = useUIStore()
 const battleStore = useBattleStore()
 const { beforeEnter, enter, leave } = useGsapTransition({ type: 'slide-right', xOffset: 30 })
 
-const isPerformanceMode = computed(() => {
-  return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
+const isFastMode = computed(() => {
+  return uiStore.isFastMode || battleStore.isBattleActive
 })
 
 const isRocket = computed(() => classStore.playerClass === 'rocket')
 const criminality = computed(() => classStore.classData.criminality || 0)
 const activeTab = computed(() => uiStore.activeTab)
 
-// Solo se muestra en la pestaña de mapa para el equipo rocket y si no estamos en modo performance
-const isVisible = computed(() => isRocket.value && activeTab.value === 'map' && !isPerformanceMode.value)
+// Solo se muestra en la pestaña de mapa para el equipo rocket y si no estamos en modo rápido
+const isVisible = computed(() => isRocket.value && activeTab.value === 'map' && !isFastMode.value)
 const isMax = computed(() => criminality.value >= 100)
 const percentLabelText = computed(() => {
   if (criminality.value > 100) {

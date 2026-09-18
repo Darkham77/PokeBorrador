@@ -8,7 +8,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/player/profile'
 import { useUIStore } from '@/stores/ui'
 import type { GenderId } from '@/types/system/game'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import ClassDashboardSidebar from './ClassDashboardSidebar.vue'
+import ClassDashboardAbilityItem from './ClassDashboardAbilityItem.vue'
+import ClassDashboardPenaltyItem from './ClassDashboardPenaltyItem.vue'
 
 interface Props {
   currentClass?: PlayerClassDefinition | null
@@ -125,151 +127,22 @@ const openMissionsModal = () => {
 const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h') => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id as string, { trainerSuffix: 'front', gender });
 }
-
-const handleImageError = (e: Event) => {
-  if (e.target) {
-    (e.target as HTMLImageElement).style.display = 'none'
-  }
-}
-
-const GSAP_TRAINER_CARD_HOVER_SCALE_BOOST = 1.05
-
-// GSAP Hover Interactions
-const onTrainerMouseEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  gsap.to(target, {
-    scale: GSAP_TRAINER_CARD_HOVER_SCALE_BOOST,
-    duration: 0.3,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
-
-const onTrainerMouseLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  gsap.to(target, {
-    scale: 1,
-    duration: 0.3,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
-
-const onRankCardMouseEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  gsap.to(target, {
-    backgroundColor: 'Rgba(15, 23, 42, 0.6)',
-    x: 5,
-    duration: 0.2,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
-
-const onRankCardMouseLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  gsap.to(target, {
-    backgroundColor: 'Rgba(15, 23, 42, 0.4)',
-    x: 0,
-    duration: 0.2,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
-
-const onAbilityMouseEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  gsap.to(target, {
-    backgroundColor: 'Rgba(255, 255, 255, 0.06)',
-    duration: 0.2,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
-
-const onAbilityMouseLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  gsap.to(target, {
-    backgroundColor: 'Rgba(15, 23, 42, 0.4)',
-    duration: 0.2,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
 </script>
 
 <template>
   <div class="dashboard-layout">
     <!-- Left: Identity -->
-    <aside class="dashboard-sidebar custom-scrollbar-vicio">
-      <div class="avatar-box">
-        <div class="avatar-glow" />
-        <div class="trainers-wrap">
-          <PVTooltip :title="currentGender === 'h' ? '♂️ Masculino (Género Actual)' : (!canChangeGender ? `♂️ Masculino (Cooldown: Faltan ${daysUntilIdentityChange} días)` : '♂️ Masculino (Haz clic para cambiar)')">
-            <img 
-              :src="getTrainerSprite(currentClass?.avatarSpriteId, 'h')"
-              class="trainer-big-img" 
-              :class="{ active: currentGender === 'h', inactive: currentGender === 'm', locked: currentGender !== 'h' && !canChangeGender }"
-              @click.stop="handleSelectGender('h')"
-              @mouseenter="onTrainerMouseEnter"
-              @mouseleave="onTrainerMouseLeave"
-              @error="handleImageError"
-            >
-          </PVTooltip>
-          <PVTooltip :title="currentGender === 'm' ? '♀️ Femenino (Género Actual)' : (!canChangeGender ? `♀️ Femenino (Cooldown: Faltan ${daysUntilIdentityChange} días)` : '♀️ Femenino (Haz clic para cambiar)')">
-            <img 
-              :src="getTrainerSprite(currentClass?.avatarSpriteId, 'm')"
-              class="trainer-big-img" 
-              :class="{ active: currentGender === 'm', inactive: currentGender === 'h', locked: currentGender !== 'm' && !canChangeGender }"
-              @click.stop="handleSelectGender('m')"
-              @mouseenter="onTrainerMouseEnter"
-              @mouseleave="onTrainerMouseLeave"
-              @error="handleImageError"
-            >
-          </PVTooltip>
-        </div>
-      </div>
-
-      <h1 class="class-main-title">
-        {{ currentClass?.name.toUpperCase() }}
-      </h1>
-      <p class="class-slogan">
-        "{{ currentClass?.description }}"
-      </p>
-
-      <div class="rank-cards">
-        <div 
-          class="rank-card level"
-          @mouseenter="onRankCardMouseEnter"
-          @mouseleave="onRankCardMouseLeave"
-        >
-          <div class="card-icon emoji">
-            🎖️
-          </div>
-          <div class="card-text">
-            <span class="label">NIVEL CUENTA</span>
-            <span class="value">Nv. {{ trainerLevel }}</span>
-          </div>
-        </div>
-
-        <div 
-          class="rank-card level"
-          @mouseenter="onRankCardMouseEnter"
-          @mouseleave="onRankCardMouseLeave"
-        >
-          <div class="card-icon emoji">
-            🎓
-          </div>
-          <div class="card-text">
-            <span class="label">NIVEL CLASE</span>
-            <span
-              class="value"
-              :style="{ color: currentClass?.color || 'var(--yellow)' }"
-            >Nv. {{ classLevel }}</span>
-          </div>
-        </div>
-      </div>
-    </aside>
+    <ClassDashboardSidebar
+      :current-class="currentClass"
+      :current-gender="currentGender"
+      :can-change-gender="canChangeGender"
+      :days-until-identity-change="daysUntilIdentityChange"
+      :trainer-level="trainerLevel"
+      :class-level="classLevel"
+      :trainer-male-sprite="getTrainerSprite(currentClass?.avatarSpriteId, 'h')"
+      :trainer-female-sprite="getTrainerSprite(currentClass?.avatarSpriteId, 'm')"
+      @select-gender="handleSelectGender"
+    />
 
     <!-- Right: Details -->
     <main class="dashboard-main custom-scrollbar">
@@ -280,43 +153,14 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
         </div>
         
         <div class="abilities-list">
-          <div 
-            v-for="(bonus, idx) in currentClass?.bonuses" 
+          <ClassDashboardAbilityItem
+            v-for="(bonus, idx) in currentClass?.bonuses"
             :key="idx"
-            class="ability-item"
-            :class="{ locked: (currentClass?.bonusLevels?.[Number(idx)] || 1) > classLevel }"
-            @mouseenter="onAbilityMouseEnter"
-            @mouseleave="onAbilityMouseLeave"
-          >
-            <div class="ability-checkbox">
-              <span class="emoji">{{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= classLevel ? '✅' : '🔒' }}</span>
-            </div>
-            <div class="ability-content">
-              <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > classLevel }">
-                {{ bonus }}
-              </p>
-              <span
-                v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > classLevel"
-                class="req-hint"
-              >
-                Requiere Nivel de Clase {{ currentClass?.bonusLevels?.[Number(idx)] }}
-              </span>
-            </div>
-            <div 
-              v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > 1" 
-              class="lv-badge"
-            >
-              NV. {{ currentClass?.bonusLevels?.[Number(idx)] }}
-            </div>
-            <PVTooltip
-              :description="currentClass?.technicalBonuses?.[Number(idx)] || 'Información no disponible.'"
-              position="top"
-              :delay="100"
-              style="cursor: help;"
-            >
-              <span class="ability-help"><span class="emoji">❓</span></span>
-            </PVTooltip>
-          </div>
+            :bonus="bonus"
+            :technical-bonus="currentClass?.technicalBonuses?.[Number(idx)]"
+            :req-level="currentClass?.bonusLevels?.[Number(idx)]"
+            :class-level="classLevel"
+          />
         </div>
       </section>
 
@@ -325,30 +169,14 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
           <div class="header-line red" />
           <h2>LIMITACIONES</h2>
         </div>
-        
+
         <div class="abilities-list limitations">
-          <div 
-            v-for="(penalty, idx) in currentClass?.penalties" 
+          <ClassDashboardPenaltyItem
+            v-for="(penalty, idx) in currentClass?.penalties"
             :key="idx"
-            class="ability-item limitation"
-            @mouseenter="onAbilityMouseEnter"
-            @mouseleave="onAbilityMouseLeave"
-          >
-            <div class="ability-checkbox">
-              <span class="emoji">❌</span>
-            </div>
-            <div class="ability-content">
-              <p>{{ penalty }}</p>
-            </div>
-            <PVTooltip
-              :description="currentClass?.technicalPenalties?.[Number(idx)] || 'Información no disponible.'"
-              position="top"
-              :delay="100"
-              style="cursor: help;"
-            >
-              <span class="ability-help"><span class="emoji">❓</span></span>
-            </PVTooltip>
-          </div>
+            :penalty="penalty"
+            :technical-penalty="currentClass?.technicalPenalties?.[Number(idx)]"
+          />
         </div>
       </section>
 

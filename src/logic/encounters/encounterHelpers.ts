@@ -42,6 +42,15 @@ import {
   applyAtmosphericStatus,
   getMapSpawnPoolData
 } from './routeSpawnMath.ts';
+import {
+  getEffectiveLeaderAbility,
+  getEncounterRateMultiplier,
+  getFishingWeightMultiplier
+} from '@/logic/pokemon/pokemonFieldAbilities';
+
+const RAINY_WEATHER_IDS = ['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const satisfies readonly WeatherId[];
+type RainyWeatherId = (typeof RAINY_WEATHER_IDS)[number];
+const RAINY_WEATHERS_SET: ReadonlySet<RainyWeatherId> = new Set<RainyWeatherId>(RAINY_WEATHER_IDS);
 
 export {
   getSpeciesEntries,
@@ -176,16 +185,42 @@ export function generateArchaeologyEncounter(
   };
 }
 
-/**
- * Calculates weights for ground, fishing, and archaeology encounter methods.
- */
-const RAINY_WEATHERS: readonly WeatherId[] = ['rain', 'heavy_rain', 'storm', 'thunderstorm'];
+function calculateFishingWeight(
+  loc: MapLocation,
+  debugChancePct: number | null | undefined,
+  fishingBonus: number,
+  state: EncounterState
+): number {
+  if (!loc.fishing) return 0;
+  const hasFishingOverride = debugChancePct !== undefined && debugChancePct !== null;
+  const baseFishing = hasFishingOverride ? (debugChancePct / PERCENTAGE_MULTIPLIER_FACTOR) : GAME_RATIOS.encounters.fishing;
+  let fishingWeight = baseFishing * FISHING_WEIGHT_SCALE * fishingBonus;
+  if ((state.fishingRodSecs || 0) > 0) {
+    fishingWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
+  }
+  return fishingWeight;
+}
 
-import {
-  getEffectiveLeaderAbility,
-  getEncounterRateMultiplier,
-  getFishingWeightMultiplier
-} from '@/logic/pokemon/pokemonFieldAbilities';
+function calculateArchaeologyWeight(
+  loc: MapLocation,
+  debugChancePct: number | null | undefined,
+  state: EncounterState
+): number {
+  if (!loc.archaeology) return 0;
+  const hasArchOverride = debugChancePct !== undefined && debugChancePct !== null;
+  let archWeight = 0;
+  if (hasArchOverride) {
+    archWeight = (debugChancePct / PERCENTAGE_MULTIPLIER_FACTOR) * FISHING_WEIGHT_SCALE;
+  } else if (loc.isCave) {
+    archWeight = CAVE_ARCHAEOLOGY_WEIGHT;
+  } else if (loc.isMountain) {
+    archWeight = MOUNTAIN_ARCHAEOLOGY_WEIGHT;
+  }
+  if ((state.pickaxeSecs || 0) > 0 || (state.brushSecs || 0) > 0) {
+    archWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
+  }
+  return archWeight;
+}
 
 export function calculateEncounterTypeWeights(
   loc: MapLocation,
@@ -205,36 +240,13 @@ export function calculateEncounterTypeWeights(
   const encounterRateMult = getEncounterRateMultiplier(leaderAbility, weather);
   const abilityFishingMult = getFishingWeightMultiplier(leaderAbility);
 
-  const isRainy = RAINY_WEATHERS.includes(weather);
+  const isRainy = RAINY_WEATHERS_SET.has(weather as RainyWeatherId);
   const climateFishingMultiplier = isRainy ? RAINY_WEATHER_FISHING_MULTIPLIER : DEFAULT_WEATHER_MULTIPLIER_NORMAL;
   const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier * abilityFishingMult;
 
   const groundWeight = GROUND_ENCOUNTER_BASE_WEIGHT * encounterRateMult;
-
-  let fishingWeight = 0;
-  if (loc.fishing) {
-    const hasFishingOverride = debug?.fishingChancePct !== undefined && debug?.fishingChancePct !== null;
-    const baseFishing = hasFishingOverride ? (debug!.fishingChancePct! / 100) : GAME_RATIOS.encounters.fishing;
-    fishingWeight = baseFishing * FISHING_WEIGHT_SCALE * fishingBonus;
-    if ((state.fishingRodSecs || 0) > 0) {
-      fishingWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
-    }
-  }
-
-  let archWeight = 0;
-  if (loc.archaeology) {
-    const isCave = !!loc.isCave;
-    const isMountain = !!loc.isMountain;
-    const hasArchOverride = debug?.archaeologyChancePct !== undefined && debug?.archaeologyChancePct !== null;
-    if (hasArchOverride) {
-      archWeight = (debug!.archaeologyChancePct! / 100) * FISHING_WEIGHT_SCALE;
-    } else {
-      archWeight = isCave ? CAVE_ARCHAEOLOGY_WEIGHT : (isMountain ? MOUNTAIN_ARCHAEOLOGY_WEIGHT : 0);
-    }
-    if ((state.pickaxeSecs || 0) > 0 || (state.brushSecs || 0) > 0) {
-      archWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
-    }
-  }
+  const fishingWeight = calculateFishingWeight(loc, debug?.fishingChancePct, fishingBonus, state);
+  const archWeight = calculateArchaeologyWeight(loc, debug?.archaeologyChancePct, state);
 
   return {
     groundWeight,

@@ -94,6 +94,7 @@ onClickOutside(selectRef, () => {
         <img
           v-if="o.icon"
           :src="o.icon"
+          :alt="o.name"
           class="item-icon"
           @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >

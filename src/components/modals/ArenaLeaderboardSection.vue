@@ -1,21 +1,27 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue'
 import { useSocialStore } from '@/stores/social/social'
 import { useUIStore } from '@/stores/ui'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import { getEloTier } from '@/logic/pvp/rankedEngine'
-import { resolveFactionColor, resolveFactionLabel } from '@/components/modals/trainerProfileResolver'
+import { resolveFactionColor } from '@/components/modals/trainerProfileResolver'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-
-const RANK_CARD_HOVER_X_OFFSET = 4
-const RANK_ANIM_FAST_DURATION_SEC = 0.2
+import { useRankCardHover, RANK_ANIM_FAST_DURATION_SEC } from '@/composables/arena/useRankCardHover'
+import type { RankingSortKey } from '@/types/system/game'
+import {
+  isValidFaction,
+  resolveCleanPlayerClass,
+  resolveLeaderboardRankBadge,
+  resolveLeaderboardScore,
+  resolveLeaderboardFactionLabel
+} from './arenaLeaderboardHelper'
 
 const socialStore = useSocialStore()
 const uiStore = useUIStore()
 
-const activeSort = ref<'elo_rating' | 'trainer_level' | 'badges'>('elo_rating')
+const activeSort = ref<RankingSortKey>('elo_rating')
 const listRef = ref<HTMLElement | null>(null)
 
 const loadLeaderboard = async () => {
@@ -49,54 +55,27 @@ const openTrainerProfile = (userId: string) => {
   uiStore.open('TrainerProfile', { userId })
 }
 
-const getFactionColor = (faction: string) => {
-  return resolveFactionColor(faction)
-}
-
-const getFactionLabel = (faction: string) => {
-  const clean = faction?.trim().toLowerCase() || ''
-  if (clean === 'poder') return 'PODER'
-  if (clean === 'union') return 'UNIÓN'
-  if (clean === 'rocket') return 'ROCKET'
-  return resolveFactionLabel(faction).toUpperCase()
-}
-
-const handleCardEnter = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
-  gsap.to(el, {
-    x: RANK_CARD_HOVER_X_OFFSET,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(251, 191, 36, 0.25)',
-    duration: RANK_ANIM_FAST_DURATION_SEC,
-    ease: 'power2.out'
+const displayPlayers = computed(() => {
+  return socialStore.leaderboard.map((player, index) => {
+    const rankBadge = resolveLeaderboardRankBadge(index)
+    const tier = getEloTier(player.elo)
+    const hasFaction = isValidFaction(player.faction)
+    const scoreText = resolveLeaderboardScore(activeSort.value, player)
+    return {
+      ...player,
+      rankBadge,
+      tierName: tier.name,
+      tierSpriteUrl: getAssetUrl(ASSET_TYPES.RANK, tier.id),
+      hasFaction,
+      factionLabel: hasFaction ? resolveLeaderboardFactionLabel(player.faction!) : '',
+      factionColor: hasFaction ? resolveFactionColor(player.faction!) : '',
+      playerClassText: resolveCleanPlayerClass(player.playerClass),
+      scoreText
+    }
   })
-}
+})
 
-const handleCardLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
-  let baseBorderColor = 'rgba(255, 255, 255, 0.05)'
-  let baseBackground = 'rgba(255, 255, 255, 0.02)'
-  
-  if (el.classList.contains('rank-1')) {
-    baseBorderColor = 'rgba(251, 191, 36, 0.35)'
-    baseBackground = 'linear-gradient(90deg, rgba(251, 191, 36, 0.1), rgba(0, 0, 0, 0))'
-  } else if (el.classList.contains('rank-2')) {
-    baseBorderColor = 'rgba(148, 163, 184, 0.35)'
-    baseBackground = 'linear-gradient(90deg, rgba(148, 163, 184, 0.1), rgba(0, 0, 0, 0))'
-  } else if (el.classList.contains('rank-3')) {
-    baseBorderColor = 'rgba(180, 83, 9, 0.35)'
-    baseBackground = 'linear-gradient(90deg, rgba(180, 83, 9, 0.1), rgba(0, 0, 0, 0))'
-  }
-
-  gsap.to(el, {
-    x: 0,
-    background: baseBackground,
-    borderColor: baseBorderColor,
-    duration: RANK_ANIM_FAST_DURATION_SEC,
-    ease: 'power2.out',
-    clearProps: 'x,background,borderColor'
-  })
-}
+const { handleCardEnter, handleCardLeave } = useRankCardHover()
 
 const handleTabEnter = (e: MouseEvent) => {
   const el = e.currentTarget as HTMLElement
@@ -208,7 +187,7 @@ watch(activeSort, () => {
         class="leaderboard-list"
       >
         <div
-          v-for="(player, index) in socialStore.leaderboard"
+          v-for="(player, index) in displayPlayers"
           :id="`arena-leaderboard-card-${player.id}`"
           :key="player.id"
           class="rank-card"
@@ -220,28 +199,20 @@ watch(activeSort, () => {
           <!-- Rank Placement & Tier Medal Sprite -->
           <div class="rank-badge">
             <span
-              v-if="index === 0"
+              v-if="player.rankBadge.isPodium"
               class="emoji crown"
-            >🥇</span>
-            <span
-              v-else-if="index === 1"
-              class="emoji crown"
-            >🥈</span>
-            <span
-              v-else-if="index === 2"
-              class="emoji crown"
-            >🥉</span>
+            >{{ player.rankBadge.emoji }}</span>
             <span
               v-else
               class="rank-digits text-outline"
             >
-              {{ index + 1 }}
+              {{ player.rankBadge.digitText }}
             </span>
             <img
-              :src="getAssetUrl(ASSET_TYPES.RANK, getEloTier(player.elo).id)"
-              :alt="getEloTier(player.elo).name"
+              :src="player.tierSpriteUrl"
+              :alt="player.tierName"
               class="ranked-medal-mini pixel-art"
-              :title="`Rango: ${getEloTier(player.elo).name}`"
+              :title="`Rango: ${player.tierName}`"
             >
           </div>
 
@@ -271,15 +242,15 @@ watch(activeSort, () => {
                 {{ player.username }}
               </span>
               <span
-                v-if="player.faction && player.faction !== 'null' && player.faction !== 'NULL' && player.faction !== 'undefined' && player.faction.trim() !== ''"
+                v-if="player.hasFaction"
                 class="faction-tag-badge text-outline"
-                :style="{ backgroundColor: getFactionColor(player.faction) }"
+                :style="{ backgroundColor: player.factionColor }"
               >
-                {{ getFactionLabel(player.faction) }}
+                {{ player.factionLabel }}
               </span>
             </div>
             <div class="player-stats-row">
-              <span class="player-class-info">{{ (player.playerClass && player.playerClass !== 'null' && player.playerClass !== 'Null' && player.playerClass !== 'NULL') ? player.playerClass : 'Entrenador' }}</span>
+              <span class="player-class-info">{{ player.playerClassText }}</span>
               <span class="divider">•</span>
               <span class="player-level-info">Nv. {{ player.level }}</span>
             </div>
@@ -288,7 +259,7 @@ watch(activeSort, () => {
           <!-- Score -->
           <div class="score-badge">
             <span class="score-value text-outline">
-              {{ activeSort === 'elo_rating' ? `${player.elo} ELO` : (activeSort === 'trainer_level' ? `Nv. ${player.level}` : `${player.badges} Medallas`) }}
+              {{ player.scoreText }}
             </span>
           </div>
         </div>

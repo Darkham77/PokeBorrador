@@ -3,6 +3,17 @@ import { ChoiceRequest, classifyRequest } from './requestHelper.ts';
 
 export type ActiveSlotRequest = NonNullable<ChoiceRequest['active']>[number];
 
+function resolveMoveModifier(slotReq: ActiveSlotRequest): string {
+  if (Reflect.get(slotReq, 'canMegaEvoX')) return ' megax';
+  if (Reflect.get(slotReq, 'canMegaEvoY')) return ' megay';
+  if (slotReq.canMegaEvo) return ' mega';
+  if (slotReq.canTerastallize) return ' terastallize';
+  if (Reflect.get(slotReq, 'canZMove')) return ' zmove';
+  if (Reflect.get(slotReq, 'canUltraBurst')) return ' ultra';
+  if (Reflect.get(slotReq, 'canDynamax')) return ' dynamax';
+  return '';
+}
+
 export abstract class ShowdownBattleAgent {
   protected turnCount = 0;
   protected justSwitched = false;
@@ -50,56 +61,44 @@ export abstract class ShowdownBattleAgent {
   /**
    * Decide action for a single active slot. Subclasses can override for custom move policies.
    */
+  /**
+   * Handle case when all moves are disabled or out of PP.
+   */
+  private handleNoValidMoves(slotReq: ActiveSlotRequest, fullRequest: ChoiceRequest): string {
+    const team = fullRequest.side?.pokemon ?? [];
+    if (!this.isTrapped(slotReq) && team.length > 1) {
+      const switchTarget = this.findBenchCandidate(team);
+      if (switchTarget !== null) {
+        return `switch ${switchTarget}`;
+      }
+    }
+    return 'pass';
+  }
+
+  /**
+   * Decide action for a single active slot. Subclasses can override for custom move policies.
+   */
   protected decideSingleSlot(
     slotReq: ActiveSlotRequest,
     _slotIdx: number,
     fullRequest: ChoiceRequest,
     targetLocation?: number
   ): string {
-    // 2. Otherwise pick a random valid move
-    if (slotReq.moves && slotReq.moves.length > 0) {
-      const validMoves = slotReq.moves.filter(m => !m.disabled && (m.pp === undefined || m.pp > 0));
-      if (validMoves.length === 0) {
-        // All moves are disabled/out of PP: try switching if allowed and bench candidates exist
-        const team = fullRequest.side?.pokemon ?? [];
-        const isTrapped = this.isTrapped(slotReq);
-        if (!isTrapped && team.length > 1) {
-          const switchTarget = this.findBenchCandidate(team);
-          if (switchTarget !== null) {
-            return `switch ${switchTarget}`;
-          }
-        }
-        return 'pass';
-      }
-
-      const move = validMoves[(this.turnCount - 1) % validMoves.length];
-      const moveIdx = move ? slotReq.moves.indexOf(move) + 1 : 1;
-      
-      // Showdown accepts at most ONE event modifier per move choice (mega, terastallize, zmove, ultra, etc.)
-      let modifier = '';
-      const availableModifiers: string[] = []; // no-domain: Non-domain utility collection or data structure
-      if (Reflect.get(slotReq, 'canMegaEvoX')) {
-        availableModifiers.push(' megax');
-      } else if (Reflect.get(slotReq, 'canMegaEvoY')) {
-        availableModifiers.push(' megay');
-      } else if (slotReq.canMegaEvo) {
-        availableModifiers.push(' mega');
-      }
-      if (slotReq.canTerastallize) availableModifiers.push(' terastallize');
-      if (Reflect.get(slotReq, 'canZMove')) availableModifiers.push(' zmove');
-      if (Reflect.get(slotReq, 'canUltraBurst')) availableModifiers.push(' ultra');
-      if (Reflect.get(slotReq, 'canDynamax')) availableModifiers.push(' dynamax');
-
-      if (availableModifiers.length > 0) {
-        modifier = availableModifiers[0] || '';
-      }
-
-      const targetStr = targetLocation !== undefined ? ` ${targetLocation}` : '';
-      
-      return `move ${moveIdx}${targetStr}${modifier}`;
+    if (!slotReq.moves || slotReq.moves.length === 0) {
+      return 'pass';
     }
 
-    return 'pass';
+    const validMoves = slotReq.moves.filter(m => !m.disabled && (m.pp === undefined || m.pp > 0));
+    if (validMoves.length === 0) {
+      return this.handleNoValidMoves(slotReq, fullRequest);
+    }
+
+    const move = validMoves[(this.turnCount - 1) % validMoves.length];
+    const moveIdx = move ? slotReq.moves.indexOf(move) + 1 : 1;
+    const modifier = resolveMoveModifier(slotReq);
+    const targetStr = targetLocation !== undefined ? ` ${targetLocation}` : '';
+
+    return `move ${moveIdx}${targetStr}${modifier}`;
   }
 
   /**

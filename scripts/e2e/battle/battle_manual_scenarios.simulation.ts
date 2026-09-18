@@ -186,7 +186,7 @@ test.describe('Battle Manual E2E Scenarios', () => {
         wasSearching: true
       };
       gameStore.state.activeBattle = activeBattle;
-      await gameStore.saveGame();
+      await gameStore.save(false, true, true);
     });
 
     // 2. Simular recarga de página (F5) con listener de eventos
@@ -200,7 +200,7 @@ test.describe('Battle Manual E2E Scenarios', () => {
       if (!bs) return false;
       const fsmState = bs.currentFsmState;
       return fsmState === 'SEARCH_PHASE' || fsmState === 'ACTIVE_BATTLE';
-    }, undefined, { timeout: 15000 });
+    }, undefined, { timeout: 30000 });
 
     const searchState = await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');

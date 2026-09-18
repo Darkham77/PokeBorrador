@@ -165,7 +165,8 @@ export interface UIStore {
   activeTab: string; // domain-ok: Open dynamic text or non-domain string payload
   notifications: UINotification[];
   isBattleSwitchForced: boolean;
-  isDebugPerformanceMode: boolean;
+  isDebugFastMode: boolean;
+  isFastMode: boolean;
   isAnyBlockingModalOpen: boolean;
   isAnyFullscreenModalOpen: boolean;
   openHudGroup: string | null; // domain-ok: Open dynamic text or non-domain string payload

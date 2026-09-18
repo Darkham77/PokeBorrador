@@ -42,6 +42,9 @@ State Architects / Frontend Developers.
   1. **Unconditional Safe Logout**: Before applying an update, `executeCleanUpdate` terminates active Web Workers, sets `sessionStorage.block_autologin = 'true'`, and invokes `authStore.logout(true, true)` with `preventSave: true` (Save Shield) to prevent writing invalid/incompatible schema payloads to the database.
   2. **Deterministic Navigation to `/login`**: Any exit, update completion, or compatibility failure redirect MUST navigate directly to `${origin}${baseUrl}login?reload_t=${timestamp}`, never reloading the protected root (`/`) or leaving the user trapped in an infinite modal loop.
   3. **Selective Cache Busting**: Selective purging of outdated code caches while preserving heavy multimedia asset buckets (`game-images-*`, `game-audio-*`, `game-event-banners-*`).
+- **Fast Mode vs. Low Power Mode Governance (`ui.ts`, `isFastMode`, `isLowPowerActive`)**:
+  - **Modo Rápido (`isFastMode`)**: Automatically activated whenever an obscuring modal is opened in `modalStore.stack`. Signals background layers to suspend animations, unmount heavy decorative DOM elements (e.g., 420 falling leaves in `AtmosphereLeavesOverlay.vue`), and disable background weather rendering. Active foreground views (such as active battle in `BattleArenaView.vue`) MUST NOT activate `isFastMode` for themselves. Underneath views (such as `MapCard.vue`) activate fast mode independently when `uiStore.isFastMode || battleStore.isBattleActive`.
+  - **Low Power Mode (`isLowPowerActive`)**: Governed by user preference (`'auto'`, `'enabled'`, `'disabled'`) or mobile viewport (< 768px). Controls asset resolution scaling (`_mobile.webp`) and secondary cosmetic parallax layer suppression, independently from modal-induced fast mode.
 
 ## Work Guidance
 
@@ -71,9 +74,11 @@ State Architects / Frontend Developers.
 
 - [auth/](./auth/AGENTS.md): Domain module documentation for auth store helpers.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding store helpers.
 - [debug/](./debug/AGENTS.md): Domain module documentation for debug.
 - [events/](./events/AGENTS.md): Domain module documentation for events store actions.
 - [game/](./game/AGENTS.md): Domain module documentation for game.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [player/](./player/AGENTS.md): Domain module documentation for player.
 - [social/](./social/AGENTS.md): Domain module documentation for social.
+- [war/](./war/AGENTS.md): Domain module documentation for war store helpers.

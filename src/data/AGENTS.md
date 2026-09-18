@@ -8,7 +8,7 @@ Game Designers / Data Maintainers.
 
 ## Local Contracts
 
-- **500/1000-Line Exemption**: Massive static databases (e.g. `pokemonFeetDatabase.ts`, `pokemonDB.ts`, `items.ts`) are completely exempt from the code modularity warning system to ensure integrity and simple copy-paste updates.
+- **Static Database Maintainability Exemption**: Massive static datasets (e.g. `pokemonFeetDatabase.ts`, `pokemonDB.ts`, `items.ts`) are pure declarative data dictionaries and are exempt from modularity decomposition to ensure dataset integrity and simple copy-paste updates.
 - **Immersion Integrity**: All data attributes representing logical entity identifiers (moves, items, abilities) must be registered in English.
 - **Trainer Archetype Single Source of Truth**: All trainer type definitions must live strictly in `src/data/player/trainerTypes.ts`. No duplicate mappings are allowed.
 - **Dynamic Thematic Trainer Pools (trainerTypes.ts)**: Trainer archetypes define declarative thematic criteria (`types`, `matchMode`, `extraPool`). Pools are precomputed on module load (`computeTrainerTypes`) against `ENABLED_POKEMON_IDS`, providing an immutable $O(1)$ dictionary `TRAINER_TYPES`.

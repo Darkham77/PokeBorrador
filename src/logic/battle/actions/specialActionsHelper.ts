@@ -3,6 +3,8 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { gameBus } from '@/logic/events/gameBus'
 
+const POKEMON_CALL_FALLBACK_DELAY_MS = 800
+
 export async function callPokemonToBattle(
   side: BattleSide,
   pokemon: Pokemon,
@@ -21,6 +23,6 @@ export async function callPokemonToBattle(
   } else {
     gameBus.emit('PLAY_SEND_OUT', { side, pokemon })
     const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
-    await gsapSleep(800)
+    await gsapSleep(POKEMON_CALL_FALLBACK_DELAY_MS)
   }
 }

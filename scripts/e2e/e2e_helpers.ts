@@ -8,7 +8,7 @@ import {
 } from './simulation_config.ts';
 export { MAX_PER_ACTION_TIMEOUT_MS };
 import { isMatchingUid } from '../../src/logic/battle/showdownUidMapper.ts';
-import type { GameStoreReadyDetail } from '../../src/types/system/gameEvents.ts';
+import type { GameStoreReadyDetail, StarterSelectReadyDetail } from '../../src/types/system/gameEvents.ts';
 import type { CertifiedBattleCase } from './fuzzer/generators/fuzzer_team_generator.ts';
 
 import {
@@ -260,6 +260,11 @@ export async function setupE2ESession(
         resolve((e as CustomEvent).detail as GameStoreReadyDetail);
       }, { once: true });
     });
+    (window as WindowWithResolver).__E2E_STARTER_SELECT_READY__ = new Promise<StarterSelectReadyDetail>((resolve) => {
+      window.addEventListener('starter-select-ready', (e) => {
+        resolve((e as CustomEvent).detail as StarterSelectReadyDetail);
+      }, { once: true });
+    });
   }, { key: sqliteKey, dbDriver: driver });
 }
 
@@ -378,9 +383,13 @@ export async function loginTestUser(
   }
 
   // A new local profile must choose a starter; an existing profile goes straight to the map.
-  const needsStarter = await page.evaluate(() => {
-    const debug = window.__VITE_DEBUG__;
-    return debug?.useGameStore?.()?.state?.starterChosen === false;
+  const needsStarter = await page.evaluate(async () => {
+    const resolver = (window as WindowWithResolver).__VITE_DEBUG_GAME_STORE_RESOLVER__;
+    if (resolver) {
+      return resolver().state.starterChosen === false;
+    }
+    const { useGameStore } = await import('../../src/stores/game.ts');
+    return useGameStore().state.starterChosen === false;
   });
 
   if (needsStarter) {
@@ -388,10 +397,12 @@ export async function loginTestUser(
     const starterCard = page.locator('[id^="starter-card-"]').first();
     await starterCard.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await starterCard.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await page.waitForFunction(() => {
-      const debug = window.__VITE_DEBUG__;
-      return debug?.useGameStore?.()?.state?.starterChosen === true &&
-             !debug?.useLoadingStore?.()?.isLoading('choose_starter');
+    await page.waitForFunction(async () => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_GAME_STORE_RESOLVER__;
+      const gameStore = resolver ? resolver() : (await import('../../src/stores/game.ts')).useGameStore();
+      const { useLoadingStore } = await import('../../src/stores/loading.ts');
+      const isChooseStarterActive = useLoadingStore().stack.some(item => item.id === 'choose_starter');
+      return gameStore.state.starterChosen === true && !isChooseStarterActive;
     }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     await page.evaluate(async () => {
@@ -1169,10 +1180,15 @@ const STORE_READY_TIMEOUT_MS = 15000;
 
 export async function waitForStoreReady(page: Page, timeoutMs = STORE_READY_TIMEOUT_MS): Promise<void> {
   await page.waitForFunction(() => {
+    const resolver = (window as WindowWithResolver).__VITE_DEBUG_GAME_STORE_RESOLVER__;
+    if (resolver) {
+      const store = resolver();
+      return Boolean(store?.state && store.isReady === true);
+    }
     const debug = (window as WindowWithResolver).__VITE_DEBUG__;
     if (!debug || !debug.getGameStore) return false;
     const store = debug.getGameStore();
-    return !!store && !!store.state && store.isReady === true;
+    return Boolean(store?.state && store.isReady === true);
   }, undefined, { timeout: timeoutMs });
 }
 

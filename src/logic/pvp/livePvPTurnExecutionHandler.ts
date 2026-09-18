@@ -19,6 +19,120 @@ export interface TurnExecutionBattleStateLike {
   logs: string[];
 }
 
+interface TurnStreamPayloadSource {
+  logs: string[];
+  isOver: boolean;
+  winnerSide?: string | null;
+  winner?: string | null;
+  p2Request?: ShowdownPlayerRequest;
+}
+
+interface TurnWinnerResultLike {
+  isOver: boolean;
+  winnerSide?: string | null;
+  winner?: string | null;
+}
+
+interface TurnRequestsResultLike {
+  p1Request?: ShowdownPlayerRequest;
+  p2Request?: ShowdownPlayerRequest;
+}
+
+interface BattleStoreStateLike {
+  winnerResult?: string;
+  playerNames?: Partial<Record<string, string>>;
+}
+
+interface TurnPostTransitionContext {
+  battleState: TurnExecutionBattleStateLike;
+  battleStore: ReturnType<typeof useBattleStore>;
+  timerManager: PvPTimerManager;
+  uiStore: ReturnType<typeof useUIStore>;
+}
+
+function formatPvpChoice(pick: PvPAction | null): string {
+  if (!pick) return 'pass';
+  if (pick.choiceString) return pick.choiceString;
+  if (pick.type === 'switch') return `switch ${(pick.switchIndex ?? 0) + 1}`;
+  return `move ${(pick.moveIndex ?? 0) + 1}`;
+}
+
+function broadcastHostTurnStream(
+  ch: Pick<RealtimeChannel, 'send' | 'unsubscribe'> | null | undefined,
+  turnRes: TurnStreamPayloadSource,
+  turnCount: number
+): void {
+  if (!ch) return;
+  const resolvedWinnerSide = turnRes.winnerSide || (turnRes.winner === 'p1' || turnRes.winner === 'Player' ? 'p1' : (turnRes.winner ? 'p2' : null));
+  ch.send({
+    type: 'broadcast',
+    event: 'pvp_turn_stream',
+    payload: {
+      streamLines: turnRes.logs,
+      turnNumber: turnCount,
+      turn: turnCount,
+      over: turnRes.isOver,
+      winnerSide: resolvedWinnerSide,
+      request: turnRes.p2Request
+    }
+  });
+}
+
+function isHostVictory(
+  result: TurnWinnerResultLike,
+  battleStoreState: BattleStoreStateLike | null | undefined
+): boolean {
+  return Boolean(
+    battleStoreState?.winnerResult === 'player'
+    || result.winnerSide === 'p1'
+    || result.winner === 'p1'
+    || result.winner === 'Player'
+    || (battleStoreState?.playerNames && battleStoreState.playerNames[result.winner || ''] === 'player')
+  );
+}
+
+async function handlePostTurnTransitions(
+  result: TurnRequestsResultLike,
+  ctx: TurnPostTransitionContext
+): Promise<void> {
+  ctx.battleState.myPick = null;
+  ctx.battleState.enemyPick = null;
+
+  const p1NeedsSwitch = Boolean(result.p1Request?.forceSwitch?.[0]);
+  const p2NeedsSwitch = Boolean(result.p2Request?.forceSwitch?.[0]);
+
+  if (ctx.battleState.config?.isAsynchronous) {
+    const { computePassiveEnemyChoice } = await import('@/logic/pvp/passiveMatchmakingHelper');
+    if (p1NeedsSwitch && p2NeedsSwitch) {
+      ctx.battleState.enemyPick = computePassiveEnemyChoice(result.p2Request);
+      ctx.battleState.phase = 'faint_switch';
+      ctx.uiStore.isBattleSwitchForced = true;
+      ctx.timerManager.startTurnTimer();
+    } else if (p1NeedsSwitch) {
+      ctx.battleState.enemyPick = null;
+      ctx.battleState.phase = 'faint_switch';
+      ctx.uiStore.isBattleSwitchForced = true;
+      ctx.timerManager.startTurnTimer();
+    } else {
+      ctx.battleState.phase = 'choosing';
+      await ctx.battleStore.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+      ctx.timerManager.startTurnTimer();
+    }
+  } else {
+    if (p1NeedsSwitch) {
+      ctx.battleState.phase = 'faint_switch';
+      ctx.uiStore.isBattleSwitchForced = true;
+      ctx.timerManager.startTurnTimer();
+    } else if (p2NeedsSwitch) {
+      ctx.battleState.phase = 'waiting';
+    } else {
+      ctx.battleState.phase = 'choosing';
+      await ctx.battleStore.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+      ctx.timerManager.startTurnTimer();
+    }
+  }
+}
+
 export async function executeResolveTurn(ctx: {
   battleState: TurnExecutionBattleStateLike;
   battleStore: ReturnType<typeof useBattleStore>;
@@ -28,18 +142,12 @@ export async function executeResolveTurn(ctx: {
   resolveTurnRecursion: () => Promise<void>;
 }): Promise<void> {
   if (!ctx.battleState.isHost) return;
-  const hostPick = ctx.battleState.myPick;
-  const guestPick = ctx.battleState.enemyPick;
 
   ctx.battleState.phase = 'resolving';
 
   try {
-    const p1Choice = hostPick
-      ? (hostPick.choiceString || (hostPick.type === 'switch' ? `switch ${(hostPick.switchIndex ?? 0) + 1}` : `move ${(hostPick.moveIndex ?? 0) + 1}`))
-      : 'pass';
-    const p2Choice = guestPick
-      ? (guestPick.choiceString || (guestPick.type === 'switch' ? `switch ${(guestPick.switchIndex ?? 0) + 1}` : `move ${(guestPick.moveIndex ?? 0) + 1}`))
-      : 'pass';
+    const p1Choice = formatPvpChoice(ctx.battleState.myPick);
+    const p2Choice = formatPvpChoice(ctx.battleState.enemyPick);
 
     const { executeCanonicalTurn } = await import('@/logic/battle/helpers/canonicalTurnRunner');
     const result = await executeCanonicalTurn(
@@ -49,75 +157,79 @@ export async function executeResolveTurn(ctx: {
       false,
       false,
       (turnRes) => {
-        if (ctx.battleState.ch) {
-          const turnCount = (ctx.battleStore.state?.turnCount || 0) + 1;
-          const resolvedWinnerSide = turnRes.winnerSide || (turnRes.winner === 'p1' || turnRes.winner === 'Player' ? 'p1' : (turnRes.winner ? 'p2' : null));
-          ctx.battleState.ch.send({
-            type: 'broadcast',
-            event: 'pvp_turn_stream',
-            payload: {
-              streamLines: turnRes.logs,
-              turnNumber: turnCount,
-              turn: turnCount,
-              over: turnRes.isOver,
-              winnerSide: resolvedWinnerSide,
-              request: turnRes.p2Request
-            }
-          });
-        }
+        const turnCount = (ctx.battleStore.state?.turnCount || 0) + 1;
+        broadcastHostTurnStream(ctx.battleState.ch, turnRes, turnCount);
       }
     );
 
     if (result.isOver) {
-      const isPlayerWinner = ctx.battleStore.state?.winnerResult === 'player'
-        || result.winnerSide === 'p1'
-        || result.winner === 'p1'
-        || result.winner === 'Player'
-        || (ctx.battleStore.state?.playerNames && ctx.battleStore.state.playerNames[result.winner || ''] === 'player');
-      const won = Boolean(isPlayerWinner);
+      const won = Boolean(isHostVictory(result, ctx.battleStore.state));
       await ctx.endBattle(won, won ? '¡Victoria en PvP!' : 'Derrota en PvP.');
-    } else if (ctx.battleState.config?.isAsynchronous) {
-      ctx.battleState.myPick = null;
-      ctx.battleState.enemyPick = null;
-
-      const p1NeedsSwitch = Boolean(result.p1Request?.forceSwitch?.[0]);
-      const p2NeedsSwitch = Boolean(result.p2Request?.forceSwitch?.[0]);
-      const { computePassiveEnemyChoice } = await import('@/logic/pvp/passiveMatchmakingHelper');
-
-      if (p1NeedsSwitch && p2NeedsSwitch) {
-        ctx.battleState.enemyPick = computePassiveEnemyChoice(result.p2Request);
-        ctx.battleState.phase = 'faint_switch';
-        ctx.uiStore.isBattleSwitchForced = true;
-        ctx.timerManager.startTurnTimer();
-      } else if (p1NeedsSwitch) {
-        ctx.battleState.enemyPick = null;
-        ctx.battleState.phase = 'faint_switch';
-        ctx.uiStore.isBattleSwitchForced = true;
-        ctx.timerManager.startTurnTimer();
-      } else {
-        // In passive PvP, enemy replacement switches are already executed during post-turn faints handling
-        ctx.battleState.phase = 'choosing';
-        await ctx.battleStore.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
-        ctx.timerManager.startTurnTimer();
-      }
     } else {
-      ctx.battleState.myPick = null;
-      ctx.battleState.enemyPick = null;
-      if (result.p1Request?.forceSwitch?.[0]) {
-        ctx.battleState.phase = 'faint_switch';
-        ctx.uiStore.isBattleSwitchForced = true;
-        ctx.timerManager.startTurnTimer();
-      } else if (result.p2Request?.forceSwitch?.[0]) {
-        ctx.battleState.phase = 'waiting';
-      } else {
-        ctx.battleState.phase = 'choosing';
-        await ctx.battleStore.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
-        ctx.timerManager.startTurnTimer();
-      }
+      await handlePostTurnTransitions(result, ctx);
     }
   } catch (err) {
     console.error('[resolveTurn Error]', err);
     ctx.battleState.phase = 'choosing';
+  }
+}
+
+function updateStoreTurnState(
+  battleStore: ReturnType<typeof useBattleStore>,
+  payload: PvpTurnStreamPayload & { request?: ShowdownPlayerRequest },
+  isSpectator: boolean
+): void {
+  if (!battleStore.state) return;
+
+  battleStore.state.turnCount = payload.turnNumber ?? payload.turn ?? ((battleStore.state.turnCount || 0) + 1);
+  if (payload.request && !isSpectator) {
+    battleStore.state.playerRequest = ShowdownPerspectiveAdapter.invertRequest(payload.request);
+  }
+}
+
+function resolveGuestPhaseAfterStream(
+  battleState: TurnExecutionBattleStateLike,
+  battleStore: ReturnType<typeof useBattleStore>,
+  uiStore: ReturnType<typeof useUIStore>,
+  timerManager: PvPTimerManager
+): void {
+  battleState.myPick = null;
+  battleState.enemyPick = null;
+  const guestNeedsSwitch = Boolean(battleStore.state?.playerRequest?.forceSwitch?.[0]);
+  const enemyFainted = (battleStore.state?.enemy?.hp ?? 1) <= 0;
+
+  if (guestNeedsSwitch) {
+    battleState.phase = 'faint_switch';
+    uiStore.isBattleSwitchForced = true;
+    timerManager.startTurnTimer();
+  } else if (enemyFainted) {
+    battleState.phase = 'waiting';
+  } else {
+    battleState.phase = 'choosing';
+    timerManager.startTurnTimer();
+  }
+}
+
+async function handleStreamCompletionOrTransitions(
+  payload: PvpTurnStreamPayload,
+  ctx: {
+    battleState: TurnExecutionBattleStateLike;
+    battleStore: ReturnType<typeof useBattleStore>;
+    timerManager: PvPTimerManager;
+    uiStore: ReturnType<typeof useUIStore>;
+    isSpectator: boolean;
+    endBattle: (won: boolean, reason: string) => Promise<void>;
+  }
+): Promise<void> {
+  if (payload.over) {
+    const won = payload.winnerSide === 'p2';
+    if (!ctx.isSpectator) {
+      await ctx.endBattle(won, won ? '¡Victoria en PvP!' : 'Derrota en PvP.');
+    } else {
+      ctx.uiStore.notify(`Batalla finalizada. Ganador: ${payload.winnerSide?.toUpperCase()}`, '🏁');
+    }
+  } else if (!ctx.isSpectator) {
+    resolveGuestPhaseAfterStream(ctx.battleState, ctx.battleStore, ctx.uiStore, ctx.timerManager);
   }
 }
 
@@ -144,40 +256,13 @@ export async function executeHandleTurnStream(
 
   ctx.battleState.logs.push(...streamLines);
 
-  if (ctx.battleStore.state) {
-    ctx.battleStore.state.turnCount = payload.turnNumber ?? payload.turn ?? ((ctx.battleStore.state.turnCount || 0) + 1);
-    if (payload.request && !ctx.isSpectator) {
-      ctx.battleStore.state.playerRequest = ShowdownPerspectiveAdapter.invertRequest(payload.request);
-    }
-  }
+  updateStoreTurnState(ctx.battleStore, payload, ctx.isSpectator);
 
   const filteredLogs = filterShowdownLogs(streamLines);
   await parseLogsWithSkip(ctx.battleStore.getContext(), filteredLogs, false, false);
   await syncTeamsFromLastWorkerState();
 
-  if (payload.over) {
-    const won = payload.winnerSide === 'p2';
-    if (!ctx.isSpectator) {
-      await ctx.endBattle(won, won ? '¡Victoria en PvP!' : 'Derrota en PvP.');
-    } else {
-      ctx.uiStore.notify(`Batalla finalizada. Ganador: ${payload.winnerSide?.toUpperCase()}`, '🏁');
-    }
-  } else if (!ctx.isSpectator) {
-    ctx.battleState.myPick = null;
-    ctx.battleState.enemyPick = null;
-    const guestNeedsSwitch = Boolean(ctx.battleStore.state?.playerRequest?.forceSwitch?.[0]);
-    const enemyFainted = (ctx.battleStore.state?.enemy?.hp ?? 1) <= 0;
-    if (guestNeedsSwitch) {
-      ctx.battleState.phase = 'faint_switch';
-      ctx.uiStore.isBattleSwitchForced = true;
-      ctx.timerManager.startTurnTimer();
-    } else if (enemyFainted) {
-      ctx.battleState.phase = 'waiting';
-    } else {
-      ctx.battleState.phase = 'choosing';
-      ctx.timerManager.startTurnTimer();
-    }
-  }
+  await handleStreamCompletionOrTransitions(payload, ctx);
 }
 
 export function executeCheckReadyToResolve(

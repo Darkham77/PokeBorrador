@@ -1,7 +1,7 @@
-import { getMechanicalWeather, requireWeatherId, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
+import { getMechanicalWeather, requireWeatherId, resolveCurrentWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
 import { getWeatherFamily } from '../../data/system/weatherFamilies.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleStages, LogFn, BattleWeather } from '@/types/battle/battle'
+import type { BattleStages, LogFn, BattleWeather, BattleState, BattleSide } from '@/types/battle/battle'
 import { tickStatus, tickLeechSeed } from './battleStatus.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { PokemonType } from '@/data/battle/types'
@@ -69,70 +69,69 @@ export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, pl
 }
 
 const SAND_IMMUNE_TYPES_SET: ReadonlySet<string> = new Set(['rock', 'ground', 'steel']) // runtime-set: Fast O(1) membership lookup set
+const WEATHER_CHIP_DAMAGE_DIVISOR = 16
+const SOLAR_POWER_DAMAGE_DIVISOR = 8
+
+function isSandImmune(poke: Pokemon): boolean {
+  return SAND_IMMUNE_TYPES_SET.has(poke.type) || (poke.type2 ? SAND_IMMUNE_TYPES_SET.has(poke.type2) : false)
+}
+
+function isHailImmune(poke: Pokemon): boolean {
+  return poke.type === 'ice' || poke.type2 === 'ice'
+}
+
+function applyWeatherDamage(
+  poke: Pokemon,
+  weatherLabel: string,
+  side: BattleSide,
+  ctx: BattleContext,
+  promises: Promise<void>[]
+) {
+  const dmg = Math.max(1, Math.floor(poke.maxHp / WEATHER_CHIP_DAMAGE_DIVISOR))
+  poke.hp = Math.max(0, poke.hp - dmg)
+  const logType = side === 'player' ? 'log-player' : 'log-enemy'
+  ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${poke.name}! (-${dmg} HP)`, logType, poke)
+  if (ctx.animations?.handleBlinkRequest) {
+    promises.push(ctx.animations.handleBlinkRequest({ side }))
+  }
+}
+
+function applySandstormWeather(p: Pokemon, e: Pokemon, weatherLabel: string, ctx: BattleContext, promises: Promise<void>[]) {
+  if (!isSandImmune(p)) applyWeatherDamage(p, weatherLabel, 'player', ctx, promises)
+  if (!isSandImmune(e)) applyWeatherDamage(e, weatherLabel, 'enemy', ctx, promises)
+}
+
+function applyHailWeather(p: Pokemon, e: Pokemon, weatherLabel: string, ctx: BattleContext, promises: Promise<void>[]) {
+  if (!isHailImmune(p)) applyWeatherDamage(p, weatherLabel, 'player', ctx, promises)
+  if (!isHailImmune(e)) applyWeatherDamage(e, weatherLabel, 'enemy', ctx, promises)
+}
+
+function applySolarPowerRecoil(poke: Pokemon, side: BattleSide, ctx: BattleContext, promises: Promise<void>[]) {
+  if (poke.ability !== 'solarpower' || poke.hp <= 0) return
+  const dmg = Math.max(1, Math.floor(poke.maxHp / SOLAR_POWER_DAMAGE_DIVISOR))
+  poke.hp = Math.max(0, poke.hp - dmg)
+  ctx.addLog(`¡${poke.name} sufre por el sol ardiente! (-${dmg} HP)`, 'log-info', poke)
+  if (ctx.animations?.handleBlinkRequest) {
+    promises.push(ctx.animations.handleBlinkRequest({ side }))
+  }
+}
 
 async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext) {
   if (p?.ability === 'cloudnine' || e?.ability === 'cloudnine') {
-    return;
+    return
   }
-  const mechWeather = getMechanicalWeather(weather?.type);
-  const wType = (weather?.visual || weather?.type || '').toLowerCase();
-  const weatherLabel = WEATHER_REGISTRY[wType]?.label || 'CLIMA';
+  const mechWeather = getMechanicalWeather(weather?.type)
+  const wType = (weather?.visual || weather?.type || '').toLowerCase()
+  const weatherLabel = WEATHER_REGISTRY[wType]?.label || 'CLIMA'
   const promises: Promise<void>[] = []
 
   if (mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
-    const isSandImmune = (poke: Pokemon) => SAND_IMMUNE_TYPES_SET.has(poke.type) || (poke.type2 ? SAND_IMMUNE_TYPES_SET.has(poke.type2) : false)
-    if (!isSandImmune(p)) {
-      const dmg = Math.max(1, Math.floor(p.maxHp / 16))
-      p.hp = Math.max(0, p.hp - dmg)
-      ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${p.name}! (-${dmg} HP)`, 'log-player', p)
-      if (ctx.animations?.handleBlinkRequest) {
-        promises.push(ctx.animations.handleBlinkRequest({ side: 'player' }))
-      }
-    }
-    if (!isSandImmune(e)) {
-      const dmg = Math.max(1, Math.floor(e.maxHp / 16))
-      e.hp = Math.max(0, e.hp - dmg)
-      ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${e.name}! (-${dmg} HP)`, 'log-enemy', e)
-      if (ctx.animations?.handleBlinkRequest) {
-        promises.push(ctx.animations.handleBlinkRequest({ side: 'enemy' }))
-      }
-    }
-  }
-
-  if (mechWeather === WEATHER_MECHANICAL.HAIL) {
-    const isHailImmune = (poke: Pokemon) => poke.type === 'ice' || poke.type2 === 'ice'
-    if (!isHailImmune(p)) {
-      const dmg = Math.max(1, Math.floor(p.maxHp / 16))
-      p.hp = Math.max(0, p.hp - dmg)
-      ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${p.name}! (-${dmg} HP)`, 'log-player', p)
-      if (ctx.animations?.handleBlinkRequest) {
-        promises.push(ctx.animations.handleBlinkRequest({ side: 'player' }))
-      }
-    }
-    if (!isHailImmune(e)) {
-      const dmg = Math.max(1, Math.floor(e.maxHp / 16))
-      e.hp = Math.max(0, e.hp - dmg)
-      ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${e.name}! (-${dmg} HP)`, 'log-enemy', e)
-      if (ctx.animations?.handleBlinkRequest) {
-        promises.push(ctx.animations.handleBlinkRequest({ side: 'enemy' }))
-      }
-    }
-  }
-
-  // Poder Solar (Solar Power) Recoil
-  if (mechWeather === WEATHER_MECHANICAL.SUN) {
-    [p, e].forEach(poke => {
-      if (poke.ability === 'solarpower' && poke.hp > 0) {
-        const dmg = Math.max(1, Math.floor(poke.maxHp / 8));
-        poke.hp = Math.max(0, poke.hp - dmg);
-        ctx.addLog(`¡${poke.name} sufre por el sol ardiente! (-${dmg} HP)`, 'log-info', poke);
-        
-        const side = poke.uid === ctx.activeBattle.value?.player?.uid ? 'player' : 'enemy'
-        if (ctx.animations?.handleBlinkRequest) {
-          promises.push(ctx.animations.handleBlinkRequest({ side }))
-        }
-      }
-    });
+    applySandstormWeather(p, e, weatherLabel, ctx, promises)
+  } else if (mechWeather === WEATHER_MECHANICAL.HAIL) {
+    applyHailWeather(p, e, weatherLabel, ctx, promises)
+  } else if (mechWeather === WEATHER_MECHANICAL.SUN) {
+    applySolarPowerRecoil(p, 'player', ctx, promises)
+    applySolarPowerRecoil(e, 'enemy', ctx, promises)
   }
 
   if (promises.length > 0) {
@@ -140,83 +139,89 @@ async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeathe
   }
 }
 
-export async function applyEndTurnEffects(ctx: BattleContext) {
-  const active = ctx.activeBattle.value
-  const p = active?.player
-  const e = active?.enemy
-  if (!p || !e || !active || ctx.fsm.currentState.value !== 'ACTIVE_BATTLE') return
-
-  const { getShowdownWorker } = await import('./showdownWorkerClient.ts')
-  if (getShowdownWorker()) {
-    return
-  }
-
-  const { useMapStore } = await import('@/stores/map.ts')
-  const mapStore = useMapStore()
-
-  if (active.pendingSlotEffects?.length) {
-    const resolved: typeof active.pendingSlotEffects = [];
-    for (const effect of active.pendingSlotEffects) {
-      effect.turnsLeft--;
-      if (effect.turnsLeft <= 0) {
-        const fsTarget = effect.side === 'player' ? active.player : active.enemy;
-        if (fsTarget && fsTarget.hp > 0) {
-          fsTarget.hp = Math.max(0, fsTarget.hp - effect.damage);
-          const fromText = effect.sourceName ? ` de ${effect.sourceName}` : '';
-          ctx.addLog(`¡Se cumplió la premonición${fromText}! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget);
-          const side = effect.side;
-          if (ctx.animations?.handleBlinkRequest) {
-            await ctx.animations.handleBlinkRequest({ side });
-          }
+async function processPendingSlotEffects(active: BattleState, ctx: BattleContext): Promise<void> {
+  if (!active.pendingSlotEffects?.length) return;
+  const resolved: typeof active.pendingSlotEffects = [];
+  for (const effect of active.pendingSlotEffects) {
+    effect.turnsLeft--;
+    if (effect.turnsLeft <= 0) {
+      const fsTarget = effect.side === 'player' ? active.player : active.enemy;
+      if (fsTarget && fsTarget.hp > 0) {
+        fsTarget.hp = Math.max(0, fsTarget.hp - effect.damage);
+        const fromText = effect.sourceName ? ` de ${effect.sourceName}` : '';
+        ctx.addLog(`¡Se cumplió la premonición${fromText}! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget);
+        const side = effect.side;
+        if (ctx.animations?.handleBlinkRequest) {
+          await ctx.animations.handleBlinkRequest({ side });
         }
-      } else {
-        resolved.push(effect);
       }
+    } else {
+      resolved.push(effect);
     }
-    active.pendingSlotEffects = resolved;
   }
+  active.pendingSlotEffects = resolved;
+}
 
-  await tickStatus(p, ctx, 'player')
-  await tickStatus(e, ctx, 'enemy')
-  await tickLeechSeed(p, e, ctx)
-  await tickLeechSeed(e, p, ctx)
-  
-  const w = active.weather
+function processEndTurnWeatherFade(w: BattleWeather | undefined, ctx: BattleContext): void {
   if (w && w.turns > 0) {
-    w.turns--
+    w.turns--;
     if (w.turns === 0) {
-      ctx.addLog(`¡El efecto de ${w.type} se desvaneció!`, 'log-info')
-      w.type = requireWeatherId(mapStore.currentWeather || 'clear')
-      w.turns = -1
+      ctx.addLog(`¡El efecto de ${w.type} se desvaneció!`, 'log-info');
+      w.type = requireWeatherId(resolveCurrentWeather() || 'clear');
+      w.turns = -1;
     }
   }
+}
 
-  const fieldEffects = ['reflect', 'lightScreen', 'safeguard', 'mist'] as const
+function processFieldScreensDecay(ctx: BattleContext): void {
+  const fieldEffects = ['reflect', 'lightScreen', 'safeguard', 'mist'] as const;
   const sides = [
     { stages: ctx.playerStages, name: 'Jugador', log: 'log-player' as const },
     { stages: ctx.enemyStages, name: 'Enemigo', log: 'log-enemy' as const }
-  ]
+  ];
   sides.forEach(side => {
     fieldEffects.forEach(effect => {
-      const stages = side.stages.value
+      const stages = side.stages.value;
       if (stages[effect] > 0) {
-        stages[effect]--
+        stages[effect]--;
         if (stages[effect] === 0) {
-          const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect // spanish-ok: UI Spanish text localization label
-          ctx.addLog(`¡El efecto de ${effectLabel} del ${side.name} se desvaneció!`, side.log)
+          const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect; // spanish-ok: UI Spanish text localization label
+          ctx.addLog(`¡El efecto de ${effectLabel} del ${side.name} se desvaneció!`, side.log);
         }
       }
-    })
-  })
+    });
+  });
+}
 
-  await applyEndTurnWeather(p, e, active.weather, ctx)
+export async function applyEndTurnEffects(ctx: BattleContext) {
+  const active = ctx.activeBattle.value;
+  const p = active?.player;
+  const e = active?.enemy;
+  if (!p || !e || !active || ctx.fsm.currentState.value !== 'ACTIVE_BATTLE') return;
+
+  const { getShowdownWorker } = await import('./showdownWorkerClient.ts');
+  if (getShowdownWorker()) {
+    return;
+  }
+
+  await processPendingSlotEffects(active, ctx);
+
+  await tickStatus(p, ctx, 'player');
+  await tickStatus(e, ctx, 'enemy');
+  await tickLeechSeed(p, e, ctx);
+  await tickLeechSeed(e, p, ctx);
   
-  if (p.hp <= 0) await ctx.handleFaint('player')
-  if (ctx.isBattleActive.value && e.hp <= 0) await ctx.handleFaint('enemy')
+  processEndTurnWeatherFade(active.weather, ctx);
+  processFieldScreensDecay(ctx);
+
+  await applyEndTurnWeather(p, e, active.weather, ctx);
   
-  ctx.persistBattle()
+  if (p.hp <= 0) await ctx.handleFaint('player');
+  if (ctx.isBattleActive.value && e.hp <= 0) await ctx.handleFaint('enemy');
+  
+  ctx.persistBattle();
   if (active && !active.over) {
-    active.turnCount++
+    active.turnCount++;
   }
 }
 

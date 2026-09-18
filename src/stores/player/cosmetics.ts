@@ -56,51 +56,51 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     { immediate: true }
   )
 
+interface CosmeticRequirement {
+  requiredRole?: string
+  requiredClass?: string
+}
+
+function checkCosmeticRequirement(
+  def: CosmeticRequirement | undefined,
+  isAdmin: boolean,
+  userClass: string,
+  currentLevel: number
+): { isEligible: boolean; errorMsg?: string } {
+  if (!def) return { isEligible: false, errorMsg: 'Definición no encontrada' }
+  if (def.requiredRole === 'admin' && !isAdmin) {
+    return { isEligible: false, errorMsg: 'admin' }
+  }
+  if (def.requiredClass) {
+    const isEligible = def.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
+    if (!isEligible) {
+      return { isEligible: false, errorMsg: 'class' }
+    }
+  }
+  return { isEligible: true }
+}
+
   function sanitizeEquippedCosmetics() {
     const userClass = gameStore.state.playerClass || ''
     const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
 
     // 1. Sanitizar Nick Style
-    const currentNick = gameStore.state.nick_style || ''
+    const currentNick = gameStore.state.nick_style
     if (currentNick && isNickStyleId(currentNick)) {
-      const nickDef = NICK_STYLES_BY_ID[currentNick]
-      if (nickDef) {
-        let shouldReset = false
-        if (nickDef.requiredRole === 'admin' && !isAdmin.value) {
-          shouldReset = true
-        }
-        if (nickDef.requiredClass) {
-          const isEligible = nickDef.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
-          if (!isEligible) {
-            shouldReset = true
-          }
-        }
-        if (shouldReset) {
-          gameStore.state.nick_style = null
-          gameStore.save(false)
-        }
+      const check = checkCosmeticRequirement(NICK_STYLES_BY_ID[currentNick], isAdmin.value, userClass, currentLevel)
+      if (!check.isEligible) {
+        gameStore.state.nick_style = null
+        gameStore.save(false)
       }
     }
 
     // 2. Sanitizar Avatar Style
-    const currentAvatar = gameStore.state.avatar_style || ''
+    const currentAvatar = gameStore.state.avatar_style
     if (currentAvatar && isAvatarStyleId(currentAvatar)) {
-      const avatarDef = AVATAR_STYLES_BY_ID[currentAvatar]
-      if (avatarDef) {
-        let shouldReset = false
-        if (avatarDef.requiredRole === 'admin' && !isAdmin.value) {
-          shouldReset = true
-        }
-        if (avatarDef.requiredClass) {
-          const isEligible = avatarDef.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
-          if (!isEligible) {
-            shouldReset = true
-          }
-        }
-        if (shouldReset) {
-          gameStore.state.avatar_style = null
-          gameStore.save(false)
-        }
+      const check = checkCosmeticRequirement(AVATAR_STYLES_BY_ID[currentAvatar], isAdmin.value, userClass, currentLevel)
+      if (!check.isEligible) {
+        gameStore.state.avatar_style = null
+        gameStore.save(false)
       }
     }
   }
@@ -111,19 +111,14 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     
     // Validación de seguridad antes de equipar
     if (styleId && isNickStyleId(styleId)) {
-      const styleDef = NICK_STYLES_BY_ID[styleId]
-      if (styleDef) {
-        const userClass = gameStore.state.playerClass || ''
-        const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
-        if (styleDef.requiredRole === 'admin' && !isAdmin.value) {
+      const userClass = gameStore.state.playerClass || ''
+      const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
+      const check = checkCosmeticRequirement(NICK_STYLES_BY_ID[styleId], isAdmin.value, userClass, currentLevel)
+      if (!check.isEligible) {
+        if (check.errorMsg === 'admin') {
           throw new Error('No tienes permiso para equipar este estilo de nick')
         }
-        if (styleDef.requiredClass) {
-          const isEligible = styleDef.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
-          if (!isEligible) {
-            throw new Error(`Este estilo de nick requiere la profesión activa y nivel ${COSMETIC_UNLOCK_CLASS_LEVEL}`)
-          }
-        }
+        throw new Error(`Este estilo de nick requiere la profesión activa y nivel ${COSMETIC_UNLOCK_CLASS_LEVEL}`)
       }
     }
 
@@ -148,19 +143,14 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     
     // Validación de seguridad antes de equipar
     if (styleId && isAvatarStyleId(styleId)) {
-      const styleDef = AVATAR_STYLES_BY_ID[styleId]
-      if (styleDef) {
-        const userClass = gameStore.state.playerClass || ''
-        const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
-        if (styleDef.requiredRole === 'admin' && !isAdmin.value) {
+      const userClass = gameStore.state.playerClass || ''
+      const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
+      const check = checkCosmeticRequirement(AVATAR_STYLES_BY_ID[styleId], isAdmin.value, userClass, currentLevel)
+      if (!check.isEligible) {
+        if (check.errorMsg === 'admin') {
           throw new Error('No tienes permiso para equipar este marco de avatar')
         }
-        if (styleDef.requiredClass) {
-          const isEligible = styleDef.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
-          if (!isEligible) {
-            throw new Error(`Este marco de avatar requiere la profesión activa y nivel ${COSMETIC_UNLOCK_CLASS_LEVEL}`)
-          }
-        }
+        throw new Error(`Este marco de avatar requiere la profesión activa y nivel ${COSMETIC_UNLOCK_CLASS_LEVEL}`)
       }
     }
 
@@ -185,9 +175,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     allAvatarStyles,
     equippedNickStyle,
     equippedAvatarStyle,
-    isLoading,
     equipNickStyle,
-    equipAvatarStyle,
-    sanitizeEquippedCosmetics
+    equipAvatarStyle
   }
 })

@@ -2,7 +2,8 @@ import {
   getSeasonalThemeForMonth, 
   SEASONAL_ANNUAL_THEMES,
   type RankedTierId,
-  type SeasonalThemeId
+  type SeasonalThemeId,
+  type SeasonalThemeConfig
 } from '@/data/system/rankedData';
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { GameState } from '@/types/system/game';
@@ -26,7 +27,7 @@ export function calculateEloSoftReset(elo: number): number {
   return Math.max(BASE_RANKED_ELO, Math.floor((current - BASE_RANKED_ELO) * 0.5 + BASE_RANKED_ELO));
 }
 
-export function resolveRankedTierFromElo(elo: number): RankedTierId {
+function resolveRankedTierFromElo(elo: number): RankedTierId {
   if (elo >= ELO_TIER_MAESTRO) return 'maestro';
   if (elo >= ELO_TIER_DIAMANTE) return 'diamante';
   if (elo >= ELO_TIER_PLATINO) return 'platino';
@@ -46,6 +47,55 @@ export interface SeasonResolutionResult {
   medal?: RankedSeasonMedal | null;
 }
 
+function createSeasonRewardPokemon(
+  tier: RankedTierId,
+  concludedTheme: SeasonalThemeConfig
+): Pokemon | null {
+  if (tier !== 'diamante' && tier !== 'maestro') return null;
+  const rewardConfig = concludedTheme.rewardPokemon?.[tier];
+  if (!rewardConfig) return null;
+
+  const created = makePokemon(rewardConfig.species, rewardConfig.level || DEFAULT_REWARD_POKEMON_LEVEL);
+  if (!created) return null;
+
+  created.isShiny = true;
+  const guaranteedCount = rewardConfig.guaranteedMaxIvs || (tier === 'maestro' ? MAX_IVS_MAESTRO : MAX_IVS_DIAMANTE);
+  for (let i = 0; i < guaranteedCount && i < POKEMON_STAT_KEYS.length; i++) {
+    const statKey = POKEMON_STAT_KEYS[i];
+    if (statKey) {
+      created.ivs[statKey] = PERFECT_IV;
+    }
+  }
+
+  recalcPokemonStats(created, true);
+  created.hp = created.maxHp;
+  return created;
+}
+
+function createCommemorativeMedal(
+  concludedTheme: SeasonalThemeConfig,
+  tier: RankedTierId,
+  finalElo: number
+): RankedSeasonMedal {
+  const timestamp = Temporal.Now.instant();
+  return {
+    id: `medal_${concludedTheme.id}_${timestamp.epochMilliseconds}`,
+    seasonName: concludedTheme.name,
+    tournamentName: concludedTheme.name,
+    themeId: concludedTheme.id,
+    tier,
+    finalElo,
+    awardedAt: timestamp.toString()
+  };
+}
+
+function resolveConcludedTheme(currentMonthIndex: number, lastSeasonId?: string): SeasonalThemeConfig { // domain-ok: Historical seasonal theme identifier from GameState
+  const found = SEASONAL_ANNUAL_THEMES.find(t => t.id === lastSeasonId);
+  if (found) return found;
+  const prevMonth = currentMonthIndex === 1 ? MONTHS_IN_YEAR : currentMonthIndex - 1;
+  return getSeasonalThemeForMonth(prevMonth);
+}
+
 export function checkAndResolveSeasonEnd(
   gameState: GameState,
   currentMonthIndex: number
@@ -63,51 +113,17 @@ export function checkAndResolveSeasonEnd(
     return { resolved: false };
   }
 
-  // Find the concluded theme
-  const concludedTheme = SEASONAL_ANNUAL_THEMES.find(t => t.id === gameState.lastResolvedSeasonId)
-    || getSeasonalThemeForMonth(currentMonthIndex === 1 ? MONTHS_IN_YEAR : currentMonthIndex - 1);
-
+  const concludedTheme = resolveConcludedTheme(currentMonthIndex, gameState.lastResolvedSeasonId);
   const finalElo = gameState.rankedMaxElo || gameState.eloRating || BASE_RANKED_ELO;
   const tier = resolveRankedTierFromElo(finalElo);
 
-  let rewardPokemon: Pokemon | null = null;
-
-  // Check if player qualified for reward pokemon (Diamante or Maestro)
-  if ((tier === 'diamante' || tier === 'maestro') && concludedTheme.rewardPokemon?.[tier]) {
-    const rewardConfig = concludedTheme.rewardPokemon[tier];
-    const created = makePokemon(rewardConfig.species, rewardConfig.level || DEFAULT_REWARD_POKEMON_LEVEL);
-    if (created) {
-      created.isShiny = true;
-      const guaranteedCount = rewardConfig.guaranteedMaxIvs || (tier === 'maestro' ? MAX_IVS_MAESTRO : MAX_IVS_DIAMANTE);
-      for (let i = 0; i < guaranteedCount && i < POKEMON_STAT_KEYS.length; i++) {
-        const statKey = POKEMON_STAT_KEYS[i];
-        if (statKey) {
-          created.ivs[statKey] = PERFECT_IV;
-        }
-      }
-
-      // Recalculate stats with guaranteed IVs
-      recalcPokemonStats(created, true);
-      created.hp = created.maxHp;
-
-      rewardPokemon = created;
-      gameState.box = [...(gameState.box || []), created];
-    }
+  const rewardPokemon = createSeasonRewardPokemon(tier, concludedTheme);
+  if (rewardPokemon) {
+    gameState.box = [...(gameState.box || []), rewardPokemon];
   }
 
-  // Create commemorative medal
-  const timestamp = Temporal.Now.instant();
-  const medal: RankedSeasonMedal = {
-    id: `medal_${concludedTheme.id}_${timestamp.epochMilliseconds}`,
-    seasonName: concludedTheme.name,
-    tournamentName: concludedTheme.name,
-    themeId: concludedTheme.id,
-    tier,
-    finalElo,
-    awardedAt: timestamp.toString()
-  };
+  const medal = createCommemorativeMedal(concludedTheme, tier, finalElo);
 
-  // Perform soft reset
   const newElo = calculateEloSoftReset(gameState.eloRating || BASE_RANKED_ELO);
   gameState.eloRating = newElo;
   gameState.rankedMaxElo = newElo;

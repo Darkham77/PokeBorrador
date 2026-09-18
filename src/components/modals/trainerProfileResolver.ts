@@ -5,8 +5,10 @@
  * cached cosmetics, friends list, and fetched profile/save data.
  */
 
-import type { RankedSeasonMedal } from '@/types/battle/pvp.ts'
+import type { RankedSeasonMedal, BattleReplayRecord, BattleCode } from '@/types/battle/pvp.ts'
+import type { SideID } from '@pkmn/sim'
 import { isRankedTierId, isSeasonalThemeId } from '@/data/system/rankedData.ts'
+import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts'
 
 export interface ProfileRow {
   id: string
@@ -170,6 +172,38 @@ export interface EventMedalCounts {
   total: number;
 }
 
+const TROPHY_RANKS_SET: ReadonlySet<PokemonCompetitionRank> = new Set<PokemonCompetitionRank>(POKEMON_COMPETITION_RANKS); // runtime-set: Fast O(1) membership lookup set
+
+function parseTrophyRank(t: unknown): PokemonCompetitionRank | null {
+  if (t && typeof t === 'object' && 'rank' in t) {
+    const r = (t as { rank?: string }).rank;
+    if (r && TROPHY_RANKS_SET.has(r as PokemonCompetitionRank)) {
+      return r as PokemonCompetitionRank;
+    }
+  }
+  return null;
+}
+
+function parsePokemonTrophies(entry: unknown, counts: Record<PokemonCompetitionRank, number>): void { // boundary-ok: External runtime boundary deserializer
+  if (!entry || typeof entry !== 'object' || !('trophies' in entry)) return;
+  const trophies = (entry as { trophies?: unknown[] }).trophies;
+  if (!Array.isArray(trophies)) return;
+
+  for (const t of trophies) {
+    const rank = parseTrophyRank(t);
+    if (rank) {
+      counts[rank]++;
+    }
+  }
+}
+
+function countPokemonListTrophies(list: unknown[] | undefined, counts: { first: number; second: number; third: number }): void {
+  if (!Array.isArray(list)) return;
+  for (const p of list) {
+    parsePokemonTrophies(p, counts);
+  }
+}
+
 export function computeEventTrophyCounts(
   team: unknown[] | undefined,
   box: unknown[] | undefined,
@@ -180,32 +214,13 @@ export function computeEventTrophyCounts(
   savedSecond = 0,
   savedThird = 0
 ): EventMedalCounts {
-  let first = 0;
-  let second = 0;
-  let third = 0;
+  const counts = { first: 0, second: 0, third: 0 };
+  countPokemonListTrophies(team, counts);
+  countPokemonListTrophies(box, counts);
 
-  const countPokes = (list: unknown[] | undefined) => {
-    if (!list || !Array.isArray(list)) return;
-    for (const p of list) {
-      if (p && typeof p === 'object' && 'trophies' in p && Array.isArray((p as { trophies?: unknown[] }).trophies)) {
-        for (const t of (p as { trophies: unknown[] }).trophies) {
-          if (t && typeof t === 'object' && 'rank' in t) {
-            const r = (t as { rank?: string }).rank;
-            if (r === 'first') first++;
-            else if (r === 'second') second++;
-            else if (r === 'third') third++;
-          }
-        }
-      }
-    }
-  };
-
-  countPokes(team);
-  countPokes(box);
-
-  const finalFirst = Math.max(first, dbFirst, savedFirst);
-  const finalSecond = Math.max(second, dbSecond, savedSecond);
-  const finalThird = Math.max(third, dbThird, savedThird);
+  const finalFirst = Math.max(counts.first, dbFirst, savedFirst);
+  const finalSecond = Math.max(counts.second, dbSecond, savedSecond);
+  const finalThird = Math.max(counts.third, dbThird, savedThird);
 
   return {
     first: finalFirst,
@@ -215,9 +230,73 @@ export function computeEventTrophyCounts(
   };
 }
 
+const DEFAULT_RANKED_ELO = 1000 as const;
+
+interface AwardPrizePayload {
+  type?: string;
+  season?: string;
+  tier?: unknown;
+  tournamentName?: string;
+  tournament_name?: string;
+  themeId?: unknown;
+  theme_id?: unknown;
+  rank?: unknown;
+  elo?: unknown;
+}
+
+interface TrainerAwardRow {
+  id?: string;
+  event_id?: string;
+  awarded_at?: string;
+  prize?: unknown;
+}
+
+function parsePrizeObject(rawPrize: unknown): AwardPrizePayload | null {
+  if (!rawPrize || (typeof rawPrize !== 'object' && typeof rawPrize !== 'string')) return null;
+  if (typeof rawPrize === 'string') {
+    try {
+      const parsed = JSON.parse(rawPrize);
+      return (parsed && typeof parsed === 'object') ? (parsed as AwardPrizePayload) : null;
+    } catch {
+      return null;
+    }
+  }
+  return rawPrize as AwardPrizePayload;
+}
+
+function parseRankedMedalFromAward(
+  row: TrainerAwardRow,
+  seenSeasons: Set<string>
+): RankedSeasonMedal | null {
+  const pObj = parsePrizeObject(row.prize);
+  if (!pObj || pObj.type !== 'ranked_medal') return null;
+
+  const season = String(pObj.season || row.event_id || 'TEMPORADA ACTUAL');
+  if (seenSeasons.has(season)) return null;
+
+  seenSeasons.add(season);
+  const tierVal = pObj.tier;
+  const tournamentName = typeof pObj.tournamentName === 'string'
+    ? pObj.tournamentName
+    : (typeof pObj.tournament_name === 'string' ? pObj.tournament_name : undefined);
+  const rawTheme = pObj.themeId ?? pObj.theme_id;
+  const themeId = isSeasonalThemeId(rawTheme) ? rawTheme : undefined;
+
+  return {
+    id: row.id || `medal_${row.event_id || 'ranked'}`,
+    seasonName: season,
+    tournamentName,
+    themeId,
+    tier: isRankedTierId(tierVal) ? tierVal : 'bronce',
+    rank: pObj.rank ? Number(pObj.rank) : undefined,
+    finalElo: Number(pObj.elo) || DEFAULT_RANKED_ELO,
+    awardedAt: String(row.awarded_at || '')
+  };
+}
+
 export function extractRankedMedals(
-  awardsData: unknown[] | undefined | null,
-  savedMedals: RankedSeasonMedal[] | undefined | null
+  awardsData: unknown,
+  savedMedals: unknown
 ): RankedSeasonMedal[] {
   const medals: RankedSeasonMedal[] = [];
   const seenSeasons = new Set<string>();
@@ -225,41 +304,13 @@ export function extractRankedMedals(
   if (Array.isArray(awardsData)) {
     for (const a of awardsData) {
       if (!a || typeof a !== 'object') continue;
-      const row = a as { prize?: unknown; event_id?: string; awarded_at?: string; id?: string };
-      let p = row.prize;
-      if (typeof p === 'string') {
-        try { p = JSON.parse(p); } catch { p = null; }
-      }
-      if (p && typeof p === 'object') {
-        const pObj = p as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-        if (pObj.type === 'ranked_medal') {
-          const season = String(pObj.season || row.event_id || 'TEMPORADA ACTUAL');
-          if (!seenSeasons.has(season)) {
-            seenSeasons.add(season);
-            const tierVal = pObj.tier;
-            const tournamentName = typeof pObj.tournamentName === 'string'
-              ? pObj.tournamentName
-              : (typeof pObj.tournament_name === 'string' ? pObj.tournament_name : undefined);
-            const rawTheme = pObj.themeId ?? pObj.theme_id;
-            const themeId = isSeasonalThemeId(rawTheme) ? rawTheme : undefined;
-            medals.push({
-              id: row.id || `medal_${row.event_id || 'ranked'}`,
-              seasonName: season,
-              tournamentName,
-              themeId,
-              tier: isRankedTierId(tierVal) ? tierVal : 'bronce',
-              rank: pObj.rank ? Number(pObj.rank) : undefined,
-              finalElo: Number(pObj.elo) || 1000,
-              awardedAt: String(row.awarded_at || '')
-            });
-          }
-        }
-      }
+      const medal = parseRankedMedalFromAward(a as { prize?: unknown; event_id?: string; awarded_at?: string; id?: string }, seenSeasons);
+      if (medal) medals.push(medal);
     }
   }
 
   if (Array.isArray(savedMedals)) {
-    for (const m of savedMedals) {
+    for (const m of savedMedals as RankedSeasonMedal[]) {
       if (m && m.seasonName && !seenSeasons.has(m.seasonName)) {
         seenSeasons.add(m.seasonName);
         medals.push(m);
@@ -268,5 +319,63 @@ export function extractRankedMedals(
   }
 
   return medals;
+}
+
+export function parseAwardMedalCounts(awardsData: unknown): { first: number; second: number; third: number } {
+  let first = 0;
+  let second = 0;
+  let third = 0;
+  if (!Array.isArray(awardsData)) return { first, second, third };
+
+  for (const a of awardsData as { prize?: unknown }[]) {
+    const p = parsePrizeObject(a?.prize);
+    if (p && 'rank' in p) {
+      const r = p.rank;
+      if (r === 'first') first++;
+      else if (r === 'second') second++;
+      else if (r === 'third') third++;
+    }
+  }
+  return { first, second, third };
+}
+
+export function calculateDistinctEventCount(compEntryData: unknown): number {
+  if (!Array.isArray(compEntryData)) return 0;
+  const distinctEvents = new Set((compEntryData as { event_id?: string }[]).map(e => e.event_id).filter(Boolean));
+  return distinctEvents.size;
+}
+
+export function mapReplayRows(replaysData: unknown): BattleReplayRecord[] {
+  if (!Array.isArray(replaysData)) return [];
+  return replaysData.map(raw => {
+    const r = raw as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    return {
+      id: String(r.id),
+      battleCode: String(r.battle_code || r.battleCode) as BattleCode,
+      seasonId: String(r.season_id || r.seasonId || ''),
+      themeId: isSeasonalThemeId(r.theme_id) ? r.theme_id : (isSeasonalThemeId(r.themeId) ? r.themeId : 'masters_allstars'),
+      p1: typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : (r.p1 || {}),
+      p2: typeof r.p2_data === 'string' ? JSON.parse(r.p2_data) : (r.p2 || {}),
+      turnsCount: Number(r.turns_count ?? r.turnsCount ?? 0),
+      winnerSide: String(r.winner_side || r.winnerSide || 'p1') as SideID,
+      choiceStream: typeof r.choice_stream === 'string' ? JSON.parse(r.choice_stream) : (r.choiceStream || []),
+      initialSeed: typeof r.initial_seed === 'string' ? JSON.parse(r.initial_seed) : (r.initialSeed || [0, 0, 0, 0]),
+      isTop10Archived: Boolean(r.is_top10_archived ?? r.isTop10Archived),
+      viewsCount: Number(r.views_count ?? r.viewsCount ?? 0),
+      createdAt: String(r.created_at || r.createdAt || '')
+    };
+  });
+}
+
+export function parseRawSaveData(saveData: unknown): SaveStateData | null {
+  if (!saveData) return null;
+  if (typeof saveData === 'string') {
+    try {
+      return JSON.parse(saveData) as SaveStateData;
+    } catch {
+      return null;
+    }
+  }
+  return typeof saveData === 'object' ? (saveData as SaveStateData) : null;
 }
 

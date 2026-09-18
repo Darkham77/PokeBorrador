@@ -20,6 +20,11 @@ Frontend Developers / Systems Engineers.
 
 - Ensure clean decoupling and zero-warning type safety.
 - Coordinate interactive notifications with `ToastNotification.vue` and GSAP timelines.
+- `DirectChatMessageRow.vue`: Child message row component in `DirectChatWindow.vue` encapsulating sender avatar, level, cosmetics, styled nickname, formatted timestamp, and optional `ChatBattleCodeBadge`.
+- `SocialRankingsLeaderboardTab.vue`: Subcomponent of `SocialRankings.vue` encapsulating the global ELO leaderboard list.
+- `SocialRankingsLeaderboardRow.vue`: Atomic row component rendering an individual player rank card, badges, and challenge action.
+- `SocialTradesSubNav.vue`: Atomic sub-navigation bar for trade categories (received, sent, claims) with notification badges and hover effects in `SocialTradesTab.vue`.
+- `SocialSearchResultActions.vue`: Encapsulates action buttons (send/accept request) and status badges (pending, friend) for search result items in `SocialSearchTab.vue`.
 
 ## Verification
 

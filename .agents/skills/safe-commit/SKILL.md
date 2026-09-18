@@ -150,7 +150,7 @@ In every iteration of the loop, execute these checks sequentially:
 
 3. **Check 2.3 — THE BUILD GATE 🔒**: Run `npm run build`
    - *Strict Requirement*: MUST return **Exit Code 0**.
-   - *Zero Bypass Mandate*: It is STRICTLY FORBIDDEN to replace `npm run build` with `npx vite build` or partial scripts to evade audit failures. `npm run build` runs `validate:tools`, `validate:types`, `audit`, and `vite build`.
+   - *Zero Bypass Mandate*: It is STRICTLY FORBIDDEN to replace `npm run build` with `npx vite build` or partial scripts to evade audit failures. `npm run build` runs `validate:tools`, `audit` (which includes `validate_type_check` in parallel), and `vite build`.
    - *If exit code ≠ 0 or build fails*:
      - **DO NOT PROCEED.** Record the error in `task.md`.
      - Fix the underlying compilation, type, or auditor errors in source code.
@@ -182,6 +182,7 @@ In every iteration of the loop, execute these checks sequentially:
 
 6. **Check 2.6 — Database Parity (if DB changed)**:
    - Verify SQL migration exists in `database/migrations/` and `src/logic/db/migrations_data.ts`.
+   - **Mandatory Migration Certification Gate**: If `database/migrations/` or `src/logic/db/migrations_data.ts` has changes in `git diff`, execute `npm run test:migrations` to certify compatibility against the real production backup fixture. The commit is strictly blocked if `test:migrations` fails. If no database files were modified, skip this check.
 
 ### Loop Exit Condition
 Only when Check 2.1 ✅ (0 errors/warnings), Check 2.2 ✅ (tests pass), Check 2.3 ✅ (`npm run build` exit code 0), Check 2.4 ✅ (compression & optimizations verified), and Check 2.5 ✅ (health ≥ 85) are all satisfied consecutively on the current code:
@@ -228,6 +229,7 @@ This phase begins **only after** the user explicitly responds to Phase 3.
 - Synthesize the final commit message using the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)):
   - Retrieve the pre-drafted message from `task.md` (Step 1.4).
   - Verify that EVERY modified subsystem from `git status` is represented with clear, technical bullets.
+  - **Hierarchical Synthesis Mandate (Synthesize Without Omission)**: When the working tree contains extensive changes across multiple subsystems, group by subsystem headers and synthesize concisely into cohesive technical bullets. NEVER omit any modified subsystem or area from the working tree.
   - Supplement it with bullets for unit tests added (Phase 1), audit fixes / optimizations applied (Phase 2), and lessons / DOX updated (Phase 3).
 - Execute `git add .` (MANDATORY `.` — selective staging is strictly forbidden).
 - Execute `git commit -m "<message>"`.

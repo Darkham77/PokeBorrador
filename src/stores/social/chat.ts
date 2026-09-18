@@ -22,7 +22,16 @@ export const useChatStore = defineStore('chat', () => {
   
   const cosmeticsStore = useChatCosmeticsStore()
   const profileCosmetics = computed(() => cosmeticsStore.profileCosmetics)
-  const fetchMissingCosmetics = cosmeticsStore.fetchMissingCosmetics
+  const fetchMissingCosmetics = async (forceIds: string[] = []) => {
+    const uniqueUserIds = new Set<string>()
+    globalMessages.value.forEach(m => { if (m.user_id) uniqueUserIds.add(m.user_id) })
+    Object.keys(privateChats).forEach(friendId => {
+      uniqueUserIds.add(friendId)
+      privateChats[friendId]?.messages.forEach(m => { if (m.senderId) uniqueUserIds.add(m.senderId) })
+    })
+    forceIds.forEach(id => { if (id) uniqueUserIds.add(id) })
+    await cosmeticsStore.fetchMissingCosmetics([...uniqueUserIds])
+  }
 
   const privateStore = useChatPrivateStore()
   const privateChats = privateStore.privateChats
@@ -32,7 +41,6 @@ export const useChatStore = defineStore('chat', () => {
   })
   const totalUnreadChats = computed(() => privateStore.totalUnreadChats)
 
-  const initPrivateInbox = privateStore.initPrivateInbox
   const sendPrivateMessage = privateStore.sendPrivateMessage
   const openChat = privateStore.openChat
   const closeChat = privateStore.closeChat
@@ -179,7 +187,6 @@ export const useChatStore = defineStore('chat', () => {
     profileCosmetics,
     totalUnreadChats,
     initGlobalChat,
-    initPrivateInbox,
     sendGlobalMessage,
     sendPrivateMessage,
     openChat,

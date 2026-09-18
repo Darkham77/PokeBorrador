@@ -37,3 +37,7 @@ $breakpoints: (
   hud-mobile: $hud-mobile-breakpoint,
   desktop: 1450px 
 );
+
+// Weather Atmospheric Bleed & Scroll Overshoot (Single Source of Truth)
+$weather-layer-bleed: -600px;
+$weather-mist-bleed: -100px;

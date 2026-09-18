@@ -4,91 +4,126 @@
  * Used by both frontend (sqliteEngine.ts) and backend/tools (validate_sql_migrations.ts).
  */
 
+interface SqlParserContext {
+  inDollarQuote: boolean;
+  inString: boolean;
+  inBlockComment: boolean;
+  inLineComment: boolean;
+  current: string;
+  statements: string[];
+}
+
+function handleActiveComments(sql: string, i: number, ctx: SqlParserContext): number {
+  if (ctx.inLineComment) {
+    if (sql[i] === '\n' || i === sql.length - 1) {
+      ctx.inLineComment = false;
+    }
+    return 1;
+  }
+  if (ctx.inBlockComment) {
+    if (sql[i] === '*' && sql[i + 1] === '/') {
+      ctx.inBlockComment = false;
+      return 2;
+    }
+    return 1;
+  }
+  return 0;
+}
+
+function handleQuoteCharacters(sql: string, i: number, ctx: SqlParserContext): number {
+  const char = sql[i];
+  const nextChar = sql[i + 1];
+
+  if (ctx.inDollarQuote) {
+    if (char === '$' && nextChar === '$') {
+      ctx.inDollarQuote = false;
+      ctx.current += '$$';
+      return 2;
+    }
+    ctx.current += char;
+    return 1;
+  }
+
+  if (ctx.inString) {
+    if (char === "'" && nextChar === "'") {
+      ctx.current += "''";
+      return 2;
+    }
+    if (char === "'" && sql[i - 1] !== '\\') {
+      ctx.inString = false;
+      ctx.current += "'";
+      return 1;
+    }
+    ctx.current += char;
+    return 1;
+  }
+
+  return 0;
+}
+
+function handleNormalTokens(sql: string, i: number, ctx: SqlParserContext): number {
+  const char = sql[i];
+  const nextChar = sql[i + 1];
+
+  if (char === '-' && nextChar === '-') {
+    ctx.inLineComment = true;
+    return 2;
+  }
+  if (char === '/' && nextChar === '*') {
+    ctx.inBlockComment = true;
+    return 2;
+  }
+  if (char === '$' && nextChar === '$') {
+    ctx.inDollarQuote = true;
+    ctx.current += '$$';
+    return 2;
+  }
+  if (char === "'") {
+    ctx.inString = true;
+    ctx.current += "'";
+    return 1;
+  }
+  if (char === ';') {
+    if (ctx.current.trim()) ctx.statements.push(ctx.current.trim());
+    ctx.current = '';
+    return 1;
+  }
+
+  ctx.current += char;
+  return 1;
+}
+
 /**
  * Splits SQL by semicolon, respecting $$ blocks and strings.
  */
 export function splitSQLStatements(sql: string): string[] {
-  const statements: string[] = []; // no-domain: Non-domain utility collection or data structure
-  let current = '';
-  let inDollarQuote = false;
-  let inString = false;
-  let inBlockComment = false;
-  let inLineComment = false;
-  
-  for (let i = 0; i < sql.length; i++) {
-    const char = sql[i];
-    const nextChar = sql[i + 1];
-    
-    // 1. Handle Line Comments (--)
-    if (inLineComment) {
-      if (char === '\n') inLineComment = false;
-      if (i === sql.length - 1) inLineComment = false; 
-      continue;
-    }
-    
-    // 2. Handle Block Comments (/* */)
-    if (inBlockComment) {
-      if (char === '*' && nextChar === '/') {
-        inBlockComment = false;
-        i++;
-      }
+  const ctx: SqlParserContext = {
+    inDollarQuote: false,
+    inString: false,
+    inBlockComment: false,
+    inLineComment: false,
+    current: '',
+    statements: []
+  };
+
+  let i = 0;
+  while (i < sql.length) {
+    const commentStep = handleActiveComments(sql, i, ctx);
+    if (commentStep > 0) {
+      i += commentStep;
       continue;
     }
 
-    if (!inDollarQuote && !inString) {
-      // Detect start of Line Comment
-      if (char === '-' && nextChar === '-') {
-        inLineComment = true;
-        i++;
-        continue;
-      }
-      // Detect start of Block Comment
-      if (char === '/' && nextChar === '*') {
-        inBlockComment = true;
-        i++;
-        continue;
-      }
-      
-      if (char === '$' && nextChar === '$') {
-        inDollarQuote = true;
-        current += '$$';
-        i++;
-        continue;
-      }
-      if (char === "'") {
-        inString = true;
-        current += "'";
-        continue;
-      }
-      if (char === ';') {
-        if (current.trim()) statements.push(current.trim());
-        current = '';
-        continue;
-      }
-    } else if (inDollarQuote) {
-      if (char === '$' && nextChar === '$') {
-        inDollarQuote = false;
-        current += '$$';
-        i++;
-        continue;
-      }
-    } else if (inString) {
-      if (char === "'" && nextChar === "'") {
-        current += "''";
-        i++;
-        continue;
-      }
-      if (char === "'" && sql[i-1] !== '\\') {
-        inString = false;
-        current += "'";
-        continue;
-      }
+    if (ctx.inDollarQuote || ctx.inString) {
+      i += handleQuoteCharacters(sql, i, ctx);
+      continue;
     }
-    current += char;
+
+    i += handleNormalTokens(sql, i, ctx);
   }
-  
-  if (current.trim()) statements.push(current.trim());
-  return statements.filter(s => s.length > 0);
+
+  if (ctx.current.trim()) ctx.statements.push(ctx.current.trim());
+  return ctx.statements.filter(s => s.length > 0);
 }
 
 const SQL_SKIP_PATTERNS = [

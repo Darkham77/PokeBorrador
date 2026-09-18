@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, getCurrentScope, onScopeDispose } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { safeStorage } from '@/logic/utils/storage.ts'
 import { useGameStore } from '@/stores/game.ts'
@@ -7,10 +7,10 @@ import { useWarStore } from '@/stores/war.ts'
 import { useEventStore } from '@/stores/events.ts'
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
 import { useAudioStore } from '@/stores/audio.ts'
-import { useMapStore } from '@/stores/map.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { useModalStore } from '@/stores/modals.ts'
 import { useErrorStore } from '@/stores/errorStore.ts'
+import { gameBus } from '@/logic/events/gameBus.ts'
 import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine.ts'
 import { clearVolatileStatus } from '@/logic/battle/battleStatus.ts'
 import { startBattleSequence, initBattleSequence, restoreBattleState } from '@/logic/battle/orchestrator.ts'
@@ -24,20 +24,32 @@ import { executeBattleSwitch } from './battleSwitchHelper.ts'
 import type { BattleSide } from '@/types/battle/battle'
 import { setupBattleEventWatchers } from './battleEventWatchers.ts'
 import { checkAndAutoRecharge, consumeInventoryItem } from './battleRechargeHelper.ts'
-import { findMatchingPokemon } from '@/logic/battle/showdownUidMapper.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
-import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts'
-import { isNaturalWeatherAllowedInLocation } from '@/logic/battle/battleTeamCoordinator.ts'
-import { isMapRouteId } from '@/data/world/map-assets'
-import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
+import type { WeatherId } from '@/logic/weather/weatherRegistry.ts'
+import type { MapRouteId } from '@/data/world/map-assets'
 import type { ItemId } from '@/data/inventory/items'
+import { buildCombatReplayPayload } from '@/logic/battle/helpers/combatReplayHelper.ts'
 import { GAME_UI_EVENTS, type BattleEnteringDetail } from '@/types/system/gameEvents.ts'
+import { registerBattleFormulasContextResolver } from '@/logic/battle/battleFormulas.ts'
+import {
+  ACTIVE_BATTLE_STATES,
+  isFaintSubstate,
+  hasForceSwitchRequest,
+  resolveBattleUiConfig,
+  syncBattleMapWeather,
+  canExecuteMove,
+  trackPlayerUsedMove,
+  syncPokemonHpEntry,
+  applyPendingBattleSwitches,
+  shouldResetRevivedPlayerSubstate,
+  shouldAdvanceToWaitInput
+} from './battleStoreHelper.ts'
 
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/system/stores'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle'
 import type { Move, Pokemon } from '@/types/pokemon/pokemon'
-import { createBattleUiConfig, type BattleMode, type BattleUiConfig } from '@/types/battle/battleConfig'
+import type { BattleUiConfig } from '@/types/battle/battleConfig'
 
 const INITIAL_STAGES: BattleStages = { 
   atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, 
@@ -51,27 +63,22 @@ export const useBattleStore = defineStore('battle', () => {
   const classStore = usePlayerClassStore()
   const audio = useAudioStore()
   const uiStore = useUIStore()
-  const mapStore = useMapStore()
   
   const activeBattle = ref<BattleState | null>(null)
   const fsm = createBattleStateMachine()
   const currentFsmState = computed(() => fsm.currentState.value)
   const currentSubState = computed(() => fsm.currentSubState.value)
   const faintedSides = ref(new Set<string>())
+  const rawShowdownLogs = ref<string[]>([])
   
   const isBattleActive = computed(() => 
-    activeBattle.value !== null && (
-      fsm.currentState.value === BATTLE_STATES.CONTEXT_SETUP ||
-      fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE || 
-      fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE ||
-      fsm.currentState.value === BATTLE_STATES.LEVEL_UP_MODAL ||
-      fsm.currentState.value === BATTLE_STATES.REORDER_TEAM ||
-      fsm.currentState.value === BATTLE_STATES.FIRST_INTRO ||
-      fsm.currentState.value === BATTLE_STATES.INITIALIZING ||
-      fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE ||
-      fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE
-    )
+    activeBattle.value !== null && ACTIVE_BATTLE_STATES.has(fsm.currentState.value)
   )
+
+  watch(isBattleActive, (active) => {
+    uiStore.setBattleActive(active)
+  }, { immediate: true })
+
   const isFinishing = computed(() => 
     fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE || 
     fsm.currentState.value === BATTLE_STATES.LEVEL_UP_MODAL ||
@@ -148,20 +155,30 @@ export const useBattleStore = defineStore('battle', () => {
     }
   })
   
-  watch(() => mapStore.currentWeather, (newWeather) => {
-    if (activeBattle.value && activeBattle.value.weather && activeBattle.value.weather.turns === -1) {
-      const locId = activeBattle.value.locationId || mapStore.currentMap
-      const mapConfig = isMapRouteId(locId) ? MAPS_BY_ROUTE_ID[locId] : null
-      if (!isNaturalWeatherAllowedInLocation(locId, mapConfig, null, activeBattle.value)) {
-        activeBattle.value.weather.type = requireWeatherId('clear')
-        activeBattle.value.weather.visual = 'clear'
-        return
-      }
-      // Sincronizar el tipo con el clima oficial según la generación, y el visual con el del mapa
-      activeBattle.value.weather.type = requireWeatherId(newWeather || 'clear')
-      activeBattle.value.weather.visual = newWeather || 'clear'
+  const handleMapWeatherChanged = (e: Event) => {
+    const detail = (e as CustomEvent<{ weather?: WeatherId; mapId?: MapRouteId }>).detail
+    if (!detail || !activeBattle.value) return
+    syncBattleMapWeather(activeBattle.value, detail.weather, detail.mapId)
+  }
+  gameBus.on('MAP_WEATHER_CHANGED', handleMapWeatherChanged)
+  const handleBattleUseItem = (e: Event) => {
+    const detail = (e as CustomEvent<{ itemId: ItemId; targetIndex: number | null }>).detail
+    if (detail?.itemId) {
+      void useItemInBattle(detail.itemId, detail.targetIndex)
     }
-  })
+  }
+  gameBus.on('BATTLE_USE_ITEM', handleBattleUseItem)
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      gameBus.off('MAP_WEATHER_CHANGED', handleMapWeatherChanged)
+      gameBus.off('BATTLE_USE_ITEM', handleBattleUseItem)
+    })
+  }
+
+  registerBattleFormulasContextResolver(() => ({
+    isGym: activeBattle.value?.isGym,
+    fieldConditions: activeBattle.value?.fieldConditions
+  }))
 
   watch(() => [fsm.currentState.value, fsm.currentSubState.value], ([state, sub]) => {
     if (
@@ -185,24 +202,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   const isPvP = computed(() => !!activeBattle.value?.isPvP)
 
-  const uiConfig = computed<BattleUiConfig>(() => {
-    const b = activeBattle.value
-    if (!b) return createBattleUiConfig('wild')
-    let mode: BattleMode = 'wild'
-    if (b.isPvP) {
-      mode = b.isRanked ? 'pvp_ranked' : 'pvp_casual'
-    } else if (b.isGym) {
-      mode = 'gym'
-    } else if (b.isTrainer) {
-      mode = 'trainer'
-    }
-    const isWild = !b.isTrainer && !b.isGym && !b.isPvP && !b.isGuardian
-    return createBattleUiConfig(mode, {
-      allowCatch: isWild,
-      allowFlee: isWild,
-      enableContinuousSearch: isWild && b.wasSearching !== false
-    })
-  })
+  const uiConfig = computed<BattleUiConfig>(() => resolveBattleUiConfig(activeBattle.value))
 
   const getContext = (): BattleContext => ({
     gs: gs as GameStore,
@@ -302,11 +302,9 @@ export const useBattleStore = defineStore('battle', () => {
   )
 
   const executeMove = async (moveIndex: number) => {
-    if (isProcessing.value || !isBattleActive.value || !activeBattle.value || activeBattle.value.over || !activeBattle.value.player || !activeBattle.value.enemy) return
+    if (!canExecuteMove(isProcessing.value, isBattleActive.value, activeBattle.value)) return
     if (isPvP.value) {
-      const { useLivePvPStore } = await import('@/stores/livePvP')
-      const livePvP = useLivePvPStore()
-      livePvP._commitPick({
+      gameBus.emit('PVP_COMMIT_PICK', {
         type: 'move',
         moveIndex,
         choiceString: `move ${moveIndex + 1}`
@@ -318,12 +316,7 @@ export const useBattleStore = defineStore('battle', () => {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE)
       
-      const move = player.value?.moves[moveIndex]
-      if (move && move.id) {
-        if (!playerUsedMoves.value.includes(move.id)) {
-          playerUsedMoves.value.push(move.id)
-        }
-      }
+      trackPlayerUsedMove(playerUsedMoves.value, player.value?.moves, moveIndex)
       
       await executeTurn(getContext(), moveIndex)
       
@@ -340,34 +333,21 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const finalizeTurnExecution = async () => {
-    if (!activeBattle.value) {
-      return
+    const battle = activeBattle.value
+    if (!battle) return
+
+    if (!battle.over && !isFaintSubstate(fsm.currentSubState.value)) {
+      await applyEndTurnEffects()
     }
-
-    const subBeforeEndTurn = fsm.currentSubState.value
-    const isFaintSeqBefore = subBeforeEndTurn === BATTLE_SUBSTATES.SWITCH_MENU || 
-                             subBeforeEndTurn === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
-                             subBeforeEndTurn === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
-
-    if (!activeBattle.value.over && !isFaintSeqBefore) await applyEndTurnEffects()
     let sub = fsm.currentSubState.value
-    const hasPendingForceSwitch = Array.isArray(activeBattle.value?.playerRequest?.forceSwitch)
-      ? activeBattle.value.playerRequest.forceSwitch.some(x => !!x)
-      : !!activeBattle.value?.playerRequest?.forceSwitch
 
-    if ((sub === BATTLE_SUBSTATES.SWITCH_MENU || sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ) && 
-        activeBattle.value?.player && activeBattle.value.player.hp > 0 && 
-        !hasPendingForceSwitch) {
-      console.debug(`[E2E-FSM-Safeguard] Player Pokémon was revived/healed. Resetting FSM substate to ANIM_SYNC.`);
+    if (shouldResetRevivedPlayerSubstate(sub, battle, hasForceSwitchRequest(battle))) {
+      console.debug(`[E2E-FSM-Safeguard] Player Pokémon was revived/healed. Resetting FSM substate to ANIM_SYNC.`)
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
       sub = BATTLE_SUBSTATES.ANIM_SYNC
     }
 
-    const isFaintSeq = sub === BATTLE_SUBSTATES.SWITCH_MENU || 
-                       sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
-                       sub === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
-    console.debug(`[E2E-FSM-Safeguard] sub: "${sub}", SWITCH_MENU: "${BATTLE_SUBSTATES.SWITCH_MENU}", PLAYER_FAINT_SEQ: "${BATTLE_SUBSTATES.PLAYER_FAINT_SEQ}", ENEMY_REPLACEMENT_SEQ: "${BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ}", isFaintSeq: ${isFaintSeq}`);
-    if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE && !isFaintSeq) {
+    if (shouldAdvanceToWaitInput(activeBattle.value, fsm.currentState.value, sub)) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
       isProcessing.value = false
@@ -376,7 +356,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const executeStruggle = async () => {
-    if (isProcessing.value || !isBattleActive.value || !activeBattle.value || activeBattle.value.over || !activeBattle.value.player || !activeBattle.value.enemy) return
+    if (!canExecuteMove(isProcessing.value, isBattleActive.value, activeBattle.value)) return
     isProcessing.value = true
     try {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
@@ -436,20 +416,13 @@ export const useBattleStore = defineStore('battle', () => {
     const active = activeBattle.value;
     if (!active || !team || active.isPvP) return;
 
-    if (active.player?.uid) {
-      const activeMatch = findMatchingPokemon(active.player.uid, team);
-      if (activeMatch) activeMatch.hp = active.player.hp;
+    if (active.player) {
+      syncPokemonHpEntry(team, active.player);
     }
 
     if (Array.isArray(active.playerTeam)) {
       for (const bp of active.playerTeam) {
-        if (!bp) continue;
-        const matchingMon = bp.uid
-          ? findMatchingPokemon(bp.uid, team)
-          : team.find(p => p && p.id === bp.id);
-        if (matchingMon && typeof bp.hp === 'number') {
-          matchingMon.hp = bp.hp;
-        }
+        syncPokemonHpEntry(team, bp);
       }
     }
   }
@@ -469,21 +442,9 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   watch(fsm.currentSubState, async (newVal) => {
-    if (newVal === BATTLE_SUBSTATES.WAIT_INPUT) {
-      if (activeBattle.value) {
-        const switchingToPlayer = Reflect.get(activeBattle.value, 'switchingToPlayer') as Pokemon | undefined
-        if (switchingToPlayer) {
-          activeBattle.value.player = switchingToPlayer
-          Reflect.deleteProperty(activeBattle.value, 'switchingToPlayer')
-        }
-        const switchingToEnemy = Reflect.get(activeBattle.value, 'switchingToEnemy') as Pokemon | undefined
-        if (switchingToEnemy) {
-          activeBattle.value.enemy = switchingToEnemy
-          Reflect.deleteProperty(activeBattle.value, 'switchingToEnemy')
-        }
-      }
-      await checkAndAutoRecharge(activeBattle, isProcessing, executeMove)
-    }
+    if (newVal !== BATTLE_SUBSTATES.WAIT_INPUT) return
+    applyPendingBattleSwitches(activeBattle.value)
+    await checkAndAutoRecharge(activeBattle, isProcessing, executeMove)
   })
 
   setupBattleEventWatchers({
@@ -494,6 +455,15 @@ export const useBattleStore = defineStore('battle', () => {
     isIntroAnimating,
   })
 
+  const getCombatReplayPayload = () => {
+    const active = activeBattle.value
+    if (!active) return null
+    if (!active.rawShowdownLogs && rawShowdownLogs.value.length > 0) {
+      active.rawShowdownLogs = [...rawShowdownLogs.value]
+    }
+    return buildCombatReplayPayload(active)
+  }
+
   if (typeof window !== 'undefined') {
     window.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore() as DebugStore
     setupBattleDebug(getContext())
@@ -501,6 +471,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   return {
     state: activeBattle, isBattleActive, awardDebugExp, isFinishing, isProcessing,
+    getCombatReplayPayload,
     isSearching, player, enemy,
     playerUsedMoves, isIntroAnimating,
     isPvP, uiConfig,

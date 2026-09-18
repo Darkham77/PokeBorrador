@@ -86,7 +86,7 @@ async function auditFile(
       // Procesa los bloques de script en reversa para no alterar los índices de caracteres al modificar el contenido
       for (let i = scriptBlocks.length - 1; i >= 0; i--) {
         const block = scriptBlocks[i]!;
-        let rules: AuditRule[] = candidateRules.filter(r => !ALL_STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
+        let rules: AuditRule[] = candidateRules.filter(r => !ALL_STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates);
         
         if (isScriptOrSupabase) {
           rules = rules.filter(r => r !== config.legacyDates);
@@ -130,7 +130,7 @@ async function auditFile(
       }
     } else {
       // isLogic
-      let rules: AuditRule[] = candidateRules.filter(r => !ALL_STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
+      let rules: AuditRule[] = candidateRules.filter(r => !ALL_STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates);
       
       if (isScriptOrSupabase) {
         rules = rules.filter(r => r !== config.legacyDates);
@@ -174,7 +174,7 @@ async function auditFile(
     }
   }
 
-  // MODULARITY AUDIT: 500/1000 Rule is handled exclusively by Fallow health (Single Source of Truth)
+  // MODULARITY & HEALTH: Handled exclusively by Fallow (Single Source of Truth)
 
   if (fix && modified) {
     await fs.writeFile(filePath, content, 'utf-8');
@@ -398,12 +398,58 @@ interface FallowStaleSuppression {
     kind_known?: boolean;
   };
 }
+interface FallowLocation {
+  path?: string;
+  file?: string;
+  line?: number;
+  col?: number;
+}
 interface FallowDuplicateExport {
   path?: string;
   file?: string;
   line?: number;
   export_name?: string;
   name?: string;
+  locations?: FallowLocation[];
+}
+interface FallowUnusedStoreMember {
+  path: string;
+  parent_name: string;
+  member_name: string;
+  kind?: string;
+  line: number;
+  col?: number;
+}
+interface FallowUnusedClassMember {
+  path: string;
+  parent_name: string;
+  member_name: string;
+  kind?: string;
+  line: number;
+  col?: number;
+}
+interface FallowUnusedType {
+  path: string;
+  export_name: string;
+  line: number;
+  col?: number;
+  is_type_only?: boolean;
+  is_re_export?: boolean;
+}
+interface FallowUnusedComponentEmit {
+  path: string;
+  component_name: string;
+  emit_name: string;
+  line: number;
+  col?: number;
+}
+interface FallowUnlistedDependency {
+  package_name: string;
+  imported_from?: Array<{
+    path?: string;
+    line?: number;
+    col?: number;
+  }>;
 }
 interface FallowDeadCode {
   unused_dependencies?: FallowUnusedDep[];
@@ -413,6 +459,11 @@ interface FallowDeadCode {
   circular_dependencies?: FallowCircularDep[];
   stale_suppressions?: FallowStaleSuppression[];
   duplicate_exports?: FallowDuplicateExport[];
+  unused_store_members?: FallowUnusedStoreMember[];
+  unused_class_members?: FallowUnusedClassMember[];
+  unused_types?: FallowUnusedType[];
+  unused_component_emits?: FallowUnusedComponentEmit[];
+  unlisted_dependencies?: FallowUnlistedDependency[];
 }
 interface FallowComplexity {
   findings?: FallowFinding[];
@@ -430,6 +481,11 @@ export interface FallowAuditData {
   circular_dependencies?: FallowCircularDep[];
   stale_suppressions?: FallowStaleSuppression[];
   duplicate_exports?: FallowDuplicateExport[];
+  unused_store_members?: FallowUnusedStoreMember[];
+  unused_class_members?: FallowUnusedClassMember[];
+  unused_types?: FallowUnusedType[];
+  unused_component_emits?: FallowUnusedComponentEmit[];
+  unlisted_dependencies?: FallowUnlistedDependency[];
 }
 
 function runFallow(command: string, extraArgs: string[] = []): Violation[] {
@@ -503,7 +559,7 @@ function addComplexityFinding(f: FallowFinding, violations: Violation[]): void {
     line: f.line,
     message: `Sugerencia de complejidad (Fallow): Función '${f.function_name || ''}' alta complejidad (cognitiva: ${f.cognitive || 0}, ciclomática: ${f.cyclomatic || 0})`,
     context: f.function_name || '',
-    severity: 'warning',
+    severity: 'error',
     fixable: false
   });
 }
@@ -567,7 +623,7 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
         line: f.line,
         message: `Candidato de seguridad [CWE-${f.cwe}] en ${f.path}:${f.line} -> ${f.evidence}`,
         context: f.kind || '',
-        severity: 'warning',
+        severity: 'error',
         fixable: false
       });
     }
@@ -620,14 +676,27 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
     // 4. Exports duplicados / ambiguos (Error)
     const duplicateExports = [...(data.duplicate_exports || []), ...(data.dead_code?.duplicate_exports || [])];
     for (const d of duplicateExports) {
-      violations.push({
-        file: path.resolve(process.cwd(), d.path || d.file || 'src'),
-        line: d.line || 1,
-        message: `Export duplicado ambiguo (Fallow): '${d.export_name || d.name || ''}'`,
-        context: d.export_name || d.name || '',
-        severity: 'error',
-        fixable: false
-      });
+      if (d.locations && d.locations.length > 0) {
+        for (const loc of d.locations) {
+          violations.push({
+            file: path.resolve(process.cwd(), loc.path || loc.file || 'src'),
+            line: loc.line || 1,
+            message: `Export duplicado ambiguo (Fallow): '${d.export_name || d.name || ''}'`,
+            context: d.export_name || d.name || '',
+            severity: 'error',
+            fixable: false
+          });
+        }
+      } else {
+        violations.push({
+          file: path.resolve(process.cwd(), d.path || d.file || 'src'),
+          line: d.line || 1,
+          message: `Export duplicado ambiguo (Fallow): '${d.export_name || d.name || ''}'`,
+          context: d.export_name || d.name || '',
+          severity: 'error',
+          fixable: false
+        });
+      }
     }
 
     // 5. Dependencias no usadas en package.json (Error)
@@ -648,7 +717,7 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
       });
     }
 
-    // 6. Exports no usados (Warning)
+    // 6. Exports no usados (Error crítico)
     const unusedExports = [...(data.unused_exports || []), ...(data.dead_code?.unused_exports || [])];
     for (const x of unusedExports) {
       violations.push({
@@ -656,12 +725,93 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
         line: x.line || 1,
         message: `Sugerencia de calidad (Fallow): Export no usado: '${x.export_name}'`,
         context: x.export_name,
-        severity: 'warning',
+        severity: 'error',
         fixable: false
       });
     }
 
-    // 7. Complejidad en auditoría
+    // 7. Miembros de store no usados (Error crítico)
+    const unusedStoreMembers = [
+      ...(data.unused_store_members || []),
+      ...(data.dead_code?.unused_store_members || [])
+    ];
+    for (const sm of unusedStoreMembers) {
+      violations.push({
+        file: path.resolve(process.cwd(), sm.path),
+        line: sm.line || 1,
+        message: `Sugerencia de calidad (Fallow): Miembro de store no usado: '${sm.parent_name}.${sm.member_name}'`,
+        context: sm.member_name,
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 8. Miembros de clase no usados (Error crítico)
+    const unusedClassMembers = [
+      ...(data.unused_class_members || []),
+      ...(data.dead_code?.unused_class_members || [])
+    ];
+    for (const cm of unusedClassMembers) {
+      violations.push({
+        file: path.resolve(process.cwd(), cm.path),
+        line: cm.line || 1,
+        message: `Sugerencia de calidad (Fallow): Miembro de clase no usado: '${cm.parent_name}.${cm.member_name}'`,
+        context: cm.member_name,
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 9. Tipos exportados no usados (Error crítico)
+    const unusedTypes = [
+      ...(data.unused_types || []),
+      ...(data.dead_code?.unused_types || [])
+    ];
+    for (const ut of unusedTypes) {
+      violations.push({
+        file: path.resolve(process.cwd(), ut.path),
+        line: ut.line || 1,
+        message: `Sugerencia de calidad (Fallow): Tipo exportado no usado: '${ut.export_name}'`,
+        context: ut.export_name,
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 10. Emits de componente no usados (Error crítico)
+    const unusedEmits = [
+      ...(data.unused_component_emits || []),
+      ...(data.dead_code?.unused_component_emits || [])
+    ];
+    for (const ue of unusedEmits) {
+      violations.push({
+        file: path.resolve(process.cwd(), ue.path),
+        line: ue.line || 1,
+        message: `Sugerencia de calidad (Fallow): Evento emit de componente no usado: '${ue.component_name}.${ue.emit_name}'`,
+        context: ue.emit_name,
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 11. Dependencias no listadas en package.json (Error crítico)
+    const unlistedDeps = [
+      ...(data.unlisted_dependencies || []),
+      ...(data.dead_code?.unlisted_dependencies || [])
+    ];
+    for (const ud of unlistedDeps) {
+      const targetLoc = ud.imported_from?.[0];
+      violations.push({
+        file: path.resolve(process.cwd(), targetLoc?.path || 'package.json'),
+        line: targetLoc?.line || 1,
+        message: `Sugerencia de calidad (Fallow): Dependencia no listada en package.json: '${ud.package_name}'`,
+        context: ud.package_name,
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 12. Complejidad en auditoría
     if (data.complexity && data.complexity.findings) {
       for (const f of data.complexity.findings) {
         addComplexityFinding(f, violations);
@@ -692,15 +842,19 @@ export function getViolationCategory(v: Violation): string {
   if (msg.includes('sin \'using\'')) return 'Falta explicit resource (\'using\')';
   if (msg.includes('Animación manual')) return 'Animación/Transición manual (GSAP)';
   if (msg.includes('Z-Index') || msg.includes('z-index')) return 'Z-Index fuera de estándar';
-  if (msg.includes('archivo tiene') || msg.includes('líneas reales') || msg.includes('SLOC')) return 'Largo de archivo (>300/500 líneas)';
   if (msg.includes('Código duplicado')) return 'Fallow: Código duplicado';
   if (msg.includes('Código triplicado')) return 'Fallow: Código triplicado';
   if (msg.includes('seguridad') || msg.includes('CWE') || msg.includes('Vulnerabilidad')) return 'Fallow: Seguridad (CWE)';
   if (msg.includes('Dependencia circular') || msg.includes('circular')) return 'Fallow: Dependencias circulares';
-  if (msg.includes('Archivo huérfano') || msg.includes('huérfano')) return 'Fallow: Archivos huérfanos';
+  if (msg.includes('Archivo huérfano') || msg.includes('huérfano')) return 'Fallow: Archivos huérfanos / Dead Code';
   if (msg.includes('Supresión obsoleta')) return 'Fallow: Supresiones obsoletas';
   if (msg.includes('Export duplicado')) return 'Fallow: Exports duplicados';
   if (msg.includes('Dependencia de package.json no usada')) return 'Fallow: Dependencias no usadas';
+  if (msg.includes('Miembro de store no usado')) return 'Fallow: Miembros de store no usados';
+  if (msg.includes('Miembro de clase no usado')) return 'Fallow: Miembros de clase no usados';
+  if (msg.includes('Tipo exportado no usado')) return 'Fallow: Tipos exportados no usados';
+  if (msg.includes('Evento emit de componente no usado')) return 'Fallow: Emits no usados';
+  if (msg.includes('Dependencia no listada')) return 'Fallow: Dependencias no listadas';
   if (msg.includes('Sugerencia de calidad')) return 'Fallow: Exports no usados';
   if (msg.includes('Sugerencia de complejidad')) return 'Fallow: Complejidad';
   if (msg.includes('AGENTS.md') || msg.includes('DOX') || msg.includes('Enlace')) return 'DOX / AGENTS.md';

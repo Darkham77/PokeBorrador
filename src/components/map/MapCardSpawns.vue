@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 interface ProcessedGridItem {
@@ -16,9 +16,10 @@ interface ProcessedGridItem {
   seed?: number
 }
 
-defineProps<{
+const props = defineProps<{
   isLocked: boolean
-  isPerformanceMode: boolean
+  isFastMode?: boolean
+  isPerformanceMode?: boolean
   isVisible: boolean
   hideMapPokemon: boolean
   isDebugGridMode: boolean
@@ -34,6 +35,8 @@ defineProps<{
   isLowPowerActive: boolean
 }>()
 
+const isFast = computed(() => props.isFastMode ?? props.isPerformanceMode ?? false)
+
 const spawnGridRef = ref<HTMLElement | null>(null)
 
 defineExpose({
@@ -43,7 +46,7 @@ defineExpose({
 
 <template>
   <div
-    v-if="!isLocked && !isPerformanceMode && isVisible && !hideMapPokemon"
+    v-if="!isLocked && !isFast && isVisible && !hideMapPokemon"
     class="location-spawns"
   >
     <div 
@@ -95,6 +98,7 @@ defineExpose({
               <div class="spawn-atmosphere-wrapper">
                 <img
                   :src="processedSprites[item.key + '-' + item.isCaught] || item.sprite"
+                  :alt="item.tooltipTitle || 'Pokémon salvaje'"
                   class="pixelated"
                   :class="{ 
                     'spawn-silhouette': !processedSprites[item.key + '-' + item.isCaught] && !item.isCaught,

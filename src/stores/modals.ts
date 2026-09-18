@@ -3,7 +3,6 @@ import { ref, markRaw } from 'vue'
 import gsap from 'gsap'
 import { logger } from '@/logic/utils/logger'
 
-import { MODAL_REGISTRY } from '@/logic/modals/registry'
 import { MODAL_OPENING_FALLBACK_DURATION_SEC, MODAL_CLOSING_FALLBACK_DURATION_SEC } from '@/logic/constants/gameplay.ts'
 
 import type { Component } from 'vue'
@@ -11,7 +10,7 @@ import type { Component } from 'vue'
 export interface Modal {
   id: string;
   name: string;
-  component: Component;
+  component?: Component;
   props: Record<string, unknown>;
   opening: boolean;
   closing: boolean;
@@ -20,15 +19,9 @@ export interface Modal {
 export const useModalStore = defineStore('modals', () => {
   const stack = ref<Modal[]>([])
 
-  const open = (name: string, props: Record<string, unknown> = {}) => {
+  const open = (name: string, props: Record<string, unknown> = {}, customComponent?: Component) => {
     if ((name === 'Confirm' || name === 'Prompt') && isOpen(name)) {
       logger.warn('ModalStore', `Modal "${name}" is already open. Ignoring duplicate request.`)
-      return null
-    }
-
-    const component = (MODAL_REGISTRY as Record<string, Component>)[name] // open-record: Generic key-value data dictionary container
-    if (!component) {
-      logger.error('ModalStore', `Modal "${name}" not found in registry`)
       return null
     }
 
@@ -36,7 +29,7 @@ export const useModalStore = defineStore('modals', () => {
     const modal: Modal = {
       id,
       name,
-      component: markRaw(component),
+      component: customComponent ? markRaw(customComponent) : undefined,
       props,
       opening: true, // Initial state for animations
       closing: false
@@ -65,7 +58,7 @@ export const useModalStore = defineStore('modals', () => {
    * Closes a specific modal by ID or Name.
    */
   const close = (identifier: string) => {
-    const index = stack.value.findIndex(m => m.id === identifier || m.name === identifier)
+    const index = stack.value.findLastIndex(m => (m.id === identifier || m.name === identifier) && !m.closing)
     if (index !== -1) {
       const modal = stack.value[index]
       if (!modal || modal.closing) return 

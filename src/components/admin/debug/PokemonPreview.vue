@@ -32,6 +32,7 @@ const emit = defineEmits<{
     >
       <img
         :src="spriteUrl" 
+        :alt="isShiny ? 'Pokémon Shiny' : 'Pokémon'"
         class="preview-sprite"
         @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
       >

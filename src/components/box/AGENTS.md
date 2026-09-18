@@ -17,6 +17,7 @@ Frontend Developers / Systems Engineers.
   - `.box-sprite-wrapper` MUST be a flexible container (`width: 100%; flex: 1 1 auto; min-height: 64px; display: flex; align-items: center; justify-content: center; position: relative; overflow: visible;`).
   - The footer info section (`.card-info`) MUST declare `flex-shrink: 0;` so when badges, dual types, or subtitles expand it, it naturally pushes the sprite container upward without truncating footer metrics.
   - A minimum vertical gap (`gap: 4px;`) MUST always be enforced between `.box-sprite-wrapper` and `.card-info` across all card variants (`.box-pokemon-card`, `.quick-card-override`) to guarantee they never collide or overlap.
+- **Box Batch Action Bar Modularization (`BoxView.vue`, `BoxModeActionsBar.vue`)**: Encapsulates the multi-selection mode action bar for Black Market batch selling and permanent Pokémon releasing into `BoxModeActionsBar.vue`, cleanly separating mode confirmation, currency estimation, and action buttons from `BoxView.vue`.
 
 ## Work Guidance
 

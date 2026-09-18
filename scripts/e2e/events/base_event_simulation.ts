@@ -377,7 +377,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
     const confirmModal = this.page.locator('.modal-overlay').filter({ hasText: '¿DESCARTAR RECOMPENSA?' });
     await confirmModal.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    const confirmBtn = confirmModal.locator('.confirm-btn, .btn-confirm, button:has-text("DESCARTAR")').first();
+    const confirmBtn = confirmModal.locator('#confirm-modal-btn, .btn-confirm').first();
     await confirmBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await confirmBtn.click();
 

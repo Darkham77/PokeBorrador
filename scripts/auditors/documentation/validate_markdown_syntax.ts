@@ -82,7 +82,7 @@ export class MarkdownSyntaxAuditor extends FileScanAuditor<MarkdownSyntaxRuleId>
         if (match) {
           this.addViolation({
             ruleId: 'npm-script-exclusivity-in-docs',
-            severity: 'warning',
+            severity: 'error',
             file: relPath,
             line: i + 1,
             message: `Direct script execution '${match[0].trim()}' in documentation. Mandate requires NPM script Single Source of Truth ('npm run <script>').`,

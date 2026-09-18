@@ -7,116 +7,116 @@ import { handleStone } from '../itemEffectHandlers.ts';
 import { EV_BERRIES, VITAMINS, FEATHERS, MOCHIS, canUseVitamin, canUseEvBerry, calculateTotalEvs } from '@/logic/pokemon/evMath.ts';
 import { getDynamicItemEffect } from './itemEffectsHelpers.ts';
 
-export const isValidTarget = (itemId: ItemId | (string & {}), pokemon: Pokemon): boolean => {
-  if (!pokemon) return false;
-  
-  const resolvedId = requireItemId(itemId);
+const EVOLUTION_STONES = [
+  'firestone', 'thunderstone', 'waterstone', 'leafstone', 'moonstone',
+  'sunstone', 'dawnstone', 'duskstone', 'icestone', 'shinystone',
+  'ovalstone', 'linkcable', 'whippeddream', 'sachet', 'deepseascale', 'deepseatooth'
+] as const satisfies readonly ItemId[];
+const EVOLUTION_STONES_SET: ReadonlySet<string> = new Set(EVOLUTION_STONES); // runtime-set: Fast O(1) membership lookup set
 
-  const isTM = resolvedId.startsWith('tm') || resolvedId.startsWith('mt');
-  let itemExists = isTM;
-  if (!isTM) {
-    try {
-      getItemById(resolvedId);
-      itemExists = true;
-    } catch {
-      itemExists = false;
-    }
-  }
-  if (!itemExists) {
-    throw new Error(`[ItemEffects] Intento de validar un objeto inexistente: ${itemId}`);
-  }
+const STATIC_TARGET_VALIDATORS: Partial<Record<ItemId, (p: Pokemon) => boolean>> = {
+  potion: canHeal,
+  superpotion: canHeal,
+  hyperpotion: canHeal,
+  maxpotion: canHeal,
+  sodapop: canHeal,
+  freshwater: canHeal,
+  lemonade: canHeal,
 
-  // 1. Curaciones / HP
-  if (['potion', 'superpotion', 'hyperpotion', 'maxpotion', 'sodapop', 'freshwater', 'lemonade'].includes(resolvedId)) {
-    return canHeal(pokemon);
-  }
+  revive: canRevive,
+  revivemax: canRevive,
 
-  // 2. Revivir
-  if (['revive', 'revivemax'].includes(resolvedId)) {
-    return canRevive(pokemon);
-  }
+  antidote: (p) => canClearStatus(p, 'poison'),
+  burnheal: (p) => canClearStatus(p, 'brn'),
+  paralyzeheal: (p) => canClearStatus(p, 'par'),
+  awakening: (p) => canClearStatus(p, 'slp'),
+  iceheal: (p) => canClearStatus(p, 'frz'),
+  fullheal: (p) => canClearStatus(p, 'any'),
 
-  // 3. Cura de estados específicos
-  if (resolvedId === 'antidote') return canClearStatus(pokemon, 'poison');
-  if (resolvedId === 'burnheal') return canClearStatus(pokemon, 'brn');
-  if (resolvedId === 'paralyzeheal') return canClearStatus(pokemon, 'par');
-  if (resolvedId === 'awakening') return canClearStatus(pokemon, 'slp');
-  if (resolvedId === 'iceheal') return canClearStatus(pokemon, 'frz');
-  if (resolvedId === 'fullheal') return canClearStatus(pokemon, 'any');
+  fullrestore: canFullRestore,
 
-  // 4. Cura Total / Restauración Completa
-  if (['fullrestore'].includes(resolvedId)) {
-    return canFullRestore(pokemon);
-  }
+  ether: canRestorePP,
+  elixir: canRestorePP,
+  elixirmax: canRestorePP,
 
-  // 5. PP (Restauración de PP)
-  if (['ether', 'elixir', 'elixirmax'].includes(resolvedId)) { // spanish-ok: UI Spanish text localization label
-    return canRestorePP(pokemon);
-  }
+  rarecandy: (p) => p.level < MAX_POKEMON_LEVEL,
+  vigorcandy: (p) => Number(p.vigor || 0) < DEFAULT_MAX_VIGOR,
+  vigorrestorer: (p) => Number(p.vigor || 0) < DEFAULT_MAX_VIGOR,
 
-  // 6. Piedras Evolutivas y Objetos de Evolución
-  if (['firestone', 'thunderstone', 'waterstone', 'leafstone', 'moonstone', 'sunstone', 'dawnstone', 'duskstone', 'icestone', 'shinystone', 'ovalstone', 'linkcable', 'whippeddream', 'sachet', 'deepseascale', 'deepseatooth'].includes(resolvedId)) {
-    const res = handleStone(pokemon, resolvedId);
-    return res.success;
-  }
+  freshstartmochi: (p) => calculateTotalEvs(p.evs) > 0,
 
-  // 7. Caramelos y Consumibles de Atributos
-  if (resolvedId === 'rarecandy') {
-    return pokemon.level < MAX_POKEMON_LEVEL;
-  }
-  if (resolvedId === 'vigorcandy' || resolvedId === 'vigorrestorer') {
-    return Number(pokemon.vigor || 0) < DEFAULT_MAX_VIGOR;
-  }
+  moverelearner: () => true,
+  naturepatch: () => true,
+  abilitypill: () => true,
+  ppup: () => true,
+  ppmax: () => true,
+};
 
-  // 8. Bayas de EVs
-  if (resolvedId in EV_BERRIES) {
-    const statKey = EV_BERRIES[resolvedId];
-    if (statKey) {
-      return canUseEvBerry(pokemon.evs, statKey, pokemon.friendship);
-    }
-  }
-
-  // 9. Vitaminas, Plumas y Mochis
-  if (resolvedId in VITAMINS) {
-    const statKey = VITAMINS[resolvedId];
-    if (statKey) {
-      return canUseVitamin(pokemon.evs, statKey);
-    }
-  }
-  if (resolvedId in FEATHERS) {
-    const statKey = FEATHERS[resolvedId];
-    if (statKey) {
-      return canUseVitamin(pokemon.evs, statKey);
-    }
-  }
-  if (resolvedId in MOCHIS) {
-    const statKey = MOCHIS[resolvedId];
-    if (statKey) {
-      return canUseVitamin(pokemon.evs, statKey);
-    }
-  }
-  if (resolvedId === 'freshstartmochi') {
-    return calculateTotalEvs(pokemon.evs) > 0;
-  }
-
-  // 10. Objetos Diferidos (Menús / Selección)
-  if (['moverelearner', 'naturepatch', 'abilitypill', 'ppup', 'ppmax'].includes(resolvedId)) {
+function verifyItemExists(resolvedId: ItemId, isTM: boolean, rawInput: string): boolean {
+  if (isTM) return true;
+  try {
+    getItemById(resolvedId);
     return true;
+  } catch {
+    throw new Error(`[ItemEffects] Intento de validar un objeto inexistente: ${rawInput}`);
   }
+}
 
-  // 11. TMs / MTs dinámicas
+function validateEvTarget(resolvedId: ItemId, pokemon: Pokemon): boolean | null {
+  const berryStatKey = EV_BERRIES[resolvedId];
+  if (berryStatKey) {
+    return canUseEvBerry(pokemon.evs, berryStatKey, pokemon.friendship);
+  }
+  const vitaminStatKey = VITAMINS[resolvedId];
+  if (vitaminStatKey) {
+    return canUseVitamin(pokemon.evs, vitaminStatKey);
+  }
+  const featherStatKey = FEATHERS[resolvedId];
+  if (featherStatKey) {
+    return canUseVitamin(pokemon.evs, featherStatKey);
+  }
+  const mochiStatKey = MOCHIS[resolvedId];
+  if (mochiStatKey) {
+    return canUseVitamin(pokemon.evs, mochiStatKey);
+  }
+  return null;
+}
+
+function validateEvolutionTarget(resolvedId: ItemId, pokemon: Pokemon): boolean | null {
+  if (EVOLUTION_STONES_SET.has(resolvedId)) {
+    return handleStone(pokemon, resolvedId).success;
+  }
+  return null;
+}
+
+function validateTmOrHeldTarget(resolvedId: ItemId, pokemon: Pokemon, isTM: boolean, itemExists: boolean): boolean {
   if (isTM) {
     const dynamicRes = getDynamicItemEffect(resolvedId, pokemon);
     return !!(dynamicRes && dynamicRes.success);
   }
-
-  // 12. Objetos Equipables (Held Items)
-  if (itemExists && !isTM) {
+  if (itemExists) {
     const itemData = getItemById(resolvedId);
     if (itemData && (itemData.cat === 'combat_held' || (itemData.cat === 'breeding_held' && itemData.id !== 'vigorrestorer' && !itemData.id.includes('berry')))) {
       return true;
     }
   }
-
   return false;
+}
+
+export const isValidTarget = (itemId: ItemId | (string & {}), pokemon: Pokemon): boolean => {
+  if (!pokemon) return false;
+  const resolvedId = requireItemId(itemId);
+  const isTM = resolvedId.startsWith('tm') || resolvedId.startsWith('mt');
+  const itemExists = verifyItemExists(resolvedId, isTM, itemId);
+
+  const staticValidator = STATIC_TARGET_VALIDATORS[resolvedId];
+  if (staticValidator) return staticValidator(pokemon);
+
+  const stoneResult = validateEvolutionTarget(resolvedId, pokemon);
+  if (stoneResult !== null) return stoneResult;
+
+  const evResult = validateEvTarget(resolvedId, pokemon);
+  if (evResult !== null) return evResult;
+
+  return validateTmOrHeldTarget(resolvedId, pokemon, isTM, itemExists);
 };

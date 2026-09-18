@@ -196,8 +196,7 @@ export {
   type SeasonalRewardPokemonConfig,
   type SeasonalThemeConfig,
   isSeasonalThemeId,
-  requireSeasonalThemeId,
-  type RankedTierId
+  requireSeasonalThemeId
 };
 
 export type BattleCode = string & { readonly __brand: unique symbol };

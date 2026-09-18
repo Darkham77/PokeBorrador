@@ -1,12 +1,14 @@
-import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue'
-import { gsap } from 'gsap'
-import { gameBus } from '@/logic/events/gameBus'
-import { logger } from '@/logic/utils/logger'
-import type { useBattleStore } from '@/stores/battle/battle'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { useBattleCaptureAnimations } from '@/composables/battle/useBattleCaptureAnimations'
-import { isTrainerTransitionActive, useBattleTrainerAnimations } from '@/composables/battle/useBattleTrainerAnimations'
-import { useBattleWildAnimations } from '@/composables/battle/useBattleWildAnimations'
+import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue';
+import { gameBus } from '@/logic/events/gameBus';
+import type { useBattleStore } from '@/stores/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { useBattleCaptureAnimations } from '@/composables/battle/useBattleCaptureAnimations';
+import { isTrainerTransitionActive, useBattleTrainerAnimations } from '@/composables/battle/useBattleTrainerAnimations';
+import { useBattleWildAnimations } from '@/composables/battle/useBattleWildAnimations';
+import {
+  dispatchBattleAnimationState,
+  type BattleAnimationContext
+} from './battleAnimationStateDispatcher.ts';
 
 export function useBattleAnimations(
   battleStore: ReturnType<typeof useBattleStore>, 
@@ -102,159 +104,36 @@ export function useBattleAnimations(
     return !toValue(battleStore.player)
   })
 
+  const resetAll = () => {
+    resetWildStates();
+    resetTrainerStates();
+    resetCaptureStates();
+  };
+
+  const animContext: BattleAnimationContext = {
+    battleStore,
+    isGlobalFadeActive,
+    isWildSilhouette,
+    wildRevealActive,
+    isWildEntryAnimation,
+    isEmerging,
+    upcomingIsEmerging,
+    silhouetteOpacity,
+    trainerAnimState,
+    isTrainerVisible,
+    seats,
+    resetAll,
+    isTrainerTransitionActive
+  };
+
   // FSM Watcher for sync
   watch(
     () => [toValue(battleStore.currentFsmState), toValue(battleStore.currentSubState)],
     ([state, sub]) => {
-      if (!state) return
-
-      const subState = sub || ''
-      const isCleanupState = (['CONTEXT_SETUP', 'EXIT_BATTLE'] as const).includes(state as never)
-
-      if (isCleanupState) {
-        isGlobalFadeActive.value = (state === 'EXIT_BATTLE' && !['DEFEAT_SCREEN', 'DEFEAT_WAIT'].includes(String(subState)))
-        const wasPreCombatWild = !battleStore.state?.isTrainer && !battleStore.state?.isGym && !isWildEntryAnimation.value && (battleStore.state?.wasSearching || battleStore.isSearching)
-        resetAll()
-        if (wasPreCombatWild) {
-          isWildSilhouette.value = true
-        }
-        return
-      }
-
-      if (sub) logger.debug('useBattleAnimations', `SubState: ${sub}`);
-
-      if (state === 'INITIALIZING' || state === 'CONTEXT_SETUP') {
-        const isTrainer = Boolean(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)
-        isWildSilhouette.value = !isTrainer
-        wildRevealActive.value = !isTrainer
-        isWildEntryAnimation.value = false
-        isEmerging.value = false
-        silhouetteOpacity.value = 0
-        trainerAnimState.value = null
-        isTrainerVisible.value = false
-      }
-
-      switch (sub) {
-
-        case 'PARALLEL_PREP':
-        case 'PARALLEL_ENTRY':
-        case 'WILD_ENTRY':
-        case 'COMBAT_OR_FLEE':
-        case 'SILHOUETTE_MODE': {
-          const isTrainer = Boolean(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)
-          isWildSilhouette.value = !isTrainer
-          wildRevealActive.value = !isTrainer
-          isWildEntryAnimation.value = false
-          break
-        }
-
-        case 'POKEMON_CALL':
-          isWildSilhouette.value = false
-          wildRevealActive.value = false
-          isWildEntryAnimation.value = false
-          isEmerging.value = false
-          silhouetteOpacity.value = 1
-          break
-
-        case 'ENTRY_ANIM': {
-          isWildSilhouette.value = true
-          wildRevealActive.value = true
-          isWildEntryAnimation.value = false
-          
-          // GSAP: Animación reactiva de opacidad de la silueta si es salvaje (0.2s invisible, luego 0.4s fade-in)
-          const stateObj = battleStore.state
-          if (stateObj && !stateObj.isTrainer && !stateObj.isGym) {
-            silhouetteOpacity.value = 0
-            gsap.killTweensOf(silhouetteOpacity)
-            gsap.to(silhouetteOpacity, {
-              value: 1,
-              delay: 0.2,
-              duration: 0.4,
-              ease: 'power1.inOut'
-            })
-          } else if (stateObj && (stateObj.isTrainer || stateObj.isGym)) {
-            isWildSilhouette.value = false
-            wildRevealActive.value = false
-            isTrainerVisible.value = true
-            trainerAnimState.value = 'entering'
-          }
-          break
-        }
-        
-        case 'PARALLEL_JUMP':
-        case 'ENCOUNTER_ANIM':
-        case 'JUMP_SHADOW':
-        case 'JUMP_COLOR':
-        case 'BUSH_FADE':
-          isWildEntryAnimation.value = true
-          wildRevealActive.value = true 
-          silhouetteOpacity.value = 1
-          isWildSilhouette.value = true
-          isEmerging.value = true
-          break
-        
-        case 'REVEAL_COLORS':
-          isWildEntryAnimation.value = true
-          wildRevealActive.value = false 
-          isWildSilhouette.value = false
-          isEmerging.value = false
-          break
-
-         case 'TRAINER_ENTRY':
-         case 'T_VISUAL':
-           trainerAnimState.value = 'entering'
-           isTrainerVisible.value = true
-           break
-
-         case 'T_RETREAT':
-         case 'RETREAT_AND_FADEOUT':
-           trainerAnimState.value = 'retreating'
-           break
-
-        case 'WAIT_INPUT':
-          isWildEntryAnimation.value = false
-          wildRevealActive.value = false
-          isEmerging.value = false
-          upcomingIsEmerging.value = false
-          if (isTrainerTransitionActive(trainerAnimState.value)) {
-            trainerAnimState.value = 'idle'
-          }
-          break
-
-        case 'EMPTY_WAIT':
-          isEmerging.value = false
-          isWildEntryAnimation.value = false
-          wildRevealActive.value = false
-          isWildSilhouette.value = false
-          Object.keys(seats.value).forEach(side => { 
-            const seat = seats.value[side]
-            if (seat) {
-              seat.entry.animState = null
-              seat.exit.animState = null
-            }
-          })
-          break
-
-        case null:
-          Object.keys(seats.value).forEach(side => { 
-            const seat = seats.value[side]
-            if (seat) {
-              if (!seat.entry.pokemonUid) seat.entry.animState = null
-              if (!seat.exit.pokemonUid) seat.exit.animState = null
-            }
-          })
-          isEmerging.value = false
-          isWildEntryAnimation.value = false
-          break
-      }
-    }
-  )
-
-  const resetAll = () => {
-    resetWildStates()
-    resetTrainerStates()
-    resetCaptureStates()
-  }
+      dispatchBattleAnimationState(state, sub, animContext);
+    },
+    { immediate: true }
+  );
 
   const registeredListeners: { event: string; callback: EventListener }[] = []
 

@@ -5,17 +5,20 @@ import { gsap } from 'gsap'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { WeatherSeasonId } from '@/data/world/weather-tables'
 import type { DayPhase } from '@/logic/utils/timeUtils'
+import type { AtmosphereLayerDepth } from './atmosphereParticleHelper'
 
 interface AtmosphereLayerProps {
   weather?: WeatherId
   cycle?: DayPhase
   season?: WeatherSeasonId
+  isFastMode?: boolean
   isPerformanceMode?: boolean
   isLocked?: boolean
   zIndex?: number | string
   animSeed?: number
   isVisible?: boolean
   isLowPower?: boolean
+  layer?: AtmosphereLayerDepth
 }
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -66,13 +69,17 @@ const props = withDefaults(defineProps<AtmosphereLayerProps>(), {
   weather: 'clear',
   cycle: 'day',
   season: 'spring',
+  isFastMode: false,
   isPerformanceMode: false,
   isLocked: false,
   zIndex: Z_LAYERS.BASE,
   animSeed: 0.5,
   isVisible: false,
-  isLowPower: false
+  isLowPower: false,
+  layer: 'all'
 })
+
+const isFastModeActive = computed(() => Boolean(props.isFastMode ?? props.isPerformanceMode))
 
 // Centralized Seed for Animations (Inherited from Map)
 const animSeed = computed(() => props.animSeed)
@@ -95,23 +102,27 @@ const applyParallaxLayer = (
   startY: number,
   moveX: number,
   moveY: number,
-  duration: number
+  duration: number,
+  seed?: number
 ) => {
   if (!layer || !weatherTimeline) return
   gsap.killTweensOf(layer)
-  gsap.set(layer, { x: startX, y: startY })
   
-  weatherTimeline.to(layer, {
-    x: startX + moveX,
-    y: startY + moveY,
-    duration,
-    repeat: -1,
-    ease: 'none',
-    modifiers: {
-      x: gsap.utils.unitize(x => parseFloat(x) % 1024),
-      y: gsap.utils.unitize(y => parseFloat(y) % 1024)
-    }
-  }, 0)
+  const tween = weatherTimeline.fromTo(
+    layer,
+    { x: startX, y: startY },
+    {
+      x: startX + moveX,
+      y: startY + moveY,
+      duration,
+      repeat: -1,
+      ease: 'none'
+    },
+    0
+  )
+  if (seed !== undefined) {
+    tween.progress(seed % 1)
+  }
 }
 
 const initWorker = async () => {
@@ -274,13 +285,13 @@ const initWeatherAnim = () => {
   const seed2 = (animSeed.value * 1.618) % 1
   const speedVar = 0.8 + (animSeed.value * 0.4)
 
-  if (w === 'clear' || props.isPerformanceMode) {
+  if (w === 'clear' || isFastModeActive.value) {
     pauseWorker()
     return
   }
 
   // Canvas / OffscreenCanvas activation for noise/mist layers
-  if (['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'].includes(w)) {
+  if (props.layer !== 'particles' && isCanvasWeather(w)) {
     nextTick(() => {
       if (canvasRef.value && !worker) {
         initWorker()
@@ -292,14 +303,20 @@ const initWeatherAnim = () => {
     pauseWorker()
   }
 
-  // Rain / Storm / Heavy Rain / Thunderstorm
-  initRainAnim(w, seed1, seed2, animSeed.value, props.isLowPower, speedVar, weatherTimeline, atmosphereContext, props)
+  if (props.layer !== 'ambient') {
+    // Rain / Storm / Heavy Rain / Thunderstorm
+    initRainAnim(w, seed1, seed2, animSeed.value, props.isLowPower, speedVar, weatherTimeline, atmosphereContext, {
+      isVisible: props.isVisible,
+      isFastMode: isFastModeActive.value,
+      weather: props.weather
+    })
 
-  // Snow / Blizzard / Hail
-  initSnowAnim(w, seed1, seed2, animSeed.value, props.isLowPower, speedVar, weatherTimeline)
+    // Snow / Blizzard / Hail
+    initSnowAnim(w, seed1, seed2, animSeed.value, props.isLowPower, speedVar, weatherTimeline)
 
-  // Sandstorm / Strong Winds / Dust Storm
-  initSandstormAnim(w, animSeed.value, props.isLowPower, speedVar)
+    // Sandstorm / Strong Winds / Dust Storm
+    initSandstormAnim(w, animSeed.value, props.isLowPower, speedVar)
+  }
 }
 
 const hasActiveWeather = computed(() => {
@@ -307,7 +324,7 @@ const hasActiveWeather = computed(() => {
 })
 
 const shouldRenderAtmosphere = computed<boolean>(() => {
-  return props.isVisible && !props.isPerformanceMode && !props.isLocked && hasActiveWeather.value
+  return props.isVisible && !isFastModeActive.value && !props.isLocked && hasActiveWeather.value
 })
 
 const cleanUpAtmosphere = () => {
@@ -334,7 +351,7 @@ const initAtmosphere = () => {
 }
 
 watch(
-  [shouldRenderAtmosphere, () => props.weather, () => props.animSeed, () => props.isLowPower],
+  [shouldRenderAtmosphere, () => props.weather, () => props.animSeed, () => props.isLowPower, () => props.layer],
   async ([shouldRender]) => {
     if (shouldRender) {
       await nextTick()
@@ -372,122 +389,137 @@ import { useAtmosphereSandstormAnim } from './useAtmosphereSandstormAnim.ts'
 import { useAtmosphereSnowAnim } from './useAtmosphereSnowAnim.ts'
 import { useAtmosphereRainAnim } from './useAtmosphereRainAnim.ts'
 
-const { isLeafWeatherId, initLeafAnim: initLeafAnimFn } = useAtmosphereLeafAnim(containerRef, props)
+const { initLeafAnim: initLeafAnimFn } = useAtmosphereLeafAnim(containerRef, props)
 const { initSandstormAnim } = useAtmosphereSandstormAnim(dustLayer1Ref, dustLayer2Ref, applyParallaxLayer)
-const { initSnowAnim } = useAtmosphereSnowAnim(layer1Ref, layer2Ref, applyParallaxLayer)
+const { initSnowAnim } = useAtmosphereSnowAnim(layer1Ref, layer2Ref)
 const { initRainAnim, cleanUpLightning } = useAtmosphereRainAnim(layer1Ref, layer2Ref, lightningRef, flashRef, lightningPos)
 
-const LEAF_WEATHER_STORM_WIND_COUNT = 15
-const ATMOSPHERE_SEED_Y_MULTIPLIER = 300
-
-const leafCount = computed(() => {
-  let count = 0
-  if (props.weather === 'storm' || props.weather === 'strong_winds') count = LEAF_WEATHER_STORM_WIND_COUNT
-  else if (props.weather === 'wind') count = 8
-  
-  if (props.isLowPower) {
-    return Math.round(count / 2)
-  }
-  return count
-})
+import {
+  isRainWeather,
+  isLightningWeather,
+  isSnowWeather,
+  isSandstormWeather,
+  isCanvasWeather,
+  resolveSnowLayerClass,
+  resolveWeatherOverlayStyles
+} from './atmosphereParticleHelper'
+import AtmosphereLeavesOverlay from './AtmosphereLeavesOverlay.vue'
 
 const initLeafAnim = (ctxVal: gsap.Context) => {
   initLeafAnimFn(ctxVal)
 }
 
-const weatherOverlayStyles = computed(() => {
-  const finalZ = props.zIndex
-    ? (typeof props.zIndex === 'number' ? `calc(${props.zIndex} + 1)` : props.zIndex)
-    : 'var(--z-map-weather, 8)'
-  return {
-    '--atmo-z-final': finalZ,
-    '--card-seed': animSeed.value,
-    '--card-speed': 0.6 + (animSeed.value * 1.0),
-    '--atmo-dir': direction.value,
-    '--seed-x': (animSeed.value * 100) % 100,
-    '--seed-y': (animSeed.value * ATMOSPHERE_SEED_Y_MULTIPLIER) % 100
+const weatherOverlayStyles = computed(() =>
+  resolveWeatherOverlayStyles({
+    zIndex: props.zIndex,
+    animSeed: animSeed.value,
+    direction: direction.value
+  })
+)
+
+const hasRain = computed(() => isRainWeather(props.weather))
+const hasLightning = computed(() => isLightningWeather(props.weather))
+const hasSnow = computed(() => isSnowWeather(props.weather))
+const hasSandstorm = computed(() => isSandstormWeather(props.weather))
+const hasCanvasWeather = computed(() => isCanvasWeather(props.weather))
+const snowLayerClass = computed(() => resolveSnowLayerClass(props.weather))
+const isDustOnly = computed(() => props.weather === 'strong_winds')
+
+const hasPrecipitation = computed(() => hasRain.value || hasSnow.value)
+const precipitationLayerClass = computed(() => (hasRain.value ? 'rain-layer' : snowLayerClass.value))
+const dustLayerClass = computed(() => ['sandstorm-layer', { 'dust-only': isDustOnly.value }])
+const showSecondLayer = computed(() => !props.isLowPower)
+const lightningStyle = computed(() => ({ '--lx': lightningPos.value.x1 }))
+const containerStyle = computed(() => ({ zIndex: props.zIndex }))
+
+const containerClasses = computed(() => [
+  `layer-${props.layer}`,
+  {
+    'is-ambient-layer': props.layer === 'ambient',
+    'is-particles-layer': props.layer === 'particles'
   }
-})
+])
+
+const overlayClasses = computed(() => [
+  props.weather,
+  props.cycle,
+  {
+    'is-fast-mode': isFastModeActive.value,
+    'is-performance': isFastModeActive.value,
+    'is-ambient-layer': props.layer === 'ambient',
+    'is-particles-layer': props.layer === 'particles'
+  }
+])
+
+const showPrecipitation = computed(() => props.layer !== 'ambient' && hasPrecipitation.value)
+const showSandstorm = computed(() => props.layer !== 'ambient' && hasSandstorm.value)
+const showCanvasWeather = computed(() => props.layer !== 'particles' && hasCanvasWeather.value)
+const showLeavesOverlay = computed(() => props.layer !== 'ambient' && Boolean(props.weather))
 </script>
 
 <template>
   <div
     ref="containerRef"
     class="atmosphere-container"
-    :style="{ zIndex: zIndex }"
+    :class="containerClasses"
+    :style="containerStyle"
   >
     <div
       v-show="shouldRenderAtmosphere"
       class="weather-overlay"
-      :class="[weather, props.cycle, { 'is-performance': isPerformanceMode }]"
+      :class="overlayClasses"
       :style="weatherOverlayStyles"
     >
-      <!-- Rain, Storm, Heavy Rain, Thunderstorm -->
-      <template v-if="['rain', 'storm', 'heavy_rain', 'thunderstorm'].includes(weather)">
+      <!-- Rain, Storm, Heavy Rain, Thunderstorm, Snow, Blizzard, Hail -->
+      <template v-if="showPrecipitation">
         <div
           ref="layer1Ref"
-          class="rain-layer layer-1"
+          :class="[precipitationLayerClass, 'layer-1']"
         />
         <div
-          v-if="!isLowPower"
+          v-if="showSecondLayer"
           ref="layer2Ref"
-          class="rain-layer layer-2"
+          :class="[precipitationLayerClass, 'layer-2']"
         />
-        <div
-          v-if="['storm', 'thunderstorm'].includes(weather)"
-          ref="lightningRef"
-          class="lightning-bolt"
-          :style="{ '--lx': lightningPos.x1 }"
-        />
-        <div 
-          v-if="['storm', 'thunderstorm'].includes(weather)" 
-          ref="flashRef" 
-          class="lightning-flash-overlay" 
-        />
-      </template>
-
-      <!-- Snow, Blizzard, Hail -->
-      <template v-if="['snow', 'blizzard', 'hail'].includes(weather)">
-        <div
-          ref="layer1Ref"
-          :class="[weather === 'hail' ? 'hail-layer' : 'snow-layer', 'layer-1']"
-        />
-        <div
-          v-if="!isLowPower"
-          ref="layer2Ref"
-          :class="[weather === 'hail' ? 'hail-layer' : 'snow-layer', 'layer-2']"
-        />
+        <template v-if="hasLightning">
+          <div
+            ref="lightningRef"
+            class="lightning-bolt"
+            :style="lightningStyle"
+          />
+          <div 
+            ref="flashRef" 
+            class="lightning-flash-overlay" 
+          />
+        </template>
       </template>
 
       <!-- Sandstorm, Strong Winds, Dust Storm -->
-      <template v-if="['sandstorm', 'strong_winds', 'dust_storm'].includes(weather)">
+      <template v-if="showSandstorm">
         <div
           ref="dustLayer1Ref"
-          class="sandstorm-layer layer-1"
-          :class="{ 'dust-only': weather === 'strong_winds' }"
+          :class="[dustLayerClass, 'layer-1']"
         />
         <div
-          v-if="!isLowPower"
+          v-if="showSecondLayer"
           ref="dustLayer2Ref"
-          class="sandstorm-layer layer-2"
-          :class="{ 'dust-only': weather === 'strong_winds' }"
+          :class="[dustLayerClass, 'layer-2']"
         />
       </template>
 
       <canvas
-        v-show="['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'].includes(weather)"
+        v-show="showCanvasWeather"
         ref="canvasRef"
         class="weather-canvas"
       />
       
       <!-- Leaves (for Wind & Storm effects) -->
-      <template v-if="isLeafWeatherId(weather)">
-        <div
-          v-for="n in leafCount"
-          :key="'leaf-'+n"
-          class="leaf-element"
-        />
-      </template>
+      <AtmosphereLeavesOverlay
+        v-if="showLeavesOverlay"
+        :weather="props.weather"
+        :is-fast-mode="isFastModeActive"
+        :is-low-power="props.isLowPower"
+      />
     </div>
   </div>
 </template>

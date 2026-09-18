@@ -41,20 +41,37 @@ QA / Automation Engineers.
   - `tests/unit/`: Strictly for frontend unit tests. Runs under `environment: 'node'` by default. Any test that mounts Vue components (`@vue/test-utils`, `mount`, `shallowMount`), tests Vue views/modals, or accesses DOM/browser globals (`document`, `window`, `HTMLCanvasElement`, `localStorageMock`) MUST declare `// @vitest-environment jsdom` at line 1. Pure frontend math, formulas, and state logic run without JSDOM overhead.
   - `tests/integration/`: For multi-module integration tests verifying cross-boundary behaviors, store + UI lifecycles, and bridge sync. Declare `// @vitest-environment jsdom` at line 1 if touching browser/DOM APIs.
   - `scripts/e2e/`: Strictly reserved for Playwright browser simulations (`*.simulation.ts`).
-- **Anti-Micro-Test Fragmentation Mandate**:
-  - It is STRICTLY FORBIDDEN to create dozens of tiny 20-50 line test files (`case_*.test.ts`, single-assertion specs). Each test file spawns a separate Vitest worker, thrashing Vite transform caches and repeatedly re-importing heavy packages like `@pkmn/sim` and `@smogon/calc`.
-  - Related test scenarios (such as fuzzer reproduction fixtures or sub-component math helpers) MUST be grouped in consolidated test suites under the 500-line SRP threshold.
+- **Anti-Micro-Test Fragmentation Mandate & Target Suite Size Standard**:
+  - It is STRICTLY FORBIDDEN to create micro-test files (<60 lines) for individual cases or single assertions. Each test file spawns a separate Vitest worker thread, thrashing Vite transform caches and repeatedly re-importing heavy packages like `@pkmn/sim` and `@smogon/calc`.
+  - All test files MUST be organized into cohesive, domain-specific test suites with a target size of **300 to 800 lines** (`*_suite.test.ts` or `*_suite.spec.ts`).
+  - Legitimate standalone process runners, benchmark files, or isolated bug reproducers are strictly governed via `TEST_FRAGMENTATION_WHITELIST` or inline `// test-fragmentation-ok: <justification>` annotations.
+  - Enforced continuously by the official auditor: `npm run validate:test-fragmentation:summary`.
+- **Systematic Des-JSDOMization Standard & JSDOM Escape Hatch Protocol**:
+  - Suites testing pure domain logic, mathematical formulas, Pinia stores without UI mounting, Showdown engine adapters, or CLI scripts MUST execute under the native Node runtime (`environment: 'node'`) rather than JSDOM.
+  - Declaring `// @vitest-environment jsdom` on suites that do not mount Vue components (`@vue/test-utils`) or touch real DOM nodes is strictly prohibited and flagged automatically as `unnecessary-jsdom`.
+  - When non-component tests genuinely require browser globals (such as Web Worker client accessing `self.onmessage`, or simulated browser storage `window.localStorage` / OPFS `navigator.storage`), the file MUST explicitly provide an inline justification escape hatch: `// jsdom-ok: <justification>`.
+- **Canonical Domain Logic SSoT & Zero Duplicate Exports in Tests**:
+  - Test suites MUST import domain calculation and formatting utilities directly from their canonical originating module (e.g. `getTypeEffectivenessMsg` from `@/logic/pokemon/pokemonMath`). Re-implementing or re-exporting duplicate utilities in secondary helper modules is strictly forbidden and rejected by Fallow duplicate export gatekeepers.
 - **SQLite In-Memory Test Optimization Standard**:
   - Test suites performing mass insertions or executing database migrations in SQLite MUST encapsulate operations inside `BEGIN TRANSACTION;` and `COMMIT;` with memory pragmas (`PRAGMA synchronous = OFF; PRAGMA journal_mode = MEMORY;`).
   - Companion SQLite migration files (`.sqlite.sql`) must be executed in bulk via `db.exec(migration.sqlite_sql)` rather than string-splitting into individual JavaScript loops.
 - **Cross-Platform Vitest Environment Directive**:
   - Tests requiring JSDOM MUST explicitly declare `// @vitest-environment jsdom` at line 1. This guarantees deterministic environment routing across both Windows (with backslashes `\`) and POSIX (`/`) file systems without relying on path glob nuances.
 - All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
+- **Vitest Multi-Project Workspace Parity Mandate**:
+  - When declaring custom or isolated test projects (such as `migrations`), configurations in `vitest.config.ts` and `vitest.workspace.ts` MUST maintain 100% attribute parity (`name`, `include`, `exclude`, `pool: 'forks'`, `forks.execArgv`, `setupFiles`, and `testTimeout`).
+  - Because Vitest prioritizes `vitest.workspace.ts` when both exist, omitting pool settings, CLI flags (`--no-experimental-webstorage`), or setup files in the workspace causes silent execution divergence between root commands and workspace invocations.
+- **Global Test Environment Setup Deduplication Mandate**:
+  - Shared global setup logic (such as `registerTeamGeneratorHandler` or `Temporal.Now` fake timer mocks) MUST NOT be copy-pasted across `vitest.setup.ts` and `vitest.node.setup.ts`.
+  - Shared initialization code MUST be centralized in helper modules under `tests/helpers/` (e.g., `tests/helpers/setupTestEnvironment.ts`) and imported into individual setup entry points to satisfy zero-tolerance code duplication gatekeepers (`fallow:dupes`).
+- **Heavy Database Migration Test Isolation (`test:migrations`)**:
+  - Heavy migration suites testing hundreds of migrations against massive production backup fixtures (`server_franco_backup_fixture.json`, >2 MB, >1,000 rows) take >30 seconds and MUST be excluded from standard daily developer test runs (`npm run test` and `npm run test:node`).
+  - They MUST be isolated under a dedicated Vitest project (`migrations`), executed independently via `npm run test:migrations`, and enforced as a mandatory blocking quality gate inside `npm run database:generate-migrations`.
 
 ## Work Guidance
 
 - **Save & Reload State Roundtrip Verification**: Any store feature modifying player profile, class, or progression MUST include a full roundtrip unit test simulating the entire client lifecycle: store action -> state serialization (`serializeState`) -> schema validation (`validateAndSanitize`) -> fresh Pinia store rehydration (`updateState`) to guarantee zero persistence loss on browser refresh.
-- **Immutable Backup Fixtures for Migration & Serialization Tests**: Automated test suites verifying SQL migrations, Dex compatibility, or player save serialization (`backup_saves_serialization.spec.ts`, `backup_full_validation.test.ts`) MUST exclusively load deterministic fixtures from `tests/node/fixtures/server_franco_backup_fixture.json`. Tests must NEVER load dynamic, live, or timestamped database backups from `database/backups/`, as production database snapshots evolve over time and cause test flakiness or inconsistent schema states.
+- **Immutable Backup Fixtures for Migration & Serialization Tests**: Automated test suites verifying SQL migrations, Dex compatibility, or player save serialization (`backup_saves_serialization.spec.ts`, `backup_migration_real.test.ts` via `npm run test:migrations`) MUST exclusively load deterministic fixtures from `tests/node/fixtures/server_franco_backup_fixture.json`. Tests must NEVER load dynamic, live, or timestamped database backups from `database/backups/`, as production database snapshots evolve over time and cause test flakiness or inconsistent schema states.
 - **Exhaustive Spawn Whitelist Unit Tests**: All map encounter generators (`getFinalGroundRates`) and static map databases (`FIRE_RED_MAPS`) MUST be verified against `ENABLED_POKEMON_IDS` across all day phases (`morning`, `day`, `dusk`, `night`) and all weather conditions in `tests/unit/world/spawn_integrity.spec.ts`.
 - **3-Tier Bug Resolution Protocol Execution**: Whenever a bug is presented with a reproducing example or discovered during test runs:
   1. Extract failing data and construct a static, inlined Unit Test in `tests/node/` or `tests/unit/` to verify RED failure. If database-related, execute across all active engines (SQLite + PostgreSQL via `describeWithDatabase` from `tests/dbTestHelper.ts`).

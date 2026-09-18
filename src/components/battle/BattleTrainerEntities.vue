@@ -261,6 +261,7 @@ defineExpose({
         >
           <img 
             :src="enemyTrainerSpriteUrl" 
+            :alt="trainerName || 'Entrenador rival'"
             class="trainer-image"
             @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender })"
           >
@@ -315,6 +316,7 @@ defineExpose({
         >
           <img 
             :src="enemyTrainerSpriteUrl" 
+            :alt="trainerName || 'Entrenador rival'"
             class="trainer-image"
             @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender })"
           >

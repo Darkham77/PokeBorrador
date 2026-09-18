@@ -33,26 +33,32 @@ describe('Supabase Schema Queries Integrity (Anti-400 Regression)', () => {
     'last_played_at'
   ]);
 
-  it('guarantees src/stores/pvp.ts queries only valid SQL columns on public.profiles without camelCase fields', () => {
-    const pvpStorePath = path.resolve(process.cwd(), 'src/stores/pvp.ts');
-    const content = fs.readFileSync(pvpStorePath, 'utf-8');
+  it('guarantees src/stores/pvp.ts and pvpDataHelper.ts query only valid SQL columns on public.profiles without camelCase fields', () => {
+    const filesToScan = [
+      path.resolve(process.cwd(), 'src/stores/pvp.ts'),
+      path.resolve(process.cwd(), 'src/stores/pvpDataHelper.ts')
+    ];
 
-    // Find queries targeting .from('profiles')
     const queryRegex = /\.from\(['"]profiles['"]\)\s*\.select\(['"]([^'"]+)['"]\)/g;
-    let match: RegExpExecArray | null;
     let foundQueries = 0;
 
-    while ((match = queryRegex.exec(content)) !== null) {
-      foundQueries++;
-      const selectFieldsRaw = match[1];
-      if (!selectFieldsRaw) continue;
-      const requestedColumns = selectFieldsRaw.split(',').map(c => c.trim()).filter(Boolean);
+    for (const filePath of filesToScan) {
+      if (!fs.existsSync(filePath)) continue;
+      const content = fs.readFileSync(filePath, 'utf-8');
+      let match: RegExpExecArray | null;
 
-      for (const col of requestedColumns) {
-        expect(
-          PROFILES_SQL_COLUMNS.has(col),
-          `Invalid column '${col}' queried on 'profiles' table in src/stores/pvp.ts. Column does not exist in PostgreSQL schema and will trigger HTTP 400 Bad Request!`
-        ).toBe(true);
+      while ((match = queryRegex.exec(content)) !== null) {
+        foundQueries++;
+        const selectFieldsRaw = match[1];
+        if (!selectFieldsRaw) continue;
+        const requestedColumns = selectFieldsRaw.split(',').map(c => c.trim()).filter(Boolean);
+
+        for (const col of requestedColumns) {
+          expect(
+            PROFILES_SQL_COLUMNS.has(col),
+            `Invalid column '${col}' queried on 'profiles' table in ${path.basename(filePath)}. Column does not exist in PostgreSQL schema and will trigger HTTP 400 Bad Request!`
+          ).toBe(true);
+        }
       }
     }
 

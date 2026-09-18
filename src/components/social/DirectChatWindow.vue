@@ -3,18 +3,9 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useChatStore } from '@/stores/social/chat';
 import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
-import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
+import DirectChatMessageRow from './DirectChatMessageRow.vue';
 import { gsap } from 'gsap';
-import { formatChatTimestamp } from '@/logic/utils/timeUtils';
-import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay';
-
-function extractBattleCode(message?: string): string | null {
-  if (!message) return null;
-  const match = message.match(BATTLE_CODE_REGEX);
-  return match ? match[0].toUpperCase() : null;
-}
 
 
 interface Props {
@@ -71,9 +62,12 @@ watch(() => chat.value?.isCollapsed, (collapsed) => {
       inputField.value?.focus();
     });
     // Sincronizar el scroll al fondo con la animación de slide-in del modal lateral
-    gsap.delayedCall(0.1, scrollToBottom);
-    gsap.delayedCall(0.3, scrollToBottom);
-    gsap.delayedCall(0.5, scrollToBottom);
+    const SCROLL_SYNC_STEP_1_SEC = 0.1;
+    const SCROLL_SYNC_STEP_2_SEC = 0.3;
+    const SCROLL_SYNC_STEP_3_SEC = 0.5;
+    gsap.delayedCall(SCROLL_SYNC_STEP_1_SEC, scrollToBottom);
+    gsap.delayedCall(SCROLL_SYNC_STEP_2_SEC, scrollToBottom);
+    gsap.delayedCall(SCROLL_SYNC_STEP_3_SEC, scrollToBottom);
     chatStore.fetchMissingCosmetics();
   }
 }, { immediate: true });
@@ -125,42 +119,14 @@ onMounted(() => {
           :css="false"
           @enter="onMessageEnter"
         >
-          <div 
-            v-for="(msg, idx) in chat?.messages" 
-            :key="idx" 
-            class="message-row"
-          >
-            <TrainerAvatar 
-              :player-class="chatStore.profileCosmetics[msg.senderId || '']?.player_class || msg.player_class" 
-              :level="chatStore.profileCosmetics[msg.senderId || '']?.trainer_level || msg.trainer_level" 
-              :avatar-style="chatStore.profileCosmetics[msg.senderId || '']?.avatar_style || undefined"
-              :gender="chatStore.profileCosmetics[msg.senderId || '']?.gender || msg.gender || 'h'"
-              :size="32"
-              class="clickable-avatar"
-              @click.stop="openTrainerProfile(msg.senderId)"
-            />
-            <div
-              class="message-content"
-              :class="{ 'is-me': msg.senderId === authStore.user?.id }"
-            >
-              <div class="message-meta">
-                <span
-                  v-gsap-nick="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
-                  class="username clickable-username"
-                  :class="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
-                  @click.stop="openTrainerProfile(msg.senderId)"
-                >{{ chatStore.profileCosmetics[msg.senderId || '']?.username || msg.senderName }}</span>
-                <span class="time">{{ formatChatTimestamp(msg.timestamp) }}</span>
-              </div>
-              <p class="text">
-                {{ msg.text }}
-              </p>
-              <ChatBattleCodeBadge
-                v-if="extractBattleCode(msg.text)"
-                :battle-code="extractBattleCode(msg.text)!"
-              />
-            </div>
-          </div>
+          <DirectChatMessageRow
+            v-for="(msg, idx) in chat?.messages"
+            :key="idx"
+            :msg="msg"
+            :is-me="msg.senderId === authStore.user?.id"
+            :cosmetics="chatStore.profileCosmetics[msg.senderId || '']"
+            @open-profile="openTrainerProfile"
+          />
         </TransitionGroup>
       </div>
 

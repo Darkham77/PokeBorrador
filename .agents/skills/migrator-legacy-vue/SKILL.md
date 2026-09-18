@@ -38,7 +38,7 @@ Every migration task **MUST** follow these phases. Do not skip any phase.
 
 1. Migrate styles to SCSS partials, using `@/project-standards` to ensure modularity.
 2. Implement components using the **Composition API** (`<script setup>`).
-3. Ensure no single file exceeds **500 lines** (strictly enforced by `@/project-standards`). If needed, extract logic into separate files in `src/logic/` or `src/composables/`.
+3. Ensure components and logic maintain low complexity and concise functions (<= 60 LOC) governed by Fallow quality standards. If needed, extract logic into separate files in `src/logic/` or `src/composables/`.
 4. **Unit Test Preparation**: For every change made, prepare a corresponding test file in `tests/`. No code should be considered "finished" without its test suite.
 
 ### Phase 4: Mandatory Unit Testing
@@ -67,7 +67,7 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 - **Database Parity**: Any legacy logic that introduces or modifies data structures **MUST** follow the versioned migration pattern in `database/migrations/`. The **Vite Migration Plugin** will automatically synchronize the local engine. Manual updates are **FORBIDDEN**.
   - **REMOTE SQL VISIBILITY**: Always present the user with the SQL code intended for Supabase to ensure parity.
 - **No Hardcoded Styles**: Use SCSS tokens. If the code is being migrated to a Vue component, implement styles using Vue standards (scoped `<style lang="scss">`, reactive classes `:class`, or computed `:style` for dynamic values). If it's not a component yet, extract all legacy inline styles to modular SCSS partials.
-- **Modularity**: Every new file must pass the 500-line audit. If a legacy script is too large, it **MUST** be split into multiple logic modules or composables.
+- **Modularity**: Every new file must comply with Fallow quality standards (low complexity, concise functions, zero dead code). If a legacy script has high complexity or oversized functions, it **MUST** be split into focused logic modules or composables.
 - **Mandatory Centralized Asset Management (`getAssetUrl`)**: When migrating legacy HTML templates or JS scripts containing hardcoded image paths (such as `src="/assets/..."`, `src="/sprites/..."`, or relative asset paths), agents MUST NEVER copy or retain hardcoded string paths. All visual assets (Pokémon sprites, trainer avatars, items, badges, medals, maps, banners) MUST be transformed to use `getAssetUrl(ASSET_TYPES.<CATEGORY>, id, options)` from `@/logic/services/assetService` or standardized component wrappers (`TrainerAvatar`, `PokemonIcon`, `PVSpriteFX`).
 - **Type Safety**: Use TypeScript where possible or JSDoc if the project is JS-only.
 - **Mandatory Unit Testing**: No migration is complete without verified unit tests for **ALL** changes. Whether it's a simple UI component or complex battle logic, you **MUST** provide a test suite that covers edge cases and confirms parity with the original legacy behavior. This is not optional and must be done for every single migrated file.

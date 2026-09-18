@@ -5,6 +5,7 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import { useSocialStore } from '@/stores/social/social'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
+import { logger } from '@/logic/utils/logger'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 
 const TOAST_ENTER_Y_OFFSET = -30
@@ -65,8 +66,8 @@ async function resolveChallenger(senderId: string) {
         }
         return
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      logger.warn('[PvPChallengeToast] Error resolviendo perfil del retador:', err)
     }
   }
 

@@ -57,7 +57,7 @@ const DIRECTIONS = [
   { r: 0, c: 1 }
 ] as const;
 
-export function generateArchaeologyGrid(gridSize: number, totalFossilParts: number): ArchaeologyTile[] {
+function createEmptyArchaeologyGrid(gridSize: number): ArchaeologyTile[] {
   const tempGrid: ArchaeologyTile[] = [];
   for (let r = 0; r < gridSize; r++) {
     for (let c = 0; c < gridSize; c++) {
@@ -70,8 +70,32 @@ export function generateArchaeologyGrid(gridSize: number, totalFossilParts: numb
       });
     }
   }
+  return tempGrid;
+}
 
-  const fossilCoords = new Set<string>();
+function collectAdjacentEmptyNeighbors(
+  activeList: { r: number; c: number }[],
+  gridSize: number,
+  occupied: Set<string>
+): { r: number; c: number }[] {
+  const candidates: { r: number; c: number }[] = [];
+  for (const cell of activeList) {
+    for (const dir of DIRECTIONS) {
+      const nr = cell.r + dir.r;
+      const nc = cell.c + dir.c;
+      if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
+        const key = `${nr},${nc}`;
+        if (!occupied.has(key)) {
+          candidates.push({ r: nr, c: nc });
+        }
+      }
+    }
+  }
+  return candidates;
+}
+
+function growConnectedFossilCoords(gridSize: number, totalFossilParts: number): Set<string> {
+  const fossilCoords = new Set<string>(); // runtime-set: Fast O(1) membership lookup set
   let currentR = Math.floor(Math.random() * gridSize);
   let currentC = Math.floor(Math.random() * gridSize);
   fossilCoords.add(`${currentR},${currentC}`);
@@ -84,19 +108,7 @@ export function generateArchaeologyGrid(gridSize: number, totalFossilParts: numb
       return { r, c };
     });
 
-    const candidates: { r: number; c: number }[] = [];
-    for (const cell of activeList) {
-      for (const dir of DIRECTIONS) {
-        const nr = cell.r + dir.r;
-        const nc = cell.c + dir.c;
-        if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
-          const key = `${nr},${nc}`;
-          if (!fossilCoords.has(key)) {
-            candidates.push({ r: nr, c: nc });
-          }
-        }
-      }
-    }
+    const candidates = collectAdjacentEmptyNeighbors(activeList, gridSize, fossilCoords);
 
     if (candidates.length === 0) {
       fossilCoords.clear();
@@ -109,6 +121,13 @@ export function generateArchaeologyGrid(gridSize: number, totalFossilParts: numb
     const chosen = candidates[Math.floor(Math.random() * candidates.length)]!;
     fossilCoords.add(`${chosen.r},${chosen.c}`);
   }
+
+  return fossilCoords;
+}
+
+export function generateArchaeologyGrid(gridSize: number, totalFossilParts: number): ArchaeologyTile[] {
+  const tempGrid = createEmptyArchaeologyGrid(gridSize);
+  const fossilCoords = growConnectedFossilCoords(gridSize, totalFossilParts);
 
   for (const tile of tempGrid) {
     if (fossilCoords.has(`${tile.r},${tile.c}`)) {

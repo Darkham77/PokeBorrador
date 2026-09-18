@@ -13,14 +13,16 @@ import { buildSpectateSyncPayload, type PvpSpectateSyncPayload } from '@/logic/p
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { DBRouter } from '@/logic/db/dbRouter'
 
-export interface RoomActionsContext {
+const ROOM_HOST_POLL_INTERVAL_SEC = 2;
+
+interface RoomActionsContext {
   db: DBRouter
   userId: string
   notify: (msg: string, icon?: string) => void
   onBattleStart: (invite: BattleInvite, isHost: boolean, isRanked: boolean) => void
 }
 
-export async function executeCreateRoom(
+async function executeCreateRoom(
   config: PvpChallengeConfig | undefined,
   ctx: RoomActionsContext,
   onPollerCreated: (poller: gsap.core.Tween) => void
@@ -52,7 +54,7 @@ export async function executeCreateRoom(
   return { code, inviteId: data.id }
 }
 
-export function startRoomHostPoller(
+function startRoomHostPoller(
   inviteId: string,
   ctx: RoomActionsContext
 ): gsap.core.Tween {
@@ -71,14 +73,14 @@ export function startRoomHostPoller(
       return
     }
 
-    poller = gsap.delayedCall(2, poll)
+    poller = gsap.delayedCall(ROOM_HOST_POLL_INTERVAL_SEC, poll)
   }
 
-  poller = gsap.delayedCall(2, poll)
+  poller = gsap.delayedCall(ROOM_HOST_POLL_INTERVAL_SEC, poll)
   return poller
 }
 
-export async function executeCancelRoom(
+async function executeCancelRoom(
   roomCode: PvpRoomCode | null,
   db: DBRouter | null,
   poller: { kill: () => void } | null
@@ -89,7 +91,7 @@ export async function executeCancelRoom(
   }
 }
 
-export async function executeJoinRoom(
+async function executeJoinRoom(
   code: PvpRoomCode,
   ctx: RoomActionsContext
 ): Promise<boolean> {

@@ -8,14 +8,14 @@
  */
 import { ref, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, WEATHER_SEASON_IDS, type WeatherSeasonId, type WeatherTableRouteId } from '@/data/world/weather-tables'
+import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, WEATHER_SEASON_IDS, type WeatherSeasonId } from '@/data/world/weather-tables'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { MapRouteId } from '@/data/world/map-assets'
-import type { PokemonType } from '@/data/battle/types'
 import { DAY_PHASES, type DayPhase } from '@/types/system/time'
+import DebugWeatherRouteSection from './DebugWeatherRouteSection.vue'
+import type { PrecomputedRouteData, RegionId, Region } from './debugWeatherTypes.ts'
 
 interface Props {
   id?: string
@@ -52,43 +52,12 @@ const getWeatherMetadata = (weather: WeatherId) => {
   return WEATHER_UI_METADATA[mech] || { icon: '❓', label: weather.toUpperCase() }
 }
 
-type RegionId = 'kanto' | 'johto' | 'hoenn' | 'sinnoh'
-
-interface Region {
-  id: RegionId
-  name: string
-  maps: readonly WeatherTableRouteId[]
-}
-
 const REGIONS: Region[] = [
   { id: 'kanto', name: 'Kanto', maps: (Object.keys(MAPS_BY_ROUTE_ID) as string[]).filter(isWeatherTableRouteId) }, // open-record: Generic key-value data dictionary container
   { id: 'johto', name: 'Johto', maps: [] },
   { id: 'hoenn', name: 'Hoenn', maps: [] },
   { id: 'sinnoh', name: 'Sinnoh', maps: [] }
 ]
-
-interface PrecomputedRouteData {
-  routeId: WeatherTableRouteId
-  name: string
-  seasons: {
-    seasonId: WeatherSeasonId
-    label: string
-    cycles: {
-      cycleId: DayPhase
-      label: string
-      probs: {
-        weather: WeatherId
-        chance: number
-        icon: string
-        label: string
-        visitors: { name: string; sprite: string }[]
-        exclusive: { name: string; sprite: string }[]
-        modifiers: { boost: readonly PokemonType[]; debuff: readonly PokemonType[]; block: readonly PokemonType[] } | null
-        hasSpawns: boolean
-      }[]
-    }[]
-  }[]
-}
 
 // Pre-calculate the entire structure statically once at import time
 const PRECOMPUTED_WEATHER_DATA = (() => {
@@ -238,140 +207,13 @@ function toggleRoute(routeId: MapRouteId) {
           <p>No hay datos de clima para la región de {{ activeRegion.toUpperCase() }} aún.</p>
         </div>
 
-        <div
+        <DebugWeatherRouteSection
           v-for="route in regionTableData"
           :key="route.routeId"
-          class="route-section"
-        >
-          <h2
-            class="route-title"
-            @click.stop="toggleRoute(route.routeId)"
-          >
-            <span class="emoji arrow">{{ expandedRoutes[route.routeId] ? '▼' : '▶' }}</span>
-            {{ route.name }} 
-            <span class="id-tag">#{{ route.routeId }}</span>
-          </h2>
-          
-          <div
-            v-if="expandedRoutes[route.routeId]"
-            class="seasons-grid"
-          >
-            <div
-              v-for="season in route.seasons"
-              :key="season.seasonId"
-              class="season-card"
-            >
-              <h3 class="season-title">
-                {{ season.label }}
-              </h3>
-              
-              <div class="cycles-list">
-                <div
-                  v-for="cycle in season.cycles"
-                  :key="cycle.cycleId"
-                  class="cycle-row"
-                >
-                  <div class="cycle-name">
-                    {{ cycle.label }}
-                  </div>
-                  <div class="probs-tags">
-                    <div 
-                      v-for="prob in cycle.probs" 
-                      :key="prob.weather" 
-                      class="prob-tag"
-                      :class="prob.weather"
-                    >
-                      <div class="prob-header">
-                        <span class="emoji">{{ prob.icon }}</span>
-                        <span class="label">{{ prob.label }}</span>
-                        <span class="chance">{{ prob.chance }}%</span>
-                      </div>
-
-                      <div
-                        v-if="prob.modifiers"
-                        class="type-modifiers"
-                      >
-                        <div
-                          v-if="prob.modifiers.boost.length"
-                          class="mod-group boost"
-                        >
-                          <span class="emoji mod-icon">▲</span>
-                          <PokemonTypeTag
-                            v-for="t in prob.modifiers.boost"
-                            :key="t"
-                            :type="t"
-                            size="ssm"
-                          />
-                        </div>
-                        <div
-                          v-if="prob.modifiers.debuff.length"
-                          class="mod-group debuff"
-                        >
-                          <span class="emoji mod-icon">▼</span>
-                          <PokemonTypeTag
-                            v-for="t in prob.modifiers.debuff"
-                            :key="t"
-                            :type="t"
-                            size="ssm"
-                          />
-                        </div>
-                        <div
-                          v-if="prob.modifiers.block.length"
-                          class="mod-group block"
-                        >
-                          <span class="emoji mod-icon">🚫</span>
-                          <PokemonTypeTag
-                            v-for="t in prob.modifiers.block"
-                            :key="t"
-                            :type="t"
-                            size="ssm"
-                          />
-                        </div>
-                      </div>
-                      
-                      <!-- Pokémon afectados por este clima -->
-                      <div 
-                        v-if="prob.hasSpawns"
-                        class="weather-spawns"
-                      >
-                        <div 
-                          v-if="prob.visitors.length" 
-                          class="spawn-group visitors"
-                        >
-                          <span class="group-label">Visitantes:</span>
-                          <div class="spawn-icons">
-                            <img 
-                              v-for="p in prob.visitors" 
-                              :key="p.name"
-                              :src="p.sprite"
-                              class="mini-sprite"
-                              :title="p.name"
-                            >
-                          </div>
-                        </div>
-                        <div 
-                          v-if="prob.exclusive.length" 
-                          class="spawn-group exclusive"
-                        >
-                          <span class="group-label">Exclusivos:</span>
-                          <div class="spawn-icons">
-                            <img 
-                              v-for="p in prob.exclusive" 
-                              :key="p.name"
-                              :src="p.sprite"
-                              class="mini-sprite"
-                              :title="p.name"
-                            >
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          :route="route"
+          :is-expanded="Boolean(expandedRoutes[route.routeId])"
+          @toggle="toggleRoute"
+        />
       </div>
     </div>
   </BaseModal>

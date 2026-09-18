@@ -3,8 +3,8 @@ import { computed, ref } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game.ts'
 import { useEventStore } from '@/stores/events.ts'
-import { isItemId } from '@/data/inventory/items'
-import type { ToolQualityTier } from '@/types/system/game'
+import { isItemId, BUFF_FIELDS } from '@/data/inventory/items'
+import type { ToolQualityTier, GameState } from '@/types/system/game'
 import { getServerTime, getServerInstant, getGMT3Date } from '@/logic/utils/timeUtils'
 import {
   buildActiveEventBuffs,
@@ -13,6 +13,39 @@ import {
 } from './buffsHelper.ts'
 
 export { type ActiveBuffItem }
+
+const BUFF_TICK_INTERVAL_SEC = 1;
+const BUFF_AUTOSAVE_INTERVAL_SECS = 30;
+
+function decrementActiveBuffs(s: GameState): boolean {
+  let changed = false;
+
+  for (const k of BUFF_FIELDS) {
+    if (s[k] > 0) {
+      s[k]--;
+      changed = true;
+    }
+  }
+
+  if (s.fishingRodSecs <= 0 && s.fishingRodType !== null) {
+    s.fishingRodType = null;
+    changed = true;
+  }
+  if (s.pickaxeSecs <= 0 && s.pickaxeType !== null) {
+    s.pickaxeType = null;
+    changed = true;
+  }
+  if (s.brushSecs <= 0 && s.brushType !== null) {
+    s.brushType = null;
+    changed = true;
+  }
+
+  return changed;
+}
+
+function shouldAutoSaveBuffTimers(s: GameState): boolean {
+  return BUFF_FIELDS.some(k => s[k] > 0 && s[k] % BUFF_AUTOSAVE_INTERVAL_SECS === 0);
+}
 
 export const useBuffsStore = defineStore('buffs', () => {
   const gameStore = useGameStore()
@@ -28,103 +61,92 @@ export const useBuffsStore = defineStore('buffs', () => {
       currentTick.value++
       // Pause timers if player is in an active battle
       if (gameStore.state.battle && !gameStore.state.battle.over) {
-        tickInterval = gsap.delayedCall(1, tick)
+        tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick)
         return
       }
 
       const s = gameStore.state
-      let changed = false
-      if (s.repelSecs > 0) { s.repelSecs--; changed = true }
-      if (s.fishingRodSecs > 0) {
-        s.fishingRodSecs--
-        if (s.fishingRodSecs <= 0) s.fishingRodType = null
-        changed = true
-      }
-      if (s.pickaxeSecs > 0) {
-        s.pickaxeSecs--
-        if (s.pickaxeSecs <= 0) s.pickaxeType = null
-        changed = true
-      }
-      if (s.brushSecs > 0) {
-        s.brushSecs--
-        if (s.brushSecs <= 0) s.brushType = null
-        changed = true
-      }
-      if (s.shinyBoostSecs > 0) { s.shinyBoostSecs--; changed = true }
-      if (s.amuletCoinSecs > 0) { s.amuletCoinSecs--; changed = true }
-      if (s.luckyEggSecs > 0) { s.luckyEggSecs--; changed = true }
-      if (s.safariTicketSecs > 0) { s.safariTicketSecs--; changed = true }
-      if (s.ceruleanTicketSecs > 0) { s.ceruleanTicketSecs--; changed = true }
-      if (s.articunoTicketSecs > 0) { s.articunoTicketSecs--; changed = true }
-      if (s.mewtwoTicketSecs > 0) { s.mewtwoTicketSecs--; changed = true }
-      if (s.ivScannerSecs > 0) { s.ivScannerSecs--; changed = true }
-      if (s.incenseSecs > 0) { s.incenseSecs--; changed = true }
+      const changed = decrementActiveBuffs(s)
 
-      if (changed) {
-        // Silent save every 30 seconds to persist active timers (ignoring 0 values)
-        const hasRepelTick = s.repelSecs > 0 && s.repelSecs % 30 === 0
-        const hasFishingTick = s.fishingRodSecs > 0 && s.fishingRodSecs % 30 === 0
-        const hasPickaxeTick = s.pickaxeSecs > 0 && s.pickaxeSecs % 30 === 0
-        const hasBrushTick = s.brushSecs > 0 && s.brushSecs % 30 === 0
-        const hasShinyTick = s.shinyBoostSecs > 0 && s.shinyBoostSecs % 30 === 0
-        const hasAmuletTick = s.amuletCoinSecs > 0 && s.amuletCoinSecs % 30 === 0
-        const hasEggTick = s.luckyEggSecs > 0 && s.luckyEggSecs % 30 === 0
-        const hasIncenseTick = s.incenseSecs > 0 && s.incenseSecs % 30 === 0
-        const hasScannerTick = s.ivScannerSecs > 0 && s.ivScannerSecs % 30 === 0
-
-        if (
-          hasRepelTick || 
-          hasFishingTick || 
-          hasPickaxeTick || 
-          hasBrushTick ||
-          hasShinyTick || 
-          hasAmuletTick || 
-          hasEggTick || 
-          hasIncenseTick || 
-          hasScannerTick
-        ) {
-          gameStore.save(false)
-        }
+      if (changed && shouldAutoSaveBuffTimers(s)) {
+        gameStore.save(false)
       }
       
-      tickInterval = gsap.delayedCall(1, tick)
+      tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick)
     }
 
-    tickInterval = gsap.delayedCall(1, tick)
+    tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick)
   }
 
+type StateCumulativeBuffField =
+  | 'repelSecs'
+  | 'shinyBoostSecs'
+  | 'amuletCoinSecs'
+  | 'luckyEggSecs'
+  | 'safariTicketSecs'
+  | 'ceruleanTicketSecs'
+  | 'articunoTicketSecs'
+  | 'mewtwoTicketSecs';
+
+const CUMULATIVE_BUFF_FIELDS: Readonly<Record<string, StateCumulativeBuffField>> = {
+  repel: 'repelSecs',
+  shiny: 'shinyBoostSecs',
+  amulet: 'amuletCoinSecs',
+  'lucky-egg': 'luckyEggSecs',
+  safari: 'safariTicketSecs',
+  cerulean: 'ceruleanTicketSecs',
+  articuno: 'articunoTicketSecs',
+  mewtwo: 'mewtwoTicketSecs',
+};
+
+function applyCumulativeBuff(s: GameState, buffName: string, seconds: number): boolean {
+  const field = CUMULATIVE_BUFF_FIELDS[buffName];
+  if (field) {
+    s[field] = (s[field] || 0) + seconds;
+    return true;
+  }
+  return false;
+}
+
+function applyToolBuff(s: GameState, buffName: string, seconds: number, extraData: string | null): boolean {
+  const tier = (extraData as ToolQualityTier | null) || 'standard';
+  if (buffName === 'fishing-rod') {
+    s.fishingRodSecs = seconds;
+    s.fishingRodType = tier;
+    return true;
+  }
+  if (buffName === 'pickaxe') {
+    s.pickaxeSecs = seconds;
+    s.pickaxeType = tier;
+    s.brushSecs = 0;
+    s.brushType = null;
+    return true;
+  }
+  if (buffName === 'brush') {
+    s.brushSecs = seconds;
+    s.brushType = tier;
+    s.pickaxeSecs = 0;
+    s.pickaxeType = null;
+    return true;
+  }
+  return false;
+}
+
+function applySpecialBuff(s: GameState, buffName: string, seconds: number, extraData: string | null): void {
+  if (buffName === 'iv-scanner') {
+    s.ivScannerSecs = seconds;
+  } else if (buffName === 'incense') {
+    s.incenseSecs = (s.incenseSecs || 0) + seconds;
+    if (extraData) s.incenseType = isItemId(extraData) ? extraData : null;
+  }
+}
+
   function addBuff(buffName: string, seconds: number, extraData: string | null = null) {
-    const s = gameStore.state
-    if (buffName === 'repel') s.repelSecs = (s.repelSecs || 0) + seconds
-    else if (buffName === 'fishing-rod') {
-      s.fishingRodSecs = seconds
-      s.fishingRodType = (extraData as ToolQualityTier | null) || 'standard'
+    const s = gameStore.state;
+    if (!applyCumulativeBuff(s, buffName, seconds) && !applyToolBuff(s, buffName, seconds, extraData)) {
+      applySpecialBuff(s, buffName, seconds, extraData);
     }
-    else if (buffName === 'pickaxe') {
-      s.pickaxeSecs = seconds
-      s.pickaxeType = (extraData as ToolQualityTier | null) || 'standard'
-      s.brushSecs = 0
-      s.brushType = null
-    }
-    else if (buffName === 'brush') {
-      s.brushSecs = seconds
-      s.brushType = (extraData as ToolQualityTier | null) || 'standard'
-      s.pickaxeSecs = 0
-      s.pickaxeType = null
-    }
-    else if (buffName === 'shiny') s.shinyBoostSecs = (s.shinyBoostSecs || 0) + seconds
-    else if (buffName === 'amulet') s.amuletCoinSecs = (s.amuletCoinSecs || 0) + seconds
-    else if (buffName === 'lucky-egg') s.luckyEggSecs = (s.luckyEggSecs || 0) + seconds
-    else if (buffName === 'safari') s.safariTicketSecs = (s.safariTicketSecs || 0) + seconds
-    else if (buffName === 'cerulean') s.ceruleanTicketSecs = (s.ceruleanTicketSecs || 0) + seconds
-    else if (buffName === 'articuno') s.articunoTicketSecs = (s.articunoTicketSecs || 0) + seconds
-    else if (buffName === 'mewtwo') s.mewtwoTicketSecs = (s.mewtwoTicketSecs || 0) + seconds
-    else if (buffName === 'iv-scanner') s.ivScannerSecs = seconds
-    else if (buffName === 'incense') {
-      s.incenseSecs = (s.incenseSecs || 0) + seconds
-      if (extraData) s.incenseType = isItemId(extraData) ? extraData : null
-    }
-    gameStore.save(false)
+    gameStore.save(false);
   }
 
   const activeBuffs = computed<ActiveBuffItem[]>(() => {

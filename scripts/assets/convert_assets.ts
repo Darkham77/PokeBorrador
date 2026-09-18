@@ -10,7 +10,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { isMainThread, parentPort, Worker } from 'node:worker_threads';
-import sharp from 'sharp';
+import sharp, { type WebpOptions } from 'sharp';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
@@ -124,7 +124,7 @@ async function handleProcessFile(filePath: string) {
   let image = sharp(filePath);
   const metadata = await image.metadata();
 
-  const webpOptions: sharp.WebpOptions = { effort: WEBP_EFFORT_LEVEL };
+  const webpOptions: WebpOptions = { effort: WEBP_EFFORT_LEVEL };
   if (isLossless) {
     webpOptions.lossless = true;
   } else {

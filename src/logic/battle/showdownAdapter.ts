@@ -1,81 +1,26 @@
-import { Dex, Battle } from '@pkmn/sim';
+import type { PokemonSet, ID } from '@pkmn/sim';
 import { toID } from '@/logic/utils/strings.ts';
-import type { PokemonSet, ID, StatsTable } from '@pkmn/sim';
 import type { Pokemon as GamePokemon } from '../../types/pokemon/pokemon.ts';
 import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
 import { getShowdownNickname } from './showdownUidMapper.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import type { BaseStats } from '../pokemon/statsMath.ts';
-
-export const statsMap = new Map<string, Record<string, number>>();
-
-const SPREAD_MODIFY_PATCH_MARKER = Symbol.for('pokevicio.showdown.spread-modify-patched');
+import { hasMoveData } from '../../data/battle/movesData.ts';
 
 /**
- * Aplica el monkey-patch spreadModify a Battle de Showdown para inyectar estadísticas custom.
- */
-export function patchShowdownSpreadModify(_getIsE2eMode: () => boolean) {
-  if (Reflect.get(Battle.prototype, SPREAD_MODIFY_PATCH_MARKER) === true) return;
-  const originalSpreadModify = Battle.prototype.spreadModify;
-  Battle.prototype.spreadModify = function (baseStats, set) {
-
-    if (set && set.name) {
-      const stats = statsMap.get(set.name);
-      if (stats) {
-        const clampStat = (val: number) => Math.max(1, Math.min(Math.floor(val), 9999));
-        const mapped = { ...(stats as Record<string, number>) }; // open-record: Generic key-value data dictionary container
-        if (mapped.maxHp !== undefined && mapped.hp === undefined) {
-          mapped.hp = mapped.maxHp;
-        }
-        for (const k of Object.keys(mapped)) {
-          if (typeof mapped[k] === 'number') mapped[k] = clampStat(mapped[k]);
-        }
-        return mapped as StatsTable; // domain-ok: Open dynamic text or non-domain string payload
-      }
-    }
-    if (set && Reflect.get(set, 'stats')) {
-      const clampStat = (val: number) => Math.max(1, Math.min(Math.floor(val), 9999));
-      const setStats = Reflect.get(set, 'stats') as Record<string, number> | undefined; // open-record: Generic key-value data dictionary container
-      const stats = { ...(setStats || {}) };
-      if (stats.maxHp !== undefined && stats.hp === undefined) {
-        stats.hp = stats.maxHp;
-      }
-      for (const k of Object.keys(stats)) {
-        if (typeof stats[k] === 'number') stats[k] = clampStat(stats[k]);
-      }
-      return stats as StatsTable; // domain-ok: Open dynamic text or non-domain string payload
-    }
-    return originalSpreadModify.call(this, baseStats, set);
-  };
-  Reflect.set(Battle.prototype, SPREAD_MODIFY_PATCH_MARKER, true);
-}
-
-/**
- * Resuelve las estadísticas base de una especie unificando la base de datos del juego y Showdown.
+ * Resuelve las estadísticas base de una especie desde la base de datos del juego.
  */
 export function resolveBaseStats(speciesId: string): BaseStats {
-  try {
-    const data = pokemonDataProvider.getPokemonData(speciesId, true);
-    return {
-      hp: data.hp,
-      atk: data.atk,
-      def: data.def,
-      spa: data.spa ?? data.atk,
-      spd: data.spd ?? data.def,
-      spe: data.spe ?? 45
-    };
-  } catch (_e) {
-    const species = Dex.species.get(speciesId);
-    return {
-      hp: species.baseStats.hp,
-      atk: species.baseStats.atk,
-      def: species.baseStats.def,
-      spa: species.baseStats.spa,
-      spd: species.baseStats.spd,
-      spe: species.baseStats.spe
-    };
-  }
+  const data = pokemonDataProvider.getPokemonData(speciesId, true);
+  return {
+    hp: data.hp,
+    atk: data.atk,
+    def: data.def,
+    spa: data.spa ?? data.atk,
+    spd: data.spd ?? data.def,
+    spe: data.spe ?? 45
+  };
 }
 
 /**
@@ -90,6 +35,59 @@ export function getShowdownFormatId(gen?: number, gameType?: 'singles' | 'double
   return `gen${finalGen}${prefix}customgame@@@!Team Preview` as ID;
 }
 
+const DEFAULT_HAPPINESS = 255 as const;
+const DEFAULT_PERFECT_IV = 31 as const;
+const DEFAULT_ZERO_EV = 0 as const;
+
+function resolveValidShowdownMoves(poke: GamePokemon): string[] {
+  const moves = poke.moves
+    .filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
+    .map(m => toID(m.id as string))
+    .filter(id => hasMoveData(id));
+
+  if (moves.length === 0) {
+    throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene ningún movimiento válido cargado.`);
+  }
+  return moves;
+}
+
+function mapShowdownIvs(poke: GamePokemon) {
+  return {
+    hp: poke.ivs?.hp ?? DEFAULT_PERFECT_IV,
+    atk: poke.ivs?.atk ?? DEFAULT_PERFECT_IV,
+    def: poke.ivs?.def ?? DEFAULT_PERFECT_IV,
+    spa: poke.ivs?.spa ?? DEFAULT_PERFECT_IV,
+    spd: poke.ivs?.spd ?? DEFAULT_PERFECT_IV,
+    spe: poke.ivs?.spe ?? DEFAULT_PERFECT_IV
+  };
+}
+
+function mapShowdownEvs(poke: GamePokemon) {
+  return {
+    hp: poke.evs?.hp ?? DEFAULT_ZERO_EV,
+    atk: poke.evs?.atk ?? DEFAULT_ZERO_EV,
+    def: poke.evs?.def ?? DEFAULT_ZERO_EV,
+    spa: poke.evs?.spa ?? DEFAULT_ZERO_EV,
+    spd: poke.evs?.spd ?? DEFAULT_ZERO_EV,
+    spe: poke.evs?.spe ?? DEFAULT_ZERO_EV
+  };
+}
+
+function mapShowdownStats(poke: GamePokemon): Record<string, number> {
+  const customStats = (poke as { stats?: Record<string, number> }).stats;
+  if (customStats) {
+    return { ...customStats };
+  }
+  return {
+    hp: poke.maxHp,
+    atk: poke.atk,
+    def: poke.def,
+    spa: poke.spa,
+    spd: poke.spd,
+    spe: poke.spe
+  };
+}
+
 /**
  * Mapea un Pokémon de Poké Vicio al formato oficial de Pokémon Showdown (PokemonSet).
  */
@@ -101,19 +99,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene una naturaleza definida (nature ID requerida).`);
   }
 
-  // Filtrar movimientos no nulos, mapear IDs y permitir cualquier movimiento existente en el Dex global
-  const moves = poke.moves
-    .filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
-    .map(m => toID(m.id as string))
-    .filter(id => {
-      const mData = Dex.moves.get(id);
-      return mData.exists;
-    });
-
-  if (moves.length === 0) {
-    throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene ningún movimiento válido cargado.`);
-  }
-
+  const moves = resolveValidShowdownMoves(poke);
   const speciesName = resolveShowdownSpecies(poke.id);
   const showdownName = getShowdownNickname(poke.uid);
   const rawNature = (poke.nature || 'serious').trim();
@@ -127,39 +113,15 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     item: poke.heldItem ? toID(poke.heldItem) : '',
     ability: poke.ability ? toID(poke.ability) : '',
     nature: rawNature,
-    happiness: poke.friendship ?? 255,
+    happiness: poke.friendship ?? DEFAULT_HAPPINESS,
     pokeball: 'pokeball',
     hpType: '',
     gigantamax: false,
-    ivs: {
-      hp: poke.ivs?.hp ?? 31,
-      atk: poke.ivs?.atk ?? 31,
-      def: poke.ivs?.def ?? 31,
-      spa: poke.ivs?.spa ?? 31,
-      spd: poke.ivs?.spd ?? 31,
-      spe: poke.ivs?.spe ?? 31
-    },
-    // No usamos EVs detallados por defecto en el modo aventura, o mapeamos 0 si no se manejan
-    evs: {
-      hp: poke.evs?.hp ?? 0,
-      atk: poke.evs?.atk ?? 0,
-      def: poke.evs?.def ?? 0,
-      spa: poke.evs?.spa ?? 0,
-      spd: poke.evs?.spd ?? 0,
-      spe: poke.evs?.spe ?? 0
-    },
-    moves: moves,
+    ivs: mapShowdownIvs(poke),
+    evs: mapShowdownEvs(poke),
+    moves,
     uid: poke.uid,
-    stats: (poke as { stats?: Record<string, number> }).stats
-      ? { ...((poke as { stats?: Record<string, number> }).stats) }
-      : {
-          hp: poke.maxHp,
-          atk: poke.atk,
-          def: poke.def,
-          spa: poke.spa,
-          spd: poke.spd,
-          spe: poke.spe
-        }
+    stats: mapShowdownStats(poke)
   };
 
   return showdownSet;

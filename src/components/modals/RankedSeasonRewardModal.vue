@@ -2,6 +2,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
+import RankedSeasonPrizeItem from './RankedSeasonPrizeItem.vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { RANKED_TIERS, type RankedTierCode } from '@/logic/pvp/rankedEngine'
@@ -48,11 +49,6 @@ const tierInfo = computed(() => RANKED_TIERS[tierCode.value] || RANKED_TIERS.BRO
 const softResetElo = computed(() => calculateSoftResetElo(props.finalElo))
 
 const tierColor = computed(() => tierInfo.value.color)
-
-function formatTierName(tier?: unknown): string {
-  if (typeof tier !== 'string' || !tier) return ''
-  return tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase()
-}
 
 // Animation on modal show
 watch(
@@ -172,61 +168,11 @@ function handleClose() {
         </h4>
 
         <div class="prizes-list awards-grid">
-          <div
+          <RankedSeasonPrizeItem
             v-for="award in props.awards"
             :key="award.id"
-            class="reward-prize-item"
-          >
-            <!-- Pokémon Prize -->
-            <template v-if="award.prize.type === 'pokemon'">
-              <span class="emoji prize-icon">🐣</span>
-              <div class="prize-info">
-                <span class="prize-title">
-                  {{ String(award.prize.species || '').toUpperCase() }}
-                  <template v-if="award.prize.shiny">
-                    <span class="emoji">✨</span> SHINY
-                  </template>
-                </span>
-                <span class="prize-sub">Nivel {{ award.prize.level }} • Genética Competitiva</span>
-              </div>
-            </template>
-
-            <!-- Item / Ticket Prize -->
-            <template v-else-if="award.prize.type === 'item'">
-              <span class="emoji prize-icon">🎫</span>
-              <div class="prize-info">
-                <span class="prize-title">{{ award.prize.item }}</span>
-                <span class="prize-sub">Cantidad: x{{ award.prize.qty }}</span>
-              </div>
-            </template>
-
-            <!-- Battle Coins Prize -->
-            <template v-else-if="award.prize.type === 'bc' || award.prize.type === 'battle_coins'">
-              <span class="emoji prize-icon">🪙</span>
-              <div class="prize-info">
-                <span class="prize-title">{{ award.prize.amount }} Battle Coins ({{ award.prize.amount }} Monedas de Batalla)</span>
-                <span class="prize-sub">Moneda de Torneo y Tienda BC</span>
-              </div>
-            </template>
-
-            <!-- Ranked Medal Prize -->
-            <template v-else-if="award.prize.type === 'ranked_medal'">
-              <span class="emoji prize-icon">🎖️</span>
-              <div class="prize-info">
-                <span class="prize-title">Medalla {{ formatTierName(award.prize.tier) }} (Medalla de Temporada {{ award.prize.season }})</span>
-                <span class="prize-sub">Rango {{ String(award.prize.tier).toUpperCase() }}</span>
-              </div>
-            </template>
-
-            <!-- Generic fallback -->
-            <template v-else>
-              <span class="emoji prize-icon">🎁</span>
-              <div class="prize-info">
-                <span class="prize-title">Premio Especial</span>
-                <span class="prize-sub">{{ JSON.stringify(award.prize) }}</span>
-              </div>
-            </template>
-          </div>
+            :prize="award.prize"
+          />
         </div>
       </div>
 
@@ -381,37 +327,6 @@ function handleClose() {
     gap: 6px;
     max-height: 200px;
     overflow-y: auto;
-  }
-}
-
-.reward-prize-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: Rgba(15, 23, 42, 0.6);
-  border: 1px solid Rgba(148, 163, 184, 0.2);
-  border-radius: 8px;
-
-  .prize-icon {
-    font-size: 1.3rem;
-  }
-
-  .prize-info {
-    display: flex;
-    flex-direction: column;
-
-    .prize-title {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #f8fafc;
-      text-transform: uppercase;
-    }
-
-    .prize-sub {
-      font-size: 0.7rem;
-      color: #94a3b8;
-    }
   }
 }
 

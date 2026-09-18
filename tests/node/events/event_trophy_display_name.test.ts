@@ -94,4 +94,16 @@ describe('Event Trophy Thematic Display Name Resolution', () => {
     const resolvedName = resolveTrophyDisplayName(unknownTrophy, allEvents, 'magikarp');
     assert.equal(resolvedName, 'Torneo Antiguo Especial');
   });
+
+  it('should resolve the correct rotation event name when an historical awarded_at date is provided', async () => {
+    const { GAME_TIMEZONE } = await import('@/logic/utils/timeUtils');
+
+    const week1Zdt = Temporal.Instant.from('2026-01-05T10:00:00Z').toZonedDateTimeISO(GAME_TIMEZONE);
+    const displayNameWeek1 = getEventDisplayName(mockFishingEvent, week1Zdt);
+    assert.equal(displayNameWeek1, 'Torneo Magikarp & Gyarados');
+
+    const week2Zdt = Temporal.Instant.from('2026-01-12T10:00:00Z').toZonedDateTimeISO(GAME_TIMEZONE);
+    const displayNameWeek2 = getEventDisplayName(mockFishingEvent, week2Zdt);
+    assert.equal(displayNameWeek2, 'Torneo de Pesca Exótica');
+  });
 });

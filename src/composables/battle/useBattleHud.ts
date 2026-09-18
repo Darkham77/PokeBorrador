@@ -1,82 +1,34 @@
-import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { useGameStore } from '@/stores/game'
-import type { useBattleStore } from '@/stores/battle/battle'
-import type { useBattleAnimations } from '@/composables/battle/useBattleAnimations'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { computed, toValue, type MaybeRefOrGetter } from 'vue';
+import { useGameStore } from '@/stores/game';
+import type { useBattleStore } from '@/stores/battle/battle';
+import type { useBattleAnimations } from '@/composables/battle/useBattleAnimations';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import {
+  checkEnemyTechnicalHidden,
+  checkFloatingState,
+  checkScrambleState,
+  isBushBehindCheck,
+  isCombatantFaintedOrCapturing,
+  isEnemyHudSuppressedCheck,
+  isEnemyJumpingCheck,
+  isPlayerTechHiddenCheck,
+  buildActiveEnemyData,
+  buildActiveEnemyHudData,
+  buildActiveEnemyIsSilhouette,
+  shouldShowEncounterLayersCheck
+} from './battleHudStateHelper.ts';
 
-/**
- * Composable para gestionar la visibilidad y estados del HUD en combate.
- * Centraliza la lógica de supresión para evitar interferencias entre bandos.
- */
-/**
- * Pure calculation helpers for HUD states to keep cyclomatic complexity low.
- */
-function isSeatCapturing(seat: unknown): boolean {
-  if (!seat || typeof seat !== 'object') return false
-  const s = seat as { entry?: { isCaptureActive?: boolean; isAnimatingCapture?: boolean; animState?: string }; exit?: { isCaptureActive?: boolean; isAnimatingCapture?: boolean; animState?: string } }
-  return !!(
-    s.entry?.isCaptureActive || s.entry?.isAnimatingCapture || 
-    s.exit?.isCaptureActive || s.exit?.isAnimatingCapture ||
-    s.entry?.animState === 'catching' || s.exit?.animState === 'catching'
-  )
+interface TrainerModeCheckable {
+  isTrainer?: boolean;
+  isGym?: boolean;
+  isPvP?: boolean;
+  isRival?: boolean;
 }
 
-const INIT_FSM_STATES_SET: ReadonlySet<string> = new Set<string>(['INITIALIZING', 'CONTEXT_SETUP', 'SEARCH_PHASE', 'FIRST_INTRO']); // runtime-set: Fast O(1) membership lookup set
-const SILHOUETTE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE']); // runtime-set: Fast O(1) membership lookup set
-
-function checkScrambleState(subState: string | null | undefined, state: string | null | undefined): boolean {
-  if (state && INIT_FSM_STATES_SET.has(state)) return true;
-  return !!subState && SILHOUETTE_FSM_SUBSTATES_SET.has(subState);
+function isTrainerMode(state: TrainerModeCheckable | null | undefined): boolean {
+  if (!state) return false;
+  return Boolean(state.isTrainer || state.isGym || state.isPvP || state.isRival);
 }
-
-const TECHNICAL_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>([ // runtime-set: Fast O(1) membership lookup set
-  'RECEIVE_CONFIG', 'APPLY_ITEM_MODIFIERS', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN',
-  'VACATE_ALL_SEATS', 'CHECK_CONTEXT', 'ASYNC_THREAD', 'GEN_TEAMS', 'MARK_EVENT', 'PRELOAD_FINAL_COORDS',
-  'SET_SEARCH_FLAG', 'PRELOAD_COORDS'
-]);
-const TRAINER_VISIBLE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_TYPE_CHECK', 'TRAINER_ENTRY', 'T_VISUAL', 'SHOW_DIALOGS', 'TRAINER_ENCOUNTER', 'RETREAT_AND_FADEOUT', 'T_RETREAT']); // runtime-set: Fast O(1) membership lookup set
-
-function checkEnemyTechnicalHidden(subState: string | null | undefined, state: string | null | undefined, isTrainer: boolean): boolean {
-  if (subState === 'GEN_TEAMS' || subState === 'MINIGAME_CHECK') return true;
-  
-  if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING') {
-    if (subState && TECHNICAL_FSM_SUBSTATES_SET.has(subState)) return true;
-  }
-
-  // En combates contra entrenador o gimnasio, el Pokémon enemigo NUNCA debe ser visible
-  // durante las fases de búsqueda o antes de POKEMON_CALL en FIRST_INTRO
-  if (isTrainer) {
-    if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE') return true;
-    if (state === 'FIRST_INTRO' && subState !== 'POKEMON_CALL') return true;
-  }
-
-  return isTrainer && !!subState && TRAINER_VISIBLE_FSM_SUBSTATES_SET.has(subState);
-}
-
-function checkFloatingState(p: { id?: string | number; ability?: string } | Pokemon | undefined | null): boolean {
-  if (!p || p.id === undefined || p.id === null) return false;
-  const data = pokemonDataProvider.getPokemonData(String(p.id));
-  if (!data) return false;
-  if (data.isFloating !== undefined) return data.isFloating;
-  
-  return data.type === 'flying' || data.type2 === 'flying' || p.ability === 'levitate';
-}
-
-const SILHOUETTE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['PARALLEL_PREP', 'PARALLEL_ENTRY', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE']); // runtime-set: Fast O(1) membership lookup set
-
-const BUSH_BEHIND_STATES_SET: ReadonlySet<string> = new Set<string>(['ACTIVE_BATTLE', 'REORDER_TEAM', 'LEVEL_UP_MODAL', 'REWARDS_PHASE']); // runtime-set: Fast O(1) membership lookup set
-const BUSH_BEHIND_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW', 'REVEAL_COLORS', 'BUSH_FADE']); // runtime-set: Fast O(1) membership lookup set
-
-const JUMPING_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW']); // runtime-set: Fast O(1) membership lookup set
-const PLAYER_TECH_HIDDEN_SET: ReadonlySet<string> = new Set<string>(['TRAINER_ENTRY', 'T_VISUAL']); // runtime-set: Fast O(1) membership lookup set
-
-const ENCOUNTER_EXCLUDE_STATES_SET: ReadonlySet<string> = new Set<string>(['ACTIVE_BATTLE', 'REORDER_TEAM', 'REWARDS_PHASE', 'LEVEL_UP_MODAL', 'EXIT_BATTLE']); // runtime-set: Fast O(1) membership lookup set
-const ENCOUNTER_ANIM_STATES_SET: ReadonlySet<string> = new Set<string>(['catching', 'trapped', 'releasing']); // runtime-set: Fast O(1) membership lookup set
-const ENCOUNTER_ACTIVE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>([ // runtime-set: Fast O(1) membership lookup set
-  'PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'COMBAT_OR_FLEE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS',
-  'PREPARATION', 'AUTO_BATTLE_CHECK', 'UPDATE_BUTTON', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE'
-]);
 
 /**
  * Composable para gestionar la visibilidad y estados del HUD en combate.
@@ -94,68 +46,60 @@ export function useBattleHud(
     seats
   } = animations;
 
+  const isTrainer = computed(() => isTrainerMode(toValue(battleStore.state)));
+
   const isEnemyHudSuppressed = computed(() => {
     const s = toValue(battleStore.state);
-    if (s?.minigame === 'archaeology') return true;
-
     const fsmState = toValue(battleStore.fsm?.currentState);
     const fsmSub = toValue(battleStore.fsm?.currentSubState);
+    const faintedSide = faintedPokemonSnapshot.value ? faintedPokemonSnapshot.value.side : undefined;
 
-    // CANONICAL MANDATE: Seat 2 HUD is unconditionally suppressed during setup and initialization
-    if (fsmState === 'CONTEXT_SETUP' || fsmState === 'INITIALIZING') return true;
-
-    const isTrainer = Boolean(s?.isTrainer || s?.isGym || s?.isPvP || s?.isRival);
-    if (isTrainer) {
-      if (fsmState === 'SEARCH_PHASE') return true;
-      if (fsmState === 'FIRST_INTRO' && fsmSub !== 'POKEMON_CALL') return true;
-    }
-
-    const seat = seats.value.seat2;
-    const isCapturing = isSeatCapturing(seat);
-    const isFainted = (s?.enemy && s.enemy.hp <= 0) || 
-                      (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'enemy');
-
-    if (isCapturing || isFainted) return true;
-
-    return !s?.enemy;
+    return isEnemyHudSuppressedCheck(
+      s ? s.minigame : undefined,
+      fsmState,
+      fsmSub,
+      isTrainer.value,
+      seats.value.seat2,
+      s ? s.enemy : undefined,
+      isFaintInProgress.value,
+      faintedSide
+    );
   });
 
   const isPlayerHudSuppressed = computed(() => {
     const s = toValue(battleStore.state);
-    const fsmState = toValue(battleStore.fsm?.currentState);
-    if (fsmState === 'CONTEXT_SETUP') return true;
+    if (toValue(battleStore.fsm?.currentState) === 'CONTEXT_SETUP') return true;
 
-    const seat = seats.value.seat1;
-    const isCapturing = isSeatCapturing(seat);
-    const isFainted = (s?.player && s.player.hp <= 0) || 
-                      (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'player');
+    const player = s ? s.player : undefined;
+    const faintedSide = faintedPokemonSnapshot.value ? faintedPokemonSnapshot.value.side : undefined;
 
-    if (isCapturing || isFainted) return true;
-    return !s?.player;
+    const isFaintedOrCapturing = isCombatantFaintedOrCapturing(
+      seats.value.seat1,
+      player,
+      isFaintInProgress.value,
+      faintedSide,
+      'player'
+    );
+    return isFaintedOrCapturing || !player;
   });
 
   const activeEnemyHudData = computed(() => {
-    const state = toValue(battleStore.fsm?.currentState);
-    if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'REWARDS_PHASE' || state === 'LEVEL_UP_MODAL') return null;
-
-    const b = toValue(battleStore.state);
-    const isTrainer = Boolean(b?.isTrainer || b?.isGym || b?.isPvP || b?.isRival);
-    const subState = toValue(battleStore.fsm?.currentSubState);
-    if (isTrainer) {
-      if (state === 'SEARCH_PHASE') return null;
-      if (state === 'FIRST_INTRO' && subState !== 'POKEMON_CALL') return null;
-    }
-
-    const enemySeat = seats.value.seat2;
-    if (isSeatCapturing(enemySeat) && caughtPokemonSnapshot.value) return caughtPokemonSnapshot.value;
-    if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'enemy') return faintedPokemonSnapshot.value;
-    
-    return toValue(enemyRef) || null;
+    return buildActiveEnemyHudData(
+      toValue(battleStore.fsm?.currentState),
+      toValue(battleStore.fsm?.currentSubState),
+      isTrainer.value,
+      seats.value.seat2,
+      caughtPokemonSnapshot.value,
+      isFaintInProgress.value,
+      faintedPokemonSnapshot.value,
+      toValue(enemyRef)
+    );
   });
 
   const activePlayerHudData = computed(() => {
     if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'player') return faintedPokemonSnapshot.value;
-    return toValue(battleStore.state)?.player || null;
+    const s = toValue(battleStore.state);
+    return s ? s.player : null;
   });
 
   const activePlayerData = computed(() => activePlayerHudData.value);
@@ -164,7 +108,7 @@ export function useBattleHud(
   
   const isWildEncounter = computed(() => {
     const state = toValue(battleStore.state);
-    return state ? (!state.isTrainer && !state.isGym) : !!toValue(battleStore.isSearching);
+    return state ? (!state.isTrainer && !state.isGym) : Boolean(toValue(battleStore.isSearching));
   });
 
   const shouldScrambleEnemyData = computed(() => {
@@ -177,69 +121,52 @@ export function useBattleHud(
   });
 
   const activeEnemyData = computed(() => {
-    const s = toValue(battleStore.fsm?.currentState);
-    const sub = toValue(battleStore.fsm?.currentSubState);
-
-    if (s === 'CONTEXT_SETUP' || s === 'INITIALIZING') return null;
-    if (s === 'REWARDS_PHASE' && sub === 'EMPTY_WAIT') return null;
-
-    const b = toValue(battleStore.state);
-    const isTrainer = Boolean(b?.isTrainer || b?.isGym || b?.isPvP || b?.isRival);
-    if (isTrainer) {
-      if (s === 'SEARCH_PHASE') return null;
-      if (s === 'FIRST_INTRO' && sub !== 'POKEMON_CALL') return null;
-    }
-    
-    return activeEnemyHudData.value;
+    return buildActiveEnemyData(
+      toValue(battleStore.fsm?.currentState),
+      toValue(battleStore.fsm?.currentSubState),
+      isTrainer.value,
+      activeEnemyHudData.value
+    );
   });
 
   const activeEnemyIsSilhouette = computed(() => {
     const s = toValue(battleStore.state);
-    if (s?.isTrainer || s?.isGym || s?.isPvP) return false;
+    const isTrainerVal = s ? Boolean(s.isTrainer) : false;
+    const isGymVal = s ? Boolean(s.isGym) : false;
+    const isPvPVal = s ? Boolean(s.isPvP) : false;
+    const wasSearchingVal = s ? Boolean(s.wasSearching) : false;
 
-    if (animations.isWildSilhouette.value) return true;
-    if (toValue(battleStore.isSilhouetteMode)) return true;
-
-    const state = toValue(battleStore.fsm?.currentState);
-    const sub = toValue(battleStore.fsm?.currentSubState);
-
-    const isSearchWild = !!(s?.wasSearching || toValue(battleStore.isSearching));
-    if (isSearchWild) {
-      if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE') {
-        return true;
-      }
-      if ((state === 'REWARDS_PHASE' || state === 'EXIT_BATTLE') && !animations.isWildEntryAnimation.value) {
-        return true;
-      }
-    }
-
-    if (state === 'SEARCH_PHASE') {
-      return true;
-    }
-
-    return !!sub && SILHOUETTE_SUBSTATES_SET.has(sub);
+    return buildActiveEnemyIsSilhouette(
+      isTrainerVal,
+      isGymVal,
+      isPvPVal,
+      animations.isWildSilhouette.value,
+      Boolean(toValue(battleStore.isSilhouetteMode)),
+      wasSearchingVal,
+      Boolean(toValue(battleStore.isSearching)),
+      toValue(battleStore.currentFsmState) || toValue(battleStore.fsm?.currentState),
+      toValue(battleStore.currentSubState) || toValue(battleStore.fsm?.currentSubState),
+      animations.isWildEntryAnimation.value
+    );
   });
 
   const bushIsBehind = computed(() => {
-    if (animations.isEmerging.value || animations.isWildEntryAnimation.value) return true;
     const state = toValue(battleStore.currentFsmState) || (battleStore.fsm?.currentState ? toValue(battleStore.fsm.currentState) : null);
-    if (state && BUSH_BEHIND_STATES_SET.has(state)) return true;
-
     const sub = toValue(battleStore.currentSubState) || (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null);
-    return sub !== null && BUSH_BEHIND_SUBSTATES_SET.has(String(sub));
+    return isBushBehindCheck(animations.isEmerging.value, animations.isWildEntryAnimation.value, state, sub ? String(sub) : null);
   });
 
   const enemyIsJumping = computed(() => {
     const sub = toValue(battleStore.currentSubState) || (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null);
-    if (!sub) return false;
-    return animations.isEmerging.value && JUMPING_SUBSTATES_SET.has(sub);
+    return isEnemyJumpingCheck(animations.isEmerging.value, sub);
   });
 
   const isInstantBush = computed(() => {
     if (animations.isInitialLoad.value) return true;
     if (toValue(battleStore.isSearching)) return false;
     const sub = toValue(battleStore.fsm?.currentSubState);
-    return toValue(battleStore.fsm?.currentState) === 'FIRST_INTRO' || sub === 'PREPARATION' || sub === 'ENTRY_ANIM';
+    const currentFsm = toValue(battleStore.fsm?.currentState);
+    return currentFsm === 'FIRST_INTRO' || sub === 'PREPARATION' || sub === 'ENTRY_ANIM';
   });
 
   const enemyIsFloating = computed(() => checkFloatingState(activeEnemyData.value));
@@ -248,38 +175,35 @@ export function useBattleHud(
     const sub = toValue(battleStore.fsm?.currentSubState);
     const state = toValue(battleStore.fsm?.currentState);
     const battleState = toValue(battleStore.state);
-    const isTrainer = !!(battleState?.isTrainer || battleState?.isGym);
-    return checkEnemyTechnicalHidden(sub, state, isTrainer);
+    const isTrainerModeFlag = Boolean(battleState?.isTrainer || battleState?.isGym);
+    return checkEnemyTechnicalHidden(sub, state, isTrainerModeFlag);
   });
 
   const isPlayerTechnicalHidden = computed(() => {
     const sub = toValue(battleStore.currentSubState);
     const state = toValue(battleStore.state);
-    const isTrainer = state?.isTrainer || state?.isGym;
-    return !!isTrainer && !!sub && PLAYER_TECH_HIDDEN_SET.has(sub);
+    const isTrainerModeFlag = Boolean(state?.isTrainer || state?.isGym);
+    return isPlayerTechHiddenCheck(isTrainerModeFlag, sub);
   });
 
   const shouldShowEncounterLayers = computed(() => {
-    if (!activeEnemyData.value) {
-      return false;
-    }
-
     const state = toValue(battleStore.fsm?.currentState);
-    if (state && ENCOUNTER_EXCLUDE_STATES_SET.has(state)) {
-      return false;
-    }
-
     const animState = animations.enemyAnimState.value;
-    if (animState && ENCOUNTER_ANIM_STATES_SET.has(animState)) return false;
-    if (animations.isCaptureSequenceActive.value || animations.isFaintInProgress.value) return false;
-    if (enemyIsFloating.value) return false;
-
     const fsmSub = toValue(battleStore.fsm?.currentSubState);
-    if (fsmSub && ENCOUNTER_ACTIVE_SUBSTATES_SET.has(fsmSub)) {
-      return isWildEncounter.value;
-    }
+    const isSearching = Boolean(toValue(battleStore.isSearching));
 
-    return isWildEncounter.value && (toValue(battleStore.isSearching) || animations.wildRevealActive.value);
+    return shouldShowEncounterLayersCheck(
+      Boolean(activeEnemyData.value),
+      state,
+      animState,
+      animations.isCaptureSequenceActive.value,
+      animations.isFaintInProgress.value,
+      enemyIsFloating.value,
+      fsmSub,
+      isWildEncounter.value,
+      isSearching,
+      animations.wildRevealActive.value
+    );
   });
 
   return {
@@ -300,4 +224,3 @@ export function useBattleHud(
     shouldShowEncounterLayers
   };
 }
-

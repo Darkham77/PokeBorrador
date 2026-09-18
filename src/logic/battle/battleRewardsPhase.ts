@@ -108,11 +108,11 @@ export async function processBattleRewardsPhase(ctx: BattleContext, win: boolean
 
     if (active.isCapture && active.capturedPokemon) {
       try {
-        const { useEventStore } = await import('@/stores/events')
-        const eventStore = useEventStore()
-        await eventStore.checkCaptureAndPrompt(active.capturedPokemon)
+        const { postBattleCoordinator } = await import('./postBattleSequenceCoordinator.ts')
+        const coordinator = ctx.postBattleCoordinator ?? postBattleCoordinator
+        coordinator.enqueueEventAutoEnroll(active.capturedPokemon)
       } catch (err) {
-        console.error('Failed to check event auto enrollment on capture:', err)
+        console.error('Failed to enqueue event auto enrollment on capture:', err)
       }
     }
   }

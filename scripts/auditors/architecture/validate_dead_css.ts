@@ -152,7 +152,7 @@ export class DeadCssAuditor extends BaseAuditor<DeadCssRuleId> {
             if (!componentLogic.includes(className) && !globalTokens.has(className)) {
               this.addViolation({
                 ruleId: 'dead-scoped-css',
-                severity: 'warning',
+                severity: 'error',
                 file: relPath,
                 line: lineNum,
                 message: `Clase CSS scoped '.${className}' es código muerto (huérfana): no se encuentra en el componente ni en el código de la aplicación.`,

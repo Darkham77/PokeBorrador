@@ -18,6 +18,7 @@ Frontend Developers / Systems Engineers.
 - **Left-Aligned Emoji Icon Semantic Containers**: Every sort option MUST render an emoji icon inside an approved `.icon` container immediately to the left of the 3-character label to visually disambiguate sorting criteria.
 - **Pill Sizing, Generous Padding & Direction Arrow Contrast**: Sort pills MUST maintain generous, consistent horizontal padding (`padding: 6px 9px;`, `border-radius: 8px;`, `gap: 4px;`) across all views (Box, Modals, etc.). Active direction arrows (`▼`/`▲`) MUST be clearly legible with high contrast (`font-size: 8px; font-weight: bold; color: var(--yellow)`).
 - **Modal Width & Symmetrical Row Centering**: Modals hosting the complete 9-button sort bar MUST allocate sufficient container width (`max-width: 640px`) to prevent line wrapping, and MUST center both the sort bar (`.pokemon-sort-bar .sort-items`) and tag filter rows (`.ps-tags-row-unified`) with `justify-content: center` to preserve symmetry with the top search input.
+- **Decomposed Pokémon Display Card Subcomponents (`PokemonDisplayTopRow.vue`, `PokemonDisplayActionFooter.vue`)**: Badges, tier indicators, friendship seal, and footer action buttons are decoupled into dedicated subcomponents to ensure single-responsibility modularity and low cognitive complexity for `PokemonDisplayCard.vue`.
 
 ## Work Guidance
 

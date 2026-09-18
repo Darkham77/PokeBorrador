@@ -46,6 +46,8 @@ QA / Automation Engineers.
 - **Dual-Stage Master Progress & Intra-Suite Failure Checkpoint Separation Contract**: Simulation checkpoint persistence (`e2eCheckpointManager.ts`) MUST strictly decouple intra-suite failure records (`doc.suites[suiteKey]`) from the global master progress cursor (`doc.master` and `doc.passedSuites`). Clearing a suite's failure record (`clearSuiteCheckpoint`) MUST NEVER mutate or nullify `doc.master`. The sequential orchestrator (`run_sequential_simulations.ts`) MUST persist intermediate progress atomically after each driver phase: (1) after SQLite completes, save `driver: 'postgres'` for the current suite, and (2) after PostgreSQL completes, record the suite in `doc.passedSuites` and advance `doc.master` to the next suite with `driver: 'sqlite'`. This guarantees resilient crash recovery without redundant re-execution.
 - **Showdown Single-Slot Locked Move Normalization Contract**: When replaying fuzzer batches containing multi-turn locked moves (*Shadow Force, Solar Beam, Fly, Dig, Recharge, Hyper Beam*), Pokémon Showdown returns an `active[0].moves` array containing only a single move (`moves.length === 1`). Simulation choice helpers (`showdownMoveChoiceHelper.ts`) MUST normalize any candidate move choice to `move 1${suffix}`, and dynamically redirect out-of-range slots or moves without PP to the first available legal move. Replay runners MUST NEVER transmit invalid slot indices (e.g. `move 3`) to Showdown, preventing `Can't move: Your <mon> doesn't have a move X` desynchronization aborts.
 - **CDP Promise Garbage Collection Decoupling Contract**: When initializing battle stores or asynchronous flows inside browser contexts (`page.evaluate`), suites MUST NOT keep async CDP promises open across GSAP animations or long-running transition tweens (`await store.startBattle(...)`). Instead, dispatch background store methods using `void store.startBattle(...)` and delegate deterministic test synchronization exclusively to typed UI/DOM listeners (`await awaitBattleReadyForInput(page)`). This prevents Chromium V8 garbage collection from dropping CDP contexts under heavy parallel load.
+- **Parallel Test Worker Username Isolation**: In Playwright simulation suites where multiple tests execute concurrently across parallel workers, tests MUST NEVER share static usernames (e.g. `'SaveShieldUser'`). Each test spec MUST generate or declare unique usernames (`'SaveShieldUserZeroPoke'`, `'SaveShieldUserNoStarter'`, etc.) to prevent database unique constraint collisions (`profiles_username_key`) during concurrent user profile insertion in PostgreSQL.
+- **Pre-Reload Explicit Remote Save Mandate**: In persistence simulation tests validating state rehydration across page reloads under dual database mode (`driver=dual`), calling code MUST invoke an explicit remote save (`await gameStore.save(false, true, true)`) and await its full resolution before calling `page.reload()`. This ensures that remote PostgreSQL synchronization is immediately executed rather than deferred by the 60-second background save throttle.
 
 ## Work Guidance
 
@@ -82,6 +84,7 @@ QA / Automation Engineers.
 - Run `npm run sim:e2e:save` to run save-related simulations.
 - Run `npm run sim:e2e:breeding` to run breeding-related simulations.
 - Run `npm run sim:e2e:missions` to run missions-related simulations.
+- Run `npm run sim:e2e:modals` to run modal lifecycle and fast mode simulations.
 - Run `npm run sim:e2e:gyms` to run gym progression simulations.
 - Run `npm run sim:e2e:pokemon` to run Pokémon friendship and UI simulations.
 - Run `npm run sim:e2e:system` to run system-level update and version lock simulations.
@@ -98,6 +101,7 @@ QA / Automation Engineers.
 - [items/](./items/AGENTS.md): Domain module documentation for item families and time manipulation simulations.
 - [logging/](./logging/AGENTS.md): Domain module documentation for OOP logging framework (`BaseRunnerLogger`, `FuzzerRunnerLogger`, `SimulationRunnerLogger`).
 - [missions/](./missions/AGENTS.md): Domain module documentation for missions.
+- [modals/](./modals/AGENTS.md): Domain module documentation for modal lifecycle and fast mode simulations.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon UI and friendship simulations.
 - [results/](./results/AGENTS.md): Domain module documentation for results.
 - [save/](./save/AGENTS.md): Domain module documentation for save.

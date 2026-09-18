@@ -49,7 +49,7 @@
   &:not(.spawn-silhouette) {
     &:not(.is-low-power *) {
       will-change: transform, filter, opacity;
-      filter: Drop-Shadow(0 0 5px Rgba(255,255,255,0.4)) !important;
+      filter: Drop-Shadow(0 0 5px Rgba(255,255,255,0.4));
     }
     
     .is-low-power & {
@@ -58,14 +58,14 @@
     }
     
     &.captured {
-      filter: Grayscale(100%) !important;
+      filter: Grayscale(100%);
       opacity: 0.8 !important;
     }
   }
 
   &.spawn-silhouette {
     @include pokemon-silhouette;
-    transform: none !important;
+    transform: none;
     
     .is-low-power & {
       will-change: auto !important;
@@ -103,5 +103,5 @@ img.guardian-icon-large,
 
 /* Force the badge to stays in the corner (Literal 79) */
 .location-card .guardian-status-badge {
-    transform: none !important;
+    transform: none;
 }

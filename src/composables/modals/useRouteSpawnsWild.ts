@@ -15,6 +15,7 @@ import {
   createPopulatedRouteSpawnItem,
   type RouteSpawnMappedItem
 } from '@/logic/utils/routeSpawnHelpers'
+import { getMapWeatherConfig } from '@/logic/encounters/routeWeatherDomainHelpers'
 import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation'
 
 const DEFAULT_WILD_SPAWN_RATE_WEIGHT = 10;
@@ -35,15 +36,18 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
       list.forEach(addMapSpawn)
     })
     
-    const weatherCfg = props.map.weather?.[props.weather]
-    if (weatherCfg) {
-      if (weatherCfg.visitors) {
-        getSpeciesEntries(weatherCfg.visitors).forEach(({ id }) => addMapSpawn(id))
-      }
-      if (weatherCfg.exclusive) {
-        getSpeciesEntries(weatherCfg.exclusive).forEach(({ id }) => addMapSpawn(id))
-      }
+    if (props.map.weather) {
+      Object.values(props.map.weather).forEach(wCfg => {
+        if (!wCfg) return
+        if (wCfg.visitors) {
+          getSpeciesEntries(wCfg.visitors).forEach(({ id }) => addMapSpawn(id))
+        }
+        if (wCfg.exclusive) {
+          getSpeciesEntries(wCfg.exclusive).forEach(({ id }) => addMapSpawn(id))
+        }
+      })
     }
+    const weatherCfg = getMapWeatherConfig(props.map, props.weather)
     activeEvents.forEach(ev => {
       const cfg = safeParse(ev.config) as EventConfig
       if (!ev.active || !cfg) return

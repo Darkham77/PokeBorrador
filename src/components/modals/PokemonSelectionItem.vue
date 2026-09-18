@@ -4,23 +4,21 @@ import { computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
-import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
-import { useBattleVisuals } from '@/composables/battle/useBattleVisuals'
 import { useUIStore } from '@/stores/ui'
 import { useBreedingStore } from '@/stores/breeding'
-import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
-import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
+import PokemonSelectionItemBattleHp from './selection/PokemonSelectionItemBattleHp.vue'
+import PokemonSelectionItemDaycare from './selection/PokemonSelectionItemDaycare.vue'
+import PokemonSelectionItemCompetition from './selection/PokemonSelectionItemCompetition.vue'
+import PokemonSelectionItemPreview from './selection/PokemonSelectionItemPreview.vue'
+import PokemonSelectionItemHeaderActions from './selection/PokemonSelectionItemHeaderActions.vue'
 
-const { getHpColor } = useBattleVisuals()
 const uiStore = useUIStore()
 const breedingStore = useBreedingStore()
 
@@ -96,29 +94,6 @@ const competitionEval = computed(() => {
   return evaluatePokemonForSubCompetition(props.item.pokemon, props.subCompetition, resolvedOrder)
 })
 
-const competitionMetricIcon = computed(() => {
-  if (!props.subCompetition) return '🏆'
-  const m = props.subCompetition.metric
-  if (m === 'total_ivs' || m === 'stat_iv') return '🧬'
-  if (m === 'weight') return '⚖️'
-  if (m === 'height') return '📏'
-  if (m === 'level') return '📈'
-  if (m === 'friendship') return '💖'
-  return '🏆'
-})
-
-const competitionLabel = computed(() => {
-  if (!props.subCompetition) return 'Torneo'
-  const dirLabel = props.subCompetition.order === 'min' ? 'Menor' : 'Mayor'
-  const m = props.subCompetition.metric
-  if (m === 'weight') return `${dirLabel} Peso`
-  if (m === 'height') return `${dirLabel} Altura`
-  if (m === 'total_ivs') return 'IVs Totales'
-  if (m === 'stat_iv' && props.subCompetition.targetStat) return `IV ${props.subCompetition.targetStat.toUpperCase()}`
-  if (m === 'level') return `${dirLabel} Nivel`
-  if (m === 'friendship') return `${dirLabel} Amistad`
-  return props.subCompetition.name || 'Torneo'
-})
 
 const seasonEvaluation = computed(() => {
   if (!props.seasonRules) return null
@@ -156,48 +131,10 @@ function handleClick() {
     }"
     @click.stop="handleClick"
   >
-    <div class="poke-preview-container">
-      <PVTooltip
-        title="DETALLES"
-        description="Ver información completa de este Pokémon."
-        position="top"
-        class="info-tooltip-wrapper"
-      >
-        <button
-          :id="'pokemon-detail-btn-' + item.pokemon.uid"
-          v-gsap-hover="{ scale: 1.05, y: 0 }"
-          type="button"
-          class="btn-info-detail-trigger"
-          @click.stop="handleOpenDetail"
-        >
-          ?
-        </button>
-      </PVTooltip>
-
-      <div class="poke-preview sprite-click-target">
-        <div
-          v-if="item.pokemon.isIllegal"
-          class="sel-illegal-danger-badge"
-          :title="item.pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal'"
-        >
-          <span class="emoji danger-icon">⚠️</span>
-          <span class="danger-label">ILEGAL</span>
-        </div>
-        <PVSpriteFX
-          v-else
-          :is-shiny="item.pokemon.isShiny"
-          :is-guardian="item.pokemon.isGuardian"
-          :sparkle-count="5"
-        >
-          <img
-            :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
-            alt=""
-            class="pixelated"
-            @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
-          >
-        </PVSpriteFX>
-      </div>
-    </div>
+    <PokemonSelectionItemPreview
+      :pokemon="item.pokemon"
+      @open-detail="handleOpenDetail"
+    />
 
     <div class="poke-details">
       <div class="top-line">
@@ -228,25 +165,11 @@ function handleClick() {
           />
         </div>
 
-        <div class="actions-right">
-          <PVTooltip
-            :title="item._source === 'team' ? 'Equipo' : (item._source === 'box' ? 'Caja de PC' : 'Mercado')"
-            :description="item._source === 'team' ? 'Este Pokémon está en tu equipo activo.' : (item._source === 'box' ? 'Este Pokémon está guardado en tu caja.' : 'Este Pokémon está en el mercado.')"
-            position="top"
-          >
-            <span
-              class="emoji source-symbol"
-              :class="item._source"
-            >
-              {{ item._source === 'team' ? '⚔️' : (item._source === 'box' ? '📦' : '🛒') }}
-            </span>
-          </PVTooltip>
-          <FriendshipSealBadge
-            :friendship="item.pokemon.friendship"
-            size="sm"
-          />
-          <span class="m-badge-tier">{{ tierData.tier }}</span>
-        </div>
+        <PokemonSelectionItemHeaderActions
+          :source="item._source"
+          :friendship="item.pokemon.friendship"
+          :tier="tierData.tier"
+        />
       </div>
       <div class="bottom-info">
         <div class="info-row stats-line">
@@ -284,82 +207,26 @@ function handleClick() {
       </div>
 
       <!-- Battle HP Status -->
-      <div
+      <PokemonSelectionItemBattleHp
         v-if="isBattleContext"
-        class="battle-hp-status"
-      >
-        <span class="hp-label">HP</span>
-        <div class="hp-bar-container">
-          <div 
-            class="hp-bar-fill" 
-            :style="{ 
-              width: (Math.max(0, Math.min(100, (item.pokemon.hp / item.pokemon.maxHp * 100)))) + '%',
-              backgroundColor: getHpColor(item.pokemon.hp / item.pokemon.maxHp * 100)
-            }"
-          />
-        </div>
-        <span class="hp-text">{{ item.pokemon.hp }} / {{ item.pokemon.maxHp }}</span>
-      </div>
+        :hp="item.pokemon.hp"
+        :max-hp="item.pokemon.maxHp"
+      />
       
       <!-- Daycare Info (Compatibility / Vigor) -->
-      <div
+      <PokemonSelectionItemDaycare
         v-if="isDaycareContext"
-        class="daycare-item-meta"
-      >
-        <div class="daycare-meta-top">
-          <div class="compat-status">
-            <template v-if="listCompatibility">
-              <span :style="{ color: (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.color || '#ff668f' }">
-                AFINIDAD: {{ (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.label || 'Desconocida' }}
-              </span>
-              <span
-                v-if="listCompatibility.eggSpecies"
-                class="egg-hint"
-              >
-                <span class="emoji">🥚</span> {{ eggSpeciesName }}
-              </span>
-            </template>
-            <template v-else>
-              <span class="waiting-status">Esperando pareja</span>
-            </template>
-          </div>
-          
-          <div
-            v-if="getVigor(item.pokemon) !== undefined"
-            class="vigor-status-mini"
-          >
-            <span class="label">VIGOR: </span>
-            <span :class="['value', { low: getVigor(item.pokemon) <= 2 }]"><span class="emoji">⚡</span> {{ getVigor(item.pokemon) }}/{{ getMaxVigor(item.pokemon) }}</span>
-          </div>
-        </div>
-
-        <!-- Individual IVs List -->
-        <div
-          v-if="item.pokemon.ivs"
-          class="ivs-list-row pixelated"
-        >
-          <span>HP: {{ item.pokemon.ivs.hp }}</span>
-          <span>ATK: {{ item.pokemon.ivs.atk }}</span>
-          <span>DEF: {{ item.pokemon.ivs.def }}</span>
-          <span>SPA: {{ item.pokemon.ivs.spa }}</span>
-          <span>SPD: {{ item.pokemon.ivs.spd }}</span>
-          <span>SPE: {{ item.pokemon.ivs.spe }}</span>
-        </div>
-      </div>
+        :pokemon="item.pokemon"
+        :list-compatibility="listCompatibility"
+        :egg-species-name="eggSpeciesName"
+      />
 
       <!-- Tournament / Sub-Competition Evaluation Sub-Element -->
-      <div
-        v-if="competitionEval"
-        class="competition-item-meta"
-      >
-        <div class="competition-meta-row">
-          <div class="competition-metric-info">
-            <span class="emoji competition-icon">{{ competitionMetricIcon }}</span>
-            <span class="competition-label">{{ competitionLabel }}:</span>
-            <span class="competition-value highlight">{{ competitionEval.displayValue }}</span>
-          </div>
-        </div>
-      </div>
+      <PokemonSelectionItemCompetition
+        v-if="competitionEval && subCompetition"
+        :sub-competition="subCompetition"
+        :display-value="competitionEval.displayValue"
+      />
       
       <slot name="extra" />
     </div>

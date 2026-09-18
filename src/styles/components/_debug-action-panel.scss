@@ -209,7 +209,7 @@
     box-shadow: 0 2px 1.5px Rgba(180, 83, 9, 0.99), 0 0 10px Rgba(250, 204, 21, 0.4) !important;
 
     &:hover:not(:disabled) {
-      filter: Brightness(1.1) !important;
+      filter: Brightness(1.1);
     }
   }
 

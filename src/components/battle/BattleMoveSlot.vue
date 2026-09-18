@@ -3,14 +3,22 @@
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import MoveTooltip from '@/components/battle/MoveTooltip.vue'
+import BattleMoveInfoZone from '@/components/battle/BattleMoveInfoZone.vue'
 import BattleMoveDetails from '@/components/battle/BattleMoveDetails.vue'
+import BattleMoveEmptySlot from '@/components/battle/BattleMoveEmptySlot.vue'
 import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
 import { toPokemonType } from '@/data/battle/types'
 import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { Z_LAYERS, SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import { useBattleStore } from '@/stores/battle/battle'
+import {
+  type ShowdownPlayerRequest,
+  isBattleMoveDisabled,
+  resolveWeatherAuraClass,
+  formatMoveName,
+  hexToRgbString
+} from './battleMoveSlotHelpers.ts'
 
 interface Props {
   move: Move | null
@@ -30,15 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
   dragOverIndex: null
 })
 
-import { useBattleStore } from '@/stores/battle/battle'
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
-
-const MOVE_TOOLTIP_DELAY_MS = 400;
 const GLOW_PULSE_DURATION_SEC = 0.8;
-const COLOR_HEX_SHORT_LENGTH = 3;
-const HEX_BYTE_SLICE_TWO = 2;
-const HEX_BYTE_SLICE_FOUR = 4;
-const HEX_BYTE_SLICE_SIX = 6;
 const HOVER_SCALED_MULT = 1.08;
 const HOVER_ANIM_DURATION_SEC = 0.3;
 // Relative layer offset within the moves grid local stacking context
@@ -67,102 +67,20 @@ const moveColor = computed(() => {
 
 const moveType = computed(() => toPokemonType(moveData.value?.type || 'normal'))
 
-const DEFAULT_WHITE_RGB = '255, 255, 255'
+const hexColorRgb = computed(() => hexToRgbString(moveColor.value))
 
-const hexColorRgb = computed(() => {
-  const hex = moveColor.value
-  if (!hex) return DEFAULT_WHITE_RGB
-  let h = hex.replace('#', '')
-  if (h.length === COLOR_HEX_SHORT_LENGTH) {
-    h = h.split('').map((c: string) => c + c).join('')
-  }
-  const r = parseInt(h.slice(0, HEX_BYTE_SLICE_TWO), 16)
-  const g = parseInt(h.slice(HEX_BYTE_SLICE_TWO, HEX_BYTE_SLICE_FOUR), 16)
-  const b = parseInt(h.slice(HEX_BYTE_SLICE_FOUR, HEX_BYTE_SLICE_SIX), 16)
-  return `${r}, ${g}, ${b}`
-})
+const isDisabled = computed(() => isBattleMoveDisabled(
+  props.move,
+  props.isProcessing,
+  props.playerInfo,
+  battleStore.state?.playerRequest as ShowdownPlayerRequest | undefined
+))
 
-const isDisabled = computed(() => {
-  if (props.isProcessing) return true
-  if (!props.move) return true
-  if (props.move.disabled === true) return true
-
-  interface ShowdownMoveRequest {
-    id: string;
-    disabled?: boolean;
-  }
-  interface ShowdownActiveRequest {
-    moves?: ShowdownMoveRequest[];
-  }
-  interface ShowdownPlayerRequest {
-    active?: ShowdownActiveRequest[];
-  }
-
-  // 1. Prioridad Absoluta: Consultar el request de Showdown para bloquear botones en la UI
-  const playerRequest = battleStore.state?.playerRequest as ShowdownPlayerRequest | undefined;
-  if (playerRequest && playerRequest.active?.[0]?.moves) {
-    const reqMoves = playerRequest.active[0].moves;
-    if (reqMoves.length > 0) {
-      const reqMove = reqMoves.find((rm: ShowdownMoveRequest) => rm.id === props.move?.id);
-      if (reqMove) {
-        return !!reqMove.disabled;
-      }
-      // Si Showdown restringió los movimientos permitidos (lockedmove, recharge, encore),
-      // cualquier movimiento no listado por Showdown debe bloquearse en gris en la UI.
-      return true;
-    }
-  }
-
-  // 2. Validaciones locales de estado:
-  const p = props.playerInfo
-
-  // 2.1 Si el Pokémon está en estado bloqueado (lockedmove, twoturnmove, thrash), bloquear cualquier otro movimiento
-  const isLocked = isPokemonLocked(p);
-  if (isLocked && p?.lastMove) {
-    if (props.move.id !== p.lastMove.id) {
-      return true;
-    }
-  }
-
-  // 2.2 Validación de Choice Items (Choice Band, Specs, Scarf)
-  const isChoiceItem = p?.heldItem && ['choiceband', 'choicespecs', 'choicescarf'].includes(p.heldItem.toLowerCase());
-  if (isChoiceItem && p?.choiceMove) {
-    const choiceLower = p.choiceMove.toLowerCase();
-    const moveNameLower = (props.move?.name || '').toLowerCase();
-    const moveIdLower = (props.move?.id || '').toLowerCase();
-    if (moveNameLower !== choiceLower && moveIdLower !== choiceLower) {
-      return true;
-    }
-  }
-
-  if (props.move.id !== 'struggle' && props.move.pp <= 0) return true
-
-  return false
-})
-
-const weatherAuraClass = computed(() => {
-  if (!props.move || !moveModifier.value) return null
-  const weather = battleStore.state?.weather
-  if (!weather || weather.turns === 0) return null
-  const wType = (weather.visual || weather.type || '').toLowerCase()
-  
-  if (wType.includes('rain') || wType.includes('storm') || wType.includes('lluvia')) {
-    return 'weather-rain'
-  }
-  if (wType.includes('sun') || wType.includes('heatwave') || wType.includes('sol')) {
-    return 'weather-sun'
-  }
-  if (wType.includes('thunder') || wType.includes('tormenta')) {
-    return 'weather-thunderstorm'
-  }
-  if (wType.includes('hail') || wType.includes('snow') || wType.includes('granizo') || wType.includes('nieve')) {
-    return 'weather-hail-snow'
-  }
-  if (wType.includes('fog') || wType.includes('mist') || wType.includes('niebla') || wType.includes('neblina')) {
-    return 'weather-fog'
-  }
-  return null
-})
+const weatherAuraClass = computed(() => resolveWeatherAuraClass(
+  Boolean(props.move),
+  Boolean(moveModifier.value),
+  battleStore.state?.weather
+))
 
 const updateGlow = () => {
   if (glowTween) {
@@ -267,15 +185,37 @@ onUnmounted(() => {
   if (glowTween) glowTween.kill()
 })
 
-const formatMoveName = (name: string) => {
-  return name.toUpperCase()
-    .replace(/Ñ/g, 'ñ')
-    .replace(/Á/g, 'á')
-    .replace(/É/g, 'é')
-    .replace(/Í/g, 'í')
-    .replace(/Ó/g, 'ó')
-    .replace(/Ú/g, 'ú')
-}
+const slotWrapperClass = computed(() => [
+  props.index % 2 === 0 ? 'is-left' : 'is-right',
+  weatherAuraClass.value,
+  { 
+    'is-dragging': props.draggedIndex === props.index,
+    'is-drag-over': props.dragOverIndex === props.index,
+    'is-draggable': props.canReorder && !!props.move,
+    'is-empty': !props.move,
+    'is-disabled': !!props.move && isDisabled.value
+  }
+])
+
+const slotWrapperStyle = computed(() => {
+  const gradientDir = props.index % 2 === 0 ? '90deg' : '270deg'
+  return { 
+    '--m-type-color': moveColor.value,
+    '--m-type-rgb': hexColorRgb.value,
+    background: props.move 
+      ? `#12141c Linear-Gradient(${gradientDir}, Rgba(${hexColorRgb.value}, 0.15) 0%, Transparent 100%)`
+      : '#0a0c10',
+    borderColor: props.move ? `Rgba(${hexColorRgb.value}, 0.6)` : 'Rgba(255, 255, 255, 0.1)'
+  }
+})
+
+const buttonClass = computed(() => ({ 
+  'disabled-move': !props.canReorder && !!props.move && isDisabled.value,
+  'is-draggable': props.canReorder && !!props.move,
+  'is-empty': !props.move
+}))
+
+const isButtonDisabled = computed(() => !props.move || (!props.canReorder && isDisabled.value))
 </script>
 
 <template>
@@ -283,25 +223,8 @@ const formatMoveName = (name: string) => {
     :id="'move-btn-wrapper-' + index"
     ref="rootEl"
     class="move-slot-wrapper"
-    :class="[
-      index % 2 === 0 ? 'is-left' : 'is-right',
-      weatherAuraClass,
-      { 
-        'is-dragging': draggedIndex === index,
-        'is-drag-over': dragOverIndex === index,
-        'is-draggable': canReorder && move,
-        'is-empty': !move,
-        'is-disabled': move && isDisabled
-      }
-    ]"
-    :style="{ 
-      '--m-type-color': moveColor,
-      '--m-type-rgb': hexColorRgb,
-      background: move 
-        ? `#12141c Linear-Gradient(${index % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexColorRgb}, 0.15) 0%, Transparent 100%)`
-        : `#0a0c10`,
-      borderColor: move ? `Rgba(${hexColorRgb}, 0.6)` : 'Rgba(255, 255, 255, 0.1)'
-    }"
+    :class="slotWrapperClass"
+    :style="slotWrapperStyle"
     @mouseenter="onHover(true)"
     @mouseleave="onHover(false)"
   >
@@ -313,46 +236,18 @@ const formatMoveName = (name: string) => {
     />
 
     <!-- Info Zone with Tooltip -->
-    <template v-if="move">
-      <PVTooltip
-        :title="move.name"
-        :delay="MOVE_TOOLTIP_DELAY_MS" 
-        position="top"
-        hide-on-click
-        touch-instant
-        class="info-tooltip-wrapper"
-        :disabled="draggedIndex !== null"
-      >
-        <template #content>
-          <MoveTooltip 
-            v-if="moveData"
-            :move="moveData as Move" 
-            :player-info="props.playerInfo"
-          />
-        </template>
-        
-        <div 
-          class="move-info-zone pixelated"
-          @click.stop
-        >
-          ?
-        </div>
-      </PVTooltip>
-    </template>
-    <div
-      v-else
-      class="info-tooltip-wrapper is-empty-tab"
+    <BattleMoveInfoZone
+      :move="move"
+      :move-data="moveData as Move"
+      :player-info="props.playerInfo"
+      :is-dragging="draggedIndex !== null"
     />
 
     <button 
       :id="'move-btn-' + index"
       class="move-card-vicio"
-      :class="{ 
-        'disabled-move': !canReorder && move && isDisabled,
-        'is-draggable': canReorder && move,
-        'is-empty': !move
-      }"
-      :disabled="!move || (!canReorder && isDisabled)"
+      :class="buttonClass"
+      :disabled="isButtonDisabled"
       @click.stop="move && emit('use-move', index)"
     >
       <template v-if="move">
@@ -371,25 +266,10 @@ const formatMoveName = (name: string) => {
           :final-accuracy="finalAccuracy"
         />
       </template>
-      <div
+      <BattleMoveEmptySlot
         v-else
-        class="empty-move-placeholder-wrap"
-      >
-        <PVTooltip
-          position="top"
-          :delay="300"
-        >
-          <template #content>
-            <div class="empty-slot-hint">
-              Puedes organizar y aprender nuevos movimientos desde la ficha de información del Pokémon.
-            </div>
-          </template>
-          <div class="empty-move-placeholder pixelated">
-            <span class="slot-num">SLOT {{ index + 1 }}</span>
-            <span class="empty-text">- VACÍO -</span>
-          </div>
-        </PVTooltip>
-      </div>
+        :index="index"
+      />
     </button>
   </div>
 </template>

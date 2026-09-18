@@ -13,18 +13,14 @@ import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleDifficulty, BattleMinigame } from '@/types/battle/battle'
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { MapRouteId } from '@/data/world/map-assets'
 import type { ItemId } from '@/data/inventory/items'
 import type { BattleOptions } from '@/types/system/stores'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
+import { generateDebugTeamList } from './debugTrainerTeamHelper.ts'
 
-const MIN_TEAM_SIZE = 1
-const MAX_TEAM_SIZE = 6
-const MIN_POKEMON_LEVEL_BOUND = 1
-const MAX_POKEMON_LEVEL_BOUND = 100
-const SHINY_DEBUG_PROBABILITY = 0.05
 const POLICE_PRESET_AVG_LEVEL_BASE = 30
 const POLICE_PRESET_LEVEL_BOOST = 2
 const POLICE_PRESET_IV_VAL = 20
@@ -163,57 +159,40 @@ export function useDebugTrainers() {
     }
   }
 
+  function setupArchetypeTrainer(archetypeKey: string): readonly PokemonSpeciesId[] {
+    const archetype = requireNpcArchetype(archetypeKey)
+    trainerArchetype.value = archetype
+    trainerName.value = generateThemedTrainerName(archetypeKey)
+
+    const availableSprites = getSpritesForArchetype(archetype)
+    const randomSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)]
+    if (!randomSprite) {
+      throw new Error(`[useDebugTrainers] No sprites found for archetype: ${archetypeKey}`)
+    }
+    trainerSprite.value = requireNpcSpriteId(randomSprite)
+
+    return isTrainerTypeKey(archetype) ? getArchetypePool(archetype) : ['rattata']
+  }
+
   function generateRandomTeam() {
-    const size = Math.max(MIN_TEAM_SIZE, Math.min(MAX_TEAM_SIZE, genTeamSize.value))
-    const team: Pokemon[] = []
+    let pool: readonly (string | PokemonSpeciesId)[]
 
     if (selectedPreset.value === 'random') {
       trainerArchetype.value = undefined
       randomizeTrainer()
-      const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb())
-      for (let i = 0; i < size; i++) {
-        const randomSpecies = dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur'
-        const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
-        const isShiny = genForceShiny.value || Math.random() < SHINY_DEBUG_PROBABILITY
-        const p = pokemonDebugService.generate({
-          id: requirePokemonSpeciesId(randomSpecies),
-          level: Math.max(MIN_POKEMON_LEVEL_BOUND, Math.min(MAX_POKEMON_LEVEL_BOUND, level)),
-          isShiny
-        })
-        if (p) {
-          p.isGuardian = Math.random() < genGuardianProb.value
-          team.push(p)
-        }
-      }
+      pool = Object.keys(pokemonDataProvider.getPokemonDb())
     } else {
-      const archetypeKey = selectedPreset.value
-      const archetype = requireNpcArchetype(archetypeKey)
-      trainerArchetype.value = archetype
-      trainerName.value = generateThemedTrainerName(archetypeKey)
-
-      const availableSprites = getSpritesForArchetype(archetype)
-      const randomSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)]
-      if (!randomSprite) {
-        throw new Error(`[useDebugTrainers] No sprites found for archetype: ${archetypeKey}`)
-      }
-      trainerSprite.value = requireNpcSpriteId(randomSprite)
-
-      const pool: readonly PokemonSpeciesId[] = isTrainerTypeKey(archetype) ? getArchetypePool(archetype) : ['rattata']
-      for (let i = 0; i < size; i++) {
-        const randomSpecies = pool[Math.floor(Math.random() * pool.length)] || 'rattata'
-        const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
-        const isShiny = genForceShiny.value || Math.random() < SHINY_DEBUG_PROBABILITY
-        const p = pokemonDebugService.generate({
-          id: randomSpecies,
-          level: Math.max(MIN_POKEMON_LEVEL_BOUND, Math.min(MAX_POKEMON_LEVEL_BOUND, level)),
-          isShiny
-        })
-        if (p) {
-          p.isGuardian = Math.random() < genGuardianProb.value
-          team.push(p)
-        }
-      }
+      pool = setupArchetypeTrainer(selectedPreset.value)
     }
+
+    const team = generateDebugTeamList({
+      size: genTeamSize.value,
+      speciesPool: pool,
+      minLevel: genMinLevel.value,
+      maxLevel: genMaxLevel.value,
+      forceShiny: genForceShiny.value,
+      guardianProb: genGuardianProb.value
+    })
 
     enemyTeam.value = team
     selectedPokeIndex.value = team.length > 0 ? 0 : null

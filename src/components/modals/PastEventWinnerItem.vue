@@ -8,12 +8,17 @@ import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics'
-import { getTierFromTotalIvs } from '@/logic/pokemon/tierEngine'
-import { getPhysicalDimensionTier } from '@/logic/pokemon/physicalDimensionsMath'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { toID } from '@/logic/utils/strings.ts'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import PastEventPodiumBadge from './PastEventPodiumBadge.vue'
+import {
+  formatWinnerMetric,
+  getWinnerSpeciesId,
+  resolveWinnerProfile,
+  resolveWinnerName,
+  resolveWinnerNickStyle
+} from './pastEventMetricFormatter.ts'
 
 interface Props {
   winner: PastCompetitionWinner
@@ -33,18 +38,6 @@ const openTrainerProfile = (userId?: string) => {
   if (userId) {
     uiStore.open('TrainerProfile', { userId })
   }
-}
-
-const getWinnerSpeciesId = (w: PastCompetitionWinner): PokemonSpeciesId | null => {
-  const rawSpecies = w.entry_data?.species
-  if (rawSpecies && isPokemonSpeciesId(rawSpecies)) {
-    return rawSpecies
-  }
-  const rawName = w.entry_data?.name ? toID(w.entry_data.name) : ''
-  if (rawName && isPokemonSpeciesId(rawName)) {
-    return rawName
-  }
-  return null
 }
 
 const getWinnerSpeciesName = (w: PastCompetitionWinner): string => {
@@ -76,145 +69,62 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
   })
 }
 
-const getWinnerProfile = (w: PastCompetitionWinner) => {
-  if (authStore.user?.id && w.player_id === authStore.user.id) {
-    return {
-      playerClass: gameStore.state.playerClass || 'entrenador',
-      level: gameStore.state.trainerLevel || 1,
-      avatarStyle: gameStore.state.avatar_style || '',
-      nick_style: gameStore.state.nick_style || '',
-      gender: gameStore.state.gender || 'h'
-    }
-  }
-  const cached = chatCosmetics.profileCosmetics[w.player_id]
-  const entryData = w.entry_data
-  return {
-    playerClass: cached?.player_class || w.player_class || entryData?.player_class || 'entrenador',
-    level: cached?.trainer_level || w.player_level || entryData?.trainer_level || 1,
-    avatarStyle: cached?.avatar_style || w.avatar_style || entryData?.avatar_style || '',
-    nick_style: cached?.nick_style || w.nick_style || entryData?.nick_style || '',
-    gender: cached?.gender || w.gender || entryData?.gender || 'h'
-  }
-}
+const winnerProfile = computed(() => {
+  return resolveWinnerProfile(
+    props.winner,
+    authStore.user?.id,
+    gameStore.state,
+    chatCosmetics.profileCosmetics[props.winner.player_id]
+  )
+})
 
-const getWinnerNickStyle = (w: PastCompetitionWinner): string => {
-  if (authStore.user?.id && w.player_id === authStore.user.id) {
-    return gameStore.state.nick_style || 'normal'
-  }
-  const cached = chatCosmetics.profileCosmetics[w.player_id]
-  const entryData = w.entry_data
-  return cached?.nick_style || w.nick_style || entryData?.nick_style || 'normal'
-}
+const winnerName = computed(() => {
+  return resolveWinnerName(
+    props.winner,
+    authStore.user?.id,
+    gameStore.state.trainer,
+    chatCosmetics.profileCosmetics[props.winner.player_id]?.username
+  )
+})
 
-const getWinnerName = (w: PastCompetitionWinner): string => {
-  if (authStore.user?.id && w.player_id === authStore.user.id) {
-    return gameStore.state.trainer || w.player_name || 'Entrenador'
-  }
-  const cached = chatCosmetics.profileCosmetics[w.player_id]
-  return cached?.username || w.player_name || 'Entrenador'
-}
+const winnerNickStyle = computed(() => {
+  return resolveWinnerNickStyle(
+    props.winner,
+    authStore.user?.id,
+    gameStore.state.nick_style,
+    chatCosmetics.profileCosmetics[props.winner.player_id]?.nick_style
+  )
+})
 
-const formatWinnerMetric = (w: PastCompetitionWinner, catId: string): string => {
-  const data = w.entry_data
+const rank = computed(() => props.winner.rank || props.rankIndex + 1)
+const rankClass = computed(() => `rank-${rank.value}`)
+const isShiny = computed(() => Boolean(props.winner.entry_data?.is_shiny))
+const hasDetails = computed(() => Boolean(props.winner.entry_data?.name || props.winner.score !== undefined))
+const hasScore = computed(() => props.winner.score !== undefined || Boolean(props.winner.entry_data?.display_value))
+const showMetricSep = computed(() => Boolean(props.winner.entry_data?.name && hasScore.value))
+const metricText = computed(() => formatWinnerMetric(props.winner, props.categoryId))
+const spriteUrl = computed(() => {
+  if (!winnerSpeciesId.value) return ''
+  return getAssetUrl(ASSET_TYPES.POKEMON, winnerSpeciesId.value, { isShiny: isShiny.value })
+})
+const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || props.winner.entry_data?.name || '')
 
-  if (catId.startsWith('ivs')) {
-    const score = Number(w.score ?? data?.total_ivs ?? 0)
-    const tierLabel = data?.tier_label || getTierFromTotalIvs(score).tier
-    return `${score} / 186 IVs (${tierLabel})`
-  }
-
-  if (catId.startsWith('weight')) {
-    let score = Number(w.score ?? data?.weight ?? 0)
-    const speciesId = getWinnerSpeciesId(w)
-    const spec = speciesId ? pokemonDataProvider.getPokemonData(speciesId, true) : null
-    const baseWeight = spec?.weight || null
-    if (score <= 0 && baseWeight) {
-      score = baseWeight
-    }
-    const tier = baseWeight ? getPhysicalDimensionTier(score, baseWeight) : null
-
-    const maxTarget = baseWeight ? (baseWeight * 1.15).toFixed(1) : null
-    const minTarget = baseWeight ? (baseWeight * 0.85).toFixed(1) : null
-    const isMinCategory = (w.category_name || '').toLowerCase().includes('miniatura') || (w.category_id || '').toLowerCase().includes('min')
-    const targetRef = isMinCategory ? minTarget : maxTarget
-
-    const tierStr = tier ? ` (${tier.label} · ${tier.name})` : data?.tier_label ? ` (${data.tier_label})` : ''
-    const targetStr = targetRef ? ` / ${targetRef} kg` : ''
-    return `${score.toFixed(1)} kg${targetStr}${tierStr}`
-  }
-
-  if (catId.startsWith('height')) {
-    let score = Number(w.score ?? data?.height ?? 0)
-    const speciesId = getWinnerSpeciesId(w)
-    const spec = speciesId ? pokemonDataProvider.getPokemonData(speciesId, true) : null
-    const baseHeight = spec?.height || null
-    if (score <= 0 && baseHeight) {
-      score = baseHeight
-    }
-    const tier = baseHeight ? getPhysicalDimensionTier(score, baseHeight) : null
-
-    const maxTarget = baseHeight ? (baseHeight * 1.15).toFixed(1) : null
-    const minTarget = baseHeight ? (baseHeight * 0.85).toFixed(1) : null
-    const isMinCategory = (w.category_name || '').toLowerCase().includes('miniatura') || (w.category_id || '').toLowerCase().includes('min')
-    const targetRef = isMinCategory ? minTarget : maxTarget
-
-    const tierStr = tier ? ` (${tier.label} · ${tier.name})` : data?.tier_label ? ` (${data.tier_label})` : ''
-    const targetStr = targetRef ? ` / ${targetRef} m` : ''
-    return `${score.toFixed(1)} m${targetStr}${tierStr}`
-  }
-
-  if (catId.startsWith('level')) {
-    const score = Number(w.score ?? data?.level ?? 1)
-    return `Nv. ${score} / 100`
-  }
-
-  if (catId.startsWith('friendship')) {
-    const score = Number(w.score ?? data?.friendship ?? 0)
-    return `${score} / 255 Amistad`
-  }
-
-  if (data?.display_value) {
-    return String(data.display_value)
-  }
-  if (data?.displayValue) {
-    return String(data.displayValue)
-  }
-
-  return `${w.score ?? 0}`
-}
-
-const getRankMedal = (rank?: string | number): string => {
-  if (rank === 'first' || rank === 1 || rank === '1') return '🥇'
-  if (rank === 'second' || rank === 2 || rank === '2') return '🥈'
-  if (rank === 'third' || rank === 3 || rank === '3') return '🥉'
-  return '🎖️'
-}
-
-const getRankLabel = (rank?: string | number): string => {
-  if (rank === 'first' || rank === 1 || rank === '1') return '1º'
-  if (rank === 'second' || rank === 2 || rank === '2') return '2º'
-  if (rank === 'third' || rank === 3 || rank === '3') return '3º'
-  return `${rank}º`
-}
 </script>
 
 <template>
   <div
     class="winner-item"
-    :class="`rank-${winner.rank || rankIndex + 1}`"
+    :class="rankClass"
   >
     <!-- Column 1: Rank Badge / Medal (Standalone) -->
-    <div class="rank-badge">
-      <span class="emoji medal">{{ getRankMedal(winner.rank || rankIndex + 1) }}</span>
-      <span class="pos-text">{{ getRankLabel(winner.rank || rankIndex + 1) }}</span>
-    </div>
+    <PastEventPodiumBadge :rank="rank" />
 
     <!-- Column 2: Content (1 line on wide screens, 2 lines on small screens) -->
     <div class="winner-content-wrap">
       <!-- Trainer Profile -->
       <div class="winner-trainer-group">
         <PVTooltip
-          :title="`Ver perfil de ${getWinnerName(winner)}`"
+          :title="`Ver perfil de ${winnerName}`"
           position="top"
         >
           <div
@@ -225,14 +135,14 @@ const getRankLabel = (rank?: string | number): string => {
             @keydown.enter.stop="openTrainerProfile(winner.player_id)"
           >
             <TrainerAvatar
-              :profile="getWinnerProfile(winner)"
+              :profile="winnerProfile"
               :size="26"
             />
           </div>
         </PVTooltip>
 
         <PVTooltip
-          :title="`Ver perfil de ${getWinnerName(winner)}`"
+          :title="`Ver perfil de ${winnerName}`"
           position="top"
         >
           <div
@@ -243,11 +153,11 @@ const getRankLabel = (rank?: string | number): string => {
             @keydown.enter.stop="openTrainerProfile(winner.player_id)"
           >
             <span
-              v-gsap-nick="getWinnerNickStyle(winner)"
+              v-gsap-nick="winnerNickStyle"
               class="player-name"
-              :class="getWinnerNickStyle(winner)"
+              :class="winnerNickStyle"
             >
-              {{ getWinnerName(winner) }}
+              {{ winnerName }}
             </span>
           </div>
         </PVTooltip>
@@ -255,13 +165,13 @@ const getRankLabel = (rank?: string | number): string => {
 
       <!-- Divider (visible when inline on same row) -->
       <span
-        v-if="winner.entry_data?.name || winner.score !== undefined"
+        v-if="hasDetails"
         class="entry-divider-dot"
       >•</span>
 
       <!-- Pokemon & Metric Details -->
       <div
-        v-if="winner.entry_data?.name || winner.score !== undefined"
+        v-if="hasDetails"
         class="winner-details-group"
       >
         <!-- Pokemon Sprite & Name Pill -->
@@ -279,17 +189,17 @@ const getRankLabel = (rank?: string | number): string => {
               @keydown.enter.stop="openSpeciesDetail(winnerSpeciesId)"
             >
               <img
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, winnerSpeciesId, { isShiny: winner.entry_data?.is_shiny })"
+                :src="spriteUrl"
                 :alt="winnerSpeciesName"
                 draggable="false"
                 class="winner-poke-sprite pixelated"
               >
               <span
                 class="entry-poke"
-                :class="{ shiny: winner.entry_data?.is_shiny }"
+                :class="{ shiny: isShiny }"
               >
                 <span
-                  v-if="winner.entry_data?.is_shiny"
+                  v-if="isShiny"
                   class="emoji"
                 >✨</span> {{ pokemonDisplayName }}
               </span>
@@ -299,25 +209,25 @@ const getRankLabel = (rank?: string | number): string => {
           <span
             v-else-if="winner.entry_data?.name"
             class="entry-poke"
-            :class="{ shiny: winner.entry_data.is_shiny }"
+            :class="{ shiny: isShiny }"
           >
             <span
-              v-if="winner.entry_data.is_shiny"
+              v-if="isShiny"
               class="emoji"
-            >✨</span> {{ winner.entry_data.nickname || winner.entry_data.name }}
+            >✨</span> {{ fallbackPokeName }}
           </span>
         </div>
 
         <span
-          v-if="winner.entry_data?.name && (winner.score !== undefined || winner.entry_data?.display_value)"
+          v-if="showMetricSep"
           class="entry-metric-sep"
         >·</span>
 
         <span
-          v-if="winner.score !== undefined || winner.entry_data?.display_value"
+          v-if="hasScore"
           class="score-val"
         >
-          {{ formatWinnerMetric(winner, categoryId) }}
+          {{ metricText }}
         </span>
       </div>
     </div>
@@ -354,30 +264,6 @@ const getRankLabel = (rank?: string | number): string => {
   &.rank-3 {
     border-color: Rgba(205, 127, 50, 0.3);
     background: Rgba(205, 127, 50, 0.04);
-  }
-}
-
-// Left Column (Rank badge)
-.rank-badge {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  min-width: 32px;
-  justify-content: center;
-  flex-shrink: 0;
-
-  .medal {
-    font-size: 14px;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .pos-text {
-    @include pixelated;
-    font-size: 8px;
-    color: var(--gray-light);
   }
 }
 

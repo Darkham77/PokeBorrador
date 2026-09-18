@@ -43,6 +43,21 @@ export interface CertifiedReplayHistoryEntry {
   p2ForceSwitch?: boolean;
 }
 
+const VALID_CERTIFIED_SUBSTATE_KEYS = ['WAIT_INPUT', 'SWITCH_MENU', 'PLAYER_FAINT_SEQ'] as const;
+type ValidCertifiedSubstateKey = (typeof VALID_CERTIFIED_SUBSTATE_KEYS)[number];
+const VALID_CERTIFIED_SUBSTATES = new Set<ValidCertifiedSubstateKey>(VALID_CERTIFIED_SUBSTATE_KEYS);
+
+const VALID_SWITCH_SUBSTATE_KEYS = ['SWITCH_MENU', 'PLAYER_FAINT_SEQ'] as const;
+type ValidSwitchSubstateKey = (typeof VALID_SWITCH_SUBSTATE_KEYS)[number];
+const VALID_SWITCH_SUBSTATES = new Set<ValidSwitchSubstateKey>(VALID_SWITCH_SUBSTATE_KEYS);
+
+export interface UiFsmReadiness {
+  subState?: string;
+  isProcessing?: boolean;
+  activePokeHp?: number;
+  hasPendingSwitch?: boolean;
+}
+
 /**
  * Orchestrates choice simulation flow for both in-memory fuzzer replay runs
  * and browser E2E test runs. Standardizes choice retrieval and index advancement.
@@ -187,6 +202,53 @@ export class ShowdownBattleRunner {
     return choice;
   }
 
+  private assertUiFsmReadiness(
+    player: SideID,
+    readiness: UiFsmReadiness,
+    activeRequest: ChoiceRequest | null | undefined
+  ): void {
+    const { subState, isProcessing, activePokeHp, hasPendingSwitch } = readiness;
+    const replayContext = JSON.stringify({
+      seat: player,
+      subState,
+      isProcessing,
+      activePokeHp,
+      hasPendingSwitch,
+      p1ChoiceIdx: this.p1ChoiceIdx,
+      p1ChoiceCount: this.choicesBySeat.get('p1')?.length,
+      p2ChoiceIdx: this.p2ChoiceIdx,
+      p2ChoiceCount: this.choicesBySeat.get('p2')?.length,
+      activeRequest
+    });
+
+    if (isProcessing) {
+      throw new Error(`[ShowdownBattleRunner] Required certified choice cannot execute while the battle is processing. context=${replayContext}`);
+    }
+
+    if (subState && !VALID_CERTIFIED_SUBSTATES.has(subState as ValidCertifiedSubstateKey)) {
+      throw new Error(`[ShowdownBattleRunner] Required certified choice cannot execute from its FSM substate. context=${replayContext}`);
+    }
+
+    const needsSwitchState = hasPendingSwitch || (activePokeHp !== undefined && activePokeHp <= 0);
+    if (needsSwitchState && (!subState || !VALID_SWITCH_SUBSTATES.has(subState as ValidSwitchSubstateKey))) {
+      throw new Error(`[ShowdownBattleRunner] Required certified switch choice arrived before the switch FSM state. context=${replayContext}`);
+    }
+  }
+
+  private consumeNextChoiceBySeat(player: SideID, activeRequest: ChoiceRequest | null | undefined): string {
+    const index = this.indicesBySeat.get(player) ?? 0;
+    const choices = this.choicesBySeat.get(player) ?? [];
+    if (index >= choices.length) {
+      throw new Error(`[ShowdownBattleRunner] Required certified choice is missing. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
+    }
+    const choice = choices[index]!;
+    if (!choice || choice.trim().length === 0) {
+      throw new Error(`[ShowdownBattleRunner] Required certified choice is empty. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
+    }
+    this.indicesBySeat.set(player, index + 1);
+    return choice;
+  }
+
   /**
    * Resolves the next choice for the given side from the certified case choices
    * based on the active simulator request. If action is consumed, advances the choice index.
@@ -194,12 +256,7 @@ export class ShowdownBattleRunner {
   resolveAndConsumeNextChoice(
     player: SideID,
     activeRequest: ChoiceRequest | null | undefined,
-    readiness?: {
-      subState?: string;
-      isProcessing?: boolean;
-      activePokeHp?: number;
-      hasPendingSwitch?: boolean;
-    }
+    readiness?: UiFsmReadiness
   ): string {
     const needsAction = requiresAction(activeRequest);
     if (!needsAction) {
@@ -212,40 +269,9 @@ export class ShowdownBattleRunner {
 
     // Verify UI FSM readiness inside runner if context provided
     if (readiness) {
-      const { subState, isProcessing, activePokeHp, hasPendingSwitch } = readiness;
-      const replayContext = JSON.stringify({
-        seat: player,
-        subState,
-        isProcessing,
-        activePokeHp,
-        hasPendingSwitch,
-        p1ChoiceIdx: this.p1ChoiceIdx,
-        p1ChoiceCount: this.choicesBySeat.get('p1')?.length,
-        p2ChoiceIdx: this.p2ChoiceIdx,
-        p2ChoiceCount: this.choicesBySeat.get('p2')?.length,
-        activeRequest
-      });
-      if (isProcessing) throw new Error(`[ShowdownBattleRunner] Required certified choice cannot execute while the battle is processing. context=${replayContext}`);
-      if (subState && subState !== 'WAIT_INPUT' && subState !== 'SWITCH_MENU' && subState !== 'PLAYER_FAINT_SEQ') {
-        throw new Error(`[ShowdownBattleRunner] Required certified choice cannot execute from its FSM substate. context=${replayContext}`);
-      }
-      if (hasPendingSwitch || (activePokeHp !== undefined && activePokeHp <= 0)) {
-        if (subState !== 'SWITCH_MENU' && subState !== 'PLAYER_FAINT_SEQ') {
-          throw new Error(`[ShowdownBattleRunner] Required certified switch choice arrived before the switch FSM state. context=${replayContext}`);
-        }
-      }
+      this.assertUiFsmReadiness(player, readiness, activeRequest);
     }
 
-    const index = this.indicesBySeat.get(player) ?? 0;
-    const choices = this.choicesBySeat.get(player) ?? [];
-    if (index >= choices.length) {
-      throw new Error(`[ShowdownBattleRunner] Required certified choice is missing. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
-    }
-    const choice = choices[index]!;
-    if (!choice || choice.trim().length === 0) {
-      throw new Error(`[ShowdownBattleRunner] Required certified choice is empty. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
-    }
-    this.indicesBySeat.set(player, index + 1);
-    return choice;
+    return this.consumeNextChoiceBySeat(player, activeRequest);
   }
 }

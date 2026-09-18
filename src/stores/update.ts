@@ -8,7 +8,7 @@ import { gameBus } from '@/logic/events/gameBus'
 
 declare const __APP_VERSION__: string
 
-export type UpdateStatus =
+type UpdateStatus =
   | 'up_to_date'
   | 'checking'
   | 'outdated_client'
@@ -17,13 +17,13 @@ export type UpdateStatus =
   | 'updating'
   | 'error'
 
-export type UpdateModalType =
+type UpdateModalType =
   | 'client_update'
   | 'server_outdated'
   | 'db_outdated'
   | null
 
-export interface UpdateVersionInfo {
+interface UpdateVersionInfo {
   client: string;
   server: string;
   db?: number | string;
@@ -69,13 +69,6 @@ export const useUpdateStore = defineStore('update', () => {
 
   const isBlocked = computed(() => {
     return modalType.value !== null
-  })
-
-  const clientVersion = computed(() => {
-    if (typeof __APP_VERSION__ !== 'undefined') {
-      return __APP_VERSION__
-    }
-    return 'v0.5.0'
   })
 
   // Purge outdated code caches while preserving heavy game media
@@ -158,6 +151,13 @@ export const useUpdateStore = defineStore('update', () => {
     gameBus.emit('PWA_NEED_REFRESH')
   }
 
+  gameBus.on('OUTDATED_CLIENT_DETECTED', (e: Event) => {
+    const detail = (e as CustomEvent<UpdateVersionInfo>).detail
+    if (detail) {
+      notifyOutdatedClient(detail)
+    }
+  })
+
   function notifyOutdatedServer(info: UpdateVersionInfo) {
     logger.warn('UpdateStore', `Server outdated (${info.server}) vs Client (${info.client}).`)
     status.value = 'outdated_server'
@@ -216,6 +216,7 @@ export const useUpdateStore = defineStore('update', () => {
     const baseUrl = import.meta.env.BASE_URL || '/'
     const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
     if (typeof window !== 'undefined') {
+      // security-ok: Same-origin redirect to internal /login route
       window.location.replace(`${window.location.origin}${cleanBase}login`)
     }
   }
@@ -226,6 +227,94 @@ export const useUpdateStore = defineStore('update', () => {
       window.location.reload()
     }
   }
+
+function terminateShowdownWorker(): void {
+  if (typeof window !== 'undefined' && window.__showdownWorker__) {
+    try {
+      window.__showdownWorker__.terminate()
+      window.__showdownWorker__ = undefined
+    } catch (e) {
+      logger.warn('UpdateStore', 'Error terminating showdown worker:', e)
+    }
+  }
+}
+
+function waitForControllerChange(timeoutSec: number): Promise<void> {
+  const controllerPromise = new Promise<void>((resolve) => {
+    const onControllerChange = () => {
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+      resolve()
+    }
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+  })
+  return Promise.race([
+    controllerPromise,
+    new Promise<void>((resolve) => {
+      gsap.delayedCall(timeoutSec, resolve)
+    })
+  ])
+}
+
+async function activateWaitingWorker(waiting: ServiceWorker): Promise<void> {
+  logger.info('UpdateStore', 'Waiting Service Worker detected. Sending SKIP_WAITING...')
+  waiting.postMessage({ type: 'SKIP_WAITING' })
+  await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC)
+}
+
+async function awaitAndActivateInstallingWorker(worker: ServiceWorker | null): Promise<void> {
+  logger.info('UpdateStore', 'Installing Service Worker detected. Awaiting installation...')
+  await new Promise<void>((resolve) => {
+    if (worker) {
+      worker.addEventListener('statechange', () => {
+        if (worker.state === 'installed') {
+          logger.info('UpdateStore', 'Worker installed. Sending SKIP_WAITING...')
+          worker.postMessage({ type: 'SKIP_WAITING' })
+          resolve()
+        }
+      })
+    } else {
+      resolve()
+    }
+  })
+  await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC)
+}
+
+async function updateAndActivateWorker(registration: ServiceWorkerRegistration): Promise<void> {
+  logger.info('UpdateStore', 'No waiting/installing worker. Triggering registration.update()...')
+  try {
+    await registration.update()
+    await new Promise<void>((resolve) => {
+      gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve)
+    })
+    const freshReg = await navigator.serviceWorker.getRegistration()
+    const updatedWorker = freshReg?.waiting
+    if (updatedWorker) {
+      logger.info('UpdateStore', 'New worker ready after update. Activating...')
+      updatedWorker.postMessage({ type: 'SKIP_WAITING' })
+      await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC)
+    } else {
+      logger.info('UpdateStore', 'No updated worker appeared. Unregistering existing SW to force clean fetch on reload...')
+      await registration.unregister()
+    }
+  } catch (updateErr) {
+    logger.error('UpdateStore', `Error during manual update: ${(updateErr as Error).message}`)
+    await registration.unregister()
+  }
+}
+
+async function transitionServiceWorker(): Promise<void> {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
+  const registration = await navigator.serviceWorker.getRegistration()
+  if (!registration) return
+
+  if (registration.waiting) {
+    await activateWaitingWorker(registration.waiting)
+  } else if (registration.installing) {
+    await awaitAndActivateInstallingWorker(registration.installing)
+  } else {
+    await updateAndActivateWorker(registration)
+  }
+}
 
   // Atomic clean update execution
   async function executeCleanUpdate(options?: UpdateExecutionOptions): Promise<void> {
@@ -238,14 +327,7 @@ export const useUpdateStore = defineStore('update', () => {
     const targetDestination = options?.targetPath || 'login'
 
     // 1. Terminate active Web Workers
-    if (typeof window !== 'undefined' && window.__showdownWorker__) {
-      try {
-        window.__showdownWorker__.terminate()
-        window.__showdownWorker__ = undefined
-      } catch (e) {
-        logger.warn('UpdateStore', 'Error terminating showdown worker:', e)
-      }
-    }
+    terminateShowdownWorker()
 
     // 2. Unconditional safe logout (preventSave = true to avoid corrupting database)
     if (authStore.user) {
@@ -275,84 +357,7 @@ export const useUpdateStore = defineStore('update', () => {
       await purgeCodeCaches()
 
       // 4. Service Worker 3-state transition
-      if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.getRegistration()
-        if (registration) {
-          if (registration.waiting) {
-            logger.info('UpdateStore', 'Waiting Service Worker detected. Sending SKIP_WAITING...')
-            const controllerPromise = new Promise<void>((resolve) => {
-              const onControllerChange = () => {
-                navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
-                resolve()
-              }
-              navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
-            })
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' })
-            await Promise.race([
-              controllerPromise,
-              new Promise<void>((resolve) => {
-                gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve)
-              })
-            ])
-          } else if (registration.installing) {
-            logger.info('UpdateStore', 'Installing Service Worker detected. Awaiting installation...')
-            await new Promise<void>((resolve) => {
-              const worker = registration.installing
-              if (worker) {
-                worker.addEventListener('statechange', () => {
-                  if (worker.state === 'installed') {
-                    logger.info('UpdateStore', 'Worker installed. Sending SKIP_WAITING...')
-                    worker.postMessage({ type: 'SKIP_WAITING' })
-                    resolve()
-                  }
-                })
-              } else {
-                resolve()
-              }
-            })
-            const controllerPromise = new Promise<void>((resolve) => {
-              const onControllerChange = () => {
-                navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
-                resolve()
-              }
-              navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
-            })
-            await Promise.race([
-              controllerPromise,
-              new Promise<void>((resolve) => {
-                gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve)
-              })
-            ])
-          } else {
-            logger.info('UpdateStore', 'No waiting/installing worker. Triggering registration.update()...')
-            try {
-              await registration.update()
-              await new Promise<void>((resolve) => {
-                gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve)
-              })
-              const freshReg = await navigator.serviceWorker.getRegistration()
-              const updatedWorker = freshReg?.waiting
-              if (updatedWorker) {
-                logger.info('UpdateStore', 'New worker ready after update. Activating...')
-                updatedWorker.postMessage({ type: 'SKIP_WAITING' })
-                await new Promise<void>((resolve) => {
-                  const onControllerChange = () => {
-                    navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
-                    resolve()
-                  }
-                  navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
-                })
-              } else {
-                logger.info('UpdateStore', 'No updated worker appeared. Unregistering existing SW to force clean fetch on reload...')
-                await registration.unregister()
-              }
-            } catch (updateErr) {
-              logger.error('UpdateStore', `Error during manual update: ${(updateErr as Error).message}`)
-              await registration.unregister()
-            }
-          }
-        }
-      }
+      await transitionServiceWorker()
 
       if (failsafeTimer) {
         failsafeTimer.kill()
@@ -380,7 +385,6 @@ export const useUpdateStore = defineStore('update', () => {
     progressText,
     isUpdateAvailable,
     isBlocked,
-    clientVersion,
     notifyOutdatedClient,
     notifyOutdatedServer,
     notifyDbIncompatible,
@@ -389,8 +393,6 @@ export const useUpdateStore = defineStore('update', () => {
     resetStatus,
     exitToLogin,
     retryCheck,
-    executeCleanUpdate,
-    purgeCodeCaches,
-    forceCacheBustingReload
+    executeCleanUpdate
   }
 })

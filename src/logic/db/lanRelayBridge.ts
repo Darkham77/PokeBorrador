@@ -69,8 +69,8 @@ class LanRelayBridge {
               }
             }
           }
-        } catch {
-          // Ignore parse errors safely
+        } catch (err) {
+          logger.warn('LanRelayBridge', 'Error parseando mensaje WebSocket:', err);
         }
       };
 

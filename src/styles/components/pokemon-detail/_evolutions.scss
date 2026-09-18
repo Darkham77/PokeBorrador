@@ -74,7 +74,7 @@ body .evolve-pane {
 
         .silhouette {
           will-change: transform, filter, opacity;
-  filter: Brightness(0) !important;
+          filter: Brightness(0);
           opacity: 1; // Solid black as requested
         }
 

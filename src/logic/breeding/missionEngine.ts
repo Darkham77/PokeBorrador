@@ -6,7 +6,7 @@
 
 import { POKEMON_DB, isPokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
 import { TRAINER_TYPES, TRAINER_TYPE_KEYS, requireNpcArchetype, type TrainerTypeKey } from '@/data/player/trainerTypes';
-import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { generateNpcName } from '@/logic/utils/npcNameGenerator';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -28,8 +28,12 @@ export type { DaycareMission, MissionRequirement, MissionReward };
 const TRAINER_LEVEL_APPRENTICE_THRESHOLD = 10;
 const TRAINER_LEVEL_VETERAN_THRESHOLD = 25;
 const TRAINER_LEVEL_MASTER_THRESHOLD = 40;
+const TRAINER_LEVEL_MID_THRESHOLD = 20;
 const TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD = 15;
 const MAX_PERFECT_IV_VAL = 31;
+const REWARD_QTY_MASTER = 4;
+const REWARD_QTY_MID = 3;
+const REWARD_QTY_BASE = 2;
 
 const POOLS: Record<DaycareMissionDifficulty, readonly PokemonSpeciesId[]> = {
   novice: ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'zubat', 'geodude', 'sandshrew', 'nidoranf', 'nidoranm', 'magikarp', 'ekans', 'paras'],
@@ -132,16 +136,29 @@ const MISSION_DIALOGUES_BASE: Record<string, string[]> = {
 };
 
 
-/**
- * Generates a new mission object.
- */
-export function generateMission(trainerLevel: number, dateStr: string): DaycareMission {
+interface RewardCandidate {
+  readonly id: ItemId;
+  readonly qty: number;
+}
+
+const POWER_ITEM_IDS: readonly ItemId[] = [
+  'powerweight',
+  'powerbracer',
+  'powerbelt',
+  'powerlens',
+  'powerband',
+  'poweranklet'
+];
+
+function resolveMissionTarget(trainerLevel: number): PokemonSpeciesId {
   let possibleTargets: PokemonSpeciesId[] = [...(POOLS['novice'] || [])];
   if (trainerLevel >= TRAINER_LEVEL_APPRENTICE_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['apprentice'] || []);
   if (trainerLevel >= TRAINER_LEVEL_VETERAN_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['veteran'] || []);
   if (trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['master'] || []);
+  return possibleTargets[Math.floor(Math.random() * possibleTargets.length)] || 'magikarp';
+}
 
-  const targetId: PokemonSpeciesId = possibleTargets[Math.floor(Math.random() * possibleTargets.length)] || 'magikarp';
+function generateMissionRequirement(trainerLevel: number): { requirement: MissionRequirement; reqText: string } {
   const missionTypes: readonly DaycareMissionRequirementType[] = trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD 
     ? ['level', 'nature', 'iv_total', 'iv_31'] 
     : ['level', 'nature', 'iv_total'];
@@ -170,13 +187,13 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     reqText = `IV ${MAX_PERFECT_IV_VAL} en ${STAT_SHORT_NAMES_ES[targetStat] || 'PS'}`;
   }
 
-  // Rewards
-  const rewardQty = trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD ? 4 : (trainerLevel >= 20 ? 3 : 2);
+  return { requirement, reqText };
+}
 
-  interface RewardCandidate {
-    readonly id: ItemId;
-    readonly qty: number;
-  }
+function generateMissionReward(trainerLevel: number): MissionReward {
+  const rewardQty = trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD 
+    ? REWARD_QTY_MASTER 
+    : (trainerLevel >= TRAINER_LEVEL_MID_THRESHOLD ? REWARD_QTY_MID : REWARD_QTY_BASE);
 
   const baseRewards: readonly RewardCandidate[] = [
     { id: 'berrybronze', qty: rewardQty + 1 },
@@ -185,18 +202,9 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     { id: 'everstone', qty: 1 }
   ];
 
-  const powerItemIds: readonly ItemId[] = [
-    'powerweight',
-    'powerbracer',
-    'powerbelt',
-    'powerlens',
-    'powerband',
-    'poweranklet'
-  ];
-
   const activeCandidates: RewardCandidate[] = [...baseRewards];
   if (trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD) {
-    for (const powerId of powerItemIds) {
+    for (const powerId of POWER_ITEM_IDS) {
       activeCandidates.push({ id: powerId, qty: 1 });
     }
   }
@@ -204,12 +212,20 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   const chosenReward = activeCandidates[Math.floor(Math.random() * activeCandidates.length)] || activeCandidates[0] as RewardCandidate;
   const itemDef = getItemById(chosenReward.id);
 
-  const reward: MissionReward = {
+  return {
     id: chosenReward.id,
     name: itemDef.name,
     qty: chosenReward.qty,
     icon: itemDef.icon || '🎁'
   };
+}
+
+function generateMissionNpcDialogue(targetId: PokemonSpeciesId, reqText: string): {
+  tKey: TrainerTypeKey;
+  trainerName: string;
+  spriteId: NpcSpriteId;
+  dialogue: string;
+} {
   const tKeys: readonly TrainerTypeKey[] = TRAINER_TYPE_KEYS.filter(k => k in TRAINER_TYPES);
   const tKey = tKeys[Math.floor(Math.random() * tKeys.length)] || 'caza_bichos';
 
@@ -230,6 +246,18 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   const templates = MISSION_DIALOGUES_BASE[tKey] || MISSION_DIALOGUES_BASE['default'] || [];
   const template = templates[Math.floor(Math.random() * templates.length)] || '...';
   const dialogue = template.replace('${pokemon}', targetName).replace('${req}', reqText);
+
+  return { tKey, trainerName, spriteId, dialogue };
+}
+
+/**
+ * Generates a new mission object.
+ */
+export function generateMission(trainerLevel: number, dateStr: string): DaycareMission {
+  const targetId = resolveMissionTarget(trainerLevel);
+  const { requirement, reqText } = generateMissionRequirement(trainerLevel);
+  const reward = generateMissionReward(trainerLevel);
+  const { tKey, trainerName, spriteId, dialogue } = generateMissionNpcDialogue(targetId, reqText);
 
   return {
     date: dateStr,
@@ -267,4 +295,12 @@ export function validateMissionPokemon(pokemon: Pokemon, mission: DaycareMission
   }
   
   return false;
+}
+
+/**
+ * Checks if a pokemon is available and meets all mission criteria.
+ */
+export function isPokemonEligibleForMission(pokemon: Pokemon, mission: DaycareMission): boolean {
+  if (pokemon.onMission || pokemon.inDaycare || pokemon.onDefense || pokemon.isIllegal) return false;
+  return validateMissionPokemon(pokemon, mission);
 }

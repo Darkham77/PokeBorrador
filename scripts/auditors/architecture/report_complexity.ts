@@ -16,7 +16,14 @@ const DEFAULT_TOP_LIMIT = 20;
 const RADIX_DECIMAL = 10;
 
 function parseCommandLineArgs() {
+  const rawCliArgs = process.argv.slice(2);
+  const normalizedCliArgs = rawCliArgs.map(cliParam => {
+    if (cliParam.includes('=') && !cliParam.startsWith('-')) return `--${cliParam}`;
+    return cliParam;
+  });
+
   const { values } = parseArgs({
+    args: normalizedCliArgs,
     options: {
       top: { type: 'string', default: '20' }, // no-magic: Explicit mathematical constant or threshold value
       layer: { type: 'string' },
@@ -60,11 +67,9 @@ function loadComplexityFindings(): ComplexityFinding[] {
     const cog = m ? parseInt(m[1], 10) : 0;
     const cyc = m ? parseInt(m[2], 10) : 0;
 
-    const normalizedPath = f.file.replace(/\\/g, '/');
-    const srcIndex = normalizedPath.indexOf('/src/');
-    const relPath = srcIndex !== -1 ? normalizedPath.slice(srcIndex + 1) : normalizedPath;
-    const segments = relPath.split('/');
-    const layer = segments.length > 1 ? segments[1] : 'root';
+    const relPath = path.relative(process.cwd(), f.file).replace(/\\/g, '/');
+    const segments = relPath.startsWith('src/') ? relPath.split('/') : relPath.replace(/^ui-demo\//, '').split('/');
+    const layer = (segments.length > 1 && segments[1]) ? segments[1] : 'root';
 
     findings.push({
       file: relPath,
@@ -102,6 +107,21 @@ function renderBoxReport(findings: ComplexityFinding[], topLimit: number, layerF
     const pct = ((count / findings.length) * 100).toFixed(1);
     console.log(`  • src/${layer.padEnd(15)} : ${String(count).padStart(4)} funciones (${pct}%)`);
   }
+
+  const fileCount: Record<string, number> = {};
+  for (const f of filtered) {
+    fileCount[f.file] = (fileCount[f.file] || 0) + 1;
+  }
+  const topFiles = Object.entries(fileCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15);
+
+  console.log(`\n📄 TOP 15 ARCHIVOS CON MÁS FUNCIONES COMPLEJAS ${layerFilter ? `(Filtro: src/${layerFilter})` : ''}:`);
+  console.log('─────────────────────────────────────────────────────────────────────────────');
+  topFiles.forEach(([file, count], idx) => {
+    const rank = String(idx + 1).padStart(2);
+    console.log(`  ${rank}. ${String(count).padStart(3)} funciones  ${file}`);
+  });
 
   console.log(`\n🔥 TOP ${Math.min(topLimit, filtered.length)} HOTSPOTS CON MAYOR COMPLEJIDAD ${layerFilter ? `(Filtro: src/${layerFilter})` : ''}:`);
   console.log('─────────────────────────────────────────────────────────────────────────────');

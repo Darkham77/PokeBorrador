@@ -79,6 +79,7 @@ const getAssetUrlLocal = getAssetUrl
           <div class="faction-icon-wrap">
             <img
               :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'union')"
+              alt="Team Unión"
               class="faction-icon-large"
               @error="handleImgError"
             >
@@ -97,6 +98,7 @@ const getAssetUrlLocal = getAssetUrl
           <div class="faction-icon-wrap">
             <img
               :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'poder')"
+              alt="Team Poder"
               class="faction-icon-large"
               @error="handleImgError"
             >

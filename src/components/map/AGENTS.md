@@ -6,9 +6,24 @@ Manage the logic and assets of map.
 
 Frontend Developers / Systems Engineers.
 
+## Directory Structure
+
+- `MapCard.vue`: Main route card orchestrator rendering background visuals, atmosphere, and subcomponents.
+- `MapCardCyclePill.vue`: Environmental cycle, season, and weather status pill in top right corner.
+- `MapCardGuardianBadge.vue`: Territorial guardian badge in top left corner.
+- `MapCardHeader.vue`: Route name and description banner.
+- `MapCardLeftPills.vue`: Bottom-left action pills (war dominance, fishing, archaeology).
+- `MapCardLockOverlay.vue`: Route lock overlay and reason banner for locked and safari-restricted locations.
+- `MapCardSpawns.vue`: Route wild Pokémon spawns 3x3 grid.
+- `MapCardSpawnsTrigger.vue`: Animated Pokéball trigger for the Route Spawns modal in bottom right corner.
+- `MapGrid.vue`: Responsive grid container for all route MapCards.
+- `MapPokemonCenterBanner.vue`: Route Pokémon Center healing and daycare status banner.
+- `MapStatusSummary.vue`: Top summary banner for weather, events, and world conditions.
+
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **MapCard Modularity & Clean Template Decomposition (`MapCard.vue`, `MapCardLockOverlay.vue`)**: Encapsulates route lock checking, safari restriction labels, and overlay rendering into `MapCardLockOverlay.vue`, delegating styling and class computation to reactive computed properties to eliminate template cognitive complexity.
 
 ## Work Guidance
 

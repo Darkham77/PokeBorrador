@@ -11,6 +11,56 @@ import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
 import { calculatePoliceBail, POLICE_STEAL_CHANCE_PERCENT } from '@/logic/player/classMath.ts';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants.ts';
 
+const DEFAULT_STOLEN_POKEMON_LEVEL = 5 as const;
+
+function handlePoliceArrest(
+  ctx: BattleContext,
+  officerName: string,
+  criminality: number,
+  uiStore: ReturnType<typeof useUIStore>
+): void {
+  const classLevel = ctx.gs.state.classLevel || 1;
+  const bailAmount = calculatePoliceBail(classLevel, criminality);
+
+  if (bailAmount > 0) {
+    const prevMoney = ctx.gs.state.money || 0;
+    ctx.gs.state.money = Math.max(0, prevMoney - bailAmount);
+    const moneyPaid = prevMoney - ctx.gs.state.money;
+
+    ctx.addLog(`¡Bajo arresto por ${officerName}! Pagaste ₽${moneyPaid} de fianza.`, 'log-error', 'player');
+    uiStore.notify(`Fianza pagada: ₽${moneyPaid}`, '🚨');
+  }
+}
+
+async function handlePoliceTheft(
+  ctx: BattleContext,
+  active: NonNullable<BattleContext['activeBattle']['value']>,
+  officerName: string,
+  uiStore: ReturnType<typeof useUIStore>
+): Promise<void> {
+  if (Math.random() >= POLICE_STEAL_CHANCE_PERCENT) return;
+
+  const pool = active.enemyTeam || [];
+  if (pool.length === 0) return;
+
+  const stolen = pool[Math.floor(Math.random() * pool.length)];
+  if (!stolen) return;
+
+  const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
+  const safeLevel = Math.max(1, Math.min(MAX_POKEMON_LEVEL, stolen.level || DEFAULT_STOLEN_POKEMON_LEVEL));
+  const clone = makePokemon(stolen.id, safeLevel);
+  if (clone) {
+    clone.caught = true;
+    ctx.gs.state.box.push(clone);
+
+    ctx.addLog(`¡Robaste el ${clone.name} de ${officerName}!`, 'log-success', 'player');
+    uiStore.notify(`¡Robaste un ${clone.name}!`, '🏴‍☠️');
+
+    const audioStore = await import('@/stores/audio').then(m => m.useAudioStore());
+    audioStore.play('steal');
+  }
+}
+
 export async function handlePoliceResolution(
   ctx: BattleContext,
   active: NonNullable<BattleContext['activeBattle']['value']>,
@@ -25,39 +75,9 @@ export async function handlePoliceResolution(
   const officerName = active.trainerName || 'Oficial de Policía';
 
   if (!win && !fled) {
-    const classLevel = ctx.gs.state.classLevel || 1;
-    const bailAmount = calculatePoliceBail(classLevel, criminality);
-
-    if (bailAmount > 0) {
-      const prevMoney = ctx.gs.state.money || 0;
-      ctx.gs.state.money = Math.max(0, prevMoney - bailAmount);
-      const moneyPaid = prevMoney - ctx.gs.state.money;
-
-      ctx.addLog(`¡Bajo arresto por ${officerName}! Pagaste ₽${moneyPaid} de fianza.`, 'log-error', 'player');
-      uiStore.notify(`Fianza pagada: ₽${moneyPaid}`, '🚨');
-    }
+    handlePoliceArrest(ctx, officerName, criminality, uiStore);
   } else if (win && !fled) {
-    if (Math.random() < POLICE_STEAL_CHANCE_PERCENT) {
-      const pool = active.enemyTeam || [];
-      if (pool.length > 0) {
-        const stolen = pool[Math.floor(Math.random() * pool.length)];
-        if (stolen) {
-          const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-          const safeLevel = Math.max(1, Math.min(MAX_POKEMON_LEVEL, stolen.level || 5));
-          const clone = makePokemon(stolen.id, safeLevel);
-          if (clone) {
-            clone.caught = true;
-            ctx.gs.state.box.push(clone);
-
-            ctx.addLog(`¡Robaste el ${clone.name} de ${officerName}!`, 'log-success', 'player');
-            uiStore.notify(`¡Robaste un ${clone.name}!`, '🏴‍☠️');
-
-            const audioStore = await import('@/stores/audio').then(m => m.useAudioStore());
-            audioStore.play('steal');
-          }
-        }
-      }
-    }
+    await handlePoliceTheft(ctx, active, officerName, uiStore);
   }
 
   ctx.gs.state.classData.criminality = 0;
@@ -100,82 +120,99 @@ export async function animatePlayerAutoSwap(
 
 import type { BattleSide } from '@/types/battle/battle';
 
+function pickNextEnemySwitchCandidate(
+  active: NonNullable<BattleContext['activeBattle']['value']>,
+  ctx: BattleContext
+): Pokemon | null {
+  if (!active.enemyTeam) return null
+  const activeUidPerShowdown = active.enemyRequest?.side?.pokemon?.find((p) => p?.active)?.uid
+  const activeUidToExclude = activeUidPerShowdown ?? active.enemy?.uid
+  const activePlayer = active.player || active.enemyTeam[0]
+
+  if (activePlayer) {
+    const bestIdx = findBestSwitchIndex(
+      active.enemyTeam,
+      activePlayer,
+      activeUidToExclude ?? '',
+      ctx,
+      'faint_replacement'
+    )
+    if (bestIdx !== -1) {
+      return active.enemyTeam[bestIdx] || null
+    }
+  }
+  return active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
+}
+
+async function recallActiveEnemy(
+  ctx: BattleContext,
+  currentEnemy: Pokemon | null | undefined
+): Promise<void> {
+  if (!currentEnemy) return
+  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POKEMON_RECALL)
+  if (ctx.animations?.handleCatchRequest) {
+    await ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: currentEnemy })
+  } else {
+    gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
+  }
+}
+
+async function executeWorkerEnemySwitch(
+  ctx: BattleContext,
+  active: NonNullable<BattleContext['activeBattle']['value']>,
+  nextEnemy: Pokemon
+): Promise<void> {
+  if (!getShowdownWorker() || !active.enemyTeam) return
+
+  let p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2')
+    if (certifiedChoice.startsWith('switch ')) {
+      p2Choice = certifiedChoice
+    }
+  }
+  const result = await executeTurnInWorker('', p2Choice, true, false)
+  active.playerRequest = result.p1Request
+  active.enemyRequest = result.p2Request
+
+  const filteredLogs = filterShowdownLogs(result.logs)
+  for (const logLine of filteredLogs) {
+    await parseShowdownLogLine(ctx, logLine, filteredLogs)
+  }
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+  }
+}
+
+async function deployNextEnemy(
+  ctx: BattleContext,
+  active: NonNullable<BattleContext['activeBattle']['value']>,
+  nextEnemy: Pokemon,
+  onFaint: (ctx: BattleContext, side: BattleSide) => Promise<void>
+): Promise<void> {
+  active.enemy = nextEnemy
+  if (ctx.animations?.handleReleaseRequest) {
+    await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
+  } else {
+    gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+  }
+
+  if (nextEnemy.hp <= 0) {
+    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+    await onFaint(ctx, 'enemy')
+  }
+}
+
 export async function handleEnemyForceSwitchExecution(
   ctx: BattleContext,
   active: NonNullable<BattleContext['activeBattle']['value']>,
   onFaint: (ctx: BattleContext, side: BattleSide) => Promise<void>
 ): Promise<void> {
-  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
-  const fsm = ctx.fsm;
+  const nextEnemy = pickNextEnemySwitchCandidate(active, ctx)
+  if (!nextEnemy) return
 
-  const activeUidPerShowdown = active.enemyRequest?.side?.pokemon?.find((p) => p?.active)?.uid;
-  const activeUidToExclude = activeUidPerShowdown ?? active.enemy?.uid;
-
-  let nextEnemy: Pokemon | null = null;
-  if (active.enemyTeam) {
-    const activePlayer = active.player || active.enemyTeam[0];
-    if (activePlayer) {
-      const bestIdx = findBestSwitchIndex(
-        active.enemyTeam,
-        activePlayer,
-        activeUidToExclude ?? '',
-        ctx,
-        'faint_replacement'
-      );
-      if (bestIdx !== -1) {
-        nextEnemy = active.enemyTeam[bestIdx] || null;
-      } else {
-        nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null;
-      }
-    } else {
-      nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null;
-    }
-  }
-
-  if (!nextEnemy) return;
-
-  const currentEnemy = active.enemy;
-  if (currentEnemy) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
-    if (ctx.animations?.handleCatchRequest) {
-      await ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: currentEnemy });
-    } else {
-      gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' });
-    }
-  }
-
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
-
-  if (getShowdownWorker() && active.enemyTeam) {
-    let p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`;
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2');
-      if (certifiedChoice.startsWith('switch ')) {
-        p2Choice = certifiedChoice;
-      }
-    }
-    const result = await executeTurnInWorker('', p2Choice, true, false);
-    active.playerRequest = result.p1Request;
-    active.enemyRequest = result.p2Request;
-
-    const filteredLogs = filterShowdownLogs(result.logs);
-    for (const logLine of filteredLogs) {
-      await parseShowdownLogLine(ctx, logLine, filteredLogs);
-    }
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__);
-    }
-  }
-
-  active.enemy = nextEnemy;
-  if (ctx.animations?.handleReleaseRequest) {
-    await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy });
-  } else {
-    gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy });
-  }
-
-  if (nextEnemy.hp <= 0) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ);
-    await onFaint(ctx, 'enemy');
-  }
+  await recallActiveEnemy(ctx, active.enemy)
+  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POKEMON_CALL)
+  await executeWorkerEnemySwitch(ctx, active, nextEnemy)
+  await deployNextEnemy(ctx, active, nextEnemy, onFaint)
 }

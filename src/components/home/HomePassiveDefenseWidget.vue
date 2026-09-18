@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { gsap } from 'gsap';
-import { usePvPStore, type PassiveBattleReport } from '@/stores/pvp';
+import { usePvPStore } from '@/stores/pvp';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { DEFENSE_TOGGLE_BTN_HOVER_DURATION_SEC } from '@/logic/constants/animations';
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
+import PassiveDefenseHistoryRow from './PassiveDefenseHistoryRow.vue';
 import { resolveDefendingTeam } from '@/logic/pvp/pvpTeamHelper';
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter';
 
@@ -24,9 +23,6 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const TOGGLE_BTN_HOVER_SCALE = 1.05;
-const AVATAR_SIZE_PX = 32;
-const DEFAULT_VICTORY_ELO_DELTA = 15;
-const DEFAULT_DEFEAT_ELO_DELTA = -12;
 
 const pvp = usePvPStore();
 const gameStore = useGameStore();
@@ -95,51 +91,8 @@ function handleToggleBtnLeave(e: MouseEvent) {
   });
 }
 
-function formatDate(isoStr?: string): string {
-  if (!isoStr) return '';
-  try {
-    const instant = Temporal.Instant.from(isoStr);
-    const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
-    return `${zdt.day.toString().padStart(2, '0')}/${zdt.month.toString().padStart(2, '0')} ${zdt.hour.toString().padStart(2, '0')}:${zdt.minute.toString().padStart(2, '0')}`;
-  } catch {
-    return '';
-  }
-}
-
-function handleViewTrainerProfile(rep: PassiveBattleReport) {
-  const targetId = rep.opponent_profile?.id || rep.opponent_id;
-  if (targetId && targetId !== 'local_user') {
-    uiStore.open('TrainerProfile', { userId: targetId });
-  }
-}
-
 function handlePokemonClick(pokemon: Pokemon, index: number) {
   uiStore.openPokemonDetail(pokemon, index, 'defense');
-}
-
-function getEloDeltaText(rep: PassiveBattleReport): string {
-  if (rep.report_data?.deltaElo !== undefined && rep.report_data?.deltaElo !== null) {
-    const delta = Number(rep.report_data.deltaElo);
-    return delta > 0 ? `+${delta} ELO` : `${delta} ELO`;
-  }
-  return rep.result === 'victory' ? `+${DEFAULT_VICTORY_ELO_DELTA} ELO` : `${DEFAULT_DEFEAT_ELO_DELTA} ELO`;
-}
-
-function getOpponentFactionLabel(rep: PassiveBattleReport): string {
-  const faction = rep.opponent_profile?.faction || (typeof rep.report_data?.faction === 'string' ? rep.report_data.faction : undefined);
-  if (!faction) return 'SIN BANDO';
-  const clean = faction.trim().toLowerCase();
-  if (clean === 'union') return 'UNIÓN';
-  if (clean === 'poder') return 'PODER';
-  return 'SIN BANDO';
-}
-
-function getOpponentFactionClass(rep: PassiveBattleReport): string {
-  const faction = rep.opponent_profile?.faction || (typeof rep.report_data?.faction === 'string' ? rep.report_data.faction : undefined);
-  if (!faction) return '';
-  const clean = faction.trim().toLowerCase();
-  if (clean === 'union' || clean === 'poder') return clean;
-  return '';
 }
 
 function openTeamManagement() {
@@ -254,51 +207,11 @@ function openTeamManagement() {
         v-if="pvp.defenseReports && pvp.defenseReports.length > 0"
         class="history-list custom-scrollbar"
       >
-        <div
+        <PassiveDefenseHistoryRow
           v-for="rep in pvp.defenseReports"
           :key="rep.id"
-          class="history-row"
-          :class="rep.result"
-          @click="handleViewTrainerProfile(rep)"
-        >
-          <div class="trainer-avatar-col">
-            <TrainerAvatar
-              :profile="rep.opponent_profile"
-              :player-class="String(rep.opponent_profile?.playerClass || rep.report_data?.playerClass || 'Entrenador')"
-              :size="AVATAR_SIZE_PX"
-            />
-          </div>
-          <div class="rep-details">
-            <div class="trainer-header-row">
-              <span class="rep-opponent text-outline">{{ rep.opponent_profile?.username || rep.report_data?.opponent || 'Rival' }}</span>
-              <span
-                class="rep-faction-badge"
-                :class="getOpponentFactionClass(rep)"
-              >{{ getOpponentFactionLabel(rep) }}</span>
-            </div>
-            <div class="rep-meta-row">
-              <span
-                v-if="rep.report_data?.turns"
-                class="rep-turns"
-              >{{ rep.report_data.turns }} turnos</span>
-              <span class="rep-date">{{ formatDate(rep.created_at) }}</span>
-            </div>
-          </div>
-          <div class="rep-badges-col">
-            <span
-              class="result-badge text-outline"
-              :class="rep.result"
-            >
-              {{ rep.result === 'victory' ? 'VICTORIA' : 'DERROTA' }}
-            </span>
-            <span
-              class="elo-delta-badge text-outline"
-              :class="rep.result === 'victory' ? 'gain' : 'loss'"
-            >
-              {{ getEloDeltaText(rep) }}
-            </span>
-          </div>
-        </div>
+          :report="rep"
+        />
       </div>
       <div
         v-else

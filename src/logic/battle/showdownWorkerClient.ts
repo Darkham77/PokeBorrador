@@ -1,16 +1,66 @@
 import { logger } from '../utils/logger.ts'
-import type { SideID } from '@pkmn/sim'
+import type { SideID, PokemonSet } from '@pkmn/sim'
 import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { useGameStore } from '@/stores/game'
-import { useBattleStore } from '@/stores/battle/battle'
 import { extractTeamHpAndStatus } from './helpers/showdownSyncHelper.ts';
 import { findMatchingPokemon } from './showdownUidMapper.ts';
+import { buildCombatReplayPayload } from './helpers/combatReplayHelper.ts';
 
-type GameStoreType = ReturnType<typeof useGameStore>;
-type BattleStoreType = ReturnType<typeof useBattleStore>;
+interface BattleStoreAccess {
+  state?: BattleState | null;
+  [key: string]: unknown;
+}
 
-export let showdownWorker: Worker | null = null;
+interface GameStoreAccess {
+  state?: { team?: Pokemon[] };
+  [key: string]: unknown;
+}
+
+let showdownStoreResolvers: {
+  getBattleStore?: () => BattleStoreAccess | null | undefined;
+  getGameStore?: () => GameStoreAccess | null | undefined;
+} = {}; // singleton-ok: Singleton instance state container
+
+export function registerShowdownStoreResolvers(resolvers: {
+  getBattleStore?: () => BattleStoreAccess | null | undefined;
+  getGameStore?: () => GameStoreAccess | null | undefined;
+}): void {
+  showdownStoreResolvers = { ...showdownStoreResolvers, ...resolvers };
+}
+
+function resolveBattleStore(): BattleStoreAccess | null { // result-ok: Operation result wrapper payload
+  if (showdownStoreResolvers.getBattleStore) {
+    const s = showdownStoreResolvers.getBattleStore();
+    if (s) return s;
+  }
+  if (typeof window !== 'undefined') {
+    const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
+    if (resolver) return resolver() as BattleStoreAccess;
+    const debug = window.__VITE_DEBUG__;
+    if (debug?.getGameStore) {
+      const gs = debug.getGameStore();
+      const bs = Reflect.get(gs, 'gs') as BattleStoreAccess | undefined;
+      if (bs) return bs;
+    }
+  }
+  return null;
+}
+
+function resolveGameStore(): GameStoreAccess | null { // result-ok: Operation result wrapper payload
+  if (showdownStoreResolvers.getGameStore) {
+    const s = showdownStoreResolvers.getGameStore();
+    if (s) return s;
+  }
+  if (typeof window !== 'undefined') {
+    const debug = window.__VITE_DEBUG__;
+    if (debug?.getGameStore) {
+      return debug.getGameStore() as GameStoreAccess;
+    }
+  }
+  return null;
+}
+
+export let showdownWorker: Worker | null = null; // singleton-ok: Singleton instance state container
 export function setShowdownWorker(worker: Worker | null) {
   showdownWorker = worker;
   if (typeof window !== 'undefined') {
@@ -93,28 +143,13 @@ function syncActiveCombatant(
 }
 
 export async function syncTeamsFromLastWorkerState(): Promise<void> {
-  let battleStore: BattleStoreType | null = null;
-  let gameStore: GameStoreType | null = null;
-
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.getGameStore) {
-    const debug = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    gameStore = (debug.getGameStore as () => GameStoreType)();
-    battleStore = (Reflect.get(gameStore, 'gs') as BattleStoreType | undefined) || ((window.__VITE_DEBUG_STORE_RESOLVER__ as (() => BattleStoreType) | undefined)?.()) || null;
-  }
-
-  if (!gameStore) {
-    const { useGameStore } = await import('@/stores/game');
-    gameStore = useGameStore();
-  }
-  if (!battleStore) {
-    const { useBattleStore } = await import('@/stores/battle/battle');
-    battleStore = useBattleStore();
-  }
+  const gameStore = resolveGameStore();
+  const battleStore = resolveBattleStore();
 
   const activeBattle = battleStore?.state;
   const p1State = lastSyncTeamStates.p1;
   if (p1State) {
-    if (gameStore.state?.team) {
+    if (gameStore?.state?.team) {
       syncPokemonState(p1State, gameStore.state.team);
     }
     if (activeBattle?.playerTeam) {
@@ -174,6 +209,230 @@ interface WorkerSuccessPayload {
   message?: string;
 }
 
+interface SimulationValidationResult {
+  shouldBypass: boolean;
+  replayContext: string;
+  isSimulation: boolean;
+  history?: unknown;
+  certifiedHistoryStep?: number;
+}
+
+interface ReplayTraceContextArgs {
+  isSimulation: boolean;
+  p1Choice: string;
+  p2Choice?: string;
+  p1Skip?: boolean;
+  p2Skip?: boolean;
+  p1UsedBattleItem?: boolean;
+  certifiedHistoryStep?: number;
+  historyLength?: number;
+}
+
+function isReplayExecutionComplete(
+  debugObj: Record<string, unknown>,
+  history: unknown,
+  certifiedHistoryIndex: number | undefined
+): boolean {
+  const isEnded = Reflect.get(debugObj, 'certifiedReplayWorkerEnded') === true;
+  return isEnded || (Array.isArray(history) && typeof certifiedHistoryIndex === 'number' && certifiedHistoryIndex >= history.length);
+}
+
+function recordReplayTrace(
+  debugObj: Record<string, unknown>,
+  p1Choice: string,
+  p2Choice?: string,
+  p1Skip?: boolean,
+  p2Skip?: boolean,
+  p1UsedBattleItem?: boolean
+): void {
+  const trace = Reflect.get(debugObj, 'certifiedReplaySubmissionTrace');
+  const entries = (Array.isArray(trace) ? trace : []) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
+  entries.push({
+    historyIndex: Reflect.get(debugObj, 'replayHistoryIdx'),
+    p1Choice,
+    p2Choice: p2Choice ?? '',
+    p1Skip: !!p1Skip,
+    p2Skip: !!p2Skip,
+    p1UsedBattleItem: !!p1UsedBattleItem
+  });
+  Reflect.set(debugObj, 'certifiedReplaySubmissionTrace', entries);
+}
+
+function serializeReplayContext(args: ReplayTraceContextArgs): string {
+  const viteDebug = typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined;
+  return JSON.stringify({
+    isSimulation: args.isSimulation,
+    p1Choice: args.p1Choice,
+    p2Choice: args.p2Choice,
+    p1Skip: !!args.p1Skip,
+    p2Skip: !!args.p2Skip,
+    p1UsedBattleItem: !!args.p1UsedBattleItem,
+    p1ChoiceIdx: viteDebug?.p1ChoiceIdx,
+    p2ChoiceIdx: viteDebug?.p2ChoiceIdx,
+    playerChoiceCount: Array.isArray(viteDebug?.playerChoices) ? viteDebug.playerChoices.length : undefined,
+    enemyChoiceCount: Array.isArray(viteDebug?.enemyChoices) ? viteDebug.enemyChoices.length : undefined,
+    historyCount: args.historyLength,
+    certifiedHistoryStep: args.certifiedHistoryStep,
+  });
+}
+
+function validateAndTraceSimulationReplay(
+  p1Choice: string,
+  p2Choice?: string,
+  p1Skip?: boolean,
+  p2Skip?: boolean,
+  p1UsedBattleItem?: boolean
+): SimulationValidationResult {
+  const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
+  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
+  const history = debugObj?.history;
+  const certifiedHistoryIndex = isSimulation && debugObj
+    ? (Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined)
+    : undefined;
+
+  if (isSimulation && debugObj && isReplayExecutionComplete(debugObj, history, certifiedHistoryIndex)) {
+    console.warn('[ShowdownWorkerClient] Bypassing executeTurnInWorker because certified replay has already finished all history steps.');
+    return { shouldBypass: true, replayContext: '', isSimulation, history };
+  }
+
+  if (isSimulation && (typeof certifiedHistoryIndex !== 'number' || certifiedHistoryIndex < 0)) {
+    throw new Error(`[ShowdownWorkerClient] Certified replay submission is missing its atomic history cursor. context=${JSON.stringify({ certifiedHistoryIndex, historyLength: Array.isArray(history) ? history.length : undefined, p1Choice, p2Choice })}`);
+  }
+
+  const certifiedHistoryStep = typeof certifiedHistoryIndex === 'number' ? certifiedHistoryIndex + 1 : undefined;
+  if (isSimulation && debugObj) {
+    recordReplayTrace(debugObj, p1Choice, p2Choice, p1Skip, p2Skip, p1UsedBattleItem);
+  }
+
+  const replayContext = serializeReplayContext({
+    isSimulation,
+    p1Choice,
+    p2Choice,
+    p1Skip,
+    p2Skip,
+    p1UsedBattleItem,
+    certifiedHistoryStep,
+    historyLength: Array.isArray(history) ? history.length : undefined,
+  });
+
+  return { shouldBypass: false, replayContext, isSimulation, history, certifiedHistoryStep };
+}
+
+interface PreparedTurnState {
+  p1Hps?: Record<string, number>;
+  p2Hps?: Record<string, number>;
+  p1Statuses?: Record<string, string>;
+  p2Statuses?: Record<string, string>;
+  weatherVal: string;
+}
+
+function prepareTurnStateForWorker(p1Choice: string, p2Choice: string, replayContext: string): PreparedTurnState {
+  let p1Hps: Record<string, number> | undefined = undefined;
+  let p2Hps: Record<string, number> | undefined = undefined;
+  let p1Statuses: Record<string, string> | undefined = undefined;
+  let p2Statuses: Record<string, string> | undefined = undefined;
+  let weatherVal = 'none';
+
+  try {
+    const battleStore = resolveBattleStore();
+    const activeState = ((battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state) as BattleState | null | undefined;
+    if (activeState) {
+      weatherVal = typeof activeState.weather === 'string' ? activeState.weather : ((activeState.weather as { type?: string } | null)?.type ?? 'none');
+      if (!activeState.battleHistory) {
+        activeState.battleHistory = [];
+      }
+      activeState.battleHistory.push({
+        turnCount: activeState.turnCount,
+        p1Choice,
+        p2Choice
+      });
+    }
+
+    const gameStore = resolveGameStore();
+    const sourcePlayerTeam = battleStore?.state?.playerTeam || gameStore?.state?.team;
+    if (sourcePlayerTeam) {
+      const p1Data = extractTeamHpAndStatus(sourcePlayerTeam);
+      p1Hps = p1Data.hps;
+      p1Statuses = p1Data.statuses;
+    }
+    if (battleStore?.state?.enemyTeam) {
+      const p2Data = extractTeamHpAndStatus(battleStore.state.enemyTeam);
+      p2Hps = p2Data.hps;
+      p2Statuses = p2Data.statuses;
+    }
+  } catch (e) {
+    throw new Error(`[ShowdownWorkerClient] Failed to load battle state before worker turn. context=${replayContext}; cause=${e instanceof Error ? e.message : String(e)}`, { cause: e });
+  }
+
+  return { p1Hps, p2Hps, p1Statuses, p2Statuses, weatherVal };
+}
+
+function cleanWorkerListener(worker: Worker, handler: (e: MessageEvent) => void): void {
+  if (worker.removeEventListener) {
+    worker.removeEventListener('message', handler);
+  } else {
+    worker.onmessage = null;
+  }
+}
+
+function syncWorkerTurnSuccessToClient(payload: WorkerSuccessPayload): void {
+  ['p1', 'p2', 'p3', 'p4'].forEach(seatId => {
+    const seatStateKey = `${seatId}TeamState` as keyof WorkerSuccessPayload;
+    const seatState = payload[seatStateKey] as Array<SynchronizedPokemonState | null> | undefined;
+    lastSyncTeamStates[seatId] = seatState || null;
+  });
+
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+    window.__VITE_DEBUG__.certifiedReplayWorkerEnded = payload.isOver;
+    if (payload.isOver) {
+      window.__VITE_DEBUG__.certifiedReplayWorkerFinalState = {
+        p1: payload.p1TeamState ?? [],
+        p2: payload.p2TeamState ?? [],
+      };
+    }
+    if (typeof payload.p1ChoiceIdx === 'number') {
+      window.__VITE_DEBUG__.p1ChoiceIdx = payload.p1ChoiceIdx;
+    }
+    if (typeof payload.p2ChoiceIdx === 'number') {
+      window.__VITE_DEBUG__.p2ChoiceIdx = payload.p2ChoiceIdx;
+    }
+  }
+
+  const battleStore = resolveBattleStore();
+  const activeState = ((battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state) as BattleState | null | undefined;
+  if (activeState) {
+    activeState.playerRequest = payload.p1Request;
+    activeState.enemyRequest = payload.p2Request;
+    if (Array.isArray(payload.logs)) {
+      if (!activeState.rawShowdownLogs) {
+        activeState.rawShowdownLogs = [];
+      }
+      activeState.rawShowdownLogs.push(...payload.logs);
+    }
+  }
+}
+
+function generateWorkerReproductionError(payloadMessage?: string): Error {
+  let reproductionReport = '';
+  try {
+    const battleStore = resolveBattleStore();
+    const active = ((battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state) as BattleState | null | undefined;
+    if (active) {
+      const reportObj = buildCombatReplayPayload(active);
+      reproductionReport = `\n\n--- REPRODUCE BATTLE TEST CASE ---\nJSON Payload:\n${JSON.stringify(reportObj, null, 2)}\n----------------------------------`;
+    }
+  } catch (err) {
+    logger.warn('[showdownWorkerClient] Fallo al generar reporte de reproducción:', err);
+  }
+
+  const errorMsg = (payloadMessage || '') + reproductionReport;
+  const err = new Error(errorMsg);
+  if (errorMsg.includes('INVALID_CHOICE')) {
+    err.name = 'InvalidChoiceError';
+  }
+  return err;
+}
+
 export async function executeTurnInWorker(
   p1Choice: string, 
   p2Choice?: string,
@@ -183,92 +442,17 @@ export async function executeTurnInWorker(
 ): Promise<{ logs: string[]; isOver: boolean; winner: string | null; winnerSide?: 'p1' | 'p2' | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
   const worker = getShowdownWorker();
   if (!worker) {
-    throw new Error('showdownWorker is null')
+    throw new Error('showdownWorker is null');
   }
 
-  const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
   const finalP2Choice = p2Choice;
-  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
-  const history = debugObj?.history;
-  const certifiedHistoryIndex = isSimulation && debugObj
-    ? (Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined)
-    : undefined;
-
-  if (isSimulation && debugObj) {
-    const isEnded = Reflect.get(debugObj, 'certifiedReplayWorkerEnded') === true;
-    if (isEnded || (Array.isArray(history) && typeof certifiedHistoryIndex === 'number' && certifiedHistoryIndex >= history.length)) {
-      console.warn('[ShowdownWorkerClient] Bypassing executeTurnInWorker because certified replay has already finished all history steps.');
-      return { logs: [], isOver: true, winner: null };
-    }
+  const simCheck = validateAndTraceSimulationReplay(p1Choice, finalP2Choice, p1Skip, p2Skip, p1UsedBattleItem);
+  if (simCheck.shouldBypass) {
+    return { logs: [], isOver: true, winner: null };
   }
 
-  if (isSimulation && (typeof certifiedHistoryIndex !== 'number' || certifiedHistoryIndex < 0)) {
-    throw new Error(`[ShowdownWorkerClient] Certified replay submission is missing its atomic history cursor. context=${JSON.stringify({ certifiedHistoryIndex, historyLength: Array.isArray(history) ? history.length : undefined, p1Choice, p2Choice: finalP2Choice })}`);
-  }
-  const certifiedHistoryStep = typeof certifiedHistoryIndex === 'number' ? certifiedHistoryIndex + 1 : undefined;
-  if (isSimulation && debugObj) {
-    const trace = Reflect.get(debugObj, 'certifiedReplaySubmissionTrace');
-    const entries = (Array.isArray(trace) ? trace : []) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
-    entries.push({ historyIndex: Reflect.get(debugObj, 'replayHistoryIdx'), p1Choice, p2Choice: finalP2Choice ?? '', p1Skip: !!p1Skip, p2Skip: !!p2Skip, p1UsedBattleItem: !!p1UsedBattleItem });
-    Reflect.set(debugObj, 'certifiedReplaySubmissionTrace', entries);
-  }
-  const replayContext = JSON.stringify({
-    isSimulation,
-    p1Choice,
-    p2Choice: finalP2Choice,
-    p1Skip: !!p1Skip,
-    p2Skip: !!p2Skip,
-    p1UsedBattleItem: !!p1UsedBattleItem,
-    p1ChoiceIdx: typeof window !== 'undefined' ? window.__VITE_DEBUG__?.p1ChoiceIdx : undefined,
-    p2ChoiceIdx: typeof window !== 'undefined' ? window.__VITE_DEBUG__?.p2ChoiceIdx : undefined,
-    playerChoiceCount: typeof window !== 'undefined' && Array.isArray(window.__VITE_DEBUG__?.playerChoices) ? window.__VITE_DEBUG__.playerChoices.length : undefined,
-    enemyChoiceCount: typeof window !== 'undefined' && Array.isArray(window.__VITE_DEBUG__?.enemyChoices) ? window.__VITE_DEBUG__.enemyChoices.length : undefined,
-    historyCount: Array.isArray(history) ? history.length : undefined,
-    certifiedHistoryStep,
-  });
-
-
-
-  // Registrar elección en el historial local del combate y extraer HPs/estados reactivos para sincronizar cheats con el simulador
-  let p1Hps: Record<string, number> | undefined = undefined;
-  let p2Hps: Record<string, number> | undefined = undefined;
-  let p1Statuses: Record<string, string> | undefined = undefined;
-  let p2Statuses: Record<string, string> | undefined = undefined;
-  let weatherVal = 'none';
-
-  try {
-    const { useBattleStore } = await import('@/stores/battle/battle');
-    const battleStore = useBattleStore();
-    const activeState = ((battleStore.state as { value?: BattleState } | undefined)?.value || battleStore.state) as BattleState | null | undefined;
-    if (activeState) {
-      weatherVal = typeof activeState.weather === 'string' ? activeState.weather : ((activeState.weather as { type?: string } | null)?.type ?? 'none');
-      if (!activeState.battleHistory) {
-        activeState.battleHistory = [];
-      }
-      activeState.battleHistory.push({
-        turnCount: activeState.turnCount,
-        p1Choice,
-        p2Choice: finalP2Choice || ''
-      });
-    }
-
-    const { useGameStore } = await import('@/stores/game');
-    const gameStore = useGameStore();
-    const sourcePlayerTeam = battleStore?.state?.playerTeam || gameStore?.state?.team;
-    if (sourcePlayerTeam) {
-      const p1Data = extractTeamHpAndStatus(sourcePlayerTeam);
-      p1Hps = p1Data.hps;
-      p1Statuses = p1Data.statuses;
-      console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Sending p1Hps:`, JSON.stringify(p1Hps), `p1Statuses:`, JSON.stringify(p1Statuses));
-    }
-    if (battleStore.state?.enemyTeam) {
-      const p2Data = extractTeamHpAndStatus(battleStore.state.enemyTeam);
-      p2Hps = p2Data.hps;
-      p2Statuses = p2Data.statuses;
-    }
-  } catch (e) {
-    throw new Error(`[ShowdownWorkerClient] Failed to load battle state before worker turn. context=${replayContext}; cause=${e instanceof Error ? e.message : String(e)}`, { cause: e })
-  }
+  const { replayContext, isSimulation, history, certifiedHistoryStep } = simCheck;
+  const { p1Hps, p2Hps, p1Statuses, p2Statuses, weatherVal } = prepareTurnStateForWorker(p1Choice, finalP2Choice || '', replayContext);
 
   return new Promise((resolve, reject) => {
     const handler = async (event: MessageEvent) => {
@@ -279,147 +463,37 @@ export async function executeTurnInWorker(
         return;
       }
       if (type === 'ERROR' || type === 'TURN_ERROR') {
-        if (worker.removeEventListener) {
-          worker.removeEventListener('message', handler)
-        } else {
-          worker.onmessage = null
-        }
+        cleanWorkerListener(worker, handler);
         const errPayload = payload as { message?: string } | string | null | undefined;
         const msg = typeof errPayload === 'object' && errPayload?.message ? errPayload.message : (typeof errPayload === 'string' ? errPayload : JSON.stringify(errPayload || 'Showdown Worker Error'));
-        reject(new Error(`[ShowdownWorkerClient] Worker rejected turn. context=${replayContext}; workerPayload=${msg}`))
-        return
+        reject(new Error(`[ShowdownWorkerClient] Worker rejected turn. context=${replayContext}; workerPayload=${msg}`));
+        return;
       }
       if (type === 'TURN_SUCCESS') {
-        console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Received TURN_SUCCESS. p1Request pokemon condition:`, JSON.stringify(payload.p1Request?.side?.pokemon?.map((p: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => ({ uid: p.uid, cond: p.condition }))));
-        if (worker.removeEventListener) {
-          worker.removeEventListener('message', handler)
-        } else {
-          worker.onmessage = null
-        }
-
-        ['p1', 'p2', 'p3', 'p4'].forEach(seatId => {
-          const seatStateKey = `${seatId}TeamState` as keyof WorkerSuccessPayload;
-          const seatState = payload[seatStateKey] as Array<SynchronizedPokemonState | null> | undefined;
-          lastSyncTeamStates[seatId] = seatState || null;
-        });
-
-        if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-          window.__VITE_DEBUG__.certifiedReplayWorkerEnded = payload.isOver;
-          if (payload.isOver) {
-            window.__VITE_DEBUG__.certifiedReplayWorkerFinalState = {
-              p1: payload.p1TeamState ?? [],
-              p2: payload.p2TeamState ?? [],
-            };
-          }
-          if (typeof payload.p1ChoiceIdx === 'number') {
-            window.__VITE_DEBUG__.p1ChoiceIdx = payload.p1ChoiceIdx;
-          }
-          if (typeof payload.p2ChoiceIdx === 'number') {
-            window.__VITE_DEBUG__.p2ChoiceIdx = payload.p2ChoiceIdx;
-          }
-          console.debug(`[E2E-SYNC-LOGS-DEBUG] Turn resolved. Final window choice indices -> P1: ${window.__VITE_DEBUG__.p1ChoiceIdx}, P2: ${window.__VITE_DEBUG__.p2ChoiceIdx}`);
-        }
-
-        // Sincronizar de forma segura las HPs de la banca de vuelta al store reactivo de la UI por índice de slot
+        cleanWorkerListener(worker, handler);
         try {
-          let battleStore: BattleStoreType | null = null;
-          let gameStore: GameStoreType | null = null;
-
-          if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.getGameStore) {
-            const debug = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-            gameStore = (debug.getGameStore as () => GameStoreType)();
-            battleStore = (Reflect.get(gameStore, 'gs') as BattleStoreType | undefined) || ((window.__VITE_DEBUG_STORE_RESOLVER__ as (() => BattleStoreType) | undefined)?.()) || null;
-          }
-
-          if (!gameStore) {
-            const { useGameStore } = await import('@/stores/game');
-            gameStore = useGameStore();
-          }
-          if (!battleStore) {
-            const { useBattleStore } = await import('@/stores/battle/battle');
-            battleStore = useBattleStore();
-          }
-
-          const activeState = ((battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state) as BattleState | null | undefined;
-          if (activeState) {
-            activeState.playerRequest = payload.p1Request;
-            activeState.enemyRequest = payload.p2Request;
-          }
-          ['p1', 'p2', 'p3', 'p4'].forEach(seatId => {
-            const seatStateKey = `${seatId}TeamState` as keyof WorkerSuccessPayload;
-            const seatState = payload[seatStateKey] as Array<SynchronizedPokemonState | null> | undefined;
-            if (seatState) {
-              lastSyncTeamStates[seatId] = seatState;
-            }
-          });
+          syncWorkerTurnSuccessToClient(payload);
         } catch (error: unknown) {
-          reject(new Error(`[ShowdownWorkerClient] Worker turn succeeded but client synchronization failed. context=${replayContext}; cause=${error instanceof Error ? error.message : String(error)}`))
-          return
+          reject(new Error(`[ShowdownWorkerClient] Worker turn succeeded but client synchronization failed. context=${replayContext}; cause=${error instanceof Error ? error.message : String(error)}`));
+          return;
         }
-
-        resolve(payload)
-      } else if (type === 'ERROR' || type === 'WORKER_ERROR') {
-        if (worker.removeEventListener) {
-          worker.removeEventListener('message', handler)
-        } else {
-          worker.onmessage = null
-        }
-
-        // Generar reporte de reproducción detallado
-        let reproductionReport = '';
-        try {
-          const { useBattleStore } = await import('@/stores/battle/battle');
-          const battleStore = useBattleStore();
-          const active = battleStore.state;
-          if (active) {
-            const reportObj = {
-              seed: active.seed || [],
-              p1Team: active.playerTeam?.map((p: Pokemon) => ({
-                id: p.id,
-                level: p.level,
-                ability: p.ability,
-                moves: p.moves.map((m: { id?: string } | null) => m?.id || ''),
-                gender: p.gender,
-                hp: p.hp,
-                maxHp: p.maxHp,
-                stats: { hp: p.maxHp, atk: p.atk, def: p.def, spa: p.spa, spd: p.spd, spe: p.spe }
-              })) || [],
-              p2Team: active.enemyTeam?.map((p: Pokemon) => ({
-                id: p.id,
-                level: p.level,
-                ability: p.ability,
-                moves: p.moves.map((m: { id?: string } | null) => m?.id || ''),
-                gender: p.gender,
-                hp: p.hp,
-                maxHp: p.maxHp,
-                stats: { hp: p.maxHp, atk: p.atk, def: p.def, spa: p.spa, spd: p.spd, spe: p.spe }
-              })) || [],
-              history: active.battleHistory || []
-            };
-            reproductionReport = `\n\n--- REPRODUCE BATTLE TEST CASE ---\nJSON Payload:\n${JSON.stringify(reportObj, null, 2)}\n----------------------------------`;
-          }
-        } catch (_e) {
-          // Ignorar fallo al generar reporte
-        }
-
-        const errorMsg = (payload.message || '') + reproductionReport;
-        const err = new Error(errorMsg);
-        if (errorMsg.includes('INVALID_CHOICE')) {
-          err.name = 'InvalidChoiceError';
-        }
-        reject(err);
+        resolve(payload);
+      } else if (type === 'WORKER_ERROR') {
+        cleanWorkerListener(worker, handler);
+        reject(generateWorkerReproductionError(payload.message));
       }
-    }
+    };
+
     if (worker.addEventListener) {
-      worker.addEventListener('message', handler)
+      worker.addEventListener('message', handler);
     } else {
-      worker.onmessage = handler
+      worker.onmessage = handler;
     }
     worker.postMessage({
       type: 'EXECUTE_TURN',
       payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1UsedBattleItem, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep, weather: weatherVal, isFuzzerSimulation: isSimulation }
-    })
-  })
+    });
+  });
 }
 
 export async function isPlayerTrappedInWorker(): Promise<boolean> {
@@ -471,9 +545,8 @@ export async function applyCheatsInWorker(cheats: Array<{ side: SideID; type: 'h
           const seatState = data.payload[seatStateKey] as Array<SynchronizedPokemonState | null> | undefined;
           lastSyncTeamStates[seatId] = seatState || null;
         });
-        const { useBattleStore } = await import('@/stores/battle/battle');
-        const battleStore = useBattleStore();
-        if (battleStore.state) {
+        const battleStore = resolveBattleStore();
+        if (battleStore?.state) {
           battleStore.state.playerRequest = data.payload.p1Request;
           battleStore.state.enemyRequest = data.payload.p2Request;
         }
@@ -500,8 +573,8 @@ export async function applyDebugStatusInWorker(side: SideID, uid: string, status
       worker.removeEventListener('message', handler);
       lastSyncTeamStates.p1 = data.payload.p1TeamState ?? null;
       lastSyncTeamStates.p2 = data.payload.p2TeamState ?? null;
-      const battleStore = useBattleStore();
-      if (battleStore.state) {
+      const battleStore = resolveBattleStore();
+      if (battleStore?.state) {
         battleStore.state.playerRequest = data.payload.p1Request;
         battleStore.state.enemyRequest = data.payload.p2Request;
       }
@@ -534,3 +607,103 @@ export function testResetShowdownWorker(): void {
     }
   }
 }
+
+export interface RequestTrainerTeamOptions {
+  level: number;
+  teamSize: number;
+  allowedSpecies: Iterable<string>;
+  aceSpeciesId?: string;
+}
+
+export interface RequestRivalTeamOptions {
+  level: number;
+  teamSize: number;
+  aceSpeciesId: string;
+  allowedSpecies?: Iterable<string>;
+}
+
+type TeamGeneratorHandler = (type: 'TRAINER' | 'RIVAL', payload: unknown) => Promise<PokemonSet[]>;
+let teamGeneratorHandler: TeamGeneratorHandler | null = null; // singleton-ok: Singleton instance state container
+
+export function registerTeamGeneratorHandler(handler: TeamGeneratorHandler | null): void {
+  teamGeneratorHandler = handler;
+}
+
+export async function requestTrainerTeam(options: RequestTrainerTeamOptions): Promise<PokemonSet[]> {
+  if (teamGeneratorHandler) {
+    return teamGeneratorHandler('TRAINER', options);
+  }
+  let worker = getShowdownWorker();
+  if (!worker) {
+    preloadShowdownWorker();
+    worker = getShowdownWorker();
+  }
+  if (!worker) {
+    throw new Error('[ShowdownWorkerClient] showdownWorker is null. Call preloadShowdownWorker or registerTeamGeneratorHandler.');
+  }
+
+  const requestId = `tr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return new Promise((resolve, reject) => {
+    const handler = (event: MessageEvent) => {
+      const data = event.data as { type: string; payload?: { requestId: string; team: PokemonSet[]; message?: string } };
+      if (data && data.type === 'GENERATE_TRAINER_TEAM_RESPONSE' && data.payload?.requestId === requestId) {
+        cleanWorkerListener(worker!, handler);
+        resolve(data.payload.team);
+      } else if (data && data.type === 'ERROR' && data.payload?.message) {
+        cleanWorkerListener(worker!, handler);
+        reject(new Error(`[ShowdownWorkerClient] Error generating trainer team: ${data.payload.message}`));
+      }
+    };
+    worker!.addEventListener('message', handler);
+    worker!.postMessage({
+      type: 'GENERATE_TRAINER_TEAM',
+      payload: {
+        requestId,
+        level: options.level,
+        teamSize: options.teamSize,
+        allowedSpecies: Array.from(options.allowedSpecies),
+        aceSpeciesId: options.aceSpeciesId
+      }
+    });
+  });
+}
+
+export async function requestRivalTeam(options: RequestRivalTeamOptions): Promise<PokemonSet[]> {
+  if (teamGeneratorHandler) {
+    return teamGeneratorHandler('RIVAL', options);
+  }
+  let worker = getShowdownWorker();
+  if (!worker) {
+    preloadShowdownWorker();
+    worker = getShowdownWorker();
+  }
+  if (!worker) {
+    throw new Error('[ShowdownWorkerClient] showdownWorker is null. Call preloadShowdownWorker or registerTeamGeneratorHandler.');
+  }
+
+  const requestId = `riv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return new Promise((resolve, reject) => {
+    const handler = (event: MessageEvent) => {
+      const data = event.data as { type: string; payload?: { requestId: string; team: PokemonSet[]; message?: string } };
+      if (data && data.type === 'GENERATE_RIVAL_TEAM_RESPONSE' && data.payload?.requestId === requestId) {
+        cleanWorkerListener(worker!, handler);
+        resolve(data.payload.team);
+      } else if (data && data.type === 'ERROR' && data.payload?.message) {
+        cleanWorkerListener(worker!, handler);
+        reject(new Error(`[ShowdownWorkerClient] Error generating rival team: ${data.payload.message}`));
+      }
+    };
+    worker!.addEventListener('message', handler);
+    worker!.postMessage({
+      type: 'GENERATE_RIVAL_TEAM',
+      payload: {
+        requestId,
+        level: options.level,
+        teamSize: options.teamSize,
+        aceSpeciesId: options.aceSpeciesId,
+        allowedSpecies: options.allowedSpecies ? Array.from(options.allowedSpecies) : undefined
+      }
+    });
+  });
+}
+

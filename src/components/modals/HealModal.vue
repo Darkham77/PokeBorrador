@@ -12,6 +12,10 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { toPokemonType } from '@/data/battle/types'
+import {
+  resolveClassSurcharge,
+  resolveHealButtonState
+} from './healModalHelper'
 
 const GSAP_SCALE_SELECTED = 1.1
 const GSAP_SCALE_AURA = 1.2
@@ -274,6 +278,56 @@ const GSAP_OVERLAY_HEAL_DELAY_SEC = 0.1
     }
   })
 
+interface HealSlotState {
+  pokemon: Pokemon | null
+  slotClass: {
+    active: boolean
+    healing: boolean
+    'is-guardian': boolean
+    'is-premium-tier': boolean
+  }
+  slotStyle: {
+    '--type-color': string
+    '--tier-color': string
+  }
+  needsHeal: boolean
+  spriteUrl: string
+}
+
+const slotStates = computed<HealSlotState[]>(() => {
+  return team.value.map((p, i) => {
+    const fx = getPokemonFX(p)
+    return {
+      pokemon: p ?? null,
+      slotClass: {
+        active: Boolean(p),
+        healing: isHealing.value && i < healedCount.value,
+        'is-guardian': Boolean(p?.isGuardian),
+        'is-premium-tier': fx.isLegendary
+      },
+      slotStyle: {
+        '--type-color': fx.typeColor,
+        '--tier-color': fx.tierColor
+      },
+      needsHeal: Boolean(needsHealing(p)),
+      spriteUrl: p ? getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny }) : ''
+    }
+  })
+})
+
+const classSurcharge = computed(() =>
+  resolveClassSurcharge(gameStore.state.playerClass)
+)
+
+const healButtonState = computed(() =>
+  resolveHealButtonState({
+    isHealing: isHealing.value,
+    teamCount: team.value.length,
+    cost: cost.value,
+    money: gameStore.state.money
+  })
+)
+
 onUnmounted(() => {
   gsap.killTweensOf(handleHeal)
   for (let i = 0; i < team.value.length; i++) {
@@ -306,26 +360,18 @@ onUnmounted(() => {
       <div class="status-section">
         <div class="team-slots">
           <div 
-            v-for="(p, i) in team" 
-            :key="p?.uid || i" 
+            v-for="(slot, i) in slotStates" 
+            :key="slot.pokemon?.uid || i" 
             :ref="(el) => { if (el) slotRefs[i] = el as HTMLElement }"
             class="slot"
-            :class="{ 
-              'active': !!p, 
-              'healing': isHealing && i < healedCount,
-              'is-guardian': p?.isGuardian,
-              'is-premium-tier': getPokemonFX(p).isLegendary
-            }"
-            :style="{ 
-              '--type-color': getPokemonFX(p).typeColor,
-              '--tier-color': getPokemonFX(p).tierColor 
-            }"
+            :class="slot.slotClass"
+            :style="slot.slotStyle"
           >
             <!-- Standardized FX Module -->
             <PVSpriteFX
-              v-if="p"
-              :is-shiny="p.isShiny"
-              :is-guardian="p.isGuardian"
+              v-if="slot.pokemon"
+              :is-shiny="slot.pokemon.isShiny"
+              :is-guardian="slot.pokemon.isGuardian"
               :sparkle-count="8"
               :vibrant="true"
             >
@@ -335,7 +381,7 @@ onUnmounted(() => {
                 @enter="onBadgeEnter"
               >
                 <div 
-                  v-if="needsHealing(p)" 
+                  v-if="slot.needsHeal" 
                   class="needs-heal-badge"
                 >
                   <span class="emoji">🚑</span>
@@ -350,9 +396,9 @@ onUnmounted(() => {
               
               <img 
                 :ref="(el) => { if (el) spriteRefs[i] = el as HTMLElement }"
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id || p.name, { isShiny: p.isShiny })" 
+                :src="slot.spriteUrl" 
                 class="poke-sprite"
-                :alt="p.name"
+                :alt="slot.pokemon.name"
                 @error="(e: Event) => { (e.target as HTMLImageElement).style.display = 'none' }"
               >
             </PVSpriteFX>
@@ -399,13 +445,9 @@ onUnmounted(() => {
               ₽ {{ cost.toLocaleString() }}
             </div>
             <small
-              v-if="gameStore.state.playerClass === 'rocket'"
+              v-if="classSurcharge"
               class="rocket-surcharge"
-            >Recargo: Miembro del Equipo Rocket (2x)</small>
-            <small
-              v-else-if="gameStore.state.playerClass === 'criador'"
-              class="rocket-surcharge"
-            >Recargo: Criador Profesional</small>
+            >{{ classSurcharge }}</small>
           </div>
         </div>
       </div>
@@ -417,10 +459,10 @@ onUnmounted(() => {
           v-if="cost > 0"
           id="heal-modal-primary-btn"
           class="btn-heal-primary" 
-          :disabled="isHealing || team.length === 0 || (cost > 0 && gameStore.state.money < cost)"
+          :disabled="healButtonState.disabled"
           @click.stop="handleHeal"
         >
-          {{ isHealing ? 'CURANDO...' : 'CURAR EQUIPO' }}
+          {{ healButtonState.text }}
         </button>
         <button
           v-if="cost > 0"

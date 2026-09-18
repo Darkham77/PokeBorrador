@@ -1,4 +1,4 @@
-import type { DebugSystem } from '@/stores/debug'
+import type { DebugSystem } from '@/types/system/debug.ts'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'

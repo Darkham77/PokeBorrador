@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+// jsdom-ok: Requires browser localStorage and navigator.storage for simulated reward saving
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { simulatePastEventAndMissionsReward } from '@/logic/debug/rewardsDebugSimulation'

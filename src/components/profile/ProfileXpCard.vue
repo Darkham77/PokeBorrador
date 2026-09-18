@@ -3,13 +3,13 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/player/playerClasses'
+import { MAX_TRAINER_RANK_LEVEL } from '@/logic/constants/gameplay'
 import gsap from 'gsap'
 
 const XP_STRIPE_SCROLL_DURATION_SEC = 2;
 const XP_BAR_ENTRY_DURATION_SEC = 0.8;
 const XP_BAR_UPDATE_DURATION_SEC = 0.5;
 
-const MAX_LEVEL = 30;
 const DEFAULT_EXP_NEEDED = 100;
 const MAX_UNLOCKS_PREVIEW = 2;
 
@@ -44,26 +44,26 @@ const classStore = usePlayerClassStore()
 const gs = computed(() => gameStore.state)
 
 const currentLevel = computed(() => props.level !== undefined ? props.level : (gs.value.trainerLevel || 1))
-const currentExp = computed(() => props.level !== undefined && props.level >= MAX_LEVEL ? 0 : (props.exp !== undefined ? props.exp : (gs.value.trainerExp || 0)))
+const currentExp = computed(() => props.level !== undefined && props.level >= MAX_TRAINER_RANK_LEVEL ? 0 : (props.exp !== undefined ? props.exp : (gs.value.trainerExp || 0)))
 const currentExpNeeded = computed(() => {
-  if (currentLevel.value >= MAX_LEVEL) return 0
+  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 0
   return props.expNeeded !== undefined ? props.expNeeded : (gs.value.trainerExpNeeded || DEFAULT_EXP_NEEDED)
 })
 
 const trainerExpPct = computed(() => {
-  if (currentLevel.value >= MAX_LEVEL) return 100
+  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 100
   const needed = currentExpNeeded.value
   if (needed === 0) return 0
   return Math.min(100, (currentExp.value / needed) * 100)
 })
 
 const xpRemaining = computed(() => {
-  if (currentLevel.value >= MAX_LEVEL) return 0
+  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 0
   return Math.max(0, currentExpNeeded.value - currentExp.value)
 })
 
 const nextLevel = computed(() => {
-  return Math.min(MAX_LEVEL, currentLevel.value + 1)
+  return Math.min(MAX_TRAINER_RANK_LEVEL, currentLevel.value + 1)
 })
 
 const nextClassUnlocks = computed(() => {
@@ -162,7 +162,7 @@ watch(trainerExpPct, (newPct) => {
     <div class="xp-details">
       <div class="xp-numbers">
         <span class="xp-current">
-          <template v-if="currentLevel >= MAX_LEVEL">
+          <template v-if="currentLevel >= MAX_TRAINER_RANK_LEVEL">
             MÁXIMO NIVEL
           </template>
           <template v-else>
@@ -182,7 +182,7 @@ watch(trainerExpPct, (newPct) => {
       </div>
       
       <div class="xp-remaining-text">
-        <template v-if="currentLevel >= MAX_LEVEL">
+        <template v-if="currentLevel >= MAX_TRAINER_RANK_LEVEL">
           <strong :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }">¡NIVEL MÁXIMO ALCANZADO!</strong>
         </template>
         <template v-else>

@@ -63,145 +63,91 @@ export async function processFaint(ctx: BattleContext, side: BattleSide) {
   }
 }
 
-/**
- * Terminates the battle and processes results.
- */
-export async function terminateBattle(ctx: BattleContext, winParam: boolean, fled = false) {
-  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
-  const fsm = ctx.fsm
-  const active = ctx.activeBattle.value;
+type ActiveBattleInstance = NonNullable<BattleContext['activeBattle']['value']>;
 
-  if (!active) {
-    await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-    return
-  }
-  if (TERMINATING_BATTLES.has(active)) return
+interface PreTerminationOutcome {
+  win: boolean;
+  isSingle: boolean;
+}
 
-  TERMINATING_BATTLES.add(active)
-  try {
-
+async function recordPreTerminationState(
+  ctx: BattleContext,
+  active: ActiveBattleInstance,
+  winParam: boolean,
+  fled: boolean
+): Promise<PreTerminationOutcome> {
   // If Showdown's protocol provided an explicit winnerResult, rely on it over local heuristics
   const win = active.winnerResult ? (active.winnerResult === 'player') : winParam;
 
-  active.over = true
-  ctx.faintedSides.value.clear()
+  active.over = true;
+  ctx.faintedSides.value.clear();
 
   // Limpiar todos los estados volátiles del equipo al terminar la batalla
   if (ctx.gs.state.team) {
     ctx.gs.state.team.forEach((p: Pokemon | null) => {
-      if (p) clearVolatileStatus(p)
-    })
+      if (p) clearVolatileStatus(p);
+    });
   }
 
   if (!ctx.gs.state.stats) {
-    ctx.gs.state.stats = {}
+    ctx.gs.state.stats = {};
   }
-  ctx.gs.state.stats.totalBattles = (Number(ctx.gs.state.stats.totalBattles) || 0) + 1
-  
-  const uiStore = useUIStore()
-  uiStore.isBattleSwitchForced = false
-  
-  await handlePoliceResolution(ctx, active, win, fled, uiStore)
-  
-  const persistenceMode = active.persistenceMode as string || 'PERSISTENT' // spanish-ok: UI Spanish text localization label
-  const isSingle = Boolean(persistenceMode === 'SINGLE' || active.isGym || active.isPvP)
+  ctx.gs.state.stats.totalBattles = (Number(ctx.gs.state.stats.totalBattles) || 0) + 1;
 
-  syncAndPersist(ctx)
+  const uiStore = useUIStore();
+  uiStore.isBattleSwitchForced = false;
 
-  // 1. Ejecutamos animaciones de salida en paralelo para el jugador y el enemigo si siguen activos
+  await handlePoliceResolution(ctx, active, win, fled, uiStore);
+
+  const persistenceMode = (active.persistenceMode as string) || 'PERSISTENT';
+  const isSingle = Boolean(persistenceMode === 'SINGLE' || active.isGym || active.isPvP);
+
+  syncAndPersist(ctx);
+  return { win, isSingle };
+}
+
+async function handleCombatantVacation(
+  ctx: BattleContext,
+  active: ActiveBattleInstance,
+  win: boolean,
+  fled: boolean
+): Promise<boolean> {
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
+  const fsm = ctx.fsm;
+
   if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-    await handleCombatantsExitAnimations(ctx, active, win, fled)
-    if (!isCurrentBattle(ctx, active)) return
-  }
+    await handleCombatantsExitAnimations(ctx, active, win, fled);
+    if (!isCurrentBattle(ctx, active)) return false;
 
-  // 2. Desvanecer la Poké Ball y vaciar el asiento del enemigo bajo ACTIVE_BATTLE
-  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL);
     if (active.isCapture && ctx.animations?.playBallFadeOut) {
-      await ctx.animations.playBallFadeOut('enemy')
+      await ctx.animations.playBallFadeOut('enemy');
     }
-    
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-    if (active) {
-      registerRewardCombatant(active)
-      active.enemy = null
-      active._initialEnemy = null
-      active._initialEnemies = {}
-    }
-  } else {
-    if (active) {
-      registerRewardCombatant(active)
-      active.enemy = null
-      active._initialEnemy = null
-      active._initialEnemies = {}
-    }
+
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT);
   }
 
-  // 3. Procesar recompensas (Transición a REWARDS_PHASE)
-  if (!isCurrentBattle(ctx, active)) return
-  const { processBattleRewardsPhase } = await import('./battleRewardsPhase.ts')
-  await processBattleRewardsPhase(ctx, win, fled)
-  if (!isCurrentBattle(ctx, active)) return
+  registerRewardCombatant(active);
+  active.enemy = null;
+  active._initialEnemy = null;
+  active._initialEnemies = {};
+  return true;
+}
 
-  const isTrainerEncounter = Boolean(active.isTrainer || active.isRival || active.trainerName || active.isGym)
-  if (isTrainerEncounter && ctx.animations?.triggerTrainerExit) {
-    await ctx.animations.triggerTrainerExit()
-  }
+interface LocalDebugObject {
+  [key: string]: unknown;
+  isScriptedReplayMode?: boolean;
+  lastFinalState?: {
+    p1: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+    p2: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+  };
+}
 
-  if (!win && !fled) {
-    await handleBattleDefeatFlow(ctx, active)
-    return
-  }
+interface WindowWithDebug extends Window {
+  __VITE_DEBUG__?: LocalDebugObject;
+}
 
-  if (fled) {
-    await handleBattleFleeFlow(ctx, active, isSingle)
-    return
-  }
-  
-  await ctx.gs.save(false)
-  await ctx.waitForLogs()
-  if (!isCurrentBattle(ctx, active)) return
-  
-  syncTeamHP(ctx)
-
-  if (active) {
-    active._initialEnemy = null
-    active._initialEnemies = {}
-    if (!active.isCapture) {
-      active.enemy = null
-    }
-  }
-
-  if (isSingle) {
-    // Para combates isSingle (Gym, PvP), NO se realiza reordenamiento animado.
-    // El FSM queda en EMPTY_WAIT con el overlay visible ("VOLVER A GIMNASIOS" / "VOLVER AL MAPA").
-    // El cierre lo dispara el usuario al hacer clic en el botón, que llama completeBattleFlow('map').
-    ctx.isProcessing.value = false
-    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
-    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-    return
-  }
-
-  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-  if (!isCurrentBattle(ctx, active)) return
-
-  // Reordenamiento animado: recall del incorrecto + release del correcto en paralelo
-  await animatePlayerAutoSwap(ctx, active, isCurrentBattle)
-  if (!isCurrentBattle(ctx, active)) return
-
-  interface LocalDebugObject {
-    [key: string]: unknown;
-    isScriptedReplayMode?: boolean;
-    lastFinalState?: {
-      p1: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
-      p2: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
-    };
-  }
-
-  interface WindowWithDebug extends Window {
-    __VITE_DEBUG__?: LocalDebugObject;
-  }
-
+function recordDebugReplayFinalState(ctx: BattleContext, active: ActiveBattleInstance): void {
   const winObj = (typeof window !== 'undefined' ? window : undefined) as WindowWithDebug | undefined;
   if (winObj && winObj.__VITE_DEBUG__?.isScriptedReplayMode) {
     const p1 = (ctx.gs.state?.team ?? []).map((p: Pokemon) => ({
@@ -220,27 +166,109 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
     }));
     winObj.__VITE_DEBUG__.lastFinalState = { p1, p2 };
   }
+}
 
-  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
-  if (!isCurrentBattle(ctx, active)) return
-  
-  const wasSearching = active.wasSearching === true || ctx.isSearching.value === true
+async function finalizeBattleFlow(ctx: BattleContext, active: ActiveBattleInstance, wasSearching: boolean): Promise<void> {
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
+  const fsm = ctx.fsm;
+
+  const { postBattleCoordinator } = await import('./postBattleSequenceCoordinator.ts');
+  const coordinator = ctx.postBattleCoordinator ?? postBattleCoordinator;
+  await coordinator.runSequence(ctx);
+  if (!isCurrentBattle(ctx, active)) return;
+
+  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE);
+  if (!isCurrentBattle(ctx, active)) return;
+
   if (wasSearching) {
-    const { useUIStore } = await import('@/stores/ui.ts')
-    const uiStore = useUIStore()
+    const { useUIStore } = await import('@/stores/ui.ts');
+    const uiStore = useUIStore();
     if (uiStore.autoBattle) {
-      const { gsapSleep } = await import('@/logic/utils/gsapHelpers.ts')
-      const { AUTO_BATTLE_REWARDS_DELAY_SEC } = await import('@/data/system/constants.ts')
-      await gsapSleep(AUTO_BATTLE_REWARDS_DELAY_SEC)
-      if (!isCurrentBattle(ctx, active)) return
+      const { gsapSleep } = await import('@/logic/utils/gsapHelpers.ts');
+      const { AUTO_BATTLE_REWARDS_DELAY_SEC } = await import('@/data/system/constants.ts');
+      await gsapSleep(AUTO_BATTLE_REWARDS_DELAY_SEC);
+      if (!isCurrentBattle(ctx, active)) return;
     }
-    await ctx.completeBattleFlow('search')
+    await ctx.completeBattleFlow('search');
   } else {
-    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-    await ctx.completeBattleFlow('map')
+    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT);
+    await ctx.completeBattleFlow('map');
   }
+}
+
+/**
+ * Terminates the battle and processes results.
+ */
+export async function terminateBattle(ctx: BattleContext, winParam: boolean, fled = false) {
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
+  const fsm = ctx.fsm;
+  const active = ctx.activeBattle.value;
+
+  if (!active) {
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE);
+    return;
+  }
+  if (TERMINATING_BATTLES.has(active)) return;
+
+  TERMINATING_BATTLES.add(active);
+  try {
+    const { win, isSingle } = await recordPreTerminationState(ctx, active, winParam, fled);
+
+    // 1. Salida y vaciado de asientos
+    const vacated = await handleCombatantVacation(ctx, active, win, fled);
+    if (!vacated || !isCurrentBattle(ctx, active)) return;
+
+    // 2. Procesar recompensas (Transición a REWARDS_PHASE)
+    const { processBattleRewardsPhase } = await import('./battleRewardsPhase.ts');
+    await processBattleRewardsPhase(ctx, win, fled);
+    if (!isCurrentBattle(ctx, active)) return;
+
+    const isTrainerEncounter = Boolean(active.isTrainer || active.isRival || active.trainerName || active.isGym);
+    if (isTrainerEncounter && ctx.animations?.triggerTrainerExit) {
+      await ctx.animations.triggerTrainerExit();
+    }
+
+    if (!win && !fled) {
+      await handleBattleDefeatFlow(ctx, active);
+      return;
+    }
+
+    if (fled) {
+      await handleBattleFleeFlow(ctx, active, isSingle);
+      return;
+    }
+
+    await ctx.gs.save(false);
+    await ctx.waitForLogs();
+    if (!isCurrentBattle(ctx, active)) return;
+
+    syncTeamHP(ctx);
+
+    active._initialEnemy = null;
+    active._initialEnemies = {};
+    if (!active.isCapture) {
+      active.enemy = null;
+    }
+
+    if (isSingle) {
+      ctx.isProcessing.value = false;
+      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE);
+      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT);
+      return;
+    }
+
+    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT);
+    if (!isCurrentBattle(ctx, active)) return;
+
+    await animatePlayerAutoSwap(ctx, active, isCurrentBattle);
+    if (!isCurrentBattle(ctx, active)) return;
+
+    recordDebugReplayFinalState(ctx, active);
+
+    const wasSearching = active.wasSearching === true || ctx.isSearching.value === true;
+    await finalizeBattleFlow(ctx, active, wasSearching);
   } finally {
-    TERMINATING_BATTLES.delete(active)
+    TERMINATING_BATTLES.delete(active);
   }
 }
 

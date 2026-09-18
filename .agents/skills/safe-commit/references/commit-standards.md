@@ -38,11 +38,21 @@ The project mandates **Atomic Commits**. A commit is never created until all tes
 
 **Rules**:
 
-- The header line is the commit summary — keep it under 72 characters.
+- The header line is the commit summary — make it clear, concise, and descriptive across the primary modified scopes. Never artificially truncate or cripple header clarity for arbitrary character limits.
 - Every bullet must specify *what* changed and *why* it matters technically.
 - For changes across 2+ files, a bulleted list is MANDATORY.
 
-## Gold Standard Example
+## Hierarchical Synthesis for Large Working Trees (Synthesize Without Omission)
+
+When the working tree contains extensive, multi-subsystem changes across dozens or hundreds of files:
+
+1. **Mandatory Subsystem Grouping**: Group changes under clear subsystem categories (e.g., `Battle Engine & Status FX:`, `Test Suite Architecture:`, `Cognitive Complexity Helpers:`, `UI Showcase:`, `DOX & Governance:`).
+2. **Synthesize Concisely**: Group related structural changes into cohesive, high-level technical bullets explaining *what* was consolidated, refactored, or fixed and *why*, rather than dumping an unreadable 100-bullet dump of individual files.
+3. **Zero-Omission Policy**: NEVER omit any modified subsystem, feature, or directory area present in `git status`. Every modified domain MUST be represented in the summary. Omitting active changes to focus solely on the immediate chat topic or prompt is strictly forbidden.
+
+## Gold Standard Examples
+
+### Example A: Single Feature / Focused Change
 
 ```text
 feat(battle): optimize silhouette rendering and sync wild encounter timing
@@ -56,10 +66,38 @@ feat(battle): optimize silhouette rendering and sync wild encounter timing
 - Updated AGENTS.md in src/components/battle/ with the GPU matrix filter pattern.
 ```
 
+### Example B: Multi-Subsystem / Broad Working Tree (Synthesize Without Omission)
+
+```text
+fix(battle,tests): sync status FX lifecycle & consolidate domain test suites
+
+- Battle Engine & Status FX:
+  - Retain combatant status overlays and particle effects throughout active defeat animations (wild sink and trainer recall beam).
+  - Extinguish status overlays and particle effects immediately upon ball capture completion (animState trapped).
+  - Suppress status overlays and aura particles during vacant field transitions and replacement Pokémon deployment.
+  - Generalize isCombatantFainting across trainer and wild combatant seats in BattleArenaView.vue.
+  - Add comprehensive unit tests in tests/unit/battle/reproduce_fainted_status_overlay_leak.spec.ts.
+
+- Test Suite Architecture & Consolidation:
+  - Consolidate fragmented unit and node test suites across domain modules (battle, pokemon, world, system, pvp, inventory, encounters).
+  - Standardize vitest setup and test environment helpers across workspace configs.
+
+- Complexity & Helper Extractions:
+  - Extract dedicated domain helpers across composables, logic, stores, and views to reduce cognitive complexity below Fallow thresholds.
+
+- UI Showcase & Demo Sections:
+  - Decompose team cards and selection modal into modular subcomponents in ui-demo/src/sections/.
+
+- DOX Contracts & Standards Governance:
+  - Document status overlay lifecycle contract in src/components/battle/AGENTS.md and battle_mechanics_manual.md.
+  - Align documentation verification rules in learn-with-docs and project-standards skills to enforce npm run audit:dox and npm run lint:md.
+```
+
 ## Forbidden Patterns
 
 - Single-word messages (`commit`, `update`, `fix`).
 - Messages without a bulleted list for changes involving 2+ files.
+- Arbitrary truncation or chopping of commit headers to appease legacy character limits.
 - Aggregated ranges of IDs (e.g., "FIX-01 to FIX-121", "fixes 1 to 80") without explicit technical bullets detailing the actual changes made.
 - Vague descriptions like "minor changes" or "various fixes" without specifying the technical "what".
 - Commit messages written from memory instead of reviewing the actual `git diff`.

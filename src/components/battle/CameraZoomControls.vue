@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useBattleStore } from '@/stores/battle/battle'
+import { useUIStore } from '@/stores/ui'
 
 const battleStore = useBattleStore()
+const uiStore = useUIStore()
 
 const zoomIn = () => {
   const current = battleStore.debugZoom
@@ -18,6 +20,23 @@ const zoomOut = () => {
     battleStore.debugZoom = nextZoom
   }
 }
+
+const copyReplay = async () => {
+  const payload = battleStore.getCombatReplayPayload()
+  if (!payload) {
+    uiStore.notify('No hay combate activo para exportar', '⚠️')
+    return
+  }
+  const text = JSON.stringify(payload, null, 2)
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+    }
+    uiStore.notify('Replay de combate copiado al portapapeles', '📋')
+  } catch (err) {
+    console.error('Failed to copy replay to clipboard:', err)
+  }
+}
 </script>
 
 <template>
@@ -25,6 +44,7 @@ const zoomOut = () => {
     <button
       class="zoom-btn"
       :disabled="battleStore.debugZoom >= 1.0"
+      title="Acercar cámara"
       @click.stop="zoomIn"
     >
       +
@@ -32,9 +52,17 @@ const zoomOut = () => {
     <button
       class="zoom-btn"
       :disabled="battleStore.debugZoom <= 0.5"
+      title="Alejar cámara"
       @click.stop="zoomOut"
     >
       -
+    </button>
+    <button
+      class="zoom-btn"
+      title="Copiar Replay de Combate"
+      @click.stop="copyReplay"
+    >
+      <span class="emoji">📋</span>
     </button>
   </div>
 </template>
@@ -63,5 +91,10 @@ const zoomOut = () => {
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+
+  .emoji {
+    line-height: 1;
+    font-size: 12px;
+  }
 }
 </style>

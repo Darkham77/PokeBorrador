@@ -20,6 +20,10 @@ Automation scripts for database backup, restoration, updates, migrations generat
 - **Unified Argument Parser SSoT (`scripts/lib/supabaseClient.ts`)**: All database scripts (`backup_supabase_db.ts`, `restore_supabase_db.ts`, `update_supabase_db.ts`, `admin_supabase_users.ts`) MUST consume `parseServerArguments(args, baseProfiles, allAvailable)` from `scripts/lib/supabaseClient.ts`. Cross-script dynamic imports for CLI options are strictly prohibited.
 - **Unified `database:` NPM Scripts Namespace**: All database maintenance scripts must strictly adhere to the `database:` command namespace in `package.json`. Invocations must use `npm run database:<action> [key=value]`.
 - **Dynamic SQL Migration Generators**: Whenever creating migrations depending on game constants (e.g., enabled species whitelist, valid movesets, catalog items), create a generator script under `scripts/database/` that reads canonical TypeScript data and outputs formatted PostgreSQL and SQLite migration pairs.
+- **Migration Preparation & Certification Protocol (`generate_migrations.ts`)**:
+  - Direct CLI invocation (`npm run database:generate-migrations`) compiles `src/logic/db/migrations_data.ts`, then automatically executes `npm run validate:sql` and `npm run test:migrations` (`backup_migration_real.test.ts` against the real production backup fixture).
+  - If any validation or migration test fails, `generate_migrations.ts` aborts with exit code 1, rejecting the migration.
+  - When imported by Vite (`vite.config.ts`), `generateMigrations()` operates strictly as a lightweight code generator (~10ms) without running test suites, keeping `npm run dev` and HMR instantaneous.
 - All scripts MUST support `--help` flag with clear ANSI formatted usage instructions.
 
 ## Child DOX Index

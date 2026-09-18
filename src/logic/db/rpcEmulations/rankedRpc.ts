@@ -26,6 +26,150 @@ interface RankedPodiumEntry {
   elo: number;
 }
 
+const MAX_PODIUM_ENTRIES = 10 as const;
+const TIER_THRESHOLDS = {
+  MAESTRO: 3400,
+  DIAMANTE: 2700,
+  PLATINO: 2100,
+  ORO: 1600,
+  PLATA: 1200,
+} as const;
+
+function resolveRankedTier(elo: number): string {
+  if (elo >= TIER_THRESHOLDS.MAESTRO) return 'maestro';
+  if (elo >= TIER_THRESHOLDS.DIAMANTE) return 'diamante';
+  if (elo >= TIER_THRESHOLDS.PLATINO) return 'platino';
+  if (elo >= TIER_THRESHOLDS.ORO) return 'oro';
+  if (elo >= TIER_THRESHOLDS.PLATA) return 'plata';
+  return 'bronce';
+}
+
+function generateTierPrizes(tier: string, seasonName: string, rank: number, elo: number): Record<string, unknown>[] {
+  const prizes: Record<string, unknown>[] = [
+    {
+      type: 'ranked_medal',
+      tier,
+      season: seasonName || 'TEMPORADA ACTUAL',
+      rank,
+      elo
+    }
+  ];
+
+  switch (tier) {
+    case 'maestro':
+      prizes.push(
+        { type: 'pokemon', species: 'eevee', level: 50, shiny: true, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } },
+        { type: 'item', item: 'Ticket Cueva Celeste', qty: 3 },
+        { type: 'item', item: 'Ticket Islas Espumas', qty: 3 },
+        { type: 'bc', amount: 500, battleCoins: 500 }
+      );
+      break;
+    case 'diamante':
+      prizes.push(
+        { type: 'pokemon', species: 'eevee', level: 50, shiny: false, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 28 } },
+        { type: 'item', item: 'Ticket Cueva Celeste', qty: 2 },
+        { type: 'item', item: 'Ticket Islas Espumas', qty: 2 },
+        { type: 'bc', amount: 350, battleCoins: 350 }
+      );
+      break;
+    case 'platino':
+      prizes.push(
+        { type: 'item', item: 'Ticket Cueva Celeste', qty: 2 },
+        { type: 'item', item: 'Ticket Islas Espumas', qty: 2 },
+        { type: 'bc', amount: 250, battleCoins: 250 }
+      );
+      break;
+    case 'oro':
+      prizes.push(
+        { type: 'item', item: 'Ticket Cueva Celeste', qty: 1 },
+        { type: 'item', item: 'Ticket Islas Espumas', qty: 1 },
+        { type: 'bc', amount: 150, battleCoins: 150 }
+      );
+      break;
+    case 'plata':
+      prizes.push(
+        { type: 'item', item: 'Ticket Cueva Celeste', qty: 1 },
+        { type: 'bc', amount: 75, battleCoins: 75 }
+      );
+      break;
+    default:
+      prizes.push(
+        { type: 'bc', amount: 25, battleCoins: 25 }
+      );
+      break;
+  }
+
+  return prizes;
+}
+
+async function fetchEligibleRankedPlayers(): Promise<StoredEligiblePlayer[]> {
+  const rawRows = await queryLocal(`
+    SELECT 
+      id,
+      username,
+      COALESCE(email, '') as email,
+      COALESCE(elo_rating, ${MIN_INITIAL_ELO}) as elo,
+      COALESCE(pvp_wins, 0) as wins,
+      COALESCE(pvp_losses, 0) as losses,
+      COALESCE(pvp_draws, 0) as draws
+    FROM profiles
+    WHERE (COALESCE(pvp_wins, 0) + COALESCE(pvp_losses, 0) + COALESCE(pvp_draws, 0)) >= ${MIN_MATCHES_FOR_RANKED}
+      AND COALESCE(elo_rating, ${MIN_INITIAL_ELO}) >= ${MIN_INITIAL_ELO}
+    ORDER BY elo_rating DESC, id ASC
+  `);
+
+  return rawRows.map(r => ({
+    id: String(r.id),
+    username: String(r.username || ''),
+    email: String(r.email || ''),
+    elo: Number(r.elo) || MIN_INITIAL_ELO,
+    wins: Number(r.wins) || 0,
+    losses: Number(r.losses) || 0,
+    draws: Number(r.draws) || 0
+  }));
+}
+
+async function distributeSeasonalAwards(
+  eligiblePlayers: StoredEligiblePlayer[],
+  targetEventKey: string,
+  targetSeasonName: string,
+  nowEpochMs: number,
+  nowIso: string
+): Promise<{ awardsCount: number; podium: RankedPodiumEntry[] }> {
+  let rank = 0;
+  let awardsCount = 0;
+  const podium: RankedPodiumEntry[] = [];
+
+  for (const player of eligiblePlayers) {
+    rank++;
+    const tier = resolveRankedTier(player.elo);
+
+    if (rank <= MAX_PODIUM_ENTRIES) {
+      podium.push({
+        rank,
+        tier,
+        player_id: player.id,
+        player_name: player.username,
+        player_email: player.email,
+        elo: player.elo
+      });
+    }
+
+    const prizes = generateTierPrizes(tier, targetSeasonName, rank, player.elo);
+
+    for (let i = 0; i < prizes.length; i++) {
+      const awardId = `award_${targetEventKey}_${player.id}_${i}_${nowEpochMs}`;
+      await queryLocal(`
+        INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL)
+      `, [awardId, targetEventKey, player.id, player.username, player.email, JSON.stringify(prizes[i]), nowIso]);
+      awardsCount++;
+    }
+  }
+
+  return { awardsCount, podium };
+}
+
 /**
  * Offline emulation for fn_award_ranked_season_automated RPC.
  * Awards tier-based prizes to all players with >= 5 matches, records podium,
@@ -52,114 +196,14 @@ export async function emulateAwardRankedSeasonAutomated(
       }
     }
 
-    // Query players who completed at least 5 matches with ELO >= 1000
-    const rawRows = await queryLocal(`
-      SELECT 
-        id,
-        username,
-        COALESCE(email, '') as email,
-        COALESCE(elo_rating, ${MIN_INITIAL_ELO}) as elo,
-        COALESCE(pvp_wins, 0) as wins,
-        COALESCE(pvp_losses, 0) as losses,
-        COALESCE(pvp_draws, 0) as draws
-      FROM profiles
-      WHERE (COALESCE(pvp_wins, 0) + COALESCE(pvp_losses, 0) + COALESCE(pvp_draws, 0)) >= ${MIN_MATCHES_FOR_RANKED}
-        AND COALESCE(elo_rating, ${MIN_INITIAL_ELO}) >= ${MIN_INITIAL_ELO}
-      ORDER BY elo_rating DESC, id ASC
-    `);
-
-    const eligiblePlayers: StoredEligiblePlayer[] = rawRows.map(r => ({
-      id: String(r.id),
-      username: String(r.username || ''),
-      email: String(r.email || ''),
-      elo: Number(r.elo) || MIN_INITIAL_ELO,
-      wins: Number(r.wins) || 0,
-      losses: Number(r.losses) || 0,
-      draws: Number(r.draws) || 0
-    }));
-
-    let rank = 0;
-    let awardsCount = 0;
-    const podium: RankedPodiumEntry[] = [];
-
-    for (const player of eligiblePlayers) {
-      rank++;
-      let tier = 'bronce';
-      if (player.elo >= 3400) tier = 'maestro';
-      else if (player.elo >= 2700) tier = 'diamante';
-      else if (player.elo >= 2100) tier = 'platino';
-      else if (player.elo >= 1600) tier = 'oro';
-      else if (player.elo >= 1200) tier = 'plata';
-
-      if (rank <= 10) {
-        podium.push({
-          rank,
-          tier,
-          player_id: player.id,
-          player_name: player.username,
-          player_email: player.email,
-          elo: player.elo
-        });
-      }
-
-      // Generate tier prizes & seasonal medal
-      const prizes: Record<string, unknown>[] = [];
-
-      // 1. Seasonal Achievement Medal (for player profile showcase)
-      prizes.push({
-        type: 'ranked_medal',
-        tier,
-        season: targetSeasonName || 'TEMPORADA ACTUAL',
-        rank,
-        elo: player.elo
-      });
-
-      if (tier === 'maestro') {
-        prizes.push(
-          { type: 'pokemon', species: 'eevee', level: 50, shiny: true, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } },
-          { type: 'item', item: 'Ticket Cueva Celeste', qty: 3 },
-          { type: 'item', item: 'Ticket Islas Espumas', qty: 3 },
-          { type: 'bc', amount: 500, battleCoins: 500 }
-        );
-      } else if (tier === 'diamante') {
-        prizes.push(
-          { type: 'pokemon', species: 'eevee', level: 50, shiny: false, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 28 } },
-          { type: 'item', item: 'Ticket Cueva Celeste', qty: 2 },
-          { type: 'item', item: 'Ticket Islas Espumas', qty: 2 },
-          { type: 'bc', amount: 350, battleCoins: 350 }
-        );
-      } else if (tier === 'platino') {
-        prizes.push(
-          { type: 'item', item: 'Ticket Cueva Celeste', qty: 2 },
-          { type: 'item', item: 'Ticket Islas Espumas', qty: 2 },
-          { type: 'bc', amount: 250, battleCoins: 250 }
-        );
-      } else if (tier === 'oro') {
-        prizes.push(
-          { type: 'item', item: 'Ticket Cueva Celeste', qty: 1 },
-          { type: 'item', item: 'Ticket Islas Espumas', qty: 1 },
-          { type: 'bc', amount: 150, battleCoins: 150 }
-        );
-      } else if (tier === 'plata') {
-        prizes.push(
-          { type: 'item', item: 'Ticket Cueva Celeste', qty: 1 },
-          { type: 'bc', amount: 75, battleCoins: 75 }
-        );
-      } else {
-        prizes.push(
-          { type: 'bc', amount: 25, battleCoins: 25 }
-        );
-      }
-
-      for (let i = 0; i < prizes.length; i++) {
-        const awardId = `award_${targetEventId}_${player.id}_${i}_${now.epochMilliseconds}`;
-        await queryLocal(`
-          INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL)
-        `, [awardId, targetEventId, player.id, player.username, player.email, JSON.stringify(prizes[i]), nowIso]);
-        awardsCount++;
-      }
-    }
+    const eligiblePlayers = await fetchEligibleRankedPlayers();
+    const { awardsCount, podium } = await distributeSeasonalAwards(
+      eligiblePlayers,
+      targetEventId,
+      targetSeasonName,
+      now.epochMilliseconds,
+      nowIso
+    );
 
     // Save podium to competition_results
     if (podium.length > 0) {
@@ -249,6 +293,129 @@ export async function emulateRecordPassiveBattleResult(
   }
 }
 
+const TOP_REPLAY_PLAYERS_LIMIT = 10 as const;
+
+async function checkReplayParticipantsTop10(p1UserUid: string, p2UserUid: string, initialIsTop10: boolean): Promise<boolean> {
+  if (initialIsTop10 || (!p1UserUid && !p2UserUid)) return initialIsTop10;
+  const top10Rows = await queryLocal(`
+    SELECT id FROM profiles
+    ORDER BY COALESCE(elo_rating, ${MIN_INITIAL_ELO}) DESC
+    LIMIT ${TOP_REPLAY_PLAYERS_LIMIT}
+  `);
+  const top10Ids = new Set(top10Rows.map(r => String(r.id)));
+  return top10Ids.has(p1UserUid) || (Boolean(p2UserUid) && top10Ids.has(p2UserUid));
+}
+
+function resolveBattleReplayCode(rawCode?: unknown): string {
+  const trimmed = String(rawCode || '').trim();
+  if (trimmed) return trimmed;
+  const p1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const p2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `BTL-${p1}-${p2}`;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleExistingReplayViews(existing: any, battleCode: string): Promise<DBResponse> {
+  await queryLocal('UPDATE battle_replays SET views_count = views_count + 1 WHERE battle_code = ?', [battleCode]);
+  await persistSQLite();
+  return {
+    data: {
+      ok: true,
+      replayId: String(existing.id),
+      battleCode,
+      isTop10Archived: Boolean(existing.is_top10_archived),
+      createdAt: String(existing.created_at)
+    },
+    error: null
+  };
+}
+
+interface NormalizedReplayPayload {
+  battleCode: string;
+  seasonId: string; // infra-id-ok: replay metadata season identifier
+  themeId: string; // infra-id-ok: replay metadata theme identifier
+  rawP1: Record<string, unknown>;
+  rawP2: Record<string, unknown>;
+  p1UserUid: string;
+  p2UserUid: string;
+  turnsCount: number;
+  winnerSide: string;
+  choiceStream: unknown;
+  initialSeed: unknown;
+  isTop10Requested: boolean;
+}
+
+function normalizePublishReplayPayload(
+  payload: Record<string, unknown>,
+  context: { userId: string; username: string }
+): NormalizedReplayPayload {
+  const battleCode = resolveBattleReplayCode(payload.battleCode || payload.battle_code);
+  const seasonId = String(payload.seasonId || payload.season_id || 'TEMPORADA ACTUAL');
+  const themeId = String(payload.themeId || payload.theme_id || 'masters_allstars');
+
+  const rawP1 = (payload.p1 || payload.p1_data || {}) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  const rawP2 = (payload.p2 || payload.p2_data || {}) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+
+  let p1UserUid = String(payload.p1_user_id || rawP1.userId || context.userId || '');
+  const p2UserUid = String(payload.p2_user_id || rawP2.userId || '');
+  if (!p1UserUid) p1UserUid = 'local_user';
+
+  const turnsCount = Number(payload.turnsCount ?? payload.turns_count ?? 0);
+  const winnerSide = String(payload.winnerSide || payload.winner_side || 'p1');
+  const choiceStream = payload.choiceStream || payload.choice_stream || [];
+  const initialSeed = payload.initialSeed || payload.initial_seed || [0, 0, 0, 0];
+  const isTop10Requested = Boolean(payload.isTop10Archived || payload.is_top10_archived);
+
+  return {
+    battleCode,
+    seasonId,
+    themeId,
+    rawP1,
+    rawP2,
+    p1UserUid,
+    p2UserUid,
+    turnsCount,
+    winnerSide,
+    choiceStream,
+    initialSeed,
+    isTop10Requested
+  };
+}
+
+async function insertNewBattleReplay(
+  norm: NormalizedReplayPayload,
+  isTop10: boolean
+): Promise<{ replayUid: string; createdAt: string }> {
+  const replayUid = globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `replay_${getServerInstant().epochMilliseconds}`;
+  const nowIso = getServerInstant().toString();
+
+  await queryLocal(`
+    INSERT INTO battle_replays (
+      id, battle_code, season_id, theme_id, p1_user_id, p2_user_id,
+      p1_data, p2_data, turns_count, winner_side, choice_stream,
+      initial_seed, is_top10_archived, views_count, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+  `, [
+    replayUid,
+    norm.battleCode,
+    norm.seasonId,
+    norm.themeId,
+    norm.p1UserUid || null,
+    norm.p2UserUid || null,
+    JSON.stringify(norm.rawP1),
+    JSON.stringify(norm.rawP2),
+    norm.turnsCount,
+    norm.winnerSide,
+    JSON.stringify(norm.choiceStream),
+    JSON.stringify(norm.initialSeed),
+    isTop10 ? 1 : 0,
+    nowIso
+  ]);
+
+  await persistSQLite();
+  return { replayUid, createdAt: nowIso };
+}
+
 /**
  * Offline emulation for fn_publish_battle_replay RPC.
  * Stores battle replay record with Top 10 detection and returns replay metadata.
@@ -261,97 +428,31 @@ export async function emulatePublishBattleReplay(
   const payload = (params.payload || params) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
 
   try {
-    let battleCode = String(payload.battleCode || payload.battle_code || '').trim();
-    if (!battleCode) {
-      const p1 = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const p2 = Math.random().toString(36).substring(2, 6).toUpperCase();
-      battleCode = `BTL-${p1}-${p2}`;
-    }
+    const norm = normalizePublishReplayPayload(payload, context);
 
-    const seasonId = String(payload.seasonId || payload.season_id || 'TEMPORADA ACTUAL');
-    const themeId = String(payload.themeId || payload.theme_id || 'masters_allstars');
-
-    const rawP1 = (payload.p1 || payload.p1_data || {}) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    const rawP2 = (payload.p2 || payload.p2_data || {}) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-
-    let p1UserId = String(payload.p1_user_id || rawP1.userId || context.userId || '');
-    const p2UserId = String(payload.p2_user_id || rawP2.userId || '');
-    if (!p1UserId) p1UserId = 'local_user';
-
-    const turnsCount = Number(payload.turnsCount ?? payload.turns_count ?? 0);
-    const winnerSide = String(payload.winnerSide || payload.winner_side || 'p1');
-    const choiceStream = payload.choiceStream || payload.choice_stream || [];
-    const initialSeed = payload.initialSeed || payload.initial_seed || [0, 0, 0, 0];
-
-    // Check if either participant is in Top 10
-    let isTop10 = Boolean(payload.isTop10Archived || payload.is_top10_archived);
-    if (!isTop10 && (p1UserId || p2UserId)) {
-      const top10Rows = await queryLocal(`
-        SELECT id FROM profiles
-        ORDER BY COALESCE(elo_rating, ${MIN_INITIAL_ELO}) DESC
-        LIMIT 10
-      `);
-      const top10Ids = new Set(top10Rows.map(r => String(r.id)));
-      if (top10Ids.has(p1UserId) || (p2UserId && top10Ids.has(p2UserId))) {
-        isTop10 = true;
-      }
-    }
+    const isTop10 = await checkReplayParticipantsTop10(
+      norm.p1UserUid,
+      norm.p2UserUid,
+      norm.isTop10Requested
+    );
 
     // Check if battle code already exists (views count increment)
-    const existingRows = await queryLocal('SELECT id, created_at, is_top10_archived, views_count FROM battle_replays WHERE battle_code = ?', [battleCode]);
+    const existingRows = await queryLocal('SELECT id, created_at, is_top10_archived, views_count FROM battle_replays WHERE battle_code = ?', [norm.battleCode]);
     const existing = existingRows[0];
     if (existing) {
-      await queryLocal('UPDATE battle_replays SET views_count = views_count + 1 WHERE battle_code = ?', [battleCode]);
-      await persistSQLite();
-
-      return {
-        data: {
-          ok: true,
-          replayId: String(existing.id),
-          battleCode,
-          isTop10Archived: Boolean(existing.is_top10_archived),
-          createdAt: String(existing.created_at)
-        },
-        error: null
-      };
+      return await handleExistingReplayViews(existing, norm.battleCode);
     }
 
-    const replayId = globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `replay_${getServerInstant().epochMilliseconds}`;
-    const nowIso = getServerInstant().toString();
+    const { replayUid, createdAt } = await insertNewBattleReplay(norm, isTop10);
 
-    await queryLocal(`
-      INSERT INTO battle_replays (
-        id, battle_code, season_id, theme_id, p1_user_id, p2_user_id,
-        p1_data, p2_data, turns_count, winner_side, choice_stream,
-        initial_seed, is_top10_archived, views_count, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
-    `, [
-      replayId,
-      battleCode,
-      seasonId,
-      themeId,
-      p1UserId || null,
-      p2UserId || null,
-      JSON.stringify(rawP1),
-      JSON.stringify(rawP2),
-      turnsCount,
-      winnerSide,
-      JSON.stringify(choiceStream),
-      JSON.stringify(initialSeed),
-      isTop10 ? 1 : 0,
-      nowIso
-    ]);
-
-    await persistSQLite();
-
-    logger.info('DBRouter', `[RankedRPC] Published battle replay ${battleCode} (id=${replayId}, isTop10=${isTop10})`);
+    logger.info('DBRouter', `[RankedRPC] Published battle replay ${norm.battleCode} (id=${replayUid}, isTop10=${isTop10})`);
     return {
       data: {
         ok: true,
-        replayId,
-        battleCode,
+        replayId: replayUid,
+        battleCode: norm.battleCode,
         isTop10Archived: isTop10,
-        createdAt: nowIso
+        createdAt
       },
       error: null
     };

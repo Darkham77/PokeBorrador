@@ -45,7 +45,7 @@ The project uses a unified audit coordinator located in `scripts/maintenance/aud
 
 - **Proportional Verification Protocol**:
   - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (takes ~1s). Running full project audits for documentation or skill edits is strictly forbidden.
-  - **In-Development Code**: Run `npm run lint` (takes ~3-5s) or `npm run audit` for full quality gate.
+  - **In-Development Code**: Run `npm run lint` (takes ~10s) or `npm run audit` for full quality gate.
   - **Safe-Commit Gatekeeper**: `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline to compare changes against `origin/main`.
 - **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
 - **Zero-Redundancy Guarantee**: Aggregator scripts must never duplicate sub-analyzers already embedded in `audit_project.ts` or sibling validation suites.
@@ -69,7 +69,7 @@ The project uses a unified audit coordinator located in `scripts/maintenance/aud
 
 ## 🚨 Non-Negotiable Quality Rules
 
-1. **Zero-Warning**: `npm run lint` and `npm run validate:types` MUST return 0 errors and 0 warnings before any commit.
+1. **Zero-Warning**: `npm run lint` (which executes `npm run audit:lint` running 10 parallel sub-auditors) and `npm run audit` MUST return 0 errors before any commit.
 2. **SASS Capitalization (Automated)**: SASS capitalization for CSS filters/transforms (`Scale()`, `Translate()`, etc.) is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build, meaning no manual capitalization or separate linting checks are required.
 3. **Dependency Shield**: Any script using external libraries must handle `ImportError` and provide clear installation instructions.
 4. **Audit Bypass**: If a violation is intentional by design, use the `// [PureVue-Ignore]` comment. The audit engine checks the **current line and the line immediately above** to support Vue/HTML attributes that span multiple lines.
@@ -110,7 +110,7 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 
 ### 🛡️ Core Validation
 
-- `npm run validate:types`: TypeScript type integrity verification (Zero Errors).
+- `npm run validate:types`: TypeScript and Vue SFC type integrity validator (`validate_type_check.ts` sub-auditor wrapping `vue-tsc --noEmit`).
 - `npm run validate:sql`: SQL schema and migration validator against local engine.
 - `npm run validate:items`: Integrity audit for item and object databases.
 - `npm run validate:items:summary`: Runs item database validation in summary mode.
@@ -125,7 +125,7 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run validate:sprites`: Sprite integrity validator across 9 generations.
 - `npm run validate:domain-types`: Domain-Type-First contract compliance auditor.
 - `npm run validate:o1`: $O(1)$ data structures and algorithmic performance auditor.
-- `npm run audit`: Unified standards scan. Displays summary Box-Drawing table in terminal and writes full JSON to `scratch/audits/latest_audit.json`. Accepts filters (e.g. `npm run audit --errors-only`, `npm run audit dox`, `npm run audit domain_data`).
+- `npm run audit`: Unified standards scan. Displays summary Box-Drawing table in terminal and writes full JSON to `scratch/audits/latest_audit.json`. Accepts filters (e.g. `npm run audit errors-only`, `npm run audit rule=dox`, `npm run audit family=domain_data`).
 - `npm run audit:warnings` / `npm run audit:summary`: Consolidated Box-Drawing report of all warnings and errors grouped by category from `scratch/audits/latest_audit.json`. Supports `category=<category>` (e.g., `category=complejidad`, `category=dead-code`), `top=<N>`, and `json`.
 - `npm run audit:complexity`: Calculates and summarizes cognitive and cyclomatic complexity hotspots via Fallow AST.
 - `npm run audit:complexity:top`: Lists top 50 highest complexity functions across production layers.
@@ -135,9 +135,13 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run audit:fallow:dead-code`: Fallow unused exports, orphan files, and dependency analyzer.
 - `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
 - `npm run audit:dox`: Dedicated DOX (AGENTS.md) integrity auditor.
-- `npm run lint`: Style and syntax verification (includes type-check).
-- `npm run lint:report`: Runs ESLint with cache enabled and saves a codeframe report in `scratch/lint_report.txt`.
+- `npm run lint`: Fast developer lint executing 10 core sub-auditors in parallel (`npm run audit:lint`).
+- `npm run lint:fix`: Auto-fixes lint and formatting issues via `npm run audit:lint fix`.
+- `npm run audit:summary` / `npm run audit:errors`: Consolidated Box-Drawing report of errors and warnings from `scratch/audits/latest_audit.json`.
+- `npm run audit:findings json`: Structured JSON report for AI agents and CLI tools with zero intermediate tooling.
 - `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
+- `npm run test:migrations`: Runs the isolated dual-engine migration validation suite (`backup_migration_real.test.ts`) against the real production backup fixture (SQLite in-memory + ephemeral PostgreSQL container). Excluded from standard daily runs to preserve developer iteration speed.
+- `npm run database:test-migrations`: Convenience alias for `npm run test:migrations`.
 - `npm run test:all`: Sequentially runs the full test suite (`test`).
 - `npm run sim:e2e`: Runs E2E browser and UI synchronization tests using Playwright.
 - `npm run sim:e2e:combat`: Runs only the battle-related E2E tests (FSM sync, held items, weather).
@@ -160,7 +164,7 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run test:combat:choice`: Runs the unit test suite verifying Choice item locking and UI disabling behavior.
 - `npm run test:combat:choice:report`: Runs the choice test and saves the verbose report in `scratch/choice_report.txt`.
 - `npm run sim:combat:all:report`: Runs the entire combat suite and outputs reports to `scripts/e2e/results/playwright_report.txt`.
-- `npm run database:generate-migrations`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest.
+- `npm run database:generate-migrations`: Scans local SQL migration files under `database/migrations/`, compiles `migrations_data.ts`, and automatically runs `npm run validate:sql` followed by `npm run test:migrations`. Rejects and aborts with exit code 1 if any migration fails against the real backup fixture. Pure code generation for Vite (`vite.config.ts`) runs in ~10ms without tests.
 - `npm run sync:test`: **Test Repo Sync**. Copies the full source tree to sibling `pokevicio-test` repository.
 
 ### ⚔️ Battle Engine (FSM Mastery)

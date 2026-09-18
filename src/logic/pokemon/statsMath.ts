@@ -47,7 +47,7 @@ export type StatIDExceptHP = Exclude<PokemonStatKey, 'hp'>;
 export const COMBAT_STAT_IDS = POKEMON_STAT_KEYS.filter((s): s is StatIDExceptHP => s !== 'hp');
 export const COMBAT_STAT_IDS_SET: ReadonlySet<string> = new Set(COMBAT_STAT_IDS); // runtime-set: Fast O(1) membership lookup set
 
-export const POKEMON_STAT_KEYS_SET: ReadonlySet<string> = new Set(POKEMON_STAT_KEYS); // runtime-set: Fast O(1) membership lookup set
+const POKEMON_STAT_KEYS_SET: ReadonlySet<string> = new Set(POKEMON_STAT_KEYS); // runtime-set: Fast O(1) membership lookup set
 
 export const STAT_NAMES_ES: Record<PokemonStatKey, string> = {
   hp: 'PS',

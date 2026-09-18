@@ -270,7 +270,7 @@ defineExpose({
   }
 
   &.is-active {
-    transform: Scale(0.9) !important;
+    transform: Scale(0.9);
     border-color: #ff453a !important;
   }
 
@@ -462,7 +462,7 @@ defineExpose({
 
   &:hover {
     @include m.shell-hover-blue;
-    transform: none !important; // Zero movement to prevent sticking
+    transform: none; // Zero movement to prevent sticking
     outline: none;
     
     .ball-sprite-wrapper .ball-icon-mini {

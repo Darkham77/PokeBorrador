@@ -1,19 +1,18 @@
 <script setup lang="ts">
-
 import { computed } from 'vue'
-import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
+import type { ItemId } from '@/data/inventory/items'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 import InventoryItemCard from '@/components/modals/inventory/InventoryItemCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { ITEM_TIERS, type Inventory, type ItemTier } from '@/types/inventory/items'
-
-const ITEM_TIERS_SET: ReadonlySet<string> = new Set(ITEM_TIERS) // runtime-set: Fast O(1) membership lookup set
-
-function requireItemTier(value: string | undefined): ItemTier | undefined {
-  if (value === undefined) return undefined
-  if (ITEM_TIERS_SET.has(value)) return value as ItemTier
-  throw new Error(`Invalid item tier: ${value}`)
-}
+import type { Inventory } from '@/types/inventory/items'
+import {
+  isTradeGiftMode,
+  resolveTradePokemonButtonText,
+  resolveTradeCreditsLabel,
+  formatTradeMaxMoney,
+  mapInventoryItems,
+  getItemQuantity
+} from '@/components/social/tradeSidePanelHelper'
 
 const DEFAULT_MAX_MONEY = 999999
 
@@ -45,26 +44,24 @@ const emit = defineEmits<{
   (e: 'update:money', val: number): void
 }>()
 
+const isGiftMode = computed(() => isTradeGiftMode(props.isGift, props.isFriendSide))
+const showTradeSections = computed(() => !isGiftMode.value)
+const pokemonBtnText = computed(() => resolveTradePokemonButtonText(props.isFriendSide))
+const creditsLabel = computed(() => resolveTradeCreditsLabel(props.isFriendSide))
+const maxMoneyText = computed(() => formatTradeMaxMoney(props.maxMoney))
+
+const mappedItems = computed(() => mapInventoryItems(props.inventory))
+
 const handleMoneyInput = (e: Event) => {
   const val = parseInt((e.target as HTMLInputElement).value) || 0
   emit('update:money', val)
 }
 
-const mappedItems = computed(() => {
-  return (Object.entries(props.inventory || {}) as [string, number | undefined][])
-    .filter((entry): entry is [ItemId, number] => typeof entry[1] === 'number' && entry[1] > 0 && isItemId(entry[0]))
-    .map(([id, qty]) => {
-      const dbItem = getItemById(id)
-      return {
-        id: dbItem.id,
-        name: dbItem.name,
-        qty,
-        desc: dbItem.desc ?? '',
-        sprite: dbItem.sprite ?? dbItem.id,
-        tier: requireItemTier(dbItem.tier)
-      }
-    })
-})
+const getItemQty = (itemId: ItemId) => getItemQuantity(props.selectedItems, itemId)
+const isItemDecDisabled = (itemId: ItemId) => getItemQty(itemId) <= 1
+const isItemIncDisabled = (itemId: ItemId, maxQty: number) => getItemQty(itemId) >= maxQty
+const handleDecrement = (itemId: ItemId) => emit('update-item-qty', itemId, getItemQty(itemId) - 1)
+const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getItemQty(itemId) + 1)
 </script>
 
 <template>
@@ -78,7 +75,7 @@ const mappedItems = computed(() => {
     
     <!-- Pokemon Display Card / Selector -->
     <div
-      v-if="!isGift || !isFriendSide"
+      v-if="showTradeSections"
       class="selected-poke-display"
     >
       <div
@@ -101,13 +98,13 @@ const mappedItems = computed(() => {
         @click.stop="emit('open-selector')"
       >
         <span class="plus-icon">+</span>
-        <span class="btn-text">{{ isFriendSide ? 'PEDIR POKÉMON' : 'OFRECER POKÉMON' }}</span>
+        <span class="btn-text">{{ pokemonBtnText }}</span>
       </button>
     </div>
 
     <!-- Items Grid -->
     <div
-      v-if="(!isGift || !isFriendSide) && mappedItems.length > 0"
+      v-if="showTradeSections && mappedItems.length > 0"
       class="item-selection-grid custom-scrollbar"
     >
       <div
@@ -117,7 +114,7 @@ const mappedItems = computed(() => {
       >
         <InventoryItemCard
           :item="item"
-          :is-selected="!!selectedItems[item.id]"
+          :is-selected="Boolean(selectedItems[item.id])"
           @click.stop="emit('toggle-item', item.id)"
         />
         <!-- Quantity control overlay when selected -->
@@ -128,16 +125,16 @@ const mappedItems = computed(() => {
         >
           <button
             class="qty-btn dec"
-            :disabled="(selectedItems[item.id] ?? 0) <= 1"
-            @click="emit('update-item-qty', item.id, (selectedItems[item.id] ?? 0) - 1)"
+            :disabled="isItemDecDisabled(item.id)"
+            @click="handleDecrement(item.id)"
           >
             -
           </button>
-          <span class="qty-val">{{ selectedItems[item.id] ?? 0 }}</span>
+          <span class="qty-val">{{ getItemQty(item.id) }}</span>
           <button
             class="qty-btn inc"
-            :disabled="(selectedItems[item.id] ?? 0) >= item.qty"
-            @click="emit('update-item-qty', item.id, (selectedItems[item.id] ?? 0) + 1)"
+            :disabled="isItemIncDisabled(item.id, item.qty)"
+            @click="handleIncrement(item.id)"
           >
             +
           </button>
@@ -151,7 +148,7 @@ const mappedItems = computed(() => {
       </div>
     </div>
     <div
-      v-else-if="!isGift || !isFriendSide"
+      v-else-if="showTradeSections"
       class="empty-items-state"
     >
       Sin objetos en la mochila
@@ -159,12 +156,12 @@ const mappedItems = computed(() => {
 
     <!-- Money Input Group -->
     <div
-      v-if="!isGift || !isFriendSide"
+      v-if="showTradeSections"
       class="money-input-group"
     >
       <label class="money-label">
-        <span class="label-text">{{ isFriendSide ? 'PEDIR CRÉDITOS' : 'OFRECER CRÉDITOS' }}</span>
-        <span class="max-text">MÁX: ₱{{ maxMoney.toLocaleString() }}</span>
+        <span class="label-text">{{ creditsLabel }}</span>
+        <span class="max-text">{{ maxMoneyText }}</span>
       </label>
       <div class="money-input-wrapper">
         <span class="currency-symbol">₱</span>
@@ -181,7 +178,7 @@ const mappedItems = computed(() => {
 
     <!-- Gift Overlay -->
     <div
-      v-if="isGift && isFriendSide"
+      v-if="isGiftMode"
       class="gift-overlay"
     >
       <div class="gift-content">

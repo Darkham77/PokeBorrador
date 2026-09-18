@@ -14,7 +14,6 @@ import type {
 } from '@/types/system/stores'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { GameState } from '@/types/system/game'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 
 import type { ItemId } from '@/data/inventory/itemIds.ts'
 import { isItemId } from '@/data/inventory/items.ts'
@@ -39,33 +38,6 @@ export const useTradeStore = defineStore('trade', () => {
   const pendingIncoming = ref<TradeOffer[]>([])
   const pendingOutgoing = ref<TradeOffer[]>([])
   const pendingAccepted = ref<TradeOffer[]>([])
-
-  let tradeChannel: RealtimeChannel | null = null
-
-  async function subscribeTradeNotifs() {
-    if (!authStore.user || authStore.sessionMode === 'offline') return
-    if (tradeChannel) tradeChannel.unsubscribe()
-
-    const db = gameStore.db
-    if (!db) return
-    tradeChannel = db.channel('trade-notifs-' + authStore.user.id)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'claim_queue',
-        filter: `user_id=eq.${authStore.user.id}`
-      }, () => {
-        uiStore.notify(' ¡Nuevos activos disponibles para reclamar!', '🎁')
-        gameStore.fetchClaimQueue()
-      })
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'trade_offers',
-        filter: `receiver_id=eq.${authStore.user.id}`
-      }, () => {
-        uiStore.notify('¡Has recibido una nueva oferta de intercambio!', '🔄')
-        audioStore.play('shiny') // Sonido de notificación
-        refreshPendingTrades()
-      })
-      .subscribe()
-  }
 
   async function refreshPendingTrades() {
     if (!authStore.user) return
@@ -125,53 +97,100 @@ export const useTradeStore = defineStore('trade', () => {
     uiStore.open('Trade')
   }
 
+function validateTradeOfferInputs(
+  target: { id: string; username: string } | null,
+  offerPoke: Pokemon | null,
+  offerItems: Partial<Record<ItemId, number>>,
+  offerMoney: number,
+  currentMoney: number,
+  lockedUids: Set<string>
+): { isValid: boolean; errorMsg?: string; icon?: string } {
+  if (!target) return { isValid: false }
+
+  const hasOffer = offerPoke !== null || Object.keys(offerItems).length > 0 || offerMoney > 0
+  if (!hasOffer) {
+    return { isValid: false, errorMsg: 'Tenés que ofrecer algo.', icon: '⚠️' }
+  }
+
+  if (offerMoney > currentMoney) {
+    return { isValid: false, errorMsg: 'No tenés suficiente dinero.', icon: '💸' }
+  }
+
+  if (offerPoke) {
+    if (isPokemonBusy(offerPoke)) {
+      return { isValid: false, errorMsg: 'No puedes comerciar o intercambiar un Pokémon en misión, evento o guardería.', icon: '⚠️' }
+    }
+    const isIllegal = offerPoke.isIllegal || (
+      offerPoke.id && offerPoke.moves
+        ? !checkPokemonLegality(offerPoke).isLegal
+        : false
+    )
+    if (isIllegal) {
+      return { isValid: false, errorMsg: 'No puedes comerciar o intercambiar un Pokémon ilegal.', icon: '⚠️' }
+    }
+    if (lockedUids.has(offerPoke.uid)) {
+      return { isValid: false, errorMsg: 'Este Pokémon ya está en otra oferta pendiente.', icon: '⚠️' }
+    }
+  }
+
+  return { isValid: true }
+}
+
+function deductTradeEscrow(
+  inventory: Partial<Record<ItemId, number>>,
+  items: Partial<Record<ItemId, number>>,
+  money: number,
+  state: { money: number }
+): void {
+  for (const [itemName, qty] of Object.entries(items)) {
+    if (isItemId(itemName) && typeof qty === 'number' && inventory[itemName]) {
+      inventory[itemName] -= qty
+      if (inventory[itemName] <= 0) {
+        delete inventory[itemName]
+      }
+    }
+  }
+  if (money > 0) {
+    state.money -= money
+  }
+}
+
+function rollbackTradeEscrow(
+  inventory: Partial<Record<ItemId, number>>,
+  items: Partial<Record<ItemId, number>>,
+  money: number,
+  state: { money: number }
+): void {
+  for (const [itemName, qty] of Object.entries(items)) {
+    if (isItemId(itemName) && typeof qty === 'number') {
+      inventory[itemName] = (inventory[itemName] || 0) + qty
+    }
+  }
+  if (money > 0) {
+    state.money += money
+  }
+}
+
   async function sendTradeOffer({ isGift, offerMoney, requestMoney, message }: { isGift: boolean; offerMoney: number; requestMoney: number; message: string }) {
     if (!tradeTarget.value) return false
 
-    const hasOffer = tradeOfferPoke.value !== null || Object.keys(tradeOfferItems).length > 0 || offerMoney > 0
-    if (!hasOffer) {
-      uiStore.notify('Tenés que ofrecer algo.', '⚠️')
+    const validation = validateTradeOfferInputs(
+      tradeTarget.value,
+      tradeOfferPoke.value,
+      tradeOfferItems,
+      offerMoney,
+      gameStore.state.money,
+      lockedUids.value
+    )
+    if (!validation.isValid) {
+      if (validation.errorMsg) {
+        uiStore.notify(validation.errorMsg, validation.icon || '⚠️')
+      }
       return false
-    }
-
-    if (offerMoney > gameStore.state.money) {
-      uiStore.notify('No tenés suficiente dinero.', '💸')
-      return false
-    }
-
-    // Anti-Duplicate and Legality check
-    if (tradeOfferPoke.value) {
-      if (isPokemonBusy(tradeOfferPoke.value)) {
-        uiStore.notify('No puedes comerciar o intercambiar un Pokémon en misión, evento o guardería.', '⚠️')
-        return false
-      }
-      const isIllegal = tradeOfferPoke.value.isIllegal || (
-        tradeOfferPoke.value.id && tradeOfferPoke.value.moves
-          ? !checkPokemonLegality(tradeOfferPoke.value).isLegal
-          : false
-      )
-      if (isIllegal) {
-        uiStore.notify('No puedes comerciar o intercambiar un Pokémon ilegal.', '⚠️')
-        return false
-      }
-      if (lockedUids.value.has(tradeOfferPoke.value.uid)) {
-        uiStore.notify('Este Pokémon ya está en otra oferta pendiente.', '⚠️')
-        return false
-      }
     }
 
     // MANDATORY: Deduct items locally before saving to SQLite so DBs match
-    for (const [itemName, qty] of Object.entries(tradeOfferItems)) {
-      if (isItemId(itemName) && typeof qty === 'number' && gameStore.state.inventory[itemName]) {
-        gameStore.state.inventory[itemName] -= qty
-        if (gameStore.state.inventory[itemName] <= 0) {
-          delete gameStore.state.inventory[itemName]
-        }
-      }
-    }
-    if (offerMoney > 0) {
-      gameStore.state.money -= offerMoney
-    }
+    deductTradeEscrow(gameStore.state.inventory, tradeOfferItems, offerMoney, gameStore.state)
 
     // MANDATORY: Pre-Action Flush (Always save before social actions with assets)
     uiStore.notify('Sincronizando inventario...', '🔄')
@@ -196,14 +215,7 @@ export const useTradeStore = defineStore('trade', () => {
       return true
     } else {
       // ROLLBACK LOCAL: Si falla, devolver los items
-      for (const [itemName, qty] of Object.entries(tradeOfferItems)) {
-        if (isItemId(itemName) && typeof qty === 'number') {
-          gameStore.state.inventory[itemName] = (gameStore.state.inventory[itemName] || 0) + qty
-        }
-      }
-      if (offerMoney > 0) {
-        gameStore.state.money += offerMoney
-      }
+      rollbackTradeEscrow(gameStore.state.inventory, tradeOfferItems, offerMoney, gameStore.state)
       logger.error('TRADE', `Error al enviar oferta: ${(error as Error).message}`)
       uiStore.notify('Error al enviar oferta: ' + (error as { message: string }).message, '❌')
       return false
@@ -314,7 +326,6 @@ export const useTradeStore = defineStore('trade', () => {
     pendingAccepted,
     pendingCount,
     lockedUids,
-    subscribeTradeNotifs,
     refreshPendingTrades,
     openTradeModal,
     sendTradeOffer,

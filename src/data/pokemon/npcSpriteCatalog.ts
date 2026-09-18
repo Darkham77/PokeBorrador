@@ -1337,11 +1337,11 @@ export const ARCHETYPE_SPRITES = {
 export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRITES][number];
 export type NpcArchetypeId = keyof typeof ARCHETYPE_SPRITES;
 
-export function isNpcArchetypeId(value: string): value is NpcArchetypeId {
+function isNpcArchetypeId(value: string): value is NpcArchetypeId {
   return Object.hasOwn(ARCHETYPE_SPRITES, value);
 }
 
-export function requireNpcArchetypeId(value: string): NpcArchetypeId {
+function requireNpcArchetypeId(value: string): NpcArchetypeId {
   if (isNpcArchetypeId(value)) return value;
   throw new Error(`[npcSpriteCatalog] Invalid NPC Archetype ID: ${value}`);
 }

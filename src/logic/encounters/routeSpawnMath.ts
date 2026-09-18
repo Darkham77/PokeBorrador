@@ -37,20 +37,15 @@ export interface EncounterTicketOptions {
   mewtwoTicketSecs?: number;
 }
 
-export const ARTICUNO_TICKET_SPAWN_WEIGHT = 1;
-export const MEWTWO_TICKET_SPAWN_WEIGHT = 0.1;
+const ARTICUNO_TICKET_SPAWN_WEIGHT = 1;
+const MEWTWO_TICKET_SPAWN_WEIGHT = 0.1;
 
-export function getEncounterPool(
+function populateBaseSpawns(
   loc: MapLocation,
   cycle: DayPhase,
-  weather: WeatherId,
-  activeEvents: GameEvent[] = [],
-  tickets?: EncounterTicketOptions
-): { pool: PokemonSpeciesId[]; rates: number[] } {
-  const pool: PokemonSpeciesId[] = [];
-  const rates: number[] = [];
-
-  // 1. Población base
+  pool: PokemonSpeciesId[],
+  rates: number[]
+): void {
   const cyclePool = loc.wild?.[cycle] || loc.wild?.day || [];
   const cycleRates = loc.rates?.[cycle] || loc.rates?.day || [];
 
@@ -58,76 +53,111 @@ export function getEncounterPool(
     pool.push(id);
     rates.push(cycleRates[index] !== undefined ? cycleRates[index] : DEFAULT_SPAWN_RATE_WEIGHT);
   });
+}
 
+function resolveWeatherConfig(loc: MapLocation, weather: WeatherId) {
+  if (weather === 'clear') return undefined;
   let wConfig = loc.weather?.[weather];
-  if (!wConfig && weather !== 'clear') {
+  if (!wConfig) {
     const family = requireWeatherFamilyId(weather);
     if (loc.weather?.[family]) {
       wConfig = loc.weather[family];
     }
   }
+  return wConfig;
+}
 
-  if (weather !== 'clear' && wConfig) {
-    if (wConfig.exclusive) {
-      const exclusives = getSpeciesEntries(wConfig.exclusive);
-      exclusives.forEach(({ id, weight }) => {
-        if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
-          return;
-        }
-        if (!pool.includes(id)) {
-          pool.push(id);
-          rates.push(weight ?? DEFAULT_EXCLUSIVE_SPAWN_WEIGHT);
-        }
-      });
+function injectWeatherEntries(
+  entries: Array<{ id: PokemonSpeciesId; weight?: number }>,
+  cycle: DayPhase,
+  weather: WeatherId,
+  defaultWeight: number,
+  pool: PokemonSpeciesId[],
+  rates: number[]
+): void {
+  entries.forEach(({ id, weight }) => {
+    if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
+      return;
     }
+    if (!pool.includes(id)) {
+      pool.push(id);
+      rates.push(weight !== undefined ? weight : defaultWeight);
+    }
+  });
+}
 
-    if (wConfig.visitors) {
-      const visitors = getSpeciesEntries(wConfig.visitors);
-      visitors.forEach(({ id, weight }) => {
-        if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
-          return;
-        }
-        if (!pool.includes(id)) {
-          pool.push(id);
-          rates.push(weight !== undefined ? weight : DEFAULT_VISITOR_SPAWN_WEIGHT);
-        }
-      });
+function injectWeatherSpawns(
+  loc: MapLocation,
+  cycle: DayPhase,
+  weather: WeatherId,
+  pool: PokemonSpeciesId[],
+  rates: number[]
+): void {
+  const wConfig = resolveWeatherConfig(loc, weather);
+  if (!wConfig) return;
+
+  if (wConfig.exclusive) {
+    injectWeatherEntries(getSpeciesEntries(wConfig.exclusive), cycle, weather, DEFAULT_EXCLUSIVE_SPAWN_WEIGHT, pool, rates);
+  }
+  if (wConfig.visitors) {
+    injectWeatherEntries(getSpeciesEntries(wConfig.visitors), cycle, weather, DEFAULT_VISITOR_SPAWN_WEIGHT, pool, rates);
+  }
+}
+
+function extractEventSpecies(ev: GameEvent): PokemonSpeciesId[] {
+  const cfg = safeParse(ev.config) as EventConfig;
+  if (!ev.active || !cfg?.ignoreTimeRestrictions) return [];
+  const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, getGMT3Date()) : null;
+  const rawSpecies = rotation?.species ?? cfg.species;
+  if (!rawSpecies || rawSpecies === '*') return [];
+  return rawSpecies
+    .split(',')
+    .map((s: string) => s.trim().toLowerCase())
+    .filter(isPokemonSpeciesId);
+}
+
+function injectSingleEventSpecies(
+  spId: PokemonSpeciesId,
+  loc: MapLocation,
+  pool: PokemonSpeciesId[],
+  rates: number[]
+): void {
+  if (pool.includes(spId)) return;
+  const wild = loc.wild || {};
+  for (const c of DAY_PHASES) {
+    const cp = wild[c];
+    if (!cp) continue;
+    const idx = cp.indexOf(spId);
+    if (idx !== -1) {
+      pool.push(spId);
+      const originalRates = loc.rates?.[c] || [];
+      rates.push(originalRates[idx] || DEFAULT_VISITOR_SPAWN_WEIGHT);
+      break;
     }
   }
+}
 
-  // 2. Inyección por Eventos Dinámicos
-  if (activeEvents && activeEvents.length > 0) {
-    activeEvents.forEach(ev => {
-      const cfg = safeParse(ev.config) as EventConfig;
-      if (!ev.active || !cfg?.ignoreTimeRestrictions) return;
-      const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, getGMT3Date()) : null;
-      const rawSpecies = rotation?.species ?? cfg.species;
-      if (rawSpecies && rawSpecies !== '*') {
-        const eventSpecies = rawSpecies
-          .split(',')
-          .map((s: string) => s.trim().toLowerCase())
-          .filter(isPokemonSpeciesId);
-        eventSpecies.forEach((spId: PokemonSpeciesId) => {
-          if (!pool.includes(spId)) {
-            const wild = loc.wild || {};
-            for (const c of DAY_PHASES) {
-              const cp = wild[c];
-              if (!cp) continue;
-              const idx = cp.indexOf(spId);
-              if (idx !== -1) {
-                pool.push(spId);
-                const originalRates = loc.rates?.[c] || [];
-                rates.push(originalRates[idx] || DEFAULT_VISITOR_SPAWN_WEIGHT);
-                break;
-              }
-            }
-          }
-        });
-      }
-    });
+function injectEventSpawns(
+  loc: MapLocation,
+  activeEvents: GameEvent[],
+  pool: PokemonSpeciesId[],
+  rates: number[]
+): void {
+  if (!activeEvents || activeEvents.length === 0) return;
+  for (const ev of activeEvents) {
+    const speciesList = extractEventSpecies(ev);
+    for (const spId of speciesList) {
+      injectSingleEventSpecies(spId, loc, pool, rates);
+    }
   }
+}
 
-  // 3. Inyección por Tickets de Legendarios (Consumibles)
+function injectTicketSpawns(
+  loc: MapLocation,
+  tickets: EncounterTicketOptions | undefined,
+  pool: PokemonSpeciesId[],
+  rates: number[]
+): void {
   if (tickets?.articunoTicketSecs && tickets.articunoTicketSecs > 0 && loc.id === 'seafoam_islands') {
     if (!pool.includes('articuno')) {
       pool.push('articuno');
@@ -141,6 +171,22 @@ export function getEncounterPool(
       rates.push(MEWTWO_TICKET_SPAWN_WEIGHT);
     }
   }
+}
+
+export function getEncounterPool(
+  loc: MapLocation,
+  cycle: DayPhase,
+  weather: WeatherId,
+  activeEvents: GameEvent[] = [],
+  tickets?: EncounterTicketOptions
+): { pool: PokemonSpeciesId[]; rates: number[] } {
+  const pool: PokemonSpeciesId[] = [];
+  const rates: number[] = [];
+
+  populateBaseSpawns(loc, cycle, pool, rates);
+  injectWeatherSpawns(loc, cycle, weather, pool, rates);
+  injectEventSpawns(loc, activeEvents, pool, rates);
+  injectTicketSpawns(loc, tickets, pool, rates);
 
   return { pool, rates };
 }

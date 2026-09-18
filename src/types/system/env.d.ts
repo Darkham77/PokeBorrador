@@ -117,6 +117,7 @@ declare global {
     enemy?: DebugPokemon | null;
     _p?: DebugPinia;
     activeBattle?: unknown;
+    animations?: unknown;
     clearLogs?: () => void;
     completeBattleFlow?: (option?: string) => Promise<void>;
     fsm?: {
@@ -143,6 +144,13 @@ declare global {
         enemy?: DebugPokemon | null;
       } | null;
     } | null;
+  }
+
+  interface DebugMapStore {
+    setFreezeClock: (freeze: boolean) => void;
+    currentEpochHour: number;
+    forcedCycle: import('@/logic/utils/timeUtils').DayPhase | null;
+    globalWeather: import('@/logic/weather/weatherRegistry').WeatherId | null;
   }
 
   interface ViteDebugApi {
@@ -233,7 +241,10 @@ declare global {
     __showdownWorker__?: Worker;
     __SIMULATOR_BATTLE__?: { p1?: { active?: Array<{ hp?: number }> }; p2?: { active?: Array<{ hp?: number }> } };
     __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown;
+    __VITE_DEBUG_MAP_STORE_RESOLVER__?: () => DebugMapStore | undefined;
+    __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => ReturnType<typeof import('@/stores/game').useGameStore>;
     showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // domain-ok: Open dynamic text or non-domain string payload // string-ok: Internal string formatting or DOM token identifier // open-record: Generic key-value data dictionary container
+    __CURRENT_BATTLE_WEATHER__?: string; // domain-ok: Open dynamic text or non-domain string payload
     __WEATHER_SESSION_SEED__?: number;
     __GET_DB_TIME_OFFSET__?: () => number;
     gsap?: typeof import('gsap').gsap;

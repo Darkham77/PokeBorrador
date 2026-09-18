@@ -2,13 +2,9 @@
 /**
  * EggWarehouse.vue
  */
-const CARD_HOVER_OFFSET_Y_PX = -4
-const CRIADOR_CLASS_MIN_LEVEL = 20
-const MAX_INVENTORY_EGGS_LIMIT = 6
-const MAX_WAREHOUSE_EGGS_CAPACITY = 30
-const GSAP_CARD_TRANSITION_DUR_SEC = 0.25
-const GSAP_TRASH_TRANSITION_DUR_SEC = 0.2
-const GSAP_TRASH_HOVER_SCALE = 1.1
+const CRIADOR_CLASS_MIN_LEVEL = 20;
+const MAX_INVENTORY_EGGS_LIMIT = 6;
+const MAX_WAREHOUSE_EGGS_CAPACITY = 30;
 import { useBreedingStore } from '@/stores/breeding';
 import { useUIStore } from '@/stores/ui';
 import { useGameStore } from '@/stores/game';
@@ -16,9 +12,8 @@ import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { DaycareEgg } from '@/types/breeding/breeding';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import EggSprite from '@/components/common/EggSprite.vue';
+import EggWarehouseCard from './EggWarehouseCard.vue';
 
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
 
@@ -34,11 +29,6 @@ const getPokemonName = (id: string) => {
   return POKEMON_DB[specId]?.name || 'Huevo'
 }
 
-const getEggTierInfo = (egg: DaycareEgg) => {
-  if (!egg.ivs) return null;
-  // getPokemonTier expects Partial<Pokemon>
-  return getPokemonTier({ ivs: egg.ivs });
-};
 
 // Cooldown countdown for scanner (Available 1 time per day)
 const cooldownText = ref('');
@@ -156,87 +146,7 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
   });
 };
 
-const handleCardMouseEnter = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement;
-  gsap.to(el, {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(244, 63, 94, 0.5)',
-    y: CARD_HOVER_OFFSET_Y_PX,
-    boxShadow: '0 8px 24px rgba(244, 63, 94, 0.15)',
-    duration: GSAP_CARD_TRANSITION_DUR_SEC,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  });
-  
-  const visual = el.querySelector('.egg-visual');
-  const info = el.querySelector('.egg-info');
-  const action = el.querySelector('.egg-hover-action');
-  
-const GSAP_EGG_CARD_HOVER_MIN_SCALE = 0.95
 
-  if (visual) {
-    gsap.to(visual, { opacity: 0, y: -8, scale: GSAP_EGG_CARD_HOVER_MIN_SCALE, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
-  }
-  if (info) {
-    gsap.to(info, { opacity: 0, y: -8, scale: GSAP_EGG_CARD_HOVER_MIN_SCALE, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
-  }
-  if (action) {
-    gsap.to(action, { opacity: 1, scale: 1, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
-  }
-};
-
-const GSAP_EGG_CARD_UNSCANNED_HOVER_SCALE = 0.85
-
-const handleCardMouseLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement;
-  gsap.to(el, {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    y: 0,
-    boxShadow: 'none',
-    duration: GSAP_CARD_TRANSITION_DUR_SEC,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  });
-  
-  const visual = el.querySelector('.egg-visual');
-  const info = el.querySelector('.egg-info');
-  const action = el.querySelector('.egg-hover-action');
-  
-  if (visual) {
-    gsap.to(visual, { opacity: 1, y: 0, scale: 1, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
-  }
-  if (info) {
-    gsap.to(info, { opacity: 1, y: 0, scale: 1, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
-  }
-  if (action) {
-    gsap.to(action, { opacity: 0, scale: GSAP_EGG_CARD_UNSCANNED_HOVER_SCALE, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
-  }
-};
-
-const handleTrashMouseEnter = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement;
-  gsap.to(el, {
-    backgroundColor: 'rgba(239, 68, 68, 0.4)',
-    color: '#ffffff',
-    scale: GSAP_TRASH_HOVER_SCALE,
-    duration: GSAP_TRASH_TRANSITION_DUR_SEC,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  });
-};
-
-const handleTrashMouseLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement;
-  gsap.to(el, {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    color: '#f87171',
-    scale: 1.0,
-    duration: GSAP_TRASH_TRANSITION_DUR_SEC,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  });
-};
 </script>
 
 <template>
@@ -278,107 +188,15 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
       v-else
       class="egg-grid"
     >
-      <div 
-        v-for="egg in breedingStore.warehouseEggs" 
-        :id="'egg-card-' + egg.id" 
+      <EggWarehouseCard
+        v-for="egg in breedingStore.warehouseEggs"
         :key="egg.id"
-        class="egg-card"
-        @click.stop="handleClaim(egg)"
-        @mouseenter="handleCardMouseEnter"
-        @mouseleave="handleCardMouseLeave"
-      >
-        <!-- Trash button to discard egg (only if scanned) -->
-        <button 
-          v-if="egg.inherited_ivs?._scanned"
-          class="egg-trash-btn"
-          title="Tirar huevo"
-          @click.stop="handleDeleteEgg(egg)"
-          @mouseenter="handleTrashMouseEnter"
-          @mouseleave="handleTrashMouseLeave"
-        >
-          <span class="emoji">🗑️</span>
-        </button>
-
-        <div class="egg-visual">
-          <div class="egg-sprite">
-            <EggSprite
-              :tint="egg.tint"
-              size="48"
-              class="egg-sprite-img"
-            />
-          </div>
-          <div
-            v-if="egg.inherited_ivs?._scanned"
-            class="scanned-badge"
-          >
-            <span class="emoji">🔍</span> ESCANEADO
-          </div>
-        </div>
-        
-        <div class="egg-info">
-          <div class="name">
-            {{ egg.inherited_ivs?._scanned ? getPokemonName(egg.species) : 'HUEVO POKÉMON' }}
-          </div>
-          
-          <!-- Colored IV Grade Badge -->
-          <div
-            v-if="egg.inherited_ivs?._scanned && getEggTierInfo(egg)"
-            class="egg-grade-container"
-          >
-            <span 
-              class="egg-grade-badge" 
-              :style="{ 
-                '--tier-color': getEggTierInfo(egg)!.color, 
-                '--tier-bg': getEggTierInfo(egg)!.bg 
-              }"
-            >
-              GRADO {{ getEggTierInfo(egg)!.tier }}
-            </span>
-          </div>
-
-          <div
-            v-if="egg.inherited_ivs?._scanned && egg.ivs"
-            class="egg-scanned-ivs"
-          >
-            <div class="iv-stat">
-              <span>HP</span>{{ egg.ivs.hp }}
-            </div>
-            <div class="iv-stat">
-              <span>ATK</span>{{ egg.ivs.atk }}
-            </div>
-            <div class="iv-stat">
-              <span>DEF</span>{{ egg.ivs.def }}
-            </div>
-            <div class="iv-stat">
-              <span>SPA</span>{{ egg.ivs.spa }}
-            </div>
-            <div class="iv-stat">
-              <span>SPD</span>{{ egg.ivs.spd }}
-            </div>
-            <div class="iv-stat">
-              <span>SPE</span>{{ egg.ivs.spe }}
-            </div>
-          </div>
-          <div
-            v-if="egg.inherited_ivs?._cost"
-            class="cost"
-          >
-            Costo: <span>₽{{ (egg.inherited_ivs?._cost || 0).toLocaleString() }}</span>
-          </div>
-        </div>
-
-        <div 
-          class="egg-hover-action"
-          :class="{ 'two-lines': isCriador && isLevelAdequate && !egg.inherited_ivs?._scanned }"
-        >
-          <template v-if="isCriador && isLevelAdequate && !egg.inherited_ivs?._scanned">
-            ESCANEAR<br>O<br>RECOGER
-          </template>
-          <template v-else>
-            RECOGER
-          </template>
-        </div>
-      </div>
+        :egg="egg"
+        :is-criador="isCriador"
+        :is-level-adequate="isLevelAdequate"
+        @claim="handleClaim"
+        @delete="handleDeleteEgg"
+      />
     </div>
   </div>
 </template>

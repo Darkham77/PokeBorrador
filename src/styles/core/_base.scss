@@ -28,6 +28,10 @@
   --bg-card: #{$legacy-card};
   --glow-yellow: #{$legacy-glow};
 
+  // Weather Atmospheric Bleed (SSoT)
+  --weather-layer-bleed: #{$weather-layer-bleed};
+  --weather-mist-bleed: #{$weather-mist-bleed};
+
   // Premium Shell System (Replaces Premium Shell)
   --shell-bg: Rgba(15, 18, 32, 1);
   --shell-border: Rgba(255, 255, 255, 0.15);
@@ -248,19 +252,19 @@ img.event-banner-img {
 }
 
 .tint-silver {
-  filter: Grayscale(1) Brightness(1.2) contrast(1.1) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3)) !important;
+  filter: Grayscale(1) Brightness(1.2) contrast(1.1) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
 }
 
 .tint-gold {
-  filter: sepia(1) Saturate(12) Hue-Rotate(5deg) Brightness(0.95) contrast(1.2) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3)) !important;
+  filter: sepia(1) Saturate(12) hue-Rotate(5deg) Brightness(0.95) contrast(1.2) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
 }
 
 .tint-silver-blue {
-  filter: Saturate(0.8) Hue-Rotate(180deg) Brightness(1.2) contrast(1.1) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3)) !important;
+  filter: Saturate(0.8) hue-Rotate(180deg) Brightness(1.2) contrast(1.1) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
 }
 
 .tint-red-gold {
-  filter: Saturate(1.8) Hue-Rotate(330deg) Brightness(1.0) contrast(1.2) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3)) !important;
+  filter: Saturate(1.8) hue-Rotate(330deg) Brightness(1.0) contrast(1.2) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
 }
 
 // Universal Season Tournament Card (EventCard & Coliseo & Ranking shared standard)
@@ -408,7 +412,7 @@ img.event-banner-img {
           display: inline-flex;
           align-items: center;
           gap: 5px;
-          line-height: 1;
+          line-height: 1.25;
 
           .emoji {
             font-size: 10px;

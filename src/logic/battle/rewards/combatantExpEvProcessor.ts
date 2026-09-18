@@ -1,10 +1,7 @@
-import { gsapSleep } from '@/logic/utils/gsapHelpers';
 import { processExpGain, processEvGain } from '../battleRewards.ts';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move, PokemonStatKey } from '@/types/pokemon/pokemon';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
 
 import { STAT_SHORT_NAMES_ES as STAT_NAMES_ES } from '@/logic/pokemon/statsMath';
 
@@ -22,92 +19,174 @@ export interface ExpEvDistributorParams {
 export async function processCombatantExpAndEvs(
   ctx: BattleContext,
   params: ExpEvDistributorParams
-) {
+): Promise<void> {
   const active = ctx.activeBattle.value;
   if (!active || active.isPvP) return;
 
-  const { combatants, participantsSet, classMult, totalExpMult, totalExpMultWithoutEvent, eventExpMultiplier } = params;
   const expGainedMap = new Map<string, number>();
   const eventExpExtraMap = new Map<string, number>();
   const levelUpMap = new Map<string, { levelsGained: number; moves: Move[] }>();
-
   const { calculateBaseExp } = await import('../battleRewards.ts');
+  const maps = { expGainedMap, eventExpExtraMap, levelUpMap };
 
-  for (const e of combatants) {
-    if (active.isCapture) {
-      await ctx.eventStore.submitCompetitionEntry('hourly_competition', e.uid);
+  for (const combatant of params.combatants) {
+    const baseExp = calculateBaseExp(combatant);
+    for (const p of ctx.gs.state.team) {
+      await processSinglePokemonExp(ctx, active, p, combatant, baseExp, params, maps);
     }
 
-    const baseExp = calculateBaseExp(e);
-    for (const p of ctx.gs.state.team) {
-      // Canonical Rule: A newly captured Pokemon never gains Exp/EVs from its own capture
-      if (active.isCapture && p.uid === e.uid) continue;
+    distributeEvsGains(ctx, active, combatant, params.participantsSet);
+  }
 
-      const reward = processExpGain(p, baseExp, participantsSet, {
-        isActive: p.uid === active.player?.uid,
-        classMult,
-        totalExpMult,
-        participantsSet
-      });
-      if (!reward) continue;
+  spreadPokerus(ctx);
+  await presentTeamExpAndLevelUps(ctx, expGainedMap, eventExpExtraMap, levelUpMap);
+}
 
-      expGainedMap.set(p.uid, (expGainedMap.get(p.uid) || 0) + reward.gained);
-
-      if (eventExpMultiplier > 1) {
-        const share = p.uid === active.player?.uid ? 1 : 0.5;
-        const gainedWithoutEvent = Math.floor(baseExp * share * classMult * totalExpMultWithoutEvent);
-        const eventExtra = Math.max(0, reward.gained - gainedWithoutEvent);
-        if (eventExtra > 0) {
-          eventExpExtraMap.set(p.uid, (eventExpExtraMap.get(p.uid) || 0) + eventExtra);
-        }
-      }
-
-      if (reward.levelUp) {
-        if (!levelUpMap.has(p.uid)) {
-          levelUpMap.set(p.uid, { levelsGained: 0, moves: [] });
-        }
-        const lvlData = levelUpMap.get(p.uid)!;
-        lvlData.levelsGained += reward.levelsGained;
-
-        const { levelUpPokemon } = await import('@/logic/pokemon/pokemonFactory');
-        for (let i = 0; i < reward.levelsGained; i++) {
-          const pendingMoves = levelUpPokemon(p);
-          if (pendingMoves) {
-            lvlData.moves.push(...pendingMoves);
-          }
-        }
-
-        const { calculateFriendshipLevelUpDelta, applyFriendshipDelta } = await import('@/logic/pokemon/friendshipLogic');
-        const hasSootheBell = p.heldItem === 'soothebell';
-        const friendshipGain = calculateFriendshipLevelUpDelta(p.friendship ?? 50, hasSootheBell) * reward.levelsGained;
-        applyFriendshipDelta(p, friendshipGain, ctx.addLog);
-      }
-    }
-
-    // Process EV gains
-    for (const p of ctx.gs.state.team) {
-      // Canonical Rule: A newly captured Pokemon never gains Exp/EVs from its own capture
-      if (active.isCapture && p.uid === e.uid) continue;
-
-      const evReward = processEvGain(p, e, participantsSet);
-      if (evReward && evReward.totalGained > 0) {
-        recalcPokemonStats(p);
-        const statGainParts = Object.entries(evReward.statGains)
-          .filter(([, v]) => (v || 0) > 0)
-          .map(([k, v]) => `+${v} ${STAT_NAMES_ES[k as PokemonStatKey] || k.toUpperCase()}`)
-          .join(', ');
-        ctx.addLog(`¡${p.nickname || p.name} ganó ${statGainParts} (EVs)!`, 'log-info', p);
-      }
+async function applyLevelUpRewards(
+  p: Pokemon,
+  levelsGained: number,
+  lvlData: { levelsGained: number; moves: Move[] },
+  addLog: BattleContext['addLog']
+): Promise<void> {
+  lvlData.levelsGained += levelsGained;
+  const { levelUpPokemon } = await import('@/logic/pokemon/pokemonFactory');
+  for (let i = 0; i < levelsGained; i++) {
+    const pendingMoves = levelUpPokemon(p);
+    if (pendingMoves) {
+      lvlData.moves.push(...pendingMoves);
     }
   }
 
-  // Process Pokérus transmission
-  spreadPokerus(ctx);
+  const { calculateFriendshipLevelUpDelta, applyFriendshipDelta } = await import('@/logic/pokemon/friendshipLogic');
+  const hasSootheBell = p.heldItem === 'soothebell';
+  const friendshipGain = calculateFriendshipLevelUpDelta(p.friendship ?? 50, hasSootheBell) * levelsGained;
+  applyFriendshipDelta(p, friendshipGain, addLog);
+}
 
-  // Print consolidated EXP and trigger Level Ups
-  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
-  const fsm = ctx.fsm;
+function recordEventExpExtra(
+  pUid: string,
+  baseExp: number,
+  rewardGained: number,
+  isActive: boolean,
+  params: ExpEvDistributorParams,
+  eventExpExtraMap: Map<string, number>
+): void {
+  if (params.eventExpMultiplier <= 1) return;
+  const share = isActive ? 1 : 0.5;
+  const gainedWithoutEvent = Math.floor(baseExp * share * params.classMult * params.totalExpMultWithoutEvent);
+  const eventExtra = Math.max(0, rewardGained - gainedWithoutEvent);
+  if (eventExtra > 0) {
+    eventExpExtraMap.set(pUid, (eventExpExtraMap.get(pUid) || 0) + eventExtra);
+  }
+}
 
+async function handleLevelUpReward(
+  p: Pokemon,
+  levelsGained: number,
+  levelUpMap: Map<string, { levelsGained: number; moves: Move[] }>,
+  addLog: BattleContext['addLog']
+): Promise<void> {
+  if (!levelUpMap.has(p.uid)) {
+    levelUpMap.set(p.uid, { levelsGained: 0, moves: [] });
+  }
+  const lvlData = levelUpMap.get(p.uid)!;
+  await applyLevelUpRewards(p, levelsGained, lvlData, addLog);
+}
+
+async function processSinglePokemonExp(
+  ctx: BattleContext,
+  active: NonNullable<BattleContext['activeBattle']['value']>,
+  p: Pokemon,
+  combatant: Pokemon,
+  baseExp: number,
+  params: ExpEvDistributorParams,
+  maps: {
+    expGainedMap: Map<string, number>;
+    eventExpExtraMap: Map<string, number>;
+    levelUpMap: Map<string, { levelsGained: number; moves: Move[] }>;
+  }
+): Promise<void> {
+  if (active.isCapture && p.uid === combatant.uid) return;
+
+  const isActive = p.uid === active.player?.uid;
+  const reward = processExpGain(p, baseExp, params.participantsSet, {
+    isActive,
+    classMult: params.classMult,
+    totalExpMult: params.totalExpMult,
+    participantsSet: params.participantsSet
+  });
+  if (!reward) return;
+
+  maps.expGainedMap.set(p.uid, (maps.expGainedMap.get(p.uid) || 0) + reward.gained);
+  recordEventExpExtra(p.uid, baseExp, reward.gained, isActive, params, maps.eventExpExtraMap);
+
+  if (reward.levelUp) {
+    await handleLevelUpReward(p, reward.levelsGained, maps.levelUpMap, ctx.addLog);
+  }
+}
+
+function distributeEvsGains(
+  ctx: BattleContext,
+  active: NonNullable<BattleContext['activeBattle']['value']>,
+  combatant: Pokemon,
+  participantsSet: Set<string>
+): void {
+  for (const p of ctx.gs.state.team) {
+    if (active.isCapture && p.uid === combatant.uid) continue;
+
+    const evReward = processEvGain(p, combatant, participantsSet);
+    if (evReward && evReward.totalGained > 0) {
+      recalcPokemonStats(p);
+      const statGainParts = Object.entries(evReward.statGains)
+        .filter(([, v]) => (v || 0) > 0)
+        .map(([k, v]) => `+${v} ${STAT_NAMES_ES[k as PokemonStatKey] || k.toUpperCase()}`)
+        .join(', ');
+      ctx.addLog(`¡${p.nickname || p.name} ganó ${statGainParts} (EVs)!`, 'log-info', p);
+    }
+  }
+}
+
+async function handleLevelUpEvolution(
+  p: Pokemon,
+  ctx: BattleContext
+): Promise<void> {
+  if (p.heldItem === 'everstone') {
+    ctx.addLog(`${p.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', p);
+    return;
+  }
+
+  const { checkLevelUpEvolution } = await import('@/logic/evolution/evolutionLogic.ts');
+  const targetId = checkLevelUpEvolution(p);
+  if (!targetId) return;
+
+  const { postBattleCoordinator } = await import('../postBattleSequenceCoordinator.ts');
+  const coordinator = ctx.postBattleCoordinator ?? postBattleCoordinator;
+  coordinator.enqueueEvolution(p, targetId, '');
+}
+
+async function finalizePokemonLevelUp(
+  ctx: BattleContext,
+  p: Pokemon,
+  lvlData: { levelsGained: number; moves: Move[] }
+): Promise<void> {
+  ctx.addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info', p);
+
+  if (lvlData.moves.length > 0) {
+    p.pendingMoves = lvlData.moves;
+    const { postBattleCoordinator } = await import('../postBattleSequenceCoordinator.ts');
+    const coordinator = ctx.postBattleCoordinator ?? postBattleCoordinator;
+    coordinator.enqueueMoveLearning(lvlData.moves.map(m => ({ pokemon: p, move: m })));
+  }
+
+  await handleLevelUpEvolution(p, ctx);
+}
+
+async function presentTeamExpAndLevelUps(
+  ctx: BattleContext,
+  expGainedMap: Map<string, number>,
+  eventExpExtraMap: Map<string, number>,
+  levelUpMap: Map<string, { levelsGained: number; moves: Move[] }>
+): Promise<void> {
   for (const p of ctx.gs.state.team) {
     const gained = expGainedMap.get(p.uid) || 0;
     if (gained > 0) {
@@ -118,39 +197,41 @@ export async function processCombatantExpAndEvs(
 
     const lvlData = levelUpMap.get(p.uid);
     if (lvlData) {
-      await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING);
-      ctx.addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info', p);
-
-      if (lvlData.moves.length > 0) {
-        await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.SHOW_CHOICE);
-        p.pendingMoves = lvlData.moves;
-
-        const uiStore = useUIStore();
-        uiStore.addToLearnQueue(lvlData.moves.map(m => ({ pokemon: p, move: m })));
-      }
-
-      // Check level-up evolution
-      if (p.heldItem === 'everstone') {
-        ctx.addLog(`${p.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', p);
-      } else {
-        const { checkLevelUpEvolution } = await import('@/logic/evolution/evolutionLogic.ts');
-        const targetId = checkLevelUpEvolution(p);
-        if (targetId) {
-          const uiStore = useUIStore();
-          uiStore.startEvolution(p, targetId, '');
-          const modalStore = useModalStore();
-          while (modalStore.isOpen('Evolution')) {
-            await gsapSleep(100);
-          }
-        }
-      }
+      await finalizePokemonLevelUp(ctx, p, lvlData);
     }
   }
 }
 
-function spreadPokerus(ctx: BattleContext) {
+function tryInfectNeighbor(
+  neighbor: Pokemon | undefined,
+  newlyInfectedNames: string[]
+): void {
+  if (neighbor && (!neighbor.pokerus || neighbor.pokerus === 'uninfected')) {
+    neighbor.pokerus = 'infected';
+    newlyInfectedNames.push(neighbor.nickname || neighbor.name);
+  }
+}
+
+function spreadPokerusFromInfected(
+  team: Pokemon[],
+  infectedIdx: number,
+  newlyInfectedNames: string[]
+): void {
+  if (Math.random() >= POKERUS_SPREAD_PROBABILITY) {
+    return;
+  }
+  if (infectedIdx > 0) {
+    tryInfectNeighbor(team[infectedIdx - 1], newlyInfectedNames);
+  }
+  if (infectedIdx + 1 < team.length) {
+    tryInfectNeighbor(team[infectedIdx + 1], newlyInfectedNames);
+  }
+}
+
+function spreadPokerus(ctx: BattleContext): void {
+  const team = ctx.gs.state.team;
   const infectedMonIndices: number[] = [];
-  ctx.gs.state.team.forEach((p, idx) => {
+  team.forEach((p, idx) => {
     if (p.pokerus === 'infected') {
       infectedMonIndices.push(idx);
     }
@@ -160,21 +241,9 @@ function spreadPokerus(ctx: BattleContext) {
 
   const newlyInfectedNames: string[] = []; // no-domain: Non-domain utility collection or data structure
   for (const idx of infectedMonIndices) {
-    if (Math.random() < POKERUS_SPREAD_PROBABILITY) {
-      const leftIdx = idx - 1;
-      const leftMon = leftIdx >= 0 ? ctx.gs.state.team[leftIdx] : undefined;
-      if (leftMon && (!leftMon.pokerus || leftMon.pokerus === 'uninfected')) {
-        leftMon.pokerus = 'infected';
-        newlyInfectedNames.push(leftMon.nickname || leftMon.name);
-      }
-      const rightIdx = idx + 1;
-      const rightMon = rightIdx < ctx.gs.state.team.length ? ctx.gs.state.team[rightIdx] : undefined;
-      if (rightMon && (!rightMon.pokerus || rightMon.pokerus === 'uninfected')) {
-        rightMon.pokerus = 'infected';
-        newlyInfectedNames.push(rightMon.nickname || rightMon.name);
-      }
-    }
+    spreadPokerusFromInfected(team, idx, newlyInfectedNames);
   }
+
   if (newlyInfectedNames.length > 0) {
     ctx.addLog(`¡El Pokérus se ha contagiado a ${newlyInfectedNames.join(', ')}!`, 'log-success', 'player');
   }

@@ -26,7 +26,8 @@ export default defineWorkspace([
       name: 'unit',
       environment: 'node',
       environmentMatchGlobs: [
-        ['tests/unit/components/**', 'jsdom'],
+        ['tests/unit/components/helpers/**', 'node'],
+        ['tests/unit/components/**/!(*Helper).spec.ts', 'jsdom'],
         ['tests/unit/views/**', 'jsdom'],
         ['tests/unit/modals/**', 'jsdom'],
         ['tests/integration/**', 'jsdom'],
@@ -38,11 +39,6 @@ export default defineWorkspace([
         ['tests/unit/battle/test_choice_items.spec.ts', 'jsdom'],
         ['tests/unit/battle/test_combatant_state.spec.ts', 'jsdom'],
         ['tests/unit/battle/battle_move_sync_isolation.spec.ts', 'jsdom'],
-        ['tests/unit/inventory/**', 'jsdom'],
-        ['tests/unit/pokemon/**', 'jsdom'],
-        ['tests/unit/world/**', 'jsdom'],
-        ['tests/unit/system/**', 'jsdom'],
-        ['tests/unit/debug/**', 'jsdom'],
       ],
       include: [
         'tests/unit/**/*.{test,spec}.ts',
@@ -65,8 +61,33 @@ export default defineWorkspace([
       name: 'node',
       environment: 'node',
       include: ['tests/node/**/*.test.ts'],
+      exclude: ['tests/node/**/backup_migration_real.test.ts'],
       testTimeout: 60000,
       cache: { dir: '.vitest-cache/node' },
+    },
+  },
+  {
+    extends: './vite.config.ts',
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+    test: {
+      name: 'migrations',
+      globals: true,
+      environment: 'node',
+      pool: 'forks',
+      threads: {
+        execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning'],
+      },
+      forks: {
+        execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning'],
+      },
+      include: ['tests/node/**/backup_migration_real.test.ts'],
+      setupFiles: ['./tests/vitest.node.setup.ts'],
+      testTimeout: 120000,
+      cache: { dir: '.vitest-cache/migrations' },
     },
   },
 ])

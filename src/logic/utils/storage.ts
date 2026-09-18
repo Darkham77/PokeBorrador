@@ -11,8 +11,8 @@ function getStorageBackend(): Storage | null { // result-ok: Operation result wr
   try {
     if (typeof localStorage !== 'undefined') return localStorage
     if (typeof window !== 'undefined' && window.localStorage) return window.localStorage
-  } catch {
-    // ignore
+  } catch (err) {
+    logger.debug('Storage', 'localStorage no accesible:', err)
   }
   return null
 }

@@ -55,32 +55,49 @@ export function matchesCoreFilters(p: Pokemon, f: BoxFilterStateData): boolean {
   return true
 }
 
+interface StatIvValues {
+  hp: number
+  atk: number
+  def: number
+  spa: number
+  spd: number
+  spe: number
+}
+
+function getPokemonIvValues(ivs?: Pokemon['ivs']): StatIvValues {
+  return {
+    hp: ivs?.hp ?? 0,
+    atk: ivs?.atk ?? 0,
+    def: ivs?.def ?? 0,
+    spa: ivs?.spa ?? 0,
+    spd: ivs?.spd ?? 0,
+    spe: ivs?.spe ?? 0
+  }
+}
+
+function areIvsWithinGlobalBounds(vals: StatIvValues, min: number, max: number): boolean {
+  const stats: readonly number[] = [vals.hp, vals.atk, vals.def, vals.spa, vals.spd, vals.spe]
+  return stats.every(val => val >= min && val <= max)
+}
+
+function satisfySpecificIvThresholds(vals: StatIvValues, f: BoxFilterStateData): boolean {
+  if (vals.hp < f.ivHP) return false
+  if (vals.atk < f.ivATK) return false
+  if (vals.def < f.ivDEF) return false
+  if (vals.spa < f.ivSPA) return false
+  if (vals.spd < f.ivSPD) return false
+  if (vals.spe < f.ivSPE) return false
+  return true
+}
+
 export function matchesIvFilters(p: Pokemon, f: BoxFilterStateData): boolean {
   const totalIv = calculateTotalIVs(p.ivs)
   if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
   if (f.ivAny31 && !hasMaxIV(p.ivs)) return false
 
-  const hp = p.ivs?.hp || 0
-  const atk = p.ivs?.atk || 0
-  const def = p.ivs?.def || 0
-  const spa = p.ivs?.spa || 0
-  const spd = p.ivs?.spd || 0
-  const spe = p.ivs?.spe || 0
-
-  if (
-    hp < f.ivMin || hp > f.ivMax ||
-    atk < f.ivMin || atk > f.ivMax ||
-    def < f.ivMin || def > f.ivMax ||
-    spa < f.ivMin || spa > f.ivMax ||
-    spd < f.ivMin || spd > f.ivMax ||
-    spe < f.ivMin || spe > f.ivMax
-  ) {
-    return false
-  }
-
-  if (hp < f.ivHP || atk < f.ivATK || def < f.ivDEF || spa < f.ivSPA || spd < f.ivSPD || spe < f.ivSPE) {
-    return false
-  }
+  const vals = getPokemonIvValues(p.ivs)
+  if (!areIvsWithinGlobalBounds(vals, f.ivMin, f.ivMax)) return false
+  if (!satisfySpecificIvThresholds(vals, f)) return false
 
   return true
 }
@@ -134,4 +151,40 @@ export function matchesAllBoxFilters(p: Pokemon, f: BoxFilterStateData): boolean
   if (!matchesFriendshipFilters(p, f)) return false
   if (!matchesTotalPowerFilter(p, f.bstMin, f.bstMax)) return false
   return true
+}
+
+const MAX_TOTAL_IVS = 186 as const
+const MAX_BST_FILTER = 1000 as const
+const MAX_SINGLE_IV = 31 as const
+const MAX_POKEMON_LEVEL_CONST = 100 as const
+const MAX_POKEMON_FRIENDSHIP_CONST = 255 as const
+
+function hasActiveCoreFilters(f: BoxFilterStateData): boolean {
+  return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < MAX_POKEMON_LEVEL_CONST || f.search !== ''
+}
+
+function hasActiveIvFilters(f: BoxFilterStateData): boolean {
+  return f.ivTotalMin > 0 || f.ivTotalMax < MAX_TOTAL_IVS || f.ivAny31 || f.ivMin > 0 || f.ivMax < MAX_SINGLE_IV ||
+         f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 || f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0
+}
+
+function hasActiveEvFilters(f: BoxFilterStateData): boolean {
+  return f.evHP > 0 || f.evATK > 0 || f.evDEF > 0 || f.evSPA > 0 || f.evSPD > 0 || f.evSPE > 0
+}
+
+function hasActiveFriendshipFilters(f: BoxFilterStateData): boolean {
+  return f.friendshipMin > 0 || f.friendshipMax < MAX_POKEMON_FRIENDSHIP_CONST ||
+         f.friendshipSealTier !== 'all' || f.friendshipEvoReady || f.friendshipMaxOnly
+}
+
+function hasActiveBstOrTagsFilters(f: BoxFilterStateData): boolean {
+  return f.bstMin > 0 || f.bstMax < MAX_BST_FILTER || Boolean(f.tags && f.tags.length > 0)
+}
+
+export function checkHasActiveFilters(f: BoxFilterStateData): boolean {
+  return hasActiveCoreFilters(f) ||
+         hasActiveIvFilters(f) ||
+         hasActiveEvFilters(f) ||
+         hasActiveFriendshipFilters(f) ||
+         hasActiveBstOrTagsFilters(f)
 }

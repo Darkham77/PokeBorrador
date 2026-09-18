@@ -243,7 +243,7 @@
   &:disabled {
     opacity: 0.35;
     cursor: not-allowed;
-    transform: none !important;
+    transform: none;
   }
 }
 
@@ -287,6 +287,6 @@
   &:disabled {
     opacity: 0.35;
     cursor: not-allowed;
-    transform: none !important;
+    transform: none;
   }
 }

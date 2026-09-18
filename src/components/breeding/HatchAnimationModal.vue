@@ -36,9 +36,9 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
 import { useGameStore } from '@/stores/game'
-import HatchStatsCard from '@/components/breeding/HatchStatsCard.vue'
 import { getAuraStyles } from '@/logic/breeding/hatchAuras'
-import EggSprite from '@/components/common/EggSprite.vue'
+import HatchEggCrackStage from './HatchEggCrackStage.vue'
+import HatchRevealContent from './HatchRevealContent.vue'
 import {
   GSAP_FAST_DURATION_SEC,
   EGG_LEVITATION_Y_OFFSET,
@@ -108,6 +108,14 @@ const hintText = computed(() => {
 const auraStyles = computed(() => {
   return getAuraStyles(resultPokemon.value, flare1Url, flare2Url)
 })
+
+const isEggStage = computed(() => stage.value === 'egg' || stage.value === 'shake')
+
+const handleContainerClick = () => {
+  if (stage.value === 'egg') {
+    handleEggClick()
+  }
+}
 
 const prepareResult = async () => {
   if (props.pokemon) {
@@ -427,23 +435,15 @@ onUnmounted(() => {
         id="hatch-container"
         class="hatch-container"
         :style="auraStyles"
-        @click.stop="stage === 'egg' ? handleEggClick() : null"
+        @click.stop="handleContainerClick"
       >
         <!-- Área de Enfoque Persistente (Huevo / Pokémon) -->
         <div class="hatch-focus-area">
           <!-- Fase de Huevo Interactiva -->
-          <div
-            v-if="stage === 'egg' || stage === 'shake'"
-            class="egg-stage-wrapper"
-          >
-            <div class="egg-sprite">
-              <EggSprite
-                size="120"
-                :tint="egg?.tint"
-              />
-            </div>
-            <div class="glow-ring" />
-          </div>
+          <HatchEggCrackStage
+            v-if="isEggStage"
+            :tint="egg?.tint"
+          />
 
           <!-- Fase de Revelación del Pokémon recién nacido -->
           <div
@@ -475,6 +475,7 @@ onUnmounted(() => {
               <img
                 v-if="resultPokemon"
                 :src="getSprite(resultPokemon.id, !!resultPokemon.isShiny)"
+                :alt="resultPokemon?.name || 'Pokémon eclosionado'"
                 class="pokemon-sprite"
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
@@ -498,35 +499,17 @@ onUnmounted(() => {
         <!-- Área de Información y Botones (Dinámica, se expande hacia abajo sin desplazar el foco) -->
         <div class="hatch-info-area">
           <div
-            v-if="stage === 'egg' || stage === 'shake'"
+            v-if="isEggStage"
             class="hatch-hint"
           >
             {{ hintText }}
           </div>
 
-          <div
+          <HatchRevealContent
             v-else
-            class="reveal-info-wrapper"
-          >
-            <div class="splash-text">
-              ¡Ha nacido un <span class="highlight">{{ resultPokemon?.name }}</span>!
-            </div>
-
-            <!-- Tarjeta Premium de Stats -->
-            <HatchStatsCard
-              v-if="resultPokemon"
-              :pokemon="resultPokemon"
-            />
-
-            <!-- Botón de Confirmación -->
-            <button
-              id="hatch-continue-btn"
-              class="btn-confirm"
-              @click.stop="handleClose"
-            >
-              CONTINUAR
-            </button>
-          </div>
+            :pokemon="resultPokemon"
+            @confirm="handleClose"
+          />
         </div>
       </div>
     </div>

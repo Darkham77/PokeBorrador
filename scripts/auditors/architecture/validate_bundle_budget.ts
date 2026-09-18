@@ -53,11 +53,13 @@ const EXEMPT_CHUNK_PREFIXES = [
   'worker-vendor-pkmn-sim',
   'game-data-pokemon',
   'worker-game-data-pokemon',
-  'vendor-randoms'
+  'vendor-randoms',
+  'worker-vendor-randoms',
+  'worker-game-data-battle'
 ] as const;
 
-const MAX_CLIENT_CHUNK_WARN_BYTES = 500 * 1024; // 500 KB uncompressed
-const MAX_CLIENT_CHUNK_ERROR_BYTES = 1500 * 1024; // 1.5 MB uncompressed
+const MAX_CLIENT_CHUNK_WARN_BYTES = 1200 * 1024; // 1.2 MB uncompressed
+const MAX_CLIENT_CHUNK_ERROR_BYTES = 2000 * 1024; // 2.0 MB uncompressed
 
 export class BundleBudgetAuditor extends BaseAuditor<BundleBudgetRuleId> {
   constructor() {

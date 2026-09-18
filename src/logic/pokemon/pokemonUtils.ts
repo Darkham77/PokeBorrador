@@ -10,7 +10,6 @@ import { calculateTotalBaseStats, calculateTotalIVs, calculateRocketSellPriceRaw
 import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
 import {
   MAX_LEARNED_MOVES_SLOTS,
-  TYPE_EFFECTIVENESS_THRESHOLDS,
   DEFAULT_ACCURACY_BASE_STAT
 } from '@/logic/constants/gameplay';
 import { isLegendaryPokemonSpeciesId, isFossilPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
@@ -94,7 +93,7 @@ export function generateRandomIVs(): PokemonIVs {
 }
 
 /** Dominant level multiplier for Pokémon strength scoring (level 50 min beats level 49 max). */
-export const SCORE_LEVEL_MULTIPLIER = 10000;
+const SCORE_LEVEL_MULTIPLIER = 10000;
 
 /**
  * Calculates a composite strength score for a Pokémon (Level * 10000 + Total Power).
@@ -192,38 +191,23 @@ export function getMovesAtLevel(id: string, level: number, bypassWhitelist = fal
 }
 
 
-/**
- * Get type effectiveness message
- */
-export function getTypeEffectivenessMsg(eff: number): string | null {
-  if (eff === TYPE_EFFECTIVENESS_THRESHOLDS.IMMUNE) return '¡No afecta!';
-  if (eff >= TYPE_EFFECTIVENESS_THRESHOLDS.SUPER_EFFECTIVE) return '¡Es muy eficaz!';
-  if (eff <= TYPE_EFFECTIVENESS_THRESHOLDS.NOT_VERY_EFFECTIVE) return 'No es muy eficaz...';
-  return null;
-}
 
-/**
- * Get display description for a move based on its effect
- */
-export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null): string {
-  let md = mdProvided;
-  if (!md) {
-    if (!id) throw new Error('[getMoveDescription] El ID de movimiento no es válido.');
+function resolveMoveBaseData(id: string, mdProvided?: MoveBaseData | null): MoveBaseData {
+  if (mdProvided) return mdProvided;
+  if (!id) throw new Error('[getMoveDescription] El ID de movimiento no es válido.');
+  try {
+    return pokemonDataProvider.getMoveData(id);
+  } catch {
     try {
-      md = pokemonDataProvider.getMoveData(id);
-    } catch {
-      try {
-        const canonicalId = pokemonDataProvider.getMoveIdBySpanishName(id);
-        md = pokemonDataProvider.getMoveData(canonicalId);
-      } catch {
-        // ignore
-      }
+      const canonicalId = pokemonDataProvider.getMoveIdBySpanishName(id);
+      return pokemonDataProvider.getMoveData(canonicalId);
+    } catch (_err) { // catch-ok: Fallback to loud throw below if Spanish lookup fails
+      throw new Error(`[getMoveDescription] No se encontró el movimiento con ID o nombre: "${id}"`, { cause: _err });
     }
   }
-  if (!md) {
-    throw new Error(`[getMoveDescription] No se encontró el movimiento con ID o nombre: "${id}"`);
-  }
-  
+}
+
+function getSpecialMechanicDescription(md: MoveBaseData): string | null {
   if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
   if (md.halfHP) return "Reduce a la mitad los PS actuales del oponente.";
   if (md.endeavor) return "Iguala los PS actuales del objetivo con los del usuario. Falla si tiene menos.";
@@ -233,7 +217,10 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
   if (md.priority && md.priority > 0) return "Ataque rápido que siempre golpea primero.";
   if (md.levelDmg) return "Causa un daño igual al nivel del usuario.";
   if (md.counter) return "Devuelve al rival el doble del daño físico recibido este turno.";
-  
+  return null;
+}
+
+function getMoveEffectOrTranslationText(md: MoveBaseData): string | null {
   const effectText = Array.isArray(md.effect)
     ? md.effect.map(effect => effect.text).find(Boolean)
     : md.effect?.text;
@@ -244,6 +231,20 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
     const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record: Generic key-value data dictionary container
     if (translated.desc) return translated.desc;
   }
+  return null;
+}
+
+/**
+ * Get display description for a move based on its effect
+ */
+export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null): string {
+  const md = resolveMoveBaseData(id, mdProvided);
+  
+  const specialDesc = getSpecialMechanicDescription(md);
+  if (specialDesc) return specialDesc;
+
+  const effectOrTranslation = getMoveEffectOrTranslationText(md);
+  if (effectOrTranslation) return effectOrTranslation;
 
   if (md.cat === 'status') return "Un movimiento que causa un efecto de estado o alteración.";
   return "Causa daño al oponente sin efectos secundarios adicionales.";

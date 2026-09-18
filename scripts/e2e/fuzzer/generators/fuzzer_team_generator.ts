@@ -24,7 +24,7 @@ import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { NatureId } from '../../../../src/data/battle/natures.ts';
 import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
 import type { CertifiedBattleGameAction } from '../../../../src/types/battle/certifiedBattleActions.ts';
-import { PokemonLegalityValidator } from '../../../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
+import { PokemonLegalityValidator } from '../../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
 import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
 
 import type { CalculatedStats } from '../../../../src/logic/pokemon/statsMath.ts';

@@ -35,7 +35,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
     :y="position.y"
     :w="baseSize"
     :h="baseSize"
-    :z-index="'calc(var(--z-base) + 30)'"
+    :z-index="'calc(var(--z-base) + 40)'"
     class="dialog-bubble-entity"
   >
     <Transition

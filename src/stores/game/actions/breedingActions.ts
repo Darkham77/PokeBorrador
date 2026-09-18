@@ -1,9 +1,9 @@
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { useUIStore } from '@/stores/ui'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon, PokemonEgg, PokemonStorageLocation } from '@/types/pokemon/pokemon'
-import { MAX_POKEMON_VIGOR, CRIADOR_VIGOR_RESTORE_CHANCE } from '@/logic/constants/gameplay'
+import { CRIADOR_VIGOR_RESTORE_CHANCE } from '@/logic/constants/gameplay'
+import { gameBus } from '@/logic/events/gameBus.ts'
 
 export function useBreedingActions(
   state: GameState, 
@@ -60,22 +60,7 @@ export function useBreedingActions(
 
     // Criador: Eclosión Vigor (15% chance to restore vigor to a daycare parent)
     if (state.playerClass === 'criador' && Math.random() < CRIADOR_VIGOR_RESTORE_CHANCE) {
-      try {
-        const breedingStore = (await import('@/stores/breeding')).useBreedingStore()
-        const healthyParents = breedingStore.slots.filter(s => s && s.pokemon)
-        if (healthyParents.length > 0) {
-          const chosenSlot = healthyParents[Math.floor(Math.random() * healthyParents.length)]
-          if (chosenSlot && chosenSlot.pokemon) {
-            const parent = chosenSlot.pokemon
-            const prevVigor = parent.vigor ?? MAX_POKEMON_VIGOR
-            const VIGOR_RECOVERY_BONUS = 5
-            parent.vigor = Math.min(MAX_POKEMON_VIGOR, prevVigor + VIGOR_RECOVERY_BONUS)
-            useUIStore().notify(`¡Eclosión Vigorosa! Su progenitor ${parent.name} recuperó +${VIGOR_RECOVERY_BONUS} de vigor.`, '❤️')
-          }
-        }
-      } catch (e) {
-        console.error('Failed to restore parent vigor:', e)
-      }
+      gameBus.emit('CRIADOR_ECLOSION_VIGOR')
     }
 
     await scheduleSave()

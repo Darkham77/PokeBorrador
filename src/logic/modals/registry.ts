@@ -70,14 +70,4 @@ export const MODAL_REGISTRY = {
 
 export type ModalRegistryKey = keyof typeof MODAL_REGISTRY;
 
-export interface ModalMetadata {
-  isFullscreen?: boolean;
-  obscuresBackground?: boolean;
-}
-
-export const MODAL_METADATA: Record<string, ModalMetadata> = {
-  HatchAnimation: { isFullscreen: true, obscuresBackground: true },
-  Evolution: { isFullscreen: true, obscuresBackground: true },
-  EncounterSequence: { isFullscreen: true, obscuresBackground: true }
-}
 

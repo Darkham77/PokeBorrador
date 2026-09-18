@@ -1,13 +1,34 @@
 const LEAF_ANIM_FULL_ROTATION_DEG = 360;
 const LEAF_ANIM_SPIN_ROTATION_DEG = 1080;
-const COMBAT_LEAF_SPAWN_X_TOP_BASE = 1400;
-const COMBAT_LEAF_SPAWN_X_TOP_RANGE = 750;
-const COMBAT_LEAF_SPAWN_Y_TOP = 850;
-const COMBAT_LEAF_SPAWN_X_SIDE = 2150;
-const COMBAT_LEAF_SPAWN_Y_SIDE_BASE = 950;
-const COMBAT_LEAF_SPAWN_Y_SIDE_RANGE = 650;
-const COMBAT_LEAF_TRAVEL_X = -1600;
-const COMBAT_LEAF_TRAVEL_Y = 500;
+
+const LEAF_SPAWN_X_BASE_PCT = 10;
+const LEAF_SPAWN_X_RANGE_PCT = 120;
+const LEAF_SPAWN_Y_BASE_PCT = -30;
+const LEAF_SPAWN_Y_RANGE_PCT = 25;
+
+const LEAF_TRAVEL_X_CQW = '-150cqw';
+const LEAF_TRAVEL_Y_CQH = '180cqh';
+
+const LEAF_MIN_SCALE = 0.9;
+const LEAF_SCALE_VARIATION = 1.2;
+const LEAF_ACTIVE_OPACITY = 0.9;
+const LEAF_OFFSCREEN_PX = -100;
+const LEAF_MAX_CYCLE_DELAY_SEC = 1.5;
+
+const LEAF_BASE_DURATION_WIND_SEC = 3.5;
+const LEAF_BASE_DURATION_STRONG_WIND_SEC = 1.2;
+const LEAF_BASE_DURATION_STORM_SEC = 1.5;
+
+const LEAF_SPEED_VAR_WIND_SEC = 4.0;
+const LEAF_SPEED_VAR_STRONG_WIND_SEC = 1.0;
+const LEAF_SPEED_VAR_STORM_SEC = 2.0;
+
+const LEAF_INITIAL_DELAY_WIND_SEC = 0.8;
+const LEAF_INITIAL_DELAY_STRONG_WIND_SEC = 0.3;
+const LEAF_INITIAL_DELAY_STORM_SEC = 0.4;
+
+const LEAF_SEED_MOD_BASE = 0.8;
+const LEAF_SEED_MOD_FACTOR = 0.4;
 
 import { gsap } from 'gsap'
 import { nextTick, type Ref } from 'vue'
@@ -16,25 +37,53 @@ import type { WeatherId } from '@/logic/weather/weatherRegistry'
 type LeafWeatherId = 'wind' | 'strong_winds' | 'storm'
 const LEAF_WEATHER_IDS = ['wind', 'strong_winds', 'storm'] as const satisfies readonly LeafWeatherId[]
 
-function isLeafWeatherId(value: WeatherId): value is LeafWeatherId {
+export function isLeafWeatherId(value: WeatherId): value is LeafWeatherId {
   return value === 'wind' || value === 'strong_winds' || value === 'storm'
+}
+
+function resolveLeafDurationAndVariation(weather: LeafWeatherId): { baseDuration: number; speedVariation: number } {
+  if (weather === 'wind') {
+    return {
+      baseDuration: LEAF_BASE_DURATION_WIND_SEC,
+      speedVariation: LEAF_SPEED_VAR_WIND_SEC
+    }
+  }
+  if (weather === 'strong_winds') {
+    return {
+      baseDuration: LEAF_BASE_DURATION_STRONG_WIND_SEC,
+      speedVariation: LEAF_SPEED_VAR_STRONG_WIND_SEC
+    }
+  }
+  return {
+    baseDuration: LEAF_BASE_DURATION_STORM_SEC,
+    speedVariation: LEAF_SPEED_VAR_STORM_SEC
+  }
+}
+
+function resolveLeafBaseDelay(weather: LeafWeatherId): number {
+  if (weather === 'wind') return LEAF_INITIAL_DELAY_WIND_SEC
+  if (weather === 'strong_winds') return LEAF_INITIAL_DELAY_STRONG_WIND_SEC
+  return LEAF_INITIAL_DELAY_STORM_SEC
 }
 
 export function useAtmosphereLeafAnim(
   containerRef: Ref<HTMLElement | null>,
   props: {
     weather: WeatherId
-    isPerformanceMode: boolean
+    isFastMode?: boolean
+    isPerformanceMode?: boolean
     isLowPower: boolean
     animSeed: number
     isVisible: boolean
   }
 ) {
+  const isFast = props.isFastMode ?? props.isPerformanceMode ?? false
+
   const initLeafAnim = (ctxVal: gsap.Context) => {
-    if (!isLeafWeatherId(props.weather) || props.isPerformanceMode || !ctxVal) return
+    if (!isLeafWeatherId(props.weather) || isFast || !ctxVal) return
 
     const runLeafAnimation = () => {
-      if (ctxVal.reverted || !props.isVisible || props.isPerformanceMode || !isLeafWeatherId(props.weather)) return
+      if (ctxVal.reverted || !props.isVisible || isFast || !isLeafWeatherId(props.weather)) return
 
       const leafNodes = containerRef.value?.querySelectorAll('.leaf-element')
       if (!leafNodes || leafNodes.length === 0) return
@@ -42,62 +91,64 @@ export function useAtmosphereLeafAnim(
       const activeLeaves = Array.from(leafNodes) as HTMLElement[]
 
       activeLeaves.forEach((el, i) => {
+        ctxVal.add(() => {
+          gsap.set(el, {
+            opacity: 0,
+            top: `${LEAF_OFFSCREEN_PX}px`,
+            left: `${LEAF_OFFSCREEN_PX}px`
+          })
+        })
+
         const animateLeaf = () => {
-          if (ctxVal.reverted || !props.isVisible || props.isPerformanceMode || !isLeafWeatherId(props.weather)) return
+          const leafWeather = props.weather
+          if (ctxVal.reverted || !props.isVisible || isFast || !isLeafWeatherId(leafWeather)) return
 
           const s1 = Math.random()
           const s2 = Math.random()
 
-          const fromTop = s1 > 0.5
-          const isVirtual = Boolean(containerRef.value?.closest('.map-virtual-world'))
-
-          const startX = isVirtual
-            ? (fromTop ? (COMBAT_LEAF_SPAWN_X_TOP_BASE + s2 * COMBAT_LEAF_SPAWN_X_TOP_RANGE) : COMBAT_LEAF_SPAWN_X_SIDE)
-            : (fromTop ? (80 + s2 * 40) : 115)
-          const startY = isVirtual
-            ? (fromTop ? COMBAT_LEAF_SPAWN_Y_TOP : (COMBAT_LEAF_SPAWN_Y_SIDE_BASE + s2 * COMBAT_LEAF_SPAWN_Y_SIDE_RANGE))
-            : (fromTop ? -20 : (s2 * 60))
-
-          const travelX = isVirtual ? COMBAT_LEAF_TRAVEL_X : '-350cqw'
-          const travelY = isVirtual ? COMBAT_LEAF_TRAVEL_Y : '80cqh'
+          const startX = LEAF_SPAWN_X_BASE_PCT + s2 * LEAF_SPAWN_X_RANGE_PCT
+          const startY = LEAF_SPAWN_Y_BASE_PCT - s1 * LEAF_SPAWN_Y_RANGE_PCT
 
           ctxVal.add(() => {
             gsap.set(el, {
-              left: isVirtual ? `${startX}px` : `${startX}%`,
-              top: isVirtual ? `${startY}px` : `${startY}%`,
+              left: `${startX}%`,
+              top: `${startY}%`,
               x: 0,
               y: 0,
-              opacity: 0.9,
-              scale: 0.9 + Math.random() * 1.2,
+              opacity: LEAF_ACTIVE_OPACITY,
+              scale: LEAF_MIN_SCALE + Math.random() * LEAF_SCALE_VARIATION,
               rotation: Math.random() * LEAF_ANIM_FULL_ROTATION_DEG
             })
 
-            const seedMod = 0.8 + (props.animSeed * 0.4)
-            const isCommonWind = props.weather === 'wind'
-            const isStrongWind = props.weather === 'strong_winds'
-            const baseDuration = (isCommonWind ? 3.5 : (isStrongWind ? 1.2 : 1.5)) * seedMod
-            const speedVariation = (isCommonWind ? 4.0 : (isStrongWind ? 1.0 : 2.0)) * seedMod
+            const seedMod = LEAF_SEED_MOD_BASE + (props.animSeed * LEAF_SEED_MOD_FACTOR)
+            const { baseDuration, speedVariation } = resolveLeafDurationAndVariation(leafWeather)
+            const duration = (baseDuration + Math.random() * speedVariation) * seedMod
 
             gsap.to(el, {
-              x: travelX,
-              y: travelY,
+              x: LEAF_TRAVEL_X_CQW,
+              y: LEAF_TRAVEL_Y_CQH,
               rotation: `+=${LEAF_ANIM_SPIN_ROTATION_DEG}`,
-              duration: baseDuration + (Math.random() * speedVariation),
+              duration,
               ease: 'none',
               onComplete: () => {
                 if (ctxVal.reverted) return
                 ctxVal.add(() => {
-                  gsap.delayedCall(Math.random() * 1.5, animateLeaf)
+                  gsap.set(el, {
+                    opacity: 0,
+                    top: `${LEAF_OFFSCREEN_PX}px`,
+                    left: `${LEAF_OFFSCREEN_PX}px`
+                  })
+                  gsap.delayedCall(Math.random() * LEAF_MAX_CYCLE_DELAY_SEC, animateLeaf)
                 })
               }
             })
           })
         }
 
-        const isCommonWind = props.weather === 'wind'
-        const isStrongWind = props.weather === 'strong_winds'
-        const seedMod = 0.8 + (props.animSeed * 0.4)
-        const baseDelay = isCommonWind ? 0.8 : (isStrongWind ? 0.3 : 0.4)
+        const initialWeather = props.weather
+        if (!isLeafWeatherId(initialWeather)) return
+        const baseDelay = resolveLeafBaseDelay(initialWeather)
+        const seedMod = LEAF_SEED_MOD_BASE + (props.animSeed * LEAF_SEED_MOD_FACTOR)
 
         ctxVal.add(() => {
           gsap.delayedCall(i * baseDelay * seedMod, animateLeaf)

@@ -8,24 +8,13 @@
 
 import { computed } from 'vue'
 import { gsap } from 'gsap'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemById, getItemName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import type { EventRewardType } from '@/types/system/stores'
 import type { UnifiedRewardPill } from '@/types/rewards/rewards'
-
-interface RawPrizeData {
-  type?: EventRewardType
-  amount?: number
-  qty?: number
-  money?: number
-  battleCoins?: number
-  item?: string
-  items?: Record<string, number>
-  species?: string
-  shiny?: boolean
-  level?: number
-}
+import {
+  normalizeAllRewards,
+  type RawPrizeData,
+  type NormalizedReward
+} from './rewardPillsNormalizers'
 
 interface Props {
   pills?: readonly UnifiedRewardPill[] | null
@@ -41,185 +30,8 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'sm'
 })
 
-interface NormalizedReward {
-  id: string
-  type: EventRewardType
-  title: string
-  label: string
-  qtyText?: string
-  spriteUrl?: string
-  icon?: string
-  description: string
-  colorClass: string
-}
-
-function getItemDesc(itemIdOrName: string): string {
-  const item = getItemById(itemIdOrName)
-  return item?.desc || 'Objeto especial de recompensa.'
-}
-
-function getItemSpriteUrl(itemIdOrName: string): string {
-  const item = getItemById(itemIdOrName)
-  const slug = item?.sprite || item?.id || itemIdOrName
-  return getAssetUrl(ASSET_TYPES.ITEM, slug)
-}
-
 const normalizedList = computed<NormalizedReward[]>(() => {
-  // 0. If unified reward pills are provided directly, render them with highest fidelity
-  if (props.pills && props.pills.length > 0) {
-    return props.pills.map((pill, idx) => ({
-      id: pill.id || `pill-${idx}`,
-      type: (pill.colorClass === 'money' ? 'money' : pill.colorClass === 'bc' ? 'bc' : pill.colorClass === 'pokemon' ? 'pokemon' : 'item') as EventRewardType,
-      title: (pill.label || 'Recompensa').toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
-      label: pill.label,
-      qtyText: pill.qtyText,
-      spriteUrl: pill.spriteUrl,
-      icon: pill.icon,
-      description: pill.description || 'Recompensa obtenida.',
-      colorClass: pill.colorClass || 'special'
-    }))
-  }
-
-  const list: NormalizedReward[] = []
-
-  // 1. If rewards map is provided (e.g. from Arena: { goldbottlecap: 1, ... })
-  if (props.rewards && typeof props.rewards === 'object') {
-    for (const [key, qty] of Object.entries(props.rewards)) {
-      if (typeof qty === 'number' && qty > 0) {
-        const name = getItemName(key)
-        list.push({
-          id: `item-${key}`,
-          type: 'item',
-          title: name.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
-          label: name,
-          qtyText: `x${qty}`,
-          spriteUrl: getItemSpriteUrl(key),
-          description: getItemDesc(key),
-          colorClass: 'item'
-        })
-      }
-    }
-    return list
-  }
-
-  const p = props.prize as RawPrizeData | Record<string, unknown> | null
-  if (!p) return list
-
-  // 2. Money (₽)
-  let money = 0
-  if (typeof (p as RawPrizeData).money === 'number') {
-    money = (p as RawPrizeData).money!
-  } else if ((p as RawPrizeData).type === 'money' && typeof (p as RawPrizeData).amount === 'number') {
-    money = (p as RawPrizeData).amount!
-  }
-  if (money > 0) {
-    list.push({
-      id: 'reward-money',
-      type: 'money',
-      title: 'POKÉDÓLARES',
-      label: `₽${money.toLocaleString()}`,
-      icon: '₽',
-      description: 'Moneda principal del juego para adquirir objetos, consumibles y mejoras.',
-      colorClass: 'money'
-    })
-  }
-
-  // 3. Battle Coins (BC)
-  let bc = 0
-  if (typeof (p as RawPrizeData).battleCoins === 'number') {
-    bc = (p as RawPrizeData).battleCoins!
-  } else if ((p as RawPrizeData).type === 'bc' && typeof (p as RawPrizeData).amount === 'number') {
-    bc = (p as RawPrizeData).amount!
-  }
-  if (bc > 0) {
-    list.push({
-      id: 'reward-bc',
-      type: 'bc',
-      title: 'BATTLE COINS',
-      label: `${bc.toLocaleString()} BC`,
-      icon: '🪙',
-      description: 'Monedas de honor obtenidas en combates competitivos, torneos y eventos.',
-      colorClass: 'bc'
-    })
-  }
-
-  // 4. Single item
-  if ((p as RawPrizeData).item) {
-    const itId = String((p as RawPrizeData).item)
-    const qty = typeof (p as RawPrizeData).qty === 'number' ? (p as RawPrizeData).qty! : (typeof (p as RawPrizeData).amount === 'number' ? (p as RawPrizeData).amount! : 1)
-    const name = getItemName(itId)
-    list.push({
-      id: `reward-item-${itId}`,
-      type: 'item',
-      title: name.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
-      label: name,
-      qtyText: `x${qty}`,
-      spriteUrl: getItemSpriteUrl(itId),
-      description: getItemDesc(itId),
-      colorClass: 'item'
-    })
-  }
-
-  // 5. Multiple items map: { [itemId]: qty }
-  if ((p as RawPrizeData).items && typeof (p as RawPrizeData).items === 'object') {
-    for (const [itId, itQty] of Object.entries((p as RawPrizeData).items!)) {
-      if (typeof itQty === 'number' && itQty > 0) {
-        const name = getItemName(itId)
-        list.push({
-          id: `reward-item-map-${itId}`,
-          type: 'item',
-          title: name.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
-          label: name,
-          qtyText: `x${itQty}`,
-          spriteUrl: getItemSpriteUrl(itId),
-          description: getItemDesc(itId),
-          colorClass: 'item'
-        })
-      }
-    }
-  }
-
-  // 5b. Direct items on prize object (e.g. Ranked Milestones: { naturepatch: 2, vigorcandy: 1 })
-  for (const [key, val] of Object.entries(p)) {
-    if (['type', 'amount', 'qty', 'money', 'battleCoins', 'item', 'items', 'species', 'shiny', 'level'].includes(key)) {
-      continue
-    }
-    if (typeof val === 'number' && val > 0) {
-      const itDef = getItemById(key)
-      if (itDef) {
-        const name = getItemName(key)
-        list.push({
-          id: `reward-item-direct-${key}`,
-          type: 'item',
-          title: name.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
-          label: name,
-          qtyText: `x${val}`,
-          spriteUrl: getItemSpriteUrl(key),
-          description: getItemDesc(key),
-          colorClass: 'item'
-        })
-      }
-    }
-  }
-
-  // 6. Pokémon reward
-  if ((p as RawPrizeData).type === 'pokemon' || (p as RawPrizeData).species) {
-    const sp = String((p as RawPrizeData).species || '')
-    const shiny = Boolean((p as RawPrizeData).shiny)
-    const lv = (p as RawPrizeData).level ? `Nv. ${(p as RawPrizeData).level}` : ''
-    list.push({
-      id: `reward-poke-${sp}`,
-      type: 'pokemon',
-      title: `${sp.toUpperCase()}${shiny ? ' ✨ SHINY' : ''}`, // domain-ok: Open dynamic text or non-domain string payload
-      label: `${sp.toUpperCase()}`, // domain-ok: Open dynamic text or non-domain string payload
-      qtyText: lv || (shiny ? '✨' : undefined),
-      spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, sp, { isShiny: shiny }),
-      description: `Ejemplar Pokémon especial ${shiny ? 'Variocolor (Shiny)' : ''} listo para sumarse a tu equipo.`,
-      colorClass: 'pokemon'
-    })
-  }
-
-  return list
+  return normalizeAllRewards(props.pills, props.rewards, props.prize)
 })
 
 // GSAP Micro-interactions

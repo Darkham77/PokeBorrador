@@ -4,6 +4,7 @@ import { isPlayerTrappedInWorker } from '@/logic/battle/orchestrator.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
 import { logger } from '@/logic/utils/logger.ts'
 import { useErrorStore } from '@/stores/errorStore.ts'
+import { gameBus } from '@/logic/events/gameBus.ts'
 
 /**
  * Authoritative switch action runner for battleStore.
@@ -16,8 +17,6 @@ export async function executeBattleSwitch(
   if (ctx.isProcessing.value && !isForced) return
 
   if (ctx.isPvP.value) {
-    const { useLivePvPStore } = await import('@/stores/livePvP')
-    const livePvP = useLivePvPStore()
     const pvpTeamList = (ctx.activeBattle.value?.playerTeam && ctx.activeBattle.value.playerTeam.length > 0)
       ? ctx.activeBattle.value.playerTeam
       : (ctx.gs.state.team || [])
@@ -25,7 +24,7 @@ export async function executeBattleSwitch(
       ? targetIdentifier
       : pvpTeamList.findIndex((p: Pokemon | null) => p && p.uid === targetIdentifier)
     const validIndex = switchIndex !== -1 ? switchIndex : 0
-    livePvP._commitPick({
+    gameBus.emit('PVP_COMMIT_PICK', {
       type: 'switch',
       switchIndex: validIndex,
       choiceString: `switch ${validIndex + 1}`

@@ -46,7 +46,7 @@
     }
     & .snow-layer {
       position: absolute;
-      inset: -256px;
+      inset: var(--weather-layer-bleed, -600px);
       background-repeat: repeat;
       will-change: transform;
       image-rendering: pixelated;
@@ -73,7 +73,7 @@
     background: Rgba(200, 230, 255, 0.2);
     & .hail-layer {
       position: absolute;
-      inset: -100px;
+      inset: var(--weather-layer-bleed, -600px);
       background-repeat: repeat;
       background-image: url("data:image/svg+xml,%3Csvg width='128' height='128' viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='10' y='10' width='4' height='4' fill='white' opacity='1'/%3E%3Crect x='70' y='40' width='3' height='3' fill='white' opacity='0.8'/%3E%3Crect x='40' y='90' width='4' height='4' fill='white' opacity='0.9'/%3E%3Crect x='110' y='110' width='3' height='3' fill='white' opacity='0.7'/%3E%3C/svg%3E");
       will-change: transform;
@@ -96,7 +96,7 @@
     
     & .snow-layer {
       position: absolute;
-      inset: -512px;
+      inset: var(--weather-layer-bleed, -600px);
       background-repeat: repeat;
       background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='white'%3E%3Ccircle cx='30' cy='30' r='3.5'/%3E%3Ccircle cx='80' cy='60' r='2.8'/%3E%3Ccircle cx='140' cy='20' r='4'/%3E%3Ccircle cx='200' cy='70' r='2.5'/%3E%3Ccircle cx='40' cy='120' r='3.5'/%3E%3Ccircle cx='100' cy='150' r='3'/%3E%3Ccircle cx='180' cy='130' r='3.8'/%3E%3Ccircle cx='230' cy='180' r='2.8'/%3E%3Ccircle cx='60' cy='220' r='3.5'/%3E%3Ccircle cx='130' cy='210' r='3'/%3E%3Ccircle cx='190' cy='240' r='4'/%3E%3Ccircle cx='20' cy='180' r='2.5'/%3E%3Ccircle cx='240' cy='40' r='3.2'/%3E%3Ccircle cx='110' cy='100' r='2.5'/%3E%3Ccircle cx='160' cy='160' r='3.5'/%3E%3Ccircle cx='210' cy='210' r='3'/%3E%3Ccircle cx='20' cy='80' r='3.8'/%3E%3Ccircle cx='70' cy='140' r='2.8'/%3E%3Ccircle cx='120' cy='190' r='3.5'/%3E%3Ccircle cx='170' cy='20' r='3'/%3E%3Ccircle cx='220' cy='50' r='4'/%3E%3Ccircle cx='30' cy='170' r='2.5'/%3E%3Ccircle cx='80' cy='240' r='3.2'/%3E%3Ccircle cx='240' cy='120' r='3.5'/%3E%3Ccircle cx='190' cy='10' r='2.8'/%3E%3Ccircle cx='10' cy='230' r='3.5'/%3E%3Ccircle cx='50' cy='10' r='3'/%3E%3C/g%3E%3C/svg%3E");
       image-rendering: pixelated;
@@ -112,7 +112,7 @@
     }
     & .layer-2 { 
       opacity: 0.7; 
-      background-size: 192px 192px; 
+      background-size: 128px 128px; 
     }
   }
 
@@ -153,7 +153,7 @@
   &.fog, &.mist, &.dust_storm {
     & .mist-layer {
       position: absolute;
-      inset: -100px;
+      inset: var(--weather-mist-bleed, -100px);
       will-change: transform, opacity;
 
       &.layer-1 {

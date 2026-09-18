@@ -3,7 +3,39 @@ import type { BattleState } from '@/types/battle/battle'
 import { gameBus } from '@/logic/events/gameBus'
 import { gsapSleep } from '@/logic/utils/gsapHelpers'
 
+import type { Pokemon } from '@/types/pokemon/pokemon.ts'
+
 const ENEMY_FLEE_ANIMATION_DELAY_MS = 1000
+
+function resolveWildEnemyExit(ctx: BattleContext, enemy: Pokemon, win: boolean): Promise<void> {
+  if (win) {
+    return ctx.animations?.handleFaintAnim
+      ? ctx.animations.handleFaintAnim({ side: 'enemy', pokemon: enemy })
+      : Promise.resolve()
+  }
+  gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee' })
+  return ctx.animations?.awaitTween
+    ? ctx.animations.awaitTween('escape-enemy')
+    : gsapSleep(ENEMY_FLEE_ANIMATION_DELAY_MS)
+}
+
+function resolveEnemyExitAnimation(
+  ctx: BattleContext,
+  active: BattleState,
+  win: boolean
+): Promise<void> {
+  const enemy = active.enemy
+  if (!enemy) return Promise.resolve()
+
+  const isTrainerOrGym = active.isTrainer || active.isGym || active.isPvP
+  if (isTrainerOrGym) {
+    return ctx.animations?.handleCatchRequest
+      ? ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: enemy })
+      : Promise.resolve()
+  }
+
+  return resolveWildEnemyExit(ctx, enemy, win)
+}
 
 export async function handleCombatantsExitAnimations(
   ctx: BattleContext,
@@ -11,30 +43,10 @@ export async function handleCombatantsExitAnimations(
   win: boolean,
   fled: boolean
 ): Promise<void> {
-  const isTrainerOrGym = active.isTrainer || active.isGym || active.isPvP
-  const playerExited: Promise<void> = Promise.resolve()
-
-  let enemyExited: Promise<void> = Promise.resolve()
-  if (active.enemy && active.enemy.hp > 0 && !fled && !active.isCapture) {
-    if (isTrainerOrGym) {
-      enemyExited = ctx.animations?.handleCatchRequest
-        ? ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: active.enemy })
-        : Promise.resolve()
-    } else {
-      if (win) {
-        enemyExited = ctx.animations?.handleFaintAnim
-          ? ctx.animations.handleFaintAnim({ side: 'enemy', pokemon: active.enemy })
-          : Promise.resolve()
-      } else {
-        gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee' })
-        enemyExited = ctx.animations?.awaitTween
-          ? ctx.animations.awaitTween('escape-enemy')
-          : gsapSleep(ENEMY_FLEE_ANIMATION_DELAY_MS)
-      }
-    }
+  if (!active.enemy || active.enemy.hp <= 0 || fled || active.isCapture) {
+    return
   }
-
-  await Promise.all([playerExited, enemyExited])
+  await resolveEnemyExitAnimation(ctx, active, win)
 }
 
 export async function handleBattleDefeatFlow(

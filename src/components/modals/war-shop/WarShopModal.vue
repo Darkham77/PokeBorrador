@@ -10,8 +10,10 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 import WarShopItemCard from './WarShopItemCard.vue'
+import { sortWarShopItems } from './warShopHelpers.ts'
 
 import type { Item } from '@/types/inventory/items'
+import type { ItemSortKey, SortOrder } from '@/types/system/game'
 
 const uiStore = useUIStore()
 const warStore = useWarStore()
@@ -40,8 +42,8 @@ const isSmallScreen = computed(() => uiStore.isSmallScreen)
 
 const activeTab = ref('todos')
 const search = ref('')
-const sortKey = ref<'name' | 'price' | 'rarity'>('name')
-const sortOrder = ref<'asc' | 'desc'>('asc')
+const sortKey = ref<ItemSortKey>('name')
+const sortOrder = ref<SortOrder>('asc')
 
 const filteredItems = computed<Item[]>(() => {
   const coins = warStore.warCoins || 0
@@ -55,37 +57,7 @@ const filteredItems = computed<Item[]>(() => {
     return true
   })
 
-  return [...items].sort((a, b) => {
-    let comp: number
-    if (sortKey.value === 'price') {
-      comp = (a.warPrice || 0) - (b.warPrice || 0)
-    } else if (sortKey.value === 'rarity') {
-      const tiers: Record<string, number> = { common: 0, rare: 1, epic: 2, legend: 3 }
-      const aT = tiers[a.tier || 'common'] ?? 0
-      const bT = tiers[b.tier || 'common'] ?? 0
-      comp = bT - aT
-    } else {
-      // Default auto sorting (by unlock level and affordability if not overridden)
-      const aUnlocked = trainerLevel >= (a.unlockLv || 1)
-      const bUnlocked = trainerLevel >= (b.unlockLv || 1)
-      const aAffordable = coins >= (a.warPrice || 0)
-      const bAffordable = coins >= (b.warPrice || 0)
-
-      const aCanBuy = aUnlocked && aAffordable
-      const bCanBuy = bUnlocked && bAffordable
-
-      if (aCanBuy !== bCanBuy) {
-        comp = aCanBuy ? -1 : 1
-      } else if (aUnlocked !== bUnlocked) {
-        comp = aUnlocked ? -1 : 1
-      } else if ((a.unlockLv || 1) !== (b.unlockLv || 1)) {
-        comp = (a.unlockLv || 1) - (b.unlockLv || 1)
-      } else {
-        comp = (a.warPrice || 0) - (b.warPrice || 0)
-      }
-    }
-    return sortOrder.value === 'asc' ? comp : -comp
-  })
+  return sortWarShopItems(items, sortKey.value, sortOrder.value, coins, trainerLevel)
 })
 
 const availableCategories = computed<string[]>(() => {

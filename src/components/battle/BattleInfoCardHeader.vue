@@ -36,6 +36,7 @@ const hasNameGender = computed(() => {
     <img
       v-if="!isPlayer && pokemon.caught"
       :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
+      alt="Capturado"
       class="caught-icon"
       @error="e => (e.target as HTMLImageElement).style.display = 'none'"
     >

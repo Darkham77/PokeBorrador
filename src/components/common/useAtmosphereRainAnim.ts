@@ -1,23 +1,21 @@
 import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
+import { TEXTURE_TILE_SIZE_BASE } from '@/logic/constants/visuals'
 
 const RAIN_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['rain', 'storm', 'heavy_rain', 'thunderstorm']) // runtime-set: Fast O(1) membership lookup set
+const STORM_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['storm', 'thunderstorm']) // runtime-set: Fast O(1) membership lookup set
 
 const HEAVY_RAIN_BASE_SPEED = 0.35
 const HEAVY_RAIN_VAR_SPEED = 0.2
 const HEAVY_RAIN_LAYER2_SPEED_MULT = 1.3
+const HEAVY_RAIN_LAYER2_ADDITIONAL_DUR_MULT = 1.5
 const STORM_BASE_SPEED = 0.65
 const STORM_VAR_SPEED = 0.6
 const STORM_LAYER2_SPEED_MULT = 1.4
 const RAIN_BASE_SPEED = 0.4
 const RAIN_VAR_SPEED = 0.4
 const RAIN_LAYER2_SPEED_MULT = 1.6
-const BG_DRIFT_PX = 256
-const SEED_X_FACTOR1 = 1234
-const SEED_Y_FACTOR1 = 5678
-const SEED_X_FACTOR2 = 9101
-const SEED_Y_FACTOR2 = 1121
 const LIGHTNING_MIN_X_PCT = 5
 const LIGHTNING_RANGE_X_PCT = 90
 const HALF_PROBABILITY_THRESHOLD = 0.5
@@ -48,7 +46,7 @@ export function useAtmosphereRainAnim(
     speedVar: number,
     weatherTimeline: gsap.core.Timeline | null,
     atmosphereContext: gsap.Context | null,
-    props: { isVisible: boolean; isPerformanceMode: boolean; weather: WeatherId }
+    props: { isVisible: boolean; isFastMode?: boolean; isPerformanceMode?: boolean; weather: WeatherId }
   ) => {
     if (!RAIN_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return
 
@@ -69,46 +67,34 @@ export function useAtmosphereRainAnim(
     }
 
     if (layer1Ref.value) {
-      const driftX = isStorm ? -BG_DRIFT_PX : 0
-      const s1X = (seed1 * SEED_X_FACTOR1) % BG_DRIFT_PX
-      const s1Y = (seed1 * SEED_Y_FACTOR1) % BG_DRIFT_PX
+      const driftX = isStorm ? -TEXTURE_TILE_SIZE_BASE : 0
 
-      gsap.set(layer1Ref.value, { x: s1X, y: s1Y })
-
-      weatherTimeline.to(layer1Ref.value,
+      weatherTimeline.fromTo(
+        layer1Ref.value,
+        { x: 0, y: -TEXTURE_TILE_SIZE_BASE },
         {
-          x: s1X + driftX,
-          y: s1Y + BG_DRIFT_PX,
+          x: driftX,
+          y: 0,
           duration: variantSpeed1,
           repeat: -1,
-          ease: 'none',
-          modifiers: {
-            x: gsap.utils.unitize(x => parseFloat(x) % BG_DRIFT_PX),
-            y: gsap.utils.unitize(y => parseFloat(y) % BG_DRIFT_PX)
-          }
+          ease: 'none'
         },
         0
       ).progress(seed1)
     }
 
     if (layer2Ref.value && !isLowPower) {
-      const driftX = isStorm ? -BG_DRIFT_PX : 0
-      const s2X = (seed2 * SEED_X_FACTOR2) % BG_DRIFT_PX
-      const s2Y = (seed2 * SEED_Y_FACTOR2) % BG_DRIFT_PX
+      const driftX = isStorm ? -TEXTURE_TILE_SIZE_BASE : 0
 
-      gsap.set(layer2Ref.value, { x: s2X, y: s2Y })
-
-      weatherTimeline.to(layer2Ref.value,
+      weatherTimeline.fromTo(
+        layer2Ref.value,
+        { x: 0, y: -TEXTURE_TILE_SIZE_BASE },
         {
-          x: s2X + driftX,
-          y: s2Y + BG_DRIFT_PX,
-          duration: variantSpeed2 * (isHeavy ? 1.5 : 1),
+          x: driftX,
+          y: 0,
+          duration: variantSpeed2 * (isHeavy ? HEAVY_RAIN_LAYER2_ADDITIONAL_DUR_MULT : 1),
           repeat: -1,
-          ease: 'none',
-          modifiers: {
-            x: gsap.utils.unitize(x => parseFloat(x) % BG_DRIFT_PX),
-            y: gsap.utils.unitize(y => parseFloat(y) % BG_DRIFT_PX)
-          }
+          ease: 'none'
         },
         0
       ).progress(seed2)
@@ -116,7 +102,8 @@ export function useAtmosphereRainAnim(
 
     if (isStorm) {
       const strike = () => {
-        if (!props.isVisible || props.isPerformanceMode || !['storm', 'thunderstorm'].includes(props.weather) || !lightningRef.value) return
+        const isFast = props.isFastMode ?? props.isPerformanceMode ?? false
+        if (!props.isVisible || isFast || !STORM_ATMOSPHERE_WEATHER_IDS_SET.has(props.weather) || !lightningRef.value) return
 
         const x1 = Math.floor(Math.random() * LIGHTNING_RANGE_X_PCT) + LIGHTNING_MIN_X_PCT
         const isFlipped = Math.random() > HALF_PROBABILITY_THRESHOLD

@@ -10,6 +10,7 @@ Frontend Core & Diagnostic Tooling Team.
 
 - **Clipboard Resilience**: Clipboard operations in `shadowEditorClipboard.ts` MUST support both standard asynchronous Web API (`navigator.clipboard`) and synchronous in-memory fallback to guarantee deterministic behavior in automated headless tests and non-HTTPS local environments.
 - **Strict Decimal Sanitation**: Number parsing from raw clipboard strings MUST sanitize commas into decimal points before numeric conversion (`.replace(',', '.')`) and clamp coordinates strictly to valid intervals.
+- **Shadow Editor Catalog Builder (`shadowEditorCatalogHelpers.ts`)**: Modular entity catalog assembly (intercalated Pokémon Front/Back sprites, female variants, NPC full-body sprites, and Player/Trainer sprites) is decoupled from the composable state into pure lookup helpers to uphold modularity and minimal complexity.
 - **Zero Production Leaks**: These utilities are intended strictly for dev-only views and test fixtures.
 
 ## Work Guidance

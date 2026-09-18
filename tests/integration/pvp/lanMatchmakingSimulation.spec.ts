@@ -1,4 +1,3 @@
-/** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { createServer, type Server } from 'node:http';

@@ -16,11 +16,28 @@ export const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
   return typeof rawPrize === 'object' ? (rawPrize as Record<string, unknown>) : {}; // open-record: Generic key-value data dictionary container
 };
 
-export const buildRewardPills = (prize: Record<string, unknown>, prefix = 'pill'): readonly UnifiedRewardPill[] => {
-  const pills: UnifiedRewardPill[] = [];
-  if (!prize || typeof prize !== 'object') return pills;
+const EXCLUDED_PRIZE_KEY_MAP: Record<string, true> = {
+  type: true,
+  amount: true,
+  qty: true,
+  money: true,
+  battleCoins: true,
+  item: true,
+  items: true,
+  species: true,
+  shiny: true,
+  level: true,
+  pokemon: true,
+  tier: true,
+  season: true,
+  rank: true,
+  elo: true,
+  data: true,
+  sold_item: true,
+  sold_pokemon: true
+}; // open-record: Generic key-value data dictionary container
 
-  // 1. Money (₽)
+function extractMoneyPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
   let money = 0;
   if (typeof prize.money === 'number') {
     money = prize.money;
@@ -29,72 +46,79 @@ export const buildRewardPills = (prize: Record<string, unknown>, prefix = 'pill'
   } else if (prize.type === 'money' && typeof prize.data === 'number') {
     money = prize.data;
   }
-  if (money > 0) {
-    pills.push({
-      id: `${prefix}-money`,
-      label: `₽${money.toLocaleString()}`,
-      icon: '₽',
-      description: 'Pokédólares para adquirir objetos, consumibles y mejoras.',
-      colorClass: 'money'
-    });
-  }
+  if (money <= 0) return null;
 
-  // 2. Battle Coins (BC)
+  return {
+    id: `${prefix}-money`,
+    label: `₽${money.toLocaleString()}`,
+    icon: '₽',
+    description: 'Pokédólares para adquirir objetos, consumibles y mejoras.',
+    colorClass: 'money'
+  };
+}
+
+function extractBcPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
   let bc = 0;
   if (typeof prize.battleCoins === 'number') {
     bc = prize.battleCoins;
   } else if (prize.type === 'bc' && typeof prize.amount === 'number') {
     bc = prize.amount;
   }
-  if (bc > 0) {
-    pills.push({
-      id: `${prefix}-bc`,
-      label: `${bc.toLocaleString()} BC`,
-      icon: '🪙',
-      description: 'Battle Coins obtenidos por mérito competitivo en arena o torneos.',
-      colorClass: 'bc'
-    });
-  }
+  if (bc <= 0) return null;
 
-  // 3. Single Item
-  if (prize.item && typeof prize.item === 'string') {
-    const itId = prize.item;
-    const qty = typeof prize.qty === 'number' ? prize.qty : (typeof prize.amount === 'number' ? prize.amount : 1);
-    const itDef = getItemById(itId);
-    const name = itDef?.name || getItemName(itId);
-    pills.push({
-      id: `${prefix}-item-${itId}`,
-      label: name,
-      qtyText: `x${qty}`,
-      spriteUrl: getAssetUrl(ASSET_TYPES.ITEM, itDef?.sprite || itId),
-      description: itDef?.desc || 'Objeto especial de recompensa.',
-      colorClass: 'item'
-    });
-  }
+  return {
+    id: `${prefix}-bc`,
+    label: `${bc.toLocaleString()} BC`,
+    icon: '🪙',
+    description: 'Battle Coins obtenidos por mérito competitivo en arena o torneos.',
+    colorClass: 'bc'
+  };
+}
 
-  // 4. Nested Items map (e.g. { items: { naturepatch: 2 } })
-  if (prize.items && typeof prize.items === 'object') {
-    for (const [itId, itQty] of Object.entries(prize.items as Record<string, number>)) { // open-record: Generic key-value data dictionary container
-      if (typeof itQty === 'number' && itQty > 0) {
-        const itDef = getItemById(itId);
-        const name = itDef?.name || getItemName(itId);
-        pills.push({
-          id: `${prefix}-items-${itId}`,
-          label: name,
-          qtyText: `x${itQty}`,
-          spriteUrl: getAssetUrl(ASSET_TYPES.ITEM, itDef?.sprite || itId),
-          description: itDef?.desc || 'Objeto de recompensa.',
-          colorClass: 'item'
-        });
-      }
+function extractSingleItemPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
+  if (!prize.item || typeof prize.item !== 'string') return null;
+  const itId = prize.item;
+  const qty = typeof prize.qty === 'number' ? prize.qty : (typeof prize.amount === 'number' ? prize.amount : 1);
+  const itDef = getItemById(itId);
+  const name = itDef?.name || getItemName(itId);
+
+  return {
+    id: `${prefix}-item-${itId}`,
+    label: name,
+    qtyText: `x${qty}`,
+    spriteUrl: getAssetUrl(ASSET_TYPES.ITEM, itDef?.sprite || itId),
+    description: itDef?.desc || 'Objeto especial de recompensa.',
+    colorClass: 'item'
+  };
+}
+
+function extractNestedItemPills(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill[] {
+  if (!prize.items || typeof prize.items !== 'object') return [];
+  const pills: UnifiedRewardPill[] = [];
+
+  for (const [itId, itQty] of Object.entries(prize.items as Record<string, number>)) { // open-record: Generic key-value data dictionary container
+    if (typeof itQty === 'number' && itQty > 0) {
+      const itDef = getItemById(itId);
+      const name = itDef?.name || getItemName(itId);
+      pills.push({
+        id: `${prefix}-items-${itId}`,
+        label: name,
+        qtyText: `x${itQty}`,
+        spriteUrl: getAssetUrl(ASSET_TYPES.ITEM, itDef?.sprite || itId),
+        description: itDef?.desc || 'Objeto de recompensa.',
+        colorClass: 'item'
+      });
     }
   }
+  return pills;
+}
 
-  // 5. Direct item key-value pairs (e.g. Ranked Milestones: { naturepatch: 2, vigorcandy: 1 })
+function extractDirectItemPills(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill[] {
+  const pills: UnifiedRewardPill[] = [];
+
   for (const [key, val] of Object.entries(prize)) {
-    if (['type', 'amount', 'qty', 'money', 'battleCoins', 'item', 'items', 'species', 'shiny', 'level', 'pokemon', 'tier', 'season', 'rank', 'elo', 'data', 'sold_item', 'sold_pokemon'].includes(key)) {
-      continue;
-    }
+    if (EXCLUDED_PRIZE_KEY_MAP[key]) continue;
+
     if (typeof val === 'number' && val > 0) {
       const itDef = getItemById(key);
       if (itDef) {
@@ -110,8 +134,12 @@ export const buildRewardPills = (prize: Record<string, unknown>, prefix = 'pill'
       }
     }
   }
+  return pills;
+}
 
-  // 6. Sold item metadata from GTS sales
+function extractSoldGtsPills(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill[] {
+  const pills: UnifiedRewardPill[] = [];
+
   if (prize.sold_item && typeof prize.sold_item === 'object') {
     const sItem = prize.sold_item as { name?: string; qty?: number };
     if (sItem.name) {
@@ -129,7 +157,6 @@ export const buildRewardPills = (prize: Record<string, unknown>, prefix = 'pill'
     }
   }
 
-  // 7. Sold pokemon metadata from GTS sales
   if (prize.sold_pokemon && typeof prize.sold_pokemon === 'object') {
     const sPoke = prize.sold_pokemon as { name?: string; level?: number; isShiny?: boolean };
     if (sPoke.name) {
@@ -145,43 +172,74 @@ export const buildRewardPills = (prize: Record<string, unknown>, prefix = 'pill'
     }
   }
 
-  // 8. Pokemon reward
-  if (prize.type === 'pokemon' || prize.species || prize.pokemon) {
-    const rawPoke = prize.pokemon && typeof prize.pokemon === 'object' ? (prize.pokemon as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
-    let sp = '';
-    if (typeof prize.species === 'string') {
-      sp = prize.species;
-    } else if (rawPoke && typeof rawPoke.species === 'string') {
-      sp = rawPoke.species;
-    } else if (typeof prize.pokemon === 'string') {
-      sp = prize.pokemon;
-    }
-    if (sp) {
-      const shiny = Boolean(rawPoke?.shiny || rawPoke?.isShiny || prize.shiny);
-      const lv = rawPoke?.level || prize.level;
-      pills.push({
-        id: `${prefix}-poke-${sp}`,
-        label: `${sp.toUpperCase()}`, // text-ok: UI text display localization string
-        qtyText: lv ? `Nv. ${lv}` : (shiny ? '✨' : undefined),
-        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, toID(sp), { isShiny: shiny }),
-        description: `Ejemplar Pokémon especial ${shiny ? 'Variocolor (Shiny)' : ''} listo para sumarse a tu equipo.`,
-        colorClass: 'pokemon'
-      });
-    }
-  }
+  return pills;
+}
 
-  // 9. Ranked Medal / Season Award
-  if (prize.type === 'ranked_medal' || prize.tier) {
-    const tier = String(prize.tier || 'Clasificatorio');
-    const season = prize.season ? ` (${prize.season})` : '';
-    pills.push({
-      id: `${prefix}-medal-${tier}`,
-      label: `Medalla ${tier.toUpperCase()}${season}`,
-      icon: '🎖️',
-      description: `Galardón de fin de temporada por alcanzar el rango ${tier}.`,
-      colorClass: 'special'
-    });
+function extractPokemonPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
+  if (prize.type !== 'pokemon' && !prize.species && !prize.pokemon) return null;
+
+  const rawPoke = prize.pokemon && typeof prize.pokemon === 'object' ? (prize.pokemon as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
+  let sp = '';
+  if (typeof prize.species === 'string') {
+    sp = prize.species;
+  } else if (rawPoke && typeof rawPoke.species === 'string') {
+    sp = rawPoke.species;
+  } else if (typeof prize.pokemon === 'string') {
+    sp = prize.pokemon;
   }
+  if (!sp) return null;
+
+  const shiny = Boolean(rawPoke?.shiny || rawPoke?.isShiny || prize.shiny);
+  const lv = rawPoke?.level || prize.level;
+
+  return {
+    id: `${prefix}-poke-${sp}`,
+    label: `${sp.toUpperCase()}`, // text-ok: UI text display localization string
+    qtyText: lv ? `Nv. ${lv}` : (shiny ? '✨' : undefined),
+    spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, toID(sp), { isShiny: shiny }),
+    description: `Ejemplar Pokémon especial ${shiny ? 'Variocolor (Shiny)' : ''} listo para sumarse a tu equipo.`,
+    colorClass: 'pokemon'
+  };
+}
+
+function extractRankedMedalPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
+  if (prize.type !== 'ranked_medal' && !prize.tier) return null;
+
+  const tier = String(prize.tier || 'Clasificatorio');
+  const season = prize.season ? ` (${prize.season})` : '';
+
+  return {
+    id: `${prefix}-medal-${tier}`,
+    label: `Medalla ${tier.toUpperCase()}${season}`,
+    icon: '🎖️',
+    description: `Galardón de fin de temporada por alcanzar el rango ${tier}.`,
+    colorClass: 'special'
+  };
+}
+
+export const buildRewardPills = (prize: Record<string, unknown>, prefix = 'pill'): readonly UnifiedRewardPill[] => {
+  if (!prize || typeof prize !== 'object') return [];
+
+  const pills: UnifiedRewardPill[] = [];
+
+  const moneyPill = extractMoneyPill(prize, prefix);
+  if (moneyPill) pills.push(moneyPill);
+
+  const bcPill = extractBcPill(prize, prefix);
+  if (bcPill) pills.push(bcPill);
+
+  const singleItem = extractSingleItemPill(prize, prefix);
+  if (singleItem) pills.push(singleItem);
+
+  pills.push(...extractNestedItemPills(prize, prefix));
+  pills.push(...extractDirectItemPills(prize, prefix));
+  pills.push(...extractSoldGtsPills(prize, prefix));
+
+  const pokemonPill = extractPokemonPill(prize, prefix);
+  if (pokemonPill) pills.push(pokemonPill);
+
+  const medalPill = extractRankedMedalPill(prize, prefix);
+  if (medalPill) pills.push(medalPill);
 
   return pills;
 };

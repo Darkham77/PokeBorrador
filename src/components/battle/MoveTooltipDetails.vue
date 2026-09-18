@@ -1,111 +1,67 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip'
 import type { PokemonMoveId } from '@/data/battle/moves'
+import {
+  resolveSpeedMatchup,
+  resolveTacticalRows
+} from './moveTooltipDetailsHelper.ts'
 
-defineProps<{
+const props = defineProps<{
   activeDetails: ActiveMoveDetails
   moveId?: PokemonMoveId
 }>()
+
+const speedMatchup = computed(() => resolveSpeedMatchup(props.activeDetails.speedInfo))
+const tacticalRows = computed(() => resolveTacticalRows(props.activeDetails.tacticalInfo, props.moveId))
 </script>
 
 <template>
   <div class="move-tooltip-details-extra">
     <!-- Speed Matchup Section -->
     <div
-      v-if="activeDetails.speedInfo"
+      v-if="speedMatchup"
       class="extra-effect-section speed-section"
     >
       <div class="calc-section-title">
         ORDEN DE TURNO
       </div>
       <div class="extra-effect-row">
-        <span class="emoji">{{ activeDetails.speedInfo.priority > 0 ? '⚡' : (activeDetails.speedInfo.outspeeds ? '▶️' : '⏱️') }}</span>
+        <span class="emoji">{{ speedMatchup.emoji }}</span>
         <span
           class="extra-effect-text"
-          :class="activeDetails.speedInfo.outspeeds || activeDetails.speedInfo.priority > 0 ? 'boosted' : 'penalized'"
+          :class="speedMatchup.boosted ? 'boosted' : 'penalized'"
         >
-          {{ activeDetails.speedInfo.priority > 0 ? `Prioridad +${activeDetails.speedInfo.priority}` : (activeDetails.speedInfo.outspeeds ? '¡Mueves primero!' : 'Rival mueve primero') }}
+          {{ speedMatchup.text }}
         </span>
         <span
           class="speed-values"
           style="color: rgba(255, 255, 255, 0.4); font-size: 6.5px; margin-left: 2px;"
         >
-          ({{ activeDetails.speedInfo.attackerSpeed }} vs {{ activeDetails.speedInfo.defenderSpeed }} Vel)
+          ({{ speedMatchup.attackerSpeed }} vs {{ speedMatchup.defenderSpeed }} Vel)
         </span>
       </div>
     </div>
 
     <!-- Special Mechanics & Weights Section -->
     <div
-      v-if="activeDetails.tacticalInfo && (activeDetails.tacticalInfo.overrideOffensiveStat || activeDetails.tacticalInfo.overrideDefensiveStat || activeDetails.tacticalInfo.ignoreDefensive || activeDetails.tacticalInfo.breaksProtect || activeDetails.tacticalInfo.hasCrashDamage || activeDetails.tacticalInfo.terrainReductions.length > 0)"
+      v-if="tacticalRows.length > 0"
       class="extra-effect-section mechanics-section"
     >
       <div class="calc-section-title">
         PROPIEDADES ESPECIALES
       </div>
       
-      <!-- Weights -->
       <div
-        v-if="['lowkick', 'grassknot', 'heavyslam', 'heatcrash'].includes(moveId ?? '')"
+        v-for="(row, idx) in tacticalRows"
+        :key="idx"
         class="field-condition-row"
       >
-        <span class="emoji">⚖️</span>
-        <span class="field-condition-text">Peso: Tu {{ activeDetails.tacticalInfo.attackerWeight }}kg vs Rival {{ activeDetails.tacticalInfo.defenderWeight }}kg</span>
-      </div>
-
-      <!-- Override Offensive Stat -->
-      <div
-        v-if="activeDetails.tacticalInfo.overrideOffensiveStat"
-        class="field-condition-row"
-      >
-        <span class="emoji">🧠</span>
-        <span class="field-condition-text">Usa tu DEFENSA para atacar</span>
-      </div>
-
-      <!-- Override Defensive Stat -->
-      <div
-        v-if="activeDetails.tacticalInfo.overrideDefensiveStat"
-        class="field-condition-row"
-      >
-        <span class="emoji">🧠</span>
-        <span class="field-condition-text">Ataca contra la DEFENSA FÍSICA del rival</span>
-      </div>
-
-      <!-- Ignore Defensive boosts -->
-      <div
-        v-if="activeDetails.tacticalInfo.ignoreDefensive"
-        class="field-condition-row"
-      >
-        <span class="emoji">🛡️</span>
-        <span class="field-condition-text">Ignora aumentos de defensa del rival</span>
-      </div>
-
-      <!-- Breaks Protect -->
-      <div
-        v-if="activeDetails.tacticalInfo.breaksProtect"
-        class="field-condition-row"
-      >
-        <span class="emoji">💥</span>
-        <span class="field-condition-text">Rompe la Protección del rival</span>
-      </div>
-
-      <!-- Has Crash Damage -->
-      <div
-        v-if="activeDetails.tacticalInfo.hasCrashDamage"
-        class="field-condition-row"
-      >
-        <span class="emoji">⚠️</span>
-        <span class="field-condition-text">Daño por colisión si falla</span>
-      </div>
-
-      <!-- Terrain reductions -->
-      <div
-        v-for="warning in activeDetails.tacticalInfo.terrainReductions"
-        :key="warning"
-        class="field-condition-row"
-      >
-        <span class="emoji">💥</span>
-        <span class="field-condition-text penalized">{{ warning }}</span>
+        <span class="emoji">{{ row.emoji }}</span>
+        <span
+          class="field-condition-text"
+          :class="{ penalized: row.penalized }"
+        >{{ row.text }}</span>
       </div>
     </div>
   </div>

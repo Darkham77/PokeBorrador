@@ -1,9 +1,9 @@
 export const MIN_INITIAL_ELO = 1000 as const;
-export const ELO_K_FACTOR_DEFAULT = 32 as const;
-export const ELO_K_FACTOR_HIGH = 16 as const;
-export const ELO_HIGH_TIER_THRESHOLD = 2100 as const;
-export const ELO_SCALE_BASE = 10 as const;
-export const ELO_SCALE_DIVISOR = 400 as const;
+const ELO_K_FACTOR_DEFAULT = 32 as const;
+const ELO_K_FACTOR_HIGH = 16 as const;
+const ELO_HIGH_TIER_THRESHOLD = 2100 as const;
+const ELO_SCALE_BASE = 10 as const;
+const ELO_SCALE_DIVISOR = 400 as const;
 export const ELO_SOFT_RESET_DIVISOR = 2 as const;
 
 /**

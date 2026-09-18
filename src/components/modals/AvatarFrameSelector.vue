@@ -4,88 +4,55 @@ import { useUIStore } from '@/stores/ui'
 import { useCosmeticsStore } from '@/stores/player/cosmetics'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
+import AvatarFrameCard from './AvatarFrameCard.vue'
 
-interface AvatarStyle {
-  id: string
-  name: string
-  class: string
-  requiredRole?: string
-  requiredClass?: string
-  requiredFaction?: string
-}
+
+import {
+  isCosmeticStyleLocked,
+  resolveCosmeticLockNotification,
+  filterAvatarStylesByShape,
+  checkIsLocalEnvironment,
+  type ShapeFilterOption,
+  type LockableCosmeticStyle,
+  type CosmeticPlayerContext
+} from './cosmeticsFilterHelper'
 
 const uiStore = useUIStore()
 const cosmeticsStore = useCosmeticsStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 
-const activeShapeFilter = ref<'all' | 'circular' | 'square'>('all')
+const activeShapeFilter = ref<ShapeFilterOption>('all')
 
 const filteredAvatarStyles = computed(() => {
-  const styles = cosmeticsStore.allAvatarStyles
-  if (activeShapeFilter.value === 'circular') {
-    return styles.filter(s => !s.class.includes('sq'))
-  }
-  if (activeShapeFilter.value === 'square') {
-    return styles.filter(s => s.class.includes('sq'))
-  }
-  return styles
+  return filterAvatarStylesByShape(cosmeticsStore.allAvatarStyles, activeShapeFilter.value)
 })
 
-// Check if the current context is local development
 const isLocal = computed(() => {
-  if (import.meta.env.DEV) return true
-  if (typeof window !== 'undefined') {
-    const hn = window.location.hostname
-    return hn === 'localhost' || hn === '127.0.0.1' || hn.endsWith('.local')
-  }
-  return false
+  const hn = typeof window !== 'undefined' ? window.location.hostname : undefined
+  return checkIsLocalEnvironment(import.meta.env.DEV, hn)
 })
 
-// Check if user is admin (local development counts as admin)
 const isAdmin = computed(() => {
   return authStore.user?.role === 'admin' || isLocal.value
 })
 
-const UNLOCK_MIN_CLASS_LEVEL = 25
+const playerContext = computed<CosmeticPlayerContext>(() => ({
+  playerClass: gameStore.state.playerClass,
+  classLevel: gameStore.state.classLevel,
+  trainerLevel: gameStore.state.trainerLevel,
+  faction: gameStore.state.faction,
+  isAdmin: isAdmin.value
+}))
 
-const isAvatarLocked = (style: AvatarStyle) => {
-  if (style.requiredRole === 'admin' && !isAdmin.value) {
-    return true
-  }
-  if (style.requiredClass) {
-    if (gameStore.state.playerClass !== style.requiredClass) {
-      return true
-    }
-    const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
-    if (currentLevel < UNLOCK_MIN_CLASS_LEVEL) {
-      return true
-    }
-  }
-  if (style.requiredFaction && gameStore.state.faction !== style.requiredFaction) {
-    return true
-  }
-  return false
+const isAvatarLocked = (style: LockableCosmeticStyle) => {
+  return isCosmeticStyleLocked(style, playerContext.value)
 }
 
-const selectAvatar = (style: AvatarStyle) => {
-  if (isAvatarLocked(style)) {
-    if (style.requiredRole) {
-      uiStore.notify('Este marco es exclusivo para Administradores', '🔒')
-    } else if (style.requiredClass) {
-      const className = style.requiredClass.toUpperCase()
-const FRAME_REQUIRED_CLASS_LEVEL = 25
-
-      if (gameStore.state.playerClass !== style.requiredClass) {
-        uiStore.notify(`Este marco es exclusivo para la profesión ${className}`, '🔒')
-      } else {
-        uiStore.notify(`Este marco requiere profesión ${className} Nivel ${FRAME_REQUIRED_CLASS_LEVEL}`, '🔒')
-      }
-    } else if (style.requiredFaction) {
-      const factionName = style.requiredFaction === 'union' ? 'UNIÓN' : 'PODER'
-      uiStore.notify(`Este marco es exclusivo para miembros del Team ${factionName}`, '🔒')
-    }
+const selectAvatar = (style: LockableCosmeticStyle) => {
+  const lockNotice = resolveCosmeticLockNotification(style, 'marco', playerContext.value)
+  if (lockNotice) {
+    uiStore.notify(lockNotice, '🔒')
     return
   }
   cosmeticsStore.equipAvatarStyle(style.id)
@@ -131,49 +98,17 @@ const FRAME_REQUIRED_CLASS_LEVEL = 25
     </div>
     
     <div class="styles-grid">
-      <div
+      <AvatarFrameCard
         v-for="style in filteredAvatarStyles"
         :key="style.id"
-        class="style-card avatar-item"
-        :class="{ 
-          active: cosmeticsStore.equippedAvatarStyle === style.id,
-          locked: isAvatarLocked(style),
-          unlocked: !isAvatarLocked(style) && (style.requiredRole || style.requiredClass || style.requiredFaction)
-        }"
-        @click.stop="selectAvatar(style)"
-      >
-        <div class="avatar-preview-box">
-          <TrainerAvatar
-            :size="64"
-            :avatar-style="style.class"
-            :player-class="gameStore.state.playerClass"
-            :level="gameStore.state.trainerLevel"
-            :gender="gameStore.state.gender"
-          />
-        </div>
-        <div class="style-meta">
-          <span class="style-name">{{ style.name }}</span>
-          <span
-            v-if="isAvatarLocked(style)"
-            class="lock-tag locked"
-            :class="[style.requiredClass, style.requiredFaction]"
-          >
-            <span class="emoji">🔒</span> {{ style.requiredRole ? 'ADMIN' : (style.requiredClass ? `${style.requiredClass.toUpperCase()} (NIVEL 25)` : (style.requiredFaction ? `TEAM ${style.requiredFaction.toUpperCase()}` : '')) }}
-          </span>
-          <span
-            v-else-if="style.requiredRole || style.requiredClass || style.requiredFaction"
-            v-gsap-loop="{ effect: 'pulse-shadow', color: 'rgba(74, 222, 128, 0.4)', boxShadow: '0 0 8px rgba(74, 222, 128, 0.5)', duration: 2 }"
-            class="lock-tag unlocked"
-            :class="[style.requiredClass, style.requiredFaction]"
-          >
-            <span class="emoji">🔓</span> {{ style.requiredRole ? 'ADMIN' : (style.requiredClass ? `${style.requiredClass.toUpperCase()} (NIVEL 25)` : (style.requiredFaction ? `TEAM ${style.requiredFaction.toUpperCase()}` : '')) }}
-          </span>
-          <span
-            v-if="cosmeticsStore.equippedAvatarStyle === style.id"
-            class="status-tag"
-          >EQUIPADO</span>
-        </div>
-      </div>
+        :style-data="style"
+        :is-active="cosmeticsStore.equippedAvatarStyle === style.id"
+        :is-locked="isAvatarLocked(style)"
+        :player-class="gameStore.state.playerClass"
+        :trainer-level="gameStore.state.trainerLevel"
+        :gender="gameStore.state.gender"
+        @select="selectAvatar(style)"
+      />
     </div>
   </section>
 </template>

@@ -11,11 +11,13 @@ import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import type { BattleCombatantProps, CombatantAnimTrigger } from '@/types/battle/battle'
-import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave, onCriticalBannerEnter } from './useBattleCombatantAnims.ts'
+import { useBattleCombatantAnims } from './useBattleCombatantAnims.ts'
 import { useBattleCombatantState } from './useBattleCombatantState.ts'
 import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts'
 import { computeCombatantVolatiles } from './combatantVolatilesHelper.ts'
 import BattleGroundHazards from './BattleGroundHazards.vue'
+import CombatantSpriteLayer from './CombatantSpriteLayer.vue'
+import CombatantTrappedBall from './CombatantTrappedBall.vue'
 
 // Referencias DOM
 const spriteRef = ref<HTMLElement | null>(null)
@@ -52,7 +54,8 @@ const props = withDefaults(defineProps<BattleCombatantProps>(), {
   hasSeat: false,
   stages: () => ({}),
   zIndex: undefined,
-  targetPosition: null
+  targetPosition: null,
+  hideStatusOverlay: false
 })
 
 const volatilesProps = computed(() => computeCombatantVolatiles(props.pokemon, props.stages))
@@ -192,8 +195,8 @@ useBattleCombatantAnims(
 
 
 
-const handleBallLeave = (el: Element, done: () => void) => {
-  onBallLeave(el, props.side, done)
+const setPokeballImgRef = (el: HTMLImageElement | null) => {
+  pokeballImgRef.value = el
 }
 </script>
 
@@ -271,6 +274,7 @@ const handleBallLeave = (el: Element, done: () => void) => {
             :radius="fxRadius * 1.25"
             :sprite-scale="fxScale"
             :poke-scale="speciesSizeScale"
+            :hide-status-overlay="props.hideStatusOverlay"
             :style="{
               width: (displaySize * 2) + 'px',
               height: (displaySize * 2) + 'px',
@@ -281,246 +285,44 @@ const handleBallLeave = (el: Element, done: () => void) => {
             }"
             :is-battle="true"
           >
-            <!-- Wrapper exterior: solo hereda tamaño y posición del parent PVSpriteFX (que es el wrapper) -->
-            <div 
-              class="pokemon-atmosphere-wrapper"
-              :style="{
-                width: '100%',
-                height: '100%',
-                minWidth: '0',
-                minHeight: '0',
-                overflow: 'visible',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: isAnimated ? 'flex-start' : 'center'
-              }"
-            >
-              <!-- Wrapper para estados (recibe filtros en PVSpriteFX) -->
-              <div
-                class="pokemon-sprite-status-wrapper"
-                :style="{
-                  width: '100%',
-                  height: '100%',
-                  minWidth: '0',
-                  minHeight: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: isAnimated ? 'flex-start' : 'center',
-                  overflow: isAnimated ? 'hidden' : 'visible',
-                  position: 'relative'
-                }"
-              >
-                <!-- Para sprites animados: Renderizamos ambos simultáneamente si existen para evitar parpadeos y demoras de swapping de src -->
-                <template v-if="isAnimated">
-                  <!-- Imagen IDLE (i) -->
-                  <img
-                    class="pokemon-combat-image pokemon-image-idle"
-                    :class="{ 
-                      'is-silhouette': isSilhouette,
-                      'active-mode': currentMode === 'idle'
-                    }"
-                    :src="idleImageUrl"
-                    :style="{
-                      filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)',
-                      width: (frames * 100) + '%',
-                      maxWidth: 'none',
-                      height: '100%',
-                      objectFit: 'fill',
-                      objectPosition: 'left center',
-                      flexShrink: 0,
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      opacity: currentMode === 'idle' ? 1 : 0,
-                      pointerEvents: currentMode === 'idle' ? 'auto' : 'none',
-                      visibility: currentMode === 'idle' ? 'visible' : 'hidden'
-                    }"
-                    @load="handleLoad"
-                    @error="handleImageError"
-                  >
-
-                  <!-- Imagen VARIACIÓN (v) -->
-                  <img
-                    v-if="variationMeta && variationMeta.frames > 1"
-                    class="pokemon-combat-image pokemon-image-variation"
-                    :class="{ 
-                      'is-silhouette': isSilhouette,
-                      'active-mode': currentMode === 'variation'
-                    }"
-                    :src="variationImageUrl"
-                    :style="{
-                      filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)',
-                      width: (variationMeta.frames * 100) + '%',
-                      maxWidth: 'none',
-                      height: '100%',
-                      objectFit: 'fill',
-                      objectPosition: 'left center',
-                      flexShrink: 0,
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      opacity: currentMode === 'variation' ? 1 : 0,
-                      pointerEvents: currentMode === 'variation' ? 'auto' : 'none',
-                      visibility: currentMode === 'variation' ? 'visible' : 'hidden'
-                    }"
-                    @load="handleLoad"
-                    @error="handleImageError"
-                  >
-                </template>
-
-                <!-- Sprite estático: img directamente -->
-                <img
-                  v-else
-                  class="pokemon-combat-image"
-                  :class="{ 'is-silhouette': isSilhouette }"
-                  :src="imageUrl"
-                  :style="{ filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)' }"
-                  @load="handleLoad"
-                  @error="handleImageError"
-                >
-              </div>
-
-              <!-- Guía de tamaño real (Debug) -->
-              <div 
-                v-if="showGuides && naturalSize.w > 0" 
-                class="guide-real-size"
-                :style="isAnimated ? {
-                  width: '100%',
-                  height: '100%'
-                } : {
-                  width: naturalSize.w + 'px',
-                  height: naturalSize.h + 'px'
-                }"
-              >
-                <span v-if="isAnimated">{{ Math.round(displaySize) }}x{{ Math.round(displaySize) }}</span>
-                <span v-else>{{ naturalSize.w }}x{{ naturalSize.h }}</span>
-              </div>
-
-              <!-- Radio del Pokémon (Debug) — centrado DENTRO del wrapper del sprite -->
-              <div
-                v-if="debugShowPokeRadius"
-                class="debug-poke-radius-sprite"
-                :style="{
-                  width: (fxRadius * 2) + '%',
-                  height: (fxRadius * 2) + '%'
-                }"
-              >
-                <span class="debug-poke-radius-label">POKE (Radius: {{ fxRadius.toFixed(1) }}%)</span>
-              </div>
-            </div>
+            <!-- Capa de Sprite y Guías Modularizada -->
+            <CombatantSpriteLayer
+              :pokemon="pokemon"
+              :is-animated="isAnimated"
+              :is-silhouette="isSilhouette"
+              :current-mode="currentMode"
+              :idle-image-url="idleImageUrl"
+              :variation-image-url="variationImageUrl"
+              :image-url="imageUrl"
+              :frames="frames"
+              :variation-meta="variationMeta"
+              :show-guides="showGuides"
+              :natural-size="naturalSize"
+              :display-size="displaySize"
+              :debug-show-poke-radius="debugShowPokeRadius"
+              :fx-radius="fxRadius"
+              @load="handleLoad"
+              @error="handleImageError"
+            />
           </PVSpriteFX>
         </div>
       </div>
     </div>
 
-    <!-- Poké Ball visual -->
-    <Transition 
-      :css="false"
-      @enter="onBallEnter" 
-      @leave="handleBallLeave"
-    >
-      <div
-        v-if="isBallVisible"
-        :key="`ball-${side}-${pokemon.uid || pokemon.id}`"
-        class="trapped-pokeball"
-        :style="[memorizedBallCoords, { width: `${pokeballSize}px`, height: `${pokeballSize}px` }]"
-      >
-        <img
-          ref="pokeballImgRef"
-          :src="getAssetUrl(ASSET_TYPES.ITEM, internalBallId)"
-          alt="Pokeball"
-          :style="{ filter: 'var(--atmosphere-filter)' }"
-          @error="handleBallError"
-        >
-        
-        <div
-          class="pokeball-shadow"
-          :style="{ backgroundImage: pokeballShadowUrl, filter: 'var(--atmosphere-filter)' }"
-        />
-
-        <!-- Critical Capture Arcade Banner -->
-        <Transition 
-          :css="false" 
-          @enter="onCriticalBannerEnter"
-        >
-          <div
-            v-if="isCriticalCapture"
-            class="critical-capture-banner"
-          >
-            <span class="crit-icon emoji">⚡</span>
-            <span class="crit-text">¡CAPTURA CRÍTICA!</span>
-            <span class="crit-icon emoji">⚡</span>
-          </div>
-        </Transition>
-
-        <!-- Success Sparkles -->
-        <TransitionGroup 
-          tag="div"
-          class="catch-success-sparkles"
-          :style="{ filter: 'var(--weather-filter, none)' }"
-          :css="false"
-          @enter="onSparkleEnter"
-        >
-          <span
-            v-for="s in sparkles"
-            :key="s.id"
-            class="sparkle"
-            :data-tx="s.tx"
-            :data-ty="s.ty"
-            :data-tf="s.tf"
-            :data-scale="s.scale"
-            :data-delay="s.delay"
-          >
-            <img
-              :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
-              class="shiny-asset-mini"
-              alt="Sparkle"
-            >
-          </span>
-        </TransitionGroup>
-      </div>
-    </Transition>
-
-    <!-- Standalone Critical Capture Banner & Sparkles (when ball is not active) -->
-    <Transition 
-      :css="false" 
-      @enter="onCriticalBannerEnter"
-    >
-      <div
-        v-if="isCriticalCapture && !isBallVisible"
-        class="critical-capture-banner standalone"
-      >
-        <span class="crit-icon emoji">⚡</span>
-        <span class="crit-text">¡CAPTURA CRÍTICA!</span>
-        <span class="crit-icon emoji">⚡</span>
-      </div>
-    </Transition>
-
-    <TransitionGroup 
-      v-if="!isBallVisible && sparkles.length > 0"
-      tag="div"
-      class="catch-success-sparkles standalone"
-      :style="{ filter: 'var(--weather-filter, none)' }"
-      :css="false"
-      @enter="onSparkleEnter"
-    >
-      <span
-        v-for="s in sparkles"
-        :key="s.id"
-        class="sparkle"
-        :data-tx="s.tx"
-        :data-ty="s.ty"
-        :data-tf="s.tf"
-        :data-scale="s.scale"
-        :data-delay="s.delay"
-      >
-        <img
-          :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
-          class="shiny-asset-mini"
-          alt="Sparkle"
-        >
-      </span>
-    </TransitionGroup>
+    <!-- Poké Ball visual y Feedback de Captura -->
+    <CombatantTrappedBall
+      :side="side"
+      :pokemon-key="pokemon.uid || pokemon.id"
+      :is-ball-visible="isBallVisible"
+      :memorized-ball-coords="memorizedBallCoords"
+      :pokeball-size="pokeballSize"
+      :internal-ball-id="internalBallId"
+      :pokeball-shadow-url="pokeballShadowUrl"
+      :is-critical-capture="isCriticalCapture"
+      :sparkles="sparkles"
+      :set-pokeball-img-ref="setPokeballImgRef"
+      @ball-error="handleBallError"
+    />
 
     <!-- Partículas de Humo de Escape -->
     <div

@@ -25,12 +25,13 @@ function parseCommandLineArgs() {
     if (pos.startsWith('category=')) {
       category = pos.split('=')[1]?.toLowerCase() || ''; // domain-ok: Open dynamic text or non-domain string payload
     } else if (pos.startsWith('top=')) {
-      top = parseInt(pos.split('=')[1] || '20', RADIX_DECIMAL); // no-magic: Explicit mathematical constant or threshold value
+      const rawTop = pos.split('=')[1] || '20';
+      top = rawTop === 'all' ? Number.MAX_SAFE_INTEGER : (parseInt(rawTop, RADIX_DECIMAL) || DEFAULT_TOP_LIMIT);
     } else if (pos === 'json') {
       jsonOutput = true;
     } else if (!category) {
       const cleanPos = pos.toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
-      if (['dupes', 'duplicates', 'security', 'cwe', 'dead-code', 'deadcode', 'unused', 'complexity', 'all'].includes(cleanPos)) {
+      if (['dupes', 'duplicates', 'security', 'cwe', 'dead-code', 'deadcode', 'unused', 'complexity', 'circular', 'exports', 'orphans', 'all'].includes(cleanPos)) {
         category = cleanPos;
       }
     }
@@ -158,15 +159,38 @@ function reportDeadCode(top: number, json: boolean): void {
   const unusedExports = (data?.unused_exports as Array<{ path: string; line: number; export_name: string }>) || [];
   const unusedDeps = (data?.unused_dependencies as Array<{ package_name: string }>) || [];
   const circular = (data?.circular_dependencies as Array<{ path?: string; cycle?: string[]; files?: string[] }>) || [];
+  const unusedStoreMembers = (data?.unused_store_members as Array<{ path: string; parent_name: string; member_name: string; line: number }>) || [];
+  const unusedClassMembers = (data?.unused_class_members as Array<{ path: string; parent_name: string; member_name: string; line: number }>) || [];
+  const unusedTypes = (data?.unused_types as Array<{ path: string; export_name: string; line: number }>) || [];
+  const unusedEmits = (data?.unused_component_emits as Array<{ path: string; component_name: string; emit_name: string; line: number }>) || [];
+  const unlistedDeps = (data?.unlisted_dependencies as Array<{ package_name: string; imported_from?: Array<{ path: string; line: number }> }>) || [];
+  const duplicateExports = (data?.duplicate_exports as Array<{ export_name: string; locations?: Array<{ path: string; line: number }> }>) || [];
+
+  const totalGranular = unusedFiles.length + unusedExports.length + unusedDeps.length + circular.length +
+    unusedStoreMembers.length + unusedClassMembers.length + unusedTypes.length +
+    unusedEmits.length + unlistedDeps.length + duplicateExports.length;
 
   if (json) {
     console.log(JSON.stringify({
+      totalIssues: totalGranular,
       unusedFilesCount: unusedFiles.length,
       unusedExportsCount: unusedExports.length,
       unusedDepsCount: unusedDeps.length,
       circularDepsCount: circular.length,
+      unusedStoreMembersCount: unusedStoreMembers.length,
+      unusedClassMembersCount: unusedClassMembers.length,
+      unusedTypesCount: unusedTypes.length,
+      unusedEmitsCount: unusedEmits.length,
+      unlistedDepsCount: unlistedDeps.length,
+      duplicateExportsCount: duplicateExports.length,
       unusedFiles: unusedFiles.slice(0, top),
       unusedExports: unusedExports.slice(0, top),
+      unusedStoreMembers: unusedStoreMembers.slice(0, top),
+      unusedClassMembers: unusedClassMembers.slice(0, top),
+      unusedTypes: unusedTypes.slice(0, top),
+      unusedEmits: unusedEmits.slice(0, top),
+      unlistedDeps: unlistedDeps.slice(0, top),
+      duplicateExports: duplicateExports.slice(0, top),
       unusedDeps,
       circular
     }, null, 2));
@@ -177,11 +201,17 @@ function reportDeadCode(top: number, json: boolean): void {
   console.log('║               REPORTE OFICIAL DE CÓDIGO MUERTO Y DEPENDENCIAS (FALLOW)                   ║');
   console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
 
-  console.log(`\n📊 Resumen de Dead Code:`);
-  console.log(`  • Dependencias circulares : ${circular.length} ${circular.length === 0 ? '✅' : '❌'}`);
-  console.log(`  • Archivos huérfanos      : ${unusedFiles.length} ${unusedFiles.length === 0 ? '✅' : '❌'}`);
-  console.log(`  • Dependencias no usadas  : ${unusedDeps.length} ${unusedDeps.length === 0 ? '✅' : '⚠️'}`);
-  console.log(`  • Exports no usados       : ${unusedExports.length} ${unusedExports.length === 0 ? '✅' : '⚠️'}`);
+  console.log(`\n📊 Resumen Consolidado de Dead Code (${totalGranular} problemas detectados):`);
+  console.log(`  • Dependencias circulares      : ${circular.length.toString().padStart(3)} ${circular.length === 0 ? '✅' : '❌'}`);
+  console.log(`  • Archivos huérfanos           : ${unusedFiles.length.toString().padStart(3)} ${unusedFiles.length === 0 ? '✅' : '❌'}`);
+  console.log(`  • Dependencias no usadas       : ${unusedDeps.length.toString().padStart(3)} ${unusedDeps.length === 0 ? '✅' : '⚠️'}`);
+  console.log(`  • Exports de valor no usados   : ${unusedExports.length.toString().padStart(3)} ${unusedExports.length === 0 ? '✅' : '⚠️'}`);
+  console.log(`  • Miembros de Store no usados  : ${unusedStoreMembers.length.toString().padStart(3)} ${unusedStoreMembers.length === 0 ? '✅' : '⚠️'}`);
+  console.log(`  • Miembros de Clase no usados  : ${unusedClassMembers.length.toString().padStart(3)} ${unusedClassMembers.length === 0 ? '✅' : '⚠️'}`);
+  console.log(`  • Tipos exportados no usados   : ${unusedTypes.length.toString().padStart(3)} ${unusedTypes.length === 0 ? '✅' : '⚠️'}`);
+  console.log(`  • Dependencias no listadas     : ${unlistedDeps.length.toString().padStart(3)} ${unlistedDeps.length === 0 ? '✅' : '⚠️'}`);
+  console.log(`  • Exports duplicados           : ${duplicateExports.length.toString().padStart(3)} ${duplicateExports.length === 0 ? '✅' : '⚠️'}`);
+  console.log(`  • Emits de componentes (Vue)   : ${unusedEmits.length.toString().padStart(3)} ${unusedEmits.length === 0 ? '✅' : '⚠️'}`);
 
   if (circular.length > 0) {
     console.log('\n🔄 Dependencias Circulares Críticas:');
@@ -202,11 +232,106 @@ function reportDeadCode(top: number, json: boolean): void {
     unusedDeps.forEach(d => console.log(`  • ${d.package_name}`));
   }
 
+  if (duplicateExports.length > 0) {
+    console.log(`\n📤 Exports Duplicados (${duplicateExports.length}):`);
+    duplicateExports.forEach((d, idx) => {
+      const locs = d.locations?.map(l => `${l.path}:${l.line}`).join(', ') || '';
+      console.log(`  [${idx + 1}] '${d.export_name}' en: ${locs}`);
+    });
+  }
+
+  if (unlistedDeps.length > 0) {
+    console.log(`\n📦 Dependencias No Listadas en package.json (${unlistedDeps.length}):`);
+    unlistedDeps.forEach((d, idx) => {
+      const firstLoc = d.imported_from?.[0] ? ` (importada en ${d.imported_from[0].path}:${d.imported_from[0].line})` : '';
+      console.log(`  [${idx + 1}] '${d.package_name}'${firstLoc}`);
+    });
+  }
+
+  if (unusedEmits.length > 0) {
+    console.log(`\n🔔 Emits de Componente No Usados (${unusedEmits.length}):`);
+    unusedEmits.forEach((e, idx) => {
+      console.log(`  [${idx + 1}] ${e.path}:${e.line} -> '${e.component_name}' emit '${e.emit_name}'`);
+    });
+  }
+
+  if (unusedStoreMembers.length > 0) {
+    console.log(`\n🏬 Top Miembros de Store No Usados (${Math.min(top, unusedStoreMembers.length)} de ${unusedStoreMembers.length}):`);
+    unusedStoreMembers.slice(0, top).forEach((sm, idx) => console.log(`  [${idx + 1}] ${sm.path}:${sm.line} -> ${sm.parent_name}.${sm.member_name}`));
+  }
+
+  if (unusedClassMembers.length > 0) {
+    console.log(`\n🏛️ Top Miembros de Clase No Usados (${Math.min(top, unusedClassMembers.length)} de ${unusedClassMembers.length}):`);
+    unusedClassMembers.slice(0, top).forEach((cm, idx) => console.log(`  [${idx + 1}] ${cm.path}:${cm.line} -> ${cm.parent_name}.${cm.member_name}`));
+  }
+
+  if (unusedTypes.length > 0) {
+    console.log(`\n🏷️ Top Tipos Exportados No Usados (${Math.min(top, unusedTypes.length)} de ${unusedTypes.length}):`);
+    unusedTypes.slice(0, top).forEach((ut, idx) => console.log(`  [${idx + 1}] ${ut.path}:${ut.line} -> type '${ut.export_name}'`));
+  }
+
   if (unusedExports.length > 0) {
-    console.log(`\n📤 Top Exports No Usados (${Math.min(top, unusedExports.length)} de ${unusedExports.length}):`);
+    console.log(`\n📤 Top Exports de Valor No Usados (${Math.min(top, unusedExports.length)} de ${unusedExports.length}):`);
     unusedExports.slice(0, top).forEach((x, idx) => console.log(`  [${idx + 1}] ${x.path}:${x.line} -> export '${x.export_name}'`));
   }
   console.log('\n─────────────────────────────────────────────────────────────────────────────\n');
+}
+
+function reportCircular(json: boolean): void {
+  const data = runFallowCommand('dead-code', ['--circular-deps']);
+  const circular = (data?.circular_dependencies as Array<{ path?: string; cycle?: string[]; files?: string[] }>) || [];
+
+  if (json) {
+    console.log(JSON.stringify({ circularDepsCount: circular.length, circular }, null, 2));
+    return;
+  }
+
+  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
+  console.log('║               REPORTE OFICIAL DE DEPENDENCIAS CIRCULARES (FALLOW)                         ║');
+  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
+  console.log(`\n📊 Dependencias Circulares Totales: ${circular.length} ${circular.length === 0 ? '✅' : '❌'}`);
+
+  if (circular.length === 0) {
+    console.log('\n  ✅ ¡Excelente! No se detectaron dependencias circulares en el proyecto.\n');
+    return;
+  }
+
+  console.log('\n🔄 Ciclos Detectados:');
+  console.log('─────────────────────────────────────────────────────────────────────────────');
+  circular.forEach((c, idx) => {
+    const filesList = (Array.isArray(c.files) && c.files.length > 0) ? c.files : (Array.isArray(c.cycle) ? c.cycle : []);
+    const cycleStr = filesList.length > 0 ? filesList.join(' → ') : (c.path || '');
+    console.log(`  [${idx + 1}] ${cycleStr}`);
+  });
+  console.log('─────────────────────────────────────────────────────────────────────────────\n');
+}
+
+function reportExports(top: number, json: boolean): void {
+  const data = runFallowCommand('dead-code', ['--unused-exports']);
+  const unusedExports = (data?.unused_exports as Array<{ path: string; line: number; export_name: string }>) || [];
+
+  if (json) {
+    console.log(JSON.stringify({ unusedExportsCount: unusedExports.length, unusedExports: unusedExports.slice(0, top) }, null, 2));
+    return;
+  }
+
+  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
+  console.log('║               REPORTE OFICIAL DE EXPORTS NO USADOS (FALLOW)                               ║');
+  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
+  console.log(`\n📊 Total de Exports no Usados: ${unusedExports.length} ${unusedExports.length === 0 ? '✅' : '⚠️'}`);
+
+  if (unusedExports.length === 0) {
+    console.log('\n  ✅ ¡Excelente! 0 exports sin uso detectados.\n');
+    return;
+  }
+
+  const showCount = Math.min(top, unusedExports.length);
+  console.log(`\n📤 Top Exports No Usados (${showCount} de ${unusedExports.length}):`);
+  console.log('─────────────────────────────────────────────────────────────────────────────');
+  unusedExports.slice(0, top).forEach((x, idx) => {
+    console.log(`  [${idx + 1}] ${x.path}:${x.line} -> export '${x.export_name}'`);
+  });
+  console.log('─────────────────────────────────────────────────────────────────────────────\n');
 }
 
 function reportAllSummary(json: boolean): void {
@@ -239,6 +364,8 @@ function reportAllSummary(json: boolean): void {
   console.log('─────────────────────────────────────────────────────────────────────────────');
   console.log('  • npm run audit:complexity         → Reporte completo de complejidad ciclomática/cognitiva');
   console.log('  • npm run audit:fallow:dupes       → Detección de bloques de código duplicados/triplicados');
+  console.log('  • npm run audit:fallow:circular    → Detección de dependencias circulares');
+  console.log('  • npm run audit:fallow:exports     → Detección de exports no usados');
   console.log('  • npm run audit:fallow:security    → Auditoría de vulnerabilidades y seguridad CWE');
   console.log('  • npm run audit:fallow:dead-code   → Detección de archivos huérfanos y exports sin uso');
   console.log('  • npm run audit                    → Suite de auditoría unificada del proyecto (20 suites)');
@@ -261,6 +388,14 @@ function main(): void {
     case 'security':
     case 'cwe':
       reportSecurity(top, jsonOutput);
+      break;
+    case 'circular':
+    case 'circular-deps':
+      reportCircular(jsonOutput);
+      break;
+    case 'exports':
+    case 'unused-exports':
+      reportExports(top, jsonOutput);
       break;
     case 'dead-code':
     case 'deadcode':

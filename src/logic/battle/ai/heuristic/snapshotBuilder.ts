@@ -76,7 +76,59 @@ function buildSideConditions(
   return map;
 }
 
+const FULL_HP_PERCENT = 100 as const;
+const DEFAULT_ACCURACY = 100 as const;
+const ZERO_POWER = 0 as const;
+
+function buildPokemonMoveInfos(moves: (Move | null)[] | undefined): HeuristicPokemonMove[] {
+  const validMoves = (moves || []).filter((m): m is Move => Boolean(m));
+  return validMoves.map(m => {
+    const id = requirePokemonMoveId(toID(m.id));
+    return {
+      id,
+      name: m.name,
+      type: m.type || 'normal',
+      category: m.cat || 'physical',
+      basePower: m.power || ZERO_POWER,
+      accuracy: m.acc || DEFAULT_ACCURACY,
+      pp: m.pp,
+      maxpp: m.maxPP,
+      target: 'normal',
+    };
+  });
+}
+
+function buildPokemonStatsMap(p: Pokemon): { hp: number; atk: number; def: number; spa: number; spd: number; spe: number } {
+  return {
+    hp: p.maxHp,
+    atk: p.atk,
+    def: p.def,
+    spa: p.spa,
+    spd: p.spd,
+    spe: p.spe,
+  };
+}
+
+function buildPokemonBoosts(
+  active: boolean,
+  stages: BattleStages,
+): { atk: number; def: number; spa: number; spd: number; spe: number; accuracy: number; evasion: number } {
+  return {
+    atk: active ? (stages.atk ?? 0) : 0,
+    def: active ? (stages.def ?? 0) : 0,
+    spa: active ? (stages.spa ?? 0) : 0,
+    spd: active ? (stages.spd ?? 0) : 0,
+    spe: active ? (stages.spe ?? 0) : 0,
+    accuracy: active ? (stages.acc ?? 0) : 0,
+    evasion: active ? (stages.eva ?? 0) : 0,
+  };
+}
+
 function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): HeuristicPokemonState {
+  if (!p.id) {
+    throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`);
+  }
+
   // AI-1 Fix: Check explicit fainted flag or hp === 0 when maxHp > 0.
   // Unrevealed enemy Pokemon with maxHp === 0 should NOT be marked as fainted!
   const fainted = p.fainted || (p.maxHp > 0 && p.hp <= 0);
@@ -84,26 +136,9 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
   // heldItem or item (fallback for compatibility across test fixtures)
   const rawItem = p.heldItem || p.item;
   const heldItem = rawItem ? requireItemId(rawItem) : ''; // domain-ok: Open dynamic text or non-domain string payload
-  const validMoves = (p.moves || []).filter((m): m is Move => Boolean(m));
-  const moveInfos: HeuristicPokemonMove[] = validMoves.map(m => {
-    const id = requirePokemonMoveId(toID(m.id));
-    return {
-      id,
-      name: m.name,
-      type: m.type || 'normal',
-      category: m.cat || 'physical',
-      basePower: m.power || 0,
-      accuracy: m.acc || 100,
-      pp: m.pp,
-      maxpp: m.maxPP,
-      target: 'normal',
-    };
-  });
+  const moveInfos = buildPokemonMoveInfos(p.moves);
   const moveIds = moveInfos.map(m => m.id);
-
-  if (!p.id) {
-    throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`);
-  }
+  const stats = buildPokemonStatsMap(p);
 
   return {
     name: p.nickname || p.name,
@@ -111,27 +146,13 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
     level: p.level,
     hp: p.hp,
     maxhp: p.maxHp,
-    hpPercent: p.maxHp > 0 ? (p.hp / p.maxHp) * 100 : 100, // AI-1 Fix: default 100% for unrevealed
+    hpPercent: p.maxHp > 0 ? (p.hp / p.maxHp) * FULL_HP_PERCENT : FULL_HP_PERCENT, // AI-1 Fix: default 100% for unrevealed
     status: p.status ?? null,
     active,
     fainted,
     types: [p.type, ...(p.type2 ? [p.type2] : [])],
-    baseStats: {
-      hp: p.maxHp,
-      atk: p.atk,
-      def: p.def,
-      spa: p.spa,
-      spd: p.spd,
-      spe: p.spe,
-    },
-    stats: {
-      hp: p.maxHp,
-      atk: p.atk,
-      def: p.def,
-      spa: p.spa,
-      spd: p.spd,
-      spe: p.spe,
-    },
+    baseStats: stats,
+    stats,
     moves: moveInfos,
     knownMoves: moveIds,
     // AI-12 Fix: prefer current ability over baseAbility if present
@@ -141,15 +162,7 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
     knownItem: heldItem || null,
     // AI-11 Fix: itemConsumed should only be true if explicitly lost via volatile/log
     itemConsumed: Boolean(p.volatileCounters?.['itemconsumed'] || p.volatileCounters?.['enditem']),
-    boosts: {
-      atk: active ? (stages.atk ?? 0) : 0,
-      def: active ? (stages.def ?? 0) : 0,
-      spa: active ? (stages.spa ?? 0) : 0,
-      spd: active ? (stages.spd ?? 0) : 0,
-      spe: active ? (stages.spe ?? 0) : 0,
-      accuracy: active ? (stages.acc ?? 0) : 0,
-      evasion: active ? (stages.eva ?? 0) : 0,
-    },
+    boosts: buildPokemonBoosts(active, stages),
     volatiles: buildVolatiles(p),
   };
 }

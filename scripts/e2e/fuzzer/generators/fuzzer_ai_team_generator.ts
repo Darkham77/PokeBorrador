@@ -174,7 +174,7 @@ export async function generateAiBattles(count: number = 100): Promise<AiBattleBa
 
   for (let i = 0; i < count; i++) {
     const [p1Team, p2Team] = await Promise.all([buildRandomTeam(), buildRandomTeam()]);
-    const { PokemonLegalityValidator } = await import('../../../../src/logic/battle/helpers/pokemonLegalityValidator.ts');
+    const { PokemonLegalityValidator } = await import('../../../../src/logic/battle/engine/pokemonLegalityValidator.ts');
     PokemonLegalityValidator.assertTeamLegality(p1Team, `AI Battle ${i + 1} P1 Team`);
     PokemonLegalityValidator.assertTeamLegality(p2Team, `AI Battle ${i + 1} P2 Team`);
     const id = `ai-${crypto.randomBytes(6).toString('hex')}`;

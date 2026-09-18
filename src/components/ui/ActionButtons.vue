@@ -4,13 +4,15 @@ import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import PVHUDButton from '@/components/common/PVHUDButton.vue'
 
+import { logger } from '@/logic/utils/logger'
+
 const uiStore = useUIStore()
 const modalStore = useModalStore()
 
 const preloadHudModals = () => {
-  import('@/components/modals/ProfileModal.vue').catch(() => { /* optional prefetch */ })
-  import('@/components/modals/SettingsModal.vue').catch(() => { /* optional prefetch */ })
-  import('@/components/modals/LibraryModal.vue').catch(() => { /* optional prefetch */ })
+  import('@/components/modals/ProfileModal.vue').catch((err: unknown) => { logger.debug('ActionButtons', 'Prefetch ProfileModal omitido:', err) })
+  import('@/components/modals/SettingsModal.vue').catch((err: unknown) => { logger.debug('ActionButtons', 'Prefetch SettingsModal omitido:', err) })
+  import('@/components/modals/LibraryModal.vue').catch((err: unknown) => { logger.debug('ActionButtons', 'Prefetch LibraryModal omitido:', err) })
 }
 
 onMounted(() => {

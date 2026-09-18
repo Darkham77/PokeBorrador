@@ -242,7 +242,7 @@ export class SqlAntiPatternsAuditor extends BaseAuditor<SqlAntiPatternRuleId> {
       if (!tablesWithPolicies.has(table)) {
         this.addViolation({
           ruleId: 'sql-rls-policy-grant-integrity',
-          severity: 'warning',
+          severity: 'error',
           file: loc.relPath,
           line: loc.line,
           message: `Table '${table}' has ENABLE ROW LEVEL SECURITY without any CREATE POLICY declared across migrations.`,

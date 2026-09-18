@@ -141,4 +141,23 @@ describe('Batch Simulation Harness Helpers', () => {
       expect(getSuiteTimeoutForBatch(turns)).toBeGreaterThan(MAX_SUITE_TOTAL_TIMEOUT_MS);
     });
   });
+
+  describe('Fuzzer Worker Batch Serialization', () => {
+    it('should execute a single batch and verify playerChoices, enemyChoices and seed are non-empty', async () => {
+      const { generateTestBatches } = await import('../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts');
+      const { runStandaloneBatch } = await import('../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts');
+
+      const batches = generateTestBatches(1);
+      const targetBatch = batches[0];
+      expect(targetBatch).toBeDefined();
+      const result = await runStandaloneBatch(targetBatch!, 1, 1);
+
+      expect(result.batch.playerChoices).toBeDefined();
+      expect(result.batch.playerChoices!.length).toBeGreaterThan(0);
+      expect(result.batch.enemyChoices).toBeDefined();
+      expect(result.batch.enemyChoices!.length).toBeGreaterThan(0);
+      expect(result.batch.seed).toBeDefined();
+    });
+  });
 });
+

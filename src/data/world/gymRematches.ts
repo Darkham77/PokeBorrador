@@ -109,7 +109,7 @@ export const GYM_REMATCHES: Record<GymId, GymRematchConfig> = {
   }
 };
 
-export function getTodayDateString(): string {
+function getTodayDateString(): string {
   return Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).toPlainDate().toString();
 }
 

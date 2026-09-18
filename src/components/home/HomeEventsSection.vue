@@ -192,7 +192,8 @@ const handlePointerEnd = (e: PointerEvent) => {
   dragOffsetPx.value = 0
 
   if (wasDragging) {
-    gsap.delayedCall(0.05, () => {
+    const DRAG_RESET_DELAY_SEC = 0.05;
+    gsap.delayedCall(DRAG_RESET_DELAY_SEC, () => {
       isDragging.value = false
     })
 

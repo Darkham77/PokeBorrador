@@ -1,4 +1,3 @@
-/** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { Dex } from '@pkmn/sim';

@@ -28,9 +28,9 @@ import {
   type PokemonSeasonEvaluation
 } from '@/logic/pvp/seasonTeamFilter';
 
-export const MAX_ADVENTURE_SLOTS = 6;
-export const DEFAULT_WAR_SLOTS = 6;
-export const TOTAL_POKEMON_TYPES = 18;
+const MAX_ADVENTURE_SLOTS = 6;
+const DEFAULT_WAR_SLOTS = 6;
+const TOTAL_POKEMON_TYPES = 18;
 
 interface UseTeamManagementOptions {
   initialTab?: TeamManagementTab;

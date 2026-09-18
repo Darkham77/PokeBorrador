@@ -192,8 +192,8 @@ export function auditAndRepairSaveData(
   // 6. Auditar y reparar atributos de Pokémon legales restantes
   auditAndRepairList(saveData.team, 'Equipo');
   auditAndRepairList(saveData.box, 'Caja');
-  if (Array.isArray(warehouse)) {
-    auditAndRepairList(warehouse, 'Guardería Depósito');
+  if (Array.isArray(saveData.daycareWarehouse)) {
+    auditAndRepairList(saveData.daycareWarehouse, 'Guardería Depósito');
   }
 
   // 7. Liberar Pokémon atrapados con onEvent = true de eventos concluidos o legacy
@@ -214,8 +214,8 @@ export function auditAndRepairSaveData(
 
   clearStuckEventFlag(saveData.team, 'Equipo');
   clearStuckEventFlag(saveData.box, 'Caja');
-  if (Array.isArray(warehouse)) {
-    clearStuckEventFlag(warehouse, 'Guardería Depósito');
+  if (Array.isArray(saveData.daycareWarehouse)) {
+    clearStuckEventFlag(saveData.daycareWarehouse, 'Guardería Depósito');
   }
 
   return {

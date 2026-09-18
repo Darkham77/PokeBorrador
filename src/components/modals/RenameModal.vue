@@ -6,8 +6,8 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import { validateTrainerName } from '@/logic/validation/schemas'
 import { getDaysUntilIdentityChange, canChangeIdentity } from '@/logic/player/identityCooldown'
+import { validateRenameRequest, syncRemoteUsernameChange, updateLocalUserStorage } from './renameHelpers'
 import type { GenderId } from '@/types/system/game'
 
 interface Props {
@@ -78,20 +78,15 @@ const submitRename = async () => {
   const targetName = newUsername.value.trim()
   const genderChanged = selectedGender.value !== gameStore.state.gender
 
-  const validation = validateTrainerName(targetName)
-  if (!validation.success) {
-    const errorMsg = validation.issues[0]?.message || 'El nombre debe tener entre 3 y 15 caracteres.'
-    uiStore.notify(errorMsg, '⚠️')
-    return
-  }
-
-  if (!nameChanged.value && !genderChanged) {
-    uiStore.notify('No se detectaron cambios.', '⚠️')
-    return
-  }
-
-  if (!canRename.value) {
-    uiStore.notify(`Faltan ${daysUntilRename.value} días para poder cambiar de identidad.`, '⏳')
+  const validationError = validateRenameRequest(
+    targetName,
+    genderChanged,
+    nameChanged.value,
+    canRename.value,
+    daysUntilRename.value
+  )
+  if (validationError) {
+    uiStore.notify(validationError.message, validationError.icon)
     return
   }
 
@@ -103,10 +98,9 @@ const submitRename = async () => {
 
     if (nameChanged.value) {
       if (!isLocal) {
-        const res = await gameStore.db.rpc('change_username', { new_username: targetName })
-        if (res.error) {
-          const errorMsg = typeof res.error === 'string' ? res.error : ((res.error as { message: string } | null)?.message || 'Error al cambiar el nombre')
-          uiStore.notify(errorMsg, '⚠️')
+        const res = await syncRemoteUsernameChange(gameStore, targetName)
+        if (!res.success) {
+          uiStore.notify(res.error || 'Error al cambiar el nombre', '⚠️')
           isRenaming.value = false
           return
         }
@@ -126,34 +120,14 @@ const submitRename = async () => {
     })
     
     if (authStore.user?.id.startsWith('local_')) {
-      const localUserStr = localStorage.getItem('pokevicio_local_user')
-      if (localUserStr) {
-        interface LocalUser {
-          user_metadata?: {
-            username?: string;
-            gender?: string;
-            last_renamed_at?: string;
-            [key: string]: unknown;
-          };
-          [key: string]: unknown;
-        }
-        const lu = JSON.parse(localUserStr) as LocalUser;
-        if (!lu.user_metadata) lu.user_metadata = {};
-        if (nameChanged.value) lu.user_metadata.username = targetName;
-        lu.user_metadata.gender = selectedGender.value;
-        lu.user_metadata.last_renamed_at = nowStr;
-        localStorage.setItem('pokevicio_local_user', JSON.stringify(lu));
-      } else {
-        localStorage.setItem('pokevicio_local_user', JSON.stringify({
-          id: authStore.user.id,
-          email: authStore.user?.email || 'entrenador@local',
-          user_metadata: { 
-            username: targetName,
-            gender: selectedGender.value,
-            last_renamed_at: nowStr 
-          }
-        }))
-      }
+      updateLocalUserStorage(
+        authStore.user.id,
+        authStore.user?.email,
+        targetName,
+        selectedGender.value,
+        nowStr,
+        nameChanged.value
+      )
     }
 
     gameStore.save(false)

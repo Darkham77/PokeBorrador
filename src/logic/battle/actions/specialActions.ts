@@ -1,10 +1,8 @@
 import type { MoveAction, BattleSide } from '@/types/battle/battle';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
-import { gameBus } from '@/logic/events/gameBus';
 import { getItemById } from '@/data/inventory/items';
 import { incrementRecordKey, addToField } from '@/logic/utils/mapUtils';
-import { callPokemonToBattle } from './specialActionsHelper.ts';
 
 /**
  * Special Actions Dictionary.
@@ -153,73 +151,9 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     }
   },
   'teleport': async (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    const b = battleCtx?.activeBattle.value;
-    if (!b) return;
-    const isWild = !b.isTrainer && !b.isGym;
-    
-    if (isWild) {
-      addLogFn(`¡${src.name} se teletransportó fuera del combate!`, 'log-info', src);
-      gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'teleport' });
-      b.fled = true;
-      b.over = true;
-    } else {
-      const isPlayer = (src.uid === b.player?.uid);
-      const team = isPlayer ? b.playerTeam : b.enemyTeam;
-      const aliveOthers = (team || []).filter((p) => p.uid !== src.uid && p.hp > 0);
-      
-      if (aliveOthers.length === 0) {
-        addLogFn(`¡${src.name} intentó teletransportarse!`, 'log-info', src);
-        addLogFn("¡Pero no hay nadie para sustituirle!", 'log-info', src);
-      } else {
-        addLogFn(`¡${src.name} se teletransportó!`, 'log-info', src);
-        const fsm = battleCtx.fsm;
-        const { BATTLE_STATES, BATTLE_SUBSTATES } = battleCtx;
-        
-        if (!isPlayer) {
-          const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)] || null;
-          battleCtx.exitingEnemy.value = src;
-          
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
-          const withdrawPromise = battleCtx.animations?.handleCatchRequest
-            ? battleCtx.animations.handleCatchRequest({ side: 'enemy', pokemon: src })
-            : Promise.resolve();
-            
-          b.enemy = randomPick;
-          await withdrawPromise;
-          
-          if (randomPick && battleCtx) {
-            await callPokemonToBattle(
-              'enemy',
-              randomPick,
-              `¡${randomPick.name} entra al combate!`,
-              randomPick,
-              addLogFn,
-              battleCtx
-            );
-          }
-          battleCtx.exitingEnemy.value = null;
-        } else {
-          battleCtx.exitingPlayer.value = src;
-          
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
-          const withdrawPromise = battleCtx.animations?.handleCatchRequest
-            ? battleCtx.animations.handleCatchRequest({ side: 'player', pokemon: src })
-            : Promise.resolve();
-            
-          const keys = Object.keys(battleCtx.playerStages.value) as (keyof typeof battleCtx.playerStages.value)[];
-          keys.forEach(k => {
-            battleCtx.playerStages.value[k] = 0;
-          });
-          
-          await withdrawPromise;
-          battleCtx.exitingPlayer.value = null;
-          b.player = null;
-          
-          battleCtx.uiStore.isBattleSwitchForced = true;
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU);
-        }
-      }
-    }
+    if (!battleCtx) return;
+    const { executeTeleportAction } = await import('./specialActionsTeleportHelper.ts');
+    await executeTeleportAction(src, addLogFn, battleCtx);
   },
   'rapid_spin': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
     let cleared = false;

@@ -25,6 +25,32 @@ describe('battleSerializerHelper', () => {
     expect(res).toBeDefined()
     expect(res?.isPvP).toBe(true)
     expect(res?.trainerName).toBe('RivalAsh')
+    expect(res?.turnCount).toBe(1)
+  })
+
+  it('serializes pvp battle with pvpOpponentName fallback and single enemy mon', () => {
+    const pvpBattle = {
+      isPvP: true,
+      pvpOpponentName: 'Gary',
+      enemy: { id: 'pikachu', hp: 100, maxHp: 100 },
+      over: false,
+    } as unknown as BattleState
+    const state = { activeBattle: pvpBattle } as unknown as GameState
+    const res = serializeActiveBattle(state)
+
+    expect(res?.trainerName).toBe('Gary')
+    expect(res?.enemyTeam).toHaveLength(1)
+  })
+
+  it('defaults pvp trainerName to Rival when none provided', () => {
+    const pvpBattle = {
+      isPvP: true,
+      over: false,
+    } as unknown as BattleState
+    const state = { activeBattle: pvpBattle } as unknown as GameState
+    const res = serializeActiveBattle(state)
+
+    expect(res?.trainerName).toBe('Rival')
   })
 
   it('serializes search phase active battle cleanly', () => {

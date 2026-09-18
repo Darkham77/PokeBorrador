@@ -261,58 +261,66 @@ interface AtmosphereWorkerMessage {
   } & Partial<AtmosphereParams>;
 }
 
+function initNoisePattern(
+  localCtx: OffscreenCanvasRenderingContext2D,
+  noise: ImageBitmap | undefined,
+  slot: 'noise1' | 'noise2'
+): void {
+  if (!noise) return;
+  textures[slot] = noise;
+  const pattern = localCtx.createPattern(noise, 'repeat');
+  if (pattern) {
+    patterns[slot] = pattern;
+  }
+}
+
+function handleWorkerInit(payload: AtmosphereWorkerMessage['payload']): void {
+  canvas = payload.canvas || null;
+  isPaused = false;
+  lastTime = performance.now();
+  if (!canvas) return;
+
+  ctx = canvas.getContext('2d');
+  if (ctx) {
+    initNoisePattern(ctx, payload.noise1, 'noise1');
+    initNoisePattern(ctx, payload.noise2, 'noise2');
+  }
+  requestAnimationFrame(render);
+}
+
+function handleWorkerResize(payload: AtmosphereWorkerMessage['payload']): void {
+  if (!canvas || payload.width === undefined || payload.height === undefined) return;
+  canvas.width = payload.width;
+  canvas.height = payload.height;
+}
+
+function handleWorkerResume(): void {
+  if (!isPaused) return;
+  isPaused = false;
+  lastTime = performance.now();
+  requestAnimationFrame(render);
+}
+
 self.onmessage = async (event: MessageEvent) => {
   const data = event.data as AtmosphereWorkerMessage;
   const { type, payload } = data;
 
   switch (type) {
-    case 'INIT': {
-      canvas = payload.canvas || null;
-      isPaused = false;
-      lastTime = performance.now();
-      if (canvas) {
-        ctx = canvas.getContext('2d');
-        if (payload.noise1 && ctx) {
-          textures.noise1 = payload.noise1;
-          const pattern = ctx.createPattern(payload.noise1, 'repeat');
-          if (pattern) {
-            patterns.noise1 = pattern;
-          }
-        }
-        if (payload.noise2 && ctx) {
-          textures.noise2 = payload.noise2;
-          const pattern = ctx.createPattern(payload.noise2, 'repeat');
-          if (pattern) {
-            patterns.noise2 = pattern;
-          }
-        }
-        requestAnimationFrame(render);
-      }
+    case 'INIT':
+      handleWorkerInit(payload);
       break;
-    }
-    case 'RESIZE': {
-      if (canvas && payload.width !== undefined && payload.height !== undefined) {
-        canvas.width = payload.width;
-        canvas.height = payload.height;
-      }
+    case 'RESIZE':
+      handleWorkerResize(payload);
       break;
-    }
-    case 'UPDATE_PARAMS': {
+    case 'UPDATE_PARAMS':
       params = { ...params, ...payload };
       break;
-    }
-    case 'PAUSE': {
+    case 'PAUSE':
       isPaused = true;
       break;
-    }
-    case 'RESUME': {
-      if (isPaused) {
-        isPaused = false;
-        lastTime = performance.now();
-        requestAnimationFrame(render);
-      }
+    case 'RESUME':
+      handleWorkerResume();
       break;
-    }
   }
 };
 

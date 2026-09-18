@@ -199,15 +199,12 @@ export function packFeetCoordinates(
       if (fsSync.existsSync(overridesPath)) {
         overridesMap = JSON.parse(fsSync.readFileSync(overridesPath, 'utf8'));
       }
-    } catch {
+    } catch (_err) { // catch-ok: Overrides file optional in development
       overridesMap = {};
     }
   }
 
-  // domain-ok: Helper lookup returning undefined when override is absent
-  function getOverrideForSprite(
-    keyPath: string
-  ): SpriteShadowOverride | undefined {
+  function getOverrideForSprite(keyPath: string): SpriteShadowOverride | undefined { // result-ok: Operation result wrapper payload
     if (!overridesMap) return undefined;
     if (overridesMap[keyPath]) return overridesMap[keyPath];
 

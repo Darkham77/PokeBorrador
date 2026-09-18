@@ -10,8 +10,15 @@ import type { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
 import type { PvpReconnectPayload } from '@/types/battle/pvp';
 import type { PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper';
 import { buildHostSpectateBroadcast } from '@/logic/pvp/pvpRoomActionsHelper';
-import { useBattleStore } from '@/stores/battle/battle.ts';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleOptions } from '@/types/system/stores';
+
+export interface SpectateBattleStore {
+  getContext: () => unknown;
+  startBattle: (enemyLeader: Pokemon, options?: BattleOptions) => Promise<void>;
+  state: { turnCount: number } | null;
+}
 
 const RECONNECT_BROADCAST_DELAY_SEC = 0.8 as const;
 const DEFAULT_TURN_NUMBER = 1 as const;
@@ -129,13 +136,13 @@ export function executeHandleSpectateJoin(
       opponentName: string;
       ch: PvpChannelSender | null;
     };
+    battleStore: { getContext: () => unknown };
   }
 ): void {
   if (!ctx.battleState.isHost) return;
-  const battleStore = useBattleStore();
   const snapshot = buildHostSpectateBroadcast(
     ctx.battleState.inviteId || '',
-    battleStore.getContext(),
+    ctx.battleStore.getContext() as Parameters<typeof buildHostSpectateBroadcast>[1],
     ctx.battleState.opponentName
   );
   if (snapshot && ctx.battleState.ch) {
@@ -149,10 +156,10 @@ export function executeHandleSpectateJoin(
 
 export function executeHandleSpectateSync(
   payload: PvpSpectateSyncPayload,
-  isSpectator: boolean
+  isSpectator: boolean,
+  battleStore: SpectateBattleStore
 ): void {
   if (!isSpectator) return;
-  const battleStore = useBattleStore();
   const enemyLeader = payload.guestTeam[0];
   if (enemyLeader) {
     battleStore.startBattle(enemyLeader, {

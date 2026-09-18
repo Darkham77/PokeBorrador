@@ -36,7 +36,7 @@ export interface RankedQueueEntry {
 const RANKED_QUEUE_FETCH_LIMIT = 10 as const;
 const RANKED_TIER_GAP_TOLERANCE = 1 as const;
 
-export async function checkUserOnline(db: DBRouter | null, userId: string): Promise<boolean> {
+async function checkUserOnline(db: DBRouter | null, userId: string): Promise<boolean> {
   if (!db) return false;
   try {
     const { data } = await db

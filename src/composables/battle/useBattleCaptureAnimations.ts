@@ -220,6 +220,7 @@ export function useBattleCaptureAnimations(
     gameBus.emit('PLAY_SOUND', 'ballHit')
 
     const animKey = `${side}-${targetUid || 'active'}`
+    activeTweens.delete(animKey)
     await awaitTween(animKey)
 
     slot.animState = null
@@ -242,6 +243,7 @@ export function useBattleCaptureAnimations(
     gameBus.emit('PLAY_SOUND', 'ballHit')
 
     const animKey = `${side}-${targetUid || 'active'}`
+    activeTweens.delete(animKey)
     await awaitTween(animKey)
 
     slot.animState = null
@@ -298,6 +300,7 @@ export function useBattleCaptureAnimations(
     gameBus.emit('PLAY_SOUND', 'ballHit')
 
     const animKey = `${side}-${targetUid || 'active'}`
+    activeTweens.delete(animKey)
     await awaitTween(animKey)
 
     slot.animState = 'trapped'

@@ -92,7 +92,7 @@ describe('Markdown & DOX Relative Links Auditor (validate_markdown_links.ts)', (
           encoding: 'utf-8',
         }
       );
-      expect(output).toContain('MARKDOWN RELATIVE LINKS & DOX AUDITOR');
+      expect(output).toContain('Markdown & DOX Relative Links Auditor');
       expect(output).toContain('0 ❌');
     });
   });

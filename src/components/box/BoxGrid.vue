@@ -14,7 +14,7 @@ interface Props {
   selectionType?: string | null
   isBoxEmpty?: boolean
   hasActiveFilters?: boolean
-  isPerformanceMode?: boolean
+  isFastMode?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
@@ -22,7 +22,7 @@ withDefaults(defineProps<Props>(), {
   selectionType: null,
   isBoxEmpty: false,
   hasActiveFilters: false,
-  isPerformanceMode: false
+  isFastMode: false
 })
 
 const emit = defineEmits<{
@@ -56,7 +56,7 @@ const emit = defineEmits<{
       :index="item.index"
       :is-selected="selection.includes(item.index)"
       :selection-type="selectionType"
-      :is-performance-mode="isPerformanceMode"
+      :is-fast-mode="isFastMode"
       data-ignore="[PureVue-Ignore]"
       @click.stop="(_, idx) => emit('pokemonClick', idx ?? item.index)"
     />

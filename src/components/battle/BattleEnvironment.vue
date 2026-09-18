@@ -38,6 +38,7 @@ const handleBackgroundError = (e: Event) => {
     <!-- Fondo dinámico -->
     <img 
       :src="bgData.url" 
+      alt="Fondo de arena de combate"
       class="arena-bg" 
       @error="handleBackgroundError"
     >

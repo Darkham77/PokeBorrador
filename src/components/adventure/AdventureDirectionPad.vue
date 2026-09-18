@@ -7,20 +7,12 @@ import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { DayPhase } from '@/logic/utils/timeUtils'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
-
-interface ConnectionItem {
-  target: AdventureNodeId
-  mo?: string
-  label: string
-}
+import type { CardinalDirection } from '@/types/system/game'
+import AdventureDirectionButton from './AdventureDirectionButton.vue'
+import type { DirectionConnectionItem } from './adventureDirectionTypes'
 
 interface Props {
-  adjacentConnections: {
-    top: ConnectionItem[]
-    bottom: ConnectionItem[]
-    left: ConnectionItem[]
-    right: ConnectionItem[]
-  }
+  adjacentConnections: Record<CardinalDirection, DirectionConnectionItem[]>
   isTraveling: boolean
   hasHealthyTeam: boolean
   activeHMs: Set<string>
@@ -36,6 +28,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const originLocation = computed(() => props.mapLocationsById[props.originMap] ?? null)
+const isTravelDisabled = computed(() => props.isTraveling || !props.hasHealthyTeam)
 
 const emit = defineEmits<{
   (e: 'travel', target: AdventureNodeId): void
@@ -48,59 +41,30 @@ const emit = defineEmits<{
   <div class="adv-manual-travel-arena">
     <!-- Left Column -->
     <div class="adv-manual-col adv-manual-left">
-      <template
+      <AdventureDirectionButton
         v-for="conn in adjacentConnections.left"
         :key="conn.target"
-      >
-        <button
-          :id="`adv-direction-left-btn-${conn.target}`"
-          v-gsap-hover
-          class="adv-manual-btn"
-          :disabled="isTraveling || !hasHealthyTeam"
-          @click="emit('travel', conn.target)"
-        >
-          <span class="emoji dir-icon">⬅️</span>
-          <span class="dir-label">{{ conn.label }}</span>
-          <span
-            v-if="conn.mo"
-            :class="['dir-mo', { 'mo-missing': !activeHMs.has(conn.mo) }]"
-          >
-            {{ conn.mo }}
-          </span>
-        </button>
-      </template>
+        direction="left"
+        :conn="conn"
+        :disabled="isTravelDisabled"
+        :is-mo-missing="Boolean(conn.mo && !activeHMs.has(conn.mo))"
+        @travel="emit('travel', $event)"
+      />
     </div>
 
     <!-- Center Column -->
     <div class="adv-manual-center">
       <!-- Top Section -->
       <div class="adv-manual-top">
-        <template
+        <AdventureDirectionButton
           v-for="conn in adjacentConnections.top"
           :key="conn.target"
-        >
-          <button
-            :id="`adv-direction-top-btn-${conn.target}`"
-            v-gsap-hover
-            class="adv-manual-btn"
-            :disabled="isTraveling || !hasHealthyTeam"
-            @click="emit('travel', conn.target)"
-          >
-            <div class="emoji dir-icon">
-              ⬆️
-            </div>
-            <div class="dir-label">
-              {{ conn.label }}
-            </div>
-            <div
-              v-if="conn.mo"
-              class="dir-mo"
-              :class="{ 'mo-missing': !activeHMs.has(conn.mo) }"
-            >
-              {{ conn.mo }}
-            </div>
-          </button>
-        </template>
+          direction="top"
+          :conn="conn"
+          :disabled="isTravelDisabled"
+          :is-mo-missing="Boolean(conn.mo && !activeHMs.has(conn.mo))"
+          @travel="emit('travel', $event)"
+        />
       </div>
 
       <!-- Map Card Core Container -->
@@ -145,62 +109,31 @@ const emit = defineEmits<{
 
       <!-- Bottom Section -->
       <div class="adv-manual-bottom">
-        <template
+        <AdventureDirectionButton
           v-for="conn in adjacentConnections.bottom"
           :key="conn.target"
-        >
-          <button
-            :id="`adv-direction-bottom-btn-${conn.target}`"
-            v-gsap-hover
-            class="adv-manual-btn"
-            :disabled="isTraveling || !hasHealthyTeam"
-            @click="emit('travel', conn.target)"
-          >
-            <p class="emoji dir-icon">
-              ⬇️
-            </p>
-            <p class="dir-label">
-              {{ conn.label }}
-            </p>
-            <p
-              v-if="conn.mo"
-              class="dir-mo"
-              :class="!activeHMs.has(conn.mo) ? 'mo-missing' : ''"
-            >
-              {{ conn.mo }}
-            </p>
-          </button>
-        </template>
+          direction="bottom"
+          :conn="conn"
+          :disabled="isTravelDisabled"
+          :is-mo-missing="Boolean(conn.mo && !activeHMs.has(conn.mo))"
+          @travel="emit('travel', $event)"
+        />
       </div>
     </div>
 
     <!-- Right Column -->
     <div class="adv-manual-col adv-manual-right">
-      <template
+      <AdventureDirectionButton
         v-for="conn in adjacentConnections.right"
         :key="conn.target"
-      >
-        <button
-          :id="`adv-direction-right-btn-${conn.target}`"
-          v-gsap-hover
-          class="adv-manual-btn"
-          :disabled="isTraveling || !hasHealthyTeam"
-          @click="emit('travel', conn.target)"
-        >
-          <strong class="emoji dir-icon">➡️</strong>
-          <strong class="dir-label">{{ conn.label }}</strong>
-          <strong
-            v-if="conn.mo"
-            class="dir-mo"
-            :class="[!activeHMs.has(conn.mo) && 'mo-missing']"
-          >
-            {{ conn.mo }}
-          </strong>
-        </button>
-      </template>
+        direction="right"
+        :conn="conn"
+        :disabled="isTravelDisabled"
+        :is-mo-missing="Boolean(conn.mo && !activeHMs.has(conn.mo))"
+        @travel="emit('travel', $event)"
+      />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss" src="@/views/adventure/AdventureTestView.styles.manual.scss"></style>
-

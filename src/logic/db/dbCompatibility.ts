@@ -1,4 +1,4 @@
-import { CLIENT_DB_VERSION, LATEST_MIGRATION_ID } from './migrations_version.ts';
+import { CLIENT_DB_VERSION } from './migrations_version.ts';
 import { logger } from '../utils/logger.ts';
 import type { DBRouter } from './dbRouter.ts';
 import type { DBCompatibilityResponse } from '@/types/system/database';
@@ -10,55 +10,77 @@ declare const __APP_VERSION__: string;
  * DB Compatibility Check
  * Ensures the client version is not greater than the DB version.
  */
-export { CLIENT_DB_VERSION, LATEST_MIGRATION_ID };
 
-export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatibilityResponse> {
-  let loadingStore: LoadingStore | null = null;
+function isE2EEnvironment(): boolean {
+  return (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
+         (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+}
+
+async function getOptionalLoadingStore(): Promise<LoadingStore | null> {
   try {
     if (typeof window !== 'undefined') {
       const { useLoadingStore } = await import('../../stores/loading.ts');
-      loadingStore = useLoadingStore();
+      return useLoadingStore();
     }
-  } catch (_) {
-    // Fail silently in node test context
+  } catch (err) {
+    logger.debug('DBCompatibility', 'LoadingStore no disponible en este contexto:', err);
+  }
+  return null;
+}
+
+function parseDbVersionValue(rawValue: unknown): number {
+  if (!rawValue) return 0;
+  let parsedRaw = rawValue;
+  if (typeof parsedRaw === 'string' && (parsedRaw.startsWith('{') || parsedRaw.startsWith('['))) {
+    try {
+      parsedRaw = JSON.parse(parsedRaw);
+    } catch (err) {
+      logger.warn('DBCompatibility', 'Fallo al parsear rawValue JSON:', err);
+    }
   }
 
+  const valObj = parsedRaw as Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
+  const parsed = (typeof parsedRaw === 'object' && valObj !== null && 'db_version' in valObj)
+    ? parseInt((valObj.db_version as string | number) + '' || '0')
+    : parseInt((parsedRaw as string | number) + '' || '0');
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+function handleCompatError(e: unknown, routerMode: string): DBCompatibilityResponse {
+  if (isE2EEnvironment() || routerMode === 'offline') {
+    logger.warn('DBRouter', 'Compatibility check offline/E2E lookup warning:', (e as Error).message);
+    return { compatible: true, client: CLIENT_DB_VERSION, db: CLIENT_DB_VERSION };
+  }
+  logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
+  return {
+    compatible: false,
+    client: CLIENT_DB_VERSION,
+    db: 0,
+    error: 'OUTDATED_SERVER'
+  };
+}
+
+export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatibilityResponse> {
+  const loadingStore = await getOptionalLoadingStore();
   if (loadingStore) {
     loadingStore.start('db_compat', 'Verificando Versión...', 'Comprobando compatibilidad de DB', false);
   }
-  try {
-    let dbVersion = 0;
-    let rawValue: unknown = null;
 
+  try {
     const { data, error } = await router
       .from('system_config')
       .select('value')
       .eq('key', 'db_version')
       .maybeSingle();
 
-    if (error) {
-      throw error;
-    }
-    if (data) rawValue = (data as { value: unknown }).value;
+    if (error) throw error;
 
-    if (rawValue) {
-      // Handle JSON strings (SQLite stores objects as JSON strings)
-      if (typeof rawValue === 'string' && (rawValue.startsWith('{') || rawValue.startsWith('['))) {
-        try { rawValue = JSON.parse(rawValue); } catch (_e) { /* ignore */ }
-      }
-      
-      const valObj = rawValue as Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
-      const parsed = (typeof rawValue === 'object' && valObj !== null && 'db_version' in valObj) 
-        ? parseInt((valObj.db_version as string | number) + '' || '0') 
-        : parseInt((rawValue as string | number) + '' || '0');
-      dbVersion = isNaN(parsed) ? 0 : parsed;
-    }
+    const rawValue = data ? (data as { value: unknown }).value : null;
+    const dbVersion = parseDbVersionValue(rawValue);
 
     logger.info('DBRouter', `Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);
 
-    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
-                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
-
+    const isE2E = isE2EEnvironment();
     const response: DBCompatibilityResponse = {
       compatible: true,
       client: CLIENT_DB_VERSION,
@@ -74,19 +96,7 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
     return response;
   } catch (e: unknown) {
     if (loadingStore) loadingStore.finish('db_compat');
-    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
-                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
-    if (isE2E || router.mode === 'offline') {
-      logger.warn('DBRouter', 'Compatibility check offline/E2E lookup warning:', (e as Error).message);
-      return { compatible: true, client: CLIENT_DB_VERSION, db: CLIENT_DB_VERSION };
-    }
-    logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
-    return { 
-      compatible: false, 
-      client: CLIENT_DB_VERSION, 
-      db: 0,
-      error: 'OUTDATED_SERVER' 
-    };
+    return handleCompatError(e, router.mode);
   }
 }
 
@@ -111,11 +121,17 @@ export function parseAppVersion(val: unknown): string {
   }
 }
 
+function isDevBypassAllowed(): boolean {
+  return Boolean(
+    import.meta.env.DEV &&
+    import.meta.env.MODE !== 'test' &&
+    !(typeof process !== 'undefined' && (process.env.VITEST || process.env.NODE_ENV === 'test'))
+  );
+}
+
 export async function checkAppVersionCompatibility(router: DBRouter): Promise<AppCompatibilityResponse> {
   const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
-  const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
-                (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
-  if (isE2E) {
+  if (isE2EEnvironment()) {
     return { compatible: true, client: clientVer, server: clientVer };
   }
   let serverVer = '';
@@ -140,19 +156,17 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
     return { compatible: false, client: clientVer, server: 'v0.0.0', error: 'OUTDATED_SERVER' };
   }
 
-  if (clientVer === serverVer) {
+  if (clientVer === serverVer || isDevBypassAllowed()) {
+    if (clientVer !== serverVer) {
+      logger.warn('DBRouter', `[DEV] Mismatch de versión ignorado en modo desarrollo (Cliente: ${clientVer} vs Servidor: ${serverVer})`);
+    }
     return { compatible: true, client: clientVer, server: serverVer };
   }
 
-  // Allow bypass in local development mode to prevent dev lockout, except during tests
-  if (import.meta.env.DEV && import.meta.env.MODE !== 'test' && !(typeof process !== 'undefined' && (process.env.VITEST || process.env.NODE_ENV === 'test'))) {
-    logger.warn('DBRouter', `[DEV] Mismatch de versión ignorado en modo desarrollo (Cliente: ${clientVer} vs Servidor: ${serverVer})`);
-    return { compatible: true, client: clientVer, server: serverVer };
-  }
-
-  if (clientVer > serverVer) {
-    return { compatible: false, client: clientVer, server: serverVer, error: 'OUTDATED_SERVER' };
-  } else {
-    return { compatible: false, client: clientVer, server: serverVer, error: 'OUTDATED_CLIENT' };
-  }
+  return {
+    compatible: false,
+    client: clientVer,
+    server: serverVer,
+    error: clientVer > serverVer ? 'OUTDATED_SERVER' : 'OUTDATED_CLIENT'
+  };
 }

@@ -2,12 +2,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useModalStore } from '@/stores/modals.ts'
-import { useBattleStore } from '@/stores/battle/battle.ts'
 import { useLoadingStore } from '@/stores/loading'
 import { safeStorage } from '@/logic/utils/storage'
 import { useNotificationStore } from '@/stores/notifications.ts'
-import type { Pokemon, Move, PokemonStorageLocation, PokedexStatus } from '@/types/pokemon/pokemon'
-import { MODAL_METADATA } from '@/logic/modals/registry'
+import { gameBus } from '@/logic/events/gameBus.ts'
+import type { Pokemon, Move, PokemonStorageLocation } from '@/types/pokemon/pokemon'
+import { MODAL_METADATA } from '@/logic/modals/metadata.ts'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { ItemId } from '@/data/inventory/items'
 import type { PokemonMoveId } from '@/data/battle/moves'
@@ -38,7 +38,10 @@ export const useUIStore = defineStore('ui', () => {
   // Notifications
   const notifications = computed(() => notificationStore.notifications)
   
-  const isDebugPerformanceMode = ref(false)
+  const isDebugFastMode = ref(false)
+  function toggleDebugFastMode() {
+    isDebugFastMode.value = !isDebugFastMode.value
+  }
   const isSimplifiedModalsMode = ref(false) // Forzado vía debug
   const isDebugGridMode = ref(false)
   const debugAnimationsEnabled = ref(true)
@@ -98,10 +101,13 @@ export const useUIStore = defineStore('ui', () => {
   const pvpAutoFillDisabled = ref(false)
   const warAutoFillDisabled = ref(false)
 
-  const isPerformanceMode = computed(() => isDebugPerformanceMode.value || isAnyBlockingModalOpen.value)
+  const isFastMode = computed(() => isDebugFastMode.value || isAnyBlockingModalOpen.value)
 
   const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
-  const isWarPanelOpen = ref(false)
+  const isBattleActive = ref(false)
+  function setBattleActive(val: boolean) {
+    isBattleActive.value = val
+  }
   
   // Data for modals (still needed in the store if shared)
   const activePokemonForRelearner = ref<Pokemon | null>(null)
@@ -144,11 +150,6 @@ export const useUIStore = defineStore('ui', () => {
   function toggleSettings() {
     const s = useModalStore(); if (s.isOpen('Settings')) s.close('Settings'); else s.open('Settings')
   }
-  const toggleHistory = () => { isHistoryOpen.value = !isHistoryOpen.value }
-  function toggleSocial() {
-    const s = useModalStore(); if (s.isOpen('SocialCenter')) s.close('SocialCenter'); else s.open('SocialCenter')
-  }
-  const openClaims = () => useModalStore().open('SocialCenter', { initialTab: 'claims' })
   function toggleLibrary(tabId = null) {
     const s = useModalStore(); if (s.isOpen('Library')) s.close('Library'); else s.open('Library', { initialTab: tabId })
   }
@@ -192,10 +193,9 @@ export const useUIStore = defineStore('ui', () => {
 
   const isAnyFullscreenModalOpen = computed(() => {
     const modalStore = useModalStore()
-    const battleStore = useBattleStore()
     
     // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
-    const isBattleFullscreen = battleStore.isBattleActive && isSmallScreen.value
+    const isBattleFullscreen = isBattleActive.value && isSmallScreen.value
     const isStackFullscreen = modalStore.stack.some(m => 
       MODAL_METADATA[m.name]?.isFullscreen || 
       ((m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
@@ -212,34 +212,26 @@ export const useUIStore = defineStore('ui', () => {
     else loadingStore.finish('ui_generic')
   }
 
-  function toggleTrade() { useModalStore().open('SocialCenter') }
-
   function openPokemonDetail(pokemon: Pokemon, index: number, context: string = 'team', extra: unknown = null) {
     selectedPokemon.value = pokemon
     useModalStore().open('PokemonDetail', { pokemon, index, context, extra })
   }
-
-  function closePokemonDetail() { useModalStore().close('PokemonDetail') }
 
   function openMoveDetail(moveId: PokemonMoveId) {
     selectedMove.value = moveId
     useModalStore().open('MoveDetail', { moveId })
   }
 
-  function closeMoveDetail() { useModalStore().close('MoveDetail') }
+  const handleEvolutionFinished = () => {
+    useModalStore().close('Evolution')
+  }
+  gameBus.on('EVOLUTION_FINISHED', handleEvolutionFinished)
 
   function startEvolution(pokemon: Pokemon, targetId: PokemonSpeciesId, itemName: string) {
     const targetSpeciesId = requirePokemonSpeciesId(targetId)
     evolutionData.value = { pokemon, targetId: targetSpeciesId, itemName }
     useModalStore().open('Evolution')
-    
-    // Dynamic import to break circular dependency: ui -> evolution -> game -> ui
-    import('@/stores/evolution').then(m => {
-      const evolutionStore = m.useEvolutionStore()
-      evolutionStore.startEvolution(pokemon, targetSpeciesId, itemName, () => {
-        useModalStore().close('Evolution')
-      })
-    })
+    gameBus.emit('START_EVOLUTION_FLOW', { pokemon, targetSpeciesId, itemName })
   }
 
   function addToLearnQueue(items: LearnItem | LearnItem[]) {
@@ -267,23 +259,18 @@ export const useUIStore = defineStore('ui', () => {
 
   /**
    * Returns true if there is any active modal that obscures the background.
+   * Modo Rápido se activa INMEDIATAMENTE al abrir cualquier modal oscurecedor
+   * y se desactiva solo cuando se inicia el cierre.
    */
   const isAnyBlockingModalOpen = computed(() => {
     const modalStore = useModalStore()
-    const battleStore = useBattleStore()
     const obscuringModals = modalStore.stack.filter(m => {
       if (m.name === 'Profile') return false
       if (m.props?.overlay === 'none') return false
       return true
     })
-    
-    const isBattleObscuring = battleStore.isBattleActive
 
-    if (obscuringModals.length === 0 && !isBattleObscuring) return false
-
-    // Performance Mode triggers ONLY after opening animation finishes 
-    // and drops IMMEDIATELY when closing starts to ensure smooth transitions.
-    return obscuringModals.some(m => !m.opening && !m.closing)
+    return obscuringModals.some(m => !m.closing)
   })
   
 
@@ -297,17 +284,9 @@ export const useUIStore = defineStore('ui', () => {
     }
   })
 
-  const isProfileOpen = createModalRef('Profile')
-  const isSettingsOpen = createModalRef('Settings')
-  const isLibraryOpen = createModalRef('Library')
-  const isWarShopOpen = createModalRef('WarShop')
-  const isEvolutionOpen = createModalRef('Evolution')
-  const isMoveLearningOpen = createModalRef('MoveLearning')
-  const isMoveRelearnerOpen = createModalRef('MoveRelearner')
   const isNaturePatchOpen = createModalRef('NaturePatch')
   const isPPUpOpen = createModalRef('PPUp')
   const isAbilityPillOpen = createModalRef('AbilityPill')
-  const isCosmeticsModalOpen = createModalRef('Cosmetics')
 
   return {
     isAnyBlockingModalOpen,
@@ -321,38 +300,32 @@ export const useUIStore = defineStore('ui', () => {
     autoBattle,
     setAutoBattle,
     isAnyFullscreenModalOpen,
-    isPerformanceMode,
-    isDebugPerformanceMode,
+    isFastMode,
+    isDebugFastMode,
+    isDebugPerformanceMode: computed(() => isDebugFastMode.value),
+    isPerformanceMode: computed(() => isFastMode.value),
+    toggleDebugFastMode,
     isSimplifiedModalsMode,
     isDebugGridMode,
     debugAnimationsEnabled,
     debugPokedexMode,
-    isProfileOpen,
-    isSettingsOpen,
     isHistoryOpen,
-    isLibraryOpen,
     isChatOpen,
     libraryTab,
 
     selectedPokemon,
     activeTab,
-    isWarShopOpen,
     appZoom,
     setZoom: (val: number) => {
       appZoom.value = val
       safeStorage.setItem('app-zoom', val.toString())
       document.documentElement.style.setProperty('--app-zoom', val.toString())
     },
-    toggleTrade,
-    toggleSocial,
-    openClaims,
     notify,
     notifications,
-    isLoading,
     setLoading,
     toggleProfile,
     toggleSettings,
-    toggleHistory,
     toggleLibrary,
     toggleHudGroup,
     openHudGroup,
@@ -361,9 +334,7 @@ export const useUIStore = defineStore('ui', () => {
     close,
     closeModal: () => useModalStore().closeTop(),
     openPokemonDetail,
-    closePokemonDetail,
     openMoveDetail,
-    closeMoveDetail,
     
     toggleTeamManagement: (initialTab?: unknown) => {
       const modalStore = useModalStore()
@@ -375,22 +346,17 @@ export const useUIStore = defineStore('ui', () => {
       }
     },
     
-    setDebugPokedex: (mode: PokedexStatus | null) => { debugPokedexMode.value = mode },
-    
     pvpAutoFillDisabled,
     warAutoFillDisabled,
     
     // Relearner
-    isMoveRelearnerOpen,
     activePokemonForRelearner,
     
     // Evolution
-    isEvolutionOpen,
     evolutionData,
     startEvolution,
     
     // Move Learning
-    isMoveLearningOpen,
     currentMoveToLearn,
     learnQueue,
     addToLearnQueue,
@@ -406,16 +372,12 @@ export const useUIStore = defineStore('ui', () => {
 
     toggleInventory,
     inventoryTarget,
-    isCosmeticsModalOpen,
-    isPvPBattleOpen: ref(false),
-    isRankedMenuOpen: ref(false),
-    currentPvPInvite: ref(null),
     isBattleSwitchForced,
-    isWarPanelOpen,
+    isBattleActive,
+    setBattleActive,
     hasDismissedSessionLock,
 
     // Stacking
-    activeModalStack,
     registerModal,
     unregisterModal,
     getModalDepth,

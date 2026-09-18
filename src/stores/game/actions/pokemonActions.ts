@@ -13,7 +13,7 @@ import { getActivePinia } from 'pinia'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { CompetitionEntry } from '@/types/system/stores'
 import { isPokemonBusy, type PokemonTagId } from '@/logic/constants/tags'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
+import { gameBus } from '@/logic/events/gameBus.ts'
 
 
 export function usePokemonActions(
@@ -81,7 +81,7 @@ export function usePokemonActions(
     }
 
     if (pokemon.obtainedMethod === 'wild') {
-      usePlayerClassStore().onCaptureSuccess()
+      gameBus.emit('CAPTURE_SUCCESS')
     }
 
     scheduleSave()

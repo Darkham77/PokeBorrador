@@ -5,12 +5,95 @@
  * Validates species constraints, capture timeframes, and filter criteria.
  */
 
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonGender } from '@/types/pokemon/pokemon';
 import { logger } from '@/logic/utils/logger.ts';
 import { normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
 import { safeParse, resolveWeeklyRotation, getEventCurrentWindow } from './eventSchedules.ts';
 import type { Event, EventConfig } from './eventEngine.ts';
 import type { SubCompetitionConfig } from './eventCompetitions.ts';
+
+/**
+ * Validates if a Pokémon is eligible to be entered/presented into an event based on its species and capture date.
+ */
+function resolveEffectiveSpecies(
+  cfg: EventConfig,
+  date: Temporal.ZonedDateTime | Temporal.Instant
+): string | undefined {
+  if (cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations) {
+    const zdt = normalizeZonedDateTime(date);
+    const rotation = resolveWeeklyRotation(cfg, zdt);
+    return rotation?.species ?? cfg.species;
+  }
+  return cfg.species;
+}
+
+function checkSpeciesEligibility(
+  effectiveSpecies: string | undefined,
+  pokemonSpeciesKey: string
+): { eligible: boolean; reason?: string } {
+  if (!effectiveSpecies || effectiveSpecies === '*') {
+    return { eligible: true };
+  }
+  const allowedSpecies = effectiveSpecies.split(',').map(s => s.trim().toLowerCase());
+  if (!allowedSpecies.includes(pokemonSpeciesKey)) {
+    return { eligible: false, reason: `Especie no permitida. Requiere: ${effectiveSpecies}` };
+  }
+  return { eligible: true };
+}
+
+function resolveEventTimeframe(
+  event: Event,
+  cfg: EventConfig,
+  date: Temporal.ZonedDateTime | Temporal.Instant
+): { startMs: number | null; endMs: number | null } {
+  let startMs: number | null = null;
+  let endMs: number | null = null;
+
+  if (cfg.catchStartDate && cfg.catchEndDate) {
+    try {
+      startMs = Temporal.Instant.from(cfg.catchStartDate).epochMilliseconds;
+      endMs = Temporal.Instant.from(cfg.catchEndDate).epochMilliseconds;
+    } catch (e) {
+      logger.warn('EventEngine', 'Invalid catchStartDate/catchEndDate format', e);
+    }
+  }
+
+  if (startMs === null || endMs === null) {
+    const window = getEventCurrentWindow(event, date);
+    if (window) {
+      startMs = window.start.epochMilliseconds;
+      endMs = window.end.epochMilliseconds;
+    }
+  }
+
+  return { startMs, endMs };
+}
+
+function checkCaptureDateEligibility(
+  event: Event,
+  cfg: EventConfig,
+  pokemon: Pokemon,
+  date: Temporal.ZonedDateTime | Temporal.Instant
+): { eligible: boolean; reason?: string } {
+  if (!cfg.requireCaughtDuringEvent) {
+    return { eligible: true };
+  }
+
+  const rawObtainedAt = pokemon.obtainedAt;
+  if (typeof rawObtainedAt !== 'number' || isNaN(rawObtainedAt) || rawObtainedAt <= 0) {
+    return { eligible: false, reason: 'El Pokémon no tiene fecha de captura registrada' };
+  }
+
+  const { startMs, endMs } = resolveEventTimeframe(event, cfg, date);
+  if (startMs !== null && endMs !== null) {
+    if (rawObtainedAt < startMs || rawObtainedAt > endMs) {
+      return { eligible: false, reason: 'El Pokémon no fue capturado dentro del periodo del evento' };
+    }
+    return { eligible: true };
+  }
+
+  return { eligible: false, reason: 'El evento no tiene una franja horaria activa válida' };
+}
 
 /**
  * Validates if a Pokémon is eligible to be entered/presented into an event based on its species and capture date.
@@ -27,57 +110,74 @@ export function isPokemonEligibleForEvent(
   const cfg = safeParse(event.config) as EventConfig;
 
   // 1. Check species if constrained ('*' means open to any species)
-  const effectiveSpecies = (() => {
-    if (cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations) {
-      const zdt = normalizeZonedDateTime(date);
-      const rotation = resolveWeeklyRotation(cfg, zdt);
-      return rotation?.species ?? cfg.species;
-    }
-    return cfg.species;
-  })();
-
-  if (effectiveSpecies && effectiveSpecies !== '*') {
-    const allowedSpecies = effectiveSpecies.split(',').map(s => s.trim().toLowerCase());
-    const pokeSpecies = pokemon.id;
-    if (!allowedSpecies.includes(pokeSpecies)) {
-      return { eligible: false, reason: `Especie no permitida. Requiere: ${effectiveSpecies}` };
-    }
+  const effectiveSpecies = resolveEffectiveSpecies(cfg, date);
+  const speciesCheck = checkSpeciesEligibility(effectiveSpecies, pokemon.id);
+  if (!speciesCheck.eligible) {
+    return speciesCheck;
   }
 
   // 2. Check capture date if constrained
-  if (cfg.requireCaughtDuringEvent) {
-    const rawObtainedAt = pokemon.obtainedAt;
-    if (typeof rawObtainedAt !== 'number' || isNaN(rawObtainedAt) || rawObtainedAt <= 0) {
-      return { eligible: false, reason: 'El Pokémon no tiene fecha de captura registrada' };
-    }
+  return checkCaptureDateEligibility(event, cfg, pokemon, date);
+}
 
-    let startMs: number | null = null;
-    let endMs: number | null = null;
-
-    if (cfg.catchStartDate && cfg.catchEndDate) {
-      try {
-        startMs = Temporal.Instant.from(cfg.catchStartDate).epochMilliseconds;
-        endMs = Temporal.Instant.from(cfg.catchEndDate).epochMilliseconds;
-      } catch (e) {
-        logger.warn('EventEngine', 'Invalid catchStartDate/catchEndDate format', e);
-      }
+function checkNatureFilter(allowedNatures: string[] | undefined, pokeNature?: string): { eligible: boolean; reason?: string } {
+  if (allowedNatures && allowedNatures.length > 0) {
+    if (!pokeNature || !allowedNatures.includes(pokeNature)) {
+      return { eligible: false, reason: `Naturaleza no permitida. Requiere: ${allowedNatures.join(', ')}` };
     }
+  }
+  return { eligible: true };
+}
 
-    if (startMs === null || endMs === null) {
-      const window = getEventCurrentWindow(event, date);
-      if (window) {
-        startMs = window.start.epochMilliseconds;
-        endMs = window.end.epochMilliseconds;
-      }
+function checkAbilityFilter(allowedAbilities: string[] | undefined, pokeAbility?: string): { eligible: boolean; reason?: string } {
+  if (allowedAbilities && allowedAbilities.length > 0) {
+    if (!pokeAbility || !allowedAbilities.includes(pokeAbility)) {
+      return { eligible: false, reason: `Habilidad no permitida. Requiere: ${allowedAbilities.join(', ')}` };
     }
+  }
+  return { eligible: true };
+}
 
-    if (startMs !== null && endMs !== null) {
-      if (rawObtainedAt < startMs || rawObtainedAt > endMs) {
-        return { eligible: false, reason: 'El Pokémon no fue capturado dentro del periodo del evento' };
-      }
-    } else {
-      return { eligible: false, reason: 'El evento no tiene una franja horaria activa válida' };
+function checkGenderFilter(requiredGender: string | undefined | null, pokeGender?: PokemonGender): { eligible: boolean; reason?: string } {
+  if (requiredGender !== undefined && requiredGender !== null) {
+    if (pokeGender !== requiredGender) {
+      return { eligible: false, reason: `Género no coincide. Requiere: ${requiredGender === 'm' ? 'Macho' : requiredGender === 'f' ? 'Hembra' : 'Sin género'}` };
     }
+  }
+  return { eligible: true };
+}
+
+function checkLevelFilter(minLevel?: number, maxLevel?: number, pokeLevel?: number): { eligible: boolean; reason?: string } {
+  const currentLevel = pokeLevel || 1;
+  if (minLevel !== undefined && currentLevel < minLevel) {
+    return { eligible: false, reason: `Nivel insuficiente. Mínimo requerido: Nv. ${minLevel}` };
+  }
+  if (maxLevel !== undefined && currentLevel > maxLevel) {
+    return { eligible: false, reason: `Nivel excedido. Máximo permitido: Nv. ${maxLevel}` };
+  }
+  return { eligible: true };
+}
+
+function checkSubCompetitionFilters(
+  filters: SubCompetitionConfig['filters'],
+  pokemon: Pokemon
+): { eligible: boolean; reason?: string } {
+  if (!filters) return { eligible: true };
+
+  const natureCheck = checkNatureFilter(filters.natures, pokemon.nature);
+  if (!natureCheck.eligible) return natureCheck;
+
+  const abilityCheck = checkAbilityFilter(filters.abilities, pokemon.ability);
+  if (!abilityCheck.eligible) return abilityCheck;
+
+  const genderCheck = checkGenderFilter(filters.gender, pokemon.gender);
+  if (!genderCheck.eligible) return genderCheck;
+
+  const levelCheck = checkLevelFilter(filters.minLevel, filters.maxLevel, pokemon.level);
+  if (!levelCheck.eligible) return levelCheck;
+
+  if (filters.isShinyOnly && !pokemon.isShiny) {
+    return { eligible: false, reason: 'Solo se admiten Pokémon Variocolor (Shiny)' };
   }
 
   return { eligible: true };
@@ -97,11 +197,8 @@ export function isPokemonEligibleForSubCompetition(
   }
 
   // 1. Target species check for species-scoped categories
-  if (subComp.targetSpecies) {
-    const requiredSpecies = subComp.targetSpecies;
-    if (pokemon.id !== requiredSpecies) {
-      return { eligible: false, reason: `Esta categoría está reservada exclusivamente para ${requiredSpecies}` };
-    }
+  if (subComp.targetSpecies && pokemon.id !== subComp.targetSpecies) {
+    return { eligible: false, reason: `Esta categoría está reservada exclusivamente para ${subComp.targetSpecies}` };
   }
 
   // 2. Global event eligibility (species whitelist, catch period)
@@ -111,48 +208,7 @@ export function isPokemonEligibleForSubCompetition(
   }
 
   // 3. Sub-competition specific filters (default to unrestricted 'any')
-  const filters = subComp.filters;
-  if (!filters) {
-    return { eligible: true };
-  }
-
-  // Nature filter
-  if (filters.natures && filters.natures.length > 0) {
-    const pokeNature = pokemon.nature;
-    if (!pokeNature || !filters.natures.includes(pokeNature)) {
-      return { eligible: false, reason: `Naturaleza no permitida. Requiere: ${filters.natures.join(', ')}` };
-    }
-  }
-
-  // Ability filter
-  if (filters.abilities && filters.abilities.length > 0) {
-    const pokeAbility = pokemon.ability;
-    if (!pokeAbility || !filters.abilities.includes(pokeAbility)) {
-      return { eligible: false, reason: `Habilidad no permitida. Requiere: ${filters.abilities.join(', ')}` };
-    }
-  }
-
-  // Gender filter
-  if (filters.gender !== undefined && filters.gender !== null) {
-    if (pokemon.gender !== filters.gender) {
-      return { eligible: false, reason: `Género no coincide. Requiere: ${filters.gender === 'm' ? 'Macho' : filters.gender === 'f' ? 'Hembra' : 'Sin género'}` };
-    }
-  }
-
-  // Level filters
-  if (filters.minLevel !== undefined && (pokemon.level || 1) < filters.minLevel) {
-    return { eligible: false, reason: `Nivel insuficiente. Mínimo requerido: Nv. ${filters.minLevel}` };
-  }
-  if (filters.maxLevel !== undefined && (pokemon.level || 1) > filters.maxLevel) {
-    return { eligible: false, reason: `Nivel excedido. Máximo permitido: Nv. ${filters.maxLevel}` };
-  }
-
-  // Shiny only filter
-  if (filters.isShinyOnly && !pokemon.isShiny) {
-    return { eligible: false, reason: 'Solo se admiten Pokémon Variocolor (Shiny)' };
-  }
-
-  return { eligible: true };
+  return checkSubCompetitionFilters(subComp.filters, pokemon);
 }
 
 /**

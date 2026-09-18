@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Battle } from '@pkmn/sim';
 import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
-import { patchShowdownSpreadModify } from '../../../src/logic/battle/showdownAdapter.ts';
+import { patchShowdownSpreadModify } from '../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 
 // Apply unified spread modify patch
 patchShowdownSpreadModify(() => true);

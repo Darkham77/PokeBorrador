@@ -74,13 +74,15 @@ const canClone = computed(() => {
 
 const showFailureTooltip = ref(false)
 
+const TOOLTIP_HIDE_DELAY_SEC = 3;
+
 const handleClone = () => {
   if (!canClone.value) return
   const success = breedingStore.cloneFossil(activeFossil.value.id, extraSacrifices.value)
   if (!success) {
     showFailureTooltip.value = true
     gsap.killTweensOf(showFailureTooltip)
-    gsap.delayedCall(3, () => {
+    gsap.delayedCall(TOOLTIP_HIDE_DELAY_SEC, () => {
       showFailureTooltip.value = false
     })
   } else {

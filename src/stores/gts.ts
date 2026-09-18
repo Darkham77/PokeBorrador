@@ -26,11 +26,6 @@ export const useGTSStore = defineStore('gts', () => {
   const myListings = ref<MarketListing[]>([])
   const salesHistory = ref<MarketListing[]>([])
   
-  const unseenSalesCount = computed(() => {
-    if (auth.sessionMode === 'offline') return 0
-    return salesHistory.value.filter(sale => sale.status === 'sold' && !isMarketSoldSeen(String(sale.id), game.state)).length
-  })
-
   const pendingSalesClaims = computed(() => {
     return (game.state.claimQueue || []).filter(
       (c: ClaimItem) => c.source_type === 'gts' && c.asset_data?.type === 'money'
@@ -377,7 +372,7 @@ export const useGTSStore = defineStore('gts', () => {
     MARKET_FEE: GTS_MARKET_FEE,
     MAX_LISTINGS: GTS_MAX_ACTIVE_LISTINGS,
     filteredListings, activeMyListings,
-    unseenSalesCount, pendingSalesClaims, unclaimedSalesCount,
+    pendingSalesClaims, unclaimedSalesCount,
     pendingPurchaseClaims, allPendingGtsClaims, unclaimedPurchasesCount, unclaimedGtsCount,
     fetchListings, fetchUserData, initRealtime, stopRealtime,
     buyListing, publishListing, cancelListing

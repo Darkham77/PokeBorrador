@@ -5,14 +5,14 @@
  */
 
 import { watch, type Ref, type ComputedRef } from 'vue';
-import { BATTLE_UI_EVENTS, type BattleForcedSwitchDetail, type BattleReadyForInputDetail } from '@/types/battle/battleEvents.ts';
+import { BATTLE_UI_EVENTS, type BattleForcedSwitchDetail, type BattleReadyForInputDetail, type BattleReadySubState } from '@/types/battle/battleEvents.ts';
 import { BATTLE_STATES, BATTLE_SUBSTATES, createBattleStateMachine } from '@/logic/battle/battleStateMachine.ts';
 import { classifyRequest, requiresAction } from '@/logic/battle/helpers/requestHelper.ts';
 import { canExecuteScriptedReplayAction } from '@/logic/battle/helpers/scriptedReplayReadiness.ts';
 import { isBattleCompletionReady } from '@/logic/battle/helpers/battleCompletionReadiness.ts';
 import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey.ts';
 import { projectBattleReadySwitchSlots } from '@/logic/battle/helpers/battleReadySwitchSlots.ts';
-import type { BattleState } from '@/types/battle/battle';
+import type { BattleState, ShowdownPlayerRequest } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export type BattleStateMachine = ReturnType<typeof createBattleStateMachine>;
@@ -51,6 +51,66 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
     },
   );
 
+function checkBattleInputReadiness(
+  subState: BattleReadySubState | undefined,
+  currentState: string,
+  processing: boolean,
+  intro: boolean,
+  req: ShowdownPlayerRequest | null | undefined,
+  enemyReq: ShowdownPlayerRequest | null | undefined,
+  activeBattleVal: BattleState | null | undefined
+): { isReady: boolean; kind: string } {
+  const p1NeedsAction = requiresAction(req);
+  const anySeatNeedsAction = [req, enemyReq].some(r => requiresAction(r));
+  if (!anySeatNeedsAction) return { isReady: false, kind: '' };
+
+  const kind = p1NeedsAction ? classifyRequest(req) : classifyRequest(enemyReq);
+  const hasPendingSwitch = Boolean(Reflect.get(activeBattleVal!, 'switchingToPlayer')) || Boolean(Reflect.get(activeBattleVal!, 'switchingToEnemy'));
+
+  const activePoke = activeBattleVal?.player;
+  const isMoveReady = kind !== 'move' || !p1NeedsAction || (!!activePoke && activePoke.hp > 0);
+  const isReady = (kind === 'team-preview' || canExecuteScriptedReplayAction({
+    isActiveBattle: currentState === BATTLE_STATES.ACTIVE_BATTLE,
+    subState: subState ?? null,
+    isProcessing: processing,
+    isIntroAnimating: intro,
+    hasPendingSwitch,
+    hasPendingPlayerAction: p1NeedsAction,
+  })) && isMoveReady;
+
+  return { isReady, kind };
+}
+
+function dispatchReadyForInputCustomEvent(
+  subState: BattleReadySubState | undefined,
+  kind: string,
+  req: ShowdownPlayerRequest | null | undefined,
+  turnCount: number,
+  lastEmittedKey: string
+): string | null {
+  if (typeof window === 'undefined') return null;
+  const p1Idx = window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0;
+  const p2Idx = window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
+  const reqRqid = (req as { rqid?: number } | undefined)?.rqid ?? 0;
+  const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${reqRqid}_${turnCount}`;
+  const nextKey = nextBattleReadyEventKey(lastEmittedKey, true, emitKey);
+  if (nextKey === null) return null;
+
+  const detail: BattleReadyForInputDetail = {
+    subState: subState ?? '',
+    p1ChoiceIdx: p1Idx,
+    p2ChoiceIdx: p2Idx,
+    over: false,
+    playerSwitchSlots: projectBattleReadySwitchSlots(req ?? undefined),
+  };
+  window.dispatchEvent(
+    new CustomEvent<BattleReadyForInputDetail>(BATTLE_UI_EVENTS.READY_FOR_INPUT, {
+      detail,
+    })
+  );
+  return nextKey;
+}
+
   // 2. Ready for input event watcher
   watch(
     [
@@ -74,50 +134,27 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
         lastEmittedStateKey = nextBattleReadyEventKey(lastEmittedStateKey, false, '') ?? '';
         return;
       }
-      if (
-        fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE &&
-        (req || enemyReq)
-      ) {
-        const p1NeedsAction = requiresAction(req);
-        const anySeatNeedsAction = [req, enemyReq].some(r => requiresAction(r));
-        if (!anySeatNeedsAction) return;
 
-        const kind = p1NeedsAction ? classifyRequest(req) : classifyRequest(enemyReq);
-        const hasPendingSwitch = Boolean(Reflect.get(activeBattle.value!, 'switchingToPlayer')) || Boolean(Reflect.get(activeBattle.value!, 'switchingToEnemy'));
+      const readiness = checkBattleInputReadiness(
+        subState,
+        fsm.currentState.value,
+        processing,
+        intro,
+        req,
+        enemyReq,
+        activeBattle.value
+      );
 
-        const activePoke = activeBattle.value?.player;
-        const isMoveReady = kind !== 'move' || !p1NeedsAction || (!!activePoke && activePoke.hp > 0);
-        const isReady = (kind === 'team-preview' || canExecuteScriptedReplayAction({
-          isActiveBattle: fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE,
+      if (readiness.isReady) {
+        const nextKey = dispatchReadyForInputCustomEvent(
           subState,
-          isProcessing: processing,
-          isIntroAnimating: intro,
-          hasPendingSwitch,
-          hasPendingPlayerAction: p1NeedsAction,
-        })) && isMoveReady;
-
-        if (isReady && typeof window !== 'undefined') {
-          const p1Idx = window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0;
-          const p2Idx = window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
-          const reqRqid = (req as { rqid?: number } | undefined)?.rqid ?? 0;
-          const turnCount = activeBattle.value?.turnCount ?? 0;
-          const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${reqRqid}_${turnCount}`;
-          const nextKey = nextBattleReadyEventKey(lastEmittedStateKey, true, emitKey);
-          if (nextKey === null) return;
+          readiness.kind,
+          req,
+          activeBattle.value?.turnCount ?? 0,
+          lastEmittedStateKey
+        );
+        if (nextKey !== null) {
           lastEmittedStateKey = nextKey;
-
-          const detail: BattleReadyForInputDetail = {
-            subState: subState ?? '',
-            p1ChoiceIdx: p1Idx,
-            p2ChoiceIdx: p2Idx,
-            over: false,
-            playerSwitchSlots: projectBattleReadySwitchSlots(req),
-          };
-          window.dispatchEvent(
-            new CustomEvent<BattleReadyForInputDetail>(BATTLE_UI_EVENTS.READY_FOR_INPUT, {
-              detail,
-            })
-          );
         }
       }
     }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import RouteSpawnsTableHeader from './spawns/RouteSpawnsTableHeader.vue';
 import RouteSpawnsPokemonRows from './spawns/RouteSpawnsPokemonRows.vue';
 import RouteSpawnsNpcRows from './spawns/RouteSpawnsNpcRows.vue';
 import RouteSpawnsItemRows from './spawns/RouteSpawnsItemRows.vue';
@@ -46,6 +47,13 @@ const spawnItems = computed(() => props.items.filter((i): i is RouteSpawnMappedI
 const npcItems = computed(() => props.items.filter((i): i is NpcChanceInfo => 'active' in i && 'chance' in i && !('isSeen' in i)));
 const archaeologyItems = computed(() => props.items.filter((i): i is ArchaeologyRewardData => 'sprite' in i && !('isSeen' in i) && !('active' in i)));
 
+const tableScrollClass = computed(() => {
+  if (props.mode === 'fishing') return 'fishing-table';
+  if (props.mode === 'item') return 'archaeology-table';
+  if (props.mode === 'npc') return 'npc-table';
+  return '';
+});
+
 defineEmits<{
   (e: 'select-pokemon', id: PokemonSpeciesId, isSeen: boolean): void;
 }>();
@@ -69,31 +77,9 @@ defineEmits<{
         </template>
       </span>
     </h3>
-    <div :class="['spawns-report-scroll', mode === 'fishing' ? 'fishing-table' : mode === 'item' ? 'archaeology-table' : mode === 'npc' ? 'npc-table' : '']">
+    <div :class="['spawns-report-scroll', tableScrollClass]">
       <!-- Headers -->
-      <div class="report-table-header">
-        <div class="col-pokemon">
-          {{ mode === 'pokemon' ? 'Pokémon' : mode === 'item' ? 'Objeto' : 'Encuentro' }}
-        </div>
-        <div class="col-types">
-          {{ mode === 'pokemon' ? 'Tipos' : mode === 'item' ? 'Categoría' : 'Tipo / Rol' }}
-        </div>
-        <div
-          v-if="mode === 'pokemon' || mode === 'npc'"
-          class="col-type"
-        >
-          Estado
-        </div>
-        <div class="col-multiplier">
-          {{ mode === 'pokemon' ? 'Clima / Mod' : 'Detalles' }}
-        </div>
-        <div class="col-prob">
-          {{ mode === 'npc' ? 'Prob. Paso' : 'Prob. Real' }}
-        </div>
-        <div class="col-stats">
-          {{ mode === 'pokemon' ? 'Stats' : '-' }}
-        </div>
-      </div>
+      <RouteSpawnsTableHeader :mode="mode" />
 
       <!-- Rows -->
       <div class="report-rows">

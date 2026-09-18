@@ -13,6 +13,8 @@ const CLASS_LEVEL_RIVAL_BOOST_MIN_LEVEL = 20
 const FACTION_DEFENDER_ENCOUNTER_PCT = 20.0
 const DEBUG_FORCED_GUARDIAN_PCT = 80.0
 const ROCKET_MAX_CRIMINALITY = 100
+const ALL_HARD_GYMS_RIVAL_MULTIPLIER = 2 as const
+const PERCENT_MULTIPLIER = 100 as const
 
 export interface NpcChanceInfo {
   name: string
@@ -44,18 +46,18 @@ function calculateRivalEncounterChance(
   if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= CLASS_LEVEL_RIVAL_BOOST_MIN_LEVEL) {
     const allGymsHard = GYM_IDS.every(id => state.gymProgress?.[id]?.hard === true)
     if (allGymsHard) {
-      rivalChance *= 2
+      rivalChance *= ALL_HARD_GYMS_RIVAL_MULTIPLIER
     }
   }
 
   const hasRivalOverride = debug?.rivalChancePct !== undefined && debug?.rivalChancePct !== null ? true : !!debug?.forceRival
   const finalRivalChance = debug?.rivalChancePct !== undefined && debug?.rivalChancePct !== null
-    ? debug.rivalChancePct / 100
+    ? debug.rivalChancePct / PERCENT_MULTIPLIER
     : (debug?.forceRival ? 1.0 : rivalChance)
 
   return {
     name: 'Rival',
-    chance: finalRivalChance * 100,
+    chance: finalRivalChance * PERCENT_MULTIPLIER,
     type: 'rival',
     active: true,
     details: hasRivalOverride ? 'Forzado por Debug' : undefined
@@ -106,7 +108,7 @@ function calculateGuardianEncounterChance(
   const hasGuardianOverride = debug?.guardianChancePct !== undefined && debug?.guardianChancePct !== null ? true : (hasGuardian && !!debug?.forceGuardian80)
   const finalGuardianChance = debug?.guardianChancePct !== undefined && debug?.guardianChancePct !== null
     ? debug.guardianChancePct
-    : (debug?.forceGuardian80 ? DEBUG_FORCED_GUARDIAN_PCT : (hasGuardian ? GUARDIAN_ENCOUNTER_CHANCE_PERCENT * 100 : 0.0))
+    : (debug?.forceGuardian80 ? DEBUG_FORCED_GUARDIAN_PCT : (hasGuardian ? GUARDIAN_ENCOUNTER_CHANCE_PERCENT * PERCENT_MULTIPLIER : 0.0))
 
   return {
     name: 'Guardián (Alfa)',
@@ -115,6 +117,29 @@ function calculateGuardianEncounterChance(
     active: hasGuardian || hasGuardianOverride,
     details: hasGuardianOverride ? 'Forzado por Debug' : undefined
   }
+}
+
+function resolveBaseTrainerChance(
+  state: EncounterState,
+  trainerBonus: number,
+  isRocketMaxCrim: boolean,
+  criminality: number,
+  repelActive: boolean,
+  debug?: DebugEncounterOverrides
+): number {
+  if (debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null) {
+    return debug.trainerChancePct
+  }
+  if (repelActive) {
+    return GAME_RATIOS.encounters.trainerRepel * PERCENT_MULTIPLIER
+  }
+  if (debug?.trainerChance50) {
+    return DEBUG_TRAINER_CHANCE_PERCENT
+  }
+  if (isRocketMaxCrim) {
+    return (criminality / CRIMINALITY_DENOMINATOR_FACTOR) * trainerBonus
+  }
+  return Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus
 }
 
 function calculateTrainerOrPoliceEncounterChance(
@@ -128,18 +153,7 @@ function calculateTrainerOrPoliceEncounterChance(
   const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= ROCKET_MAX_CRIMINALITY
 
   const hasTrainerOverride = debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null ? true : !!debug?.trainerChance50
-  let baseTrainerChance: number
-  if (debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null) {
-    baseTrainerChance = debug.trainerChancePct
-  } else if (repelActive) {
-    baseTrainerChance = GAME_RATIOS.encounters.trainerRepel * 100
-  } else if (debug?.trainerChance50) {
-    baseTrainerChance = DEBUG_TRAINER_CHANCE_PERCENT
-  } else {
-    baseTrainerChance = isRocketMaxCrim
-      ? (criminality / CRIMINALITY_DENOMINATOR_FACTOR) * trainerBonus
-      : Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus
-  }
+  const baseTrainerChance = resolveBaseTrainerChance(state, trainerBonus, isRocketMaxCrim, criminality, repelActive, debug)
 
   if (isRocketMaxCrim) {
     return {

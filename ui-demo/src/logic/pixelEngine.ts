@@ -16,28 +16,28 @@ interface RawCoord {
   y: number;
 }
 
-export interface PolygonPaths {
+interface PolygonPaths {
   outerPath: string;
   innerPath: string;
   borderPath: string;
 }
 
-export const CORNER_MODELS = ['bresenham', 'chamfer', 'wide'] as const;
-export type CornerModelId = typeof CORNER_MODELS[number];
+const _CORNER_MODELS = ['bresenham', 'chamfer', 'wide'] as const;
+export type CornerModelId = typeof _CORNER_MODELS[number];
 
 const ARC_START_DEG = 270;
 const ARC_END_DEG = 225;
 const FULL_CIRCLE_DEG = 360;
 const ROUNDING_OFFSET = 0.5;
 
-export const RADIUS_XS = 1;
-export const RADIUS_SM = 2;
-export const RADIUS_MD = 4;
-export const RADIUS_LG = 8;
-export const RADIUS_XL = 12;
-export const RADIUS_XXL = 16;
+const RADIUS_XS = 1;
+const RADIUS_SM = 2;
+const RADIUS_MD = 4;
+const RADIUS_LG = 8;
+const RADIUS_XL = 12;
+const RADIUS_XXL = 16;
 
-export const DEFAULT_FRAME_BORDER_WIDTH = 1;
+const DEFAULT_FRAME_BORDER_WIDTH = 1;
 
 const pixelState = {
   scale: 3,
@@ -140,7 +140,7 @@ function generatePath(coords: RawCoord[], reverse = false): string {
   return (reverse ? mirrored : mirrored.reverse()).map(p => `${p.x} ${p.y}`).join(', ');
 }
 
-export function getPixelFramePolygons(radius: number, pixelSize: number, borderWidth = DEFAULT_FRAME_BORDER_WIDTH): PolygonPaths {
+function getPixelFramePolygons(radius: number, pixelSize: number, borderWidth = DEFAULT_FRAME_BORDER_WIDTH): PolygonPaths {
   const outerCoords = flipCoords(generatePoints(radius, pixelSize));
   const outerPath = generatePath(outerCoords);
   const innerCoords = addCorners(
@@ -155,7 +155,7 @@ export function getPixelFramePolygons(radius: number, pixelSize: number, borderW
   return { outerPath, innerPath, borderPath };
 }
 
-export function getChamferFramePolygons(blocks: number, pixelSize: number, borderWidth = DEFAULT_FRAME_BORDER_WIDTH): PolygonPaths {
+function getChamferFramePolygons(blocks: number, pixelSize: number, borderWidth = DEFAULT_FRAME_BORDER_WIDTH): PolygonPaths {
   const outerCut = blocks * pixelSize;
   const outerCoords = [{ x: 0, y: outerCut }, { x: outerCut, y: 0 }];
   const outerPath = mirrorCoords(outerCoords).map(p => `${p.x} ${p.y}`).join(', ');
