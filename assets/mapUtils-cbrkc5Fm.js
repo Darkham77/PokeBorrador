@@ -1,0 +1,1 @@
+function e(e,t,n=1){let r=(e[t]??0)+n;return e[t]=r,r}function t(e,t,n){let r=(e[t]??0)+n;return Object.assign(e,{[t]:r}),r}export{e as n,t};

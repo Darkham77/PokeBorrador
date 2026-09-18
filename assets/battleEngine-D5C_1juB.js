@@ -1,0 +1,1 @@
+import{b as e}from"./game-data-pokemon-Bjwm-IKP.js";import"./battleFormulas-DJVlp9FL.js";import"./typeEngine-Tf0p6mMJ.js";var t=12;function n(n){return e[Math.max(0,Math.min(t,(n||0)+6))]||1}export{n as t};

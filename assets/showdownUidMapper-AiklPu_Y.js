@@ -1,0 +1,1 @@
+function e(e){return e&&e.split(`-`)[0]||``}function t(e,t){if(!e||!t)return!1;let n=e.toLowerCase(),r=t.toLowerCase();return!!(n===r||n.startsWith(r)&&(n[r.length]===`-`||n[r.length]===`_`)||r.startsWith(n)&&(r[n.length]===`-`||r[n.length]===`_`))}function n(e,n){if(e&&Array.isArray(n))return n.find(n=>n&&n.uid&&t(n.uid,e))}export{e as n,t as r,n as t};

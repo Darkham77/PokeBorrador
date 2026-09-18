@@ -1,0 +1,1 @@
+import{z as e}from"./game-data-pokemon-Bjwm-IKP.js";export{e as requirePokemonSpeciesId};
