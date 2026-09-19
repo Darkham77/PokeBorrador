@@ -31,6 +31,8 @@ scratch/
 
 # TS incremental build cache
 .tsbuildinfo/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
 
 # Vitest transform cache (both unit and node runners)
 .vitest-cache/

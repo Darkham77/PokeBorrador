@@ -235,19 +235,21 @@ This phase begins **only after** the user explicitly responds to Phase 3.
 - Execute `git commit -m "<message>"`.
 - Run `git status` to confirm working tree is clean. Exactly ONE atomic, verified commit has been added to history.
 
-**Step 4.3** — Final Status & Deployment Instructions
+**Step 4.3** — Final Status & Mandatory Deployment Instructions
 - Notify the user that the process is complete.
 - **Push Protection**: AI agents are FORBIDDEN from pushing directly to `main` (`origin/main`). Pushing to `main` is strictly manual. For development branches (e.g. `desarrollo`), push if requested.
-- Display manual deployment commands:
+- **Mandatory Supabase Version & Schema Synchronization**:
+  Because `npm run build` updates `public/version.json` on EVERY production build, the game client requires Supabase's `system_config.app_version` to match. If Supabase is not updated with `npm run database:update`, connecting clients will fail due to a version mismatch.
+- **STRICT MANDATE**: The agent MUST ALWAYS display BOTH the Git push instruction AND the Supabase database update commands in the final response. Omitting the database update commands is strictly forbidden:
 
 ```bash
-# Push changes to remote (if on development branch, or for manual execution)
+# 1. Push changes to remote repository (manual on main)
 git push origin <branch>
 
-# Update database on a specific server
+# 2. Synchronize app version (app_version) and apply migrations to Supabase (MANDATORY)
 npm run database:update server=<profile>
 
-# Update database on all configured servers
+# Or update all configured database servers:
 npm run database:update all
 ```
 
@@ -264,3 +266,4 @@ Mark Phase 4 `[x]` in `task.md`. Workflow complete.
 - **Fallow Health Gate**: Exiting Phase 2 with Fallow health < 85 is a critical violation.
 - **Fallow Bypass Prohibition**: Adding file-level ignore directives (`/* eslint-disable */`, `@ts-nocheck`) is STRICTLY FORBIDDEN.
 - **Selective Git Add Prohibition**: Staging individual files via `git add <file>` is FORBIDDEN. Always use `git add .`.
+- **Mandatory Dual Deployment Instructions Mandate (Push + Supabase Sync)**: Every commit produced by `/safe-commit` updates `public/version.json` during `npm run build`. Remote Supabase instances validate `app_version` against `public.system_config`. Omitting `npm run database:update` from the final completion message—even when no `.sql` files were touched—is STRICTLY FORBIDDEN. The agent MUST always instruct the user to run both `git push` and `npm run database:update`.
