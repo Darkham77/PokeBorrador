@@ -1,0 +1,1 @@
+import{t as e}from"./breeding-KQz122uD.js";export{e as useBreedingStore};
