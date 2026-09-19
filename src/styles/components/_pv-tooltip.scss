@@ -42,6 +42,19 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    box-sizing: border-box;
+  }
+
+  .pv-tooltip-ellipsis {
+    @include pixelated;
+    font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen') !important;
+    font-size: 8px;
+    line-height: 1.4;
+    color: var(--yellow);
+    text-align: center;
+    padding-top: 2px;
+    letter-spacing: 2px;
+    user-select: none;
   }
 
   .pv-tooltip-title {

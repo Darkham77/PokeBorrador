@@ -1,8 +1,57 @@
 import { ref, type Ref } from 'vue'
 
-const MIN_TOOLTIP_MAX_HEIGHT_PX = 120
+const MIN_TOOLTIP_CONTENT_HEIGHT_PX = 40
+const TOOLTIP_CHROME_VERTICAL_PX = 24
 const GAP_PX = 12
 const PADDING_PX = 15
+const DOUBLE_FACTOR = 2
+
+function getEffectiveZoom(tooltipEl?: HTMLElement | null): number {
+  if (typeof window === 'undefined') return 1
+
+  if (typeof document !== 'undefined') {
+    const rawZoom = document.documentElement.style.getPropertyValue('--app-zoom') ||
+      window.getComputedStyle(document.documentElement).getPropertyValue('--app-zoom')
+    const appZoom = parseFloat(rawZoom)
+    if (!Number.isNaN(appZoom) && appZoom > 0) {
+      return appZoom
+    }
+  }
+
+  if (tooltipEl) {
+    const wrapper = tooltipEl.querySelector('.tooltip-animate-wrapper') as HTMLElement | null
+    const target = wrapper ?? tooltipEl
+    const computedZoom = parseFloat(window.getComputedStyle(target).zoom)
+    if (!Number.isNaN(computedZoom) && computedZoom > 0) {
+      return computedZoom
+    }
+  }
+
+  return 1
+}
+
+function calculateTooltipMaxHeight(
+  pos: string,
+  rect: DOMRect,
+  viewportHeight: number,
+  zoom = 1
+): number {
+  let availableScreenHeight: number
+  if (pos === 'top') {
+    availableScreenHeight = Math.max(0, rect.top - PADDING_PX - GAP_PX)
+  } else if (pos === 'bottom') {
+    availableScreenHeight = Math.max(0, viewportHeight - rect.bottom - PADDING_PX - GAP_PX)
+  } else {
+    // 'left' or 'right'
+    availableScreenHeight = Math.max(0, viewportHeight - DOUBLE_FACTOR * PADDING_PX)
+  }
+
+  const effectiveZoom = zoom > 0 ? zoom : 1
+  const maxWrapperHeight = availableScreenHeight / effectiveZoom
+  const maxContentHeight = Math.floor(maxWrapperHeight - TOOLTIP_CHROME_VERTICAL_PX)
+
+  return Math.max(MIN_TOOLTIP_CONTENT_HEIGHT_PX, maxContentHeight)
+}
 
 function resolveFlippedPosition(
   pos: string,
@@ -96,16 +145,6 @@ function calculateNudgeAndArrow(
   }
 }
 
-function calculateTooltipMaxHeight(pos: string, rect: DOMRect, viewportHeight: number): number | null {
-  if (pos === 'top') {
-    return Math.max(MIN_TOOLTIP_MAX_HEIGHT_PX, Math.round(rect.top - PADDING_PX - GAP_PX))
-  }
-  if (pos === 'bottom') {
-    return Math.max(MIN_TOOLTIP_MAX_HEIGHT_PX, Math.round(viewportHeight - rect.bottom - PADDING_PX - GAP_PX))
-  }
-  return null
-}
-
 export function useTooltipPosition(
   trigger: Ref<HTMLElement | null>,
   tooltip: Ref<HTMLElement | null>,
@@ -136,8 +175,9 @@ export function useTooltipPosition(
     const base = calculateBaseCoordinates(pos, rect, triggerCenter, scrollX, scrollY)
     const nudged = calculateNudgeAndArrow(pos, base.top, base.left, tipRect, triggerCenter, scrollX, scrollY, viewportWidth, viewportHeight)
 
+    const zoom = getEffectiveZoom(tooltip.value)
     arrowOffset.value = nudged.arrowOffset
-    maxHeight.value = calculateTooltipMaxHeight(pos, rect, viewportHeight)
+    maxHeight.value = calculateTooltipMaxHeight(pos, rect, viewportHeight, zoom)
     
     coords.value = { 
       top: Math.round(nudged.top), 

@@ -100,6 +100,12 @@ describe('pokemonFeetDatabase', () => {
       expect(unSuffixed.feetX).toBe(0.605);
       expect(unSuffixed.feetY).toBe(0.924);
     });
+
+    it('resolves animated variation sprite paths lacking separate entry to the default idle frame', () => {
+      const variationPoints = requireFeetPoints('/assets/sprites/pokemon/animated/Back shiny/656v.webp');
+      const idlePoints = requireFeetPoints('/assets/sprites/pokemon/animated/Back/656i.webp');
+      expect(variationPoints).toEqual(idlePoints);
+    });
   });
 
   describe('Error Handling', () => {
@@ -116,7 +122,8 @@ describe('pokemonFeetDatabase', () => {
 
   describe('Automatic Calculations Parity (Pre-Deduplication Baseline)', () => {
     const COORDINATE_EPSILON = 1e-4;
-    const MIN_AUTOMATIC_MATCHES_THRESHOLD = 14000;
+    // Lower threshold accommodates ongoing manual calibrations from spriteShadowOverrides.json (each manual override reduces automatic count)
+    const MIN_AUTOMATIC_MATCHES_THRESHOLD = 12000;
     const TOTAL_LEGACY_SPRITE_COUNT = 19024;
 
     it('achieves exact parity with legacy snapshot for sprites using automatic calculations', () => {

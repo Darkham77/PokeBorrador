@@ -451,6 +451,12 @@ function resolveFeetPath(raw: string): FeetDatabasePath {
 
   if (hasFeetDatabasePath(cleaned)) return cleaned;
 
+  // Check frame fallback on exact variant first (e.g. Back shiny/656v -> Back shiny/656i)
+  const cleanedIdle = cleaned
+    .replace(/(\\/animated\\/[^/]+\\/\\d+)\\.webp$/i, '$1i.webp')
+    .replace(/(\\/animated\\/[^/]+\\/[^/]+)v([^/]*\\.webp)$/i, '$1i$2');
+  if (hasFeetDatabasePath(cleanedIdle)) return cleanedIdle;
+
   // Shiny variants share identical physical geometry with the base sprite
   const baseSpritePath = cleaned
     .replace('/Back shiny/', '/Back/')
@@ -463,9 +469,11 @@ function resolveFeetPath(raw: string): FeetDatabasePath {
 
   if (hasFeetDatabasePath(baseSpritePath)) return baseSpritePath;
 
-  // Animated sprites default to idle 'i' frame if no frame suffix was provided (e.g. 26.webp -> 26i.webp)
-  const idleAnimatedPath = baseSpritePath.replace(/\\/animated\\/(Front|Back)\\/(\\d+)\\.webp$/i, '/animated/$1/$2i.webp');
-  if (hasFeetDatabasePath(idleAnimatedPath)) return idleAnimatedPath;
+  // Fallback for variation 'v' or missing frame suffix on base sprite (e.g. 656v -> 656i, 26 -> 26i, 112v_f -> 112i_f)
+  const baseIdle = baseSpritePath
+    .replace(/(\\/animated\\/[^/]+\\/\\d+)\\.webp$/i, '$1i.webp')
+    .replace(/(\\/animated\\/[^/]+\\/[^/]+)v([^/]*\\.webp)$/i, '$1i$2');
+  if (hasFeetDatabasePath(baseIdle)) return baseIdle;
 
   throw new Error(\`[pokemonFeetDatabase] Unknown feet database path: \${raw}\`);
 }

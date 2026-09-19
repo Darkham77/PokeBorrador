@@ -10933,6 +10933,1916 @@
       "feetY": 0.765,
       "isFlying": true,
       "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/563i.webp": {
+      "feetX": 0.516,
+      "feetY": 0.785,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/563i.webp": {
+      "feetX": 0.584,
+      "feetY": 0.873,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/564i.webp": {
+      "feetX": 0.473,
+      "feetY": 0.856,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Back/564i.webp": {
+      "feetX": 0.452,
+      "feetY": 0.867,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/565i.webp": {
+      "feetX": 0.548,
+      "feetY": 0.802,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Back/565i.webp": {
+      "feetX": 0.478,
+      "feetY": 0.769,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/566i.webp": {
+      "feetX": 0.445,
+      "feetY": 0.823,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Back/566i.webp": {
+      "feetX": 0.535,
+      "feetY": 0.828,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Front/567i.webp": {
+      "feetX": 0.4677,
+      "feetY": 0.9677,
+      "isFlying": true,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/567i.webp": {
+      "feetX": 0.421,
+      "feetY": 0.886,
+      "isFlying": true,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/568i.webp": {
+      "feetX": 0.428,
+      "feetY": 0.794,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/568i.webp": {
+      "feetX": 0.505,
+      "feetY": 0.768,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Front/569i.webp": {
+      "feetX": 0.568,
+      "feetY": 0.839,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/569i.webp": {
+      "feetX": 0.484,
+      "feetY": 0.77,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/570i.webp": {
+      "feetX": 0.467,
+      "feetY": 0.909,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/570i.webp": {
+      "feetX": 0.448,
+      "feetY": 0.915,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/571i.webp": {
+      "feetX": 0.476,
+      "feetY": 0.854,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/571i.webp": {
+      "feetX": 0.564,
+      "feetY": 0.843,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/572i.webp": {
+      "feetX": 0.465,
+      "feetY": 0.849,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/572i.webp": {
+      "feetX": 0.554,
+      "feetY": 0.816,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/573i.webp": {
+      "feetX": 0.48,
+      "feetY": 0.892,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/573i.webp": {
+      "feetX": 0.493,
+      "feetY": 0.862,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/574i.webp": {
+      "feetX": 0.482,
+      "feetY": 0.951,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/574i.webp": {
+      "feetX": 0.377,
+      "feetY": 0.951,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/575i.webp": {
+      "feetX": 0.464,
+      "feetY": 0.958,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/575i.webp": {
+      "feetX": 0.464,
+      "feetY": 0.958,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/576i.webp": {
+      "feetX": 0.483,
+      "feetY": 0.952,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/576i.webp": {
+      "feetX": 0.483,
+      "feetY": 0.952,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/577i.webp": {
+      "feetX": 0.4487,
+      "feetY": 0.8718,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Back/577i.webp": {
+      "feetX": 0.519,
+      "feetY": 0.888,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Front/578i.webp": {
+      "feetX": 0.481,
+      "feetY": 0.897,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/578i.webp": {
+      "feetX": 0.508,
+      "feetY": 0.901,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/579i.webp": {
+      "feetX": 0.4901,
+      "feetY": 0.7624,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/579i.webp": {
+      "feetX": 0.515,
+      "feetY": 0.775,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/580i.webp": {
+      "feetX": 0.5952,
+      "feetY": 0.9524,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/580i.webp": {
+      "feetX": 0.361,
+      "feetY": 0.909,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/581i.webp": {
+      "feetX": 0.498,
+      "feetY": 0.725,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/581i.webp": {
+      "feetX": 0.365,
+      "feetY": 0.847,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/582i.webp": {
+      "feetX": 0.761,
+      "feetY": 0.801,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/582i.webp": {
+      "feetX": 0.234,
+      "feetY": 0.784,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/583i.webp": {
+      "feetX": 0.416,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.45
+    },
+    "/assets/sprites/pokemon/animated/Back/583i.webp": {
+      "feetX": 0.555,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.45
+    },
+    "/assets/sprites/pokemon/animated/Front/584i.webp": {
+      "feetX": 0.4865,
+      "feetY": 0.9189,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/584i.webp": {
+      "feetX": 0.514,
+      "feetY": 0.935,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/585i.webp": {
+      "feetX": 0.529,
+      "feetY": 0.937,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/585i.webp": {
+      "feetX": 0.4,
+      "feetY": 0.955,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/586i.webp": {
+      "feetX": 0.513,
+      "feetY": 0.955,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Back/586i.webp": {
+      "feetX": 0.402,
+      "feetY": 0.951,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Front/587i.webp": {
+      "feetX": 0.34,
+      "feetY": 0.79,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Back/587i.webp": {
+      "feetX": 0.655,
+      "feetY": 0.765,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Front/588i.webp": {
+      "feetX": 0.523,
+      "feetY": 0.964,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/588i.webp": {
+      "feetX": 0.489,
+      "feetY": 0.964,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/589i.webp": {
+      "feetX": 0.589,
+      "feetY": 0.923,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/589i.webp": {
+      "feetX": 0.436,
+      "feetY": 0.935,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/590i.webp": {
+      "feetX": 0.4868,
+      "feetY": 0.9211,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/590i.webp": {
+      "feetX": 0.535,
+      "feetY": 0.913,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/591i.webp": {
+      "feetX": 0.4766,
+      "feetY": 0.9063,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/591i.webp": {
+      "feetX": 0.477,
+      "feetY": 0.906,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/592i.webp": {
+      "feetX": 0.473,
+      "feetY": 0.9595,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/592i.webp": {
+      "feetX": 0.473,
+      "feetY": 0.96,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/592i_f.webp": {
+      "feetX": 0.473,
+      "feetY": 0.96,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/592i_f.webp": {
+      "feetX": 0.473,
+      "feetY": 0.96,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/593i.webp": {
+      "feetX": 0.506,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Back/593i.webp": {
+      "feetX": 0.506,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Front/593i_f.webp": {
+      "feetX": 0.506,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Back/593i_f.webp": {
+      "feetX": 0.506,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Front/594i.webp": {
+      "feetX": 0.4888,
+      "feetY": 0.9775,
+      "isFlying": false,
+      "shadowScale": 0.4
+    },
+    "/assets/sprites/pokemon/animated/Back/594i.webp": {
+      "feetX": 0.489,
+      "feetY": 0.978,
+      "isFlying": false,
+      "shadowScale": 0.4
+    },
+    "/assets/sprites/pokemon/animated/Front/596i.webp": {
+      "feetX": 0.509,
+      "feetY": 0.762,
+      "isFlying": false,
+      "shadowScale": 1.2
+    },
+    "/assets/sprites/pokemon/animated/Back/596i.webp": {
+      "feetX": 0.509,
+      "feetY": 0.762,
+      "isFlying": false,
+      "shadowScale": 1.2
+    },
+    "/assets/sprites/pokemon/animated/Front/597i.webp": {
+      "feetX": 0.4659,
+      "feetY": 0.9545,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/597i.webp": {
+      "feetX": 0.466,
+      "feetY": 0.955,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/598i.webp": {
+      "feetX": 0.4813,
+      "feetY": 0.825,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/598i.webp": {
+      "feetX": 0.457,
+      "feetY": 0.829,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/602i.webp": {
+      "feetX": 0.4831,
+      "feetY": 0.84,
+      "isFlying": false,
+      "shadowScale": 1.6
+    },
+    "/assets/sprites/pokemon/animated/Back/602i.webp": {
+      "feetX": 0.483,
+      "feetY": 0.84,
+      "isFlying": false,
+      "shadowScale": 1.6
+    },
+    "/assets/sprites/pokemon/animated/Front/603i.webp": {
+      "feetX": 0.4789,
+      "feetY": 0.9577,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/603i.webp": {
+      "feetX": 0.479,
+      "feetY": 0.958,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/605i.webp": {
+      "feetX": 0.4712,
+      "feetY": 0.9615,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/605i.webp": {
+      "feetX": 0.471,
+      "feetY": 0.962,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/606i.webp": {
+      "feetX": 0.524,
+      "feetY": 0.971,
+      "isFlying": false,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Back/606i.webp": {
+      "feetX": 0.464,
+      "feetY": 0.957,
+      "isFlying": false,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Front/607i.webp": {
+      "feetX": 0.506,
+      "feetY": 0.957,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/607i.webp": {
+      "feetX": 0.398,
+      "feetY": 0.957,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/608i.webp": {
+      "feetX": 0.483,
+      "feetY": 0.859,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/608i.webp": {
+      "feetX": 0.544,
+      "feetY": 0.859,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/609i.webp": {
+      "feetX": 0.492,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.45
+    },
+    "/assets/sprites/pokemon/animated/Back/609i.webp": {
+      "feetX": 0.466,
+      "feetY": 0.993,
+      "isFlying": false,
+      "shadowScale": 0.45
+    },
+    "/assets/sprites/pokemon/animated/Front/610i.webp": {
+      "feetX": 0.491,
+      "feetY": 0.957,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/610i.webp": {
+      "feetX": 0.491,
+      "feetY": 0.957,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/611i.webp": {
+      "feetX": 0.465,
+      "feetY": 0.92,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/611i.webp": {
+      "feetX": 0.444,
+      "feetY": 0.874,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/612i.webp": {
+      "feetX": 0.51,
+      "feetY": 0.926,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/612i.webp": {
+      "feetX": 0.547,
+      "feetY": 0.916,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/613i.webp": {
+      "feetX": 0.475,
+      "feetY": 0.903,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/613i.webp": {
+      "feetX": 0.411,
+      "feetY": 0.911,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Front/614i.webp": {
+      "feetX": 0.492,
+      "feetY": 0.927,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/614i.webp": {
+      "feetX": 0.484,
+      "feetY": 0.935,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/615i.webp": {
+      "feetX": 0.456,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/615i.webp": {
+      "feetX": 0.456,
+      "feetY": 1,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/617i.webp": {
+      "feetX": 0.197,
+      "feetY": 0.966,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/617i.webp": {
+      "feetX": 0.752,
+      "feetY": 0.966,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/618i.webp": {
+      "feetX": 0.519,
+      "feetY": 0.6582,
+      "isFlying": false,
+      "shadowScale": 1.75
+    },
+    "/assets/sprites/pokemon/animated/Front/619i.webp": {
+      "feetX": 0.488,
+      "feetY": 0.928,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/619i.webp": {
+      "feetX": 0.554,
+      "feetY": 0.952,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Front/620i.webp": {
+      "feetX": 0.437,
+      "feetY": 0.853,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/620i.webp": {
+      "feetX": 0.525,
+      "feetY": 0.845,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/621i.webp": {
+      "feetX": 0.551,
+      "feetY": 0.878,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/621i.webp": {
+      "feetX": 0.538,
+      "feetY": 0.832,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Front/622i.webp": {
+      "feetX": 0.4917,
+      "feetY": 0.95,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/622i.webp": {
+      "feetX": 0.477,
+      "feetY": 0.95,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/623i.webp": {
+      "feetX": 0.4824,
+      "feetY": 0.9529,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/623i.webp": {
+      "feetX": 0.482,
+      "feetY": 0.953,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/624i.webp": {
+      "feetX": 0.653,
+      "feetY": 0.917,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/624i.webp": {
+      "feetX": 0.38,
+      "feetY": 0.924,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/625i.webp": {
+      "feetX": 0.4416,
+      "feetY": 0.974,
+      "isFlying": false,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Back/625i.webp": {
+      "feetX": 0.565,
+      "feetY": 0.966,
+      "isFlying": false,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Front/626i.webp": {
+      "feetX": 0.535,
+      "feetY": 0.795,
+      "isFlying": false,
+      "shadowScale": 0.95
+    },
+    "/assets/sprites/pokemon/animated/Back/626i.webp": {
+      "feetX": 0.449,
+      "feetY": 0.747,
+      "isFlying": false,
+      "shadowScale": 0.95
+    },
+    "/assets/sprites/pokemon/animated/Front/627i.webp": {
+      "feetX": 0.4911,
+      "feetY": 0.9643,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/627i.webp": {
+      "feetX": 0.491,
+      "feetY": 0.964,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/628i.webp": {
+      "feetX": 0.485,
+      "feetY": 0.849,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/628i.webp": {
+      "feetX": 0.521,
+      "feetY": 0.888,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/629i.webp": {
+      "feetX": 0.5078,
+      "feetY": 0.9531,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/629i.webp": {
+      "feetX": 0.428,
+      "feetY": 0.958,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/630i.webp": {
+      "feetX": 0.4931,
+      "feetY": 0.9722,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/630i.webp": {
+      "feetX": 0.493,
+      "feetY": 0.938,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/631i.webp": {
+      "feetX": 0.63,
+      "feetY": 0.765,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/631i.webp": {
+      "feetX": 0.405,
+      "feetY": 0.702,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Front/632i.webp": {
+      "feetX": 0.488,
+      "feetY": 0.704,
+      "isFlying": false,
+      "shadowScale": 1.6
+    },
+    "/assets/sprites/pokemon/animated/Back/632i.webp": {
+      "feetX": 0.488,
+      "feetY": 0.704,
+      "isFlying": false,
+      "shadowScale": 1.6
+    },
+    "/assets/sprites/pokemon/animated/Front/633i.webp": {
+      "feetX": 0.617,
+      "feetY": 0.943,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/633i.webp": {
+      "feetX": 0.363,
+      "feetY": 0.95,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/634i.webp": {
+      "feetX": 0.516,
+      "feetY": 0.87,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/634i.webp": {
+      "feetX": 0.499,
+      "feetY": 0.906,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Front/635i.webp": {
+      "feetX": 0.425,
+      "feetY": 0.893,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/635i.webp": {
+      "feetX": 0.522,
+      "feetY": 0.865,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/636i.webp": {
+      "feetX": 0.522,
+      "feetY": 0.936,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/636i.webp": {
+      "feetX": 0.493,
+      "feetY": 0.852,
+      "isFlying": false,
+      "shadowScale": 1.05
+    },
+    "/assets/sprites/pokemon/animated/Front/637i.webp": {
+      "feetX": 0.4895,
+      "feetY": 0.8211,
+      "isFlying": true,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/637i.webp": {
+      "feetX": 0.58,
+      "feetY": 0.844,
+      "isFlying": true,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/638i.webp": {
+      "feetX": 0.5,
+      "feetY": 0.951,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/638i.webp": {
+      "feetX": 0.508,
+      "feetY": 0.947,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/639i.webp": {
+      "feetX": 0.583,
+      "feetY": 0.81,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Back/639i.webp": {
+      "feetX": 0.367,
+      "feetY": 0.771,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/640i.webp": {
+      "feetX": 0.527,
+      "feetY": 0.973,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/640i.webp": {
+      "feetX": 0.474,
+      "feetY": 0.973,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/641i.webp": {
+      "feetX": 0.4806,
+      "feetY": 0.9417,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/641i.webp": {
+      "feetX": 0.517,
+      "feetY": 0.942,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/642i.webp": {
+      "feetX": 0.4554,
+      "feetY": 0.851,
+      "isFlying": true,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/642i.webp": {
+      "feetX": 0.525,
+      "feetY": 0.851,
+      "isFlying": true,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/643i.webp": {
+      "feetX": 0.541,
+      "feetY": 0.827,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Back/643i.webp": {
+      "feetX": 0.436,
+      "feetY": 0.831,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/644i.webp": {
+      "feetX": 0.509,
+      "feetY": 0.887,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/644i.webp": {
+      "feetX": 0.486,
+      "feetY": 0.878,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/645i.webp": {
+      "feetX": 0.496,
+      "feetY": 0.927,
+      "isFlying": true,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/645i.webp": {
+      "feetX": 0.494,
+      "feetY": 0.938,
+      "isFlying": true,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Front/646i.webp": {
+      "feetX": 0.578,
+      "feetY": 0.84,
+      "isFlying": false,
+      "shadowScale": 0.95
+    },
+    "/assets/sprites/pokemon/animated/Back/646i.webp": {
+      "feetX": 0.54,
+      "feetY": 0.855,
+      "isFlying": false,
+      "shadowScale": 0.95
+    },
+    "/assets/sprites/pokemon/animated/Front/647i.webp": {
+      "feetX": 0.436,
+      "feetY": 0.927,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/647i.webp": {
+      "feetX": 0.506,
+      "feetY": 0.946,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/648i.webp": {
+      "feetX": 0.4615,
+      "feetY": 0.9077,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/648i.webp": {
+      "feetX": 0.483,
+      "feetY": 0.913,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/649i.webp": {
+      "feetX": 0.605,
+      "feetY": 0.942,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/649i.webp": {
+      "feetX": 0.462,
+      "feetY": 0.942,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/650i.webp": {
+      "feetX": 0.473,
+      "feetY": 0.955,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/650i.webp": {
+      "feetX": 0.511,
+      "feetY": 0.958,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/651i.webp": {
+      "feetX": 0.577,
+      "feetY": 0.898,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/651i.webp": {
+      "feetX": 0.418,
+      "feetY": 0.898,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/652i.webp": {
+      "feetX": 0.511,
+      "feetY": 0.867,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/652i.webp": {
+      "feetX": 0.499,
+      "feetY": 0.943,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/653i.webp": {
+      "feetX": 0.517,
+      "feetY": 0.941,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/653i.webp": {
+      "feetX": 0.478,
+      "feetY": 0.935,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/654i.webp": {
+      "feetX": 0.5141,
+      "feetY": 0.9718,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/654i.webp": {
+      "feetX": 0.488,
+      "feetY": 0.954,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/655i.webp": {
+      "feetX": 0.511,
+      "feetY": 0.937,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/655i.webp": {
+      "feetX": 0.549,
+      "feetY": 0.947,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/656i.webp": {
+      "feetX": 0.492,
+      "feetY": 0.95,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Back/656i.webp": {
+      "feetX": 0.492,
+      "feetY": 0.95,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Front/657i.webp": {
+      "feetX": 0.507,
+      "feetY": 0.918,
+      "isFlying": false,
+      "shadowScale": 1.1
+    },
+    "/assets/sprites/pokemon/animated/Back/657i.webp": {
+      "feetX": 0.504,
+      "feetY": 0.94,
+      "isFlying": false,
+      "shadowScale": 1.1
+    },
+    "/assets/sprites/pokemon/animated/Front/658i.webp": {
+      "feetX": 0.515,
+      "feetY": 0.896,
+      "isFlying": false,
+      "shadowScale": 1.1
+    },
+    "/assets/sprites/pokemon/animated/Back/658i.webp": {
+      "feetX": 0.515,
+      "feetY": 0.909,
+      "isFlying": false,
+      "shadowScale": 1.1
+    },
+    "/assets/sprites/pokemon/animated/Front/659i.webp": {
+      "feetX": 0.501,
+      "feetY": 0.956,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/659i.webp": {
+      "feetX": 0.568,
+      "feetY": 0.934,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/660i.webp": {
+      "feetX": 0.524,
+      "feetY": 0.898,
+      "isFlying": false,
+      "shadowScale": 0.95
+    },
+    "/assets/sprites/pokemon/animated/Back/660i.webp": {
+      "feetX": 0.457,
+      "feetY": 0.952,
+      "isFlying": false,
+      "shadowScale": 0.95
+    },
+    "/assets/sprites/pokemon/animated/Front/661i.webp": {
+      "feetX": 0.4898,
+      "feetY": 0.9388,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/661i.webp": {
+      "feetX": 0.49,
+      "feetY": 0.939,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/662i.webp": {
+      "feetX": 0.5341,
+      "feetY": 0.8864,
+      "isFlying": true,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/662i.webp": {
+      "feetX": 0.534,
+      "feetY": 0.886,
+      "isFlying": true,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/663i.webp": {
+      "feetX": 0.448,
+      "feetY": 0.833,
+      "isFlying": true,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Back/663i.webp": {
+      "feetX": 0.559,
+      "feetY": 0.833,
+      "isFlying": true,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Front/664i.webp": {
+      "feetX": 0.575,
+      "feetY": 0.958,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/664i.webp": {
+      "feetX": 0.443,
+      "feetY": 0.964,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/666i.webp": {
+      "feetX": 0.48,
+      "feetY": 0.871,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/666i.webp": {
+      "feetX": 0.566,
+      "feetY": 0.938,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/667i.webp": {
+      "feetX": 0.52,
+      "feetY": 0.715,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/667i.webp": {
+      "feetX": 0.475,
+      "feetY": 0.715,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/668i.webp": {
+      "feetX": 0.426,
+      "feetY": 0.909,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/668i.webp": {
+      "feetX": 0.548,
+      "feetY": 0.882,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/668i_f.webp": {
+      "feetX": 0.343,
+      "feetY": 0.918,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/668i_f.webp": {
+      "feetX": 0.694,
+      "feetY": 0.815,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/669i.webp": {
+      "feetX": 0.4898,
+      "feetY": 0.7449,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/669i.webp": {
+      "feetX": 0.49,
+      "feetY": 0.828,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/670i.webp": {
+      "feetX": 0.5051,
+      "feetY": 0.8469,
+      "isFlying": true,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/670i.webp": {
+      "feetX": 0.505,
+      "feetY": 0.847,
+      "isFlying": true,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/671i.webp": {
+      "feetX": 0.442,
+      "feetY": 0.86,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/671i.webp": {
+      "feetX": 0.442,
+      "feetY": 0.86,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/672i.webp": {
+      "feetX": 0.4917,
+      "feetY": 0.9667,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/672i.webp": {
+      "feetX": 0.435,
+      "feetY": 0.967,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/673i.webp": {
+      "feetX": 0.488,
+      "feetY": 0.828,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/673i.webp": {
+      "feetX": 0.503,
+      "feetY": 0.95,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/674i.webp": {
+      "feetX": 0.4904,
+      "feetY": 0.9038,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Back/674i.webp": {
+      "feetX": 0.52,
+      "feetY": 0.874,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Front/675i.webp": {
+      "feetX": 0.453,
+      "feetY": 0.917,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/675i.webp": {
+      "feetX": 0.542,
+      "feetY": 0.879,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/676i.webp": {
+      "feetX": 0.517,
+      "feetY": 0.926,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/676i.webp": {
+      "feetX": 0.466,
+      "feetY": 0.792,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/677i.webp": {
+      "feetX": 0.4949,
+      "feetY": 0.7041,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/677i.webp": {
+      "feetX": 0.495,
+      "feetY": 0.726,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/678i.webp": {
+      "feetX": 0.482,
+      "feetY": 0.821,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/678i.webp": {
+      "feetX": 0.562,
+      "feetY": 0.76,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/679i.webp": {
+      "feetX": 0.653,
+      "feetY": 0.902,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Back/679i.webp": {
+      "feetX": 0.316,
+      "feetY": 0.87,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Front/680i.webp": {
+      "feetX": 0.531,
+      "feetY": 0.819,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Back/680i.webp": {
+      "feetX": 0.386,
+      "feetY": 0.819,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Front/681i.webp": {
+      "feetX": 0.5,
+      "feetY": 0.8295,
+      "isFlying": true,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/681i.webp": {
+      "feetX": 0.529,
+      "feetY": 0.846,
+      "isFlying": true,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/682i.webp": {
+      "feetX": 0.4949,
+      "feetY": 0.6837,
+      "isFlying": true,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/682i.webp": {
+      "feetX": 0.495,
+      "feetY": 0.684,
+      "isFlying": true,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/683i.webp": {
+      "feetX": 0.4949,
+      "feetY": 0.9592,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/683i.webp": {
+      "feetX": 0.495,
+      "feetY": 0.959,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/684i.webp": {
+      "feetX": 0.512,
+      "feetY": 0.963,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/684i.webp": {
+      "feetX": 0.467,
+      "feetY": 0.964,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/685i.webp": {
+      "feetX": 0.4949,
+      "feetY": 0.9592,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/685i.webp": {
+      "feetX": 0.495,
+      "feetY": 0.959,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/686i.webp": {
+      "feetX": 0.455,
+      "feetY": 0.789,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/686i.webp": {
+      "feetX": 0.455,
+      "feetY": 0.789,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/687i.webp": {
+      "feetX": 0.48,
+      "feetY": 0.888,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/687i.webp": {
+      "feetX": 0.48,
+      "feetY": 0.888,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/688i.webp": {
+      "feetX": 0.5,
+      "feetY": 0.95,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/688i.webp": {
+      "feetX": 0.5,
+      "feetY": 0.95,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/689i.webp": {
+      "feetX": 0.553,
+      "feetY": 0.88,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/689i.webp": {
+      "feetX": 0.432,
+      "feetY": 0.874,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/690i.webp": {
+      "feetX": 0.4828,
+      "feetY": 0.9138,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/690i.webp": {
+      "feetX": 0.47,
+      "feetY": 0.698,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/691i.webp": {
+      "feetX": 0.434,
+      "feetY": 0.96,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/691i.webp": {
+      "feetX": 0.482,
+      "feetY": 0.86,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/692i.webp": {
+      "feetX": 0.517,
+      "feetY": 0.644,
+      "isFlying": false,
+      "shadowScale": 1.4
+    },
+    "/assets/sprites/pokemon/animated/Back/692i.webp": {
+      "feetX": 0.498,
+      "feetY": 0.638,
+      "isFlying": false,
+      "shadowScale": 1.4
+    },
+    "/assets/sprites/pokemon/animated/Front/693i.webp": {
+      "feetX": 0.475,
+      "feetY": 0.84,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/693i.webp": {
+      "feetX": 0.574,
+      "feetY": 0.86,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/694i.webp": {
+      "feetX": 0.512,
+      "feetY": 0.875,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/694i.webp": {
+      "feetX": 0.428,
+      "feetY": 0.86,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Front/695i.webp": {
+      "feetX": 0.643,
+      "feetY": 0.896,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/695i.webp": {
+      "feetX": 0.369,
+      "feetY": 0.832,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/696i.webp": {
+      "feetX": 0.563,
+      "feetY": 0.693,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Back/696i.webp": {
+      "feetX": 0.444,
+      "feetY": 0.699,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/697i.webp": {
+      "feetX": 0.466,
+      "feetY": 0.852,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/697i.webp": {
+      "feetX": 0.546,
+      "feetY": 0.852,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/698i.webp": {
+      "feetX": 0.472,
+      "feetY": 0.769,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/698i.webp": {
+      "feetX": 0.453,
+      "feetY": 0.759,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/699i.webp": {
+      "feetX": 0.428,
+      "feetY": 0.936,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Back/699i.webp": {
+      "feetX": 0.582,
+      "feetY": 0.88,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Front/700i.webp": {
+      "feetX": 0.497,
+      "feetY": 0.776,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/700i.webp": {
+      "feetX": 0.497,
+      "feetY": 0.776,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/701i.webp": {
+      "feetX": 0.4898,
+      "feetY": 0.9082,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/701i.webp": {
+      "feetX": 0.49,
+      "feetY": 0.79,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/702i.webp": {
+      "feetX": 0.543,
+      "feetY": 0.673,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Back/702i.webp": {
+      "feetX": 0.46,
+      "feetY": 0.67,
+      "isFlying": false,
+      "shadowScale": 0.9
+    },
+    "/assets/sprites/pokemon/animated/Front/703i.webp": {
+      "feetX": 0.496,
+      "feetY": 0.798,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Back/703i.webp": {
+      "feetX": 0.496,
+      "feetY": 0.798,
+      "isFlying": true
+    },
+    "/assets/sprites/pokemon/animated/Front/704i.webp": {
+      "feetX": 0.518,
+      "feetY": 0.695,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Back/704i.webp": {
+      "feetX": 0.499,
+      "feetY": 0.703,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/705i.webp": {
+      "feetX": 0.474,
+      "feetY": 0.97,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/705i.webp": {
+      "feetX": 0.508,
+      "feetY": 0.965,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/706i.webp": {
+      "feetX": 0.4796,
+      "feetY": 0.9592,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Back/706i.webp": {
+      "feetX": 0.531,
+      "feetY": 0.883,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Front/707i.webp": {
+      "feetX": 0.5273,
+      "feetY": 0.9091,
+      "isFlying": true,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Back/707i.webp": {
+      "feetX": 0.501,
+      "feetY": 0.906,
+      "isFlying": true,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Front/708i.webp": {
+      "feetX": 0.4931,
+      "feetY": 0.6528,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/708i.webp": {
+      "feetX": 0.493,
+      "feetY": 0.653,
+      "isFlying": true,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/709i.webp": {
+      "feetX": 0.476,
+      "feetY": 0.907,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/709i.webp": {
+      "feetX": 0.498,
+      "feetY": 0.878,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/710i.webp": {
+      "feetX": 0.473,
+      "feetY": 0.782,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/710i.webp": {
+      "feetX": 0.53,
+      "feetY": 0.814,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/711i.webp": {
+      "feetX": 0.4796,
+      "feetY": 0.8469,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Back/711i.webp": {
+      "feetX": 0.509,
+      "feetY": 0.847,
+      "isFlying": false,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Front/712i.webp": {
+      "feetX": 0.4891,
+      "feetY": 0.9565,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/712i.webp": {
+      "feetX": 0.489,
+      "feetY": 0.957,
+      "isFlying": false,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/713i.webp": {
+      "feetX": 0.496,
+      "feetY": 0.691,
+      "isFlying": false,
+      "shadowScale": 1.35
+    },
+    "/assets/sprites/pokemon/animated/Back/713i.webp": {
+      "feetX": 0.499,
+      "feetY": 0.714,
+      "isFlying": false,
+      "shadowScale": 1.35
+    },
+    "/assets/sprites/pokemon/animated/Front/714i.webp": {
+      "feetX": 0.4931,
+      "feetY": 0.8472,
+      "isFlying": true,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Back/714i.webp": {
+      "feetX": 0.493,
+      "feetY": 0.847,
+      "isFlying": true,
+      "shadowScale": 0.55
+    },
+    "/assets/sprites/pokemon/animated/Front/715i.webp": {
+      "feetX": 0.4854,
+      "feetY": 0.9029,
+      "isFlying": true,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Back/715i.webp": {
+      "feetX": 0.485,
+      "feetY": 0.903,
+      "isFlying": true,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Front/716i.webp": {
+      "feetX": 0.549,
+      "feetY": 0.96,
+      "isFlying": false,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Back/716i.webp": {
+      "feetX": 0.415,
+      "feetY": 0.954,
+      "isFlying": false,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Front/717i.webp": {
+      "feetX": 0.485,
+      "feetY": 0.851,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Back/717i.webp": {
+      "feetX": 0.431,
+      "feetY": 0.854,
+      "isFlying": true,
+      "shadowScale": 0.7
+    },
+    "/assets/sprites/pokemon/animated/Front/718i.webp": {
+      "feetX": 0.521,
+      "feetY": 0.928,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/718i.webp": {
+      "feetX": 0.507,
+      "feetY": 0.919,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/719i.webp": {
+      "feetX": 0.4578,
+      "feetY": 0.9759,
+      "isFlying": false,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Back/719i.webp": {
+      "feetX": 0.492,
+      "feetY": 0.976,
+      "isFlying": false,
+      "shadowScale": 0.5
+    },
+    "/assets/sprites/pokemon/animated/Front/720i.webp": {
+      "feetX": 0.537,
+      "feetY": 0.862,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/720i.webp": {
+      "feetX": 0.508,
+      "feetY": 0.913,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/721i.webp": {
+      "feetX": 0.533,
+      "feetY": 0.909,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Back/721i.webp": {
+      "feetX": 0.498,
+      "feetY": 0.858,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/722i.webp": {
+      "feetX": 0.4949,
+      "feetY": 0.6633,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Back/722i.webp": {
+      "feetX": 0.452,
+      "feetY": 0.75,
+      "isFlying": false,
+      "shadowScale": 0.75
+    },
+    "/assets/sprites/pokemon/animated/Front/723i.webp": {
+      "feetX": 0.504,
+      "feetY": 0.78,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Back/723i.webp": {
+      "feetX": 0.459,
+      "feetY": 0.767,
+      "isFlying": false,
+      "shadowScale": 0.65
+    },
+    "/assets/sprites/pokemon/animated/Front/724i.webp": {
+      "feetX": 0.481,
+      "feetY": 0.904,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Back/724i.webp": {
+      "feetX": 0.452,
+      "feetY": 0.856,
+      "isFlying": false,
+      "shadowScale": 0.6
+    },
+    "/assets/sprites/pokemon/animated/Front/725i.webp": {
+      "feetX": 0.506,
+      "feetY": 0.681,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/725i.webp": {
+      "feetX": 0.465,
+      "feetY": 0.687,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Front/726i.webp": {
+      "feetX": 0.513,
+      "feetY": 0.8,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Back/726i.webp": {
+      "feetX": 0.433,
+      "feetY": 0.765,
+      "isFlying": false,
+      "shadowScale": 0.85
+    },
+    "/assets/sprites/pokemon/animated/Front/727i.webp": {
+      "feetX": 0.506,
+      "feetY": 0.948,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/727i.webp": {
+      "feetX": 0.463,
+      "feetY": 0.948,
+      "isFlying": false,
+      "shadowScale": 0.8
+    },
+    "/assets/sprites/pokemon/animated/Back/728i.webp": {
+      "feetX": 0.467,
+      "feetY": 0.936,
+      "isFlying": false
+    },
+    "/assets/sprites/pokemon/animated/Front/728i.webp": {
+      "feetX": 0.541,
+      "feetY": 0.92,
+      "isFlying": false
     }
   },
   "globalShadowConfig": {

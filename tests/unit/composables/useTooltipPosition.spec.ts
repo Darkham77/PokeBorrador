@@ -141,4 +141,188 @@ describe('useTooltipPosition', () => {
     // Arrow should compensate to point back to the trigger center (20 - 115 = -95)
     expect(arrowOffset.value.x).toBe(-95)
   })
+
+  it('calculates maxHeight for position "bottom" correctly deducting GAP, PADDING and chrome', () => {
+    const TRIGGER_TOP_PX = 20
+    const TRIGGER_BOTTOM_PX = 50
+    const TRIGGER_LEFT_PX = 600
+    const TRIGGER_RIGHT_PX = 680
+    const TRIGGER_WIDTH_PX = 80
+    const TRIGGER_HEIGHT_PX = 30
+    const TOOLTIP_WIDTH_PX = 200
+    const TOOLTIP_HEIGHT_PX = 100
+    const EXPECTED_MAX_HEIGHT_BOTTOM_PX = 699
+
+    vi.spyOn(triggerEl, 'getBoundingClientRect').mockReturnValue({
+      top: TRIGGER_TOP_PX,
+      bottom: TRIGGER_BOTTOM_PX,
+      left: TRIGGER_LEFT_PX,
+      right: TRIGGER_RIGHT_PX,
+      width: TRIGGER_WIDTH_PX,
+      height: TRIGGER_HEIGHT_PX,
+      x: TRIGGER_LEFT_PX,
+      y: TRIGGER_TOP_PX,
+      toJSON: () => {}
+    })
+
+    vi.spyOn(tooltipEl, 'getBoundingClientRect').mockReturnValue({
+      top: 0,
+      bottom: TOOLTIP_HEIGHT_PX,
+      left: 0,
+      right: TOOLTIP_WIDTH_PX,
+      width: TOOLTIP_WIDTH_PX,
+      height: TOOLTIP_HEIGHT_PX,
+      x: 0,
+      y: 0,
+      toJSON: () => {}
+    })
+
+    const trigger = ref(triggerEl)
+    const tooltip = ref(tooltipEl)
+    const { maxHeight, activePosition, updatePosition } = useTooltipPosition(trigger, tooltip, 'top')
+
+    updatePosition()
+
+    expect(activePosition.value).toBe('bottom')
+    expect(maxHeight.value).toBe(EXPECTED_MAX_HEIGHT_BOTTOM_PX)
+  })
+
+  it('calculates maxHeight for position "top" correctly deducting GAP, PADDING and chrome', () => {
+    const TRIGGER_TOP_PX = 600
+    const TRIGGER_BOTTOM_PX = 630
+    const TRIGGER_LEFT_PX = 600
+    const TRIGGER_RIGHT_PX = 680
+    const TRIGGER_WIDTH_PX = 80
+    const TRIGGER_HEIGHT_PX = 30
+    const TOOLTIP_WIDTH_PX = 200
+    const TOOLTIP_HEIGHT_PX = 100
+    const EXPECTED_MAX_HEIGHT_TOP_PX = 549
+
+    vi.spyOn(triggerEl, 'getBoundingClientRect').mockReturnValue({
+      top: TRIGGER_TOP_PX,
+      bottom: TRIGGER_BOTTOM_PX,
+      left: TRIGGER_LEFT_PX,
+      right: TRIGGER_RIGHT_PX,
+      width: TRIGGER_WIDTH_PX,
+      height: TRIGGER_HEIGHT_PX,
+      x: TRIGGER_LEFT_PX,
+      y: TRIGGER_TOP_PX,
+      toJSON: () => {}
+    })
+
+    vi.spyOn(tooltipEl, 'getBoundingClientRect').mockReturnValue({
+      top: 0,
+      bottom: TOOLTIP_HEIGHT_PX,
+      left: 0,
+      right: TOOLTIP_WIDTH_PX,
+      width: TOOLTIP_WIDTH_PX,
+      height: TOOLTIP_HEIGHT_PX,
+      x: 0,
+      y: 0,
+      toJSON: () => {}
+    })
+
+    const trigger = ref(triggerEl)
+    const tooltip = ref(tooltipEl)
+    const { maxHeight, activePosition, updatePosition } = useTooltipPosition(trigger, tooltip, 'top')
+
+    updatePosition()
+
+    expect(activePosition.value).toBe('top')
+    expect(maxHeight.value).toBe(EXPECTED_MAX_HEIGHT_TOP_PX)
+  })
+
+  it('calculates maxHeight for position "left" bounded by viewport height and chrome', () => {
+    const TRIGGER_TOP_PX = 400
+    const TRIGGER_BOTTOM_PX = 430
+    const TRIGGER_LEFT_PX = 600
+    const TRIGGER_RIGHT_PX = 680
+    const TRIGGER_WIDTH_PX = 80
+    const TRIGGER_HEIGHT_PX = 30
+    const TOOLTIP_WIDTH_PX = 200
+    const TOOLTIP_HEIGHT_PX = 100
+    const EXPECTED_MAX_HEIGHT_SIDE_PX = 746
+
+    vi.spyOn(triggerEl, 'getBoundingClientRect').mockReturnValue({
+      top: TRIGGER_TOP_PX,
+      bottom: TRIGGER_BOTTOM_PX,
+      left: TRIGGER_LEFT_PX,
+      right: TRIGGER_RIGHT_PX,
+      width: TRIGGER_WIDTH_PX,
+      height: TRIGGER_HEIGHT_PX,
+      x: TRIGGER_LEFT_PX,
+      y: TRIGGER_TOP_PX,
+      toJSON: () => {}
+    })
+
+    vi.spyOn(tooltipEl, 'getBoundingClientRect').mockReturnValue({
+      top: 0,
+      bottom: TOOLTIP_HEIGHT_PX,
+      left: 0,
+      right: TOOLTIP_WIDTH_PX,
+      width: TOOLTIP_WIDTH_PX,
+      height: TOOLTIP_HEIGHT_PX,
+      x: 0,
+      y: 0,
+      toJSON: () => {}
+    })
+
+    const trigger = ref(triggerEl)
+    const tooltip = ref(tooltipEl)
+    const { maxHeight, activePosition, updatePosition } = useTooltipPosition(trigger, tooltip, 'left')
+
+    updatePosition()
+
+    expect(activePosition.value).toBe('left')
+    expect(maxHeight.value).toBe(EXPECTED_MAX_HEIGHT_SIDE_PX)
+  })
+
+  it('scales maxHeight correctly when --app-zoom is applied', () => {
+    const TRIGGER_TOP_PX = 20
+    const TRIGGER_BOTTOM_PX = 50
+    const TRIGGER_LEFT_PX = 600
+    const TRIGGER_RIGHT_PX = 680
+    const TRIGGER_WIDTH_PX = 80
+    const TRIGGER_HEIGHT_PX = 30
+    const TOOLTIP_WIDTH_PX = 200
+    const TOOLTIP_HEIGHT_PX = 100
+    const APP_ZOOM_VALUE = '1.25'
+    const EXPECTED_ZOOM_MAX_HEIGHT_PX = 554
+
+    document.documentElement.style.setProperty('--app-zoom', APP_ZOOM_VALUE)
+
+    vi.spyOn(triggerEl, 'getBoundingClientRect').mockReturnValue({
+      top: TRIGGER_TOP_PX,
+      bottom: TRIGGER_BOTTOM_PX,
+      left: TRIGGER_LEFT_PX,
+      right: TRIGGER_RIGHT_PX,
+      width: TRIGGER_WIDTH_PX,
+      height: TRIGGER_HEIGHT_PX,
+      x: TRIGGER_LEFT_PX,
+      y: TRIGGER_TOP_PX,
+      toJSON: () => {}
+    })
+
+    vi.spyOn(tooltipEl, 'getBoundingClientRect').mockReturnValue({
+      top: 0,
+      bottom: TOOLTIP_HEIGHT_PX,
+      left: 0,
+      right: TOOLTIP_WIDTH_PX,
+      width: TOOLTIP_WIDTH_PX,
+      height: TOOLTIP_HEIGHT_PX,
+      x: 0,
+      y: 0,
+      toJSON: () => {}
+    })
+
+    const trigger = ref(triggerEl)
+    const tooltip = ref(tooltipEl)
+    const { maxHeight, updatePosition } = useTooltipPosition(trigger, tooltip, 'top')
+
+    updatePosition()
+
+    expect(maxHeight.value).toBe(EXPECTED_ZOOM_MAX_HEIGHT_PX)
+
+    document.documentElement.style.removeProperty('--app-zoom')
+  })
 })

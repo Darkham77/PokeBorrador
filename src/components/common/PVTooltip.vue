@@ -14,6 +14,10 @@ const TOUCH_DRAG_THRESHOLD_PX = 15
 const BLOCK_CLICK_DURATION_SEC = 5
 const TOUCH_HOVER_COOLDOWN_MS = 1000
 const SECS_PER_MS_FACTOR = 1000
+const ELLIPSIS_HEIGHT_PX = 16
+const TITLE_MARGIN_BOTTOM_PX = 8
+const LINE_MARGIN_BOTTOM_PX = 2
+const MIN_VISIBLE_LINES_COUNT = 1
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -68,15 +72,21 @@ const show = (immediate = false) => {
       isRightSide.value = (rect.left + rect.width / 2) > window.innerWidth / 2
     }
     
+    visibleLineCount.value = null
+    isSlotTruncated.value = false
+
     isVisible.value = true
     await nextTick()
     updatePosition()
+    
+    calculateFittingLines()
     await nextTick()
     updatePosition()
     
-    // Auto-hide on scroll/wheel/click-outside to prevent floating artifacts
+    // Auto-hide on scroll/wheel/click-outside/resize to prevent floating artifacts
     window.addEventListener('scroll', hideScroll, { passive: true, capture: true })
     window.addEventListener('wheel', hideScroll, { passive: true })
+    window.addEventListener('resize', hideScroll, { passive: true })
     window.addEventListener('click', hideClickOutside, { capture: true })
     window.addEventListener('touchstart', hideClickOutside, { capture: true })
   })
@@ -100,8 +110,11 @@ const hide = (immediate = false) => {
   }
   
   isVisible.value = false
+  visibleLineCount.value = null
+  isSlotTruncated.value = false
   window.removeEventListener('scroll', hideScroll, { capture: true })
   window.removeEventListener('wheel', hideScroll)
+  window.removeEventListener('resize', hideScroll)
   window.removeEventListener('click', hideClickOutside, { capture: true })
   window.removeEventListener('touchstart', hideClickOutside, { capture: true })
 }
@@ -238,6 +251,75 @@ const descriptionLines = computed(() => {
       isQuote
     }
   })
+})
+
+const visibleLineCount = ref<number | null>(null)
+const isSlotTruncated = ref(false)
+
+const displayedLines = computed(() => {
+  if (visibleLineCount.value === null) {
+    return descriptionLines.value
+  }
+  return descriptionLines.value.slice(0, visibleLineCount.value)
+})
+
+const isTruncated = computed(() => {
+  return visibleLineCount.value !== null && visibleLineCount.value < descriptionLines.value.length
+})
+
+const calculateFittingLines = () => {
+  if (!tooltip.value || maxHeight.value === null) return
+
+  const contentEl = tooltip.value.querySelector('.tooltip-content') as HTMLElement | null
+  if (!contentEl) return
+
+  if (descriptionLines.value.length === 0) {
+    isSlotTruncated.value = contentEl.scrollHeight > maxHeight.value
+    return
+  }
+
+  if (contentEl.scrollHeight <= maxHeight.value) {
+    visibleLineCount.value = null
+    return
+  }
+
+  const titleEl = contentEl.querySelector('.pv-tooltip-title') as HTMLElement | null
+  const titleHeight = titleEl ? titleEl.offsetHeight + TITLE_MARGIN_BOTTOM_PX : 0
+  const availableForLines = maxHeight.value - titleHeight - ELLIPSIS_HEIGHT_PX
+
+  if (availableForLines <= 0) {
+    visibleLineCount.value = MIN_VISIBLE_LINES_COUNT
+    return
+  }
+
+  const lineElements = contentEl.querySelectorAll('.tooltip-line, .tooltip-divider-line')
+  if (lineElements.length === 0) return
+
+  let accumulatedHeight = 0
+  let count = 0
+  for (let i = 0; i < lineElements.length; i++) {
+    const el = lineElements[i] as HTMLElement
+    const lineH = el.offsetHeight + LINE_MARGIN_BOTTOM_PX
+    if (accumulatedHeight + lineH <= availableForLines) {
+      accumulatedHeight += lineH
+      count++
+    } else {
+      break
+    }
+  }
+
+  visibleLineCount.value = Math.max(MIN_VISIBLE_LINES_COUNT, count)
+}
+
+watch(() => props.description, async () => {
+  if (isVisible.value) {
+    visibleLineCount.value = null
+    await nextTick()
+    updatePosition()
+    calculateFittingLines()
+    await nextTick()
+    updatePosition()
+  }
 })
 
 const handleMouseEnter = () => {
@@ -386,12 +468,24 @@ onUnmounted(() => {
                 class="pv-tooltip-desc"
               >
                 <PVTooltipDescriptionLine
-                  v-for="(line, idx) in descriptionLines"
+                  v-for="(line, idx) in displayedLines"
                   :key="idx"
                   :line="line"
                 />
+                <div
+                  v-if="isTruncated"
+                  class="pv-tooltip-ellipsis"
+                >
+                  ...
+                </div>
               </span>
               <slot name="content" />
+              <div
+                v-if="isSlotTruncated"
+                class="pv-tooltip-ellipsis"
+              >
+                ...
+              </div>
             </div>
             <div class="tooltip-arrow" />
           </div>
