@@ -1,0 +1,13 @@
+import{L as e}from"./game-data-system-4kOnkohN.js";import{U as t}from"./game-data-pokemon-CTNZykkt.js";var n=9,r=6,i=4,a={heavy_rain:e=>e>=r?`primordialsea`:`raindance`,intense_sun:e=>e>=r?`desolateland`:`sunnyday`,strong_winds:e=>e>=r?`deltastream`:`none`,rain:()=>`raindance`,storm:()=>`raindance`,sun:()=>`sunnyday`,heatwave:()=>`sunnyday`,sandstorm:()=>`sandstorm`,dust_storm:()=>`sandstorm`,snow:e=>e>=n?`snow`:`hail`,hail:e=>e>=n?`snow`:`hail`,blizzard:e=>e>=n?`snow`:`hail`,cold:e=>e>=n?`snow`:`hail`,coldwave:e=>e>=n?`snow`:`hail`,fog:e=>e>=i?`fog`:`none`,mist:e=>e>=i?`fog`:`none`};function o(t,n){if(!t)return`none`;let r=e(t)?t:null;if(!r)return`none`;let i=a[r];return i?i(n):`none`}function s(e,r){if(e===`none`||e===`clear`||e===`null`)return`Despejado`;let i=t(e);return{sunnyday:`Sol`,raindance:`Lluvia`,sandstorm:`T. Arena`,hail:r>=n?`Nieve`:`Granizo`,snow:`Nieve`,desolateland:`Sol Abrasador`,primordialsea:`Lluvia Torrencial`,deltastream:`Turbulencias`}[i]||`Despejado`}var c={raindance:()=>`▲ Potencia Agua (x1.5)
+▼ Debilita Fuego (x0.5)
+• Efecto: Trueno 100% precisión`,sunnyday:()=>`▲ Potencia Fuego (x1.5)
+▼ Debilita Agua (x0.5)
+• Efecto: Rayo Solar sin carga`,sandstorm:e=>e>=i?`▲ Potencia Especial Roca (x1.5)
+▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)`:`▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)`,hail:()=>`▼ Debilita a no Hielo (1/16 HP por turno)
+• Efecto: Ventisca 100% precisión`,snow:()=>`▲ Potencia Defensa Hielo (x1.5)
+• Efecto: Ventisca 100% precisión`,desolateland:()=>`▲ Potencia Fuego (x1.5)
+▼ Bloquea Agua (x0)
+• Efecto: Rayo Solar sin carga`,primordialsea:()=>`▲ Potencia Agua (x1.5)
+▼ Bloquea Fuego (x0)
+• Efecto: Trueno 100% precisión`,deltastream:()=>`▲ Bloquea debilidades Volador`,fog:e=>e>=i?`▼ Reduce la precisión de todos los movimientos (x0.6)
+• Efecto: Meteorobola dobla potencia`:`Sin efectos en combate.`};function l(e,n){let r=o(e,n),i=c[t(r)];return i?i(n):`Sin efectos en combate.`}var u={raindance:()=>`rain`,rain:()=>`rain`,sunnyday:()=>`sun`,sun:()=>`sun`,sandstorm:()=>`sandstorm`,hail:e=>e>=n?`snow`:`hail`,snowscape:()=>`snow`,snow:()=>`snow`,desolateland:()=>`intense_sun`,intensesun:()=>`intense_sun`,primordialsea:()=>`heavy_rain`,heavyrain:()=>`heavy_rain`,deltastream:()=>`strong_winds`,strongwinds:()=>`strong_winds`,fog:()=>`fog`};function d(e,n){if(!e)return`clear`;let r=u[t(e)];return r?r(n):`clear`}export{o as i,l as n,d as r,s as t};

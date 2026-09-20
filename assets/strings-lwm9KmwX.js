@@ -1,1 +1,0 @@
-import{U as e}from"./game-data-pokemon-Bjwm-IKP.js";export{e as toID};
