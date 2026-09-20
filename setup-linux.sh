@@ -117,6 +117,7 @@ cd "$SCRIPT_DIR"
 npm ci
 
 # 8. Validar y compilar herramientas nativas auxiliares
+npm run postinstall --ignore-scripts=false 2>/dev/null || true
 npm run validate:tools
 
 echo "======================================================"

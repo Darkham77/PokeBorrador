@@ -83,15 +83,25 @@ export class BuildToolsAuditor extends BaseAuditor<BuildToolsRuleId> {
 
     if (!ready) {
       try {
-        const npmCmd = isWin ? 'npm.cmd' : 'npm';
         const pkgDir = 'node_modules/css-checker-kit';
-        if (!fs.existsSync(pkgDir)) {
-          execFileSync(npmCmd, ['install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { stdio: 'ignore', cwd: process.cwd() });
+        const nodeDir = process.execPath ? path.dirname(process.execPath) : '';
+        const npmCli = nodeDir ? path.join(nodeDir, 'node_modules', 'npm', 'bin', 'npm-cli.js') : '';
+
+        if (npmCli && fs.existsSync(npmCli)) {
+          if (!fs.existsSync(pkgDir)) {
+            execFileSync(process.execPath, [npmCli, 'install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { cwd: process.cwd() });
+          }
+          execFileSync(process.execPath, [npmCli, 'run', 'postinstall', '--ignore-scripts=false'], { cwd: pkgDir });
+        } else {
+          const npmCmd = isWin ? 'npm.cmd' : 'npm';
+          if (!fs.existsSync(pkgDir)) {
+            execFileSync(npmCmd, ['install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { cwd: process.cwd(), shell: isWin });
+          }
+          execFileSync(npmCmd, ['run', 'postinstall', '--ignore-scripts=false'], { cwd: pkgDir, shell: isWin });
         }
-        execFileSync(npmCmd, ['run', 'postinstall', '--ignore-scripts=false'], { stdio: 'ignore', cwd: pkgDir });
         ready = findCssCheckerBinary();
-      } catch {
-        // Handled below
+      } catch (err) {
+        this.context.logProgress(`Auto-build of css-checker binary failed: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 

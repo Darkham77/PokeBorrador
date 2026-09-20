@@ -227,8 +227,17 @@ Write-Host ""
 Write-Host "[CLEANUP] Limpiando versiones obsoletas de Node.js..." -ForegroundColor Cyan
 try {
     Get-ChildItem -Path $nvmRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^v\d+\.\d+\.\d+$' -and $_.Name -ne "v$targetNodeVer" } | ForEach-Object {
-        Write-Host "  [-] Eliminando version obsoleta: $($_.Name)..." -ForegroundColor Yellow
+        $verName = $_.Name
+        Write-Host "  [-] Eliminando version obsoleta: $verName..." -ForegroundColor Yellow
         Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        if (Test-Path $_.FullName) {
+            if (Get-Command nvm -ErrorAction SilentlyContinue) {
+                nvm uninstall ($verName -replace '^v','') 2>$null | Out-Null
+            }
+        }
+        if (Test-Path $_.FullName) {
+            Write-Host "  [WARN] No se pudo purgar $verName (archivos protegidos por SYSTEM/Admin). Ejecuta PowerShell como Administrador para eliminarla." -ForegroundColor Yellow
+        }
     }
 } catch {}
 
@@ -241,12 +250,20 @@ if ($env:Path -notlike "*$npmRoamingPath*") {
     $env:Path = "$npmRoamingPath;" + $env:Path
 }
 
-# Persistir rutas de Node y npm en el PATH de Usuario para sesiones futuras
+# Persistir rutas de Node y npm en el PATH de Usuario para sesiones futuras, saneando delimitadores
 try {
-    $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
-    $userPathsToAdd = @($nodeSymlinkPath, $npmRoamingPath) | Where-Object { $currentUserPath -notlike "*$_*" }
-    if ($userPathsToAdd.Count -gt 0) {
-        $updatedUserPath = (($userPathsToAdd + ($currentUserPath -split ';')) | Where-Object { [string]::IsNullOrWhiteSpace($_) -eq $false } | Select-Object -Unique) -join ';'
+    $rawUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    if ($rawUserPath) {
+        $sanitizedUserPath = $rawUserPath -replace 'npm([A-Za-z]:\\)', 'npm;$1'
+        $parts = [System.Text.RegularExpressions.Regex]::Split($sanitizedUserPath, ';|(?<=\S)\s+(?=[A-Za-z]:\\)')
+        $userList = @()
+        foreach ($p in $parts) {
+            $t = $p.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($t)) { $userList += $t }
+        }
+        $pathsToAdd = @($nodeSymlinkPath, $npmRoamingPath, $nvmRoot) | Where-Object { $_ -and ($userList -notcontains $_) }
+        $finalUserList = ($pathsToAdd + $userList) | Select-Object -Unique
+        $updatedUserPath = $finalUserList -join ';'
         [System.Environment]::SetEnvironmentVariable("Path", $updatedUserPath, "User")
     }
 } catch {}
@@ -295,6 +312,11 @@ if (Test-Path $nodeModulesDir) {
 }
 
 # 12. Validar y compilar herramientas nativas auxiliares
+Write-Host ""
+Write-Host "[BUILD-TOOLS] Compilando y verificando herramientas nativas auxiliares..." -ForegroundColor Cyan
+try {
+    npm run postinstall --ignore-scripts=false
+} catch {}
 npm run validate:tools
 
 Write-Host ""
