@@ -103,7 +103,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
   3. **Zero Hardcoded Dates**: Images MUST NEVER contain burned-in calendar dates, years (e.g. 2024, 2026), timeslots, or fixed hours. All event timing is dynamic and managed via Vue UI overlays. Detailed event system standards are governed in [Event System Manual](./references/systems/event_system_manual.md).
 - **Prohibition of Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**:
   - AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
-  - All validations, diagnostic checks, and tests MUST be executed via dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
+  - All validations, diagnostic checks, and tests MUST be executed via dedicated Vitest test files (`npm run test:node -- <path>` or `npm run test:unit -- <path>`) or dedicated script files in `scripts/` or `scratch/`.
 - **Absolute Prohibition on Manual Command PATH Injections (`noManualPathInjection`)**:
   - AI agents are STRICTLY FORBIDDEN from prefixing CLI commands with ad-hoc path variables (e.g. `$env:Path = ...; npm ...`, `export PATH=... && npm ...`, or inline path wrappers).
   - All commands MUST be executed cleanly and natively (`npm run <script>`, `npx <tool>`, `node <file>`).

@@ -249,18 +249,17 @@ box-shadow:
 /* Lower opacity for subtle, higher for neon */
 ```
 
-### Pulsing Glow Animation
+### Pulsing Glow Animation (GSAP Mandate)
 
-```css
-@keyframes glow-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 SMALL-BLUR COLOR;
-  }
-  50% {
-    box-shadow: 0 0 LARGE-BLUR COLOR;
-  }
-}
+```typescript
+// Drive pulsing glow via GSAP rather than CSS @keyframes:
+gsap.to(elementRef.value, {
+  boxShadow: '0 0 25px var(--glow-color)',
+  duration: 1.5,
+  repeat: -1,
+  yoyo: true,
+  ease: 'sine.inOut'
+});
 ```
 
 ### 4. Dynamic Variable Binding (Generic SCSS)

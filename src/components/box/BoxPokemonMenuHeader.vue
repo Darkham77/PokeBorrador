@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent BoxPokemonMenu.vue
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -77,3 +76,7 @@ defineProps<Props>()
     <div class="header-right-spacer" />
   </header>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/components/box-menu" as *;
+</style>

@@ -14,4 +14,4 @@ Frontend Developers / QA Engineers.
 
 ## Verification
 
-- Run `npx vitest run tests/unit/components/social/` to verify social component tests.
+- Run `npm run test:unit -- tests/unit/components/social/` to verify social component tests.

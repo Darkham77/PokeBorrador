@@ -21,8 +21,8 @@ Frontend Developers.
 
 ## Verification
 
-- Run `npx vitest run tests/unit/composables/useHomeWidgetsCollapse.spec.ts` to verify state toggling, defaults, and persistence.
-- Run `npx vitest run tests/unit/composables/useHomeWidgetBadges.spec.ts` to verify badge calculations and provider registration.
+- Run `npm run test:unit -- tests/unit/composables/useHomeWidgetsCollapse.spec.ts` to verify state toggling, defaults, and persistence.
+- Run `npm run test:unit -- tests/unit/composables/useHomeWidgetBadges.spec.ts` to verify badge calculations and provider registration.
 
 ## Child DOX Index
 

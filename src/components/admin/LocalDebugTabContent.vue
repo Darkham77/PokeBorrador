@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent LocalDebugPanel.vue
 import DebugStatsTab from './debug/DebugStatsTab.vue'
 import DebugClassTab from './debug/DebugClassTab.vue'
 import DebugItemsTab from './debug/DebugItemsTab.vue'

@@ -17,4 +17,4 @@ Frontend Developers / QA Engineers.
 
 ## Verification
 
-- Run `npx vitest run tests/unit/components/helpers/` to execute helper test suites.
+- Run `npm run test:unit -- tests/unit/components/helpers/` to execute helper test suites.

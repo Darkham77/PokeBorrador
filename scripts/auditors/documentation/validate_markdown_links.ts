@@ -137,7 +137,13 @@ export function checkMarkdownLinksInContent(
     }
 
     linksChecked++;
-    const [urlPath] = rawUrl.split('#');
+    const [rawUrlPath] = rawUrl.split('#');
+    let urlPath = rawUrlPath ?? '';
+    try {
+      urlPath = decodeURIComponent(urlPath);
+    } catch {
+      // keep raw if decode fails
+    }
 
     let resolvedTarget = filePath;
     if (urlPath && urlPath.length > 0) {

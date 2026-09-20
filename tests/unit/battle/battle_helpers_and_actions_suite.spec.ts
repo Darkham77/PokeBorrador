@@ -481,6 +481,12 @@ describe('Battle Helpers & Actions Domain Suite', () => {
       expect(typeof coordsHyphen.x).toBe('number')
       expect(typeof coordsHyphen.y).toBe('number')
 
+      const castformSunnyPure = { id: 'castformsunny' } as unknown as Pokemon
+      const coordsPure = computeShadowCoords(castformSunnyPure, false)
+      expect(coordsPure).toBeDefined()
+      expect(typeof coordsPure.x).toBe('number')
+      expect(typeof coordsPure.y).toBe('number')
+
       const radius = computeShadowBodyRadius(castformSunny, false)
       expect(radius).toBeDefined()
       expect(typeof radius).toBe('string')

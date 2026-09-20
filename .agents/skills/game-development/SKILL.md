@@ -24,10 +24,7 @@ You are working on a game development project. This skill teaches the PRINCIPLES
 
 | If the game targets... | Use Sub-Skill |
 | :--- | :--- |
-| Web browsers (HTML5, WebGL) | `references/web-games.md` |
-| Mobile (iOS, Android) | `references/mobile-games.md` |
-| PC (Steam, Desktop) | `references/pc-games.md` |
-| VR/AR headsets | `references/vr-ar.md` |
+| Web browsers (HTML5, Canvas, WebGL) | `references/web-games.md` |
 
 ### Dimension Selection
 

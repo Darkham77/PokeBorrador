@@ -19,9 +19,9 @@ const CASTFORM_NATIONAL_DEX_ID_TEXT = '351';
 
 const SPECIAL_FORMS = [
   { id: 'castform', num: CASTFORM_NATIONAL_DEX_ID_TEXT },
-  { id: 'castform-sunny', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_1` },
-  { id: 'castform-rainy', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_2` },
-  { id: 'castform-snowy', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_3` }
+  { id: 'castformsunny', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_1` },
+  { id: 'castformrainy', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_2` },
+  { id: 'castformsnowy', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_3` }
 ] as const;
 
 export type SpriteRuleId = 'sprite-missing-asset';

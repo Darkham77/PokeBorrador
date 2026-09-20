@@ -11,7 +11,7 @@ function parseCommandLineArgs() {
   const { values, positionals } = parseArgs({
     options: {
       category: { type: 'string' },
-      top: { type: 'string', default: '20' }, // no-magic: Explicit mathematical constant or threshold value
+      top: { type: 'string', default: '20' },
       json: { type: 'boolean', default: false }
     },
     strict: false,

@@ -17,6 +17,12 @@ tags: [vue3, transition, animation, performance, keys]
 - Use `mode="out-in"` when you need sequential swaps
 - Prefer `transform` and `opacity` for smooth animations
 
+> [!IMPORTANT]
+> **Poké Vicio Architecture Standard - GSAP Exclusive Mandate**:
+> In Poké Vicio, manual CSS transitions (`transition: ...`) are strictly prohibited and rejected by `validate_component_styles.ts`.
+> Vue transitions MUST use javascript-driven GSAP hooks: `<Transition :css="false" @before-enter="..." @enter="..." @leave="...">`
+> (or composables like `useGsapTransition`), never manual CSS transition classes.
+
 ## Use Transition for a Single Root Element
 
 `<Transition>` only supports one direct child. Wrap multiple nodes in a single element or component.

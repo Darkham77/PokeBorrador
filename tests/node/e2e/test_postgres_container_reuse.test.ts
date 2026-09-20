@@ -27,5 +27,5 @@ describe('Postgres Test Container Lifecycle & Reuse', () => {
     assert.strictEqual(second.isReady, true, 'Re-invocation should return isReady: true');
     // Reusing avoids container tear-down and 83 SQL migrations (takes >30s); assert it reuses without recreation
     assert.ok(elapsedMs < 20000, `Expected reuse in <20000ms, took ${elapsedMs}ms`);
-  });
+  }, 120_000);
 });

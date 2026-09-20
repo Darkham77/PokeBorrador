@@ -129,6 +129,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.45;
+  padding-bottom: 2px;
 }
 
 @mixin text-outline($color: #000, $width: 1px) {

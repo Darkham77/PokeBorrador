@@ -329,9 +329,9 @@ function handleCardClick() {
 
   .violation-reason-text {
     font-size: 8px;
-    line-height: 1.1;
+    line-height: 1.45;
+    padding-bottom: 2px;
     color: #ffffff;
-    font-weight: bold;
     letter-spacing: 0.2px;
     white-space: normal;
     overflow: hidden;

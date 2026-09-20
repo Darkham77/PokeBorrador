@@ -29,7 +29,7 @@ allowed-tools: Read, Glob, Grep
 | Skill | Use For |
 | :--- | :--- |
 | [database-design](../database-design/SKILL.md) | Database schema design |
-| [api-patterns](../api-patterns/SKILL.md) | API design patterns |
+| [domain-type-first](../domain-type-first/SKILL.md) | Strict domain typing & data contracts |
 
 ---
 

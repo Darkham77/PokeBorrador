@@ -1,6 +1,6 @@
 ---
 name: database-design
-description: Database design principles and decision-making. Schema design, indexing strategy, ORM selection, serverless databases.
+description: Database design principles and decision-making. Schema design, indexing strategy, SQL migrations, dual SQLite/PostgreSQL architecture.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
@@ -14,20 +14,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 | File | Description | When to Read |
 | :--- | :--- | :--- |
-| `references/database-selection.md` | PostgreSQL vs Neon vs Turso vs SQLite | Choosing database |
-| `references/orm-selection.md` | Drizzle vs Prisma vs Kysely | Choosing ORM |
+| `references/database-selection.md` | PostgreSQL vs SQLite WASM vs Supabase | Choosing database |
 | `references/schema-design.md` | Normalization, PKs, relationships | Designing schema |
 | `references/indexing.md` | Index types, composite indexes | Performance tuning |
 | `references/optimization.md` | N+1, EXPLAIN ANALYZE | Query optimization |
-| `references/migrations.md` | Safe migrations, serverless DBs | Schema changes |
+| `references/migrations.md` | Safe migrations, dual-engine sync | Schema changes |
 
 ---
 
 ## ⚠️ Core Principle
 
 - **Ask** the user for database preferences when unclear.
-- **Choose** database/ORM based on context.
-- **Avoid** defaulting to PostgreSQL for everything.
+- **Choose** database engine based on context.
+- **Avoid** defaulting to single-engine assumptions when dual persistence is required.
 
 ---
 
@@ -49,9 +48,9 @@ Before designing schema:
 When modifying the database in a project with a local engine:
 
 - **Absolute Immutability of Historical Migrations**: Migration files in `database/migrations/` (`.sql` and `.sqlite.sql`) already committed and pushed to `main` (or run in production) are **STRICTLY IMMUTABLE**. Never modify past migrations. Existing databases have already recorded them in `_migrations` and will NEVER re-execute them. Any schema modification, fix, or column addition MUST ALWAYS be a NEW forward-only timestamped migration file.
-- **Forced Sync**: To update an existing local SQLite database, always add a new SQL migration to `database/migrations/` and run the build script to regenerate the internal migrations data.
+- **Forced Sync**: To update an existing local SQLite database, always add a new SQL migration to `database/migrations/` and run `npm run database:generate-migrations` to regenerate the internal migrations data.
 - **Casing Parity**: SQLite column names MUST match the casing and property names of the JavaScript payloads (e.g., camelCase vs snake_case) to avoid insertion errors during property mapping.
-- **Dynamic In-Memory SQL Dialect Translation**: To maintain compatibility between local offline validation engines (which execute migrations against SQLite) and advanced remote execution (Postgres), preserve pure SQLite syntax in the `.sql` migration files on disk. In the automated migration runners, intercept and dynamically translate incompatible statements in memory (e.g., adding `CASCADE` to `DROP TABLE` or casting text dates to `TIMESTAMPTZ`) before executing them on Postgres.
+- **Canonical PostgreSQL SSoT & SQLite Companion Compilation**: Migration scripts in `database/migrations/` are authored in canonical PostgreSQL (`.sql`) and compiled via `npm run database:generate-migrations` into companion SQLite (`.sqlite.sql`) scripts for client-side SQLite WASM execution. ORMs (Prisma, Drizzle, Kysely) are strictly prohibited; schema management is 100% native SQL governed by `DBRouter`.
 
 ---
 

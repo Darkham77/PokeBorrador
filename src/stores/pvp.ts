@@ -231,7 +231,6 @@ export const usePvPStore = defineStore('pvp', () => {
 
   const DEFENSE_SNAPSHOT_DEBOUNCE_MS = 1500;
 
-  // audit-disable timers: Low-level persistence debounce for passive defense snapshot
   let defenseSnapshotTimer: ReturnType<typeof setTimeout> | null = null
 
   function scheduleDefenseSnapshotSync(delayMs = DEFENSE_SNAPSHOT_DEBOUNCE_MS) {

@@ -187,7 +187,7 @@ export default defineConfig({
 })
 
 // Run browser tests separately
-// npx vitest --browser.enabled
+// npm run test -- --browser.enabled
 ```
 
 ### Directory Structure

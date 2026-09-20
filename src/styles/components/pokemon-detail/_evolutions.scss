@@ -135,7 +135,10 @@ body .evolve-pane {
 
       & .evo-target-name {
           font-size: 7px;
+          line-height: 1.45;
+          padding-bottom: 2px;
           max-width: 60px;
+          white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }

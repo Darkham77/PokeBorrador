@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent ClassDashboard.vue
 import { gsap } from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { PlayerClassDefinition } from '@/data/player/playerClasses'
@@ -151,3 +150,5 @@ const handleImageError = (e: Event) => {
     </div>
   </aside>
 </template>
+
+<style src="./ClassDashboard.styles.scss" scoped lang="scss"></style>

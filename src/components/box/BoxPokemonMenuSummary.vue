@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent BoxPokemonMenu.vue
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonType } from '@/data/battle/types'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
@@ -87,3 +86,7 @@ const emit = defineEmits<{
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/components/box-menu" as *;
+</style>

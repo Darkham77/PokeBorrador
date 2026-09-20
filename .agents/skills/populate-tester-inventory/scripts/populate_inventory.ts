@@ -1,60 +1,72 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import type { ItemId } from '../../../../src/types/items';
 
 /**
  * POPULATE TESTER INVENTORY
- * Quick script to add a set of common testing items to the player's inventory.
- * Usage: node .agents/skills/populate-tester-inventory/scripts/populate_inventory.js
+ * Utility script to generate a console snippet for adding standard testing items
+ * to the player's inventory using canonical Showdown ItemIds.
+ *
+ * Usage: npm run test:populate-inventory
  */
 
-const _SAVE_PATH = path.join(__dirname, '../../../../src/data/state.json'); // Legacy local state if used
+const TEST_INVENTORY: Record<ItemId, number> = {
+  potion: 99,
+  superpotion: 99,
+  hyperpotion: 99,
+  maxpotion: 99,
+  revive: 99,
+  maxrevive: 99,
+  antidote: 99,
+  burnheal: 99,
+  awakening: 99,
+  fullheal: 99,
+  ether: 99,
+  maxelixir: 99,
+  firestone: 10,
+  waterstone: 10,
+  thunderstone: 10,
+  leafstone: 10,
+  moonstone: 10,
+  sunstone: 10,
+  rarecandy: 99,
+  ppup: 50,
+  ppmax: 10,
+  repel: 20,
+  superrepel: 20,
+  maxrepel: 20,
+};
 
-function populateInventory() {
-    console.log("Populating tester inventory...");
-    
-    // In a real scenario, this would interact with the DBRouter or the gameStore
-    // But as a skill script, it can generate a snippet for the browser console.
-    const items = {
-        'Poción': 99,
-        'Súper Poción': 99,
-        'Hiper Poción': 99,
-        'Poción Máxima': 99,
-        'Revivir': 99,
-        'Revivir Máximo': 99,
-        'Antídoto': 99,
-        'Cura Quemadura': 99,
-        'Despertar': 99,
-        'Cura Total': 99,
-        'Éter': 99,
-        'Elixir Máximo': 99,
-        'Piedra Fuego': 10,
-        'Piedra Agua': 10,
-        'Piedra Trueno': 10,
-        'Piedra Hoja': 10,
-        'Piedra Lunar': 10,
-        'Piedra Solar': 10,
-        'Caramelo Raro': 99,
-        'Subida de PP': 50,
-        'PP Máximo': 10,
-        'Repelente': 20,
-        'Superrepelente': 20,
-        'Máximo Repelente': 20
-    };
+function generatePopulateSnippet(): void {
+  console.log('='.repeat(70));
+  console.log('  POKÉ VICIO - TESTER INVENTORY GENERATOR');
+  console.log('='.repeat(70));
+  console.log(`Generated canonical testing payload for ${Object.keys(TEST_INVENTORY).length} item types.`);
+  console.log('\nCopy and paste this snippet into the browser DevTools console:\n');
 
+  const snippet = `(() => {
+  const items = ${JSON.stringify(TEST_INVENTORY, null, 2)};
+  const debug = window.__VITE_DEBUG__;
+  if (!debug || !debug.getGameStore) {
+    console.error('❌ __VITE_DEBUG__ is not available. Ensure you are running in dev mode.');
+    return;
+  }
+  const gameStore = debug.getGameStore();
+  if (!gameStore || !gameStore.state) {
+    console.error('❌ gameStore is not initialized.');
+    return;
+  }
+  if (!gameStore.state.inventory) {
+    gameStore.state.inventory = {};
+  }
+  Object.entries(items).forEach(([id, qty]) => {
+    gameStore.state.inventory[id] = (gameStore.state.inventory[id] || 0) + qty;
+  });
+  gameStore.state.inventory = { ...gameStore.state.inventory };
+  gameStore.saveGame();
+  console.log('✅ Tester inventory successfully populated with 24 canonical Showdown item sets!');
+})();`;
 
-    const snippet = `
-Object.entries(${JSON.stringify(items)}).forEach(([name, qty]) => {
-    window.gameStore.state.inventory[name] = (window.gameStore.state.inventory[name] || 0) + qty;
-});
-window.gameStore.save();
-console.log('✅ Tester inventory populated!');
-    `;
-
-    console.log("\nCopy and paste this into the browser console:\n");
-    console.log(snippet);
+  console.log(snippet);
+  console.log('\n' + '='.repeat(70) + '\n');
 }
 
-populateInventory();
+generatePopulateSnippet();

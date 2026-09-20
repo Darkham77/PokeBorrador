@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: uses global pv-button-retro and PVLoadingOverlay scoped styles
 import { gsap } from 'gsap'
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 

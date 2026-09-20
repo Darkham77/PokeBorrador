@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: inherits .modal-footer-premium from base-modal.scss
 </script>
 
 <template>

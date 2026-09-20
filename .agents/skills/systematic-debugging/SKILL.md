@@ -93,9 +93,9 @@ Create deterministic reproduction tests before touching `src/`:
 2. **Mandatory Dual-Engine Testing for Database Bugs**:
    - If the bug involves database queries, migrations, schemas, persistence roundtrips, or DBRouter, the reproduction test MUST run across **BOTH database engines** (SQLite and PostgreSQL) using `describeWithDatabase` from `tests/dbTestHelper.ts` (or testing both SQLite in-memory and isolated PostgreSQL schemas).
    - Assert identical behavior, constraint enforcement, and error shapes across both engines.
-3. **Confirm Deterministic RED**: Execute the reproduction test and confirm that it fails with the exact reported error:
+3. **Confirm Deterministic RED**: Execute the reproduction test and confirm that it fails with the exact reported error (always use official NPM scripts to guarantee Rolldown native bindings load correctly):
    ```bash
-   npx vitest run tests/node/<domain>/reproduce_<slug>.test.ts
+   npm run test:node -- tests/node/<domain>/reproduce_<slug>.test.ts
    ```
 
 ---
@@ -127,7 +127,7 @@ Verify all test tiers in strict sequential order. If any test fails, re-enter Ph
 
 1. **Tier 1 Pass**: Re-run the reproduction unit test. Confirm that it turns **GREEN** (across both SQLite and PostgreSQL if database-related):
    ```bash
-   npx vitest run tests/node/<domain>/reproduce_<slug>.test.ts
+   npm run test:node -- tests/node/<domain>/reproduce_<slug>.test.ts
    ```
 2. **Tier 2 Pass**: Verify integrity/integration tests turn **GREEN** (across both database engines for persistence bugs).
 3. **Full Node Unit Regression**: Run the entire Node test suite to confirm 0 regressions:

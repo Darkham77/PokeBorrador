@@ -214,8 +214,10 @@
   }
 
   .item-name {
-    font-weight: 700;
-    font-size: 11.5px;
+    @include pixelated;
+    font-size: 11px;
+    line-height: 1.45;
+    padding-bottom: 2px;
     color: white;
     margin-bottom: 4px;
     // Allow wrapping for long names

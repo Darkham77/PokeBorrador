@@ -10,6 +10,7 @@
 
     /* Bundler mode */
     "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo/tsconfig.app.tsbuildinfo",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,

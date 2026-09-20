@@ -14,4 +14,4 @@ Frontend Developers / QA Engineers.
 
 ## Verification
 
-- Run `npx vitest run tests/unit/components/profile/` to verify profile component tests.
+- Run `npm run test:unit -- tests/unit/components/profile/` to verify profile component tests.

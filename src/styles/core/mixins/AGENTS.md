@@ -20,6 +20,9 @@ Frontend Developers.
 - **Pixel Font Line-Height & Multiline Inheritance (`_layout.scss`)**:
   - `@mixin pixelated` and `@mixin pixelated-proportional` enforce a safe base `line-height: 1.35` to ensure multiline pixelated text inherits sufficient vertical spacing.
   - Overriding text containers or headings with destructive `line-height: 1` or `line-height: 1.1` is strictly prohibited on elements that can wrap across multiple lines, preventing pixel glyph collisions.
+- **Single-Line Text Truncation & Descender Protection Mixin (`_layout.scss`)**:
+  - `@mixin text-truncate` enforces `line-height: 1.45` and `padding-bottom: 2px` alongside `overflow: hidden; text-overflow: ellipsis; white-space: nowrap;`.
+  - In custom pixel fonts (`Pokemon FireRed LeafGreen`), descenders (`g`, `p`, `q`, `y`, `j`) extend down to `y = -204`. Truncated text containers MUST never use `line-height < 1.4` without bottom padding; otherwise the browser line box clips the bottom glyph strokes.
 - **Unified Card & Empty-State Mixins (`_shell.scss`)**:
   - Home dashboard cards and widgets must reuse `@mixin home-section-card` to standardize card surface geometry, padding, shadows, and backdrop filters.
   - Dashed placeholder and unconfigured states must reuse `@mixin empty-state-card` for consistent empty-state layout and button styling.

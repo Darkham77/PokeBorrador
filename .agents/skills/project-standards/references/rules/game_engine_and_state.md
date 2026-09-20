@@ -39,8 +39,8 @@
 
 ## 4. Mandatory 4-Seat Generic Compatibility Mandate
 
-- Every battle orchestration, state synchronization, worker payload processing, and UI component MUST be strictly designed, modularized, and generalized to support up to 4 battle seats (`p1`, `p2`, `p3`, `p4`) dynamically.
-- Hardcoding logic, branches, or state variables for only 2 seats (`p1`/`p2`) is STRICTLY FORBIDDEN. Refactor seat logic into parameterized loops without code duplication.
+- **Multi-Seat Architecture & Worker Decoupling**: Every battle orchestration, state synchronization, worker payload processing, RPC protocol parser, and session abstraction (`BattleSession`) MUST be strictly designed and generalized to support up to 4 battle seats (`p1`, `p2`, `p3`, `p4`) dynamically.
+- **UI 1v1 Viewport Projection & State Roadmap**: Current 1v1 battle arena views and store models project the active combatants as `player` and `enemy` from the underlying session. Hardcoding protocol-level branches for only 2 seats is strictly prohibited; the store state is roadmapped to migrate dynamically to `Record<SideID, Pokemon | null>` without duplicating combat loops.
 
 ## 5. Visual Shell, SASS Integrity & Game Performance
 
@@ -51,7 +51,7 @@
 ## 6. Entity Identifier Formatting Rules
 
 - **English Identifier Mandate**: Logical identifiers (`id`) for items, Pokémon, abilities, natures, moves, etc., MUST be strictly in English (using official Showdown format). Spanish is reserved exclusively for user-facing UI text.
-- **Showdown ID Format**: All identifiers MUST be all lowercase, alphanumeric characters only (no spaces, no hyphens, no underscores). Correct non-conforming IDs across configs, code, and databases immediately upon discovery.
+- **Showdown ID Format (Zero Hyphens, Zero Underscores)**: All identifiers MUST be all lowercase, alphanumeric characters only (no spaces, no hyphens, no underscores). 100% of Pokémon species in `ENABLED_POKEMON_IDS` (including all form variants like `castformsunny`, `castformrainy`, `castformsnowy`) adhere strictly to Showdown's `toID()` canonical format. Correct non-conforming IDs across configs, code, and databases immediately upon discovery.
 - **Showdown Healthy Status Semantics**: An unafflicted Pokémon's status condition is represented strictly as an empty string `''` (never `null`). Status clearance and condition evaluations across engine, items, and UI logic MUST check `Boolean(pokemon.status)` to avoid falsely evaluating healthy Pokémon as afflicted.
 
 ## 7. Movepool & Learnset Legality Standards

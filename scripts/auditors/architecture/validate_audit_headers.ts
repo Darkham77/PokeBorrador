@@ -36,6 +36,8 @@ export type HeaderRuleId =
   | 'file-level-fallow-ignore'
   | 'file-level-eslint-disable'
   | 'banned-ts-suppression'
+  | 'banned-magic-suppression'
+  | 'banned-style-suppression'
   | 'header-auditor-escape'
   | 'unjustified-escape-hatch';
 
@@ -43,6 +45,8 @@ export const HEADER_RULES: readonly HeaderRuleId[] = [
   'file-level-fallow-ignore',
   'file-level-eslint-disable',
   'banned-ts-suppression',
+  'banned-magic-suppression',
+  'banned-style-suppression',
   'header-auditor-escape',
   'unjustified-escape-hatch'
 ];
@@ -69,8 +73,10 @@ const FALLOW_IGNORE_FILE_REGEX = /^\s*\/\/\s*fallow-ignore-file\b/i;
 const TS_SUPPRESSION_REGEX = /^\s*\/\/\s*@ts-(nocheck|ignore|expect-error)\b/i;
 const ESLINT_DISABLE_BLOCK_REGEX = /^\s*\/\*\s*eslint-disable\b(?!\s*-(next-line|line)\b)/i;
 const ESLINT_DISABLE_TEMPLATE_REGEX = /^\s*<!--\s*eslint-disable\b(?!\s*-(next-line|line)\b)/i;
-const STANDALONE_ESCAPE_HATCHES_REGEX = /^\s*\/\/\s*(domain-ok|singleton-ok|no-magic|magic-ok|number-ok|string-ok|any-ok|boolean-ok|type-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok)\b\s*$/i;
-const UNJUSTIFIED_ESCAPE_HATCH_REGEX = /\/\/\s*(domain-ok|singleton-ok|no-magic|magic-ok|number-ok|string-ok|any-ok|boolean-ok|type-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok|uuid-ok|infra-id-ok|spanish-ok|open-record|runtime-set|runtime-map|lib-duplicate-ok|fallback-ok)\b(?!\s*:\s*\S+)/i;
+const BANNED_MAGIC_SUPPRESSION_REGEX = /\/\/\s*(no-magic|magic-ok|number-ok)\b/i;
+const BANNED_STYLE_SUPPRESSION_REGEX = /\/\/\s*(style-inherited|style-ok)\b/i;
+const STANDALONE_ESCAPE_HATCHES_REGEX = /^\s*\/\/\s*(domain-ok|singleton-ok|string-ok|any-ok|boolean-ok|type-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok)\b\s*$/i;
+const UNJUSTIFIED_ESCAPE_HATCH_REGEX = /\/\/\s*(domain-ok|singleton-ok|string-ok|any-ok|boolean-ok|type-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok|uuid-ok|infra-id-ok|spanish-ok|open-record|runtime-set|runtime-map|lib-duplicate-ok|fallback-ok)\b(?!\s*:\s*\S+)/i;
 
 /**
  * Scans file contents for illegal suppression headers or file-level ignores.
@@ -136,7 +142,35 @@ export function scanFileForIllegalHeaders(filePath: string, content: string): He
       continue;
     }
 
-    // 4. Check for standalone escape hatches in header lines
+    // 4. Check for banned magic number suppression directives
+    const bannedMagicMatch = rawLine.match(BANNED_MAGIC_SUPPRESSION_REGEX);
+    if (bannedMagicMatch) {
+      violations.push({
+        file: filePath,
+        line: lineNum,
+        ruleId: 'banned-magic-suppression',
+        message: `Directiva de escape prohibida '// ${bannedMagicMatch[1]}' detectada. La política de Zero Magic Numbers exige declarar constantes descriptivas ('as const') sin excepciones.`,
+        context: trimmed,
+        severity: 'error'
+      });
+      continue;
+    }
+
+    // 5. Check for banned style inheritance/suppression directives
+    const bannedStyleMatch = rawLine.match(BANNED_STYLE_SUPPRESSION_REGEX);
+    if (bannedStyleMatch) {
+      violations.push({
+        file: filePath,
+        line: lineNum,
+        ruleId: 'banned-style-suppression',
+        message: `Directiva de escape prohibida '// ${bannedStyleMatch[1]}' detectada. Los estilos scoped de Vue 3 no penetran a componentes hijos; está estrictamente prohibido usar comentarios de herencia simulada de estilos. Cada componente con clases debe vincular o declarar sus estilos explícitamente.`,
+        context: trimmed,
+        severity: 'error'
+      });
+      continue;
+    }
+
+    // 6. Check for standalone escape hatches in header lines
     if (lineNum <= MAX_HEADER_LINES_CHECK && STANDALONE_ESCAPE_HATCHES_REGEX.test(rawLine)) {
       violations.push({
         file: filePath,
@@ -149,7 +183,7 @@ export function scanFileForIllegalHeaders(filePath: string, content: string): He
       continue;
     }
 
-    // 5. Check for ANY unjustified escape hatch without mandatory ': <motivo>'
+    // 6. Check for ANY unjustified escape hatch without mandatory ': <motivo>'
     const unjustifiedMatch = rawLine.match(UNJUSTIFIED_ESCAPE_HATCH_REGEX);
     if (unjustifiedMatch) {
       violations.push({
@@ -160,7 +194,6 @@ export function scanFileForIllegalHeaders(filePath: string, content: string): He
    📚 FORMATO CANÓNICO REQUERIDO: '// ${unjustifiedMatch[1]}: <motivo técnico detallado>'
    💡 EJEMPLOS VÁLIDOS SEGÚN EL CASO:
       - // domain-ok: Texto dinámico de UI, mensajes de chat o cadenas narrativas
-      - // no-magic: Coeficiente matemático de fórmula física o easing visual
       - // uuid-ok: UUID de base de datos o identificador único de sesión
       - // infra-id-ok: Identificador DOM o socket de red externo
       - // open-record: Contenedor JSON dinámico de clave-valor genérico
@@ -194,6 +227,8 @@ export class AuditHeadersAuditor extends FileScanAuditor<HeaderRuleId> {
         'file-level-fallow-ignore': 'Directiva de ignore global de Fallow en archivo',
         'file-level-eslint-disable': 'Directiva global eslint-disable en archivo',
         'banned-ts-suppression': 'Directiva TypeScript prohibida (@ts-nocheck/@ts-ignore)',
+        'banned-magic-suppression': 'Directiva de escape de números mágicos prohibida',
+        'banned-style-suppression': 'Directiva de escape de estilos prohibida',
         'header-auditor-escape': 'Escape hatch de auditor mal ubicado en cabecera',
         'unjustified-escape-hatch': 'Escape hatch sin justificación explícita'
       },

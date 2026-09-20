@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent MainGameView.vue (_main-game-view.scss)
 import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent'
 import HomeView from '@/views/game/HomeView.vue'
 

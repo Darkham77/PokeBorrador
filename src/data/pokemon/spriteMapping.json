@@ -1416,6 +1416,9 @@
   "terapagosterastal": 1024,
   "terapagosstellar": 1024,
   "pecharunt": 1025,
+  "castformsunny": "351_1",
+  "castformrainy": "351_2",
+  "castformsnowy": "351_3",
   "castform-sunny": "351_1",
   "castform-rainy": "351_2",
   "castform-snowy": "351_3"

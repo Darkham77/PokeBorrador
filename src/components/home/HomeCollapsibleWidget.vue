@@ -135,7 +135,8 @@ const toggle = () => {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    line-height: 1.35;
+    line-height: 1.45;
+    padding-bottom: 2px;
     text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;

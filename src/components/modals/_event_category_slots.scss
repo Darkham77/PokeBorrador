@@ -40,8 +40,9 @@
 
       .cat-title {
         font-size: 8px;
+        line-height: 1.45;
+        padding-bottom: 2px;
         color: var(--yellow);
-        font-weight: bold;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -103,8 +104,9 @@
         min-width: 0;
 
         .poke-name-txt {
-          font-size: 8.5px;
-          font-weight: bold;
+          font-size: 9px;
+          line-height: 1.45;
+          padding-bottom: 2px;
           color: var(--white);
           white-space: nowrap;
           overflow: hidden;
@@ -133,6 +135,8 @@
       .metric-highlight-row {
         .metric-val-txt {
           font-size: 7px;
+          line-height: 1.45;
+          padding-bottom: 2px;
           color: var(--green-bright);
           text-shadow: 0 0 6px Rgba(74, 222, 128, 0.3);
           white-space: nowrap;

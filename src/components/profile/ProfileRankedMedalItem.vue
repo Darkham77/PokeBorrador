@@ -178,6 +178,8 @@ function handleMedalClick() {
 
     .season-name {
       font-size: 0.75rem;
+      line-height: 1.45;
+      padding-bottom: 2px;
       font-weight: 700;
       color: #e2e8f0;
       white-space: nowrap;

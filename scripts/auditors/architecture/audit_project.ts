@@ -974,10 +974,13 @@ export function getViolationCategory(v: Violation): string {
   return 'Otros';
 }
 
-const MAX_CONTEXT_SNIPPET_LENGTH = 50; // no-magic: Explicit mathematical constant or threshold value
-const DEFAULT_TOP_LIMIT = 15; // no-magic: Explicit mathematical constant or threshold value
-const MAX_FILES_TO_SHOW_IN_TERMINAL = 25; // no-magic: Explicit mathematical constant or threshold value
-const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10; // no-magic: Explicit mathematical constant or threshold value
+const MAX_CONTEXT_SNIPPET_LENGTH = 50;
+const DEFAULT_TOP_LIMIT = 15;
+const MAX_FILES_TO_SHOW_IN_TERMINAL = 25;
+const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10;
+const FALLOW_DUPES_MIN_OCCURRENCES = '3';
+const FALLOW_DUPES_MIN_LINES = '10';
+const FALLOW_DUPES_MIN_TOKENS = '60';
 function sanitizeContext(ctx: string): string {
   if (!ctx) return '';
   return ctx.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_CONTEXT_SNIPPET_LENGTH);
@@ -1174,7 +1177,7 @@ async function main() {
         if (isFallowDupesActive) {
           logProgress(styleText('cyan', '   ├─ [1/4] Fallow: Análisis de duplicación de código...'));
           all = all.concat(runFallow('dupes'));
-          all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic: Explicit mathematical constant or threshold value
+          all = all.concat(runFallow('dupes', ['--min-occurrences', FALLOW_DUPES_MIN_OCCURRENCES, '--min-lines', FALLOW_DUPES_MIN_LINES, '--min-tokens', FALLOW_DUPES_MIN_TOKENS]));
         }
         if (isFallowSecurityActive) {
           logProgress(styleText('cyan', '   ├─ [2/4] Fallow: Análisis de seguridad (CWE)...'));

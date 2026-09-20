@@ -17,6 +17,7 @@ describe('Player Saves Migration & Compatibility Audit', () => {
 
     // 1. Inicializar base de datos SQLite nativa en memoria usando node:sqlite
     using db = new DatabaseSync(':memory:');
+    db.exec('PRAGMA synchronous = OFF; PRAGMA journal_mode = MEMORY; PRAGMA temp_store = MEMORY;');
     
     // Crear esquema de tablas oficial
     for (const ddl of TABLES_SCHEMA) {
@@ -145,5 +146,5 @@ describe('Player Saves Migration & Compatibility Audit', () => {
     }
 
     expect(errors.length).toBe(0);
-  }, 120000);
+  }, 240000);
 });

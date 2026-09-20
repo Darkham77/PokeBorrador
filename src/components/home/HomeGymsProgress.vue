@@ -351,7 +351,8 @@ const openGyms = () => {
     .leader-name {
       @include pixelated;
       font-size: 7px;
-      line-height: 1.35;
+      line-height: 1.45;
+      padding-bottom: 1px;
       color: var(--white);
       white-space: nowrap;
       overflow: hidden;

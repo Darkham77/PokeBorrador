@@ -36,7 +36,5 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-// El estilo reside en la clase global .hud-sq-btn (definida en _pills.scss)
-// para garantizar consistencia absoluta y reutilización de estilos 1:1.
-// HMR Touch v3
+@use "@/styles/layouts/hud/pills";
 </style>

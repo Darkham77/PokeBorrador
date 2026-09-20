@@ -350,13 +350,21 @@ export const manualTimersFrontend: AuditRule = {
   regex: /\b(set|clear)(Timeout|Interval)\b/g,
   message: (match: string) => `Timer de ANIMACIÓN/UI detectado: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Prohibido en componentes UI y lógicas para gestionar flujo visual o reintentos de carga. Usa gsap.delayedCall, timelines o promesas deterministas.`,
   severity: 'error', 
-  check: (content: string, _match: RegExpExecArray, filePath?: string) => {
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
-    if (/audit-disable\s+timers/i.test(content)) return false;
     const norm = normalizeFilePath(filePath);
     if (!norm.includes('src/')) return false;
     if (norm.includes('.spec.') || norm.includes('.test.') || norm.includes('node_modules') || norm.includes('external')) return false;
-    if (norm.includes('src/logic/utils/timeutils') || norm.includes('src/logic/battle/showdownworkerclient') || norm.includes('src/logic/battle/battledebug') || norm.includes('src/logic/db/sqliteengine') || norm.includes('src/stores/auth') || norm.includes('src/views/auth/')) return false;
+    if (
+      norm.includes('src/logic/utils/timeutils') ||
+      norm.includes('src/logic/battle/showdownworkerclient') ||
+      norm.includes('src/logic/battle/battledebug') ||
+      norm.includes('src/logic/db/sqliteengine') ||
+      norm.includes('src/stores/auth') ||
+      norm.includes('src/views/auth/') ||
+      norm.includes('src/logic/auth/savecoordinator') ||
+      norm.includes('src/stores/pvp')
+    ) return false;
     return true;
   },
   fixable: false
@@ -366,9 +374,8 @@ export const zeroTimerBattleLogic: AuditRule = {
   regex: /\b(sleep)\s*\(/g,
   message: "Uso de 'sleep()' nativo detectado en lógica/animaciones de combate. MIGRACIÓN OBLIGATORIA A GSAP: Usa 'gsapSleep' (reloj GSAP) o promesas de animación 'awaitTween' para que las animaciones respondan a timeScale y a eventos deterministas.",
   severity: 'error',
-  check: (content: string, _match: RegExpExecArray, filePath?: string) => {
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
-    if (/audit-disable\s+timers/i.test(content)) return false;
     const norm = normalizeFilePath(filePath);
     if (!norm.includes('src/logic/battle/') && !norm.includes('src/components/battle/')) return false;
     if (norm.includes('.spec.') || norm.includes('.test.') || norm.includes('gsaphelpers')) return false;
@@ -1151,7 +1158,7 @@ export const namedTimerConstants: AuditRule = {
     const lineStart = content.lastIndexOf('\n', matchIndex) + 1;
     const lineEnd = content.indexOf('\n', matchIndex);
     const line = content.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
-    if (/\/\/\s*(?:timer-ok|delay-ok|magic-ok|no-magic):\s*\S+/i.test(line)) return false;
+    if (/\/\/\s*(?:timer-ok|delay-ok):\s*\S+/i.test(line)) return false;
 
     return true;
   },

@@ -467,7 +467,8 @@
 
         .trophy-event-name {
           font-size: 9px;
-          font-weight: bold;
+          line-height: 1.45;
+          padding-bottom: 2px;
           color: var(--white);
           white-space: nowrap;
           overflow: hidden;

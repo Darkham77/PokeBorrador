@@ -14,5 +14,5 @@ import TimeDebugControls from './shared/TimeDebugControls.vue'
 </template>
 
 <style scoped lang="scss">
-// Inherits layout styles from debug.scss via TimeDebugControls
+@use "@/styles/components/debug";
 </style>

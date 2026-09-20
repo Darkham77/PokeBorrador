@@ -6,5 +6,5 @@
  * Decouples client version checks from the heavy migrations SQL data chunk.
  */
 
-export const CLIENT_DB_VERSION = 20260911020000;
-export const LATEST_MIGRATION_ID = '20260911020000_deactivate_corrupted_passive_teams';
+export const CLIENT_DB_VERSION = 20260920000000;
+export const LATEST_MIGRATION_ID = '20260920000000_normalize_castform_showdown_ids';

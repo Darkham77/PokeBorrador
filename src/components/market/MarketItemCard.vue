@@ -267,7 +267,7 @@ const tierColor = computed(() => {
       overflow: hidden;
       text-overflow: ellipsis;
       line-height: 1.5;
-      padding-top: 2px;
+      padding: 2px 0;
     }
 
     .i-meta {

@@ -132,6 +132,8 @@
     .box-pokemon-name {
       @include pixelated;
       font-size: 8px;
+      line-height: 1.45;
+      padding-bottom: 2px;
       color: var(--white);
       white-space: nowrap;
       overflow: hidden;
@@ -150,6 +152,8 @@
     .box-pokemon-species-sub {
       @include pixelated;
       font-size: 6px;
+      line-height: 1.45;
+      padding-bottom: 1px;
       color: var(--text-muted, Rgba(255, 255, 255, 0.6));
       text-transform: uppercase;
       white-space: nowrap;

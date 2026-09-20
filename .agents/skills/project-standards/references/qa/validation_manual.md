@@ -202,11 +202,11 @@ When diagnosing, reproducing, or fixing failures across tests or E2E simulation 
 1. **Tier 1: Isolated Unit Test (RED-to-GREEN)**:
    - Identify the failing scenario or case ID (e.g. `case-8b5b9aabf776`).
    - Extract the failing parameters, seed, teams, and turn choices into an immutable static fixture under `tests/fixtures/battle/` or inlined in a test file under `tests/node/battle/`.
-   - Run `npx vitest run <path_to_test>` and verify the deterministic failure in **RED** before touching `src/`.
+   - Run `npm run test:node -- <path_to_test>` (or `npm run test:unit -- <path_to_test>`) and verify the deterministic failure in **RED** before touching `src/`.
 2. **Tier 2: Integrity & Integration Test**:
    - Verify that data boundaries, schemas, FSM state machine transitions, and Showdown `@pkmn/sim` parity are tested in `tests/integration/` or `tests/node/`.
    - Diagnose root cause in `src/` without using masking fallbacks (`||`, `??`, dummy derivations). Apply clean fix and verify that unit & integration tests turn **GREEN**.
-   - Run the full Node unit suite (`npx vitest run tests/node/` / `npm run test`) with 0 regressions.
+   - Run the full Node unit suite (`npm run test:node` / `npm run test`) with 0 regressions.
 3. **Tier 3: Playwright E2E Browser Simulation (following `@/game-simulation`)**:
    - Re-run ONLY the specific affected simulation file (e.g. `npx playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts`).
    - Follow all `/game-simulation` rules: passive joystick, 100% ID-based locators (`#<id>`), 10s per-action timeout limit, zero artificial timers, and certified combat replay.

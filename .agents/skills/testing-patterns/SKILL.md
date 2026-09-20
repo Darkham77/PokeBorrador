@@ -193,24 +193,12 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 ---
 
-## 11. Required Mocks for `switchAction` Tests
+## 11. Mocking Boundaries & Anti-Tautological Governance
 
-`switchAction.ts` uses multiple dynamic imports. If any of them is missing from the test's
-mock setup, the function crashes before reaching the return statement under test — causing
-the assertion to fail for the wrong reason.
+In accordance with the **Absolute Prohibition on Tautological Mocking & Falsified Integration Tests Mandate** in root `AGENTS.md`:
 
-When testing `executeSwitch`, always include **all** of these mocks:
-
-| Module | Exports to mock |
-| :--- | :--- |
-| `@/logic/battle/orchestrator` | `isPlayerTrappedInWorker`, `executeTurnInWorker` |
-| `@/logic/battle/showdownWorkerClient` | `executeTurnInWorker`, `syncTeamsFromLastWorkerState` |
-| `@/logic/battle/showdownBridge` | `filterShowdownLogs`, `parseShowdownLogLine` |
-| `@/stores/ui` | `useUIStore().notify` (required for the trap-abort notification path) |
-| `@/logic/pokemon/typeEngine` | `getCombinedEffectiveness` |
-
-Without the `@/stores/ui` mock, the early return inside the trap check never executes,
-causing the switch to proceed and the trap assertion to fail silently.
+- **Core Subsystems Are NEVER Mocked in Integration / Parity Suites**: In integration tests (`tests/integration/`), engine parity tests, and battle regression verifications, agents **MUST NEVER** mock out the core execution pipeline under test (`showdownWorkerClient.ts`, `showdownBridge.ts`, `@pkmn/sim`, `turnActionResolver.ts`, DBRouter, or database drivers) with dummy objects (`vi.mock('@/logic/battle/showdownWorkerClient.ts', ...)`). Multi-module contracts MUST execute against the real engine or real Showdown simulation instances.
+- **Isolated Unit Test Mocking (Side-Effects & UI Only)**: When writing isolated unit tests for individual action dispatchers (like `executeSwitch` in `switchAction.ts`), only external UI side-effects and notification stores (e.g. `useUIStore().notify` for trap-abort notifications) may be spied or stubbed to verify pure branch routing. Do NOT mock simulation math or engine state to falsify passing assertions.
 
 ---
 

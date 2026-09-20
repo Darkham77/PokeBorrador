@@ -90,9 +90,12 @@
     background: transparent !important;
     box-shadow: none !important;
 
-    &::before,
-    &::after {
-      display: none !important;
+    // Suppress heavy background pseudoelements, except for camera-level atmospheric vignettes
+    &:not(.cold):not(.coldwave):not(.heatwave):not(.sun):not(.intense_sun) {
+      &::before,
+      &::after {
+        display: none !important;
+      }
     }
   }
 }

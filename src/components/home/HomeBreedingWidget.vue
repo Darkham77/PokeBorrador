@@ -336,13 +336,14 @@ const handleEggClick = (egg: PokemonEgg) => {
 .egg-status {
   @include pixelated;
   font-size: 7px;
-  line-height: 1.35;
+  line-height: 1.45;
   color: var(--gray, #94a3b8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
   padding-left: 2px;
+  padding-bottom: 1px;
 
   &.status-ready {
     color: #4ade80;
@@ -371,6 +372,7 @@ const handleEggClick = (egg: PokemonEgg) => {
   height: 100%;
   background: linear-gradient(90deg, #38bdf8, #818cf8);
   border-radius: 2px;
+  overflow: hidden;
 
   &.fill-ready {
     background: linear-gradient(90deg, #22c55e, #4ade80);
@@ -380,12 +382,13 @@ const handleEggClick = (egg: PokemonEgg) => {
 .steps-remaining {
   @include pixelated;
   font-size: 6px;
-  line-height: 1.35;
+  line-height: 1.45;
   color: var(--gray, #94a3b8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding-left: 2px;
+  padding-bottom: 1px;
 }
 
 .empty-breeding-card {

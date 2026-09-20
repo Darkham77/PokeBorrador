@@ -286,6 +286,8 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 .buff-label {
   @include pixelated;
   font-size: 8px;
+  line-height: 1.45;
+  padding-bottom: 2px;
   color: var(--white, #ffffff);
   white-space: nowrap;
   overflow: hidden;

@@ -8,7 +8,6 @@ import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { logger } from '@/logic/utils/logger';
 import { getGMT3Date } from '@/logic/utils/timeUtils';
 import type { DaycareMission } from '@/types/breeding/breeding';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function isValidDaycareMission(m: unknown): m is DaycareMission {
   if (!m || typeof m !== 'object') return false;
@@ -47,12 +46,21 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
   const fulfillableMissionsCount = computed(() => {
     const missions = dailyMissions.value.filter(m => !m.completed);
     if (missions.length === 0) return 0;
-    
+
     const team = gameStore.state.team || [];
     const box = gameStore.state.box || [];
-    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null); // o1-ok: O(1) data structure exception
-    
-    return missions.filter(mission => allPokes.some(p => isPokemonEligibleForMission(p, mission))).length;
+
+    function hasEligiblePokemon(mission: DaycareMission): boolean {
+      for (const p of team) {
+        if (p && isPokemonEligibleForMission(p, mission)) return true;
+      }
+      for (const p of box) {
+        if (p && isPokemonEligibleForMission(p, mission)) return true;
+      }
+      return false;
+    }
+
+    return missions.filter(hasEligiblePokemon).length;
   });
 
   function checkDailyReset() {

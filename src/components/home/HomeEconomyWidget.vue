@@ -224,6 +224,8 @@ const getListingTitle = (listing: MarketListing): string => {
 
     .alert-sub {
       font-size: 9px;
+      line-height: 1.45;
+      padding-bottom: 2px;
       color: #e2e8f0;
       white-space: nowrap;
       overflow: hidden;
@@ -301,6 +303,8 @@ const getListingTitle = (listing: MarketListing): string => {
     .item-title {
       @include pixelated;
       font-size: 8px;
+      line-height: 1.45;
+      padding-bottom: 2px;
       color: var(--white, #ffffff);
       white-space: nowrap;
       overflow: hidden;
@@ -310,6 +314,8 @@ const getListingTitle = (listing: MarketListing): string => {
     .item-seller {
       @include pixelated;
       font-size: 7px;
+      line-height: 1.4;
+      padding-bottom: 1px;
       color: var(--gray, #94a3b8);
       white-space: nowrap;
       overflow: hidden;

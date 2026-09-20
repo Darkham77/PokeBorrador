@@ -9,7 +9,7 @@
 ## 1. Absolute Prohibitions — Unrecoverable Errors
 
 ### PROHIBITION 1 — NEVER catalog a bug without a RED-failing test first
-- A suspected divergence is **NOT a bug** until a unit test written for it **fails RED** when run with `npx vitest run`.
+- A suspected divergence is **NOT a bug** until a unit test written for it **fails RED** when run with `npm run test:unit -- <path>`.
 - The test must directly validate the **exact behavior** described in the Showdown canonical code — not a trivial assertion that passes for any input.
 - If a test passes GREEN on the first run (before any `src/` modification), the behavior is **already correctly implemented**. It is NOT a bug. Do not catalog it.
 - **NEVER** pre-catalog bugs based on suspicion and mark them GREEN "because the test passed". That is fabricating bugs.
@@ -65,7 +65,7 @@ SUSPECT (from Stage 1)
        ↓
 Add test describe block in tests/unit/battle/parity/
        ↓
-npx vitest run tests/unit/battle/parity/
+npm run test:unit -- tests/unit/battle/parity/
        ↓
 RED (test fails)    ──→ Confirmed real bug → Catalog it
 GREEN (test passes) ──→ Already working    → Discard. Do NOT catalog.
@@ -151,7 +151,7 @@ graph TD
 ```
 
 ### Phase Details
-- **Phase 1**: Run `npm run sim:audit`, inspect `external/` vs `src/` to collect ≥20 suspects, write a test for each in `tests/unit/battle/parity/`, run with `npx vitest run`.
+- **Phase 1**: Run `npm run sim:audit`, inspect `external/` vs `src/` to collect ≥20 suspects, write a test for each in `tests/unit/battle/parity/`, run with `npm run test:unit -- tests/unit/battle/parity/`.
 - **Phase 2**: Catalog ONLY suspects that fail RED into the Master 1:1 Bug Table. If 0 fail RED, report 0 divergences honestly.
 - **Phase 3**: Present confirmed RED bugs to the user and **WAIT for explicit approval** before modifying any code in `src/`.
 - **Phase 4**: Fix confirmed RED bugs in `src/`. Update `task.md` after each fix.

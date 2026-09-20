@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent PokemonSelectionModal.vue
-
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -106,4 +104,8 @@ function clearFilters() {
     </div>
   </div>
 </template>
+
+<style lang="scss">
+@use "@/styles/components/pokemon-selection";
+</style>
 

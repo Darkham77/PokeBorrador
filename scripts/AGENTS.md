@@ -72,4 +72,5 @@ DevOps / Tooling Engineers.
 - [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.
 - [testing/](./testing/AGENTS.md): Test execution orchestration, ephemeral Docker PostgreSQL lifecycle, and dual test runner.
 - [auditors/](./auditors/AGENTS.md): Domain module documentation for auditors and validators.
+- [lib/](./lib/AGENTS.md): Core infrastructure libraries, base classes, streaming runners, and terminal rendering themes.
 - [tools/](./tools/AGENTS.md): Domain module documentation for tools.

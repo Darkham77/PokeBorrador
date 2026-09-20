@@ -268,10 +268,10 @@ What animation do you need?
 │   └── CSS 3D Transforms (simple) or Three.ts (complex)
 │
 ├── Atmospheric background?
-│   └── tsParticles or Canvas
+│   └── Canvas / Web Worker OffscreenCanvas or GSAP Particle Ticker
 │
-└── Simple entrance/hover?
-    └── CSS @keyframes or Framer Motion
+└── Entrance / UI hover / Micro-interactions?
+    └── GSAP (gsap.to, v-gsap-hover, useGsapTransition)
 ```
 
 ---
@@ -280,9 +280,9 @@ What animation do you need?
 
 | ❌ Don't | ✅ Do |
 | :--- | :--- |
-| Animate everything at once | Stagger and sequence |
-| Use heavy libraries for simple effects | Start with CSS |
-| Ignore reduced-motion | Always provide fallback |
+| Animate everything at once | Stagger and sequence via GSAP timeline |
+| Use CSS @keyframes or transitions | Use GSAP composables and directives (`v-gsap-hover`) |
+| Ignore reduced-motion | Always provide fallback via `gsap.matchMedia()` |
 | Block main thread | Optimize for 60fps |
 | Same particles every project | Match brand/context |
 | Complex effects on mobile | Feature detection |

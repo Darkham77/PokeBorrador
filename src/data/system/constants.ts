@@ -22,9 +22,6 @@ export const ENABLED_POKEMON_IDS = [
   'elekid',
   'magby',
   'castform',
-  'castform-sunny',
-  'castform-rainy',
-  'castform-snowy',
   'castformsunny',
   'castformrainy',
   'castformsnowy'

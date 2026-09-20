@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent PVTooltip.vue (_pv-tooltip.scss)
 interface TooltipDescriptionLineData {
   readonly hasBullet: boolean
   readonly text?: string | undefined
@@ -45,3 +44,5 @@ defineProps<{
     </template>
   </div>
 </template>
+
+<style lang="scss" src="@/styles/components/_pv-tooltip.scss"></style>

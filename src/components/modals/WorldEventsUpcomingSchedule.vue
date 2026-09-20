@@ -342,7 +342,8 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
       .upcoming-desc {
         font-size: 9px;
         color: var(--gray);
-        line-height: 1.35;
+        line-height: 1.45;
+        padding-bottom: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

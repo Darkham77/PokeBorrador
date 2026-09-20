@@ -16,7 +16,7 @@ Frontend Developers / QA Engineers.
 
 ## Verification
 
-- Run `npx vitest run tests/unit/components/` to execute component unit tests.
+- Run `npm run test:unit -- tests/unit/components/` to execute component unit tests.
 
 ## Child DOX Index
 

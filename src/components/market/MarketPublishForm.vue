@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent MarketPublish.vue
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MarketListingType } from '@/logic/economy/market'
 import type { InventoryItem } from './useMarketPublishInventory.ts'
@@ -151,3 +150,5 @@ const emit = defineEmits<{
     </div>
   </div>
 </template>
+
+<style src="./MarketPublish.styles.scss" lang="scss"></style>

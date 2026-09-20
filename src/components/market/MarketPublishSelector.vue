@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// style-inherited: styles imported in parent MarketPublish.vue
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
@@ -191,3 +190,5 @@ function handleNextPage() {
     </div>
   </div>
 </template>
+
+<style src="./MarketPublish.styles.scss" lang="scss"></style>

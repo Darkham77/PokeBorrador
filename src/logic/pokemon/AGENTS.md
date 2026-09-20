@@ -29,7 +29,7 @@ Frontend Developers / Systems Engineers.
 
 ## Verification
 
-- Run standard validation scripts (`npm test`).
+- Run standard test suites (`npm run test:node` or `npm run test`).
 
 ## Child DOX Index
 

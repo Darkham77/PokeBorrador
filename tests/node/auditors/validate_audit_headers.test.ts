@@ -24,10 +24,36 @@ export function calculate(a: number, b: number): number {
       const codeWithInlineEscapes = [
         'const name = getRawName(); // ' + 'domain-ok: Open dynamic text or non-domain string payload',
         'let globalCache: Cache | null = null; // ' + 'singleton-ok: Global persistent singleton instance',
-        'const shake = { x: -4 }; // ' + 'no-magic: Visual shake offset displacement'
+        'const timeout = 1000; // ' + 'timer-ok: Explicit network latency debounce'
       ].join('\n');
       const violations = scanFileForIllegalHeaders('src/logic/helpers.ts', codeWithInlineEscapes);
       expect(violations).toEqual([]);
+    });
+
+    it('detects banned magic number suppression directives (no-magic, magic-ok, number-ok)', () => {
+      const code = [
+        'const shake = { x: -4 }; // ' + 'no-magic: Visual shake offset displacement',
+        'const ratio = 1.5; // ' + 'magic-ok: Aspect ratio',
+        'const count = 42; // ' + 'number-ok: Fixed count'
+      ].join('\n');
+      const violations = scanFileForIllegalHeaders('src/logic/math.ts', code);
+      expect(violations.length).toBe(3);
+      expect(violations[0]?.ruleId).toBe('banned-magic-suppression');
+      expect(violations[1]?.ruleId).toBe('banned-magic-suppression');
+      expect(violations[2]?.ruleId).toBe('banned-magic-suppression');
+    });
+
+    it('detects banned style inheritance directives (style-inherited, style-ok)', () => {
+      const code = [
+        '<script setup lang="ts">',
+        '// ' + 'style-inherited: styles imported in parent BoxMenu.vue',
+        '// ' + 'style-ok: local exemption',
+        '</script>'
+      ].join('\n');
+      const violations = scanFileForIllegalHeaders('src/components/MyChild.vue', code);
+      expect(violations.length).toBe(2);
+      expect(violations[0]?.ruleId).toBe('banned-style-suppression');
+      expect(violations[1]?.ruleId).toBe('banned-style-suppression');
     });
 
     it('detects // fallow-ignore-file headers anywhere in file', () => {

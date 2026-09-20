@@ -264,6 +264,8 @@ async function handleDecline() {
 .challenger-name {
   font-family: var(--font-pixel);
   font-size: 11px;
+  line-height: 1.45;
+  padding-bottom: 2px;
   color: #f8fafc;
   overflow: hidden;
   text-overflow: ellipsis;

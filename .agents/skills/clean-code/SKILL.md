@@ -130,6 +130,7 @@ File to edit: UserService.ts
 > 🔴 **CSS Consolidation**: In shared/generic components (e.g., `BaseModal`, `UnifiedCard`), avoid using multiple classes that define overlapping properties (like `height`, `max-height`). Consolidate styles into a single master class and use context-based nesting (e.g., `.type-center &`) to prevent specificity wars and layout bugs.
 > 🔴 **CSS Override Governance**: ALWAYS audit the end of large SASS/CSS files for duplicated local class definitions. During migrations, local overrides can silently break global standardizations and cause "phantom" regressions. In shared/generic components (e.g., `.location-card`, `.card`), avoid hardcoding filters or themes that should be handled by specialized atmospheric systems.
 > 🔴 **SASS Nesting Traceability**: Maintain a strict trace of nesting levels (max 3-4 deep) to avoid "unmatched brace" syntax errors. In complex components with conditional wrappers, prefer flatter structures to maintain visibility of scope boundaries.
+> 🔴 **Extracted Component Scoped Style Linkage**: In Vue 3, parent `<style scoped>` styles DO NOT penetrate child component elements. Extracted child components MUST declare their own `<style scoped lang="scss" src="...">` link or local stylesheet; never rely on simulated parent style inheritance (`// style-inherited` is strictly prohibited).
 
 ---
 
@@ -170,31 +171,30 @@ File to edit: UserService.ts
 
 ### Agent → Script Mapping
 
-| Agent | Script | Command |
+| Role / Concern | Scope | Command |
 | :--- | :--- | :--- |
-| **backend-specialist** | API Validator | `python .agents/skills/api-patterns/scripts/api_validator.py .` |
-| **mobile-developer** | Mobile Audit | `python .agents/skills/mobile-design/scripts/mobile_audit.py .` |
-| **database-architect** | Schema Validate | `python .agents/skills/database-design/scripts/schema_validator.py .` |
-| **security-auditor** | Security Scan | `python .agents/skills/vulnerability-scanner/scripts/security_scan.py .` |
-| **test-engineer** | Playwright | `python .agents/skills/webapp-testing/scripts/playwright_runner.py <url>` |
-| **Any agent** | Lint & Types | `npm run lint` (runs `npm run audit:lint` executing 10 core sub-auditors in parallel) |
-| **Any agent** | Unified Audit | `npm run audit` (Terminal summary + full JSON in `scratch/audits/latest_audit.json`) |
+| **Database & Persistence** | Schema & Parity | `npm run audit:family:persistence` (or `npm run database:test-migrations`) |
+| **Frontend & Styles** | Accessibility & Styles | `npm run validate:component-styles` (or `npm run validate:mobile-accessibility`) |
+| **Security & Vulnerabilities** | Security Audit | `npm run audit:fallow:security` |
+| **Testing & Parity** | Full Vitest Suite | `npm run test` (executes 100% of unit and node projects) |
+| **Any agent** | Lint & Fast Types | `npm run lint` (runs `npm run audit:lint` executing 10 core sub-auditors in parallel) |
+| **Any agent** | Unified Global Audit | `npm run audit` (Terminal summary + full JSON in `scratch/audits/latest_audit.json`) |
 
-> ❌ **WRONG:** `test-engineer` running `security_scan.py`
-> ✅ **CORRECT:** `security-auditor` running `security_scan.py`
+> ❌ **WRONG:** Running unapproved raw scripts, nonexistent paths, or python commands
+> ✅ **CORRECT:** Running native TypeScript auditors or official NPM scripts declared in `package.json`
 
 ---
 
-### 🔴 Script Output Handling (READ → SUMMARIZE → ASK)
+### 🔴 Script Output Handling (READ → SUMMARIZE → ACT)
 
 **When running a validation script, you MUST:**
 
-1. **Run the script** and capture ALL output
+1. **Run the script** via official NPM script and capture ALL output
 2. **Parse the output** - identify errors, warnings, and passes
 3. **Summarize to user** in this format:
 
 ```markdown
-## Script Results: [script_name.py]
+## Script Results: [npm run <script>]
 
 ### ❌ Errors Found (X items)
 - [File:Line] Error description 1
@@ -206,13 +206,10 @@ File to edit: UserService.ts
 ### ✅ Passed (Z items)
 - Check 1 passed
 - Check 2 passed
-
-**Should I fix the X errors?**
 ```
 
-1. **Wait for user confirmation** before fixing
-2. **After fixing** → Re-run script to confirm
+1. **Fix errors cleanly at the source** (use `npm run lint:fix` where applicable for automated lint repairs within scope).
+2. **After fixing** → Re-run script to confirm 0 errors.
 
 > 🔴 **VIOLATION:** Running script and ignoring output = FAILED task.
-> 🔴 **VIOLATION:** Auto-fixing without asking = Not allowed.
-> 🔴 **Rule:** Always READ output → SUMMARIZE → ASK → then fix.
+> 🔴 **Rule:** Always READ output → SUMMARIZE → VERIFY GREEN (0 errors).

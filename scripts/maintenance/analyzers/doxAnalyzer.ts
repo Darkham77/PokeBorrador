@@ -62,15 +62,6 @@ export async function checkDoxIntegrity(
       return;
     }
 
-    const posixRelPath = relPath.split(path.sep).join(path.posix.sep);
-    if (
-      posixRelPath.includes('supabase/docker') ||
-      posixRelPath === 'scripts/lib' ||
-      posixRelPath.includes('test aventura')
-    ) {
-      return;
-    }
-
     if (relPath !== '' && relPath !== 'src') {
       if (await hasCodeFiles(dir)) {
         doxDirs.push(dir);
@@ -164,6 +155,8 @@ export async function checkDoxIntegrity(
           const hasLink =
             parentContent.includes(cleanPath) ||
             parentContent.includes('./' + cleanPath) ||
+            parentContent.includes(encodeURI(cleanPath)) ||
+            parentContent.includes('./' + encodeURI(cleanPath)) ||
             parentContent.includes('[' + dirOnlyPath + '/]') ||
             parentContent.includes('(' + dirOnlyPath + '/') ||
             parentContent.includes('./' + dirOnlyPath + '/');
@@ -217,7 +210,13 @@ export async function checkDoxIntegrity(
           continue;
         }
 
-        const cleanTarget = targetUrl.split('#')[0];
+        const rawTarget = targetUrl.split('#')[0] ?? '';
+        let cleanTarget = rawTarget;
+        try {
+          cleanTarget = decodeURIComponent(rawTarget);
+        } catch {
+          cleanTarget = rawTarget;
+        }
         if (!cleanTarget) continue;
 
         const absoluteTarget = path.resolve(dirPath, cleanTarget);

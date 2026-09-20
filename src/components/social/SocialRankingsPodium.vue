@@ -143,7 +143,18 @@ defineProps<{
   width: 90px;
 
   .podium-crown { font-size: 18px; }
-  .podium-player-name { font-family: var(--font-pixel); font-size: 8px; color: #f8fafc; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+  .podium-player-name {
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    line-height: 1.45;
+    padding-bottom: 2px;
+    color: #f8fafc;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
   .podium-elo { font-family: var(--font-ui); font-size: 8px; color: #fbbf24; font-weight: bold; }
 
   .pedestal {

@@ -21,18 +21,16 @@ Steps to design an adaptable composable in Vue.ts:
 
 ## Core Type Concepts
 
-### Type Utilities
+### Native Vue 3.5+ Type Utilities
+
+In Vue 3.5+, import native types directly from `'vue'` without loose `any` casts (adhering strictly to `@/domain-type-first`):
 
 ```ts
-/**
- * value or writable ref (value/ref/shallowRef/writable computed)
- */
-export type MaybeRef<T = any> = T | Ref<T> | ShallowRef<T> | WritableComputedRef<T>;
+import type { MaybeRef, MaybeRefOrGetter } from 'vue';
 
-/**
- * MaybeRef<T> + ComputedRef<T> + () => T
- */
-export type MaybeRefOrGetter<T = any> = MaybeRef<T> | ComputedRef<T> | (() => T);
+// Canonical Vue definitions:
+// type MaybeRef<T> = T | Ref<T> | ShallowRef<T> | WritableComputedRef<T>;
+// type MaybeRefOrGetter<T> = MaybeRef<T> | ComputedRef<T> | (() => T);
 ```
 
 ### Policy and Rules

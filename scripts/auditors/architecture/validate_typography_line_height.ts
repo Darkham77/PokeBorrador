@@ -3,16 +3,17 @@
  *
  * TYPOGRAPHY LINE-HEIGHT & INTERLINEAR SPACING AUDITOR (Node.js 26+ Native)
  *
- * Enforces safe multiline line-height across Poké Vicio typography:
+ * Enforces safe typography and spacing across Poké Vicio:
  *   1. Anti-Zero Line-Height (`line-height-overlap`): Detects text classes, headings, titles,
  *      descriptions, and multiline labels that declare 'line-height: 1' or 'line-height: 0'.
  *      Pixel fonts ('Pokemon FireRed LeafGreen') with line-height <= 1 collide
  *      and overlap vertically with zero spacing when text wraps into 2+ lines.
- *   2. Icon / Glyph Exemption: Standalone glyphs, SVGs, and emojis (.emoji, .icon,
- *      *-icon, .toggle-arrow, .avatar-placeholder, etc.) are allowed to use line-height: 1.
+ *   2. Descender Clipping Prevention (`typography-descender-clipping`): Detects single-line
+ *      or clamped text elements using 'overflow: hidden' (with ellipsis/nowrap) without safe
+ *      line-height (>= 1.4) or padding-bottom, which cuts off descenders (g, p, q, y, j).
  *
  * Escape Hatch:
- *   // line-height-ok or /* line-height-ok *\/ disables the rule for intentional single-line fixtures.
+ *   // line-height-ok or // descender-ok disables the check for intentional fixtures.
  *
  * Usage:
  *   npm run validate:line-height
@@ -27,10 +28,17 @@ import {
 
 enableCompileCache();
 
-export type LineHeightRuleId = 'line-height-overlap';
+export type LineHeightRuleId =
+  | 'line-height-overlap'
+  | 'typography-descender-clipping';
+
+export const TYPOGRAPHY_LINE_HEIGHT_RULES: readonly LineHeightRuleId[] = [
+  'line-height-overlap',
+  'typography-descender-clipping'
+];
 
 const ICON_ELEMENT_REGEX = /(?:^|[._-])(?:emoji|icon|arrow|bullet|symbol|glyph|avatar|medal|quote|mark|placeholder|checkmark|shiny-star|star|particle|dot|sprite|indicator|infinity|dash|tooltip-wrapper|fx-wrapper|clear|close|dismiss|gender)(?:$|[._-])|(?<![a-zA-Z0-9_-])(?:img|svg|canvas)\b/i;
-const TEXT_ELEMENT_REGEX = /(?:^|[._-])(?:title|heading|header|caption|desc|description|sub|subtitle|dialogue|name|label|text|body|wrap|item|card|accordion|content|h[1-6]|paragraph|note|message|banner|alert|prompt|phrase|comment|summary|reason)(?:$|[._-])/i;
+const TEXT_ELEMENT_REGEX = /(?:^|[._-])(?:title|heading|header|caption|desc|description|sub|subtitle|dialogue|name|label|text|body|wrap|item|card|accordion|content|h[1-6]|paragraph|note|message|banner|alert|prompt|phrase|comment|summary|reason|metric|trainer|slot|evo|pill|tag)(?:$|[._-])/i;
 
 interface ExtractedStyleBlock {
   readonly content: string;
@@ -76,6 +84,35 @@ function isEmojiFontContext(lines: readonly string[], currentIndex: number): boo
   return false;
 }
 
+function checkPaddingHasBottom(paddingVal: string): boolean {
+  if (paddingVal.includes('clamp') || paddingVal.includes('calc') || paddingVal.includes('var(')) {
+    return true;
+  }
+  const parts = paddingVal.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 1) {
+    return parts[0] !== '0' && parts[0] !== '0px';
+  }
+  if (parts.length === 2) {
+    return parts[0] !== '0' && parts[0] !== '0px';
+  }
+  if (parts.length >= 3) {
+    return parts[2] !== '0' && parts[2] !== '0px';
+  }
+  return true;
+}
+
+interface FrameState {
+  selector: string;
+  startLine: number;
+  hasOverflowHidden: boolean;
+  overflowLine: number;
+  hasTruncation: boolean;
+  lineHeight: number | null;
+  hasPaddingBottom: boolean;
+  hasTextClues: boolean;
+  isIgnored: boolean;
+}
+
 export class TypographyLineHeightAuditor extends FileScanAuditor<LineHeightRuleId> {
   private totalRulesChecked = 0;
 
@@ -83,11 +120,12 @@ export class TypographyLineHeightAuditor extends FileScanAuditor<LineHeightRuleI
     super({
       id: 'validate_typography_line_height',
       name: 'Typography Line-Height & Interlinear Spacing Validator',
-      description: 'Detecta colisiones de line-height en tipografías retro',
+      description: 'Valida line-height y recorte de descendentes en tipografía',
       family: 'architecture',
-      ruleIds: ['line-height-overlap'],
+      ruleIds: TYPOGRAPHY_LINE_HEIGHT_RULES,
       ruleDescriptions: {
-        'line-height-overlap': 'Colisión de line-height en tipografía'
+        'line-height-overlap': 'Colisión de line-height en tipografía',
+        'typography-descender-clipping': 'Recorte de descendentes en texto con overflow: hidden'
       },
       roots: ['src'],
       allowedExtensions: new Set(['.vue', '.scss', '.css'])
@@ -99,28 +137,85 @@ export class TypographyLineHeightAuditor extends FileScanAuditor<LineHeightRuleI
 
     for (const block of styleBlocks) {
       const blockLines = block.content.split('\n');
-      const selectorStack: string[] = [];
+      const frameStack: FrameState[] = [];
 
       for (let i = 0; i < blockLines.length; i++) {
         const line = blockLines[i];
         if (!line) continue;
         const trimmed = line.trim();
 
-        if (this.isLineIgnored(line, ['line-height-ok', 'css-ok']) || line.includes('/* line-height-ok */')) {
-          continue;
-        }
+        const lineIgnored = this.isLineIgnored(line, ['line-height-ok', 'descender-ok', 'css-ok']) ||
+                            line.includes('/* line-height-ok */') ||
+                            line.includes('/* descender-ok */');
 
         if (trimmed.includes('{')) {
           const selectorPart = trimmed.slice(0, trimmed.indexOf('{')).trim();
           if (selectorPart) {
-            selectorStack.push(selectorPart);
+            frameStack.push({
+              selector: selectorPart,
+              startLine: block.startLine + i,
+              hasOverflowHidden: false,
+              overflowLine: 0,
+              hasTruncation: false,
+              lineHeight: null,
+              hasPaddingBottom: false,
+              hasTextClues: false,
+              isIgnored: lineIgnored
+            });
           }
         }
 
+        const currentFrame = frameStack[frameStack.length - 1];
+        if (currentFrame) {
+          if (lineIgnored) {
+            currentFrame.isIgnored = true;
+          }
+
+          // Check overflow: hidden (excluding purely horizontal overflow-x)
+          if (/\boverflow(-y)?\s*:\s*hidden\b/i.test(trimmed)) {
+            currentFrame.hasOverflowHidden = true;
+            currentFrame.overflowLine = block.startLine + i;
+          }
+
+          // Check text truncation indicators
+          if (/\btext-overflow\s*:\s*ellipsis\b/i.test(trimmed) ||
+              /\bwhite-space\s*:\s*nowrap\b/i.test(trimmed) ||
+              /\b-webkit-line-clamp\b/i.test(trimmed) ||
+              /@include\s+text-truncate\b/i.test(trimmed)) {
+            currentFrame.hasTruncation = true;
+          }
+
+          // Check line-height values
+          const lhMatch = trimmed.match(/\bline-height\s*:\s*([0-9.]+)(px|em|rem)?/i);
+          if (lhMatch) {
+            currentFrame.lineHeight = parseFloat(lhMatch[1] || '0');
+          }
+
+          // Check padding-bottom
+          const pbMatch = trimmed.match(/\bpadding-bottom\s*:\s*([^;]+);/i);
+          if (pbMatch) {
+            const pbVal = pbMatch[1]?.trim() || '';
+            if (pbVal !== '0' && pbVal !== '0px') {
+              currentFrame.hasPaddingBottom = true;
+            }
+          }
+
+          const padMatch = trimmed.match(/\bpadding\s*:\s*([^;]+);/i);
+          if (padMatch && checkPaddingHasBottom(padMatch[1] || '')) {
+            currentFrame.hasPaddingBottom = true;
+          }
+
+          // Check text indications
+          if (/(?:font-size|font-family|font-weight|@include\s+pixelated|letter-spacing|color)\b/i.test(trimmed)) {
+            currentFrame.hasTextClues = true;
+          }
+        }
+
+        // Rule 1: Anti-Zero Line-Height (line-height-overlap)
         const lineHeightMatch = trimmed.match(/\bline-height\s*:\s*(0|1|0px|1px|1em|1rem)\s*(?:!important)?\s*;/i);
-        if (lineHeightMatch) {
+        if (lineHeightMatch && !lineIgnored) {
           this.totalRulesChecked++;
-          const currentSelector = selectorStack.join(' ') || '(global scope)';
+          const currentSelector = frameStack.map(f => f.selector).join(' ') || '(global scope)';
           const leafSelector = getLeafSelector(currentSelector);
 
           if (!ICON_ELEMENT_REGEX.test(leafSelector) && !isEmojiFontContext(blockLines, i)) {
@@ -138,10 +233,39 @@ export class TypographyLineHeightAuditor extends FileScanAuditor<LineHeightRuleI
           }
         }
 
+        // Closing bracket: evaluate Frame for Rule 2 (typography-descender-clipping)
         if (trimmed.includes('}')) {
           const closeCount = (trimmed.match(/\}/g) || []).length;
           for (let c = 0; c < closeCount; c++) {
-            selectorStack.pop();
+            const popped = frameStack.pop();
+            if (popped && !popped.isIgnored) {
+              const fullSelector = [...frameStack.map(f => f.selector), popped.selector].join(' ');
+              const leafSelector = getLeafSelector(popped.selector);
+
+              if (popped.hasOverflowHidden && popped.hasTruncation) {
+                const isIcon = ICON_ELEMENT_REGEX.test(leafSelector);
+                const isText = TEXT_ELEMENT_REGEX.test(leafSelector) ||
+                               TEXT_ELEMENT_REGEX.test(fullSelector) ||
+                               popped.hasTextClues;
+
+                if (isText && !isIcon) {
+                  // If it lacks both line-height >= 1.4 AND padding-bottom
+                  const hasSafeLineHeight = popped.lineHeight !== null && popped.lineHeight >= 1.4;
+                  if (!hasSafeLineHeight && !popped.hasPaddingBottom) {
+                    this.totalRulesChecked++;
+                    const targetLine = popped.overflowLine || popped.startLine;
+                    this.addViolation({
+                      ruleId: 'typography-descender-clipping',
+                      severity: 'error',
+                      file: relPath,
+                      line: targetLine,
+                      message: `Text selector '${leafSelector}' uses 'overflow: hidden' with truncation but lacks 'line-height: 1.4+' or 'padding-bottom'. Descenders (g, p, q, y, j) risk clipping.`,
+                      context: popped.selector
+                    });
+                  }
+                }
+              }
+            }
           }
         }
       }

@@ -8,7 +8,6 @@
  * 3. Emergency flush on browser unload (beforeunload).
  */
 
-// audit-disable timers: Low-level persistence debounce coordinator
 import { logger } from '@/logic/utils/logger';
 
 export type SaveExecutor = () => Promise<unknown>;

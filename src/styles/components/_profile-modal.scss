@@ -82,6 +82,8 @@
       .value {
         @include pixelated;
         font-size: 8px;
+        line-height: 1.45;
+        padding-bottom: 2px;
         color: var(--white);
         flex: 1;
         min-width: 0;

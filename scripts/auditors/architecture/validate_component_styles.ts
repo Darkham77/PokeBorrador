@@ -7,8 +7,7 @@
  *   1. Broken style link verification: All `<style src="...">` in `.vue` files
  *      and `@use`/`@import`/`@forward` must resolve to existent files on disk.
  *   2. Missing style linkage verification: Every `.vue` component with custom
- *      template classes must have an associated `<style>` block, explicit link,
- *      or `// style-inherited` marker.
+ *      template classes must have an associated `<style>` block or explicit link.
  *   3. SCSS orphan detection: All stylesheets in `src/styles/components/` must be
  *      actively linked or imported in the dependency graph rooted at `src/styles/_index.scss`
  *      or directly inside Vue components.
@@ -28,17 +27,19 @@ enableCompileCache();
 export type ComponentStyleRuleId =
   | 'broken-style-link'
   | 'missing-style-tag'
+  | 'banned-style-inherited'
   | 'orphaned-scss';
 
 export const COMPONENT_STYLE_RULES: readonly ComponentStyleRuleId[] = [
   'broken-style-link',
   'missing-style-tag',
+  'banned-style-inherited',
   'orphaned-scss'
 ];
 
 export interface ComponentStyleViolation {
   readonly file: string;
-  readonly type: 'broken_style_link' | 'missing_style_tag' | 'orphaned_scss';
+  readonly type: 'broken_style_link' | 'missing_style_tag' | 'banned_style_inherited' | 'orphaned_scss';
   readonly message: string;
 }
 
@@ -51,9 +52,9 @@ export interface ComponentStyleAuditResult {
 
 const GLOBAL_UTILITY_CLASSES = new Set([ // runtime-set: Fast O(1) membership lookup set
   'pixelated', 'allow-aliasing', 'clickable', 'flex', 'hidden', 'active', 'disabled', 'legacy-ui',
-  'legacy-panel', 'legacy-confirm-btn', 'retro-btn', 'pulse', 'gold', 'silver', 'bronze',
+  'legacy-panel', 'legacy-confirm-btn', 'retro-btn', 'pv-button-retro', 'pulse', 'gold', 'silver', 'bronze',
   'w-full', 'h-full', 'truncate', 'pointer-events-none', 'pointer-events-auto', 'select-none',
-  'custom-scrollbar', 'empty-state', 'scrollable-content', 'modal-footer', 'm-type-tag'
+  'custom-scrollbar', 'empty-state', 'scrollable-content', 'modal-footer', 'm-type-tag', 'emoji'
 ]);
 
 /**
@@ -106,6 +107,7 @@ export class ComponentStylesAuditor extends BaseAuditor<ComponentStyleRuleId> {
       ruleDescriptions: {
         'broken-style-link': 'Enlace de estilo roto o archivo inexistente',
         'missing-style-tag': 'Componente con clases sin bloque de estilos',
+        'banned-style-inherited': 'Uso prohibido del marcador style-inherited',
         'orphaned-scss': 'Archivo SCSS huérfano sin importar ni enlazar'
       },
       roots: ['src']
@@ -164,7 +166,6 @@ export class ComponentStylesAuditor extends BaseAuditor<ComponentStyleRuleId> {
       const content = fs.readFileSync(file, 'utf-8');
       const relPath = path.relative(this.projectRoot, file).replace(/\\/g, '/');
 
-      const hasStyleTag = /<style[\s>]/i.test(content);
       const styleSrcMatch = content.match(/<style[^>]*src=["']([^"']+)["']/i);
 
       // Track all SCSS imports in Vue component
@@ -204,9 +205,38 @@ export class ComponentStylesAuditor extends BaseAuditor<ComponentStyleRuleId> {
         }
       }
 
+      // Check for illegal style-inherited bypass directive
+      if (content.includes('style-inherited')) {
+        const v: ComponentStyleViolation = {
+          file: relPath,
+          type: 'banned_style_inherited',
+          message: `Directiva ilegal '// ' + 'style-inherited' detectada. Los estilos scoped en Vue 3 no penetran a componentes hijos; cada SFC debe declarar o enlazar explícitamente sus propios estilos.`
+        };
+        this.collectedViolations.push(v);
+        this.addViolation({
+          ruleId: 'banned-style-inherited',
+          severity: 'error',
+          file: relPath,
+          line: 1,
+          message: v.message,
+          context: 'style-inherited'
+        });
+      }
+
+      // Check whether component has a valid (non-empty or src-linked) style block
+      const styleMatches = Array.from(content.matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi));
+      const hasValidStyle = styleMatches.some(sm => {
+        const attrs = sm[1] ?? '';
+        const body = (sm[2] ?? '')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/\/\/[^\n]*/g, '')
+          .trim();
+        return /\bsrc=["']/.test(attrs) || body.length > 0;
+      });
+
       // Check missing style tag on component defining custom template classes
-      if (!hasStyleTag && !content.includes('// style-inherited')) {
-        const classMatches = content.matchAll(/class=["']([^"']+)["']/g);
+      if (!hasValidStyle) {
+        const classMatches = content.matchAll(/(?<![-:\w])class=["']([^"']+)["']/g);
         const customClasses: string[] = []; // no-domain: Non-domain utility collection or data structure
 
         for (const m of classMatches) {
@@ -228,11 +258,34 @@ export class ComponentStylesAuditor extends BaseAuditor<ComponentStyleRuleId> {
           }
         }
 
+        // Also harvest static string literal class tokens from dynamic :class bindings
+        const dynamicClassMatches = content.matchAll(/(?:\s:|\bv-bind:)class=["']([^"']+)["']/g);
+        for (const dm of dynamicClassMatches) {
+          const expr = dm[1]!;
+          const strLiterals = expr.matchAll(/['`]([a-zA-Z0-9_-]+)['`]/g);
+          for (const sl of strLiterals) {
+            const c = sl[1]!;
+            if (
+              !c.startsWith('var(') &&
+              !c.includes('{') &&
+              !c.includes('}') &&
+              !c.startsWith(':') &&
+              !c.includes('[') &&
+              !c.includes(']') &&
+              !c.includes('(') &&
+              !c.includes(')') &&
+              !GLOBAL_UTILITY_CLASSES.has(c)
+            ) {
+              customClasses.push(c);
+            }
+          }
+        }
+
         if (customClasses.length > 0) {
           const v: ComponentStyleViolation = {
             file: relPath,
             type: 'missing_style_tag',
-            message: `Defines ${customClasses.length} custom template classes (${customClasses.slice(0, 3).join(', ')}...) without an associated <style> block or // style-inherited marker`
+            message: `Defines ${customClasses.length} custom template classes (${customClasses.slice(0, 3).join(', ')}...) without an associated non-empty <style> block`
           };
           this.collectedViolations.push(v);
           this.addViolation({

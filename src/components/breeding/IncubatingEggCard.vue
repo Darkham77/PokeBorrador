@@ -195,6 +195,8 @@ const progress = computed(() => {
   .name {
     font-size: 11px;
     @include pixelated;
+    line-height: 1.45;
+    padding-bottom: 2px;
     color: #ffffff;
     letter-spacing: 0.5px;
     white-space: nowrap;
