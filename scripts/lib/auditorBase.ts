@@ -24,7 +24,7 @@ import {
   renderAuditTaskRow,
   renderFindingsDetail
 } from './unifiedTheme.ts';
-import { SharedAstContext } from './astContext.ts';
+import type { SharedAstContext } from './astContext.ts';
 import type ts from 'typescript';
 
 enableCompileCache();
@@ -494,7 +494,11 @@ export abstract class BaseAuditor<TRuleId extends string = string> {
 
   public async execute(astContext?: SharedAstContext): Promise<StandardAuditResult> {
     await this.context.checkFiles();
-    const effectiveAst = astContext ?? (this.requiresAst ? new SharedAstContext() : undefined);
+    let effectiveAst = astContext;
+    if (!effectiveAst && this.requiresAst) {
+      const { SharedAstContext } = await import('./astContext.ts');
+      effectiveAst = new SharedAstContext();
+    }
     await this.runAudit(effectiveAst);
 
     this.context.setMetric('Files Scanned', this.filesScannedCount);
@@ -521,7 +525,11 @@ export abstract class FileScanAuditor<TRuleId extends string = string> extends B
 
   public override async runAudit(astContext?: SharedAstContext): Promise<void> {
     const files = this.context.collectFiles(this.roots, this.allowedExtensions);
-    const effectiveAst = astContext ?? (this.requiresAst ? new SharedAstContext() : undefined);
+    let effectiveAst = astContext;
+    if (!effectiveAst && this.requiresAst) {
+      const { SharedAstContext } = await import('./astContext.ts');
+      effectiveAst = new SharedAstContext();
+    }
 
     for (const file of files) {
       const relPath = path.relative(this.projectRoot, file).split(path.sep).join(path.posix.sep);

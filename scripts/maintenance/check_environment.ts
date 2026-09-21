@@ -1,4 +1,3 @@
-import { safeResolve } from '../lib/safePath.ts';
 import fs from 'node:fs';
 
 function parseSemver(v: string): { major: number; minor: number; patch: number } {
@@ -48,8 +47,7 @@ try {
     if (isWindows) {
       hasNvm = !!process.env.NVM_HOME || !!process.env.NVM_SYMLINK;
     } else {
-      const homeDir = process.env.HOME || '';
-      hasNvm = !!process.env.NVM_DIR || (homeDir !== '' && safeResolve('package.json') !== '');
+      hasNvm = !!process.env.NVM_DIR;
     }
 
     console.error('\n\x1b[31m\x1b[1m❌ ERROR DE ENTORNO EN POKÉ VICIO:\x1b[0m');
