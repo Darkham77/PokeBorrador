@@ -326,7 +326,7 @@ function transformRow(
 }
 
 // 4. Inicializar Base de Datos SQLite temporal
-const tempDir = path.resolve('database/temp');
+const tempDir = path.resolve('scratch/database');
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir, { recursive: true });
 }
@@ -442,5 +442,5 @@ db.close();
 
 console.log('\n==================================================');
 console.log('🎉 PROCESO DE IMPORTACIÓN A SQLITE COMPLETADO CON ÉXITO');
-console.log(`📂 Archivo listo para el navegador en: database/temp/manual_user_backup_import.db`);
+console.log(`📂 Archivo listo para el navegador en: scratch/database/manual_user_backup_import.db`);
 console.log('==================================================\n');

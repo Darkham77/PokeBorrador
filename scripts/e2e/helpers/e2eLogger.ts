@@ -20,7 +20,7 @@ export function flushE2ELogs(
   durationMs?: number
 ): void {
   const workerId = process.env.TEST_WORKER_INDEX || '0';
-  const logDir = path.resolve('scripts/e2e/results/logs');
+  const logDir = path.resolve('scratch/logs/e2e');
   
   try {
     if (!fs.existsSync(logDir)) {

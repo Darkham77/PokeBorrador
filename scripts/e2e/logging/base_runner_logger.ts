@@ -30,7 +30,7 @@ export abstract class BaseRunnerLogger {
 
   constructor(options: LoggerOptions) {
     this.logName = options.logName;
-    this.reportDir = options.reportDir || path.resolve(process.cwd(), 'scripts/e2e/results/reports');
+    this.reportDir = options.reportDir || path.resolve(process.cwd(), 'scratch/reports/e2e');
     if (!fs.existsSync(this.reportDir)) {
       fs.mkdirSync(this.reportDir, { recursive: true });
     }

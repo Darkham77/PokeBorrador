@@ -84,11 +84,9 @@ const SKIP_SUBDIRECTORIES = [
 /** Known dynamic, placeholder, or ephemeral path patterns that are valid architectural concepts */
 const KNOWN_VALID_ABSTRACT_PATHS = new Set([
   'database/backups',
-  'database/temp',
   'database/schemas',
   'database/migrations',
   'database/poke_local.db',
-  'database/temp/manual_user_backup_import.db',
   'database/store',
   'database/server',
   'database/file',
@@ -167,6 +165,56 @@ function stripCodeBlocks(markdown: string): string {
   return markdown.replace(/```[\s\S]*?```/g, match => {
     return '\n'.repeat((match.match(/\n/g) || []).length);
   });
+}
+
+/** Parses and matches paths against .gitignore patterns in pure TypeScript */
+export class GitIgnoreMatcher {
+  private readonly rules: Array<{ isNegative: boolean; regex: RegExp }> = [];
+
+  constructor(gitignoreContent: string) {
+    for (const rawLine of gitignoreContent.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('#')) continue;
+
+      let isNegative = false;
+      let pattern = line;
+      if (pattern.startsWith('!')) {
+        isNegative = true;
+        pattern = pattern.slice(1);
+      }
+
+      let p = pattern.replace(/\\/g, '/');
+      const isDirOnly = p.endsWith('/');
+      if (isDirOnly) p = p.slice(0, -1);
+
+      const startsWithSlash = p.startsWith('/');
+      if (startsWithSlash) p = p.slice(1);
+
+      const escaped = p.replace(/[.+()^${}|[\]]/g, '\\$&')
+        .replace(/\*\*/g, '.*')
+        .replace(/\*/g, '[^/]*')
+        .replace(/\?/g, '[^/]');
+
+      const prefix = startsWithSlash ? '^' : '(?:^|/)';
+      const suffix = '(?:/.*)?$';
+      try {
+        this.rules.push({ isNegative, regex: new RegExp(`${prefix}${escaped}${suffix}`) });
+      } catch {
+        // ignore invalid regex
+      }
+    }
+  }
+
+  public ignores(relPath: string): boolean {
+    const clean = relPath.replace(/\\/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
+    let ignored = false;
+    for (const rule of this.rules) {
+      if (rule.regex.test(clean)) {
+        ignored = !rule.isNegative;
+      }
+    }
+    return ignored;
+  }
 }
 
 export function checkExactCase(
@@ -251,6 +299,14 @@ export class MarkdownCodeReferencesAuditor extends BaseAuditor<MarkdownCodeRefer
       registeredScripts = new Set(Object.keys(pkgContent.scripts || {}));
     } catch {
       registeredScripts = new Set();
+    }
+
+    let gitignoreMatcher: GitIgnoreMatcher | null = null;
+    try {
+      const gitignoreRaw = fs.readFileSync(path.join(this.rootDir, '.gitignore'), 'utf8');
+      gitignoreMatcher = new GitIgnoreMatcher(gitignoreRaw);
+    } catch {
+      gitignoreMatcher = null;
     }
 
     // Discover skills
@@ -367,6 +423,10 @@ export class MarkdownCodeReferencesAuditor extends BaseAuditor<MarkdownCodeRefer
             }
 
             if (KNOWN_VALID_ABSTRACT_PATHS.has(candidate)) {
+              continue;
+            }
+
+            if (gitignoreMatcher && gitignoreMatcher.ignores(candidate)) {
               continue;
             }
 

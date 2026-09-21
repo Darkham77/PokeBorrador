@@ -59,7 +59,7 @@ function migrationsPlugin() {
           console.error('[Migrations Generator] Hot update generation failed:', err)
         })
         try {
-          const templatePath = path.resolve(import.meta.dirname, 'database/temp/clean_template.db')
+          const templatePath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db')
           if (fs.existsSync(templatePath)) {
             fs.unlinkSync(templatePath)
             console.log('🗑️ [DevDB] clean_template.db deleted due to migration update.')
@@ -77,7 +77,7 @@ function devDbImportPlugin() {
       let cleanDbRamBuffer: Buffer | null = null;
       const simDbRamBuffers = new Map<string, Buffer>();
 
-      const manualImportPath = path.resolve(import.meta.dirname, 'database/temp/manual_user_backup_import.db');
+      const manualImportPath = path.resolve(import.meta.dirname, 'scratch/database/manual_user_backup_import.db');
 
       const getSimKey = (req: IncomingMessage): string | null => {
         const headerKey = req.headers['x-db-key'];
@@ -100,7 +100,7 @@ function devDbImportPlugin() {
 
       const getSimDbPath = (simKey: string): string => {
         const normalizedKey = simKey.startsWith('sim_') ? simKey : `sim_${simKey}`;
-        return path.resolve(import.meta.dirname, 'database/temp/simulations', `${normalizedKey}.db`);
+        return path.resolve(import.meta.dirname, 'scratch/database/simulations', `${normalizedKey}.db`);
       };
 
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
@@ -261,7 +261,7 @@ function devDbImportPlugin() {
             res.end(cleanDbRamBuffer);
             return;
           }
-          const dbPath = path.resolve(import.meta.dirname, 'database/temp/clean_template.db');
+          const dbPath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db');
           try {
             await fsPromises.access(dbPath);
             const binary = await fsPromises.readFile(dbPath);
@@ -285,7 +285,7 @@ function devDbImportPlugin() {
           req.on('end', async () => {
             const buffer = Buffer.concat(chunks);
             cleanDbRamBuffer = buffer; // Store 100% in RAM memory
-            const dbPath = path.resolve(import.meta.dirname, 'database/temp/clean_template.db');
+            const dbPath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db');
             const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
             try {
               await fsPromises.mkdir(path.dirname(dbPath), { recursive: true });
@@ -626,7 +626,6 @@ export default defineConfig({
       ignored: [
         '**/_raw-assets/**',
         '**/sprite_test/**',
-        '**/database/temp/**',
         '**/database/backups/**',
         '**/scratch/**',
         '**/src/data/pokemon/spriteShadowOverrides.json',

@@ -129,10 +129,10 @@ npm run dev
 2. **`import_backup_to_sqlite.ts` (Mapeo Local & SQLite)**:
    - Mapea los UUIDs remotos de Supabase a identificadores locales limpios (`local_<username>`).
    - Sincroniza y remapea los mensajes de chat privado (`chat_messages`), chats globales, solicitudes de amistad (`friendships`), huevos (`eggs`), guardería y tablas de guerra.
-   - Genera el archivo SQLite binario compilado en `database/temp/manual_user_backup_import.db`.
+   - Genera el archivo SQLite binario compilado en `scratch/database/manual_user_backup_import.db`.
 
 3. **Vite Dev Server & OPFS Sync (Navegador)**:
-   - Al iniciar `npm run dev`, Vite expone `database/temp/manual_user_backup_import.db` a través del endpoint `/api/dev-manual-import-*`.
+   - Al iniciar `npm run dev`, Vite expone `scratch/database/manual_user_backup_import.db` a través del endpoint `/api/dev-manual-import-*`.
    - Al abrir `https://localhost:5173/`, el motor del cliente (`sqliteEngine.ts` / `loadingStore.ts`) detecta la base importada manual, la descarga y la persiste en el almacenamiento privado del navegador (**OPFS** / `pokevicio_sqlite_v2`).
    - El juego inicia sesión en modo offline instantáneamente con todas las cuentas, Pokémon y estados listos para jugar.
 

@@ -12,7 +12,8 @@ import path from 'node:path';
 import os from 'node:os';
 import {
   MarkdownCodeReferencesAuditor,
-  MARKDOWN_CODE_REFERENCE_RULES
+  MARKDOWN_CODE_REFERENCE_RULES,
+  GitIgnoreMatcher
 } from '../../../scripts/auditors/documentation/validate_markdown_code_references.ts';
 
 describe('MarkdownCodeReferencesAuditor', () => {
@@ -249,4 +250,57 @@ Refer to @/project-standards.
     expect(result.summary.errors).toBe(0);
     expect(result.status).toBe('passed');
   });
+
+  it('ignores paths matched by .gitignore even when they do not exist on disk', async () => {
+    // Create a .gitignore with scratch/ and custom ephemeral directories
+    await fs.writeFile(
+      path.join(tempDir, '.gitignore'),
+      `
+# Git ignore
+node_modules/
+scratch/
+database/temp/*
+!database/temp/.gitkeep
+      `.trim(),
+      'utf-8'
+    );
+
+    const mdContent = `
+# Architecture Documentation
+Simulation databases are stored in \`scratch/database/simulations/\`.
+Legacy ephemeral databases resided in \`database/temp/simulations/\`.
+Clean template is at \`scratch/database/clean_template.db\`.
+    `;
+    await fs.writeFile(path.join(tempDir, 'README.md'), mdContent, 'utf-8');
+
+    const auditor = new MarkdownCodeReferencesAuditor(['.'], tempDir);
+    const result = await auditor.execute();
+
+    const brokenRefs = result.findings.filter(f => f.ruleId === 'markdown-broken-source-ref');
+    expect(brokenRefs.length).toBe(0);
+    expect(result.summary.errors).toBe(0);
+  });
+
+  it('GitIgnoreMatcher accurately matches wildcards, directories, and negations', () => {
+    const gitignoreContent = `
+# Comment
+node_modules/
+scratch/
+*.log
+database/temp/*
+!database/temp/.gitkeep
+    `.trim();
+
+    const matcher = new GitIgnoreMatcher(gitignoreContent);
+
+    expect(matcher.ignores('scratch/database/simulations')).toBe(true);
+    expect(matcher.ignores('scratch/database/clean_template.db')).toBe(true);
+    expect(matcher.ignores('scratch/reports/e2e/fuzzer.log')).toBe(true);
+    expect(matcher.ignores('database/temp/simulations')).toBe(true);
+    expect(matcher.ignores('database/temp/clean_template.db')).toBe(true);
+    expect(matcher.ignores('database/temp/.gitkeep')).toBe(false);
+    expect(matcher.ignores('src/logic/battle/battle.ts')).toBe(false);
+    expect(matcher.ignores('some_file.log')).toBe(true);
+  });
 });
+
