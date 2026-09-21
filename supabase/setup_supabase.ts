@@ -23,7 +23,7 @@ enableCompileCache();
 
 // ── Constantes y Configuración de Rutas ──────────────────────────────────────
 const BASE_DIR          = path.dirname(fileURLToPath(import.meta.url));
-const ARCHIVO_MAESTRO   = path.resolve(BASE_DIR, '..', '.env'); // .env maestro en raíz de PokeBorrador
+const ARCHIVO_MAESTRO   = path.resolve(BASE_DIR, '..', '.env'); // .env maestro en raíz de Poké Vicio
 const CARPETA_GENERADOS = path.resolve(BASE_DIR, 'generated');
 const CARPETA_DOCKER    = path.resolve(BASE_DIR, 'docker');
 
@@ -39,7 +39,7 @@ const DOCKERFILE_CONTENT = `# ────────────────�
 # Pull:   docker pull francogp612/pokevicio-db:latest
 # ─────────────────────────────────────────────────────────────────────────────
 
-FROM supabase/postgres:15.8.1.060
+FROM supabase/postgres:17.6.1.136
 
 LABEL maintainer="francogpellegrini@gmail.com"
 LABEL description="Poké Vicio — Supabase Postgres preconfigurado"
@@ -66,7 +66,7 @@ COPY volumes/functions /supabase-volumes/functions
 COPY volumes/snippets /supabase-volumes/snippets
 
 # Asegurar que el directorio de configuración personalizada exista y pertenezca a postgres
-RUN mkdir -p /etc/postgresql-custom && chown -R postgres:postgres /etc/postgresql-custom
+RUN mkdir -p /etc/postgresql-custom/conf.d && chown -R postgres:postgres /etc/postgresql-custom
 `;
 
 // ── Helpers Visuales y de Consola ────────────────────────────────────────────
@@ -429,7 +429,7 @@ async function generar() {
 
     // 1. Reemplazar imagen de postgres por la imagen personalizada
     contenidoCompose = contenidoCompose.replace(
-      "image: supabase/postgres:15.8.1.085",
+      /image:\s*supabase\/postgres:[^\r\n]+/,
       "image: ${DOCKER_USER}/${DOCKER_REPO_DB}:${DOCKER_TAG_DB}"
     );
 
@@ -453,10 +453,10 @@ async function generar() {
       contenidoCompose = contenidoCompose.replace(m, "");
     }
 
-    // Insertar el montaje de supabase-volumes-v2 en db, usar db-data-v2 y db-config-v2 con :Z
+    // Insertar el montaje de supabase-volumes-v2 en db, usar db-data-v3 y db-config-v3 con :Z
     contenidoCompose = contenidoCompose.replace(
       "      # PGDATA directory is persisted between restarts\n      - ./volumes/db/data:/var/lib/postgresql/data:Z\n      # Use named volume to persist pgsodium decryption key between restarts\n      - db-config:/etc/postgresql-custom",
-      "      - supabase-volumes-v2:/supabase-volumes:Z\n      # PGDATA directory is persisted between restarts\n      - db-data-v2:/var/lib/postgresql/data:Z\n      # Use named volume to persist pgsodium decryption key between restarts\n      - db-config-v2:/etc/postgresql-custom:Z"
+      "      - supabase-volumes-v2:/supabase-volumes:Z\n      # PGDATA directory is persisted between restarts\n      - db-data-v3:/var/lib/postgresql/data:Z\n      # Use named volume to persist pgsodium decryption key between restarts\n      - db-config-v3:/etc/postgresql-custom:Z"
     );
 
     // Reemplazar montajes locales de studio, storage, imgproxy y functions por volúmenes nombrados con :Z
@@ -501,17 +501,19 @@ async function generar() {
 
     // Adaptar Supavisor
     contenidoCompose = contenidoCompose.replace(
-      "  supavisor:\n    container_name: supabase-pooler\n    image: supabase/supavisor:2.7.4\n    restart: unless-stopped\n    ports:",
-      "  supavisor:\n    container_name: supabase-pooler\n    image: supabase/supavisor:2.7.4\n    restart: unless-stopped\n    ulimits:\n      nofile:\n        soft: 65536\n        hard: 65536\n    ports:"
+      /(supavisor:\s*\r?\n\s*container_name:\s*supabase-pooler\s*\r?\n\s*image:\s*supabase\/supavisor:[^\r\n]+\s*\r?\n\s*restart:\s*unless-stopped\s*\r?\n)(\s*ports:)/,
+      "$1    ulimits:\n      nofile:\n        soft: 65536\n        hard: 65536\n$2"
     );
     contenidoCompose = contenidoCompose.replace(
       "      - ./volumes/pooler/pooler.exs:/etc/pooler/pooler.exs:ro,z",
       "      - supabase-volumes-v2:/supabase-volumes:ro,z"
     );
-    contenidoCompose = contenidoCompose.replace(
-      "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}",
-      "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}\n      RLIMIT_NOFILE: \"65536\""
-    );
+    if (!contenidoCompose.includes('RLIMIT_NOFILE: "65536"')) {
+      contenidoCompose = contenidoCompose.replace(
+        "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}",
+        "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}\n      RLIMIT_NOFILE: \"65536\""
+      );
+    }
     contenidoCompose = contenidoCompose.replace(
       "/etc/pooler/pooler.exs",
       "/supabase-volumes/pooler/pooler.exs"
@@ -526,7 +528,7 @@ async function generar() {
     // Declarar todos los volúmenes nombrados al final
     contenidoCompose = contenidoCompose.replace(
       "volumes:\n  db-config:",
-      "volumes:\n  supabase-volumes-v2:\n  db-data-v2:\n  storage-data:\n  db-config-v2:"
+      "volumes:\n  supabase-volumes-v2:\n  db-data-v3:\n  storage-data:\n  db-config-v3:"
     );
 
     await fs.writeFile(composeDestino, contenidoCompose, 'utf-8');

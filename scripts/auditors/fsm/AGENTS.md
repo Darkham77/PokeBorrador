@@ -8,9 +8,11 @@ This directory contains Finite State Machine (FSM) validators verifying parity b
 
 - [_fsmParityParser.ts](./_fsmParityParser.ts): Helper module providing source code scanning and dynamic state detection.
 - [_validate_fsm_all.ts](./_validate_fsm_all.ts): Aggregated runner executing the entire FSM validation suite.
+- [validate_combat_invariants.ts](./validate_combat_invariants.ts): Validates combat invariant rules and battle state transitions.
 - [validate_fsm_diagrams.ts](./validate_fsm_diagrams.ts): Validates Mermaid diagram syntax and transitions in mechanics documentation.
 - [validate_fsm_flow_parity.ts](./validate_fsm_flow_parity.ts): Compares diagram transition flow against implementation transitions.
 - [validate_fsm_implementation.ts](./validate_fsm_implementation.ts): Audits FSM constants, transition calls, and sub-state handlers.
+- [validate_showdown_parity.ts](./validate_showdown_parity.ts): Validates Pokémon Showdown protocol token parity and battle event handler coverage.
 
 ## Local Governance & Rules
 

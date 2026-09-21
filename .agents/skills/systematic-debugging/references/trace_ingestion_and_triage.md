@@ -84,7 +84,7 @@ Before touching any code or formulating hypotheses, identify the authoritative c
      - UI components & views: `src/components/AGENTS.md` / `src/views/AGENTS.md`
      - Persistence & SQLite: `database/AGENTS.md` / `src/logic/auth/AGENTS.md`
 2. **Consult Specialized Reference Manuals**:
-   - Check [.agents/skills/project-standards/references/rules/](file:///home/franco/Trabajos/PokeBorrador/.agents/skills/project-standards/references/rules/README.md) for applicable engine laws:
+   - Check [.agents/skills/project-standards/references/rules/](../../project-standards/references/rules/README.md) for applicable engine laws:
      - `testing_and_simulations.md`: Passive joystick, 10s timeout, zero timers.
      - `game_engine_and_state.md`: Showdown canonical rules, 4-seat generalization, UID parity.
      - `database_and_persistence.md`: DBRouter context isolation, Save Shield.

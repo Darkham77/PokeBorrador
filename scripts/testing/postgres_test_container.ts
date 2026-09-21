@@ -377,8 +377,9 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
         IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticator') THEN
           CREATE ROLE authenticator LOGIN PASSWORD 'postgres';
         END IF;
+        CREATE SCHEMA IF NOT EXISTS storage;
         GRANT anon, authenticated, service_role TO authenticator;
-        GRANT USAGE ON SCHEMA public, auth TO anon, authenticated, service_role;
+        GRANT USAGE ON SCHEMA public, auth, storage TO anon, authenticated, service_role;
         GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
         GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
         GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated, service_role;
@@ -504,7 +505,7 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
       '-e', 'POSTGRES_USER=postgres',
       '-e', 'POSTGRES_DB=postgres',
       '--tmpfs', '/var/lib/postgresql/data:rw',
-      'postgres:15-alpine',
+      'postgres:17-alpine',
       '-c', 'synchronous_commit=off',
       '-c', 'fsync=off',
       '-c', 'full_page_writes=off',
@@ -542,7 +543,7 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
       '-e', 'PGRST_DB_USE_BUILTIN_RAISE=true',
       '-e', 'PGRST_DB_POOL=50',
       '-e', 'PGRST_DB_POOL_TIMEOUT=30',
-      'postgrest/postgrest:v12.2.0'
+      'postgrest/postgrest:v14.17'
     ], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] });
 
     if (runPostgrestRes.status !== 0) {

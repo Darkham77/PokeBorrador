@@ -56,7 +56,7 @@ graph TD
 
 ## Configuración Inicial
 
-1. Editá el archivo `.env` en la raíz de **PokeBorrador** para definir tus credenciales de Docker Hub y los servidores que desees gestionar:
+1. Editá el archivo `.env` en la raíz de **Poké Vicio** para definir tus credenciales de Docker Hub y los servidores que desees gestionar:
 
 ```ini
 # === [ CONFIGURACIÓN DOCKER HUB ] ===

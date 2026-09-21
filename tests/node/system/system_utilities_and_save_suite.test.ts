@@ -17,7 +17,7 @@ import { ShowdownBattleRunner } from '@/logic/battle/helpers/showdownBattleRunne
 
 describe('System Utilities & Save Services Domain Suite', () => {
   describe('Diagnose Account Tool', () => {
-    const backupRelPath = 'database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json';
+    const backupRelPath = 'tests/node/fixtures/server_franco_backup_fixture.json';
     const backupPath = path.resolve(backupRelPath);
     assert.ok(fs.existsSync(backupPath), `Backup file must exist at ${backupRelPath}`);
 

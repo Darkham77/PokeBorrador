@@ -139,7 +139,7 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run lint:fix`: Auto-fixes lint and formatting issues via `npm run audit:lint fix`.
 - `npm run audit:summary` / `npm run audit:errors`: Consolidated Box-Drawing report of errors and warnings from `scratch/audits/latest_audit.json`.
 - `npm run audit:findings json`: Structured JSON report for AI agents and CLI tools with zero intermediate tooling.
-- `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
+- `npm run test:node`: Runs the pure logic test suite under Vitest via the centralized orchestrator `scripts/testing/run_tests.ts --project node` (supporting dual SQLite and ephemeral Docker PostgreSQL validation).
 - `npm run test:migrations`: Runs the isolated dual-engine migration validation suite (`backup_migration_real.test.ts`) against the real production backup fixture (SQLite in-memory + ephemeral PostgreSQL container). Excluded from standard daily runs to preserve developer iteration speed.
 - `npm run database:test-migrations`: Convenience alias for `npm run test:migrations`.
 - `npm run test:all`: Sequentially runs the full test suite (`test`).

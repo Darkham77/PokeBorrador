@@ -1,6 +1,6 @@
 # Purpose
 
-Custom Vue directives for PokeBorrador application.
+Custom Vue directives for Poké Vicio application.
 
 ## Ownership
 

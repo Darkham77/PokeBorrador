@@ -292,7 +292,7 @@ $$\text{Shiny\_Probability} = \frac{1 + 0.25 \cdot N}{4096}$$
 
 ## 12. 🚔 Team Rocket Criminality & Police Scaling Math
 
-All police scaling and criminality resolution formulas are pure functions implemented in [`src/logic/player/classMath.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/player/classMath.ts).
+All police scaling and criminality resolution formulas are pure functions implemented in [`src/logic/player/classMath.ts`](../../../../../src/logic/player/classMath.ts).
 
 ### 1. Police Extra Level Bonus (`calculatePoliceBonusLevel`)
 $$\text{bonusLv} = \lfloor \frac{\max(0, \text{criminality} - 100)}{10} \rfloor$$
@@ -344,7 +344,7 @@ $$\text{Damage}_{\text{Confusion}} = \left\lfloor \left( \left\lfloor \frac{\lef
 
 ## 14. 🎣 Fishing Minigame Mathematical Ratios & Dynamic Difficulty Scaling
 
-The fishing rhythm minigame dynamically scales difficulty, note count, ring collapse speed, and encounter rewards by combining encounter rarity and Pokemon level in [`src/components/modals/fishingGameHelper.ts`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/components/modals/fishingGameHelper.ts).
+The fishing rhythm minigame dynamically scales difficulty, note count, ring collapse speed, and encounter rewards by combining encounter rarity and Pokemon level in [`src/components/modals/fishingGameHelper.ts`](../../../../../src/components/modals/fishingGameHelper.ts).
 
 ### 1. Continuous Difficulty Score ($\text{Score} \in [0, 100]$)
 
@@ -374,7 +374,7 @@ $$\text{NewLevel} = \min(100, \text{CurrentLevel} + \text{BonusLevel})$$
 
 ## 15. 🏆 Monthly Competitive Ranked Seasons & ELO Rating System
 
-The monthly competitive ranked tournament operates on an automatic 1-month seasonal rotation governed by [`src/logic/battle/rankedSeasonManager.ts`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/logic/battle/rankedSeasonManager.ts) and [`src/data/system/rankedData.ts`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/data/system/rankedData.ts).
+The monthly competitive ranked tournament operates on an automatic 1-month seasonal rotation governed by [`src/logic/battle/rankedSeasonManager.ts`](../../../../../src/logic/battle/rankedSeasonManager.ts) and [`src/data/system/rankedData.ts`](../../../../../src/data/system/rankedData.ts).
 
 ### 1. Expected Win Probability (ELO Matchup Math)
 

@@ -108,7 +108,7 @@ Upon starting work, every agent MUST load these core skills:
 - `@/dox-navigator` (`.agents/skills/dox-navigator/SKILL.md`) for directory navigation and DOX hierarchy.
 - `@/domain-type-first` (`.agents/skills/domain-type-first/SKILL.md`) for domain-type-first governance, data contracts, and union derivation.
 
-*Domain-specific skills (`@/game-simulation`, `@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`, `@/fallow`) MUST be loaded on-demand when performing their respective tasks.*
+*All specialized and domain-specific skills in `.agents/skills/` (such as `@/game-simulation`, `@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`, `@/auditor-framework`, `@/fallow`, `@/clean-code`, `@/testing-patterns`, etc.) MUST be loaded on-demand when performing their respective tasks.*
 
 ## 4. Specialized Project Rules Index
 

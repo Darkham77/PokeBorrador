@@ -120,7 +120,7 @@ stateDiagram-v2
 
 ### 2.2 Forced Exit Animation Types & GSAP Keyframes
 
-Defined in [`forcedSwitchRegistry.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/battle/helpers/forcedSwitchRegistry.ts) and [`useBattleCombatantState.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/components/battle/useBattleCombatantState.ts):
+Defined in [`forcedSwitchRegistry.ts`](../../../../../src/logic/battle/helpers/forcedSwitchRegistry.ts) and [`useBattleCombatantState.ts`](../../../../../src/components/battle/useBattleCombatantState.ts):
 
 | Animation Type (`BattleEscapeType`) | GSAP Kinematics & Physics | Duration | Audio Cue | Target State Result |
 | :--- | :--- | :--- | :--- | :--- |
@@ -208,7 +208,7 @@ When a forced switch move targets a Pokémon whose trainer has **no eligible ben
 When the player clicks **HUIR** in a wild encounter:
 
 1. **Pre-Combat Check**: If fleeing during the encounter intro/search phase (`isPreCombat`), escape is 100% guaranteed.
-2. **In-Combat Speed Formula**: Evaluated in `calculateEscapeChance` ([`battleFormulas.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/battle/battleFormulas.ts)):
+2. **In-Combat Speed Formula**: Evaluated in `calculateEscapeChance` ([`battleFormulas.ts`](../../../../../src/logic/battle/battleFormulas.ts)):
    - If player Speed $\ge$ wild enemy Speed $\rightarrow$ **100% Guaranteed**.
    - If player has `Run Away` ability, holds `Smoke Ball` / `Poké Doll`, or is `Ghost` type $\rightarrow$ **100% Guaranteed**.
    - Otherwise, calculates chance: $F = \frac{\text{PlayerSpeed} \times 128}{\text{EnemySpeed}} + 30 \times \text{Attempts}$.
@@ -245,7 +245,7 @@ sequenceDiagram
 
 - **Player Sprite**: Recalls into its Poké Ball via `handleWithdrawRequest({ side: 'player' })` using the blue suction energy effect. Player Pokémon **NEVER** play dust smoke or run-off animations.
 - **Wild Enemy Sprite**: Emits dust particles and slides horizontally off-screen (`x: +120px, opacity: 0`) via `TRIGGER_COMBATANT_ESCAPE` with `type: 'flee'`.
-- **Synchronization**: Handled via `Promise.all([playerRecallPromise, enemyEscapePromise])` in [`battleFlee.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/battle/battleFlee.ts). Neither sprite disappears abruptly before both animations resolve.
+- **Synchronization**: Handled via `Promise.all([playerRecallPromise, enemyEscapePromise])` in [`battleFlee.ts`](../../../../../src/logic/battle/battleFlee.ts). Neither sprite disappears abruptly before both animations resolve.
 
 ### 3.3 Failed Flee & Enemy Counter-Attack
 
@@ -314,7 +314,7 @@ If the escape check fails:
 
 ### 4.1 Move Category Normalization & GSAP Timelines
 
-Defined in [`combatantActionAnims.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/components/battle/helpers/combatantActionAnims.ts):
+Defined in [`combatantActionAnims.ts`](../../../../../src/components/battle/helpers/combatantActionAnims.ts):
 
 | Move Category | Visual Kinematics | Target Transform & Filters | Duration |
 | :--- | :--- | :--- | :--- |
@@ -459,7 +459,7 @@ sequenceDiagram
 
 ### 6.1 Wild vs. Owned Faint Visual Divergence
 
-Defined in [`battleFaintSequence.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/battle/battleFaintSequence.ts) & [`useBattleCaptureAnimations.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/composables/battle/useBattleCaptureAnimations.ts):
+Defined in [`battleFaintSequence.ts`](../../../../../src/logic/battle/battleFaintSequence.ts) & [`useBattleCaptureAnimations.ts`](../../../../../src/composables/battle/useBattleCaptureAnimations.ts):
 
 - **Wild Pokémon Defeat (`ENEMY_DEFEAT`)**:
   - Plays faint cry (`PLAY_CRY: { isFaint: true }`).

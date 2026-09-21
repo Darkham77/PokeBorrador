@@ -161,7 +161,7 @@
     "validate:persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
     "validate:persistence:summary": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts summary",
     "validate:persistence:errors": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts errors-only",
-    "validate:markdown-links": "node --permission --experimental-strip-types --allow-fs-read=. scripts/auditors/documentation/validate_markdown_links.ts",
+    "validate:markdown-links": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/documentation/validate_markdown_links.ts",
     "validate:fsm:summary": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/fsm/validate_fsm_implementation.ts summary",
     "validate:fsm:errors": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/fsm/validate_fsm_implementation.ts errors-only",
     "validate:fsm:report": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/fsm/validate_fsm_implementation.ts output=scratch/fsm_report.txt",

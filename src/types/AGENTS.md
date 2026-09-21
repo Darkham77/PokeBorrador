@@ -26,8 +26,8 @@ State & Type Architects.
 - **JSDoc Integrity**: When editing code, always verify the preservation of the `/**` opening tags. Deleting them breaks JSDoc transformation and builds.
 - **ESLint Empty Catch Block Compliance**: Empty catch blocks are prohibited. When catching exceptions that can be ignored, name the error variable `_e` and write an explanatory comment inside the catch block.
 - **Temporal API Typings**: Custom or polyfilled Temporal API properties (e.g. year, month) must be declared with formal types (like `ZonedDateTime` interface) in `env.d.ts`, not as `unknown` or `any`.
-- **Generic Key Access Type-Safety**: For dynamic property access, use TypeScript generic index constraints: `<K extends keyof T>(obj: T, key: K, fallback: T[K])` instead of casting to `any`.
-- **Empty Object Union Avoidance (`{}`)**: Merging fallbacks like `const x = data[key] || {}` is prohibited as the compiler infers `{}`. Use explicit conditional checks (e.g., `const x = data[key]; const val = x ? x.name : defaultVal;`).
+- **Generic Key Access & Boundary Validation**: For dynamic property access at external boundaries, use TypeScript generic index constraints: `<K extends keyof T>(obj: T, key: K): T[K] | undefined` instead of casting to `any`. In accordance with the Zero Runtime Fallback Mandate, domain entities must never synthesize dynamic fallback properties at runtime; boundary adapters must validate schema integrity and fail fast.
+- **Empty Object Union Avoidance (`{}`)**: Merging fallbacks like `const x = data[key] || {}` is prohibited as the compiler infers `{}`. Use explicit type guards or Valibot schema parsers to validate structure before consumption.
 - **Export Only When Consumed Externally**: Only apply `export` to types or interfaces if they are consumed outside of the declaring file to avoid dead export warnings.
 - **Named Interface Parameters**: Function parameters must consume named interfaces rather than inline anonymous object literals (`{ id: string }`).
 - **No Inline Type Imports**: Parameter and property types must use explicit top-level type imports (`import type { ... } from '...'`) instead of inline `import('...').Type`.

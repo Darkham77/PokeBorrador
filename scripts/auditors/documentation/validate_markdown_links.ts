@@ -28,6 +28,8 @@ export interface BrokenMarkdownLink {
   readonly rawUrl: string;
   readonly resolvedPath: string;
   readonly error: string;
+  readonly ruleId?: MarkdownLinkRuleId;
+  readonly line?: number;
 }
 
 export interface MarkdownLinkAuditResult {
@@ -51,11 +53,14 @@ export const DEFAULT_SCAN_DIRECTORIES = [
   '.agents/skills',
   'AGENTS.md',
   'README.md',
+  'docs',
   'src',
   'tests',
   'database',
   'scripts',
   'supabase',
+  'test aventura',
+  'ui-demo',
 ] as const;
 
 const SKIP_NAMES = [
@@ -73,7 +78,9 @@ const SKIP_NAMES = [
  * Strips code fences and inline backticks so syntax examples are not parsed as active links.
  */
 export function stripCodeBlocksAndInlineCode(markdown: string): string {
-  let clean = markdown.replace(/```[\s\S]*?```/g, '');
+  let clean = markdown.replace(/```[\s\S]*?```/g, match => {
+    return '\n'.repeat((match.match(/\n/g) || []).length);
+  });
   clean = clean.replace(/`[^`\n]+`/g, '');
   return clean;
 }
@@ -108,7 +115,7 @@ export function collectMarkdownFiles(targetPath: string, rootDir: string): strin
 }
 
 /**
- * Parses all markdown links in a file and returns broken references.
+ * Parses all markdown links in a file and returns broken references or illegal paths.
  */
 export function checkMarkdownLinksInContent(
   content: string,
@@ -120,10 +127,52 @@ export function checkMarkdownLinksInContent(
   const brokenLinks: BrokenMarkdownLink[] = [];
   let linksChecked = 0;
   let match: RegExpExecArray | null;
+  const relSourceFile = path.relative(rootDir, filePath).replace(/\\/g, '/');
 
   while ((match = linkRegex.exec(cleanContent)) !== null) {
     const linkText = match[1]!.trim();
     const rawUrl = match[2]!.trim();
+    const line = cleanContent.slice(0, match.index).split('\n').length;
+
+    // Check for stale environment references in link URL or text
+    if (
+      /(?:PokeBorrador|\/home\/franco|Users[\\\/]Franco)/i.test(rawUrl) ||
+      /(?:PokeBorrador|\/home\/franco|Users[\\\/]Franco)/i.test(linkText)
+    ) {
+      linksChecked++;
+      brokenLinks.push({
+        sourceFile: relSourceFile,
+        linkText,
+        rawUrl,
+        resolvedPath: '',
+        error: `Stale legacy environment path detected: "${rawUrl}" (RULE: No references to legacy repository or personal machine paths)`,
+        ruleId: 'markdown-stale-environment-path',
+        line,
+      });
+      continue;
+    }
+
+    // Check for prohibited absolute paths or file:// URLs
+    const isAbsolutePath =
+      rawUrl.startsWith('file://') ||
+      rawUrl.startsWith('/') ||
+      rawUrl.startsWith('\\') ||
+      /^[a-zA-Z]:/.test(rawUrl) ||
+      path.isAbsolute(rawUrl);
+
+    if (isAbsolutePath) {
+      linksChecked++;
+      brokenLinks.push({
+        sourceFile: relSourceFile,
+        linkText,
+        rawUrl,
+        resolvedPath: '',
+        error: `Forbidden absolute path or file:// URL: "${rawUrl}" (RULE: Use relative paths exclusively)`,
+        ruleId: 'markdown-absolute-path',
+        line,
+      });
+      continue;
+    }
 
     // Skip external protocols and app schemes
     if (
@@ -131,7 +180,7 @@ export function checkMarkdownLinksInContent(
       rawUrl.startsWith('https://') ||
       rawUrl.startsWith('mailto:') ||
       rawUrl.startsWith('conversation://') ||
-      rawUrl.startsWith('file://')
+      rawUrl.startsWith('#')
     ) {
       continue;
     }
@@ -145,23 +194,49 @@ export function checkMarkdownLinksInContent(
       // keep raw if decode fails
     }
 
-    let resolvedTarget = filePath;
-    if (urlPath && urlPath.length > 0) {
-      if (urlPath.startsWith('/')) {
-        resolvedTarget = path.join(rootDir, urlPath);
-      } else {
-        resolvedTarget = path.resolve(path.dirname(filePath), urlPath);
-      }
-    }
+    const resolvedTarget =
+      urlPath.length > 0 ? path.resolve(path.dirname(filePath), urlPath) : filePath;
 
     // Check if target file or directory exists
     if (!fs.existsSync(resolvedTarget)) {
       brokenLinks.push({
-        sourceFile: path.relative(rootDir, filePath).replace(/\\/g, '/'),
+        sourceFile: relSourceFile,
         linkText,
         rawUrl,
         resolvedPath: path.relative(rootDir, resolvedTarget).replace(/\\/g, '/'),
-        error: 'Target path does not exist on disk',
+        error: `Target path does not exist on disk: "${path.relative(rootDir, resolvedTarget).replace(/\\/g, '/')}"`,
+        ruleId: 'markdown-broken-relative-link',
+        line,
+      });
+    }
+  }
+
+  // Scan unescaped text outside code blocks for standalone stale paths or file:// references
+  const lines = cleanContent.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const lineText = lines[i]!;
+    const lineNum = i + 1;
+    if (brokenLinks.some(b => b.line === lineNum)) continue;
+
+    if (/(?:PokeBorrador|\/home\/franco|Users[\\\/]Franco)/i.test(lineText)) {
+      brokenLinks.push({
+        sourceFile: relSourceFile,
+        linkText: '',
+        rawUrl: lineText.trim(),
+        resolvedPath: '',
+        error: `Stale legacy environment reference detected in text: "${lineText.trim()}"`,
+        ruleId: 'markdown-stale-environment-path',
+        line: lineNum,
+      });
+    } else if (/file:\/\/\/[^\s\)]+/i.test(lineText)) {
+      brokenLinks.push({
+        sourceFile: relSourceFile,
+        linkText: '',
+        rawUrl: lineText.trim(),
+        resolvedPath: '',
+        error: `Forbidden absolute file:// URL detected in text: "${lineText.trim()}"`,
+        ruleId: 'markdown-absolute-path',
+        line: lineNum,
       });
     }
   }
@@ -203,10 +278,15 @@ export function auditMarkdownLinks(options: MarkdownLinkAuditOptions = {}): Mark
 
 import { BaseAuditor } from '../../lib/auditorBase.ts';
 
-export type MarkdownLinkRuleId = 'markdown-broken-relative-link';
+export type MarkdownLinkRuleId =
+  | 'markdown-broken-relative-link'
+  | 'markdown-absolute-path'
+  | 'markdown-stale-environment-path';
 
 export const MARKDOWN_LINK_RULES: readonly MarkdownLinkRuleId[] = [
-  'markdown-broken-relative-link'
+  'markdown-broken-relative-link',
+  'markdown-absolute-path',
+  'markdown-stale-environment-path',
 ] as const;
 
 export class MarkdownLinkAuditor extends BaseAuditor<MarkdownLinkRuleId> {
@@ -216,12 +296,14 @@ export class MarkdownLinkAuditor extends BaseAuditor<MarkdownLinkRuleId> {
     super({
       id: 'validate_markdown_links',
       name: 'Markdown & DOX Relative Links Auditor',
-      description: 'Enlaces relativos rotos en documentación markdown',
+      description: 'Enlaces relativos y rutas válidas en markdown',
       family: 'documentation',
       ruleIds: MARKDOWN_LINK_RULES,
       ruleDescriptions: {
-        'markdown-broken-relative-link': 'Enlace relativo roto en archivo markdown'
-      }
+        'markdown-broken-relative-link': 'Enlace relativo roto en archivo markdown',
+        'markdown-absolute-path': 'Ruta absoluta prohibida (usar ruta relativa)',
+        'markdown-stale-environment-path': 'Ruta o referencia obsoleta de entorno heredado',
+      },
     });
     this.scanRoots = scanRoots;
   }
@@ -231,15 +313,15 @@ export class MarkdownLinkAuditor extends BaseAuditor<MarkdownLinkRuleId> {
     const result = auditMarkdownLinks({ scanPaths: this.scanRoots, rootDir: process.cwd() });
     this.filesScannedCount = result.filesScanned;
 
-    this.context.logStep(2, 2, 'Verifying relative links...');
+    this.context.logStep(2, 2, 'Verifying relative links and paths...');
     for (const v of result.violations) {
       this.addViolation({
-        ruleId: 'markdown-broken-relative-link',
+        ruleId: v.ruleId ?? 'markdown-broken-relative-link',
         severity: 'error',
         file: v.sourceFile,
-        line: 1,
-        message: `Broken relative link "${v.linkText}" -> target "${v.resolvedPath}" does not exist on disk`,
-        context: v.rawUrl
+        line: v.line ?? 1,
+        message: v.error,
+        context: v.rawUrl,
       });
     }
 

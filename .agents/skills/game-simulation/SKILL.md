@@ -35,7 +35,7 @@ Whenever instructed to start, resume, or continue a simulation workflow (e.g. *"
 - Synchronize/recreate the brain's internal `simulation_progress.md` artifact from this physical file before issuing any simulation command.
 
 ### 2. Checkpoint Inspection
-- Read [`scratch/e2e_checkpoints.json`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/scratch/e2e_checkpoints.json).
+- Read [`scratch/e2e_checkpoints.json`](../../../scratch/e2e_checkpoints.json).
 - Identify:
   - `doc.master.suiteIndex` and `doc.master.suiteName`: current master sequence position.
   - `doc.suites[suiteKey].failedBatchIndex`: whether an intra-suite failure is actively being repaired.

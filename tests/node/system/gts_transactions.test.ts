@@ -57,7 +57,7 @@ describeWithDatabase('GTS Transactions Dual Validation', (engine, getDb) => {
     if (engine === 'postgres') {
       const rows = await db.query<{ version: string; current_schema: string }>('SELECT version(), current_schema()');
       assert.ok(rows.length > 0);
-      assert.ok(rows[0]?.version.includes('PostgreSQL 15'), `Expected PostgreSQL 15, got: ${rows[0]?.version}`);
+      assert.ok(rows[0]?.version.includes('PostgreSQL 17'), `Expected PostgreSQL 17, got: ${rows[0]?.version}`);
       console.log(`\n  🐘 [POSTGRES LIVE PROBE] Conectado a: ${rows[0]?.version.slice(0, 30)}... | Schema aislado: ${rows[0]?.current_schema}`);
     } else {
       console.log(`\n  ⚡ [SQLITE LIVE PROBE] Ejecutando sobre emulación en memoria.`);

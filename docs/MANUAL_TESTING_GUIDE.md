@@ -24,7 +24,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 1.1 Team Rocket Black Market (Bulk Sales)
 
-- **Target Component**: [`BoxView.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/box/BoxView.vue), [`box.ts`](file:///home/franco/Trabajos/PokeBorrador/src/stores/box.ts)
+- **Target Component**: [`BoxView.vue`](../src/components/box/BoxView.vue), [`box.ts`](../src/stores/box.ts)
 - **Steps**:
   1. Open the Pokémon Box in-game (`PC / Box`).
   2. If player class is **Team Rocket**, activate **Black Market Mode** (mass selection).
@@ -38,7 +38,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 1.2 Global Trade System (GTS) & Market Listings
 
-- **Target Component**: [`MarketPublish.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/market/MarketPublish.vue), [`useMarketPublishPokemon.ts`](file:///home/franco/Trabajos/PokeBorrador/src/components/market/useMarketPublishPokemon.ts), [`marketRpc.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/db/rpcEmulations/marketRpc.ts)
+- **Target Component**: [`MarketPublish.vue`](../src/components/market/MarketPublish.vue), [`useMarketPublishPokemon.ts`](../src/components/market/useMarketPublishPokemon.ts), [`marketRpc.ts`](../src/logic/db/rpcEmulations/marketRpc.ts)
 - **Steps**:
   1. Navigate to the **Mercado / GTS** view from the navigation menu.
   2. Click **"Publicar Oferta"** (Publish Listing).
@@ -53,7 +53,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 1.3 P2P Direct Trade Security
 
-- **Target Component**: [`tradeRpc.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/db/rpcEmulations/tradeRpc.ts), [`trade.ts`](file:///home/franco/Trabajos/PokeBorrador/src/stores/trade.ts)
+- **Target Component**: [`tradeRpc.ts`](../src/logic/db/rpcEmulations/tradeRpc.ts), [`trade.ts`](../src/stores/trade.ts)
 - **Steps**:
   1. Initiate a direct trade offer between two trainers.
   2. Attempt to offer an illegal Pokémon or an item that doesn't exist in the player's inventory.
@@ -65,7 +65,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 2.1 Battle Damage & Weather Multipliers
 
-- **Target Component**: [`battleMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleMath.ts), [`battleTurn.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleTurn.ts)
+- **Target Component**: [`battleMath.ts`](../src/logic/battle/battleMath.ts), [`battleTurn.ts`](../src/logic/battle/battleTurn.ts)
 - **Steps**:
   1. Enter a wild battle or trainer battle on a route with active weather (e.g., Rain, Sun, Sandstorm, Snow).
   2. **Water/Fire in Rain/Sun**:
@@ -80,7 +80,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 2.2 Forced Switch & Faint Sequence (`battleFaintSequence.ts` / `BattleQuickTeam.vue`)
 
-- **Target Component**: [`battleFaintSequence.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleFaintSequence.ts), [`BattleArenaControls.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/battle/BattleArenaControls.vue), [`BattleQuickTeam.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/battle/BattleQuickTeam.vue)
+- **Target Component**: [`battleFaintSequence.ts`](../src/logic/battle/battleFaintSequence.ts), [`BattleArenaControls.vue`](../src/components/battle/BattleArenaControls.vue), [`BattleQuickTeam.vue`](../src/components/battle/BattleQuickTeam.vue)
 - **Steps**:
   1. Enter a battle with a party of 3+ Pokémon.
   2. Allow the active player Pokémon to reach 0 HP (or use the Debug Action Panel to set HP to 0).
@@ -96,7 +96,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 2.3 Forced Recharge Turns (`Blast Burn` / `Hyper Beam` / `Giga Impact`)
 
-- **Target Component**: [`showdownBattleEngine.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/engine/showdownBattleEngine.ts)
+- **Target Component**: [`showdownBattleEngine.ts`](../src/logic/battle/engine/showdownBattleEngine.ts)
 - **Steps**:
   1. Teach a Pokémon `Blast Burn`, `Hyper Beam`, or `Giga Impact`.
   2. Execute the move in battle against an opponent.
@@ -107,7 +107,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 2.4 In-Combat Item Usage (`battleItemUseHelper.ts` / `itemTargetValidator.ts`)
 
-- **Target Component**: [`battleItemUseHelper.ts`](file:///home/franco/Trabajos/PokeBorrador/src/stores/battle/battleItemUseHelper.ts), [`itemTargetValidator.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/itemTargetValidator.ts)
+- **Target Component**: [`battleItemUseHelper.ts`](../src/stores/battle/battleItemUseHelper.ts), [`itemTargetValidator.ts`](../src/logic/battle/itemTargetValidator.ts)
 - **Steps**:
   1. Open the Bag during battle:
      - **Potion / Super Potion / Hyper Potion**: Select an injured Pokémon -> verify healing particle animation and real-time HP bar refill.
@@ -118,7 +118,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 2.5 In-Battle Debug Action Panel (`DebugActionPanel.vue` / `DebugActionPanelQuickButtons.vue`)
 
-- **Target Component**: [`DebugActionPanel.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/battle/DebugActionPanel.vue), [`DebugActionPanelQuickButtons.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/battle/DebugActionPanelQuickButtons.vue)
+- **Target Component**: [`DebugActionPanel.vue`](../src/components/battle/DebugActionPanel.vue), [`DebugActionPanelQuickButtons.vue`](../src/components/battle/DebugActionPanelQuickButtons.vue)
 - **Steps**:
   1. In development mode (`window.__VITE_DEBUG__ = true`), enter any battle.
   2. Observe the debug bar above the arena:
@@ -134,7 +134,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 3.1 Debug Pokémon Creator (`DebugPokemonCreator.vue` / `useDebugPokemonCreator.ts`)
 
-- **Target Component**: [`DebugPokemonCreator.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/admin/debug/DebugPokemonCreator.vue), [`useDebugPokemonCreator.ts`](file:///home/franco/Trabajos/PokeBorrador/src/components/admin/debug/useDebugPokemonCreator.ts)
+- **Target Component**: [`DebugPokemonCreator.vue`](../src/components/admin/debug/DebugPokemonCreator.vue), [`useDebugPokemonCreator.ts`](../src/components/admin/debug/useDebugPokemonCreator.ts)
 - **Steps**:
   1. Open the **Admin Panel -> Creador de Pokémon** (`DebugPokemonCreator`).
   2. **Species Selection**:
@@ -155,7 +155,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 3.2 Individual Pokémon Editor (`IndividualPokemonEditor.vue`)
 
-- **Target Component**: [`IndividualPokemonEditor.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/admin/debug/IndividualPokemonEditor.vue)
+- **Target Component**: [`IndividualPokemonEditor.vue`](../src/components/admin/debug/IndividualPokemonEditor.vue)
 - **Steps**:
   1. Select an existing Pokémon from team or box to edit.
   2. Modify IVs (0-31), EVs (0-252, total <= 510), Nature, and Held Item.
@@ -166,7 +166,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 3.3 Debug Trainers Tab (`DebugTrainersTab.vue` / `useDebugTrainers.ts`)
 
-- **Target Component**: [`DebugTrainersTab.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/admin/debug/DebugTrainersTab.vue), [`useDebugTrainers.ts`](file:///home/franco/Trabajos/PokeBorrador/src/components/admin/debug/useDebugTrainers.ts)
+- **Target Component**: [`DebugTrainersTab.vue`](../src/components/admin/debug/DebugTrainersTab.vue), [`useDebugTrainers.ts`](../src/components/admin/debug/useDebugTrainers.ts)
 - **Steps**:
   1. Open **Admin Panel -> Entrenadores** tab.
   2. Select a preset trainer (e.g., Gym Leader Brock, Youngster Joey, Rival Blue).
@@ -180,7 +180,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 4.1 Daycare Egg Incubation & Step Walking (`HomeBreedingWidget.vue` / `breeding.ts`)
 
-- **Target Component**: [`HomeBreedingWidget.vue`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/components/home/HomeBreedingWidget.vue), [`breeding.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/stores/breeding.ts), [`daycareMissions.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/stores/daycareMissions.ts)
+- **Target Component**: [`HomeBreedingWidget.vue`](../src/components/home/HomeBreedingWidget.vue), [`breeding.ts`](../src/stores/breeding.ts), [`daycareMissions.ts`](../src/stores/daycareMissions.ts)
 - **Steps**:
   1. Deposit two compatible Pokémon in the Daycare (or use debug tools to generate an egg).
   2. Open the **Huevos / Crianza** (Breeding) panel.
@@ -201,7 +201,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 5.1 World Events & Active Missions (`HomeEventsSection.vue` / `EventMissions.vue`)
 
-- **Target Component**: [`HomeEventsSection.vue`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/components/home/HomeEventsSection.vue), [`EventMissions.vue`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/components/events/EventMissions.vue), [`events.ts`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/stores/events.ts)
+- **Target Component**: [`HomeEventsSection.vue`](../src/components/home/HomeEventsSection.vue), [`EventMissions.vue`](../src/components/events/EventMissions.vue), [`events.ts`](../src/stores/events.ts)
 - **Steps**:
   1. Inspect the **Eventos Mundiales** section in the Home dashboard.
   2. **Active Events View**:
@@ -214,7 +214,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 5.2 Past Events History & Leaderboard Podium (`PastEventsList.vue` / `PastEventCard.vue`)
 
-- **Target Component**: [`PastEventsList.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/modals/PastEventsList.vue), [`PastEventCard.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/modals/PastEventCard.vue)
+- **Target Component**: [`PastEventsList.vue`](../src/components/modals/PastEventsList.vue), [`PastEventCard.vue`](../src/components/modals/PastEventCard.vue)
 - **Steps**:
   1. In the Events modal, switch to the **"Historial de Eventos"** (Past Events) tab.
   2. **Visual & UI Checks**:
@@ -231,7 +231,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 6.1 Status Effects & Particle FX (`PVStatusFX.vue`)
 
-- **Target Component**: [`PVStatusFX.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/common/PVStatusFX.vue), [`useParticleEngine.ts`](file:///home/franco/Trabajos/PokeBorrador/src/composables/effects/useParticleEngine.ts)
+- **Target Component**: [`PVStatusFX.vue`](../src/components/common/PVStatusFX.vue), [`useParticleEngine.ts`](../src/composables/effects/useParticleEngine.ts)
 - **Steps**:
   1. Apply status conditions to combatants (Burn `brn`, Poison `psn`, Paralysis `par`, Sleep `slp`, Freeze `frz`).
   2. **Visual Checks**:
@@ -244,7 +244,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 6.2 Atmospheric Weather Canvas (`atmosphere.worker.ts`)
 
-- **Target Component**: [`AtmosphereLayer.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/world/AtmosphereLayer.vue), [`atmosphere.worker.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/render/atmosphere.worker.ts)
+- **Target Component**: [`AtmosphereLayer.vue`](../src/components/world/AtmosphereLayer.vue), [`atmosphere.worker.ts`](../src/logic/render/atmosphere.worker.ts)
 - **Steps**:
   1. Navigate across routes with different weather types (Rain, Snow, Ashfall, Sandstorm, Leaves/Petals).
   2. **Visual Checks**:
@@ -253,7 +253,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 6.3 Pokémon Center Healing Sequence (`HealModal.vue`)
 
-- **Target Component**: [`HealModal.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/modals/HealModal.vue)
+- **Target Component**: [`HealModal.vue`](../src/components/modals/HealModal.vue)
 - **Steps**:
   1. Visit any Pokémon Center and talk to Nurse Joy (or click "Curar Equipo").
   2. **Visual Checks**:
@@ -268,7 +268,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 7.1 App Version Compatibility (`checkAppVersionCompatibility`)
 
-- **Target Component**: [`dbRouter.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/db/dbRouter.ts)
+- **Target Component**: [`dbRouter.ts`](../src/logic/db/dbRouter.ts)
 - **Steps**:
   1. In standard gameplay, verify database connects without compatibility lockouts.
   2. When server version matches client version -> Game boots directly to main view.
@@ -276,7 +276,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 7.2 Healed Data Saves Verification (Tangela Move Healing)
 
-- **Target Migration**: [`20260825110500_heal_tangela_local_moves.sql`](file:///home/franco/Trabajos/PokeBorrador/database/migrations/20260825110500_heal_tangela_local_moves.sql)
+- **Target Migration**: [`20260825110500_heal_tangela_local_moves.sql`](../database/migrations/20260825110500_heal_tangela_local_moves.sql)
 - **Steps**:
   1. Load a legacy save containing a Lv 1 Tangela.
   2. Check Tangela's move list in the Pokémon Summary screen.
@@ -284,7 +284,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 7.3 Auto-Save & Manual Persistence (`saveSanitizer.ts` / `saveSerializer.ts`)
 
-- **Target Component**: [`saveSanitizer.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/auth/saveSanitizer.ts), [`saveSerializer.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/auth/saveSerializer.ts)
+- **Target Component**: [`saveSanitizer.ts`](../src/logic/auth/saveSanitizer.ts), [`saveSerializer.ts`](../src/logic/auth/saveSerializer.ts)
 - **Steps**:
   1. Perform various actions (catch a Pokémon, spend money, rearrange party, win a gym badge).
   2. Click **Guardar Partida** (Save Game) or allow battle end auto-save.

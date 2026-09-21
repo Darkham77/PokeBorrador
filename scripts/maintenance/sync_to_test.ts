@@ -64,7 +64,7 @@ async function copyRecursive(src: string, dest: string, ignoreFilter?: (p: strin
 }
 
 async function main(): Promise<void> {
-  console.log(`\n🚀 Starting Sync PokeBorrador -> pokevicio-test`);
+  console.log(`\n🚀 Starting Sync Pokemon-Online -> pokevicio-test`);
   console.log(`Source: ${SOURCE_DIR}`);
   console.log(`Target: ${TARGET_DIR}\n`);
 

@@ -56,8 +56,52 @@ describe('Markdown & DOX Relative Links Auditor (validate_markdown_links.ts)', (
       expect(result.linksChecked).toBe(2);
       expect(result.brokenLinks.length).toBe(2);
       expect(result.brokenLinks[0]!.linkText).toBe('Ghost File');
+      expect(result.brokenLinks[0]!.ruleId).toBe('markdown-broken-relative-link');
       expect(result.brokenLinks[0]!.error).toContain('Target path does not exist');
       expect(result.brokenLinks[1]!.linkText).toBe('Ghost Folder');
+    });
+
+    it('should catch absolute file:// URLs and Windows drive paths (markdown-absolute-path)', () => {
+      const sampleContent = `
+# Absolute Links Doc
+- [Local File](file:///projects/core/src/file.ts)
+- [Drive File](D:/projects/core/file.ts)
+- [Root Absolute](/src/logic/battle.ts)
+`;
+      const fakeDocPath = path.join(rootDir, 'src/logic/dummy.md');
+      const result = checkMarkdownLinksInContent(sampleContent, fakeDocPath, rootDir);
+
+      expect(result.brokenLinks.length).toBe(3);
+      expect(result.brokenLinks.every(b => b.ruleId === 'markdown-absolute-path')).toBe(true);
+      expect(result.brokenLinks[0]!.rawUrl).toContain('file:///');
+    });
+
+    it('should catch stale environment paths like PokeBorrador and /home/franco (markdown-stale-environment-path)', () => {
+      const sampleContent = `
+# Stale Doc
+- [Old Repo](https://github.com/myorg/PokeBorrador)
+- [Old Home](file:///home/franco/Trabajos/PokeBorrador/src/test.ts)
+`;
+      const fakeDocPath = path.join(rootDir, 'src/logic/dummy.md');
+      const result = checkMarkdownLinksInContent(sampleContent, fakeDocPath, rootDir);
+
+      expect(result.brokenLinks.length).toBe(2);
+      expect(result.brokenLinks[0]!.ruleId).toBe('markdown-stale-environment-path');
+      expect(result.brokenLinks[1]!.ruleId).toBe('markdown-stale-environment-path');
+    });
+
+    it('should detect unescaped file:/// or PokeBorrador in plain text', () => {
+      const sampleContent = `
+# Unescaped Mention
+Please see file:///home/user/test.json for more details.
+Also check PokeBorrador legacy notes.
+`;
+      const fakeDocPath = path.join(rootDir, 'src/logic/dummy.md');
+      const result = checkMarkdownLinksInContent(sampleContent, fakeDocPath, rootDir);
+
+      expect(result.brokenLinks.length).toBe(2);
+      expect(result.brokenLinks.some(b => b.ruleId === 'markdown-absolute-path')).toBe(true);
+      expect(result.brokenLinks.some(b => b.ruleId === 'markdown-stale-environment-path')).toBe(true);
     });
   });
 

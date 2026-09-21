@@ -142,12 +142,12 @@ graph TD
     F --> G[Updated Pokemon Instance Stats]
 ```
 
-- [`src/logic/pokemon/evMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/evMath.ts): Pure math engine for EV limits, yield modifications, items application, and EV-to-IV bonus conversion.
-- [`src/logic/pokemon/pokemonUtils.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/pokemonUtils.ts): Canonical Single Source of Truth for Total Power (`calculateTotalPower`).
-- [`src/logic/pokemon/statsMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/statsMath.ts): Canonical stat formula calculation.
-- [`src/logic/pokemon/pokemonFactory.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/pokemonFactory.ts): Instance creation and stat recalculation triggers.
-- [`src/logic/items/itemEffectHandlers.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/items/itemEffectHandlers.ts): Inventory item dispatchers for EV consumables.
-- [`src/logic/battle/battleRewards.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleRewards.ts): Battle reward processing and EV yield distribution.
+- [`src/logic/pokemon/evMath.ts`](../../../../../src/logic/pokemon/evMath.ts): Pure math engine for EV limits, yield modifications, items application, and EV-to-IV bonus conversion.
+- [`src/logic/pokemon/pokemonUtils.ts`](../../../../../src/logic/pokemon/pokemonUtils.ts): Canonical Single Source of Truth for Total Power (`calculateTotalPower`).
+- [`src/logic/pokemon/statsMath.ts`](../../../../../src/logic/pokemon/statsMath.ts): Canonical stat formula calculation.
+- [`src/logic/pokemon/pokemonFactory.ts`](../../../../../src/logic/pokemon/pokemonFactory.ts): Instance creation and stat recalculation triggers.
+- [`src/logic/items/itemEffectHandlers.ts`](../../../../../src/logic/items/itemEffectHandlers.ts): Inventory item dispatchers for EV consumables.
+- [`src/logic/battle/battleRewards.ts`](../../../../../src/logic/battle/battleRewards.ts): Battle reward processing and EV yield distribution.
 
 ---
 

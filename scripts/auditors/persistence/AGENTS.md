@@ -7,6 +7,9 @@ This directory contains database migration integrity, SQL dialect translation, a
 ## Directory Structure & Files
 
 - [_testDbHelper.ts](./_testDbHelper.ts): Shared test database setup and base schema initialization for persistence validators.
+- [validate_save_persistence_parity.ts](./validate_save_persistence_parity.ts): Validates serialization and deserialization parity for Pokémon and save data persistence.
+- [validate_schema_parity.ts](./validate_schema_parity.ts): Audits schema parity and column definitions between PostgreSQL and SQLite migration scripts.
+- [validate_sql_anti_patterns.ts](./validate_sql_anti_patterns.ts): Audits SQL migrations for anti-patterns, dangerous default values, and unindexed foreign keys.
 - [validate_sql_migrations.ts](./validate_sql_migrations.ts): Tests in-memory execution of all PostgreSQL-translated SQL migrations in SQLite and validates migration timestamp monotonicity.
 
 ## Local Governance & Rules
