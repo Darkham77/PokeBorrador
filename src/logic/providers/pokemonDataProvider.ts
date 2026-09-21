@@ -1,4 +1,3 @@
-// [PureVue-Ignore-Length]
 import { shallowRef } from 'vue';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { ABILITY_TRANSLATIONS_ES, ABILITIES_BY_SPANISH_NAME, type AbilityId } from '@/data/battle/abilities';

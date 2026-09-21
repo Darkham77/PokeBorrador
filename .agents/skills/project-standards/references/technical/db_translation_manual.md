@@ -112,6 +112,6 @@ PRAGMA foreign_keys=ON;
 2. **Standardized English Identifiers**:
    - All seed data (items, missions, arena rewards) in SQL migrations MUST use standard English IDs (`potion`, `quest_daily_01`). Never insert Spanish terms as primary keys.
 3. **Unit Test Parity**:
-   - All new SQL translation patterns MUST have unit tests added to `tests/unit/db_translation.spec.ts`.
+   - All new SQL translation patterns MUST have unit tests added to `tests/node/system/db_translation.test.ts`.
 4. **Batch Execution (`db.exec`) for Multi-Statement SQLite Migrations**:
    - In Node.js native `node:sqlite`, multi-statement SQL migration scripts (such as large sanitization files containing 10,000+ statements) must be executed in batch via `db.exec(migration.sqlite_sql)` inside a `try/catch` block, falling back to statement-by-statement execution (`splitSQLStatements`) only if an error occurs. Batch execution runs in 41ms natively in C++ instead of 34+ seconds across the V8 boundary.

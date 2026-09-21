@@ -14,20 +14,20 @@ Every sub-auditor and reporter in the project is part of a unified static analys
 ## 🏛️ Core Principles & Tooling Mandates
 
 1. **Strict OOP Inheritance Mandate**:
-   - Every sub-auditor MUST extend either `BaseAuditor<TRuleId>` or `FileScanAuditor<TRuleId>` from [`scripts/lib/auditorBase.ts`](../../scripts/lib/auditorBase.ts).
+   - Every sub-auditor MUST extend either `BaseAuditor<TRuleId>` or `FileScanAuditor<TRuleId>` from [`scripts/lib/auditorBase.ts`](../../../scripts/lib/auditorBase.ts).
    - Creating standalone procedural scripts, custom CLI loggers, or ad-hoc result printers is **STRICTLY FORBIDDEN**.
 2. **Unified Box-Drawing Table & Terminal Width Mandate (Max 80 Cols, Zero Wrapping)**:
-   - ALL terminal tables, whether rendered by sub-auditors (`BaseAuditor`), orchestrators (`audit_full.ts`), or interactive reporters (`report_fallow.ts`, `report_complexity.ts`, `report_audit_findings.ts`), MUST use the shared Box-Drawing utilities from [`scripts/lib/unifiedTheme.ts`](../../scripts/lib/unifiedTheme.ts) (`renderBanner`, `renderBoxTable`, `formatStatusBadge`, `getVisualWidth`).
+   - ALL terminal tables, whether rendered by sub-auditors (`BaseAuditor`), orchestrators (`audit_full.ts`), or interactive reporters (`report_fallow.ts`, `report_complexity.ts`, `report_audit_findings.ts`), MUST use the shared Box-Drawing utilities from [`scripts/lib/unifiedTheme.ts`](../../../scripts/lib/unifiedTheme.ts) (`renderBanner`, `renderBoxTable`, `formatStatusBadge`, `getVisualWidth`).
    - Hardcoding custom ASCII banners (`╔════...` exceeding 80 columns) or ad-hoc bulleted lists (`•`) is **STRICTLY FORBIDDEN**.
    - Tables must fit within the standard 80-column terminal width (`TERMINAL_WIDTH = 80`) and use `getVisualWidth()` for padding so emojis (`✅`, `❌`, `⚠️`) do NOT throw column borders out of alignment.
 3. **Dynamic Auto-Discovery Mandate (Zero Hardcoded Lists)**:
-   - The master orchestrator (`npm run audit` / [`scripts/maintenance/audit_full.ts`](../../scripts/maintenance/audit_full.ts)) and safe-commit diff gatekeeper ([`scripts/maintenance/audit_for_commit.ts`](../../scripts/maintenance/audit_for_commit.ts)) discover all suites dynamically via [`scripts/maintenance/auditScanner.ts`](../../scripts/maintenance/auditScanner.ts).
+   - The master orchestrator (`npm run audit` / [`scripts/maintenance/audit_full.ts`](../../../scripts/maintenance/audit_full.ts)) and safe-commit diff gatekeeper ([`scripts/maintenance/audit_for_commit.ts`](../../../scripts/maintenance/audit_for_commit.ts)) discover all suites dynamically via [`scripts/maintenance/auditScanner.ts`](../../../scripts/maintenance/auditScanner.ts).
    - **Never hardcode an array of auditors or task IDs**. Any `.ts` file placed in `scripts/auditors/<family>/` is automatically discovered, categorized, timed, and executed.
 4. **Prohibition of Ad-Hoc File Walkers**:
    - Sub-auditors MUST NEVER implement custom recursive directory traversals (`fs.readdir` loops, `getAllFiles`, `getAllVueFiles`, `getFilesRecursively`, `walkSourceFiles`).
    - File discovery MUST use the centralized, cached, and ignore-aware scanner: `this.context.collectFiles(roots, extensions)` or `collectRepositoryFiles()`.
 5. **Unified Dual Output Standard (`StandardAuditResult`)**:
-   - **Console (stdout)**: Emits formatted progress lines (`🔍 [X/N]`) followed by clean visual Box-Drawing tables (`[ ✅ PASS ]`, `[ ❌ FAIL ]`, `[ ⚠️ WARN ]`), runtimes in ms, and domain metrics via [`scripts/lib/unifiedTheme.ts`](../../scripts/lib/unifiedTheme.ts).
+   - **Console (stdout)**: Emits formatted progress lines (`🔍 [X/N]`) followed by clean visual Box-Drawing tables (`[ ✅ PASS ]`, `[ ❌ FAIL ]`, `[ ⚠️ WARN ]`), runtimes in ms, and domain metrics via [`scripts/lib/unifiedTheme.ts`](../../../scripts/lib/unifiedTheme.ts).
    - **Scratch Disk (`scratch/audits/`)**: ALWAYS saves 100% complete structured JSON conforming to `StandardAuditResult` to `scratch/audits/<family>/<id>.json` (and `scratch/audits/latest_audit.json` for global runs).
 6. **Zero Double-Reporting Anti-Pattern**:
    - NEVER pass string arrays (`errors`, `warnings`) to `context.finish(...)` if violations were already registered with `this.addViolation(...)` or `context.addError()`. Doing so causes duplicate violation listings in the terminal summary table.
@@ -53,7 +53,7 @@ Every sub-auditor and reporter in the project is part of a unified static analys
    - Whenever a sub-auditor performs TypeScript AST analysis or inspects Vue SFC `<script>` blocks, it MUST declare `requiresAst: true` in its constructor configuration (`BaseAuditor` or `FileScanAuditor`).
    - Sub-auditors MUST NEVER instantiate isolated AST parsers or call `ts.createProgram` / `ts.createSourceFile` inside ad-hoc file loops.
    - Sub-auditors MUST consume the centralized `astContext: SharedAstContext` passed to `runAudit(astContext?: SharedAstContext)` or receive the pre-compiled `sourceFile?: ts.SourceFile` directly in `FileScanAuditor.scanFile(relPath, content, sourceFile)`.
-   - All AST-dependent sub-auditors MUST be registered in `AST_DEPENDENT_SUITE_IDS` inside [`scripts/maintenance/auditScanner.ts`](../../scripts/maintenance/auditScanner.ts). This ensures the master orchestrator (`audit_full.ts`) initializes and preheats a single AST cache before running suites.
+   - All AST-dependent sub-auditors MUST be registered in `AST_DEPENDENT_SUITE_IDS` inside [`scripts/maintenance/auditScanner.ts`](../../../scripts/maintenance/auditScanner.ts). This ensures the master orchestrator (`audit_full.ts`) initializes and preheats a single AST cache before running suites.
    - For standalone CLI execution (`BaseAuditor.runCli`), `execute()` automatically provisions a fallback `SharedAstContext` on demand if `requiresAst: true`.
 
 ---

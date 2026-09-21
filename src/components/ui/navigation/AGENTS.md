@@ -8,7 +8,7 @@ Frontend Developers.
 
 ## Local Contracts
 
-- Follow standard repository modularity guidelines (<500 lines per component).
+- Follow standard repository modularity and Fallow SSoT complexity guidelines.
 - Keep GSAP transitions scoped and coordinated with useNavigationState.
 
 ## Work Guidance

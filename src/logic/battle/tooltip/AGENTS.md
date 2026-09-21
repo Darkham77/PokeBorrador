@@ -18,4 +18,4 @@ Frontend Developers / Battle Engine Engineers.
 
 ## Verification
 
-- Run `npm run test` targeting `tests/unit/battle/move_tooltip_o1_lookup.spec.ts`.
+- Run `npm run test` targeting `tests/unit/battle/move_tooltip_suite.spec.ts`.

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// [PureVue-Ignore-Length]
 const MAP_CARD_HOVER_Y_OFFSET_PX = -8
 const MAP_CARD_BG_SCALE_HOVER = 1.08
 const GSAP_TRANSITION_DURATION_SEC = 0.25

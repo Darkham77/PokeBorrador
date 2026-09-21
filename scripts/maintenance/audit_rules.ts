@@ -129,7 +129,7 @@ const Z_LAYERS_DIFF_SENTINEL = Z_SORTED_ENTRIES.length + 1;
  */
 export function normalizeFilePath(filePath: string): string {
   const rel = path.isAbsolute(filePath) ? path.relative(process.cwd(), filePath) : filePath;
-  return rel.split(path.sep).join(path.posix.sep).toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
+  return rel.replace(/\\/g, '/').toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
 }
 
 export const viewport: AuditRule = { // string-ok: Internal string formatting or DOM token identifier

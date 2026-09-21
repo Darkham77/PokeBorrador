@@ -2,7 +2,7 @@
 
 > **Scope & Authority**: This manual governs the modernization of pre-Vue code into the current Poké Vicio Vue 3 + Pinia + GSAP architecture, maintaining 1:1 visual and behavioral parity.
 > **Sources of Truth**:
-> - Skill: `@/migrator-legacy-vue` (`.agents/skills/migrator-legacy-vue/SKILL.md`)
+> - Skill: `@/vue-best-practices` (`.agents/skills/vue-best-practices/SKILL.md`)
 > - UI Standards: [`../core/ui_ux_standards.md`](../core/ui_ux_standards.md)
 > - Animation Standards: [`../battle/animation_standards.md`](../battle/animation_standards.md)
 
@@ -22,7 +22,7 @@
 
 ### 2. Logic Isolation
 - Extract logic from legacy `.ts` files into Vue 3 composables (`src/logic/` or `src/composables/`).
-- Keep logic files under 500 lines (Golden Rule).
+- Enforce strict modularity and low complexity adhering to Fallow SSoT metrics (Golden Rule).
 
 ### 3. Regression Verification
 After migrating a critical module (e.g., the box system or inventory):

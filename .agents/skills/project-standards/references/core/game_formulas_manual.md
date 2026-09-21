@@ -12,10 +12,10 @@
 
 ## 1. ⚙️ Global Engine Configuration
 
-The battle engine formulas module (`battleFormulas.ts`) is driven by centralized generation constants:
+The battle engine formulas module (`battleFormulas.ts`) is driven by centralized generation constants defined in `@/data/system/constants`:
 
-- **`CURRENT_GENERATION`**: `9` (Default species, learnset, and move data base).
-- **`ACTIVE_RULE_SET`**: `9` (Active combat formulas, critical hit calculations, and STAB modifiers).
+- **`ACTIVE_GENERATION`**: `9` (Default species, learnset, and move database).
+- **`ACTIVE_SHOWDOWN_FORMAT`**: `'gen9customgame'` (Active combat formulas, critical hit calculations, and Showdown simulation rules).
 
 ### Bridge Integrity (Parameter Drift Prevention)
 The bridge between the UI and the math core (`battleFormulas.ts`) **MUST** pass all context parameters (stages, weather, terrain, day cycle) explicitly to the pure math functions. Never assume implicit parameter derivation.
@@ -374,7 +374,7 @@ $$\text{NewLevel} = \min(100, \text{CurrentLevel} + \text{BonusLevel})$$
 
 ## 15. 🏆 Monthly Competitive Ranked Seasons & ELO Rating System
 
-The monthly competitive ranked tournament operates on an automatic 1-month seasonal rotation governed by [`src/logic/battle/rankedSeasonManager.ts`](../../../../../src/logic/battle/rankedSeasonManager.ts) and [`src/data/system/rankedData.ts`](../../../../../src/data/system/rankedData.ts).
+The monthly competitive ranked tournament operates on an automatic 1-month seasonal rotation governed by [`src/logic/pvp/rankedSeasonRewardEngine.ts`](../../../../../src/logic/pvp/rankedSeasonRewardEngine.ts) and [`src/data/system/rankedData.ts`](../../../../../src/data/system/rankedData.ts).
 
 ### 1. Expected Win Probability (ELO Matchup Math)
 

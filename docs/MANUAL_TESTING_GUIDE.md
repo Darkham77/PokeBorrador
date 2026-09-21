@@ -107,7 +107,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 2.4 In-Combat Item Usage (`battleItemUseHelper.ts` / `itemTargetValidator.ts`)
 
-- **Target Component**: [`battleItemUseHelper.ts`](../src/stores/battle/battleItemUseHelper.ts), [`itemTargetValidator.ts`](../src/logic/battle/itemTargetValidator.ts)
+- **Target Component**: [`battleItemUseHelper.ts`](../src/stores/battle/battleItemUseHelper.ts), [`itemTargetValidator.ts`](../src/logic/items/helpers/itemTargetValidator.ts)
 - **Steps**:
   1. Open the Bag during battle:
      - **Potion / Super Potion / Hyper Potion**: Select an injured Pokémon -> verify healing particle animation and real-time HP bar refill.
@@ -244,7 +244,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ### 6.2 Atmospheric Weather Canvas (`atmosphere.worker.ts`)
 
-- **Target Component**: [`AtmosphereLayer.vue`](../src/components/world/AtmosphereLayer.vue), [`atmosphere.worker.ts`](../src/logic/render/atmosphere.worker.ts)
+- **Target Component**: [`AtmosphereLayer.vue`](../src/components/common/AtmosphereLayer.vue), [`atmosphere.worker.ts`](../src/logic/render/atmosphere.worker.ts)
 - **Steps**:
   1. Navigate across routes with different weather types (Rain, Snow, Ashfall, Sandstorm, Leaves/Petals).
   2. **Visual Checks**:

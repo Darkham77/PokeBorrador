@@ -117,7 +117,7 @@ To process raw images, place them in the root `_raw-assets/` directory:
 ```text
 _raw-assets/
 ├── public/assets/maps/        <-- Mirrors the exact destination in the project
-└── src/assets/ui/
+└── public/assets/ui/
     └── icons.atlas/           <-- Folders ending in .atlas will be packed
 ```
 
@@ -174,7 +174,7 @@ To ensure visual consistency between terrestrial and flying Pokémon, the follow
 
 ## ⚙️ NPC Sprite Pipeline & Catalog
 
-The NPC sprite catalog (`npcSpriteCatalog.ts`) is automatically generated from the raw images in the assets folder via `scripts/convert_assets.ts`:
+The NPC sprite catalog (`npcSpriteCatalog.ts`) is automatically generated from the raw images in the assets folder via `scripts/assets/convert_assets.ts`:
 
 - **Archetype Synchronization**: To introduce new trainer categories or custom NPC archetypes, ensure you map the new archetype name and its parsing keywords to `ARCHETYPE_KEYWORDS_LOCAL` in `convert_assets.ts`.
 - **Automatic Matching**: The script scans files in `_raw-assets/public/assets/sprites/npc/` matching filenames containing the keywords, classifying them, and exporting them in `npcSpriteCatalog.ts` under the new archetype key.

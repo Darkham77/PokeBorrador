@@ -61,7 +61,7 @@ The optimization script splits sheets into two functional states:
 
 ## 3. Sprite Optimization & Segmentation
 
-The script `scripts/optimize_sprites.ts` automates spritesheet analysis by comparing individual frame pixel buffers (using `sharp` raw buffers).
+The script `scripts/assets/optimize_sprites.ts` automates spritesheet analysis by comparing individual frame pixel buffers (using `sharp` raw buffers).
 
 ### Segmentation Algorithm
 

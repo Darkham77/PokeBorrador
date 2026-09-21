@@ -178,7 +178,7 @@ Once the design is validated:
 
 - **Write to a Durable Format**: Save as a Markdown file in the project.
 - Durable File: Write a Markdown file (e.g., `DESIGN_DOC.md`) containing the Summary, Assumptions, Decision Log, and Final Specification.
-- Transparency: Use @/markdown-expert to ensure the project's documentation follows best practices and is well-structured.
+- Transparency: Use @/dox-navigator to ensure the project's documentation follows best practices and is well-structured.
 
 ---
 
@@ -233,4 +233,4 @@ You may exit brainstorming mode **only when all of the following are true**:
 ## Related Skills
 
 - @/architecture for high-level system patterns.
-- @/markdown-expert to ensure resulting design docs are well-indexed and follow standards.
+- @/dox-navigator to ensure resulting design docs are well-indexed and follow standards.

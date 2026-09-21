@@ -4,13 +4,13 @@ Este manual detalla los comandos y configuraciones necesarios para trabajar en l
 
 ## 📋 Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instalado **Node.js (v26.9.0 o superior)** y **npm (v12.0.0 o superior)** en tu sistema.
+Antes de comenzar, asegúrate de tener instaladas versiones compatibles de **Node.js** y **npm** según lo definido en `package.json` (`engines`) y `.nvmrc`.
 
-> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente **Node >= 26.9.0** y **npm >= 12.0.0**. Si la versión instalada es inferior, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
+> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y exige las versiones especificadas en `package.json` (`engines`) y `.nvmrc`. Si la versión instalada no cumple con estos requisitos, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
 
 ### 🌐 Preparación y Actualización del Entorno (Node.js y npm)
 
-Para inicializar o actualizar automáticamente el entorno (instalación de NVM si falta, Node.js 26+ y npm 12+), ejecuta el script correspondiente desde la raíz del proyecto:
+Para inicializar o actualizar automáticamente el entorno (instalación de NVM si falta, y sincronización con las versiones de Node.js y npm declaradas en `package.json`), ejecuta el script correspondiente desde la raíz del proyecto:
 
 - **En Windows (PowerShell como Administrador)**:
 
@@ -364,7 +364,7 @@ El proyecto soporta persistencia dual con aislamiento total entre el modo local 
 | `npm run database:repair-account` | **Reparación de Cuentas Ilegales**: Corrige Pokémon ilegales (niveles, movimientos o habilidades no permitidas) en una o todas las cuentas, tanto en SQLite local como en servidores Supabase. |
 | `npm run database:diagnose-account` | **Diagnóstico de Cuentas**: Diagnostica integridad, inventario, Pokémon ilegales y locks de una cuenta (`database:diagnose-accounts` para todas las cuentas). |
 | `npm run admin:rename` | **Renombrado Administrativo**: Cambia el nombre de entrenador de un usuario en Supabase directamente desde consola. |
-| `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro y genera la lista tipada de servidores en `src/data/official_servers.ts`. |
+| `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro y genera la lista tipada de servidores en `src/data/system/official_servers.ts`. |
 | `npm run database:update` | **Gestor y Migrador**: Aplica esquemas iniciales y migraciones SQL incrementales en el servidor Supabase elegido o en todos (`--all`). |
 | `npm run database:backup` | **Generador de Respaldos**: Conecta al servidor Supabase y exporta todas las tablas a un archivo JSON estructurado. |
 | `npm run database:upgrade-backup` | **Actualizador de Respaldos**: Aplica migraciones y legalización de Showdown a un respaldo JSON exportado. |

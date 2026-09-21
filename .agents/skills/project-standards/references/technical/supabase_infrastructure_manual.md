@@ -17,7 +17,7 @@ The PostgreSQL database is built as a custom image (`Dockerfile.db`) that packag
 A dedicated `db-migrator` service in `docker-compose.yml` handles schema parity on every startup.
 
 - **Trigger**: Runs automatically when the infrastructure is lifted.
-- **Source**: Uses the local `supabase/migrations` directory.
+- **Source**: Uses the canonical `database/migrations/` directory.
 
 ### 3. Deployment Commands
 
@@ -37,7 +37,7 @@ The client supports dynamic switching between official and local instances.
 
 ### 1. Configuration Centralization
 
-All servers are registered in `src/data/official_servers.ts`.
+All servers are registered in `src/data/system/official_servers.ts`.
 
 - **Environment Variables**: Production credentials MUST be stored in `.env`.
 - **Local Fallback**: Docker instances use a pre-configured `anonKey` by default.
@@ -53,7 +53,7 @@ The client performs a "permissive ping" to verify server availability.
 
 ## 🚨 Maintenance Rules
 
-- **Schema Changes**: To update the database schema, add a new `.sql` file to `supabase/migrations`. The `db-migrator` will apply it on the next restart.
+- **Schema Changes**: To update the database schema, add a new `.sql` file (and companion `.sqlite.sql`) to `database/migrations/`. The `db-migrator` will apply it on the next restart.
 
 ---
 

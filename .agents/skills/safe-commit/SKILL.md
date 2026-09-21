@@ -100,7 +100,7 @@ This phase audits test coverage for modified logic and captures a zero-commit sa
 - Inspect `git diff HEAD` and review all conversation session artifacts in `<appDataDir>/brain/<conversation-id>/` (`implementation_plan.md`, `walkthrough.md`, scratch notes) to build a clear mental model of all changes across the working tree.
 
 **Step 1.2** — Test Gap Analysis
-- For each modified file containing non-trivial logic (`src/logic/`, `src/stores/`, `src/composables/`, `src/utils/`):
+- For each modified file containing non-trivial logic (`src/logic/`, `src/stores/`, `src/composables/`, `src/logic/utils/`):
   - Check if corresponding unit tests exist in `tests/unit/` or `tests/node/`.
   - If non-trivial logic lacks tests, implement the required unit tests **now** (before proceeding to verification).
 

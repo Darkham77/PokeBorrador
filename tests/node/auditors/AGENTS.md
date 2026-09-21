@@ -13,6 +13,7 @@ Developer Tooling & Codebase Quality Team.
 - [validate_o1_data_structures.test.ts](./validate_o1_data_structures.test.ts): Unit tests for O(1) data structure lookups and catalog performance.
 - [validate_test_fragmentation.test.ts](./validate_test_fragmentation.test.ts): Unit tests for test anti-fragmentation validator and 60-line test floor governance.
 - [validate_native_paths.test.ts](./validate_native_paths.test.ts): Unit tests for security and path integrity auditor.
+- [validate_markdown_code_references.test.ts](./validate_markdown_code_references.test.ts): Unit tests for markdown source code, npm scripts, and runtime version reference auditor.
 
 ## Local Contracts
 

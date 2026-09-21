@@ -98,11 +98,20 @@ export function clearGitIgnoredPathsCache(): void {
 
 /**
  * Strips code fences and inline backticks so syntax examples are not parsed as active links.
+ * Preserves links whose text contains inline code backticks (e.g. [`/dox-navigator`](url)).
  */
 export function stripCodeBlocksAndInlineCode(markdown: string): string {
   let clean = markdown.replace(/```[\s\S]*?```/g, match => {
     return '\n'.repeat((match.match(/\n/g) || []).length);
   });
+
+  // Preserve markdown links formatted with inline code in link text (e.g. [`code`](url) or [foo `code`](url))
+  // by unwrapping inner backticks from inside [ ... ] before stripping isolated code spans.
+  clean = clean.replace(/\[([^\]\n]*)\]\(([^)\n]+)\)/g, (_match, text, url) => {
+    return `[${text.replace(/`/g, '')}](${url})`;
+  });
+
+  // Strip remaining inline code spans (e.g. `[example](./fake.md)` or `variable`)
   clean = clean.replace(/`[^`\n]+`/g, '');
   return clean;
 }
@@ -145,7 +154,7 @@ export function checkMarkdownLinksInContent(
   rootDir: string,
 ): { linksChecked: number; brokenLinks: BrokenMarkdownLink[] } {
   const cleanContent = stripCodeBlocksAndInlineCode(content);
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const linkRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
   const brokenLinks: BrokenMarkdownLink[] = [];
   let linksChecked = 0;
   let match: RegExpExecArray | null;

@@ -170,9 +170,8 @@ El sistema de Rutas de Farmeo debe integrarse con la progresión general del jug
 
 ## 6. Referencias
 
-* [1] `DESIGN_DOC.md` - Documento de Diseño: Sistema de Viaje Aventura y MOs. `/home/ubuntu/PokeBorrador/test aventura/DESIGN_DOC.md`
-* [2] `pokemon.ts` - Definiciones de tipos para Pokémon. `/home/ubuntu/PokeBorrador/src/types/pokemon.ts`
-* [3] `items.ts` - Definiciones de tipos para ítems. `/home/ubuntu/PokeBorrador/src/types/items.ts`
-* [4] `useAdventureSimulation.ts` - Lógica de simulación de aventura. `/home/ubuntu/PokeBorrador/src/composables/adventure/useAdventureSimulation.ts`
-* [5] `kantoGraph.ts` - Grafo de conexiones del mapa de Kanto. `/home/ubuntu/PokeBorrador/test aventura/kantoGraph.ts`
-`
+* [1] [DESIGN_DOC.md](./DESIGN_DOC.md) - Documento de Diseño: Sistema de Viaje Aventura y MOs.
+* [2] [pokemon.ts](../src/types/pokemon/pokemon.ts) - Definiciones de tipos para Pokémon.
+* [3] [items.ts](../src/types/inventory/items.ts) - Definiciones de tipos para ítems.
+* [4] [useAdventureSimulation.ts](../src/composables/adventure/useAdventureSimulation.ts) - Lógica de simulación de aventura.
+* [5] [kantoGraph.ts](./kantoGraph.ts) - Grafo de conexiones del mapa de Kanto.

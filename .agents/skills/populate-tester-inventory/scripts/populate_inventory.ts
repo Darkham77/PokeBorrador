@@ -1,4 +1,4 @@
-import type { ItemId } from '../../../../src/types/items';
+import type { ItemId } from '../../../../src/types/inventory/items.ts';
 
 /**
  * POPULATE TESTER INVENTORY

@@ -191,13 +191,13 @@ docker compose ps
 ```
 
 Después de ~1 minuto, todos los servicios deben mostrar `Up [...] (healthy)`.  
-Si ves estado `created` pero no `Up`, corré el script de diagnóstico:
+Si ves estado `created` pero no `Up`, inspeccioná los logs de los contenedores:
 
 ```bash
-sh tests/test-container-logs.sh
+docker compose logs
 ```
 
-O inspeccioná logs de un contenedor específico:
+O inspeccioná logs de un servicio específico (por ejemplo, analytics):
 
 ```bash
 docker compose logs analytics

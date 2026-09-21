@@ -10,7 +10,7 @@ Core Frontend.
 
 - Route visibility guards and session state handling.
 - Screen layouts must use `dvh` units to avoid mobile browser address bar clipping.
-- **Loading Gate Synchronization & Zero Pop-In Mandate**: Top-level game orchestrators (`MainGameView.vue`) MUST import primary dashboard views (`HomeView.vue`) statically (avoiding intermediate async chunk boundaries on initial boot) and release the loading gate (`loadingStore.markAppMounted()`) strictly after `nextTick()` + `requestAnimationFrame()` frame paint signals. This guarantees 100% simultaneous mounting and rendering of dashboard widgets before the loading veil dissolves, completely eliminating visual pop-in.
+- **Loading Gate Synchronization & Zero Pop-In Mandate**: Top-level game orchestrators (`./game/MainGameView.vue`) MUST import primary dashboard views (`./game/HomeView.vue`) statically (avoiding intermediate async chunk boundaries on initial boot) and release the loading gate (`loadingStore.markAppMounted()`) strictly after `nextTick()` + `requestAnimationFrame()` frame paint signals. This guarantees 100% simultaneous mounting and rendering of dashboard widgets before the loading veil dissolves, completely eliminating visual pop-in.
 - **Mandatory Centralized Asset Management Mandate (`getAssetUrl`)**: Views, dashboard layouts, and top-level pages MUST NEVER hardcode asset path strings. All asset URLs (map backgrounds, tournament banners, modal icons, sprites) MUST be resolved strictly through `getAssetUrl(ASSET_TYPES.<CATEGORY>, id, options)` from `@/logic/services/assetService`.
 
 ## Work Guidance
@@ -18,8 +18,8 @@ Core Frontend.
 - Keep page views clean. Extract complex visual state management to composables.
 - Standardize the loading screen gate; hide the loading veil entirely via `v-if` when `onMounted` triggers to prevent DOM blockages.
 - Do not apply CSS `zoom` transforms to canvas wrappers (such as battle arena or map canvas wrappers); apply zooms strictly to surrounding UI panels.
-- **Just-in-Time Web Worker Preloading**: Do not launch heavy simulation Web Workers (such as the Showdown Worker) during root application boot in `main.ts`. Preload them in `MainGameView.vue` `onMounted()` when entering the active game view.
-- **Asynchronous View & Debug Panel Splitting**: Top-level views (`MainGameView`) and developer debug panels (`LocalDebugPanel`) must be loaded asynchronously via `defineAsyncComponent` to isolate their dependencies from the initial login chunk.
+- **Just-in-Time Web Worker Preloading**: Do not launch heavy simulation Web Workers (such as the Showdown Worker) during root application boot in `main.ts`. Preload them in `./game/MainGameView.vue` `onMounted()` when entering the active game view.
+- **Asynchronous View & Debug Panel Splitting**: Top-level views (`./game/MainGameView.vue`) and developer debug panels (`@/components/admin/debug/LocalDebugPanel.vue`) must be loaded asynchronously via `defineAsyncComponent` to isolate their dependencies from the initial login chunk.
 
 ## Verification
 

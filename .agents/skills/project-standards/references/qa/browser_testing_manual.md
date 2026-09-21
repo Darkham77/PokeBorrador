@@ -194,3 +194,15 @@ When writing unit tests or specs that verify items or item effects, you MUST alw
 | `sim:e2e` | Dynamic sequential file-by-file execution of all `*.simulation.ts` under `scripts/e2e/` (halts on 1st failure) |
 
 When writing tests or configuring battle cheats, do not trigger healing or reanimation items on invalid targets. Any test or simulation script attempting to apply a potion to a Full HP Pokemon or a revive to a living Pokemon MUST fail, matching official game mechanics where it has no effect and does not consume the item.
+
+### 9. Tester Inventory Population Protocol (`npm run test:populate-inventory`)
+
+To quickly equip the test player (`ASH`) with standard testing items (potions, revives, evolution stones, status heaters, rare candies, repels) during interactive browser testing:
+
+1. Execute the utility script:
+   ```bash
+   npm run test:populate-inventory
+   ```
+2. Copy the generated JavaScript console snippet.
+3. In the browser DevTools console (F12) while on `https://localhost:5173`, paste and execute the snippet.
+4. The snippet updates `window.__VITE_DEBUG__.getGameStore().state.bag` with standard testing items and invokes `saveGame()` to persist the updated bag to the local database.

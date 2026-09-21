@@ -344,7 +344,7 @@ The obedience cap acts as a dual gatekeeper across both wild capturing and in-ba
 
 For future implementation in Poké Vicio, the obedience subsystem MUST adhere to Domain-Type-First standards, DBRouter persistence contracts, and event-driven combat execution.
 
-### 1. Domain Types Contract (`src/types/pokemon.ts` or `src/types/battle.ts`)
+### 1. Domain Types Contract (`src/types/pokemon/pokemon.ts` or `src/types/battle/battle.ts`)
 
 ```typescript
 export type ObedienceBehavior =
@@ -381,7 +381,7 @@ export interface PokemonObedienceData {
 }
 ```
 
-### 2. Pure Calculation Function (`src/logic/battleFormulas.ts`)
+### 2. Pure Calculation Function (`src/logic/battle/battleFormulas.ts`)
 
 ```typescript
 /**

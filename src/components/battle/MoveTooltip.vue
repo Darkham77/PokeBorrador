@@ -1,4 +1,3 @@
-<!-- [PureVue-Ignore-Length] -->
 <script setup lang="ts">
 import { useMoveTooltip } from '@/composables/battle/useMoveTooltip'
 import MoveTooltipDamage from './MoveTooltipDamage.vue'

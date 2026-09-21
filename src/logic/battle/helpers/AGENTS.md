@@ -26,7 +26,7 @@ Systems Engineers / Backend Developers.
 
 ## Work Guidance
 
-- Modularize complex helper logic into standalone files (under 500 lines).
+- Modularize complex helper logic into standalone files adhering to Fallow SSoT complexity limits.
 - Keep code fully typed with strict types from `@pkmn/sim` and local domain interfaces.
 
 ## Verification

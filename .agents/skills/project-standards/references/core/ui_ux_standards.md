@@ -556,7 +556,7 @@ To maximize action zone visibility while protecting the UI in high-density comba
 
 ## 📏 Layering & Z-Index Governance
 
-To prevent "z-index wars" and ensure consistent interaction, all layers MUST follow the centralized scale defined in `_variables.scss`.
+To prevent "z-index wars" and ensure consistent interaction, all layers MUST follow the centralized CSS custom properties scale defined in `src/styles/core/_base.scss` (`:root` `--z-*`), synchronized with `Z_LAYERS` in `src/logic/constants/visuals.ts`.
 
 ### 1. Standard Layers (0-999)
 
@@ -679,7 +679,7 @@ To ensure optimal GPU performance and eliminate race conditions or memory leaks 
 
 To maintain a coherent sense of depth in the 2D-perspective virtual world and prevent layout conflicts:
 
-- **Z-Index Single Source of Truth**: All visual layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of JSON files or hardcoded integers is forbidden. SCSS variables in `_variables.scss` must reflect these TS constants.
+- **Z-Index Single Source of Truth**: All visual layering constants MUST be defined in `src/logic/constants/visuals.ts` (`Z_LAYERS`). The use of JSON files or hardcoded integers is forbidden. CSS custom properties in `src/styles/core/_base.scss` (`:root` `--z-*`) must maintain 1:1 parity with these TS constants, audited continuously by `npm run validate:z-index`.
 - **Strict Z-Index Layering**: The use of magic z-index numbers (`1`, `9999`) or raw CSS variables with unsafe fallbacks is strictly prohibited. You MUST reactively bind the official TS constant from the system using `calc(v-bind('Z_LAYERS.MAP_SPAWNS') + X)`.
 - **Layering Matrix (relative to `--z-map-spawns` [Default: 10])**:
 
@@ -740,7 +740,7 @@ When designing card grids or summary cards (e.g. PC Box menu slots, item lists) 
 
 When using the global GSAP hover engine to animate borders or box-shadows on interactive cards, lists, or containers:
 
-- **Registry Mandate**: The component's base class (e.g., `trainer-card`) MUST be registered in the `HOVER_VISUAL_BORDER_CLASSES` array within `src/logic/hoverHelpers.ts`.
+- **Registry Mandate**: The component's base class (e.g., `trainer-card`) MUST be registered in the `HOVER_VISUAL_BORDER_CLASSES` array within `src/logic/hover/hoverHelpers.ts`.
 - **Why**: The hover leave engine (`triggerLeave` in `hoverLeave.ts`) relies on `hasVisualBorders` to detect if the element has custom borders. If the class is not registered, the engine will skip cleaning up the border properties on mouse leave, leaving the hover styles stuck (e.g., permanently white or colored).
 - **GSAP and CSS Conflict Avoidance**: Ensure the CSS stylesheet does not declare `transition: border-color` or custom `:hover` border colors that fight with GSAP's style injections.
 

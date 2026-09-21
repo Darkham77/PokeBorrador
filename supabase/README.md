@@ -1,6 +1,6 @@
 # Supabase Configurator & Deployment Manager
 
-Herramienta de orquestación y automatización CLI (`setup_supabase.ts`) diseñada para gestionar despliegues multi-servidor de Supabase bajo un enfoque **"Cero-Contacto" (Zero-Touch)** y una arquitectura purista de Git, completamente migrada a **Node.js 26+ nativo**.
+Herramienta de orquestación y automatización CLI (`setup_supabase.ts`) diseñada para gestionar despliegues multi-servidor de Supabase bajo un enfoque **"Cero-Contacto" (Zero-Touch)** y una arquitectura purista de Git, completamente migrada a **Node.js nativo (versión gobernada por `package.json` / `.nvmrc`)**.
 
 ---
 
@@ -11,17 +11,17 @@ Herramienta de orquestación y automatización CLI (`setup_supabase.ts`) diseña
 - **Metadatos de Juego & Tenant DRY**: Incorpora de forma nativa identificadores para la UI del juego (`ID`, `NAME`, `REGION`) y aplica el principio DRY para la gestión de tenants (`TENANT_ID`), propagándolo automáticamente a los servicios de Supavisor y Storage.
 - **Despliegues Cero-Contacto**: Encapsula todas las configuraciones, scripts SQL internos de Supabase y servicios (Kong, Vector, Supavisor) dentro de una imagen Docker personalizada, evitando la necesidad de crear o editar archivos manualmente en los servidores remotos.
 - **Herencia Inteligente de Variables**: Combina automáticamente las configuraciones base oficiales de Supabase (`.env.example`) con las variables del maestro y las específicas de cada servidor, garantizando que Docker Compose levante sin errores de especificación.
-- **Interfaz CLI en Español Modernizada**: Comandos intuitivos y amigables con formato visual enriquecido y compilación ultrarrápida nativa de TypeScript (gracias a Node.js 26+).
+- **Interfaz CLI en Español Modernizada**: Comandos intuitivos y amigables con formato visual enriquecido y compilación ultrarrápida nativa de TypeScript (gracias a Node.js nativo).
 
 ---
 
 ## Estructura del Proyecto
 
 ```text
-PokeBorrador/
+Poké Vicio/
 ├── .env.example         # Plantilla del archivo maestro de configuración (Raíz)
 └── supabase/
-    ├── setup_supabase.ts    # Orquestador CLI principal (Node.js 26+)
+    ├── setup_supabase.ts    # Orquestador CLI principal (Node.js nativo)
     └── README.md            # Esta documentación
 ```
 
@@ -48,7 +48,7 @@ graph TD
 
 ## Requisitos Previos
 
-- **Node.js 26.1.0+**
+- **Node.js** (versión gobernada por la SSoT del proyecto en `package.json` [`engines.node`] y `.nvmrc`)
 - **Docker** y **Docker Compose** (para construir y publicar imágenes)
 - **Git** (para la clonación selectiva de Supabase)
 

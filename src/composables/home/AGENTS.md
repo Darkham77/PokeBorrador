@@ -16,7 +16,7 @@ Frontend Developers.
 ## Work Guidance
 
 - When adding new widgets or collapsible sections to `HomeView.vue`, declare their domain ID in `HOME_WIDGET_IDS` with strict typing.
-- Maintain responsive, accessible controls using `HomeWidgetMinimizeBtn.vue` and `HomeCollapsibleWidget.vue`.
+- Maintain responsive, accessible controls using `@/components/home/HomeWidgetMinimizeBtn.vue` and `@/components/home/HomeCollapsibleWidget.vue`.
 - Expose widget notifications through `useHomeWidgetBadges.ts` or register custom reactive providers via `registerWidgetBadge`.
 
 ## Verification

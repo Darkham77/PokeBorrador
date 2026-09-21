@@ -1,6 +1,6 @@
 /**
  * @file configure_official_servers.ts
- * @description Script automático para parsear el archivo .env maestro y configurar src/data/official_servers.ts.
+ * @description Script automático para parsear el archivo .env maestro y configurar src/data/system/official_servers.ts.
  * 
  * UTILIDAD:
  * Extrae las configuraciones de cada perfil de servidor (SERVER_<profile>_*) y genera

@@ -1,11 +1,11 @@
 /**
- * scripts/audit_item_assets.ts
+ * scripts/assets/audit_item_assets.ts
  *
  * ITEM ASSET IMAGE AUDITOR (Node.js 26+)
- * Compares src/data/items.ts entries against physical webp images in the public folder.
+ * Compares src/data/inventory/items.ts entries against physical webp images in the public folder.
  * Categorizes and audits both Poké Market (Local Shop) and Battle Club (BC Shop) items.
  *
- * Usage: node --experimental-strip-types scripts/audit_item_assets.ts
+ * Usage: node --experimental-strip-types scripts/assets/audit_item_assets.ts
  */
 
 import fs from 'node:fs/promises';

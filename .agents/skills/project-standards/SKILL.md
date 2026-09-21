@@ -115,7 +115,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Hardware-Adaptive Worker Concurrency Mandate**:
   - Multi-process worker pools (master audit runner, safe-commit gatekeeper, asset compression, fuzzer engines) MUST calculate worker capacity dynamically based on available logical cores divided by the standard coefficient: `Math.max(1, Math.floor(availableCpus / 2))` for CPU-heavy auditor tasks, and `Math.floor(os.cpus().length / 4)` for multi-threaded fuzzer/browser testing. Hardcoding arbitrary static limits (such as a fixed cap of 6) is strictly prohibited.
 - **Proportional Verification Protocol (Fast Lint vs Full Audit)**:
-  - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (~1-2s). Running heavy audits for documentation or skill edits is strictly forbidden.
+  - **Documentation & Skills (`.md`)**: Run ONLY `npm run audit:md` (~1-2s). Running heavy audits for documentation or skill edits is strictly forbidden.
   - **In-Development Code Iteration**: Run `npm run lint` (~10s) or `npm run audit` for full quality gate.
   - **Safe-Commit Gatekeeper**: `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline to diff warnings against `origin/main`.
 
@@ -241,6 +241,6 @@ Before declaring any task completed, verify code against this mandatory checklis
 - [ ] **GPU Acceleration**: Have I applied layer promotion (`will-change: transform`) and object pooling on animated/heavy elements?
 - [ ] **Pixel Parity**: Is all game content pixelated, sharp, and properly rendered with appropriate font fallbacks ('ñ' handled)?
 - [ ] **CLI-First State Verification**: Have I verified game states via `window.__VITE_DEBUG__` console commands?
-- [ ] **Proportional Verification**: For documentation/skill edits, does `npm run lint:md` pass cleanly? For code development, does `npm run audit` pass with 0 errors? (The command `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline).
+- [ ] **Proportional Verification**: For documentation/skill edits, does `npm run audit:md` pass cleanly? For code development, does `npm run audit` pass with 0 errors? (The command `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline).
 - [ ] **Fallow Score Compliance**: Does `npm run fallow:health` report a score of 85 or higher?
-- [ ] **Language Parity**: Are all repository files (.ts, .vue, .md, skills) written exclusively in English?
+- [ ] **Language Parity**: Are code files (.ts, .vue) and skill files written in English, documentation in the file's native language (English or Spanish), with zero intra-file language mixing?

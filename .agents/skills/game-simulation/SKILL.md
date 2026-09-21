@@ -35,7 +35,7 @@ Whenever instructed to start, resume, or continue a simulation workflow (e.g. *"
 - Synchronize/recreate the brain's internal `simulation_progress.md` artifact from this physical file before issuing any simulation command.
 
 ### 2. Checkpoint Inspection
-- Read [`scratch/e2e_checkpoints.json`](../../../scratch/e2e_checkpoints.json).
+- Read `scratch/e2e_checkpoints.json`.
 - Identify:
   - `doc.master.suiteIndex` and `doc.master.suiteName`: current master sequence position.
   - `doc.suites[suiteKey].failedBatchIndex`: whether an intra-suite failure is actively being repaired.
@@ -166,7 +166,7 @@ La auditoría de paridad compara el código fuente canónico de Pokémon Showdow
 - **Aislamiento de Puerto 5174**: E2E simulations strictly use port 5174 (`npx kill-port 5174`).
 - **Auto-Arranque Proactivo de Docker**: Automatically starts Docker if stopped when PostgreSQL runs.
 - **Prohibición de Mockeo Tautológico**: Never mock the subsystem under test (`showdownWorkerClient.ts`, `@pkmn/sim`). Real engine parity is mandatory.
-- **No-Test Mandate for Documentation**: Strictly forbidden to run `test` or `sim:e2e` when editing `.md` or skills. Use only `npm run lint:md`.
+- **No-Test Mandate for Documentation**: Strictly forbidden to run `test` or `sim:e2e` when editing `.md` or skills. Use only `npm run audit:md`.
 
 ---
 

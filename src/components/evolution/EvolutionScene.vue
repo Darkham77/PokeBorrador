@@ -1,4 +1,3 @@
-<!-- [PureVue-Ignore-Length] -->
 <script setup lang="ts">
 import { ref, onMounted, nextTick, computed } from 'vue';
 import { useEvolutionStore } from '@/stores/evolution';

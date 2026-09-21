@@ -26,6 +26,14 @@ describe('Markdown & DOX Relative Links Auditor (validate_markdown_links.ts)', (
       expect(cleaned).not.toContain('[example](./fake.md)');
       expect(cleaned).toContain('Here is an example:');
     });
+
+    it('should preserve links whose text contains inline code backticks while stripping isolated code', () => {
+      const input = `Here is \`code snippet\` and a link [\`/dox-navigator\`](./SKILL.md) and \`[fake](./fake.md)\`.`;
+      const cleaned = stripCodeBlocksAndInlineCode(input);
+      expect(cleaned).toContain('[/dox-navigator](./SKILL.md)');
+      expect(cleaned).not.toContain('code snippet');
+      expect(cleaned).not.toContain('[fake](./fake.md)');
+    });
   });
 
   describe('checkMarkdownLinksInContent', () => {
@@ -116,6 +124,36 @@ Also check PokeBorrador legacy notes.
       expect(result.brokenLinks.length).toBe(2);
       expect(result.brokenLinks.every(b => b.ruleId === 'markdown-gitignored-target')).toBe(true);
       expect(result.brokenLinks[0]!.error).toContain('ignored by git');
+    });
+
+    it('should validate links with inline code in link text ([`code`](url))', () => {
+      const sampleContent = `
+# Backtick Links Doc
+- [\`Valid Package\`](../../package.json)
+- [\`Broken Target\`](./nonexistent_file_backtick_999.md)
+- [\`/home/franco/leak\`](../../package.json)
+`;
+      const fakeDocPath = path.join(rootDir, 'src/logic/dummy.md');
+      const result = checkMarkdownLinksInContent(sampleContent, fakeDocPath, rootDir);
+
+      expect(result.linksChecked).toBe(3);
+      expect(result.brokenLinks.length).toBe(2);
+      expect(result.brokenLinks.some(b => b.ruleId === 'markdown-broken-relative-link')).toBe(true);
+      expect(result.brokenLinks.some(b => b.ruleId === 'markdown-stale-environment-path')).toBe(true);
+    });
+
+    it('should validate links with empty bracket text ([](url))', () => {
+      const sampleContent = `
+# Empty Bracket Links
+- [](../../package.json)
+- [](./nonexistent_empty_target_888.md)
+`;
+      const fakeDocPath = path.join(rootDir, 'src/logic/dummy.md');
+      const result = checkMarkdownLinksInContent(sampleContent, fakeDocPath, rootDir);
+
+      expect(result.linksChecked).toBe(2);
+      expect(result.brokenLinks.length).toBe(1);
+      expect(result.brokenLinks[0]!.ruleId).toBe('markdown-broken-relative-link');
     });
   });
 

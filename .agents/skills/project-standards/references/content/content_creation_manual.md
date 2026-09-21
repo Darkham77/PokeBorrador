@@ -15,11 +15,11 @@
 2. **Deduplication**: Never add an element (move, ability, item) that already exists. Always execute validators before committing.
 3. **PP Synchronization**: When initializing a move for a Pokémon, `maxPP` must equal its initial base `pp`.
 4. **Image Formats**: All external sprite downloads and UI icons must be converted to **PNG** / **WebP** via the asset pipeline.
-5. **Dynamic Tier Calculation**: Tier ratings (S+, S, A, etc.) are computed dynamically in the UI via `src/logic/constants/tiers.ts`. Do not hardcode tiers into static databases.
+5. **Dynamic Tier Calculation**: Tier ratings (S+, S, A, etc.) are computed dynamically in the UI via `src/logic/pokemon/tierEngine.ts` and `src/logic/pvp/rankedEngine.ts`. Do not hardcode tiers into static databases.
 6. **SASS Directives**: In component styles, `@use` directives must be the first lines of the `<style>` block.
 7. **CLI-First Verification**: Upon completing content implementation, verify the content via `window.__VITE_DEBUG__` commands.
 8. **Prop Unification**: Always use `isShiny` (Boolean) for asset resolution and logic. The legacy `shiny` property is deprecated.
-9. **Item Parity Mandate**: Absolute synchronization between `SHOP_ITEMS` (`src/data/items.ts`), `HEALING_ITEMS`, and logic effects is mandatory. Every consumable item MUST be registered in both constants to avoid `[PHANTOM]` item warnings in `validate:items`.
+9. **Item Parity Mandate**: Absolute synchronization between `SHOP_ITEMS` (`src/data/inventory/items.ts`), `HEALING_ITEMS`, and logic effects is mandatory. Every consumable item MUST be registered in both constants to avoid `[PHANTOM]` item warnings in `validate:items`.
 10. **External Asset Download (Bulbapedia)**: Requests to `archives.bulbagarden.net` require a `Referer: https://bulbapedia.bulbagarden.net/` header and realistic `User-Agent`.
 11. **Fail-Fast Asset Policy**: Do not mask missing item images or visual assets with fallback emojis or generic icons in development. If an asset is missing, fail visibly to ensure prompt resolution.
 12. **Segmented Shop Audits**: Item asset validation and diagnostic tools must categorize and audit database collections independently (e.g., Poké Market vs BC Shop) based on their specific runtime filters (`market !== false` and `trainerShop === true`).
@@ -43,13 +43,13 @@
 Ensure that the species entry includes base stats, height, weight, catch rate, and learnsets containing only moves that exist in `MOVE_DATA`.
 
 ### Step 2: Types and Abilities
-- **Types**: Register primary and secondary types in `src/data/types.ts`.
-- **Abilities**: Register in `src/data/abilities.ts` -> `POKEMON_ABILITIES`. If the ability is new, implement its mechanical behavior in Showdown / `src/logic/battle/battleAbilities.ts`.
+- **Types**: Register primary and secondary types in `src/data/battle/types.ts`.
+- **Abilities**: Register in `src/data/battle/abilities.ts` -> `POKEMON_ABILITIES`. If the ability is new, verify mechanical behavior in the Showdown engine (`@pkmn/sim`).
 
-### Step 3: Evolutions (`src/data/evolutionData.ts`)
+### Step 3: Evolutions (`src/data/pokemon/evolutionData.ts`)
 Register species evolution triggers in `EVOLUTION_TABLE`, `STONE_EVOLUTIONS`, or `TRADE_EVOLUTIONS`.
 
-### Step 4: Pokédex (`src/logic/pokedexConstants.ts`)
+### Step 4: Pokédex (`src/logic/constants/pokedexConstants.ts`)
 - Register the National Dex ID in `POKEMON_SPRITE_IDS`.
 - Insert in the `PDEX_ORDER` array.
 - Add TM compatibility in `TM_COMPAT` (aligned with Gen 9 standards).
@@ -70,7 +70,7 @@ When performing mass updates on a database file (e.g. adding properties to 200+ 
 
 - [ ] Entry in `POKEMON_DB` with valid base stats and Gen 9 learnset.
 - [ ] Secondary types and abilities registered in canonical databases.
-- [ ] Evolution mappings registered in `src/data/evolutionData.ts`.
+- [ ] Evolution mappings registered in `src/data/pokemon/evolutionData.ts`.
 - [ ] Pokédex ID and TM compatibility configured.
 - [ ] Sprites converted and verified via `npm run validate:sprites`.
 - [ ] Run `npm run audit:family:domain` with 0 errors.

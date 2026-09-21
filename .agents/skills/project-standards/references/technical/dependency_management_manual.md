@@ -10,9 +10,9 @@ To guarantee the operation of critical systems (PWA, Service Workers, Animations
 | :--- | :--- | :--- |
 | **Vite** | `^8.x` | Build Tool & Dev Server |
 | **Vue** | `^3.5.x` | Framework Core |
-| **Pinia** | `^2.x` | State Management |
-| **Vue Router** | `^4.x` | Routing |
-| **Vitest** | `^4.x` | Testing Framework |
+| **Pinia** | `^4.x` | State Management |
+| **Vue Router** | `^5.x` | Routing |
+| **Vitest** | `^5.x` | Testing Framework |
 | **TypeScript** | `^6.x` | Type Checker |
 
 ### Upgrade Policy
@@ -32,7 +32,7 @@ To ensure total cross-platform resilience across all developer machines:
 
 ## 🩹 Patches and Overrides
 
-When critical vulnerabilities are detected in deep sub-dependencies that have not been updated by their maintainers, the project uses the `overrides` field in `package.tson`.
+When critical vulnerabilities are detected in deep sub-dependencies that have not been updated by their maintainers, the project uses the `overrides` field in `package.json`.
 
 > [!IMPORTANT]
 > **Current Build Patches**: All overrides (such as the one for `serialize-javascript`) are corrective measures for the current build and ecosystem state. They must be reviewed during every major version jump.
@@ -81,7 +81,7 @@ To maintain a single codebase that runs in both Node.js (scripts/tests) and Brow
    - **WHY**: Prevents Vite from attempting to bundle or analyze server-only modules, avoiding build-time warnings and errors.
 2. **Strict Sync Typing**: Avoid using `any` when synchronizing state with external APIs (like Supabase). Define explicit local interfaces for the expected response structure to maintain TypeScript integrity in `timeUtils.ts` and `DBRouter`.
 3. **Temporal Mandate**: The legacy `Date` object is DEPRECATED for engine logic and timestamps. Use the `Temporal` API for all precise timing and durations in both logic and tests to ensure Node.js 26+ compatibility and clear automated audits.
-   - **Native-First Architecture**: Follow a "Native-First" approach by loading the `@js-temporal/polyfill` conditionally via `src/logic/utils/temporal-init.ts`. Global types MUST be provided via `tsconfig.json` (types array) and `src/types/env.d.ts` (global augmentation) instead of local imports to prevent namespace conflicts between native and polyfill types. Avoid importing `{ Temporal }` locally in Vue SFCs or normal utility modules.
+   - **Native-First Architecture**: Follow a "Native-First" approach by loading the `@js-temporal/polyfill` conditionally via `src/logic/utils/temporal-init.ts`. Global types MUST be provided via `tsconfig.json` (types array) and `src/types/system/env.d.ts` (global augmentation) instead of local imports to prevent namespace conflicts between native and polyfill types. Avoid importing `{ Temporal }` locally in Vue SFCs or normal utility modules.
    - **Temporal API Comparison & Coercion**: When comparing `Temporal` objects, use the static compare method `Temporal.Instant.compare(now, range.start) >= 0` instead of native operators like `>=`. When coercing to strings, use `${obj}` or `String(obj)`. When coercing to numbers, use properties/methods of the object, not `+obj`. When concatenating, use `${str}${obj}` or `str.concat(obj)`. In templates, coerce to a string before rendering.
    - **BigInt Precision**: When performing calculations with nanosecond precision (`epochNanoseconds`), ALWAYS use explicit `BigInt()` casts (e.g., `BigInt(instant.epochNanoseconds)`) to ensure consistency across all IDEs and TypeScript environments.
    - **Atomicity**: To prevent time inconsistencies (clock skew/race conditions) and unnecessary system calls/allocations when chaining time formatting, always capture a single Temporal instance in a constant (e.g., `const now = Temporal.Now.instant().toZonedDateTimeISO('UTC')`) and perform subsequent calculations/formatting on that single instance.

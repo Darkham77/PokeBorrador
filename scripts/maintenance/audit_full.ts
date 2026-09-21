@@ -41,6 +41,7 @@ const MIN_CONCURRENCY = 1 as const;
 const DECIMAL_RADIX = 10 as const;
 
 async function runMasterAudit() {
+  process.env.AUDIT_SUBPROCESS = 'true';
   const startTime = performance.now();
   const args = process.argv.slice(2);
   const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['errors-only', 'fix', 'all'].includes(a) ? `--${a}` : a));

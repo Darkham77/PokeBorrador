@@ -6,7 +6,7 @@ This manual centralizes all automatic validation protocols to ensure that code a
 
 ### 1. Moves (`MOVE_DATA`)
 
-Any change in `src/data/moves.ts` or in battle logic must be validated:
+Any change in `src/data/battle/moves.ts` or in battle logic must be validated:
 
 - **Full Validation**: `npm run validate:moves` (detects duplicates, semantic errors, and learnset integrity).
 
@@ -44,7 +44,7 @@ Core logic modules and critical system components MUST have dedicated unit tests
 The project uses a unified audit coordinator located in `scripts/maintenance/audit_full.ts`:
 
 - **Proportional Verification Protocol**:
-  - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (takes ~1s). Running full project audits for documentation or skill edits is strictly forbidden.
+  - **Documentation & Skills (`.md`)**: Run ONLY `npm run audit:md` (takes ~1.8s). Running full project audits for documentation or skill edits is strictly forbidden.
   - **In-Development Code**: Run `npm run lint` (takes ~10s) or `npm run audit` for full quality gate.
   - **Safe-Commit Gatekeeper**: `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline to compare changes against `origin/main`.
 - **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
@@ -58,7 +58,7 @@ The project uses a unified audit coordinator located in `scripts/maintenance/aud
   - `npm run audit:family:persistence`: SQLite in-memory and save schema migrations.
   - `npm run audit:family:assets`: Sprite coverage and item sprite collisions.
   - `npm run audit:family:architecture`: AST rules, Fallow intelligence, Z-Index, CSS duplicates.
-  - `npm run audit:family:docs`: Markdown relative links and DOX hierarchy.
+  - `npm run audit:md` (or `npm run audit family=documentation`): Markdown relative links, syntax, and DOX hierarchy.
 
 ### 🎛️ Consuming Audit Reports
 
@@ -73,7 +73,7 @@ The project uses a unified audit coordinator located in `scripts/maintenance/aud
 2. **SASS Capitalization (Automated)**: SASS capitalization for CSS filters/transforms (`Scale()`, `Translate()`, etc.) is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build, meaning no manual capitalization or separate linting checks are required.
 3. **Dependency Shield**: Any script using external libraries must handle `ImportError` and provide clear installation instructions.
 4. **Audit Bypass**: If a violation is intentional by design, use the `// [PureVue-Ignore]` comment. The audit engine checks the **current line and the line immediately above** to support Vue/HTML attributes that span multiple lines.
-5. **Large Data and Debug Panel Integrity**: Massive data files (e.g., spawn grids) or large administrative/debug utility panels (e.g., `DebugPokemonCreator.vue`) that exceed 500 lines by design must carry `// [PureVue-Ignore-Length]` at the beginning of the file (or first line of `<script setup>`) to bypass modularization checks during the audit pass.
+5. **Fallow SSoT Modularity & Large Data Boundaries**: File health and modularity are governed strictly by Fallow SSoT (`maintainability_index`, cognitive/cyclomatic complexity, and function size risk bins) rather than arbitrary raw line caps. Arbitrary bypass comments like `[PureVue-Ignore-Length]` are strictly prohibited. Massive data files or administrative panels are evaluated by complexity metrics; Fallow enforces a 5 MB file size boundary (`--max-file-size 5`) to prevent OOM.
 6. **ESLint Optimization**: To avoid `no-useless-assignment` errors, prefer using ternary operators or immediate-return logic instead of initializing variables with `null` and assigning them within `if/else` blocks.
 7. **Database Parity**: Automated sync of SQL migrations via the Vite build process is mandatory. Always verify that `npm run validate:sql` passes after schema changes.
 8. **Automated Repair Safety (Click Propagation)**: Repair scripts MUST NOT inject `.stop` modifiers into components that rely on event bubbling (e.g., `PVTooltip`).
@@ -156,14 +156,9 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run sim:e2e:combat`: Runs only the Playwright E2E battle FSM sync test suite.
   - *Tip*: You can run a single specific battle by its unique hash ID using the `TEST_CASE_ID` environment variable: `$env:TEST_CASE_ID="case-8b5b9aabf776"; npm run sim:e2e:combat`
   - *Tip*: To skip already verified cases during debugging, you can start execution *from* a specific case ID or index: `$env:TEST_START_FROM_CASE_ID="case-8b5b9aabf776"; npm run sim:e2e:combat` (or use `$env:TEST_START_FROM_INDEX="15"`)
-- `npm run sim:e2e:combat:report`: Runs the Playwright E2E FSM tests and saves the output in `scripts/e2e/results/e2e_simulation_failures.json`.
-- `npm run test:combat:cleanup`: Runs the unit test suite verifying volatile status and stat stage resets on switch.
-- `npm run test:combat:cleanup:report`: Runs the cleanup test and saves the verbose report in `scratch/cleanup_report.txt`.
-- `npm run test:combat:weather`: Runs the unit test suite verifying weather and terrain effects on speed and status.
-- `npm run test:combat:weather:report`: Runs the weather test and saves the verbose report in `scratch/weather_report.txt`.
-- `npm run test:combat:choice`: Runs the unit test suite verifying Choice item locking and UI disabling behavior.
-- `npm run test:combat:choice:report`: Runs the choice test and saves the verbose report in `scratch/choice_report.txt`.
-- `npm run sim:combat:all:report`: Runs the entire combat suite and outputs reports to `scripts/e2e/results/playwright_report.txt`.
+- `npm run sim:e2e:combat:report`: Runs the Playwright E2E FSM tests and saves the output in `scratch/playwright_combat.log`.
+- `npm run test:combat:switch`: Runs the unit test suite verifying volatile status and stat stage resets on switch (`tests/unit/battle/battle_switch_action_suite.spec.ts`).
+- `npm run test:combat:weather`: Runs the unit test suite verifying weather and terrain effects on speed, field state, and status (`tests/unit/battle/battle_weather_and_field_suite.spec.ts`).
 - `npm run database:generate-migrations`: Scans local SQL migration files under `database/migrations/`, compiles `migrations_data.ts`, and automatically runs `npm run validate:sql` followed by `npm run test:migrations`. Rejects and aborts with exit code 1 if any migration fails against the real backup fixture. Pure code generation for Vite (`vite.config.ts`) runs in ~10ms without tests.
 - `npm run sync:test`: **Test Repo Sync**. Copies the full source tree to sibling `pokevicio-test` repository.
 
@@ -174,13 +169,13 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run validate:fsm:flow`: State sequence verifier and race condition detection.
 - `npm run validate:fsm`: Unified FSM Mastery Audit (Diagrams + Implementation + Flow).
 - `npm run validate:fsm:summary`: Runs FSM validation in summary mode.
-- `npm run validate:fsm:report`: Runs FSM validation and saves detailed output to `fsm_report.txt`.
+- `npm run validate:fsm:report`: Runs FSM validation and saves detailed output to `scratch/fsm_report.txt`.
 
 ### ☁️ Supabase Infrastructure & Multi-Server Management
 
 - `npm run supabase:manage [command=<command>] [tag=<tag>]`: Main Supabase CLI orchestrator in Node.js 26+ (`supabase/setup_supabase.ts`). Manages the Docker container lifecycle.
   - Subcommands / options: `command=all`, `command=clone`, `command=generate`, `command=build`, `command=publish`, `command=add`.
-- `npm run servers:configure`: Parses unified master `.env` file, extracts profiles, and automatically generates `src/data/official_servers.ts`.
+- `npm run servers:configure`: Parses unified master `.env` file, extracts profiles, and automatically generates `src/data/system/official_servers.ts`.
 - `npm run database:update [server=<profile> | all]`: Supabase database manager and migrator in Node.js 26+.
 - `npm run database:backup [server=<profile> | all]`: Connects to chosen Supabase server and downloads complete structured backup to `database/backups/`.
 - `npm run database:restore server=<profile> [file=<path>]`: Transactionally restores a JSON backup file to the chosen server.

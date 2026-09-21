@@ -41,6 +41,7 @@ export const AUDIT_PRESETS = {
   ],
   md: [
     'validate_markdown_links',
+    'validate_markdown_code_references',
     'validate_markdown_lint',
     'validate_markdown_syntax',
     'validate_dox_integrity'

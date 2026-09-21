@@ -15,7 +15,7 @@ When a browser simulation fails (`npm run sim:e2e` or targeted family):
 1. **Failure Artifacts (`scratch/test-results/`)**:
    - Inspect the subfolder matching the failing simulation name (e.g. `scratch/test-results/battle-battle_forced_switch_ui-.../`).
    - Read the console logs (`test-failed-1.png`, trace archives, standard error output).
-2. **Checkpoint State (`scripts/e2e/results/e2e_checkpoints.json`)**:
+2. **Checkpoint State (`scratch/e2e_checkpoints.json`)**:
    - Inspect the recorded checkpoint object:
      ```json
      {

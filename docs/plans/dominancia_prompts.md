@@ -18,7 +18,7 @@
 No es un prompt para la IA. Debés vos mismo ir a **Supabase → SQL Editor** y ejecutar el archivo:
 
 ```text
-d:\Documentos\GitHub\PokeBorrador\db_dominance_schema.sql
+database/migrations/20260909000000_add_war_dominance_rls_policies.sql
 ```
 
 Esto crea las tablas: `war_factions`, `war_points`, `war_dominance`, `guardian_captures`, `war_coins`, y la función RPC `add_war_points`.

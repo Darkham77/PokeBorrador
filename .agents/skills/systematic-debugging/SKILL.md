@@ -63,7 +63,7 @@ flowchart TD
 ### Phase 1: Trace Ingestion & DOX Triage
 
 1. **Extract & Parse Available Traces**:
-   - **Playwright Failures**: Read `scratch/test-results/` for console logs, stack traces, and screenshots. Check `scripts/e2e/results/e2e_checkpoints.json` for failing suite name, batch index, database driver (`sqlite` or `postgres`), and error snippet.
+   - **Playwright Failures**: Read `scratch/test-results/` for console logs, stack traces, and screenshots. Check `scratch/e2e_checkpoints.json` for failing suite name, batch index, database driver (`sqlite` or `postgres`), and error snippet.
    - **Fuzzer / Replayer Failures**: Extract failing case ID (`case-xxx`), seed, active UIDs, and diverging turn index from `scripts/e2e/results/fuzzer_certified_cases.json`.
    - **Database & Persistence Failures**: Detect whether the failure originates from SQL syntax, migrations, schema discrepancies, RLS policies, serialization roundtrips, or DBRouter query proxies. Identify if it reproduces in SQLite, PostgreSQL, or diverges between them.
    - **Verbal / Informal Reports**: If the report lacks traces, DO NOT execute heavy suites. Prompt the user for minimal context: (1) exact reproduction steps, (2) team/game state, and (3) observed error message in DevTools console.

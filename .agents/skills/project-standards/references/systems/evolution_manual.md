@@ -2,7 +2,7 @@
 
 > **Scope & Authority**: This manual serves as the Single Source of Truth for all Pokémon evolution mechanics, triggers, stone interactions, friendship requirements, trade evolution holding items, and cancellation rules in Poké Vicio.
 > **Sources of Truth**:
-> - Evolution Database: `src/data/evolutionData.ts`
+> - Evolution Database: `src/data/pokemon/evolutionData.ts`
 > - Friendship Logic: [`friendship_mechanics_manual.md`](./friendship_mechanics_manual.md)
 > - Item System: [`item_system_manual.md`](./item_system_manual.md)
 
