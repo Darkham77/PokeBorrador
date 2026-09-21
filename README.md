@@ -4,9 +4,9 @@ Este manual detalla los comandos y configuraciones necesarios para trabajar en l
 
 ## 📋 Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instalado **Node.js (v26.8.1 o superior)** y **npm (v12.0.0 o superior)** en tu sistema.
+Antes de comenzar, asegúrate de tener instalado **Node.js (v26.9.0 o superior)** y **npm (v12.0.0 o superior)** en tu sistema.
 
-> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente **Node >= 26.8.1** y **npm >= 12.0.0**. Si la versión instalada es inferior, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
+> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente **Node >= 26.9.0** y **npm >= 12.0.0**. Si la versión instalada es inferior, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
 
 ### 🌐 Preparación y Actualización del Entorno (Node.js y npm)
 
@@ -182,50 +182,91 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 #### 🔄 Flujo de Verificación Recomendado
 
 - **Durante el Desarrollo Activo**: Ejecuta `npm run lint` (~10 segundos) para comprobaciones unificadas ejecutando los 10 sub-auditores centrales en paralelo (`npm run audit:lint`): tipos de dominio, $O(1)$, estilos de componentes, suite de inteligencia Fallow, higiene SFC de Vue, limpieza de consola, directivas de auditoría, verificación de tipos TypeScript (`vue-tsc`), markdownlint y ESLint.
+- **Auditoría Documental y DOX**: Ejecuta `npm run audit:md` (~2 segundos) para validar en paralelo la jerarquía `AGENTS.md`, enlaces relativos, sintaxis Markdown y reglas de Markdownlint.
 - **Workflow de Safe-Commit**: El pipeline de safe-commit utiliza internamente `npm run audit:for-commit` para comparar advertencias nuevas contra `origin/main`.
 
 | Comando | Descripción |
 | :-- | :-- |
 | `npm run lint` | **Fast Developer Lint**: Ejecuta las 10 suites esenciales de calidad en paralelo mediante `npm run audit:lint`. |
 | `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint (`npm run audit:lint fix`). |
-| `npm run audit:summary` | **Resumen de Auditoría**: Muestra un resumen estructurado con el recuento de advertencias y errores en consola desde `scratch/audits/latest_audit.json`. |
-| `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores dinámicamente, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. Soporta `rule=<regla>` para ejecución selectiva ultrarrápida (ej. `npm run audit rule=DOX,z-index`, `npm run audit rule=dupes`). |
+| `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los 52 sub-auditores dinámicamente con concurrencia acotada, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. |
+| `npm run audit:lint` | **Preset de Linting**: Ejecuta en paralelo el preset de 10 suites de código fuente. |
+| `npm run audit:md` | **Auditoría Documental y DOX**: Suite unificada (~2s) que ejecuta en paralelo la validación de jerarquía `AGENTS.md`, enlaces relativos, sintaxis Markdown y reglas de Markdownlint (preset `md`). |
 | `npm run audit:for-commit` | **Safe-Commit Diff Gatekeeper**: Compara cambios contra `origin/main` en el flujo de safe-commit exigiendo 0 errores en el repositorio y 0 advertencias nuevas en archivos modificados. |
 | `npm run audit:changed` | **Auditoría de Archivos Modificados**: Ejecuta las suites de auditoría exclusivamente sobre los archivos modificados desde `main`. |
 | `npm run audit:fix` | **Auto-corrección de Arquitectura**: Corrige automáticamente timers, sintaxis SASS, capas de render y directivas de importación. |
-| `npm run audit:dox` | **Auditoría Ultrarrápida de DOX**: Ejecuta de forma selectiva (~600ms) la validación de jerarquía de archivos `AGENTS.md`, secciones obligatorias y enlaces relativos sin ejecutar suites innecesarias. |
+| `npm run audit:project` | **Reglas de Arquitectura y Estilo**: Evalúa las 43 reglas estáticas de código en archivos `.ts`, `.vue` y `.scss`. |
+| `npm run audit:findings` | **Reporte Consolidado de Incidencias**: Muestra tablas Box-Drawing de hallazgos agrupados por categoría (`audit:errors`, `audit:warnings`, `audit:summary`, `audit:files`). |
 | `npm run audit:family:domain` | **Auditoría de Dominio**: Valida tipos de dominio, uniones canónicas y estructuras de datos $O(1)$. |
 | `npm run audit:family:fsm` | **Auditoría de FSM**: Valida diagramas, implementación dinámica y paridad de flujo de combate. |
 | `npm run audit:family:persistence` | **Auditoría de Persistencia**: Valida esquemas SQL, migraciones y serialización de partidas. |
 | `npm run audit:family:assets` | **Auditoría de Assets**: Valida colisiones de sprites, nombres canónicos y atlas de texturas. |
-| `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad de 500 líneas, tokens SCSS y componentes Vue. |
-| `npm run audit:family:docs` | **Auditoría Documental**: Valida enlaces internos, rutas relativas y cumplimiento del framework DOX. |
-| `npm run fallow:health` | **Salud de Código (Fallow)**: Mide el puntaje de salud del repositorio, duplicaciones, hotspots de complejidad y vulnerabilidades CWE. |
-| `npm run audit:fallow:triplets` | **Detección de Duplicados**: Escanea bloques de código duplicados o triplicados en todo el proyecto. |
-| `npm run audit:css` | **Auditoría de Estilos**: Analiza bundles de SCSS y bloques `<style>` de componentes para detectar reglas redundantes. |
-| `npm run audit:sprites` | **Auditoría de Sprites**: Detecta colisiones de identificadores y nombres de sprites en el catálogo de ítems. |
+| `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad de 500 líneas, tokens SCSS, reactividad Pinia y componentes Vue. |
+| `npm run audit:fallow` | **Codebase Intelligence (Fallow)**: Dashboard consolidado de métricas, dependencias circulares, duplicaciones, exportaciones huérfanas y vulnerabilidades CWE. |
+| `npm run audit:complexity` | **Hotspots de Complejidad**: Reporta funciones con mayor complejidad ciclomática y cognitiva (`npm run audit:complexity:top`). |
+| `npm run audit:css` | **Auditoría de Estilos y Clases**: Detecta selectores duplicados y clases redundantes en SCSS y bloques `<style>` vía `css-checker`. |
+| `npm run audit:bundle` | **Presupuesto de Bundles**: Audita los tamaños de chunks de producción y desacoplamiento del cliente. |
+| `npm run build:analyze` | **Treemap Interactivo de Bundles**: Dispara la compilación de producción con visualizador gráfico en `scratch/bundle_stats.html`. |
 
 ---
 
-### 🔍 Validadores Semánticos de Dominio
+### 🔍 Sub-Auditores Especializados por Dominio
 
-Herramientas independientes de validación estricta ejecutadas bajo el modelo de permisos de Node.js 26+:
+Cada regla arquitectónica y de dominio cuenta con su propio sub-auditor modular ejecutable de forma aislada:
 
+#### 🏛️ Arquitectura, Rendimiento y Reactividad
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run validate:domain-types` | **Domain Types Audit**: Audita el cumplimiento estricto de tipos de dominio y uniones canónicas derivadas (sin `any` ni strings libres). |
-| `npm run validate:o1` | **$O(1)$ Optimization Audit**: Garantiza que los accesos en rutas críticas de combate, IA e inventario usen diccionarios y conjuntos $O(1)$. |
-| `npm run validate:types` | **Type-Checking**: Ejecuta el sub-auditor `validate_type_check.ts` (`vue-tsc --noEmit`) para verificar la integridad de tipos en todos los componentes y archivos TypeScript. |
-| `npm run validate:component-styles` | **Component Styles Audit**: Verifica el uso de mixins SASS estandarizados, tokens de color y reglas visuales retro-modernas. |
-| `npm run validate:sql` | **SQL Integrity**: Valida la sintaxis y ejecución de migraciones SQL contra el motor SQLite nativo (`node:sqlite`). |
-| `npm run validate:save-migrations` | **Save Migrations**: Valida las transformaciones de partidas guardadas contra el Dex de Showdown. |
-| `npm run validate:markdown-links` | **Markdown Links**: Valida que todos los enlaces relativos y referencias cruzadas en documentación y DOX sean válidos. |
-| `npm run validate:items` | **Item Database**: Valida identificadores, categorías, tiers de crafteo e íconos en la base de datos de objetos. |
-| `npm run validate:moves` | **Move Integrity**: Valida movimientos, efectos, tipos y learnsets contra el Dex oficial de Pokémon Showdown. |
-| `npm run validate:abilities` | **Ability Sync**: Valida habilidades pasivas y de campo contra el motor canónico. |
-| `npm run validate:pokemon` | **Pokémon Database**: Valida stats base, ratios de captura, tipos y tablas de evolución. |
-| `npm run validate:sprites` | **Sprite Registry**: Verifica la existencia física de sprites animados, miniaturas e íconos de interfaz. |
-| `npm run validate:fsm` | **FSM Mastery Audit**: Verifica exhaustivamente diagramas Mermaid, paridad de flujo y controladores FSM. |
+| `npm run validate:types` | Verificación estricta de tipos TypeScript y Vue SFC con `vue-tsc --noEmit`. |
+| `npm run validate:z-index` | Paridad 1:1 estricta entre `Z_LAYERS` (TypeScript) y variables CSS `--z-*` en `_base.scss` (soporta `--fix`). |
+| `npm run validate:duplicate-constants` | Detección de declaraciones de constantes idénticas o divergentes entre módulos mediante AST compartido. |
+| `npm run validate:css-duplicates` | Detección de selectores CSS y reglas duplicadas en hojas SCSS y SFC de Vue. |
+| `npm run validate:pinia-reactivity` | Audita stores de Pinia contra desestructuración reactiva indebida y accesos de estado desenvueltos. |
+| `npm run validate:reactive-leaks` | Detección de fugas de memoria, observadores sin limpiar y listeners huérfanos. |
+| `npm run validate:reactive-purity` | Asegura pureza y ausencia de efectos secundarios en mutaciones y getters reactivos. |
+| `npm run validate:client-sim-decoupling` | Enforce 100% estricto de desacoplamiento entre cliente web y runtime de `@pkmn/sim`. |
+| `npm run validate:render-performance` | Garantiza 60 FPS GPU: prohíbe `mix-blend-mode` en clima, filtros pesados y closures por frame. |
+| `npm run validate:component-styles` | Valida enlaces de estilos, mixins SCSS estandarizados y ausencia de hojas huérfanas. |
+| `npm run validate:line-height` | Previene recorte de fuentes descendentes (*descender clipping*) y valida espaciado vertical. |
+| `npm run validate:vue-sfc-hygiene` | Higiene de componentes Vue: `<script setup>`, estilos `scoped` y estructura SFC. |
+| `npm run validate:template-ids` | Garantiza IDs deterministas y únicos en plantillas Vue para automatización E2E. |
+| `npm run validate:mobile-accessibility` | Audita objetivos táctiles (touch targets) y adaptabilidad móvil. |
+| `npm run validate:console-cleanliness` | Prohíbe sentencias `console.log` o depuración en rutas de producción. |
+| `npm run validate:error-suppression` | Erradica bloques `catch` vacíos, promesas silenciadas y supresión de errores. |
+| `npm run validate:audit-headers` | Prohíbe directivas de escape a nivel de archivo (`fallow-ignore-file`, `@ts-nocheck`, etc.). |
+| `npm run validate:test-hygiene` | Audita suites de pruebas contra aserciones tautológicas y mocks excesivos. |
+| `npm run validate:test-fragmentation` | Previene micro-archivos (<60 líneas) y fomenta suites cohesivas (300-800 líneas). |
+
+#### 📚 Documentación y Enlaces
+| Comando | Descripción |
+| :-- | :-- |
+| `npm run validate:dox-integrity` | Valida la jerarquía estructural de `AGENTS.md`, secciones requeridas y exclusión de `.gitignore`. |
+| `npm run validate:markdown-links` | Valida enlaces relativos, referencias cruzadas y evita rutas absolutas o de entorno. |
+| `npm run validate:markdown-syntax` | Valida encabezados, tablas y sintaxis Markdown conforme a CommonMark. |
+
+#### 🎮 Datos de Dominio y Juego
+| Comando | Descripción |
+| :-- | :-- |
+| `npm run validate:domain-types` | Cumplimiento estricto de tipos de dominio y uniones canónicas (sin `any` ni strings libres). |
+| `npm run validate:o1` | Optimización $O(1)$: diccionarios y conjuntos tipados en rutas críticas de ejecución. |
+| `npm run validate:pokemon` | Estadísticas base, tipos y tablas de evolución contra el Dex oficial de Showdown. |
+| `npm run validate:moves` | Integridad de movimientos, efectos secundarios y learnsets canónicos. |
+| `npm run validate:abilities` | Habilidades pasivas y de campo contra el motor canónico. |
+| `npm run validate:items` | Catálogo de objetos, categorías, tiers y sprites. |
+| `npm run validate:sprites` | Existencia física de sprites animados, miniaturas e iconos sin colisiones. |
+| `npm run validate:spanish-ids` | Paridad y correspondencia canónica de traducciones al español. |
+| `npm run validate:spawns` | Lista blanca y áreas de aparición de Pokémon salvajes. |
+
+#### 🗄️ Persistencia, Migraciones y Máquinas de Estado (FSM)
+| Comando | Descripción |
+| :-- | :-- |
+| `npm run validate:sql` | Ejecución incremental de 96 migraciones SQL en SQLite en memoria (`node:sqlite`). |
+| `npm run validate:schema-parity` | Paridad estructural 100% idéntica entre esquemas SQLite y PostgreSQL. |
+| `npm run validate:save-persistence` | Paridad 1:1 entre estado en memoria (`GameState`) y esquema persistido (`SaveData`). |
+| `npm run validate:sql-anti-patterns` | Detección de consultas no transaccionales y anti-patrones SQL. |
+| `npm run validate:fsm` | Suite unificada FSM: paridad de diagramas Mermaid, implementación y flujo de ejecución. |
+| `npm run validate:showdown-parity` | Cobertura de protocolos de combate y tokens canónicos de Showdown. |
+| `npm run validate:combat-invariants` | Invariantes de combate por turno, asientos (seats) e idempotencia de comandos. |
 
 ---
 
@@ -242,8 +283,14 @@ npm run test
 # Tests unitarios de componentes Vue (JSDOM)
 npm run test:unit
 
-# Tests de lógica pura con runner nativo de Node.js 26+
+# Tests de lógica pura con runner nativo de Node.js 26+ (soporte multi-motor SQLite/PostgreSQL)
 npm run test:node
+
+# Tests de nodo en modo observador (watch mode)
+npm run test:node:watch
+
+# Validación estricta de paridad de migraciones SQL sobre fixtures reales (SQLite + Postgres)
+npm run test:migrations
 
 # Reporte de cobertura de código
 npm run test:coverage
@@ -315,15 +362,18 @@ El proyecto soporta persistencia dual con aislamiento total entre el modo local 
 | Comando | Descripción |
 | :-- | :-- |
 | `npm run database:repair-account` | **Reparación de Cuentas Ilegales**: Corrige Pokémon ilegales (niveles, movimientos o habilidades no permitidas) en una o todas las cuentas, tanto en SQLite local como en servidores Supabase. |
+| `npm run database:diagnose-account` | **Diagnóstico de Cuentas**: Diagnostica integridad, inventario, Pokémon ilegales y locks de una cuenta (`database:diagnose-accounts` para todas las cuentas). |
 | `npm run admin:rename` | **Renombrado Administrativo**: Cambia el nombre de entrenador de un usuario en Supabase directamente desde consola. |
 | `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro y genera la lista tipada de servidores en `src/data/official_servers.ts`. |
 | `npm run database:update` | **Gestor y Migrador**: Aplica esquemas iniciales y migraciones SQL incrementales en el servidor Supabase elegido o en todos (`--all`). |
 | `npm run database:backup` | **Generador de Respaldos**: Conecta al servidor Supabase y exporta todas las tablas a un archivo JSON estructurado. |
+| `npm run database:upgrade-backup` | **Actualizador de Respaldos**: Aplica migraciones y legalización de Showdown a un respaldo JSON exportado. |
 | `npm run database:restore` | **Restaurador Transaccional**: Restaura transaccionalmente un respaldo JSON hacia el servidor Supabase elegido. |
 | `npm run database:local-import` | **Importador SQLite**: Importa el respaldo JSON más reciente de Supabase a la base de datos local SQLite para pruebas offline. |
 | `npm run database:admin` | **Administración de Usuarios**: Permite desbanear, cambiar contraseñas, actualizar emails o promover a admin desde consola. |
 | `npm run supabase:manage` | **Gestor Docker/CLI**: Orquestador local de contenedores Supabase y compilación de imágenes Docker. |
 | `npm run database:generate-migrations` | **Compilador de Migraciones**: Escanea `database/migrations/` y compila el manifiesto TypeScript de producción. |
+| `npm run database:recompile-feet` | **Compilador de Huellas**: Recompila y sincroniza el atlas y base de datos de huellas de Pokémon. |
 | `npm run sync:test` | **Sincronización a Repo Hermano**: Sincroniza el árbol de fuentes con el repositorio hermano `pokevicio-test`. |
 
 ---

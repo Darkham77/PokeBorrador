@@ -16,8 +16,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import ts from 'typescript';
 import { enableCompileCache } from 'node:module';
 import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { type SharedAstContext } from '../../lib/astContext.ts';
 
 enableCompileCache();
 
@@ -67,70 +69,99 @@ export function isWorkerBoundaryFile(relPath: string): boolean {
 /**
  * Scans a source code string for forbidden @pkmn/sim and @pkmn/randoms imports.
  */
-export function scanSourceForSimImports(content: string, relPath: string): SimImportIssue[] {
+export function scanSourceForSimImports(
+  content: string,
+  relPath: string,
+  sourceFile?: ts.SourceFile
+): SimImportIssue[] {
   if (isWorkerBoundaryFile(relPath)) {
     return [];
   }
 
+  // Fast O(1) string pre-filter to skip non-matching files immediately
+  if (!content.includes('@pkmn/sim') && !content.includes('@pkmn/randoms')) {
+    return [];
+  }
+
+  const sf = sourceFile ?? ts.createSourceFile(
+    path.basename(relPath),
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    relPath.endsWith('.vue') ? ts.ScriptKind.TS : undefined
+  );
+
   const issues: SimImportIssue[] = [];
-  const lines = content.split(/\r?\n/);
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]!;
-    const lineNum = i + 1;
-    const trimmed = line.trim();
+  ts.forEachChild(sf, (node) => {
+    if (ts.isImportDeclaration(node)) {
+      const moduleSpec = node.moduleSpecifier;
+      if (!ts.isStringLiteral(moduleSpec)) return;
+      const modName = moduleSpec.text;
 
-    // Skip empty lines or standard full-line comments
-    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
-      continue;
-    }
+      const { line } = sf.getLineAndCharacterOfPosition(node.getStart());
+      const lineNum = line + 1;
+      const nodeText = node.getText(sf).trim();
 
-    // 1. Check for @pkmn/randoms in client
-    if (line.includes('@pkmn/randoms')) {
-      issues.push({
-        ruleId: 'client-randoms-value-import',
-        line: lineNum,
-        message: `Import de @pkmn/randoms detectado en código cliente "${relPath}:${lineNum}". Debe ejecutarse en Web Worker.`,
-        snippet: trimmed
-      });
-      continue;
-    }
-
-    // 2. Check for @pkmn/sim in client
-    if (line.includes('@pkmn/sim')) {
-      // Allowed: pure type imports: `import type { ... } from '@pkmn/sim'`
-      if (/^import\s+type\s+/.test(trimmed)) {
-        continue;
+      // 1. Check for @pkmn/randoms in client
+      if (modName === '@pkmn/randoms') {
+        issues.push({
+          ruleId: 'client-randoms-value-import',
+          line: lineNum,
+          message: `Import de @pkmn/randoms detectado en código cliente "${relPath}:${lineNum}". Debe ejecutarse en Web Worker.`,
+          snippet: nodeText
+        });
+        return;
       }
 
-      // Check for inline type specifiers: `import { type Foo, type Bar } from '@pkmn/sim'`
-      const namedMatch = trimmed.match(/^import\s*\{([^}]+)\}\s*from\s*['"]@pkmn\/sim['"]/);
-      if (namedMatch && namedMatch[1]) {
-        const specifiers = namedMatch[1].split(',').map(s => s.trim()).filter(Boolean);
-        const nonTypeSpecifiers = specifiers.filter(s => !s.startsWith('type '));
-        if (nonTypeSpecifiers.length === 0) {
-          // All imported specifiers are types (e.g. `import { type SideID } from '@pkmn/sim'`)
-          continue;
+      // 2. Check for @pkmn/sim in client
+      if (modName === '@pkmn/sim') {
+        const clause = node.importClause;
+        if (!clause) {
+          issues.push({
+            ruleId: 'client-sim-value-import',
+            line: lineNum,
+            message: `Import no tipado o de valor en tiempo de ejecución desde @pkmn/sim en "${relPath}:${lineNum}". Solo se permite "import type".`,
+            snippet: nodeText
+          });
+          return;
         }
 
+        // Allowed: pure type imports: `import type { ... } from '@pkmn/sim'`
+        if (clause.isTypeOnly) {
+          return;
+        }
+
+        // Check for inline type specifiers: `import { type Foo, type Bar } from '@pkmn/sim'`
+        if (clause.namedBindings && ts.isNamedImports(clause.namedBindings)) {
+          const nonTypeSpecifiers = clause.namedBindings.elements
+            .filter(elem => !elem.isTypeOnly)
+            .map(elem => elem.name.text);
+
+          if (nonTypeSpecifiers.length === 0) {
+            // All imported specifiers are types
+            return;
+          }
+
+          issues.push({
+            ruleId: 'client-sim-value-import',
+            line: lineNum,
+            message: `Import de valores en tiempo de ejecución [${nonTypeSpecifiers.join(', ')}] desde @pkmn/sim en "${relPath}:${lineNum}". Use "import type".`,
+            snippet: nodeText
+          });
+          return;
+        }
+
+        // Any other import (default, namespace, dynamic, or unparsed) is a runtime value import
         issues.push({
           ruleId: 'client-sim-value-import',
           line: lineNum,
-          message: `Import de valores en tiempo de ejecución [${nonTypeSpecifiers.join(', ')}] desde @pkmn/sim en "${relPath}:${lineNum}". Use "import type".`,
-          snippet: trimmed
+          message: `Import no tipado o de valor en tiempo de ejecución desde @pkmn/sim en "${relPath}:${lineNum}". Solo se permite "import type".`,
+          snippet: nodeText
         });
-        continue;
       }
-
-      // Any other import (default, namespace, dynamic, or unparsed) is a runtime value import
-      issues.push({
-        ruleId: 'client-sim-value-import',
-        line: lineNum,
-        message: `Import no tipado o de valor en tiempo de ejecución desde @pkmn/sim en "${relPath}:${lineNum}". Solo se permite "import type".`,
-        snippet: trimmed
-      });
     }
-  }
+  });
 
   return issues;
 }
@@ -204,11 +235,12 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
       description: 'Verifica desacoplamiento total de Showdown en cliente',
       family: 'architecture',
       ruleIds: CLIENT_SIM_DECOUPLING_RULES,
-      ruleDescriptions: CLIENT_SIM_DECOUPLING_DESCRIPTIONS
+      ruleDescriptions: CLIENT_SIM_DECOUPLING_DESCRIPTIONS,
+      requiresAst: true
     });
   }
 
-  public override async runAudit(): Promise<void> {
+  public override async runAudit(astContext?: SharedAstContext): Promise<void> {
     const cwd = process.cwd();
 
     this.context.logStep(1, 3, 'Escaneando imports de @pkmn/sim y @pkmn/randoms en src/...');
@@ -224,7 +256,8 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
 
       filesScanned++;
       const content = fs.readFileSync(file, 'utf8');
-      const issues = scanSourceForSimImports(content, relPath);
+      const sf = astContext?.getSourceFile(file, content);
+      const issues = scanSourceForSimImports(content, relPath, sf);
 
       for (const issue of issues) {
         totalIssuesFound++;

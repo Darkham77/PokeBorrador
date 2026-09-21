@@ -25,5 +25,4 @@ Cloud / Backend Engineers.
 
 # Child DOX Index
 
-- [docker/volumes/functions/hello/](./docker/volumes/functions/hello/AGENTS.md): Hello world test edge function.
-- [docker/volumes/functions/main/](./docker/volumes/functions/main/AGENTS.md): Main routing and JWT authorization gateway edge function.
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

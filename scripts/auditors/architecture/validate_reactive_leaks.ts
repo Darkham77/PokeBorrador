@@ -48,31 +48,29 @@ export class ReactiveLeaksAuditor extends FileScanAuditor<ReactiveLeakRuleId> {
         'gamebus-leak': 'gameBus.on sin desregistro ni hook de ciclo de vida',
         'interval-leak': 'setInterval ejecutado sin clearInterval en el componente'
       },
+      requiresAst: true,
       roots,
       allowedExtensions: new Set(['.ts', '.vue'])
     });
   }
 
-  protected override scanFile(relPath: string, content: string): void {
-    const { scriptContent, offsetLine } = this.extractScript(content, relPath);
-    if (!scriptContent.trim()) return;
+  protected override scanFile(relPath: string, content: string, sourceFile?: ts.SourceFile): void {
+    // Fast string pre-filter to skip files that cannot contain reactive leaks
+    if (!content.includes('addEventListener') && !content.includes('gameBus.on') && !content.includes('setInterval')) {
+      return;
+    }
 
-    const sourceFile = ts.createSourceFile(
-      path.basename(relPath),
-      scriptContent,
-      ts.ScriptTarget.Latest,
-      true,
-      relPath.endsWith('.vue') ? ts.ScriptKind.TS : undefined
-    );
+    const sf = sourceFile ?? this.createStandaloneSourceFile(relPath, content);
+    if (!sf.text.trim()) return;
 
-    const fileLines = scriptContent.split('\n');
-    const hasUnmountHook = scriptContent.includes('onUnmounted') || scriptContent.includes('onBeforeUnmount') || scriptContent.includes('onScopeDispose');
-    const hasRemoveEventListener = scriptContent.includes('removeEventListener');
-    const hasGameBusOff = scriptContent.includes('gameBus.off');
-    const hasClearInterval = scriptContent.includes('clearInterval');
+    const fullLines = content.split('\n');
+    const hasUnmountHook = content.includes('onUnmounted') || content.includes('onBeforeUnmount') || content.includes('onScopeDispose');
+    const hasRemoveEventListener = content.includes('removeEventListener');
+    const hasGameBusOff = content.includes('gameBus.off');
+    const hasClearInterval = content.includes('clearInterval');
 
-    const checkLineEscape = (lineIdx: number): boolean => {
-      const lineText = fileLines[lineIdx] || '';
+    const checkLineEscape = (lineNum: number): boolean => {
+      const lineText = fullLines[lineNum - 1] || '';
       return lineText.includes('leak-ok') || lineText.includes('reactive-leak-ok');
     };
 
@@ -82,8 +80,7 @@ export class ReactiveLeaksAuditor extends FileScanAuditor<ReactiveLeakRuleId> {
 
         // 1. addEventListener Check
         if (ts.isPropertyAccessExpression(expr) && expr.name.text === 'addEventListener') {
-          const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-          const actualLine = line + offsetLine + 1;
+          const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
 
           if (!checkLineEscape(line)) {
             let isOnce = false;
@@ -105,9 +102,9 @@ export class ReactiveLeaksAuditor extends FileScanAuditor<ReactiveLeakRuleId> {
                 ruleId: 'dom-event-leak',
                 severity: 'error',
                 file: relPath,
-                line: actualLine,
+                line,
                 message: 'addEventListener sin removeEventListener ni ciclo de vida onUnmounted / onScopeDispose (potencial fuga de memoria).',
-                context: node.getText(sourceFile)
+                context: node.getText(sf)
               });
             }
           }
@@ -115,10 +112,9 @@ export class ReactiveLeaksAuditor extends FileScanAuditor<ReactiveLeakRuleId> {
 
         // 2. gameBus.on Check
         if (ts.isPropertyAccessExpression(expr) && expr.name.text === 'on') {
-          const callerText = expr.expression.getText(sourceFile);
+          const callerText = expr.expression.getText(sf);
           if (callerText === 'gameBus') {
-            const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-            const actualLine = line + offsetLine + 1;
+            const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
 
             if (!checkLineEscape(line)) {
               if (!hasGameBusOff && !hasUnmountHook) {
@@ -126,9 +122,9 @@ export class ReactiveLeaksAuditor extends FileScanAuditor<ReactiveLeakRuleId> {
                   ruleId: 'gamebus-leak',
                   severity: 'error',
                   file: relPath,
-                  line: actualLine,
+                  line,
                   message: 'gameBus.on llamado sin gameBus.off ni hook de desmontaje onUnmounted / onScopeDispose.',
-                  context: node.getText(sourceFile)
+                  context: node.getText(sf)
                 });
               }
             }
@@ -137,17 +133,16 @@ export class ReactiveLeaksAuditor extends FileScanAuditor<ReactiveLeakRuleId> {
 
         // 3. setInterval Check
         if (ts.isIdentifier(expr) && expr.text === 'setInterval') {
-          const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-          const actualLine = line + offsetLine + 1;
+          const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
 
           if (!checkLineEscape(line) && !hasClearInterval) {
             this.addViolation({
               ruleId: 'interval-leak',
               severity: 'error',
               file: relPath,
-              line: actualLine,
+              line,
               message: 'setInterval ejecutado sin clearInterval en el componente o composable.',
-              context: node.getText(sourceFile)
+              context: node.getText(sf)
             });
           }
         }
@@ -156,20 +151,26 @@ export class ReactiveLeaksAuditor extends FileScanAuditor<ReactiveLeakRuleId> {
       ts.forEachChild(node, visit);
     };
 
-    visit(sourceFile);
+    visit(sf);
   }
 
-  private extractScript(content: string, filePath: string): { scriptContent: string; offsetLine: number } {
-    if (!filePath.endsWith('.vue')) {
-      return { scriptContent: content, offsetLine: 0 };
+  private createStandaloneSourceFile(relPath: string, content: string): ts.SourceFile {
+    let scriptContent = content;
+    if (relPath.endsWith('.vue')) {
+      const match = content.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i);
+      const openTagMatch = content.match(/<script\b[^>]*>/i);
+      const openTagEnd = openTagMatch && openTagMatch.index !== undefined ? openTagMatch.index + openTagMatch[0].length : 0;
+      const linesBefore = (content.substring(0, openTagEnd).match(/\n/g) ?? []).length;
+      scriptContent = '\n'.repeat(linesBefore) + (match ? match[1] ?? '' : '');
     }
-    const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/i;
-    const match = scriptRegex.exec(content);
-    if (!match) {
-      return { scriptContent: '', offsetLine: 0 };
-    }
-    const linesBefore = content.substring(0, match.index).split('\n').length - 1;
-    return { scriptContent: match[1] || '', offsetLine: linesBefore };
+
+    return ts.createSourceFile(
+      path.basename(relPath),
+      scriptContent,
+      ts.ScriptTarget.Latest,
+      true,
+      relPath.endsWith('.vue') ? ts.ScriptKind.TS : undefined
+    );
   }
 }
 

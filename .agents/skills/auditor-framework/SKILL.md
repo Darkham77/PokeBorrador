@@ -49,6 +49,12 @@ Every sub-auditor and reporter in the project is part of a unified static analys
    - Following the table, they MUST output ONLY an illustrative sample of the last 5 errors (`❌ Muestra de errores detectados (últimos 5 de N)`).
    - Listing the full set of warnings or dumping all errors in console output is **STRICTLY FORBIDDEN**.
    - Grouping console results under opaque "FAMILIAS" headers is permanently eradicated. Full machine-readable findings reside in `scratch/audits/latest_audit.json`.
+11. **Shared AST Engine & Zero Duplicate Parse Mandate (`SharedAstContext`)**:
+   - Whenever a sub-auditor performs TypeScript AST analysis or inspects Vue SFC `<script>` blocks, it MUST declare `requiresAst: true` in its constructor configuration (`BaseAuditor` or `FileScanAuditor`).
+   - Sub-auditors MUST NEVER instantiate isolated AST parsers or call `ts.createProgram` / `ts.createSourceFile` inside ad-hoc file loops.
+   - Sub-auditors MUST consume the centralized `astContext: SharedAstContext` passed to `runAudit(astContext?: SharedAstContext)` or receive the pre-compiled `sourceFile?: ts.SourceFile` directly in `FileScanAuditor.scanFile(relPath, content, sourceFile)`.
+   - All AST-dependent sub-auditors MUST be registered in `AST_DEPENDENT_SUITE_IDS` inside [`scripts/maintenance/auditScanner.ts`](../../scripts/maintenance/auditScanner.ts). This ensures the master orchestrator (`audit_full.ts`) initializes and preheats a single AST cache before running suites.
+   - For standalone CLI execution (`BaseAuditor.runCli`), `execute()` automatically provisions a fallback `SharedAstContext` on demand if `requiresAst: true`.
 
 ---
 
@@ -79,6 +85,7 @@ scripts/auditors/
 Pre-formatted, production-ready templates conforming to all project standards are bundled directly within this skill for instant scaffolding:
 - **Line-by-Line Scanner**: [`assets/templates/file_scan_auditor_template.ts`](./assets/templates/file_scan_auditor_template.ts)
 - **Composite / Database / Asset Auditor**: [`assets/templates/base_auditor_template.ts`](./assets/templates/base_auditor_template.ts)
+- **AST-Driven Auditor**: [`assets/templates/ast_auditor_template.ts`](./assets/templates/ast_auditor_template.ts)
 - **Dedicated Vitest Unit Test**: [`assets/templates/auditor_unit_test_template.test.ts`](./assets/templates/auditor_unit_test_template.test.ts)
 
 ### Option A: File-Scanning Auditor (`FileScanAuditor`)
@@ -217,6 +224,75 @@ export class MyDataAuditor extends BaseAuditor<MyDataRuleId> {
 // Canonical CLI Entrypoint
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
   await BaseAuditor.runCli(new MyDataAuditor());
+}
+```
+
+### Option C: AST-Driven Sub-Auditor (`requiresAst: true` & `SharedAstContext`)
+Use `BaseAuditor` with `requiresAst: true` (or `FileScanAuditor` with `sourceFile`) when the audit inspects TypeScript syntax trees, imports, exports, decorators, types, or Vue SFC script blocks across codebase files.
+
+```typescript
+/**
+ * scripts/auditors/architecture/validate_my_ast_rule.ts
+ *
+ * AST-DRIVEN AUDITOR (Node.js 26+ Native)
+ */
+
+import path from 'node:path';
+import ts from 'typescript';
+import { enableCompileCache } from 'node:module';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { SharedAstContext } from '../../lib/astContext.ts';
+
+enableCompileCache();
+
+export type MyAstRuleId = 'my-ast-forbidden-call';
+
+export const MY_AST_RULES: readonly MyAstRuleId[] = [
+  'my-ast-forbidden-call'
+] as const;
+
+export class MyAstAuditor extends BaseAuditor<MyAstRuleId> {
+  constructor() {
+    super({
+      id: 'validate_my_ast_rule',
+      name: 'My AST Rule Validator',
+      description: 'Valida llamadas prohibidas en el AST de TypeScript',
+      family: 'architecture',
+      ruleIds: MY_AST_RULES,
+      ruleDescriptions: {
+        'my-ast-forbidden-call': 'Llamada prohibida detectada en el árbol sintáctico'
+      },
+      requiresAst: true,
+      roots: ['src'],
+      allowedExtensions: new Set(['.ts', '.vue'])
+    });
+  }
+
+  public override async runAudit(astContext?: SharedAstContext): Promise<void> {
+    this.context.logStep(1, 1, 'Analizando AST con contexto compartido...');
+
+    const astEngine = astContext ?? new SharedAstContext();
+    const relFiles = await this.context.collectFiles(['src'], new Set(['.ts', '.vue']));
+
+    for (const relFile of relFiles) {
+      this.filesScannedCount++;
+      const absPath = path.resolve(this.projectRoot, relFile);
+      const sourceFile = astEngine.getSourceFile(absPath);
+
+      ts.forEachChild(sourceFile, (node) => {
+        if (ts.isCallExpression(node)) {
+          // Inspect AST node properties...
+        }
+      });
+    }
+
+    this.context.setMetric('Files Scanned with AST', this.filesScannedCount);
+  }
+}
+
+// Canonical CLI Entrypoint
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new MyAstAuditor());
 }
 ```
 

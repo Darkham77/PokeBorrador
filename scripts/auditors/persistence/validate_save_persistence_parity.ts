@@ -24,7 +24,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
+import ts from 'typescript';
 import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { SharedAstContext } from '../../lib/astContext.ts';
 
 enableCompileCache();
 
@@ -53,169 +55,245 @@ const SCHEMAS_PATH = path.resolve(ROOT, 'src/logic/validation/schemas.ts');
 const SERIALIZER_PATH = path.resolve(ROOT, 'src/logic/auth/saveSerializer.ts');
 const INITIAL_STATE_PATH = path.resolve(ROOT, 'src/stores/gameInitialState.ts');
 
-function extractInterfaceKeys(content: string, interfaceName: string): Set<string> {
+const ALLOWED_NULLABLE_FIELDS: ReadonlySet<string> = new Set([
+  'activeBattle', 'activeMission', 'playerClass', 'faction',
+  'fishingRodType', 'pickaxeType', 'brushType', 'incenseType',
+  'lastRankedSeason', 'nick_style', 'avatar_style',
+  'extortedRouteId', 'extortedRouteTimestamp', 'lastEggScanDate',
+  'officialRouteId', 'officialRouteTimestamp', 'lastResolvedWeek',
+  'last_renamed_at'
+]);
+
+/**
+ * Extracts interface property keys using TypeScript AST.
+ * Correctly handles optional, readonly, and string/identifier keys.
+ */
+export function extractInterfaceKeys(sourceFile: ts.SourceFile, interfaceName: string): Set<string> {
   const keys = new Set<string>();
-  const regex = new RegExp(`export\\s+interface\\s+${interfaceName}\\s*(?:extends[^{]+)?\\{([\\s\\S]*?)\\n\\}`, 'm');
-  const match = content.match(regex);
-  if (!match || !match[1]) return keys;
-
-  const body = match[1];
-  const lines = body.split('\n');
-  let braceDepth = 0;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
-
-    const openBraces = (line.match(/\{/g) || []).length;
-    const closeBraces = (line.match(/\}/g) || []).length;
-
-    if (braceDepth === 0) {
-      const propMatch = trimmed.match(/^([a-zA-Z0-9_]+)\??\s*:/);
-      if (propMatch && propMatch[1]) {
-        keys.add(propMatch[1]);
+  ts.forEachChild(sourceFile, (node) => {
+    if (ts.isInterfaceDeclaration(node) && node.name.text === interfaceName) {
+      for (const member of node.members) {
+        if (ts.isPropertySignature(member) && member.name) {
+          if (ts.isIdentifier(member.name) || ts.isStringLiteral(member.name)) {
+            keys.add(member.name.text);
+          }
+        }
       }
     }
-
-    braceDepth += openBraces - closeBraces;
-  }
-
+  });
   return keys;
 }
 
-function extractEphemeralKeys(content: string): Set<string> {
+/**
+ * Extracts string literal types from type alias EphemeralGameStateKeys.
+ */
+export function extractEphemeralKeys(sourceFile: ts.SourceFile): Set<string> {
   const keys = new Set<string>();
-  const match = content.match(/export\s+type\s+EphemeralGameStateKeys\s*=\s*([^;]+);/);
-  if (!match || !match[1]) return keys;
-
-  const literals = match[1].match(/'([^']+)'|"([^"]+)"/g) || [];
-  for (const lit of literals) {
-    keys.add(lit.replace(/['"]/g, ''));
-  }
-  return keys;
-}
-
-function parseTopLevelObjectKeys(body: string): Set<string> {
-  const keys = new Set<string>();
-  const lines = body.split('\n');
-  let parenDepth = 0;
-  let braceDepth = 0;
-  let bracketDepth = 0;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
-
-    if (parenDepth === 0 && braceDepth === 0 && bracketDepth === 0) {
-      const propMatch = trimmed.match(/^([a-zA-Z0-9_]+)\s*:/);
-      if (propMatch && propMatch[1]) {
-        keys.add(propMatch[1]);
+  ts.forEachChild(sourceFile, (node) => {
+    if (ts.isTypeAliasDeclaration(node) && node.name.text === 'EphemeralGameStateKeys') {
+      if (ts.isUnionTypeNode(node.type)) {
+        for (const element of node.type.types) {
+          if (ts.isLiteralTypeNode(element) && ts.isStringLiteral(element.literal)) {
+            keys.add(element.literal.text);
+          }
+        }
+      } else if (ts.isLiteralTypeNode(node.type) && ts.isStringLiteral(node.type.literal)) {
+        keys.add(node.type.literal.text);
       }
     }
-
-    const openParens = (line.match(/\(/g) || []).length;
-    const closeParens = (line.match(/\)/g) || []).length;
-    const openBraces = (line.match(/\{/g) || []).length;
-    const closeBraces = (line.match(/\}/g) || []).length;
-    const openBrackets = (line.match(/\[/g) || []).length;
-    const closeBrackets = (line.match(/\]/g) || []).length;
-
-    parenDepth += openParens - closeParens;
-    braceDepth += openBraces - closeBraces;
-    bracketDepth += openBrackets - closeBrackets;
-  }
-
+  });
   return keys;
 }
 
-function extractSchemaKeys(content: string, schemaVarName: string): Set<string> {
-  const regex = new RegExp(`export\\s+const\\s+${schemaVarName}\\s*=\\s*object\\s*\\(\\{([\\s\\S]*?)\\n\\}\\);`, 'm');
-  const match = content.match(regex);
-  if (!match || !match[1]) return new Set<string>();
-  return parseTopLevelObjectKeys(match[1]);
-}
-
-function extractSerializerKeys(content: string): Set<string> {
+/**
+ * Extracts property names from an ObjectLiteralExpression node,
+ * recursively resolving spread expressions (e.g. conditional spreads: ...(cond ? { prop: val } : {})).
+ */
+export function extractObjectLiteralKeys(objNode: ts.ObjectLiteralExpression): Set<string> {
   const keys = new Set<string>();
-  const funcRegex = /function\s+serialize[a-zA-Z0-9_]*[\s\S]*?return\s*\{([\s\S]*?)\n\s*\};/g;
-  let match: RegExpExecArray | null;
 
-  while ((match = funcRegex.exec(content)) !== null) {
-    const body = match[1];
-    if (!body) continue;
-    for (const k of parseTopLevelObjectKeys(body)) {
-      keys.add(k);
+  for (const prop of objNode.properties) {
+    if (ts.isPropertyAssignment(prop) || ts.isShorthandPropertyAssignment(prop)) {
+      if (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) {
+        keys.add(prop.name.text);
+      }
+    } else if (ts.isSpreadAssignment(prop)) {
+      let expr: ts.Expression = prop.expression;
+      while (ts.isParenthesizedExpression(expr)) {
+        expr = expr.expression;
+      }
+      if (ts.isObjectLiteralExpression(expr)) {
+        for (const k of extractObjectLiteralKeys(expr)) {
+          keys.add(k);
+        }
+      } else if (ts.isConditionalExpression(expr)) {
+        let whenTrue: ts.Expression = expr.whenTrue;
+        while (ts.isParenthesizedExpression(whenTrue)) {
+          whenTrue = whenTrue.expression;
+        }
+        if (ts.isObjectLiteralExpression(whenTrue)) {
+          for (const k of extractObjectLiteralKeys(whenTrue)) {
+            keys.add(k);
+          }
+        }
+      }
     }
   }
 
   return keys;
 }
 
-function extractInitialStateKeys(content: string): Set<string> {
-  const match = content.match(/(?:const\s+INITIAL_STATE(?::\s*GameState)?\s*=|export\s+function\s+createInitialGameState\(\)[^{]*)\s*(?:=>)?\s*\{([\s\S]*?)\n\};/m) ||
-                content.match(/return\s*\{([\s\S]*?)\n\s*\};/m);
-  if (!match || !match[1]) return new Set<string>();
-  return parseTopLevelObjectKeys(match[1]);
+/**
+ * Extracts property keys from a Valibot object schema declaration (e.g., export const saveDataSchema = object({ ... })).
+ */
+export function extractSchemaKeys(sourceFile: ts.SourceFile, schemaVarName: string): { keys: Set<string>; declNode?: ts.VariableDeclaration } {
+  const keys = new Set<string>();
+  let targetDecl: ts.VariableDeclaration | undefined;
+
+  ts.forEachChild(sourceFile, (node) => {
+    if (ts.isVariableStatement(node)) {
+      for (const decl of node.declarationList.declarations) {
+        if (ts.isIdentifier(decl.name) && decl.name.text === schemaVarName) {
+          targetDecl = decl;
+          if (decl.initializer && ts.isCallExpression(decl.initializer)) {
+            const firstArg = decl.initializer.arguments[0];
+            if (firstArg && ts.isObjectLiteralExpression(firstArg)) {
+              for (const k of extractObjectLiteralKeys(firstArg)) {
+                keys.add(k);
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  return { keys, declNode: targetDecl };
 }
 
-function extractNestedClassDataKeys(
-  gameTypes: string,
-  schemas: string,
-  serializer: string,
-  initialState: string
-): {
-  typeKeys: Set<string>;
-  schemaKeys: Set<string>;
-  serializerKeys: Set<string>;
-  initialStateKeys: Set<string>;
-} {
-  const typeKeys = extractInterfaceKeys(gameTypes, 'PlayerClassState');
-  const schemaKeys = extractSchemaKeys(schemas, 'classDataSchema');
+/**
+ * Extracts all property keys returned by serializer functions in saveSerializer.ts.
+ */
+export function extractSerializerKeys(sourceFile: ts.SourceFile): Set<string> {
+  const keys = new Set<string>();
 
-  const serializerKeys = new Set<string>();
-  const serMatch = serializer.match(/classData:\s*\{([\s\S]*?)\n\s*\},/m);
-  if (serMatch && serMatch[1]) {
-    for (const line of serMatch[1].split('\n')) {
-      const m = line.trim().match(/^([a-zA-Z0-9_]+)\s*:/);
-      if (m && m[1]) serializerKeys.add(m[1]);
+  ts.forEachChild(sourceFile, (node) => {
+    if (ts.isFunctionDeclaration(node) && node.name?.text.startsWith('serialize')) {
+      const visitReturns = (child: ts.Node) => {
+        if (ts.isReturnStatement(child) && child.expression) {
+          let expr = child.expression;
+          while (ts.isParenthesizedExpression(expr)) {
+            expr = expr.expression;
+          }
+          if (ts.isObjectLiteralExpression(expr)) {
+            for (const k of extractObjectLiteralKeys(expr)) {
+              keys.add(k);
+            }
+          }
+        }
+        ts.forEachChild(child, visitReturns);
+      };
+      if (node.body) {
+        visitReturns(node.body);
+      }
     }
-  }
+  });
 
-  const initialStateKeys = new Set<string>();
-  const initMatch = initialState.match(/classData:\s*\{([\s\S]*?)\n\s*\},/m);
-  if (initMatch && initMatch[1]) {
-    for (const line of initMatch[1].split('\n')) {
-      const m = line.trim().match(/^([a-zA-Z0-9_]+)\s*:/);
-      if (m && m[1]) initialStateKeys.add(m[1]);
-    }
-  }
-
-  return { typeKeys, schemaKeys, serializerKeys, initialStateKeys };
+  return keys;
 }
 
-function extractNestedActiveMissionKeys(
-  gameTypes: string,
-  schemas: string,
-  serializer: string
-): {
-  typeKeys: Set<string>;
-  schemaKeys: Set<string>;
-  serializerKeys: Set<string>;
-} {
-  const typeKeys = extractInterfaceKeys(gameTypes, 'ActiveMission');
-  const schemaKeys = extractSchemaKeys(schemas, 'activeMissionSchema');
+/**
+ * Extracts top-level keys and nested classData keys from createInitialGameState in gameInitialState.ts.
+ */
+export function extractInitialStateKeys(sourceFile: ts.SourceFile): { topLevelKeys: Set<string>; classDataKeys: Set<string> } {
+  const topLevelKeys = new Set<string>();
+  const classDataKeys = new Set<string>();
 
-  const serializerKeys = new Set<string>();
-  const serMatch = serializer.match(/activeMission:\s*state\.classData\.activeMission\s*\?\s*\{([\s\S]*?)\n\s*\}\s*:\s*null/m);
-  if (serMatch && serMatch[1]) {
-    for (const line of serMatch[1].split('\n')) {
-      const m = line.trim().match(/^(?:([a-zA-Z0-9_]+)\s*:|\.\.\.\s*\(.*?\s*\{\s*([a-zA-Z0-9_]+)\s*:)/);
-      const key = m ? (m[1] || m[2]) : null;
-      if (key) serializerKeys.add(key);
+  ts.forEachChild(sourceFile, (node) => {
+    if (ts.isFunctionDeclaration(node) && node.name?.text === 'createInitialGameState' && node.body) {
+      for (const statement of node.body.statements) {
+        if (ts.isReturnStatement(statement) && statement.expression && ts.isObjectLiteralExpression(statement.expression)) {
+          for (const prop of statement.expression.properties) {
+            if (ts.isPropertyAssignment(prop) || ts.isShorthandPropertyAssignment(prop)) {
+              if (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) {
+                topLevelKeys.add(prop.name.text);
+
+                if (prop.name.text === 'classData' && ts.isPropertyAssignment(prop) && ts.isObjectLiteralExpression(prop.initializer)) {
+                  for (const classProp of extractObjectLiteralKeys(prop.initializer)) {
+                    classDataKeys.add(classProp);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-  }
+  });
 
-  return { typeKeys, schemaKeys, serializerKeys };
+  return { topLevelKeys, classDataKeys };
+}
+
+/**
+ * Extracts keys serialized for nested PlayerClassState.
+ */
+export function extractNestedClassDataSerializerKeys(sourceFile: ts.SourceFile): Set<string> {
+  const keys = new Set<string>();
+
+  ts.forEachChild(sourceFile, (node) => {
+    if (ts.isFunctionDeclaration(node)) {
+      if (node.name?.text === 'serializeClassProgress' || node.name?.text === 'serializeClassRoutes') {
+        const visitReturns = (child: ts.Node) => {
+          if (ts.isReturnStatement(child) && child.expression && ts.isObjectLiteralExpression(child.expression)) {
+            for (const k of extractObjectLiteralKeys(child.expression)) {
+              keys.add(k);
+            }
+          }
+          ts.forEachChild(child, visitReturns);
+        };
+        if (node.body) visitReturns(node.body);
+      }
+
+      if (node.name?.text === 'serializePlayerClass' && node.body) {
+        const visitObject = (child: ts.Node) => {
+          if (ts.isPropertyAssignment(child) && child.name.getText(sourceFile) === 'classData') {
+            if (ts.isObjectLiteralExpression(child.initializer)) {
+              for (const k of extractObjectLiteralKeys(child.initializer)) {
+                keys.add(k);
+              }
+            }
+          }
+          ts.forEachChild(child, visitObject);
+        };
+        visitObject(node.body);
+      }
+    }
+  });
+
+  return keys;
+}
+
+/**
+ * Extracts keys serialized for nested ActiveMission.
+ */
+export function extractNestedActiveMissionSerializerKeys(sourceFile: ts.SourceFile): Set<string> {
+  const keys = new Set<string>();
+
+  ts.forEachChild(sourceFile, (node) => {
+    if (ts.isFunctionDeclaration(node) && node.name?.text === 'serializeClassActiveMission' && node.body) {
+      const visitReturns = (child: ts.Node) => {
+        if (ts.isReturnStatement(child) && child.expression && ts.isObjectLiteralExpression(child.expression)) {
+          for (const k of extractObjectLiteralKeys(child.expression)) {
+            keys.add(k);
+          }
+        }
+        ts.forEachChild(child, visitReturns);
+      };
+      visitReturns(node.body);
+    }
+  });
+
+  return keys;
 }
 
 export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistenceParityRuleId> {
@@ -235,13 +313,16 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
         'persistence-domain-type-violation': 'Uso de unknown() en esquema de persistencia',
         'persistence-redundant-nullability': 'Uso redundante de optional(nullable(...))'
       },
+      requiresAst: true,
       requiredFiles: [GAME_TYPES_PATH, SCHEMAS_PATH, SERIALIZER_PATH, INITIAL_STATE_PATH]
     });
   }
 
-  public override async runAudit(): Promise<void> {
+  public override async runAudit(astContext?: SharedAstContext): Promise<void> {
     this.filesScannedCount = 4;
-    this.context.logStep(1, 4, 'Leyendo contratos fuente de tipos, esquemas y serializadores...');
+    const astEngine = astContext ?? new SharedAstContext();
+
+    this.context.logStep(1, 4, 'Leyendo y parseando contratos fuente de tipos, esquemas y serializadores...');
     const [gameTypesContent, schemasContent, serializerContent, initialStateContent] = await Promise.all([
       fs.readFile(GAME_TYPES_PATH, 'utf-8'),
       fs.readFile(SCHEMAS_PATH, 'utf-8'),
@@ -249,12 +330,17 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
       fs.readFile(INITIAL_STATE_PATH, 'utf-8')
     ]);
 
+    const gameTypesAst = astEngine.getSourceFile(GAME_TYPES_PATH, gameTypesContent);
+    const schemasAst = astEngine.getSourceFile(SCHEMAS_PATH, schemasContent);
+    const serializerAst = astEngine.getSourceFile(SERIALIZER_PATH, serializerContent);
+    const initialStateAst = astEngine.getSourceFile(INITIAL_STATE_PATH, initialStateContent);
+
     this.context.logStep(2, 4, 'Analizando paridad de propiedades de primer nivel (GameState vs SaveData)...');
-    const gameStateKeys = extractInterfaceKeys(gameTypesContent, 'GameState');
-    const ephemeralKeys = extractEphemeralKeys(gameTypesContent);
-    const schemaKeys = extractSchemaKeys(schemasContent, 'saveDataSchema');
-    const serializerKeys = extractSerializerKeys(serializerContent);
-    const initialStateKeys = extractInitialStateKeys(initialStateContent);
+    const gameStateKeys = extractInterfaceKeys(gameTypesAst, 'GameState');
+    const ephemeralKeys = extractEphemeralKeys(gameTypesAst);
+    const { keys: schemaKeys, declNode: saveSchemaDecl } = extractSchemaKeys(schemasAst, 'saveDataSchema');
+    const serializerKeys = extractSerializerKeys(serializerAst);
+    const { topLevelKeys: initialStateKeys, classDataKeys: initClassDataKeys } = extractInitialStateKeys(initialStateAst);
 
     const expectedPersistedKeys = new Set<string>();
     for (const k of gameStateKeys) {
@@ -308,15 +394,12 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
     this.context.logStep(3, 4, 'Analizando paridad en estructuras anidadas (PlayerClassState & ActiveMission)...');
 
     // 4. Nested PlayerClassState parity
-    const classDataParity = extractNestedClassDataKeys(
-      gameTypesContent,
-      schemasContent,
-      serializerContent,
-      initialStateContent
-    );
+    const classTypeKeys = extractInterfaceKeys(gameTypesAst, 'PlayerClassState');
+    const { keys: classSchemaKeys } = extractSchemaKeys(schemasAst, 'classDataSchema');
+    const classSerializerKeys = extractNestedClassDataSerializerKeys(serializerAst);
 
-    for (const key of classDataParity.typeKeys) {
-      if (!classDataParity.schemaKeys.has(key)) {
+    for (const key of classTypeKeys) {
+      if (!classSchemaKeys.has(key)) {
         this.addViolation({
           ruleId: 'persistence-class-data-missing-field',
           severity: 'error',
@@ -326,7 +409,7 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
           context: key
         });
       }
-      if (!classDataParity.serializerKeys.has(key)) {
+      if (!classSerializerKeys.has(key)) {
         this.addViolation({
           ruleId: 'persistence-class-data-missing-field',
           severity: 'error',
@@ -336,7 +419,7 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
           context: key
         });
       }
-      if (!classDataParity.initialStateKeys.has(key)) {
+      if (!initClassDataKeys.has(key)) {
         this.addViolation({
           ruleId: 'persistence-class-data-missing-field',
           severity: 'error',
@@ -349,14 +432,12 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
     }
 
     // 5. Nested ActiveMission parity
-    const activeMissionParity = extractNestedActiveMissionKeys(
-      gameTypesContent,
-      schemasContent,
-      serializerContent
-    );
+    const activeMissionTypeKeys = extractInterfaceKeys(gameTypesAst, 'ActiveMission');
+    const { keys: activeMissionSchemaKeys } = extractSchemaKeys(schemasAst, 'activeMissionSchema');
+    const activeMissionSerializerKeys = extractNestedActiveMissionSerializerKeys(serializerAst);
 
-    for (const key of activeMissionParity.typeKeys) {
-      if (!activeMissionParity.schemaKeys.has(key)) {
+    for (const key of activeMissionTypeKeys) {
+      if (!activeMissionSchemaKeys.has(key)) {
         this.addViolation({
           ruleId: 'persistence-active-mission-missing-field',
           severity: 'error',
@@ -366,13 +447,13 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
           context: key
         });
       }
-      if (!activeMissionParity.serializerKeys.has(key)) {
+      if (!activeMissionSerializerKeys.has(key)) {
         this.addViolation({
           ruleId: 'persistence-active-mission-missing-field',
           severity: 'error',
           file: 'src/logic/auth/saveSerializer.ts',
           line: 1,
-          message: `Propiedad '${key}' de ActiveMission no se serializa en serializeState.classData.activeMission.`,
+          message: `Propiedad '${key}' de ActiveMission no se serializa en serializeClassActiveMission.`,
           context: key
         });
       }
@@ -380,47 +461,50 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
 
     this.context.logStep(4, 4, 'Verificando tipado estricto en esquemas de persistencia...');
 
-    // 6. Anti-pattern audit: Check for unknown in saveDataSchema
-    const unknownMatch = schemasContent.match(/([a-zA-Z0-9_]+)\s*:\s*(?:optional\s*\(\s*)?unknown\s*\(\s*\)/g);
-    if (unknownMatch) {
-      for (const match of unknownMatch) {
-        const fieldName = match.split(':')[0]?.trim();
-        if (fieldName && fieldName !== 'chats') {
-          this.addViolation({
-            ruleId: 'persistence-domain-type-violation',
-            severity: 'error',
-            file: 'src/logic/validation/schemas.ts',
-            line: 1,
-            message: `Campo '${fieldName}' usa unknown() en schemas.ts. Debe tiparse estrictamente con un esquema de dominio.`,
-            context: fieldName
-          });
-        }
-      }
-    }
+    // 6 & 7. AST Schema inspect for unknown() and redundant optional(nullable(...))
+    if (saveSchemaDecl && saveSchemaDecl.initializer && ts.isCallExpression(saveSchemaDecl.initializer)) {
+      const schemaObjArg = saveSchemaDecl.initializer.arguments[0];
+      if (schemaObjArg && ts.isObjectLiteralExpression(schemaObjArg)) {
+        for (const prop of schemaObjArg.properties) {
+          if (ts.isPropertyAssignment(prop)) {
+            const propName = prop.name.getText(schemasAst).replace(/['"]/g, '');
+            const line = schemasAst.getLineAndCharacterOfPosition(prop.getStart(schemasAst)).line + 1;
 
-    // 7. Anti-pattern audit: Check for redundant optional(nullable(...))
-    const optNullMatch = schemasContent.match(/([a-zA-Z0-9_]+)\s*:\s*optional\s*\(\s*nullable\s*\(/g);
-    if (optNullMatch) {
-      const ALLOWED_NULLABLE_FIELDS = new Set([
-        'activeBattle', 'activeMission', 'playerClass', 'faction',
-        'fishingRodType', 'pickaxeType', 'brushType', 'incenseType',
-        'lastRankedSeason', 'nick_style', 'avatar_style',
-        'extortedRouteId', 'extortedRouteTimestamp', 'lastEggScanDate',
-        'officialRouteId', 'officialRouteTimestamp', 'lastResolvedWeek',
-        'last_renamed_at'
-      ]);
+            // Check for naked unknown() or optional(unknown()) call expression
+            let directTypeExpr = prop.initializer;
+            if (ts.isCallExpression(directTypeExpr) && ts.isIdentifier(directTypeExpr.expression) && directTypeExpr.expression.text === 'optional') {
+              directTypeExpr = directTypeExpr.arguments[0]!;
+            }
+            if (directTypeExpr && ts.isCallExpression(directTypeExpr) && ts.isIdentifier(directTypeExpr.expression) && directTypeExpr.expression.text === 'unknown') {
+              if (propName !== 'chats') {
+                this.addViolation({
+                  ruleId: 'persistence-domain-type-violation',
+                  severity: 'error',
+                  file: 'src/logic/validation/schemas.ts',
+                  line,
+                  message: `Campo '${propName}' usa unknown() en schemas.ts. Debe tiparse estrictamente con un esquema de dominio.`,
+                  context: propName
+                });
+              }
+            }
 
-      for (const match of optNullMatch) {
-        const fieldName = match.split(':')[0]?.trim();
-        if (fieldName && !ALLOWED_NULLABLE_FIELDS.has(fieldName)) {
-          this.addViolation({
-            ruleId: 'persistence-redundant-nullability',
-            severity: 'warning',
-            file: 'src/logic/validation/schemas.ts',
-            line: 1,
-            message: `Campo '${fieldName}' usa optional(nullable(...)) redundante en schemas.ts. Usar optional(T) o nullable(T).`,
-            context: fieldName
-          });
+            // Check for optional(nullable(...)) redundant pattern
+            if (ts.isCallExpression(prop.initializer) && ts.isIdentifier(prop.initializer.expression) && prop.initializer.expression.text === 'optional') {
+              const innerArg = prop.initializer.arguments[0];
+              if (innerArg && ts.isCallExpression(innerArg) && ts.isIdentifier(innerArg.expression) && innerArg.expression.text === 'nullable') {
+                if (!ALLOWED_NULLABLE_FIELDS.has(propName)) {
+                  this.addViolation({
+                    ruleId: 'persistence-redundant-nullability',
+                    severity: 'warning',
+                    file: 'src/logic/validation/schemas.ts',
+                    line,
+                    message: `Campo '${propName}' usa optional(nullable(...)) redundante en schemas.ts. Usar optional(T) o nullable(T).`,
+                    context: propName
+                  });
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -436,3 +520,4 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
   await BaseAuditor.runCli(new SavePersistenceParityAuditor());
 }
+

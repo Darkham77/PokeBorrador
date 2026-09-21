@@ -16,7 +16,7 @@ flowchart TD
     VerifyUnit -- "Yes (GREEN)" --> RunNodeRegression["4. Run Node Regression: npm run test:node"]
     RunNodeRegression -- "Fail" --> Diagnose
     RunNodeRegression -- "Pass (0 Regressions)" --> CheckTier3{"Tier 3 Created/Affected?"}
-    CheckTier3 -- "No" --> LintAndDox["5. Lint & DOX Pass: npm run lint && npm run audit:dox"]
+    CheckTier3 -- "No" --> LintAndDox["5. Lint & DOX Pass: npm run lint && npm run audit:md"]
     CheckTier3 -- "Yes" --> RunPlaywright["5. Run Playwright: npm run sim:e2e filter=<suite>"]
     RunPlaywright -- "Pass" --> CleanZeroPass["6. Step 6B: Dual Clean Pass (clean=true)"]
     CleanZeroPass -- "Pass" --> LintAndDox
@@ -91,9 +91,9 @@ If the bug affected UI, GSAP animations, visual combat, or F5 persistence:
    npm run lint
    ```
    Ensures domain types, vue-tsc type checking, ESLint, and markdownlint pass cleanly.
-2. **DOX Integrity Audit**:
+2. **Documentation & DOX Audit**:
    ```bash
-   npm run audit:dox
+   npm run audit:md
    ```
 3. **DOX Lesson Update (`dox-navigator`)**:
    Update the nearest owning `AGENTS.md` file with the lesson learned, contract clarification, or invariant established by this fix.

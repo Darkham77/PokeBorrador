@@ -53,7 +53,7 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 ## 3. Strict No-Test Mandate for Documentation
 
 - Running test suites (`npm run test`, `test:node`, Vitest, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is **STRICTLY FORBIDDEN**.
-- Verification for documentation tasks is strictly limited to `npm run lint:md` and `npm run audit:dox`.
+- Verification for documentation tasks is strictly limited to `npm run audit:md`.
 - Running full project audits (`npm run lint` or `npm run audit`) for documentation or skill edits is strictly forbidden.
 
 ---

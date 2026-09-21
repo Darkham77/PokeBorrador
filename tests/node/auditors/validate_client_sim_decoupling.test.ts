@@ -48,6 +48,18 @@ describe('ValidateClientSimDecouplingAuditor', () => {
       expect(issues).toHaveLength(0);
     });
 
+    it('allows multi-line inline type imports without false positives', () => {
+      const code = `
+        import {
+          type SideID,
+          type PokemonSet,
+          type GenderName
+        } from '@pkmn/sim';
+      `;
+      const issues = scanSourceForSimImports(code, 'src/logic/battle/adapter.ts');
+      expect(issues).toHaveLength(0);
+    });
+
     it('flags runtime value imports of Dex or Battle from @pkmn/sim as ERROR', () => {
       const code = `
         import { Dex, Battle } from '@pkmn/sim';

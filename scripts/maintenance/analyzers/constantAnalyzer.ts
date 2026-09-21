@@ -6,7 +6,9 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import ts from 'typescript';
 import type { Violation, RuleDescriptor } from '../audit_rules.ts';
+import { SharedAstContext } from '../../lib/astContext.ts';
 
 export const CONSTANT_ANALYZER_DESCRIPTOR: RuleDescriptor = {
   id: 'duplicate-constants',
@@ -15,7 +17,7 @@ export const CONSTANT_ANALYZER_DESCRIPTOR: RuleDescriptor = {
   aliases: ['duplicate-constants', 'constants', 'constantes', 'constantes-duplicadas']
 };
 
-const IGNORED_CONSTANT_NAMES = new Set([ // runtime-set: Fast O(1) membership lookup set
+export const IGNORED_CONSTANT_NAMES: ReadonlySet<string> = new Set([ // runtime-set: Fast O(1) membership lookup set
   'ID', 'NAME', 'TYPE', 'KEY', 'INDEX', 'COUNT', 'DEFAULT', 'SIZE', 'MAX', 'MIN',
   'VAL', 'VALUE', 'ITEM', 'STATE', 'MODE', 'TAG', 'URL', 'PATH', 'ERR', 'ERROR',
   'MSG', 'DATA', 'INFO', 'OPTIONS', 'CONFIG', 'RESULT', 'RES', 'REQ', 'STATUS',
@@ -27,18 +29,63 @@ const IGNORED_CONSTANT_NAMES = new Set([ // runtime-set: Fast O(1) membership lo
 ]);
 
 interface ConstDecl {
+  name: string;
   file: string;
   line: number;
   valueStr: string;
   isExported: boolean;
 }
 
-export async function detectDuplicateConstants(files: string[]): Promise<Violation[]> {
+/**
+ * Extracts top-level const declarations using TypeScript AST.
+ */
+export function extractConstantsFromSource(
+  sourceFile: ts.SourceFile,
+  filePath: string
+): ConstDecl[] {
+  const decls: ConstDecl[] = [];
+
+  for (const statement of sourceFile.statements) {
+    if (ts.isVariableStatement(statement)) {
+      const isExported = !!statement.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword);
+      const isConst = (statement.declarationList.flags & ts.NodeFlags.Const) !== 0;
+      if (!isConst) continue;
+
+      for (const decl of statement.declarationList.declarations) {
+        if (ts.isIdentifier(decl.name)) {
+          const constName = decl.name.text;
+          if (constName.length < 4) continue;
+          if (IGNORED_CONSTANT_NAMES.has(constName)) continue;
+          if (!/^[A-Z0-9_]+$/.test(constName)) continue;
+
+          const line = sourceFile.getLineAndCharacterOfPosition(decl.getStart(sourceFile)).line + 1;
+          const rawValue = decl.initializer ? decl.initializer.getText(sourceFile).trim() : '';
+
+          decls.push({
+            name: constName,
+            file: filePath,
+            line,
+            valueStr: rawValue,
+            isExported
+          });
+        }
+      }
+    }
+  }
+
+  return decls;
+}
+
+export async function detectDuplicateConstants(
+  files: string[],
+  astContext?: SharedAstContext
+): Promise<Violation[]> {
   const violations: Violation[] = [];
   const declarations = new Map<string, ConstDecl[]>();
+  const astEngine = astContext ?? new SharedAstContext();
 
   for (const filePath of files) {
-    const rel = path.relative(process.cwd(), filePath);
+    const rel = path.relative(process.cwd(), filePath).split(path.sep).join(path.posix.sep);
     if (
       rel.includes('node_modules') ||
       rel.includes('external') ||
@@ -60,31 +107,17 @@ export async function detectDuplicateConstants(files: string[]): Promise<Violati
       continue;
     }
 
-    const lines = content.split('\n');
-    for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-      const line = lines[lineIdx]!.trim();
-      const isTopLevelDecl = line.startsWith('export const ') || line.startsWith('const ');
-      if (!isTopLevelDecl) continue;
+    // Fast string pre-filter to skip files with no const declarations
+    if (!content.includes('const ')) continue;
 
-      const match = /^(export\s+)?const\s+([A-Z0-9_]{4,})\s*(?::\s*[^=]+)?=\s*([^;\n]+)/.exec(line);
-      if (!match) continue;
+    const sourceFile = astEngine.getSourceFile(filePath, content);
+    const constDecls = extractConstantsFromSource(sourceFile, filePath);
 
-      const isExported = !!match[1];
-      const constName = match[2]!;
-      const rawValue = match[3]!.trim();
-
-      if (IGNORED_CONSTANT_NAMES.has(constName)) continue;
-      if (!/^[A-Z0-9_]+$/.test(constName)) continue;
-
-      if (!declarations.has(constName)) {
-        declarations.set(constName, []);
+    for (const decl of constDecls) {
+      if (!declarations.has(decl.name)) {
+        declarations.set(decl.name, []);
       }
-      declarations.get(constName)!.push({
-        file: filePath,
-        line: lineIdx + 1,
-        valueStr: rawValue,
-        isExported,
-      });
+      declarations.get(decl.name)!.push(decl);
     }
   }
 

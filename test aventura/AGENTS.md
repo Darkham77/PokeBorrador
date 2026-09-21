@@ -14,4 +14,4 @@ Game Mechanics / World Exploration Prototyping.
 
 ## Verification
 
-- Run `npm run audit:dox` to ensure this sandbox directory is indexed and conforming to DOX standards.
+- Run `npm run audit:md` to ensure this sandbox directory is indexed and conforming to DOX standards.

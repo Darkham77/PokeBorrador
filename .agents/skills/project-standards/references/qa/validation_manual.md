@@ -50,7 +50,7 @@ The project uses a unified audit coordinator located in `scripts/maintenance/aud
 - **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
 - **Zero-Redundancy Guarantee**: Aggregator scripts must never duplicate sub-analyzers already embedded in `audit_project.ts` or sibling validation suites.
 - **Universal Audit Command**: `npm run audit`. Dynamically discovers and executes all sub-auditors across the 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation` — e.g. domain types, FSM diagrams, SQL migrations, sprite collisions, typography, architecture AST, DOX links). Supports `rule=<regla>` or `rule=<regla1>,<regla2>` for ultra-fast selective execution (e.g. `npm run audit rule=DOX`, `npm run audit rule=DOX,z-index`, `npm run audit rule=dupes`). It always renders the clean human summary table to the console and automatically persists the 100% complete structured JSON report to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites).
-- **Fast DOX Hierarchy Audit**: `npm run audit:dox`. Runs selective validation (~600ms) of DOX `AGENTS.md` hierarchy and integrity without executing unrequested suites.
+- **Fast Documentation & DOX Audit**: `npm run audit:md`. Unified documentation quality gate (~1.8s) executing DOX hierarchy, relative links, Markdown syntax, and Markdownlint in parallel.
 - **Auto-Fix**: `npm run audit:fix`. Repairs common standard violations (Viewports, SASS filters, ESM extensions).
 - **Family-Specific Audits**:
   - `npm run audit:family:domain`: Domain types, Pokemon DB, moves, abilities, items, Spanish IDs.
@@ -134,7 +134,7 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run audit:fallow:security`: Fallow CWE security analysis.
 - `npm run audit:fallow:dead-code`: Fallow unused exports, orphan files, and dependency analyzer.
 - `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
-- `npm run audit:dox`: Dedicated DOX (AGENTS.md) integrity auditor.
+- `npm run audit:md`: Unified documentation and DOX integrity suite (preset=md).
 - `npm run lint`: Fast developer lint executing 10 core sub-auditors in parallel (`npm run audit:lint`).
 - `npm run lint:fix`: Auto-fixes lint and formatting issues via `npm run audit:lint fix`.
 - `npm run audit:summary` / `npm run audit:errors`: Consolidated Box-Drawing report of errors and warnings from `scratch/audits/latest_audit.json`.

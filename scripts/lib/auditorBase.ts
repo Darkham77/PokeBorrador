@@ -24,6 +24,8 @@ import {
   renderAuditTaskRow,
   renderFindingsDetail
 } from './unifiedTheme.ts';
+import { SharedAstContext } from './astContext.ts';
+import type ts from 'typescript';
 
 enableCompileCache();
 
@@ -303,7 +305,7 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
         console.log(styleText('dim', `💾 Reporte detallado guardado en: ${relPath}\n`));
       }
 
-      if (errorsCount > 0) {
+      if (!isSubprocess && errorsCount > 0) {
         process.exit(1);
       }
 
@@ -325,6 +327,7 @@ export interface AuditorOptions<TRuleId extends string = string> {
   readonly allowedExtensions?: ReadonlySet<string>;
   readonly extraIgnorePatterns?: readonly string[];
   readonly requiredFiles?: readonly string[];
+  readonly requiresAst?: boolean;
 }
 
 export interface ViolationInput<TRuleId extends string = string> {
@@ -352,6 +355,7 @@ export abstract class BaseAuditor<TRuleId extends string = string> {
   public readonly allowedExtensions: ReadonlySet<string>;
   public readonly extraIgnorePatterns: readonly string[];
   public readonly requiredFiles: readonly string[];
+  public readonly requiresAst: boolean;
 
   protected readonly projectRoot: string;
   protected readonly context: AuditorContext;
@@ -359,6 +363,8 @@ export abstract class BaseAuditor<TRuleId extends string = string> {
   protected filesScannedCount = 0;
 
   constructor(options: AuditorOptions<TRuleId>) {
+    this.requiresAst = options.requiresAst ?? false;
+
     if (!options.id || options.id.trim().length === 0) {
       throw new Error('Auditor must define an id');
     }
@@ -484,11 +490,12 @@ export abstract class BaseAuditor<TRuleId extends string = string> {
     }
   }
 
-  public abstract runAudit(): Promise<void> | void;
+  public abstract runAudit(astContext?: SharedAstContext): Promise<void> | void;
 
-  public async execute(): Promise<StandardAuditResult> {
+  public async execute(astContext?: SharedAstContext): Promise<StandardAuditResult> {
     await this.context.checkFiles();
-    await this.runAudit();
+    const effectiveAst = astContext ?? (this.requiresAst ? new SharedAstContext() : undefined);
+    await this.runAudit(effectiveAst);
 
     this.context.setMetric('Files Scanned', this.filesScannedCount);
     for (const [ruleId, count] of this.countsByRule.entries()) {
@@ -510,16 +517,19 @@ export abstract class BaseAuditor<TRuleId extends string = string> {
  * Automates recursive file discovery, ignore filtering, reading, and line-by-line scanning dispatch.
  */
 export abstract class FileScanAuditor<TRuleId extends string = string> extends BaseAuditor<TRuleId> {
-  protected abstract scanFile(relPath: string, content: string): void | Promise<void>;
+  protected abstract scanFile(relPath: string, content: string, sourceFile?: ts.SourceFile): void | Promise<void>;
 
-  public override async runAudit(): Promise<void> {
+  public override async runAudit(astContext?: SharedAstContext): Promise<void> {
     const files = this.context.collectFiles(this.roots, this.allowedExtensions);
+    const effectiveAst = astContext ?? (this.requiresAst ? new SharedAstContext() : undefined);
+
     for (const file of files) {
       const relPath = path.relative(this.projectRoot, file).split(path.sep).join(path.posix.sep);
       try {
         const content = nodeFs.readFileSync(file, 'utf-8');
         this.filesScannedCount++;
-        await this.scanFile(relPath, content);
+        const sourceFile = effectiveAst && this.requiresAst ? effectiveAst.getSourceFile(file, content) : undefined;
+        await this.scanFile(relPath, content, sourceFile);
       } catch {
         // Ignore read errors on inaccessible files
       }

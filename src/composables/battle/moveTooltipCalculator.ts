@@ -160,15 +160,15 @@ function formatTooltipPower(power: TooltipPowerInput, isStatus: boolean) {
   }
 }
 
-const DEFAULT_STAGES = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+const DEFAULT_TOOLTIP_STAGES = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
 
 function resolveTooltipStages(
   playerStages: Partial<BattleStages> | null | undefined,
   enemyStages: Partial<BattleStages> | null | undefined,
   isPhysical: boolean
 ) {
-  const playerStageFull = playerStages ?? DEFAULT_STAGES
-  const enemyStageFull = enemyStages ?? DEFAULT_STAGES
+  const playerStageFull = playerStages ?? DEFAULT_TOOLTIP_STAGES
+  const enemyStageFull = enemyStages ?? DEFAULT_TOOLTIP_STAGES
   const playerStagesEff = playerStageFull.atk !== undefined ? { atk: isPhysical ? playerStageFull.atk : playerStageFull.spa } : null
   const enemyStagesEff = enemyStageFull.def !== undefined ? { def: isPhysical ? enemyStageFull.def : enemyStageFull.spd } : null
 

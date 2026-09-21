@@ -38,8 +38,29 @@ export const AUDIT_PRESETS = {
     'validate_type_check',
     'validate_markdown_lint',
     'validate_eslint'
+  ],
+  md: [
+    'validate_markdown_links',
+    'validate_markdown_lint',
+    'validate_markdown_syntax',
+    'validate_dox_integrity'
   ]
 } as const;
+
+export const AST_DEPENDENT_SUITE_IDS = [
+  'validate_pinia_reactivity',
+  'validate_client_sim_decoupling',
+  'validate_save_persistence_parity',
+  'validate_reactive_purity',
+  'validate_reactive_leaks',
+  'validate_bundle_budget',
+  'validate_showdown_parity',
+  'validate_duplicate_constants'
+] as const;
+
+export type AstDependentSuiteId = (typeof AST_DEPENDENT_SUITE_IDS)[number];
+
+export const AST_DEPENDENT_SUITES: ReadonlySet<string> = new Set(AST_DEPENDENT_SUITE_IDS);
 
 export type AuditPresetName = keyof typeof AUDIT_PRESETS;
 
@@ -143,6 +164,8 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
 
         if (options.preset === 'lint' && id === 'audit_project') {
           taskArgs.push('--rule', 'fallow');
+        } else if (options.preset === 'md' && id === 'audit_project') {
+          taskArgs.push('--rule', 'dox');
         }
 
         discovered.push({
@@ -154,7 +177,8 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
           args: taskArgs,
           fast: isFast,
           timeoutMs: getTimeoutForTask(filename),
-          order: FAMILY_METADATA[family]?.order ?? 99
+          order: FAMILY_METADATA[family]?.order ?? 99,
+          requiresAst: AST_DEPENDENT_SUITES.has(id)
         });
       }
     }

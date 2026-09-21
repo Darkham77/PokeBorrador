@@ -15,7 +15,7 @@ Consult this skill whenever you need to:
 
 - Access general project info, domain models, or manual files.
 - Search for components or locate specific directories.
-- **Audit DOX integrity & detect missing/unindexed AGENTS.md files**: Always run `npm run audit:dox` to discover missing indices or broken DOX hierarchy links.
+- **Audit DOX integrity & detect missing/unindexed AGENTS.md files**: Always run `npm run audit:md` to discover missing indices or broken DOX hierarchy links.
 - **Perform refactorings or major structural changes** to the codebase (which require refreshing and updating DOX indices/AGENTS.md files).
 - Run the `/learn` command to persist new rules or behaviors.
 - Perform the **Lessons Extraction** (Step 8) or **DOX Maintenance** (Step 7.1) during `/safe-commit`.
@@ -135,8 +135,8 @@ Whenever persisting new knowledge, rules, lessons, or constraints:
   1. Re-check changed paths against the DOX chain.
   2. Update the nearest owning docs and any affected parents/children.
   3. Refresh every affected `Child DOX Index`.
-  4. Run `npm run audit:dox` to verify there are 0 errors in the `DOX (AGENTS.md) Integrity` category.
-  5. **Strict No-Test Mandate for Documentation**: Never run `npm run test`, Vitest, or test runners when performing DOX updates, docs maintenance, or markdown edits. Verification is strictly restricted to DOX audit and markdown linting.
+  4. Run `npm run audit:md` to verify there are 0 errors in the `DOX (AGENTS.md) Integrity` category.
+  5. **Strict No-Test Mandate for Documentation**: Never run `npm run test`, Vitest, or test runners when performing DOX updates, docs maintenance, or markdown edits. Verification is strictly restricted to DOX audit and markdown linting via `npm run audit:md`.
 
 ---
 
@@ -144,10 +144,10 @@ Whenever persisting new knowledge, rules, lessons, or constraints:
 
 To detect missing `AGENTS.md` files, unindexed child DOX indices, absolute path violations, or broken relative links across `src/` and the root `AGENTS.md`:
 
-### Dedicated DOX Audit Script
+### Dedicated DOX & Markdown Audit Suite
 Use the project's dedicated npm script:
 ```bash
-npm run audit:dox
+npm run audit:md
 ```
 
 ### Full Project Audit (Errors Only Filter)

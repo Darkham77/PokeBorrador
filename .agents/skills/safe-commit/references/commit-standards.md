@@ -90,7 +90,7 @@ fix(battle,tests): sync status FX lifecycle & consolidate domain test suites
 
 - DOX Contracts & Standards Governance:
   - Document status overlay lifecycle contract in src/components/battle/AGENTS.md and battle_mechanics_manual.md.
-  - Align documentation verification rules in learn-with-docs and project-standards skills to enforce npm run audit:dox and npm run lint:md.
+  - Align documentation verification rules in learn-with-docs and project-standards skills to enforce npm run audit:md.
 ```
 
 ## Forbidden Patterns

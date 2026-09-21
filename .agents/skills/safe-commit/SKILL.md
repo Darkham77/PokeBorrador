@@ -38,27 +38,33 @@ graph TD
 
     subgraph LOOP ["🔁 Fase 2 — Active Repair Loop (Workspace)"]
         direction TB
-        C1[2.1 npm run audit:for-commit] -->|Errors / Warnings| REPAIR[🛠️ Reparación:\n1. npm run audit:fix\n2. Edición manual de código]
-        C1 -->|0 errors, 0 warnings| C2[2.2 npm run test]
+        C0[2.1 DOX Maintenance AGENTS.md\n& npm run audit:md] -->|Errors| REPAIR[🛠️ Reparación:\n1. npm run audit:fix\n2. Edición manual de código / DOX]
+        C0 -->|0 errors| C1[2.2 npm run audit:for-commit]
+        C1 -->|Errors / Warnings| REPAIR
+        C1 -->|0 errors, 0 warnings| C2[2.3 npm run test]
         
         C2 -->|Tests Fail| REPAIR
-        C2 -->|100% Pass| C3[2.3 npm run build\n🔒 THE BUILD GATE]
+        C2 -->|100% Pass| C2b[2.4 Database Parity Gate\nnpm run test:migrations]
+        C2b -->|Migrations Fail| REPAIR
+        C2b -->|Pass / Skipped| C3[2.5 npm run build\n🔒 THE BUILD GATE]
         
         C3 -->|Exit code ≠ 0 / Fail| REPAIR
-        C3 -->|Exit 0 ✅| C4[2.4 Build Optimization & Chunk Analysis\nnpm run audit:bundle]
+        C3 -->|Exit 0 ✅| C4[2.6 Build Optimization & Chunk Analysis\nnpm run audit:bundle]
         C4 -->|Chunk bloat / missing optimizations| REPAIR
-        C4 -->|Optimized ✅| C5[2.5 npm run fallow:health]
+        C4 -->|Optimized ✅| C5[2.7 npm run fallow:health]
         
         C5 -->|Score < 85| REPAIR
-        REPAIR -->|Re-verificar ciclo completo| C1
+        REPAIR -->|Re-verificar ciclo completo| C0
     end
 
     C5 -->|Score ≥ 85 & Build Exit 0 & Optimized| EXIT_GATE[✅ Salida del Bucle]
-    EXIT_GATE --> A3[Fase 3\nDOX + Lessons + Walkthrough]
+    EXIT_GATE --> A3[Fase 3\nLessons + Walkthrough]
     A3 --> STOP1{🛑 USER APPROVES\nlearning_proposal.md?}
-    STOP1 -->|Approved| A4[Fase 4\nSingle Atomic Certified Commit]
+    STOP1 -->|Approved| A4[Fase 4\nSingle Atomic Certified Commit\n+ Pre-commit npm run audit:md]
 
     style LOOP fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
+    style C0 fill:#1f4068,stroke:#00b4d8,stroke-width:2px,color:#fff
+    style C2b fill:#162447,stroke:#00b4d8,stroke-width:2px,color:#fff
     style C3 fill:#e94560,stroke:#fff,stroke-width:2px,color:#fff
     style C4 fill:#162447,stroke:#00b4d8,stroke-width:2px,color:#fff
     style EXIT_GATE fill:#0f3460,stroke:#00b4d8,stroke-width:2px,color:#fff
@@ -132,7 +138,17 @@ This phase audits test coverage for modified logic and captures a zero-commit sa
 
 In every iteration of the loop, execute these checks sequentially:
 
-1. **Check 2.1 — Primary Audit**: Run `npm run audit:for-commit`
+1. **Step 2.1 — DOX Maintenance (`AGENTS.md`) & Fast Markdown/DOX Audit**:
+   - For any modified files that changed architectural rules, contracts, or directory structures (from Phase 1 `git status`):
+     - Load the [dox-navigator](../dox-navigator/SKILL.md) skill.
+     - Update the nearest `AGENTS.md` in the touched directory tree.
+     - If new directories were created, update the parent's Child DOX Index.
+   - **Fast DOX & Markdown Gate (~1-2s)**: Run `npm run audit:md`
+     - Validates in parallel: markdown links on disk, prohibition of links to gitignored targets, AGENTS.md hierarchy, and markdown formatting.
+     - *If errors exist*: Fix them immediately in the respective `AGENTS.md` files before proceeding.
+     - *If clean (0 errors)*: Proceed to Check 2.2.
+
+2. **Check 2.2 — Primary Audit**: Run `npm run audit:for-commit`
    - *If errors or new warnings exist*:
      - Run `npm run audit:fix` (auto-repairs simple imports, viewport tags, etc.).
      - Apply manual fixes to the source code for remaining issues.
@@ -142,21 +158,26 @@ In every iteration of the loop, execute these checks sequentially:
        - Never blindly strip `export` if dynamic modules or reflection might break.
      - Record fixes under "Repairs applied" in `task.md`.
      - Re-run `npm run audit:for-commit` until it reports **0 errors and 0 new warnings**.
-   - *If clean (0 errors, 0 new warnings)*: Proceed immediately to Check 2.2.
+   - *If clean (0 errors, 0 new warnings)*: Proceed immediately to Check 2.3.
 
-2. **Check 2.2 — Test Suite**: Run `npm run test`
+3. **Check 2.3 — Test Suite**: Run `npm run test`
    - *If any test fails*: Fix the source code or test logic, and re-test until 100% of tests pass.
-   - *If 100% pass*: Proceed to Check 2.3.
+   - *If 100% pass*: Proceed to Check 2.4.
 
-3. **Check 2.3 — THE BUILD GATE 🔒**: Run `npm run build`
+4. **Check 2.4 — Database Parity Gate (if DB changed)**:
+   - Verify SQL migration exists in `database/migrations/` and `src/logic/db/migrations_data.ts`.
+   - **Mandatory Migration Certification Gate**: If `database/migrations/` or `src/logic/db/migrations_data.ts` has changes in `git diff`, execute `npm run test:migrations` to certify compatibility against the real production backup fixture *before* compiling the app. The commit is strictly blocked if `test:migrations` fails. If no database files were modified, skip this check.
+   - *If clean (or skipped)*: Proceed to Check 2.5.
+
+5. **Check 2.5 — THE BUILD GATE 🔒**: Run `npm run build`
    - *Strict Requirement*: MUST return **Exit Code 0**.
    - *Zero Bypass Mandate*: It is STRICTLY FORBIDDEN to replace `npm run build` with `npx vite build` or partial scripts to evade audit failures. `npm run build` runs `validate:tools`, `audit` (which includes `validate_type_check` in parallel), and `vite build`.
    - *If exit code ≠ 0 or build fails*:
      - **DO NOT PROCEED.** Record the error in `task.md`.
      - Fix the underlying compilation, type, or auditor errors in source code.
-     - Restart from Check 2.1 and re-run until `npm run build` returns Exit Code 0.
+     - Restart from Step 2.1 and re-run until `npm run build` returns Exit Code 0.
 
-4. **Check 2.4 — Build Optimization, Chunk Budgets & Data Compression Audit**:
+6. **Check 2.6 — Build Optimization, Chunk Budgets & Data Compression Audit**:
    - **Automated Bundle Chunk Budget Gatekeeper**: Run `npm run audit:bundle`
      - Evaluates production chunks in `dist/assets/` against architectural budgets:
        - `auth-*.js` < 150 KB (ensures login shell is decoupled from heavy game stores).
@@ -171,49 +192,39 @@ In every iteration of the loop, execute these checks sequentially:
        2. *Static Data / Migration Lazy-Loading*: If large SQL strings or multi-megabyte datasets are loaded upfront (e.g. `sqliteEngine.ts`), defer them via dynamic import inside execution functions (`runMigrations()`).
        3. *Heavy Engine Leak Eradication*: Client-side UI code MUST NEVER import heavy engine symbols (e.g. `@pkmn/sim Dex` or `toID`). Always use lightweight domain equivalents (`toID` from `@/logic/utils/strings`, `POKEMON_DB` from `pokemonDB.ts`).
        4. *`manualChunks` Rollup Governance*: If a large third-party library is pulled into app chunks, isolate it in `vite.config.ts` under `build.rollupOptions.output.manualChunks(id)`.
-     - Apply repairs, record them under "Repairs applied" in `task.md`, and re-enter the loop from Check 2.1.
+     - Apply repairs, record them under "Repairs applied" in `task.md`, and re-enter the loop from Step 2.1.
    - **Pre-compression & Savings Verification**:
      - Inspect Brotli Q11 and Gzip L9 sizes and savings ratios in `⚡ POKÉ VICIO — PRE-COMPRESSION & ASSET SUMMARY`. Verify that high compression savings are maintained without compression errors.
-     - Record key compression metrics (total original bytes, Brotli size, % savings) in `task.md` and proceed to Check 2.5.
+     - Record key compression metrics (total original bytes, Brotli size, % savings) in `task.md` and proceed to Check 2.7.
 
-5. **Check 2.5 — Fallow Health**: Run `npm run fallow:health`
+7. **Check 2.7 — Fallow Health**: Run `npm run fallow:health`
    - Score MUST be ≥ `BASELINE_HEALTH` and ≥ 85.
    - If < 85, refactor cognitive complexity / dead code and re-verify.
 
-6. **Check 2.6 — Database Parity (if DB changed)**:
-   - Verify SQL migration exists in `database/migrations/` and `src/logic/db/migrations_data.ts`.
-   - **Mandatory Migration Certification Gate**: If `database/migrations/` or `src/logic/db/migrations_data.ts` has changes in `git diff`, execute `npm run test:migrations` to certify compatibility against the real production backup fixture. The commit is strictly blocked if `test:migrations` fails. If no database files were modified, skip this check.
-
 ### Loop Exit Condition
-Only when Check 2.1 ✅ (0 errors/warnings), Check 2.2 ✅ (tests pass), Check 2.3 ✅ (`npm run build` exit code 0), Check 2.4 ✅ (compression & optimizations verified), and Check 2.5 ✅ (health ≥ 85) are all satisfied consecutively on the current code:
+Only when Step 2.1 ✅ (DOX clean via `npm run audit:md`), Check 2.2 ✅ (0 errors/warnings), Check 2.3 ✅ (tests pass), Check 2.4 ✅ (migrations pass or skipped), Check 2.5 ✅ (`npm run build` exit code 0), Check 2.6 ✅ (bundle & compression verified), and Check 2.7 ✅ (health ≥ 85) are all satisfied consecutively on the current code:
 **Phase 2 is complete.**
 
 **✓ Completion gate**: Mark Phase 2 `[x]` in `task.md`. Show snippet. Proceed to Phase 3.
 
 ---
 
-## Phase 3: Unified DOX, Lessons Extraction & 🛑 Hard Stop
+## Phase 3: Lessons Extraction, Walkthrough & 🛑 Hard Stop
 
-**Step 3.1** — DOX Maintenance (`AGENTS.md`)
-- For any modified files that changed architectural rules, contracts, or directory structures:
-  - Load the [dox-navigator](../dox-navigator/SKILL.md) skill.
-  - Update the nearest `AGENTS.md` in the touched directory tree.
-  - If new directories were created, update the parent's Child DOX Index.
-
-**Step 3.2** — Lessons Extraction
+**Step 3.1** — Lessons Extraction
 - Load and execute [/learn-with-docs](../learn-with-docs/SKILL.md).
 - Identify key learnings, patterns, or caveats from this session.
 - Call `write_to_file` to create `<appDataDir>/brain/<conversation-id>/learning_proposal.md` (`UserFacing: true`, `RequestFeedback: true`).
 
-**Step 3.3** — Walkthrough & Workspace Cleanup
+**Step 3.2** — Walkthrough & Workspace Cleanup
 - Call `write_to_file` to create/update `<appDataDir>/brain/<conversation-id>/walkthrough.md` (`UserFacing: true`).
 - Clean temporary files from `scratch/` and verify clean `git status`.
 
-**Step 3.4** — 🛑 Hard Stop for User Approval
+**Step 3.3** — 🛑 Hard Stop for User Approval
 - Call `ask_question` presenting the `learning_proposal.md` and walkthrough summary with Approve / Reject-Modify options.
 
 > [!CAUTION]
-> **🛑 ABSOLUTE HARD STOP AFTER STEP 3.4**: Stop calling tools immediately after `ask_question`. Do NOT run `git commit`, `git add`, or file edits in the same turn. Wait for user response.
+> **🛑 ABSOLUTE HARD STOP AFTER STEP 3.3**: Stop calling tools immediately after `ask_question`. Do NOT run `git commit`, `git add`, or file edits in the same turn. Wait for user response.
 
 ---
 
@@ -221,8 +232,9 @@ Only when Check 2.1 ✅ (0 errors/warnings), Check 2.2 ✅ (tests pass), Check 2
 
 This phase begins **only after** the user explicitly responds to Phase 3.
 
-**Step 4.1** — Apply Approved Lessons
+**Step 4.1** — Apply Approved Lessons & Pre-Commit Sanity Check
 - Persist approved lessons into their respective `AGENTS.md` files.
+- **Mandatory Pre-Commit Sanity Check**: Run `npm run audit:md`. Ensures that writing lessons to `AGENTS.md` did not introduce any broken link, syntax issue, or gitignored path reference before committing.
 
 **Step 4.2** — Single Atomic Certified Commit
 - Run `git status` to verify 100% of modified and untracked files across the entire working tree (including feature code, tests, audit fixes, and updated DOX).
@@ -230,7 +242,7 @@ This phase begins **only after** the user explicitly responds to Phase 3.
   - Retrieve the pre-drafted message from `task.md` (Step 1.4).
   - Verify that EVERY modified subsystem from `git status` is represented with clear, technical bullets.
   - **Hierarchical Synthesis Mandate (Synthesize Without Omission)**: When the working tree contains extensive changes across multiple subsystems, group by subsystem headers and synthesize concisely into cohesive technical bullets. NEVER omit any modified subsystem or area from the working tree.
-  - Supplement it with bullets for unit tests added (Phase 1), audit fixes / optimizations applied (Phase 2), and lessons / DOX updated (Phase 3).
+  - Supplement it with bullets for unit tests added (Phase 1), audit fixes / optimizations applied (Phase 2), and lessons / DOX updated (Phase 2/3).
 - Execute `git add .` (MANDATORY `.` — selective staging is strictly forbidden).
 - Execute `git commit -m "<message>"`.
 - Run `git status` to confirm working tree is clean. Exactly ONE atomic, verified commit has been added to history.

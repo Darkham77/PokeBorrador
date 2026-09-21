@@ -31,6 +31,8 @@ import {
 } from '../lib/unifiedTheme.ts';
 import { discoverAuditors, type AuditPresetName } from './auditScanner.ts';
 import { executeAuditorStreaming, isNodeInternalWarning } from '../lib/streamingRunner.ts';
+import { SharedAstContext } from '../lib/astContext.ts';
+import { BaseAuditor } from '../lib/auditorBase.ts';
 
 enableCompileCache();
 
@@ -142,6 +144,13 @@ async function runMasterAudit() {
     ? Math.max(MIN_CONCURRENCY, Number.parseInt(values.concurrency as string, DECIMAL_RADIX) || defaultConcurrency)
     : defaultConcurrency;
 
+  const astTasks = tasksToRun.filter(t => t.requiresAst);
+  let sharedAstContext: SharedAstContext | undefined;
+  if (astTasks.length > 0) {
+    console.log(styleText('cyan', `🧠 [AST Engine] Detectados ${astTasks.length} sub-auditor(es) que requieren AST. Inicializando contexto AST compartido...\n`));
+    sharedAstContext = new SharedAstContext();
+  }
+
   console.log(styleText('bold', `⏳ Progreso de ejecución de suites (Concurrencia: ${concurrencyLimit} workers):\n`));
 
   class AuditStreamCoordinator {
@@ -201,77 +210,103 @@ async function runMasterAudit() {
     if (values.fix && !taskArgs.includes('fix')) taskArgs.push('fix');
 
     const subLines: string[] = []; // no-domain: Non-domain utility collection or data structure
-    const proc = await executeAuditorStreaming(task, taskArgs, (subLine) => {
-      subLines.push(subLine);
-    });
-    const taskDuration = proc.durationMs;
-
     let parsedResult: StandardAuditResult | null = null;
-    const taskJsonPath = path.join(scratchAuditsDir, task.family, `${task.id}.json`);
+    let taskDuration = 0;
 
-    try {
-      const fileContent = await fs.readFile(taskJsonPath, 'utf-8');
-      parsedResult = JSON.parse(fileContent) as StandardAuditResult;
-      parsedResult.durationMs = taskDuration;
-    } catch {
-      if (proc.stdout) {
-        try {
-          const raw = proc.stdout.trim();
-          const firstBrace = raw.indexOf('{');
-          const lastBrace = raw.lastIndexOf('}');
-          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-            parsedResult = JSON.parse(raw.substring(firstBrace, lastBrace + 1)) as StandardAuditResult;
+    if (task.requiresAst && sharedAstContext) {
+      const taskStart = performance.now();
+      try {
+        const fullScriptPath = path.resolve(process.cwd(), task.scriptPath);
+        const mod = await import(fullScriptPath);
+        let AuditorClass: (new () => BaseAuditor) | undefined;
+        for (const val of Object.values(mod)) {
+          if (typeof val === 'function' && val.prototype instanceof BaseAuditor) {
+            AuditorClass = val as new () => BaseAuditor;
+            break;
           }
-        } catch {
-          // Handled below
         }
+        if (AuditorClass) {
+          const auditor = new AuditorClass();
+          parsedResult = await auditor.execute(sharedAstContext);
+          taskDuration = Math.round(performance.now() - taskStart);
+          parsedResult.durationMs = taskDuration;
+        }
+      } catch (_err) {
+        // Fallback to streaming execution if in-process execution fails
       }
     }
 
     if (!parsedResult) {
-      const isSuccess = !proc.timedOut && proc.status === 0;
-      const findings: AuditFinding[] = [];
+      const proc = await executeAuditorStreaming(task, taskArgs, (subLine) => {
+        subLines.push(subLine);
+      });
+      taskDuration = proc.durationMs;
+      const taskJsonPath = path.join(scratchAuditsDir, task.family, `${task.id}.json`);
 
-      let errorMsg: string;
-      if (proc.timedOut) {
-        errorMsg = `Timeout excedido (${task.timeoutMs ?? 60000}ms) en la ejecución de la suite.`;
-      } else {
-        const cleanStderr = proc.stderr
-          .split('\n')
-          .filter(l => !isNodeInternalWarning(l.trim()) && l.trim().length > 0)
-          .join('\n')
-          .trim();
-        const cleanStdout = proc.stdout
-          .split('\n')
-          .filter(l => !isNodeInternalWarning(l.trim()) && l.trim().length > 0)
-          .join('\n')
-          .trim();
-        errorMsg = cleanStderr || cleanStdout || `Código de salida ${proc.status}`;
-      }
-
-      if (!isSuccess) {
-        findings.push({
-          severity: 'error',
-          message: errorMsg,
-          file: task.scriptPath
-        });
-      }
-
-      parsedResult = {
-        id: task.id,
-        name: task.name,
-        description: task.description || task.name,
-        family: task.family,
-        status: isSuccess ? 'passed' : 'failed',
-        durationMs: taskDuration,
-        metrics: {},
-        findings,
-        summary: {
-          errors: isSuccess ? 0 : 1,
-          warnings: 0,
-          info: 0
+      try {
+        const fileContent = await fs.readFile(taskJsonPath, 'utf-8');
+        parsedResult = JSON.parse(fileContent) as StandardAuditResult;
+        parsedResult.durationMs = taskDuration;
+      } catch {
+        if (proc.stdout) {
+          try {
+            const raw = proc.stdout.trim();
+            const firstBrace = raw.indexOf('{');
+            const lastBrace = raw.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+              parsedResult = JSON.parse(raw.substring(firstBrace, lastBrace + 1)) as StandardAuditResult;
+            }
+          } catch {
+            // Handled below
+          }
         }
-      };
+      }
+
+      if (!parsedResult) {
+        const isSuccess = !proc.timedOut && proc.status === 0;
+        const findings: AuditFinding[] = [];
+
+        let errorMsg: string;
+        if (proc.timedOut) {
+          errorMsg = `Timeout excedido (${task.timeoutMs ?? 60000}ms) en la ejecución de la suite.`;
+        } else {
+          const cleanStderr = proc.stderr
+            .split('\n')
+            .filter(l => !isNodeInternalWarning(l.trim()) && l.trim().length > 0)
+            .join('\n')
+            .trim();
+          const cleanStdout = proc.stdout
+            .split('\n')
+            .filter(l => !isNodeInternalWarning(l.trim()) && l.trim().length > 0)
+            .join('\n')
+            .trim();
+          errorMsg = cleanStderr || cleanStdout || `Código de salida ${proc.status}`;
+        }
+
+        if (!isSuccess) {
+          findings.push({
+            severity: 'error',
+            message: errorMsg,
+            file: task.scriptPath
+          });
+        }
+
+        parsedResult = {
+          id: task.id,
+          name: task.name,
+          description: task.description || task.name,
+          family: task.family,
+          status: isSuccess ? 'passed' : 'failed',
+          durationMs: taskDuration,
+          metrics: {},
+          findings,
+          summary: {
+            errors: isSuccess ? 0 : 1,
+            warnings: 0,
+            info: 0
+          }
+        };
+      }
     }
 
     const currentResult: StandardAuditResult = parsedResult;

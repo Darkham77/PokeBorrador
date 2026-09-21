@@ -74,6 +74,28 @@ const SKIP_NAMES = [
   'external',
 ] as const;
 
+let gitIgnoredPathsCache: Set<string> | null = null;
+export function getGitIgnoredPaths(rootDir: string): Set<string> {
+  if (gitIgnoredPathsCache) return gitIgnoredPathsCache;
+  const paths = new Set<string>();
+  try {
+    const gitignoreRaw = fs.readFileSync(path.join(rootDir, '.gitignore'), 'utf-8');
+    for (const line of gitignoreRaw.split('\n')) {
+      const trimmed = line.trim().replace(/\/$/, '');
+      if (!trimmed || trimmed.startsWith('#') || trimmed.includes('*') || trimmed.includes('?')) continue;
+      paths.add(path.resolve(rootDir, trimmed));
+    }
+  } catch {
+    // no .gitignore found
+  }
+  gitIgnoredPathsCache = paths;
+  return paths;
+}
+
+export function clearGitIgnoredPathsCache(): void {
+  gitIgnoredPathsCache = null;
+}
+
 /**
  * Strips code fences and inline backticks so syntax examples are not parsed as active links.
  */
@@ -197,14 +219,35 @@ export function checkMarkdownLinksInContent(
     const resolvedTarget =
       urlPath.length > 0 ? path.resolve(path.dirname(filePath), urlPath) : filePath;
 
+    const resolvedRelPath = path.relative(rootDir, resolvedTarget).replace(/\\/g, '/');
+
+    // Check if target path is gitignored (.gitignore)
+    const gitIgnoredPaths = getGitIgnoredPaths(rootDir);
+    const isGitIgnored =
+      gitIgnoredPaths.has(resolvedTarget) ||
+      [...gitIgnoredPaths].some(p => resolvedTarget.startsWith(p + path.sep));
+
+    if (isGitIgnored) {
+      brokenLinks.push({
+        sourceFile: relSourceFile,
+        linkText,
+        rawUrl,
+        resolvedPath: resolvedRelPath,
+        error: `Target path is ignored by git (.gitignore) and will not exist in clean checkouts or CI: "${resolvedRelPath}"`,
+        ruleId: 'markdown-gitignored-target',
+        line,
+      });
+      continue;
+    }
+
     // Check if target file or directory exists
     if (!fs.existsSync(resolvedTarget)) {
       brokenLinks.push({
         sourceFile: relSourceFile,
         linkText,
         rawUrl,
-        resolvedPath: path.relative(rootDir, resolvedTarget).replace(/\\/g, '/'),
-        error: `Target path does not exist on disk: "${path.relative(rootDir, resolvedTarget).replace(/\\/g, '/')}"`,
+        resolvedPath: resolvedRelPath,
+        error: `Target path does not exist on disk: "${resolvedRelPath}"`,
         ruleId: 'markdown-broken-relative-link',
         line,
       });
@@ -281,12 +324,14 @@ import { BaseAuditor } from '../../lib/auditorBase.ts';
 export type MarkdownLinkRuleId =
   | 'markdown-broken-relative-link'
   | 'markdown-absolute-path'
-  | 'markdown-stale-environment-path';
+  | 'markdown-stale-environment-path'
+  | 'markdown-gitignored-target';
 
 export const MARKDOWN_LINK_RULES: readonly MarkdownLinkRuleId[] = [
   'markdown-broken-relative-link',
   'markdown-absolute-path',
   'markdown-stale-environment-path',
+  'markdown-gitignored-target',
 ] as const;
 
 export class MarkdownLinkAuditor extends BaseAuditor<MarkdownLinkRuleId> {
@@ -303,6 +348,7 @@ export class MarkdownLinkAuditor extends BaseAuditor<MarkdownLinkRuleId> {
         'markdown-broken-relative-link': 'Enlace relativo roto en archivo markdown',
         'markdown-absolute-path': 'Ruta absoluta prohibida (usar ruta relativa)',
         'markdown-stale-environment-path': 'Ruta o referencia obsoleta de entorno heredado',
+        'markdown-gitignored-target': 'Enlace a ruta ignorada por Git (.gitignore)',
       },
     });
     this.scanRoots = scanRoots;

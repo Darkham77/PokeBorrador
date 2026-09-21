@@ -1041,16 +1041,17 @@ async function main() {
     }
   }
 
-  // Query descriptors dynamically from their source modules
-  const isZIndexActive = matchesRule(Z_INDEX_CONSISTENCY_DESCRIPTOR, selectedRules);
-  const isDoxActive = matchesRule(DOX_ANALYZER_DESCRIPTOR, selectedRules);
-  const isFallowDupesActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.dupes, selectedRules);
-  const isFallowSecurityActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.security, selectedRules);
-  const isFallowDeadCodeActive = matchesRule(FALLOW_SUITE_DESCRIPTORS['dead-code'], selectedRules);
-  const isFallowHealthActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.health, selectedRules);
-  const isCssCheckerActive = values['css-only'] || matchesRule(CSS_ANALYZER_DESCRIPTOR, selectedRules);
-  const isConstantDetectorActive = matchesRule(CONSTANT_ANALYZER_DESCRIPTOR, selectedRules);
-  const isSassMigratorActive = matchesRule(SASS_MIGRATOR_DESCRIPTOR, selectedRules);
+  // Query descriptors dynamically from their source modules only when explicitly requested
+  const hasSpecificRules = selectedRules.size > 0;
+  const isZIndexActive = hasSpecificRules && matchesRule(Z_INDEX_CONSISTENCY_DESCRIPTOR, selectedRules);
+  const isDoxActive = hasSpecificRules && matchesRule(DOX_ANALYZER_DESCRIPTOR, selectedRules);
+  const isFallowDupesActive = hasSpecificRules && matchesRule(FALLOW_SUITE_DESCRIPTORS.dupes, selectedRules);
+  const isFallowSecurityActive = hasSpecificRules && matchesRule(FALLOW_SUITE_DESCRIPTORS.security, selectedRules);
+  const isFallowDeadCodeActive = hasSpecificRules && matchesRule(FALLOW_SUITE_DESCRIPTORS['dead-code'], selectedRules);
+  const isFallowHealthActive = hasSpecificRules && matchesRule(FALLOW_SUITE_DESCRIPTORS.health, selectedRules);
+  const isCssCheckerActive = values['css-only'] || (hasSpecificRules && matchesRule(CSS_ANALYZER_DESCRIPTOR, selectedRules));
+  const isConstantDetectorActive = hasSpecificRules && matchesRule(CONSTANT_ANALYZER_DESCRIPTOR, selectedRules);
+  const isSassMigratorActive = !hasSpecificRules || matchesRule(SASS_MIGRATOR_DESCRIPTOR, selectedRules);
 
   const isHumanMode = !!(values.human || values.pretty || values.summary);
 
@@ -1062,7 +1063,7 @@ async function main() {
     }
   }
 
-  logProgress(styleText('bold', '--- 🔎 REGLAS DE CÓDIGO Y ESTRUCTURA DOX (audit_project.ts) ---'));
+  logProgress(styleText('bold', '--- 🔎 REGLAS DE CÓDIGO Y ARQUITECTURA (audit_project.ts) ---'));
   if (selectedRules.size > 0) {
     logProgress(styleText('cyan', `🎯 Ejecución selectiva de reglas: [ ${Array.from(selectedRules).join(', ')} ]`));
   }
@@ -1113,10 +1114,16 @@ async function main() {
     if (shouldScanFiles) {
       if (changedSince) {
         files = getChangedFiles(changedSince);
-        logProgress(styleText('cyan', `[3/6] 🔍 Auditando archivos modificados desde: '${changedSince}' (${files.length} archivos)...`));
+        logProgress(styleText('cyan', `🔍 Auditando archivos modificados desde: '${changedSince}' (${files.length} archivos)...`));
       } else {
-        files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
-        logProgress(styleText('cyan', `[3/6] 🔍 Auditando AST y reglas de código en ${files.length} archivos...`));
+        const onlyDoxRules = Array.from(activeConfigRules).every(r => r.id === 'doxIndexIntegrity');
+        if (onlyDoxRules) {
+          files = (await getFilesToAudit(path.resolve(process.cwd(), values.path as string))).filter(f => f.endsWith('AGENTS.md'));
+          logProgress(styleText('cyan', `🔍 Auditando reglas de estructura en ${files.length} archivos AGENTS.md...`));
+        } else {
+          files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
+          logProgress(styleText('cyan', `🔍 Auditando reglas de arquitectura y estilo en ${files.length} archivos...`));
+        }
       }
 
       let processed = 0;
@@ -1124,7 +1131,7 @@ async function main() {
       for (const f of files) {
         processed++;
         if (processed % 200 === 0 || processed === total) {
-          logProgress(styleText('cyan', `   ⏳ Progreso AST: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
+          logProgress(styleText('cyan', `   ⏳ Progreso de reglas de código: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
         }
         all = all.concat(await auditFile(f, !!values.fix, activeConfigRules));
       }
@@ -1309,14 +1316,18 @@ async function main() {
     )
   };
 
-  // 1. ALWAYS persist complete JSON to scratch/audits/
+  // 1. ALWAYS persist complete JSON to scratch/audits/ (if permissions permit)
   const scratchArchDir = path.resolve(process.cwd(), 'scratch/audits/architecture');
-  await fs.mkdir(scratchArchDir, { recursive: true });
   const archJsonPath = path.join(scratchArchDir, 'audit_project.json');
-  const latestArchJsonPath = path.resolve(process.cwd(), 'scratch/audits/latest_audit_project.json');
   const jsonReportStr = JSON.stringify(jsonReport, null, 2);
-  await fs.writeFile(archJsonPath, jsonReportStr, 'utf-8');
-  await fs.writeFile(latestArchJsonPath, jsonReportStr, 'utf-8');
+  try {
+    await fs.mkdir(scratchArchDir, { recursive: true });
+    const latestArchJsonPath = path.resolve(process.cwd(), 'scratch/audits/latest_audit_project.json');
+    await fs.writeFile(archJsonPath, jsonReportStr, 'utf-8');
+    await fs.writeFile(latestArchJsonPath, jsonReportStr, 'utf-8');
+  } catch {
+    // Ignorar si no se tienen permisos de escritura
+  }
 
   const isSubprocess = process.env.AUDIT_SUBPROCESS === 'true';
 

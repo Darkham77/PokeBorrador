@@ -19,6 +19,7 @@
  */
 
 import path from 'node:path';
+import ts from 'typescript';
 import { enableCompileCache } from 'node:module';
 import { BaseAuditor, FileScanAuditor } from '../../lib/auditorBase.ts';
 
@@ -32,12 +33,6 @@ export const PINIA_REACTIVITY_RULES: readonly PiniaReactivityRuleId[] = [
   'no-store-destructuring-without-storetorefs',
   'no-direct-state-mutation-outside-actions'
 ] as const;
-
-// Detects: const { ... } = useXxxStore()
-const DIRECT_STORE_DESTRUCTURING_REGEX = /const\s*\{[^}]*\}\s*=\s*use[A-Z]\w*Store\s*\(/g;
-
-// Detects: store.$state = ...
-const DIRECT_STATE_MUTATION_REGEX = /\b(?:[a-zA-Z_$][\w$]*Store|store)\.\$state\s*=/g;
 
 const AUTHORIZED_STATE_MUTATION_FILES = new Set([
   'src/stores/game/actions/saveActionHelpers.ts',
@@ -58,63 +53,104 @@ export class PiniaReactivityAuditor extends FileScanAuditor<PiniaReactivityRuleI
         'no-direct-state-mutation-outside-actions': 'Mutación directa de $state fuera de acciones autorizadas'
       },
       roots: ['src'],
-      allowedExtensions: new Set(['.vue', '.ts'])
+      allowedExtensions: new Set(['.vue', '.ts']),
+      requiresAst: true
     });
   }
 
-  protected override scanFile(relPath: string, content: string): void {
+  protected override scanFile(relPath: string, content: string, sourceFile?: ts.SourceFile): void {
     const normalizedPath = relPath.replace(/\\/g, '/');
 
-    // Skip store declaration files themselves (where actions define store methods)
-    if (normalizedPath.startsWith('src/stores/')) {
-      // Still audit direct $state mutations in stores unless authorized
-      if (!AUTHORIZED_STATE_MUTATION_FILES.has(normalizedPath)) {
-        this.auditDirectStateMutation(normalizedPath, content);
-      }
+    // Fast O(1) string pre-filter to eliminate files without store keywords
+    if (!content.includes('Store') && !content.includes('$state')) {
       return;
     }
 
-    // 1. Audit direct store destructuring
-    this.auditStoreDestructuring(normalizedPath, content);
+    const isStoreFile = normalizedPath.startsWith('src/stores/');
+    const isAuthorized = AUTHORIZED_STATE_MUTATION_FILES.has(normalizedPath);
 
-    // 2. Audit direct $state mutations
-    if (!AUTHORIZED_STATE_MUTATION_FILES.has(normalizedPath)) {
-      this.auditDirectStateMutation(normalizedPath, content);
-    }
-  }
+    const sf = sourceFile ?? ts.createSourceFile(
+      path.basename(relPath),
+      content,
+      ts.ScriptTarget.Latest,
+      true,
+      relPath.endsWith('.vue') ? ts.ScriptKind.TS : undefined
+    );
 
-  private auditStoreDestructuring(relPath: string, content: string): void {
-    let match: RegExpExecArray | null;
-    const regex = new RegExp(DIRECT_STORE_DESTRUCTURING_REGEX.source, DIRECT_STORE_DESTRUCTURING_REGEX.flags);
+    const storeVariables = new Set<string>();
 
-    while ((match = regex.exec(content)) !== null) {
-      const line = this.getLineNumber(content, match.index);
-      const lineContent = this.getLineAt(content, line);
+    const visit = (node: ts.Node) => {
+      // 1. Track variables assigned to useXxxStore(...)
+      if (ts.isVariableDeclaration(node) && node.initializer) {
+        if (ts.isIdentifier(node.name) && ts.isCallExpression(node.initializer)) {
+          const calleeText = node.initializer.expression.getText(sf);
+          if (/^use[A-Z]\w*Store$/.test(calleeText)) {
+            storeVariables.add(node.name.text);
+          }
+        }
 
-      if (this.hasEscapeHatch(lineContent, ['pinia-ok', 'store-ok'])) {
-        continue;
+        // Case: Store Destructuring without storeToRefs
+        if (!isStoreFile && ts.isObjectBindingPattern(node.name)) {
+          let isStoreDestructuring = false;
+
+          // Direct: const { a, b } = useXxxStore(...)
+          if (ts.isCallExpression(node.initializer)) {
+            const calleeText = node.initializer.expression.getText(sf);
+            if (/^use[A-Z]\w*Store$/.test(calleeText)) {
+              isStoreDestructuring = true;
+            }
+          }
+          // Indirect: const { a, b } = storeVar
+          else if (ts.isIdentifier(node.initializer) && storeVariables.has(node.initializer.text)) {
+            isStoreDestructuring = true;
+          }
+
+          if (isStoreDestructuring) {
+            const { line } = sf.getLineAndCharacterOfPosition(node.getStart());
+            const lineNum = line + 1;
+            const lineContent = this.getLineAt(content, lineNum);
+
+            if (!this.hasEscapeHatch(lineContent, ['pinia-ok', 'store-ok'])) {
+              this.addViolation({
+                ruleId: 'no-store-destructuring-without-storetorefs',
+                severity: 'error',
+                file: relPath,
+                line: lineNum,
+                message: `Direct or indirect destructuring from use...Store() detected. Destructuring directly strips reactivity from state and getters; wrap with 'storeToRefs(store)' or use '// pinia-ok: <reason>' if destructuring actions only.`,
+                context: lineContent.trim()
+              });
+            }
+          }
+        }
       }
 
-      this.addViolation({
-        ruleId: 'no-store-destructuring-without-storetorefs',
-        severity: 'error',
-        file: relPath,
-        line,
-        message: `Direct destructuring from use...Store() detected. Destructuring directly strips reactivity from state and getters; wrap with 'storeToRefs(store)' or use '// pinia-ok: <reason>' if destructuring actions only.`,
-        context: lineContent.trim()
-      });
-    }
-  }
+      // 2. Direct $state mutation: store.$state = ...
+      if (!isAuthorized && ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+        if (ts.isPropertyAccessExpression(node.left) && node.left.name.text === '$state') {
+          const objText = node.left.expression.getText(sf);
+          if (objText.toLowerCase().includes('store') || storeVariables.has(objText)) {
+            const { line } = sf.getLineAndCharacterOfPosition(node.getStart());
+            const lineNum = line + 1;
+            const lineContent = this.getLineAt(content, lineNum);
 
-  private auditDirectStateMutation(relPath: string, content: string): void {
-    this.scanRegexMatches(
-      content,
-      DIRECT_STATE_MUTATION_REGEX,
-      relPath,
-      'no-direct-state-mutation-outside-actions',
-      ['pinia-ok', 'store-ok'],
-      `Direct assignment to store.$state detected. Mutating $state directly outside persistence coordinators bypasses action lifecycles. Use actions or store.$patch instead.`
-    );
+            if (!this.hasEscapeHatch(lineContent, ['pinia-ok', 'store-ok'])) {
+              this.addViolation({
+                ruleId: 'no-direct-state-mutation-outside-actions',
+                severity: 'error',
+                file: relPath,
+                line: lineNum,
+                message: `Direct assignment to store.$state detected. Mutating $state directly outside persistence coordinators bypasses action lifecycles. Use actions or store.$patch instead.`,
+                context: lineContent.trim()
+              });
+            }
+          }
+        }
+      }
+
+      ts.forEachChild(node, visit);
+    };
+
+    visit(sf);
   }
 }
 

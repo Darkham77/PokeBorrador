@@ -19,5 +19,5 @@ Frontend Developers / State Architects.
 
 ## Verification
 
-- Run `npm run audit:dox` to verify DOX hierarchy.
+- Run `npm run audit:md` to verify DOX hierarchy.
 - Run `npm run test:unit tests/unit/loaders/` for unit tests.

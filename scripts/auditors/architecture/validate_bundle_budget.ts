@@ -22,6 +22,7 @@ import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
 import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { SharedAstContext } from '../../lib/astContext.ts';
 
 enableCompileCache();
 
@@ -73,16 +74,19 @@ export class BundleBudgetAuditor extends BaseAuditor<BundleBudgetRuleId> {
         'bundle-runtime-leak': 'Fuga de código de tests o scripts en código de producción',
         'bundle-heavy-import': 'Import de librería pesada prohibida en capas de UI',
         'bundle-chunk-size': 'Chunk compilado excede presupuesto de tamaño de cliente'
-      }
+      },
+      requiresAst: true
     });
   }
 
-  public override async runAudit(): Promise<void> {
+  public override async runAudit(astContext?: SharedAstContext): Promise<void> {
     const allFiles = await this.context.collectFiles(['src'], new Set(['.ts', '.vue', '.js']));
     const candidateFiles = allFiles.filter(f => {
       const base = path.basename(f);
       return !base.includes('.spec.') && !base.includes('.test.') && !base.includes('.simulation.') && !base.endsWith('.d.ts');
     });
+
+    const astEngine = astContext ?? new SharedAstContext();
 
     this.context.logStep(1, 2, `Auditing imports across ${candidateFiles.length} source files...`);
 
@@ -90,29 +94,13 @@ export class BundleBudgetAuditor extends BaseAuditor<BundleBudgetRuleId> {
       this.filesScannedCount++;
       const fullPath = path.resolve(this.projectRoot, relPath);
       const content = fs.readFileSync(fullPath, 'utf8');
+
+      // Fast string pre-filter to skip files with no imports
+      if (!content.includes('import ')) continue;
+
       const norm = relPath.replace(/\\/g, '/');
-
-      let scriptContent = content;
-      let lineOffset = 0;
-      if (relPath.endsWith('.vue')) {
-        const match = /<script\b[^>]*>([\s\S]*?)<\/script>/i.exec(content);
-        if (match) {
-          scriptContent = match[1] || '';
-          lineOffset = content.substring(0, match.index).split('\n').length - 1;
-        } else {
-          scriptContent = '';
-        }
-      }
-
-      if (!scriptContent) continue;
-
-      const sourceFile = ts.createSourceFile(
-        fullPath,
-        scriptContent,
-        ts.ScriptTarget.Latest,
-        true,
-        ts.ScriptKind.TS
-      );
+      const sourceFile = astEngine.getSourceFile(fullPath, content);
+      if (!sourceFile.text.trim()) continue;
 
       const isUiLayer = UI_DIRS.some(d => norm.startsWith(d));
       const fullLines = content.split('\n');
@@ -135,8 +123,7 @@ export class BundleBudgetAuditor extends BaseAuditor<BundleBudgetRuleId> {
 
           if (isTypeOnly) return;
 
-          const lineAndChar = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-          const lineNum = lineAndChar.line + lineOffset + 1;
+          const lineNum = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
           const lineText = fullLines[lineNum - 1] || '';
           if (lineText.includes('// bundle-leak-ok:')) return;
 

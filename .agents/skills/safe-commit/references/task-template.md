@@ -18,17 +18,17 @@
   - [ ] Pre-draft commit message (The Elegant Protocol synthesis in `task.md`)
 - [ ] **Phase 2: Active Verification & Repair Loop 🔁 (Exits ONLY on `npm run build` Exit Code 0)**
   - [ ] **Loop Cycle Checks (Must ALL pass consecutively on final code)**:
-    - [ ] `npm run audit:for-commit` (0 errors, 0 new warnings)
-    - [ ] `npm run test` (100% test suites passing)
-    - [ ] `npm run build` 🔒 **THE BUILD GATE** (STRICT Exit Code 0 — zero bypasses)
-    - [ ] Build Optimization & Data Compression Analysis (Inspect Brotli/Gzip tables, chunk sizes, manualChunks, and PWA caching budgets)
-    - [ ] `npm run fallow:health` (Score ≥ 85 and ≥ BASELINE_HEALTH)
-    - [ ] *(If DB changed)* Database Parity Sync verified
+    - [ ] `npm run audit:md` (Step 2.1: DOX Maintenance & fast Markdown audit — 0 errors)
+    - [ ] `npm run audit:for-commit` (Check 2.2: 0 errors, 0 new warnings)
+    - [ ] `npm run test` (Check 2.3: 100% test suites passing)
+    - [ ] *(If DB changed)* Database Parity Gate (Check 2.4: `npm run test:migrations` before build)
+    - [ ] `npm run build` 🔒 **THE BUILD GATE** (Check 2.5: STRICT Exit Code 0 — zero bypasses)
+    - [ ] Build Optimization & Data Compression Analysis (Check 2.6: `npm run audit:bundle`)
+    - [ ] `npm run fallow:health` (Check 2.7: Score ≥ 85 and ≥ BASELINE_HEALTH)
   - [ ] **Loop Repair Action (Triggered on ANY failure above; repeat until build exits 0)**:
     - [ ] `npm run audit:fix` (auto-repairs) & Manual code fixes applied in workspace
     - [ ] Re-run cycle checks until `npm run build` returns exit code 0
-- [ ] **Phase 3: Unified DOX, Lessons Extraction & 🛑 Hard Stop**
-  - [ ] DOX Maintenance (`AGENTS.md` updated via `/dox-navigator`)
+- [ ] **Phase 3: Lessons Extraction, Walkthrough & 🛑 Hard Stop**
   - [ ] Extract lessons via `/learn-with-docs`
   - [ ] Create `<appDataDir>/brain/<conversation-id>/learning_proposal.md`
   - [ ] Create/Update `<appDataDir>/brain/<conversation-id>/walkthrough.md`
@@ -37,6 +37,7 @@
   - [ ] 🛑 HARD STOP (Wait for approval before Phase 4)
 - [ ] **Phase 4: Single Atomic Certified Commit & Completion**
   - [ ] Apply approved lessons to `AGENTS.md`
+  - [ ] Pre-commit Sanity Check (`npm run audit:md`)
   - [ ] Synthesize final Elegant Protocol commit message (feature + tests + audit fixes + DOX)
   - [ ] `git add .` & `git commit -m "<message>"` (Single Atomic Certified Commit)
   - [ ] Display push status or instructions & db update commands

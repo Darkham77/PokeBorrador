@@ -116,6 +116,7 @@ export interface AuditTaskDefinition {
   order?: number;
   timeoutMs?: number;
   shell?: boolean;
+  requiresAst?: boolean;
 }
 
 export interface AuditTaskDescriptor {
@@ -127,4 +128,6 @@ export interface AuditTaskDescriptor {
   timeoutMs?: number;
   permissions?: string[];
   extraArgs?: string[];
+  requiresAst?: boolean;
 }
+

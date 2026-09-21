@@ -8,6 +8,9 @@ import { isPokemonMoveId, requirePokemonMoveId } from '@/data/battle/moves';
 import { isWeatherId, requireWeatherId } from '../weather/weatherRegistry';
 import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle';
 import { requireVolatileStatusKey } from '@/types/pokemon/pokemon';
+import { CANONICAL_TERRAINS } from '../constants/gameplay.ts';
+
+const CANONICAL_TERRAINS_SET: ReadonlySet<BattleConditionKey> = new Set<BattleConditionKey>(CANONICAL_TERRAINS);
 
 const WEATHER_EMOJIS: Record<string, string> = {
   'Sandstorm': '🌀',
@@ -17,13 +20,6 @@ const WEATHER_EMOJIS: Record<string, string> = {
   'Snow': '❄️',
   'none': '🌤️'
 };
-
-const CANONICAL_TERRAINS = new Set<BattleConditionKey>([ // runtime-set: Fast O(1) membership lookup set
-  'electricterrain',
-  'grassyterrain',
-  'mistyterrain',
-  'psychicterrain'
-]);
 
 const FIELD_START_MESSAGES: Record<string, string> = {
   'Trick Room': '¡Espacio Raro distorsionó el tiempo!',
@@ -294,7 +290,7 @@ function handleFieldStart(ctx: SBCtx, parts: string[], line: string): boolean {
   const fieldCondition = (parts[2] || '').replace('move: ', '');
   if (fieldCondition && ctx.store.activeBattle.value) {
     const cleanField = requireBattleConditionKey(toID(fieldCondition));
-    if (CANONICAL_TERRAINS.has(cleanField)) {
+    if (CANONICAL_TERRAINS_SET.has(cleanField)) {
       ctx.store.activeBattle.value.terrain = cleanField;
     } else {
       if (!ctx.store.activeBattle.value.fieldConditions) {
@@ -313,7 +309,7 @@ function handleFieldEnd(ctx: SBCtx, parts: string[], line: string): boolean {
   const fieldConditionEnd = (parts[2] || '').replace('move: ', '');
   if (fieldConditionEnd && ctx.store.activeBattle.value) {
     const cleanEndField = requireBattleConditionKey(toID(fieldConditionEnd));
-    if (CANONICAL_TERRAINS.has(cleanEndField)) {
+    if (CANONICAL_TERRAINS_SET.has(cleanEndField)) {
       ctx.store.activeBattle.value.terrain = null;
     } else if (ctx.store.activeBattle.value.fieldConditions) {
       delete ctx.store.activeBattle.value.fieldConditions[cleanEndField];

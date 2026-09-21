@@ -22,6 +22,7 @@ import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
 import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { SharedAstContext } from '../../lib/astContext.ts';
 
 enableCompileCache();
 
@@ -151,11 +152,12 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
       ruleIds: SHOWDOWN_PARITY_RULES,
       ruleDescriptions: {
         'missing-protocol-token': 'Token de protocolo Showdown sin manejador ni dispatcher'
-      }
+      },
+      requiresAst: true
     });
   }
 
-  public override async runAudit(): Promise<void> {
+  public override async runAudit(astContext?: SharedAstContext): Promise<void> {
     const battleFiles = await this.context.collectFiles(['src/logic/battle'], new Set(['.ts']));
     const bridgeFiles = battleFiles.filter(f => {
       const base = path.basename(f);
@@ -163,6 +165,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
     });
 
     const handledTokens = new Set<string>();
+    const astEngine = astContext ?? new SharedAstContext();
 
     this.context.logStep(1, 2, `Parsing handlers in ${bridgeFiles.length} showdownBridge files...`);
 
@@ -171,12 +174,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
       const fullPath = path.resolve(this.projectRoot, relPath);
       const code = fs.readFileSync(fullPath, 'utf-8');
 
-      const sourceFile = ts.createSourceFile(
-        path.basename(relPath),
-        code,
-        ts.ScriptTarget.Latest,
-        true
-      );
+      const sourceFile = astEngine.getSourceFile(fullPath, code);
 
       const visit = (node: ts.Node) => {
         // 1. Match Object Literal Keys (CORE_EVENT_DISPATCHER, etc.)

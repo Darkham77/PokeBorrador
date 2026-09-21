@@ -44,6 +44,18 @@ describe('PiniaReactivityAuditor', () => {
     expect(auditor.getCountsByRule().get('no-store-destructuring-without-storetorefs') ?? 0).toBe(0);
   });
 
+  it('detects indirect store destructuring without storeToRefs', () => {
+    const auditor = new PiniaReactivityAuditor();
+    const badCode = `
+      import { useGameStore } from '@/stores/game';
+      const gameStore = useGameStore();
+      const { party, money } = gameStore;
+    `;
+
+    scan(auditor, 'src/components/MyComponent.vue', badCode);
+    expect(auditor.getCountsByRule().get('no-store-destructuring-without-storetorefs')!).toBeGreaterThan(0);
+  });
+
   it('allows action destructuring with // pinia-ok', () => {
     const auditor = new PiniaReactivityAuditor();
     const goodCode = `

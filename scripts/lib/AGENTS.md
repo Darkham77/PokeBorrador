@@ -14,6 +14,7 @@ Tooling / Platform Architecture Engineers.
 ## Local Contracts
 
 - **Core Auditor OOP Superclasses (`auditorBase.ts`)**: Defines `BaseAuditor<TRuleId>`, `FileScanAuditor<TRuleId>`, and `CompositeAuditor`. All sub-auditors in `scripts/auditors/` MUST inherit from these superclasses. Standalone procedural scripts or ad-hoc directory walkers are strictly forbidden.
+- **Shared AST Engine & Cache Boundary (`astContext.ts`)**: Provides `SharedAstContext` for centralized, memoized TypeScript AST creation and caching across all sub-auditors. Eliminates duplicate file parsing across suites, supports Vue SFC script extraction with line offset preservation, and provides O(1) in-memory retrieval of pre-compiled `ts.SourceFile` objects.
 - **Unified Theme & Box-Drawing Boundary (`unifiedTheme.ts`)**: Centralizes Unicode Box-Drawing terminal rendering, visual widths (`getVisualWidth`), and badge formatting (`[ ✅ PASS ]`, `[ ❌ FAIL ]`, `[ ⚠️ WARN ]`). Terminal tables MUST NOT exceed 80 columns in width, MUST prevent line wrapping across platforms, and MUST account for multi-byte Unicode and double-width emojis.
 - **Audit Contract & Finding Shapes (`auditContract.ts`)**: SSoT data contracts for findings (`AuditFinding`), execution results (`StandardAuditResult`), and summary tallies (`AuditSummary`).
 - **Parallel Streaming Runner (`streamingRunner.ts`)**: Provides dynamic sub-auditor execution with bounded CPU concurrency and real-time streaming output.
@@ -28,5 +29,5 @@ Tooling / Platform Architecture Engineers.
 
 ## Verification
 
-- Run `npm run audit:dox` to certify that this directory is properly indexed.
+- Run `npm run audit:md` to certify that this directory is properly indexed.
 - Run `npm run test:node -- tests/node/auditors/` to verify auditor framework contracts.

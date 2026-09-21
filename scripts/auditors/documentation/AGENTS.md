@@ -6,6 +6,7 @@ This directory contains documentation validation tools verifying Markdown cross-
 
 ## Directory Structure & Files
 
+- [validate_dox_integrity.ts](./validate_dox_integrity.ts): Scans all `AGENTS.md` documentation indices to verify hierarchy integrity, required sections, relative link validity, and gitignore target enforcement.
 - [validate_markdown_links.ts](./validate_markdown_links.ts): Scans all Markdown and AGENTS.md files for broken relative links and references.
 - [validate_markdown_lint.ts](./validate_markdown_lint.ts): Wraps `markdownlint-cli` to validate Markdown formatting, spacing, and style across documentation and skills with Zero-Warning Policy (elevating all issues to `severity: 'error'`), supporting `--fix`.
 - [validate_markdown_syntax.ts](./validate_markdown_syntax.ts): Validates markdown syntax, heading hierarchies, code fence languages, and table formatting.

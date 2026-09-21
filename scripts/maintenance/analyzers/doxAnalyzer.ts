@@ -224,7 +224,17 @@ export async function checkDoxIntegrity(
         const isGitIgnored =
           gitIgnoredPaths.has(absoluteTarget) ||
           [...gitIgnoredPaths].some(p => absoluteTarget.startsWith(p + path.sep));
-        if (isGitIgnored) continue;
+        if (isGitIgnored) {
+          violations.push({
+            file: agentsPath,
+            line: i + 1,
+            message: `Enlace a ruta ignorada por Git (.gitignore): '${targetUrl}' apunta a una ruta no versionada que no existirá en clones o CI.`,
+            context: targetUrl,
+            severity: 'error',
+            fixable: false,
+          });
+          continue;
+        }
 
         try {
           await fs.stat(absoluteTarget);

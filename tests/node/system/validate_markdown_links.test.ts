@@ -103,6 +103,20 @@ Also check PokeBorrador legacy notes.
       expect(result.brokenLinks.some(b => b.ruleId === 'markdown-absolute-path')).toBe(true);
       expect(result.brokenLinks.some(b => b.ruleId === 'markdown-stale-environment-path')).toBe(true);
     });
+
+    it('should detect links pointing to gitignored targets (markdown-gitignored-target)', () => {
+      const sampleContent = `
+# Ignored Links Doc
+- [Ignored Docker](./docker/volumes/functions/hello/AGENTS.md)
+- [Ignored Scratch](../scratch/notes.md)
+`;
+      const fakeDocPath = path.join(rootDir, 'supabase/AGENTS.md');
+      const result = checkMarkdownLinksInContent(sampleContent, fakeDocPath, rootDir);
+
+      expect(result.brokenLinks.length).toBe(2);
+      expect(result.brokenLinks.every(b => b.ruleId === 'markdown-gitignored-target')).toBe(true);
+      expect(result.brokenLinks[0]!.error).toContain('ignored by git');
+    });
   });
 
   describe('collectMarkdownFiles', () => {
