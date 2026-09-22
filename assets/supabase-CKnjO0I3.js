@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-xRJHT2pt.js";export{e as default,e as supabase};
