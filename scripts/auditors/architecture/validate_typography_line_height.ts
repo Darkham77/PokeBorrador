@@ -180,7 +180,7 @@ export class TypographyLineHeightAuditor extends FileScanAuditor<LineHeightRuleI
           // Check text truncation indicators
           if (/\btext-overflow\s*:\s*ellipsis\b/i.test(trimmed) ||
               /\bwhite-space\s*:\s*nowrap\b/i.test(trimmed) ||
-              /\b-webkit-line-clamp\b/i.test(trimmed) ||
+              /(?:-webkit-)?line-clamp\s*:/i.test(trimmed) ||
               /@include\s+text-truncate\b/i.test(trimmed)) {
             currentFrame.hasTruncation = true;
           }

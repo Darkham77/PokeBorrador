@@ -29,6 +29,7 @@ import {
   testResetShowdownWorker
 } from './showdownWorkerClient.ts';
 import { initBattleSequence } from './helpers/battleLifecycleInitializer.ts';
+import { clampFriendship } from '@/logic/pokemon/friendshipLogic.ts';
 
 const DEFAULT_RARITY_WEIGHT_BASE = 50;
 
@@ -315,7 +316,10 @@ function buildInitialBattleState(p: BuildBattleStateParams): BattleState {
     learnQueue: [],
     escapeAttempts: 0,
     playerSideConditions: {},
-    enemySideConditions: {}
+    enemySideConditions: {},
+    initialFriendships: Object.fromEntries(
+      (effectivePlayerTeam || []).map((p: Pokemon) => [p.uid, clampFriendship(p.friendship)])
+    )
   }
 }
 

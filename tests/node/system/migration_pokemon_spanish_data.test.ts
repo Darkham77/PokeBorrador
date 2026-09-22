@@ -378,7 +378,8 @@ describe('Exhaustive Multi-Engine & Multi-Table Data Migration Suite (2026090901
       for (const migration of DATABASE_MIGRATIONS) {
         if (appliedSet.has(migration.id)) continue;
 
-        let sqlSource = migration.sql;
+        const pgFile = path.resolve('database/migrations', `${migration.id}.sql`);
+        let sqlSource = fs.readFileSync(pgFile, 'utf-8');
         sqlSource = sqlSource.replace(/public\.(game_saves|profiles|trade_offers|claim_queue|market_listings|war_defenders|passive_teams|system_config|competition_entries|events_config|war_factions|war_coins|daycare_upgrades|ranked_queue|guardian_captures|war_dominance)\b/g, '$1');
 
         await sql.unsafe(sqlSource);

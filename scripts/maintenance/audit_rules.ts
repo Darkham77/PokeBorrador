@@ -335,8 +335,20 @@ export const explicitResource: AuditRule = {
 };
 
 export const manualAnimations: AuditRule = {
-  regex: /@keyframes\b|\btransition\s*:/g,
+  regex: /@keyframes\b|\btransition\s*:|(?<![-$\w])animation\s*:(?!\s*none\b)/g,
   message: (match: string) => `Animación manual detectada: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Está strictly PROHIBIDO borrar esta animación sin haberla migrado antes a GSAP para preservar la experiencia visual.`,
+  severity: 'error',
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    return norm.endsWith('.scss') || norm.endsWith('.css') || norm.endsWith('.vue');
+  },
+  fixable: false
+};
+
+export const emptyVueTransitions: AuditRule = {
+  regex: /\.(?:[\w-]+)-(?:enter|leave)-(?:active|from|to)(?:[\s,]+(?:\.(?:[\w-]+)-(?:enter|leave)-(?:active|from|to)))*\s*\{\s*(?:@include\s+[\w-]+;\s*)?\}/g,
+  message: (match: string) => `Transición de Vue vacía detectada: '${match.trim()}'. MIGRACIÓN OBLIGATORIA A GSAP: Prohibido vaciar las clases de transición de Vue para evadir el auditor. Migra la animación a hooks GSAP (<Transition :css="false" @enter="..." @leave="...">) o usa composables de animación.`,
   severity: 'error',
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
@@ -348,9 +360,9 @@ export const manualAnimations: AuditRule = {
 
 export const manualTimersFrontend: AuditRule = {
   regex: /\b(set|clear)(Timeout|Interval)\b/g,
-  message: (match: string) => `Timer de ANIMACIÓN/UI detectado: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Prohibido en componentes UI y lógicas para gestionar flujo visual o reintentos de carga. Usa gsap.delayedCall, timelines o promesas deterministas.`,
+  message: (match: string) => `Timer de ANIMACIÓN/UI detectado: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Prohibido en componentes UI y lógicas para gestionar flujo visual o reintentos de carga. Usa gsap.delayedCall, timelines o promesas deterministas. Si es un timer de infraestructura/red no visual, anótalo en la misma línea con '// timer-ok: <justificación>' y usa constantes _MS.`,
   severity: 'error', 
-  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
     const norm = normalizeFilePath(filePath);
     if (!norm.includes('src/')) return false;
@@ -360,11 +372,16 @@ export const manualTimersFrontend: AuditRule = {
       norm.includes('src/logic/battle/showdownworkerclient') ||
       norm.includes('src/logic/battle/battledebug') ||
       norm.includes('src/logic/db/sqliteengine') ||
-      norm.includes('src/stores/auth') ||
-      norm.includes('src/views/auth/') ||
-      norm.includes('src/logic/auth/savecoordinator') ||
-      norm.includes('src/stores/pvp')
+      norm.includes('src/logic/auth/savecoordinator')
     ) return false;
+
+    // Check for inline suppression // timer-ok: <justification>
+    const matchIndex = match.index ?? 0;
+    const lineStart = content.lastIndexOf('\n', matchIndex) + 1;
+    const lineEnd = content.indexOf('\n', matchIndex);
+    const currentLine = content.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+    if (/\/\/\s*timer-ok:\s*\S+/i.test(currentLine)) return false;
+
     return true;
   },
   fixable: false
@@ -1166,7 +1183,7 @@ export const namedTimerConstants: AuditRule = {
 };
 
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps,
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, zIndexAudit, zIndexConstantDeclaration, manualAnimations, emptyVueTransitions, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps,
   noImportantOnTransforms, noImportantOnFilters, noHardcodedShowdownGen, noRawJsonImportsOutsideData, noSassAtImport, overscrollBehaviorLock,
   noLayoutAnimationInGsap, namedTimerConstants
 };

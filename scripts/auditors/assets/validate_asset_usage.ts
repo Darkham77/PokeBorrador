@@ -24,6 +24,7 @@ export type AssetUsageRuleId =
   | 'asset-direct-banner-binding'
   | 'asset-unmediated-logic-path'
   | 'asset-hardcoded-data-path'
+  | 'asset-hardcoded-style-path'
   | 'asset-physical-file-missing';
 
 export const ASSET_USAGE_RULES: readonly AssetUsageRuleId[] = [
@@ -32,6 +33,7 @@ export const ASSET_USAGE_RULES: readonly AssetUsageRuleId[] = [
   'asset-direct-banner-binding',
   'asset-unmediated-logic-path',
   'asset-hardcoded-data-path',
+  'asset-hardcoded-style-path',
   'asset-physical-file-missing'
 ];
 
@@ -64,6 +66,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         'asset-direct-banner-binding': 'Binding directo de banner sin getAssetUrl',
         'asset-unmediated-logic-path': 'Ruta de asset construida sin assetService',
         'asset-hardcoded-data-path': 'Ruta de asset en datos en vez de ID canónico',
+        'asset-hardcoded-style-path': 'Ruta de asset cableada en hojas de estilo SCSS/CSS',
         'asset-physical-file-missing': 'Archivo de asset no encontrado en disco'
       },
       requiredFiles: [
@@ -130,6 +133,35 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       }
     }
 
+    // 1b. Audit SCSS / CSS Stylesheets for Hardcoded Asset URLs
+    const styleDirs = ['src/styles', 'src/components', 'src/views'];
+    const styleFiles = this.context.collectFiles(styleDirs, new Set(['.scss', '.css']));
+
+    for (const file of styleFiles) {
+      this.filesScannedCount++;
+      const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      const content = await fs.readFile(file, 'utf-8');
+      const lines = content.split('\n');
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line || line.includes('// asset-url-ok')) continue;
+
+        const styleUrlRegex = /url\(\s*["']?\/(?:assets|sprites)\/[^"')]+["']?\s*\)/gi;
+        let match: RegExpExecArray | null;
+        while ((match = styleUrlRegex.exec(line)) !== null) {
+          this.addViolation({
+            ruleId: 'asset-hardcoded-style-path',
+            severity: 'error',
+            file: relFile,
+            line: i + 1,
+            message: `Hardcoded asset path in stylesheet: '${match[0]}'. Stylesheets must use CSS variables or centralized theme tokens instead of raw asset URLs.`,
+            context: line.trim()
+          });
+        }
+      }
+    }
+
     // 2. Audit TypeScript Logic in Components, Views, Stores, and Composables
     const logicDirs = ['src/components', 'src/views', 'src/stores', 'src/composables'];
     const tsLogicFiles = this.context.collectFiles(logicDirs, new Set(['.ts']));
@@ -150,7 +182,6 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
 
         if (
           /(?:return|=)\s*[`'"]\/?(?:public\/)?assets\/(?:sprites|ui|maps)/i.test(line) &&
-          !line.includes('resolveAsset(') &&
           !line.includes('getAssetUrl(')
         ) {
           this.addViolation({
@@ -158,7 +189,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
             severity: 'error',
             file: relFile,
             line: i + 1,
-            message: `Unmediated asset path string construction without getAssetUrl/resolveAsset: ${line.trim()}`,
+            message: `Unmediated asset path string construction without getAssetUrl: ${line.trim()}`,
             context: line.trim()
           });
         }

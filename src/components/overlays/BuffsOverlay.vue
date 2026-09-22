@@ -8,11 +8,13 @@ import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses'
 import { getClassMissionDetails } from '@/logic/player/classMissionsData'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 
 const buffsStore = useBuffsStore()
 const modalStore = useModalStore()
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
+const { beforeEnter, enter, leave } = useGsapTransition({ type: 'slide-left', xOffset: -30, duration: 0.25 })
 
 const isVisible = computed(() => 
   uiStore.activeTab === 'map' || 
@@ -95,10 +97,13 @@ const handleClassMissionClick = () => {
     v-if="isVisible"
     class="buffs-overlay"
   >
-    <transition-group
-      name="list"
+    <TransitionGroup
+      :css="false"
       tag="div"
       class="buffs-list"
+      @before-enter="beforeEnter"
+      @enter="enter"
+      @leave="leave"
     >
       <!-- Class Mission Deployment Badge -->
       <PVTooltip
@@ -157,7 +162,7 @@ const handleClassMissionClick = () => {
           </div>
         </div>
       </PVTooltip>
-    </transition-group>
+    </TransitionGroup>
   </div>
 </template>
 
@@ -282,17 +287,6 @@ const handleClassMissionClick = () => {
   font-size: 12px;
   font-weight: 700;
   @include pixelated;
-}
-
-/* Transitions */
-.list-enter-active,
-.list-leave-active {
-  
-}
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: Translatex(-30px);
 }
 </style>
 

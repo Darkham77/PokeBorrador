@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { libraryContent, libraryCategories } from '@/data/system/libraryData'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 
 interface Props {
   show?: boolean
@@ -21,6 +22,7 @@ const emit = defineEmits<{
 // Default to 'gimnasios' if initialTab is null or not in categories
 const selectedTab = ref(props.initialTab || 'gimnasios')
 const contentFade = ref(true)
+const { beforeEnter, enter, leave } = useGsapTransition({ type: 'fade', duration: 0.2 })
 
 watch(() => props.initialTab, (newTab) => {
   if (newTab) selectedTab.value = newTab
@@ -71,15 +73,22 @@ const selectTab = (tabId: string) => {
       </aside>
 
       <main class="library-content custom-scrollbar-vicio">
-        <div
-          v-if="contentFade"
-          id="library-article-content"
-          class="library-article"
+        <Transition
+          :css="false"
+          @before-enter="beforeEnter"
+          @enter="enter"
+          @leave="leave"
         >
-          <!-- fallow-ignore-next-line security-sink -->
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div v-html="currentContent" />
-        </div>
+          <div
+            v-if="contentFade"
+            id="library-article-content"
+            class="library-article"
+          >
+            <!-- fallow-ignore-next-line security-sink -->
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div v-html="currentContent" />
+          </div>
+        </Transition>
       </main>
     </div>
   </BaseModal>
@@ -88,13 +97,6 @@ const selectTab = (tabId: string) => {
 <style lang="scss" scoped>
 @use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
-
-.fade-enter-active, .fade-leave-active {
-  
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
 
 .library-container {
   display: grid;

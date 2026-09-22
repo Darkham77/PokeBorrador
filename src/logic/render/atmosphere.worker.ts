@@ -35,7 +35,13 @@ type OpacityPresetKey =
   | 'STRONG_MAX'
   | 'DUST'
   | 'SAND_OP1'
-  | 'SAND_OP2';
+  | 'SAND_OP2'
+  | 'SUN_MIN'
+  | 'SUN_MAX'
+  | 'INTENSE_SUN_MIN'
+  | 'INTENSE_SUN_MAX'
+  | 'HEATWAVE_MIN'
+  | 'HEATWAVE_MAX';
 
 const ATMOSPHERE_OPACITY_PRESETS: Record<OpacityPresetKey, number> = {
   FOG_MIN: 0.8,
@@ -51,6 +57,12 @@ const ATMOSPHERE_OPACITY_PRESETS: Record<OpacityPresetKey, number> = {
   DUST: 0.8,
   SAND_OP1: 0.5,
   SAND_OP2: 0.55,
+  SUN_MIN: 0.35,
+  SUN_MAX: 0.45,
+  INTENSE_SUN_MIN: 0.50,
+  INTENSE_SUN_MAX: 0.65,
+  HEATWAVE_MIN: 0.65,
+  HEATWAVE_MAX: 0.80,
 };
 
 /** Physics divisors for fog/mist drift speed calculations. */
@@ -69,6 +81,18 @@ const ATMOSPHERE_DRIFT = {
   SAND_SEED_MULT: 0.8,
   SAND_DUR2_BASE: 1.1,
   SAND_DUR2_MULT: 0.4,
+  HEAT_DRIFT_Y_DIVISOR_1: 6,
+  HEAT_DRIFT_Y_DIVISOR_2: 8,
+  HEAT_FACTOR_SUN: 1.0,
+  HEAT_FACTOR_INTENSE: 1.5,
+  HEAT_FACTOR_HEATWAVE: 2.0,
+  HEAT_WAVE_X_MULT_1: 8,
+  HEAT_WAVE_X_MULT_2: 6,
+  HEAT_WAVE_FREQ: 10,
+  HEAT_SHIMMER_FREQ_1: 6,
+  HEAT_SHIMMER_FREQ_2: 8,
+  HEAT_SHIMMER_AMP_1: 8,
+  HEAT_SHIMMER_AMP_2: 6,
 } as const;
 
 /** Pulse cycle duration in seconds for non-strong weather. */
@@ -142,8 +166,32 @@ function calculateAtmosphereDrift(w: string, animSeed: number, speedMultiplier =
       driftY2: 0,
     };
   }
+  if (w === 'sun' || w === 'intense_sun' || w === 'heatwave') {
+    const heatFactor = w === 'heatwave'
+      ? ATMOSPHERE_DRIFT.HEAT_FACTOR_HEATWAVE
+      : (w === 'intense_sun' ? ATMOSPHERE_DRIFT.HEAT_FACTOR_INTENSE : ATMOSPHERE_DRIFT.HEAT_FACTOR_SUN);
+    return {
+      driftX1: Math.sin(animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) * ATMOSPHERE_DRIFT.HEAT_WAVE_X_MULT_1 * speedVar * heatFactor,
+      driftY1: (-TEXTURE_TILE_SIZE_BASE * speedVar * heatFactor) / ATMOSPHERE_DRIFT.HEAT_DRIFT_Y_DIVISOR_1,
+      driftX2: -Math.cos(animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) * ATMOSPHERE_DRIFT.HEAT_WAVE_X_MULT_2 * speedVar * heatFactor,
+      driftY2: (-TEXTURE_TILE_SIZE_LARGE * speedVar * heatFactor) / ATMOSPHERE_DRIFT.HEAT_DRIFT_Y_DIVISOR_2,
+    };
+  }
   return { driftX1: 0, driftY1: 0, driftX2: 0, driftY2: 0 };
 }
+
+const CANVAS_SUPPORTED_WEATHERS = [
+  'fog',
+  'mist',
+  'wind',
+  'strong_winds',
+  'dust_storm',
+  'sandstorm',
+  'sun',
+  'intense_sun',
+  'heatwave'
+] as const;
+const CANVAS_SUPPORTED_WEATHERS_SET: ReadonlySet<string> = new Set(CANVAS_SUPPORTED_WEATHERS);
 
 function calculateAtmosphereOpacity(w: string, pulse: number, isLowPower: boolean): { op1: number; op2: number } {
   if (w === 'fog') {
@@ -170,6 +218,18 @@ function calculateAtmosphereOpacity(w: string, pulse: number, isLowPower: boolea
   if (w === 'sandstorm') {
     return { op1: ATMOSPHERE_OPACITY_PRESETS.SAND_OP1, op2: ATMOSPHERE_OPACITY_PRESETS.SAND_OP2 };
   }
+  if (w === 'sun') {
+    const op = ATMOSPHERE_OPACITY_PRESETS.SUN_MIN + (ATMOSPHERE_OPACITY_PRESETS.SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.SUN_MIN) * pulse;
+    return { op1: op, op2: op * 0.85 };
+  }
+  if (w === 'intense_sun') {
+    const op = ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN + (ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN) * pulse;
+    return { op1: op, op2: op * 0.9 };
+  }
+  if (w === 'heatwave') {
+    const op = ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN + (ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MAX - ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN) * pulse;
+    return { op1: op, op2: op * 0.95 };
+  }
   return { op1: ATMOSPHERE_OPACITY_PRESETS.WIND_MAX, op2: ATMOSPHERE_OPACITY_PRESETS.WIND_MIN };
 }
 
@@ -185,7 +245,7 @@ function render(time: number) {
   localCtx.clearRect(0, 0, localCanvas.width, localCanvas.height);
 
   const w = params.weather;
-  if (!['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'].includes(w)) {
+  if (!CANVAS_SUPPORTED_WEATHERS_SET.has(w)) {
     requestAnimationFrame(render);
     return;
   }
@@ -202,7 +262,8 @@ function render(time: number) {
 
   // Target sizes based on original CSS
   const isSand = w === 'sandstorm';
-  const targetSize1 = (isSand || isStrong) ? TEXTURE_TILE_SIZE_LARGE : TEXTURE_TILE_SIZE_BASE;
+  const isHeat = w === 'sun' || w === 'intense_sun' || w === 'heatwave';
+  const targetSize1 = (isSand || isStrong || isHeat) ? TEXTURE_TILE_SIZE_LARGE : TEXTURE_TILE_SIZE_BASE;
   const targetSize2 = TEXTURE_TILE_SIZE_LARGE;
 
   const bitmap1 = textures.noise1;
@@ -213,18 +274,29 @@ function render(time: number) {
   const scale1 = bitmap1 ? (targetSize1 / bitmap1.width) : 1;
   const scale2 = bitmap2 ? (targetSize2 / bitmap2.width) : 1;
 
+  const heatFactor = w === 'heatwave'
+    ? ATMOSPHERE_DRIFT.HEAT_FACTOR_HEATWAVE
+    : (w === 'intense_sun' ? ATMOSPHERE_DRIFT.HEAT_FACTOR_INTENSE : ATMOSPHERE_DRIFT.HEAT_FACTOR_SUN);
+
+  const heatShimmerX1 = isHeat
+    ? Math.sin((time / MILLISECONDS_PER_SECOND) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_FREQ_1 + params.animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_AMP_1 * heatFactor
+    : 0;
+  const heatShimmerX2 = isHeat
+    ? Math.cos((time / MILLISECONDS_PER_SECOND) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_FREQ_2 + params.animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_AMP_2 * heatFactor
+    : 0;
+
   // Layer 1
   if (noise1) {
     textureOffsets.layer1.x += driftX1 * (dt / MILLISECONDS_PER_SECOND);
     textureOffsets.layer1.y += driftY1 * (dt / MILLISECONDS_PER_SECOND);
-    drawPattern(noise1, scale1, textureOffsets.layer1.x, textureOffsets.layer1.y, op1);
+    drawPattern(noise1, scale1, textureOffsets.layer1.x + heatShimmerX1, textureOffsets.layer1.y, op1);
   }
 
   // Layer 2
   if (!params.isLowPower && noise2 && !isStrong) {
     textureOffsets.layer2.x += driftX2 * (dt / MILLISECONDS_PER_SECOND);
     textureOffsets.layer2.y += driftY2 * (dt / MILLISECONDS_PER_SECOND);
-    drawPattern(noise2, scale2, textureOffsets.layer2.x, textureOffsets.layer2.y, op2);
+    drawPattern(noise2, scale2, textureOffsets.layer2.x + heatShimmerX2, textureOffsets.layer2.y, op2);
   }
 
   requestAnimationFrame(render);

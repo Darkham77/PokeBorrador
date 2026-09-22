@@ -438,7 +438,6 @@ const handleCloseModal = () => {
       height: 32px;
       object-fit: contain;
       @include sprite-render;
-      animation: pulse 1.5s infinite;
     }
   }
 

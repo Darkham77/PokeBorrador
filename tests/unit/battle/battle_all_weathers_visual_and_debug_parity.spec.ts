@@ -122,4 +122,58 @@ describe('Battle Weather & Debug Controls Parity Suite (RED -> GREEN)', () => {
       expect(weatherOnlyFilter.value).not.toContain('undefined')
     }
   })
+
+  it('AtmosphereLayer renders canvas at camera level (particles) and on map (all) for heat weathers', async () => {
+    const heatWeathers = ['sun', 'intense_sun', 'heatwave'] as const
+
+    for (const weather of heatWeathers) {
+      // In combat at camera level (layer="particles"): canvas must be visible
+      const particlesWrapper = mount(AtmosphereLayer, {
+        props: {
+          weather,
+          layer: 'particles',
+          isVisible: true,
+          isFastMode: false,
+          isLowPower: false,
+          animSeed: 0.5
+        }
+      })
+      await nextTick()
+      const particlesCanvas = particlesWrapper.find('.weather-canvas')
+      expect(particlesCanvas.exists()).toBe(true)
+      expect(particlesCanvas.isVisible()).toBe(true)
+
+      // On map cards (layer="all"): canvas must be visible
+      const allWrapper = mount(AtmosphereLayer, {
+        props: {
+          weather,
+          layer: 'all',
+          isVisible: true,
+          isFastMode: false,
+          isLowPower: false,
+          animSeed: 0.5
+        }
+      })
+      await nextTick()
+      const allCanvas = allWrapper.find('.weather-canvas')
+      expect(allCanvas.exists()).toBe(true)
+      expect(allCanvas.isVisible()).toBe(true)
+
+      // In combat background (layer="ambient"): heat canvas must be hidden (delegated to camera overlay)
+      const ambientWrapper = mount(AtmosphereLayer, {
+        props: {
+          weather,
+          layer: 'ambient',
+          isVisible: true,
+          isFastMode: false,
+          isLowPower: false,
+          animSeed: 0.5
+        }
+      })
+      await nextTick()
+      const ambientCanvas = ambientWrapper.find('.weather-canvas')
+      expect(ambientCanvas.exists()).toBe(true)
+      expect(ambientCanvas.isVisible()).toBe(false)
+    }
+  })
 })

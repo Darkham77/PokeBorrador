@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
+import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 
 interface Props {
   show?: boolean
@@ -19,6 +20,7 @@ defineEmits<{
 }>()
 
 const authStore = useAuthStore()
+const { beforeEnter, enter, leave } = useGsapTransition({ type: 'fade' })
 
 function handleReconnect() {
   window.location.reload()
@@ -31,7 +33,12 @@ async function handleLogout() {
 
 <template>
   <Teleport to="body">
-    <transition name="fade">
+    <Transition
+      :css="false"
+      @before-enter="beforeEnter"
+      @enter="enter"
+      @leave="leave"
+    >
       <PVLoadingOverlay
         v-if="show"
         theme="warning"
@@ -62,19 +69,12 @@ async function handleLogout() {
           ID de sesión: <code>{{ authStore.sessionId.substring(0, 8) }}</code>
         </template>
       </PVLoadingOverlay>
-    </transition>
+    </Transition>
   </Teleport>
 </template>
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
-
-.fade-enter-active, .fade-leave-active {
-  
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
 
 .action-btn {
   width: 100%;

@@ -157,14 +157,14 @@
       will-change: transform, opacity;
 
       &.layer-1 {
-        background-image: url("/assets/fx/pattern-noise-1.webp");
+        background-image: var(--weather-noise-1-url);
         background-size: 256px 256px;
         z-index: calc(var(--z-base) + 1);
         transform: translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0);
       }
 
       &.layer-2 {
-        background-image: url("/assets/fx/pattern-noise-2.webp");
+        background-image: var(--weather-noise-2-url);
         background-size: 512px 512px;
         z-index: calc(var(--z-base) + 2);
         transform: translate3d(calc(var(--seed-x, 0) * 1.2px), calc(var(--seed-y, 0) * 1.2px), 0);

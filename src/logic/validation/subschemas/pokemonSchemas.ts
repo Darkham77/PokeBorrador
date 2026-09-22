@@ -177,6 +177,7 @@ export const pokemonSchema = object({
   heldItem: optional(nullable(string())),
   item: optional(nullable(string())),
   friendship: optional(pipe(number(), minValue(MIN_FRIENDSHIP), maxValue(MAXIMUM_FRIENDSHIP_VALUE))),
+  friendshipSteps: optional(pipe(number(), minValue(0))),
   vigor: optional(number()),
   maxVigor: optional(number()),
   catchRate: optional(number()),

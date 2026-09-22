@@ -65,6 +65,7 @@ async function auditFile(
     config.gpuGaps,
     config.zIndexAudit,
     config.manualAnimations,
+    config.emptyVueTransitions,
     config.sassTraps,
     config.noImportantOnTransforms,
     config.noImportantOnFilters,

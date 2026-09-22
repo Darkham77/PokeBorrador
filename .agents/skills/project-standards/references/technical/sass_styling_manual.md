@@ -285,18 +285,18 @@ When refactoring legacy or generic components:
 - **CSS Animation Composition**: When applying multiple classes that define an `animation` to the same element, you MUST ensure they do not override each other.
   - **Standard**: If an element needs to Shake AND Flash, use a combined rule: `animation: wobble 0.6s, flash 0.3s;`.
   - **WHY**: CSS properties follow a "last-one-wins" rule. Declaring `animation` in two separate classes applied to the same element will result in only the last class's animation being executed.
-- **Aura Counter-Pulse (Sincronización Inversa)**:
-  - **REGLA**: Cuando un elemento tiene múltiples auras (ej: Roja por rareza y Cian por clima), las animaciones **DEBEN** estar en contra-fase exacta para evitar "ruido visual" y que un color eclipse al otro.
-  - **Sincronización**: Ambas animaciones deben compartir el mismo `animation-delay` basado en semilla (ej: `var(--spawn-seed)`) para asegurar que el baile sea determinista por instancia.
-  - **Comportamiento**:
-    - **Aura Principal (Rare)**: Escala 0.1 (Mín) -> Escala 2.0 (Máx).
-    - **Halo Secundario (Weather)**: Escala 2.0 (Máx) -> Escala 0.1 (Mín).
-  - **Resultado**: Mientras una se apaga/encoge, la otra brilla/crece, manteniendo siempre un halo de color visible y distinguible.
+- **Aura Counter-Pulse (Inverse Synchronization)**:
+  - **RULE**: When an element displays multiple auras (e.g. Red for rarity and Cyan for weather), animations **MUST** be in exact counter-phase to prevent visual clutter and avoid one color eclipsing the other.
+  - **Synchronization**: Both animations must share the same seed-based `animation-delay` (e.g. `var(--spawn-seed)`) to ensure deterministic motion per instance.
+  - **Behavior**:
+    - **Primary Aura (Rare)**: Scale 0.1 (Min) -> Scale 2.0 (Max).
+    - **Secondary Halo (Weather)**: Scale 2.0 (Max) -> Scale 0.1 (Min).
+  - **Result**: As one dims/shrinks, the other brightens/expands, maintaining a distinct, legible visual halo.
 - **Viewport Units (Mobile Safety)**:
   - **MANDATORY**: Use `dvh` and `dvw` (Dynamic Viewport) for any element requiring full-screen scaling.
   - **WHY**: Standard `vh`/`vw` units do not account for dynamic toolbars (URL bar, navigation) in mobile browsers like Safari. This leads to layout clipping or unwanted scrollbars.
   - **FORBIDDEN**: Legacy `vh` and `vw` units accompanied by numeric values (e.g., `100vh`).
-  - **Audit**: `detect_viewport_units.py` enforces this rule and supports `--fix` for automatic migration.
+  - **Audit**: Enforced by the unified audit engine (`npm run audit`, rule `viewport`). Supports auto-fix via `npm run audit fix`.
 - **Interaction Stability (Zero-Translatey)**:
   - **Rule**: Avoid vertical displacements (`TranslateY`) in the `:hover` or `:active` states of cards and interactive list elements (e.g., in inventory, battle Pokemon selectors, or boxes). The use of `TranslateY` causes visual artifacts ("ghosting") and layout shifts in dense layouts.
   - **Standard**: Use border-color transitions (`border-color`), brightness filters (`Brightness`), or uniform scale transformations (`Scale`) that do not alter the rendering flow. To neutralize unwanted inherited hover effects, apply `transform: none !important;`.

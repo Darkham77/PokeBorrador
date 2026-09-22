@@ -13,6 +13,7 @@ import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
 import { getHatchSpeedMultiplier } from '@/logic/pokemon/pokemonFieldAbilities';
 import { HATCH_STEP_REDUCTION_CRIADOR } from '@/logic/player/classDeploymentEngine';
 import { executeCloneFossil } from '@/stores/breedingActions.ts';
+import { processWalkingFriendshipStepAccumulation } from '@/logic/pokemon/friendshipLogic.ts';
 import type { ItemId } from '@/data/inventory/items';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon';
@@ -296,12 +297,22 @@ export const useBreedingStore = defineStore('breeding', () => {
     const baseReduction = REDUCTIONS[activity] || 0;
     if (baseReduction === 0) return;
 
+    // 1. Process team walking friendship step accumulation directly on companion (per-Pokemon)
+    processWalkingFriendshipStepAccumulation({
+      team: gameStore.state.team,
+      addedSteps: baseReduction,
+      notifyFn: uiStore.notify,
+    });
+
     const hatchMult = getHatchSpeedMultiplier(gameStore.state.team);
     const criadorBonus = gameStore.state.playerClass === 'criador' ? (1 / (1 - HATCH_STEP_REDUCTION_CRIADOR)) : 1;
     const reduction = baseReduction * hatchMult * criadorBonus;
 
     const eggs = gameStore.state.eggs || [];
-    if (eggs.length === 0) return;
+    if (eggs.length === 0) {
+      gameStore.scheduleSave();
+      return;
+    }
 
     let newlyReady = false;
     eggs.forEach((egg) => {

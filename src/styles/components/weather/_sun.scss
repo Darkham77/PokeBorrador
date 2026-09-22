@@ -1,59 +1,54 @@
 .weather-overlay {
-  // Sol Normal (Dorado Suave)
+  // Normal Sun (Golden warmth with glowing ambient vignette)
   &.sun {
-    background: radial-gradient(circle at center, transparent 30%, Rgba(255, 200, 0, 0.15) 100%);
+    background: radial-gradient(ellipse at center, transparent 30%, Rgba(255, 200, 0, 0.18) 100%);
+
     &::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle, Rgba(255, 215, 0, 0) 50%, Rgba(255, 200, 0, 0.3) 100%);
+      background: radial-gradient(ellipse at center, Rgba(255, 215, 0, 0) 45%, Rgba(255, 200, 0, 0.35) 100%);
       box-shadow: 
-        inset 0 0 25px Rgba(255, 200, 0, 0.7),
-        inset 0 0 60px Rgba(255, 150, 0, 0.35);
+        inset 0 0 30px Rgba(255, 200, 0, 0.75),
+        inset 0 0 70px Rgba(255, 150, 0, 0.4);
       pointer-events: none;
+      z-index: var(--z-low);
     }
   }
 
-  &.heatwave .mist-layer {
-    background-image: 
-      radial-gradient(circle at center, transparent 20%, Rgba(255, 60, 0, 0.1) 100%);
-    
-    mix-blend-mode: normal;
+  // Intense Sun (Blinding White/Yellow with glowing ambient vignette)
+  &.intense_sun {
+    background: radial-gradient(ellipse at center, transparent 20%, Rgba(255, 255, 255, 0.2) 100%);
 
-    &.layer-1 { background-image: radial-gradient(circle at center, transparent 20%, Rgba(255, 60, 0, 0.1) 100%), url("/assets/fx/pattern-noise-1.webp"); }
-    &.layer-2 { background-image: radial-gradient(circle at center, transparent 20%, Rgba(255, 60, 0, 0.1) 100%), url("/assets/fx/pattern-noise-2.webp"); }
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, Rgba(255, 255, 255, 0) 35%, Rgba(255, 230, 100, 0.45) 100%);
+      box-shadow: 
+        inset 0 0 35px Rgba(255, 255, 255, 0.95), 
+        inset 0 0 70px Rgba(255, 215, 0, 0.8),
+        inset 0 0 130px Rgba(255, 200, 0, 0.4);
+      pointer-events: none;
+      z-index: var(--z-low);
+    }
   }
 
+  // Heatwave (Scorching Fiery Red/Orange with glowing ambient vignette)
   &.heatwave {
+    background: radial-gradient(ellipse at center, transparent 25%, Rgba(255, 60, 0, 0.2) 100%);
+
     &::after {
       content: '';
       position: absolute;
       inset: 0;
       pointer-events: none;
       z-index: var(--z-low);
-      
-      background: radial-gradient(circle at center, transparent 30%, Rgba(255, 60, 0, 0.15) 100%);
-      
+      background: radial-gradient(ellipse at center, transparent 25%, Rgba(255, 60, 0, 0.3) 100%);
       box-shadow: 
-        inset 0 0 15px Rgba(255, 0, 0, 0.95),
-        inset 0 0 40px Rgba(255, 20, 0, 0.7),
-        inset 0 0 120px Rgba(255, 40, 0, 0.25);
-    }
-  }
-
-  // Sol Intenso (Brillo Blanco/Amarillo)
-  &.intense_sun {
-    background: radial-gradient(circle at center, transparent 20%, Rgba(255, 255, 255, 0.15) 100%);
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle, Rgba(255, 255, 255, 0) 40%, Rgba(255, 230, 100, 0.4) 100%);
-      box-shadow: 
-        inset 0 0 30px Rgba(255, 255, 255, 0.9), 
-        inset 0 0 60px Rgba(255, 215, 0, 0.75),
-        inset 0 0 120px Rgba(255, 200, 0, 0.35);
-      pointer-events: none;
+        inset 0 0 25px Rgba(255, 0, 0, 0.95),
+        inset 0 0 60px Rgba(255, 25, 0, 0.8),
+        inset 0 0 140px Rgba(255, 50, 0, 0.45);
     }
   }
 }

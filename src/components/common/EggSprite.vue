@@ -40,9 +40,15 @@ const imgStyle = computed(() => ({
   imageRendering: 'pixelated' as const
 }))
 
+const resolveTintColor = (tint: string): string => {
+  if (tint === 'violet') return 'rgba(168, 85, 247, 0.65)'
+  if (tint === 'red' || tint === 'npc') return 'rgba(239, 68, 68, 0.75)'
+  return tint
+}
+
 const tintStyle = computed(() => {
   if (!props.tint) return {}
-  const tintColor = props.tint === 'violet' ? 'rgba(168, 85, 247, 0.65)' : props.tint
+  const tintColor = resolveTintColor(props.tint)
   return {
     position: 'absolute' as const,
     top: 0,

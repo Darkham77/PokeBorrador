@@ -54,6 +54,10 @@ State Architects / Frontend Developers.
   2. **Unconditional `crypto.randomUUID`**: Unique UUID generation MUST call `crypto.randomUUID()` directly, eliminating legacy environment checks or fallback branches.
   3. **Explicit Action Return Types for UUIDs**: In Pinia stores where actions return dynamic UUIDs (such as `modalStore.open()`), the return type MUST be explicitly typed as `string | null` rather than allowing TypeScript to infer a narrow template literal union (`\`${string}-${string}-${string}-${string}-${string}\` | null`), ensuring strict compatibility with unit test mocks.
 - **Allocation-Free State Array Traversal over Spread Filtering**: When secondary stores or composables verify existence of eligible entities across primary state arrays (such as `gameStore.state.team` and `gameStore.state.box`), they MUST NOT use combined array spreads (`[...team, ...box].filter(...)` or `.some(...)`). Instead, implement an allocation-free early-exiting bounded loop (`for...of` directly reading `gameStore.state.team` followed by `gameStore.state.box`). This completely avoids intermediate array allocations, guarantees O(1) best-case complexity with zero `// o1-ok` bypasses, and ensures instant reactive responsiveness across unit tests where state arrays may be reassigned directly.
+- **Dual Step Coordination in Breeding Store (`reduceHatchTimers`)**:
+  - Calling `reduceHatchTimers(steps)` in `src/stores/breeding.ts` MUST process party walking friendship accumulation via `processWalkingFriendshipStepAccumulation(gameStore.state.team, steps)` **prior** to checking the active egg count.
+  - Walking friendship steps accumulate on team members even when 0 eggs are currently incubating.
+  - Any completed 128-step cycle that increments a Pokémon's friendship immediately schedules persistence via `gameStore.scheduleSave()` and emits a UI notification toast (`uiStore.notify`) with `'❤️'`.
 
 ## Work Guidance
 
@@ -70,7 +74,7 @@ State Architects / Frontend Developers.
   2. The store MUST validate entity completeness (e.g. via an `isValid<Entity>` guard) and verify that dynamic reward IDs match canonical Showdown domain IDs (`isItemId(reward.id)`).
   3. In accordance with the *Absolute Prohibition on Runtime Auto-Heal Mandate*, stores MUST NOT attempt to dynamically auto-heal or synthesize corrupt data in memory; corrupt states MUST fail loudly via error logging and boundary locks (`saveBlocked = true`) so the corruption is resolved at the static SQL migration layer.
 - **Store Action Decomposition & Sub-Directory DOX Registration**:
-  - When Pinia stores exceed the 500 LOC threshold, their business actions should be decomposed into dedicated domain action modules under a subdirectory (e.g. `src/stores/events/eventEnrollmentActions.ts` and `src/stores/events/eventAwardsActions.ts`).
+  - When Pinia stores exceed Fallow complexity thresholds, their business actions should be decomposed into dedicated domain action modules under a subdirectory (e.g. `src/stores/events/eventEnrollmentActions.ts` and `src/stores/events/eventAwardsActions.ts`).
   - Any newly created actions subdirectory under `src/stores/` MUST contain its own mandatory `AGENTS.md` file and be linked under the `## Child DOX Index` of `src/stores/AGENTS.md`.
 - **Initial Game State Factory (`createInitialGameState`)**: Store reset actions (`$reset()`, `resetGame()`, `loadGame()`) MUST hydrate default state using the pure factory function `createInitialGameState(): GameState` from `@/stores/gameInitialState.ts` rather than deep cloning a shared mutable module-level `INITIAL_STATE` object.
 

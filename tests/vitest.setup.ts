@@ -219,6 +219,13 @@ vi.mock('gsap', () => {
       random: (min: number, max: number) => Math.random() * (max - min) + min,
       interpolate: (a: number, b: number, p: number) => a + (b - a) * p,
       unitize: (fn: (val: string) => number | string, unit = 'px') => (v: string) => `${fn(v)}${unit}`,
+    },
+    ticker: {
+      add: vi.fn(),
+      remove: vi.fn(),
+      sleep: vi.fn(),
+      wake: vi.fn(),
+      lagSmoothing: vi.fn(),
     }
   };
   return { gsap: gsapMock, default: gsapMock };

@@ -4,6 +4,8 @@ import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useGameStore } from '@/stores/game'
 import { PLAYER_CLASSES } from '@/data/player/playerClasses'
+import EggSprite from '@/components/common/EggSprite.vue'
+import { NPC_EGG_TINT } from '@/logic/constants/gameplay'
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
@@ -66,7 +68,9 @@ const GSAP_LOG_ENTRY_INITIAL_X_OFFSET_PX = -20
 }, { deep: true, immediate: true })
 
 const handleImgError = (e: Event) => {
-  (e.target as HTMLImageElement).style.display = 'none'
+  const target = e.target as HTMLImageElement
+  console.error(`[BattleLog] Fallo al cargar sprite del log de combate: ${target.src}`)
+  target.style.display = 'none'
 }
 
 onMounted(() => {
@@ -103,6 +107,11 @@ onMounted(() => {
             v-if="log.iconType === 'emoji'"
             class="log-emoji"
           >{{ log.icon }}</span>
+          <EggSprite
+            v-else-if="log.iconType === 'egg' || log.iconType === 'npc_egg'"
+            size="26"
+            :tint="log.iconType === 'npc_egg' ? NPC_EGG_TINT : undefined"
+          />
           <img
             v-else-if="log.icon"
             :src="log.icon"
@@ -243,6 +252,14 @@ onMounted(() => {
         transform: none;
       }
     }
+
+    &.egg,
+    &.npc_egg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: Drop-Shadow(0 2px 5px Rgba(0, 0, 0, 0.45));
+    }
     
     &.empty {
       opacity: 0;
@@ -337,6 +354,56 @@ onMounted(() => {
 :deep(.log-damage) { color: Rgba(255, 65, 54, 1); }
 :deep(.log-heal) { color: Rgba(0, 255, 127, 1); }
 :deep(.log-status) { color: Rgba(177, 13, 201, 1); }
+
+/* Recompensas Unificadas de Fin de Combate */
+:deep(.reward-entry-unified) {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  line-height: 1.35;
+}
+
+:deep(.reward-line-primary) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  color: Rgba(255, 255, 255, 0.95);
+
+  strong {
+    color: #ffffff;
+    font-weight: 700;
+  }
+}
+
+:deep(.reward-line-secondary) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 0.92em;
+  opacity: 0.9;
+}
+
+:deep(.reward-lvl) {
+  color: var(--yellow, #ffd700);
+  font-weight: 600;
+}
+
+:deep(.reward-exp) {
+  color: #38ef7d;
+  font-weight: 500;
+}
+
+:deep(.reward-evs) {
+  color: #63b3ed;
+}
+
+:deep(.reward-friendship) {
+  color: #fb7185;
+  font-weight: 500;
+}
 
 .log-entry {
   padding-left: 6px;

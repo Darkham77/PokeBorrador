@@ -33,12 +33,12 @@ This workflow is a **strict state machine**, not a loose checklist. Each step pr
 
 ```mermaid
 graph TD
-    A0[Fase 0\nCreate task.md] --> A1
-    A1[Fase 1\nTest Gaps + Zero-Commit Safety Backup] --> LOOP
+    A0[Phase 0\nCreate task.md] --> A1
+    A1[Phase 1\nTest Gaps + Zero-Commit Safety Backup] --> LOOP
 
-    subgraph LOOP ["🔁 Fase 2 — Active Repair Loop (Workspace)"]
+    subgraph LOOP ["🔁 Phase 2 — Active Repair Loop (Workspace)"]
         direction TB
-        C0[2.1 DOX Maintenance AGENTS.md\n& npm run audit:md] -->|Errors| REPAIR[🛠️ Reparación:\n1. npm run audit:fix\n2. Edición manual de código / DOX]
+        C0[2.1 DOX Maintenance AGENTS.md\n& npm run audit:md] -->|Errors| REPAIR[🛠️ Repair:\n1. npm run audit:fix\n2. Manual code / DOX editing]
         C0 -->|0 errors| C1[2.2 npm run audit:for-commit]
         C1 -->|Errors / Warnings| REPAIR
         C1 -->|0 errors, 0 warnings| C2[2.3 npm run test]
@@ -54,13 +54,13 @@ graph TD
         C4 -->|Optimized ✅| C5[2.7 npm run fallow:health]
         
         C5 -->|Score < 85| REPAIR
-        REPAIR -->|Re-verificar ciclo completo| C0
+        REPAIR -->|Re-verify full cycle| C0
     end
 
-    C5 -->|Score ≥ 85 & Build Exit 0 & Optimized| EXIT_GATE[✅ Salida del Bucle]
-    EXIT_GATE --> A3[Fase 3\nLessons + Walkthrough]
+    C5 -->|Score ≥ 85 & Build Exit 0 & Optimized| EXIT_GATE[✅ Loop Exit]
+    EXIT_GATE --> A3[Phase 3\nLessons + Walkthrough]
     A3 --> STOP1{🛑 USER APPROVES\nlearning_proposal.md?}
-    STOP1 -->|Approved| A4[Fase 4\nSingle Atomic Certified Commit\n+ Pre-commit npm run audit:md]
+    STOP1 -->|Approved| A4[Phase 4\nSingle Atomic Certified Commit\n+ Pre-commit npm run audit:md]
 
     style LOOP fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
     style C0 fill:#1f4068,stroke:#00b4d8,stroke-width:2px,color:#fff

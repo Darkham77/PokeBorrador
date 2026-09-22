@@ -28,6 +28,13 @@ import { useBattleTrainerVisuals } from '@/composables/battle/useBattleTrainerVi
 import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere'
 import type { BattleSide } from '@/types/battle/battle'
 import { createBattleAnimationsBridge } from './helpers/battleAnimationsBridge.ts'
+import { useGsapTransition } from '@/composables/ui/useGsapTransition'
+
+const {
+  beforeEnter: beforeFadeOverlayEnter,
+  enter: onFadeOverlayEnter,
+  leave: onFadeOverlayLeave
+} = useGsapTransition({ type: 'fade', duration: 0.3 })
 
 // Componentes
 import VirtualSpace from './VirtualSpace.vue'
@@ -352,7 +359,12 @@ function getCombatantKey(prefix: string, uid?: string, id?: string): string {
     :class="{ 'is-fading': isGlobalFadeActive }"
   >
     <!-- Overlay de Transición Global (The Void / Exit) -->
-    <Transition name="fade-overlay">
+    <Transition
+      :css="false"
+      @before-enter="beforeFadeOverlayEnter"
+      @enter="onFadeOverlayEnter"
+      @leave="onFadeOverlayLeave"
+    >
       <div
         v-if="isGlobalFadeActive"
         class="global-transition-overlay"

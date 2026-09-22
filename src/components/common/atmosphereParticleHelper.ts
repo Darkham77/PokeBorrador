@@ -24,9 +24,23 @@ const ATMOSPHERE_SANDSTORM_WEATHERS = ['sandstorm', 'strong_winds', 'dust_storm'
 type AtmosphereSandstormWeather = (typeof ATMOSPHERE_SANDSTORM_WEATHERS)[number];
 const ATMOSPHERE_SANDSTORM_WEATHERS_SET: ReadonlySet<AtmosphereSandstormWeather> = new Set(ATMOSPHERE_SANDSTORM_WEATHERS);
 
-const ATMOSPHERE_CANVAS_WEATHERS = ['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'] as const;
+const ATMOSPHERE_CANVAS_WEATHERS = [
+  'fog',
+  'mist',
+  'wind',
+  'strong_winds',
+  'dust_storm',
+  'sandstorm',
+  'sun',
+  'intense_sun',
+  'heatwave'
+] as const;
 type AtmosphereCanvasWeather = (typeof ATMOSPHERE_CANVAS_WEATHERS)[number];
 const ATMOSPHERE_CANVAS_WEATHERS_SET: ReadonlySet<AtmosphereCanvasWeather> = new Set(ATMOSPHERE_CANVAS_WEATHERS);
+
+const ATMOSPHERE_HEAT_WEATHERS = ['sun', 'intense_sun', 'heatwave'] as const;
+type AtmosphereHeatWeather = (typeof ATMOSPHERE_HEAT_WEATHERS)[number];
+const ATMOSPHERE_HEAT_WEATHERS_SET: ReadonlySet<AtmosphereHeatWeather> = new Set(ATMOSPHERE_HEAT_WEATHERS);
 
 export function isRainWeather(weather?: string): boolean {
   return weather !== undefined && ATMOSPHERE_RAIN_WEATHERS_SET.has(weather as AtmosphereRainWeather);
@@ -42,6 +56,10 @@ export function isSnowWeather(weather?: string): boolean {
 
 export function isSandstormWeather(weather?: string): boolean {
   return weather !== undefined && ATMOSPHERE_SANDSTORM_WEATHERS_SET.has(weather as AtmosphereSandstormWeather);
+}
+
+export function isHeatWeather(weather?: string): boolean {
+  return weather !== undefined && ATMOSPHERE_HEAT_WEATHERS_SET.has(weather as AtmosphereHeatWeather);
 }
 
 export function isCanvasWeather(weather?: string): boolean {

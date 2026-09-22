@@ -78,8 +78,10 @@ const percentLabelText = computed(() => {
 .criminality-container {
   position: fixed;
   right: calc(6px + var(--scrollbar-width, 0px));
-  top: 50%;
-  transform: Translatey(-50%);
+  top: 0;
+  bottom: 0;
+  margin-block: auto;
+  height: fit-content;
   width: 24px; // Aumentado para dar aire lateral
   display: flex;
   flex-direction: column;
@@ -131,15 +133,5 @@ const percentLabelText = computed(() => {
   writing-mode: vertical-lr;
   transform: Rotate(180deg);
   @include pixelated;
-}
-
-
-
-.slide-right-enter-active, .slide-right-leave-active {
-  
-}
-.slide-right-enter-from, .slide-right-leave-to {
-  opacity: 0;
-  transform: Translatey(-50%) Translatex(30px);
 }
 </style>

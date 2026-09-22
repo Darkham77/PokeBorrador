@@ -224,6 +224,7 @@ export interface Pokemon {
   position?: number;
   item?: ItemId | null; // @deprecated use heldItem
   friendship?: number;
+  friendshipSteps?: number;
   vigor?: number;
   maxVigor?: number;
   catchRate?: number;
@@ -257,6 +258,7 @@ export interface Pokemon {
   chargingMove?: Move | null;
   aura?: string; // domain-ok: Open dynamic text or non-domain string payload
   isAncestral?: boolean;
+  isEgg?: boolean;
   choiceMove?: PokemonMoveId;
   originalDitto?: Partial<Pokemon>;
   form?: string; // domain-ok: Open dynamic text or non-domain string payload

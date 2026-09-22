@@ -11,6 +11,7 @@ Frontend Developers / Systems Engineers.
 - Follow standard repository modularity guidelines.
 - **HUD Action Modals Idle & Hover Preloading (`ActionButtons.vue`)**: Primary HUD action controls (Profile, Settings, Library) must prefetch their lazy-loaded modal SFC chunks during browser idle time (`requestIdleCallback`) and on container/button hover (`@mouseenter`), ensuring instantaneous modal opening without on-demand compilation delays in development or network latency in production.
 - **Criminality Bar HUD (`CriminalityBar.vue`)**: Visual gauge floating on map tab exclusively for Team Rocket members. Exposes explicit test IDs (`#criminality-bar`, `#criminality-bar-fill`, `#criminality-percent-label`), calculates excess levels via `calculatePoliceBonusLevel()`, enforces a visual height ceiling of 100%, and activates red pulse/glow upon reaching or exceeding 100% criminality.
+  - **Fixed Viewport Vertical Centering**: Positioned fixed on the right viewport margin and vertically centered across the full screen using pure CSS Box Alignment (`top: 0; bottom: 0; margin-block: auto; height: fit-content;`), preventing clipping across varying display heights and avoiding GSAP transform conflicts.
 
 ## Work Guidance
 

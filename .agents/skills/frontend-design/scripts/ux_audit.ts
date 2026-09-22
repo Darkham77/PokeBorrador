@@ -82,7 +82,7 @@ export function auditUX(projectPath: string): UXReport {
         }
 
         // Check for manual transition: (unless standard opacity/color hover transitions or fallow-ignore)
-        if (/\btransition:\s*(?!none\b|all\s+0s)[^;]+;/i.test(line) && !line.includes('// style-ok')) {
+        if (/\btransition:\s*(?!none\b|all\s+0s)[^;]+;/i.test(line)) {
           issues.push({
             file: relativeFile,
             line: lineNum,

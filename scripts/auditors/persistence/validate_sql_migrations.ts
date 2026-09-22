@@ -28,13 +28,18 @@ function isIgnorableSqliteMigrationError(error: unknown): boolean {
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const TIMESTAMP_REGEX = /^(\d{14})_/;
-const DB_VERSION_SQL_REGEX = /(?:VALUES\s*\(\s*['"]db_version['"]\s*,\s*['"]?(\d{14})|SET\s+value\s*=\s*['"]?(\d{14})|jsonb_build_object\s*\(\s*['"]db_version['"]\s*,\s*['"]?(\d{14}))/i;
+const DB_VERSION_SQL_REGEX = /(?:VALUES\s*\(\s*['"]db_version['"]\s*,\s*['"]*(\d{14})|SET\s+value\s*=\s*['"]*(\d{14})|jsonb_build_object\s*\(\s*['"]db_version['"]\s*,\s*['"]*(\d{14}))/i;
+const MANDATORY_DB_VERSION_TIMESTAMP = '20260901000000';
+const MANDATORY_SQLITE_COMPANION_TIMESTAMP = '20260619202000';
 
 export type SqlMigrationRuleId =
   | 'sql-migration-orphan-sqlite'
   | 'sql-migration-invalid-timestamp'
   | 'sql-migration-duplicate-timestamp'
   | 'sql-migration-broken-monotonicity'
+  | 'sql-migration-missing-dbversion'
+  | 'sql-migration-missing-sqlite-companion'
+  | 'sql-migration-sqlite-missing-dbversion'
   | 'sql-migration-dbversion-desync'
   | 'sql-migration-sqlite-exec-failure';
 
@@ -43,6 +48,9 @@ export const SQL_MIGRATION_RULES: readonly SqlMigrationRuleId[] = [
   'sql-migration-invalid-timestamp',
   'sql-migration-duplicate-timestamp',
   'sql-migration-broken-monotonicity',
+  'sql-migration-missing-dbversion',
+  'sql-migration-missing-sqlite-companion',
+  'sql-migration-sqlite-missing-dbversion',
   'sql-migration-dbversion-desync',
   'sql-migration-sqlite-exec-failure'
 ] as const;
@@ -60,6 +68,9 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         'sql-migration-invalid-timestamp': 'Timestamp inválido en nombre de migración',
         'sql-migration-duplicate-timestamp': 'Timestamp duplicado en migraciones SQL',
         'sql-migration-broken-monotonicity': 'Secuencia temporal no monótona en migraciones',
+        'sql-migration-missing-dbversion': 'Migración PostgreSQL sin actualización de db_version',
+        'sql-migration-missing-sqlite-companion': 'Migración PostgreSQL sin compañero .sqlite.sql obligatorio',
+        'sql-migration-sqlite-missing-dbversion': 'Migración SQLite sin actualización de db_version',
         'sql-migration-dbversion-desync': 'Desincronización de versión con db_version',
         'sql-migration-sqlite-exec-failure': 'Fallo de ejecución en SQLite en memoria'
       },
@@ -151,11 +162,22 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         } else {
           validatedDbVersionStatements++;
         }
+      } else if (timestamp >= MANDATORY_DB_VERSION_TIMESTAMP) {
+        this.addViolation({
+          ruleId: 'sql-migration-missing-dbversion',
+          severity: 'error',
+          file: `database/migrations/${file}`,
+          line: 1,
+          message: `Migración PostgreSQL '${file}' sin sentencia obligatoria de db_version en system_config.`,
+          context: file
+        });
       }
 
       // Companion .sqlite.sql
       const companionSqliteName = file.replace(/\.sql$/, '.sqlite.sql');
-      if (dirEntries.includes(companionSqliteName)) {
+      const hasCompanionSqlite = dirEntries.includes(companionSqliteName);
+
+      if (hasCompanionSqlite) {
         const sqliteContent = await fs.readFile(path.join(MIGRATIONS_DIR, companionSqliteName), 'utf-8');
         const sqliteVersionMatch = sqliteContent.match(DB_VERSION_SQL_REGEX);
         if (sqliteVersionMatch) {
@@ -170,7 +192,25 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
               context: `${sqliteVersion} !== ${timestamp}`
             });
           }
+        } else if (timestamp >= MANDATORY_DB_VERSION_TIMESTAMP) {
+          this.addViolation({
+            ruleId: 'sql-migration-sqlite-missing-dbversion',
+            severity: 'error',
+            file: `database/migrations/${companionSqliteName}`,
+            line: 1,
+            message: `Migración SQLite '${companionSqliteName}' sin sentencia obligatoria de db_version en system_config.`,
+            context: companionSqliteName
+          });
         }
+      } else if (timestamp >= MANDATORY_SQLITE_COMPANION_TIMESTAMP) {
+        this.addViolation({
+          ruleId: 'sql-migration-missing-sqlite-companion',
+          severity: 'error',
+          file: `database/migrations/${file}`,
+          line: 1,
+          message: `Migración PostgreSQL '${file}' sin archivo compañero SQLite obligatorio: '${companionSqliteName}'.`,
+          context: companionSqliteName
+        });
       }
     }
 

@@ -41,6 +41,18 @@ function resolvePlayerAvatarIcon(gs: LogContext['gs']): string {
 }
 
 function resolveStringSourceIcon(source: string): { icon: string; iconType: string } {
+  if (source === 'egg') {
+    return {
+      icon: getAssetUrl(ASSET_TYPES.POKEMON, 'egg'),
+      iconType: 'egg'
+    };
+  }
+  if (source === 'npc_egg') {
+    return {
+      icon: getAssetUrl(ASSET_TYPES.POKEMON, 'egg'),
+      iconType: 'npc_egg'
+    };
+  }
   const isEmoji = /^\p{Emoji}/u.test(source) && source.length <= 4;
   if (isEmoji) {
     return { icon: source, iconType: 'emoji' };
@@ -49,7 +61,7 @@ function resolveStringSourceIcon(source: string): { icon: string; iconType: stri
   try {
     item = getItemById(source);
   } catch {
-    logger.warn('BattleLogger', `La fuente de texto "${source}" no es un ID de item registrado. Se intentará cargar como sprite directo.`);
+    logger.error('BattleLogger', `La fuente de texto "${source}" no es un ID de item registrado en el catálogo.`);
   }
   const spriteId = (item && item.sprite) ? item.sprite : source;
   return {
@@ -74,6 +86,13 @@ function resolveLogIconAndType(msg: string, source: BattleSource, ctx: LogContex
     return { icon: getAssetUrl(ASSET_TYPES.TRAINER, spriteId), iconType: 'trainer' };
   }
   if (typeof source === 'object') {
+    if ('isEgg' in source || 'totalSteps' in source) {
+      const isNpc = Boolean((source as { isNpc?: boolean }).isNpc);
+      return {
+        icon: getAssetUrl(ASSET_TYPES.POKEMON, 'egg'),
+        iconType: isNpc ? 'npc_egg' : 'egg'
+      };
+    }
     const poke = source as Partial<Pokemon>;
     if (poke.id) {
       return {

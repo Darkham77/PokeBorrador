@@ -31,6 +31,8 @@
   // Weather Atmospheric Bleed (SSoT)
   --weather-layer-bleed: #{$weather-layer-bleed};
   --weather-mist-bleed: #{$weather-mist-bleed};
+  --weather-noise-1-url: url('/assets/fx/pattern-noise-1.webp'); // asset-url-ok: SSoT root CSS variable for weather noise pattern 1
+  --weather-noise-2-url: url('/assets/fx/pattern-noise-2.webp'); // asset-url-ok: SSoT root CSS variable for weather noise pattern 2
 
   // Premium Shell System (Replaces Premium Shell)
   --shell-bg: Rgba(15, 18, 32, 1);

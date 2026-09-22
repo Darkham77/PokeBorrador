@@ -97,4 +97,21 @@ describe('TypographyLineHeightAuditor', () => {
     const counts = auditor.getCountsByRule();
     expect(counts.get('typography-descender-clipping')).toBe(0);
   });
+
+  it('detects descender clipping on -webkit-line-clamp without safe line-height and padding', () => {
+    const auditor = new TypographyLineHeightAuditor();
+    const badScss = `
+      .bm-item-desc {
+        font-size: 9.5px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    `;
+    (auditor as unknown as { scanFile(path: string, content: string): void }).scanFile('src/test.scss', badScss);
+    const counts = auditor.getCountsByRule();
+    expect(counts.get('typography-descender-clipping')).toBe(1);
+  });
 });

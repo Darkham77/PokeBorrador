@@ -117,54 +117,54 @@ Each browser tab generates a unique `SessionID`:
 
 ```mermaid
 flowchart TD
-    Start[PWA Update Detected / Lockout] --> ActiveSession{¿Jugador en partida?<br>isReady == true}
-    ActiveSession -- Sí --> ClickUpdateActive[Usuario hace click en ACTUALIZAR AHORA]
-    ClickUpdateActive --> SafeLogout[Ejecutar authStore.logout<br>Guarda progreso, cierra sesión y recarga]
-    ActiveSession -- No --> ClickUpdateBlocked[Usuario hace click en ACTUALIZAR AHORA]
-    ClickUpdateBlocked --> CleanReload[Limpiar Cachés y SW. Recarga física]
-    SafeLogout --> ReloadPage[Recarga deslogueado]
-    ReloadPage --> ShowBlockedCard[Mostrar Cartel de Actualización en LoginView]
+    Start[PWA Update Detected / Lockout] --> ActiveSession{Player in-game?<br>isReady == true}
+    ActiveSession -- Yes --> ClickUpdateActive[User clicks UPDATE NOW]
+    ClickUpdateActive --> SafeLogout[Execute authStore.logout<br>Saves progress, logs out, and reloads]
+    ActiveSession -- No --> ClickUpdateBlocked[User clicks UPDATE NOW]
+    ClickUpdateBlocked --> CleanReload[Clear Caches and SW. Hard physical reload]
+    SafeLogout --> ReloadPage[Reload logged out]
+    ReloadPage --> ShowBlockedCard[Show Update Card in LoginView]
     ShowBlockedCard --> ClickUpdateBlocked
 ```
 
-### Secuencia de Inicio (Boot), Validación de Versión y Login
+### Startup Sequence (Boot), Version Validation, and Login
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Usuario
+    actor User
     participant App as App.vue (Startup)
     participant LoginView as LoginView.vue (Login)
-    participant DB as DBRouter / Servidor
+    participant DB as DBRouter / Server
     participant GameStore as GameStore (Save/Load)
     
-    Usuario->>App: Iniciar App (Boot / Recarga)
-    Note over App: Cargar sesión de Auth
-    alt Sesión activa detectada (Auto-Login)
+    User->>App: Launch App (Boot / Reload)
+    Note over App: Load Auth Session
+    alt Active session detected (Auto-Login)
         App->>DB: checkAppVersionCompatibility()
-        DB-->>App: Retorna compatible o OUTDATED_CLIENT
+        DB-->>App: Returns compatible or OUTDATED_CLIENT
         alt compatible
-            App->>GameStore: loadGame() (Carga segura de datos)
-            GameStore-->>App: Carga exitosa
-            App->>Usuario: Entrar al juego (Listo)
-        else OUTDATED_CLIENT (Desactualizado)
-            Note over App: Bloquear carga de datos de partida
-            App->>Usuario: Mostrar PVLoadingOverlay "NUEVA VERSIÓN"
-            Usuario->>App: Presiona ACTUALIZAR AHORA
-            App->>Usuario: Limpiar SW/Cachés y forzar Recarga Física
+            App->>GameStore: loadGame() (Safe data load)
+            GameStore-->>App: Load successful
+            App->>User: Enter game (Ready)
+        else OUTDATED_CLIENT (Outdated)
+            Note over App: Block save data loading
+            App->>User: Show PVLoadingOverlay "NEW VERSION"
+            User->>App: Clicks UPDATE NOW
+            App->>User: Clear SW/Caches and force Hard Reload
         end
-    else No hay sesión activa (Pantalla de Login)
+    else No active session (Login Screen)
         App->>DB: checkAppVersionCompatibility()
-        DB-->>App: Retorna compatible o OUTDATED_CLIENT
+        DB-->>App: Returns compatible or OUTDATED_CLIENT
         alt OUTDATED_CLIENT
-            App->>LoginView: Cargar vista de Login (sin loading overlay)
-            Note over LoginView: Bloquear formulario y mostrar tarjeta "NUEVA VERSIÓN"
-            Usuario->>LoginView: Presiona ACTUALIZAR AHORA
-            LoginView->>Usuario: Limpiar SW/Cachés y forzar Recarga Física
+            App->>LoginView: Load Login view (without loading overlay)
+            Note over LoginView: Lock form and show "NEW VERSION" card
+            User->>LoginView: Clicks UPDATE NOW
+            LoginView->>User: Clear SW/Caches and force Hard Reload
         else compatible
-            App->>Usuario: Mostrar Pantalla de Login normal
-            Usuario->>LoginView: Ingresar credenciales y Login
-            LoginView->>App: Recargar para iniciar sesión auto-check
+            App->>User: Show normal Login screen
+            User->>LoginView: Enter credentials and Login
+            LoginView->>App: Reload to initiate session auto-check
         end
     end
 ```

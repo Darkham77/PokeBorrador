@@ -83,6 +83,32 @@
   &.strong_winds .weather-canvas {
     filter: sepia(1) Saturate(1.5) Brightness(0.8) contrast(1.1);
   }
+  &.sun,
+  &.intense_sun,
+  &.heatwave {
+    .weather-canvas {
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: var(--z-low);
+    }
+  }
+
+  &.sun .weather-canvas {
+    filter: sepia(0.8) Saturate(2.5) Brightness(1.2) contrast(1.4);
+    -webkit-mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 30%, Rgba(0, 0, 0, 0.6) 65%, Rgba(0, 0, 0, 1) 88%);
+    mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 30%, Rgba(0, 0, 0, 0.6) 65%, Rgba(0, 0, 0, 1) 88%);
+  }
+  &.intense_sun .weather-canvas {
+    filter: sepia(0.6) Saturate(3.0) Brightness(1.35) contrast(1.6);
+    -webkit-mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 25%, Rgba(0, 0, 0, 0.7) 60%, Rgba(0, 0, 0, 1) 85%);
+    mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 25%, Rgba(0, 0, 0, 0.7) 60%, Rgba(0, 0, 0, 1) 85%);
+  }
+  &.heatwave .weather-canvas {
+    filter: sepia(1) Saturate(5.0) hue-Rotate(-25deg) Brightness(1.1) contrast(1.9);
+    -webkit-mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 20%, Rgba(0, 0, 0, 0.8) 55%, Rgba(0, 0, 0, 1) 80%);
+    mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 20%, Rgba(0, 0, 0, 0.8) 55%, Rgba(0, 0, 0, 1) 80%);
+  }
 
   // Sandwich Architecture: Pure particles layer without background tint or shadows
   &.is-particles-layer {

@@ -112,7 +112,15 @@ The cloning system allows recreating ancestral Pokémon (Omanyte, Kabuto, Aeroda
 
 ---
 
-## 10. 🥚 Interactive Egg Hatching Lifecycle & Animation Protocols
+## 10. 🚶‍♂️ Activity Step Distribution & Walking Friendship Coordination
+
+Activity steps earned throughout the game (`battle: 2`, `capture: 3`, `gym: 10`, `minigame: 1`) are processed centrally through `breedingStore.reduceHatchTimers(steps)`:
+1. **Party Walking Friendship**: Steps are accumulated onto the eligible lead Pokémon via `processWalkingFriendshipStepAccumulation` **unconditionally**, even if no eggs are currently in the incubator.
+2. **Egg Hatch Timers**: If eggs are carried in the player's team, their remaining hatch timers are reduced in tandem.
+
+---
+
+## 11. 🥚 Interactive Egg Hatching Lifecycle & Animation Protocols
 
 Hatching follows a structured 3-phase interactive lifecycle orchestrated by `HatchAnimationModal.vue`:
 
@@ -131,7 +139,7 @@ window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch_anim' });
 
 ---
 
-## 11. 🧬 Move Inheritance & Newborn Legality Standards
+## 12. 🧬 Move Inheritance & Newborn Legality Standards
 
 - **Level 1 Move Legality Verification**: When calculating inherited moves (`inheritMoves`) between parents:
   1. **Egg Moves (`E`)**: Inherited if either parent knows a move found in the baby species' Showdown egg movepool.

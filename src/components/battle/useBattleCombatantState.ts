@@ -222,6 +222,7 @@ const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
 
   // Escape Smoke Particles
   const smokeParticles = ref<SmokeParticle[]>([]);
+  let activeSmokeTicker: (() => void) | null = null;
 
 const GSAP_TELEPORT_SCALEY_TARGET = 2.0;
 const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
@@ -315,6 +316,7 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
       }
       smokeParticles.value = list;
 
+
       const updateTicker = () => {
         let active = false;
         smokeParticles.value.forEach((p) => {
@@ -325,13 +327,18 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
           if (p.opacity > 0) active = true;
         });
 
-        if (active) {
-          requestAnimationFrame(updateTicker);
-        } else {
+        if (!active) {
+          if (activeSmokeTicker && gsap?.ticker) {
+            gsap.ticker.remove(activeSmokeTicker);
+            activeSmokeTicker = null;
+          }
           smokeParticles.value = [];
         }
       };
-      requestAnimationFrame(updateTicker);
+      activeSmokeTicker = updateTicker;
+      if (gsap?.ticker) {
+        gsap.ticker.add(updateTicker);
+      }
 
       const slideX = props.side === 'player' ? -FLEE_SLIDE_DISTANCE_PX : FLEE_SLIDE_DISTANCE_PX;
       const tween = gsap.to(spriteRef.value, {
@@ -371,6 +378,10 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
   });
 
   onUnmounted(() => {
+    if (activeSmokeTicker && gsap?.ticker) {
+      gsap.ticker.remove(activeSmokeTicker);
+      activeSmokeTicker = null;
+    }
     gameBus.off('TRIGGER_COMBATANT_ESCAPE', handleEscapeEvent);
     gameBus.off('PLAY_TRANSFORM', handleTransformEvent);
   });

@@ -103,6 +103,7 @@ function sanitizeDeserializedPokemon(rawMon: Pokemon): Pokemon {
     attracted: false,
     isGuardian: false,
     volatileCounters: {},
+    friendshipSteps: Number(rawMon.friendshipSteps ?? 0),
     uid: ensurePokemonUid(rawMon.uid)
   };
 }

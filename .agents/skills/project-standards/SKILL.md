@@ -49,7 +49,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 
 ### 3. Architectural Reuse, Polymorphism & 4-Seat Compatibility
 - **Zero-Duplication & Inheritance Mandate**: Duplicating logic, structures, components, or control flows anywhere in the codebase is strictly forbidden. Refactor to extract common base classes, parameterized composables, or generic extensible components before writing new code.
-- **Mandatory 4-Seat Generic Compatibility**: Every battle orchestration, state synchronization, worker payload processing, and UI component MUST be strictly designed and generalized to support up to 4 battle seats (`p1`, `p2`, `p3`, `p4`) dynamically. Hardcoding logic for only 2 seats is strictly prohibited.
+- **Mandatory 4-Seat Extensible Harness & 1v1 Active Battle Architecture**: Battle engine types, worker interfaces, state schemas, and harness adapters MUST be strictly designed and extensible to support up to 4 battle seats (`p1`–`p4`, 2vs2 double battles) when activated. The active gameplay battle orchestrator, UI HUDs, and heuristic AI execute the canonical 1v1 mode (`p1` vs `p2`), reserving `p3`/`p4` harness slots for multi-combatant expansion without duplicating core combat loops.
 
 ### 4. TypeScript Integrity & Zero-Ignore Policy
 - **Zero-Ignore & Zero-Any**: `@ts-ignore`, `@ts-nocheck`, and `any` are strictly forbidden across the entire repository (including Web Workers and E2E simulation files).
@@ -123,14 +123,16 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 
 ## 🧭 Navigation Hub, Documentation Taxonomy & Anti-Junk-Drawer Policy
 
-### 📚 5-Tier Documentation Taxonomy
-To prevent clutter, confusion, and document degradation, documentation in `references/` is strictly divided into 5 distinct tiers:
+### 📚 7-Tier Documentation Taxonomy
+To prevent clutter, confusion, and document degradation, documentation in `references/` is strictly divided into 7 distinct tiers:
 
 1. **`references/rules/` (Developer & Engine Governance ONLY)**: Invariable architectural laws, coding constraints, and low-level engine integration rules (Showdown worker interface, 4-seat generalization, zero-timers, Zero-Any TypeScript, Git safety, Save Shield). 🛑 **NEVER put gameplay feature rules, drop tables, or daycare/egg mechanics here.**
 2. **`references/systems/` (Gameplay Systems & Features SSoT)**: The dedicated Single Source of Truth for specific in-game features (`breeding_manual.md` for Daycare/Eggs/Vigor, `gym_system_manual.md` for Gyms, `obedience_mechanics_manual.md` for Obedience/Level Caps, `item_system_manual.md` for Items/Crafting, `capturing_manual.md` for Capture Math, `evolution_manual.md` for Evolutions, `ev_mechanics_manual.md` for EVs, `war_system_manual.md` for Faction War, `spawn_grid_manual.md` for Spawns).
 3. **`references/battle/` (Combat Arena & Battle Execution)**: Battle state transitions, Showdown event translation, GSAP combat animations, combat camera, status ailments, and weather standards.
 4. **`references/core/` (Mathematical Formulas & UI/UX Standards)**: Central mathematical formulas (Damage, Catch rates, Stats, Escape, Minigames) and global UI/UX design tokens.
 5. **`references/technical/` (Infrastructure & Frontend Tech)**: GPU optimization, SASS styling, asset pipelines, DBRouter proxy architecture, SQL dialect translation, legacy migration, and Supabase infrastructure.
+6. **`references/qa/` (QA Protocols, Audit Checklists & Animation Testing)**: Manual and automated testing protocols, DevTools shortcuts, verification matrix (`browser_testing_manual.md`), animation and forced-switch checklists (`manual_testing_battle_animations.md`), pre-release audit checklists (`audit_checklist.md`), and quality verification standards (`validation_manual.md`).
+7. **`references/content/` (Content Creation & Quest Crafting)**: Quest authoring, content design, event storyline crafting, and dialog trees (`content_creation_manual.md`).
 
 ### 🌳 Document Routing Decision Tree
 

@@ -231,14 +231,14 @@ export const usePvPStore = defineStore('pvp', () => {
 
   const DEFENSE_SNAPSHOT_DEBOUNCE_MS = 1500;
 
-  let defenseSnapshotTimer: ReturnType<typeof setTimeout> | null = null
+  let defenseSnapshotTimer: ReturnType<typeof setTimeout> | null = null // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
 
   function scheduleDefenseSnapshotSync(delayMs = DEFENSE_SNAPSHOT_DEBOUNCE_MS) {
     if (defenseSnapshotTimer) {
-      clearTimeout(defenseSnapshotTimer)
+      clearTimeout(defenseSnapshotTimer) // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
       defenseSnapshotTimer = null
     }
-    defenseSnapshotTimer = setTimeout(() => {
+    defenseSnapshotTimer = setTimeout(() => { // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
       defenseSnapshotTimer = null
       void syncDefendingTeamSnapshot()
     }, delayMs)
@@ -246,7 +246,7 @@ export const usePvPStore = defineStore('pvp', () => {
 
   async function flushPendingDefenseSnapshotSync() {
     if (defenseSnapshotTimer) {
-      clearTimeout(defenseSnapshotTimer)
+      clearTimeout(defenseSnapshotTimer) // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
       defenseSnapshotTimer = null
       await syncDefendingTeamSnapshot()
     }
@@ -254,7 +254,7 @@ export const usePvPStore = defineStore('pvp', () => {
 
   async function deactivatePassiveDefense(reason?: string) {
     if (defenseSnapshotTimer) {
-      clearTimeout(defenseSnapshotTimer)
+      clearTimeout(defenseSnapshotTimer) // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
       defenseSnapshotTimer = null
     }
     if (!gameStore.db || !authStore.user) return

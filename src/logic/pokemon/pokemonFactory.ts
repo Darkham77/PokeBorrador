@@ -381,6 +381,7 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
     ivs, nature, ability, gender, isShiny,
     moves: getMovesAtLevel(id, level, bypass) as Move[],
     status: '', sleepTurns: 0, friendship: DEFAULT_FRIENDSHIP_VALUE,
+    friendshipSteps: 0,
     vigor: 0, maxVigor: 0,
     heldItem,
     nickname: null,

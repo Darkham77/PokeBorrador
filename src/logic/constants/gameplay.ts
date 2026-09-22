@@ -316,6 +316,9 @@ export const MAX_NPC_CARRIED_EGGS = 1;
 /** Max total eggs (regular daycare + NPC) a trainer can carry simultaneously in incubator (7). */
 export const MAX_TOTAL_CARRIED_EGGS = MAX_CARRIED_EGGS + MAX_NPC_CARRIED_EGGS;
 
+/** Distinctive visual tint applied to baby eggs gifted by NPC trainers and Rivals. */
+export const NPC_EGG_TINT = 'rgba(239, 68, 68, 0.75)';
+
 /** Base success chance per fossil consumed during fossil cloning (5%). */
 export const FOSSIL_CLONE_BASE_SUCCESS_CHANCE = 0.05;
 

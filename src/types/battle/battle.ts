@@ -233,6 +233,7 @@ export interface BattleState {
     money: number;
     items: Inventory;
   };
+  initialFriendships?: Record<string, number>; // domain-ok: Map of Pokemon UID to baseline friendship at battle start
   p1SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
   p2SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
   switchingToEnemy?: Pokemon | null;

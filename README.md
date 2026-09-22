@@ -189,10 +189,10 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | :-- | :-- |
 | `npm run lint` | **Fast Developer Lint**: Ejecuta las 10 suites esenciales de calidad en paralelo mediante `npm run audit:lint`. |
 | `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint (`npm run audit:lint fix`). |
-| `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los 52 sub-auditores dinámicamente con concurrencia acotada, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. |
+| `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores descubiertos dinámicamente con concurrencia acotada, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. |
 | `npm run audit:lint` | **Preset de Linting**: Ejecuta en paralelo el preset de 10 suites de código fuente. |
 | `npm run audit:md` | **Auditoría Documental y DOX**: Suite unificada (~2s) que ejecuta en paralelo la validación de jerarquía `AGENTS.md`, enlaces relativos, sintaxis Markdown y reglas de Markdownlint (preset `md`). |
-| `npm run audit:for-commit` | **Safe-Commit Diff Gatekeeper**: Compara cambios contra `origin/main` en el flujo de safe-commit exigiendo 0 errores en el repositorio y 0 advertencias nuevas en archivos modificados. |
+| `npm run audit:for-commit` | **Safe-Commit Diff Gatekeeper**: Compara cambios contra `origin/main` (estrictamente reservado para el pipeline `/safe-commit`). |
 | `npm run audit:changed` | **Auditoría de Archivos Modificados**: Ejecuta las suites de auditoría exclusivamente sobre los archivos modificados desde `main`. |
 | `npm run audit:fix` | **Auto-corrección de Arquitectura**: Corrige automáticamente timers, sintaxis SASS, capas de render y directivas de importación. |
 | `npm run audit:project` | **Reglas de Arquitectura y Estilo**: Evalúa las 43 reglas estáticas de código en archivos `.ts`, `.vue` y `.scss`. |
@@ -201,7 +201,7 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | `npm run audit:family:fsm` | **Auditoría de FSM**: Valida diagramas, implementación dinámica y paridad de flujo de combate. |
 | `npm run audit:family:persistence` | **Auditoría de Persistencia**: Valida esquemas SQL, migraciones y serialización de partidas. |
 | `npm run audit:family:assets` | **Auditoría de Assets**: Valida colisiones de sprites, nombres canónicos y atlas de texturas. |
-| `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad de 500 líneas, tokens SCSS, reactividad Pinia y componentes Vue. |
+| `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad y complejidad Fallow, tokens SCSS, reactividad Pinia y componentes Vue. |
 | `npm run audit:fallow` | **Codebase Intelligence (Fallow)**: Dashboard consolidado de métricas, dependencias circulares, duplicaciones, exportaciones huérfanas y vulnerabilidades CWE. |
 | `npm run audit:complexity` | **Hotspots de Complejidad**: Reporta funciones con mayor complejidad ciclomática y cognitiva (`npm run audit:complexity:top`). |
 | `npm run audit:css` | **Auditoría de Estilos y Clases**: Detecta selectores duplicados y clases redundantes en SCSS y bloques `<style>` vía `css-checker`. |
@@ -467,7 +467,7 @@ npm run sync:test         # Sincroniza el código fuente al repo hermano pokevic
 
 - **Rendimiento GPU**: Prioriza el uso de transformaciones CSS3 (`translate3d`), capas GPU y evita filtros costosos en bucles de animación.
 - **Assets WebP**: Prohibido usar PNG/JPG raw; usa el script de conversión a WebP. (Excepción: Assets de PokeAPI deben ser PNG).
-- **Ley de 500 Líneas**: Ningún archivo de lógica o componente debe exceder las 500 líneas.
+- **Gobernanza de Calidad Fallow**: La modularidad, tamaño de funciones (≤60 LOC) y límites de complejidad ciclomática/cognitiva están gobernados estrictamente por Fallow (Maintainability Index ≥ 85) en lugar de límites arbitrarios de líneas.
 - **Aislamiento de Servidores**: No mezcles datos de instancias Global (Supabase) con Local (SQLite).
 
 ---
@@ -530,7 +530,7 @@ Si bajas cambios del repositorio (git pull) y el comando `npm run dev` falla o t
 Para mantener la calidad y el orden del código, es una excelente práctica realizar una auditoría periódica (cada 2 o 3 días de trabajo).
 
 - **Instrucción**: Pedile a la IA: *"Hace una auditoría a todo el proyecto y revisá que cumpla con /project-standards"*.
-- **Resultado**: La IA detectará archivos que exceden las 500 líneas, errores de estilo o violaciones a la arquitectura.
+- **Resultado**: La IA detectará hotspots de complejidad Fallow, errores de estilo o violaciones a la arquitectura.
 - **Acción**: Después del reporte, pedile que genere el *"plan de corrección"* para normalizar el código.
 
 ### 3. 🖼️ Gestión de Imágenes (`_raw-assets`)

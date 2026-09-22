@@ -307,3 +307,101 @@ export function applyFriendshipDelta(
 
   return { oldFriendship, newFriendship, transition };
 }
+
+export const FRIENDSHIP_WALK_CONSTANTS = {
+  CYCLE_STEPS: 128,
+  SUCCESS_PROBABILITY: 0.5,
+  BASE_GAIN: 1,
+  SOOTHE_BELL_BONUS: 1,
+} as const;
+
+/**
+ * Calculates walking friendship gain for a Pokémon, factoring in Soothe Bell.
+ */
+export function calculateWalkingFriendshipGain(pokemon: Pokemon): number {
+  if (pokemon.heldItem === 'soothebell') {
+    return FRIENDSHIP_WALK_CONSTANTS.BASE_GAIN + FRIENDSHIP_WALK_CONSTANTS.SOOTHE_BELL_BONUS;
+  }
+  return FRIENDSHIP_WALK_CONSTANTS.BASE_GAIN;
+}
+
+/**
+ * Resolves the walking companion eligible to gain friendship.
+ * Prioritizes the conscious lead companion (team[0]), and cascades past
+ * fainted Pokémon, eggs, or members already at maximum friendship (255).
+ */
+export function resolveWalkingFriendshipRecipient(team: Pokemon[]): Pokemon | null {
+  for (const p of team) {
+    if (p.isEgg) continue;
+    if (p.fainted || (p.hp ?? 1) <= 0) continue;
+    const current = clampFriendship(p.friendship);
+    if (current >= FRIENDSHIP_BOUNDS.MAX) continue;
+    return p;
+  }
+  return null;
+}
+
+export interface ProcessWalkingFriendshipOptions {
+  team: Pokemon[];
+  addedSteps: number;
+  notifyFn?: (msg: string, icon?: string) => void;
+  rollFn?: () => number;
+}
+
+export interface ProcessWalkingFriendshipResult {
+  recipient: Pokemon | null;
+  remainingSteps: number;
+  rewardedPokemon: Pokemon | null;
+  gain: number;
+}
+
+/**
+ * Accumulates walking/activity steps directly on the active walking companion (per-Pokemon),
+ * consumes 128-step cycles, evaluates the canonical 50% probability roll, awards friendship,
+ * and emits a toast notification.
+ */
+export function processWalkingFriendshipStepAccumulation(
+  options: ProcessWalkingFriendshipOptions
+): ProcessWalkingFriendshipResult {
+  const recipient = resolveWalkingFriendshipRecipient(options.team);
+  if (!recipient) {
+    return {
+      recipient: null,
+      remainingSteps: 0,
+      rewardedPokemon: null,
+      gain: 0,
+    };
+  }
+
+  let totalSteps = (recipient.friendshipSteps ?? 0) + options.addedSteps;
+  let rewardedPokemon: Pokemon | null = null;
+  let totalGain = 0;
+
+  while (totalSteps >= FRIENDSHIP_WALK_CONSTANTS.CYCLE_STEPS) {
+    totalSteps -= FRIENDSHIP_WALK_CONSTANTS.CYCLE_STEPS;
+    const roll = options.rollFn ? options.rollFn() : Math.random();
+    if (roll < FRIENDSHIP_WALK_CONSTANTS.SUCCESS_PROBABILITY) {
+      const gain = calculateWalkingFriendshipGain(recipient);
+      const { transition } = applyFriendshipDelta(recipient, gain);
+      rewardedPokemon = recipient;
+      totalGain += gain;
+
+      if (options.notifyFn) {
+        const name = recipient.nickname || recipient.name;
+        const baseMsg = `¡El vínculo con ${name} ha mejorado!`;
+        const msg = transition ? `${baseMsg} ${transition.message}` : baseMsg;
+        options.notifyFn(msg, '❤️');
+      }
+    }
+  }
+
+  recipient.friendshipSteps = totalSteps;
+
+  return {
+    recipient,
+    remainingSteps: totalSteps,
+    rewardedPokemon,
+    gain: totalGain,
+  };
+}
+

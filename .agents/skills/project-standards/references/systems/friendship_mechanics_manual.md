@@ -185,8 +185,11 @@ Friendship gain operates under a **diminishing returns** model divided into thre
 | Event / Action | Bracket: 0–99 | Bracket: 100–199 | Bracket: 200–255 | Applicable Generations |
 | :--- | :---: | :---: | :---: | :--- |
 | **Level Up** | **+5** | **+3** | **+2** | All Gens (I–IX) |
-| **Walking** (128 / 512 steps, 50% chance) | **+1** | **+1** | **+1** | All Gens (II–IX) |
+| **Walking** (128 steps, 50% chance, +2 with Soothe Bell) | **+1** | **+1** | **+1** | All Gens (II–IX) |
 | **Vitamins** (Protein, Iron, Carbos, etc.) | **+5** | **+3** | **+2** | All Gens (I–IX) |
+
+> **Per-Pokémon Persistent Accumulator (`friendshipSteps`)**:
+> In Poké Vicio, the 128-step counter is tracked independently per Pokémon (`pokemon.friendshipSteps?: number`, 0 to 127) in save data. When walking or completing activities, steps are accumulated onto the leading eligible Pokémon (`hp > 0`, `!isEgg`, `friendship < 255`). Switching party order or storing Pokémon in PC boxes preserves each Pokémon's exact step progress without resetting.
 | **Stat Wings / Feathers** (Gen V+) | **+3** | **+2** | **+1** | Gen V–IX |
 | **EV-Reducing Berries** (Pomeg, Kelpsy, etc.) | **+10** | **+5** | **+2** | Gen III (Emerald)–IX |
 | **Gym Leader / E4 / Champion / Red Battle** | **+3** | **+2** | **+1** | Gen I–VII |

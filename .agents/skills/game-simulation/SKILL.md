@@ -103,31 +103,31 @@ flowchart TD
 ```
 
 ### Detailed Step Protocols
-1. **Paso 1: Fuzzer Execution & Regeneration** (`npm run sim:fuzzer` / `npm run sim:fuzzer:validate`):
+1. **Step 1: Fuzzer Execution & Regeneration** (`npm run sim:fuzzer` / `npm run sim:fuzzer:validate`):
    - Mandatory on clean runs or when battle engine logic (`src/logic/battle/`) changes.
-2. **Paso 2: E2E Simulation Execution** (`npm run sim:e2e`):
+2. **Step 2: E2E Simulation Execution** (`npm run sim:e2e`):
    - Executes dynamic sequential suites. Halts immediately on the first error.
-3. **Paso 3: Isolate Failing Suite and Case ID**:
+3. **Step 3: Isolate Failing Suite and Case ID**:
    - Halt master run. Identify exact suite name, batch index, and case ID from failure logs.
-4. **Paso 4: Create Isolated RED Reproduction Test** (`tests/node/`):
+4. **Step 4: Create Isolated RED Reproduction Test** (`tests/node/`):
    - Extract static case parameters (`seed`, teams, turn choice streams from `history`) into a static fixture or test file. Verify deterministic failure in **RED** via Vitest.
-5. **Paso 5: Fix Root Cause in `src/` & Harden Base Harness**:
+5. **Step 5: Fix Root Cause in `src/` & Harden Base Harness**:
    - Fix upstream root cause without fallbacks. Verify reproduction test turns **GREEN**.
-6. **Paso 5.5: Full Node Unit Regression Check** (`npm run test:node`):
+6. **Step 5.5: Full Node Unit Regression Check** (`npm run test:node`):
    - Run entire Node test suite. Must report 100% GREEN (0 regressions) before browser testing.
-7. **Paso 6A: Fast-Forward Resume from Checkpoint**:
+7. **Step 6A: Fast-Forward Resume from Checkpoint**:
    - Run `npm run sim:e2e filter=<suite_name>` to resume from `failedBatchIndex` through end of suite.
-8. **Paso 6B: Mandatory Dual Clean Zero Intra-Suite Regression Pass**:
+8. **Step 6B: Mandatory Dual Clean Zero Intra-Suite Regression Pass**:
    - Run `npm run sim:e2e filter=<suite_name> clean=true`.
    - Must pass 100% from case 1 in both SQLite and PostgreSQL.
-9. **Paso 6C: Record Fix in Commit Ledger**:
+9. **Step 6C: Record Fix in Commit Ledger**:
    - Record the repaired bug in `simulation_progress.md` and mirror to physical log.
-10. **Paso 7: Full Master Resumption**:
+10. **Step 7: Full Master Resumption**:
     - Run `npm run sim:e2e` to advance to the next suite until all 58+ suites are certified.
 
 ---
 
-## 📊 Gobernanza del Artefacto de Progreso y del Commit Ledger
+## 📊 Progress Artifact Governance & Commit Ledger
 
 Every simulation run maintains `simulation_progress.md` in the brain, mirrored to `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md`:
 
@@ -142,42 +142,42 @@ Every simulation run maintains `simulation_progress.md` in the brain, mirrored t
 
 ---
 
-## 🔍 Herramienta de Auditoría de Paridad 1:1 con Showdown (`npm run sim:audit`)
+## 🔍 1:1 Showdown Parity Audit Tool (`npm run sim:audit`)
 
-La auditoría de paridad compara el código fuente canónico de Pokémon Showdown en `external/pokemon-showdown-code/` contra `src/` para detectar y resolver divergencias reales de comportamiento (sin fabricar falsos positivos ni usar fallbacks):
+The parity audit compares canonical Pokémon Showdown source code in `external/pokemon-showdown-code/` against `src/` to detect and resolve real behavioral divergences (without fabricating false positives or using fallbacks):
 
-### Metodología de Auditoría
-- **Suite Diagnóstica**: Ejecutar `npm run sim:audit` (`scripts/maintenance/audit_showdown/run_audit_suite.ts`) para escanear violaciones automatizadas en tokens, estados FSM, boosts y fórmulas.
-- **El Mandato de Dos Etapas**:
-  1. *Etapa 1 (Investigación)*: Inspección línea por línea hasta listar ≥20 sospechosos concretos (*"Showdown hace X pero src/ hace Y"*).
-  2. *Etapa 2 (Confirmación RED)*: Escribir y ejecutar un test para cada sospechoso en `tests/unit/battle/parity/`. Si pasa en GREEN en la primera corrida, NO es un bug (descartar). Si falla en **RED**, catalogar en la Tabla Maestra 1:1.
-- **Prohibiciones Absolutas**: Cero catalogación sin fallo RED previo, prohibición estricta de inventar bugs para llenar cuotas, prohibición de fallbacks (`||`, `??`), y cero strings desnudos para dominios finitos.
-- Consultar la guía completa en [showdown_parity_audit_guide.md](./references/showdown_parity_audit_guide.md).
+### Audit Methodology
+- **Diagnostic Suite**: Run `npm run sim:audit` (`scripts/maintenance/audit_showdown/run_audit_suite.ts`) to scan automated violations in tokens, FSM states, boosts, and formulas.
+- **Two-Stage Mandate**:
+  1. *Stage 1 (Investigation)*: Line-by-line inspection until listing ≥20 concrete suspects (*"Showdown does X but src/ does Y"*).
+  2. *Stage 2 (RED Confirmation)*: Write and run a test for each suspect in `tests/unit/battle/parity/`. If it passes in GREEN on the first run, it is NOT a bug (discard). If it fails in **RED**, catalog in the 1:1 Master Table.
+- **Absolute Prohibitions**: Zero cataloging without prior RED failure, strict prohibition on inventing bugs to fill quotas, prohibition on fallbacks (`||`, `??`), and zero naked strings for finite domains.
+- Consult the full guide in [showdown_parity_audit_guide.md](./references/showdown_parity_audit_guide.md).
 
 ---
 
-## 🏛️ Directivas e Invariantes Centrales
+## 🏛️ Core Directives & Invariants
 
-- **Límite Estricto de 10s por Acción (`MAX_PER_ACTION_TIMEOUT_MS = 10000`)**: Input response window strictly capped at 10s. A timeout is NEVER a time shortage; it is an empirical bug in `src/`. Engine turn processing (`isProcessing.value`) resets inactivity watchdog.
-- **Ley del Joystick Pasivo & Selectores 100% por ID/UID**: Simulators only react to explicit FSM readiness states. All elements located strictly by `#<id>` or `data-pokemon-uid="${uid}"`. Text/regex matching is forbidden. Official keyboard activation (`Enter`).
-- **Sincronización por Eventos Tipados & Cero-Timers**: Timers (`setTimeout`, `sleep`) forbidden in UI. Synced exclusively via typed events (`battle-ready-for-input`, `GAME_UI_EVENTS`) coordinated with GSAP `onComplete`.
-- **Aceleración Universal GSAP a 100x**: `gsap.globalTimeline.timeScale(100)` enforced in simulations.
-- **Paridad Multimotor y Ejecución Serial**: Dual driver model (SQLite in-memory WASM + PostgreSQL Docker). Drivers execute strictly in series: `[1/2 SQLite]` then `[2/2 PostgreSQL]`.
-- **Aislamiento de Puerto 5174**: E2E simulations strictly use port 5174 (`npx kill-port 5174`).
-- **Auto-Arranque Proactivo de Docker**: Automatically starts Docker if stopped when PostgreSQL runs.
-- **Prohibición de Mockeo Tautológico**: Never mock the subsystem under test (`showdownWorkerClient.ts`, `@pkmn/sim`). Real engine parity is mandatory.
+- **Strict 10s per Action Limit (`MAX_PER_ACTION_TIMEOUT_MS = 10000`)**: Input response window strictly capped at 10s. A timeout is NEVER a time shortage; it is an empirical bug in `src/`. Engine turn processing (`isProcessing.value`) resets inactivity watchdog.
+- **Passive Joystick Law & 100% ID/UID Locators**: Simulators only react to explicit FSM readiness states. All elements located strictly by `#<id>` or `data-pokemon-uid="${uid}"`. Text/regex matching is forbidden. Official keyboard activation (`Enter`).
+- **Typed Event Synchronization & Zero-Timers**: Timers (`setTimeout`, `sleep`) forbidden in UI. Synced exclusively via typed events (`battle-ready-for-input`, `GAME_UI_EVENTS`) coordinated with GSAP `onComplete`.
+- **Universal GSAP Acceleration at 100x**: `gsap.globalTimeline.timeScale(100)` enforced in simulations.
+- **Multi-Engine Parity & Serial Execution**: Dual driver model (SQLite in-memory WASM + PostgreSQL Docker). Drivers execute strictly in series: `[1/2 SQLite]` then `[2/2 PostgreSQL]`.
+- **Port 5174 Isolation**: E2E simulations strictly use port 5174 (`npx kill-port 5174`).
+- **Proactive Docker Auto-Start**: Automatically starts Docker if stopped when PostgreSQL runs.
+- **Prohibition on Tautological Mocking**: Never mock the subsystem under test (`showdownWorkerClient.ts`, `@pkmn/sim`). Real engine parity is mandatory.
 - **No-Test Mandate for Documentation**: Strictly forbidden to run `test` or `sim:e2e` when editing `.md` or skills. Use only `npm run audit:md`.
 
 ---
 
-## 📚 Índice de Módulos de Referencia Especializados (`references/`)
+## 📚 Specialized Reference Modules Index (`references/`)
 
-Para consultar los esquemas técnicos completos, tablas de comandos y arquitecturas en profundidad sin resumen ni pérdida mecánica:
+To consult complete technical schemas, command tables, and in-depth architectures without abbreviation or mechanical loss:
 
-| Módulo de Referencia | Contenido y Gobernanza | Enlace |
+| Reference Module | Content & Governance | Link |
 |---|---|---|
-| **Directivas e Invariantes** | Límites de timeout, joystick pasivo, selectores `#id`/UID, esquema `history`, legalidad Showdown, conservación PP, reglas de huida, aserción visual `.toBeVisible()`. | [simulation_directives_and_invariants.md](./references/simulation_directives_and_invariants.md) |
-| **Arquitectura de Fuzzers** | Capa 0 fuzzer, árbol de dependencias, ciclo de vida IPB, heurísticas cooperativas, pool de páginas por worker y estándar de reseteo en 7 pilares (`WorkerSessionPool`). | [fuzzer_architecture_and_heuristics.md](./references/fuzzer_architecture_and_heuristics.md) |
-| **CLI y Solución de Problemas** | Diccionario completo de scripts NPM (Capas 0–3), filtros de casos (`TEST_CASE_ID`, `TEST_BATCH`), ruta rápida headless, depuración masiva, auto-arranque Docker, puerto 5174. | [cli_and_troubleshooting.md](./references/cli_and_troubleshooting.md) |
-| **Estándares de Testing** | Protocolo en 3 niveles, ley anti-mockeo tautológico, mandato no-test para docs, concurrencia adaptativa, taxonomía de tests, ley anti-fragmentación, des-JSDOMización, cinemática GSAP. | [simulation_testing_standards.md](./references/simulation_testing_standards.md) |
-| **Auditoría de Paridad Showdown** | Metodología de comparación línea por línea con `external/pokemon-showdown-code/`, mandato de dos etapas (≥20 sospechosos -> confirmación RED), suite diagnóstica `npm run sim:audit`, tabla maestra de bugs y checklist. | [showdown_parity_audit_guide.md](./references/showdown_parity_audit_guide.md) |
+| **Directives & Invariants** | Timeout caps, passive joystick, `#id`/UID locators, `history` schema, Showdown legality, PP conservation, flee rules, visual `.toBeVisible()` assertions. | [simulation_directives_and_invariants.md](./references/simulation_directives_and_invariants.md) |
+| **Fuzzer Architecture** | Layer 0 fuzzer, dependency tree, IPB lifecycle, cooperative heuristics, per-worker page pool, and 7-pillar reset standard (`WorkerSessionPool`). | [fuzzer_architecture_and_heuristics.md](./references/fuzzer_architecture_and_heuristics.md) |
+| **CLI & Troubleshooting** | Complete NPM scripts dictionary (Layers 0–3), case filters (`TEST_CASE_ID`, `TEST_BATCH`), headless fast path, mass debugging, Docker auto-start, port 5174. | [cli_and_troubleshooting.md](./references/cli_and_troubleshooting.md) |
+| **Testing Standards** | 3-tier protocol, anti-tautological mocking law, no-test mandate for docs, adaptive concurrency, test taxonomy, anti-fragmentation law, de-JSDOMization, GSAP kinematics. | [simulation_testing_standards.md](./references/simulation_testing_standards.md) |
+| **Showdown Parity Audit** | Line-by-line comparison methodology with `external/pokemon-showdown-code/`, two-stage mandate (≥20 suspects -> RED confirmation), `npm run sim:audit` diagnostic suite, master bug table, and checklist. | [showdown_parity_audit_guide.md](./references/showdown_parity_audit_guide.md) |

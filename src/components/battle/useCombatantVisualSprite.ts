@@ -1,7 +1,6 @@
 import { computed } from 'vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { resolveAsset } from '@/logic/utils/assetResolver';
 import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
 import {
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
@@ -30,7 +29,6 @@ export interface CombatantVisualSpriteProps {
 
 const COMBATANT_SCALE_FACTOR_BASE = 1.0;
 const SINGLE_FRAME_FALLBACK = 1;
-const PATH_SLICE_OFFSET = 1;
 
 const MIN_SPECIES_SIZE_SCALE = 0.20;
 const MAX_SPECIES_SIZE_SCALE = 1.0;
@@ -193,15 +191,6 @@ export function useCombatantVisualSprite(props: CombatantVisualSpriteProps) {
     return base.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`);
   });
 
-  const baseSvgPath = computed(() => {
-    if (!imageUrl.value) return '';
-    const cleanUrl = imageUrl.value.replace(/\.png$/, '.svg');
-    const parts = cleanUrl.split('/');
-    const filename = parts.pop();
-    const folder = parts.slice(PATH_SLICE_OFFSET).join('/');
-    return resolveAsset(`/assets/sprites/${folder}/${filename}`);
-  });
-
   return {
     isFloating,
     isPlayer,
@@ -218,7 +207,6 @@ export function useCombatantVisualSprite(props: CombatantVisualSpriteProps) {
     speciesSizeScale,
     displaySize,
     imageUrl,
-    variationUrl,
-    baseSvgPath
+    variationUrl
   };
 }

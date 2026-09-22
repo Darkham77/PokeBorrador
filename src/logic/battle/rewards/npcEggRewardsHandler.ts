@@ -9,7 +9,8 @@ import {
   RIVAL_BABY_EGG_DROP_CHANCE,
   NPC_BABY_POKEMON_POOL,
   MAX_NPC_CARRIED_EGGS,
-  MAX_TOTAL_CARRIED_EGGS
+  MAX_TOTAL_CARRIED_EGGS,
+  NPC_EGG_TINT
 } from '@/logic/constants/gameplay';
 
 /**
@@ -52,6 +53,7 @@ export function handleNpcBabyEggReward(ctx: BattleContext, active: BattleState):
     isNpc: true,
     isShiny,
     nature,
+    tint: NPC_EGG_TINT,
     ivs: generateRandomIVs()
   });
 
@@ -61,7 +63,7 @@ export function handleNpcBabyEggReward(ctx: BattleContext, active: BattleState):
   ctx.gs.state.eggs.push(egg);
 
   const giverLabel = active.isRival ? '¡El Rival' : '¡El Entrenador';
-  ctx.addLog(`${giverLabel} te ha regalado un misterioso Huevo Pokémon!`, 'log-catch', 'egg');
+  ctx.addLog(`${giverLabel} te ha regalado un misterioso Huevo Pokémon!`, 'log-catch', 'npc_egg');
   ctx.uiStore.notify(`¡Recibiste un Huevo Pokémon (${active.isRival ? 'Rival' : 'NPC'})! 🥚`, '🥚');
 
   return true;

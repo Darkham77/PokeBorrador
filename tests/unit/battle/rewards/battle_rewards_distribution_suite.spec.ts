@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { calculateBattleRewards } from '@/logic/battle/rewardsDistributor'
 import { handleNpcBabyEggReward } from '@/logic/battle/rewards/npcEggRewardsHandler'
-import { NPC_BABY_POKEMON_POOL } from '@/logic/constants/gameplay'
+import { NPC_BABY_POKEMON_POOL, NPC_EGG_TINT } from '@/logic/constants/gameplay'
 import { useBreedingActions } from '@/stores/game/actions/breedingActions'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import type { BattleContext } from '@/types/battle/battleContext'
@@ -272,11 +272,12 @@ describe('Battle Rewards Distribution Suite', () => {
       if (!egg) throw new Error('Expected egg to be defined')
 
       expect(egg.isNpc).toBe(true)
+      expect(egg.tint).toBe(NPC_EGG_TINT)
       expect(NPC_BABY_POKEMON_POOL).toContain(egg.id)
       expect(mockCtx.addLog).toHaveBeenCalledWith(
         '¡El Entrenador te ha regalado un misterioso Huevo Pokémon!',
         'log-catch',
-        'egg'
+        'npc_egg'
       )
       expect(mockCtx.uiStore.notify).toHaveBeenCalledWith(
         '¡Recibiste un Huevo Pokémon (NPC)! 🥚',
@@ -305,11 +306,12 @@ describe('Battle Rewards Distribution Suite', () => {
       if (!egg) throw new Error('Expected egg to be defined')
 
       expect(egg.isNpc).toBe(true)
+      expect(egg.tint).toBe(NPC_EGG_TINT)
       expect(NPC_BABY_POKEMON_POOL).toContain(egg.id)
       expect(mockCtx.addLog).toHaveBeenCalledWith(
         '¡El Rival te ha regalado un misterioso Huevo Pokémon!',
         'log-catch',
-        'egg'
+        'npc_egg'
       )
       expect(mockCtx.uiStore.notify).toHaveBeenCalledWith(
         '¡Recibiste un Huevo Pokémon (Rival)! 🥚',

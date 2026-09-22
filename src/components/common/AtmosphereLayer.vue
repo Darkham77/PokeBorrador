@@ -290,8 +290,15 @@ const initWeatherAnim = () => {
     return
   }
 
-  // Canvas / OffscreenCanvas activation for noise/mist layers
-  if (props.layer !== 'particles' && isCanvasWeather(w)) {
+  // Canvas / OffscreenCanvas activation for noise/mist/heat layers
+  const shouldActivateCanvas = (weatherId?: WeatherId): boolean => {
+    if (isHeatWeather(weatherId)) {
+      return props.layer !== 'ambient' && isCanvasWeather(weatherId)
+    }
+    return props.layer !== 'particles' && isCanvasWeather(weatherId)
+  }
+
+  if (shouldActivateCanvas(w)) {
     nextTick(() => {
       if (canvasRef.value && !worker) {
         initWorker()
@@ -400,6 +407,7 @@ import {
   isSnowWeather,
   isSandstormWeather,
   isCanvasWeather,
+  isHeatWeather,
   resolveSnowLayerClass,
   resolveWeatherOverlayStyles
 } from './atmosphereParticleHelper'
@@ -453,7 +461,12 @@ const overlayClasses = computed(() => [
 
 const showPrecipitation = computed(() => props.layer !== 'ambient' && hasPrecipitation.value)
 const showSandstorm = computed(() => props.layer !== 'ambient' && hasSandstorm.value)
-const showCanvasWeather = computed(() => props.layer !== 'particles' && hasCanvasWeather.value)
+const showCanvasWeather = computed(() => {
+  if (isHeatWeather(props.weather)) {
+    return props.layer !== 'ambient' && hasCanvasWeather.value
+  }
+  return props.layer !== 'particles' && hasCanvasWeather.value
+})
 const showLeavesOverlay = computed(() => props.layer !== 'ambient' && Boolean(props.weather))
 </script>
 

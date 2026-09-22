@@ -32,23 +32,11 @@
 .enemy-side { align-self: flex-start; }
 .player-side { align-self: flex-end; margin-top: auto; }
 
-.hud-fade-enemy-enter-active, .hud-fade-enemy-leave-active,
-.hud-fade-player-enter-active, .hud-fade-player-leave-active { 
-   
-  @include gpu-layer;
-}
-
-.hud-fade-enemy-enter-from, .hud-fade-enemy-leave-to { opacity: 0; transform: Translate(-20px) Scale(0.98); }
-.hud-fade-player-enter-from, .hud-fade-player-leave-to { opacity: 0; transform: Translate(20px) Scale(0.98); }
-
 /* --- ANIMACIONES DE ENTRENADOR Y TRANSICIONES --- */
 .global-transition-overlay {
   position: absolute; inset: 0; background: black; z-index: var(--z-max);
   pointer-events: none;
 }
-
-.fade-overlay-enter-active, .fade-overlay-leave-active {  }
-.fade-overlay-enter-from, .fade-overlay-leave-to { opacity: 0; }
 
 .trainer-entity {
   z-index: calc(var(--z-map-spawns) + 1) !important;

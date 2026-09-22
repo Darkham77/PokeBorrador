@@ -5,7 +5,7 @@
  * Calculates costs, rewards, Bug-type expeditions, Rocket valuations,
  * Cazabichos streak mechanics, and mutations for all 4 classes.
  *
- * Adheres strictly to @/project-standards (pure functions, <500 lines, 0 Vue/Pinia dependencies).
+ * Adheres strictly to @/project-standards (pure functions, low complexity, 0 Vue/Pinia dependencies).
  */
 
 import type { PlayerClassId, MissionId } from '@/data/player/playerClasses';

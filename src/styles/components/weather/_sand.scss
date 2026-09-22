@@ -39,14 +39,14 @@
   // Tormenta de Arena: usa Ruido WebP en lugar de partículas, tintado sepia
   &.sandstorm {
     & .layer-1 { 
-      background-image: url("/assets/fx/pattern-noise-1.webp");
+      background-image: var(--weather-noise-1-url);
       background-size: 512px 512px; 
       opacity: 0.5; 
       filter: sepia(1) Saturate(2) Brightness(0.7) contrast(1.5);
       transform: translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0);
     }
     & .layer-2 { 
-      background-image: url("/assets/fx/pattern-noise-2.webp");
+      background-image: var(--weather-noise-2-url);
       background-size: 512px 512px; 
       opacity: 0.55; 
       filter: sepia(1) Saturate(1.8) Brightness(0.65) contrast(1.6); 
@@ -57,7 +57,7 @@
   // Vientos Fuertes: Similar a arena, pero con mucho menos detalle en la capa de fondo (haze suave)
   &.strong_winds {
     & .sandstorm-layer.layer-1 { 
-      background-image: url("/assets/fx/pattern-noise-1.webp") !important;
+      background-image: var(--weather-noise-1-url) !important;
       background-size: 512px 512px !important; 
       opacity: 0.05 !important; 
       filter: sepia(1) Saturate(1.5) Brightness(0.8) contrast(1.1); 

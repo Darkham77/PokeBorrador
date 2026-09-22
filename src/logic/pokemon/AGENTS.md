@@ -18,10 +18,16 @@ Frontend Developers / Systems Engineers.
 - **Zero Constant Aliasing**: Constant aliasing (`const A = B;`) is strictly forbidden across domain modules. All modules must directly import and use the single canonical source of truth from `@/logic/constants/` per the Domain-Type-First governance mandate.
 - **Debug Mode Whitelist Bypass**: In debug mode (`window.__VITE_DEBUG__`), `validatePokemon` and `checkPokemonLegality` MUST allow unreleased Pokémon species without throwing illegal species errors, while still enforcing valid structure and base stats.
 - **Resilient Move Legality & Evolutionary Lineage Mandate (`pokemonLearnset.ts`)**: Move legality validation (`canLearnMove` and `getLegalSpeciesMoves`) MUST evaluate canonical `POKEMON_DB` and evolutionary lineage (`getSpeciesHistory`) so that evolved species inherit legal moves from pre-evolutions (e.g. Charizard recognizing Charmander's Scratch). Furthermore, moves learned via TM, Tutor, Egg, Special, Dream World, Virtual Console, or legacy past-generation transfers (`compatMoves`) MUST be treated as legal at any level.
+- **Canonical Friendship & Walking Step Engine (`friendshipLogic.ts`)**:
+  - **Bounds & Seal Tiers**: Friendship is clamped to `[0, 255]`, partitioned into 5 canonical tiers (`distrust`: 0-49, `sprout`: 50-99, `comrade`: 100-159, `radiant_prism`: 160-219, `best_friends`: 220-255).
+  - **Evolution & Perks**: Modern Gen 9 evolution threshold is 160 (`radiant_prism`), while combat affection perks activate at 220+ (`best_friends`).
+  - **Diminishing Returns & Return/Frustration**: Level up gains scale by tier (+5 for 0-99, +3 for 100-199, +2 for 200-255). Faint penalty is -1. Return scales as `floor(friendship / 2.5)` (1-102), Frustration as `floor((255 - friendship) / 2.5)` (1-102).
+  - **128-Step Walking Cycle**: 128 steps trigger a 50% roll (`WALK_ROLL_CHANCE = 0.5`) for +1 friendship (+2 with *Soothe Bell*). Steps accumulate on an independent per-Pokémon counter (`pokemon.friendshipSteps?: number`) targeting the first conscious (`hp > 0`), non-egg, non-maxed (`friendship < 255`) party member (`resolveWalkingFriendshipRecipient`).
 
 ## Key Files
 
 - `pokemonLearnset.ts`: Canonical move legality engine and legal move generator powered by precomputed databases and evolutionary lineage traversal.
+- `friendshipLogic.ts`: Canonical formulas for friendship gain/loss, seal metadata tiers, combat perk activation, and 128-step walking accumulation.
 
 ## Work Guidance
 

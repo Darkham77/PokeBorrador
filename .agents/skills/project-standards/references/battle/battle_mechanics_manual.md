@@ -1447,25 +1447,25 @@ To maintain search tension, Pokémon data disclosure is restricted during the in
 
 > [!IMPORTANT] This rule applies globally to the `Combat HUD` component and must be evaluated reactively against the player's inventory and the current FSM substate.
 
-#### 3.2.4 Control de Efectos Visuales (FX) en Combate
+#### 3.2.4 Combat Visual Effects (FX) Control
 
-El sistema de combate utiliza el componente centralizado `PVSpriteFX` para gestionar capas visuales (Shiny, Guardian, Estados). Se aplican las siguientes reglas de visibilidad:
+The combat system uses the centralized `PVSpriteFX` component to manage visual layers (Shiny, Guardian, Status). The following visibility rules apply:
 
-- **Modo Silueta (isSilhouette: true)**:
-  - FUERZA el **Modo Simplificado** (`isSimplified: true`).
-  - OCULTA todos los efectos visuales (Shiny sparkles, Guardian aura, partículas de estado) para mantener la integridad visual de la fase de descubrimiento.
-- **Modo Revelado (isSilhouette: false)**:
-  - DESACTIVA el Modo Simplificado (a menos que existan otras restricciones de rendimiento).
-  - RESTAURA la visibilidad de todos los FX activos.
-- **Supresión por FSM**: Ciertos estados de la máquina de estados pueden suprimir temporalmente los FX mediante la prop `suppressFX` en `BattleCombatant`.
+- **Silhouette Mode (isSilhouette: true)**:
+  - FORCES **Simplified Mode** (`isSimplified: true`).
+  - HIDES all visual effects (Shiny sparkles, Guardian aura, status particles) to maintain the visual mystery and thematic integrity of the encounter.
+- **Revealed Mode (isSilhouette: false)**:
+  - DISABLES Simplified Mode (unless other performance throttling is active).
+  - RESTORES visibility of all active combat FX.
+- **FSM Suppression**: Certain state machine states may temporarily suppress FX via the `suppressFX` prop on `BattleCombatant`.
 
 ### 4. Verification Protocol
 
 - **Mocked Randomness**: Use `vi.spyOn(Math, 'random').mockReturnValue(X)` in unit tests to verify that Pokémon are caught/escaped at specific mathematical thresholds.
 
-### 5. Safe Context Destructuring
+### 5. Deterministic Context Validation
 
-- **Context Unpacking**: In special action handlers like `teleport` or `roar`, always destructure or check the `battleCtx` safely. Use fallbacks such as `battleCtx.activeBattle || battleCtx` to avoid accessing properties on undefined objects.
+- **Strict Context Unpacking**: In special action handlers like `teleport` or `roar`, always validate or narrow `battleCtx` deterministically. Never use runtime fallback masking (`battleCtx.activeBattle || battleCtx`); if `battleCtx` violates its domain contract, fail fast and loudly with descriptive errors.
 
 - **Weather-Aware Moves**: Move modifiers (boosted or penalized) for complex conditions (like Thunder or Hurricane under Rain/Sun) MUST be perfectly aligned across the battle moves grid and the hovering tooltips to maintain clear informational transparency.
 

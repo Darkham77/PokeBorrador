@@ -4,6 +4,7 @@ import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 import type { PokemonEgg } from '@/types/pokemon/pokemon'
 import { getEggSpecies } from '@/logic/breeding/breedingEngine'
 import EggSprite from '@/components/common/EggSprite.vue'
+import { NPC_EGG_TINT } from '@/logic/constants/gameplay'
 
 interface Props {
   egg: PokemonEgg
@@ -17,11 +18,16 @@ const emit = defineEmits<{
 
 const isReady = computed(() => props.egg.ready || props.egg.steps <= 0)
 
+const eggTint = computed(() => props.egg.tint || (props.egg.isNpc ? NPC_EGG_TINT : undefined))
+
 const eggName = computed(() => {
   const egg = props.egg
   if (egg.scanned || egg.predictedInfo) {
     const speciesId = getEggSpecies(egg.pokemonId || egg.id)
     return POKEMON_DB[speciesId]?.name || 'Huevo Pokémon'
+  }
+  if (egg.isNpc) {
+    return 'Huevo Misterioso'
   }
   return 'Huevo Pokémon'
 })
@@ -44,7 +50,7 @@ const progress = computed(() => {
 <template>
   <div
     class="egg-card"
-    :class="{ ready: isReady }"
+    :class="{ ready: isReady, 'npc-egg-card': egg.isNpc }"
   >
     <!-- Upper Main Row (Sprite + Progress details) -->
     <div class="egg-main-row">
@@ -52,7 +58,7 @@ const progress = computed(() => {
       <div class="egg-visual">
         <span class="egg-sprite">
           <EggSprite
-            :tint="egg.tint"
+            :tint="eggTint"
             size="38"
             class="egg-sprite-img"
           />
@@ -65,8 +71,16 @@ const progress = computed(() => {
 
       <!-- Progress and Info details -->
       <div class="egg-details">
-        <div class="name">
-          {{ eggName }}
+        <div class="name-row">
+          <div class="name">
+            {{ eggName }}
+          </div>
+          <span
+            v-if="egg.isNpc"
+            class="npc-origin-badge"
+          >
+            REGALO NPC
+          </span>
         </div>
         
         <div class="progress-container">
@@ -145,6 +159,18 @@ const progress = computed(() => {
       box-shadow: 0 6px 22px Rgba(34, 197, 94, 0.18), inset 0 0 15px Rgba(34, 197, 94, 0.08);
     }
   }
+
+  &.npc-egg-card {
+    border-color: Rgba(239, 68, 68, 0.35);
+    background: linear-gradient(135deg, Rgba(38, 12, 16, 0.75) 0%, Rgba(20, 6, 8, 0.92) 100%);
+    box-shadow: 0 4px 15px Rgba(239, 68, 68, 0.12), inset 0 0 15px Rgba(239, 68, 68, 0.05);
+
+    &:hover {
+      border-color: Rgba(239, 68, 68, 0.55);
+      background: linear-gradient(135deg, Rgba(48, 16, 22, 0.8) 0%, Rgba(26, 8, 11, 0.96) 100%);
+      box-shadow: 0 6px 20px Rgba(239, 68, 68, 0.2), inset 0 0 15px Rgba(239, 68, 68, 0.08);
+    }
+  }
 }
 
 .egg-main-row {
@@ -192,6 +218,13 @@ const progress = computed(() => {
   gap: 6px;
   min-width: 0;
 
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
   .name {
     font-size: 11px;
     @include pixelated;
@@ -202,6 +235,19 @@ const progress = computed(() => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .npc-origin-badge {
+    font-size: 7.5px;
+    font-weight: 700;
+    color: #f87171;
+    background: Rgba(239, 68, 68, 0.15);
+    border: 1px solid Rgba(239, 68, 68, 0.4);
+    padding: 1px 5px;
+    border-radius: 99px;
+    letter-spacing: 0.5px;
+    @include pixelated;
+    flex-shrink: 0;
   }
 }
 

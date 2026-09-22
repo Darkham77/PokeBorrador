@@ -26,16 +26,16 @@ QA / Automation Engineers.
 
 ## Verification
 
-- **Replay Headless (Recomendado/Rápido):** Si necesitas verificar paridad de HP, FSM, estados de combate o depurar errores de lógica de combate fuzzer, **NUNCA** utilices Playwright. Usa el replayer headless en Node.js que ejecuta Showdown directamente y corre en 1-2 segundos:
-  - Ejecutar un caso: `$env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace`
-  - Ejecutar varios casos: `$env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68"; npm run sim:fuzzer:trace`
-- **Simulaciones E2E (Navegador):** Usa Playwright para regresiones de flujo o verificar animaciones GSAP y UI:
-  - Todas las simulaciones de batalla: `npm run sim:e2e:battle`
-  - Combate FSM y escenarios tácticos: `npm run sim:e2e:combat` (Filtrar por lote: `$env:TEST_BATCH="21"; npm run sim:e2e:combat`)
-  - Captura y ciclo de vida de encuentros salvajes: `npm run sim:e2e:capture`
-  - Modos PvP y matchmaking competitivo: `npm run sim:e2e:pvp`
-  - Ciclo de exploración y búsqueda secuencial: `npm run sim:e2e:search`
-  - Combate contra IA heurística: `npm run sim:e2e:ai`
+- **Headless Replay (Recommended/Fast):** If you need to verify HP parity, FSM, combat states, or debug fuzzer combat logic errors, **NEVER** use Playwright. Use the headless replayer in Node.js that executes Showdown directly and runs in 1-2 seconds:
+  - Run a single case: `$env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace`
+  - Run multiple cases: `$env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68"; npm run sim:fuzzer:trace`
+- **E2E Simulations (Browser):** Use Playwright for flow regressions or verifying GSAP animations and UI:
+  - All battle simulations: `npm run sim:e2e:battle`
+  - Combat FSM and tactical scenarios: `npm run sim:e2e:combat` (Filter by batch: `$env:TEST_BATCH="21"; npm run sim:e2e:combat`)
+  - Wild encounter lifecycle and capture: `npm run sim:e2e:capture`
+  - PvP modes and competitive matchmaking: `npm run sim:e2e:pvp`
+  - Exploration loop and sequential search: `npm run sim:e2e:search`
+  - Combat against heuristic AI: `npm run sim:e2e:ai`
 
 ## Child DOX Index
 

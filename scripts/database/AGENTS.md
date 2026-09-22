@@ -24,6 +24,7 @@ Automation scripts for database backup, restoration, updates, migrations generat
   - Direct CLI invocation (`npm run database:generate-migrations`) compiles `src/logic/db/migrations_data.ts`, then automatically executes `npm run validate:sql` and `npm run test:migrations` (`backup_migration_real.test.ts` against the real production backup fixture).
   - If any validation or migration test fails, `generate_migrations.ts` aborts with exit code 1, rejecting the migration.
   - When imported by Vite (`vite.config.ts`), `generateMigrations()` operates strictly as a lightweight code generator (~10ms) without running test suites, keeping `npm run dev` and HMR instantaneous.
+- **Client Migrations Manifest PostgreSQL Purge**: `generate_migrations.ts` strictly purges PostgreSQL SQL (`sql: ''`) for all migrations that possess a companion `.sqlite.sql` file when compiling `src/logic/db/migrations_data.ts`. Because the web client exclusively executes SQLite in WebAssembly, PostgreSQL syntax (PL/pgSQL functions, triggers, RLS policies, duplicate data patches) is dead weight in the client bundle. Backend migration runners (`update_supabase_db.ts`) read `.sql` files directly from disk.
 - All scripts MUST support `--help` flag with clear ANSI formatted usage instructions.
 
 ## Child DOX Index

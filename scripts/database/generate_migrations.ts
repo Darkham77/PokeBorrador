@@ -111,9 +111,10 @@ export async function generateMigrations() {
       }
     }
 
+    const hasSqliteCompanion = sqliteContent !== undefined;
     return {
       id,
-      sql: cleanContent,
+      sql: hasSqliteCompanion ? '' : cleanContent,
       sqlite_sql: sqliteContent,
       check
     };
