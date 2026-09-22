@@ -65,22 +65,6 @@ const DEFAULT_SCAN_DIRECTORIES = [
   'ui-demo'
 ] as const;
 
-const SKIP_SUBDIRECTORIES = [
-  'node_modules',
-  '.git',
-  '.tsbuildinfo',
-  'dist',
-  'dev-dist',
-  'coverage',
-  'scratch',
-  'results',
-  'external',
-  'test aventura',
-  'docs/plans',
-  'docs/architecture',
-  'docs/media'
-] as const;
-
 /** Known dynamic, placeholder, or ephemeral path patterns that are valid architectural concepts */
 const KNOWN_VALID_ABSTRACT_PATHS = new Set([
   'database/backups',
@@ -271,6 +255,7 @@ export class MarkdownCodeReferencesAuditor extends BaseAuditor<MarkdownCodeRefer
   private readonly scanRoots: readonly string[];
 
   constructor(scanRoots: readonly string[] = DEFAULT_SCAN_DIRECTORIES, rootDir?: string) {
+    const effectiveRoot = rootDir || process.cwd();
     super({
       id: 'validate_markdown_code_references',
       name: 'Markdown Code References Validator',
@@ -283,9 +268,14 @@ export class MarkdownCodeReferencesAuditor extends BaseAuditor<MarkdownCodeRefer
         'markdown-hardcoded-runtime-version': 'Versión de Node/npm hardcodeada en documentación',
         'markdown-broken-skill-ref': 'Referencia a skill inexistente (@/nombre-del-skill)',
         'markdown-case-mismatch': 'Discrepancia de mayúsculas/minúsculas en nombre de archivo'
-      }
+      },
+      roots: scanRoots,
+      allowedExtensions: new Set(['.md']),
+      extraIgnorePatterns: ['docs/plans/**', 'docs/architecture/**', 'docs/media/**', 'coverage/**', 'results/**'],
+      unignoreDirs: ['docs', '.agents', 'test aventura', 'ui-demo'],
+      projectRoot: effectiveRoot
     });
-    this.rootDir = rootDir || process.cwd();
+    this.rootDir = effectiveRoot;
     this.scanRoots = scanRoots;
   }
 
@@ -545,49 +535,7 @@ export class MarkdownCodeReferencesAuditor extends BaseAuditor<MarkdownCodeRefer
   }
 
   private collectMarkdownFiles(): string[] {
-    const results: string[] = [];
-
-    const walk = (currentPath: string) => {
-      if (!fs.existsSync(currentPath)) return;
-      const stat = fs.statSync(currentPath);
-
-      if (stat.isFile() && currentPath.endsWith('.md')) {
-        results.push(currentPath);
-        return;
-      }
-
-      if (stat.isDirectory()) {
-        const entries = fs.readdirSync(currentPath, { withFileTypes: true });
-        for (const entry of entries) {
-          const fullChild = path.join(currentPath, entry.name);
-          const relChild = path.relative(this.rootDir, fullChild).replace(/\\/g, '/');
-
-          if (
-            SKIP_SUBDIRECTORIES.some(
-              skip =>
-                relChild === skip ||
-                relChild.startsWith(`${skip}/`) ||
-                relChild.split('/').includes(skip)
-            )
-          ) {
-            continue;
-          }
-
-          if (entry.isDirectory()) {
-            walk(fullChild);
-          } else if (entry.isFile() && entry.name.endsWith('.md')) {
-            results.push(fullChild);
-          }
-        }
-      }
-    };
-
-    for (const root of this.scanRoots) {
-      const full = path.resolve(this.rootDir, root);
-      walk(full);
-    }
-
-    return results;
+    return this.context.collectFiles(this.scanRoots, new Set(['.md']));
   }
 }
 

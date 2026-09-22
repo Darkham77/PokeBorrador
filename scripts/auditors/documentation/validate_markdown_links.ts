@@ -19,6 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
+import { BaseAuditor, collectRepositoryFiles } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
 
@@ -61,17 +62,6 @@ export const DEFAULT_SCAN_DIRECTORIES = [
   'supabase',
   'test aventura',
   'ui-demo',
-] as const;
-
-const SKIP_NAMES = [
-  'node_modules',
-  '.git',
-  'dist',
-  'dev-dist',
-  'coverage',
-  'scratch',
-  'results',
-  'external',
 ] as const;
 
 let gitIgnoredPathsCache: Set<string> | null = null;
@@ -128,21 +118,13 @@ export function collectMarkdownFiles(targetPath: string, rootDir: string): strin
     return fullPath.endsWith('.md') ? [fullPath] : [];
   }
 
-  const results: string[] = [];
-  const entries = fs.readdirSync(fullPath, { withFileTypes: true });
-
-  for (const entry of entries) {
-    if ((SKIP_NAMES as readonly string[]).includes(entry.name)) continue; // no-domain: Non-domain utility collection or data structure
-
-    const childPath = path.join(fullPath, entry.name);
-    if (entry.isDirectory()) {
-      results.push(...collectMarkdownFiles(childPath, rootDir));
-    } else if (entry.isFile() && entry.name.endsWith('.md')) {
-      results.push(childPath);
-    }
-  }
-
-  return results;
+  return collectRepositoryFiles(
+    fullPath,
+    rootDir,
+    [],
+    new Set(['.md']),
+    new Set(['docs', '.agents', 'test aventura', 'ui-demo'])
+  );
 }
 
 /**
@@ -328,8 +310,6 @@ export function auditMarkdownLinks(options: MarkdownLinkAuditOptions = {}): Mark
   };
 }
 
-import { BaseAuditor } from '../../lib/auditorBase.ts';
-
 export type MarkdownLinkRuleId =
   | 'markdown-broken-relative-link'
   | 'markdown-absolute-path'
@@ -359,6 +339,9 @@ export class MarkdownLinkAuditor extends BaseAuditor<MarkdownLinkRuleId> {
         'markdown-stale-environment-path': 'Ruta o referencia obsoleta de entorno heredado',
         'markdown-gitignored-target': 'Enlace a ruta ignorada por Git (.gitignore)',
       },
+      roots: scanRoots,
+      allowedExtensions: new Set(['.md']),
+      unignoreDirs: ['docs', '.agents', 'test aventura', 'ui-demo']
     });
     this.scanRoots = scanRoots;
   }

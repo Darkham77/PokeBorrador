@@ -24,7 +24,7 @@ Every sub-auditor and reporter in the project is part of a unified static analys
    - The master orchestrator (`npm run audit` / [`scripts/maintenance/audit_full.ts`](../../../scripts/maintenance/audit_full.ts)) and safe-commit diff gatekeeper ([`scripts/maintenance/audit_for_commit.ts`](../../../scripts/maintenance/audit_for_commit.ts)) discover all suites dynamically via [`scripts/maintenance/auditScanner.ts`](../../../scripts/maintenance/auditScanner.ts).
    - **Never hardcode an array of auditors or task IDs**. Any `.ts` file placed in `scripts/auditors/<family>/` is automatically discovered, categorized, timed, and executed.
 4. **Prohibition of Ad-Hoc File Walkers**:
-   - Sub-auditors MUST NEVER implement custom recursive directory traversals (`fs.readdir` loops, `getAllFiles`, `getAllVueFiles`, `getFilesRecursively`, `walkSourceFiles`).
+   - Sub-auditors MUST NEVER implement custom recursive directory traversals (`fs.readdir` loops, `getAllFiles`, `getAllVueFiles`, `getFilesRecursively`, `walkSourceFiles`, `walkFiles`, `walkDir`, `collectMarkdownFiles`).
    - File discovery MUST use the centralized, cached, and ignore-aware scanner: `this.context.collectFiles(roots, extensions)` or `collectRepositoryFiles()`.
 5. **Unified Dual Output Standard (`StandardAuditResult`)**:
    - **Console (stdout)**: Emits formatted progress lines (`🔍 [X/N]`) followed by clean visual Box-Drawing tables (`[ ✅ PASS ]`, `[ ❌ FAIL ]`, `[ ⚠️ WARN ]`), runtimes in ms, and domain metrics via [`scripts/lib/unifiedTheme.ts`](../../../scripts/lib/unifiedTheme.ts).
@@ -44,17 +44,22 @@ Every sub-auditor and reporter in the project is part of a unified static analys
    - Sub-auditors must NEVER implement manual line-counting loops, regex line filters, or ad-hoc SLOC checkers (`checkSloc`, line counting loops).
    - Fallow is the Single Source of Truth (SSoT) for all AST metrics, cognitive and cyclomatic complexity, function unit size, maintainability, dead code, and duplication detection across the codebase.
 10. **Human-Friendly Descriptions & Category Breakdown Mandate (Zero Code Slugs & Zero Family Grouping)**:
-   - The master audit orchestrator (`npm run audit`) and warnings reporter (`npm run audit:warnings`) MUST render results desglosados strictly by category/rule in an official Box-Drawing table.
-   - The table MUST display **100% human-friendly Spanish descriptions** (`finding.ruleDescription` or `suite.description`) defined via inheritance in `BaseAuditor` (`ruleDescriptions: Record<TRuleId, string>`). Displaying raw code slugs, identifiers, or technical keys (e.g. displaying `sprite-missing-asset` instead of `'Sprite no encontrado en assets de Pokémon'`) is **STRICTLY FORBIDDEN**.
-   - Following the table, they MUST output ONLY an illustrative sample of the last 5 errors (`❌ Muestra de errores detectados (últimos 5 de N)`).
-   - Listing the full set of warnings or dumping all errors in console output is **STRICTLY FORBIDDEN**.
-   - Grouping console results under opaque "FAMILIAS" headers is permanently eradicated. Full machine-readable findings reside in `scratch/audits/latest_audit.json`.
+    - The master audit orchestrator (`npm run audit`) and warnings reporter (`npm run audit:warnings`) MUST render results desglosados strictly by category/rule in an official Box-Drawing table.
+    - The table MUST display **100% human-friendly Spanish descriptions** (`finding.ruleDescription` or `suite.description`) defined via inheritance in `BaseAuditor` (`ruleDescriptions: Record<TRuleId, string>`). Displaying raw code slugs, identifiers, or technical keys (e.g. displaying `sprite-missing-asset` instead of `'Sprite no encontrado en assets de Pokémon'`) is **STRICTLY FORBIDDEN**.
+    - Following the table, they MUST output ONLY an illustrative sample of the last 5 errors (`❌ Muestra de errores detectados (últimos 5 de N)`).
+    - Listing the full set of warnings or dumping all errors in console output is **STRICTLY FORBIDDEN**.
+    - Grouping console results under opaque "FAMILIAS" headers is permanently eradicated. Full machine-readable findings reside in `scratch/audits/latest_audit.json`.
 11. **Shared AST Engine & Zero Duplicate Parse Mandate (`SharedAstContext`)**:
-   - Whenever a sub-auditor performs TypeScript AST analysis or inspects Vue SFC `<script>` blocks, it MUST declare `requiresAst: true` in its constructor configuration (`BaseAuditor` or `FileScanAuditor`).
-   - Sub-auditors MUST NEVER instantiate isolated AST parsers or call `ts.createProgram` / `ts.createSourceFile` inside ad-hoc file loops.
-   - Sub-auditors MUST consume the centralized `astContext: SharedAstContext` passed to `runAudit(astContext?: SharedAstContext)` or receive the pre-compiled `sourceFile?: ts.SourceFile` directly in `FileScanAuditor.scanFile(relPath, content, sourceFile)`.
-   - All AST-dependent sub-auditors MUST be registered in `AST_DEPENDENT_SUITE_IDS` inside [`scripts/maintenance/auditScanner.ts`](../../../scripts/maintenance/auditScanner.ts). This ensures the master orchestrator (`audit_full.ts`) initializes and preheats a single AST cache before running suites.
-   - For standalone CLI execution (`BaseAuditor.runCli`), `execute()` automatically provisions a fallback `SharedAstContext` on demand if `requiresAst: true`.
+    - Whenever a sub-auditor performs TypeScript AST analysis or inspects Vue SFC `<script>` blocks, it MUST declare `requiresAst: true` in its constructor configuration (`BaseAuditor` or `FileScanAuditor`).
+    - Sub-auditors MUST NEVER instantiate isolated AST parsers or call `ts.createProgram` / `ts.createSourceFile` inside ad-hoc file loops.
+    - Sub-auditors MUST consume the centralized `astContext: SharedAstContext` passed to `runAudit(astContext?: SharedAstContext)` or receive the pre-compiled `sourceFile?: ts.SourceFile` directly in `FileScanAuditor.scanFile(relPath, content, sourceFile)`.
+    - All AST-dependent sub-auditors MUST be registered in `AST_DEPENDENT_SUITE_IDS` inside [`scripts/maintenance/auditScanner.ts`](../../../scripts/maintenance/auditScanner.ts). This ensures the master orchestrator (`audit_full.ts`) initializes and preheats a single AST cache before running suites.
+    - For standalone CLI execution (`BaseAuditor.runCli`), `execute()` automatically provisions a fallback `SharedAstContext` on demand if `requiresAst: true`.
+12. **Single Source of Truth Directory Ignore Mandate (`CANONICAL_IGNORE_DIRS`)**:
+    - Sub-auditors and maintenance scripts MUST NEVER declare local ignore sets (`const IGNORE_DIRS`, `const SKIP_DIRS`, `const SKIP_NAMES`, `const SKIP_SUBDIRECTORIES`).
+    - Directory ignores are strictly governed by `CANONICAL_IGNORE_DIRS` in [`scripts/lib/auditorBase.ts`](../../../scripts/lib/auditorBase.ts), which unifies `ALWAYS_IGNORE_DIRS` (unconditionally ignored build/cache artifacts like `coverage`, `results`, `node_modules`, `.tsbuildinfo`, `.vitest-cache`) and `CODE_ONLY_IGNORE_DIRS` (`docs`, `.agents`, `public`).
+    - Documentation auditors that need to inspect documentation trees must configure `unignoreDirs: ['docs', '.agents']` instead of maintaining custom walkers.
+    - Sub-auditors supporting unit-test sandboxes (`tempDir`) must forward `projectRoot: effectiveRoot` via `AuditorOptions` into `super({...})` to guarantee isolation from the live project repository.
 
 ---
 

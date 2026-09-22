@@ -347,7 +347,7 @@ async function clonar() {
   }
 
   info("Clonando estructura de Supabase (sparse-checkout)...");
-  const tempDir = path.resolve(BASE_DIR, 'temp_supabase');
+  const tempDir = path.resolve(BASE_DIR, '..', 'scratch', 'temp_supabase');
   try {
     await fs.rm(tempDir, { recursive: true, force: true });
   } catch {

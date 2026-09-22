@@ -207,7 +207,8 @@
     "validate:spawns": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/domain_data/validate_spawns_whitelist.ts",
     "validate:combat-invariants": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/fsm/validate_combat_invariants.ts",
     "validate:save-persistence": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_save_persistence_parity.ts",
-    "validate:sql-anti-patterns": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_sql_anti_patterns.ts"
+    "validate:sql-anti-patterns": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_sql_anti_patterns.ts",
+    "validate:ephemeral-storage-isolation": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_ephemeral_storage_isolation.ts"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",

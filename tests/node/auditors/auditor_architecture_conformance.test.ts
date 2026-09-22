@@ -74,11 +74,16 @@ describe('Auditor Architecture Conformance', () => {
       /function\s+scanDir\b/,
       /function\s+getFilesRecursively\b/,
       /function\s+walkSourceFiles\b/,
+      /function\s+walkFiles\b/,
+      /async\s+function\*\s+walkFiles\b/,
+      /function\s+walkDir\b/,
       /const\s+getAllFiles\s*=/,
       /const\s+getAllVueFiles\s*=/,
       /const\s+scanDir\s*=/,
       /const\s+getFilesRecursively\s*=/,
-      /const\s+walkSourceFiles\s*=/
+      /const\s+walkSourceFiles\s*=/,
+      /const\s+walkFiles\s*=/,
+      /const\s+walkDir\s*=/
     ];
 
     for (const filePath of subAuditorFiles) {
@@ -92,6 +97,31 @@ describe('Auditor Architecture Conformance', () => {
           expect(
             pattern.test(source),
             `Found illegal custom recursive file walker matching ${pattern} in ${relPath}. Use BaseAuditor.context.collectFiles or collectRepositoryFiles instead.`
+          ).toBe(false);
+        }
+      });
+    }
+  });
+
+  describe('Single Source of Truth Ignore Sets Mandate', () => {
+    const FORBIDDEN_LOCAL_IGNORE_PATTERNS = [
+      /const\s+IGNORE_DIRS\s*=\s*new\s+Set\b/,
+      /const\s+SKIP_DIRS\s*=\s*new\s+Set\b/,
+      /const\s+SKIP_NAMES\s*=\s*new\s+Set\b/,
+      /const\s+SKIP_SUBDIRECTORIES\s*=\s*new\s+Set\b/
+    ];
+
+    for (const filePath of subAuditorFiles) {
+      const relPath = path.relative(process.cwd(), filePath).replace(/\\/g, '/');
+      const filename = path.basename(filePath);
+
+      it(`${filename} uses canonical ignore sets from auditorBase and declares zero local ignore sets`, () => {
+        const source = fs.readFileSync(filePath, 'utf-8');
+
+        for (const pattern of FORBIDDEN_LOCAL_IGNORE_PATTERNS) {
+          expect(
+            pattern.test(source),
+            `Found illegal local ignore set matching ${pattern} in ${relPath}. Use CANONICAL_IGNORE_DIRS or pass extraIgnorePatterns/unignoreDirs to BaseAuditor/FileScanAuditor.`
           ).toBe(false);
         }
       });

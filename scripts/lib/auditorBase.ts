@@ -29,25 +29,39 @@ import type ts from 'typescript';
 
 enableCompileCache();
 
-export const CANONICAL_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-set: Fast O(1) membership lookup set
+export const ALWAYS_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-set: Fast O(1) membership lookup set
   'node_modules',
   '.git',
-  '.agents',
+  '.tsbuildinfo',
+  '.vitest-cache',
   '.fallow',
   '.vscode',
   '.github',
+  '.gemini',
   'dist',
   'dev-dist',
+  'build',
+  'coverage',
+  'results',
+  'test-results',
   'backup_legacy_code',
   'external',
   'scratch',
   'tmp',
-  'test-results',
+  'test aventura',
+  'showdown'
+]);
+
+export const CODE_ONLY_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-set: Fast O(1) membership lookup set
   'public',
   'docs',
-  'test aventura',
-  'showdown',
+  '.agents',
   '_raw-assets'
+]);
+
+export const CANONICAL_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-set: Fast O(1) membership lookup set
+  ...ALWAYS_IGNORE_DIRS,
+  ...CODE_ONLY_IGNORE_DIRS
 ]);
 
 export const SCANNABLE_EXTENSIONS: ReadonlySet<string> = new Set(['.ts', '.js', '.vue', '.cjs', '.mjs']); // runtime-set: Fast O(1) membership lookup set
@@ -91,20 +105,44 @@ export function loadFallowIgnorePatterns(projectRoot = process.cwd()): string[] 
 /**
  * Determines whether a relative POSIX path belongs to an ignored directory or matches directory ignore patterns.
  */
-export function isPathIgnored(relPath: string, extraIgnorePatterns: readonly string[] = []): boolean {
+export function isPathIgnored(
+  relPath: string,
+  extraIgnorePatterns: readonly string[] = [],
+  unignoreDirs: ReadonlySet<string> | readonly string[] = []
+): boolean {
   const normalized = relPath.split(path.sep).join(path.posix.sep).toLowerCase();
   const segments = normalized.split('/');
+  const unignoreSet = unignoreDirs instanceof Set ? unignoreDirs : new Set(unignoreDirs);
 
   for (const seg of segments) {
-    if (CANONICAL_IGNORE_DIRS.has(seg)) {
+    if (CANONICAL_IGNORE_DIRS.has(seg) && !unignoreSet.has(seg)) {
       return true;
     }
   }
 
   for (const pattern of extraIgnorePatterns) {
-    const cleanPattern = pattern.replace(/\/\*\*$/, '').replace(/\/\*$/, '').toLowerCase();
-    if (cleanPattern && (normalized === cleanPattern || normalized.startsWith(cleanPattern + '/'))) {
-      return true;
+    let cleanPattern = pattern.toLowerCase();
+    const matchesAnywhere = cleanPattern.startsWith('**/');
+    if (matchesAnywhere) {
+      cleanPattern = cleanPattern.slice(3);
+    }
+    cleanPattern = cleanPattern.replace(/\/\*\*$/, '').replace(/\/\*$/, '');
+
+    if (!cleanPattern) continue;
+
+    if (matchesAnywhere) {
+      if (
+        normalized === cleanPattern ||
+        normalized.startsWith(cleanPattern + '/') ||
+        normalized.endsWith('/' + cleanPattern) ||
+        normalized.includes('/' + cleanPattern + '/')
+      ) {
+        return true;
+      }
+    } else {
+      if (normalized === cleanPattern || normalized.startsWith(cleanPattern + '/')) {
+        return true;
+      }
     }
   }
 
@@ -118,10 +156,23 @@ export function collectRepositoryFiles(
   dir: string,
   projectRoot = process.cwd(),
   extraIgnorePatterns: readonly string[] = [],
-  allowedExtensions: ReadonlySet<string> = SCANNABLE_EXTENSIONS
+  allowedExtensions: ReadonlySet<string> = SCANNABLE_EXTENSIONS,
+  unignoreDirs: ReadonlySet<string> | readonly string[] = []
 ): string[] {
   const results: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!nodeFs.existsSync(dir)) return results;
+
+  const stat = nodeFs.statSync(dir);
+  if (stat.isFile()) {
+    const relPath = path.relative(projectRoot, dir).split(path.sep).join(path.posix.sep);
+    if (!isPathIgnored(relPath, extraIgnorePatterns, unignoreDirs)) {
+      const ext = path.extname(dir).toLowerCase();
+      if (allowedExtensions.has(ext)) {
+        results.push(dir);
+      }
+    }
+    return results;
+  }
 
   const entries = nodeFs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
@@ -129,11 +180,11 @@ export function collectRepositoryFiles(
     const relPath = path.relative(projectRoot, fullPath).split(path.sep).join(path.posix.sep);
 
     if (entry.isDirectory()) {
-      if (!isPathIgnored(relPath, extraIgnorePatterns)) {
-        results.push(...collectRepositoryFiles(fullPath, projectRoot, extraIgnorePatterns, allowedExtensions));
+      if (!isPathIgnored(relPath, extraIgnorePatterns, unignoreDirs)) {
+        results.push(...collectRepositoryFiles(fullPath, projectRoot, extraIgnorePatterns, allowedExtensions, unignoreDirs));
       }
     } else if (entry.isFile()) {
-      if (!isPathIgnored(relPath, extraIgnorePatterns)) {
+      if (!isPathIgnored(relPath, extraIgnorePatterns, unignoreDirs)) {
         const ext = path.extname(entry.name).toLowerCase();
         if (allowedExtensions.has(ext)) {
           results.push(fullPath);
@@ -151,6 +202,8 @@ export interface AuditorConfig {
   family: AuditFamily;
   requiredFiles?: string[];
   extraIgnorePatterns?: string[];
+  unignoreDirs?: string[];
+  projectRoot?: string;
 }
 
 export interface AuditorContext {
@@ -159,6 +212,7 @@ export interface AuditorContext {
     'errors-only'?: boolean;
   };
   ignorePatterns: readonly string[];
+  unignoreDirs: readonly string[];
   isPathIgnored: (relPath: string) => boolean;
   collectFiles: (roots?: readonly string[], allowedExtensions?: ReadonlySet<string>) => string[];
   logProgress: (msg: string) => void;
@@ -185,9 +239,10 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
     strict: false
   });
 
-  const projectRoot = process.cwd();
+  const projectRoot = config.projectRoot || process.cwd();
   const fallowIgnores = loadFallowIgnorePatterns(projectRoot);
   const combinedIgnores = [...fallowIgnores, ...(config.extraIgnorePatterns || [])];
+  const unignoreDirs = config.unignoreDirs ?? [];
 
   const isSubprocess = process.env.AUDIT_SUBPROCESS === 'true';
   const findings: AuditFinding[] = [];
@@ -196,12 +251,13 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
   return {
     values: values as AuditorContext['values'],
     ignorePatterns: combinedIgnores,
-    isPathIgnored: (relPath: string) => isPathIgnored(relPath, combinedIgnores),
+    unignoreDirs,
+    isPathIgnored: (relPath: string) => isPathIgnored(relPath, combinedIgnores, unignoreDirs),
     collectFiles: (roots: readonly string[] = CANONICAL_SCANNABLE_ROOTS, allowedExtensions = SCANNABLE_EXTENSIONS) => {
       const all: string[] = []; // no-domain: Non-domain utility collection or data structure
       for (const root of roots) {
         const fullRoot = path.resolve(projectRoot, root);
-        all.push(...collectRepositoryFiles(fullRoot, projectRoot, combinedIgnores, allowedExtensions));
+        all.push(...collectRepositoryFiles(fullRoot, projectRoot, combinedIgnores, allowedExtensions, unignoreDirs));
       }
       return all;
     },
@@ -326,8 +382,10 @@ export interface AuditorOptions<TRuleId extends string = string> {
   readonly roots?: readonly string[];
   readonly allowedExtensions?: ReadonlySet<string>;
   readonly extraIgnorePatterns?: readonly string[];
+  readonly unignoreDirs?: readonly string[];
   readonly requiredFiles?: readonly string[];
   readonly requiresAst?: boolean;
+  readonly projectRoot?: string;
 }
 
 export interface ViolationInput<TRuleId extends string = string> {
@@ -354,6 +412,7 @@ export abstract class BaseAuditor<TRuleId extends string = string> {
   public readonly roots: readonly string[];
   public readonly allowedExtensions: ReadonlySet<string>;
   public readonly extraIgnorePatterns: readonly string[];
+  public readonly unignoreDirs: readonly string[];
   public readonly requiredFiles: readonly string[];
   public readonly requiresAst: boolean;
 
@@ -400,8 +459,9 @@ export abstract class BaseAuditor<TRuleId extends string = string> {
     this.roots = options.roots ?? CANONICAL_SCANNABLE_ROOTS;
     this.allowedExtensions = options.allowedExtensions ?? SCANNABLE_EXTENSIONS;
     this.extraIgnorePatterns = options.extraIgnorePatterns ?? [];
+    this.unignoreDirs = options.unignoreDirs ?? [];
     this.requiredFiles = options.requiredFiles ?? [];
-    this.projectRoot = process.cwd();
+    this.projectRoot = options.projectRoot || process.cwd();
 
     for (const ruleId of this.ruleIds) {
       this.countsByRule.set(ruleId, 0);
@@ -413,7 +473,9 @@ export abstract class BaseAuditor<TRuleId extends string = string> {
       description: this.description,
       family: this.family,
       requiredFiles: [...this.requiredFiles],
-      extraIgnorePatterns: [...this.extraIgnorePatterns]
+      extraIgnorePatterns: [...this.extraIgnorePatterns],
+      unignoreDirs: [...this.unignoreDirs],
+      projectRoot: this.projectRoot
     });
   }
 

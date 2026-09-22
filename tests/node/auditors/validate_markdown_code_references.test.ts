@@ -259,8 +259,8 @@ Refer to @/project-standards.
 # Git ignore
 node_modules/
 scratch/
-database/temp/*
-!database/temp/.gitkeep
+build/temp/*
+!build/temp/.gitkeep
       `.trim(),
       'utf-8'
     );
@@ -268,7 +268,7 @@ database/temp/*
     const mdContent = `
 # Architecture Documentation
 Simulation databases are stored in \`scratch/database/simulations/\`.
-Legacy ephemeral databases resided in \`database/temp/simulations/\`.
+Build artifacts reside in \`build/temp/artifacts/\`.
 Clean template is at \`scratch/database/clean_template.db\`.
     `;
     await fs.writeFile(path.join(tempDir, 'README.md'), mdContent, 'utf-8');
@@ -287,8 +287,8 @@ Clean template is at \`scratch/database/clean_template.db\`.
 node_modules/
 scratch/
 *.log
-database/temp/*
-!database/temp/.gitkeep
+build/temp/*
+!build/temp/.gitkeep
     `.trim();
 
     const matcher = new GitIgnoreMatcher(gitignoreContent);
@@ -296,9 +296,9 @@ database/temp/*
     expect(matcher.ignores('scratch/database/simulations')).toBe(true);
     expect(matcher.ignores('scratch/database/clean_template.db')).toBe(true);
     expect(matcher.ignores('scratch/reports/e2e/fuzzer.log')).toBe(true);
-    expect(matcher.ignores('database/temp/simulations')).toBe(true);
-    expect(matcher.ignores('database/temp/clean_template.db')).toBe(true);
-    expect(matcher.ignores('database/temp/.gitkeep')).toBe(false);
+    expect(matcher.ignores('build/temp/simulations')).toBe(true);
+    expect(matcher.ignores('build/temp/clean_template.db')).toBe(true);
+    expect(matcher.ignores('build/temp/.gitkeep')).toBe(false);
     expect(matcher.ignores('src/logic/battle/battle.ts')).toBe(false);
     expect(matcher.ignores('some_file.log')).toBe(true);
   });

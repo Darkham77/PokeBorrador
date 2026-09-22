@@ -13,7 +13,7 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { parseArgs } from 'node:util';
 import { execSync } from 'node:child_process';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor, CANONICAL_IGNORE_DIRS } from '../../lib/auditorBase.ts';
 import { Z_LAYERS } from '../../../src/logic/constants/visuals.ts';
 import {
   type AuditRule,
@@ -31,14 +31,13 @@ import { detectDuplicateConstants, CONSTANT_ANALYZER_DESCRIPTOR } from '../../ma
 
 enableCompileCache();
 
-const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown', 'external', 'test aventura']); // runtime-set: Fast O(1) membership lookup set
 const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js', '.md']); // runtime-set: Fast O(1) membership lookup set
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
   const files: string[] = []; // no-domain: Non-domain utility collection or data structure
   const pattern = `**/*{${Array.from(AUDIT_EXTENSIONS).join(',')}}`;
   
-  for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p: string) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
+  for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p: string) => Array.from(CANONICAL_IGNORE_DIRS).some(d => p.includes(d)) })) {
     files.push(path.resolve(dir, entry));
   }
   return files;
@@ -338,7 +337,7 @@ function getChangedFiles(ref: string): string[] {
     return output
       .split('\n')
       .map(f => f.trim())
-      .filter(f => f !== '' && AUDIT_EXTENSIONS.has(path.extname(f)) && !Array.from(IGNORE_DIRS).some(d => f.includes(d)))
+      .filter(f => f !== '' && AUDIT_EXTENSIONS.has(path.extname(f)) && !Array.from(CANONICAL_IGNORE_DIRS).some(d => f.includes(d)))
       .map(f => path.resolve(process.cwd(), f));
   } catch (_e) {
     process.stderr.write(styleText('yellow', `⚠️ No se pudo obtener la lista de archivos modificados desde git para ref: '${ref}'. Se auditará el proyecto completo.\n`));
@@ -1074,7 +1073,7 @@ async function main() {
 
   if (values['css-only']) {
     logProgress(styleText('cyan', '[1/1] 🎨 Ejecutando análisis exclusivo de css-checker (SCSS duplicados)...'));
-    all = await runCssChecker(values.path as string || '.', IGNORE_DIRS);
+    all = await runCssChecker(values.path as string || '.', new Set(CANONICAL_IGNORE_DIRS));
   } else {
     // 1. Consistency Check (z-index)
     if (isZIndexActive) {
@@ -1104,7 +1103,7 @@ async function main() {
     // 2. DOX / AGENTS.md Integrity Check
     if (isDoxActive) {
       logProgress(styleText('cyan', '[2/6] 📘 Escaneando jerarquía e integridad de índices AGENTS.md / DOX...'));
-      const doxErrors = await checkDoxIntegrity(process.cwd(), IGNORE_DIRS);
+      const doxErrors = await checkDoxIntegrity(process.cwd(), new Set(CANONICAL_IGNORE_DIRS));
       all = [...all, ...doxErrors];
     }
 
@@ -1205,7 +1204,7 @@ async function main() {
     // 6. Integración de css-checker
     if (isCssCheckerActive) {
       logProgress(styleText('cyan', '[5/6] 🎨 Ejecutando análisis de css-checker (SCSS duplicados)...'));
-      all = all.concat(await runCssChecker(values.path as string || '.', IGNORE_DIRS));
+      all = all.concat(await runCssChecker(values.path as string || '.', new Set(CANONICAL_IGNORE_DIRS)));
     }
 
     // 7. Integración de detector de constantes duplicadas

@@ -13,28 +13,18 @@
  * [PureVue-Ignore]
  */
 
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { collectRepositoryFiles } from '../lib/auditorBase.ts';
 
-const IGNORE_DIRS = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public', 'scripts']); // runtime-set: Fast O(1) membership lookup set
-
-function walkDir(dir: string): string[] {
-  const results: string[] = []; // no-domain: Non-domain utility collection or data structure
-  for (const entry of readdirSync(dir)) {
-    if (IGNORE_DIRS.has(entry)) continue;
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) results.push(...walkDir(full));
-    else if (['.ts', '.vue'].includes(extname(full))) results.push(full);
-  }
-  return results;
-}
-
-const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
-const srcDir = join(root, 'src');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const srcDir = path.join(root, 'src');
+const TARGET_EXTENSIONS = new Set(['.ts', '.vue']); // runtime-set: Fast O(1) membership lookup set
 
 let fixed = 0; // singleton-ok: Singleton instance state container
 
-for (const file of walkDir(srcDir)) {
+for (const file of collectRepositoryFiles(srcDir, root, [], TARGET_EXTENSIONS)) {
   const content = readFileSync(file, 'utf-8');
 
   // Pattern 1: <script setup lang="ts">import { setTimeout } from 'node:timers/promises';

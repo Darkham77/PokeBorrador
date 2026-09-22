@@ -21,6 +21,7 @@ This directory contains static code analysis, AST governance, TypeScript configu
 - [validate_dead_css.ts](./validate_dead_css.ts): Detects orphaned CSS/SCSS classes and unreferenced stylesheets.
 - [validate_duplicate_constants.ts](./validate_duplicate_constants.ts): AST analysis via `SharedAstContext` (`requiresAst: true`) detecting duplicated constant values across modules.
 - [validate_emoji_typography.ts](./validate_emoji_typography.ts): Audits Vue templates for unwrapped emojis and enforces proper icon/emoji class styling and vertical centering.
+- [validate_ephemeral_storage_isolation.ts](./validate_ephemeral_storage_isolation.ts): Enforces strict ephemeral storage and scratch isolation: bans temporary directories/files inside source code trees (`src/`, `database/`, `scripts/`, `tests/`, `supabase/`), forbids temporary ignore rules in `.gitignore`, and bans source code references to ephemeral folders outside `scratch/`.
 - [validate_error_suppression.ts](./validate_error_suppression.ts): Audits codebase for empty catch blocks, silent promise rejections, or swallowed errors.
 - [validate_eslint.ts](./validate_eslint.ts): Wraps ESLint with cache and JSON output to enforce code style, syntax rules, and Zero-Warning Policy (elevating all warnings and errors to `severity: 'error'`), supporting `--fix`.
 - [validate_fallow_config.ts](./validate_fallow_config.ts): Audits `.fallowrc.json` for integrity, bans dead-code suppressing entry globs, and ensures 100% of files and symbols declared in `ignoreExports` exist in code.

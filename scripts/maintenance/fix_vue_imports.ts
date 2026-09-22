@@ -1,22 +1,13 @@
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { collectRepositoryFiles } from '../lib/auditorBase.ts';
 
-function walkDir(dir: string): string[] {
-  const results: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const IGNORE = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public']); // runtime-set: Fast O(1) membership lookup set
-  for (const entry of readdirSync(dir)) {
-    if (IGNORE.has(entry)) continue;
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) results.push(...walkDir(full));
-    else if (['.ts', '.vue'].includes(extname(full))) results.push(full);
-  }
-  return results;
-}
-
-const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const TARGET_EXTENSIONS = new Set(['.ts', '.vue']); // runtime-set: Fast O(1) membership lookup set
 let fixed = 0; // singleton-ok: Singleton instance state container
 
-for (const file of walkDir(root)) {
+for (const file of collectRepositoryFiles(root, root, [], TARGET_EXTENSIONS)) {
   const content = readFileSync(file, 'utf-8');
   // Remove .ts suffix from .vue imports: './Foo.vue' → './Foo.vue'
   const updated = content.replace(/(['"])(\.\.?\/[^'"]*\.vue)\.ts(['"])/g, '$1$2$3');

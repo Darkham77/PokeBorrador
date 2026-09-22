@@ -31,9 +31,7 @@ enableCompileCache();
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const ROOT = path.resolve(import.meta.dirname, '../../..');
-const SCAN_ROOTS = [path.join(ROOT, 'src'), path.join(ROOT, 'scripts')];
-const EXTENSIONS = ['.ts', '.vue'] as const;
-const SKIP_DIRS = ['node_modules', '.git', 'dist', 'coverage', 'external', '.agents', 'auditors', 'lib'] as const;
+const EXTENSIONS = new Set(['.ts', '.vue']); // runtime-set: Fast O(1) membership lookup set
 const TEST_PATH_MARKERS = ['tests/', '.test.', '.spec.', 'scripts/e2e/'] as const;
 const ESCAPE_HATCHES = ['domain-ok', 'string-ok', 'open-record', 'runtime-set', 'runtime-map', 'no-domain', 'lib-duplicate-ok', 'result-ok'] as const;
 
@@ -93,23 +91,6 @@ interface Finding {
 
 type MatchFilter = (match: RegExpExecArray, line: string, file: string) => boolean;
 type SeverityPicker = (match: RegExpExecArray, line: string, file: string) => FindingSeverity;
-
-// ─── Scanner ─────────────────────────────────────────────────────────────────
-async function* walkFiles(dir: string): AsyncGenerator<string> {
-  for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
-    if ((SKIP_DIRS as readonly string[]).includes(entry.name)) continue; // no-domain: Non-domain utility collection or data structure
-
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      yield* walkFiles(full);
-      continue;
-    }
-
-    if (EXTENSIONS.some(extension => extension === path.extname(entry.name))) {
-      yield full;
-    }
-  }
-}
 
 function toRepoPath(filePath: string): string {
   return path.relative(ROOT, filePath).split(path.sep).join(path.posix.sep);
@@ -1112,7 +1093,10 @@ export class DomainTypesAuditor extends BaseAuditor<DomainTypesRuleId> {
       ruleIds: DOMAIN_TYPES_RULES,
       ruleDescriptions: {
         'domain-type-violation': 'Uso de string crudo en vez de tipo de dominio'
-      }
+      },
+      roots: ['src', 'scripts'],
+      allowedExtensions: EXTENSIONS,
+      extraIgnorePatterns: ['scripts/auditors/**', 'scripts/lib/**', 'coverage/**']
     });
   }
 
@@ -1123,14 +1107,13 @@ export class DomainTypesAuditor extends BaseAuditor<DomainTypesRuleId> {
 
     const libraryTypes = await extractLibraryDomainTypes(ROOT);
 
-    for (const scanRoot of SCAN_ROOTS) {
-      for await (const filePath of walkFiles(scanRoot)) {
-        const rel = toRepoPath(filePath);
-        allFindings.push(...await auditFile(filePath));
+    const filePaths = this.context.collectFiles(this.roots, this.allowedExtensions);
+    for (const filePath of filePaths) {
+      const rel = toRepoPath(filePath);
+      allFindings.push(...await auditFile(filePath));
 
-        const content = await fs.readFile(filePath, 'utf8');
-        scannedFiles.push({ file: rel, content });
-      }
+      const content = await fs.readFile(filePath, 'utf8');
+      scannedFiles.push({ file: rel, content });
     }
 
     this.filesScannedCount = scannedFiles.length;

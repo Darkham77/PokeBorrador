@@ -25,10 +25,11 @@
 - **Main Branch Push Protection Mandate**: AI agents are STRICTLY FORBIDDEN from executing `git push` towards the `main` branch (`origin/main` or while checked out on `main`). Pushing to `main` must always be performed manually by the user.
 - **Controlled Push to Non-Main Branches**: When explicitly requested by the user (e.g., "hace push"), the agent MAY execute `git push origin <branch>` ONLY IF the current branch is a non-main branch (such as `desarrollo` or a feature branch) and does not touch or target `main` or any other branch.
 
-## 4. Scratch Directory Output Mandate
+## 4. Scratch Directory Output & Universal Ephemeral Storage Mandate
 
-- Whenever generating temporary files, debug outputs, text reports, summaries, or validation reports (`.txt`, `.log`, `.json`, etc.), they MUST be stored exclusively in the `scratch/` directory at the project root.
-- Dumping temporary reports or scratch files in the root or source directories is strictly prohibited.
+- **Root `scratch/` SSoT**: The `scratch/` directory at the project root is the exclusive, mandatory location for all temporary files, debug outputs, text reports, summaries, validation artifacts, ephemeral SQLite databases, and simulation exports (`.txt`, `.log`, `.json`, `.db`).
+- **Strict Prohibition on Source Tree Temp Folders**: Creating or referencing temporary or ephemeral directories (`temp/`, `tmp/`, `temp_*`, `tmp_*`) or temporary persistence files inside source code roots (`src/`, `database/`, `scripts/`, `tests/`, `supabase/`) is strictly prohibited.
+- **Zero `.gitignore` Temp Bypasses**: Adding `.gitignore` entries to mask or ignore temporary folders or files under source trees (e.g. `database/temp`, `src/temp`, `supabase/temp_supabase/`) is strictly forbidden. All temporary assets must be created directly in `scratch/`. Enforced continuously by `npm run validate:ephemeral-storage-isolation`.
 
 ## 5. Root Setup Scripts SSoT & Workspace Update Governance
 

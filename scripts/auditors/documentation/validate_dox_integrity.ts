@@ -16,7 +16,7 @@
  */
 
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor, CANONICAL_IGNORE_DIRS } from '../../lib/auditorBase.ts';
 import { checkDoxIntegrity } from '../../maintenance/analyzers/doxAnalyzer.ts';
 
 enableCompileCache();
@@ -35,11 +35,6 @@ export const DOX_RULES: readonly DoxRuleId[] = [
   'dox-broken-link',
   'dox-gitignore-target'
 ] as const;
-
-const IGNORE_DIRS: ReadonlySet<string> = new Set([
-  'node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code',
-  'public', 'docs', 'scratch', 'showdown', 'external', 'test aventura'
-]);
 
 export class DoxIntegrityAuditor extends BaseAuditor<DoxRuleId> {
   private readonly rootDir: string;
@@ -65,7 +60,7 @@ export class DoxIntegrityAuditor extends BaseAuditor<DoxRuleId> {
   public override async runAudit(): Promise<void> {
     this.context.logStep(1, 1, 'Escaneando jerarquía e integridad de índices AGENTS.md...');
 
-    const rawViolations = await checkDoxIntegrity(this.rootDir, new Set(IGNORE_DIRS));
+    const rawViolations = await checkDoxIntegrity(this.rootDir, new Set(CANONICAL_IGNORE_DIRS));
     this.filesScannedCount = rawViolations.length > 0 ? rawViolations.length : 1;
 
     for (const v of rawViolations) {
