@@ -1,1 +1,0 @@
-import{t as e}from"./ArchaeologyModal-BPGv8B_w.js";export{e as default};

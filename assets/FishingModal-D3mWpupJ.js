@@ -1,1 +1,0 @@
-import{t as e}from"./FishingModal-GvWl---f.js";export{e as default};

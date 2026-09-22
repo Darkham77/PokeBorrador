@@ -1,0 +1,1 @@
+import{N as e}from"./vendor-vue-dLJ2ydZO.js";import{r as t}from"./vendor-gsap-DbQd7P_a.js";import{r as n}from"./gsapHelpers-DxreeFfW.js";var r=150,i=1e3;function a(n,a=3){return e({loader:n,onError(e,n,o,s){s<=a?t.delayedCall(s*r/i,n):o()}})}function o(e,t=3){return async()=>{let i=0;for(;;)try{return await e()}catch(e){if(i++,i>=t)throw e;await n(i*r)}}}export{o as n,a as t};
