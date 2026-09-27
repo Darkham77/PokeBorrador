@@ -2,21 +2,33 @@
 import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 
+const MAX_ZOOM_LEVEL = 1.0;
+const DEFAULT_MIN_ZOOM_LEVEL = 0.5;
+const ZOOM_INCREMENT = 0.1;
+const ZOOM_DECIMALS_FACTOR = 10;
+
+const props = withDefaults(defineProps<{
+  minZoom?: number
+}>(), {
+  minZoom: DEFAULT_MIN_ZOOM_LEVEL
+})
+
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
 
 const zoomIn = () => {
   const current = battleStore.debugZoom
-  if (current < 1.0) {
-    const nextZoom = Math.min(1.0, Math.round((current + 0.1) * 10) / 10)
+  if (current < MAX_ZOOM_LEVEL) {
+    const nextZoom = Math.min(MAX_ZOOM_LEVEL, Math.round((current + ZOOM_INCREMENT) * ZOOM_DECIMALS_FACTOR) / ZOOM_DECIMALS_FACTOR)
     battleStore.debugZoom = nextZoom
   }
 }
 
 const zoomOut = () => {
   const current = battleStore.debugZoom
-  if (current > 0.5) {
-    const nextZoom = Math.max(0.5, Math.round((current - 0.1) * 10) / 10)
+  const minAllowed = props.minZoom
+  if (current > minAllowed) {
+    const nextZoom = Math.max(minAllowed, Math.round((current - ZOOM_INCREMENT) * ZOOM_DECIMALS_FACTOR) / ZOOM_DECIMALS_FACTOR)
     battleStore.debugZoom = nextZoom
   }
 }
@@ -43,7 +55,7 @@ const copyReplay = async () => {
   <div class="camera-zoom-controls">
     <button
       class="zoom-btn"
-      :disabled="battleStore.debugZoom >= 1.0"
+      :disabled="battleStore.debugZoom >= MAX_ZOOM_LEVEL"
       title="Acercar cámara"
       @click.stop="zoomIn"
     >
@@ -51,7 +63,7 @@ const copyReplay = async () => {
     </button>
     <button
       class="zoom-btn"
-      :disabled="battleStore.debugZoom <= 0.5"
+      :disabled="battleStore.debugZoom <= props.minZoom"
       title="Alejar cámara"
       @click.stop="zoomOut"
     >

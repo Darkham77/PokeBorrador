@@ -20,4 +20,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- [Map Environments (`./map/AGENTS.md`)](./map/AGENTS.md): Encapsulates polymorphic environment, lighting, and weather inheritance logic for map locations.

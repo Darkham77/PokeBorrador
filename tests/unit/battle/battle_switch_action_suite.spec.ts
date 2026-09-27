@@ -269,7 +269,7 @@ describe('Switch Sync & Showdown Worker Protocol', () => {
   it('should abort switch early and notify player if trapped by Arena Trap/Shadow Tag', async () => {
     const { ctx, p1 } = createMockContext();
 
-    const { isPlayerTrappedInWorker } = await import('@/logic/battle/orchestrator');
+    const { isPlayerTrappedInWorker } = await import('@/logic/battle/showdownWorkerClient');
     vi.mocked(isPlayerTrappedInWorker).mockResolvedValueOnce(true);
 
     const transitionSpy = vi.spyOn(ctx.fsm, 'transition');

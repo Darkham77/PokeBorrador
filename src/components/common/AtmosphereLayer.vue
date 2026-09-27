@@ -290,12 +290,9 @@ const initWeatherAnim = () => {
     return
   }
 
-  // Canvas / OffscreenCanvas activation for noise/mist/heat layers
+  // Canvas / OffscreenCanvas activation for noise/mist/heat layers (Unified Screen-Space camera level)
   const shouldActivateCanvas = (weatherId?: WeatherId): boolean => {
-    if (isHeatWeather(weatherId)) {
-      return props.layer !== 'ambient' && isCanvasWeather(weatherId)
-    }
-    return props.layer !== 'particles' && isCanvasWeather(weatherId)
+    return props.layer !== 'ambient' && isCanvasWeather(weatherId)
   }
 
   if (shouldActivateCanvas(w)) {
@@ -407,7 +404,6 @@ import {
   isSnowWeather,
   isSandstormWeather,
   isCanvasWeather,
-  isHeatWeather,
   resolveSnowLayerClass,
   resolveWeatherOverlayStyles
 } from './atmosphereParticleHelper'
@@ -431,11 +427,10 @@ const hasSnow = computed(() => isSnowWeather(props.weather))
 const hasSandstorm = computed(() => isSandstormWeather(props.weather))
 const hasCanvasWeather = computed(() => isCanvasWeather(props.weather))
 const snowLayerClass = computed(() => resolveSnowLayerClass(props.weather))
-const isDustOnly = computed(() => props.weather === 'strong_winds')
 
 const hasPrecipitation = computed(() => hasRain.value || hasSnow.value)
 const precipitationLayerClass = computed(() => (hasRain.value ? 'rain-layer' : snowLayerClass.value))
-const dustLayerClass = computed(() => ['sandstorm-layer', { 'dust-only': isDustOnly.value }])
+const dustLayerClass = 'sandstorm-layer'
 const showSecondLayer = computed(() => !props.isLowPower)
 const lightningStyle = computed(() => ({ '--lx': lightningPos.value.x1 }))
 const containerStyle = computed(() => ({ zIndex: props.zIndex }))
@@ -461,12 +456,7 @@ const overlayClasses = computed(() => [
 
 const showPrecipitation = computed(() => props.layer !== 'ambient' && hasPrecipitation.value)
 const showSandstorm = computed(() => props.layer !== 'ambient' && hasSandstorm.value)
-const showCanvasWeather = computed(() => {
-  if (isHeatWeather(props.weather)) {
-    return props.layer !== 'ambient' && hasCanvasWeather.value
-  }
-  return props.layer !== 'particles' && hasCanvasWeather.value
-})
+const showCanvasWeather = computed(() => props.layer !== 'ambient' && hasCanvasWeather.value)
 const showLeavesOverlay = computed(() => props.layer !== 'ambient' && Boolean(props.weather))
 </script>
 

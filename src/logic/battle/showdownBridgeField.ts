@@ -146,9 +146,10 @@ function handleWeatherEvent(ctx: SBCtx, parts: string[], line: string): boolean 
     const nextWeatherType = mapOfficialToVisualWeather(weatherType, ACTIVE_GENERATION);
     const currentWeatherType = store.activeBattle.value.weather?.type || 'clear';
 
+    const validatedWeather = requireWeatherId(nextWeatherType);
     store.activeBattle.value.weather = {
-      type: requireWeatherId(nextWeatherType),
-      visual: nextWeatherType,
+      type: validatedWeather,
+      visual: validatedWeather,
       turns: -1
     };
 

@@ -373,9 +373,9 @@ function handleExecuteTurn(payload: WorkerEventPayload): void {
 }
 
 function handleCheckTrapped(): void {
-  const activeReq = currentBattle?.p1?.activeRequest as { active?: Array<{ trapped?: boolean } | null> } | undefined;
+  const activeReq = currentBattle?.p1?.activeRequest as { active?: Array<{ trapped?: boolean; maybeTrapped?: boolean } | null> } | undefined;
   const activeMon = currentBattle?.p1?.active?.[0];
-  const trapped = Boolean(activeReq?.active?.[0]?.trapped || activeMon?.trapped);
+  const trapped = Boolean(activeReq?.active?.[0]?.trapped || activeReq?.active?.[0]?.maybeTrapped || activeMon?.trapped);
   self.postMessage({
     type: 'CHECK_TRAPPED_RESPONSE',
     payload: { trapped }

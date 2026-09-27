@@ -67,9 +67,23 @@ function resolveSwitchTarget(
   return { targetMon, teamIndex }
 }
 
+function isTrappedSynchronous(ctx: BattleContext): boolean {
+  if (ctx.isPlayerTrapped?.value) return true
+  const reqActive = ctx.activeBattle.value?.playerRequest?.active?.[0]
+  if (reqActive?.trapped || reqActive?.maybeTrapped) return true
+  const player = ctx.activeBattle.value?.player
+  if (!player) return false
+  if (player.trapped) return true
+  const vc = player.volatileCounters
+  return Boolean(vc?.['partiallytrapped'] || vc?.['trapped'] || vc?.['bide'])
+}
+
 async function checkSwitchTrapBlocked(ctx: BattleContext): Promise<boolean> {
-  const { isPlayerTrappedInWorker } = await import('../orchestrator.ts')
-  const isTrapped = await isPlayerTrappedInWorker()
+  const isTrapped = isTrappedSynchronous(ctx) || await (async () => {
+    const { isPlayerTrappedInWorker } = await import('../showdownWorkerClient.ts')
+    return await isPlayerTrappedInWorker()
+  })()
+
   if (isTrapped) {
     const { useUIStore } = await import('@/stores/ui')
     useUIStore().notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')

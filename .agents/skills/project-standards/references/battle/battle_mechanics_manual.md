@@ -71,6 +71,7 @@ Pokémon Showdown emits specialized request structures and log tokens for multi-
    - Turn 2: Showdown sends `moves: [{ id: 'recharge', move: 'Recharge' }]`. The turn auto-executes `move 1` (`|cant|...|recharge`).
 4. **`uproar`, `rollout`, `bide`**:
    - Successive turns maintain fixed action execution and UI slot disabling until expiration.
+   - **Bide Trapping & Switch Guard**: While charging or discharging *Bide*, Showdown sets `active[0].trapped: true` in the side request. The client engine synchronizes this into `poke.trapped`, immediately disabling the `#battle-switch-btn` and `BattleQuickTeam` cards, displaying the `🪤` badge in `BattleInfoCardStatusContainer.vue`, and synchronously blocking any voluntary switch attempts with a descriptive notification toast before dispatching choices to Showdown.
 
 ### 6. Canonical Combat Engine & BattleSession Architecture (Zero Duplication)
 

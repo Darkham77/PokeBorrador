@@ -12,8 +12,8 @@
   position: absolute;
   top: -100px;
   left: -100px;
-  width: 8px;
-  height: 6px;
+  width: clamp(6px, 2.5cqmin, 14px);
+  height: clamp(5px, 1.9cqmin, 11px);
   background: linear-gradient(135deg, #4ade80, #166534);
   border-radius: 50% 0 50% 0;
   opacity: 0; // Default invisible until explicitly animated by GSAP
@@ -116,11 +116,20 @@
     box-shadow: none !important;
 
     // Suppress heavy background pseudoelements, except for camera-level atmospheric vignettes
-    &:not(.cold):not(.coldwave):not(.heatwave):not(.sun):not(.intense_sun) {
+    &:not(.cold):not(.coldwave):not(.heatwave):not(.sun):not(.intense_sun):not(.fog):not(.snow):not(.blizzard):not(.mist):not(.wind):not(.strong_winds) {
       &::before,
       &::after {
         display: none !important;
       }
     }
+  }
+
+  // Pure ambient layer in virtual space: NEVER render camera lens vignettes, halos, or borders on the map!
+  &.is-ambient-layer {
+    &::before,
+    &::after {
+      display: none !important;
+    }
+    box-shadow: none !important;
   }
 }

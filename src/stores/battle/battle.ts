@@ -202,6 +202,15 @@ export const useBattleStore = defineStore('battle', () => {
 
   const isPvP = computed(() => !!activeBattle.value?.isPvP)
 
+  const isPlayerTrapped = computed(() => {
+    const p = activeBattle.value?.player;
+    const req = activeBattle.value?.playerRequest?.active?.[0];
+    if (req?.trapped || req?.maybeTrapped) return true;
+    if (p?.trapped) return true;
+    if (p?.volatileCounters?.['trapped'] || p?.volatileCounters?.['partiallytrapped'] || p?.volatileCounters?.['bide']) return true;
+    return false;
+  });
+
   const uiConfig = computed<BattleUiConfig>(() => resolveBattleUiConfig(activeBattle.value))
 
   const getContext = (): BattleContext => ({
@@ -223,6 +232,7 @@ export const useBattleStore = defineStore('battle', () => {
     isReadyToExit, 
     isIntroAnimating,
     isPvP,
+    isPlayerTrapped,
     uiConfig,
     isProcessing, 
     debugBinoculars, 
@@ -474,7 +484,7 @@ export const useBattleStore = defineStore('battle', () => {
     getCombatReplayPayload,
     isSearching, player, enemy,
     playerUsedMoves, isIntroAnimating,
-    isPvP, uiConfig,
+    isPvP, isPlayerTrapped, uiConfig,
     playerStages, enemyStages, battleLogs, debugLoopPokemon, debugBinoculars,
     debugShowGuides, debugShowFxRadius, debugShowPokeRadius, debugZoom,
     attackerSide, activeMove, exitingPlayer, exitingEnemy, animations,

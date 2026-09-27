@@ -2,63 +2,48 @@ import { computed, type Ref } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals'
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
-import { isMapRouteId } from '@/data/world/map-assets'
 import { requireDayPhase, type DayPhase } from '@/logic/utils/timeUtils'
-import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
-import { GYMS_BY_ID, isGymId, type Gym } from '@/data/world/gyms'
+import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry'
+import type { BaseMapEnvironment } from '@/logic/environment/map/baseMapEnvironment'
 import type { BattleState } from '@/types/battle/battle'
-import {
-  isNaturalWeatherAllowedInLocation,
-  resolveEffectiveCycleForLocation
-} from '@/logic/battle/battleTeamCoordinator'
 import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 import {
-  resolveBattleSupportedCycles,
   resolveActiveFieldCondition,
   resolveActiveSideCondition,
   resolveActiveCombatWeather,
-  isNaturalWeatherBlocked,
   resolveAmbientWeather
 } from './battleAtmosphereHelpers.ts'
 
 export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>) {
   const mapStore = useMapStore()
 
-  const gymConfig = computed<Gym | null>(() => {
-    const gymId = battle.value?.gymId
-    if (!gymId || !isGymId(gymId)) return null
-    return GYMS_BY_ID[gymId] || null
-  })
-
-  const mapLocationConfig = computed(() => {
+  const environment = computed<BaseMapEnvironment | null>(() => {
     const locId = battle.value?.locationId
-    if (!locId || !isMapRouteId(locId)) return null
-    return MAPS_BY_ROUTE_ID[locId] || null
+    if (!locId) return null
+    return getMapEnvironment(locId, {
+      isGym: battle.value?.isGym,
+      gymId: battle.value?.gymId,
+      isPvP: battle.value?.isPvP,
+      isCave: battle.value?.isCave || battle.value?.isCrystalCave,
+      isIndoors: battle.value?.isIndoors
+    })
   })
 
   const isNaturalWeatherAllowed = computed<boolean>(() => {
-    return isNaturalWeatherAllowedInLocation(
-      battle.value?.locationId,
-      mapLocationConfig.value,
-      gymConfig.value,
-      battle.value
-    )
+    return environment.value ? environment.value.isWeatherAllowed() : false
   })
 
   const isGymOrPvP = computed<boolean>(() => !isNaturalWeatherAllowed.value)
 
   const supportedCycles = computed<readonly DayPhase[]>(() => {
-    return resolveBattleSupportedCycles(battle.value, gymConfig.value, mapLocationConfig.value)
+    if (battle.value?.fixedCycle) return [battle.value.fixedCycle]
+    return environment.value ? environment.value.getSupportedCycles() : ['day']
   })
 
   const effectiveCycle = computed<DayPhase>(() => {
-    return resolveEffectiveCycleForLocation(
-      battle.value?.locationId,
-      mapLocationConfig.value,
-      gymConfig.value,
-      battle.value,
-      requireDayPhase(mapStore.currentCycle)
-    )
+    if (battle.value?.fixedCycle) return battle.value.fixedCycle
+    const currentClockCycle = requireDayPhase(mapStore.currentCycle || 'day')
+    return environment.value ? environment.value.resolveEffectiveLighting(currentClockCycle) : 'day'
   })
 
   const effectiveBattleVisual = computed<string>(() => {
@@ -75,10 +60,9 @@ export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>)
     if (combatWeather) return combatWeather
 
     if (battle.value?.fixedWeather) return battle.value.fixedWeather
-    if (gymConfig.value?.fixedWeather) return gymConfig.value.fixedWeather
 
-    const activeRouteId = battle.value?.locationId || 'route1'
-    if (isNaturalWeatherBlocked(isNaturalWeatherAllowed.value, mapLocationConfig.value, gymConfig.value, activeRouteId)) {
+    const activeRouteId = battle.value?.locationId
+    if (!activeRouteId || !isNaturalWeatherAllowed.value) {
       return 'clear'
     }
 
@@ -96,11 +80,10 @@ export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>)
     if (combatWeather) return requireWeatherId(combatWeather)
 
     if (battle.value?.fixedWeather) return requireWeatherId(battle.value.fixedWeather)
-    if (gymConfig.value?.fixedWeather) return requireWeatherId(gymConfig.value.fixedWeather)
 
-    const activeRouteId = battle.value?.locationId || 'route1'
-    if (isNaturalWeatherBlocked(isNaturalWeatherAllowed.value, mapLocationConfig.value, gymConfig.value, activeRouteId)) {
-      return 'clear'
+    const activeRouteId = battle.value?.locationId
+    if (!activeRouteId || !isNaturalWeatherAllowed.value) {
+      return requireWeatherId('clear')
     }
 
     return requireWeatherId(
@@ -120,19 +103,18 @@ export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>)
   })
 
   const isAtmosphereLayerVisible = computed<boolean>(() => {
-    const isWeatherExplicitlyDisabled = mapLocationConfig.value?.weatherEnabled === false || gymConfig.value?.weatherEnabled === false
-    if (!isNaturalWeatherAllowed.value || isWeatherExplicitlyDisabled) {
+    if (!isNaturalWeatherAllowed.value) {
       return computedWeather.value !== 'clear'
     }
     return true
   })
 
   const arenaAtmosphereStyles = computed(() => {
-    const isCave = !!(battle.value?.isCave || battle.value?.isCrystalCave)
+    const isCave = Boolean(environment.value?.isCave())
     const hasActiveBattleWeather = Boolean(
       battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none'
     )
-    const hasExplicitWeather = Boolean(battle.value?.fixedWeather || gymConfig.value?.fixedWeather)
+    const hasExplicitWeather = Boolean(battle.value?.fixedWeather)
 
     if (!isNaturalWeatherAllowed.value && !hasActiveBattleWeather && !hasExplicitWeather) {
       return {
@@ -141,24 +123,28 @@ export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>)
       }
     }
 
+    if (isCave) {
+      return {
+        '--atmosphere-filter': 'brightness(0.7) contrast(1.1) saturate(0.85)',
+        '--weather-filter': weatherOnlyFilter.value
+      }
+    }
+
     return {
-      '--atmosphere-filter': isCave && !hasActiveBattleWeather ? 'none' : atmosphereFilter.value,
-      '--weather-filter': isCave && !hasActiveBattleWeather ? 'none' : weatherOnlyFilter.value
+      '--atmosphere-filter': atmosphereFilter.value,
+      '--weather-filter': weatherOnlyFilter.value
     }
   })
 
   return {
-    isGymOrPvP,
-    gymConfig,
-    mapLocationConfig,
-    supportedCycles,
-    mapSupportsCycles: computed(() => supportedCycles.value.length > 1),
     effectiveBattleVisual,
     computedWeather,
     effectiveCycle,
-    atmosphereFilter,
-    weatherOnlyFilter,
     isAtmosphereLayerVisible,
-    arenaAtmosphereStyles
+    arenaAtmosphereStyles,
+    isNaturalWeatherAllowed,
+    isGymOrPvP,
+    supportedCycles,
+    mapSupportsCycles: computed(() => supportedCycles.value.length > 1)
   }
 }

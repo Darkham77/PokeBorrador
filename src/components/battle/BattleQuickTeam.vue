@@ -39,7 +39,7 @@ const canSwitch = computed(() => {
   if (p.hp <= 0) return true // Si el activo está debilitado, siempre se puede cambiar
   
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
-  if (p.volatileCounters?.['partiallytrapped'] || p.trapped) return false
+  if (battleStore.isPlayerTrapped || p.volatileCounters?.['partiallytrapped'] || p.trapped) return false
   
   if (isPokemonLocked(p)) {
     return false

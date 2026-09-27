@@ -1,5 +1,6 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING, isBattleMapAssetId, requireBattleMapAssetId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
+import { isStadiumId, type StadiumId } from '@/data/world/stadiums'
 
 const CYCLE_SUFFIXES = {
   // English keys
@@ -16,9 +17,7 @@ const CYCLE_SUFFIXES = {
 } as const
 
 type BattleBackgroundCycle = keyof typeof CYCLE_SUFFIXES
-export const BATTLE_ARENA_SPECIAL_VENUES = ['gym', 'pvp'] as const
-export type BattleArenaSpecialVenue = (typeof BATTLE_ARENA_SPECIAL_VENUES)[number]
-export type BattleBackgroundLocationId = MapRouteId | BattleArenaSpecialVenue
+export type BattleBackgroundLocationId = MapRouteId | StadiumId
 const BATTLE_BACKGROUND_CYCLES = [
   'morning',
   'dawn',
@@ -46,7 +45,7 @@ export function useBattleBackground() {
    * @returns {{ url: string, isBakedIn: boolean }}
    */
   function getBackgroundUrl(locationId: BattleBackgroundLocationId, cycle = 'day', _isFishing = false) {
-    const baseName = locationId === 'gym' || locationId === 'pvp'
+    const baseName = isStadiumId(locationId)
       ? 'gimnasio'
       : MAP_ROUTE_MAPPING[requireMapRouteId(locationId)]
 

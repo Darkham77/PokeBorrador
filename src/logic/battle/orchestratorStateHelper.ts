@@ -1,17 +1,24 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
-import { requireWeatherId, resolveCurrentWeather } from '../weather/weatherRegistry.ts'
-import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
+import { resolveCurrentWeather } from '../weather/weatherRegistry.ts'
+import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts'
 
 export async function resetActiveBattleState(ctx: BattleContext, initialPlayer: Pokemon, isGym: boolean) {
   if (ctx.activeBattle.value) {
-    const curWeather = resolveCurrentWeather()
-    ctx.activeBattle.value.weather = {
-      type: isGym ? requireWeatherId('none') : requireWeatherId(mapVisualToOfficialWeather(curWeather, ACTIVE_GENERATION)),
-      visual: isGym ? 'clear' : curWeather,
-      turns: -1
+    const active = ctx.activeBattle.value
+    const locId = active.locationId
+    if (!locId) {
+      throw new Error('[orchestratorStateHelper] resetActiveBattleState: activeBattle.locationId es requerido. Se prohíben fallbacks silenciosos.')
     }
+    const environment = getMapEnvironment(locId, {
+      isGym: active.isGym || isGym,
+      gymId: active.gymId,
+      isPvP: active.isPvP,
+      isCave: active.isCave || active.isCrystalCave,
+      isIndoors: active.isIndoors
+    })
+    const curWeather = resolveCurrentWeather()
+    active.weather = environment.resolveCombatWeather(curWeather)
     ctx.activeBattle.value.over = false
     ctx.activeBattle.value.turnCount = 1
     ctx.activeBattle.value.turn = 'player'

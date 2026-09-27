@@ -112,14 +112,21 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: Bat
 
   const request = side === 'player' ? active.playerRequest : active.enemyRequest
   const poke = side === 'player' ? active.player : active.enemy
-  if (!poke || !request?.active?.[0]?.moves) return
+  if (!poke) return
+
+  const reqActive = request?.active?.[0]
+  if (reqActive) {
+    poke.trapped = Boolean(reqActive.trapped || reqActive.maybeTrapped)
+  }
+
+  if (!reqActive?.moves) return
 
   if (isStaleRequest(request, poke.uid)) {
     console.debug(`[syncActiveMovesFromRequest] Bypassed stale request for ${poke.name} (${poke.uid})`)
     return
   }
 
-  const reqMoves = request.active[0].moves
+  const reqMoves = reqActive.moves
 
   if (poke.isTransformed) {
     poke.moves = buildTransformedMoves(reqMoves)

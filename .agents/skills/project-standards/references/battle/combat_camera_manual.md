@@ -48,6 +48,23 @@ The camera frame applies dynamic letterboxing/pillarboxing to protect the safe z
    - `TARGET_Y = (SAFE_ZONE_Y + SAFE_ZONE_HEIGHT) - (VISIBLE_UNITS_Y / 2)`.
    - This ensures a cinematic "grounded" look with all safety padding concentrated at the top.
 
+### Dynamic Zoom Clamping & Zero Black Bars Protection
+
+To guarantee resolution independence across arbitrary aspect ratios (including ultrawide 21:9 and vertical mobile 9:16) without exposing unrendered backdrop black bars, the camera enforces dynamic zoom clamping:
+
+1. **Cover Scale Calculation**:
+   $$\text{coverScale} = \max\left(\frac{W_{\text{cam}}}{W_{\text{map}}}, \frac{H_{\text{cam}}}{H_{\text{map}}}\right) \times 1.02$$
+
+2. **Dynamic Minimum Zoom**:
+   $$\text{minZoom} = \operatorname{clamp}\left(\frac{\text{coverScale}}{\text{baseScale}}, 0.4, 1.0\right)$$
+   Rounded up to 1 decimal place to guarantee seamless button stepping in UI controls (`CameraZoomControls.vue`).
+
+3. **Scale & Pan Boundary Clamping**:
+   $$\text{effectiveScale} = \max(\text{coverScale}, \text{baseScale} \times \text{effectiveZoom})$$
+   $$\text{minTx} = W_{\text{cam}} - W_{\text{map}} \times \text{effectiveScale}$$
+   $$tx = \min(0, \max(\text{minTx}, \text{desiredTx}))$$
+   This ensures that even when panning or zooming out to the maximum allowed limit, the arena canvas always fills 100% of the visible frame.
+
 ## 🛠️ Debugging Standards
 
 When `showGuides` is enabled, the system MUST display:

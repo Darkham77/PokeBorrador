@@ -127,7 +127,7 @@ export type BattleStages = Partial<Record<CoreBattleStatKey, number>> & {
 
 export interface BattleWeather {
   type: WeatherId;
-  visual?: string; // domain-ok: Open dynamic text or non-domain string payload
+  visual?: WeatherId;
   turns: number;
 }
 

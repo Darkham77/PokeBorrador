@@ -15,6 +15,7 @@ import BattleQuickBag from './BattleQuickBag.vue'
 import StruggleOverlay from './StruggleOverlay.vue'
 import BattleFinishOverlay from './BattleFinishOverlay.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils.ts'
 import { getActiveCombatTeam, getHealthyBenchCombatants } from '@/logic/battle/battleTeamCoordinator.ts'
 
 // Debug tools are now handled by BattleArena sidebar
@@ -61,6 +62,11 @@ const isFinishOverlayVisible = computed(() => {
 const execShowBattleSwitch = () => { 
   const isForced = uiStore.isBattleSwitchForced;
   uiStore.isBattleSwitchForced = false;
+
+  if (!isForced && (battleStore.isPlayerTrapped || isPokemonLocked(player.value))) {
+    uiStore.notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫');
+    return;
+  }
 
   const team = getActiveCombatTeam(battleStore.getContext());
   const hasBenchPokemon = getHealthyBenchCombatants(battleStore.getContext()).length > 0;

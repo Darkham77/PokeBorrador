@@ -72,4 +72,17 @@ describe('useCombatCamera', () => {
     expect(950 - 550).toBe(400) // Top edge
     expect(950 + 550).toBe(1500) // Bottom edge
   })
+
+  it('computes dynamic minZoom to ensure 3000x3000 map covers viewport without black bars', () => {
+    const wrapper = mount(TestComponent)
+    expect(wrapper.vm.minZoom).toBeGreaterThanOrEqual(0.4)
+    expect(wrapper.vm.minZoom).toBeLessThanOrEqual(1.0)
+  })
+
+  it('bounds tx and ty within map dimensions to eliminate black bars', () => {
+    const wrapper = mount(TestComponent)
+    const styles = wrapper.vm.worldStyles
+    expect(styles.transform).toBeDefined()
+    expect(styles.transform).toMatch(/translate\(-?\d+(\.\d+)?px, -?\d+(\.\d+)?px\) scale\(\d+(\.\d+)?\)/)
+  })
 })

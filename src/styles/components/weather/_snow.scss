@@ -149,38 +149,4 @@
         inset 0 0 150px Rgba(0, 150, 255, 0.4);
     }
   }
-
-  &.fog, &.mist, &.dust_storm {
-    & .mist-layer {
-      position: absolute;
-      inset: var(--weather-mist-bleed, -100px);
-      will-change: transform, opacity;
-
-      &.layer-1 {
-        background-image: var(--weather-noise-1-url);
-        background-size: 256px 256px;
-        z-index: calc(var(--z-base) + 1);
-        transform: translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0);
-      }
-
-      &.layer-2 {
-        background-image: var(--weather-noise-2-url);
-        background-size: 512px 512px;
-        z-index: calc(var(--z-base) + 2);
-        transform: translate3d(calc(var(--seed-x, 0) * 1.2px), calc(var(--seed-y, 0) * 1.2px), 0);
-      }
-    }
-  }
-
-  &.fog {
-    & .layer-1 { opacity: 1; filter: contrast(1.5) Brightness(1.2); }
-    & .layer-2 { opacity: 1; filter: contrast(1.3) Brightness(1.1); }
-    .night & { opacity: 0.9; }
-  }
-
-  &.mist {
-    & .layer-1 { opacity: 1; filter: contrast(1.2) Brightness(1.1); }
-    & .layer-2 { opacity: 0.9; filter: contrast(1.1) Brightness(1.05); }
-    .night & { opacity: 0.8; }
-  }
 }

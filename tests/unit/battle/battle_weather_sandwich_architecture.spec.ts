@@ -7,7 +7,7 @@
  * 3. AtmosphereLayer layer="particles" renders precipitation & lightning with .is-particles-layer flag.
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
@@ -124,6 +124,66 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
     expect(leaves.length).toBeGreaterThan(0)
   })
 
+  it('AtmosphereLayer layer="particles" renders canvas for fog, mist, wind, strong_winds, dust_storm, sandstorm at camera level', async () => {
+    const canvasWeathers = ['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'] as const
+    for (const w of canvasWeathers) {
+      const wrapper = mount(AtmosphereLayer, {
+        props: {
+          weather: w,
+          layer: 'particles',
+          isVisible: true,
+          isFastMode: false,
+          isLowPower: false,
+          animSeed: 0.5
+        }
+      })
+      await nextTick()
+      const canvasEl = wrapper.find('canvas.weather-canvas')
+      expect(canvasEl.exists(), `Canvas should exist in particles layer for weather: ${w}`).toBe(true)
+      expect(canvasEl.isVisible(), `Canvas should be visible in particles layer for weather: ${w}`).toBe(true)
+    }
+  })
+
+  it('AtmosphereLayer layer="ambient" does NOT render canvas for any weather', async () => {
+    const allCanvasWeathers = ['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm', 'sun', 'heatwave'] as const
+    for (const w of allCanvasWeathers) {
+      const wrapper = mount(AtmosphereLayer, {
+        props: {
+          weather: w,
+          layer: 'ambient',
+          isVisible: true,
+          isFastMode: false,
+          isLowPower: false,
+          animSeed: 0.5
+        }
+      })
+      await nextTick()
+      const canvasEl = wrapper.find('canvas.weather-canvas')
+      expect(canvasEl.isVisible(), `Canvas must NOT be visible in ambient layer for weather: ${w}`).toBe(false)
+    }
+  })
+
+  it('AtmosphereLayer layer="particles" for strong_winds renders leaves and canvas without sandstorm layers', async () => {
+    const wrapper = mount(AtmosphereLayer, {
+      props: {
+        weather: 'strong_winds',
+        layer: 'particles',
+        isVisible: true,
+        isFastMode: false,
+        isLowPower: false,
+        animSeed: 0.5
+      }
+    })
+    await nextTick()
+    // Should NOT have sandstorm layers
+    expect(wrapper.find('.sandstorm-layer').exists()).toBe(false)
+    // Should have canvas
+    expect(wrapper.find('canvas.weather-canvas').isVisible()).toBe(true)
+    // Should have leaves
+    const leaves = wrapper.findAll('.leaf-element')
+    expect(leaves.length).toBeGreaterThan(0)
+  })
+
   it('isLeafWeatherId correctly filters weather types requiring leaf animation', async () => {
     const { isLeafWeatherId } = await import('@/components/common/useAtmosphereLeafAnim')
     expect(isLeafWeatherId('wind')).toBe(true)
@@ -169,6 +229,57 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
       top: '-100px',
       left: '-100px'
     }))
+    ctx.revert()
+  })
+
+  it('useAtmosphereLeafAnim alternates between top and side spawns with dedicated trajectories', async () => {
+    const { useAtmosphereLeafAnim } = await import('@/components/common/useAtmosphereLeafAnim')
+    const container = document.createElement('div')
+    const leafTop = document.createElement('div')
+    leafTop.className = 'leaf-element'
+    const leafSide = document.createElement('div')
+    leafSide.className = 'leaf-element'
+    container.appendChild(leafTop)
+    container.appendChild(leafSide)
+
+    const containerRef = { value: container }
+    const { initLeafAnim } = useAtmosphereLeafAnim(containerRef as never, {
+      weather: 'wind',
+      isFastMode: false,
+      isPerformanceMode: false,
+      isLowPower: false,
+      animSeed: 0.5,
+      isVisible: true
+    })
+
+    const { gsap } = await import('gsap')
+    const toSpy = vi.spyOn(gsap, 'to')
+    const delayedCalls: Array<() => void> = []
+    vi.spyOn(gsap, 'delayedCall').mockImplementation((_delay, callback) => {
+      if (typeof callback === 'function') {
+        delayedCalls.push(callback as () => void)
+      }
+      return {} as never
+    })
+
+    const ctx = gsap.context(() => {})
+    initLeafAnim(ctx)
+
+    // Trigger initial animateLeaf callbacks for both leaves
+    delayedCalls.forEach(fn => fn())
+
+    // Leaf 0 (index 0) is top spawn: falls down 135cqh, drifts left -120cqw
+    expect(toSpy).toHaveBeenCalledWith(leafTop, expect.objectContaining({
+      x: '-120cqw',
+      y: '135cqh'
+    }))
+
+    // Leaf 1 (index 1) is side spawn: sweeps across -140cqw, descends 100cqh
+    expect(toSpy).toHaveBeenCalledWith(leafSide, expect.objectContaining({
+      x: '-140cqw',
+      y: '100cqh'
+    }))
+
     ctx.revert()
   })
 

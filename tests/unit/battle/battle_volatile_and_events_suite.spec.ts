@@ -323,7 +323,7 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
         isPvP: false,
         enemy: kadabra,
         enemyTeam: [magneton],
-        locationId: 'route-1',
+        locationId: 'route1',
         weather: null,
         turnCount: 0
       });

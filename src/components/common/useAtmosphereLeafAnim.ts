@@ -1,17 +1,26 @@
 const LEAF_ANIM_FULL_ROTATION_DEG = 360;
 const LEAF_ANIM_SPIN_ROTATION_DEG = 1080;
+const LEAF_SPAWN_CYCLE_MODULO = 2;
 
-const LEAF_SPAWN_X_BASE_PCT = 10;
-const LEAF_SPAWN_X_RANGE_PCT = 120;
-const LEAF_SPAWN_Y_BASE_PCT = -30;
-const LEAF_SPAWN_Y_RANGE_PCT = 25;
+// Side spawn geometry (enters from right edge)
+const LEAF_SIDE_SPAWN_X_BASE_PCT = 102;
+const LEAF_SIDE_SPAWN_X_RANGE_PCT = 5;
+const LEAF_SIDE_SPAWN_Y_BASE_PCT = 2;
+const LEAF_SIDE_SPAWN_Y_RANGE_PCT = 65;
+const LEAF_SIDE_TRAVEL_X_CQW = '-140cqw';
+const LEAF_SIDE_TRAVEL_Y_CQH = '100cqh';
 
-const LEAF_TRAVEL_X_CQW = '-150cqw';
-const LEAF_TRAVEL_Y_CQH = '180cqh';
+// Top spawn geometry (enters from top edge)
+const LEAF_TOP_SPAWN_X_BASE_PCT = 20;
+const LEAF_TOP_SPAWN_X_RANGE_PCT = 90;
+const LEAF_TOP_SPAWN_Y_BASE_PCT = -5;
+const LEAF_TOP_SPAWN_Y_RANGE_PCT = 4;
+const LEAF_TOP_TRAVEL_X_CQW = '-120cqw';
+const LEAF_TOP_TRAVEL_Y_CQH = '135cqh';
 
-const LEAF_MIN_SCALE = 0.9;
-const LEAF_SCALE_VARIATION = 1.2;
-const LEAF_ACTIVE_OPACITY = 0.9;
+const LEAF_MIN_SCALE = 0.85;
+const LEAF_SCALE_VARIATION = 0.35;
+const LEAF_ACTIVE_OPACITY = 0.95;
 const LEAF_OFFSCREEN_PX = -100;
 const LEAF_MAX_CYCLE_DELAY_SEC = 1.5;
 
@@ -91,6 +100,8 @@ export function useAtmosphereLeafAnim(
       const activeLeaves = Array.from(leafNodes) as HTMLElement[]
 
       activeLeaves.forEach((el, i) => {
+        let cycleIndex = i
+
         ctxVal.add(() => {
           gsap.set(el, {
             opacity: 0,
@@ -103,11 +114,21 @@ export function useAtmosphereLeafAnim(
           const leafWeather = props.weather
           if (ctxVal.reverted || !props.isVisible || isFast || !isLeafWeatherId(leafWeather)) return
 
-          const s1 = Math.random()
-          const s2 = Math.random()
+          const isSideSpawn = (cycleIndex % LEAF_SPAWN_CYCLE_MODULO !== 0)
+          cycleIndex++
 
-          const startX = LEAF_SPAWN_X_BASE_PCT + s2 * LEAF_SPAWN_X_RANGE_PCT
-          const startY = LEAF_SPAWN_Y_BASE_PCT - s1 * LEAF_SPAWN_Y_RANGE_PCT
+          const r1 = Math.random()
+          const r2 = Math.random()
+
+          const startX = isSideSpawn
+            ? LEAF_SIDE_SPAWN_X_BASE_PCT + r2 * LEAF_SIDE_SPAWN_X_RANGE_PCT
+            : LEAF_TOP_SPAWN_X_BASE_PCT + r2 * LEAF_TOP_SPAWN_X_RANGE_PCT
+          const startY = isSideSpawn
+            ? LEAF_SIDE_SPAWN_Y_BASE_PCT + r1 * LEAF_SIDE_SPAWN_Y_RANGE_PCT
+            : LEAF_TOP_SPAWN_Y_BASE_PCT - r1 * LEAF_TOP_SPAWN_Y_RANGE_PCT
+
+          const travelX = isSideSpawn ? LEAF_SIDE_TRAVEL_X_CQW : LEAF_TOP_TRAVEL_X_CQW
+          const travelY = isSideSpawn ? LEAF_SIDE_TRAVEL_Y_CQH : LEAF_TOP_TRAVEL_Y_CQH
 
           ctxVal.add(() => {
             gsap.set(el, {
@@ -125,8 +146,8 @@ export function useAtmosphereLeafAnim(
             const duration = (baseDuration + Math.random() * speedVariation) * seedMod
 
             gsap.to(el, {
-              x: LEAF_TRAVEL_X_CQW,
-              y: LEAF_TRAVEL_Y_CQH,
+              x: travelX,
+              y: travelY,
               rotation: `+=${LEAF_ANIM_SPIN_ROTATION_DEG}`,
               duration,
               ease: 'none',

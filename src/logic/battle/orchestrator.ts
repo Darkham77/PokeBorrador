@@ -6,11 +6,10 @@ import { getMapBiomeAndTags } from './biomeHelper.ts'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { BattleState } from '@/types/battle/battle'
+import type { BattleState, BattleWeather } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
-import { isWeatherId, requireWeatherId, resolveCurrentWeather, type WeatherId } from '../weather/weatherRegistry.ts'
-import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
+import { isWeatherId, requireWeatherId, resolveCurrentWeather } from '../weather/weatherRegistry.ts'
+import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts'
 import { generateNPCInventory } from './trainerInventory.ts'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireGymId } from '@/data/world/gyms'
@@ -82,13 +81,19 @@ function resolveDifficultyAndReward(options: BattleOptions) {
 }
 
 function extractBattleConfig(options: BattleOptions) {
+  const isGym = Boolean(
+    options.isGym ||
+    (typeof options.battleOptions === 'object' && options.battleOptions?.isGym) ||
+    options.gymId ||
+    options.locationId === 'gym'
+  )
+  const isPvP = Boolean(options.isPvP || options.pvpMatchId || options.locationId === 'pvp')
+
   const {
-    isGym = false,
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
     battleOptions = {}, minigame = options.minigame ?? null, wasSearching: wasSearchingOpt = options.wasSearching ?? null,
     trainerSprite = undefined, isRival = false, cannotEscape = false,
     trainerQuote = undefined,
-    isPvP = false,
     pvpMatchId = undefined,
     pvpIsHost = undefined,
     pvpOpponentId = undefined,
@@ -157,14 +162,23 @@ function cleanTeamVolatileStatus(team: Pokemon[], isPvP: boolean, ctx: BattleCon
   })
 }
 
-function resolveBattleWeather(options: BattleOptions, battleOptions: Record<string, unknown>, isGym: boolean) {
-  const rawFixedWeather = options.fixedWeather || (typeof battleOptions.fixedWeather === 'string' && isWeatherId(battleOptions.fixedWeather) ? battleOptions.fixedWeather : undefined)
-  const activeWeatherId: WeatherId = rawFixedWeather || resolveCurrentWeather()
-  const weather = {
-    type: isGym ? requireWeatherId('none') : requireWeatherId(mapVisualToOfficialWeather(activeWeatherId, ACTIVE_GENERATION)),
-    visual: isGym ? 'clear' : activeWeatherId,
-    turns: -1
-  }
+function resolveBattleWeather(
+  options: BattleOptions,
+  cfg: ReturnType<typeof extractBattleConfig>,
+  loc: ResolvedLocationData
+) {
+  const environment = getMapEnvironment(loc.resolvedLocationId, {
+    isGym: cfg.isGym,
+    gymId: cfg.resolvedGymId,
+    isPvP: cfg.isPvP,
+    isCave: loc.locationMap?.isCave,
+    isIndoors: loc.locationMap?.isIndoors
+  })
+
+  const rawFixedWeather = options.fixedWeather || (typeof cfg.battleOptions?.fixedWeather === 'string' && isWeatherId(cfg.battleOptions.fixedWeather) ? cfg.battleOptions.fixedWeather : undefined)
+  const rawIncomingWeather = rawFixedWeather || resolveCurrentWeather()
+  const weather = environment.resolveCombatWeather(rawIncomingWeather)
+  const activeWeatherId = requireWeatherId(weather.visual || weather.type || 'clear')
   return { activeWeatherId, weather }
 }
 
@@ -255,7 +269,7 @@ interface BuildBattleStateParams {
   maxEnemyLv: number
   enemyInventory: Record<string, number> | undefined
   enemyMoney: number | undefined
-  weather: { type: WeatherId; visual: WeatherId; turns: number }
+  weather: BattleWeather
   wasSearching: boolean
   ctx: BattleContext
 }
@@ -410,7 +424,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   const maxEnemyLv = Math.max(...finalEnemyTeam.map(p => p?.level || 1))
   const npcInvResult = generateNpcInventoryForBattle(cfg, maxEnemyLv)
-  const { weather } = resolveBattleWeather(options, cfg.battleOptions, cfg.isGym)
+  const { weather } = resolveBattleWeather(options, cfg, loc)
 
   ctx.activeBattle.value = buildInitialBattleState({
     cfg, loc, options, playerPoke, startingEnemyPoke, finalEnemyPoke, finalEnemyTeam, effectivePlayerTeam, maxEnemyLv,

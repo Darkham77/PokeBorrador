@@ -122,7 +122,9 @@ export function isPokemonLocked(p: Pokemon | null | undefined): boolean {
   const isTwoTurnActive = !!(p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0);
   const isMustRecharge = !!(p.volatileCounters?.['mustrecharge'] && p.volatileCounters['mustrecharge'] > 0);
   const isThrashLocked = !!(p.thrashTurns && p.thrashTurns > 0);
-  return isLockedMove || isTwoTurnActive || isMustRecharge || isThrashLocked;
+  const isBideActive = !!(p.volatileCounters?.['bide'] && p.volatileCounters['bide'] > 0);
+  const isTrapped = !!p.trapped;
+  return isLockedMove || isTwoTurnActive || isMustRecharge || isThrashLocked || isBideActive || isTrapped;
 }
 import type { LearnsetMove, MoveBaseData } from '@/types/system/database';
 

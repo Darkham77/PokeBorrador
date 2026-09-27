@@ -82,7 +82,7 @@ provide('isModalPerformanceMode', computed(() => false))
 
 const arenaRef = ref<HTMLElement | null>(null)
 const trainerEntitiesRef = ref<{ getTrainerElement: () => HTMLElement | null } | null>(null)
-const { cameraStyles, worldStyles, showGuides } = useCombatCamera(arenaRef)
+const { cameraStyles, worldStyles, showGuides, minZoom } = useCombatCamera(arenaRef)
 
 const showRivalAlert = ref(false)
 const rivalFlickerRef = ref<HTMLElement | null>(null)
@@ -588,7 +588,7 @@ function getCombatantKey(prefix: string, uid?: string, id?: string): string {
     <!-- Los minijuegos de Pesca y Arqueología se disparan como modales tradicionales mediante ModalRegistry en el watcher FSM -->
 
     <!-- Controles de Zoom de Cámara -->
-    <CameraZoomControls />
+    <CameraZoomControls :min-zoom="minZoom" />
 
     <!-- Controles Flotantes PvP, Replay y Espectador (Flotando sobre el suelo del viewport sin reducir la cámara) -->
     <div

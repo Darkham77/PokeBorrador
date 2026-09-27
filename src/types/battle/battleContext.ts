@@ -30,6 +30,7 @@ export interface BattleContext {
   isReadyToExit: Ref<boolean>;
   isIntroAnimating: Ref<boolean>;
   isPvP: Ref<boolean>;
+  isPlayerTrapped?: Ref<boolean>;
   uiConfig?: Ref<BattleUiConfig>;
   isProcessing: Ref<boolean>;
   debugBinoculars: Ref<boolean>;

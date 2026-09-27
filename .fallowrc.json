@@ -83,6 +83,21 @@
   },
   "ignoreExports": [
     {
+      "file": "src/data/world/stadiums.ts",
+      "exports": [
+        "STADIUM_IDS",
+        "STADIUM_IDS_SET",
+        "STADIUMS_BY_ID"
+      ]
+    },
+    {
+      "file": "src/logic/environment/map/baseMapEnvironment.ts",
+      "exports": [
+        "MAP_ENVIRONMENT_TYPES",
+        "MapEnvironmentType"
+      ]
+    },
+    {
       "file": "src/data/world/gyms.ts",
       "exports": [
         "Gym",
@@ -1215,12 +1230,6 @@
       "file": "src/composables/adventure/useAdventureEvents.ts",
       "exports": [
         "ADVENTURE_TRIGGER_TYPES"
-      ]
-    },
-    {
-      "file": "src/composables/battle/useBattleBackground.ts",
-      "exports": [
-        "BATTLE_ARENA_SPECIAL_VENUES"
       ]
     },
     {

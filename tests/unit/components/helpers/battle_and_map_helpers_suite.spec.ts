@@ -220,7 +220,7 @@ describe('Battle & Map Helpers Domain Suite', () => {
 
       it('identifies sandstorm and dust storm weathers', () => {
         expect(isSandstormWeather('sandstorm')).toBe(true)
-        expect(isSandstormWeather('strong_winds')).toBe(true)
+        expect(isSandstormWeather('strong_winds')).toBe(false)
         expect(isSandstormWeather('dust_storm')).toBe(true)
         expect(isSandstormWeather('clear')).toBe(false)
       })

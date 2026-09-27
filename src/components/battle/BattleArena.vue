@@ -25,7 +25,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getEncounterPool, getSpeciesEntries } from '@/logic/encounters/encounters'
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts'
 import { requireWeatherSeasonId } from '@/data/world/weather-tables'
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
+import { isMapRouteId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { requireDayPhase } from '@/logic/utils/timeUtils'
 import type { DayPhase } from '@/types/system/time'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
@@ -70,16 +70,29 @@ const cycleEmoji = computed(() => {
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
 const currentDayPhase = computed(() => requireDayPhase(mapStore.currentCycle || 'day'))
 const computedWeather = computed<WeatherId>(() => {
-  if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
-    return requireWeatherId(battle.value.weather.visual || battle.value.weather.type)
+  if (battle.value) {
+    if (battle.value.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
+      return requireWeatherId(battle.value.weather.visual || battle.value.weather.type)
+    }
+    if (battle.value.weather && (battle.value.weather.type === 'none' || battle.value.weather.type === 'clear')) {
+      return requireWeatherId('clear')
+    }
+    if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
+    const locId = battle.value.locationId
+    if (!locId) {
+      throw new Error('[BattleArena] battle.locationId no especificado en batalla activa. Se prohíben fallbacks silenciosos.')
+    }
+    return getRouteWeather(
+      requireMapRouteId(locId),
+      requireWeatherSeasonId(mapStore.currentSeason.id),
+      mapStore.currentEpochHour,
+      currentDayPhase.value
+    )
   }
+
+  // Estado en reposo (sin batalla activa, modal cerrado)
   if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
-  return getRouteWeather(
-    requireMapRouteId(battle.value?.locationId || 'route1'),
-    requireWeatherSeasonId(mapStore.currentSeason.id),
-    mapStore.currentEpochHour,
-    currentDayPhase.value
-  )
+  return requireWeatherId('clear')
 })
 const weatherEmoji = computed(() => {
   const visual = WEATHER_VISUAL_METADATA[computedWeather.value]
@@ -103,12 +116,21 @@ const weatherName = computed(() => {
 const mapsList = computed<MapLocation[]>(() => pokemonDataProvider.getMaps())
 
 const mapPropForModal = computed(() => {
-  const locId = requireMapRouteId(battle.value?.locationId || 'route1')
-  const loc = mapsList.value.find(m => m.id === locId)
-  if (loc) return loc
+  const locId = battle.value?.locationId || mapStore.currentMap
+  if (!locId) {
+    const first = mapsList.value[0]
+    if (first) return first
+    throw new Error('[BattleArena] No hay mapas disponibles en el catálogo para el modal de spawns.')
+  }
+  const cleanId = isMapRouteId(locId) ? locId : undefined
+  if (cleanId) {
+    const loc = mapsList.value.find(m => m.id === cleanId)
+    if (loc) return loc
+  }
+  // For special non-spawning arenas (gym, pvp) or cities without wild encounters, provide first map
   const first = mapsList.value[0]
   if (first) return first
-  throw new Error('[BattleArena] No maps available for route spawns modal')
+  throw new Error(`[BattleArena] Mapa no encontrado para locationId: "${locId}"`)
 })
 
 const routeSpawnsProps = reactive({
@@ -252,7 +274,8 @@ const weatherTooltipDescription = computed(() => {
   const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${weatherDescText}`
   if (!debugStore.isAdminOrOffline) return baseDesc
 
-  const locId = battle.value?.locationId || 'route1'
+  const locId = battle.value?.locationId || mapStore.currentMap
+  if (!locId) return baseDesc
   const loc = mapsList.value.find(m => m.id === locId)
   if (!loc) return baseDesc
 

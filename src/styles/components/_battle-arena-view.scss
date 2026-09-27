@@ -124,12 +124,6 @@
   z-index: calc(var(--z-map-spawns) - 5);
 }
 
-// Combat weather particles in virtual space (scaled proportionally to world objects)
-:deep(.leaf-element) {
-  width: calc(8px * var(--obj-scale, 2) * 1.5);
-  height: calc(6px * var(--obj-scale, 2) * 1.5);
-}
-
 
 .retro-battle-dialog {
   position: absolute;

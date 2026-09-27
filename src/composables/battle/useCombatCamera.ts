@@ -4,6 +4,15 @@ import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { useBattleStore } from '@/stores/battle/battle'
 
+const COVER_SAFETY_MARGIN = 1.02;
+const MIN_ZOOM_FALLBACK = 0.5;
+const MIN_ZOOM_FLOOR = 0.4;
+const MAX_ZOOM_CEILING = 1.0;
+const ZOOM_ROUNDING_FACTOR = 10;
+const MIN_VIEWPORT_SIZE_PX = 100;
+const DEFAULT_INITIAL_WIDTH_PX = 1000;
+const DEFAULT_INITIAL_HEIGHT_PX = 766;
+
 /**
  * useCombatCamera
  * Implements a dynamic 2D camera system based on docs/architecture/combat_camera.md
@@ -21,6 +30,23 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
 
   const showGuides = computed(() => battleStore.debugShowGuides)
   const debugZoom = computed(() => battleStore.debugZoom)
+
+  const minZoom = computed(() => {
+    if (!camWidth.value || !camHeight.value) return MIN_ZOOM_FALLBACK
+    const cw = camWidth.value
+    const ch = camHeight.value
+    const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X
+    const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y
+    const baseScale = Math.min(scaleX, scaleY)
+    if (baseScale <= 0) return MIN_ZOOM_FALLBACK
+
+    // Minimum scale required so that the 3000x3000px map completely covers the viewport
+    const minScaleX = cw / WORLD_CONSTANTS.MAP_WIDTH
+    const minScaleY = ch / (WORLD_CONSTANTS.TARGET_Y * 2)
+    const coverScale = Math.max(minScaleX, minScaleY) * COVER_SAFETY_MARGIN
+    const minRatio = coverScale / baseScale
+    return Math.min(MAX_ZOOM_CEILING, Math.max(MIN_ZOOM_FLOOR, Math.ceil(minRatio * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR))
+  })
 
   watch(debugZoom, () => {
     updateCamera(vpWidth.value, vpHeight.value)
@@ -56,7 +82,7 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
 
   const updateCamera = (width: number, height: number) => {
     // Filtro de Estabilidad: Ignoramos dimensiones nulas o valores de inicialización del navegador (0 o window.innerWidth exacto si no es fullscreen)
-    if (!width || !height || width < 100 || height < 100) return
+    if (!width || !height || width < MIN_VIEWPORT_SIZE_PX || height < MIN_VIEWPORT_SIZE_PX) return
 
     let cw = width
     let ch = height
@@ -75,13 +101,33 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     // Cálculo de escala basado estrictamente en el manual (VisibleX/Y)
     const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X
     const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y
-    const currentScale = Math.min(scaleX, scaleY) * debugZoom.value
+    const baseScale = Math.min(scaleX, scaleY)
+
+    // Acotación dinámica para que el zoom mínimo nunca descubra barras negras
+    const minScaleX = cw / WORLD_CONSTANTS.MAP_WIDTH
+    const minScaleY = ch / (WORLD_CONSTANTS.TARGET_Y * 2)
+    const coverScale = Math.max(minScaleX, minScaleY) * COVER_SAFETY_MARGIN
+    const minRatio = baseScale > 0 ? coverScale / baseScale : MIN_ZOOM_FALLBACK
+    const currentMinZoom = Math.min(MAX_ZOOM_CEILING, Math.max(MIN_ZOOM_FLOOR, Math.ceil(minRatio * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR))
+
+    if (battleStore.debugZoom < currentMinZoom) {
+      battleStore.debugZoom = currentMinZoom
+    }
+
+    const effectiveZoom = Math.max(currentMinZoom, battleStore.debugZoom)
+    const currentScale = Math.max(coverScale, baseScale * effectiveZoom)
     scale.value = currentScale
 
     // Focal Point (Bottom-Alignment Centering)
-    // El desplazamiento Tx/Ty centra el TARGET_X/Y del coordinador en el centro del viewport físico
-    tx.value = (cw / 2) - (WORLD_CONSTANTS.TARGET_X * currentScale)
-    ty.value = (ch / 2) - (WORLD_CONSTANTS.TARGET_Y * currentScale)
+    // El desplazamiento Tx/Ty centra el TARGET_X/Y del coordinador en el centro del viewport físico,
+    // con acotación estricta de límites para garantizar que el mapa cubra siempre el 100% del viewport
+    const desiredTx = (cw / 2) - (WORLD_CONSTANTS.TARGET_X * currentScale)
+    const desiredTy = (ch / 2) - (WORLD_CONSTANTS.TARGET_Y * currentScale)
+    const minTx = cw - (WORLD_CONSTANTS.MAP_WIDTH * currentScale)
+    const minTy = ch - (WORLD_CONSTANTS.MAP_HEIGHT * currentScale)
+
+    tx.value = Math.min(0, Math.max(minTx, desiredTx))
+    ty.value = Math.min(0, Math.max(minTy, desiredTy))
   }
 
   let onToggleGuides: () => void
@@ -102,8 +148,8 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     if (viewportRef.value) {
       // Evitamos getBoundingClientRect() para prevenir Forced Reflows.
       // Usamos clientWidth/clientHeight como inicialización estática no-bloqueante.
-      const w = viewportRef.value.clientWidth || 1000
-      const h = viewportRef.value.clientHeight || 766
+      const w = viewportRef.value.clientWidth || DEFAULT_INITIAL_WIDTH_PX
+      const h = viewportRef.value.clientHeight || DEFAULT_INITIAL_HEIGHT_PX
       vpWidth.value = w
       vpHeight.value = h
       updateCamera(w, h)
@@ -114,7 +160,7 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     }
 
     onToggleZoom = () => {
-      battleStore.debugZoom = battleStore.debugZoom === 1 ? 0.4 : 1
+      battleStore.debugZoom = battleStore.debugZoom === 1 ? minZoom.value : 1
       updateCamera(vpWidth.value, vpHeight.value)
     }
 
@@ -132,6 +178,7 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     worldStyles,
     showGuides,
     scale,
+    minZoom,
     objectScale: WORLD_CONSTANTS.OBJECT_SCALE
   }
 }

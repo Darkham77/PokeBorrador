@@ -1,5 +1,5 @@
 import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, type WeatherSeasonId } from '@/data/world/weather-tables';
-import type { MapRouteId } from '@/data/world/map-assets';
+import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { getDayCycle, type DayPhase } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { isWeatherId, requireWeatherId, WEATHER_REGISTRY, type WeatherId } from './weatherRegistry.ts';
@@ -36,7 +36,7 @@ export function getRouteWeather(
   forcedCycle?: DayPhase
 ): WeatherId {
   if (!isWeatherTableRouteId(mapId)) {
-    if (mapId === 'gym' || mapId === 'pvp') {
+    if (isMapRouteId(mapId)) {
       return 'clear';
     }
     throw new Error(`[weatherUtils] Route '${mapId}' has no registered weather table`);

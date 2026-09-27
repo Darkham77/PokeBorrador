@@ -278,14 +278,9 @@ try {
     Write-Host "  Continuando con la version actual de npm ($((npm -v)))..." -ForegroundColor Gray
 }
 
-# 8. Configuracion de Seguridad de Windows y NPM
+# 8. Configuracion de Entorno y NPM
 Write-Host ""
-Write-Host "[SECURITY] Configurando politicas de seguridad y exclusiones de Windows Defender..." -ForegroundColor Cyan
-try {
-    if (Get-Command Add-MpPreference -ErrorAction SilentlyContinue) {
-        Add-MpPreference -ExclusionPath $PSScriptRoot -ErrorAction SilentlyContinue
-    }
-} catch {}
+Write-Host "[CONFIG] Configurando politicas de NPM..." -ForegroundColor Cyan
 
 npm config set ignore-scripts true
 npm config set registry https://registry.npmjs.org/

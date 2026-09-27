@@ -48,6 +48,20 @@ npm config set audit-level high
 >[!NOTE]
 > **Nota sobre `ignore-scripts`**: Al activar esto, algunos paquetes legítimos que compilan binarios nativos (como `node-gyp` o herramientas de profiling) podrían fallar al instalarse. Si confías plenamente en un paquete específico y necesitas ejecutar sus scripts de compilación, puedes compilarlo manualmente usando `npm rebuild` o ejecutándolo de forma aislada una única vez con `npm run <script> --ignore-scripts=false`.
 
+### 🛡️ Exclusiones de Antivirus y Windows Defender (Fallow y CSS Checker)
+
+El proyecto utiliza herramientas auxiliares de alto rendimiento compiladas en binarios nativos y distribuidas a través de npm (`fallow` para auditorías de arquitectura/AST y `css-checker-kit` para análisis de duplicación de estilos SCSS).
+
+Debido a que estas herramientas emplean verificación criptográfica nativa (Ed25519 y firmas SHA-256) en lugar de certificados comerciales de Microsoft en sus binarios PE, **Windows Defender** o **Smart App Control** pueden emitir notificaciones informativas o alertas de falsos positivos al intentar ejecutarlas en segundo plano.
+
+>[!TIP]
+> **Recomendación para Desarrolladores**: Agrega la carpeta raíz del proyecto a la lista de exclusiones de tu antivirus:
+>
+> 1. Abre **Seguridad de Windows** (*Windows Security*).
+> 2. Dirígete a **Protección contra virus y amenazas** > **Configuración de Protección contra virus y amenazas** (*Administrar la configuración*).
+> 3. En la sección **Exclusiones**, selecciona **Agregar o quitar exclusiones**.
+> 4. Haz clic en **Agregar una exclusión** > **Carpeta** y selecciona la carpeta donde clonaste el repositorio (`PokeBorrador`).
+
 ### 🚀 Pasos para Iniciar el Servidor Local
 
 El archivo `package-lock.json` es tu barrera de seguridad más crítica porque almacena los hashes criptográficos (integrity SHA-512) de cada paquete.

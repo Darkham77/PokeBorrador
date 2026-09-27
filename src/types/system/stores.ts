@@ -121,6 +121,7 @@ export interface BattleStore {
   battleLogs: BattleLog[];
   debugLoopPokemon: Pokemon | null;
   isPvP: boolean;
+  isPlayerTrapped?: boolean;
   fsm: {
     currentState: Ref<BattleStateName>;
     currentSubState: Ref<BattleSubStateName | null>;

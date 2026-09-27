@@ -56,7 +56,7 @@ const isInputReady = computed(() => {
       <button
         id="battle-switch-btn"
         class="action-btn switch-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped) || isLocked || !hasAvailableBenchPokemon || battleStore.currentFsmState === 'REORDER_TEAM' || !isInputReady"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || battleStore.isPlayerTrapped || isLocked || !hasAvailableBenchPokemon || battleStore.currentFsmState === 'REORDER_TEAM' || !isInputReady"
         @click.stop="emit('switch')"
       >
         <span class="emoji">🔄</span> <span class="text">CAMBIAR</span>

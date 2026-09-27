@@ -26,7 +26,7 @@ import type { PokemonType } from '@/data/battle/types';
 export type WeatherMechanical = typeof WEATHER_MECHANICAL[keyof typeof WEATHER_MECHANICAL];
 
 /** All registered weather state IDs, including 'none' (no weather / gym default) */
-const WEATHER_IDS = [
+export const WEATHER_IDS = [
   'none',
   'clear',
   'null',

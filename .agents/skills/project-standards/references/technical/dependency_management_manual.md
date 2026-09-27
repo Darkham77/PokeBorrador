@@ -19,14 +19,16 @@ To guarantee the operation of critical systems (PWA, Service Workers, Animations
 
 Before upgrading any Core Stack library, verify that `vite-plugin-pwa` supports the new Vite major (`npm info vite-plugin-pwa peerDependencies`). A migration is only successful if `npm run build` produces a functional `sw.js` and `npm run audit` passes with 0 errors.
 
-### 🛡️ Bundler & Native Addon Resilience (Smart App Control & WASI Fallback)
+### 🛡️ Native Tooling & Antivirus Exclusions Protocol (Fallow, CSS Checker & Addons)
 
-When using modern bundlers with native binary bindings (such as Rolldown / Vite 8 on Windows), unsigned or newly released `.node` binaries may be intercepted by Windows 11 **Smart App Control (SAC)** or **Windows Defender Application Control (WDAC)** (`ERR_DLOPEN_FAILED` / `An Application Control policy has blocked this file`).
+The project relies on high-performance native binaries distributed through npm (`fallow` for AST architecture audits and `css-checker-kit` for SCSS duplication analysis), as well as native bundler bindings. Because these tools employ native cryptographic verification (Ed25519 and SHA-256 signatures) rather than commercial Microsoft Authenticode certificates on their PE binaries, **Windows Defender** or **Smart App Control** may flag false positive alerts or background execution toasts.
 
-To ensure total cross-platform resilience across all developer machines:
-1. **WASI Fallback Dependency**: Maintain `@rolldown/binding-wasm32-wasi` declared in `devDependencies`. If the OS blocks the native MSVC binding, Rolldown automatically and transparently falls back to WASI execution without halting development.
-2. **Automated Setup Unblocking**: `setup-windows.ps1` automatically unblocks downloaded native files (`.node`, `.dll`, `.exe`) in `node_modules` via `Unblock-File` and adds the workspace folder to Windows Defender exclusions.
-3. **Build Tool Validation**: `setup-windows.ps1` and `setup-linux.sh` automatically trigger `npm run validate:tools` post-install to compile and verify all native tooling.
+To ensure total cross-platform resilience and clean developer setup:
+1. **Antivirus Exclusions Protocol (Single Source of Truth)**: Developers MUST add the project root directory (`PokeBorrador`) to their antivirus exclusion list (`Windows Security > Virus & threat protection > Manage settings > Exclusions > Add an exclusion > Folder`).
+2. **Zero System Registry Tampering Mandate**: Workspace automation scripts (`setup-windows.ps1`) MUST NEVER attempt intrusive system-wide registry alterations (`VerifiedAndReputablePolicyState`, `AppModelUnlock`, `citool.exe`) to silence security alerts. Scripts must remain lightweight, clean, and portable.
+3. **Automated Setup Unblocking**: `setup-windows.ps1` unblocks downloaded native files (`.node`, `.dll`, `.exe`) in `node_modules` via `Unblock-File` and configures npm security policies (`ignore-scripts true`).
+4. **WASI Fallback Dependency**: Maintain `@rolldown/binding-wasm32-wasi` declared in `devDependencies`. If the OS blocks the native MSVC binding, Rolldown automatically and transparently falls back to WASI execution without halting development.
+5. **Build Tool Validation**: `setup-windows.ps1` and `setup-linux.sh` automatically trigger `npm run validate:tools` post-install to compile and verify all native tooling.
 
 ---
 
