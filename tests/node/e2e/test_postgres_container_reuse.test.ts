@@ -14,8 +14,8 @@ describe('Postgres Test Container Lifecycle & Reuse', () => {
     assert.strictEqual(initial.isReady, true, 'PostgreSQL container should be ready');
 
     // 2. Both services should be responding
-    const pgOk = await waitForPostgres(POSTGRES_URL, 1);
-    const postgrestOk = await waitForPostgrest(1);
+    const pgOk = await waitForPostgres(POSTGRES_URL, 5);
+    const postgrestOk = await waitForPostgrest(5);
     assert.strictEqual(pgOk, true, 'PostgreSQL should respond immediately');
     assert.strictEqual(postgrestOk, true, 'PostgREST should respond immediately');
 

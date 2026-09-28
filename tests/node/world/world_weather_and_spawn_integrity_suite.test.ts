@@ -456,6 +456,9 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
 
   describe('Spawn Integrity - No Babies in the Wild', () => {
     typedMaps.forEach(map => {
+      const hasSpawns = Boolean(map.wild || map.fishing?.pool || map.archaeology?.pool || map.weather);
+      if (!hasSpawns) return;
+
       describe(`Map: ${map.id} (${map.name})`, () => {
         if (map.wild) {
           Object.entries(map.wild).forEach(([cycle, pool]) => {

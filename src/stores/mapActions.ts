@@ -182,6 +182,11 @@ export async function executeNavigation(
   const uiStore = useUIStore();
   const eventStore = useEventStore();
 
+  if (locId === 'stadium' || locId === 'gym') {
+    uiStore.activeTab = 'gyms';
+    return;
+  }
+
   const now = Temporal.Now.instant().epochMilliseconds;
   if (now - state.lastNavigateTime < NAVIGATE_THROTTLE_MS) {
     logger.warn('MapStore', 'Navigate throttled');

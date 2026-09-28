@@ -9,15 +9,16 @@ Game Logic Engineers / World Environment Designers.
 ## Local Contracts
 
 - **Immutable Class Hierarchy (`BaseMapEnvironment`, `concreteEnvironments.ts`)**:
-  - `BaseMapEnvironment`: Abstract base contract defining `isWeatherAllowed()`, `resolveCombatWeather()`, `resolveEffectiveLighting()`, `getSupportedCycles()`, and `isCave()`.
-  - Concrete classes (`OutdoorEnvironment`, `CaveEnvironment`, `IndoorEnvironment`, `GymEnvironment`) implement polymorphic behavior without conditional branching spaghetti.
-- **Closed Environment Weather Suppression**:
-  - Subterranean caves, indoor rooms, and gym arenas strictly disallow natural ambient weather (`isWeatherAllowed() === false`).
-  - Combat entered from closed environments MUST initialize with `{ type: 'none', visual: 'clear', turns: -1 }`.
+  - `BaseMapEnvironment`: Abstract base contract taking frozen `MapEnvironmentBoundaries` derived 100% from `FIRE_RED_MAPS`, exposing `isWeatherAllowed()`, `isWeatherTypeAllowed()`, `assertWeatherAllowed()`, `resolveCombatWeather()`, and `resolveEffectiveLighting()`.
+  - Concrete semantic classes (`OutdoorEnvironment`, `SubterraneanCaveEnvironment`, `InteriorFacilityEnvironment`, `StadiumEnvironment`) implement polymorphic classification without hardcoded domain logic.
+- **Map Boundaries & Ambient Weather Contract**:
+  - Ambient weather and lighting are governed 100% by the immutable boundaries defined on each map in `FIRE_RED_MAPS` (`weatherEnabled`, `allowedWeathers`, `supportedCycles`, `fixedCycle`).
+  - Generic stadiums (`stadium`) strictly disallow natural ambient weather (`weatherEnabled: false`) and lock lighting to daylight (`fixedCycle: 'day'`). Combat entered in `stadium` initializes without ambient weather (`{ type: 'none', visual: 'clear', turns: -1 }`). In-combat moves and abilities (e.g. *Rain Dance*, *Drizzle*) remain fully functional per Pokémon Showdown simulation rules.
+  - Subterranean caves and indoor locations declare their own legitimate boundaries in `FIRE_RED_MAPS` (e.g., fog in Mt. Moon, mist in Pokémon Tower). Attempting to inject any ambient weather that violates a map's boundaries MUST fail loudly with a descriptive error.
 - **Lighting Cycle Resolution**:
-  - Closed spaces override ambient day/night cycles with fixed lighting (`day` or artificial cave illumination), preventing night darkness inside brightly lit facilities.
+  - Maps specify supported cycles (`supportedCycles`) or a forced cycle (`fixedCycle`). Closed facilities and generic stadiums override ambient day/night cycles with fixed lighting (`day`), preventing night darkness inside brightly lit arenas.
 - **Environment Registry (`mapEnvironmentRegistry.ts`)**:
-  - Provides constant-time $O(1)$ lookup mapping map IDs to their concrete `BaseMapEnvironment` instances.
+  - Provides constant-time $O(1)$ lookup mapping map IDs from `FIRE_RED_MAPS` to their concrete `BaseMapEnvironment` instances. Fails loudly on unknown map IDs.
 
 ## Work Guidance
 

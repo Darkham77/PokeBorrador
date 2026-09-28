@@ -41,8 +41,8 @@ export const MAP_ROUTE_MAPPING = {
   saffron_city: '/test aventura/imagenes/Saffron_City_FRLG.png',
   fuchsia_city: '/test aventura/imagenes/Fuchsia_City_FRLG.png',
   cinnabar_island: '/test aventura/imagenes/Cinnabar_Island_FRLG.png',
-  gym: 'gimnasio',
-  pvp: 'gimnasio'
+  stadium: 'gimnasio',
+  gym: 'gimnasio'
 } as const;
 export type MapRouteId = keyof typeof MAP_ROUTE_MAPPING;
 

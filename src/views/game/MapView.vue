@@ -39,6 +39,10 @@ onUnmounted(() => {
 const navigateToMap = async (loc: MapLocation | string | number) => {
   if (modalStore.isOpen('Confirm')) return
   const id = requireMapRouteId(typeof loc === 'object' ? loc.id : String(loc))
+  if (id === 'stadium' || id === 'gym') {
+    uiStore.activeTab = 'gyms'
+    return
+  }
   const maps = pokemonDataProvider.getMaps()
   const targetMap = maps.find(m => m.id === id)
   const mapDisplayName = targetMap ? targetMap.name : id

@@ -158,4 +158,11 @@ When evaluating weather spawn modifiers (boosts, debuffs, or blocks in `getWeath
 ### 11.2 Comprehensive Terrain Tags Display
 When presenting map terrain tags (under "Entorno" or similar details panel), avoid nesting ternaries in Vue templates which limit display to the first matching tag. Implement a computed list (e.g. `terrainTags`) to list all active environment flags (such as both Crystal Cave and Cave, or Volcano and Plains) simultaneously.
 
+---
+
+## 12. Encounter Pool Presence & Map Exploration Visibility
+
+- **Exploration Map Filtering**: Maps without wild Pokémon encounter pools across all schedules, weathers, and seasons (`hasMapEncounterSpawns(loc) === false`), or explicitly configured with `visibleInWorldMap: false` (such as the generic `stadium`), are automatically filtered out from the world exploration grid (`isMapVisibleInWorld(loc)`).
+- **Navigation Safety & Redirects**: Direct navigations or card clicks on combat arenas (`stadium`, `gym`) redirect cleanly to the gyms tab (`uiStore.activeTab = 'gyms'`). Encounter generators (`generateEncounter`, `generateGroundEncounter`) return `null` safely without attempting selection from an empty pool (`selectFromPool`).
+
 

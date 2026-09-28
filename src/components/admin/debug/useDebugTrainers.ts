@@ -259,7 +259,7 @@ export function useDebugTrainers() {
     const isGym = combatLocationType.value === 'gym'
     const gym = isGym && isGymId(selectedGymId.value) ? GYMS_BY_ID[selectedGymId.value] : null
 
-    const locationId = isGym ? 'gym' : selectedMapId.value
+    const locationId = isGym ? 'stadium' : selectedMapId.value
     const trainerNameVal = isGym && gym ? `Líder ${gym.leader}` : trainerName.value
     const gymIdVal = isGym && gym ? gym.id : undefined
     const rewardTMVal = isGym && gym ? gym.rewardTM : undefined

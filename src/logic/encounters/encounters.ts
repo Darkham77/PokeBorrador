@@ -17,7 +17,8 @@ import {
   clampLegendaryRates,
   getFinalGroundRates,
   getSpeciesEntries,
-  applyAtmosphericStatus
+  applyAtmosphericStatus,
+  hasMapEncounterSpawns
 } from './encounterHelpers.ts';
 
 import { generateFishingEncounter } from './fishingEncounterHelper.ts'
@@ -85,6 +86,7 @@ function generateGroundEncounter(
     }
   }
 
+  if (!pool.length) return null;
   clampLegendaryRates(pool, rates);
   const selectedId = selectFromPool(pool, rates);
   const minLv = loc.lv[0] || 2;
@@ -112,6 +114,38 @@ function generateGroundEncounter(
   };
 }
 
+async function checkTrainerEncounter(state: EncounterState, options: EncounterOptions): Promise<boolean> {
+  if (options.forceEncounter) return false;
+  const trainerBonus = options.eventTrainerBonus || 1;
+  const criminality = state.classData?.criminality || 0;
+  const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= 100;
+
+  const { calculatePoliceEncounterChance } = await import('@/logic/player/classMath');
+  const tChance = isRocketMaxCrim
+    ? calculatePoliceEncounterChance(criminality, trainerBonus)
+    : Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
+
+  return Math.random() * 100 < tChance;
+}
+
+function resolveActivityEncounter(
+  loc: MapLocation,
+  weather: WeatherId,
+  state: EncounterState,
+  options: EncounterOptions
+): Encounter | null {
+  const { fishingWeight, archWeight, totalWeight } = calculateEncounterTypeWeights(loc, weather, state, options);
+  const roll = Math.random() * totalWeight;
+
+  if (loc.fishing && roll < fishingWeight) {
+    return generateFishingEncounter(loc, weather, state, options);
+  }
+  if (loc.archaeology && roll < fishingWeight + archWeight) {
+    return generateArchaeologyEncounter(loc, options);
+  }
+  return null;
+}
+
 /**
  * Main logic to generate a wild encounter.
  * Decomposes complex logic flows into single-responsibility utilities.
@@ -120,7 +154,7 @@ export async function generateEncounter(locId: MapRouteId, state: EncounterState
   const routeId = requireMapRouteId(locId);
   const maps = pokemonDataProvider.getMaps();
   const loc = maps.find(l => l.id === routeId) || getMapLocationById(routeId);
-  if (!loc) return null;
+  if (!loc || !hasMapEncounterSpawns(loc)) return null;
 
   const cycle = requireDayPhase(options.cycle || getDayCycle());
   const eventStore = useEventStore() as { activeEvents: GameEvent[] };
@@ -137,29 +171,14 @@ export async function generateEncounter(locId: MapRouteId, state: EncounterState
   }
 
   // 3. Base Trainer Chance
-  const trainerBonus = options.eventTrainerBonus || 1;
-  const criminality = state.classData?.criminality || 0;
-  const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= 100;
-
-  const { calculatePoliceEncounterChance } = await import('@/logic/player/classMath');
-  const tChance = isRocketMaxCrim
-    ? calculatePoliceEncounterChance(criminality, trainerBonus)
-    : Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
-
-  if (!options.forceEncounter && Math.random() * 100 < tChance) {
+  if (await checkTrainerEncounter(state, options)) {
     return { type: 'trainer' };
   }
 
   // 4. Weighted Encounter Roll (Walking vs Fishing vs Archaeology)
   const weather = requireWeatherId(options.weather || 'clear');
-  const { fishingWeight, archWeight, totalWeight } = calculateEncounterTypeWeights(loc, weather, state, options);
-  const roll = Math.random() * totalWeight;
-
-  if (loc.fishing && roll < fishingWeight) {
-    return generateFishingEncounter(loc, weather, state, options);
-  } else if (loc.archaeology && roll < fishingWeight + archWeight) {
-    return generateArchaeologyEncounter(loc, options);
-  }
+  const activityEncounter = resolveActivityEncounter(loc, weather, state, options);
+  if (activityEncounter) return activityEncounter;
 
   // 5. Wild Pokemon Pool Selection (Normal)
   return generateGroundEncounter(loc, cycle, weather, state, options, activeEvents, routeId);

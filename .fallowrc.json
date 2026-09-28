@@ -83,14 +83,6 @@
   },
   "ignoreExports": [
     {
-      "file": "src/data/world/stadiums.ts",
-      "exports": [
-        "STADIUM_IDS",
-        "STADIUM_IDS_SET",
-        "STADIUMS_BY_ID"
-      ]
-    },
-    {
       "file": "src/logic/environment/map/baseMapEnvironment.ts",
       "exports": [
         "MAP_ENVIRONMENT_TYPES",

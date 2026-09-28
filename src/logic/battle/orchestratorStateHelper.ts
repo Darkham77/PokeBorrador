@@ -17,7 +17,7 @@ export async function resetActiveBattleState(ctx: BattleContext, initialPlayer: 
       isCave: active.isCave || active.isCrystalCave,
       isIndoors: active.isIndoors
     })
-    const curWeather = resolveCurrentWeather()
+    const curWeather = environment.isWeatherAllowed() ? resolveCurrentWeather() : undefined
     active.weather = environment.resolveCombatWeather(curWeather)
     ctx.activeBattle.value.over = false
     ctx.activeBattle.value.turnCount = 1

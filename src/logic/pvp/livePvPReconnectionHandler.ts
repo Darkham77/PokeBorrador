@@ -169,7 +169,7 @@ export function executeHandleSpectateSync(
       trainerName: payload.guestTrainerName,
       playerTeam: payload.hostTeam,
       enemyTeam: payload.guestTeam,
-      locationId: 'gym'
+      locationId: 'stadium'
     });
     if (battleStore.state) {
       battleStore.state.turnCount = payload.turnCount;

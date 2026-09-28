@@ -46,10 +46,10 @@ export const SUPABASE_TEST_SERVICE_KEY = createSignedJwt({
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const BASELINE_FILE = path.resolve(process.cwd(), 'database/migrations/20240416000000_baseline_schema.sql');
-const DOCKER_INFO_TIMEOUT_MS = 3000;
+const DOCKER_INFO_TIMEOUT_MS = 10000;
 const DOCKER_START_POLL_ATTEMPTS = 15;
 const POSTGRES_CONNECT_TIMEOUT_SEC = 10;
-const POSTGRES_PING_TIMEOUT_SEC = 1;
+const POSTGRES_PING_TIMEOUT_SEC = 3;
 const POSTGRES_READY_MAX_RETRIES = 20;
 const POLL_INTERVAL_MS = 1000;
 const POSTGRES_POLL_INTERVAL_MS = 500;
@@ -472,8 +472,8 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
 
     // 0. Quick check: if already running and healthy, reuse without container/network recreation churn
     if (!forceRecreate) {
-      const isPgRunning = await waitForPostgres(POSTGRES_URL, 1);
-      const isPostgrestRunning = await waitForPostgrest(1);
+      const isPgRunning = await waitForPostgres(POSTGRES_URL, 3);
+      const isPostgrestRunning = await waitForPostgrest(3);
       if (isPgRunning && isPostgrestRunning) {
         console.log(styleText('green', '✅ Pila Supabase (PostgreSQL + PostgREST + Gateway) ya activa y lista en RAM.'));
         try {

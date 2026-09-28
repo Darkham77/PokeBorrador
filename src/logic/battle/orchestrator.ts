@@ -3,15 +3,16 @@ const INITIAL_RATE_CUMULATIVE_SUM = 0;
 import { PERCENTAGE_SCALE_FACTOR } from '@/logic/constants/encounters'
 import { cloneReactive } from '@/logic/utils/cloneUtils.ts'
 import { getMapBiomeAndTags } from './biomeHelper.ts'
-import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
+import { MAPS_BY_ROUTE_ID, getMapLocationById } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { BattleState, BattleWeather } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { MapLocation } from '@/types/pokemon/encounters'
 import { isWeatherId, requireWeatherId, resolveCurrentWeather } from '../weather/weatherRegistry.ts'
 import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts'
 import { generateNPCInventory } from './trainerInventory.ts'
-import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { requireGymId } from '@/data/world/gyms'
 import { requireNpcArchetype } from '@/logic/utils/npcSpriteRouter'
 import { requireItemId } from '@/data/inventory/items'
@@ -46,8 +47,8 @@ import type { BattleOptions } from '@/types/system/stores.ts';
 export type { BattleOptions };
 
 interface ResolvedLocationData {
-  resolvedLocationId: ReturnType<typeof requireMapRouteId>
-  locationMap: (typeof MAPS_BY_ROUTE_ID)[keyof typeof MAPS_BY_ROUTE_ID] | undefined
+  resolvedLocationId: MapRouteId
+  locationMap: MapLocation | undefined
   activeBiome: string
   mapTags: string[]
 }
@@ -57,8 +58,9 @@ function extractLocationAndBiome(options: BattleOptions, rawMapLocation?: string
   if (!rawLoc) {
     throw new Error('[Battle] locationId or gameStore.state.map.currentMap is required to start a battle')
   }
-  const resolvedLocationId = requireMapRouteId(rawLoc)
-  const locationMap = MAPS_BY_ROUTE_ID[resolvedLocationId]
+  const cleanLoc = requireMapRouteId(rawLoc)
+  const resolvedLocationId: MapRouteId = cleanLoc === 'gym' ? 'stadium' : cleanLoc
+  const locationMap = getMapLocationById(resolvedLocationId)
   const { activeBiome, mapTags } = getMapBiomeAndTags(resolvedLocationId)
   return { resolvedLocationId, locationMap, activeBiome, mapTags }
 }
@@ -85,9 +87,10 @@ function extractBattleConfig(options: BattleOptions) {
     options.isGym ||
     (typeof options.battleOptions === 'object' && options.battleOptions?.isGym) ||
     options.gymId ||
+    options.locationId === 'stadium' ||
     options.locationId === 'gym'
   )
-  const isPvP = Boolean(options.isPvP || options.pvpMatchId || options.locationId === 'pvp')
+  const isPvP = Boolean(options.isPvP || options.pvpMatchId)
 
   const {
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
@@ -176,7 +179,7 @@ function resolveBattleWeather(
   })
 
   const rawFixedWeather = options.fixedWeather || (typeof cfg.battleOptions?.fixedWeather === 'string' && isWeatherId(cfg.battleOptions.fixedWeather) ? cfg.battleOptions.fixedWeather : undefined)
-  const rawIncomingWeather = rawFixedWeather || resolveCurrentWeather()
+  const rawIncomingWeather = rawFixedWeather ?? (environment.isWeatherAllowed() ? resolveCurrentWeather() : undefined)
   const weather = environment.resolveCombatWeather(rawIncomingWeather)
   const activeWeatherId = requireWeatherId(weather.visual || weather.type || 'clear')
   return { activeWeatherId, weather }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import { computed } from 'vue'
 import MapCard from './MapCard.vue'
 import { useEventStore } from '@/stores/events'
 import { getGuardianData } from '@/logic/war/guardianEngine'
@@ -11,14 +11,11 @@ import { useMapStore } from '@/stores/map'
 import { type MapRouteId } from '@/data/world/map-assets'
 import { type DayPhase } from '@/logic/utils/timeUtils'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-
-
 import type { MapLocation } from '@/types/pokemon/encounters'
+import { getMapSpawnPoolData, isMapVisibleInWorld } from '@/logic/encounters/encounterHelpers'
 
 const ROCKET_EXTORT_DURATION_MS = 24 * 3600 * 1000
 const TRAINER_OFFICIAL_DURATION_MS = 30 * 60 * 1000
-
-
 
 interface Props {
   maps: MapLocation[]
@@ -59,7 +56,7 @@ interface SpawnPoolData {
   weather: WeatherId | null | undefined
 }
 
-import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
+const visibleMaps = computed(() => props.maps.filter(isMapVisibleInWorld))
 
 const getMapData = (loc: MapLocation): SpawnPoolData => {
   if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }
@@ -124,7 +121,7 @@ const isRocketExtorted = (loc: MapLocation): boolean => {
 <template>
   <div class="map-grid">
     <MapCard
-      v-for="loc in maps"
+      v-for="loc in visibleMaps"
       :key="loc.id"
       :map="loc"
       :is-locked="isMapLocked(loc)"

@@ -4244,6 +4244,19 @@ export const FIRE_RED_MAPS: MapLocation[] = [
         "exclusive": {}
       }
     }
+  },
+  {
+    id: "stadium",
+    name: "Estadio Pokémon",
+    icon: "🏟️",
+    desc: "Estadio oficial para combates de gimnasio, torneos y enfrentamientos PvP.",
+    isIndoors: true,
+    visibleInWorldMap: false,
+    weatherEnabled: false,
+    allowedWeathers: ["clear"],
+    supportedCycles: ["day"],
+    fixedCycle: "day",
+    lv: [1, 100]
   }
 ];
 
@@ -4251,9 +4264,14 @@ export const MAPS_BY_ROUTE_ID: Record<MapRouteId, MapLocation> = Object.freeze(
   Object.fromEntries(FIRE_RED_MAPS.map(m => [m.id, m])) as Record<MapRouteId, MapLocation>
 );
 
+export const VISIBLE_WORLD_MAPS: readonly MapLocation[] = Object.freeze(
+  FIRE_RED_MAPS.filter(m => m.visibleInWorldMap !== false)
+);
+
 export function getMapLocationById(routeId: MapRouteId): MapLocation {
   const cleanId = requireMapRouteId(routeId);
-  const loc = MAPS_BY_ROUTE_ID[cleanId];
+  const resolvedId: MapRouteId = cleanId === 'gym' ? 'stadium' : cleanId;
+  const loc = MAPS_BY_ROUTE_ID[resolvedId];
   if (!loc) throw new Error(`[maps] Mapa no encontrado: "${routeId}"`);
   return loc;
 }

@@ -1,171 +1,170 @@
 import { describe, it, expect } from 'vitest';
 import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
 import { BaseMapEnvironment } from '@/logic/environment/map/baseMapEnvironment.ts';
-import { WEATHER_IDS, requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
-import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider.ts';
-import { ACTIVE_GENERATION } from '@/data/system/constants.ts';
-import type { DayPhase } from '@/types/system/time.ts';
+import { WEATHER_IDS, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
+import { DAY_PHASES } from '@/types/system/time.ts';
 import type { MapRouteId } from '@/data/world/map-assets.ts';
+import { FIRE_RED_MAPS } from '@/data/world/maps.ts';
+import { ROUTE_WEATHER_TABLES, isWeatherTableRouteId, WEATHER_SEASON_IDS } from '@/data/world/weather-tables.ts';
 
-describe('Map Environment Class Architecture & Weather Immunization Matrix (RED -> GREEN)', () => {
-  const FORBIDDEN_MAP_TYPES = [
-    { label: 'Cueva (Mt. Moon)', locationId: 'mt_moon', options: { isCave: true } },
-    { label: 'Cueva (Diglett Cave)', locationId: 'diglett_cave', options: { isCave: true } },
-    { label: 'Interior / Edificio (Power Plant)', locationId: 'power_plant', options: { isIndoors: true } },
-    { label: 'Interior / Edificio (Pokemon Tower)', locationId: 'pokemon_tower', options: { isIndoors: true } },
-    { label: 'Gimnasio por ID (Pewter Gym)', locationId: 'pewter_city', options: { isGym: true, gymId: 'pewter' as const } },
-    { label: 'Gimnasio por ID (Cerulean Gym)', locationId: 'cerulean_city', options: { isGym: true, gymId: 'cerulean' as const } },
-    { label: 'Gimnasio genérico (locationId: gym)', locationId: 'gym', options: { isGym: true } },
-    { label: 'Estadio PvP (locationId: pvp)', locationId: 'pvp', options: { isPvP: true } }
-  ] as const;
-
-  const PERMITTED_MAP_TYPES = [
-    { label: 'Ruta Exterior (Ruta 1)', locationId: 'route1', options: {} },
-    { label: 'Ruta Exterior (Bosque Viridian)', locationId: 'forest', options: {} },
-    { label: 'Ciudad Exterior (Pueblo Paleta)', locationId: 'pallet_town', options: {} }
-  ] as const;
-
-  describe('1. Matriz Exhaustiva de Climas Prohibidos (Cero Fugas)', () => {
-    for (const mapTarget of FORBIDDEN_MAP_TYPES) {
-      describe(`Entorno: ${mapTarget.label}`, () => {
-        it('debe declarar isWeatherAllowed() como false e inmutabilidad garantizada', () => {
-          const env = getMapEnvironment(mapTarget.locationId, mapTarget.options);
+describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSoT)', () => {
+  describe('1. Verificación Dinámica Exhaustiva de Todos los Mapas en FIRE_RED_MAPS', () => {
+    for (const loc of FIRE_RED_MAPS) {
+      describe(`Mapa: "${loc.id}" (${loc.name})`, () => {
+        it('debe instanciar un BaseMapEnvironment congelado y alineado con sus metadatos', () => {
+          const env = getMapEnvironment(loc.id);
           expect(env).toBeInstanceOf(BaseMapEnvironment);
-          expect(env.isWeatherAllowed()).toBe(false);
+          expect(env.id).toBe(loc.id);
+          expect(env.name).toBe(loc.name);
           expect(Object.isFrozen(env)).toBe(true);
+
+          const expectedCave = Boolean(loc.isCave || loc.isCrystalCave);
+          expect(env.isCave()).toBe(expectedCave);
+
+          const expectedIndoors = Boolean(
+            loc.isIndoors ||
+            loc.id === 'stadium' ||
+            loc.id === 'power_plant' ||
+            loc.id === 'pokemon_tower' ||
+            loc.id === 'mansion'
+          );
+          expect(env.isIndoors()).toBe(expectedIndoors);
         });
 
-        // Test absolutamente todos los 22 climas para este entorno cerrado
-        for (const weather of WEATHER_IDS) {
-          it(`debe suprimir completamente el clima "${weather}" devolviendo type: "none" y visual: "clear"`, () => {
-            const env = getMapEnvironment(mapTarget.locationId, mapTarget.options);
-            const resolved = env.resolveCombatWeather(weather as WeatherId);
-            expect(resolved).toEqual({
-              type: 'none',
-              visual: 'clear',
-              turns: -1
-            });
-          });
-        }
-      });
-    }
-  });
-
-  describe('2. Matriz Exhaustiva de Climas Permitidos en Rutas Exteriores', () => {
-    for (const mapTarget of PERMITTED_MAP_TYPES) {
-      describe(`Entorno Exterior: ${mapTarget.label}`, () => {
-        it('debe declarar isWeatherAllowed() como true e inmutabilidad garantizada', () => {
-          const env = getMapEnvironment(mapTarget.locationId, mapTarget.options);
-          expect(env).toBeInstanceOf(BaseMapEnvironment);
-          expect(env.isWeatherAllowed()).toBe(true);
-          expect(Object.isFrozen(env)).toBe(true);
-        });
-
-        for (const weather of WEATHER_IDS) {
-          it(`debe resolver y aceptar el clima exterior "${weather}" preservando visual y mapeando a Showdown`, () => {
-            const env = getMapEnvironment(mapTarget.locationId, mapTarget.options);
-            const resolved = env.resolveCombatWeather(weather as WeatherId);
-            if (weather === 'none' || weather === 'clear' || weather === 'null') {
-              expect(resolved.type).toBe('none');
-              expect(resolved.visual).toBe('clear');
+        it('debe resolver la iluminación dinámica o fija estrictamente según sus límites', () => {
+          const env = getMapEnvironment(loc.id);
+          for (const phase of DAY_PHASES) {
+            const resolvedLighting = env.resolveEffectiveLighting(phase);
+            if (loc.fixedCycle) {
+              expect(resolvedLighting).toBe(loc.fixedCycle);
+            } else if (env.boundaries.supportedCycles.includes(phase)) {
+              expect(resolvedLighting).toBe(phase);
             } else {
-              expect(resolved.visual).toBe(weather);
-              // Showdown mapping is verified against the official generation mapping converted to canonical WeatherId
-              const expectedOfficial = mapVisualToOfficialWeather(weather as WeatherId, ACTIVE_GENERATION);
-              expect(resolved.type).toBe(requireWeatherId(expectedOfficial));
+              expect(env.boundaries.supportedCycles).toContain(resolvedLighting);
+            }
+          }
+        });
+
+        const routeId = loc.id;
+        if (isWeatherTableRouteId(routeId)) {
+          it('todos los climas generados por la tabla meteorológica deben ser admitidos por los límites del mapa', () => {
+            const env = getMapEnvironment(loc.id);
+            const table = ROUTE_WEATHER_TABLES[routeId];
+
+            for (const season of WEATHER_SEASON_IDS) {
+              const seasonData = table[season];
+              if (!seasonData) continue;
+              for (const phase of DAY_PHASES) {
+                const phaseData = seasonData[phase];
+                if (!phaseData) continue;
+                for (const [weatherKey, chance] of Object.entries(phaseData)) {
+                  if (typeof chance === 'number' && chance > 0) {
+                    const weatherId = weatherKey as WeatherId;
+                    expect(
+                      env.isWeatherTypeAllowed(weatherId),
+                      `El mapa "${loc.id}" genera "${weatherId}" en ${season}/${phase} pero no lo permite en sus límites.`
+                    ).toBe(true);
+                    expect(() => env.assertWeatherAllowed(weatherId)).not.toThrow();
+                  }
+                }
+              }
             }
           });
         }
+
+        const mapWeather = loc.weather;
+        if (mapWeather) {
+          it('todos los climas con Pokémon visitantes o exclusivos deben ser admitidos por los límites del mapa', () => {
+            const env = getMapEnvironment(loc.id);
+            for (const weatherKey of Object.keys(mapWeather)) {
+              const weatherId = weatherKey as WeatherId;
+              expect(
+                env.isWeatherTypeAllowed(weatherId),
+                `El mapa "${loc.id}" define spawns para "${weatherId}" pero no lo permite en sus límites.`
+              ).toBe(true);
+              expect(() => env.assertWeatherAllowed(weatherId)).not.toThrow();
+            }
+          });
+        }
+
+        it('debe rechazar ruidosamente cualquier clima activo que viole los límites del mapa', () => {
+          const env = getMapEnvironment(loc.id);
+
+          for (const weather of WEATHER_IDS) {
+            const isBaseClean = weather === 'none' || weather === 'clear' || weather === 'null';
+
+            if (!env.isWeatherAllowed()) {
+              if (isBaseClean) {
+                expect(env.isWeatherTypeAllowed(weather)).toBe(true);
+                expect(env.resolveCombatWeather(weather)).toEqual({ type: 'none', visual: 'clear', turns: -1 });
+              } else {
+                expect(env.isWeatherTypeAllowed(weather)).toBe(false);
+                expect(() => env.assertWeatherAllowed(weather)).toThrowError(/\[MapEnvironment\] Violación de límites/);
+                expect(() => env.resolveCombatWeather(weather)).toThrowError(/\[MapEnvironment\] Violación de límites/);
+              }
+            } else {
+              const isAllowed = env.boundaries.allowedWeathers.has(weather) || isBaseClean;
+              expect(env.isWeatherTypeAllowed(weather)).toBe(isAllowed);
+              if (isAllowed) {
+                expect(() => env.assertWeatherAllowed(weather)).not.toThrow();
+                expect(() => env.resolveCombatWeather(weather)).not.toThrow();
+              } else {
+                expect(() => env.assertWeatherAllowed(weather)).toThrowError(/\[MapEnvironment\] Violación de límites/);
+                expect(() => env.resolveCombatWeather(weather)).toThrowError(/\[MapEnvironment\] Violación de límites/);
+              }
+            }
+          }
+        });
       });
     }
   });
 
-  describe('3. Ciclos de Iluminación y Horarios Encapsulados', () => {
-    const CYCLES: readonly DayPhase[] = ['morning', 'day', 'dusk', 'night'] as const;
-
-    it('Gimnasios y PvP deben forzar iluminación fija diurna ("day") independientemente del ciclo exterior', () => {
-      const gymEnv = getMapEnvironment('pewter_city', { isGym: true, gymId: 'pewter' });
-      const pvpEnv = getMapEnvironment('pvp', { isPvP: true });
-
-      for (const cycle of CYCLES) {
-        expect(gymEnv.resolveEffectiveLighting(cycle)).toBe('day');
-        expect(pvpEnv.resolveEffectiveLighting(cycle)).toBe('day');
-      }
+  describe('2. Estadio Genérico Universal ("stadium")', () => {
+    it('el mapa "stadium" debe tener clima deshabilitado y horario fijo diurno', () => {
+      const env = getMapEnvironment('stadium');
+      expect(env.environmentKind).toBe('stadium');
+      expect(env.isWeatherAllowed()).toBe(false);
+      expect(env.resolveEffectiveLighting('night')).toBe('day');
+      expect(env.resolveEffectiveLighting('morning')).toBe('day');
     });
 
-    it('Cuevas deben forzar iluminación fija nocturna / oscura ("night") independientemente del ciclo exterior', () => {
-      const caveEnv = getMapEnvironment('mt_moon', { isCave: true });
-      for (const cycle of CYCLES) {
-        expect(caveEnv.resolveEffectiveLighting(cycle)).toBe('night');
-      }
+    it('el alias "gym" debe apuntar al mismo entorno que "stadium"', () => {
+      const stadiumEnv = getMapEnvironment('stadium');
+      const gymEnv = getMapEnvironment('gym');
+      expect(gymEnv).toBe(stadiumEnv);
     });
 
-    it('Rutas exteriores deben respetar la iluminación dinámica del mundo', () => {
-      const routeEnv = getMapEnvironment('route1', {});
-      for (const cycle of CYCLES) {
-        expect(routeEnv.resolveEffectiveLighting(cycle)).toBe(cycle);
-      }
-    });
+    it('tanto combates de gimnasio como PvP en "stadium" usan el mismo entorno y respetan sus límites', () => {
+      const gymCombatEnv = getMapEnvironment('stadium', { isGym: true, gymId: 'pewter' });
+      const pvpCombatEnv = getMapEnvironment('stadium', { isPvP: true });
 
-    it('debe exponer getSupportedCycles() coherentes para cada tipo de entorno', () => {
-      const gymEnv = getMapEnvironment('pewter_city', { isGym: true, gymId: 'pewter' });
-      const caveEnv = getMapEnvironment('mt_moon', { isCave: true });
-      const indoorEnv = getMapEnvironment('power_plant', { isIndoors: true });
-      const routeEnv = getMapEnvironment('route1', {});
-
-      expect(gymEnv.getSupportedCycles().length).toBeGreaterThanOrEqual(1);
-      expect(caveEnv.getSupportedCycles().length).toBeGreaterThanOrEqual(1);
-      expect(indoorEnv.getSupportedCycles().length).toBeGreaterThanOrEqual(1);
-      expect(routeEnv.getSupportedCycles().length).toBeGreaterThanOrEqual(1);
+      expect(gymCombatEnv).toBe(pvpCombatEnv);
+      expect(gymCombatEnv.isWeatherAllowed()).toBe(false);
+      expect(() => gymCombatEnv.resolveCombatWeather('rain' as WeatherId)).toThrowError(/\[MapEnvironment\] Violación de límites/);
     });
   });
 
-  describe('4. Mandato de Cero Fallbacks y Errores Ruidosos (Fail Loudly)', () => {
+  describe('3. Mandato de Cero Fallbacks y Errores Ruidosos (Fail Loudly)', () => {
     it('debe lanzar un error descriptivo inmediato si locationId está vacío o es nulo', () => {
-      expect(() => getMapEnvironment('' as unknown as MapRouteId, {})).toThrowError(/\[MapEnvironmentRegistry\]/);
-      expect(() => getMapEnvironment(null as unknown as MapRouteId, {})).toThrowError(/\[MapEnvironmentRegistry\]/);
-      expect(() => getMapEnvironment(undefined as unknown as MapRouteId, {})).toThrowError(/\[MapEnvironmentRegistry\]/);
+      expect(() => getMapEnvironment('' as unknown as MapRouteId)).toThrowError(/\[MapEnvironmentRegistry\]/);
+      expect(() => getMapEnvironment(null as unknown as MapRouteId)).toThrowError(/\[MapEnvironmentRegistry\]/);
+      expect(() => getMapEnvironment(undefined as unknown as MapRouteId)).toThrowError(/\[MapEnvironmentRegistry\]/);
     });
 
     it('debe lanzar un error descriptivo si locationId no está registrado en el catálogo', () => {
-      expect(() => getMapEnvironment('non_existent_alien_dimension' as unknown as MapRouteId, {})).toThrowError(
+      expect(() => getMapEnvironment('non_existent_alien_dimension' as unknown as MapRouteId)).toThrowError(
         /\[MapEnvironmentRegistry\] Entorno no registrado para locationId: "non_existent_alien_dimension"/
       );
     });
 
     it('no debe recurrir a "route1" silenciosamente cuando la ubicación no existe', () => {
       try {
-        getMapEnvironment('ruta_falsa' as unknown as MapRouteId, {});
+        getMapEnvironment('ruta_falsa' as unknown as MapRouteId);
         expect.unreachable('Debería haber lanzado un error ruidoso');
       } catch (err: unknown) {
         expect((err as Error).message).toContain('[MapEnvironmentRegistry]');
         expect((err as Error).message).not.toContain('route1');
       }
-    });
-  });
-
-  describe('5. Flexibilidad de Modos: PvP en Cualquier Mapa', () => {
-    it('PvP en el Estadio Gimnasio ("gym") debe adoptar las reglas del gimnasio (clima prohibido, luz diurna)', () => {
-      const env = getMapEnvironment('gym', { isPvP: true });
-      expect(env.isWeatherAllowed()).toBe(false);
-      expect(env.resolveCombatWeather('rain' as WeatherId)).toEqual({ type: 'none', visual: 'clear', turns: -1 });
-      expect(env.resolveEffectiveLighting('night')).toBe('day');
-    });
-
-    it('PvP en una Cueva ("mt_moon") debe adoptar las reglas de la cueva (clima prohibido, oscuridad)', () => {
-      const env = getMapEnvironment('mt_moon', { isPvP: true });
-      expect(env.isWeatherAllowed()).toBe(false);
-      expect(env.isCave()).toBe(true);
-      expect(env.resolveCombatWeather('fog' as WeatherId)).toEqual({ type: 'none', visual: 'clear', turns: -1 });
-      expect(env.resolveEffectiveLighting('day')).toBe('night');
-    });
-
-    it('PvP en Ruta 1 ("route1") debe adoptar las reglas de la ruta (clima permitido, iluminación dinámica)', () => {
-      const env = getMapEnvironment('route1', { isPvP: true });
-      expect(env.isWeatherAllowed()).toBe(true);
-      expect(env.resolveCombatWeather('rain' as WeatherId).visual).toBe('rain');
-      expect(env.resolveEffectiveLighting('night')).toBe('night');
-      expect(env.resolveEffectiveLighting('morning')).toBe('morning');
     });
   });
 });

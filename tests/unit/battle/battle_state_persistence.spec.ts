@@ -4,10 +4,14 @@ import type { BattleState, BattleStages } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleContext } from '@/types/battle/battleContext';
 
-vi.mock('@/logic/weather/weatherRegistry', () => ({
-  requireWeatherId: vi.fn((id: string) => id),
-  resolveCurrentWeather: vi.fn(() => 'clear'),
-}));
+vi.mock('@/logic/weather/weatherRegistry', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/logic/weather/weatherRegistry')>();
+  return {
+    ...actual,
+    requireWeatherId: vi.fn((id: string) => id),
+    resolveCurrentWeather: vi.fn(() => 'clear'),
+  };
+});
 
 vi.mock('@/logic/weather/weatherGenerationProvider', () => ({
   mapVisualToOfficialWeather: vi.fn(() => 'none'),

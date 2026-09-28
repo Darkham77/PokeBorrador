@@ -106,7 +106,7 @@ export function executeStartPassiveBattle(
       trainerGender: params.opponentGender || 'h',
       trainerArchetype: params.opponentClass === 'rocket' ? 'rocket' : 'default',
       trainerQuote: getRandomQuoteForTrainer('rival'),
-      locationId: 'gym'
+      locationId: 'stadium'
     }).then(() => {
       if (ctx.battleState.active) {
         ctx.timerManager.startTurnTimer();

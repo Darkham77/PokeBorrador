@@ -3,6 +3,7 @@ import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleState } from '@/types/battle/battle';
 import type { DayPhase } from '@/types/system/time';
 import { getAvailableCyclesForMap, isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
 import { cloneReactive } from '@/logic/utils/cloneUtils';
 import type { PvpMatchFormat } from '@/types/battle/pvp';
 
@@ -185,7 +186,7 @@ function isLocationGym(
   mapConfig?: LocationEnvironmentFlags | null,
   locationId?: MapRouteId
 ): boolean {
-  return Boolean(battleState?.isGym || gymConfig || mapConfig?.isGym || locationId === 'gym');
+  return Boolean(battleState?.isGym || gymConfig || mapConfig?.isGym || locationId === 'stadium' || locationId === 'gym');
 }
 
 function isLocationCave(
@@ -215,21 +216,28 @@ export function isNaturalWeatherAllowedInLocation(
   gymConfig?: { id?: string; fixedCycle?: DayPhase; isGym?: boolean } | null,
   battleState?: (LocationEnvironmentFlags & { locationId?: MapRouteId }) | null
 ): boolean {
-  if (isLocationGym(battleState, gymConfig, mapConfig, locationId) || battleState?.locationId === 'gym') {
+  const targetLoc = locationId || battleState?.locationId;
+  if (isLocationGym(battleState, gymConfig, mapConfig, targetLoc)) {
     return false;
   }
-  if (isLocationIndoors(battleState, mapConfig) || isLocationCave(battleState, mapConfig)) {
+  if (isLocationCave(battleState, mapConfig) || isLocationIndoors(battleState, mapConfig)) {
     return false;
   }
   if (mapConfig?.weatherEnabled === false) {
     return false;
+  }
+  if (targetLoc && isMapRouteId(targetLoc)) {
+    return getMapEnvironment(targetLoc).isWeatherAllowed();
+  }
+  if (mapConfig?.weatherEnabled !== undefined) {
+    return mapConfig.weatherEnabled;
   }
   return true;
 }
 
 /**
  * Resolves the effective day/night lighting cycle for an arena.
- * Indoors and Gyms have fixed daytime lighting; caves have fixed nighttime/dark lighting.
+ * Evaluates map environment boundaries first, falling back to location flags.
  */
 export function resolveEffectiveCycleForLocation(
   locationId?: MapRouteId,
@@ -241,13 +249,18 @@ export function resolveEffectiveCycleForLocation(
   if (battleState?.fixedCycle) return battleState.fixedCycle;
   if (gymConfig?.fixedCycle) return gymConfig.fixedCycle;
 
-  if (isLocationGym(battleState, gymConfig, mapConfig, locationId)) return 'day';
+  const targetLoc = locationId || battleState?.locationId;
+  if (isLocationGym(battleState, gymConfig, mapConfig, targetLoc)) return 'day';
 
-  const mapCycle = selectAvailableCycle(locationId, currentMapCycle);
+  const mapCycle = selectAvailableCycle(targetLoc, currentMapCycle);
   if (mapCycle) return mapCycle;
 
   if (isLocationCave(battleState, mapConfig)) return 'night';
   if (isLocationIndoors(battleState, mapConfig)) return 'day';
+
+  if (targetLoc && isMapRouteId(targetLoc)) {
+    return getMapEnvironment(targetLoc).resolveEffectiveLighting(currentMapCycle);
+  }
 
   return currentMapCycle;
 }

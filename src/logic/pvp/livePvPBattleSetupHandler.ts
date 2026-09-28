@@ -170,7 +170,7 @@ export function executeCheckBothTeamsConfirmed(ctx: CheckBothTeamsConfirmedConte
         trainerGender: ctx.battleState.opponentGender || 'h',
         trainerArchetype: resolvePvPArchetype(ctx.battleState.opponentClass),
         trainerQuote: getRandomQuoteForTrainer('rival'),
-        locationId: 'gym'
+        locationId: 'stadium'
       }).then(() => {
         if (ctx.battleState.active) {
           ctx.timerManager.startTurnTimer();
@@ -241,7 +241,7 @@ export function executeHandleOpponentTeam(
         trainerGender: battleState.opponentGender || 'h',
         trainerArchetype: resolvePvPArchetype(battleState.opponentClass),
         trainerQuote: getRandomQuoteForTrainer('rival'),
-        locationId: 'gym'
+        locationId: 'stadium'
       }).then(() => {
         if (battleState.active) {
           ctx.timerManager.startTurnTimer();

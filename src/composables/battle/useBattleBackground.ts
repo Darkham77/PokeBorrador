@@ -1,6 +1,5 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING, isBattleMapAssetId, requireBattleMapAssetId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
-import { isStadiumId, type StadiumId } from '@/data/world/stadiums'
 
 const CYCLE_SUFFIXES = {
   // English keys
@@ -17,7 +16,7 @@ const CYCLE_SUFFIXES = {
 } as const
 
 type BattleBackgroundCycle = keyof typeof CYCLE_SUFFIXES
-export type BattleBackgroundLocationId = MapRouteId | StadiumId
+export type BattleBackgroundLocationId = MapRouteId
 const BATTLE_BACKGROUND_CYCLES = [
   'morning',
   'dawn',
@@ -45,9 +44,7 @@ export function useBattleBackground() {
    * @returns {{ url: string, isBakedIn: boolean }}
    */
   function getBackgroundUrl(locationId: BattleBackgroundLocationId, cycle = 'day', _isFishing = false) {
-    const baseName = isStadiumId(locationId)
-      ? 'gimnasio'
-      : MAP_ROUTE_MAPPING[requireMapRouteId(locationId)]
+    const baseName = MAP_ROUTE_MAPPING[requireMapRouteId(locationId)]
 
     const suffix = CYCLE_SUFFIXES[requireBattleBackgroundCycle(cycle.toLowerCase())] // text-ok: UI text display localization string
 

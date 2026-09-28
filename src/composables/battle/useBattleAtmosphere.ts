@@ -37,7 +37,7 @@ export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>)
 
   const supportedCycles = computed<readonly DayPhase[]>(() => {
     if (battle.value?.fixedCycle) return [battle.value.fixedCycle]
-    return environment.value ? environment.value.getSupportedCycles() : ['day']
+    return environment.value ? environment.value.boundaries.supportedCycles : ['day']
   })
 
   const effectiveCycle = computed<DayPhase>(() => {

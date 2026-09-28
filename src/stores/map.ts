@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { gameBus } from '@/logic/events/gameBus'
 import { logger } from '@/logic/utils/logger'
-import { FIRE_RED_MAPS } from '@/data/world/maps'
+import { VISIBLE_WORLD_MAPS } from '@/data/world/maps'
 import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { useGameStore } from '@/stores/game.ts'
@@ -108,7 +108,7 @@ export const useMapStore = defineStore('map', () => {
 
   // Sync time on store init (safer than onMounted in a store)
   // syncServerTime() -- DEFERRED to game initialization
-  const maps = ref(FIRE_RED_MAPS)
+  const maps = ref([...VISIBLE_WORLD_MAPS])
   const activeEvents = ref<Event[]>([])
   const lastNavigateTime = ref(0)
   const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds)

@@ -10,7 +10,7 @@ In full accordance with official Pokémon Showdown rules, combat damage, stat bo
 
 1. **Primal / Extreme Weather** (Desolate Land, Primordial Sea, Delta Stream): Overrides all weather conditions.
 2. **Move & Ability Weather** (Sun, Rain, Sandstorm, Snow/Hail summoned in battle): Standard 5-8 turn weather effects.
-3. **Gym Neutrality**: Gym battles disable environmental map weather (defaulting to `'clear'`), unless a combatant explicitly summons weather during battle.
+3. **Map Environment Boundaries & Stadium Neutrality**: Environmental map weather is strictly governed by the map's immutable boundaries (`BaseMapEnvironment`). In generic stadiums (`stadium`), natural ambient weather is strictly disabled (`weatherEnabled: false`, defaulting to `{ type: 'none', visual: 'clear', turns: -1 }`), while indoor facilities and caves enforce their own legitimate boundaries. Moves or abilities summoned during combat remain fully functional per Pokémon Showdown simulation rules.
 4. **Day/Night Cycle Isolation**: The day and night cycle is strictly non-combat (affecting only map spawns, evolutions, and visual UI filters). It does NOT modify move damage or accuracy in combat.
 
 ---

@@ -256,4 +256,40 @@ export function calculateEncounterTypeWeights(
   };
 }
 
+function hasWildSpawns(wild?: MapLocation['wild']): boolean {
+  if (!wild) return false;
+  if (Array.isArray(wild)) return wild.length > 0;
+  return Object.values(wild).some(pool => Array.isArray(pool) && pool.length > 0);
+}
+
+function hasWeatherConfigSpawns(weather?: MapLocation['weather']): boolean {
+  if (!weather) return false;
+  return Object.values(weather).some(w => {
+    if (!w) return false;
+    const vCount = Array.isArray(w.visitors) ? w.visitors.length : Object.keys(w.visitors || {}).length;
+    const eCount = Array.isArray(w.exclusive) ? w.exclusive.length : Object.keys(w.exclusive || {}).length;
+    return vCount > 0 || eCount > 0;
+  });
+}
+
+/**
+ * Checks whether a map location possesses any wild Pokémon spawn pools across any cycle, weather, or minigame.
+ * Locations without encounter tables (such as generic stadium arenas) return false.
+ */
+export function hasMapEncounterSpawns(loc: MapLocation): boolean {
+  if (hasWildSpawns(loc.wild)) return true;
+  if (loc.fishing?.pool?.length) return true;
+  if (loc.archaeology?.pool?.length) return true;
+  return hasWeatherConfigSpawns(loc.weather);
+}
+
+/**
+ * Determines whether a map should be rendered in the world map wild exploration tab.
+ * A map is hidden if visibleInWorldMap is explicitly false or if its Pokémon encounter pool is completely empty across all cycles and weathers.
+ */
+export function isMapVisibleInWorld(loc: MapLocation): boolean {
+  if (loc.visibleInWorldMap === false) return false;
+  return hasMapEncounterSpawns(loc);
+}
+
 
