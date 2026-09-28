@@ -1,1 +1,0 @@
-import{et as e}from"./game-data-world-IXPx8Wsn.js";export{e as requireMapRouteId};

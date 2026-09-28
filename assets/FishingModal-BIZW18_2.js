@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-Chlyb77v.js";export{e as default};
