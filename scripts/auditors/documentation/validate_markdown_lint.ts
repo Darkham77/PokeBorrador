@@ -64,7 +64,10 @@ export function parseMarkdownLintIssues(input: string | object[], cwd: string = 
 
   let rawList: RawMarkdownLintIssue[] = []; // no-domain: Non-domain utility collection or data structure
   if (typeof input === 'string') {
-    const trimmed = input.trim();
+    const cleanedLines = input
+      .split('\n')
+      .filter((line) => !line.startsWith('(node:') && !line.startsWith('(Use `node') && !line.includes('SecurityWarning'));
+    const trimmed = cleanedLines.join('\n').trim();
     if (!trimmed) return findings;
     const startIdx = trimmed.indexOf('[');
     const endIdx = trimmed.lastIndexOf(']');
@@ -72,8 +75,8 @@ export function parseMarkdownLintIssues(input: string | object[], cwd: string = 
 
     try {
       rawList = JSON.parse(trimmed.substring(startIdx, endIdx + 1)) as RawMarkdownLintIssue[];
-    } catch {
-      return findings;
+    } catch (err: unknown) {
+      throw new Error(`Error al procesar salida JSON de markdownlint: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
     }
   } else if (Array.isArray(input)) {
     rawList = input as RawMarkdownLintIssue[];
@@ -135,12 +138,16 @@ export class MarkdownLintAuditor extends BaseAuditor<MarkdownLintRuleId> {
       args.push('--fix');
     }
 
-    const proc = spawnSync('node', [binPath, ...args], {
-      cwd: this.projectRoot,
-      encoding: 'utf-8',
-      maxBuffer: MAX_BUFFER_BYTES,
-      timeout: EXECUTION_TIMEOUT_MS
-    });
+    const proc = spawnSync(
+      'node',
+      ['--disable-warning=PERM0001', '--disable-warning=PERM0002', '--disable-warning=ExperimentalWarning', binPath, ...args],
+      {
+        cwd: this.projectRoot,
+        encoding: 'utf-8',
+        maxBuffer: MAX_BUFFER_BYTES,
+        timeout: EXECUTION_TIMEOUT_MS
+      }
+    );
 
     const combinedOutput = `${proc.stdout || ''}\n${proc.stderr || ''}`;
     const findings = parseMarkdownLintIssues(combinedOutput, this.projectRoot);

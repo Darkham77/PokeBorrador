@@ -22,11 +22,10 @@ Frontend Developers / Systems Engineers.
   2. *Scale & Boundary Translation Clamping*: `currentScale` is strictly bounded by `Math.max(coverScale, baseScale * effectiveZoom)`. Translation offsets ($tx, ty$) are clamped within valid canvas boundaries: $tx \in [\min(0, \text{camWidth} - \text{MAP\_WIDTH} \times \text{currentScale}), 0]$ and $ty \in [\min(0, \text{camHeight} - \text{MAP\_HEIGHT} \times \text{currentScale}), 0]$.
   3. *UI Control Synchronicity*: `minZoom` is passed down to `CameraZoomControls.vue`, disabling the zoom-out `[-]` button when the maximum safe zoom-out is reached and clamping all manual zoom inputs.
 
-
 ## Verification
 
 - Run standard validation scripts.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This domain module does not contain nested sub-directories with independent AGENTS.md files.*

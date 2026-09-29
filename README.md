@@ -229,6 +229,7 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 Cada regla arquitectónica y de dominio cuenta con su propio sub-auditor modular ejecutable de forma aislada:
 
 #### 🏛️ Arquitectura, Rendimiento y Reactividad
+
 | Comando | Descripción |
 | :-- | :-- |
 | `npm run validate:types` | Verificación estricta de tipos TypeScript y Vue SFC con `vue-tsc --noEmit`. |
@@ -252,6 +253,7 @@ Cada regla arquitectónica y de dominio cuenta con su propio sub-auditor modular
 | `npm run validate:test-fragmentation` | Previene micro-archivos (<60 líneas) y fomenta suites cohesivas (300-800 líneas). |
 
 #### 📚 Documentación y Enlaces
+
 | Comando | Descripción |
 | :-- | :-- |
 | `npm run validate:dox-integrity` | Valida la jerarquía estructural de `AGENTS.md`, secciones requeridas y exclusión de `.gitignore`. |
@@ -259,6 +261,7 @@ Cada regla arquitectónica y de dominio cuenta con su propio sub-auditor modular
 | `npm run validate:markdown-syntax` | Valida encabezados, tablas y sintaxis Markdown conforme a CommonMark. |
 
 #### 🎮 Datos de Dominio y Juego
+
 | Comando | Descripción |
 | :-- | :-- |
 | `npm run validate:domain-types` | Cumplimiento estricto de tipos de dominio y uniones canónicas (sin `any` ni strings libres). |
@@ -272,6 +275,7 @@ Cada regla arquitectónica y de dominio cuenta con su propio sub-auditor modular
 | `npm run validate:spawns` | Lista blanca y áreas de aparición de Pokémon salvajes. |
 
 #### 🗄️ Persistencia, Migraciones y Máquinas de Estado (FSM)
+
 | Comando | Descripción |
 | :-- | :-- |
 | `npm run validate:sql` | Ejecución incremental de 96 migraciones SQL en SQLite en memoria (`node:sqlite`). |
