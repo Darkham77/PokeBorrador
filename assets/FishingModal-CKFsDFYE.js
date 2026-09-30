@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-Dw_ivLox.js";export{e as default};
