@@ -17,35 +17,31 @@ Para inicializar o actualizar automáticamente el entorno de trabajo (configurac
 - **En Windows (PowerShell como Administrador / Terminal)**:
 
   ```powershell
-  PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-UpdateVersion]
+  PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-DeclaredVersions]
   ```
 
 - **En Linux / macOS (Terminal)**:
 
   ```bash
-  chmod +x ./setup-linux.sh && ./setup-linux.sh [--update-version]
+  chmod +x ./setup-linux.sh && ./setup-linux.sh [--declared-versions]
   ```
 
 > [!TIP]
-> Por defecto (sin flags), los scripts son **100% deterministas, offline-friendly e idempotentes**: leen la versión de Node.js requerida desde `.nvmrc` y preservan la versión activa de `npm` sin llamadas a la red ni modificaciones al árbol de Git.
-> Si deseas consultar `nodejs.org` para actualizar la versión de Node.js y actualizar `npm` globalmente a `npm@latest`, agrega el flag opcional `--update-version` (Linux/macOS) o `-UpdateVersion` (Windows).
+> Por defecto en puestos de desarrollo, los scripts consultan `nodejs.org`, sincronizan `.nvmrc` y `package.json` con la última versión Current estable de Node.js, actualizan `npm@latest` globalmente y ejecutan `npm ci`.
+> Si estás en un servidor, CI/CD o deseas congelar la instalación estrictamente a lo declarado en el commit sin consultar la red ni modificar archivos locales, pasa el flag `--declared-versions` (Linux/macOS) o `-DeclaredVersions` (Windows).
+> Ambos modos son no destructivos: nunca borran otras versiones de Node instaladas en tu máquina ni sobreescriben tu alias `default`.
 
 ## 🛠️ Entorno de Desarrollo
 
 ### 🛡️ Configuración de Seguridad de NPM
 
-Los scripts de preparación (`setup-windows.ps1` y `setup-linux.sh`) aplican estas directivas de seguridad automáticamente. Si necesitas configurarlas o verificarlas manualmente para mitigar riesgos de cadena de suministro (*supply chain attacks*) e inyección de código malicioso:
+Las directivas de seguridad se gestionan de forma aislada mediante el archivo `.npmrc` en la raíz del proyecto (sin alterar la configuración global del usuario):
 
-```bash
-# 1. Desactivar la ejecución automática de scripts (Pre/Post install)
-# Esto evita que un paquete malicioso ejecute código en tu máquina al instalar paquetes
-npm config set ignore-scripts true
-
-# 2. Forzar el uso de HTTPS para todo el registro
-npm config set registry https://registry.npmjs.org/
-
-# 3. Requerir obligatoriamente firmas de paquetes válidas
-npm config set audit-level high
+```ini
+# Poké Vicio - Local Project NPM Configuration
+ignore-scripts=true
+registry=https://registry.npmjs.org/
+audit-level=high
 ```
 
 >[!NOTE]

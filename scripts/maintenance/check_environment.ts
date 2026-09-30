@@ -59,45 +59,33 @@ try {
 
     if (hasNvm) {
       console.error('\x1b[32m\x1b[1m💡 NVM DETECTADO EN EL SISTEMA:\x1b[0m');
-      console.error('Ejecuta los siguientes comandos para actualizar automáticamente usando NVM:');
-      console.error('  1. Instalar la versión requerida:');
+      console.error('Ejecuta los siguientes comandos para activar la versión requerida en este proyecto:');
+      console.error('  1. Instalar la versión requerida (si aún no la tienes):');
       console.error(`     nvm install ${targetNodeVer}`);
-      console.error('  2. Activar la versión:');
-      console.error(`     nvm use ${targetNodeVer}`);
-      if (!isWindows) {
-        console.error('  3. Fijar como default (Linux/macOS):');
-        console.error(`     nvm alias default ${targetNodeVer}`);
-      }
-      console.error('  4. Actualizar npm a v12+:');
-      console.error('     npm install -g npm@latest\n');
+      console.error('  2. Activar la versión para este proyecto:');
+      console.error(`     nvm use`);
+      console.error('     (o ejecuta ./setup-linux.sh / .\\setup-windows.ps1)\n');
+      console.error('  ℹ️  Convivencia multi-proyecto: No necesitas sobreescribir tu alias default de NVM.');
+      console.error('     Este proyecto lee .nvmrc automáticamente para convivir con tus otros proyectos.\n');
     } else {
       console.error('\x1b[33m\x1b[1m⚠️ NVM NO DETECTADO EN EL SISTEMA:\x1b[0m');
-      console.error('Se recomienda encarecidamente instalar NVM (Node Version Manager) para evitar problemas de permisos y mantener Node.js actualizado.\n');
+      console.error('Se recomienda encarecidamente instalar NVM (Node Version Manager) para convivir con múltiples versiones de Node.js sin problemas de permisos.\n');
       
       if (isWindows) {
         console.error('\x1b[1m🪟 INSTALACIÓN DE NVM EN WINDOWS (nvm-windows):\x1b[0m');
         console.error('  ⚠️  IMPORTANTE: Desinstala primero cualquier versión previa de Node.js instalada manualmente');
-        console.error('      desde el Panel de Control / Configuración de Windows antes de instalar NVM, o no funcionará.\n');
+        console.error('      desde el Panel de Control / Configuración de Windows antes de instalar NVM.\n');
         console.error('  1. Instalar NVM via winget (PowerShell / CMD):');
         console.error('     winget install CoreyButler.NVMforWindows');
-        console.error('  2. Reiniciar la terminal como Administrador y ejecutar:');
-        console.error(`     nvm install ${targetNodeVer}`);
-        console.error(`     nvm use ${targetNodeVer}`);
-        console.error('     npm install -g npm@latest\n');
-        console.error(`  📌 Nota (Troubleshooting Windows):`);
-        console.error(`     - Si 'npm' no se reconoce tras usar 'nvm use', abre una NUEVA ventana de PowerShell/CMD como Administrador y ejecuta nuevamente 'nvm use ${targetNodeVer}'.`);
-        console.error(`     - Si el problema persiste, borra la carpeta '%APPDATA%\\npm' y '%LOCALAPPDATA%\\nvm' e intenta de nuevo 'nvm use ${targetNodeVer}'.\n`);
+        console.error('  2. Abrir PowerShell en esta carpeta y ejecutar el setup del proyecto:');
+        console.error('     .\\setup-windows.ps1\n');
       } else {
         console.error('\x1b[1m🐧 INSTALACIÓN DE NVM EN LINUX / MACOS:\x1b[0m');
         console.error('  1. Instalar NVM:');
         console.error('     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash');
         console.error('  2. Reiniciar la terminal (o ejecutar: source ~/.bashrc / source ~/.zshrc)');
-        console.error('  3. Instalar y activar la versión de Node.js:');
-        console.error(`     nvm install ${targetNodeVer}`);
-        console.error(`     nvm use ${targetNodeVer}`);
-        console.error(`     nvm alias default ${targetNodeVer}`);
-        console.error('  4. Actualizar npm a v12+:');
-        console.error('     npm install -g npm@latest\n');
+        console.error('  3. Ejecutar el setup del proyecto:');
+        console.error('     ./setup-linux.sh\n');
       }
     }
     process.exit(1);

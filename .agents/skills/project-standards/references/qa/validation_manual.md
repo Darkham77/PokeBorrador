@@ -104,8 +104,8 @@ Use these scripts to verify project standards, manage servers, and run audits:
  
 Whenever requested to "actualizar herramientas", "update tools", "preparar entorno", or "instalar dependencias", run the root automated setup script for the platform:
  
-- `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-UpdateVersion]`: Automated environment & tool setup for Windows (elevates to Admin, creates NVM symlink dir `C:\nvm4w`, cleans orphan APPDATA files, installs NVM, aligns Node version deterministically from `.nvmrc`, applies npm security configs, and executes `npm ci`; with `-UpdateVersion` queries nodejs.org and updates npm globally).
-- `./setup-linux.sh [--update-version]`: Automated environment & tool setup for Linux/macOS (installs NVM, aligns Node version deterministically from `.nvmrc`, applies npm security configs, and executes `npm ci`; with `--update-version` queries nodejs.org and updates npm globally).
+- `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-DeclaredVersions]`: Automated environment & tool setup for Windows (elevates to Admin, creates NVM symlink dir `C:\nvm4w`, cleans orphan APPDATA files, installs NVM, auto-updates to latest Node.js & npm@latest by default, applies local `.npmrc` security configs, and executes `npm ci`; with `-DeclaredVersions` freezes strictly to versions declared in the commit without network queries).
+- `./setup-linux.sh [--declared-versions]`: Automated environment & tool setup for Linux/macOS (installs NVM, auto-updates to latest Node.js & npm@latest by default, applies local `.npmrc` security configs, and executes `npm ci`; with `--declared-versions` freezes strictly to versions declared in the commit without network queries).
 - `node --experimental-strip-types scripts/maintenance/check_environment.ts`: Environment sanity check script (runs automatically during `preinstall` to validate runtime engine constraints).
 
 ### 🛡️ Core Validation

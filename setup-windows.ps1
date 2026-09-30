@@ -2,10 +2,18 @@
 # Configura NVM, Node.js, npm de forma determinista y resiliente.
 
 param(
-    [switch]$UpdateVersion
+    [switch]$DeclaredVersions = $false,
+    [switch]$Locked = $false,
+    [switch]$Pinned = $false,
+    [switch]$UpdateVersion = $false,
+    [switch]$PruneOtherVersions = $false
 )
 
 $ErrorActionPreference = "Stop"
+
+# Por defecto: actualiza automaticamente a la ultima version estable (Node.js Current + npm@latest)
+# -DeclaredVersions / -Locked / -Pinned: restringe la instalacion estrictamente a lo declarado en el commit (.nvmrc / package.json)
+$updateToLatest = -not ($DeclaredVersions -or $Locked -or $Pinned)
 
 # Forzar codificacion UTF-8 en consola de Windows
 try {
@@ -37,7 +45,7 @@ function Refresh-ProcessEnvironment {
 # 1. Recargar variables de entorno iniciales
 Refresh-ProcessEnvironment
 
-# 2. Determinar version de Node.js requerida
+# 2. Determinar version de Node.js requerida (por defecto actualiza a la ultima version estable; -DeclaredVersions para ceñirse a .nvmrc)
 $pkgPath = Join-Path $PSScriptRoot "package.json"
 $nvmrcPath = Join-Path $PSScriptRoot ".nvmrc"
 
@@ -48,9 +56,8 @@ if (-not (Test-Path $pkgPath)) {
 
 $targetNodeVer = ""
 
-# Solo consultar nodejs.org y actualizar package.json/.nvmrc si se especifica -UpdateVersion
-if ($UpdateVersion) {
-    Write-Host "[NODE] Consultando la ultima version Current estable de Node.js en nodejs.org..." -ForegroundColor Cyan
+if ($updateToLatest) {
+    Write-Host "[NODE] Consultando la ultima version Current estable de Node.js en nodejs.org (modo por defecto: auto-actualizacion)..." -ForegroundColor Cyan
     try {
         $nodeDist = Invoke-RestMethod -Uri "https://nodejs.org/dist/index.json" -TimeoutSec 10 -ErrorAction Stop
         foreach ($item in $nodeDist) {
@@ -71,9 +78,11 @@ if ($UpdateVersion) {
     } catch {
         Write-Host "  [WARN] No se pudo consultar la API de nodejs.org: $_. Usando definicion local de .nvmrc / package.json..." -ForegroundColor Yellow
     }
+} else {
+    Write-Host "[NODE] Modo versiones declaradas activo (-DeclaredVersions). Preservando version exacta de .nvmrc sin consultar la red..." -ForegroundColor Cyan
 }
 
-# Por defecto: leer la version canonica de .nvmrc (sin ensuciar git al desplegar o ejecutar setup)
+# Por defecto en modo -DeclaredVersions o si fallo la consulta: leer la version canonica de .nvmrc
 if (-not $targetNodeVer -and (Test-Path $nvmrcPath)) {
     $rawNvmrc = (Get-Content -Raw -Path $nvmrcPath).Trim() -replace '^v', ''
     if ($rawNvmrc) {
@@ -235,24 +244,30 @@ if (-not $activated -and (Get-Command nvm -ErrorAction SilentlyContinue)) {
     } catch {}
 }
 
-# 7. Limpiar versiones obsoletas de Node.js en NVM para mantener el entorno limpio
-Write-Host ""
-Write-Host "[CLEANUP] Limpiando versiones obsoletas de Node.js..." -ForegroundColor Cyan
-try {
-    Get-ChildItem -Path $nvmRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^v\d+\.\d+\.\d+$' -and $_.Name -ne "v$targetNodeVer" } | ForEach-Object {
-        $verName = $_.Name
-        Write-Host "  [-] Eliminando version obsoleta: $verName..." -ForegroundColor Yellow
-        Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
-        if (Test-Path $_.FullName) {
-            if (Get-Command nvm -ErrorAction SilentlyContinue) {
-                nvm uninstall ($verName -replace '^v','') 2>$null | Out-Null
+# 7. Limpieza de versiones obsoletas (ESTRICTAMENTE OPT-IN con -PruneOtherVersions)
+if ($PruneOtherVersions) {
+    Write-Host ""
+    Write-Host "[CLEANUP] Limpiando versiones obsoletas de Node.js (-PruneOtherVersions activado)..." -ForegroundColor Cyan
+    try {
+        Get-ChildItem -Path $nvmRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^v\d+\.\d+\.\d+$' -and $_.Name -ne "v$targetNodeVer" } | ForEach-Object {
+            $verName = $_.Name
+            Write-Host "  [-] Eliminando version: $verName..." -ForegroundColor Yellow
+            Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+            if (Test-Path $_.FullName) {
+                if (Get-Command nvm -ErrorAction SilentlyContinue) {
+                    nvm uninstall ($verName -replace '^v','') 2>$null | Out-Null
+                }
+            }
+            if (Test-Path $_.FullName) {
+                Write-Host "  [WARN] No se pudo purgar $verName. Ejecuta PowerShell como Administrador si deseas eliminarla." -ForegroundColor Yellow
             }
         }
-        if (Test-Path $_.FullName) {
-            Write-Host "  [WARN] No se pudo purgar $verName (archivos protegidos por SYSTEM/Admin). Ejecuta PowerShell como Administrador para eliminarla." -ForegroundColor Yellow
-        }
-    }
-} catch {}
+    } catch {}
+} else {
+    Write-Host ""
+    Write-Host "[INFO] Preservando todas las demas versiones de Node.js instaladas para convivencia multi-proyecto." -ForegroundColor Cyan
+    Write-Host "       (Usa -PruneOtherVersions solo si deseas eliminar deliberadamente otras versiones)." -ForegroundColor Gray
+}
 
 # Asegurar que el symlink activo de Node y Roaming npm esten en el PATH de la sesion actual
 $npmRoamingPath = "$env:APPDATA\npm"
@@ -281,9 +296,9 @@ try {
     }
 } catch {}
 
-# 7. Actualizar npm a la ultima version (solo si se especifica -UpdateVersion)
+# 7. Actualizar npm a la ultima version (por defecto en auto-actualizacion; preservada en -DeclaredVersions)
 Write-Host ""
-if ($UpdateVersion) {
+if ($updateToLatest) {
     Write-Host "[NPM] Actualizando npm a la ultima version global (npm@latest)..." -ForegroundColor Cyan
     try {
         npm install -g npm@latest
@@ -292,21 +307,24 @@ if ($UpdateVersion) {
         Write-Host "  Continuando con la version actual de npm ($((npm -v)))..." -ForegroundColor Gray
     }
 } else {
-    Write-Host "[NPM] Preservando version actual de npm ($((npm -v))). Usa -UpdateVersion para actualizar npm@latest." -ForegroundColor Gray
+    Write-Host "[NPM] Preservando version activa de npm ($((npm -v))). No se actualiza npm en modo -DeclaredVersions." -ForegroundColor Gray
 }
 
-# 8. Configuracion de Entorno y NPM
+# 8. Verificacion de configuracion NPM aislada al proyecto
 Write-Host ""
-Write-Host "[CONFIG] Configurando politicas de NPM..." -ForegroundColor Cyan
-
-npm config set ignore-scripts true
-npm config set registry https://registry.npmjs.org/
-npm config set audit-level high
-
-# 9. Limpiar residuales en %APPDATA%\npm-cache
-$appDataNpmCache = "$env:APPDATA\npm-cache"
-if (Test-Path -Path $appDataNpmCache) {
-    Remove-Item -Recurse -Force $appDataNpmCache -ErrorAction SilentlyContinue
+Write-Host "[CONFIG] Verificando politicas de NPM (.npmrc local del proyecto)..." -ForegroundColor Cyan
+$projectNpmrc = Join-Path $PSScriptRoot ".npmrc"
+if (-not (Test-Path $projectNpmrc)) {
+    $npmrcContent = @"
+# Poké Vicio - Local Project NPM Configuration
+ignore-scripts=true
+registry=https://registry.npmjs.org/
+audit-level=high
+"@
+    [System.IO.File]::WriteAllText($projectNpmrc, $npmrcContent, (New-Object System.Text.UTF8Encoding $false))
+    Write-Host " [CONFIG] Archivo .npmrc local inicializado correctamente." -ForegroundColor Green
+} else {
+    Write-Host " [CONFIG] Archivo .npmrc local detectado y activo." -ForegroundColor Green
 }
 
 # Sincronizar configuraciones locales desde plantillas si no existen (sin pisar existentes ni ensuciar git)

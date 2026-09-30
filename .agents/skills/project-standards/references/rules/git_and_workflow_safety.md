@@ -34,17 +34,17 @@
 ## 5. Root Setup Scripts SSoT & Workspace Update Governance
 
 - **Root Setup Scripts SSoT**: Whenever instructed to initialize, configure, or update the workspace/environment (e.g. *"actualiza el entorno de trabajo"*, *"actualizar entorno"*, *"preparar el entorno"*, *"setup environment"*, *"actualizar herramientas"*), initial environment configuration, Node version updates, NVM fixes, and clean dependency installations MUST be executed exclusively via the root setup scripts:
-  - Windows: [`setup-windows.ps1`](../../../../../setup-windows.ps1) (`PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-UpdateVersion]`)
-  - Linux / macOS: [`setup-linux.sh`](../../../../../setup-linux.sh) (`chmod +x ./setup-linux.sh && ./setup-linux.sh [--update-version]`)
+  - Windows: [`setup-windows.ps1`](../../../../../setup-windows.ps1) (`PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-DeclaredVersions]`)
+  - Linux / macOS: [`setup-linux.sh`](../../../../../setup-linux.sh) (`chmod +x ./setup-linux.sh && ./setup-linux.sh [--declared-versions]`)
 - **All-in-One Execution Scope**: The setup script performs all required steps in a single run:
   1. Auto-elevates permissions via native Windows UAC prompt dialog (`setup-windows.ps1`) or sudo when necessary.
   2. Detects, installs, and configures NVM symlinks and junctions.
-  3. By default, deterministically reads `.nvmrc` and preserves the active npm version without making remote network calls or modifying git working tree. Only when invoked with `--update-version` / `-UpdateVersion` does it dynamically query `https://nodejs.org/dist/index.json` for the latest stable Current Node.js release, synchronize `package.json` (`engines.node`) and `.nvmrc`, and update global npm to latest release (`npm install -g npm@latest`).
+  3. By default in development, automatically queries `https://nodejs.org/dist/index.json` for the latest stable Current Node.js release, synchronizes `package.json` (`engines.node`) and `.nvmrc`, updates global npm to latest release (`npm install -g npm@latest`), and runs `npm ci`. When invoked with `--declared-versions` / `-DeclaredVersions` (aliases `--locked`, `--pinned`), freezes installation strictly to versions declared in the commit without network queries, without mutating Git-tracked files, and without updating npm.
   4. Installs and activates Node.js via NVM (`nvm install` & `nvm use`).
-  5. Enforces global npm security settings (`ignore-scripts true`, registry HTTPS, high audit level) and applies Windows Defender folder exclusions (`Add-MpPreference`).
+  5. Enforces local `.npmrc` security settings (`ignore-scripts=true`, registry HTTPS, high audit level) and applies Windows Defender folder exclusions (`Add-MpPreference`).
   6. Cleans residual npm cache, executes `npm ci` for a deterministic workspace, unblocks native binaries in `node_modules` (`Unblock-File`), and compiles native workspace tools via `npm run validate:tools`.
   7. Preserves full system `PATH` integrity by additively concatenating `Machine` and `User` paths, ensuring `C:\Windows\System32` and core OS utilities remain permanently accessible.
-- **Idempotent Version Governance**: Routine setup runs during server deployments or local workspace setups MUST be 100% idempotent, offline-friendly, and leave Git working tree clean. Querying `nodejs.org`, mutating tracked files, or updating global npm is strictly restricted to explicit invocations with `--update-version` / `-UpdateVersion`.
+- **Idempotent Version Governance**: In server deployments, CI/CD pipelines, or locked runs, setup scripts MUST be invoked with `--declared-versions` / `-DeclaredVersions` to remain 100% deterministic, offline-friendly, and leave Git working tree clean without querying `nodejs.org` or mutating tracked files.
 - **Environment Audit & Pre-Check**: Pre-install checks (`node --experimental-strip-types scripts/maintenance/check_environment.ts`) automatically validate runtime environment requirements against `package.json`. Whenever outdated Node/npm versions or broken Windows NVM symlinks are detected, instruct the user to run the appropriate root setup script.
 - **IDE & Terminal Restart Mandate**: Whenever setup scripts update system/user environment variables, NVM symlinks, or PATH paths, the agent MUST instruct the user to restart their IDE or reopen all terminal sessions so that the entire process tree inherits the updated PATH without needing manual PATH injections in subsequent operations.
 

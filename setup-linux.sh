@@ -3,13 +3,26 @@
 
 set -e
 
-# 1. Determinar modo de actualización de versión
-UPDATE_VERSION=false
+# 1. Determinar versión de Node.js (por defecto actualiza a la última versión estable; --declared-versions para ceñirse a .nvmrc)
+# Por defecto: actualiza automáticamente a la última versión estable (Node.js Current + npm@latest)
+# --declared-versions / --locked / --pinned: restringe la instalación estrictamente a lo declarado en el commit (.nvmrc / package.json)
+UPDATE_TO_LATEST=true
+PRUNE_VERSIONS=false
+SET_DEFAULT=false
+
 for arg in "$@"; do
     case "$arg" in
+        --declared-versions|--locked|--pinned)
+            UPDATE_TO_LATEST=false
+            ;;
         --update-version|-u)
-            UPDATE_VERSION=true
-            shift
+            UPDATE_TO_LATEST=true
+            ;;
+        --prune-other-versions)
+            PRUNE_VERSIONS=true
+            ;;
+        --set-default)
+            SET_DEFAULT=true
             ;;
     esac
 done
@@ -25,9 +38,8 @@ fi
 
 TARGET_NODE_VER=""
 
-# Solo consultar nodejs.org y mutar archivos si se solicita explícitamente --update-version
-if [ "$UPDATE_VERSION" = true ]; then
-    echo "🔍 Consultando la última versión Current estable de Node.js desde nodejs.org..."
+if [ "$UPDATE_TO_LATEST" = true ]; then
+    echo "🔍 Consultando la última versión Current estable de Node.js desde nodejs.org (modo por defecto: auto-actualización)..."
     if command -v curl >/dev/null 2>&1; then
         TARGET_NODE_VER=$(curl -s --max-time 10 https://nodejs.org/dist/index.json | grep -o '"version": *"v[0-9.]*"' | head -n 1 | grep -o '[0-9.]*' || true)
     fi
@@ -36,11 +48,13 @@ if [ "$UPDATE_VERSION" = true ]; then
             sed -i -E "s/(\"node\": *\">=)[^\"]*(\")/\1$TARGET_NODE_VER\2/" "$PKG_PATH"
         fi
         echo -n "$TARGET_NODE_VER" > "$NVMRC_PATH"
-        echo "✅ Versión actualizada en package.json y .nvmrc: v$TARGET_NODE_VER"
+        echo "✅ Versión de Node.js sincronizada a v$TARGET_NODE_VER en .nvmrc y package.json"
     fi
+else
+    echo "🔒 Modo versiones declaradas activo (--declared-versions). Preservando versión exacta de .nvmrc sin consultar la red..."
 fi
 
-# Por defecto: leer la versión canónica de .nvmrc (sin ensuciar git al desplegar o ejecutar setup)
+# Por defecto en modo --declared-versions o si falló la consulta: leer la versión canónica de .nvmrc
 if [ -z "$TARGET_NODE_VER" ]; then
     if [ -f "$NVMRC_PATH" ]; then
         TARGET_NODE_VER=$(tr -d ' \n\r' < "$NVMRC_PATH" | sed 's/^v//')
@@ -77,20 +91,33 @@ fi
 echo -e "\n🟢 Verificando / Instalando Node.js v$TARGET_NODE_VER en NVM..."
 nvm install "$TARGET_NODE_VER" || echo "⚠️ Advertencia al instalar Node v$TARGET_NODE_VER via NVM."
 
-echo -e "\n⚡ Activando y fijando Node.js v$TARGET_NODE_VER..."
+echo -e "\n⚡ Activando Node.js v$TARGET_NODE_VER..."
 nvm use "$TARGET_NODE_VER" || echo "⚠️ Advertencia al activar Node v$TARGET_NODE_VER."
-nvm alias default "$TARGET_NODE_VER" 2>/dev/null || true
 
-# 3. Limpiar versiones obsoletas de Node.js en NVM para mantener el entorno limpio
-echo -e "\n🧹 Limpiando versiones obsoletas de Node.js en NVM..."
-if [ -d "$NVM_DIR/versions/node" ]; then
-    for old_dir in "$NVM_DIR/versions/node"/v*; do
-        if [ -d "$old_dir" ] && [ "$(basename "$old_dir")" != "v$TARGET_NODE_VER" ]; then
-            old_ver=$(basename "$old_dir" | sed 's/^v//')
-            echo "  [-] Eliminando versión obsoleta: $old_ver..."
-            nvm uninstall "$old_ver" 2>/dev/null || rm -rf "$old_dir"
-        fi
-    done
+# Preservar alias default existente del usuario para convivencia multi-proyecto
+CURRENT_DEFAULT=$(nvm alias default 2>/dev/null | awk '{print $3}' || true)
+if [ -n "$CURRENT_DEFAULT" ] && [ "$CURRENT_DEFAULT" != "N/A" ] && [ "$SET_DEFAULT" = false ]; then
+    echo "ℹ️ Preservando alias default existente en NVM ($CURRENT_DEFAULT). Este proyecto se activa localmente vía .nvmrc ('nvm use')."
+else
+    echo "📌 Configurando alias default de NVM a v$TARGET_NODE_VER..."
+    nvm alias default "$TARGET_NODE_VER" 2>/dev/null || true
+fi
+
+# 3. Limpieza de versiones obsoletas (ESTRICTAMENTE OPT-IN con --prune-other-versions)
+if [ "$PRUNE_VERSIONS" = true ]; then
+    echo -e "\n🧹 Limpiando versiones de Node.js en NVM (--prune-other-versions activado)..."
+    if [ -d "$NVM_DIR/versions/node" ]; then
+        for old_dir in "$NVM_DIR/versions/node"/v*; do
+            if [ -d "$old_dir" ] && [ "$(basename "$old_dir")" != "v$TARGET_NODE_VER" ]; then
+                old_ver=$(basename "$old_dir" | sed 's/^v//')
+                echo "  [-] Eliminando versión: $old_ver..."
+                nvm uninstall "$old_ver" 2>/dev/null || rm -rf "$old_dir"
+            fi
+        done
+    fi
+else
+    echo -e "\nℹ️ Preservando todas las demás versiones de Node.js instaladas en NVM para convivencia multi-proyecto."
+    echo "   (Usa --prune-other-versions solo si deseas eliminar deliberadamente otras versiones)."
 fi
 
 # 4. Detectar ruta de binarios y asegurar enlaces simbólicos en ~/.local/bin (Paridad con Symlink/Junction de Windows)
@@ -112,9 +139,9 @@ for bin_name in node npm npx corepack css-checker; do
     fi
 done
 
-# 4. Actualizar npm a la última versión global (solo si se solicita explícitamente --update-version)
-if [ "$UPDATE_VERSION" = true ]; then
-    echo -e "\n📦 Actualizando npm a la última versión global (npm@latest)..."
+# 4. Actualizar npm a la última versión global (por defecto en auto-actualización; preservada en --declared-versions)
+if [ "$UPDATE_TO_LATEST" = true ]; then
+    echo -e "\n📦 Actualizando npm a la última versión global en este Node (npm@latest)..."
     npm install -g npm@latest || echo "⚠️ Advertencia: No se pudo actualizar npm globalmente. Continuando con versión actual..."
 
     # Re-sincronizar symlinks en ~/.local/bin por si npm/npx fueron actualizados
@@ -124,18 +151,22 @@ if [ "$UPDATE_VERSION" = true ]; then
         fi
     done
 else
-    echo -e "\nℹ️ Preservando versión actual de npm ($($NODE_BIN_DIR/npm -v 2>/dev/null || npm -v)). Usa --update-version para actualizar npm@latest."
+    echo -e "\n🔒 Preservando versión activa de npm ($($NODE_BIN_DIR/npm -v 2>/dev/null || npm -v)). No se actualiza npm en modo --declared-versions."
 fi
 
-# 5. Configuración de Seguridad de NPM
-echo -e "\n🛡️ Aplicando configuraciones de seguridad globales en npm..."
-npm config set ignore-scripts true
-npm config set registry https://registry.npmjs.org/
-npm config set audit-level high
-
-# 6. Limpieza de caché residual
-echo -e "\n🧹 Limpiando caché residual de npm..."
-npm cache clean --force 2>/dev/null || true
+# 5. Configuración de Seguridad de NPM aislada al proyecto (sin afectar el entorno global)
+echo -e "\n🛡️ Verificando configuración local de npm (.npmrc del proyecto)..."
+if [ ! -f "$SCRIPT_DIR/.npmrc" ]; then
+    cat << 'EOF' > "$SCRIPT_DIR/.npmrc"
+# Poké Vicio - Local Project NPM Configuration
+ignore-scripts=true
+registry=https://registry.npmjs.org/
+audit-level=high
+EOF
+    echo "  [+] Creado .npmrc local con políticas aisladas (ignore-scripts, registry, audit-level)."
+else
+    echo "  [✓] .npmrc local detectado y activo."
+fi
 
 # Sincronizar configuraciones locales si no existen (sin pisar existentes ni ensuciar git)
 if [ ! -f "$SCRIPT_DIR/src/data/system/servers.local.json" ] && [ -f "$SCRIPT_DIR/src/data/system/servers.defaults.json" ]; then
