@@ -47,8 +47,15 @@
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
               registrations.forEach(function(r) {
                 if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
-                r.update().catch(function() {});
+                r.unregister().catch(function() {});
               });
+            }).catch(function() {});
+          } catch (e) {}
+        }
+        if ('caches' in window) {
+          try {
+            caches.keys().then(function(keys) {
+              return Promise.all(keys.map(function(key) { return caches.delete(key); }));
             }).catch(function() {});
           } catch (e) {}
         }
@@ -83,13 +90,14 @@
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
               registrations.forEach(function(r) {
                 if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
-                r.update().catch(function() {});
+                r.unregister().catch(function() {});
               });
             }).catch(function() {});
           } catch (e) {}
         }
 
-        var target = '/login?fresh_t=' + Date.now();
+        var base = (typeof window !== 'undefined' && window.location.pathname.startsWith('/PokeBorrador')) ? '/PokeBorrador/' : '/';
+        var target = base + 'login?fresh_t=' + Date.now();
         window.location.replace(target);
       }
 
@@ -113,7 +121,7 @@
     </script>
 
     <!-- VUE ENTRY POINT -->
-    <script type="module" crossorigin src="/PokeBorrador/assets/index-JHyVZZp_.js"></script>
+    <script type="module" crossorigin src="/PokeBorrador/assets/index-njgBa8vD.js"></script>
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-pokemon-Ca8Bwgro.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-battle-5BlTsoFy.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-pokemon-db-CJiyup47.js">
