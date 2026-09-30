@@ -464,7 +464,7 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
-        skipWaiting: false,
+        skipWaiting: true,
         clientsClaim: true,
         // CRITICAL: Precache ONLY the essential App Shell (< 500 KB).
         // Heavy data chunks, optional views, and dynamic engines are cached on-demand via runtime caching.

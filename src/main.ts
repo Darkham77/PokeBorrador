@@ -8,6 +8,8 @@ import router from './router/index.ts'
 import { DataLoaderPlugin } from 'vue-router/experimental'
 import '@/styles/_index.scss'
 import { useErrorStore } from '@/stores/errorStore'
+import { useUpdateStore } from '@/stores/update'
+import { gameBus } from '@/logic/events/gameBus'
 
 declare global {
   interface Window {
@@ -77,16 +79,13 @@ if (typeof window !== 'undefined') {
     }
   })
 
-  window.addEventListener('vite:preloadError', async (event) => {
+  window.addEventListener('vite:preloadError', (event) => {
     event.preventDefault()
-    console.warn('[Vite] Chunk preload error detected (stale deployment assets). Triggering update flow.')
+    console.warn('[Vite] Chunk preload error detected (stale deployment assets). Triggering update flow via gameBus.')
     try {
-      const { useUpdateStore } = await import('@/stores/update')
       useUpdateStore(pinia).notifyChunkLoadError(event)
     } catch {
-      import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
-        gameBus.emit('PWA_NEED_REFRESH')
-      })
+      gameBus.emit('PWA_NEED_REFRESH')
     }
   })
 }
