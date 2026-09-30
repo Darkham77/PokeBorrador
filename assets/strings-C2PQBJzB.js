@@ -1,1 +1,0 @@
-import{U as e}from"./game-data-pokemon-CTNZykkt.js";export{e as toID};

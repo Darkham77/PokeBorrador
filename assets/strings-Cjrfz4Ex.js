@@ -1,0 +1,1 @@
+import{U as e}from"./game-data-pokemon-Ca8Bwgro.js";export{e as toID};

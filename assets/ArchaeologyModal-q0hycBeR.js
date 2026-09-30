@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-BeAIDuab.js";export{e as default};
