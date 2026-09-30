@@ -54,17 +54,17 @@ Before attempting to upgrade any library in the "Core Stack", this protocol MUST
 
 ## 🛠️ Environment Initialization & Workspace Update Mandate
 
-Whenever asked to "actualiza el entorno de trabajo", "actualizar el entorno de trabajo", "actualizar herramientas", "update tools", "preparar entorno", "update workspace", or "instalar librerías / dependencias", the agent MUST execute the dedicated root setup script corresponding to the current operating system. This script automatically handles NVM verification/installation, Node.js runtime alignment (`engines.node`), global npm update (`npm install -g npm@latest`), global npm security settings, and deterministic project dependency installation via `npm ci`:
+Whenever asked to "actualiza el entorno de trabajo", "actualizar el entorno de trabajo", "actualizar herramientas", "update tools", "preparar entorno", "update workspace", or "instalar librerías / dependencias", the agent MUST execute the dedicated root setup script corresponding to the current operating system. This script automatically handles NVM verification/installation, Node.js runtime alignment to `.nvmrc`, global npm security settings, and deterministic project dependency installation via `npm ci`. Upgrading Node.js from nodejs.org and updating npm globally (`npm install -g npm@latest`) are strictly restricted to explicit invocations with `--update-version` / `-UpdateVersion`:
 
-- **Linux / macOS**: `chmod +x ./setup-linux.sh && ./setup-linux.sh`
-- **Windows (PowerShell as Administrator / Terminal)**: `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`
+- **Linux / macOS**: `chmod +x ./setup-linux.sh && ./setup-linux.sh [--update-version]`
+- **Windows (PowerShell as Administrator / Terminal)**: `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-UpdateVersion]`
 
 > [!TIP]
 > **IDE / Terminal Restart Recommendation**: After executing the setup script or modifying environment variables/PATH, always restart the IDE or open a fresh terminal session so that all child process trees inherit the updated system PATH without requiring manual injections.
 
 ### 🛠️ Diagnostic & Maintenance Commands
 
-- **Update Tools & Clean Dependencies (Single Command)**: `./setup-linux.sh` (Linux/macOS) / `.\setup-windows.ps1` (Windows)
+- **Update Tools & Clean Dependencies (Single Command)**: `./setup-linux.sh [--update-version]` (Linux/macOS) / `.\setup-windows.ps1 [-UpdateVersion]` (Windows)
 - **Verify Build Tools**: `npm run validate:tools` (verifies and compiles native binary `css-checker-kit`)
 - **Build & Bundle Analysis**: `npm run build:analyze` (builds production bundle with `ANALYZE='true'`, generates visual interactive treemap in `scratch/bundle_stats.html`)
 - **Audit Bundle Chunks & Budgets**: `npm run audit:bundle` (verifies bundle chunk sizes and critical budget limits)

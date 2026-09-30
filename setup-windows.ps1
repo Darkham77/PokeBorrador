@@ -281,14 +281,18 @@ try {
     }
 } catch {}
 
-# 7. Actualizar npm a la ultima version
+# 7. Actualizar npm a la ultima version (solo si se especifica -UpdateVersion)
 Write-Host ""
-Write-Host "[NPM] Actualizando npm a la ultima version global (npm@latest)..." -ForegroundColor Cyan
-try {
-    npm install -g npm@latest
-} catch {
-    Write-Host "  [WARN] Advertencia al actualizar npm global: $_" -ForegroundColor Yellow
-    Write-Host "  Continuando con la version actual de npm ($((npm -v)))..." -ForegroundColor Gray
+if ($UpdateVersion) {
+    Write-Host "[NPM] Actualizando npm a la ultima version global (npm@latest)..." -ForegroundColor Cyan
+    try {
+        npm install -g npm@latest
+    } catch {
+        Write-Host "  [WARN] Advertencia al actualizar npm global: $_" -ForegroundColor Yellow
+        Write-Host "  Continuando con la version actual de npm ($((npm -v)))..." -ForegroundColor Gray
+    }
+} else {
+    Write-Host "[NPM] Preservando version actual de npm ($((npm -v))). Usa -UpdateVersion para actualizar npm@latest." -ForegroundColor Gray
 }
 
 # 8. Configuracion de Entorno y NPM

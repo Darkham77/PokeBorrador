@@ -1,31 +1,34 @@
-# Manual de Desarrollo: Poké Vicio (Vue 3 + Vite + Supabase)
+# Poké Vicio — Retro-Modern Pokémon Web Game
 
-Este manual detalla los comandos y configuraciones necesarios para trabajar en la versión moderna del juego usando **Vue 3**, **Vite** y **Supabase**. El motor de juego ha sido migrado íntegramente a Vue para máxima reactividad y rendimiento.
+Poké Vicio es un videojuego web híbrido retro-moderno construido con **Vue 3**, **Pinia**, **GSAP**, el motor canónico de combate de Pokémon Showdown (`@pkmn/sim`), persistencia dual (SQLite local offline con OPFS y Supabase/PostgreSQL online) y una arquitectura modular gobernada por la suite de auditoría desacoplada (`@fgp/auditor`).
 
 ## 📋 Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instaladas versiones compatibles de **Node.js** y **npm** según lo definido en `package.json` (`engines`) y `.nvmrc`.
+- **Runtime**: **Node.js >=26** (soporta el modelo de permisos nativo `--permission`, `node:sqlite` nativo y la API `Temporal`).
+- **Gestor de Paquetes**: **npm >=12**.
 
-> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y exige las versiones especificadas en `package.json` (`engines`) y `.nvmrc`. Si la versión instalada no cumple con estos requisitos, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
+> [!IMPORTANT]
+> El proyecto utiliza características modernas del motor V8 y exige las versiones especificadas en `package.json` (`engines`) y `.nvmrc`. La ejecución de `npm install` o `npm ci` verifica automáticamente el entorno a través de `preinstall` (`check_environment.ts`), interrumpiendo la ejecución con instrucciones claras si el entorno no cumple con los requisitos.
 
 ### 🌐 Preparación y Actualización del Entorno (Node.js y npm)
 
-Para inicializar o actualizar automáticamente el entorno (instalación de NVM si falta, y sincronización con las versiones de Node.js y npm declaradas en `package.json`), ejecuta el script correspondiente desde la raíz del proyecto:
+Para inicializar o actualizar automáticamente el entorno de trabajo (configuración de NVM, alineación con `.nvmrc`, políticas de seguridad de npm, limpieza de caché e instalación determinista con `npm ci`), ejecuta el script Single Source of Truth (SSoT) según tu sistema operativo:
 
-- **En Windows (PowerShell como Administrador)**:
+- **En Windows (PowerShell como Administrador / Terminal)**:
 
   ```powershell
-  PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1
+  PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-UpdateVersion]
   ```
 
 - **En Linux / macOS (Terminal)**:
 
   ```bash
-  chmod +x ./setup-linux.sh && ./setup-linux.sh
+  chmod +x ./setup-linux.sh && ./setup-linux.sh [--update-version]
   ```
 
 > [!TIP]
-> Los scripts leen dinámicamente la versión requerida desde `package.json`, configuran NVM/symlinks automáticamente, actualizan `npm` a la última versión global, aplican las políticas de seguridad y ejecutan `npm ci` para dejar el proyecto 100% listo para desarrollar.
+> Por defecto (sin flags), los scripts son **100% deterministas, offline-friendly e idempotentes**: leen la versión de Node.js requerida desde `.nvmrc` y preservan la versión activa de `npm` sin llamadas a la red ni modificaciones al árbol de Git.
+> Si deseas consultar `nodejs.org` para actualizar la versión de Node.js y actualizar `npm` globalmente a `npm@latest`, agrega el flag opcional `--update-version` (Linux/macOS) o `-UpdateVersion` (Windows).
 
 ## 🛠️ Entorno de Desarrollo
 
@@ -77,19 +80,19 @@ Sigue estos pasos para configurar e iniciar tu entorno de desarrollo:
    npm ci
    ```
 
-2. **Actualizar dependencias** (Si hay nuevas versiones o warnings de seguridad):
-
-   ```bash
-   npm update
-   ```
-
-3. **Configurar Variables de Entorno**: Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
+2. **Configurar Variables de Entorno**: Copia el archivo `.env.example` y renómbralo a `.env`, luego completa las credenciales de Supabase o perfiles de servidor:
 
    ```bash
    cp .env.example .env
    ```
 
-4. **Iniciar Vite**:
+3. **Sincronizar Servidores Locales**: Genera el catálogo desacoplado en `src/data/system/servers.local.json`:
+
+   ```bash
+   npm run servers:configure
+   ```
+
+4. **Iniciar Vite Dev Server**:
 
    ```bash
    npm run dev
@@ -97,13 +100,24 @@ Sigue estos pasos para configurar e iniciar tu entorno de desarrollo:
 
 El servidor estará disponible en `https://localhost:5173` (HTTPS / Secure Context).
 
-## 🗄️ Base de Datos (Supabase)
+## 🗄️ Base de Datos y Persistencia Dual
 
-### Inicialización
+Poké Vicio implementa una arquitectura de **persistencia dual** con aislamiento total gobernado por `DBRouter`:
 
-Para inicializar las tablas necesarias la primera vez:
+- **Modo Online (Supabase / PostgreSQL)**: Conexión remota autenticada mediante `@supabase/supabase-js` con Row Level Security (RLS) y migraciones transaccionales.
+- **Modo Offline / Local (SQLite + OPFS)**: Base de datos SQLite embebida en WebAssembly en el navegador a través de *Origin Private File System* (`node:sqlite` / OPFS), permitiendo jugar 100% sin conexión ni servidores externos.
 
-1. Ejecutá el script [database/schemas/supabase_migration.sql](./database/schemas/supabase_migration.sql) en el SQL Editor de Supabase.
+### Inicialización y Actualización de Base de Datos (Supabase)
+
+Todas las migraciones de esquema son incrementales y se ejecutan automáticamente a través del migrador central:
+
+```bash
+# Inicializar o actualizar un servidor específico configurado en el .env:
+npm run database:update server=server_franco
+
+# Actualizar TODOS los servidores configurados en el .env:
+npm run database:update all
+```
 
 ### 💾 Importación de Base de Datos Local al Navegador (Modo Offline / QA)
 
@@ -150,31 +164,49 @@ npm run dev
    - Al abrir `https://localhost:5173/`, el motor del cliente (`sqliteEngine.ts` / `loadingStore.ts`) detecta la base importada manual, la descarga y la persiste en el almacenamiento privado del navegador (**OPFS** / `pokevicio_sqlite_v2`).
    - El juego inicia sesión en modo offline instantáneamente con todas las cuentas, Pokémon y estados listos para jugar.
 
-## 🚀 Despliegue (Hosting)
+## 🚀 Compilación y Despliegue en Producción
 
-### Vercel (Recomendado Fullstack)
+### 1. Compilación de Producción (`npm run build`)
 
-Vercel es la opción ideal ya que soporta automáticamente las funciones de la carpeta `/api`.
+La compilación oficial para producción ejecuta un ciclo completo de aseguramiento:
 
-1. **Dashboard**: Conecta tu repositorio de GitHub en [vercel.com](https://vercel.com).
-2. **Variables de Entorno**: En los ajustes del proyecto, agrega `VITE_SUPABASE_URL` y `VITE_SUPABASE_KEY`.
-3. **Despliegue**: Vercel detectará Vite automáticamente. Cada `git push` a `main` actualizará el sitio.
-
-### GitHub Pages (Solo Frontend)
-
-Si solo deseas hostear el cliente estático:
-
-1. **Configurar Base**: En `vite.config.js`, agrega `base: '/PokeBorrador/'` (o el nombre de tu repo).
-2. **GitHub Actions**: Utiliza un workflow (ej. `.github/workflows/deploy.yml`) para automatizar el build.
-3. **Secrets**: Agrega las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_KEY` en `Settings > Secrets > Actions`.
-
-## ☁️ Configuración Local de Funciones (Vercel CLI)
-
-Para probar las funciones de la carpeta `api/` localmente:
+1. **Auditoría Integral**: Ejecuta `npm run audit` certificando 0 errores arquitectónicos y de dominio.
+2. **Bundle Build**: Compila el bundle optimizado de Vite con minificación Rolldown/ESBuild y chunk splitting estricto.
+3. **PWA & Service Worker**: Genera la configuración de PWA offline (`sw.js`).
+4. **Pre-Compresión Estática**: Comprime automáticamente todos los activos estáticos a Brotli (`.br`, Q11) y Gzip (`.gz`, L9) mediante `vite-plugin-precompress.ts`.
 
 ```bash
-vercel dev
+npm run build
 ```
+
+Para analizar la distribución de tamaño y detectar cuellos de botella en los chunks del bundle:
+
+```bash
+npm run build:analyze
+```
+
+Genera un treemap gráfico e interactivo en `scratch/bundle_stats.html` y alimenta la auditoría `npm run audit:bundle`.
+
+### 2. Opciones de Hosting
+
+- **Servidor Web / Reverse Proxy (Nginx, Caddy, Apache)**:
+  - Servir la carpeta `dist/` como una SPA estática (redireccionando todas las rutas no estáticas a `/index.html`).
+  - Habilitar soporte HTTP/2 o HTTP/3 y terminación SSL/TLS (HTTPS).
+  - Configurar soporte de WebSockets (WSS) para sincronización en tiempo real con Supabase y HMR.
+- **Hosting Estático Cloud (Cloudflare Pages, Vercel SPA, GitHub Pages)**:
+  - Comando de compilación: `npm run build`
+  - Directorio de publicación: `dist`
+  - Variables de entorno mínimas: `VITE_SUPABASE_URL`, `VITE_SUPABASE_KEY`
+- **Infraestructura Supabase Auto-Hospedada (Docker)**:
+  - Poké Vicio incluye un orquestador automatizado para generar y gestionar la pila completa de 13 microservicios Supabase en Docker:
+
+    ```bash
+    npm run supabase:manage
+    ```
+
+  - Consulta los detalles en [supabase/README.md](./supabase/README.md) y [SUPABASE-DOCKER-MANUAL.md](./supabase/SUPABASE-DOCKER-MANUAL.md).
+
+## 🏛️ Gobernanza, Calidad e Integridad de Código
 
 El desarrollo de este proyecto se rige por un sistema de reglas estrictas gestionadas por IA a través de Antigravity. Estas reglas están formalizadas en:
 
@@ -382,8 +414,8 @@ El proyecto soporta persistencia dual con aislamiento total entre el modo local 
 | `npm run database:repair-account` | **Reparación de Cuentas Ilegales**: Corrige Pokémon ilegales (niveles, movimientos o habilidades no permitidas) en una o todas las cuentas, tanto en SQLite local como en servidores Supabase. |
 | `npm run database:diagnose-account` | **Diagnóstico de Cuentas**: Diagnostica integridad, inventario, Pokémon ilegales y locks de una cuenta (`database:diagnose-accounts` para todas las cuentas). |
 | `npm run admin:rename` | **Renombrado Administrativo**: Cambia el nombre de entrenador de un usuario en Supabase directamente desde consola. |
-| `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro y genera la lista tipada de servidores en `src/data/system/official_servers.ts`. |
-| `npm run database:update` | **Gestor y Migrador**: Aplica esquemas iniciales y migraciones SQL incrementales en el servidor Supabase elegido o en todos (`--all`). |
+| `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro y genera el catálogo desacoplado en `src/data/system/servers.local.json` a partir de `servers.defaults.json` sin ensuciar Git. |
+| `npm run database:update` | **Gestor y Migrador**: Aplica esquemas iniciales y migraciones SQL incrementales en el servidor Supabase elegido (`server=<profile>`) o en todos (`all`). |
 | `npm run database:backup` | **Generador de Respaldos**: Conecta al servidor Supabase y exporta todas las tablas a un archivo JSON estructurado. |
 | `npm run database:upgrade-backup` | **Actualizador de Respaldos**: Aplica migraciones y legalización de Showdown a un respaldo JSON exportado. |
 | `npm run database:restore` | **Restaurador Transaccional**: Restaura transaccionalmente un respaldo JSON hacia el servidor Supabase elegido. |
@@ -525,12 +557,16 @@ npm run assets:convert
 
 ## 📂 Estructura del Proyecto
 
-- `/src`: Código fuente de la aplicación (Componentes, Stores, Vistas).
-- `/public`: Activos estáticos (Assets, Mapas).
-- `/api`: Funciones serverless para el backend.
-- `/database`: Esquemas SQL y migraciones.
-- `/tests`: Suite de pruebas (Vitest y Playwright).
-- `/docs`: Documentación técnica y reglas del juego.
+- `/src`: Código fuente de la aplicación (Componentes Vue 3, Stores Pinia, Vistas, Puente Showdown `@pkmn/sim`, DBRouter).
+- `/public`: Activos estáticos públicos (Mapas, Audio, Sprites procesados WebP).
+- `/packages/auditor`: Motor de auditoría y análisis estático desacoplado (`@fgp/auditor`).
+- `/database`: Migraciones SQL incrementales (`.sql` PostgreSQL y `.sqlite.sql` SQLite), respaldos y esquemas.
+- `/supabase`: Orquestador Docker y automatización de microservicios Supabase (`setup_supabase.ts`).
+- `/scripts`: Fuzzers multi-hilo, simulaciones E2E Playwright, compiladores de datos y mantenimiento.
+- `/tests`: Suites de pruebas unitarias (JSDOM) y de nodo (Vitest multi-motor SQLite/PostgreSQL).
+- `/.agents`: Jerarquía DOX de skills, estándares arquitectónicos y manuales de referencia.
+- `/_raw-assets`: Directorio de trabajo para imágenes originales antes de la optimización WebP (`npm run assets:convert`).
+- `/scratch`: Almacenamiento efímero unificado (reportes JSON de auditoría, bases SQLite temporales, logs de simulación).
 
 ---
 
@@ -538,18 +574,18 @@ npm run assets:convert
 
 ### 1. 🛠️ Solución a errores de `npm run dev`
 
-Si bajas cambios del repositorio (git pull) y el comando `npm run dev` falla o tira errores inesperados, generalmente es porque se instalaron nuevas librerías que no tienes en tu entorno local.
+Si bajas cambios del repositorio (`git pull`) y el comando `npm run dev` falla o reporta errores inesperados, generalmente es porque se agregaron nuevas dependencias que no están en tu entorno local.
 
-- **Solución**: Ejecutá `npm ci` para sincronizar las dependencias de forma segura (evitando el uso de `npm install`).
-- **Tip**: Se recomienda ejecutar periódicamente `npm update` para mantener todas las librerías actualizadas.
+- **Solución**: Ejecutá `npm ci` para sincronizar las dependencias de forma limpia y segura según el `package-lock.json`.
+- **Tip**: Para gestionar versiones y dependencias, consulta siempre el [Dependency Management Manual](./.agents/skills/project-standards/references/technical/dependency_management_manual.md). Evita ejecutar `npm update` masivo no supervisado para prevenir desalineaciones entre peer-dependencies del stack.
 
-### 2. 🛡️ Auditoría de Estándares
+### 2. 🛡️ Auditoría de Estándares y Calidad
 
-Para mantener la calidad y el orden del código, es una excelente práctica realizar una auditoría periódica (cada 2 o 3 días de trabajo).
+Para mantener la calidad y el orden del código, ejecuta regularmente las suites de auditoría oficiales:
 
-- **Instrucción**: Pedile a la IA: *"Hace una auditoría a todo el proyecto y revisá que cumpla con /project-standards"*.
-- **Resultado**: La IA detectará hotspots de complejidad Fallow, errores de estilo o violaciones a la arquitectura.
-- **Acción**: Después del reporte, pedile que genere el *"plan de corrección"* para normalizar el código.
+- **En desarrollo**: Ejecuta `npm run lint` (~8-10s) para validar tipos de dominio, $O(1)$, estilos y linter.
+- **Auditoría completa**: Ejecuta `npm run audit` para lanzar el motor de `@fgp/auditor` con reporte tabular y JSON en `scratch/audits/latest_audit.json`.
+- **Inspección de hallazgos**: Usa `npm run audit:findings`, `npm run audit:errors` o `npm run audit:warnings` para desglosar incidencias por categoría.
 
 ### 3. 🖼️ Gestión de Imágenes (`_raw-assets`)
 
@@ -572,12 +608,16 @@ Por identidad visual, el "corazón" del juego es pixelado, pero el "shell" (la i
 - **Especificación**: Si necesitás asegurar que algo se vea pixel-perfect, usá el mixin `@include pixelated;` en el SCSS.
 - **Excepciones**: Para logos premium o elementos que deban verse suaves, usá `@include smooth;` (esto aplica `image-rendering: auto`).
 
-### 5. ⚠️ Precaución al actualizar Skills
+### 5. 📚 Navegación y Gobernanza DOX (`/dox-navigator` y `AGENTS.md`)
 
-Cuando la IA actualiza una Skill (archivos `.md` en `.agents/skills/`):
+Toda la arquitectura técnica, reglas locales de carpetas y contratos de interfaces están gobernados por el sistema DOX:
 
-- **SIEMPRE LEELA**: A veces la IA tiene la mala costumbre de borrar secciones antiguas o útiles por error al reescribir.
-- **Revisión**: Mirá los cambios (los bloques rojos del diff) antes de confirmar que el cambio es correcto.
+- **Contratos Cercanos al Código**: Cada carpeta de código contiene su propio `AGENTS.md` definiendo su alcance, contratos locales y `Child DOX Index`.
+- **Integridad Documental**: Cualquier cambio estructural o adición de directorios debe mantener su índice `AGENTS.md` actualizado, validable instantáneamente vía:
+
+  ```bash
+  npm run audit:md
+  ```
 
 ### 6. 🔍 Debugging y Comandos de Consola
 

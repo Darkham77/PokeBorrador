@@ -112,16 +112,20 @@ for bin_name in node npm npx corepack css-checker; do
     fi
 done
 
-# 4. Actualizar npm a la última versión global
-echo -e "\n📦 Actualizando npm a la última versión global (npm@latest)..."
-npm install -g npm@latest || echo "⚠️ Advertencia: No se pudo actualizar npm globalmente. Continuando con versión actual..."
+# 4. Actualizar npm a la última versión global (solo si se solicita explícitamente --update-version)
+if [ "$UPDATE_VERSION" = true ]; then
+    echo -e "\n📦 Actualizando npm a la última versión global (npm@latest)..."
+    npm install -g npm@latest || echo "⚠️ Advertencia: No se pudo actualizar npm globalmente. Continuando con versión actual..."
 
-# Re-sincronizar symlinks en ~/.local/bin por si npm/npx fueron actualizados
-for bin_name in npm npx; do
-    if [ -e "$NODE_BIN_DIR/$bin_name" ]; then
-        ln -sf "$NODE_BIN_DIR/$bin_name" "$LOCAL_BIN/$bin_name"
-    fi
-done
+    # Re-sincronizar symlinks en ~/.local/bin por si npm/npx fueron actualizados
+    for bin_name in npm npx; do
+        if [ -e "$NODE_BIN_DIR/$bin_name" ]; then
+            ln -sf "$NODE_BIN_DIR/$bin_name" "$LOCAL_BIN/$bin_name"
+        fi
+    done
+else
+    echo -e "\nℹ️ Preservando versión actual de npm ($($NODE_BIN_DIR/npm -v 2>/dev/null || npm -v)). Usa --update-version para actualizar npm@latest."
+fi
 
 # 5. Configuración de Seguridad de NPM
 echo -e "\n🛡️ Aplicando configuraciones de seguridad globales en npm..."
