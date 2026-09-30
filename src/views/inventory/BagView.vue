@@ -198,14 +198,14 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
         </div>
         <div class="sell-buttons">
           <button 
-            class="btn btn-green" 
+            class="btn-vicio-success btn-vicio-sm" 
             :disabled="Object.keys(inventoryStore.bagSellSelected).length === 0"
             @click.stop="inventoryStore.confirmBagSell"
           >
             Confirmar Venta
           </button>
           <button
-            class="btn btn-gray"
+            class="btn-vicio-neutral btn-vicio-sm"
             @click.stop="inventoryStore.toggleBagSellMode"
           >
             Cancelar
@@ -418,18 +418,6 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 }
 
 .sell-buttons { display: flex; gap: 8px; }
-
-.btn {
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: none;
-  @include pixelated;
-  font-size: 8px;
-  cursor: pointer;
-}
-
-.btn-green { background: var(--green-bright); color: var(--white); }
-.btn-gray { background: Rgba(255, 255, 255, 0.1); color: var(--white); }
 
 .btn-sell-mode {
   width: 100%;

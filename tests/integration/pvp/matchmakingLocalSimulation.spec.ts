@@ -74,7 +74,7 @@ describe('Local Instance PvP Matchmaking Full Simulation', () => {
       user_id: 'local_franco',
       elo: 1250,
       status: 'searching',
-      created_at: new Date().toISOString()
+      created_at: Temporal.Now.instant().toString()
     })
 
     const allInQueue = await gameStore.db.from('ranked_queue').select('*')

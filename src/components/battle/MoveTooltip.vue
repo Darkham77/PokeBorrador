@@ -90,17 +90,6 @@ const {
   word-break: break-word;
 }
 
-.move-modifier {
-  @include pixelated;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.15);
-  font-size: $tooltip-stat-val-size;
-  
-  &.boosted { color: var(--yellow); }
-  &.penalized { color: $red; }
-}
-
 .move-details-calc {
   margin-top: 10px;
   padding-top: 8px;

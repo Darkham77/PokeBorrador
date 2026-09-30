@@ -325,11 +325,6 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
     will-change: transform, filter, opacity;
     filter: Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.1);
   }
-
-  &.is-ingrain :deep(img) {
-    will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 4px 10px Rgba(34, 139, 134, 0.8));
-  }
 }
 .pv-fx-sprite-layer {
   position: relative; display: flex; align-items: center; justify-content: center;
@@ -344,12 +339,6 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
       will-change: transform, filter, opacity;
     }
   }
-
-  &.is-freeze {
-    filter: Drop-Shadow(0 0 12px Rgba(0, 255, 255, 0.8)) 
-            Drop-Shadow(0 0 6px Rgba(255, 255, 255, 0.9)) 
-            Brightness(1.1);
-  }
 }
 
 .debug-guide {
@@ -362,10 +351,6 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
     padding: 2px 5px; border-radius: 3px; white-space: nowrap;
     transform: Scale(calc(1 / var(--camera-scale, 1)));
     transform-origin: center top;
-  }
-  &.debug-poke-radius {
-    border-color: #00ffff; background: Rgba(0, 255, 255, 0.25); border: 2px solid #00ffff;
-    .label { border: 1px solid #00ffff; background: Rgba(0, 40, 40, 0.9); color: #00ffff; }
   }
   &.debug-fx-radius {
     border-color: #ff9900; background: Rgba(255, 153, 0, 0.2); border: 2px solid #ff9900;

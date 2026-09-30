@@ -139,7 +139,7 @@ async function main() {
         await fs.access(p);
         found = true;
         break;
-      } catch {
+      } catch { // catch-ok: path does not exist, continue search
         // Continue
       }
     }

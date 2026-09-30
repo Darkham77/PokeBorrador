@@ -21,7 +21,7 @@ const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 
 describe('Profile Sync SQLite Column Parity', () => {
   it('updates and inserts profile fields matching exact SQLite schema columns without error', async () => {
-    const tempDbPath = path.join(os.tmpdir(), `test_profile_sync_${Date.now()}_${Math.random().toString(36).slice(2)}.db`);
+    const tempDbPath = path.join(os.tmpdir(), `test_profile_sync_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`);
     fs.copyFileSync(DB_PATH, tempDbPath);
 
     try {

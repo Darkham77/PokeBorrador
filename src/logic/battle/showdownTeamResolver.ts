@@ -1,5 +1,5 @@
-import type { Pokemon } from '../../types/pokemon/pokemon';
-import type { ShowdownPlayerRequest } from '../../types/battle/battle';
+import type { Pokemon } from '../../types/pokemon/pokemon.ts';
+import type { ShowdownPlayerRequest } from '../../types/battle/battle.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
 
 interface RequestPokemonWithUid {

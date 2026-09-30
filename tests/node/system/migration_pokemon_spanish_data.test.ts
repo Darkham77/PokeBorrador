@@ -306,7 +306,7 @@ describe('Exhaustive Multi-Engine & Multi-Table Data Migration Suite (2026090901
       return;
     }
 
-    const schema = `test_migration_${Date.now()}`;
+    const schema = `test_migration_${Temporal.Now.instant().epochMilliseconds}`;
     await sql.unsafe(`CREATE SCHEMA ${schema}`);
 
     try {
@@ -331,7 +331,7 @@ describe('Exhaustive Multi-Engine & Multi-Table Data Migration Suite (2026090901
         const saveDataJson = typeof row.save_data === 'string' ? JSON.parse(row.save_data) : row.save_data;
         await sql`
           INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at)
-          VALUES (${row.user_id}, ${sql.json(saveDataJson)}, ${row.last_save_id || 'test'}, ${row.updated_at || new Date().toISOString()})
+          VALUES (${row.user_id}, ${sql.json(saveDataJson)}, ${row.last_save_id || 'test'}, ${row.updated_at || Temporal.Now.instant().toString()})
         `;
       }
       for (const row of (bData.trade_offers || [])) {

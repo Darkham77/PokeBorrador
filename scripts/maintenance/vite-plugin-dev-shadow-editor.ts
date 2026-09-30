@@ -94,7 +94,7 @@ export function devShadowEditorPlugin(): Plugin {
               if (db.shadow) {
                 globalShadowConfig = db.shadow;
               }
-            } catch {
+            } catch { // catch-ok: fallback to defaults
               // fallback to defaults
             }
 

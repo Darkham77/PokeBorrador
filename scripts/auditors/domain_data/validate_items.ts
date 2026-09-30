@@ -11,7 +11,7 @@ import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor } from '@fgp/auditor';
 
 enableCompileCache();
 

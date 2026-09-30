@@ -25,8 +25,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
-import { SharedAstContext } from '../../lib/astContext.ts';
+import { BaseAuditor, SharedAstContext } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -304,14 +303,15 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
       description: 'Verifica paridad de persistencia y serialización',
       family: 'persistence',
       ruleIds: SAVE_PERSISTENCE_PARITY_RULES,
+      packageName: 'SaveData',
       ruleDescriptions: {
-        'persistence-schema-missing-field': 'Campo de GameState falta en saveDataSchema de Valibot',
-        'persistence-serializer-missing-field': 'Campo de GameState no se serializa en saveSerializer',
-        'persistence-initial-state-missing-field': 'Campo de GameState falta en createInitialGameState',
-        'persistence-class-data-missing-field': 'Propiedad de PlayerClassState desincronizada',
-        'persistence-active-mission-missing-field': 'Propiedad de ActiveMission desincronizada',
-        'persistence-domain-type-violation': 'Uso de unknown() en esquema de persistencia',
-        'persistence-redundant-nullability': 'Uso redundante de optional(nullable(...))'
+        'persistence-schema-missing-field': 'Campo ausente en schema Valibot',
+        'persistence-serializer-missing-field': 'Campo ausente en saveSerializer',
+        'persistence-initial-state-missing-field': 'Campo ausente en estado inicial',
+        'persistence-class-data-missing-field': 'PlayerClassState desincronizado',
+        'persistence-active-mission-missing-field': 'ActiveMission desincronizada',
+        'persistence-domain-type-violation': 'unknown() en schema de save',
+        'persistence-redundant-nullability': 'optional(nullable) redundante'
       },
       requiresAst: true,
       requiredFiles: [GAME_TYPES_PATH, SCHEMAS_PATH, SERIALIZER_PATH, INITIAL_STATE_PATH]

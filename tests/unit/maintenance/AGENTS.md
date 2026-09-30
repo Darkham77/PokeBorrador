@@ -9,7 +9,7 @@ Tooling & DevOps Engineers.
 ## Local Contracts
 
 - Test audit rules, zero-timer invariants, and anti-pattern detectors.
-- Ensure all custom audit rules in `scripts/maintenance/audit_rules.ts` have passing unit tests.
+- Ensure all custom audit rules in `packages/auditor/src/suites/architecture/audit_rules.ts` have passing unit tests.
 
 ## Work Guidance
 

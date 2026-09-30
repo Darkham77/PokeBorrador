@@ -21,7 +21,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor, FileScanAuditor } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -45,9 +45,10 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
       description: 'Invariantes rotas de Showdown o bifurcación binaria p1/p2',
       family: 'fsm',
       ruleIds: COMBAT_INVARIANTS_RULES,
+      packageName: 'Combate',
       ruleDescriptions: {
-        'showdown-healthy-status-null-prohibition': 'Asignación de status: null en vez de string vacío',
-        'battle-multi-seat-hardcoding': 'Bifurcación binaria p1/p2 violando 4 asientos'
+        'showdown-healthy-status-null-prohibition': 'status null en vez de vacío',
+        'battle-multi-seat-hardcoding': 'Bifurcación binaria p1/p2'
       },
       roots: ['src/logic/battle'],
       allowedExtensions: new Set(['.ts', '.vue'])

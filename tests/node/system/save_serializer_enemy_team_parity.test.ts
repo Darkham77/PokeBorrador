@@ -41,7 +41,7 @@ describe('Save Serializer Enemy Team SSoT Parity', () => {
       playerTeam: [playerMon],
       playerTeamIndex: 0,
       enemyTeamIndex: 0,
-      timestamp: Date.now(),
+      timestamp: Temporal.Now.instant().epochMilliseconds,
     } as unknown as GameState['activeBattle'];
 
     const serialized = serializeState(rawState);

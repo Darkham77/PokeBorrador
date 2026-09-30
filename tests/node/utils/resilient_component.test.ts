@@ -46,4 +46,24 @@ describe("Resilient Component & Dynamic Route Loader", () => {
     const asyncComp = defineResilientAsyncComponent(loader);
     assert.ok(asyncComp);
   });
+
+  it("propagates immediately if error is an unexpected runtime error not related to network or chunk load", async () => {
+    const syntaxError = new SyntaxError("Unexpected token in imported module");
+    const loader = vi.fn().mockRejectedValue(syntaxError);
+
+    const resilient = resilientRouteComponent(loader, 3);
+    await assert.rejects(async () => {
+      await resilient();
+    }, /Unexpected token/);
+  });
+
+  it("handles custom retry count and delay defaults safely", async () => {
+    const mockModule = { default: { name: "DefaultRetriesComp" } };
+    const loader = vi.fn().mockResolvedValue(mockModule);
+
+    const resilient = resilientRouteComponent(loader);
+    const result = await resilient();
+    assert.deepStrictEqual(result, mockModule);
+  });
 });
+

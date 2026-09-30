@@ -248,9 +248,6 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   }
 }
 
-.union-text-small { color: #60a5fa; font-weight: bold; }
-.poder-text-small { color: #f87171; font-weight: bold; }
-
 .search-bar {
   margin-bottom: 0;
   position: relative;
@@ -288,42 +285,6 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.search-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: Rgba(199, 125, 255, 0.2);
-    transform: Translatex(4px);
-  }
-
-  .player-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    .name { 
-      font-size: 14px;
-      font-weight: 700; 
-      color: var(--white); 
-      line-height: 1.2;
-    }
-    
-    .meta { 
-      font-size: 11px; 
-      color: Rgba(255, 255, 255, 0.5); 
-      line-height: 1.2;
-    }
-  }
 }
 
 .clickable-avatar {

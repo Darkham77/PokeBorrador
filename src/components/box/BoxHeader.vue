@@ -104,21 +104,4 @@ onMounted(() => {
     .hint-text { @include pixelated; font-size: 6px; color: var(--gray); max-width: 250px; }
   }
 }
-
-.rocket-action-btn {
-  @include btn-vicio('danger', 'sm');
-}
-
-.rocket-confirm-group {
-  display: flex;
-  gap: 8px;
-
-  .confirm-btn {
-    @include btn-vicio('danger', 'sm');
-  }
-
-  .cancel-btn {
-    @include btn-vicio('danger', 'sm');
-  }
-}
 </style>

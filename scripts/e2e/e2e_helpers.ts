@@ -447,7 +447,7 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
     if ((await confirmBtn.count()) > 0 && (await confirmBtn.isVisible())) {
       await clickResilient(confirmBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
     }
-  } catch (_e) {
+  } catch (_e) { // catch-ok: transition dismounted confirm button cleanly
     // Transition dismounted confirm button cleanly
   }
 
@@ -455,7 +455,7 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
     const startBtn = page.locator('#start-encounter-btn').first();
     await startBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  } catch (_e) {
+  } catch (_e) { // catch-ok: transition dismounted start button cleanly
     // Transition dismounted start button cleanly
   }
 }
@@ -1254,7 +1254,7 @@ export async function playFishingMinigameNaturally(page: Page): Promise<void> {
         const scale = Number(transform.match(/matrix\(([^,]+)/)?.[1] ?? Number.NaN);
         return !Number.isFinite(scale) || scale <= 1.15;
       }, noteId, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    } catch {
+    } catch { // catch-ok: transition timeout, proceed to click attempt
       // Transition timeout, proceed to click attempt
     }
     try {
@@ -1268,7 +1268,7 @@ export async function playFishingMinigameNaturally(page: Page): Promise<void> {
 
   try {
     await modalContainer.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  } catch {
+  } catch { // catch-ok: modal already detached or closed
     // Modal already detached or closed
   }
 }
@@ -1296,7 +1296,7 @@ export async function playArchaeologyMinigameNaturally(page: Page): Promise<void
 
   try {
     await grid.waitFor({ state: 'detached', timeout: RESILIENT_NAV_TIMEOUT_MS });
-  } catch {
+  } catch { // catch-ok: grid already detached or closed
     // Grid already detached or closed
   }
 }

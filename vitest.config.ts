@@ -43,6 +43,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
+      '@fgp/auditor': path.resolve(import.meta.dirname, './packages/auditor/src/index.ts'),
       'virtual:pwa-register': path.resolve(import.meta.dirname, './tests/helpers/pwaRegisterMock.ts'),
     },
     dedupe: ['vue', 'pinia', 'vue-router'],
@@ -116,7 +117,7 @@ export default defineConfig({
           globals: true,
           pool: 'forks',
           environment: 'node',
-          include: ['tests/node/**/*.test.ts'],
+          include: ['tests/node/**/*.test.ts', 'packages/auditor/tests/**/*.test.ts'],
           exclude: ['tests/node/**/backup_migration_real.test.ts'],
           setupFiles: ['./tests/vitest.node.setup.ts'],
           testTimeout: 60000,

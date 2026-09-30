@@ -3,23 +3,51 @@
 
 set -e
 
-# 1. Consultar dinamicamente la ultima version Current estable de Node.js desde nodejs.org
+# 1. Determinar modo de actualización de versión
+UPDATE_VERSION=false
+for arg in "$@"; do
+    case "$arg" in
+        --update-version|-u)
+            UPDATE_VERSION=true
+            shift
+            ;;
+    esac
+done
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PKG_PATH="$SCRIPT_DIR/package.json"
+NVMRC_PATH="$SCRIPT_DIR/.nvmrc"
 
 if [ ! -f "$PKG_PATH" ]; then
     echo "❌ ERROR: No se encontró package.json en $PKG_PATH"
     exit 1
 fi
 
-echo "🔍 Consultando la última versión Current estable de Node.js desde nodejs.org..."
 TARGET_NODE_VER=""
 
-if command -v curl >/dev/null 2>&1; then
-    TARGET_NODE_VER=$(curl -s --max-time 10 https://nodejs.org/dist/index.json | grep -o '"version": *"v[0-9.]*"' | head -n 1 | grep -o '[0-9.]*' || true)
+# Solo consultar nodejs.org y mutar archivos si se solicita explícitamente --update-version
+if [ "$UPDATE_VERSION" = true ]; then
+    echo "🔍 Consultando la última versión Current estable de Node.js desde nodejs.org..."
+    if command -v curl >/dev/null 2>&1; then
+        TARGET_NODE_VER=$(curl -s --max-time 10 https://nodejs.org/dist/index.json | grep -o '"version": *"v[0-9.]*"' | head -n 1 | grep -o '[0-9.]*' || true)
+    fi
+    if [ -n "$TARGET_NODE_VER" ]; then
+        if grep -q '"node":' "$PKG_PATH"; then
+            sed -i -E "s/(\"node\": *\">=)[^\"]*(\")/\1$TARGET_NODE_VER\2/" "$PKG_PATH"
+        fi
+        echo -n "$TARGET_NODE_VER" > "$NVMRC_PATH"
+        echo "✅ Versión actualizada en package.json y .nvmrc: v$TARGET_NODE_VER"
+    fi
 fi
 
-# Fallback a package.json si no hubo conexión a internet
+# Por defecto: leer la versión canónica de .nvmrc (sin ensuciar git al desplegar o ejecutar setup)
+if [ -z "$TARGET_NODE_VER" ]; then
+    if [ -f "$NVMRC_PATH" ]; then
+        TARGET_NODE_VER=$(tr -d ' \n\r' < "$NVMRC_PATH" | sed 's/^v//')
+    fi
+fi
+
+# Fallback a package.json si no existe .nvmrc
 if [ -z "$TARGET_NODE_VER" ]; then
     TARGET_NODE_VER=$(grep -o '"node": *"[^"]*"' "$PKG_PATH" | grep -o '[0-9.]*' | head -n 1)
 fi
@@ -28,12 +56,6 @@ if [ -z "$TARGET_NODE_VER" ]; then
     echo "❌ ERROR: No se pudo determinar la versión requerida de Node.js"
     exit 1
 fi
-
-# 2. Sincronizar automáticamente package.json y .nvmrc con la versión detectada
-if grep -q '"node":' "$PKG_PATH"; then
-    sed -i -E "s/(\"node\": *\">=)[^\"]*(\")/\1$TARGET_NODE_VER\2/" "$PKG_PATH"
-fi
-echo -n "$TARGET_NODE_VER" > "$SCRIPT_DIR/.nvmrc"
 
 echo "======================================================"
 echo " 🚀 PREPARACIÓN DE ENTORNO NODE (v$TARGET_NODE_VER) (LINUX/MACOS)"
@@ -84,7 +106,7 @@ LOCAL_BIN="$HOME/.local/bin"
 mkdir -p "$LOCAL_BIN"
 
 echo -e "\n🔗 Sincronizando enlaces simbólicos en $LOCAL_BIN..."
-for bin_name in node npm npx corepack; do
+for bin_name in node npm npx corepack css-checker; do
     if [ -e "$NODE_BIN_DIR/$bin_name" ]; then
         ln -sf "$NODE_BIN_DIR/$bin_name" "$LOCAL_BIN/$bin_name"
     fi
@@ -111,14 +133,24 @@ npm config set audit-level high
 echo -e "\n🧹 Limpiando caché residual de npm..."
 npm cache clean --force 2>/dev/null || true
 
+# Sincronizar configuraciones locales si no existen (sin pisar existentes ni ensuciar git)
+if [ ! -f "$SCRIPT_DIR/src/data/system/servers.local.json" ] && [ -f "$SCRIPT_DIR/src/data/system/servers.defaults.json" ]; then
+    echo "📋 Inicializando src/data/system/servers.local.json desde plantilla..."
+    cp "$SCRIPT_DIR/src/data/system/servers.defaults.json" "$SCRIPT_DIR/src/data/system/servers.local.json"
+fi
+
 # 7. Instalar dependencias limpias del proyecto
 echo -e "\n📦 Instalando dependencias del proyecto con npm ci..."
 cd "$SCRIPT_DIR"
 npm ci
 
 # 8. Validar y compilar herramientas nativas auxiliares
-npm run postinstall --ignore-scripts=false 2>/dev/null || true
 npm run validate:tools
+
+# Sincronizar binarios nativos generados hacia ~/.local/bin
+if [ -e "$NODE_BIN_DIR/css-checker" ]; then
+    ln -sf "$NODE_BIN_DIR/css-checker" "$LOCAL_BIN/css-checker"
+fi
 
 echo "======================================================"
 echo " 🎉 ¡ENTORNO Y DEPENDENCIAS PREPARADOS CON ÉXITO!"

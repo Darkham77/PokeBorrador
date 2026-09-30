@@ -25,7 +25,6 @@ export function deepToRaw<T>(source: T): T {
   }
   if (raw instanceof RegExp) {
     // security-ok: Cloning existing RegExp instance with identical source and flags
-    // eslint-disable-next-line security/detect-non-literal-regexp
     return new RegExp(raw.source, raw.flags) as T;
   }
   if (raw instanceof Map) {

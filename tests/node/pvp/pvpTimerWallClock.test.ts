@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { setupTemporalMock } from '../../helpers/setupTestEnvironment.ts';
 import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper';
 import { PVP_TURN_TIMEOUT_SEC, PVP_AFK_MAX_STRIKES, PVP_RECONNECT_WINDOW_SEC } from '@/types/battle/pvp';
 
 describe('PvPTimerManager Wall-Clock & Tab-Minimization Immunity - Unit Tests', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.spyOn(Temporal.Now, 'instant').mockImplementation(() => 
-      Temporal.Instant.fromEpochMilliseconds(Date.now())
-    );
+    setupTemporalMock();
   });
 
   afterEach(() => {

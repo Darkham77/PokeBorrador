@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor } from '@fgp/auditor';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
@@ -59,9 +59,10 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
       description: 'Verifica paridad de esquemas entre PostgreSQL y SQLite',
       family: 'persistence',
       ruleIds: SCHEMA_PARITY_RULES,
+      packageName: 'Esquema',
       ruleDescriptions: {
-        'schema-parity-missing-table': 'Tabla de PostgreSQL no existe en esquema SQLite offline',
-        'schema-parity-missing-column': 'Columna de PostgreSQL falta en tabla de SQLite offline'
+        'schema-parity-missing-table': 'Tabla Postgres ausente en SQLite',
+        'schema-parity-missing-column': 'Columna Postgres ausente en SQLite'
       }
     });
     this.migrationsDir = path.resolve(this.projectRoot, 'database/migrations');
@@ -198,7 +199,7 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
 
         try {
           db.exec(sql);
-        } catch {
+        } catch { // catch-ok: ignored for harmless migration redundancies
           // Ignored for harmless migration redundancies
         }
       }

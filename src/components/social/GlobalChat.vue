@@ -279,41 +279,6 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   flex-direction: column;
 }
 
-.chat-header {
-  padding: 20px;
-  background: Linear-Gradient(to bottom, Rgba(157, 78, 221, 0.1), transparent);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
-
-  .title {
-    @include pixelated;
-    font-size: 10px;
-    color: var(--purple-light);
-    text-shadow: 2px 2px 0px Rgba(0, 0, 0, 0.5); // Sharp shadow for pixel font
-  }
-
-  .close-btn {
-    background: Rgba(255, 255, 255, 0.05);
-    border: none;
-    color: Rgba(148, 163, 184, 1);
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-      background: Rgba(239, 68, 68, 0.15);
-      color: Rgba(248, 113, 113, 1);
-    }
-  }
-}
-
 .messages-list {
   flex: 1;
   overflow-y: auto;

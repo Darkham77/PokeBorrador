@@ -94,12 +94,6 @@ const hatchEgg = (egg: PokemonEgg) => {
     align-items: center;
     gap: 12px;
   }
-
-  .scanner-btn {
-    font-size: 7px;
-    padding: 8px 14px;
-    @include pixelated;
-  }
 }
 
 .count-badge {

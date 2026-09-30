@@ -248,19 +248,16 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   min-height: 42px;
   box-sizing: border-box;
 
-  &.rank-first,
   &.rank-1 {
     border-color: Rgba(255, 215, 0, 0.3);
     background: Rgba(255, 215, 0, 0.05);
   }
 
-  &.rank-second,
   &.rank-2 {
     border-color: Rgba(192, 192, 192, 0.3);
     background: Rgba(192, 192, 192, 0.04);
   }
 
-  &.rank-third,
   &.rank-3 {
     border-color: Rgba(205, 127, 50, 0.3);
     background: Rgba(205, 127, 50, 0.04);

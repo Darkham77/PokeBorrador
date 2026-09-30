@@ -52,4 +52,23 @@ describe('MoveTooltip subcomponents', () => {
     expect(wrapper.text()).toContain('Clima Soleado Activo')
     expect(wrapper.text()).toContain('ANÁLISIS COMPLETO (SMOGON)')
   })
+
+  it('renders status moves cleanly without power formula section', () => {
+    const statusDetails = {
+      ...dummyActiveDetails,
+      isStatus: true,
+      power: {
+        base: 0,
+        final: '0',
+        list: [],
+      }
+    } as unknown as ActiveMoveDetails
+
+    const wrapper = mount(MoveTooltipModifiers, {
+      props: { activeDetails: statusDetails },
+    })
+
+    expect(wrapper.text()).not.toContain('STAB (Fuego)')
+  })
 })
+

@@ -9,6 +9,10 @@ import { incrementRecordKey, addToField } from '@/logic/utils/mapUtils';
  * Handles moves with unique logic that doesn't fit into standard stat/status/healing categories.
  */
 
+const TRI_ATTACK_BURN_THRESHOLD = 0.066 as const;
+const TRI_ATTACK_PARALYZE_THRESHOLD = 0.132 as const;
+const TRI_ATTACK_FREEZE_THRESHOLD = 0.20 as const;
+
 export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
   'leech_seed': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {
@@ -92,9 +96,9 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
   },
   'tri_attack': (src, tgt, srcStages, tgtStages, addLogFn) => {
     const roll = Math.random();
-    if (roll < 0.066) STATUS_ACTIONS.burn?.(src, tgt, srcStages, tgtStages, addLogFn);
-    else if (roll < 0.132) STATUS_ACTIONS.paralyze?.(src, tgt, srcStages, tgtStages, addLogFn);
-    else if (roll < 0.20) STATUS_ACTIONS.freeze?.(src, tgt, srcStages, tgtStages, addLogFn);
+    if (roll < TRI_ATTACK_BURN_THRESHOLD) STATUS_ACTIONS.burn?.(src, tgt, srcStages, tgtStages, addLogFn);
+    else if (roll < TRI_ATTACK_PARALYZE_THRESHOLD) STATUS_ACTIONS.paralyze?.(src, tgt, srcStages, tgtStages, addLogFn);
+    else if (roll < TRI_ATTACK_FREEZE_THRESHOLD) STATUS_ACTIONS.freeze?.(src, tgt, srcStages, tgtStages, addLogFn);
   },
   'focus_energy': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.focusEnergy = true;

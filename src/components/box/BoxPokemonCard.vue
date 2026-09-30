@@ -364,15 +364,6 @@ onUnmounted(() => {
     }
   }
 
-  &.is-busy {
-    &.mode-release, &.mode-rocket, &.mode-select {
-      opacity: 0.4;
-      filter: Grayscale(1);
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-  }
-
   .top-right-column {
     position: absolute;
     top: 6px;

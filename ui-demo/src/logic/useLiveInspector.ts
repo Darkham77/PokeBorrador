@@ -23,6 +23,7 @@ const serializedData = ref<Record<string, unknown>>({
   nota: 'Cambia cualquier input o pulsa submit para serializar los datos en vivo.'
 })
 
+const MAX_INSPECTOR_LOG_ENTRIES = 50;
 const logState = { nextId: 2 }
 
 export function logToInspector(message: string): void {
@@ -32,7 +33,7 @@ export function logToInspector(message: string): void {
     time,
     message
   })
-  if (logs.value.length > 50) {
+  if (logs.value.length > MAX_INSPECTOR_LOG_ENTRIES) {
     logs.value.pop()
   }
 }

@@ -70,7 +70,7 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
       playerTeam: team,
       playerTeamIndex: 0,
       enemyTeamIndex: 0,
-      timestamp: Date.now(),
+      timestamp: Temporal.Now.instant().epochMilliseconds,
     } as unknown as typeof gameStore.state.activeBattle;
 
     // 3. Serialize game state (simulates saving to localStorage/Supabase mid-battle)

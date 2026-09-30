@@ -24,10 +24,10 @@ const TRAINER_FIXTURES = {
 } as const satisfies Record<'npc' | 'gym' | 'rival', { readonly name: string; readonly sprite: NpcSpriteId }>;
 
 function recordFailure(scenario: string, error: string): void {
-  const rec: FailureRecord = { scenario, error, timestamp: new Date().toISOString() };
+  const rec: FailureRecord = { scenario, error, timestamp: Temporal.Now.instant().toString() };
   failures.push(rec);
   if (!fs.existsSync(FAILURES_DIR)) fs.mkdirSync(FAILURES_DIR, { recursive: true });
-  const fname = `heuristic-${scenario.replace(/\s+/g, '-')}-${Date.now()}.json`;
+  const fname = `heuristic-${scenario.replace(/\s+/g, '-')}-${Temporal.Now.instant().epochMilliseconds}.json`;
   fs.writeFileSync(path.join(FAILURES_DIR, fname), JSON.stringify(rec, null, 2), 'utf8');
 }
 

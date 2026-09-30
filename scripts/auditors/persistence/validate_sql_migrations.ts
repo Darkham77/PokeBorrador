@@ -13,7 +13,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { enableCompileCache } from 'node:module';
 import { translatePostgresToSqlite, splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor } from '@fgp/auditor';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
 
 enableCompileCache();
@@ -63,16 +63,17 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
       description: 'Errores de sintaxis o ejecución en migraciones SQL',
       family: 'persistence',
       ruleIds: SQL_MIGRATION_RULES,
+      packageName: 'Migración',
       ruleDescriptions: {
-        'sql-migration-orphan-sqlite': 'Archivo .sqlite.sql huérfano sin migración SQL',
-        'sql-migration-invalid-timestamp': 'Timestamp inválido en nombre de migración',
-        'sql-migration-duplicate-timestamp': 'Timestamp duplicado en migraciones SQL',
-        'sql-migration-broken-monotonicity': 'Secuencia temporal no monótona en migraciones',
-        'sql-migration-missing-dbversion': 'Migración PostgreSQL sin actualización de db_version',
-        'sql-migration-missing-sqlite-companion': 'Migración PostgreSQL sin compañero .sqlite.sql obligatorio',
-        'sql-migration-sqlite-missing-dbversion': 'Migración SQLite sin actualización de db_version',
-        'sql-migration-dbversion-desync': 'Desincronización de versión con db_version',
-        'sql-migration-sqlite-exec-failure': 'Fallo de ejecución en SQLite en memoria'
+        'sql-migration-orphan-sqlite': '.sqlite.sql huérfano',
+        'sql-migration-invalid-timestamp': 'Timestamp inválido',
+        'sql-migration-duplicate-timestamp': 'Timestamp duplicado',
+        'sql-migration-broken-monotonicity': 'Secuencia no monótona',
+        'sql-migration-missing-dbversion': 'Postgres sin bump de db_version',
+        'sql-migration-missing-sqlite-companion': 'Falta compañero .sqlite.sql',
+        'sql-migration-sqlite-missing-dbversion': 'SQLite sin bump de db_version',
+        'sql-migration-dbversion-desync': 'Desincronización db_version',
+        'sql-migration-sqlite-exec-failure': 'Fallo en SQLite en memoria'
       },
       requiredFiles: [MIGRATIONS_DIR]
     });

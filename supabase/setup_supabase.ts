@@ -261,7 +261,7 @@ async function ensureServerKeys(serverName: string, envVars: Record<string, stri
   const jwtSecret = existing.JWT_SECRET || generated.JWT_SECRET!;
 
   // Unix Epoch en segundos
-  const iat = Math.floor(Date.now() / 1000);
+  const iat = Math.floor(Temporal.Now.instant().epochMilliseconds / 1000);
   const exp = iat + 157680000; // 5 años de validez
 
   for (const [key, role] of [['ANON_KEY', 'anon'], ['SERVICE_ROLE_KEY', 'service_role']] as const) {

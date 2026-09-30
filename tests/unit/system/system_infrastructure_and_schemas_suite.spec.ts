@@ -203,7 +203,7 @@ describe('System Infrastructure, Database & Schemas Suite', () => {
       })
 
       it('debe persistir la selección del servidor en localStorage', () => {
-        const targetServer = OFFICIAL_SERVERS.find(s => s.id === 'local-docker')
+        const targetServer = OFFICIAL_SERVERS.find(s => s.id === 'server_franco')
         if (targetServer) {
           switchServer(targetServer.id)
           expect(localStorage.setItem).toHaveBeenCalledWith('pokevicio_selected_server_id', targetServer.id)
@@ -211,7 +211,7 @@ describe('System Infrastructure, Database & Schemas Suite', () => {
       })
 
       it('debe actualizar la configuración del DBRouter al cambiar de servidor', () => {
-        const targetServer = OFFICIAL_SERVERS.find(s => s.id === 'local-docker')
+        const targetServer = OFFICIAL_SERVERS.find(s => s.id === 'server_franco')
         if (targetServer) {
           const spy = vi.spyOn(supabase, 'updateConfig')
           switchServer(targetServer.id)
@@ -450,7 +450,7 @@ describe('System Infrastructure, Database & Schemas Suite', () => {
         const action = {
           type: 'CHAT_SEND',
           payload: { msg: 'Hello' },
-          timestamp: Date.now()
+          timestamp: Temporal.Now.instant().epochMilliseconds
         }
         expect(validateNetworkAction(action).success).toBe(true)
       })

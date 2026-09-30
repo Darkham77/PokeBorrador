@@ -179,7 +179,7 @@ export function lanPvPPlugin(): Plugin {
                 }
               }
             }
-          } catch {
+          } catch { // catch-ok: ignore malformed payloads safely
             // Ignore malformed payloads safely
           }
         });

@@ -447,10 +447,10 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
       });
 
       const mock: Partial<RealtimeChannel> = {
-        on(type: unknown, filter: unknown, cb: unknown) {
+        on(eventType: unknown, filter: unknown, cb: unknown) { // domain-ok: Open dynamic text or non-domain string payload
           const filterObj = (filter && typeof filter === 'object') ? filter as { event?: string } : {};
           listeners.push({
-            type: String(type || ''),
+            type: String(eventType || ''),
             event: filterObj.event,
             cb: cb as (payload: unknown) => void
           });

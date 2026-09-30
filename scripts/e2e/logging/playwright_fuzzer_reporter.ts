@@ -46,7 +46,7 @@ export default class PlaywrightFuzzerReporter implements Reporter {
     // When all tests (including skipped ones) are registered statically in Playwright (pendingTests >= totalTests),
     // Playwright dispatches onTestEnd for every skipped test. Initializing completedTests to offset causes double-counting.
     this.completedTests = (pendingTests >= this.totalTests && offset > 0) ? 0 : offset;
-    this.startTime = Date.now();
+    this.startTime = Temporal.Now.instant().epochMilliseconds;
     const firstTest = suite.allTests()[0];
     if (firstTest?.location?.file) {
       this.activeSuiteName = path.basename(firstTest.location.file);
@@ -127,7 +127,7 @@ export default class PlaywrightFuzzerReporter implements Reporter {
             errorSnippet: result.error?.message?.slice(0, 300),
           });
         }
-      } catch {
+      } catch { // catch-ok: non-fatal checkpoint recording error
         // Non-fatal
       }
     }
@@ -155,14 +155,14 @@ export default class PlaywrightFuzzerReporter implements Reporter {
   }
 
   onEnd(result: FullResult) {
-    const totalSec = ((Date.now() - this.startTime) / 1000).toFixed(1);
+    const totalSec = ((Temporal.Now.instant().epochMilliseconds - this.startTime) / 1000).toFixed(1);
     const icon = result.status === 'passed' ? '✨' : '❌';
     logSync(`\n${icon} [SIMULATION] Suite finalizada con estado: ${result.status.toUpperCase()} (${this.completedTests}/${this.totalTests} ejecutados en ${totalSec}s)\n`);
 
     if (result.status === 'passed' && this.activeSuiteName) {
       try {
         clearSuiteCheckpoint(this.activeSuiteName);
-      } catch {
+      } catch { // catch-ok: non-fatal checkpoint cleanup error
         // Non-fatal
       }
     }

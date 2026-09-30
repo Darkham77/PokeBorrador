@@ -13,7 +13,7 @@ describe('repair_account_legality maintenance script test suite', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia());
-    tempDbPath = path.join(os.tmpdir(), `test_poke_repair_${Date.now()}_${Math.random().toString(36).slice(2)}.db`);
+    tempDbPath = path.join(os.tmpdir(), `test_poke_repair_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`);
     using db = new DatabaseSync(tempDbPath);
     db.exec(`
       CREATE TABLE IF NOT EXISTS game_saves (

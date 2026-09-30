@@ -136,3 +136,12 @@ Naked tags (e.g. `// domain-ok` without `: reason`) are flagged as critical erro
 
 - **Strict Domain ID Mandate**: In accordance with the *Absolute Prohibition on Runtime Auto-Heal & In-Memory Entity Translation Mandate*, unit and integration test fixtures MUST pass canonical domain IDs (e.g. `'tm39'`, `'potion'`, `'charcoal'`), NEVER localized display strings (e.g. `'MT39 Tumba Rocas'`, `'Poción'`).
 - **Fail-Fast Parity**: Application code in `src/` fails fast on non-canonical IDs. Tests must pass canonical IDs to functions like `requireItemId()`, and test localization solely by asserting against `getItemById(id).name`.
+
+## 14. Modern Date & Timestamp APIs (Zero `Date.now()`, Zero `new Date()`)
+
+- **Performance Benchmarking**: For measuring elapsed execution time, sub-auditor runtimes, or benchmark loops, ALWAYS use `performance.now()` (monotonic, sub-millisecond precision).
+- **Wall-Clock Dates & Persistence**: For domain timestamps, persistence dates, log records, or audit headers, ALWAYS use the modern ECMAScript `Temporal` API:
+  - Milliseconds: `Temporal.Now.instant().epochMilliseconds`
+  - ISO String: `Temporal.Now.instant().toString()`
+- **Prohibited APIs**: Legacy `Date.now()` and `new Date()` are deprecated across the project and flagged as lint errors.
+

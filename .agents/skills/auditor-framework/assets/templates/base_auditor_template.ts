@@ -8,7 +8,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -29,8 +29,9 @@ export class MyCompositeAuditor extends BaseAuditor<MyCompositeRuleId> {
       description: 'Valida integridad y paridad cruzada en bases de datos',
       family: 'domain_data', // 'architecture' | 'domain_data' | 'persistence' | 'fsm' | 'assets' | 'documentation'
       ruleIds: MY_COMPOSITE_RULES,
+      packageName: 'Datos',
       ruleDescriptions: {
-        'composite-missing-entry': 'Entrada faltante en registro canónico de datos',
+        'composite-missing-entry': 'Entrada faltante en registro canónico',
         'composite-parity-mismatch': 'Desincronización de entidades entre datasets'
       },
       requiredFiles: [

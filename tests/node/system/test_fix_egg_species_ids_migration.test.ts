@@ -106,7 +106,7 @@ describe('Egg Migration and Sanitization Suite', () => {
       'user_ash_1',
       JSON.stringify(mockSaveData),
       'save_1',
-      new Date().toISOString()
+      Temporal.Now.instant().toString()
     );
 
     // Apply all registered migrations

@@ -18,7 +18,7 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
 import { buildDatabaseUrl, getValidatedServerConfigs, parseServerArguments } from '../lib/supabaseClient.ts';
-import { safeResolve, safeJoin } from '../lib/safePath.ts';
+import { safeResolve, safeJoin } from '@fgp/auditor';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
@@ -186,7 +186,7 @@ export async function updateSupabaseDb(): Promise<void> {
         if (verContent && verContent.version) {
           appVersion = verContent.version;
         }
-      } catch (_e) {
+      } catch (_e) { // catch-ok: fallback to default appVersion if version.json is not present
         // Fallback
       }
       console.log(styleText('cyan', `🔄 Sincronizando app_version en system_config de [${profile}] a la versión: ${appVersion}`));

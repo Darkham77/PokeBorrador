@@ -126,7 +126,7 @@ const prepareResult = async () => {
   if (props.egg) {
     const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory')
     const { getEggSpecies } = await import('@/logic/breeding/breedingEngine')
-    const rawSpeciesId = String(props.egg.pokemonId || props.egg.id || '')
+    const rawSpeciesId = props.egg.pokemonId ?? props.egg.id
     const speciesId = getEggSpecies(rawSpeciesId)
     const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))
     const p = makePokemon(speciesId, 1, {

@@ -10,7 +10,7 @@ import fsSync from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { Dex, toID } from '@pkmn/sim';
-import { safeResolve, safeJoin, safeWriteFile, safeReadFile } from '../../lib/safePath.ts';
+import { safeResolve, safeJoin, safeWriteFile, safeReadFile } from '@fgp/auditor';
 import type { SpriteShadowOverride, SpriteShadowOverridesMap, PackedFeetTuple, GlobalShadowConfig } from '../../../src/types/pokemon/spriteShadows.ts';
 
 export interface AnimatedSpriteData {
@@ -601,7 +601,7 @@ export async function regenerateFeetDatabase(
         overrides = parsed as SpriteShadowOverridesMap;
       }
     }
-  } catch {
+  } catch { // catch-ok: no overrides file found, use defaults
     // No overrides
   }
 

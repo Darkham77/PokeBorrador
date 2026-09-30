@@ -5,7 +5,7 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { safeResolve, safeJoin } from '../lib/safePath.ts';
+import { safeResolve, safeJoin } from '@fgp/auditor';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -395,7 +395,7 @@ if (isMainThread) {
             
             // Actualizar DB en tiempo real al superar bloques de 32, o al final de listas cortas
             if (completedCount % DB_SYNC_BATCH_CHUNK_SIZE === 0 || filteredFiles.length < DB_SYNC_BATCH_CHUNK_SIZE) {
-              writeFinalReport().catch(() => {});
+              writeFinalReport().catch((err: unknown) => console.error('Error writing interim report:', err));
             }
           } else {
             hasErrors = true;

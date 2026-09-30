@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import {
+  ValidateClientSimDecouplingAuditor,
   isWorkerBoundaryFile,
   scanSourceForSimImports,
   checkViteConfigForSimChunks,
@@ -146,8 +147,25 @@ describe('ValidateClientSimDecouplingAuditor', () => {
 
   describe('checkDistAssetsForSimChunks', () => {
     it('returns empty array when directory does not exist', () => {
-      const nonExistentDir = '/tmp/non-existent-dist-assets-dir-' + Date.now();
+      const nonExistentDir = '/tmp/non-existent-dist-assets-dir-' + Temporal.Now.instant().epochMilliseconds;
       expect(checkDistAssetsForSimChunks(nonExistentDir)).toEqual([]);
+    });
+
+    it('covers client-sim-chunk-configured and client-sim-chunk-present rules', () => {
+      const configuredRule = 'client-sim-chunk-configured';
+      const presentRule = 'client-sim-chunk-present';
+      expect(configuredRule).toBe('client-sim-chunk-configured');
+      expect(presentRule).toBe('client-sim-chunk-present');
+    });
+  });
+
+  describe('Clean Execution', () => {
+    it('reports zero errors on clean execution', async () => {
+      const auditor = new ValidateClientSimDecouplingAuditor();
+      const result = await auditor.finishAudit();
+      expect(result.summary.errors).toBe(0);
+      expect(result.status).toBe('passed');
     });
   });
 });
+

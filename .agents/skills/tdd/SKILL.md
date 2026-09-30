@@ -107,3 +107,16 @@ After all tests pass, look for [refactor candidates](refactoring.md):
 [ ] Code is minimal for this test
 [ ] No speculative features added
 ```
+
+## TDD for Static Analysis & Auditors
+
+When developing or refactoring sub-auditors (`BaseAuditor`, `FileScanAuditor`, or host plugins):
+
+1. **RED First**: Create a test case with a dirty synthetic fixture that violates the specific rule. Run the test and verify it fails (the violation is NOT yet caught or has the wrong structure).
+2. **GREEN**: Implement the scanning/AST/regex logic in the auditor until the test passes, asserting:
+   - Exact `ruleId` matches the declared rule.
+   - Exact `severity` matches ('error' or 'warning').
+   - File path, line number, and context snippet are populated.
+3. **Negative GREEN**: Write the companion test with a clean fixture to ensure zero false positives (`expect(summary.errors).toBe(0)`, `expect(summary.warnings).toBe(0)`).
+4. **Suppression GREEN**: Write a test verifying that valid suppression comments (e.g. `// <rule>-ok:`) properly bypass the check without false positives.
+5. **No Rule Without a Test**: Every single error and warning that an auditor is designed to catch MUST have an automated test asserting its detection. Untested rules are strictly forbidden.

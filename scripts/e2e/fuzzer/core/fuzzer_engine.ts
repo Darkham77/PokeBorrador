@@ -97,7 +97,7 @@ logger.debug = (tag: string, message: string, ...args: unknown[]) => {
 
 export function createLocalPoke(set: PokemonSet): Pokemon {
   const speciesData = Dex.species.get(set.species);
-  const baseStats = resolveBaseStats(set.species);
+  const baseStats = resolveBaseStats(toID(set.species) as PokemonSpeciesId);
   const natureData = Dex.natures.get(set.nature || 'serious');
   const mappedNature = {
     up: natureData.plus ?? null,

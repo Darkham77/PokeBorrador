@@ -1,0 +1,24 @@
+[
+  {
+    "id": "official_prod",
+    "name": "Poké Vicio Oficial",
+    "region": "Global",
+    "url": "https://wakrkvizmoqdlrtnxcth.supabase.co",
+    "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indha3Jrdml6bW9xZGxydG54Y3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMDA3MjYsImV4cCI6MjA4ODg3NjcyNn0.l_NYYNPDFOAr5CRqbuVf3jLv_TRnOw6shw9j9GzhQsA",
+    "isDefault": true
+  },
+  {
+    "id": "server_franco",
+    "name": "Servidor Franco (Docker)",
+    "region": "Desarrollo",
+    "url": "https://francogp.myqnapcloud.com:50002",
+    "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgwMTg4NjcyLCJleHAiOjE5Mzc4Njg2NzJ9.u9JvY3wUO9K9Kh4Pv8EzlOrwtwNA7mxzLC6y5bqSoVA"
+  },
+  {
+    "id": "test_postgres",
+    "name": "Local Docker Test Server",
+    "region": "Testing",
+    "url": "http://127.0.0.1:54321",
+    "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjI1MDAwMDAwMDB9.bWuWcdy1ICtTs7Zq7TNjum7G0VIS5je9rFlzshoeBLA"
+  }
+]

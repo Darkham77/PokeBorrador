@@ -272,12 +272,6 @@ onMounted(() => {
   width: 100%;
 }
 
-.tab-content-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
 .empty-state {
   text-align: center;
   padding: 60px 20px;

@@ -42,7 +42,8 @@ export class ShowdownTeamMapper {
     team.forEach(set => {
       if (set && set.stats) {
         const baseKey = set.species ? set.species.split('-')[0] : '';
-        statsMap.set(set.name || baseKey || set.species, set.stats);
+        const key = (set.name && set.name.length > 0) ? set.name : (baseKey || set.species); // domain-ok: Showdown team set identifier lookup
+        statsMap.set(key, set.stats);
       }
     });
   }

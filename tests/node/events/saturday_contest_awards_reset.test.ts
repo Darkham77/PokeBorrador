@@ -34,7 +34,7 @@ describeWithDatabase('Saturday Contest Awards Reset Parity', (engine) => {
         await queryLocal(`
           INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL)
-        `, [id, eventId, 'user-sat-1', user, 'sat@test.local', JSON.stringify({ type: 'money', money: 50000 }), new Date().toISOString()]);
+        `, [id, eventId, 'user-sat-1', user, 'sat@test.local', JSON.stringify({ type: 'money', money: 50000 }), Temporal.Now.instant().toString()]);
       };
 
       // Pass 1: Two awards inserted

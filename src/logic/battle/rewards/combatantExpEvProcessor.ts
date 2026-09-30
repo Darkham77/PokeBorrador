@@ -195,7 +195,7 @@ function buildPrimaryRewardLine(
   expGained: number,
   eventExtra: number
 ): string {
-  let lvlText = '';
+  let lvlText: string;
   if (lvlData && lvlData.levelsGained > 0) {
     if (lvlData.levelsGained > 1) {
       const prevLvl = level - lvlData.levelsGained;

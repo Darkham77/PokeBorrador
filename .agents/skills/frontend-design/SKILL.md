@@ -53,6 +53,7 @@ description: Design thinking and decision-making for web UI. Use when designing 
 | **Glassmorphism** | AI's idea of "premium" | How about solid, high-contrast flat? |
 | **Deep Cyan / Fintech Blue** | Safe harbor from purple ban | Why not Red, Black, or Neon Green? |
 | **"Orchestrate / Empower"** | AI-generated copywriting | How would a human say this? |
+| **Framed / Boxed Logos** | AI habit of wrapping logos in rounded bordered boxes with tinted backgrounds | Let logos breathe directly and cleanly on the background surface without artificial frames. |
 
 ---
 

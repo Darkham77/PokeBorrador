@@ -32,7 +32,7 @@ function applyTransformToUser(user: Pokemon, targetPoke: Pokemon): void {
       const copiedMax = Math.min(5, m.maxPP || 5);
       const builtMove: Move = {
         ...m,
-        name: m.name ?? m.id ?? '',
+        name: m.name,
         pp: copiedMax,
         maxPP: copiedMax
       };

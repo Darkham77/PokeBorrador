@@ -290,13 +290,6 @@ const confirmDiscard = (awardId: string, eventName: string) => {
   gap: 6px;
   white-space: nowrap;
 
-  .btn-emoji {
-    font-size: 11px;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-  }
-
   @include event-award-action-buttons;
 }
 </style>

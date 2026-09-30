@@ -19,7 +19,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor, FileScanAuditor } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -55,9 +55,10 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
       description: 'Valida uso de uiConfig declarativo en UI de combate',
       family: 'architecture',
       ruleIds: BATTLE_UI_BRANCHING_RULES,
+      packageName: 'Combate',
       ruleDescriptions: {
-        'ui-branching-raw-flag': 'Ramificación de botones de combate mediante flags primitivos',
-        'ui-branching-escape': 'Uso de cannotEscape para condicionar la UI de combate'
+        'ui-branching-raw-flag': 'Ramificación con flags primitivos',
+        'ui-branching-escape': 'cannotEscape en template'
       },
       roots,
       allowedExtensions: new Set(['.vue'])

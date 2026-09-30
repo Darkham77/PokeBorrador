@@ -121,3 +121,21 @@ POOLER_TENANT_ID=your-tenant-id
 STORAGE_TENANT_ID=your-tenant-id
 JWT_SECRET=secret_nas_456
 ```
+
+## 5. Security & Zero Public Credential Reuse Mandate
+
+When configuring, parsing, or provisioning `.env` files:
+- **Zero Public Password Reuse**: The private `.env` file MUST NEVER reuse default or example passwords published in `.env.example`, `README.md`, SQL migrations, or commit logs (e.g. `AdminTestPassword2026!`, `OperadorTestPassword2026!`, `testpassword123`).
+- **Separation of Template vs Production**: `.env.example` represents an immutable public template; never alter it to store private server configurations or create Git history noise.
+- **Active Cross-Verification**: When asked to verify environment security, agents MUST programmatically compare every secret in `.env` against the Git repository to guarantee zero overlap with published data.
+
+## 6. Decoupled Application Server Catalog Standard (servers.local.json vs servers.defaults.json)
+
+When generating or synchronizing official Supabase connection profiles from the master `.env` file for the frontend application (e.g., login server selectors):
+
+- **Zero Tracked Code Mutation Mandate**: Configuration scripts (such as `configure_official_servers.ts`) MUST NEVER write TypeScript code or overwrite tracked files (`official_servers.ts`). Overwriting tracked files during setup or deploy dirties the git working tree and causes `git pull` merge conflicts on production or testing servers.
+- **Tracked Defaults vs Gitignored Local Overrides**:
+  - `src/data/system/servers.defaults.json`: Canonical server catalog committed to Git, defining baseline configurations for fresh checkouts and CI pipelines.
+  - `src/data/system/servers.local.json`: Machine-local active server configurations generated from `.env` and **strictly ignored in `.gitignore`**.
+  - `src/data/system/servers.local.json.d.ts`: Ambient module declarations allowing TypeScript to compile cleanly even before `servers.local.json` is generated.
+- **Stable Typed Facade (`official_servers.ts`)**: Application code MUST import from the stable facade `official_servers.ts`. The facade dynamically loads `servers.local.json` if present and non-empty, cleanly falling back to `servers.defaults.json` on clean clones.

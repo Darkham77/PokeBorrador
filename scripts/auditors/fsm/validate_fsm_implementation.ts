@@ -4,7 +4,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor } from '@fgp/auditor';
 import { collectFsmFiles } from './_fsmParityParser.ts';
 
 enableCompileCache();
@@ -148,14 +148,15 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
       description: 'Fallas de implementación, idempotencia o asientos en FSM',
       family: 'fsm',
       ruleIds: FSM_IMPLEMENTATION_RULES,
+      packageName: 'FSM',
       ruleDescriptions: {
-        'fsm-mermaid-missing-in-js': 'Estado de FSM Mermaid no implementado en código',
-        'fsm-missing-idempotency-guard': 'Falta guarda de idempotencia en transición',
-        'fsm-missing-seat-rule': 'Falta regla de asiento en resolución de combate',
-        'fsm-missing-level-up-cycle': 'Falta ciclo de subida de nivel en batalla',
-        'fsm-missing-persistence-mode': 'Modo de combate sin persistencia asociada',
-        'fsm-nonexistent-state-reference': 'Referencia a estado inexistente de FSM',
-        'fsm-invalid-suppression': 'Comentario de supresión FSM inválido'
+        'fsm-mermaid-missing-in-js': 'Estado Mermaid no implementado',
+        'fsm-missing-idempotency-guard': 'Falta guarda de idempotencia',
+        'fsm-missing-seat-rule': 'Falta regla de asiento',
+        'fsm-missing-level-up-cycle': 'Falta ciclo de level-up',
+        'fsm-missing-persistence-mode': 'Modo sin persistencia asociada',
+        'fsm-nonexistent-state-reference': 'Referencia a estado inexistente',
+        'fsm-invalid-suppression': 'Supresión inválida'
       },
       requiredFiles: [IMPL_MANUAL_PATH, IMPL_FSM_PATH]
     });

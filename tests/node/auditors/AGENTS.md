@@ -1,6 +1,6 @@
 # Purpose
 
-Unit tests for custom maintenance auditors, static code scanners, and performance validation scripts.
+Unit tests for host-specific extension sub-auditors in Poké Vicio. Unit tests for generic auditor suites reside in `packages/auditor/tests/`.
 
 ## Ownership
 
@@ -8,14 +8,14 @@ Developer Tooling & Codebase Quality Team.
 
 ## Directory Structure & Files
 
-- [validate_audit_headers.test.ts](./validate_audit_headers.test.ts): Unit tests for illegal audit headers & file-level suppressions validator.
-- [auditors_conformance_suite.test.ts](./auditors_conformance_suite.test.ts): Unit tests for component styles, bundle budget, dead CSS, combat invariants, and schema/save parity validators.
-- [validate_o1_data_structures.test.ts](./validate_o1_data_structures.test.ts): Unit tests for O(1) data structure lookups and catalog performance.
-- [validate_test_fragmentation.test.ts](./validate_test_fragmentation.test.ts): Unit tests for test anti-fragmentation validator and 60-line test floor governance.
-- [validate_native_paths.test.ts](./validate_native_paths.test.ts): Unit tests for security and path integrity auditor.
-- [validate_markdown_code_references.test.ts](./validate_markdown_code_references.test.ts): Unit tests for markdown source code, npm scripts, and runtime version reference auditor.
+- [validate_battle_ui_branching.test.ts](./validate_battle_ui_branching.test.ts): Unit tests for battle UI branching auditor.
+- [validate_client_sim_decoupling.test.ts](./validate_client_sim_decoupling.test.ts): Unit tests for client-side `@pkmn/sim` decoupling auditor.
+- [validate_save_persistence_parity.test.ts](./validate_save_persistence_parity.test.ts): Unit tests for Pokémon save persistence serialization/deserialization parity.
 
 ## Local Contracts
 
-- Test pattern detection rules, false-positive prevention, and escape hatch annotations (`// o1-ok: O(1) data structure exception`, `// linear-search-ok: Small bounded collection linear lookup`, `// path-ok`).
-- Ensure all tests run deterministically in Vitest Node environment without external dependencies.
+- **Host Extension Test Completeness**: Every host extension sub-auditor declared in `audit.config.ts` MUST have a dedicated test file in this directory (`tests/node/auditors/<suite_filename>.test.ts`).
+- **100% Declared Rule Coverage**: Dedicated test cases must explicitly trigger and assert every declared rule ID (`untested-auditor-rule` enforcement).
+- **Mandatory Clean Execution Path Verification**: Every test suite MUST include at least one clean verification test asserting zero errors (`expect(result.summary.errors).toBe(0)` and `expect(result.status).toBe('passed')`). Missing clean path checks violate `missing-clean-auditor-test` (severity: error).
+- **Hermetic Test Isolation**: Tests MUST use `testScanFile(...)` combined with `await auditor.finishAudit()` or temporary sandbox directories (`fs.mkdtemp`) via `projectRoot`. Direct calls to `auditor.execute()` that scan the live `src/` directory are strictly forbidden in unit tests.
+- **Deterministic Vitest Execution**: Ensure all tests run deterministically in Vitest Node environment without external dependencies or live database connections.

@@ -385,7 +385,7 @@ describe('PvP Ranked & Elo Suite', () => {
       result,
       deltaElo: result === 'victory' ? 16 : -14,
       turnsCount: 8,
-      timestamp: new Date().toISOString()
+      timestamp: Temporal.Now.instant().toString()
     });
 
     it('appends a match to an empty history', () => {

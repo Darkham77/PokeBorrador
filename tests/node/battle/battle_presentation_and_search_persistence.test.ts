@@ -179,7 +179,7 @@ describe('Active Battle Presentation and Search Persistence', () => {
       wasSearching: true,
       locationId: 'route2',
       over: false,
-      timestamp: Date.now()
+      timestamp: Temporal.Now.instant().epochMilliseconds
     };
 
     await restoreBattleState(mockCtx as BattleContext, savedBattleData);
@@ -232,7 +232,7 @@ describe('Active Battle Presentation and Search Persistence', () => {
       enemyTeam: [rivalMon],
       enemyTeamIndex: 0,
       over: false,
-      timestamp: Date.now()
+      timestamp: Temporal.Now.instant().epochMilliseconds
     };
 
     await restoreBattleState(mockCtx as BattleContext, savedBattleData);

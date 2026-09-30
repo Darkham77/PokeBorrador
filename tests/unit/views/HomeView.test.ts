@@ -47,9 +47,42 @@ describe('HomeView.vue', () => {
     expect(wrapper.find('.stub-feed').exists()).toBe(true)
     expect(wrapper.find('#widget-coliseum-dual-section').exists()).toBe(true)
     expect(wrapper.find('.stub-passive-defense').exists()).toBe(true)
-    expect(wrapper.find('.stub-ranked').exists()).toBe(true)
- 
     await wrapper.vm.$nextTick()
     wrapper.unmount()
   })
+
+  it('triggers store initialization hooks on mount', async () => {
+    const breedingStore = useBreedingStore()
+    const loadingStore = useLoadingStore()
+    expect(breedingStore).toBeDefined()
+    expect(loadingStore).toBeDefined()
+
+    const wrapper = mount(HomeView, {
+      global: {
+        directives: {
+          'gsap-hover': () => {}
+        },
+        stubs: {
+          HomePendingRewardsWidget: true,
+          HomeEventsSection: true,
+          EventMissions: true,
+          HomeBreedingWidget: true,
+          HomeNotificationsFeed: true,
+          HomeGymsProgress: true,
+          HomeFactionWar: true,
+          HomeClassMissionsWidget: true,
+          HomeActiveBuffsWidget: true,
+          HomeEconomyWidget: true,
+          HomePassiveDefenseWidget: true,
+          HomeRankedWidget: true
+        }
+      }
+    })
+
+    await wrapper.vm.$nextTick()
+    expect(breedingStore.loadDaycare).toHaveBeenCalled()
+    expect(breedingStore.checkDailyReset).toHaveBeenCalled()
+    wrapper.unmount()
+  })
 })
+

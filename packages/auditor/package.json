@@ -1,0 +1,24 @@
+{
+  "name": "@fgp/auditor",
+  "version": "1.0.0",
+  "description": "High-performance, generic static analysis and architecture audit engine",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./base": "./src/core/auditorBase.ts",
+    "./config": "./src/core/auditConfig.ts",
+    "./contract": "./src/core/auditContract.ts",
+    "./theme": "./src/core/unifiedTheme.ts",
+    "./plugin": "./src/plugin/defineAuditorExtension.ts"
+  },
+  "bin": {
+    "auditor": "./src/cli/audit_full.ts",
+    "auditor-commit": "./src/cli/audit_for_commit.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "audit": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons src/cli/audit_full.ts"
+  }
+}

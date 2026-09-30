@@ -208,21 +208,6 @@ const handleEggClick = (egg: PokemonEgg) => {
   @include widget-header-actions;
 }
 
-.missions-badge-btn {
-  @include pixelated;
-  font-size: 7px;
-  padding: 4px 8px;
-  background: Rgba(250, 204, 21, 0.15);
-  border: 1px solid Rgba(250, 204, 21, 0.4);
-  border-radius: 4px;
-  color: var(--yellow, #facc15);
-  cursor: pointer;
-
-  &:hover {
-    background: Rgba(250, 204, 21, 0.25);
-  }
-}
-
 .eggs-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

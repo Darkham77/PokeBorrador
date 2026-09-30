@@ -42,5 +42,30 @@ describe('Rewards Debug Simulation Market Listings DB Insertion', () => {
     // Verify claims were inserted into claim_queue
     const claimRows = await queryLocal('SELECT * FROM claim_queue');
     expect(claimRows.length).toBe(2);
+    expect(claimRows[0]?.user_id).toBe('local_seller');
+    expect(claimRows[1]?.user_id).toBe('local_seller');
+  });
+
+  it('verifies that claim rows have valid reward payloads', async () => {
+    const state = {
+      trainer: { name: 'Seller' },
+      claimQueue: []
+    } as unknown as GameState;
+
+    const user: AuthUser = {
+      id: 'local_seller_2',
+      email: 'seller2@test.com'
+    } as AuthUser;
+
+    const router = new DBRouter({ url: 'http://localhost', key: 'mock' }, 'offline', {
+      inMemory: true
+    });
+
+    await injectSimulatedGtsClaimsAndListings(state, router, user, false);
+
+    const rows = await queryLocal('SELECT * FROM market_listings WHERE seller_id = ?', ['local_seller_2']);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows[0]?.seller_id).toBe('local_seller_2');
   });
 });
+

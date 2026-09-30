@@ -198,32 +198,6 @@ onMounted(async () => {
     }
   }
 
-  &.badge-pill {
-    border-color: Rgba($yellow, 0.3);
-    .pill-value, .fa-medal {
-      color: var(--yellow);
-      text-shadow: 0 0 8px Rgba($yellow, 0.4);
-    }
-  }
-
-  &.ball-pill {
-    border-color: Rgba($red, 0.3);
-    .pill-value {
-      color: var(--red);
-      text-shadow: 0 0 8px Rgba($red, 0.4);
-    }
-  }
-
-  &.egg-pill {
-    border-color: Rgba($coin-gold, 0.3);
-    cursor: pointer;
-    &:hover { background: Rgba($white, 0.05); }
-    .pill-value {
-      color: var(--coin-gold);
-      text-shadow: 0 0 8px Rgba($coin-gold, 0.4);
-    }
-  }
-
   &.war-pill {
     border-color: Rgba(239, 68, 68, 0.3);
     .pill-value, .war-icon {
@@ -259,19 +233,5 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.ball-icon-wrap {
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 2px;
-  filter: Drop-Shadow(0 0 4px Rgba($red, 0.4));
-  will-change: filter;
-  
-  img {
-    margin-top: -2px; // Ajuste óptico para centrar la bola
-  }
 }
 </style>

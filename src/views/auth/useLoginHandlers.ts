@@ -7,7 +7,7 @@
 import { type Ref } from 'vue';
 import type { Router } from 'vue-router';
 import { validateAuthLogin, validateAuthRegister, validateTrainerName } from '@/logic/validation/schemas';
-import { OFFICIAL_SERVERS } from '@/data/system/official_servers';
+import { OFFICIAL_SERVERS_BY_ID } from '@/data/system/official_servers';
 import type { useAuthStore } from '@/stores/auth';
 import { logger } from '@/logic/utils/logger';
 
@@ -145,7 +145,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
       return;
     }
 
-    const server = OFFICIAL_SERVERS.find(s => s.id === selectedServerId.value);
+    const server = OFFICIAL_SERVERS_BY_ID[selectedServerId.value];
     if (!server) return;
 
     serverStatus.value = 'checking';

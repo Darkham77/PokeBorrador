@@ -18,7 +18,7 @@ export default async function globalPostgresSetup(): Promise<void> {
       await fetch('http://localhost:5174/');
       await fetch('http://localhost:5174/src/main.ts');
       await fetch('http://localhost:5174/src/views/game/MainGameView.vue');
-    } catch {
+    } catch { // catch-ok: non-blocking pre-warm request failure
       // Non-blocking pre-warm
     }
   }

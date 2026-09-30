@@ -852,7 +852,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           `DELETE FROM game_saves WHERE user_id IN (SELECT id FROM profiles WHERE username = $1);`,
           [this.username]
         );
-      } catch {
+      } catch { // catch-ok: ignore if table does not contain user rows yet
         // Ignorar si la tabla aún no tiene datos del usuario
       }
     }

@@ -3,11 +3,11 @@ import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '../weather/
 import { toID } from '@/logic/utils/strings.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
-import { toPokemonType } from '@/data/battle/types';
-import { isPokemonMoveId, requirePokemonMoveId } from '@/data/battle/moves';
-import { isWeatherId, requireWeatherId } from '../weather/weatherRegistry';
-import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle';
-import { requireVolatileStatusKey } from '@/types/pokemon/pokemon';
+import { toPokemonType } from '@/data/battle/types.ts';
+import { isPokemonMoveId, requirePokemonMoveId } from '@/data/battle/moves.ts';
+import { isWeatherId, requireWeatherId } from '../weather/weatherRegistry.ts';
+import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle.ts';
+import { requireVolatileStatusKey } from '@/types/pokemon/pokemon.ts';
 import { CANONICAL_TERRAINS } from '../constants/gameplay.ts';
 
 const CANONICAL_TERRAINS_SET: ReadonlySet<BattleConditionKey> = new Set<BattleConditionKey>(CANONICAL_TERRAINS);

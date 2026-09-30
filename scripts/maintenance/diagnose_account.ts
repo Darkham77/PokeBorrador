@@ -44,7 +44,7 @@ import { toID } from '../../src/logic/utils/strings.ts';
 import type { GameState } from '../../src/types/system/game.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 
-import type { FindingSeverity } from '../lib/auditContract.ts';
+import type { FindingSeverity } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -528,7 +528,7 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   db.prepare(`
     INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at)
     VALUES (?, ?, ?, ?)
-  `).run(userId, JSON.stringify(saveData), 'diag-test', new Date().toISOString());
+  `).run(userId, JSON.stringify(saveData), 'diag-test', Temporal.Now.instant().toString());
 
   // Ejecutar todas las migraciones oficiales
   db.exec('BEGIN TRANSACTION;');
@@ -542,7 +542,7 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
       if (!sql) continue;
       try {
         db.exec(sql);
-      } catch {
+      } catch { // catch-ok: ignore harmless schema migration replay errors in memory db
         // Ignorar errores benignos de esquema
       }
     }

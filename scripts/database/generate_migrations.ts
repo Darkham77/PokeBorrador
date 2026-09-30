@@ -166,7 +166,7 @@ export const LATEST_MIGRATION_ID = '${latestId}';
       console.log(`📦 [Migrations Generator] ${relOutputDir} está actualizado (${migrations.length} migraciones).`);
       return;
     }
-  } catch {
+  } catch { // catch-ok: the manifest does not exist yet and must be created below
     // The manifest does not exist yet and must be created below.
   }
 

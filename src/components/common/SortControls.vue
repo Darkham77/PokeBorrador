@@ -164,14 +164,5 @@ const setSort = (key: SortKey) => {
     display: block;
     flex-shrink: 0;
   }
-
-  // Coin icon used in BC Shop slot
-  .bc-coin-icon {
-    font-size: 11px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    color: #c084fc;
-  }
 }
 </style>

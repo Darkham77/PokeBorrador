@@ -70,4 +70,18 @@ describe('BattleUiBranchingAuditor', () => {
     scan(auditor, 'src/components/battle/TestControls.vue', suppressedCode);
     expect(auditor.getCountsByRule().get('ui-branching-raw-flag') ?? 0).toBe(0);
   });
+
+  it('reports zero errors on clean code', async () => {
+    const auditor = new BattleUiBranchingAuditor();
+    const cleanCode = `
+      <template>
+        <button :disabled="!battleStore.uiConfig.allowFlee">Huir</button>
+      </template>
+    `;
+    scan(auditor, 'src/components/battle/TestControls.vue', cleanCode);
+    const result = await auditor.finishAudit();
+    expect(result.summary.errors).toBe(0);
+    expect(result.status).toBe('passed');
+  });
 });
+

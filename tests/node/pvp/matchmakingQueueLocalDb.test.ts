@@ -24,13 +24,13 @@ describe('Local Ranked Matchmaking Queue Parity', () => {
     expect(() => {
       dbSync.exec(`
         INSERT OR REPLACE INTO ranked_queue (user_id, elo, looking_since)
-        VALUES ('local_ash', 1000, '${new Date().toISOString()}')
+        VALUES ('local_ash', 1000, '${Temporal.Now.instant().toString()}')
       `)
     }).toThrow(/no column named looking_since/)
   })
 
   it('succeeds when inserting valid schema columns (user_id, elo, status, created_at) into ranked_queue', () => {
-    const now = new Date().toISOString()
+    const now = Temporal.Now.instant().toString()
     expect(() => {
       dbSync.exec(`
         INSERT OR REPLACE INTO ranked_queue (user_id, elo, status, created_at)

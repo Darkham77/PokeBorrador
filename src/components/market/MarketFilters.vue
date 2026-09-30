@@ -300,17 +300,6 @@ const resetFilters = () => {
   border-color: var(--blue);
 }
 
-.filters-drawer {
-  background: Rgba(0, 0, 0, 0.2);
-  border: 1px solid Rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
 .filter-body {
   border-top: 1px solid Rgba(255, 255, 255, 0.06);
   padding-top: 14px;
@@ -354,11 +343,6 @@ const resetFilters = () => {
   font-size: 10px;
   color: var(--gray);
   margin-bottom: 8px;
-}
-
-.sub-label {
-  font-size: 8px;
-  color: var(--gray);
 }
 
 .tags-grid, .tags-row {

@@ -31,4 +31,31 @@ describe('trainerFactory - buildTrainerTeam', () => {
     }
     expect((team[0] as unknown as ExtendedPokemon)._revealed).toBe(true)
   })
+
+  it('should generate a team where all members have the specified level', async () => {
+    const team = await buildTrainerTeam(['pidgey'], 25, 4)
+    expect(team.length).toBe(4)
+    for (const mon of team) {
+      expect(mon.level).toBe(25)
+      expect(mon.id).toBe('pidgey')
+    }
+  })
+
+  it('should select members strictly from the provided species pool', async () => {
+    const allowedPool = ['pidgey', 'rattata'] as const
+    const team = await buildTrainerTeam(allowedPool, 5, 5)
+    expect(team.length).toBe(5)
+    for (const mon of team) {
+      expect(allowedPool).toContain(mon.id)
+    }
+  })
+
+  it('should handle single pokemon species pool without crash', async () => {
+    const team = await buildTrainerTeam(['rattata'] as const, 12, 2)
+    expect(team.length).toBe(2)
+    expect(team[0]?.id).toBe('rattata')
+    expect(team[1]?.id).toBe('rattata')
+  })
 })
+
+

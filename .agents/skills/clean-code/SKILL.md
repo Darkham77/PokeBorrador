@@ -56,7 +56,7 @@ priority: CRITICAL
 | **Guard Clauses** | Early returns for edge cases |
 | **Flat > Nested** | Avoid deep nesting (max 2 levels) |
 | **Composition** | Small functions composed together |
-| **Modularity** | **Fallow Quality Governance**: Keep functions concise (≤ 60 LOC), maintain low cognitive and cyclomatic complexity, and follow Fallow refactoring targets. Modularize based on Single Responsibility, eliminating arbitrary file line limits. |
+| **Modularity** | **Fallow Quality Governance**: Maintain low cognitive (≤ 20) and cyclomatic (≤ 25) complexity, and follow Fallow refactoring targets. Modularize based on Single Responsibility and cognitive load, eliminating arbitrary line limits. |
 | **Colocation** | Keep related code close |
 | **Layout Centering** | Use `display: flex` + `justify-content` + `align-items` for centering. Avoid `position: absolute` with `translate(-50%, -50%)` as it creates sub-pixel blurring and breaks layout flow. |
 | **Stable Sorting** | When using `Array.prototype.sort()`, ensure the comparison function returns stable and predictable values (1, -1, 0). Use a unique identifier (like `uid`) as a final tie-breaker. ALWAYS filter out null/undefined slots BEFORE sorting to prevent runtime type errors. |
@@ -180,8 +180,8 @@ File to edit: UserService.ts
 | **Any agent** | Lint & Fast Types | `npm run lint` (runs `npm run audit:lint` executing 10 core sub-auditors in parallel) |
 | **Any agent** | Unified Global Audit | `npm run audit` (Terminal summary + full JSON in `scratch/audits/latest_audit.json`) |
 
-> ❌ **WRONG:** Running unapproved raw scripts, nonexistent paths, or python commands
-> ✅ **CORRECT:** Running native TypeScript auditors or official NPM scripts declared in `package.json`
+> ❌ **WRONG:** Running unapproved raw scripts, nonexistent paths, or executing `npm run audit:for-commit` in routine checks (it is strictly reserved for `/safe-commit`)
+> ✅ **CORRECT:** Running native TypeScript auditors or official NPM scripts declared in `package.json` (`npm run lint` for fast checks, `npm run audit` + `npm run test` for full verification)
 
 ---
 

@@ -98,7 +98,7 @@ describe('Fix Legacy expNeeded and Egg IDs Migration Test', () => {
       'mock_user_1',
       JSON.stringify(mockSaveData),
       'save_1',
-      new Date().toISOString()
+      Temporal.Now.instant().toString()
     );
 
     // Apply migrations

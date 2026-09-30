@@ -7,6 +7,8 @@ description: MANDATORY safeguard for repository operations. You MUST trigger and
 
 > [!IMPORTANT]
 > **PROMPT-DRIVEN TRIGGER ONLY**: Activate when the user explicitly requests a commit or push. Do NOT activate for automatic agent-internal saves or background operations.
+>
+> **EXCLUSIVE WORKFLOW BOUNDARY (`npm run audit:for-commit`)**: The command `npm run audit:for-commit` belongs STRICTLY AND EXCLUSIVELY to this `/safe-commit` workflow. Agents MUST NEVER execute `npm run audit:for-commit` during routine feature development, bug fixes, or regular verification turns outside of `/safe-commit`. Running it right after `npm run audit` in normal tasks is redundant and strictly prohibited.
 
 ---
 

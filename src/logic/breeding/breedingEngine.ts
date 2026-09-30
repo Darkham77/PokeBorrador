@@ -34,8 +34,8 @@ export { getFirstEvolution };
  * Determina qué especie nacerá de un huevo.
  * Considera si la forma base tiene una forma "Bebé".
  */
-export function getEggSpecies(motherId: string): PokemonSpeciesId {
-  const cleanId = toID(motherId);
+export function getEggSpecies(motherSpeciesId: PokemonSpeciesId): PokemonSpeciesId {
+  const cleanId = toID(motherSpeciesId);
   if (BABY_MAP[cleanId]) {
     return requirePokemonSpeciesId(BABY_MAP[cleanId]);
   }

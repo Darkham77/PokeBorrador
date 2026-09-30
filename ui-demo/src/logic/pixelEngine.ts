@@ -175,6 +175,72 @@ function applyPolygonVars(prefix: string, polygons: PolygonPaths): void {
   document.documentElement.style.setProperty(`--clip-${prefix}`, `polygon(${polygons.outerPath})`);
 }
 
+function applyBresenhamCurves(pixelSize: number): Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', PolygonPaths> {
+  const curves = {
+    xs: getPixelFramePolygons(RADIUS_XS, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    sm: getPixelFramePolygons(RADIUS_SM, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    md: getPixelFramePolygons(RADIUS_MD, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    lg: getPixelFramePolygons(RADIUS_LG, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    xl: getPixelFramePolygons(RADIUS_XL, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    xxl: getPixelFramePolygons(RADIUS_XXL, pixelSize, DEFAULT_FRAME_BORDER_WIDTH)
+  };
+  applyPolygonVars('curve-xs', curves.xs);
+  applyPolygonVars('curve-sm', curves.sm);
+  applyPolygonVars('curve-md', curves.md);
+  applyPolygonVars('curve-lg', curves.lg);
+  applyPolygonVars('curve-xl', curves.xl);
+  applyPolygonVars('curve-xxl', curves.xxl);
+  return curves;
+}
+
+function applyChamferCurves(pixelSize: number): Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', PolygonPaths> {
+  const chamfers = {
+    xs: getChamferFramePolygons(RADIUS_XS, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    sm: getChamferFramePolygons(RADIUS_SM, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    md: getChamferFramePolygons(RADIUS_MD, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    lg: getChamferFramePolygons(RADIUS_LG, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
+    xl: getChamferFramePolygons(RADIUS_XL, pixelSize, DEFAULT_FRAME_BORDER_WIDTH)
+  };
+  applyPolygonVars('chamfer-xs', chamfers.xs);
+  applyPolygonVars('chamfer-sm', chamfers.sm);
+  applyPolygonVars('chamfer-md', chamfers.md);
+  applyPolygonVars('chamfer-lg', chamfers.lg);
+  applyPolygonVars('chamfer-xl', chamfers.xl);
+  return chamfers;
+}
+
+function applySemanticPolygons(
+  model: CornerModelId,
+  curves: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', PolygonPaths>,
+  chamfers: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', PolygonPaths>
+): void {
+  if (model === 'chamfer') {
+    applyPolygonVars('pill', chamfers.xs);
+    applyPolygonVars('control', chamfers.sm);
+    applyPolygonVars('btn', chamfers.sm);
+    applyPolygonVars('panel', chamfers.md);
+    applyPolygonVars('card', chamfers.md);
+    applyPolygonVars('modal', chamfers.lg);
+    return;
+  }
+  if (model === 'wide') {
+    applyPolygonVars('pill', curves.xs);
+    applyPolygonVars('control', curves.md);
+    applyPolygonVars('btn', curves.sm);
+    applyPolygonVars('panel', curves.lg);
+    applyPolygonVars('card', curves.xl);
+    applyPolygonVars('modal', curves.xxl);
+    return;
+  }
+  // bresenham (canónico)
+  applyPolygonVars('pill', curves.xs);
+  applyPolygonVars('control', curves.sm);
+  applyPolygonVars('btn', curves.sm);
+  applyPolygonVars('panel', curves.md);
+  applyPolygonVars('card', curves.lg);
+  applyPolygonVars('modal', curves.xl);
+}
+
 export function updatePixelScale(pixelSize: number, model: CornerModelId = pixelState.model): void {
   if (typeof document === 'undefined') return;
 
@@ -183,58 +249,9 @@ export function updatePixelScale(pixelSize: number, model: CornerModelId = pixel
 
   document.documentElement.style.setProperty('--s', `${pixelSize}px`);
 
-  // 1. Curvas Bresenham Escalonadas (Píxeles escalonados circulares)
-  const lXs = getPixelFramePolygons(RADIUS_XS, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const lSm = getPixelFramePolygons(RADIUS_SM, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const lMd = getPixelFramePolygons(RADIUS_MD, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const lLg = getPixelFramePolygons(RADIUS_LG, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const lXl = getPixelFramePolygons(RADIUS_XL, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const lXxl = getPixelFramePolygons(RADIUS_XXL, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-
-  applyPolygonVars('curve-xs', lXs);
-  applyPolygonVars('curve-sm', lSm);
-  applyPolygonVars('curve-md', lMd);
-  applyPolygonVars('curve-lg', lLg);
-  applyPolygonVars('curve-xl', lXl);
-  applyPolygonVars('curve-xxl', lXxl);
-
-  // 2. Chaflanes Rectos 45° (Notch lineal diagonal)
-  const chXs = getChamferFramePolygons(RADIUS_XS, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const chSm = getChamferFramePolygons(RADIUS_SM, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const chMd = getChamferFramePolygons(RADIUS_MD, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const chLg = getChamferFramePolygons(RADIUS_LG, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-  const chXl = getChamferFramePolygons(RADIUS_XL, pixelSize, DEFAULT_FRAME_BORDER_WIDTH);
-
-  applyPolygonVars('chamfer-xs', chXs);
-  applyPolygonVars('chamfer-sm', chSm);
-  applyPolygonVars('chamfer-md', chMd);
-  applyPolygonVars('chamfer-lg', chLg);
-  applyPolygonVars('chamfer-xl', chXl);
-
-  // 3. Asignación Semántica según Modelo Seleccionado
-  if (model === 'chamfer') {
-    applyPolygonVars('pill', chXs);
-    applyPolygonVars('control', chSm);
-    applyPolygonVars('btn', chSm);
-    applyPolygonVars('panel', chMd);
-    applyPolygonVars('card', chMd);
-    applyPolygonVars('modal', chLg);
-  } else if (model === 'wide') {
-    applyPolygonVars('pill', lXs);
-    applyPolygonVars('control', lMd);
-    applyPolygonVars('btn', lSm);
-    applyPolygonVars('panel', lLg);
-    applyPolygonVars('card', lXl);
-    applyPolygonVars('modal', lXxl);
-  } else {
-    // bresenham (canónico)
-    applyPolygonVars('pill', lXs);
-    applyPolygonVars('control', lSm);
-    applyPolygonVars('btn', lSm);
-    applyPolygonVars('panel', lMd);
-    applyPolygonVars('card', lLg);
-    applyPolygonVars('modal', lXl);
-  }
+  const curves = applyBresenhamCurves(pixelSize);
+  const chamfers = applyChamferCurves(pixelSize);
+  applySemanticPolygons(model, curves, chamfers);
 }
 
 export function setCornerModel(model: CornerModelId): void {

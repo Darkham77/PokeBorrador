@@ -25,10 +25,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import {
-  BaseAuditor
-} from '../../lib/auditorBase.ts';
+import { BaseAuditor } from '@fgp/auditor';
 import { ENABLED_POKEMON_IDS_SET } from '../../../src/data/system/constants.ts';
+import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
+import { GYMS, type Gym } from '../../../src/data/world/gyms.ts';
+import type { MapLocation } from '../../../src/types/pokemon/encounters.ts';
 
 enableCompileCache();
 
@@ -46,23 +47,6 @@ export const SPAWN_WHITELIST_RULES: readonly SpawnWhitelistRuleId[] = [
 const MAPS_FILE_PATH = 'src/data/world/maps.ts';
 const GYMS_FILE_PATH = 'src/data/world/gyms.ts';
 const GYM_REMATCHES_FILE_PATH = 'src/data/world/gymRematches.ts';
-
-interface RawMapLocation {
-  id: string;
-  name: string;
-  wild?: Record<string, string[]>;
-  rates?: Record<string, number[]>;
-  lv?: [number, number];
-  weather?: Record<string, { visitors?: Record<string, number>; fishingVisitors?: Record<string, number> }>;
-}
-
-interface RawGym {
-  id: string;
-  name: string;
-  pokemon: string[];
-  levels: number[];
-  difficulties?: Record<string, { pokemon: string[]; levels: number[] }>;
-}
 
 export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
   constructor() {
@@ -104,15 +88,16 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
           context: `"id": "${map.id}"`
         });
       } else {
-        const [minLv, maxLv] = map.lv;
-        if (minLv < 1 || maxLv > 100 || minLv > maxLv) {
+        const minLv = map.lv[0];
+        const maxLv = map.lv[1];
+        if (minLv === undefined || maxLv === undefined || minLv < 1 || maxLv > 100 || minLv > maxLv) {
           this.addViolation({
             ruleId: 'spawns-level-range-integrity',
             severity: 'error',
             file: MAPS_FILE_PATH,
             line: mapLine,
-            message: `Map '${map.id}' has invalid level range [${minLv}, ${maxLv}]. Must satisfy 1 <= min <= max <= 100.`,
-            context: `"id": "${map.id}", "lv": [${minLv}, ${maxLv}]`
+            message: `Map '${map.id}' has invalid level range [${minLv ?? 'undefined'}, ${maxLv ?? 'undefined'}]. Must satisfy 1 <= min <= max <= 100.`,
+            context: `"id": "${map.id}", "lv": [${minLv ?? 'undefined'}, ${maxLv ?? 'undefined'}]`
           });
         }
       }
@@ -286,21 +271,10 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     this.context.setMetric('Gyms Scanned', gyms.length);
   }
 
-  private parseMaps(): { maps: RawMapLocation[]; lineMap: Map<string, number> } {
+  private parseMaps(): { maps: readonly MapLocation[]; lineMap: Map<string, number> } {
     const fullPath = path.resolve(this.projectRoot, MAPS_FILE_PATH);
     const content = fs.readFileSync(fullPath, 'utf-8');
 
-    const startToken = 'export const MAP_LOCATIONS: MapLocation[] = [';
-    const startIndex = content.indexOf(startToken);
-    if (startIndex === -1) return { maps: [], lineMap: new Map() };
-
-    const arrayStart = startIndex + startToken.length - 1;
-    const arrayEnd = content.lastIndexOf('];');
-    if (arrayEnd === -1) return { maps: [], lineMap: new Map() };
-
-    const jsStr = content.substring(arrayStart, arrayEnd + 1);
-
-    const maps = new Function('return ' + jsStr)() as RawMapLocation[];
     const lines = content.split('\n');
     const lineMap = new Map<string, number>();
 
@@ -313,19 +287,11 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
       }
     }
 
-    return { maps, lineMap };
+    return { maps: FIRE_RED_MAPS, lineMap };
   }
 
-  private parseGyms(): RawGym[] {
-    const fullPath = path.resolve(this.projectRoot, GYMS_FILE_PATH);
-    const content = fs.readFileSync(fullPath, 'utf-8');
-
-    const startToken = 'export const GYMS = [';
-    const start = content.indexOf(startToken) + 'export const GYMS = '.length;
-    const end = content.indexOf('] as const satisfies', start);
-    const jsStr = content.slice(start, end + 1);
-
-    return new Function('return ' + jsStr)() as RawGym[];
+  private parseGyms(): readonly Gym[] {
+    return GYMS;
   }
 }
 

@@ -1,6 +1,10 @@
 # Script de Inicializacion y Preparacion de Entorno para Windows (Poke Vicio)
 # Configura NVM, Node.js, npm de forma determinista y resiliente.
 
+param(
+    [switch]$UpdateVersion
+)
+
 $ErrorActionPreference = "Stop"
 
 # Forzar codificacion UTF-8 en consola de Windows
@@ -33,32 +37,53 @@ function Refresh-ProcessEnvironment {
 # 1. Recargar variables de entorno iniciales
 Refresh-ProcessEnvironment
 
-# 2. Consultar dinamicamente la ultima version Current estable de Node.js desde nodejs.org
+# 2. Determinar version de Node.js requerida
 $pkgPath = Join-Path $PSScriptRoot "package.json"
+$nvmrcPath = Join-Path $PSScriptRoot ".nvmrc"
+
 if (-not (Test-Path $pkgPath)) {
     Write-Host "[ERROR] No se encontro package.json en $pkgPath" -ForegroundColor Red
     exit 1
 }
 
 $targetNodeVer = ""
-Write-Host "[NODE] Consultando la ultima version Current estable de Node.js en nodejs.org..." -ForegroundColor Cyan
-try {
-    $nodeDist = Invoke-RestMethod -Uri "https://nodejs.org/dist/index.json" -TimeoutSec 10 -ErrorAction Stop
-    foreach ($item in $nodeDist) {
-        # Filtrar versiones estables puras (sin tags -alpha, -beta, -rc)
-        if ($item.version -match '^v?(\d+\.\d+\.\d+)$') {
-            $targetNodeVer = $Matches[1]
-            break
+
+# Solo consultar nodejs.org y actualizar package.json/.nvmrc si se especifica -UpdateVersion
+if ($UpdateVersion) {
+    Write-Host "[NODE] Consultando la ultima version Current estable de Node.js en nodejs.org..." -ForegroundColor Cyan
+    try {
+        $nodeDist = Invoke-RestMethod -Uri "https://nodejs.org/dist/index.json" -TimeoutSec 10 -ErrorAction Stop
+        foreach ($item in $nodeDist) {
+            # Filtrar versiones estables puras (sin tags -alpha, -beta, -rc)
+            if ($item.version -match '^v?(\d+\.\d+\.\d+)$') {
+                $targetNodeVer = $Matches[1]
+                break
+            }
         }
+        if ($targetNodeVer) {
+            $expectedNodeEngine = ">=$targetNodeVer"
+            $pkgRaw = Get-Content -Raw -Path $pkgPath
+            $pkgUpdated = $pkgRaw -replace '("node":\s*")[^"]*(")', "`$1$expectedNodeEngine`$2"
+            [System.IO.File]::WriteAllText($pkgPath, $pkgUpdated, (New-Object System.Text.UTF8Encoding $false))
+            [System.IO.File]::WriteAllText($nvmrcPath, $targetNodeVer, (New-Object System.Text.UTF8Encoding $false))
+            Write-Host "[CONFIG] Sincronizado package.json y .nvmrc con v$targetNodeVer" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "  [WARN] No se pudo consultar la API de nodejs.org: $_. Usando definicion local de .nvmrc / package.json..." -ForegroundColor Yellow
     }
-} catch {
-    Write-Host "  [WARN] No se pudo consultar la API de nodejs.org: $_. Usando definicion local de package.json..." -ForegroundColor Yellow
 }
 
-$pkgContent = Get-Content -Raw -Path $pkgPath | ConvertFrom-Json
+# Por defecto: leer la version canonica de .nvmrc (sin ensuciar git al desplegar o ejecutar setup)
+if (-not $targetNodeVer -and (Test-Path $nvmrcPath)) {
+    $rawNvmrc = (Get-Content -Raw -Path $nvmrcPath).Trim() -replace '^v', ''
+    if ($rawNvmrc) {
+        $targetNodeVer = $rawNvmrc
+    }
+}
 
-# Fallback a package.json si no hubo conexion
+# Fallback a package.json si no existe .nvmrc
 if (-not $targetNodeVer) {
+    $pkgContent = Get-Content -Raw -Path $pkgPath | ConvertFrom-Json
     if ($pkgContent.engines -and $pkgContent.engines.node) {
         $targetNodeVer = $pkgContent.engines.node -replace '[^0-9.]', ''
     }
@@ -68,18 +93,6 @@ if (-not $targetNodeVer) {
     Write-Host "[ERROR] No se pudo determinar la version de Node.js a instalar." -ForegroundColor Red
     exit 1
 }
-
-# 3. Sincronizar automaticamente package.json y .nvmrc con la version detectada
-$expectedNodeEngine = ">=$targetNodeVer"
-if (-not $pkgContent.engines -or $pkgContent.engines.node -ne $expectedNodeEngine) {
-    Write-Host "[CONFIG] Sincronizando package.json ('engines.node' = '$expectedNodeEngine')..." -ForegroundColor Cyan
-    $pkgRaw = Get-Content -Raw -Path $pkgPath
-    $pkgUpdated = $pkgRaw -replace '("node":\s*")[^"]*(")', "`$1$expectedNodeEngine`$2"
-    [System.IO.File]::WriteAllText($pkgPath, $pkgUpdated, (New-Object System.Text.UTF8Encoding $false))
-}
-
-# Sincronizar automaticamente .nvmrc
-$targetNodeVer.Trim() | Set-Content -Path (Join-Path $PSScriptRoot ".nvmrc") -Encoding ASCII -NoNewline
 
 Write-Host "======================================================" -ForegroundColor Cyan
 Write-Host " [SETUP] PREPARACION DE ENTORNO NODE (v$targetNodeVer) (WINDOWS)" -ForegroundColor Cyan
@@ -292,6 +305,14 @@ if (Test-Path -Path $appDataNpmCache) {
     Remove-Item -Recurse -Force $appDataNpmCache -ErrorAction SilentlyContinue
 }
 
+# Sincronizar configuraciones locales desde plantillas si no existen (sin pisar existentes ni ensuciar git)
+$localServersJson = Join-Path $PSScriptRoot "src\data\system\servers.local.json"
+$defaultServersJson = Join-Path $PSScriptRoot "src\data\system\servers.defaults.json"
+if (-not (Test-Path $localServersJson) -and (Test-Path $defaultServersJson)) {
+    Write-Host "[CONFIG] Inicializando src\data\system\servers.local.json desde plantilla..." -ForegroundColor Cyan
+    Copy-Item $defaultServersJson $localServersJson
+}
+
 # 10. Instalar dependencias limpias del proyecto
 Write-Host ""
 Write-Host "[DEPENDENCIES] Instalando dependencias del proyecto con npm ci..." -ForegroundColor Cyan
@@ -309,9 +330,6 @@ if (Test-Path $nodeModulesDir) {
 # 12. Validar y compilar herramientas nativas auxiliares
 Write-Host ""
 Write-Host "[BUILD-TOOLS] Compilando y verificando herramientas nativas auxiliares..." -ForegroundColor Cyan
-try {
-    npm run postinstall --ignore-scripts=false
-} catch {}
 npm run validate:tools
 
 Write-Host ""

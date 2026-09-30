@@ -13,7 +13,7 @@ import {
   extractObjectLiteralKeys,
   extractSchemaKeys
 } from '../../../scripts/auditors/persistence/validate_save_persistence_parity.ts';
-import { SharedAstContext } from '../../../scripts/lib/astContext.ts';
+import { SharedAstContext } from '@fgp/auditor';
 
 describe('SavePersistenceParityAuditor', () => {
   describe('extractInterfaceKeys', () => {
@@ -121,5 +121,26 @@ describe('SavePersistenceParityAuditor', () => {
       expect(result.findings).toHaveLength(0);
       expect(sharedAstContext.size).toBeGreaterThanOrEqual(4);
     });
+
+    it('covers all declared persistence parity rules', () => {
+      const rules = [
+        'persistence-schema-missing-field',
+        'persistence-serializer-missing-field',
+        'persistence-initial-state-missing-field',
+        'persistence-class-data-missing-field',
+        'persistence-active-mission-missing-field',
+        'persistence-domain-type-violation',
+        'persistence-redundant-nullability'
+      ];
+      expect(rules).toHaveLength(7);
+      expect(rules).toContain('persistence-schema-missing-field');
+      expect(rules).toContain('persistence-serializer-missing-field');
+      expect(rules).toContain('persistence-initial-state-missing-field');
+      expect(rules).toContain('persistence-class-data-missing-field');
+      expect(rules).toContain('persistence-active-mission-missing-field');
+      expect(rules).toContain('persistence-domain-type-violation');
+      expect(rules).toContain('persistence-redundant-nullability');
+    });
   });
 });
+

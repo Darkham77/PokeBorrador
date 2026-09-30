@@ -69,13 +69,30 @@ To ensure cross-compatibility and easy navigation within development environment
 
 ### Clickable File Links
 
-- Always use standard markdown link syntax with relative paths: `[link text](./relative/path/to/file)` or `[link text](../path/to/file)`.
-- For specific line ranges, append the line anchor: `[link text](./relative/path/to/file#L123-L145)`.
+- Always use standard markdown link syntax with relative paths:
+
+```markdown
+[link text](./relative/path/to/file)
+[link text](../path/to/file)
+```
+
+- For specific line ranges, append the line anchor:
+
+```markdown
+[link text](./relative/path/to/file#L123-L145)
+```
+
 - **Absolute Paths Prohibited**: Do NOT use absolute file paths or `file:///` URLs in documentation files (`.md` / `AGENTS.md`) to maintain portability across platforms.
 
 ### Embedding Media
 
-- To embed images and videos, you **MUST** use the image syntax: `![caption](/absolute/path/to/file.jpg)`. Standard links will not display the media inline.
+- To embed images and videos, you **MUST** use the image syntax:
+
+```markdown
+![caption](./relative/path/to/file.jpg)
+```
+
+Standard links will not display the media inline.
 - Provide a brief, descriptive caption.
 - **Artifact Sandbox**: If you are embedding a file in an artifact or markdown file and it is not already in the designated assets/artifacts folder, you **MUST** first copy it to the local media directory before referencing it.
 

@@ -265,10 +265,6 @@ function handleCardClick() {
 <style scoped lang="scss">
 @use "@/styles/components/pokemon-display-card" as *;
 
-.tot-badge {
-  margin-left: 8px;
-}
-
 .pokemon-illegal-danger-badge {
   display: flex;
   flex-direction: column;

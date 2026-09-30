@@ -33,3 +33,6 @@ tsconfig.tsbuildinfo
 
 # Vitest transform cache (both unit and node runners)
 .vitest-cache/
+
+# Local server profile configurations (environment-specific overrides)
+src/data/system/servers.local.json

@@ -11,7 +11,7 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import sharp from 'sharp';
 
-import { safeResolve, safeWriteFile, safeFetch } from '../lib/safePath.ts';
+import { safeResolve, safeWriteFile, safeFetch } from '@fgp/auditor';
 
 enableCompileCache();
 

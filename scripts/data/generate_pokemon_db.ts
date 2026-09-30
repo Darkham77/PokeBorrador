@@ -180,7 +180,7 @@ export async function generatePokemonDatabase(): Promise<void> {
       console.log(`📦 [PokemonDB Generator] ${relPath} está actualizado.`);
       return;
     }
-  } catch {
+  } catch { // catch-ok: file does not exist yet, proceed with writing
     // File doesn't exist yet, proceed with writing
   }
 

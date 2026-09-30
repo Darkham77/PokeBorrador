@@ -4,7 +4,7 @@ import path from 'node:path';
 import {
   scanFileForO1Issues,
   P_JSON_CLONE
-} from '../../../scripts/auditors/domain_data/validate_o1_data_structures.ts';
+} from '@/../packages/auditor/src/suites/domain_data/validate_o1_data_structures.ts';
 
 describe('validate_o1_data_structures - o1-json-clone rule', () => {
   it('detects JSON.parse(JSON.stringify(...)) as a strict error', () => {

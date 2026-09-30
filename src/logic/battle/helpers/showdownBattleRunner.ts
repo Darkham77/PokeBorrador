@@ -2,6 +2,7 @@ import type { SideID } from '@pkmn/sim';
 import { ChoiceRequest, requiresAction } from './requestHelper.ts';
 import { isCertifiedBattleGameAction, type CertifiedBattleGameAction } from '../../../types/battle/certifiedBattleActions.ts';
 import { REPLAY_SEATS, isReplaySeat } from './showdownSeats.ts';
+import type { PokemonMoveId } from '@/data/battle/moves.ts';
 
 export { REPLAY_SEATS };
 
@@ -13,12 +14,12 @@ export interface CertifiedReplayHistoryEntry {
   p1GameAction?: CertifiedBattleGameAction;
   p1ActiveUid?: string;
   p2ActiveUid?: string;
-  p1MoveId?: string;
-  p2MoveId?: string;
+  p1MoveId?: PokemonMoveId;
+  p2MoveId?: PokemonMoveId;
   p1MovePp?: number;
   p2MovePp?: number;
-  p1LockedMoveId?: string;
-  p2LockedMoveId?: string;
+  p1LockedMoveId?: PokemonMoveId;
+  p2LockedMoveId?: PokemonMoveId;
   p1Trapped?: boolean;
   p2Trapped?: boolean;
   p1Volatiles?: string[]; // no-domain: Non-domain utility collection or data structure

@@ -130,7 +130,7 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
           weight: 10,
           displayValue: '180 IVs'
         },
-        submitted_at: new Date().toISOString()
+        submitted_at: Temporal.Now.instant().toString()
       };
 
       const res = await client.from('competition_entries').upsert(entryData, {

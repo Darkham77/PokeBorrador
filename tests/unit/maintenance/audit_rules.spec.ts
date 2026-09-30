@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import {
   manualTimersFrontend,
-  zeroTimerBattleLogic,
+  zeroTimerCalculationLogic as zeroTimerBattleLogic,
   noPlaywrightWaitForTimeout,
   forbiddenFallbacks,
   sassTraps,
   normalizeFilePath,
   noDomainIdFallbacks,
   noLayoutAnimationInGsap
-} from '@/../scripts/maintenance/audit_rules.ts'
+} from '@/../packages/auditor/src/suites/architecture/audit_rules.ts'
 
 describe('audit_rules.ts - Zero-Timer & Anti-Pattern Rules', () => {
   const matchRule = (rule: { regex: RegExp }, code: string) => {

@@ -117,21 +117,6 @@ onUnmounted(() => {
   padding: 10px;
 }
 
-.pwa-icon-large {
-  width: 100px;
-  height: 100px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
-  border: 2px solid var(--yellow);
-  
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
 .pwa-description {
   color: white;
   font-size: 14px;

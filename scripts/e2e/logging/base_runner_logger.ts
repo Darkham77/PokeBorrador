@@ -6,15 +6,8 @@ export interface LoggerOptions {
   readonly reportDir?: string;
 }
 
-export function formatExecutionTimestamp(date: Date = new Date()): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+export function formatExecutionTimestamp(instant: Temporal.Instant = Temporal.Now.instant()): string {
+  return instant.toString().replace('T', ' ').slice(0, 19);
 }
 
 export abstract class BaseRunnerLogger {
@@ -51,7 +44,7 @@ export abstract class BaseRunnerLogger {
 
   /** Escribe logs de progreso de alto nivel en consola y almacena en el buffer en memoria */
   public progress(message: string): void {
-    const formatted = `[${new Date().toISOString()}] [PROGRESS] ${message}`;
+    const formatted = `[${Temporal.Now.instant().toString()}] [PROGRESS] ${message}`;
     this.originalConsoleLog.call(console, message);
     this.writeToFile(formatted);
   }
@@ -74,20 +67,20 @@ export abstract class BaseRunnerLogger {
 
   /** Escribe logs ruidosos de depuración exclusivamente en el buffer en memoria */
   public debug(message: string): void {
-    const formatted = `[${new Date().toISOString()}] [DEBUG] ${message}`;
+    const formatted = `[${Temporal.Now.instant().toString()}] [DEBUG] ${message}`;
     this.writeToFile(formatted);
   }
 
   /** Escribe advertencias en consola y almacena en buffer en memoria */
   public warn(message: string): void {
-    const formatted = `[${new Date().toISOString()}] [WARN] ${message}`;
+    const formatted = `[${Temporal.Now.instant().toString()}] [WARN] ${message}`;
     this.originalConsoleWarn.call(console, message);
     this.writeToFile(formatted);
   }
 
   /** Escribe errores en consola y almacena en buffer en memoria */
   public error(message: string): void {
-    const formatted = `[${new Date().toISOString()}] [ERROR] ${message}`;
+    const formatted = `[${Temporal.Now.instant().toString()}] [ERROR] ${message}`;
     this.originalConsoleError.call(console, message);
     this.writeToFile(formatted);
   }
@@ -106,7 +99,7 @@ export abstract class BaseRunnerLogger {
     const blockLines: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (blockHeader) {
       blockLines.push(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      blockLines.push(`[${new Date().toISOString()}] LOG BLOCK: ${blockHeader}`);
+      blockLines.push(`[${Temporal.Now.instant().toString()}] LOG BLOCK: ${blockHeader}`);
       blockLines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
     }
     for (const line of this.memoryBuffer) {

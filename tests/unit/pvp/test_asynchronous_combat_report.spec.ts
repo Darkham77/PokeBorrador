@@ -52,4 +52,43 @@ describe('Asynchronous Combat Report Recording', () => {
     expect(rpcCalled).toBe(true)
     expect(rpcParams.p_defender_id).toBe('sim-offline-rival-id')
   })
+
+  it('does not record passive battle result when isAsynchronous is false or undefined', async () => {
+    const livePvP = useLivePvPStore()
+    const gameStore = useGameStore()
+    const authStore = useAuthStore()
+
+    authStore.user = { id: 'usr-attacker-live', user_metadata: { username: 'AttackerLive' } } as any
+    gameStore.state.trainer = 'AttackerLive'
+
+    let rpcCalled = false
+    gameStore.db = {
+      from: vi.fn().mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null })
+        })
+      }),
+      rpc: vi.fn().mockImplementation((name: string) => {
+        if (name === 'record_passive_battle_result') {
+          rpcCalled = true
+        }
+        return Promise.resolve({ data: { ok: true }, error: null })
+      })
+    } as any
+
+    livePvP.battleState.active = true
+    livePvP.battleState.isRanked = true
+    livePvP.battleState.opponentId = 'live-rival-id'
+    livePvP.battleState.config = {
+      format: '3v3',
+      levelRule: 'flat50',
+      arena: { gymId: 'celadon' },
+      mode: 'ranked',
+      isAsynchronous: false
+    }
+
+    await (livePvP as any).endBattle(true, 'Victoria')
+    expect(rpcCalled).toBe(false)
+  })
 })
+

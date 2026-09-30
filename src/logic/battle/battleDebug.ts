@@ -553,7 +553,7 @@ export function setupBattleDebug(ctx: BattleContext) {
 
       const cleanup = () => {
         if (unwatch) unwatch()
-        if (timer) clearTimeout(timer)
+        if (timer) clearTimeout(timer) // timer-ok: Scripted battle readiness timeout in debug harness
         window.removeEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler)
         window.removeEventListener('battle-log-added', onActivity)
       }
@@ -578,8 +578,8 @@ export function setupBattleDebug(ctx: BattleContext) {
       }
 
       const resetTimer = () => {
-        if (timer) clearTimeout(timer)
-        timer = setTimeout(() => {
+        if (timer) clearTimeout(timer) // timer-ok: Scripted battle readiness timeout in debug harness
+        timer = setTimeout(() => { // timer-ok: Scripted battle readiness timeout in debug harness
           const currentDetail = getScriptedReplayReadiness()
           if (currentDetail.isReady || currentDetail.over) {
             cleanup()

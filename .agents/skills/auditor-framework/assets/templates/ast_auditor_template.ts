@@ -9,8 +9,7 @@
 import path from 'node:path';
 import ts from 'typescript';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
-import { SharedAstContext } from '../../lib/astContext.ts';
+import { BaseAuditor, SharedAstContext } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -28,12 +27,13 @@ export class MyAstAuditor extends BaseAuditor<MyAstRuleId> {
     super({
       id: 'validate_my_ast',
       name: 'My AST Validator',
-      description: 'Valida contratos AST en archivos TypeScript y componentes Vue',
+      description: 'Valida contratos AST en TypeScript y Vue SFC',
       family: 'architecture', // 'architecture' | 'domain_data' | 'persistence' | 'fsm' | 'assets' | 'documentation'
       ruleIds: MY_AST_RULES,
+      packageName: 'AST',
       ruleDescriptions: {
-        'my-ast-forbidden-pattern': 'Patrón sintáctico prohibido detectado en AST',
-        'my-ast-missing-contract': 'Declaración requerida faltante en el archivo fuente'
+        'my-ast-forbidden-pattern': 'Patrón sintáctico prohibido en AST',
+        'my-ast-missing-contract': 'Declaración requerida faltante'
       },
       requiresAst: true,
       roots: ['src'],

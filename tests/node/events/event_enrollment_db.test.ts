@@ -26,7 +26,7 @@ describeWithDatabase('Competition Entries Dual Database Integration', (engine, g
       total_ivs: 120,
       ivs: { hp: 20, atk: 20, def: 20, spa: 20, spd: 20, spe: 20 },
       is_shiny: false,
-      obtained_at: Date.now(),
+      obtained_at: Temporal.Now.instant().epochMilliseconds,
       height: 0.3,
       weight: 3.5,
       displayValue: '120 IVs',

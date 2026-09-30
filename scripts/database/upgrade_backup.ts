@@ -20,7 +20,7 @@ import { enableCompileCache } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
-import { safeResolve, safeJoin } from '../lib/safePath.ts';
+import { safeResolve, safeJoin } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -58,7 +58,7 @@ export async function upgradeBackup(): Promise<string> {
       if (matchingFiles.length > 0 && matchingFiles[0]) {
         targetBackupPath = safeJoin(serverBackupDir, matchingFiles[0]);
       }
-    } catch {
+    } catch { // catch-ok: directory might not exist yet
       // ignore
     }
   }
@@ -149,7 +149,8 @@ export async function upgradeBackup(): Promise<string> {
         const statements = splitSQLStatements(sqlSource);
         for (const stmt of statements) {
           if (stmt.trim()) {
-            try { db.exec(stmt); } catch { /* ignore */ }
+            try { db.exec(stmt); } catch { // catch-ok: ignore harmless migration redundancies during backup upgrade
+            }
           }
         }
       }
@@ -173,7 +174,7 @@ export async function upgradeBackup(): Promise<string> {
         }
       }
     }
-    db.prepare('INSERT OR REPLACE INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, new Date().toISOString());
+    db.prepare('INSERT OR REPLACE INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, Temporal.Now.instant().toString());
     appliedCount++;
   }
 
@@ -217,7 +218,7 @@ export async function upgradeBackup(): Promise<string> {
   const upgradedBackup = {
     metadata: {
       profile: backupObj.metadata?.profile || serverArg || 'server_franco',
-      timestamp: new Date().toISOString(),
+      timestamp: Temporal.Now.instant().toString(),
       totalTables: Object.keys(upgradedBackupData).length,
       totalRows: Object.values(upgradedBackupData).reduce((sum, arr) => sum + arr.length, 0),
       upgradedFrom: path.basename(targetBackupPath),

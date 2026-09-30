@@ -13,9 +13,11 @@ interface Props {
   context?: string
 }
 
-const { pokemon } = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  context: ''
+})
 
-const p = computed(() => pokemon)
+const p = computed(() => props.pokemon)
 
 const friendshipDetails = computed(() => getFriendshipTooltipDetails(p.value))
 const friendshipSeal = computed(() => friendshipDetails.value.seal)
@@ -265,14 +267,6 @@ const abilityStyle = computed(() => ({
   display: inline-flex;
   align-items: center;
   gap: 4px;
-
-  .seal-emoji {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    line-height: 1;
-  }
 }
 
 .progress-outer {
@@ -395,10 +389,6 @@ const abilityStyle = computed(() => ({
   align-items: center !important;
   justify-content: center !important;
   gap: 4px;
-
-  .vigor-icon {
-    font-size: 10px;
-  }
 }
 
 .egg-born-badge {

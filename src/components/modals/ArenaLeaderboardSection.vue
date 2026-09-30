@@ -421,16 +421,6 @@ watch(activeSort, () => {
     color: #94a3b8;
     min-width: 18px;
     text-align: center;
-
-    &.top-1 {
-      color: #fbbf24;
-    }
-    &.top-2 {
-      color: #cbd5e1;
-    }
-    &.top-3 {
-      color: #f59e0b;
-    }
   }
 
   .ranked-medal-mini {

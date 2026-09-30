@@ -35,7 +35,7 @@ async function downloadFile(url: string, destPath: string): Promise<boolean> {
     if (stat.size > 0) {
       return true;
     }
-  } catch {
+  } catch { // catch-ok: file does not exist locally yet, proceed with download
     // El archivo no existe, proceder con la descarga
   }
 

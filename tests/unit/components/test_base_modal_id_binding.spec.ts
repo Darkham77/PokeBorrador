@@ -27,4 +27,38 @@ describe('BaseModal id attribute binding', () => {
 
     wrapper.unmount()
   })
+
+  it('renders modal title when title prop is provided', () => {
+    const wrapper = mount(BaseModal, {
+      props: {
+        id: 'titled-modal',
+        show: true,
+        title: 'Modal Title Test'
+      },
+      slots: {
+        default: '<div>Body text</div>'
+      },
+      attachTo: document.body
+    })
+
+    expect(document.body.textContent).toContain('Modal Title Test')
+    expect(document.body.textContent).toContain('Body text')
+    wrapper.unmount()
+  })
+
+  it('renders close button with resolved id attribute', () => {
+    const wrapper = mount(BaseModal, {
+      props: {
+        id: 'closeable-modal',
+        show: true,
+        title: 'Closable'
+      },
+      attachTo: document.body
+    })
+
+    const closeBtn = document.getElementById('closeable-modal-close-btn')
+    expect(closeBtn).not.toBeNull()
+    wrapper.unmount()
+  })
 })
+

@@ -217,13 +217,15 @@ export abstract class BaseE2ESimulation {
       const dbPath = this.getDbPath();
       const fs = await import('node:fs');
       if (fs.existsSync(dbPath)) {
-        try { fs.unlinkSync(dbPath); } catch { /* ignore non-existent db */ }
+        try { fs.unlinkSync(dbPath); } catch { // catch-ok: ignore non-existent db
+        }
       }
       try {
         await this.page.request.post('/api/dev-sim-db-cleanup', {
           headers: { 'x-db-key': this.sqliteKey }
         });
-      } catch { /* ignore if dev server not reachable or in non-browser context */ }
+      } catch { // catch-ok: ignore if dev server not reachable or in non-browser context
+      }
     }
   }
 
@@ -247,7 +249,8 @@ export abstract class BaseE2ESimulation {
         if (!this.isSharedDatabase) {
           await this.queryTestDb(`DELETE FROM game_saves WHERE user_id IN (SELECT id FROM profiles WHERE username = $1)`, [this.username]);
         }
-      } catch { /* ignore if tables empty or not initialized */ }
+      } catch { // catch-ok: ignore if tables empty or not initialized
+      }
     }
 
     await loginE2ETestUser(this.page, this.username, this.logBuffer, this.sqliteKey, this.driver);

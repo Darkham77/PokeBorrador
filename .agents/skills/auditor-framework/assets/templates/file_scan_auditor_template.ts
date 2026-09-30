@@ -8,7 +8,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor, FileScanAuditor } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -26,12 +26,13 @@ export class MyFeatureAuditor extends FileScanAuditor<MyFeatureRuleId> {
     super({
       id: 'validate_my_feature',
       name: 'My Feature Auditor',
-      description: 'Valida tokens prohibidos y atributos obligatorios en src/',
+      description: 'Valida tokens prohibidos y atributos en src/',
       family: 'architecture', // 'architecture' | 'domain_data' | 'persistence' | 'fsm' | 'assets' | 'documentation'
       ruleIds: MY_FEATURE_RULES,
+      packageName: 'MiModulo',
       ruleDescriptions: {
-        'my-feature-forbidden-pattern': 'Token prohibido detectado en archivo fuente',
-        'my-feature-missing-attribute': 'Atributo obligatorio faltante en componente'
+        'my-feature-forbidden-pattern': 'Token prohibido en archivo fuente',
+        'my-feature-missing-attribute': 'Atributo obligatorio faltante'
       },
       roots,
       allowedExtensions: new Set(['.vue', '.ts'])

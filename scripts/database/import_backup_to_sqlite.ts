@@ -175,7 +175,7 @@ function transformRow(
     if ('id' in rowCopy) {
       rowCopy['last_save_id'] = rowCopy['id'];
     }
-    rowCopy['updated_at'] = new Date().toISOString();
+    rowCopy['updated_at'] = Temporal.Now.instant().toString();
   }
   if (tableName === 'battle_invites' && 'challenger_id' in rowCopy) {
     rowCopy['sender_id'] = rowCopy['challenger_id'];
@@ -294,7 +294,7 @@ function transformRow(
         }
 
         const transformed = replaceUserIds(parsed, mapping) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-        transformed._last_updated = Date.now();
+        transformed._last_updated = Temporal.Now.instant().epochMilliseconds;
         val = JSON.stringify(transformed);
       } catch {
         val = replaceUserIds(val, mapping);
@@ -430,7 +430,7 @@ for (const tableName of Object.keys(backupData.data)) {
   } catch (err) {
     try {
       db.exec('ROLLBACK;');
-    } catch {
+    } catch { // catch-ok: ignore rollback error if transaction was not active
       // Ignorar si no había transacción activa
     }
     console.error(`❌ Error al importar la tabla [${tableName}]: ${(err as Error).message}`);

@@ -3,15 +3,12 @@ import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
-import pluginSecurity from 'eslint-plugin-security';
 import { globalIgnores } from 'eslint/config';
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
-   
-  pluginSecurity.configs.recommended,
   {
     name: 'pokevicio/core-rules',
     plugins: {
@@ -42,6 +39,14 @@ export default tseslint.config(
         {
           selector: 'TSAsExpression[typeAnnotation.type="TSUnknownKeyword"]',
           message: 'Está ESTRICTAMENTE PROHIBIDO usar doble casteo (as unknown as). Usa guardas de tipo, augmentations de interfaz o tipado estricto.'
+        },
+        {
+          selector: 'NewExpression[callee.name="Date"]',
+          message: 'El uso de new Date() está ESTRICTAMENTE PROHIBIDO. Usa la API moderna Temporal (Temporal.Now.instant() / Temporal.Instant).'
+        },
+        {
+          selector: 'CallExpression[callee.object.name="Date"][callee.property.name="now"]',
+          message: 'El uso de Date.now() está ESTRICTAMENTE PROHIBIDO. Usa Temporal.Now.instant().epochMilliseconds o performance.now().'
         }
       ],
       'unused-imports/no-unused-imports': 'error',
@@ -62,10 +67,9 @@ export default tseslint.config(
       'no-useless-assignment': 'error',
       'preserve-caught-error': 'error',
 
-      // Calidad general & Seguridad
+      // Calidad general
       'no-console': 'off',
       'no-undef': 'off', // TS ya maneja el chequeo de no-undef
-      'security/detect-object-injection': 'off',
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -80,27 +84,6 @@ export default tseslint.config(
         ...globals.es2025,
       },
     },
-  },
-  // Desactivar warnings de seguridad en scripts de utilidad y tests
-  {
-    name: 'pokevicio/security-script-exemptions',
-    files: [
-      'scripts/**/*.ts',
-      'scripts/**/*.js',
-      'scripts/**/*.cjs',
-      'tests/**/*.ts',
-      'tests/**/*.js',
-      'tests/**/*.spec.ts',
-      'tests/**/*.test.ts',
-      'vite.config.ts',
-      'supabase/**/*.ts',
-      'supabase/**/*.js'
-    ],
-    rules: {
-      'security/detect-non-literal-fs-filename': 'off',
-      'security/detect-non-literal-regexp': 'off',
-      'security/detect-unsafe-regex': 'off'
-    }
   },
   globalIgnores([
     'dist/**',

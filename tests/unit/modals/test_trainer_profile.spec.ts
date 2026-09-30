@@ -46,4 +46,21 @@ describe('useTrainerProfile helpers & reactivity', () => {
     expect(profile.faction.value).toBe('poder')
     expect(profile.factionLabel.value).toBe('Equipo Poder')
   })
+
+  it('correctly marks isOwnProfile as false when inspecting another trainer ID', () => {
+    const authStore = useAuthStore()
+    authStore.user = { id: 'current-user-123' } as unknown as typeof authStore.user
+
+    const profile = useTrainerProfile(() => 'foreign-user-456')
+    expect(profile.isOwnProfile.value).toBe(false)
+  })
+
+  it('handles authenticated user with undefined target as not own profile', () => {
+    const authStore = useAuthStore()
+    authStore.user = { id: 'current-user-123' } as unknown as typeof authStore.user
+
+    const profile = useTrainerProfile(() => undefined)
+    expect(profile.isOwnProfile.value).toBe(false)
+  })
 })
+

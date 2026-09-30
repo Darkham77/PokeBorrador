@@ -16,7 +16,7 @@
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { BaseAuditor } from '@fgp/auditor';
 
 export type AssetUsageRuleId =
   | 'asset-hardcoded-path-template'
@@ -60,14 +60,15 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       description: 'Rutas de assets cableadas o bypass de getAssetUrl',
       family: 'assets',
       ruleIds: ASSET_USAGE_RULES,
+      packageName: 'Asset',
       ruleDescriptions: {
-        'asset-hardcoded-path-template': 'Ruta de asset cableada en template Vue',
-        'asset-literal-bound-src': 'Atributo :src con ruta literal cableada',
-        'asset-direct-banner-binding': 'Binding directo de banner sin getAssetUrl',
-        'asset-unmediated-logic-path': 'Ruta de asset construida sin assetService',
-        'asset-hardcoded-data-path': 'Ruta de asset en datos en vez de ID canónico',
-        'asset-hardcoded-style-path': 'Ruta de asset cableada en hojas de estilo SCSS/CSS',
-        'asset-physical-file-missing': 'Archivo de asset no encontrado en disco'
+        'asset-hardcoded-path-template': 'Ruta cableada en template',
+        'asset-literal-bound-src': ':src con ruta literal',
+        'asset-direct-banner-binding': 'Banner directo sin getAssetUrl',
+        'asset-unmediated-logic-path': 'Ruta sin assetService',
+        'asset-hardcoded-data-path': 'Ruta en datos en vez de ID',
+        'asset-hardcoded-style-path': 'Ruta cableada en estilos',
+        'asset-physical-file-missing': 'Archivo no encontrado en disco'
       },
       requiredFiles: [
         path.resolve(process.cwd(), 'src/logic/services/assetService.ts')

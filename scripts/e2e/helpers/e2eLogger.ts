@@ -1,7 +1,7 @@
 import { type Page, type Locator } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { sanitizePath } from '../../lib/safePath.ts';
+import { sanitizePath } from '@fgp/auditor';
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
   MAX_UI_SETTLE_TIMEOUT_MS,
@@ -27,7 +27,7 @@ export function flushE2ELogs(
       fs.mkdirSync(logDir, { recursive: true });
     }
     const logFilePath = path.join(logDir, sanitizePath(`worker_${workerId}.log`));
-    const timeStr = new Date().toISOString();
+    const timeStr = Temporal.Now.instant().toString();
     const header = `\n--- [${timeStr}] TEST: ${testName} [STATUS: ${status.toUpperCase()}] (${durationMs ? (durationMs / MS_TO_SECONDS_DIVISOR).toFixed(1) + 's' : '0s'}) ---\n`;
     fs.appendFileSync(logFilePath, header + logBuffer.join('\n') + '\n');
   } catch (err: unknown) {

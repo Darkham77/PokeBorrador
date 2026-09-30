@@ -76,7 +76,7 @@ export function findDockerBinary(): string | null {
         return firstLine;
       }
     }
-  } catch {
+  } catch { // catch-ok: ignore and proceed to fallback paths
     // Ignore and proceed to fallback paths
   }
 
@@ -161,7 +161,7 @@ export async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> 
       spawnSync('systemctl', ['--user', 'start', 'docker'], { stdio: 'ignore' });
       spawnSync('sudo', ['systemctl', 'start', 'docker'], { stdio: 'ignore' });
     }
-  } catch {
+  } catch { // catch-ok: ignore and proceed to poll
     // Ignore and proceed to poll
   }
 
@@ -392,7 +392,7 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
     // Notify PostgREST to reload its schema cache
     try {
       await sql.unsafe("NOTIFY pgrst, 'reload schema';");
-    } catch {
+    } catch { // catch-ok: ignore notification error if pgrst is restarting
       // Ignore notification error if pgrst is restarting
     }
   } finally {
@@ -420,7 +420,7 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
   /**
    * Waits for PostgREST HTTP REST server to be ready through the gateway.
    */
-  export async function waitForPostgrest(maxRetries = 20): Promise<boolean> {
+  export async function waitForPostgrest(maxRetries = POSTGRES_READY_MAX_RETRIES): Promise<boolean> {
     for (let i = 0; i < maxRetries; i++) {
       try {
         const res = await fetch(`${POSTGREST_URL}/rest/v1/system_config`, {
@@ -429,7 +429,7 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
         if (res.ok || res.status === 200) {
           return true;
         }
-      } catch {
+      } catch { // catch-ok: retry if postgrest ping failed during startup poll
         // Retry
       }
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -447,7 +447,7 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
         spawnSync(bin, ['rm', '-f', GATEWAY_CONTAINER_NAME], { stdio: 'ignore' });
         spawnSync(bin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
         spawnSync(bin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
-      } catch {
+      } catch { // catch-ok: ignore cleanup error on container removal
         // Ignore cleanup error
       }
     }

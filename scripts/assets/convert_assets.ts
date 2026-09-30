@@ -15,7 +15,7 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
 
-import { safeResolve, safeJoin } from '../lib/safePath.ts';
+import { safeResolve, safeJoin } from '@fgp/auditor';
 import {
   findFeetPointsFromBuffer,
   analyzeImageBufferBounds
@@ -302,7 +302,7 @@ function runTasksInParallel(tasks: WorkerTask[], maxWorkers: number): Promise<Wo
 
 async function main() {
   console.log(styleText('bold', '🚀 INICIANDO CONVERSIÓN Y PROCESAMIENTO MULTICORE DE ASSETS (Node.js 26+)'));
-  const startTime = Date.now();
+  const startTime = performance.now();
 
   const pipelineWarnings: string[] = []; // no-domain: Non-domain utility collection or data structure
   const pipelineErrors: string[] = []; // no-domain: Non-domain utility collection or data structure
@@ -339,7 +339,7 @@ async function main() {
     }
   }
 
-  const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+  const duration = ((performance.now() - startTime) / 1000).toFixed(2);
   console.log(styleText('green', `✅ Conversión inicial completada en ${duration}s.`));
   console.log(`   - Archivos procesados: ${successfulFiles}/${files.length}`);
   console.log(`   - Imágenes WebP generadas: ${generatedWebps}`);
@@ -377,7 +377,7 @@ async function main() {
     try {
       backFiles = (await fs.readdir(ANIMATED_BACK_DIR))
         .filter(f => f.endsWith('.webp') || f.endsWith('.png'));
-    } catch {
+    } catch { // catch-ok: optional back directory might not exist yet
       // Back opcional
     }
 

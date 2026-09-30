@@ -168,7 +168,7 @@ async function fetchBufferWithFallback(candidateNames: string[], cleanId: string
             return { buffer: buf, sourceUrl: url, matchedName: name };
           }
         }
-      } catch {
+      } catch { // catch-ok: try next source
         // Try next source
       }
     }
@@ -269,7 +269,7 @@ async function downloadPokemon(limit: number) {
         const buf = Buffer.from(await res.arrayBuffer());
         await fs.writeFile(target, buf);
       }
-    } catch {
+    } catch { // catch-ok: ignore single failure during bulk download
       // Ignore single failure
     }
   }

@@ -273,15 +273,6 @@ const handleClassMissionClick = () => {
   justify-content: center;
 }
 
-.buff-name {
-  color: $white;
-  font-size: 10px;
-  font-weight: 800;
-  @include pixelated;
-  letter-spacing: -0.5px;
-  white-space: nowrap;
-}
-
 .buff-time {
   color: var(--yellow, #ffd93d);
   font-size: 12px;

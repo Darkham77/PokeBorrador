@@ -13,6 +13,11 @@ if (!fs.existsSync(dbPath)) {
 
 using db = new DatabaseSync(dbPath);
 
+const TEST_USER_LEVEL = 50;
+const TEST_INVENTORY_DEFAULT_QTY = 50;
+const ASH_INITIAL_ELO = 1200;
+const ENTRENADOR_INITIAL_ELO = 1100;
+
 // Helper to create a structured Pokemon object
 function createMockPokemon(id: string, name: string, type: string, type2: string | null, level: number, isShiny: boolean = false, heldItem: string | null = null): Record<string, unknown> {
   const uid = `${id}_${crypto.randomUUID().substring(0, 8)}`;
@@ -107,12 +112,12 @@ const entrenadorBox = [
 
 const mockInventory: Record<string, number> = {
   'pokeball': 99,
-  'greatball': 50,
+  'greatball': TEST_INVENTORY_DEFAULT_QTY,
   'ultraball': 30,
   'masterball': 10,
   'potion': 99,
   'hyperpotion': 99,
-  'revive': 50,
+  'revive': TEST_INVENTORY_DEFAULT_QTY,
   'maxrevive': 10,
   'rarecandy': 99,
   'thunderstone': 5,
@@ -129,7 +134,7 @@ const ashSaveData = {
   battleCoins: 5000,
   eggs: [],
   trainerChance: 0,
-  trainerLevel: 50,
+  trainerLevel: TEST_USER_LEVEL,
   trainerExp: 0,
   trainerExpNeeded: 10000,
   inventory: { ...mockInventory },
@@ -196,7 +201,7 @@ const entrenadorSaveData = {
   box: entrenadorBox,
   pokedex: ['gyarados', 'alakazam', 'machamp', 'gengar', 'snorlax', 'lapras', 'geodude', 'gastly', 'abra'],
   seenPokedex: ['gyarados', 'alakazam', 'machamp', 'gengar', 'snorlax', 'lapras', 'geodude', 'gastly', 'abra'],
-  eloRating: 1100,
+  eloRating: ENTRENADOR_INITIAL_ELO,
   playerClass: 'entrenador',
   faction: 'union'
 };
@@ -216,8 +221,8 @@ try {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'), strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
   `);
 
-  insertProfile.run('local_ash', 'ASH', 'ash@local', 50, 'maestro_pokemon', 'union', 'color: #ffcc00; font-weight: bold;', '', 'admin', 1200);
-  insertProfile.run('local_entrenador', 'ENTRENADOR', 'entrenador@local', 50, 'entrenador', 'union', '', '', 'admin', 1100);
+  insertProfile.run('local_ash', 'ASH', 'ash@local', TEST_USER_LEVEL, 'maestro_pokemon', 'union', 'color: #ffcc00; font-weight: bold;', '', 'admin', ASH_INITIAL_ELO);
+  insertProfile.run('local_entrenador', 'ENTRENADOR', 'entrenador@local', TEST_USER_LEVEL, 'entrenador', 'union', '', '', 'admin', ENTRENADOR_INITIAL_ELO);
 
   // Insert Saves
   const insertSave = db.prepare(`

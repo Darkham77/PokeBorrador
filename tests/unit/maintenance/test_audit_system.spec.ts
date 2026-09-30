@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { discoverAuditors } from '../../../scripts/maintenance/auditScanner.ts';
 import {
+  discoverAuditors,
+  loadAuditConfig,
   AUDIT_FAMILIES,
+  getActiveFamilies,
   FAMILY_METADATA,
-  type StandardAuditResult
-} from '../../../scripts/lib/auditContract.ts';
-import {
+  type StandardAuditResult,
   renderBanner,
   renderFamilyHeader,
   renderAuditTaskRow,
   renderFindingsDetail,
   renderMarkdownReport,
   formatStatusBadge
-} from '../../../scripts/lib/unifiedTheme.ts';
+} from '@fgp/auditor';
 import {
   findSpriteCollisions,
   findMissingSprites
@@ -29,25 +29,28 @@ describe('Audit System & Dynamic Auto-Discovery Engine', () => {
   it('should have parity between AUDIT_FAMILIES and FAMILY_METADATA', () => {
     expect(AUDIT_FAMILIES.length).toBeGreaterThan(0);
     for (const family of AUDIT_FAMILIES) {
-      expect(FAMILY_METADATA[family]).toBeDefined();
-      expect(FAMILY_METADATA[family].key).toBe(family);
-      expect(FAMILY_METADATA[family].title).toBeTruthy();
-      expect(FAMILY_METADATA[family].order).toBeGreaterThan(0);
+      const meta = FAMILY_METADATA[family]!;
+      expect(meta).toBeDefined();
+      expect(meta.key).toBe(family);
+      expect(meta.title).toBeTruthy();
+      expect(meta.order).toBeGreaterThan(0);
     }
   });
 
   it('should discover all sub-auditors in scripts/auditors without omission', async () => {
+    const config = await loadAuditConfig();
+    const activeFamilies = getActiveFamilies(config.customFamilies);
     const tasks = await discoverAuditors();
     expect(tasks.length).toBeGreaterThanOrEqual(15);
 
     // Verify all tasks have valid family, id, command, and existing scriptPath
     for (const task of tasks) {
-      expect(AUDIT_FAMILIES).toContain(task.family);
+      expect(activeFamilies).toContain(task.family);
       expect(task.id).toBeTruthy();
       expect(task.name).toBeTruthy();
       expect(task.command).toBe('node');
       expect(task.args).toContain('--permission');
-      expect(task.scriptPath).toMatch(/^scripts\/auditors\//);
+      expect(task.scriptPath).toMatch(/^(?:packages\/auditor\/src\/suites|scripts\/auditors)\//);
     }
   });
 
@@ -97,7 +100,7 @@ describe('Unified Theme Presentation Engine', () => {
   });
 
   it('should render family headers with order and icons', () => {
-    const meta = FAMILY_METADATA.domain_data;
+    const meta = FAMILY_METADATA.domain_data!;
     const header = renderFamilyHeader(meta);
     expect(header).toContain('[FAMILIA 2]');
     expect(header).toContain(meta.title);
@@ -333,7 +336,7 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
     it('automatically persists complete structured JSON to scratch/audits/<family>/<id>.json', async () => {
       const fs = await import('node:fs/promises');
       const path = await import('node:path');
-      const { setupAuditor } = await import('../../../scripts/lib/auditorBase.ts');
+      const { setupAuditor } = await import('@fgp/auditor');
 
       process.env.AUDIT_SUBPROCESS = 'true';
       const testAuditor = setupAuditor({

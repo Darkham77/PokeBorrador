@@ -98,7 +98,8 @@ async function seedMockListings(dbPath: string, count: number) {
   } finally {
     try {
       db.close();
-    } catch (_e: unknown) { /* expected */ }
+    } catch (_e: unknown) { // catch-ok: expected db already closed
+    }
   }
 }
 

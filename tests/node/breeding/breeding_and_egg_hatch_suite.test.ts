@@ -186,7 +186,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         'kenviota_test_id',
         JSON.stringify(unmigratedSave),
         'save_kenviota_1',
-        new Date().toISOString()
+        Temporal.Now.instant().toString()
       );
 
       const saveWithMissingWarehouse = {
@@ -198,7 +198,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         'kenviota_missing_wh_id',
         JSON.stringify(saveWithMissingWarehouse),
         'save_kenviota_2',
-        new Date().toISOString()
+        Temporal.Now.instant().toString()
       );
 
       for (const migration of DATABASE_MIGRATIONS) {
@@ -512,7 +512,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         'user_nature_test',
         JSON.stringify(mockSaveWithSpanishNatures),
         'save_nature_1',
-        new Date().toISOString()
+        Temporal.Now.instant().toString()
       );
 
       for (const migration of DATABASE_MIGRATIONS) {

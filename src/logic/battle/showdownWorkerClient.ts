@@ -2,6 +2,7 @@ import { logger } from '../utils/logger.ts'
 import type { SideID, PokemonSet } from '@pkmn/sim'
 import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { extractTeamHpAndStatus } from './helpers/showdownSyncHelper.ts';
 import { findMatchingPokemon } from './showdownUidMapper.ts';
 import { buildCombatReplayPayload } from './helpers/combatReplayHelper.ts';
@@ -174,7 +175,7 @@ export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[
   if (!worker) throw new Error('showdownWorker is null');
   worker.postMessage({ type: 'GET_SIMULATOR_STATE' });
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(() => { // timer-ok: Web Worker message response timeout with SIMULATOR_STATE_TIMEOUT_MS
       worker.removeEventListener('message', handler);
       reject(new Error('[ShowdownWorkerClient] Timeout waiting for GET_SIMULATOR_STATE_RESPONSE'));
     }, SIMULATOR_STATE_TIMEOUT_MS);
@@ -183,7 +184,7 @@ export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[
       const data = event.data as { type: string; payload: { p1: unknown[]; p2: unknown[] } };
       const { type, payload } = data;
       if (type === 'GET_SIMULATOR_STATE_RESPONSE') {
-        clearTimeout(timer);
+        clearTimeout(timer); // timer-ok: Web Worker message response timeout with SIMULATOR_STATE_TIMEOUT_MS
         worker.removeEventListener('message', handler);
         resolve(payload);
       }
@@ -611,15 +612,15 @@ export function testResetShowdownWorker(): void {
 export interface RequestTrainerTeamOptions {
   level: number;
   teamSize: number;
-  allowedSpecies: Iterable<string>;
-  aceSpeciesId?: string;
+  allowedSpecies: Iterable<PokemonSpeciesId>;
+  aceSpeciesId?: PokemonSpeciesId;
 }
 
 export interface RequestRivalTeamOptions {
   level: number;
   teamSize: number;
-  aceSpeciesId: string;
-  allowedSpecies?: Iterable<string>;
+  aceSpeciesId: PokemonSpeciesId;
+  allowedSpecies?: Iterable<PokemonSpeciesId>;
 }
 
 type TeamGeneratorHandler = (type: 'TRAINER' | 'RIVAL', payload: unknown) => Promise<PokemonSet[]>;
@@ -642,7 +643,7 @@ export async function requestTrainerTeam(options: RequestTrainerTeamOptions): Pr
     throw new Error('[ShowdownWorkerClient] showdownWorker is null. Call preloadShowdownWorker or registerTeamGeneratorHandler.');
   }
 
-  const requestId = `tr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const requestId = `tr_${Math.floor(performance.now())}_${Math.random().toString(36).slice(2, 8)}`;
   return new Promise((resolve, reject) => {
     const handler = (event: MessageEvent) => {
       const data = event.data as { type: string; payload?: { requestId: string; team: PokemonSet[]; message?: string } };
@@ -681,7 +682,7 @@ export async function requestRivalTeam(options: RequestRivalTeamOptions): Promis
     throw new Error('[ShowdownWorkerClient] showdownWorker is null. Call preloadShowdownWorker or registerTeamGeneratorHandler.');
   }
 
-  const requestId = `riv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const requestId = `riv_${Math.floor(performance.now())}_${Math.random().toString(36).slice(2, 8)}`;
   return new Promise((resolve, reject) => {
     const handler = (event: MessageEvent) => {
       const data = event.data as { type: string; payload?: { requestId: string; team: PokemonSet[]; message?: string } };

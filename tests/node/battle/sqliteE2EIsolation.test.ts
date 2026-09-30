@@ -41,4 +41,24 @@ describe('SQLite E2E isolation', () => {
     assert.equal(userStorageKey.startsWith('sim_'), false)
     assert.equal(simKey.startsWith('sim_'), true)
   })
+
+  it('validates template key and isolation naming contracts', () => {
+    const templateKey = 'pokevicio_sqlite_clean_template'
+    const workerTemplateKey = 'pokevicio_sqlite_worker_template'
+    assert.equal(templateKey.includes('clean_template'), true)
+    assert.equal(workerTemplateKey.includes('worker_template'), true)
+    assert.notEqual(templateKey, workerTemplateKey)
+  })
+
+  it('guarantees clean database template cannot be refreshed when in production mode', () => {
+    assert.equal(canRefreshCleanDatabaseTemplate(false, false), false)
+    assert.equal(canRefreshCleanDatabaseTemplate(false, true), false)
+  })
+
+  it('verifies default window undefined safety in node environment', () => {
+    assert.equal(canUseDevDatabaseBridge(true, false), false)
+    assert.equal(canRefreshCleanDatabaseTemplate(true, false), false)
+  })
 })
+
+

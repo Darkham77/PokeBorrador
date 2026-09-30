@@ -271,7 +271,8 @@ export async function adminSupabaseUsers(): Promise<void> {
     await sql.end();
   } catch (adminErr: unknown) {
     console.error(styleText('red', `\n❌ Error al ejecutar la acción de administración en [${profile}]: ${(adminErr as Error).message}`));
-    try { await sql.end(); } catch { /* ignore */ }
+    try { await sql.end(); } catch { // catch-ok: ignore failure during disconnect on already errored connection
+    }
     process.exit(1);
   }
 }

@@ -584,11 +584,26 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes('node_modules/@pkmn/sim/build/esm/data/learnsets') || id.includes('@pkmn/sim/build/cjs/data/learnsets') || id.includes('/learnsets')) {
+            return 'worker-vendor-pkmn-learnsets';
+          }
+          if (id.includes('node_modules/@pkmn/sim/build/esm/data/mods') || id.includes('@pkmn/sim/build/cjs/data/mods') || id.includes('/mods/')) {
+            return 'worker-vendor-pkmn-mods';
+          }
           if (id.includes('node_modules/@pkmn/sim') || id.includes('node_modules/@pkmn/sets') || id.includes('pkmn_sim.js')) {
             return 'worker-vendor-pkmn-sim';
           }
           if (id.includes('node_modules/@pkmn/randoms')) {
             return 'worker-vendor-randoms';
+          }
+          if (id.includes('src/data/pokemon/pokemonFeetDatabase') || id.includes('src/data/pokemon/feetCoordinatesData')) {
+            return 'worker-game-data-feet';
+          }
+          if (id.includes('src/data/pokemon/animatedSpriteDatabase') || id.includes('src/data/pokemon/animatedSpriteData')) {
+            return 'worker-game-data-sprites';
+          }
+          if (id.includes('src/data/pokemon/pokemonDB')) {
+            return 'worker-game-data-pokemon-db';
           }
           if (id.includes('src/data/pokemon/')) {
             return 'worker-game-data-pokemon';
@@ -633,9 +648,12 @@ export default defineConfig({
         '**/src/data/pokemon/pokemonFeetDatabase.ts'
       ]
     },
-    /* hmr: {
-      clientPort: 443,
-    }, */
+    hmr: (process.env.DEPLOY_SERVER_NAME || process.env.VITE_HMR_PORT || process.env.VITE_REVERSE_PROXY === 'true')
+      ? {
+          protocol: 'wss',
+          clientPort: 443,
+        }
+      : undefined,
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
@@ -700,6 +718,9 @@ export default defineConfig({
           }
           if (id.includes('src/data/pokemon/animatedSpriteDatabase') || id.includes('src/data/pokemon/animatedSpriteData')) {
             return 'game-data-sprites';
+          }
+          if (id.includes('src/data/pokemon/pokemonDB')) {
+            return 'game-data-pokemon-db';
           }
           if (id.includes('src/data/pokemon/')) {
             return 'game-data-pokemon';

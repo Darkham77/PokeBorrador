@@ -20,7 +20,7 @@ async function main() {
     const raw = await fs.readFile(TARGET_FILE, 'utf8');
     const existing = JSON.parse(raw);
     Object.assign(overrides, existing);
-  } catch {
+  } catch { // catch-ok: file does not exist yet, initialize fresh
     // File does not exist yet, initialize fresh
   }
 

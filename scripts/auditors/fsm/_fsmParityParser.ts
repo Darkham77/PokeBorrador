@@ -1,4 +1,4 @@
-import { collectRepositoryFiles } from '../../lib/auditorBase.ts';
+import { collectRepositoryFiles } from '@fgp/auditor';
 
 const FSM_SCANNABLE_EXTS = new Set(['.ts', '.vue']);
 

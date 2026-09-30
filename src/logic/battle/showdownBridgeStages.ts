@@ -1,6 +1,6 @@
-import type { SBCtx } from './showdownBridgeCtx';
-import { modifyStatStage } from '@/logic/pokemon/statsMath';
-import { SHOWDOWN_BOOST_STAT_KEYS, type ShowdownBoostStatKey } from '@/types/pokemon/pokemon';
+import type { SBCtx } from './showdownBridgeCtx.ts';
+import { modifyStatStage } from '@/logic/pokemon/statsMath.ts';
+import { SHOWDOWN_BOOST_STAT_KEYS, type ShowdownBoostStatKey } from '@/types/pokemon/pokemon.ts';
 
 /** 
  * NATIVE SHOWDOWN STAT STAGE KEYS

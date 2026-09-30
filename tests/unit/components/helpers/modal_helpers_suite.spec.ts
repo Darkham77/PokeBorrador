@@ -310,12 +310,12 @@ describe('Modal & Card Helpers Domain Suite', () => {
       it('returns startsInLabel for upcoming occurrence', () => {
         const occurrence = { startsInLabel: 'Inicia en 2 horas' } as UpcomingEventOccurrence
         const event = { id: 'test' } as GameEvent
-        expect(formatEventRemainingTime(event, occurrence, Date.now())).toBe('Inicia en 2 horas')
+        expect(formatEventRemainingTime(event, occurrence, Temporal.Now.instant().epochMilliseconds)).toBe('Inicia en 2 horas')
       })
 
       it('returns Manual (Activo) for active manual event', () => {
         const event = { id: 'test', manual: true } as GameEvent
-        expect(formatEventRemainingTime(event, undefined, Date.now())).toBe('Manual (Activo)')
+        expect(formatEventRemainingTime(event, undefined, Temporal.Now.instant().epochMilliseconds)).toBe('Manual (Activo)')
       })
     })
   })

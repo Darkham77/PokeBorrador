@@ -19,7 +19,7 @@ import { parseArgs, styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
 import { buildDatabaseUrl, getValidatedServerConfigs, parseServerArguments } from '../lib/supabaseClient.ts';
-import { safeResolve, safeJoin } from '../lib/safePath.ts';
+import { safeResolve, safeJoin } from '@fgp/auditor';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
@@ -461,7 +461,8 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
   } catch (restErr: unknown) {
     console.error(styleText('red', `\n❌ Error fatal durante la restauración en [${canonicalName}]: ${(restErr as Error).message}`));
     console.error(styleText('yellow', `🔄 La transacción ha sido revertida (ROLLBACK automático). La base de datos mantiene su estado anterior.`));
-    try { await sql.end(); } catch { /* ignore */ }
+    try { await sql.end(); } catch { // catch-ok: ignore failure during disconnect on already errored connection
+    }
     process.exit(1);
   }
 }

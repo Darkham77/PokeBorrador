@@ -151,9 +151,6 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
         color: #4ade80;
         text-shadow: 0 0 10px Rgba(74, 222, 128, 0.5);
       }
-      .currency-icon-rep {
-        color: #fbbf24;
-      }
     }
   }
 }

@@ -328,7 +328,7 @@ async function tryHandleManualDevImport(sqliteKey: string): Promise<boolean> {
       throw new Error(`[sqliteEngine] Failed to access sessionStorage during import reload: ${String(e)}`, { cause: e })
     }
 
-    await new Promise(resolve => setTimeout(resolve, IMPORT_RELOAD_DELAY_MS))
+    await new Promise(resolve => setTimeout(resolve, IMPORT_RELOAD_DELAY_MS)) // timer-ok: Browser manual database import page reload delay with IMPORT_RELOAD_DELAY_MS
     window.location.reload()
     return true
   } catch (err) {

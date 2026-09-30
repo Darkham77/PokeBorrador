@@ -122,59 +122,6 @@ watch(() => socialStore.pendingRequests.map((r) => r.id).join(','), () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-
-  &.tab-mounting .request-card {
-    
-  }
-}
-
-.request-card {
-  background: Rgba(157, 78, 221, 0.05);
-  border: 1px solid Rgba(157, 78, 221, 0.1);
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  
-
-  &:hover {
-    background: Rgba(157, 78, 221, 0.08);
-    border-color: Rgba(157, 78, 221, 0.3);
-    transform: Translatex(4px);
-  }
-
-  .request-info {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    
-    .text {
-      font-size: 13px;
-      color: Rgba(148, 163, 184, 1);
-      .username {
-        color: var(--white);
-        font-weight: 700;
-        margin-right: 4px;
-        font-size: 14px;
-      }
-    }
-  }
-
-  .request-btns {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-
-    .reject-btn {
-      min-width: 32px;
-      padding: 0 !important;
-      font-size: 16px !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
 }
 
 .empty-state {

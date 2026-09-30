@@ -12,7 +12,7 @@ const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 
 describe('Local Ash DB Diagnostics', () => {
   it('should run all SQLite migrations on poke_local_ash.db and validate all saves', async () => {
-    const tempDbPath = path.join(os.tmpdir(), `test_local_ash_${Date.now()}_${Math.random().toString(36).slice(2)}.db`);
+    const tempDbPath = path.join(os.tmpdir(), `test_local_ash_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`);
     fs.copyFileSync(DB_PATH, tempDbPath);
 
     try {
@@ -50,7 +50,7 @@ describe('Local Ash DB Diagnostics', () => {
       }
       
       try {
-        db.prepare('INSERT INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, new Date().toISOString());
+        db.prepare('INSERT INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, Temporal.Now.instant().toString());
       } catch (_) {
         // Ignore insert errors
       }

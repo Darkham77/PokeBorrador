@@ -30,7 +30,7 @@ describe('Combatant Sanitization - Unit Tests', () => {
     ability: 'blaze',
     gender: 'm',
     tags: [],
-    obtainedAt: Date.now(),
+    obtainedAt: Temporal.Now.instant().epochMilliseconds,
     obtainedMethod: 'wild',
     isShiny: false,
     catchRate: 45,

@@ -212,8 +212,8 @@ export const useBreedingStore = defineStore('breeding', () => {
     gameStore.scheduleSave();
   }
 
-  function claimEgg(eggId: string) {
-    const eggIndex = warehouseEggs.value.findIndex((e) => e.id === eggId);
+  function claimEgg(eggUid: string) {
+    const eggIndex = warehouseEggs.value.findIndex((e) => e.id === eggUid);
     if (eggIndex === -1) return;
     
     const egg = warehouseEggs.value[eggIndex];
@@ -253,7 +253,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     gameStore.scheduleSave();
   }
 
-  function scanEgg(eggId: string) {
+  function scanEgg(eggUid: string) {
     const classLevel = gameStore.state.classLevel ?? 1;
     const validation = validateEggScanEligibility(
       classStore.playerClass,
@@ -265,7 +265,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       return;
     }
 
-    const egg = warehouseEggs.value.find((e) => e.id === eggId);
+    const egg = warehouseEggs.value.find((e) => e.id === eggUid);
     if (!egg || !egg.ivs) return;
 
     const { speciesName, updatedClassData } = executeEggScan(egg, gameStore.state.classData);
@@ -332,8 +332,8 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
 
-  function deleteEgg(eggId: string) {
-    const idx = warehouseEggs.value.findIndex(e => e.id === eggId);
+  function deleteEgg(eggUid: string) {
+    const idx = warehouseEggs.value.findIndex(e => e.id === eggUid);
     if (idx !== -1) {
       warehouseEggs.value.splice(idx, 1);
       saveWarehouseEggs();

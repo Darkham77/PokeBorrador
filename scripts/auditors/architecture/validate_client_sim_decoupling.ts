@@ -18,8 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
-import { type SharedAstContext } from '../../lib/astContext.ts';
+import { BaseAuditor, type SharedAstContext } from '@fgp/auditor';
 
 enableCompileCache();
 

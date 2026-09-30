@@ -152,11 +152,6 @@ onUnmounted(() => {
   flex: 1;
   min-width: 0;
 
-  .feed-icon {
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-
   .feed-title {
     @include pixelated;
     font-size: 10px;

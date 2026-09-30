@@ -2,7 +2,7 @@ import { Battle, Pokemon, Side, type PokemonSet, type SideID } from '@pkmn/sim';
 import { statsMap, patchShowdownSpreadModify } from './engine/showdownSpreadModifyHelper.ts';
 import { parseToNumericSeed, formatToShowdownSeed } from './battleSeedManager.ts';
 import { TrainerTeamGenerator, RivalTeamGenerator } from './engine/rivalTeamGenerator.ts';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import { applyHealCheatToSide, applyStatusCheatToSide, syncRequestConditionsWithSimulator } from './cheats.ts';
 import { createShowdownBattle } from './helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
@@ -132,7 +132,7 @@ interface WorkerEventPayload {
   level?: number;
   teamSize?: number;
   allowedSpecies?: string[];
-  aceSpeciesId?: string;
+  aceSpeciesId?: PokemonSpeciesId;
 }
 
 interface WorkerEventData {

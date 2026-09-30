@@ -72,7 +72,7 @@ describe('Matchmaking Queue Lifecycle & Ranked Pairing Integration', () => {
                 challenger_id: payload.challenger_id || 'usr-player-alice',
                 opponent_id: payload.opponent_id || '',
                 status: payload.status || 'ranked_match',
-                created_at: new Date().toISOString(),
+                created_at: Temporal.Now.instant().toString(),
                 config: payload.config
               }
               dbInvites[id] = record
@@ -126,7 +126,7 @@ describe('Matchmaking Queue Lifecycle & Ranked Pairing Integration', () => {
     rankedQueueEntries['usr-player-bob'] = {
       user_id: 'usr-player-bob',
       elo: 1600,
-      created_at: new Date().toISOString()
+      created_at: Temporal.Now.instant().toString()
     }
 
     const livePvP = useLivePvPStore()

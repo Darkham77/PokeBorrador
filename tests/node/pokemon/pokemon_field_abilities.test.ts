@@ -42,7 +42,7 @@ function createMockPokemon(partial: Partial<Pokemon> = {}): Pokemon {
     heldItem: null,
     nickname: null,
     tags: [],
-    obtainedAt: Date.now(),
+    obtainedAt: Temporal.Now.instant().epochMilliseconds,
     obtainedMethod: 'wild',
     isFloating: false,
     catchRate: 200,

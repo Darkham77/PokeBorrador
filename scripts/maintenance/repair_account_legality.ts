@@ -376,11 +376,11 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
             }
           }
         }
-      } catch {
+      } catch { // catch-ok: ignore corrupt market listing json parse error
         // ignore
       }
     }
-  } catch {
+  } catch { // catch-ok: market_listings table might not exist
     // market_listings table might not exist
   }
 
@@ -617,7 +617,7 @@ Ejemplos:
         targetServer = remainingPositionals[serverIdx];
         remainingPositionals.splice(serverIdx, 1);
       }
-    } catch {
+    } catch { // catch-ok: ignored if .env cannot be read in offline mode
       // Ignored if .env cannot be read in offline mode
     }
   }

@@ -7,11 +7,12 @@ import { getShowdownNickname } from './showdownUidMapper.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import type { BaseStats } from '../pokemon/statsMath.ts';
 import { hasMoveData } from '../../data/battle/movesData.ts';
+import type { PokemonSpeciesId } from '../../data/pokemon/pokedex.ts';
 
 /**
  * Resuelve las estadísticas base de una especie desde la base de datos del juego.
  */
-export function resolveBaseStats(speciesId: string): BaseStats {
+export function resolveBaseStats(speciesId: PokemonSpeciesId): BaseStats {
   const data = pokemonDataProvider.getPokemonData(speciesId, true);
   return {
     hp: data.hp,

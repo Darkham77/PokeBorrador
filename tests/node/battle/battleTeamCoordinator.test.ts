@@ -45,7 +45,7 @@ function createMockPokemon(uid: string, name: string, overrides: Partial<Pokemon
     ability: 'runaway',
     gender: 'm',
     tags: [],
-    obtainedAt: Date.now(),
+    obtainedAt: Temporal.Now.instant().epochMilliseconds,
     obtainedMethod: 'wild',
     isShiny: false,
     catchRate: 100,

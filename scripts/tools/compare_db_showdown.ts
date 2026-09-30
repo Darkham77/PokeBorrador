@@ -240,7 +240,7 @@ async function main() {
 
   const reportLines: string[] = [ // no-domain: Non-domain utility collection or data structure
     '# Reporte Detallado de Comparación de Bases de Datos',
-    `*Generado el: ${new Date().toISOString()}*\n`,
+    `*Generado el: ${Temporal.Now.instant().toString()}*\n`,
     'Este reporte compara los Pokémon, habilidades y movimientos del juego core frente a la extracción de Pokémon Showdown (Gen 3).\n',
     '## Resumen Estadístico',
     `- **Total Pokémon en el Juego**: ${pokeResults.totalPokemonCore}`,

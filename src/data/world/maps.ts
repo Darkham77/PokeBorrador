@@ -1,5 +1,5 @@
 import type { MapLocation } from '@/types/pokemon/encounters';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { requireMapRouteId, type MapRouteId } from './map-assets.ts';
 
 export const FIRE_RED_MAPS: MapLocation[] = [
   {

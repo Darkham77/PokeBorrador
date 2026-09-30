@@ -100,9 +100,9 @@ function selectItem(item: CanonicalBagItem) {
   logToInspector(`Mochila: Seleccionado "${item.name}" (x${item.qty})`)
 }
 
-function onCategorySelect(catId: string) {
-  activeCategory.value = catId
-  logToInspector(`Mochila: Categoría cambiada a "${catId}"`)
+function onCategorySelect(categoryId: string) {
+  activeCategory.value = categoryId
+  logToInspector(`Mochila: Categoría cambiada a "${categoryId}"`)
 }
 
 function onActionClick(action: string) {

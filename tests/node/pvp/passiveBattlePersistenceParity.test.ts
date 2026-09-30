@@ -109,7 +109,7 @@ describeWithDatabase('Passive Battle Persistence Parity', (engine, getDb) => {
         assert.strictEqual(activeTeams[0]!.is_active, true);
 
         // 4. Record passive battle result (defender loses 16 ELO)
-        const reportData = { opponent: 'AttackerRed', turns: 4, endedAt: new Date().toISOString() };
+        const reportData = { opponent: 'AttackerRed', turns: 4, endedAt: Temporal.Now.instant().toString() };
         await sql`
           INSERT INTO public.passive_battle_reports (user_id, opponent_id, result, report_data, created_at)
           VALUES (${defenderId}, ${attackerId}, 'defeat', ${sql.json(reportData)}, NOW())

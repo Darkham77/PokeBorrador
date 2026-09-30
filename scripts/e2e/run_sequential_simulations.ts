@@ -97,7 +97,7 @@ function discoverPlaywrightTargets(): SimulationTarget[] {
         countMap.set(resolvedPath, (countMap.get(resolvedPath) || 0) + countSpecs(topSuite));
       }
     }
-  } catch {
+  } catch { // catch-ok: fallback to default count 1 if spec listing fails
     // Fallback to default count 1
   }
 
@@ -300,10 +300,10 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
     }
   });
 
-  const startTime = Date.now();
-  while (Date.now() - startTime < HEALTH_CHECK_TIMEOUT_MS) {
+  const startTime = Temporal.Now.instant().epochMilliseconds;
+  while (Temporal.Now.instant().epochMilliseconds - startTime < HEALTH_CHECK_TIMEOUT_MS) {
     if (await probeViteServer(VITE_URL)) {
-      logger.progress(`🔥 Servidor Vite persistente pre-calentado y listo en ${VITE_URL} (${((Date.now() - startTime) / 1000).toFixed(1)}s).\n`);
+      logger.progress(`🔥 Servidor Vite persistente pre-calentado y listo en ${VITE_URL} (${((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1)}s).\n`);
       return viteProcess;
     }
     await new Promise((resolve) => setTimeout(resolve, HEALTH_CHECK_INTERVAL_MS));
@@ -431,7 +431,7 @@ async function runAllSequentialSuites(): Promise<void> {
       if (isPostgresNeeded) {
         try {
           spawnSync('docker', ['stop', '-t', '1', 'pokevicio-test-gateway', 'pokevicio-test-postgrest', 'pokevicio-test-postgres'], { stdio: 'ignore' });
-        } catch {
+        } catch { // catch-ok: ignore failure when stopping docker test containers on exit
           // Ignore
         }
       }
@@ -516,11 +516,11 @@ async function runAllSequentialSuites(): Promise<void> {
         if (!skipSqlite) {
           // ── Step 1: Run SQLite ─────────────────────────────────────────────
           logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [1/2 SQLite] Ejecutando: ${target.name}...`);
-          const sqliteStart = Date.now();
+          const sqliteStart = Temporal.Now.instant().epochMilliseconds;
           try {
             await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite' });
           } catch (_err: unknown) {
-            const durationSec = ((Date.now() - sqliteStart) / 1000).toFixed(1);
+            const durationSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(1);
             logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [SQLite]: "${target.name}" ha fallado tras ${durationSec}s.`);
             recordMasterSuiteFailure({
               suiteIndex: i,
@@ -531,7 +531,7 @@ async function runAllSequentialSuites(): Promise<void> {
             logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo en SQLite.\n`);
             process.exit(1);
           }
-          sqliteSec = ((Date.now() - sqliteStart) / 1000).toFixed(1);
+          sqliteSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(1);
           if (!rawFilter) {
             recordMasterSuiteProgress({
               suiteIndex: i,
@@ -546,11 +546,11 @@ async function runAllSequentialSuites(): Promise<void> {
 
         // ── Step 2: Run PostgreSQL ─────────────────────────────────────────
         logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [2/2 PostgreSQL] Ejecutando: ${target.name}...`);
-        const pgStart = Date.now();
+        const pgStart = Temporal.Now.instant().epochMilliseconds;
         try {
           await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres' });
         } catch (_err: unknown) {
-          const durationSec = ((Date.now() - pgStart) / 1000).toFixed(1);
+          const durationSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
           logger.error(`\n❌ [${suiteDisplayIdx}/${totalDisplayCount}] FAIL en [PostgreSQL]: "${target.name}" ha fallado tras ${durationSec}s.`);
           recordMasterSuiteFailure({
             suiteIndex: i,
@@ -561,7 +561,7 @@ async function runAllSequentialSuites(): Promise<void> {
           logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo en PostgreSQL.\n`);
           process.exit(1);
         }
-        const pgSec = ((Date.now() - pgStart) / 1000).toFixed(1);
+        const pgSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
 
         logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `🎉 DUAL PASS: ${target.name} (SQLite: ${sqliteSec}s | Postgres: ${pgSec}s)`);
         passedCount++;
@@ -580,10 +580,10 @@ async function runAllSequentialSuites(): Promise<void> {
         // Single driver mode
         const driverName = selectedDriver === 'postgres' ? 'PostgreSQL' : 'SQLite';
         logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [${driverName}] Ejecutando: ${target.name}...`);
-        const startTime = Date.now();
+        const startTime = Temporal.Now.instant().epochMilliseconds;
         try {
           await runCommandStreamed(target.command, { SIM_DB_DRIVER: selectedDriver });
-          const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
+          const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
           logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✅ PASS: ${target.name} (${durationSec}s)`);
           passedCount++;
 
@@ -598,7 +598,7 @@ async function runAllSequentialSuites(): Promise<void> {
             });
           }
         } catch (_err: unknown) {
-          const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
+          const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
           logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [${driverName}]: "${target.name}" ha fallado tras ${durationSec}s.`);
           recordMasterSuiteFailure({
             suiteIndex: i,
@@ -631,7 +631,7 @@ async function runAllSequentialSuites(): Promise<void> {
 
         // ── 1. Clean Run on SQLite ─────────────────────────────────────────
         logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [6B 1/2 SQLite] Ejecutando corrida limpia desde CERO para: "${target.name}"...`);
-        const cleanSqliteStart = Date.now();
+        const cleanSqliteStart = Temporal.Now.instant().epochMilliseconds;
         try {
           await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite', ...cleanEnv });
         } catch (_err: unknown) {
@@ -644,11 +644,11 @@ async function runAllSequentialSuites(): Promise<void> {
           });
           process.exit(1);
         }
-        const cleanSqliteSec = ((Date.now() - cleanSqliteStart) / 1000).toFixed(1);
+        const cleanSqliteSec = ((Temporal.Now.instant().epochMilliseconds - cleanSqliteStart) / 1000).toFixed(1);
 
         // ── 2. Clean Run on PostgreSQL ─────────────────────────────────────
         logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [6B 2/2 PostgreSQL] Ejecutando corrida limpia desde CERO para: "${target.name}"...`);
-        const cleanPgStart = Date.now();
+        const cleanPgStart = Temporal.Now.instant().epochMilliseconds;
         try {
           await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres', ...cleanEnv });
         } catch (_err: unknown) {
@@ -661,7 +661,7 @@ async function runAllSequentialSuites(): Promise<void> {
           });
           process.exit(1);
         }
-        const cleanPgSec = ((Date.now() - cleanPgStart) / 1000).toFixed(1);
+        const cleanPgSec = ((Temporal.Now.instant().epochMilliseconds - cleanPgStart) / 1000).toFixed(1);
 
         logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✨ [6B: 100% DUAL CLEAN ZERO PASS] "${target.name}" superó la prueba limpia desde CERO en ambos motores (SQLite: ${cleanSqliteSec}s | Postgres: ${cleanPgSec}s)`);
 
@@ -697,7 +697,7 @@ async function runAllSequentialSuites(): Promise<void> {
       try {
         const { stopPostgresTestContainer } = await import('../testing/postgres_test_container.ts');
         stopPostgresTestContainer();
-      } catch {
+      } catch { // catch-ok: ignore failure when stopping postgres container in finally block
         // Ignore
       }
     }

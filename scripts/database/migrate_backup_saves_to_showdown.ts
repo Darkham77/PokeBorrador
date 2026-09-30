@@ -184,7 +184,6 @@ const NATURE_TO_SHOWDOWN: Record<string, string> = {
 };
 
 const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
-const OUTPUT_FILE = BACKUP_FILE;
 
 function canLearnMove(speciesId: string, moveId: string): boolean {
   let currId: string | undefined = Dex.toID(speciesId);
@@ -466,11 +465,11 @@ async function main() {
     }
   }
 
-  await fs.writeFile(OUTPUT_FILE, JSON.stringify(backup, null, 2), 'utf8');
+  await fs.writeFile(BACKUP_FILE, JSON.stringify(backup, null, 2), 'utf8');
   console.log(`\n🎉 Migración completada exitosamente!`);
   console.log(`📦 Pokémon migrados: ${migratedPokes}`);
   console.log(`⚔️ Movimientos migrados: ${migratedMovesCount}`);
-  console.log(`💾 Backup migrado guardado en: ${OUTPUT_FILE}`);
+  console.log(`💾 Backup migrado guardado en: ${BACKUP_FILE}`);
 }
 
 main().catch(err => {

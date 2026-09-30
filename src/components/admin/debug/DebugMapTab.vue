@@ -55,13 +55,6 @@ const togglePerf = () => getDebug().togglePerf()
 <style scoped lang="scss">
 @use "@/styles/components/debug";
 
-.debug-help {
-  font-size: 8px;
-  color: $muted;
-  margin-top: 8px;
-  line-height: 1.4;
-}
-
 .field-label {
   font-family: inherit;
   font-weight: 500;

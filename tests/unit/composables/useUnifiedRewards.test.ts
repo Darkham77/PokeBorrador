@@ -53,8 +53,8 @@ describe('useUnifiedRewards composable', () => {
       ...(gameStore.state.classData || {}),
       activeMission: {
         id: 'mission_6h',
-        startedAt: Date.now() - 4000000,
-        endsAt: Date.now() - 1000,
+        startedAt: Temporal.Now.instant().epochMilliseconds - 4000000,
+        endsAt: Temporal.Now.instant().epochMilliseconds - 1000,
         projectedReward: 500
       }
     }

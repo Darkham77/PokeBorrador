@@ -277,7 +277,7 @@ describe('Profile Cards Suite', () => {
           tier: 'maestro',
           rank: 1,
           finalElo: 3500,
-          awardedAt: new Date().toISOString()
+          awardedAt: Temporal.Now.instant().toString()
         },
         {
           id: 'medal_expired',

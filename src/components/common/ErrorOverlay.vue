@@ -224,18 +224,6 @@ const transitionHooks = useGsapTransition({
   color: Rgba(170, 170, 170, 1);
 }
 
-.error-message-box {
-  background: Rgba(255, 59, 59, 0.1);
-  border-left: 4px solid var(--red);
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 25px;
-  font-weight: 700;
-  color: Rgba(255, 128, 128, 1);
-  font-size: 13px;
-  font-family: 'Courier New', Courier, monospace;
-}
-
 .error-sub-title {
   @include pixelated;
   font-size: 9px;

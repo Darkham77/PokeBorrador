@@ -17,6 +17,8 @@ export type NumericSeed = [number, number, number, number];
 export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
 export const BATTLE_SIDES = ['player', 'enemy'] as const;
 export type BattleSide = (typeof BATTLE_SIDES)[number];
+export const BATTLE_WINNER_RESULTS = ['player', 'enemy', 'tie'] as const;
+export type BattleWinnerResult = (typeof BATTLE_WINNER_RESULTS)[number];
 export const BATTLE_MINIGAMES = ['fishing', 'archaeology'] as const;
 export type BattleMinigame = (typeof BATTLE_MINIGAMES)[number];
 
@@ -205,7 +207,7 @@ export interface BattleState {
   battleLogs?: BattleLog[];
   rewardsProcessed?: boolean;
   persistenceMode?: 'local' | 'remote';
-  winnerResult?: BattleSide | 'tie';
+  winnerResult?: BattleWinnerResult;
   learnQueue?: unknown[];
   isPvP?: boolean;
   isRanked?: boolean;

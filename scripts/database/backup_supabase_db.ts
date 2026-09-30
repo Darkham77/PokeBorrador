@@ -171,7 +171,8 @@ export async function backupSupabaseDb() {
 
     } catch (dbErr: unknown) {
       console.error(styleText('red', `❌ Error al conectar o respaldar la base de datos de [${canonicalName}]: ${(dbErr as Error).message}`));
-      try { await sql.end(); } catch { /* ignore */ }
+      try { await sql.end(); } catch { // catch-ok: ignore failure during disconnect on already errored connection
+      }
     }
   }
 }

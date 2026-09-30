@@ -5,7 +5,7 @@ import { requirePokemonMoveId, type MoveCategory, type PokemonMoveId } from '@/d
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
 import type { BattleContext } from '../../types/battle/battleContext.ts';
-import type { BattleSide } from '../../types/battle/battle.ts';
+import type { BattleSide, BattleWinnerResult } from '../../types/battle/battle.ts';
 
 function syncMatchingPokemon(team: (Pokemon | null)[] | undefined, target: Pokemon) {
   if (!team) return;
@@ -257,7 +257,7 @@ async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
   const attacker = getPoke(parts[2] || '');
   const moveId = parts[3] || 'Movimiento';
   const moveData = pokemonDataProvider.getMoveData(moveId);
-  const translatedName = moveData?.name || moveId;
+  const translatedName = moveData?.name || moveId; // text-ok: UI display label fallback
   const isFromEffect = line.includes('[from]');
   const isMissed = line.includes('[miss]') || line.includes('[notarget]');
 
@@ -280,7 +280,7 @@ function handlePrepareToken(ctx: SBCtx): boolean {
   const attacker = getPoke(parts[2] ?? '');
   const moveId = parts[3] || 'Movimiento';
   const moveData = pokemonDataProvider.getMoveData(moveId);
-  const translatedName = moveData?.name || moveId;
+  const translatedName = moveData?.name || moveId; // text-ok: UI display label fallback
   if (attacker) {
     if (!attacker.volatileCounters) attacker.volatileCounters = {};
     attacker.volatileCounters['twoturnmove'] = 1;
@@ -347,7 +347,7 @@ function handleWinTieToken(ctx: SBCtx): boolean {
   const { store, type, parts } = ctx;
   const winnerName = parts[2] || 'Entrenador';
   let source: 'player' | 'enemy_trainer' = 'enemy_trainer';
-  let winnerResult: 'player' | 'enemy' | 'tie' = 'enemy';
+  let winnerResult: BattleWinnerResult = 'enemy';
   if (type === 'tie') {
     winnerResult = 'tie';
   } else {

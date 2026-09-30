@@ -21,8 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { BaseAuditor } from '../../lib/auditorBase.ts';
-import { SharedAstContext } from '../../lib/astContext.ts';
+import { BaseAuditor, SharedAstContext } from '@fgp/auditor';
 
 enableCompileCache();
 
@@ -150,8 +149,9 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
       description: 'Verifica paridad del protocolo Pokémon Showdown',
       family: 'fsm',
       ruleIds: SHOWDOWN_PARITY_RULES,
+      packageName: 'Showdown',
       ruleDescriptions: {
-        'missing-protocol-token': 'Token de protocolo Showdown sin manejador ni dispatcher'
+        'missing-protocol-token': 'Token de protocolo sin handler'
       },
       requiresAst: true
     });

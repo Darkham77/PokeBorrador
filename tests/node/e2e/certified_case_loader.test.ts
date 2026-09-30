@@ -31,4 +31,35 @@ describe('Certified Case Loader - loadCertifiedBattleCases', () => {
     expect(Array.isArray(doc.battle)).toBe(true);
     expect(Array.isArray(doc.items)).toBe(true);
   });
+
+  it('validates playerTeam and enemyTeam structure in certified cases', () => {
+    const battleBatches = loadCertifiedBattleCases('battle') as CertifiedTestBatch[];
+    const first = battleBatches[0]!;
+    expect(Array.isArray(first.playerTeam)).toBe(true);
+    expect(Array.isArray(first.enemyTeam)).toBe(true);
+    expect(first.playerTeam.length).toBeGreaterThan(0);
+    expect(first.enemyTeam.length).toBeGreaterThan(0);
+
+    const firstMon = first.playerTeam[0]!;
+    expect(firstMon).toHaveProperty('species');
+    expect(firstMon).toHaveProperty('moves');
+  });
+
+  it('verifies that battle case IDs follow standard naming pattern', () => {
+    const battleBatches = loadCertifiedBattleCases('battle') as CertifiedTestBatch[];
+    for (const batch of battleBatches) {
+      expect(typeof batch.id).toBe('string');
+      expect(batch.id.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('verifies that items batches contain expected item effects', () => {
+    const itemBatches = loadCertifiedBattleCases('items') as CertifiedTestBatch[];
+    for (const batch of itemBatches) {
+      expect(batch.playerTeam.length).toBeGreaterThan(0);
+      expect(batch.enemyTeam.length).toBeGreaterThan(0);
+    }
+  });
 });
+
+
