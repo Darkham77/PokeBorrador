@@ -11,6 +11,8 @@ const HTTP_STATUS_UNAUTHORIZED = 401
 const AUTH_RETRY_DELAY_MS = 1500
 const AUTH_FETCH_TIMEOUT_SEC = 10
 const AUTH_UPDATE_TIMEOUT_SEC = 10
+const AUTH_SESSION_TIMEOUT_INITIAL_SEC = 3
+const AUTH_SESSION_TIMEOUT_RETRY_SEC = 4
 
 export interface VerifiedProfileData {
   dbVersion: number
@@ -25,7 +27,7 @@ export async function fetchOnlineSessionWithRetry(maxAttempts = 2): Promise<Sess
   let attempt = 1
   while (attempt <= maxAttempts) {
     try {
-      const timeoutSeconds = attempt === 1 ? 5 : 15
+      const timeoutSeconds = attempt === 1 ? AUTH_SESSION_TIMEOUT_INITIAL_SEC : AUTH_SESSION_TIMEOUT_RETRY_SEC
       const sessionPromise = supabase.auth.getSession()
       const timeoutPromise = new Promise((_, reject) => gsap.delayedCall(timeoutSeconds, () => reject(new Error('TIMEOUT'))))
       

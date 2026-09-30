@@ -410,7 +410,7 @@ El proyecto soporta persistencia dual con aislamiento total entre el modo local 
 | `npm run database:repair-account` | **Reparación de Cuentas Ilegales**: Corrige Pokémon ilegales (niveles, movimientos o habilidades no permitidas) en una o todas las cuentas, tanto en SQLite local como en servidores Supabase. |
 | `npm run database:diagnose-account` | **Diagnóstico de Cuentas**: Diagnostica integridad, inventario, Pokémon ilegales y locks de una cuenta (`database:diagnose-accounts` para todas las cuentas). |
 | `npm run admin:rename` | **Renombrado Administrativo**: Cambia el nombre de entrenador de un usuario en Supabase directamente desde consola. |
-| `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro y genera el catálogo desacoplado en `src/data/system/servers.local.json` a partir de `servers.defaults.json` sin ensuciar Git. |
+| `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro o secrets de CI y genera el catálogo desacoplado en `src/data/system/servers.local.json` de manera estricta y sin fallbacks. |
 | `npm run database:update` | **Gestor y Migrador**: Aplica esquemas iniciales y migraciones SQL incrementales en el servidor Supabase elegido (`server=<profile>`) o en todos (`all`). |
 | `npm run database:backup` | **Generador de Respaldos**: Conecta al servidor Supabase y exporta todas las tablas a un archivo JSON estructurado. |
 | `npm run database:upgrade-backup` | **Actualizador de Respaldos**: Aplica migraciones y legalización de Showdown a un respaldo JSON exportado. |
@@ -446,11 +446,9 @@ npm run database:repair-account db=tests/fixtures/poke_local_ash.db all
 ```bash
 # Reparar una cuenta específica en un servidor Supabase (por UUID, username o email):
 npm run database:repair-account server=server_franco user=Ash
-npm run database:repair-account server=nas_franco user=usuario@ejemplo.com
 
 # Reparar TODAS las cuentas registradas en el servidor Supabase:
 npm run database:repair-account server=server_franco all
-npm run database:repair-account server=nas_franco all
 ```
 
 ---
@@ -462,19 +460,19 @@ npm run database:repair-account server=nas_franco all
 npm run servers:configure
 
 # 2. Inicializar o actualizar base de datos en un servidor específico con formato directo
-npm run database:update server=nas_franco
+npm run database:update server=server_franco
 
 # 3. Actualizar base de datos en TODOS los servidores configurados en el .env
 npm run database:update all
 
 # 4. Descargar un respaldo completo en formato JSON de un servidor
-npm run database:backup server=nas_franco
+npm run database:backup server=server_franco
 
 # 5. Restaurar el respaldo más reciente de forma automática a un servidor
-npm run database:restore server=nas_franco
+npm run database:restore server=server_franco
 
 # 6. Restaurar un respaldo específico pasándole la ruta exacta del archivo
-npm run database:restore server=nas_franco file=database/backups/nas_franco/nas_franco_backup_2026-05-17T05-29-09.json
+npm run database:restore server=server_franco file=database/backups/server_franco/server_franco_backup_2026-05-17T05-29-09.json
 ```
 
 #### 🌐 Resolución de Problemas de Red (MikroTik & Hairpin NAT)
@@ -642,21 +640,21 @@ El proyecto incluye un sistema de protección automática (**"Ban Trap"**) para 
   - **Comando para desbanear**:
 
     ```bash
-    npm run database:admin server=nas_franco action=unban email=usuario@ejemplo.com
+    npm run database:admin server=server_franco action=unban email=usuario@ejemplo.com
     ```
 
 - **Modo Local**: En modo `offline` (localhost), el sistema de baneo está deshabilitado para permitir el testing sin riesgos.
 
 ### 8. 🛡️ Mantenimiento de Usuarios (Admin CLI)
 
-El proyecto cuenta con un gestor unificado de administración de usuarios en consola (`database:admin`) que se conecta de forma nativa a cualquier instancia Supabase (Cloud o NAS) utilizando las credenciales del `.env` maestro, permitiendo realizar operaciones de mantenimiento avanzadas sin necesidad de ingresar al SQL Editor ni escribir consultas manuales.
+El proyecto cuenta con un gestor unificado de administración de usuarios en consola (`database:admin`) que se conecta de forma nativa a cualquier instancia Supabase (Cloud o Docker local) utilizando las credenciales del `.env` maestro, permitiendo realizar operaciones de mantenimiento avanzadas sin necesidad de ingresar al SQL Editor ni escribir consultas manuales.
 
 #### Cambiar Contraseña de un Usuario
 
 Para resetear la contraseña de forma segura (generando automáticamente el hash bcrypt en el servidor):
 
 ```bash
-npm run database:admin server=nas_franco action=set-password email=usuario@ejemplo.com password=NUEVA_CONTRASEÑA
+npm run database:admin server=server_franco action=set-password email=usuario@ejemplo.com password=NUEVA_CONTRASEÑA
 ```
 
 #### Cambiar Email de un Usuario
@@ -664,13 +662,13 @@ npm run database:admin server=nas_franco action=set-password email=usuario@ejemp
 El gestor actualiza automáticamente tanto la tabla de autenticación (`auth.users`) como el perfil público (`public.profiles`) en una única transacción DML para mantener la consistencia absoluta:
 
 ```bash
-npm run database:admin server=nas_franco action=set-email email=viejo@email.com new-email=nuevo@email.com
+npm run database:admin server=server_franco action=set-email email=viejo@email.com new-email=nuevo@email.com
 ```
 
 #### Cambiar Nombre de Entrenador (Username)
 
 ```bash
-npm run database:admin server=nas_franco action=set-username email=usuario@ejemplo.com username=NuevoNombre
+npm run database:admin server=server_franco action=set-username email=usuario@ejemplo.com username=NuevoNombre
 ```
 
 #### Promoción a Administrador (ADMIN Role)
@@ -678,7 +676,7 @@ npm run database:admin server=nas_franco action=set-username email=usuario@ejemp
 Para otorgar permisos de administrador a un usuario (acceso a paneles de debug en producción, bypass de ban-traps, etc.):
 
 ```bash
-npm run database:admin server=nas_franco action=promote email=usuario@ejemplo.com
+npm run database:admin server=server_franco action=promote email=usuario@ejemplo.com
 ```
 
 > [!IMPORTANT] Los nombres de usuario deben ser únicos. Si el nombre ya está ocupado por otro jugador, la herramienta capturará la restricción `UNIQUE` y mostrará un mensaje de advertencia claro en consola.

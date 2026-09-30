@@ -172,7 +172,7 @@ export function parseServerArguments(args: string[], baseProfiles: string[], all
     console.log(styleText('cyan', `\n📖 USO: npm run <comando> [server=<perfil> | <perfil> | all]`));
     console.log(styleText('gray', '\nOpciones disponibles:'));
     console.log(styleText('gray', '  server=<perfil>   : Nombre del perfil de servidor objetivo.'));
-    console.log(styleText('gray', '  <perfil>          : Nombre directo del servidor (ej. server_franco, nas_franco).'));
+    console.log(styleText('gray', '  <perfil>          : Nombre directo del servidor (ej. server_franco, cloud).'));
     console.log(styleText('gray', '  all               : Aplica la operación a todos los servidores del .env.'));
     console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(0);

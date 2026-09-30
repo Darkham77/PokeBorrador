@@ -3,14 +3,14 @@ import { parseArgs } from 'node:util'
 import { parseServerArguments } from '@/../scripts/lib/supabaseClient.ts'
 
 describe('CLI Argument Parsing & Standardization', () => {
-  const baseProfiles = ['nas_franco', 'cloud']
-  const allAvailable = ['nas_franco', 'cloud', 'local-docker', 'official_prod']
+  const baseProfiles = ['server_franco', 'cloud']
+  const allAvailable = ['server_franco', 'cloud', 'local-docker', 'official_prod']
 
   describe('parseServerArguments', () => {
     it('correctly extracts server from --server=<profile>', () => {
-      const args = ['--server=nas_franco']
+      const args = ['--server=server_franco']
       const result = parseServerArguments(args, baseProfiles, allAvailable)
-      expect(result).toEqual(['nas_franco'])
+      expect(result).toEqual(['server_franco'])
     })
 
     it('correctly extracts server from -s=<profile>', () => {
@@ -20,9 +20,9 @@ describe('CLI Argument Parsing & Standardization', () => {
     })
 
     it('correctly extracts server from separated --server <profile>', () => {
-      const args = ['--server', 'nas_franco']
+      const args = ['--server', 'server_franco']
       const result = parseServerArguments(args, baseProfiles, allAvailable)
-      expect(result).toEqual(['nas_franco'])
+      expect(result).toEqual(['server_franco'])
     })
 
     it('correctly returns all profiles when --all is passed', () => {
@@ -58,13 +58,13 @@ describe('CLI Argument Parsing & Standardization', () => {
 
     it('correctly parses all explicit flags for set-password', () => {
       const args = [
-        '--server=nas_franco',
+        '--server=server_franco',
         '--action=set-password',
         '--email=usuario@ejemplo.com',
         '--password=poke312'
       ]
       const { values } = parseAdminArgs(args)
-      expect(values.server).toBe('nas_franco')
+      expect(values.server).toBe('server_franco')
       expect(values.action).toBe('set-password')
       expect(values.email).toBe('usuario@ejemplo.com')
       expect(values.password).toBe('poke312')
@@ -86,13 +86,13 @@ describe('CLI Argument Parsing & Standardization', () => {
 
     it('correctly parses set-email with new-email flag', () => {
       const args = [
-        '--server=nas_franco',
+        '--server=server_franco',
         '--action=set-email',
         '--email=old@test.com',
         '--new-email=new@test.com'
       ]
       const { values } = parseAdminArgs(args)
-      expect(values.server).toBe('nas_franco')
+      expect(values.server).toBe('server_franco')
       expect(values.action).toBe('set-email')
       expect(values.email).toBe('old@test.com')
       expect(values['new-email']).toBe('new@test.com')

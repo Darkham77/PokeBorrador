@@ -72,13 +72,13 @@ SERVER_cloud_TENANT_ID=your-tenant-id
 SERVER_cloud_SUPABASE_PUBLIC_URL=https://mi-api-cloud.midominio.com
 SERVER_cloud_POSTGRES_PASSWORD=mi_password_seguro_cloud
 
-# === [ SERVIDOR: nas-franco ] ===
-SERVER_nas_franco_ID=nas-franco
-SERVER_nas_franco_NAME="Franco NAS (Docker)"
-SERVER_nas_franco_REGION="Desarrollo"
-SERVER_nas_franco_TENANT_ID=your-tenant-id
-SERVER_nas_franco_SUPABASE_PUBLIC_URL=http://192.168.88.200:8000
-SERVER_nas_franco_POSTGRES_PASSWORD=mi_password_seguro_nas
+# === [ SERVIDOR: server_franco ] ===
+SERVER_server_franco_ID=server_franco
+SERVER_server_franco_NAME="Servidor Franco (Docker)"
+SERVER_server_franco_REGION="Desarrollo"
+SERVER_server_franco_TENANT_ID=your-tenant-id
+SERVER_server_franco_SUPABASE_PUBLIC_URL=https://francogp.myqnapcloud.com:50002
+SERVER_server_franco_POSTGRES_PASSWORD=mi_password_seguro_server
 ```
 
 > [!TIP]
@@ -116,7 +116,7 @@ npm run supabase:manage clone
 
 ### `generate`
 
-Procesa los servidores del `.env` maestro y crea un archivo `.env` independiente para cada uno dentro de la carpeta `generated/` (ej. `generated/nas_franco.env`). También copia y adapta el `docker-compose.yml` oficial inyectando los volúmenes nombrados y configuraciones de tenant.
+Procesa los servidores del `.env` maestro y crea un archivo `.env` independiente para cada uno dentro de la carpeta `generated/` (ej. `generated/server_franco.env`). También copia y adapta el `docker-compose.yml` oficial inyectando los volúmenes nombrados y configuraciones de tenant.
 
 ```bash
 npm run supabase:manage generate
@@ -256,7 +256,7 @@ Para evitar esto:
 1. En tu archivo `.env` maestro en la raíz, asigna un puerto diferente y libre para el bindeo HTTPS interno de Kong agregando esta variable en tu perfil de servidor:
 
    ```ini
-   SERVER_nas_franco_KONG_HTTPS_PORT=8444
+   SERVER_server_franco_KONG_HTTPS_PORT=50002
    ```
 
 2. Corre el script para regenerar los archivos de despliegue:
@@ -265,7 +265,7 @@ Para evitar esto:
    npm run supabase:manage generate
    ```
 
-3. Subí el nuevo `nas_franco.env` (renombrado a `.env`) y `docker-compose.yml` al NAS y recreá el contenedor:
+3. Subí el nuevo `server_franco.env` (renombrado a `.env`) y `docker-compose.yml` al servidor y recreá el contenedor:
 
    ```bash
    docker compose down

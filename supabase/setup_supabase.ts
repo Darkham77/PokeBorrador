@@ -250,6 +250,30 @@ function signJwt(payload: object, secret: string): string {
   return `${h}.${p}.${b64url(signature)}`;
 }
 
+function isJwtValid(token: string | undefined, expectedRole: string, secret: string): boolean {
+  if (!token || typeof token !== 'string') return false;
+  const parts = token.trim().replace(/^["']|["']$/g, '').split('.');
+  if (parts.length !== 3) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8')) as {
+      role?: string;
+      exp?: number | null;
+    };
+    if (payload.role !== expectedRole) return false;
+    if (typeof payload.exp !== 'number' || isNaN(payload.exp)) return false;
+    const nowSec = Math.floor(Temporal.Now.instant().epochMilliseconds / 1000);
+    if (payload.exp <= nowSec) return false;
+
+    // Verificar firma criptográfica HMAC-SHA256 con el JWT_SECRET correspondiente
+    const expectedSig = crypto.createHmac('sha256', secret)
+      .update(`${parts[0]}.${parts[1]}`)
+      .digest('base64url');
+    return parts[2] === expectedSig;
+  } catch {
+    return false;
+  }
+}
+
 async function ensureServerKeys(serverName: string, envVars: Record<string, string>): Promise<Record<string, string>> {
   const prefix = `SERVER_${serverName}_`;
   const existing = extractServerVars(envVars, serverName);
@@ -265,7 +289,11 @@ async function ensureServerKeys(serverName: string, envVars: Record<string, stri
   const exp = iat + 157680000; // 5 años de validez
 
   for (const [key, role] of [['ANON_KEY', 'anon'], ['SERVICE_ROLE_KEY', 'service_role']] as const) {
-    if (!existing[key]) {
+    const currentToken = existing[key];
+    if (!currentToken || !isJwtValid(currentToken, role, jwtSecret)) {
+      if (currentToken) {
+        warn(`El token SERVER_${serverName}_${key} actual en .env es inválido, expirado o tiene 'exp: null'. Regenerando automáticamente con firma válida...`);
+      }
       const payload = { role, iss: "supabase", iat, exp };
       generated[key] = signJwt(payload, jwtSecret);
     }

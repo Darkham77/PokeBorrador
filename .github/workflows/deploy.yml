@@ -13,6 +13,21 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      # Official Cloud Production Server
+      SERVER_cloud_ID: ${{ secrets.SERVER_cloud_ID }}
+      SERVER_cloud_NAME: ${{ secrets.SERVER_cloud_NAME }}
+      SERVER_cloud_REGION: ${{ secrets.SERVER_cloud_REGION }}
+      SERVER_cloud_SUPABASE_PUBLIC_URL: ${{ secrets.SERVER_cloud_SUPABASE_PUBLIC_URL }}
+      SERVER_cloud_ANON_KEY: ${{ secrets.SERVER_cloud_ANON_KEY }}
+      SERVER_cloud_IS_DEFAULT: ${{ secrets.SERVER_cloud_IS_DEFAULT }}
+
+      # Dedicated Server Franco
+      SERVER_server_franco_ID: ${{ secrets.SERVER_server_franco_ID }}
+      SERVER_server_franco_NAME: ${{ secrets.SERVER_server_franco_NAME }}
+      SERVER_server_franco_REGION: ${{ secrets.SERVER_server_franco_REGION }}
+      SERVER_server_franco_SUPABASE_PUBLIC_URL: ${{ secrets.SERVER_server_franco_SUPABASE_PUBLIC_URL }}
+      SERVER_server_franco_ANON_KEY: ${{ secrets.SERVER_server_franco_ANON_KEY }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -32,25 +47,6 @@ jobs:
         run: |
           npm run servers:configure
           npm run validate:tools
-        env:
-          SERVER_nas_franco_ID: ${{ secrets.SERVER_nas_franco_ID }}
-          SERVER_nas_franco_NAME: ${{ secrets.SERVER_nas_franco_NAME }}
-          SERVER_nas_franco_REGION: ${{ secrets.SERVER_nas_franco_REGION }}
-          SERVER_nas_franco_TENANT_ID: ${{ secrets.SERVER_nas_franco_TENANT_ID }}
-          SERVER_nas_franco_PG_META_CRYPTO_KEY: ${{ secrets.SERVER_nas_franco_PG_META_CRYPTO_KEY }}
-          SERVER_nas_franco_VAULT_ENC_KEY: ${{ secrets.SERVER_nas_franco_VAULT_ENC_KEY }}
-          SERVER_nas_franco_SECRET_KEY_BASE: ${{ secrets.SERVER_nas_franco_SECRET_KEY_BASE }}
-          SERVER_nas_franco_POSTGRES_PASSWORD: ${{ secrets.SERVER_nas_franco_POSTGRES_PASSWORD }}
-          SERVER_nas_franco_SERVICE_ROLE_KEY: ${{ secrets.SERVER_nas_franco_SERVICE_ROLE_KEY }}
-          SERVER_nas_franco_ANON_KEY: ${{ secrets.SERVER_nas_franco_ANON_KEY }}
-          SERVER_nas_franco_JWT_SECRET: ${{ secrets.SERVER_nas_franco_JWT_SECRET }}
-          SERVER_nas_franco_DASHBOARD_PASSWORD: ${{ secrets.SERVER_nas_franco_DASHBOARD_PASSWORD }}
-          SERVER_nas_franco_DASHBOARD_USERNAME: ${{ secrets.SERVER_nas_franco_DASHBOARD_USERNAME }}
-          SERVER_nas_franco_SITE_URL: ${{ secrets.SERVER_nas_franco_SITE_URL }}
-          SERVER_nas_franco_SUPABASE_PUBLIC_URL: ${{ secrets.SERVER_nas_franco_SUPABASE_PUBLIC_URL }}
-          SERVER_nas_franco_API_EXTERNAL_URL: ${{ secrets.SERVER_nas_franco_API_EXTERNAL_URL }}
-          SERVER_nas_franco_KONG_HTTPS_PORT: ${{ secrets.SERVER_nas_franco_KONG_HTTPS_PORT }}
-          SERVER_nas_franco_DATABASE_URL: ${{ secrets.SERVER_nas_franco_DATABASE_URL }}
 
       - name: Build project
         run: npm run build

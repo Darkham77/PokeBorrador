@@ -75,4 +75,83 @@ describe('Official Servers Missing Local Reproduction', () => {
       delete process.env['SERVER_ci_mock_SUPABASE_URL'];
     }
   });
+
+  it('compiles servers strictly from environment profiles and preserves official_prod as default', async () => {
+    const { configureOfficialServers } = await import('../../../scripts/maintenance/configure_official_servers.ts');
+    process.env['SERVER_ci_extra_ID'] = 'ci_extra_server';
+    process.env['SERVER_ci_extra_NAME'] = 'CI Extra Server';
+    process.env['SERVER_ci_extra_SUPABASE_PUBLIC_URL'] = 'https://extra.supabase.co';
+    process.env['SERVER_ci_extra_ANON_KEY'] = 'test-extra-anon-key';
+
+    try {
+      await configureOfficialServers();
+      const generated = JSON.parse(fs.readFileSync(localJsonPath, 'utf-8')) as Array<{ id: string; isDefault?: boolean }>;
+      const officialProd = generated.find(s => s.id === 'official_prod');
+      const ciExtra = generated.find(s => s.id === 'ci_extra_server');
+      
+      expect(officialProd).toBeDefined();
+      expect(officialProd?.isDefault).toBe(true);
+      expect(ciExtra).toBeDefined();
+      expect(ciExtra?.isDefault).toBeFalsy();
+    } finally {
+      delete process.env['SERVER_ci_extra_ID'];
+      delete process.env['SERVER_ci_extra_NAME'];
+      delete process.env['SERVER_ci_extra_SUPABASE_PUBLIC_URL'];
+      delete process.env['SERVER_ci_extra_ANON_KEY'];
+      // Restore clean local configuration from local environment
+      await configureOfficialServers();
+    }
+  });
+
+  it('throws a loud critical error when no profiles exist in env or process.env', async () => {
+    const { configureOfficialServers } = await import('../../../scripts/maintenance/configure_official_servers.ts');
+    const savedEnv: Record<string, string | undefined> = {};
+    for (const key of Object.keys(process.env)) {
+      if (key.startsWith('SERVER_')) {
+        savedEnv[key] = process.env[key];
+        delete process.env[key];
+      }
+    }
+    const envPath = path.resolve(process.cwd(), '.env');
+    const envBakPath = path.resolve(process.cwd(), '.env.repro_bak');
+    let envMoved = false;
+    if (fs.existsSync(envPath)) {
+      fs.renameSync(envPath, envBakPath);
+      envMoved = true;
+    }
+
+    try {
+      await expect(configureOfficialServers()).rejects.toThrow(/ERROR CRÍTICO/);
+    } finally {
+      if (envMoved && fs.existsSync(envBakPath)) {
+        fs.renameSync(envBakPath, envPath);
+      }
+      for (const [k, v] of Object.entries(savedEnv)) {
+        if (v !== undefined) process.env[k] = v;
+      }
+      await configureOfficialServers();
+    }
+  });
+
+  it('throws loud critical error at module load when servers.local.json is empty', () => {
+    const originalContent = fs.readFileSync(localJsonPath, 'utf-8');
+    try {
+      fs.writeFileSync(localJsonPath, '[]', 'utf-8');
+      let errorThrown = false;
+      try {
+        const { execSync } = require('node:child_process');
+        execSync('node --experimental-strip-types -e "import(\'./src/data/system/official_servers.ts\')"', {
+          cwd: process.cwd(),
+          stdio: 'pipe'
+        });
+      } catch (err: unknown) {
+        errorThrown = true;
+        const stderr = String((err as { stderr?: Buffer }).stderr ?? '');
+        expect(stderr).toContain('ERROR CRÍTICO: No se encontraron servidores configurados');
+      }
+      expect(errorThrown).toBe(true);
+    } finally {
+      fs.writeFileSync(localJsonPath, originalContent, 'utf-8');
+    }
+  });
 });

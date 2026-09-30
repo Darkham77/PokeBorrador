@@ -410,7 +410,7 @@ export async function repairAccountsInSupabase(options: RepairAccountOptions): P
   const isSilent = Boolean(options.silent);
 
   if (!profile) {
-    throw new Error('Debes especificar un perfil de servidor (ej: server_franco, nas_franco).');
+    throw new Error('Debes especificar un perfil de servidor (ej: server_franco, cloud).');
   }
 
   const { serverConfigs } = await getValidatedServerConfigs();
@@ -593,15 +593,15 @@ Uso:
 Opciones:
   user=<userId>            ID, nombre de usuario o email de la cuenta a reparar.
   all                      Corrige los Pokémon ilegales de TODAS las cuentas registradas, una por una.
-  server=<perfil>          Perfil de servidor Supabase (ej: server_franco, nas_franco, cloud).
+  server=<perfil>          Perfil de servidor Supabase (ej: server_franco, cloud).
   db=<path>                Ruta a la base de datos SQLite (.db). Por defecto busca poke_local.db.
   help                     Muestra esta ayuda.
 
 Ejemplos:
   npm run database:repair-account user=Ash
   npm run database:repair-account all
-  npm run database:repair-account server=nas_franco user=kenviota@gmail.com
-  npm run database:repair-account server=nas_franco all
+  npm run database:repair-account server=server_franco user=kenviota@gmail.com
+  npm run database:repair-account server=server_franco all
 `);
     process.exit(0);
   }

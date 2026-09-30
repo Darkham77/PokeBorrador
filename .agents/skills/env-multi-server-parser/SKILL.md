@@ -9,14 +9,14 @@ This skill defines the standards and procedures for AI agents to correctly inter
 
 ## 1. Context & Master `.env` Architecture
 
-The project utilizes a single master `.env` file as the single source of truth for multiple deployment environments/servers (e.g., `cloud`, `nas_franco`). To prevent naming collisions and maintain clear organization, variables are structured using the following prefix conventions:
+The project utilizes a single master `.env` file as the single source of truth for multiple deployment environments/servers (e.g., `cloud`, `server_franco`). To prevent naming collisions and maintain clear organization, variables are structured using the following prefix conventions:
 
 - **Global Variables**: Shared across deployments or used for container/image management (e.g., `DOCKER_USER`, `DOCKER_REPO_DB`, `DOCKER_TAG_DB`).
 - **Server-Specific Variables**: Strictly grouped using the prefix `SERVER_<profile_name>_<VARIABLE_NAME>`.
   - **Game & GUI Metadata**: Every server profile includes `SERVER_<profile>_ID`, `SERVER_<profile>_NAME`, and `SERVER_<profile>_REGION` to allow easy parsing of server registration data for the game client/GUI.
   - **Single Source of Truth Tenant ID**: To adhere to DRY principles, every server defines only `SERVER_<profile>_TENANT_ID`. When generating deployment configurations, the parser automatically propagates this value to `POOLER_TENANT_ID` and `STORAGE_TENANT_ID` as required by Supabase services.
   - Cloud Profile Example: `SERVER_cloud_ID=official_prod`, `SERVER_cloud_TENANT_ID=your-tenant-id`.
-  - NAS Profile Example: `SERVER_nas_franco_ID=local-docker`, `SERVER_nas_franco_TENANT_ID=your-tenant-id`.
+  - Docker Dedicated Profile Example: `SERVER_server_franco_ID=server_franco`, `SERVER_server_franco_TENANT_ID=your-tenant-id`.
 
 ## 2. Parsing & Extraction Principles
 
@@ -24,13 +24,13 @@ When consuming, transforming, or generating configurations from the master `.env
 
 ### Rule 1: Target Profile Identification
 
-Before performing any extraction, unambiguously identify the target environment or server profile requested by the user (e.g., `nas_franco` or `cloud`).
+Before performing any extraction, unambiguously identify the target environment or server profile requested by the user (e.g., `server_franco` or `cloud`).
 
 ### Rule 2: Prefix Filtering & Stripping (Canonical Transformation)
 
 Select only the variables matching the target profile prefix (`SERVER_<profile>_`). When injecting or exporting them for the final service consumption (Supabase, Docker, etc.), **strip the server prefix** to restore the canonical variable name expected by the application.
 
-- *Source in master .env*: `SERVER_nas_franco_POSTGRES_PASSWORD=my_password`
+- *Source in master .env*: `SERVER_server_franco_POSTGRES_PASSWORD=my_password`
 - *Transformed result*: `POSTGRES_PASSWORD=my_password`
 
 ### Rule 3: Global Variable Inclusion
@@ -102,24 +102,24 @@ SERVER_cloud_NAME="Poké Vicio Oficial"
 SERVER_cloud_REGION="Global / Cloud"
 SERVER_cloud_TENANT_ID=your-tenant-id
 SERVER_cloud_JWT_SECRET=secret_cloud_123
-SERVER_nas_franco_ID=local-docker
-SERVER_nas_franco_NAME="Servidor Dev (Docker)"
-SERVER_nas_franco_REGION="Desarrollo"
-SERVER_nas_franco_TENANT_ID=your-tenant-id
-SERVER_nas_franco_JWT_SECRET=secret_nas_456
+SERVER_server_franco_ID=server_franco
+SERVER_server_franco_NAME="Servidor Dev (Docker)"
+SERVER_server_franco_REGION="Desarrollo"
+SERVER_server_franco_TENANT_ID=your-tenant-id
+SERVER_server_franco_JWT_SECRET=secret_server_456
 ```
 
-**Requested Output (Clean configuration for `nas_franco`):**
+**Requested Output (Clean configuration for `server_franco`):**
 
 ```env
 DOCKER_USER=francogp612
-ID=local-docker
+ID=server_franco
 NAME="Servidor Dev (Docker)"
 REGION="Desarrollo"
 TENANT_ID=your-tenant-id
 POOLER_TENANT_ID=your-tenant-id
 STORAGE_TENANT_ID=your-tenant-id
-JWT_SECRET=secret_nas_456
+JWT_SECRET=secret_server_456
 ```
 
 ## 5. Security & Zero Public Credential Reuse Mandate
@@ -129,13 +129,13 @@ When configuring, parsing, or provisioning `.env` files:
 - **Separation of Template vs Production**: `.env.example` represents an immutable public template; never alter it to store private server configurations or create Git history noise.
 - **Active Cross-Verification**: When asked to verify environment security, agents MUST programmatically compare every secret in `.env` against the Git repository to guarantee zero overlap with published data.
 
-## 6. Decoupled Application Server Catalog Standard (servers.local.json vs servers.defaults.json)
+## 6. Decoupled Application Server Catalog Standard (servers.local.json)
 
-When generating or synchronizing official Supabase connection profiles from the master `.env` file for the frontend application (e.g., login server selectors):
+When generating or synchronizing official Supabase connection profiles from the master `.env` file (or CI/CD environment secrets) for the frontend application (e.g., login server selectors):
 
 - **Zero Tracked Code Mutation Mandate**: Configuration scripts (such as `configure_official_servers.ts`) MUST NEVER write TypeScript code or overwrite tracked files (`official_servers.ts`). Overwriting tracked files during setup or deploy dirties the git working tree and causes `git pull` merge conflicts on production or testing servers.
-- **Tracked Defaults vs Gitignored Local Overrides**:
-  - `src/data/system/servers.defaults.json`: Canonical server catalog committed to Git, defining baseline configurations for fresh checkouts and CI pipelines.
-  - `src/data/system/servers.local.json`: Machine-local active server configurations generated from `.env` and **strictly ignored in `.gitignore`**.
+- **Gitignored Machine-Local Catalog & Zero Fallback Mandate**:
+  - `src/data/system/servers.local.json`: Machine-local active server configurations generated from `.env` (or CI environment variables) and **strictly ignored in `.gitignore`**. Silent mock fallbacks and default dummy files (`servers.defaults.json`) are strictly prohibited.
   - `src/data/system/servers.local.json.d.ts`: Ambient module declarations allowing TypeScript to compile cleanly even before `servers.local.json` is generated.
-- **Stable Typed Facade (`official_servers.ts`)**: Application code MUST import from the stable facade `official_servers.ts`. The facade dynamically loads `servers.local.json` if present and non-empty, cleanly falling back to `servers.defaults.json` on clean clones.
+- **Stable Typed Facade (`official_servers.ts`)**: Application code MUST import from the stable facade `official_servers.ts`. The facade loads `servers.local.json` and throws a noisy, descriptive error if no servers are configured or if the environment variables were omitted.
+

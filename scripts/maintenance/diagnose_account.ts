@@ -611,7 +611,7 @@ Uso:
 
 Opciones:
   all                      Audita todas las cuentas disponibles en el origen seleccionado.
-  server=<perfil>          Nombre del perfil de servidor en .env (ej: server_franco, nas_franco, cloud).
+  server=<perfil>          Nombre del perfil de servidor en .env (ej: server_franco, cloud).
   user=<id|email|user>     Identificador, correo o nombre de usuario del entrenador a diagnosticar.
   file=<ruta>              Ruta directa a un archivo JSON de respaldo.
   db=<ruta>                Ruta al archivo SQLite local (por defecto: poke_local.db).
