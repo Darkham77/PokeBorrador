@@ -327,14 +327,6 @@ audit-level=high
     Write-Host " [CONFIG] Archivo .npmrc local detectado y activo." -ForegroundColor Green
 }
 
-# Sincronizar configuraciones locales desde plantillas si no existen (sin pisar existentes ni ensuciar git)
-$localServersJson = Join-Path $PSScriptRoot "src\data\system\servers.local.json"
-$defaultServersJson = Join-Path $PSScriptRoot "src\data\system\servers.defaults.json"
-if (-not (Test-Path $localServersJson) -and (Test-Path $defaultServersJson)) {
-    Write-Host "[CONFIG] Inicializando src\data\system\servers.local.json desde plantilla..." -ForegroundColor Cyan
-    Copy-Item $defaultServersJson $localServersJson
-}
-
 # 10. Instalar dependencias limpias del proyecto
 Write-Host ""
 Write-Host "[DEPENDENCIES] Instalando dependencias del proyecto con npm ci..." -ForegroundColor Cyan
@@ -353,6 +345,11 @@ if (Test-Path $nodeModulesDir) {
 Write-Host ""
 Write-Host "[BUILD-TOOLS] Compilando y verificando herramientas nativas auxiliares..." -ForegroundColor Cyan
 npm run validate:tools
+
+# 13. Compilar catálogo de servidores oficiales desde .env o plantilla
+Write-Host ""
+Write-Host "[CONFIG] Compilando catalogo de servidores oficiales..." -ForegroundColor Cyan
+npm run servers:configure
 
 Write-Host ""
 Write-Host "======================================================" -ForegroundColor Green

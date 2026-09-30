@@ -34,13 +34,12 @@ const TEST_DOCKER_SERVER: OfficialServer = {
 
 export async function configureOfficialServers(): Promise<void> {
   console.log(styleText('bold', `\n--- 🌐 OFFICIAL SERVERS CONFIGURATOR (Node.js ${CONFIGURATOR_TARGET_NODE_VERSION_LABEL}+) ---`));
-  console.log(styleText('cyan', `📄 Leyendo archivo .env maestro: ${MASTER_ENV_FILE_PATH}`));
 
   try {
     await fsPromises.access(MASTER_ENV_FILE_PATH);
+    console.log(styleText('cyan', `📄 Leyendo archivo .env maestro: ${MASTER_ENV_FILE_PATH}`));
   } catch {
-    console.error(styleText('red', '❌ Error: Archivo .env maestro no encontrado.'));
-    process.exit(1);
+    console.log(styleText('yellow', `ℹ️ Archivo .env maestro no encontrado. Leyendo variables de entorno desde process.env...`));
   }
 
   const { readAndParseEnv } = await import('../lib/supabaseClient.ts');
@@ -48,7 +47,18 @@ export async function configureOfficialServers(): Promise<void> {
 
   const profiles = Object.keys(serverConfigs);
   if (profiles.length === 0) {
-    console.warn(styleText('yellow', '⚠️ Advertencia: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
+    const defaultsPath = path.resolve(process.cwd(), 'src/data/system/servers.defaults.json');
+    try {
+      await fsPromises.access(defaultsPath);
+      console.warn(styleText('yellow', '⚠️ No se encontraron perfiles SERVER_* en el entorno ni en .env. Inicializando desde servers.defaults.json...'));
+      const outputDir = path.dirname(OUTPUT_FILE);
+      await fsPromises.mkdir(outputDir, { recursive: true });
+      await fsPromises.copyFile(defaultsPath, OUTPUT_FILE);
+      console.log(styleText('green', `✨ src/data/system/servers.local.json inicializado desde plantilla por defecto.\n`));
+      return;
+    } catch {
+      console.warn(styleText('yellow', '⚠️ Advertencia: No se encontraron configuraciones de servidor (SERVER_<profile>_*).'));
+    }
   } else {
     console.log(styleText('green', `✅ Se encontraron ${profiles.length} perfiles de servidor: ${profiles.join(', ')}`));
   }

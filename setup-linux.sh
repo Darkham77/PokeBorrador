@@ -168,12 +168,6 @@ else
     echo "  [✓] .npmrc local detectado y activo."
 fi
 
-# Sincronizar configuraciones locales si no existen (sin pisar existentes ni ensuciar git)
-if [ ! -f "$SCRIPT_DIR/src/data/system/servers.local.json" ] && [ -f "$SCRIPT_DIR/src/data/system/servers.defaults.json" ]; then
-    echo "📋 Inicializando src/data/system/servers.local.json desde plantilla..."
-    cp "$SCRIPT_DIR/src/data/system/servers.defaults.json" "$SCRIPT_DIR/src/data/system/servers.local.json"
-fi
-
 # 7. Instalar dependencias limpias del proyecto
 echo -e "\n📦 Instalando dependencias del proyecto con npm ci..."
 cd "$SCRIPT_DIR"
@@ -181,6 +175,9 @@ npm ci
 
 # 8. Validar y compilar herramientas nativas auxiliares
 npm run validate:tools
+
+# 9. Compilar catálogo de servidores oficiales desde .env o plantilla
+npm run servers:configure
 
 # Sincronizar binarios nativos generados hacia ~/.local/bin
 if [ -e "$NODE_BIN_DIR/css-checker" ]; then

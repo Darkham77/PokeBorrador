@@ -13,7 +13,7 @@
   "scripts": {
     "preinstall": "node --experimental-strip-types scripts/maintenance/check_environment.ts",
     "postinstall": "cd node_modules/css-checker-kit && npm run postinstall",
-    "dev": "node -e \"if(process.platform === 'win32') try { require('child_process').execSync('chcp 65001') } catch (e) {}\" && vite",
+    "dev": "npm run servers:configure && node -e \"if(process.platform === 'win32') try { require('child_process').execSync('chcp 65001') } catch (e) {}\" && vite",
     "ui-demo": "vite --open /ui-demo/index.html",
     "validate:tools": "node --experimental-strip-types packages/auditor/src/suites/architecture/validate_build_tools.ts",
     "build": "npm run audit && vite build",

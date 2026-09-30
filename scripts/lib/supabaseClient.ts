@@ -44,24 +44,6 @@ export interface ServerConfig {
 }
 
 export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
-  try {
-    await fsPromises.access(ENV_FILE);
-  } catch {
-    console.error(styleText('red', '❌ Error: Archivo .env maestro no encontrado.'));
-    process.exit(1);
-  }
-
-  let envContent = '';
-  try {
-    // Uso de Explicit Resource Management (await using) para la lectura del .env
-    await using fileHandle = await fsPromises.open(ENV_FILE, 'r');
-    envContent = await fileHandle.readFile({ encoding: 'utf-8' });
-  } catch (e: unknown) {
-    console.error(styleText('red', `❌ Error al leer el archivo .env: ${(e as Error).message}`));
-    process.exit(1);
-  }
-
-  const lines = envContent.split('\n');
   const serverConfigs: Record<string, ServerConfig> = {};
 
   const KNOWN_SUFFIXES = [ // no-domain: Non-domain utility collection or data structure
@@ -74,36 +56,51 @@ export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
     'POSTGRES_PORT', 'DB_PORT', 'DB_PASSWORD', 'POSTGRES_URL', 'PG_URL'
   ];
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
+  function parseKeyVal(fullKey: string, rawVal: string): void {
+    let value = rawVal.trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
 
-    const match = trimmed.match(/^([^=]+)=(.*)$/);
-    if (match && match[1] !== undefined && match[2] !== undefined) {
-      const fullKey = match[1].trim();
-      let value = match[2].trim();
+    if (fullKey.startsWith('SERVER_')) {
+      const withoutPrefix = fullKey.slice('SERVER_'.length);
+      const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
+      if (matchedSuffix === undefined) return;
 
-      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
+      const profile = withoutPrefix.slice(0, withoutPrefix.length - matchedSuffix.length - 1);
+      if (!profile) return;
+
+      const cleanKey = matchedSuffix;
+      if (!serverConfigs[profile]) {
+        serverConfigs[profile] = {};
       }
-
-      if (fullKey.startsWith('SERVER_')) {
-        const withoutPrefix = fullKey.slice('SERVER_'.length);
-        const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
-        if (matchedSuffix === undefined) continue;
-
-        const profile = withoutPrefix.slice(0, withoutPrefix.length - matchedSuffix.length - 1);
-        if (!profile) continue;
-
-        const cleanKey = matchedSuffix;
-        if (!serverConfigs[profile]) {
-          serverConfigs[profile] = {};
-        }
-        const targetConf = serverConfigs[profile];
-        if (targetConf) {
-          targetConf[cleanKey] = value;
-        }
+      const targetConf = serverConfigs[profile];
+      if (targetConf) {
+        targetConf[cleanKey] = value;
       }
+    }
+  }
+
+  // 1. Read .env file if accessible
+  try {
+    await using fileHandle = await fsPromises.open(ENV_FILE, 'r');
+    const envContent = await fileHandle.readFile({ encoding: 'utf-8' });
+    for (const line of envContent.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const match = trimmed.match(/^([^=]+)=(.*)$/);
+      if (match && match[1] !== undefined && match[2] !== undefined) {
+        parseKeyVal(match[1].trim(), match[2].trim());
+      }
+    }
+  } catch {
+    // .env file not present or unreadable, ignore and proceed to process.env
+  }
+
+  // 2. Parse / overlay from process.env (CI/CD environments, GitHub Actions secrets)
+  for (const [key, val] of Object.entries(process.env)) {
+    if (key.startsWith('SERVER_') && typeof val === 'string') {
+      parseKeyVal(key, val);
     }
   }
 
