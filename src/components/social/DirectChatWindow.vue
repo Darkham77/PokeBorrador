@@ -107,14 +107,14 @@ onMounted(() => {
         <div class="chat-start-hint">
           Comienzo de la conversación con {{ chat?.username }}
         </div>
-        
+
         <div
           v-if="!chat?.messages?.length"
           class="empty-state"
         >
           No hay mensajes aún...
         </div>
-        
+
         <TransitionGroup
           :css="false"
           @enter="onMessageEnter"

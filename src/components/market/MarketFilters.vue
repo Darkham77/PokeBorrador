@@ -114,6 +114,7 @@ const resetFilters = () => {
       <!-- Price Range -->
       <div
         class="filter-group"
+        role="group"
         :aria-labelledby="priceGroupId"
       >
         <div

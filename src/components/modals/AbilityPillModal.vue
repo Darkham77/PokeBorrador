@@ -111,7 +111,7 @@ const close = () => {
       <p class="target-info">
         Cambia la habilidad de <strong>{{ abilityPokemon?.name }}</strong>
       </p>
-      
+
       <div class="ability-list">
         <button 
           v-for="a in availableAbilities" 
@@ -122,16 +122,16 @@ const close = () => {
           @mouseleave="onBtnLeave($event, abilityPokemon?.ability === a)"
           @click.stop="handleApplyAbility(a)"
         >
-          <div class="a-header">
+          <span class="a-header">
             <span class="a-name">{{ getAbilityName(a) }}</span>
             <span
               v-if="abilityPokemon?.ability === a"
               class="a-current"
             >(Actual)</span>
-          </div>
+          </span>
           <span class="a-desc">{{ getAbilityDesc(a) }}</span>
         </button>
-        
+
         <div
           v-if="availableAbilities.length <= 1"
           class="no-options"

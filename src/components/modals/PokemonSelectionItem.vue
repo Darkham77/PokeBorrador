@@ -212,7 +212,7 @@ function handleClick() {
         :hp="item.pokemon.hp"
         :max-hp="item.pokemon.maxHp"
       />
-      
+
       <!-- Daycare Info (Compatibility / Vigor) -->
       <PokemonSelectionItemDaycare
         v-if="isDaycareContext"
@@ -227,7 +227,7 @@ function handleClick() {
         :sub-competition="subCompetition"
         :display-value="competitionEval.displayValue"
       />
-      
+
       <slot name="extra" />
     </div>
 

@@ -164,7 +164,7 @@ const leave = (el: Element, done: () => void) => {
             ×
           </button>
         </div>
-        
+
         <PVTooltip
           title="CONFIGURACIÓN DE FILTROS"
           description="Abre el panel avanzado de búsqueda y tipos."
@@ -237,7 +237,7 @@ const leave = (el: Element, done: () => void) => {
             />
           </div>
         </div>
-        
+
         <!-- Filtro por Tier -->
         <div class="compact-section full-width margin-top">
           <h4 class="box-section-label">

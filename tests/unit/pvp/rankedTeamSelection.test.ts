@@ -11,6 +11,8 @@ import { useAuthStore } from '@/stores/auth';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 
 describe('Ranked Format and Team Selection Protocol', () => {
   let pinia: ReturnType<typeof createPinia>;
@@ -165,8 +167,10 @@ describe('Ranked Format and Team Selection Protocol', () => {
 
     await pvpStore.loadPvPData();
 
-    // The expired 3v3 rules from May 2026 MUST NOT be applied to current season in September 2026
+    // The expired 3v3 rules from May 2026 MUST NOT be applied to current season
+    const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE);
+    const expectedTheme = getSeasonalThemeForMonth(now.month);
     expect(pvpStore.currentSeasonRules?.maxPokemon).toBe(6);
-    expect(pvpStore.currentSeasonRules?.name).toBe('Frontera Kanto & Johto');
+    expect(pvpStore.currentSeasonRules?.name).toBe(expectedTheme.name);
   });
 });

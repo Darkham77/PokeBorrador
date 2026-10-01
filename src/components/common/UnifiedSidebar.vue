@@ -76,12 +76,12 @@ const sidebarBorderColor = computed(() => {
       :class="{ active: activeCategory === cat.id }"
       @click.stop="setCategory(cat.id)"
     >
-      <div class="cat-icon-frame">
+      <span class="cat-icon-frame">
         <span class="emoji cat-icon">{{ cat.icon }}</span>
-      </div>
+      </span>
       <span class="cat-label">{{ cat.label }}</span>
-      
-      <div class="active-indicator" />
+
+      <span class="active-indicator" />
     </button>
   </aside>
 </template>

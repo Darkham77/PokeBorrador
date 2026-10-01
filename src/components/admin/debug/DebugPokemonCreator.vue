@@ -82,12 +82,12 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         <span class="emoji">🎲</span> ALEATORIO
       </button>
     </div>
-    
+
     <div class="creator-grid">
       <!-- Left: Species & Stats -->
       <div class="creator-section">
         <div class="section-header-row">
-          <h4>BASE & ATRIBUTOS</h4>
+          <h4>BASE &amp; ATRIBUTOS</h4>
           <div class="header-actions">
             <PVTooltip
               title="Aleatorizar Base y Atributos"
@@ -103,7 +103,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             </PVTooltip>
           </div>
         </div>
-        
+
         <!-- Species Search -->
         <DebugSearchSelect
           v-model="config.id"
@@ -163,7 +163,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         </div>
 
         <PokemonBaseStats :stats="baseStats" />
-          
+
         <div class="debug-input-group">
           <div
             class="label-row"
@@ -240,7 +240,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
       <!-- Right: Preview & Moves -->
       <div class="creator-section">
         <div class="section-header-row">
-          <h4>VISUALIZACIÓN & ATAQUES</h4>
+          <h4>VISUALIZACIÓN &amp; ATAQUES</h4>
           <div class="header-actions">
             <PVTooltip
               title="Aleatorizar Aspecto Visual"
@@ -256,7 +256,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             </PVTooltip>
           </div>
         </div>
-        
+
         <PokemonPreview
           :sprite-url="currentSprite"
           :is-shiny="config.isShiny"
@@ -287,7 +287,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
       <!-- Bottom/Right: Extras & Action -->
       <div class="creator-section">
         <div class="section-header-row">
-          <h4>EXTRAS & ACCIONES</h4>
+          <h4>EXTRAS &amp; ACCIONES</h4>
           <div class="header-actions">
             <PVTooltip
               title="Aleatorizar Extras"
@@ -303,7 +303,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             </PVTooltip>
           </div>
         </div>
-      
+
         <div class="debug-input-group">
           <div
             class="label-row"
@@ -335,7 +335,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             >
           </PVTooltip>
         </div>
-      
+
         <div class="debug-input-group">
           <div
             class="label-row"
@@ -420,7 +420,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             </select>
           </PVTooltip>
         </div>
-      
+
         <!-- Origin Route Dropdown -->
         <DebugSearchSelect
           v-model="config.mapId"

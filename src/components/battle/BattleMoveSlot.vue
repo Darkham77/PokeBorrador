@@ -257,7 +257,7 @@ const isButtonDisabled = computed(() => !props.move || (!props.canReorder && isD
             size="ssm"
           />
         </div>
-        
+
         <BattleMoveDetails
           :move="move"
           :move-data="moveData as Move"

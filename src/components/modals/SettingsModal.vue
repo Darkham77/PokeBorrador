@@ -51,7 +51,7 @@ const handleZoomInput = (e: Event) => {
         <label class="zoom-label">
           Zoom de la Interfaz: <span class="zoom-value">{{ currentZoom }}%</span>
         </label>
-        
+
         <input 
           type="range" 
           :value="currentZoom" 
@@ -61,7 +61,7 @@ const handleZoomInput = (e: Event) => {
           class="zoom-slider"
           @input="handleZoomInput"
         >
-        
+
         <div class="zoom-labels">
           <span>50%</span>
           <span>100%</span>

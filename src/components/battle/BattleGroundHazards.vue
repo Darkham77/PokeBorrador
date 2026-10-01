@@ -77,7 +77,7 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
         ><span class="emoji">☠️</span></span>
       </div>
     </Transition>
-    
+
     <!-- Arraigo -->
     <Transition
       :css="false"

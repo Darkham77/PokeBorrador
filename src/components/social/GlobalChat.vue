@@ -148,7 +148,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
           >
             No hay mensajes aún...
           </div>
-          
+
           <TransitionGroup
             :css="false"
             @enter="onMessageEnter"

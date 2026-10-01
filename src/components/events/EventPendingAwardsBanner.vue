@@ -98,7 +98,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
       <h3 class="pixelated">
         <span class="emoji">🎁</span> RECOMPENSAS PENDIENTES ({{ pendingAwards.length }})
       </h3>
-      
+
       <div class="awards-list">
         <div
           v-for="award in pendingAwards"
@@ -123,12 +123,12 @@ const confirmDiscard = (awardId: string, eventName: string) => {
                 <span class="emoji">⚠️</span> ARCHIVADO / NO DISPONIBLE
               </span>
             </div>
-            
+
             <div class="award-pills-wrap">
               <RewardPillsGroup :prize="parsePrize(award.prize)" />
             </div>
           </div>
-          
+
           <div class="award-actions-wrap">
             <button
               v-if="checkIfClaimable(award)"

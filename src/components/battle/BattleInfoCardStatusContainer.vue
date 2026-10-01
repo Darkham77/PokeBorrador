@@ -61,7 +61,7 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
           >
             <span class="emoji">⚠️</span> esto es visible solo para administradores
           </div>
-          
+
           <template v-if="shouldShowStatsTable(status, showStatsTable)">
             <div class="tooltip-divider" />
             <BattleInfoStats

@@ -90,7 +90,6 @@ const transitionHooks = useGsapTransition({
 
             <div class="error-user-action-container">
               <label
-                for="error-overlay-user-action"
                 class="error-sub-title error-label-block"
               >
                 ¿QUÉ ESTABAS HACIENDO?

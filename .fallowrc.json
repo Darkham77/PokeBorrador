@@ -40,7 +40,9 @@
     "css-checker-kit",
     "@rolldown/binding-wasm32-wasi",
     "ws",
-    "sql.js"
+    "sql.js",
+    "html-validate",
+    "html-validate-vue"
   ],
   "health": {
     "maxCyclomatic": 25,

@@ -104,7 +104,7 @@ const handleSwitch = (index: number) => {
         }"
         @click.stop="handleSwitch(index)"
       />
-      
+
       <!-- Slots Vacíos para mantener la estructura 2x3 -->
       <div 
         v-for="i in Math.max(0, 6 - team.length)" 

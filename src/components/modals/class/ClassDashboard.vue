@@ -151,7 +151,7 @@ const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h
           <div class="header-line" />
           <h2>HABILIDADES DE CLASE</h2>
         </div>
-        
+
         <div class="abilities-list">
           <ClassDashboardAbilityItem
             v-for="(bonus, idx) in currentClass?.bonuses"
@@ -195,10 +195,10 @@ const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h
             @click.stop="emit('changeClass')"
           >
             <span class="emoji">🔄</span>
-            <div class="btn-label-stack">
+            <span class="btn-label-stack">
               <span class="btn-label">CAMBIAR CLASE</span>
               <span class="price">10,000 BC</span>
-            </div>
+            </span>
           </button>
           <button
             class="btn-primary"

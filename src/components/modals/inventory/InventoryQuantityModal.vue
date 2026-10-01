@@ -78,7 +78,7 @@ const handleConfirm = () => {
       <div class="selector-label">
         ¿CUÁNTOS DESEAS {{ mode === 'sell' ? 'VENDER' : 'TIRAR' }}?
       </div>
-      
+
       <div class="selector-controls">
         <button
           class="control-btn"
@@ -87,7 +87,7 @@ const handleConfirm = () => {
         >
           -
         </button>
-        
+
         <div class="input-wrapper">
           <input 
             type="number" 

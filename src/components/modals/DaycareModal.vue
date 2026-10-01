@@ -94,7 +94,7 @@ onMounted(() => {
             @deposit="openPicker(0)"
             @withdraw="withdraw(0)"
           />
-          
+
           <div class="compat-summary-wrapper">
             <BreedingSummary />
           </div>

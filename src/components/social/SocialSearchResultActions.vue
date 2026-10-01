@@ -22,7 +22,7 @@ const emit = defineEmits<{
     >
       <span class="emoji">➕</span> ENVIAR
     </button>
-    
+
     <button 
       v-else-if="player.status === 'pending' && !player.isRequester" 
       :id="`social-search-accept-btn-${player.id}`"

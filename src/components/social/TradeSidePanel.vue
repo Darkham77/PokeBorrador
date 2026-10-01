@@ -72,7 +72,7 @@ const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getI
     <div class="side-title">
       {{ title }}
     </div>
-    
+
     <!-- Pokemon Display Card / Selector -->
     <div
       v-if="showTradeSections"

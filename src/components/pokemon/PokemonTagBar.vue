@@ -112,7 +112,7 @@ function toggleCompatible() {
       v-if="showLabel"
       class="mini-label"
     >{{ label }}</span>
-    
+
     <div class="tag-items ps-tags-list-horizontal">
       <slot name="prefix" />
 

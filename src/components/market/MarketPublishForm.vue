@@ -36,7 +36,7 @@ const emit = defineEmits<{
     >
       <div class="selected-summary">
         <span class="label">VAS A VENDER:</span>
-        
+
         <!-- Mini tarjeta estilo Caja para Pokémon seleccionado -->
         <div
           v-if="selectedPokemon"

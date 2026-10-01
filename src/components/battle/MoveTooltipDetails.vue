@@ -51,7 +51,7 @@ const tacticalRows = computed(() => resolveTacticalRows(props.activeDetails.tact
       <div class="calc-section-title">
         PROPIEDADES ESPECIALES
       </div>
-      
+
       <div
         v-for="(row, idx) in tacticalRows"
         :key="idx"

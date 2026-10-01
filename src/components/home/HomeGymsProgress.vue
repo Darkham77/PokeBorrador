@@ -133,7 +133,7 @@ const openGyms = () => {
           </div>
           <div class="medal-info">
             <span class="leader-name">{{ gym.leader }}</span>
-            
+
             <!-- Compact 3-difficulty indicators: F (Fácil) | N (Normal) | D (Difícil) -->
             <div class="diff-chips-row">
               <span

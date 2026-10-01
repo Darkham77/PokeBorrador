@@ -69,9 +69,10 @@ const handleClose = () => {
       class="modal-close-btn"
       :class="closeBtnClass"
       :disabled="preventClose"
+      aria-label="Cerrar modal"
       @click.stop="handleClose"
     >
-      <div class="close-icon-wrapper" />
+      <span class="close-icon-wrapper" />
     </button>
   </header>
 
@@ -82,9 +83,10 @@ const handleClose = () => {
     class="modal-close-btn-floating"
     :class="closeBtnClass"
     :disabled="preventClose"
+    aria-label="Cerrar modal"
     @click.stop="handleClose"
   >
-    <div class="close-icon-wrapper" />
+    <span class="close-icon-wrapper" />
   </button>
 </template>
 

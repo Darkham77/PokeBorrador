@@ -159,7 +159,7 @@ const close = () => {
             <span class="sub-title">MERCADO MUNDIAL DE ENTRENADORES</span>
           </div>
         </div>
-        
+
         <div class="header-stats">
           <!-- Mis Créditos -->
           <div class="stat-node money">
@@ -188,9 +188,9 @@ const close = () => {
           :class="{ active: activeTab === tab.id }"
           @click.stop="activeTab = tab.id"
         >
-          <div class="cat-icon-frame">
+          <span class="cat-icon-frame">
             <span class="emoji cat-icon">{{ tab.icon }}</span>
-          </div>
+          </span>
           <span class="cat-label">{{ tab.label }}</span>
           <span
             v-if="tab.id === 'my_items' && gtsStore.unclaimedGtsCount > 0"
@@ -198,7 +198,7 @@ const close = () => {
           >
             {{ gtsStore.unclaimedGtsCount }}
           </span>
-          <div class="active-indicator" />
+          <span class="active-indicator" />
         </button>
       </aside>
 

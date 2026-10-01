@@ -18,7 +18,7 @@ defineProps<{
     <h3 class="season-title">
       {{ season.label }}
     </h3>
-    
+
     <div class="cycles-list">
       <div
         v-for="cycle in season.cycles"

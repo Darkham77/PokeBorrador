@@ -21,7 +21,7 @@ const emit = defineEmits<{
     <div class="update-message">
       ¡Hay una nueva actualización disponible! Es necesario actualizar para mantener la compatibilidad con el servidor.
     </div>
-    
+
     <div
       v-if="isUpdating"
       class="pwa-progress-wrapper"

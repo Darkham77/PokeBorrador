@@ -48,12 +48,12 @@ onMounted(() => {
             <span class="badge-label">ESTADO RED:</span>
             <span class="badge-value">{{ count }} / {{ max }}</span>
           </div>
-          
+
           <div
             v-if="hint"
             class="badge-divider"
           />
-          
+
           <div
             v-if="hint"
             class="hint-group"

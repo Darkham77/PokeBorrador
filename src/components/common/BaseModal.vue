@@ -274,7 +274,7 @@ const modalRootStyle = computed(() => ({
         :overlay-classes="overlayClasses"
         @click="handleOverlayClick"
       />
-      
+
       <!-- Content Wrapper -->
       <div 
         class="base-modal-teleport-wrapper" 

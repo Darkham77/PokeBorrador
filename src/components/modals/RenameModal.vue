@@ -198,7 +198,7 @@ const submitRename = async () => {
             /> FEMENINO
           </button>
         </div>
-        
+
         <div
           v-if="!canRename"
           class="cooldown-notice"

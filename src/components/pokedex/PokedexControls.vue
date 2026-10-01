@@ -40,7 +40,7 @@ const handleSortClick = (key: string) => {
         GEN {{ gen }}
       </button>
     </nav>
-    
+
     <div class="controls-right">
       <div class="sort-group">
         <span class="sort-label">ORDEN:</span>

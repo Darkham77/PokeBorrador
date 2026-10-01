@@ -214,7 +214,7 @@ function handleCardClick() {
         :size="typePillsSize"
         class="pdc-types"
       />
-      
+
       <div class="level-line">
         <span class="m-badge-level">Nv. {{ pokemon.level }}</span>
         <PVTooltip
@@ -233,7 +233,7 @@ function handleCardClick() {
           class="status-tag obedience"
         >NV ALTO</span>
       </div>
-      
+
       <div class="hp-container">
         <div class="hp-bar-outer">
           <div

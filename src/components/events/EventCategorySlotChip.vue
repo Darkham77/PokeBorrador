@@ -51,15 +51,15 @@ const metricLabel = computed<string>(() => {
       :class="{ enrolled: Boolean(props.participant) }"
       @click.stop="emit('click', props.sub)"
     >
-      <div class="chip-content">
+      <span class="chip-content">
         <!-- Metric Icon (🧬 Genética, ⚖️ Peso, 📏 Altura, etc.) -->
         <span class="chip-metric-icon">
           <span class="emoji">{{ props.sub.icon || getSubCompIcon(props.sub.metric) }}</span>
         </span>
-        
+
         <!-- Clean Metric Name (IVs / Peso / Altura) -->
         <span class="chip-metric">{{ metricLabel }}</span>
-      </div>
+      </span>
 
       <!-- Simple Status Badge (+ or ✓) -->
       <span class="chip-status-pill">

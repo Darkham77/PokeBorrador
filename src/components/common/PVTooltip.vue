@@ -428,7 +428,7 @@ onUnmounted(() => {
     @contextmenu="handleContextMenu"
   >
     <slot />
-    
+
     <Teleport to="body">
       <Transition
         :css="false"
@@ -472,12 +472,12 @@ onUnmounted(() => {
                   :key="idx"
                   :line="line"
                 />
-                <div
+                <span
                   v-if="isTruncated"
                   class="pv-tooltip-ellipsis"
                 >
                   ...
-                </div>
+                </span>
               </span>
               <slot name="content" />
               <div

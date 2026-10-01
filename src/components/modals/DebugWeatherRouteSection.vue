@@ -20,10 +20,10 @@ const emit = defineEmits<{
       @click.stop="emit('toggle', route.routeId)"
     >
       <span class="emoji arrow">{{ isExpanded ? '▼' : '▶' }}</span>
-      {{ route.name }} 
+      {{ route.name }}
       <span class="id-tag">#{{ route.routeId }}</span>
     </h2>
-    
+
     <div
       v-if="isExpanded"
       class="seasons-grid"

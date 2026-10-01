@@ -51,7 +51,7 @@ function handleReorder(fromIndex: number, toIndex: number) {
       <h4 class="vp-section-title">
         MOVIMIENTOS ACTUALES
       </h4>
-      
+
       <BattleMovesGrid 
         :moves="currentMoves"
         :can-reorder="canReorder"

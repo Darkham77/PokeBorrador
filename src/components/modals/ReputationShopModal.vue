@@ -217,7 +217,7 @@ const close = () => {
             <span class="sub-title">EXCLUSIVO PARA EL ENTRENADOR DE RUTA</span>
           </div>
         </div>
-        
+
         <div class="header-stats">
           <div class="stat-node reputation">
             <span class="shop-stat-label">MI REPUTACIÓN</span>
@@ -285,10 +285,10 @@ const close = () => {
             class="shop-empty-state"
           >
             <span class="emoji empty-icon">🔍</span>
-            <span class="empty-text">
+            <div class="empty-text">
               <h3>Sin resultados</h3>
               <p>Prueba con otros términos de búsqueda en esta sección</p>
-            </span>
+            </div>
           </div>
         </div>
       </div>

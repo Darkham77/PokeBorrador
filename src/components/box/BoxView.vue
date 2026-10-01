@@ -198,7 +198,7 @@ const handlePokemonClick = (index: number) => {
         </div>
       </template>
     </BoxTabs>
-    
+
     <BoxFilters
       v-model:filters="filters"
       v-model:is-filters-open="isFiltersOpen"

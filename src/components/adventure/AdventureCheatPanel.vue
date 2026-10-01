@@ -96,7 +96,7 @@ const healActiveTeam = () => {
       >
         Mi Equipo Activo
       </h3>
-      
+
       <div style="display: flex; gap: 4px; width: 100%;">
         <button 
           class="adv-hm-btn" 

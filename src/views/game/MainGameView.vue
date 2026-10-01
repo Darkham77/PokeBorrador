@@ -119,7 +119,7 @@ watch(() => gs.value.starterChosen, (val) => {
 <template>
   <div class="main-game-view-root">
     <TitleScreen />
-  
+
     <div
       v-show="gs.starterChosen"
       id="game-screen"

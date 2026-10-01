@@ -206,7 +206,7 @@ onMounted(() => {
       <!-- ICON AREA -->
       <div class="item-visual-wrap">
         <div class="item-bg-glow" />
-        
+
         <img
           v-if="itemIcon && !hasError"
           :src="itemIcon"

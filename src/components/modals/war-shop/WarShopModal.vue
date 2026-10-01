@@ -142,7 +142,7 @@ if (typeof window !== 'undefined') {
             <span class="sub-title">CANJE DE MONEDAS FACCIONARIAS</span>
           </div>
         </div>
-        
+
         <div class="header-stats">
           <!-- Monedas -->
           <div class="stat-node coins">

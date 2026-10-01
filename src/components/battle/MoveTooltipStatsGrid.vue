@@ -45,7 +45,7 @@ const accuracyData = computed(() => {
       :text="powerData.text"
       :arrow="powerData.arrow"
     />
-    
+
     <!-- Accuracy Box -->
     <MoveTooltipPowerAccuracyBox
       label="PRECISIÓN"

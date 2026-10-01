@@ -194,7 +194,7 @@ const getCompatText = (label: string) => {
         <span class="emoji icon">🧬</span>
         <h4>Pronóstico de Herencia</h4>
       </div>
-      
+
       <div class="forecast-grid">
         <PVTooltip
           tag="div"
@@ -206,7 +206,7 @@ const getCompatText = (label: string) => {
           <span class="label">IVs heredados:</span>
           <span class="value">{{ forecast.ivsInherited }} de 6</span>
         </PVTooltip>
-        
+
         <PVTooltip
           tag="div"
           class="forecast-item"

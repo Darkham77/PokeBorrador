@@ -6,12 +6,17 @@ import PvPChallengeModal from '@/components/modals/PvPChallengeModal.vue'
 import { useGameStore } from '@/stores/game'
 import { useLivePvPStore } from '@/stores/livePvP'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 describe('PvPChallengeModal.vue', () => {
   let mockPokemonList: Pokemon[]
 
   beforeEach(() => {
     setActivePinia(createPinia())
+
+    const currentTheme = getSeasonalThemeForMonth(Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month)
+    const allowedType = currentTheme.allowedTypes?.[0] || 'electric'
 
     mockPokemonList = Array.from({ length: 6 }).map((_, i) => ({
       uid: `p_${i}`,
@@ -20,6 +25,7 @@ describe('PvPChallengeModal.vue', () => {
       level: 50,
       hp: 100,
       maxHp: 100,
+      type: allowedType,
       isIllegal: false
     })) as unknown as Pokemon[]
 

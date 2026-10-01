@@ -70,7 +70,7 @@ const close = () => {
             <span class="sub-title">BATTLE CLUB EXCLUSIVOS</span>
           </div>
         </div>
-        
+
         <div class="header-stats">
           <!-- Battle Coins -->
           <div class="stat-node coins">

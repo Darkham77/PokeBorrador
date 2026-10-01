@@ -31,7 +31,7 @@ const formattedSellValue = computed(() => {
     <div class="selection-info">
       <span class="count">{{ selectedCount }}</span>
       <span class="label">{{ modeLabel }}</span>
-      
+
       <div
         v-if="isRocketMode"
         class="earnings"

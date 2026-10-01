@@ -120,7 +120,7 @@ function removeMove(slotIndex: number) {
         >
           + SELECCIONAR
         </div>
-        
+
         <div
           v-if="activeMoveSlot === i"
           class="move-picker custom-scrollbar"
@@ -134,7 +134,7 @@ function removeMove(slotIndex: number) {
             autofocus
             @click.stop
           >
-          
+
           <div class="move-list">
             <div
               v-if="speciesMoves.length > 0 && !moveSearch"

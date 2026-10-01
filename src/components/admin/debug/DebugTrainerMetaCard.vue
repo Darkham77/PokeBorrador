@@ -31,7 +31,7 @@ const emit = defineEmits<{
         <span class="emoji">🎲</span> ALEATORIO
       </button>
     </div>
-    
+
     <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
       <div class="trainer-sprite-preview">
         <img 

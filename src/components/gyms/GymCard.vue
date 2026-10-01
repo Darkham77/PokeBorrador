@@ -188,7 +188,7 @@ const handleBtnLeave = (e: MouseEvent) => {
           >
         </div>
       </div>
-      
+
       <!-- Panel de Recompensa de Medalla Destacada -->
       <GymRewardPanel
         :gym="gym"

@@ -82,7 +82,7 @@ const progress = computed(() => {
             REGALO NPC
           </span>
         </div>
-        
+
         <div class="progress-container">
           <div class="progress-bar-wrapper">
             <div

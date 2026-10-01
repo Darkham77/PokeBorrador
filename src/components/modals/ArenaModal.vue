@@ -93,7 +93,7 @@ onMounted(async () => {
           @click="activeTab = 'casual'"
         >
           <span class="tab-icon"><span class="emoji">⚔️</span></span>
-          <span class="tab-label">DUELOS & SALAS</span>
+          <span class="tab-label">DUELOS &amp; SALAS</span>
         </button>
         <button
           v-gsap-hover="'button'"

@@ -64,7 +64,7 @@ defineExpose({
         :style="{ filter: 'var(--atmosphere-filter)' }"
         @error="emit('ballError')"
       >
-      
+
       <div
         class="pokeball-shadow"
         :style="{ backgroundImage: pokeballShadowUrl, filter: 'var(--atmosphere-filter)' }"

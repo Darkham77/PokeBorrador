@@ -54,7 +54,7 @@ function selectTab(tab: string) {
         :class="{ active: activeTab === 'rankings' }"
         @click.stop="selectTab('rankings')"
       >
-        <div class="glow-box" />
+        <span class="glow-box" />
         <span class="tab-label">HALL</span>
       </button>
       <button 

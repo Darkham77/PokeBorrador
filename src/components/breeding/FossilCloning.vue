@@ -230,7 +230,7 @@ watch(extraSacrifices, () => {
       <!-- Right: Configurations & Interactive Matrix Table -->
       <div class="cloning-panel">
         <span class="section-label">2. CONFIGURAR MEZCLA GENÉTICA (SELECCIONAR FILA)</span>
-        
+
         <!-- Preview Target -->
         <div class="cloning-target-preview">
           <div class="egg-preview-box">

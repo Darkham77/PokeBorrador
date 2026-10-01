@@ -77,7 +77,7 @@ const filteredMaps = computed(() => {
         >PROXIMAMENTE</span>
       </button>
     </div>
-    
+
     <div class="grid">
       <div
         v-for="map in filteredMaps"

@@ -38,7 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
           :player-info="props.playerInfo"
         />
       </template>
-      
+
       <div 
         class="move-info-zone pixelated"
         @click.stop

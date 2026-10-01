@@ -104,7 +104,7 @@ const handleImageError = (e: Event) => {
           :alt="item.name"
           @error="handleImageError"
         >
-        
+
         <!-- Lock Overlay if locked -->
         <div 
           v-if="!isUnlocked"
@@ -126,7 +126,7 @@ const handleImageError = (e: Event) => {
         <div class="item-price-wrapper">
           <span class="currency-symbol">₽</span>
           <span class="price-val">{{ formatCurrency(finalPrice) }}</span>
-          
+
           <!-- Original price crossed out if modified -->
           <span 
             v-if="isModifiedPrice" 

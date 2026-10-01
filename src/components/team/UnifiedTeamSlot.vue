@@ -344,7 +344,7 @@ onUnmounted(() => {
       <span class="emoji plus-icon">✚</span>
       <span class="label">AÑADIR</span>
     </div>
-    
+
     <div
       v-else-if="pokemon"
       class="slot-card-wrapper"

@@ -106,7 +106,7 @@ function triggerSampleError() {
     </div>
 
     <div class="debug-group">
-      <label>TESTING RECOMPENSAS & BADGES</label>
+      <label>TESTING RECOMPENSAS &amp; BADGES</label>
       <div class="button-row">
         <PVTooltip title="Busca el último torneo o evento pasado, simula ganarlo (puesto aleatorio), inyecta misión y cobro GTS, y redirige a Inicio.">
           <button

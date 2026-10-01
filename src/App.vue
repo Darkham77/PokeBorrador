@@ -285,7 +285,7 @@ const handleReclaim = async () => {
     <template v-if="isLoginPage || isStandaloneDevPage">
       <router-view />
     </template>
-    
+
     <template v-else-if="authStore.user">
       <!-- Bloqueo por Versión (Base de Datos o Servidor) -->
       <AppVersionLockHost
@@ -325,7 +325,7 @@ const handleReclaim = async () => {
       <BattleArena />
       <PWAManager />
     </template>
-    
+
     <!-- Optimized SVG Filters for Pixel Art -->
     <SVGFilters />
   </div>

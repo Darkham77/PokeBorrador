@@ -101,7 +101,7 @@ onClickOutside(navRef, () => {
         MOCHILA
       </PVHUDButton>
     </PVTooltip>
-    
+
     <!-- 4. GIMS -->
     <PVTooltip
       title="GIMNASIOS"

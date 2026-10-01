@@ -110,13 +110,13 @@ const openFactionChoice = () => {
                 @error="handleImgError"
               >
             </div>
-            
+
             <h2>¡ELIGE TU DESTINO!</h2>
-            
+
             <p class="description">
               Kanto se encuentra dividida. El <strong>Team Unión</strong> busca la armonía y compañerismo, mientras el <strong>Team Poder</strong> persigue la máxima eficiencia y fuerza.
             </p>
-            
+
             <p class="benefit">
               Únete a un bando para luchar por el control territorial de los mapas, acumular puntos semanales y conseguir valiosas recompensas.
             </p>

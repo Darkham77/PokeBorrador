@@ -43,7 +43,7 @@ if (typeof window !== 'undefined') {
       <p class="editor-help-text">
         Elegí tus mejores defensores. Estos Pokémon protegerán tus rutas conquistadas automáticamente.
       </p>
-      
+
       <div
         id="passive-editor-body"
         class="editor-body-container"

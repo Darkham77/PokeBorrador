@@ -40,7 +40,8 @@ export const AUDIT_PRESETS = {
     'validate_audit_headers',
     'validate_type_check',
     'validate_markdown_lint',
-    'validate_eslint'
+    'validate_eslint',
+    'validate_html_validate'
   ],
   md: [
     'validate_markdown_links',

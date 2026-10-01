@@ -80,7 +80,7 @@ const emit = defineEmits<{
           :spawn-pool="getSpawnPoolForMap(originLocation)"
           @navigate="() => {}"
         />
-        
+
         <!-- Actions Overlay -->
         <div
           v-if="!isTraveling"

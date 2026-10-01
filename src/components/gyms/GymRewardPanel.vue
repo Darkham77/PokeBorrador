@@ -73,7 +73,7 @@ const tmRewardText = computed(() => {
     <div class="medal-detail">
       <span class="reward-title">RECOMPENSA DE VICTORIA</span>
       <span class="medal-name">{{ gym.badgeName }}</span>
-      
+
       <div class="reward-grid">
         <span 
           class="tm-reward" 

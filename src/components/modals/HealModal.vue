@@ -393,7 +393,7 @@ onUnmounted(() => {
                 :ref="(el) => { if (el) auraRefs[i] = el as HTMLElement }"
                 class="type-aura" 
               />
-              
+
               <img 
                 :ref="(el) => { if (el) spriteRefs[i] = el as HTMLElement }"
                 :src="slot.spriteUrl" 
@@ -403,7 +403,7 @@ onUnmounted(() => {
               >
             </PVSpriteFX>
           </div>
-          
+
           <div 
             v-for="i in Math.max(0, MAX_TEAM_POKEMON_COUNT - team.length)" 
             :key="'empty-' + i"
@@ -414,7 +414,7 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
-        
+
         <div
           v-if="isHealing"
           class="progress-container"
@@ -429,7 +429,7 @@ onUnmounted(() => {
             RESTAURANDO EQUIPO...
           </p>
         </div>
-        
+
         <div
           v-else
           class="info-text"

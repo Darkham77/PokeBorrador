@@ -84,7 +84,7 @@ const formatDate = (timestamp: number) => {
           <h3 class="trophy-event-title">
             {{ resolveTrophyEventName(trophy) }}
           </h3>
-          
+
           <div class="trophy-category-row">
             <span class="category-lbl pixelated">CATEGORÍA:</span>
             <span class="category-val pixelated">{{ trophy.categoryName }}</span>

@@ -25,6 +25,7 @@
     "fallow": "node ./node_modules/fallow/bin/fallow",
     "fallow:health": "node ./node_modules/fallow/bin/fallow health --score",
     "validate:types": "node --permission --experimental-strip-types --allow-fs-read=* --allow-child-process packages/auditor/src/suites/architecture/validate_type_check.ts",
+    "validate:html": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process packages/auditor/src/suites/architecture/validate_html_validate.ts",
     "test": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons --allow-net scripts/testing/run_tests.ts",
     "test:unit": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons --allow-net scripts/testing/run_tests.ts --project unit",
     "test:node": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons --allow-net scripts/testing/run_tests.ts --project node",
@@ -235,7 +236,6 @@
     "@types/node": "^26.6.1",
     "@types/sql.js": "^1.4.11",
     "@types/ws": "^8.18.1",
-    "ws": "^8.18.1",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vitest/coverage-v8": "^5.0.1",
@@ -247,6 +247,8 @@
     "eslint-plugin-vue": "^10.11.0",
     "fallow": "^3.27.0",
     "globals": "^17.12.0",
+    "html-validate": "^11.16.1",
+    "html-validate-vue": "^9.3.1",
     "jsdom": "^30.1.0",
     "markdownlint-cli": "^0.49.1",
     "postgres": "^3.4.9",
@@ -261,7 +263,8 @@
     "vite-plugin-pwa": "^1.3.0",
     "vitest": "^5.0.1",
     "vue-eslint-parser": "^10.4.1",
-    "vue-tsc": "^3.3.11"
+    "vue-tsc": "^3.3.11",
+    "ws": "^8.18.1"
   },
   "overrides": {
     "serialize-javascript": "^7.0.5"

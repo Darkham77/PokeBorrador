@@ -37,7 +37,7 @@ const compatMeta = computed(() => {
           <span class="waiting-status">Esperando pareja</span>
         </template>
       </div>
-      
+
       <div
         v-if="vigorValue !== undefined"
         class="vigor-status-mini"

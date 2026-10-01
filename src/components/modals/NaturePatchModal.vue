@@ -103,7 +103,7 @@ const close = () => {
       <p class="target-info">
         Selecciona la nueva naturaleza para <strong>{{ naturePokemon?.name }}</strong>
       </p>
-      
+
       <div class="nature-grid scrollbar">
         <button 
           v-for="n in sortedNatures" 
@@ -115,7 +115,7 @@ const close = () => {
           @click.stop="handleApplyNature(n)"
         >
           <span class="n-name">{{ NATURE_DATA[n].name }}</span>
-          <div class="n-effects">
+          <span class="n-effects">
             <template v-if="NATURE_DATA[n].up">
               <span class="stat-mod mod-up">
                 <span class="emoji indicator-icon">▲</span>
@@ -129,7 +129,7 @@ const close = () => {
             <template v-else>
               <span class="stat-mod mod-neutral">Sin cambios</span>
             </template>
-          </div>
+          </span>
         </button>
       </div>
     </div>

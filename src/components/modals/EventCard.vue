@@ -191,7 +191,7 @@ onUnmounted(() => {
         @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
       >
     </div>
-    
+
     <div class="card-body">
       <div class="body-header">
         <div class="event-id-icon">

@@ -69,7 +69,7 @@ const handleCancel = () => {
         @keyup.enter="handleConfirm"
       >
     </div>
-    
+
     <template #footer>
       <div class="prompt-footer">
         <button 

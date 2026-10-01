@@ -88,16 +88,16 @@ const handleMove = (targetBoxIndex: number) => {
           :disabled="box.isFull || box.isCurrent"
           @click.stop="handleMove(box.index)"
         >
-          <div class="btn-inner">
-            <div class="box-number">
+          <span class="btn-inner">
+            <span class="box-number">
               CAJA {{ box.number }}
-            </div>
-            <div class="box-stats">
+            </span>
+            <span class="box-stats">
               <span class="count">{{ box.count }}</span>
               <span class="max">/ 50</span>
-            </div>
-            
-            <div class="status-tags">
+            </span>
+
+            <span class="status-tags">
               <span
                 v-if="box.isCurrent"
                 class="tag current"
@@ -110,9 +110,9 @@ const handleMove = (targetBoxIndex: number) => {
                 v-else
                 class="tag available"
               >DISPONIBLE</span>
-            </div>
-          </div>
-          <div class="border-glow" />
+            </span>
+          </span>
+          <span class="border-glow" />
         </button>
       </div>
 

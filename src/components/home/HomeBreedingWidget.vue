@@ -66,7 +66,7 @@ const handleEggClick = (egg: PokemonEgg) => {
       <div class="header-left">
         <span class="emoji">🥚</span>
         <h3 class="widget-title">
-          EN CAMINATA & CRIANZA
+          EN CAMINATA &amp; CRIANZA
         </h3>
       </div>
       <div class="header-actions">

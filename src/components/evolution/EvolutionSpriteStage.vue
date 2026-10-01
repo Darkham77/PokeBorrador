@@ -37,7 +37,7 @@ const onImageError = (e: Event) => {
       class="glow-bg"
       :class="step"
     />
-    
+
     <img 
       v-if="isShowingFrom"
       :src="fromSprite"

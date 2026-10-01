@@ -148,7 +148,7 @@ const handleMouseLeave = (event: MouseEvent) => {
     <p class="title-description">
       Elegí tu Pokémon inicial para comenzar tu aventura
     </p>
-    
+
     <div class="starter-grid">
       <div
         v-for="starter in starterList"
@@ -196,7 +196,7 @@ const handleMouseLeave = (event: MouseEvent) => {
         class="logout-btn-trigger"
         @click.stop="handleLogout"
       >
-        <i class="fas fa-sign-out-alt" /> 
+        <i class="fas fa-sign-out-alt" />
         <span>CERRAR SESIÓN</span>
       </button>
       <div class="logout-hint">

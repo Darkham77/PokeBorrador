@@ -33,7 +33,7 @@ const {
   <div class="debug-menu custom-scrollbar-vicio">
     <div class="debug-header">
       <span class="emoji">🕹️</span>
-      <span class="title">BATTLE ACTIONS & DEBUG</span>
+      <span class="title">BATTLE ACTIONS &amp; DEBUG</span>
       <button
         id="battle-debug-menu-close-btn"
         class="close-mini"
@@ -50,7 +50,7 @@ const {
       <!-- ENVIRONMENT & BEHAVIOR -->
       <div class="debug-section">
         <div class="section-label">
-          Environment & Behavior
+          Environment &amp; Behavior
         </div>
         <div class="btn-grid">
           <PVTooltip description="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)">
@@ -63,7 +63,7 @@ const {
               {{ battleStore.debugBinoculars ? 'BINOCS: ON' : 'BINOCS: OFF' }}
             </button>
           </PVTooltip>
-          
+
           <PVTooltip description="Chain: El siguiente Pokémon aparece automáticamente al ganar">
             <button
               id="battle-debug-chain-btn"

@@ -79,7 +79,7 @@ const validationMap = computed(() => {
     <div class="info-label">
       INTERCAMBIOS PENDIENTES
     </div>
-    
+
     <div
       v-for="t in tradeStore.pendingAccepted"
       :key="t.id"
@@ -104,7 +104,7 @@ const validationMap = computed(() => {
       <div class="notif-header">
         <span class="emoji">🔄</span> NUEVA OFERTA
       </div>
-      
+
       <div class="offer-details">
         <div class="detail-section">
           <span class="detail-label">Ofrece:</span>

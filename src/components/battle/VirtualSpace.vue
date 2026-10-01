@@ -48,7 +48,7 @@ const p2Anchor = getCombatantPosition('enemy')
           height: SAFE_ZONE_HEIGHT + 'px' 
         }"
       />
-      
+
       <!-- Entity Anchors -->
       <div 
         class="entity-anchor p1" 

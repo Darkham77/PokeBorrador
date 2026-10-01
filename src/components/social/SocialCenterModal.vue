@@ -79,7 +79,7 @@ onMounted(() => {
             <span class="sub-title">CENTRO SOCIAL</span>
           </div>
         </div>
-        
+
         <div class="header-stats">
           <div class="stat-node">
             <span class="shop-stat-label">MIS AMIGOS</span>

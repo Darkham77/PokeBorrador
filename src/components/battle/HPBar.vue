@@ -116,7 +116,7 @@ const getHpClass = (pct: number) => {
         :style="{ width: getHpPct(displayHp, maxHp) + '%' }"
       />
     </div>
-      
+
     <!-- EXP Bar only for player -->
     <div
       v-if="isPlayer"

@@ -238,7 +238,7 @@ const handleSellRocket = () => {
       >
         <span class="emoji warning-icon">⚠️</span>
         <span class="warning-text">
-          Este Pokémon está ocupado (<span class="emoji">{{ busyInfo.icon }}</span> {{ busyInfo.label }}). 
+          Este Pokémon está ocupado (<span class="emoji">{{ busyInfo.icon }}</span> {{ busyInfo.label }}).
           Las acciones de equipo, venta y liberación están bloqueadas.
         </span>
       </div>
@@ -296,9 +296,9 @@ const handleSellRocket = () => {
                   </span>
                 </PVTooltip>
               </div>
-              
+
               <span class="ts-name">{{ m.pokemon.nickname || m.pokemon.name }}</span>
-              
+
               <PokemonTypePills 
                 :pokemon="m.pokemon" 
                 size="ssm"

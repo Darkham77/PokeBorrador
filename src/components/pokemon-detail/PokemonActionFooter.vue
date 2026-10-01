@@ -45,7 +45,7 @@ const hasActions = computed(() => {
     >
       <span class="emoji">💎</span> EVOLUCIONAR CON PIEDRA
     </button>
-    
+
     <!-- Market Purchase Action -->
     <div
       v-if="context === 'market' && extra"

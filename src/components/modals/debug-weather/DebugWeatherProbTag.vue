@@ -26,7 +26,7 @@ defineProps<{
     </div>
 
     <DebugWeatherModifiers :modifiers="prob.modifiers" />
-    
+
     <DebugWeatherSpawns
       :has-spawns="prob.hasSpawns"
       :visitors="prob.visitors"

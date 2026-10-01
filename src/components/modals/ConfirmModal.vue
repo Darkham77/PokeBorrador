@@ -59,7 +59,7 @@ const handleCancel = () => {
     <div class="confirm-body">
       <p>{{ message }}</p>
     </div>
-    
+
     <template #footer>
       <div class="confirm-footer">
         <button 

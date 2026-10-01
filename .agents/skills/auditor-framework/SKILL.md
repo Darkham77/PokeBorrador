@@ -92,14 +92,20 @@ Every sub-auditor and reporter is part of a unified static analysis and verifica
 18. **Static Security Single Source of Truth (Fallow CWE vs ESLint Syntax)**:
     - Codebase vulnerability analysis (CWE) is strictly and exclusively delegated to **Fallow** (`fallow security`).
     - Using `eslint-plugin-security` in ESLint configurations is **STRICTLY PROHIBITED**. ESLint must focus exclusively on ECMAScript/TypeScript syntax correctness, style, and Vue SFC integrity. Sub-auditors analyzing AST or traversing files are legitimate development operations and must never be encumbered by blunt regex-based linter false positives.
+19. **Standard Living Specification Engines Over Handcrafted Regex Mandate**:
+    - When validating web standards, markup hygiene, accessibility, or obsolete HTML5 elements/attributes, the auditor framework and linters MUST NOT implement handcrafted manual regular expressions or arbitrary AST pattern lists (e.g. in ESLint).
+    - Sub-auditors MUST delegate to authoritative, actively maintained specification engines (`html-validate` with `html-validate-vue`) that embody the W3C / WHATWG Living Standard, bridging their output into canonical `AuditFinding[]` objects.
+20. **Child Process Stream Isolation & Ephemeral Scratch Output Mandate**:
+    - Sub-auditors invoking external CLI tools or linters (`html-validate`, `vue-tsc`, `fallow`) via child processes (`spawnSync`) MUST NEVER rely on piping large JSON payloads across standard output (`stdout`), as Node.js process exits can truncate unbuffered output streams.
+    - Tools supporting direct file output MUST write raw JSON to an isolated ephemeral file in `scratch/audits/<family>/` (e.g. `-f json=scratch/audits/architecture/html-validate-raw.json`) and parse it cleanly from disk.
 
 ---
 
 ## 📂 Canonical Architecture: Built-in Suites & Host Extensions
 
 ### 1. Generic Built-In Suites (`packages/auditor/src/suites/`)
-35 domain-agnostic suites discovered automatically across 4 canonical families:
-- `architecture/`: AST rules, Fallow intelligence, Z-Index, CSS orphans, emoji typography
+36 domain-agnostic suites discovered automatically across 4 canonical families:
+- `architecture/`: AST rules, Fallow intelligence, Z-Index, CSS orphans, emoji typography, HTML5 standards validation (`validate_html_validate`)
 - `domain_data/`: O(1) data structures, Domain-type-first validation (`validate_domain_types.ts`, parameterized via `audit.config.ts`)
 - `persistence/`: SQL anti-patterns, schema-qualification checks
 - `documentation/`: Markdown relative links, DOX hierarchy (AGENTS.md), syntax standards

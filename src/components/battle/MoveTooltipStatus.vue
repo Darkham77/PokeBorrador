@@ -18,7 +18,7 @@ defineProps<{
     <div class="calc-section-title">
       EFECTO DE ESTADO
     </div>
-    
+
     <!-- Si es condición persistente/volátil (Envenenado, Drenadoras, etc.) -->
     <template v-if="parsedStatusEffect.isCondition">
       <div class="combat-stats-grid">
@@ -38,7 +38,7 @@ defineProps<{
             </span>
           </span>
         </div>
-        
+
         <!-- Box 2: Estado -->
         <div class="stat-box">
           <span class="stat-lbl">ESTADO</span>

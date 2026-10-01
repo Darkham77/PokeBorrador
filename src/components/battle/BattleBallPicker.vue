@@ -181,23 +181,23 @@ defineExpose({
             class="ball-option-item"
             @click.stop="selectBall(ball.id)"
           >
-            <div class="ball-sprite-wrapper">
+            <span class="ball-sprite-wrapper">
               <img 
                 :src="getAssetUrl(ASSET_TYPES.ITEM, ball.sprite)" 
                 :alt="ball.name" 
                 class="ball-icon-mini" 
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
-            </div>
-            <div class="ball-info">
+            </span>
+            <span class="ball-info">
               <span class="ball-name">{{ ball.name }}</span>
-            </div>
-            <div class="ball-qty">
+            </span>
+            <span class="ball-qty">
               x{{ ball.qty }}
-            </div>
-            <div class="ball-action-arrow">
+            </span>
+            <span class="ball-action-arrow">
               <span class="emoji">▶</span>
-            </div>
+            </span>
           </button>
         </PVTooltip>
       </div>

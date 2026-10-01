@@ -45,7 +45,7 @@ const isProgressing = computed(() => props.step === 'intro' || props.step === 'f
         CONTINUAR
       </button>
     </div>
-    
+
     <div
       v-if="step === 'final'"
       class="result-text"

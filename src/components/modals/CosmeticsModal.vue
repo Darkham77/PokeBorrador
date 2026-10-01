@@ -94,12 +94,12 @@ const selectNick = (style: LockableCosmeticStyle) => {
       <section class="style-section">
         <div class="section-header">
           <h3>Estilos de Nick</h3>
-          <span class="badge">CHAT & PERFIL</span>
+          <span class="badge">CHAT &amp; PERFIL</span>
         </div>
         <p class="section-desc">
           Personalizá cómo los demás ven tu nombre.
         </p>
-        
+
         <div class="styles-grid">
           <CosmeticsNickStyleCard
             v-for="style in cosmeticsStore.allNickStyles"

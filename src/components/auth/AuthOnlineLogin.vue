@@ -102,6 +102,7 @@ const handleServerSelect = (e: Event) => {
       class="auth-input"
       type="password"
       placeholder="Contraseña"
+      autocomplete="current-password"
       @input="emit('update:passwordValue', ($event.target as HTMLInputElement).value)"
       @keyup.enter="emit('login')"
       @focus="handleInputFocus"

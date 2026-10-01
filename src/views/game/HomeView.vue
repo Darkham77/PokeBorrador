@@ -146,7 +146,7 @@ onUnmounted(() => {
                 <div class="title-wrap">
                   <span class="emoji card-icon">📜</span>
                   <h2 class="card-title">
-                    MISIONES DIARIAS & DESPLIEGUES
+                    MISIONES DIARIAS &amp; DESPLIEGUES
                   </h2>
                 </div>
                 <div class="header-actions">

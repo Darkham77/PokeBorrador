@@ -75,7 +75,7 @@ const handlePanelClick = (event: Event) => {
         </PVTooltip>
       </template>
     </TrainerAvatar>
-    
+
     <div class="trainer-content">
       <div
         id="hud-name"

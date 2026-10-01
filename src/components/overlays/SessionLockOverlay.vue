@@ -29,7 +29,7 @@ const emit = defineEmits<{
       >
         TOMAR CONTROL DE ESTA SESIÓN
       </button>
-      
+
       <button
         id="session-lock-dismiss-btn"
         class="risk-btn"

@@ -45,7 +45,7 @@ const {
       @mouseenter="handleInputEnter"
       @mouseleave="handleInputLeave"
     >
-    
+
     <div class="gender-selection-row">
       <button
         class="gender-select-btn male"
@@ -88,6 +88,7 @@ const {
       class="auth-input"
       type="password"
       placeholder="Contraseña (mín. 6 caracteres)"
+      autocomplete="new-password"
       @input="emit('update:passwordValue', ($event.target as HTMLInputElement).value)"
       @keyup.enter="emit('signup')"
       @focus="handleInputFocus"

@@ -63,7 +63,7 @@ const onItemMouseLeave = (event: MouseEvent) => {
         @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
       >
     </div>
-    
+
     <div class="item-details">
       <div class="item-name">
         {{ item.name }}

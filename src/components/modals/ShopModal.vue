@@ -71,7 +71,7 @@ const close = () => {
             <span class="sub-title">TIENDA DE OBJETOS</span>
           </div>
         </div>
-        
+
         <div class="header-stats">
           <!-- Mis Créditos -->
           <div class="stat-node money">

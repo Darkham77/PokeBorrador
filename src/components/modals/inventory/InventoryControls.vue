@@ -102,7 +102,7 @@ const startMode = (mode: string) => {
           <span class="count">{{ selectedCount }}</span>
           <span class="label">SELECCIONADOS</span>
         </div>
-        
+
         <div class="multi-actions">
           <button
             id="inventory-multi-cancel-btn"

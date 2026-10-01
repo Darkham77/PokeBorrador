@@ -291,7 +291,7 @@ onUnmounted(() => {
           </div>
         </PVTooltip>
       </div>
-      
+
       <!-- HP Mini Bar -->
       <div class="hp-bar-mini">
         <div

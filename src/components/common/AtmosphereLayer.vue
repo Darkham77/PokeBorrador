@@ -515,7 +515,7 @@ const showLeavesOverlay = computed(() => props.layer !== 'ambient' && Boolean(pr
         ref="canvasRef"
         class="weather-canvas"
       />
-      
+
       <!-- Leaves (for Wind & Storm effects) -->
       <AtmosphereLeavesOverlay
         v-if="showLeavesOverlay"

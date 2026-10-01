@@ -24,9 +24,9 @@ const emit = defineEmits<{
     :show-spinner="false"
   >
     <p class="admin-note">
-      {{ lockType === 'server' 
+      {{ lockType === 'server'
         ? 'Por favor, espera a que el servidor web sea actualizado con la última compilación.'
-        : 'Por favor, contacta al administrador para actualizar la base de datos.' 
+        : 'Por favor, contacta al administrador para actualizar la base de datos.'
       }}
     </p>
 

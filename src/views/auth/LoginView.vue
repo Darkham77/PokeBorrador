@@ -257,7 +257,7 @@ const handleServerChange = () => {
 <template>
   <div id="auth-screen">
     <div class="login-background-stars" />
-    
+
     <div class="login-header-logo">
       <img
         :src="logoUrl"

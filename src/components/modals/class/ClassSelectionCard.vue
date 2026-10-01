@@ -206,7 +206,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
       :disabled="isCurrent"
       @click.stop="$emit('select', cls.id)"
     >
-      <div class="btn-label-stack">
+      <span class="btn-label-stack">
         <span class="btn-label">
           {{ isCurrent ? 'CLASE ACTUAL' : (currentPlayerClass ? 'CAMBIAR' : 'ELEGIR') }}
         </span>
@@ -214,7 +214,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
           v-if="currentPlayerClass && !isCurrent"
           class="btn-price"
         >10,000 BC</span>
-      </div>
+      </span>
     </button>
   </div>
 </template>

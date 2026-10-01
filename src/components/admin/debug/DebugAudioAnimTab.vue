@@ -259,7 +259,7 @@ const isEffectActive = (type: string, category: string) => {
       :items="DEBUG_COMBAT_ANIMS"
       @action="triggerAnim"
     />
-    
+
     <!-- CATCH ANIMS SECTION -->
     <DebugActionList
       title="FASES DE CAPTURA"

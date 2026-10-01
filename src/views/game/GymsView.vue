@@ -78,7 +78,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
           Derrota a los 8 líderes de Kanto para acceder a la Liga Pokémon. Cada líder otorga una medalla única y una MT especial.
         </p>
       </div>
-      
+
       <div class="badge-summary">
         <div class="badge-title">
           TUS MEDALLAS

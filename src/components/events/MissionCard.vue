@@ -178,7 +178,7 @@ const handleImgError = (e: Event) => {
     >
       {{ completedBadgeText }}
     </div>
-    
+
     <div class="trainer-section">
       <div class="trainer-avatar">
         <img 
@@ -192,7 +192,7 @@ const handleImgError = (e: Event) => {
           v-else
           class="avatar-placeholder"
         >{{ avatar }}</span>
-        
+
         <span
           v-if="isAvatarUrl"
           class="avatar-placeholder"

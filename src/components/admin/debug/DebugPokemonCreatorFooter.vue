@@ -27,7 +27,7 @@ const emit = defineEmits<{
           ATRAPAR
         </button>
       </PVTooltip>
-        
+
       <PVTooltip
         title="Iniciar minijuego de captura"
         description="Inicia la secuencia y el minijuego de captura seleccionado."
@@ -40,7 +40,7 @@ const emit = defineEmits<{
           MINIJUEGO
         </button>
       </PVTooltip>
-        
+
       <PVTooltip
         title="Añadir huevo listo (1 paso)"
         description="Genera un huevo en tu mochila que eclosionará al dar el siguiente paso."
@@ -53,7 +53,7 @@ const emit = defineEmits<{
           CAMINAR HUEVO
         </button>
       </PVTooltip>
-        
+
       <PVTooltip
         title="Añadir huevo con animación"
         description="Genera un huevo que iniciará la secuencia de eclosión."
@@ -79,7 +79,7 @@ const emit = defineEmits<{
           HUEVO ALMACÉN
         </button>
       </PVTooltip>
-        
+
       <PVTooltip
         title="Iniciar encuentro"
         description="Genera un encuentro salvaje con este Pokémon."

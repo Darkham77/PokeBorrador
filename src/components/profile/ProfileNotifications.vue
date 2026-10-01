@@ -56,7 +56,7 @@ function getTimestamp(n: NotificationItem): number {
         Ver ultimas 10 ({{ filteredHistory.length }})
       </button>
     </div>
-    
+
     <div
       v-show="isHistoryOpen"
       class="history-container-legacy custom-scrollbar"

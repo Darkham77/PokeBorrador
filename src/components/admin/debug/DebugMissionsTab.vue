@@ -45,7 +45,7 @@ const clear = () => {
       <div class="mission-status">
         Actualmente: <span>{{ game.state.daycare_missions?.length || 0 }}</span> activas
       </div>
-      
+
       <div class="button-row">
         <PVTooltip title="Fuerza la regeneración de nuevas misiones de guardería.">
           <button 

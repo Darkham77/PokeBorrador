@@ -71,7 +71,7 @@ const HMS = ['cut', 'surf', 'strength', 'flash', 'rock_smash', 'waterfall', 'fly
         </button>
       </div>
     </div>
-    
+
     <div
       class="adv-panel adv-column adv-team-passives-column"
       style="display: flex; flex-direction: column; gap: 8px;"
@@ -121,14 +121,14 @@ const HMS = ['cut', 'surf', 'strength', 'flash', 'rock_smash', 'waterfall', 'fly
         </button>
       </div>
     </div>
-    
+
     <!-- Sandbox Cheat Panel -->
     <AdventureCheatPanel
       :injected-items="injectedItems"
       @update:injected-items="emit('update:injectedItems', $event)"
       @add-log="emit('add-log', $event)"
     />
-    
+
     <div class="adv-panel adv-column adv-console-column">
       <h3 class="adv-pixel-text adv-column-title">
         Logs

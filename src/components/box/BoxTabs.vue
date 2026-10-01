@@ -25,7 +25,7 @@ const emit = defineEmits<{
       >
         CAJA {{ i }}
       </button>
-      
+
       <button
         v-if="props.boxCount < 10"
         class="box-buy-new-btn"

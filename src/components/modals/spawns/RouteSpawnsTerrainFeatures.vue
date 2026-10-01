@@ -83,7 +83,7 @@ function handleActionClick() {
           {{ terrainTags }}
         </span>
       </div>
-      
+
       <!-- Active special route bonus indicators in route stats -->
       <div
         v-if="specialBonus"

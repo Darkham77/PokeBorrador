@@ -19,7 +19,7 @@ defineProps<Props>()
           POKÉDEX NACIONAL
         </h1>
         <h2 class="header-sub-title">
-          REGIÓN DE KANTO & JOHTO
+          REGIÓN DE KANTO &amp; JOHTO
         </h2>
       </div>
 
@@ -30,9 +30,9 @@ defineProps<Props>()
             <span class="badge-label">VISTOS:</span>
             <span class="badge-value">{{ stats.seen }}</span>
           </div>
-          
+
           <div class="badge-divider" />
-          
+
           <div class="stat-group highlight">
             <span class="badge-label">CAPTURADOS:</span>
             <span class="badge-value">{{ stats.caught }} <small>/ {{ stats.total }}</small></span>

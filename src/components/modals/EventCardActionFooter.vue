@@ -51,7 +51,7 @@ onUnmounted(() => {
         :class="{ 'upcoming-value': props.isUpcoming }"
       >{{ props.formattedRemainingTime }}</span>
     </div>
-    
+
     <div
       v-if="props.isUpcoming"
       class="upcoming-badge"

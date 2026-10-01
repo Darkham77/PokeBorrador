@@ -100,7 +100,7 @@ onMounted(async () => {
         <span class="title">MI PROGRESO</span>
         <span class="pts">{{ warStore.weeklyPoints }} PT</span>
       </div>
-      
+
       <div class="progress-container">
         <div class="progress-bar">
           <div
@@ -122,10 +122,10 @@ onMounted(async () => {
       </div>
 
       <div class="reward-preview">
-        Próximo premio: 
+        Próximo premio:
         <span class="highlight">
           <span class="emoji">⚡</span>{{ formatCurrency(nextReward?.coins || 0) }} Monedas de Guerra
-        </span> 
+        </span>
         al llegar a {{ formatCurrency(nextReward?.pt || 0) }} PT
       </div>
     </div>

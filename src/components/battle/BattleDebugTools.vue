@@ -36,7 +36,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
       >
         <div class="effects-header">
           <span class="emoji">✨</span>
-          <span class="title">BATTLE EFFECTS & AUDIO</span>
+          <span class="title">BATTLE EFFECTS &amp; AUDIO</span>
           <button
             id="battle-debug-effects-close-btn"
             class="close-mini"
@@ -59,7 +59,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
       >
         <div class="time-header">
           <span class="emoji">⌛</span>
-          <span class="title">TIME & WEATHER CONTROL</span>
+          <span class="title">TIME &amp; WEATHER CONTROL</span>
           <button
             class="close-mini"
             @click.stop="isTimeOpen = false"
@@ -81,7 +81,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
       >
         <div class="spawn-header">
           <span class="emoji">🎲</span>
-          <span class="title">SPAWN & MINIGAMES CONDITIONS</span>
+          <span class="title">SPAWN &amp; MINIGAMES CONDITIONS</span>
           <button
             id="battle-debug-spawn-close-btn"
             class="close-mini"

@@ -139,7 +139,7 @@ function handleCancel(listingId: string | number) {
       <h3 class="mkt-section-title">
         PUBLICACIONES ACTIVAS ({{ activeListings.length }}/{{ gtsStore.MAX_LISTINGS }})
       </h3>
-      
+
       <div
         v-if="activeListings.length === 0"
         class="empty-state"
@@ -182,7 +182,7 @@ function handleCancel(listingId: string | number) {
           {{ isClaimingAll ? '...COBRANDO' : `RECLAMAR TODO (${unclaimedCount})` }}
         </button>
       </div>
-      
+
       <div
         v-if="displayHistory.length === 0"
         class="empty-state"

@@ -99,7 +99,7 @@ async function repairAllIllegal() {
           </button>
         </PVTooltip>
       </div>
-      
+
       <div class="debug-danger-zone">
         <label class="danger-label">Persistent Database Changes (SE GUARDA)</label>
         <div class="button-row wrap">
@@ -144,7 +144,7 @@ async function repairAllIllegal() {
               LIMPIAR EQUIPO PVP
             </button>
           </PVTooltip>
-          
+
           <PVTooltip title="Alternar rellenado automático de equipo de Guerra">
             <button
               class="btn-vicio-secondary btn-vicio-sm"

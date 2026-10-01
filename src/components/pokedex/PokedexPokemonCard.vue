@@ -37,7 +37,7 @@ defineEmits<{
     <div class="dex-number">
       #{{ p.dexNum }}
     </div>
-    
+
     <div class="pdex-sprite-container">
       <template v-if="p.isSeen">
         <PVSpriteFX

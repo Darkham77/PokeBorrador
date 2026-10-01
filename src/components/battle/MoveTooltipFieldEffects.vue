@@ -52,7 +52,7 @@ defineProps<{
         <span class="emoji">◆</span>
         <span class="field-condition-text">{{ cond }}</span>
       </div>
-    
+
       <!-- Smogon Calculator Description -->
       <div
         v-if="activeDetails.smogonDesc"

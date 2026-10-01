@@ -40,7 +40,7 @@ const {
       </template>
       POKÉMON
     </PVHUDButton>
-    
+
     <Transition
       :css="false"
       @before-enter="el => beforeEnter(el, position)"

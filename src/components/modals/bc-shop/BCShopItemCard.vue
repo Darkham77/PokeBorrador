@@ -93,7 +93,7 @@ const handleImageError = (e: Event) => {
           :alt="item.name"
           @error="handleImageError"
         >
-        
+
         <!-- Lock Overlay if locked -->
         <div 
           v-if="!isUnlocked"

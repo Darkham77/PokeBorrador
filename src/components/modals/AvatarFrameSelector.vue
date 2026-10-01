@@ -96,7 +96,7 @@ const selectAvatar = (style: LockableCosmeticStyle) => {
         <span class="emoji">🟦</span> Cuadrados
       </button>
     </div>
-    
+
     <div class="styles-grid">
       <AvatarFrameCard
         v-for="style in filteredAvatarStyles"

@@ -50,7 +50,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
         <span class="emoji card-icon">⚡</span>
         <div class="title-text-group">
           <h3 class="card-title">
-            POTENCIADORES & AURAS
+            POTENCIADORES &amp; AURAS
           </h3>
           <span class="buffs-sub">
             {{ activeBuffs.length }} {{ activeBuffs.length === 1 ? 'efecto activo' : 'efectos activos' }}

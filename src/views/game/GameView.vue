@@ -60,7 +60,7 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
       <div class="placeholder-hud">
         HUD (Migrada a LegacyInterface)
       </div>
-      
+
       <main class="content-area">
         <router-view v-slot="{ Component }">
           <transition

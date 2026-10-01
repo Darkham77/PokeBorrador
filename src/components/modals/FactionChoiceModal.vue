@@ -76,18 +76,18 @@ const getAssetUrlLocal = getAssetUrl
           :disabled="isProcessing"
           @click.stop="chooseFaction('union')"
         >
-          <div class="faction-icon-wrap">
+          <span class="faction-icon-wrap">
             <img
               :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'union')"
               alt="Team Unión"
               class="faction-icon-large"
               @error="handleImgError"
             >
-          </div>
-          <div class="faction-info">
+          </span>
+          <span class="faction-info">
             <span class="faction-name union-text">Team Unión</span>
             <span class="faction-motto">Amistad. Armonía. Compañerismo.</span>
-          </div>
+          </span>
         </button>
 
         <button
@@ -95,18 +95,18 @@ const getAssetUrlLocal = getAssetUrl
           :disabled="isProcessing"
           @click.stop="chooseFaction('poder')"
         >
-          <div class="faction-icon-wrap">
+          <span class="faction-icon-wrap">
             <img
               :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'poder')"
               alt="Team Poder"
               class="faction-icon-large"
               @error="handleImgError"
             >
-          </div>
-          <div class="faction-info">
+          </span>
+          <span class="faction-info">
             <span class="faction-name poder-text">Team Poder</span>
             <span class="faction-motto">Poder. Herramientas. Eficiencia.</span>
-          </div>
+          </span>
         </button>
       </div>
     </div>

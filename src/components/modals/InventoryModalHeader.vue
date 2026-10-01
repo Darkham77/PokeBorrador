@@ -19,7 +19,7 @@ defineProps<{
         <span class="sub-title">GESTIÓN DE INVENTARIO</span>
       </div>
     </div>
-    
+
     <div class="header-stats">
       <div class="stat-node">
         <span class="inv-stat-label">OBJETOS TOTALES</span>

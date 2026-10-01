@@ -37,9 +37,9 @@ defineEmits<{
         :style="cardStyle"
         @click.stop="$emit('action', item.id)"
       >
-        <div class="btn-content">
+        <span class="btn-content">
           <span class="emoji icon">{{ item.icon }}</span>
-          <div class="text">
+          <span class="text">
             <span 
               class="label"
               :style="labelStyle"
@@ -49,8 +49,8 @@ defineEmits<{
               class="desc"
               :style="descStyle"
             >{{ item.desc }}</span>
-          </div>
-        </div>
+          </span>
+        </span>
         <span 
           class="emoji arrow"
           :style="arrowStyle"

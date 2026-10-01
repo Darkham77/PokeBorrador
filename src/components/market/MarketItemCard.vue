@@ -88,7 +88,7 @@ const tierColor = computed(() => {
               <span class="pill-amount">₱{{ (item.price || 0).toLocaleString() }}</span>
             </div>
           </div>
-          
+
           <!-- GTS Price Pills Row on separate line -->
           <div class="price-pills-row">
             <template v-if="gtsStats">
@@ -97,13 +97,13 @@ const tierColor = computed(() => {
                 <span class="pill-label">MIN:</span>
                 <span class="pill-amount">₱{{ Math.round(gtsStats.min).toLocaleString() }}</span>
               </div>
-              
+
               <!-- GTS Avg Price -->
               <div class="price-pill avg-pill">
                 <span class="pill-label">PROM:</span>
                 <span class="pill-amount">₱{{ Math.round(gtsStats.avg).toLocaleString() }}</span>
               </div>
-              
+
               <!-- GTS Max Price -->
               <div class="price-pill max-pill">
                 <span class="pill-label">MAX:</span>

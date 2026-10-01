@@ -171,7 +171,7 @@ watch(trainerExpPct, (newPct) => {
         </span>
         <span class="xp-percent">{{ Math.round(trainerExpPct) }}%</span>
       </div>
-      
+
       <!-- Progress Bar -->
       <div class="xp-bar-container">
         <div 
@@ -180,7 +180,7 @@ watch(trainerExpPct, (newPct) => {
           :style="{ backgroundColor: props.classColor || classStore.currentClassDef?.color || 'var(--purple)' }"
         />
       </div>
-      
+
       <div class="xp-remaining-text">
         <template v-if="currentLevel >= MAX_TRAINER_RANK_LEVEL">
           <strong :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }">¡NIVEL MÁXIMO ALCANZADO!</strong>
