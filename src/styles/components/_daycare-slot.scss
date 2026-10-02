@@ -30,6 +30,7 @@
 .slot-marker {
   @include pixelated;
   font-size: 7px;
+  text-transform: uppercase;
   color: $muted;
   margin-bottom: 20px;
 
@@ -184,6 +185,7 @@
   .item-badge {
     padding: 8px 12px; border-radius: 10px; font-size: 10px;
     text-align: center;
+    text-transform: uppercase;
     @include pixelated;
     &.active { 
       background: Rgba($pokecenter-pink, 0.08); 

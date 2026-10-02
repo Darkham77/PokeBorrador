@@ -65,7 +65,7 @@ const eventAction = computed<EventTypeAction>(() => {
         class="adv-mo-status"
       >
         Requisito: <span :class="['adv-mo-badge', { ok: activeHMs.has(activeEvent.moRequired) }]">
-          MO {{ activeEvent.moRequired.toUpperCase() }} <!-- text-ok -->
+          MO {{ activeEvent.moRequired }}
           ({{ activeHMs.has(activeEvent.moRequired) ? 'DISPONIBLE' : 'FALTANTE' }})
         </span>
       </div>

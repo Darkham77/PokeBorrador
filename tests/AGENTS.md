@@ -46,7 +46,7 @@ QA / Automation Engineers.
   - It is STRICTLY FORBIDDEN to create micro-test files (<60 lines) for individual cases or single assertions. Each test file spawns a separate Vitest worker thread, thrashing Vite transform caches and repeatedly re-importing heavy packages like `@pkmn/sim` and `@smogon/calc`.
   - All test files MUST be organized into cohesive, domain-specific test suites with a target size of **300 to 800 lines** (`*_suite.test.ts` or `*_suite.spec.ts`).
   - Legitimate standalone process runners, benchmark files, or isolated bug reproducers are strictly governed via `TEST_FRAGMENTATION_WHITELIST` or inline `// test-fragmentation-ok: <justification>` annotations.
-  - Enforced continuously by the official auditor: `npm run validate:test-fragmentation:summary`.
+  - Enforced continuously by the official auditor: `npm run audit suites=validate_test_fragmentation`.
 - **Systematic Des-JSDOMization Standard & JSDOM Escape Hatch Protocol**:
   - Suites testing pure domain logic, mathematical formulas, Pinia stores without UI mounting, Showdown engine adapters, or CLI scripts MUST execute under the native Node runtime (`environment: 'node'`) rather than JSDOM.
   - Declaring `// @vitest-environment jsdom` on suites that do not mount Vue components (`@vue/test-utils`) or touch real DOM nodes is strictly prohibited and flagged automatically as `unnecessary-jsdom`.

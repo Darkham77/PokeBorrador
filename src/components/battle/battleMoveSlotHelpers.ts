@@ -26,15 +26,12 @@ const DEFAULT_WHITE_RGB = '255, 255, 255' as const
 const HEX_RADIX = 16 as const
 
 function isChoiceLocked(pokemon: Pokemon | null, move: Move): boolean {
-  if (!pokemon?.heldItem || !CHOICE_ITEMS.has(pokemon.heldItem.toLowerCase())) {
+  if (!pokemon?.heldItem || !CHOICE_ITEMS.has(pokemon.heldItem)) {
     return false
   }
   if (!pokemon.choiceMove) return false
 
-  const choiceLower = pokemon.choiceMove.toLowerCase()
-  const moveNameLower = (move.name || '').toLowerCase()
-  const moveIdLower = (move.id || '').toLowerCase()
-  return moveNameLower !== choiceLower && moveIdLower !== choiceLower
+  return move.id !== pokemon.choiceMove
 }
 
 export function isBattleMoveDisabled(

@@ -142,7 +142,7 @@ onUnmounted(() => {
     @mouseleave="handleSlotMouseLeave"
   >
     <div class="slot-marker">
-      RANURA {{ slotId.toUpperCase() }}
+      RANURA {{ slotId }}
     </div>
 
     <!-- Empty State -->

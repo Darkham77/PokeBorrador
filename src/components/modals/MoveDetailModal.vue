@@ -44,7 +44,7 @@ const catInfo = computed(() => {
     special: { icon: '✨', text: 'Especial' },
     status: { icon: '🔮', text: 'Estado' }
   }
-  return cats[md.value.cat.toLowerCase()] || { icon: '', text: '' }
+  return cats[md.value.cat] ?? { icon: '', text: '' }
 })
 
 const description = computed(() => {

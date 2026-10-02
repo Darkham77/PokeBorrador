@@ -10,17 +10,13 @@ import { enableCompileCache } from 'node:module';
 import { BaseAuditor } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '../../../src/data/system/constants.ts';
+import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 import type { PokemonBaseData } from '../../../src/types/system/database.ts';
 
 enableCompileCache();
 
 const DB_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
 const STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
-
-function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
-  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id);
-}
 
 export type PokemonDbRuleId =
   | 'pokemon-invalid-species'

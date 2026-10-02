@@ -304,7 +304,7 @@ export async function emulateClaimAward(
   _sqliteDb: SQLiteDatabase,
   params: Record<string, unknown> = {}
 ): Promise<DBResponse> {
-  const awardId = (params.p_award_id || params.awardId || params.id) as string;
+  const awardId = (params.p_award_id ?? params.awardId) as string;
   if (!awardId) {
     return { data: null, error: 'p_award_id is required' };
   }

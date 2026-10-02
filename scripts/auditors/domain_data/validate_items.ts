@@ -111,7 +111,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
     ];
 
     shopItems.forEach(item => {
-      const tag = `[${item.name || item.id} (line ~${item._line})]`;
+      const tag = `[${item.id} (line ~${item._line})]`;
 
       REQUIRED_FIELDS.forEach(f => {
         const val = item[f];

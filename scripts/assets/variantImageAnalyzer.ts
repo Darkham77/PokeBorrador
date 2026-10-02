@@ -7,7 +7,7 @@
 import sharp from 'sharp';
 
 export interface AnimationAnalysisResult {
-  pokemonId: string;
+  pokemonSlug: string;
   suffix: string;
   hasIdle: boolean;
   idleRange: [number, number];
@@ -96,7 +96,7 @@ function findCycleCandidates(transitions: TransitionInfo[]): CandidateCycle[] {
 
 export async function analyzeVariantImage(
   varSourcePath: string,
-  pokemonId: string,
+  pokemonSlug: string,
   suffix: string
 ): Promise<AnimationAnalysisResult> {
   const image = sharp(varSourcePath);
@@ -158,7 +158,7 @@ export async function analyzeVariantImage(
 
     if (hasNonAdjacentDuplicates) {
       return {
-        pokemonId,
+        pokemonSlug,
         suffix,
         hasIdle: true,
         idleRange: [0, totalFrames - 1],
@@ -168,7 +168,7 @@ export async function analyzeVariantImage(
     }
 
     return {
-      pokemonId,
+      pokemonSlug,
       suffix,
       hasIdle: true,
       idleRange: [0, totalFrames - 1],
@@ -215,7 +215,7 @@ export async function analyzeVariantImage(
     const attackLength = e - s + 1;
     if (attackLength <= 2) {
       return {
-        pokemonId,
+        pokemonSlug,
         suffix,
         hasIdle: true,
         idleRange: [0, totalFrames - 1],
@@ -230,7 +230,7 @@ export async function analyzeVariantImage(
   }
 
   return {
-    pokemonId,
+    pokemonSlug,
     suffix,
     hasIdle: true,
     idleRange: [idleStart, firstCycleEnd],

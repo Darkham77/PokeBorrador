@@ -49,7 +49,7 @@ const getWeatherMetadata = (weather: WeatherId) => {
   const visual = WEATHER_VISUAL_METADATA[weather]
   if (visual) return visual
   const mech = getMechanicalWeather(weather)
-  return WEATHER_UI_METADATA[mech] || { icon: '❓', label: weather.toUpperCase() }
+  return WEATHER_UI_METADATA[mech] ?? { icon: '❓', label: weather }
 }
 
 const REGIONS: Region[] = [
@@ -96,11 +96,11 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
                   const excList = Object.keys(rawExc)
                   
                   visitors = visList.map(p => ({
-                    name: p.toUpperCase(),
+                    name: p,
                     sprite: getAssetUrl(ASSET_TYPES.POKEMON, p)
                   }))
                   exclusive = excList.map(p => ({
-                    name: p.toUpperCase(),
+                    name: p,
                     sprite: getAssetUrl(ASSET_TYPES.POKEMON, p)
                   }))
                 }
@@ -204,7 +204,7 @@ function toggleRoute(routeId: MapRouteId) {
           <div class="pixel-icon emoji">
             🚫
           </div>
-          <p>No hay datos de clima para la región de {{ activeRegion.toUpperCase() }} aún.</p>
+          <p>No hay datos de clima para la región de <span style="text-transform: uppercase;">{{ activeRegion }}</span> aún.</p>
         </div>
 
         <DebugWeatherRouteSection

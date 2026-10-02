@@ -1,6 +1,6 @@
 # Poké Vicio — Retro-Modern Pokémon Web Game
 
-Poké Vicio es un videojuego web híbrido retro-moderno construido con **Vue 3**, **Pinia**, **GSAP**, el motor canónico de combate de Pokémon Showdown (`@pkmn/sim`), persistencia dual (SQLite local offline con OPFS y Supabase/PostgreSQL online) y una arquitectura modular gobernada por la suite de auditoría desacoplada (`@fgp/auditor`).
+Poké Vicio es un videojuego web híbrido retro-moderno construido con **Vue 3**, **Pinia**, **GSAP**, el motor canónico de combate de Pokémon Showdown (`@pkmn/sim`), persistencia dual (SQLite local offline con OPFS y Supabase/PostgreSQL online) y una arquitectura modular gobernada por la suite de auditoría desacoplada (`@francogp/auditor`).
 
 ## 📋 Requisitos Previos
 
@@ -236,8 +236,8 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | `npm run audit:md` | **Auditoría Documental y DOX**: Suite unificada (~2s) que ejecuta en paralelo la validación de jerarquía `AGENTS.md`, enlaces relativos, sintaxis Markdown y reglas de Markdownlint (preset `md`). |
 | `npm run audit:for-commit` | **Safe-Commit Diff Gatekeeper**: Compara cambios contra `origin/main` (estrictamente reservado para el pipeline `/safe-commit`). |
 | `npm run audit:changed` | **Auditoría de Archivos Modificados**: Ejecuta las suites de auditoría exclusivamente sobre los archivos modificados desde `main`. |
-| `npm run audit:fix` | **Auto-corrección de Arquitectura**: Corrige automáticamente timers, sintaxis SASS, capas de render y directivas de importación. |
-| `npm run audit:project` | **Reglas de Arquitectura y Estilo**: Evalúa las 43 reglas estáticas de código en archivos `.ts`, `.vue` y `.scss`. |
+| `npm run audit fix` | **Auto-corrección de Arquitectura**: Corrige automáticamente timers, sintaxis SASS, capas de render y directivas de importación. |
+| `npm run audit suites=audit_project` | **Reglas de Arquitectura y Estilo**: Evalúa las 43 reglas estáticas de código en archivos `.ts`, `.vue` y `.scss`. |
 | `npm run audit:findings` | **Reporte Consolidado de Incidencias**: Muestra tablas Box-Drawing de hallazgos agrupados por categoría (`audit:errors`, `audit:warnings`, `audit:summary`, `audit:files`). |
 | `npm run audit:family:domain` | **Auditoría de Dominio**: Valida tipos de dominio, uniones canónicas y estructuras de datos $O(1)$. |
 | `npm run audit:family:fsm` | **Auditoría de FSM**: Valida diagramas, implementación dinámica y paridad de flujo de combate. |
@@ -246,7 +246,7 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad y complejidad Fallow, tokens SCSS, reactividad Pinia y componentes Vue. |
 | `npm run audit:fallow` | **Codebase Intelligence (Fallow)**: Dashboard consolidado de métricas, dependencias circulares, duplicaciones, exportaciones huérfanas y vulnerabilidades CWE. |
 | `npm run audit:complexity` | **Hotspots de Complejidad**: Reporta funciones con mayor complejidad ciclomática y cognitiva (`npm run audit:complexity:top`). |
-| `npm run audit:css` | **Auditoría de Estilos y Clases**: Detecta selectores duplicados y clases redundantes en SCSS y bloques `<style>` vía `css-checker`. |
+| `npm run audit suites=validate_css_duplicates` | **Auditoría de Estilos y Clases**: Detecta selectores duplicados y clases redundantes en SCSS y bloques `<style>` vía `css-checker`. |
 | `npm run audit:bundle` | **Presupuesto de Bundles**: Audita los tamaños de chunks de producción y desacoplamiento del cliente. |
 | `npm run build:analyze` | **Treemap Interactivo de Bundles**: Dispara la compilación de producción con visualizador gráfico en `scratch/bundle_stats.html`. |
 
@@ -260,40 +260,40 @@ Cada regla arquitectónica y de dominio cuenta con su propio sub-auditor modular
 
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run validate:types` | Verificación estricta de tipos TypeScript y Vue SFC con `vue-tsc --noEmit`. |
-| `npm run validate:z-index` | Paridad 1:1 estricta entre `Z_LAYERS` (TypeScript) y variables CSS `--z-*` en `_base.scss` (soporta `--fix`). |
-| `npm run validate:duplicate-constants` | Detección de declaraciones de constantes idénticas o divergentes entre módulos mediante AST compartido. |
-| `npm run validate:css-duplicates` | Detección de selectores CSS y reglas duplicadas en hojas SCSS y SFC de Vue. |
-| `npm run validate:pinia-reactivity` | Audita stores de Pinia contra desestructuración reactiva indebida y accesos de estado desenvueltos. |
-| `npm run validate:reactive-leaks` | Detección de fugas de memoria, observadores sin limpiar y listeners huérfanos. |
-| `npm run validate:reactive-purity` | Asegura pureza y ausencia de efectos secundarios en mutaciones y getters reactivos. |
+| `npm run audit suites=validate_type_check` | Verificación estricta de tipos TypeScript y Vue SFC con `vue-tsc --noEmit`. |
+| `npm run audit suites=validate_z_index` | Paridad 1:1 estricta entre `Z_LAYERS` (TypeScript) y variables CSS `--z-*` en `_base.scss` (soporta `--fix`). |
+| `npm run audit suites=validate_duplicate_constants` | Detección de declaraciones de constantes idénticas o divergentes entre módulos mediante AST compartido. |
+| `npm run audit suites=validate_css_duplicates` | Detección de selectores CSS y reglas duplicadas en hojas SCSS y SFC de Vue. |
+| `npm run audit suites=validate_pinia_reactivity` | Audita stores de Pinia contra desestructuración reactiva indebida y accesos de estado desenvueltos. |
+| `npm run audit suites=validate_reactive_leaks` | Detección de fugas de memoria, observadores sin limpiar y listeners huérfanos. |
+| `npm run audit suites=validate_reactive_purity` | Asegura pureza y ausencia de efectos secundarios en mutaciones y getters reactivos. |
 | `npm run validate:client-sim-decoupling` | Enforce 100% estricto de desacoplamiento entre cliente web y runtime de `@pkmn/sim`. |
-| `npm run validate:render-performance` | Garantiza 60 FPS GPU: prohíbe `mix-blend-mode` en clima, filtros pesados y closures por frame. |
-| `npm run validate:component-styles` | Valida enlaces de estilos, mixins SCSS estandarizados y ausencia de hojas huérfanas. |
-| `npm run validate:line-height` | Previene recorte de fuentes descendentes (*descender clipping*) y valida espaciado vertical. |
-| `npm run validate:vue-sfc-hygiene` | Higiene de componentes Vue: `<script setup>`, estilos `scoped` y estructura SFC. |
-| `npm run validate:template-ids` | Garantiza IDs deterministas y únicos en plantillas Vue para automatización E2E. |
-| `npm run validate:mobile-accessibility` | Audita objetivos táctiles (touch targets) y adaptabilidad móvil. |
-| `npm run validate:console-cleanliness` | Prohíbe sentencias `console.log` o depuración en rutas de producción. |
-| `npm run validate:error-suppression` | Erradica bloques `catch` vacíos, promesas silenciadas y supresión de errores. |
-| `npm run validate:audit-headers` | Prohíbe directivas de escape a nivel de archivo (`fallow-ignore-file`, `@ts-nocheck`, etc.). |
-| `npm run validate:test-hygiene` | Audita suites de pruebas contra aserciones tautológicas y mocks excesivos. |
-| `npm run validate:test-fragmentation` | Previene micro-archivos (<60 líneas) y fomenta suites cohesivas (300-800 líneas). |
+| `npm run audit suites=validate_render_performance` | Garantiza 60 FPS GPU: prohíbe `mix-blend-mode` en clima, filtros pesados y closures por frame. |
+| `npm run audit suites=validate_component_styles` | Valida enlaces de estilos, mixins SCSS estandarizados y ausencia de hojas huérfanas. |
+| `npm run audit suites=validate_line_height` | Previene recorte de fuentes descendentes (*descender clipping*) y valida espaciado vertical. |
+| `npm run audit suites=validate_vue_sfc_hygiene` | Higiene de componentes Vue: `<script setup>`, estilos `scoped` y estructura SFC. |
+| `npm run audit suites=validate_template_ids` | Garantiza IDs deterministas y únicos en plantillas Vue para automatización E2E. |
+| `npm run audit suites=validate_mobile_accessibility` | Audita objetivos táctiles (touch targets) y adaptabilidad móvil. |
+| `npm run audit suites=validate_console_cleanliness` | Prohíbe sentencias `console.log` o depuración en rutas de producción. |
+| `npm run audit suites=validate_error_suppression` | Erradica bloques `catch` vacíos, promesas silenciadas y supresión de errores. |
+| `npm run audit suites=validate_audit_headers` | Prohíbe directivas de escape a nivel de archivo (`fallow-ignore-file`, `@ts-nocheck`, etc.). |
+| `npm run audit suites=validate_test_hygiene` | Audita suites de pruebas contra aserciones tautológicas y mocks excesivos. |
+| `npm run audit suites=validate_test_fragmentation` | Previene micro-archivos (<60 líneas) y fomenta suites cohesivas (300-800 líneas). |
 
 #### 📚 Documentación y Enlaces
 
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run validate:dox-integrity` | Valida la jerarquía estructural de `AGENTS.md`, secciones requeridas y exclusión de `.gitignore`. |
-| `npm run validate:markdown-links` | Valida enlaces relativos, referencias cruzadas y evita rutas absolutas o de entorno. |
-| `npm run validate:markdown-syntax` | Valida encabezados, tablas y sintaxis Markdown conforme a CommonMark. |
+| `npm run audit suites=validate_dox_integrity` | Valida la jerarquía estructural de `AGENTS.md`, secciones requeridas y exclusión de `.gitignore`. |
+| `npm run audit suites=validate_markdown_links` | Valida enlaces relativos, referencias cruzadas y evita rutas absolutas o de entorno. |
+| `npm run audit suites=validate_markdown_syntax` | Valida encabezados, tablas y sintaxis Markdown conforme a CommonMark. |
 
 #### 🎮 Datos de Dominio y Juego
 
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run validate:domain-types` | Cumplimiento estricto de tipos de dominio y uniones canónicas (sin `any` ni strings libres). |
-| `npm run validate:o1` | Optimización $O(1)$: diccionarios y conjuntos tipados en rutas críticas de ejecución. |
+| `npm run audit suites=validate_domain_types` | Cumplimiento estricto de tipos de dominio y uniones canónicas (sin `any` ni strings libres). |
+| `npm run audit suites=validate_o1_data_structures` | Optimización $O(1)$: diccionarios y conjuntos tipados en rutas críticas de ejecución. |
 | `npm run validate:pokemon` | Estadísticas base, tipos y tablas de evolución contra el Dex oficial de Showdown. |
 | `npm run validate:moves` | Integridad de movimientos, efectos secundarios y learnsets canónicos. |
 | `npm run validate:abilities` | Habilidades pasivas y de campo contra el motor canónico. |
@@ -309,7 +309,7 @@ Cada regla arquitectónica y de dominio cuenta con su propio sub-auditor modular
 | `npm run validate:sql` | Ejecución incremental de 96 migraciones SQL en SQLite en memoria (`node:sqlite`). |
 | `npm run validate:schema-parity` | Paridad estructural 100% idéntica entre esquemas SQLite y PostgreSQL. |
 | `npm run validate:save-persistence` | Paridad 1:1 entre estado en memoria (`GameState`) y esquema persistido (`SaveData`). |
-| `npm run validate:sql-anti-patterns` | Detección de consultas no transaccionales y anti-patrones SQL. |
+| `npm run audit suites=validate_sql_anti_patterns` | Detección de consultas no transaccionales y anti-patrones SQL. |
 | `npm run validate:fsm` | Suite unificada FSM: paridad de diagramas Mermaid, implementación y flujo de ejecución. |
 | `npm run validate:showdown-parity` | Cobertura de protocolos de combate y tokens canónicos de Showdown. |
 | `npm run validate:combat-invariants` | Invariantes de combate por turno, asientos (seats) e idempotencia de comandos. |
@@ -553,7 +553,6 @@ npm run assets:convert
 
 - `/src`: Código fuente de la aplicación (Componentes Vue 3, Stores Pinia, Vistas, Puente Showdown `@pkmn/sim`, DBRouter).
 - `/public`: Activos estáticos públicos (Mapas, Audio, Sprites procesados WebP).
-- `/packages/auditor`: Motor de auditoría y análisis estático desacoplado (`@fgp/auditor`).
 - `/database`: Migraciones SQL incrementales (`.sql` PostgreSQL y `.sqlite.sql` SQLite), respaldos y esquemas.
 - `/supabase`: Orquestador Docker y automatización de microservicios Supabase (`setup_supabase.ts`).
 - `/scripts`: Fuzzers multi-hilo, simulaciones E2E Playwright, compiladores de datos y mantenimiento.
@@ -578,7 +577,7 @@ Si bajas cambios del repositorio (`git pull`) y el comando `npm run dev` falla o
 Para mantener la calidad y el orden del código, ejecuta regularmente las suites de auditoría oficiales:
 
 - **En desarrollo**: Ejecuta `npm run lint` (~8-10s) para validar tipos de dominio, $O(1)$, estilos y linter.
-- **Auditoría completa**: Ejecuta `npm run audit` para lanzar el motor de `@fgp/auditor` con reporte tabular y JSON en `scratch/audits/latest_audit.json`.
+- **Auditoría completa**: Ejecuta `npm run audit` para lanzar el motor de `@francogp/auditor` con reporte tabular y JSON en `scratch/audits/latest_audit.json`.
 - **Inspección de hallazgos**: Usa `npm run audit:findings`, `npm run audit:errors` o `npm run audit:warnings` para desglosar incidencias por categoría.
 
 ### 3. 🖼️ Gestión de Imágenes (`_raw-assets`)

@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.5.0",
+  "version": "0.6.0-build.20261002-172710",
   "private": true,
   "type": "module",
   "engines": {
@@ -92,7 +92,10 @@
     "assets:download:medals": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. --allow-net=archives.bulbagarden.net scripts/assets/download_ranked_medals.ts",
     "assets:convert": "node --permission --experimental-strip-types --allow-worker --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/convert_assets.ts",
     "assets:organize-tiers": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts",
+    "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts",
     "audit": "auditor",
+    "auditor:update": "auditor-update",
+    "auditor:version": "auditor-version -v",
     "audit:changed": "auditor changed-since=main",
     "audit:lint": "auditor preset=lint",
     "audit:md": "auditor preset=md",
@@ -143,7 +146,8 @@
     "validate:sql": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_sql_migrations.ts",
     "validate:persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
     "validate:save-persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
-    "validate:schema-parity": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_schema_parity.ts"
+    "validate:schema-parity": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_schema_parity.ts",
+    "validate:tools": "auditor --task=validate_build_tools"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",
@@ -159,7 +163,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@francogp/auditor": "github:francogp/auditor#main",
+    "@francogp/auditor": "github:francogp/auditor",
     "@pkmn/sim": "^0.10.11",
     "@playwright/test": "^1.63.0",
     "@rolldown/binding-wasm32-wasi": "^1.2.9",

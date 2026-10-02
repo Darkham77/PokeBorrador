@@ -65,7 +65,7 @@ const handleRematch = () => {
 const typeIcon = computed(() => getPokemonTypeIcon(props.gym.type))
 
 const leaderSpriteUrl = computed(() => {
-  return getAssetUrl(ASSET_TYPES.TRAINER, props.gym.leader.toLowerCase())
+  return getAssetUrl(ASSET_TYPES.TRAINER, props.gym.leader.toLowerCase()) // domain-ok: Open dynamic text or non-domain string payload
 })
 
 const headerBgStyle = computed(() => ({ background: resolveGymHeaderGradient(props.gym.typeColor) }))

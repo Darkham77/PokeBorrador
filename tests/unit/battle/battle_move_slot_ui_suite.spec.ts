@@ -132,7 +132,7 @@ describe('Battle Move Slot UI & Choice / Volatile Move Locking Suite', () => {
         uid: 'p1',
         name: 'Charizard',
         heldItem: 'choicespecs',
-        choiceMove: 'Lanzallamas',
+        choiceMove: 'flamethrower',
         moves: [
           { id: 'flamethrower', name: 'Lanzallamas', pp: 15, maxPP: 15 },
           { id: 'airslash', name: 'Tajo Aéreo', pp: 15, maxPP: 15 }
@@ -172,8 +172,8 @@ describe('Battle Move Slot UI & Choice / Volatile Move Locking Suite', () => {
         uid: 'p1',
         name: 'Charizard',
         heldItem: 'choicespecs',
-        choiceMove: 'Lanzallamas'
-      } as unknown as Pokemon & { choiceMove?: string };
+        choiceMove: 'flamethrower'
+      } as unknown as Pokemon;
 
       clearVolatileStatus(pokemon);
 

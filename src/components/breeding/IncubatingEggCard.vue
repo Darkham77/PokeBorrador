@@ -22,8 +22,8 @@ const eggTint = computed(() => props.egg.tint || (props.egg.isNpc ? NPC_EGG_TINT
 
 const eggName = computed(() => {
   const egg = props.egg
-  if (egg.scanned || egg.predictedInfo) {
-    const speciesId = getEggSpecies(egg.pokemonId || egg.id)
+  if ((egg.scanned || egg.predictedInfo) && egg.pokemonId) {
+    const speciesId = getEggSpecies(egg.pokemonId)
     return POKEMON_DB[speciesId]?.name || 'Huevo Pokémon'
   }
   if (egg.isNpc) {

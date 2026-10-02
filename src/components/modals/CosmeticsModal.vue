@@ -119,7 +119,7 @@ const selectNick = (style: LockableCosmeticStyle) => {
 
     <template #footer>
       <div class="modal-footer-internal">
-        <p>Los cambios se guardan instantáneamente en tu perfil de Supabase.</p>
+        <p>Los cambios se guardan instantáneamente en tu perfil de entrenador.</p>
       </div>
     </template>
   </BaseModal>

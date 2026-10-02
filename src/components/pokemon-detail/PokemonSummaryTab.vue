@@ -21,7 +21,7 @@ const props = defineProps<{
 
 const speciesDescription = computed(() => props.species.description || 'No hay datos disponibles en la Pokédex.')
 const uidDisplay = computed(() => props.targetPokemon?.uid || 'N/A')
-const formattedCaptureDate = computed(() => (props.captureDateFormatted ? props.captureDateFormatted.toUpperCase() : ''))
+const formattedCaptureDate = computed(() => (props.captureDateFormatted ? props.captureDateFormatted.toUpperCase() : '')) // text-ok: UI text display localization string
 </script>
 
 <template>

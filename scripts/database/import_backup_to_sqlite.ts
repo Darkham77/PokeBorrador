@@ -40,12 +40,15 @@ if (!backupPath) {
     const { readAndParseEnv } = await import('../lib/supabaseClient.ts');
     const serverConfigs = await readAndParseEnv();
 
-    let conf = serverConfigs[serverNameInput];
-    if (!conf) {
-      const found = Object.keys(serverConfigs).find(p => serverConfigs[p]?.ID === serverNameInput);
-      if (found) conf = serverConfigs[found];
+    const profileToConfig = new Map<string, (typeof serverConfigs)[string]>();
+    for (const [key, config] of Object.entries(serverConfigs)) {
+      profileToConfig.set(key, config);
+      if (config?.ID) {
+        profileToConfig.set(config.ID, config);
+      }
     }
 
+    const conf = profileToConfig.get(serverNameInput);
     if (conf) {
       serverName = conf.ID || serverNameInput;
     }

@@ -25,7 +25,7 @@ export function formatRange(
 }
 
 export function getCategoryDescription(cat: string): string {
-  const c = cat.toLowerCase();
+  const c = cat.toLowerCase(); // text-ok: UI text display localization string
   if (c.includes('nueva especie')) {
     return 'Pokémon extremadamente raro que contiene el ADN de todos los demás Pokémon. Se creía puramente mitológico.';
   }

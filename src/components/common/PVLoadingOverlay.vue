@@ -213,7 +213,7 @@ watch(() => props.icon, (newIcon) => {
         <span
           v-if="statusText"
           class="status-text press-start"
-        >{{ statusText.toUpperCase() }}</span>
+        >{{ statusText }}</span>
       </div>
 
       <div
@@ -378,6 +378,7 @@ watch(() => props.icon, (newIcon) => {
 
 .status-text {
   font-size: 10px;
+  text-transform: uppercase;
   @include pixelated;
 }
 

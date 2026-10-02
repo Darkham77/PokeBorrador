@@ -3,9 +3,9 @@
 > **Scope & Authority**: This document governs **Git safety confirmations, rollback protocols, uncommitted file protection, scratch directory mandates, prohibition on autonomous commits/pushes, root setup scripts SSoT, and artifact lifecycles** across Poké Vicio.
 >
 > 🛑 **Domain Boundaries & Redirection**:
-> - For full Safe Commit validation pipeline and commit message standards ➔ See [@/safe-commit](../../../safe-commit/SKILL.md).
+> - For full Safe Commit validation pipeline and commit message standards ➔ See **@/safe-commit**.
 > - For dependency management and package hygiene ➔ See [Dependency Management Manual](../technical/dependency_management_manual.md).
-> - For DOX documentation maintenance ➔ See [Markdown Standards](../technical/markdown_standards.md) and [@/dox-navigator](../../../dox-navigator/SKILL.md).
+> - For DOX documentation maintenance ➔ See [Markdown Standards](../technical/markdown_standards.md) and **@/dox-navigator**.
 
 ---
 

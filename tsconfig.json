@@ -22,8 +22,5 @@
     "vite.config.ts",
     "ui-demo/**/*.ts",
     "ui-demo/**/*.vue"
-  ],
-  "exclude": [
-    "auditor_fault_suite"
   ]
 }

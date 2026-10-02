@@ -250,7 +250,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
       const unequipped = inventoryStore.unequipItem('team', idx);
       if (unequipped) {
         const itemData = getItemById(unequipped);
-        const displayName = itemData ? itemData.name : unequipped.toUpperCase().replace(/_/g, ' ');
+        const displayName = itemData ? itemData.name : unequipped;
         uiStore.notify(`¡Se ha quitado el objeto: ${displayName}!`, '🎒');
       }
       return;
@@ -261,7 +261,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
       const unequipped = inventoryStore.unequipItem('box', idx);
       if (unequipped) {
         const itemData = getItemById(unequipped);
-        const displayName = itemData ? itemData.name : unequipped.toUpperCase().replace(/_/g, ' ');
+        const displayName = itemData ? itemData.name : unequipped;
         uiStore.notify(`¡Se ha quitado el objeto: ${displayName}!`, '🎒');
       }
     }

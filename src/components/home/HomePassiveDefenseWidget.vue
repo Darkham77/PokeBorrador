@@ -38,7 +38,7 @@ const teamEligibility = computed(() => {
   if (!rules) return map;
   for (const mon of defenseTeam.value) {
     const check = evaluatePokemonForSeason(mon, rules);
-    map.set(mon.uid || mon.id, {
+    map.set(mon.uid, {
       eligible: check.eligible,
       reason: check.reason || 'no cumple las reglas'
     });

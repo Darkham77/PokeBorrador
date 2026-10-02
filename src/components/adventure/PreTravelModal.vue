@@ -78,8 +78,8 @@ const activeTravelModifiers = computed(() => {
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span><span class="emoji">🔥</span> Tipo Foco:</span>
-              <span :style="{ color: activeTravelModifiers.typeFocus ? '#00bcd4' : '#fff' }">
-                {{ activeTravelModifiers.typeFocus ? activeTravelModifiers.typeFocus.toUpperCase() : 'Ninguno' }}
+              <span :style="{ color: activeTravelModifiers.typeFocus ? '#00bcd4' : '#fff', textTransform: activeTravelModifiers.typeFocus ? 'uppercase' : 'none' }">
+                {{ activeTravelModifiers.typeFocus ? activeTravelModifiers.typeFocus : 'Ninguno' }}
               </span>
             </div>
           </div>

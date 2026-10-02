@@ -112,7 +112,7 @@ export function auditAndRepairSaveData(
     saveData.box = saveData.box.filter((p) => {
       if (!p) return false;
       if (!p.id || !isEnabledPokemonId(p.id)) {
-        const logMsg = `Pokémon no habilitado eliminado de Caja: "${p.name || p.id}" (UID: ${p.uid || 'N/A'})`;
+        const logMsg = `Pokémon no habilitado eliminado de Caja: "${p.name}" (UID: ${p.uid || 'N/A'})`;
         accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
         if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
         return false;
@@ -130,7 +130,7 @@ export function auditAndRepairSaveData(
     saveData.team = saveData.team.filter((p) => {
       if (!p) return false;
       if (!p.id || !isEnabledPokemonId(p.id)) {
-        const logMsg = `Pokémon no habilitado eliminado de Equipo: "${p.name || p.id}" (UID: ${p.uid || 'N/A'})`;
+        const logMsg = `Pokémon no habilitado eliminado de Equipo: "${p.name}" (UID: ${p.uid || 'N/A'})`;
         accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
         if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
         return false;
@@ -148,7 +148,7 @@ export function auditAndRepairSaveData(
       const promoted = saveData.box.shift();
       if (promoted) {
         saveData.team.push(promoted);
-        const logMsg = `Save Shield: Pokémon ${promoted.name || promoted.id} promovido de Caja al Equipo para evitar equipo vacío.`;
+        const logMsg = `Save Shield: Pokémon ${promoted.name} promovido de Caja al Equipo para evitar equipo vacío.`;
         accountDetails.push(`  ↳ 🛡️ ${logMsg}`);
         if (!isSilent) console.log(`    ↳ 🛡️ ${logMsg}`);
         accountModified = true;
@@ -204,7 +204,7 @@ export function auditAndRepairSaveData(
       const poke = p as Pokemon;
       if (poke.onEvent) {
         poke.onEvent = false;
-        const logMsg = `[${locationLabel} Slot ${idx}] ${poke.name || poke.id} (UID: ${poke.uid}) liberado de evento concluido/legacy (onEvent = false).`;
+        const logMsg = `[${locationLabel} Slot ${idx}] ${poke.name} (UID: ${poke.uid}) liberado de evento concluido/legacy (onEvent = false).`;
         accountDetails.push(`  ↳ 🏆 ${logMsg}`);
         if (!isSilent) console.log(`    ↳ 🏆 ${logMsg}`);
         accountModified = true;

@@ -184,7 +184,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [Game Engine & State](./references/rules/game_engine_and_state.md)
 
 #### 2. Technical, Infrastructure & QA Manuals (`references/technical/`, `qa/`, `content/`)
-- [Domain Type First Skill](../domain-type-first/SKILL.md)
+- **@/domain-type-first** (bundled in `@francogp/auditor`)
 - [Browser Testing Manual](./references/qa/browser_testing_manual.md)
 - [Battle Animations QA Manual](./references/qa/manual_testing_battle_animations.md)
 - [Validation & Quality Manual](./references/qa/validation_manual.md)

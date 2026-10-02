@@ -88,7 +88,6 @@ export default tseslint.config(
   globalIgnores([
     'dist/**',
     'dev-dist/**',
-    'auditor_fault_suite/**',
     'node_modules/**',
     'scratch/**',
     'tmp/**',

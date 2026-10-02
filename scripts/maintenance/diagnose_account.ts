@@ -432,7 +432,7 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
       findings.push({
         severity: 'error',
         category: 'pokemon',
-        message: `expNeeded inválido (${poke.expNeeded}) en ${location} (${poke.name || poke.id} Nivel ${poke.level}).`,
+        message: `expNeeded inválido (${poke.expNeeded}) en ${location} (${poke.name} Nivel ${poke.level}).`,
         path: `${location}.expNeeded`
       });
     }
@@ -441,7 +441,7 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
       findings.push({
         severity: 'error',
         category: 'pokemon',
-        message: `[${location}] Especie "${poke.id}" (${poke.name || poke.id}) no habilitada por la whitelist global.`,
+        message: `[${location}] Especie "${poke.id}" (${poke.name}) no habilitada por la whitelist global.`,
         path: `${location}.id`
       });
     }
@@ -453,7 +453,7 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
           findings.push({
             severity: 'warning',
             category: 'legality',
-            message: `[${location}] ${poke.name || poke.id}: ${issue}`,
+            message: `[${location}] ${poke.name}: ${issue}`,
             path: location
           });
         }
@@ -462,7 +462,7 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
       findings.push({
         severity: 'error',
         category: 'pokemon',
-        message: `[${location}] ${poke.name || poke.id}: Error al verificar especie/datos: ${(legalityErr as Error).message}`,
+        message: `[${location}] ${poke.name}: Error al verificar especie/datos: ${(legalityErr as Error).message}`,
         path: `${location}.id`
       });
     }

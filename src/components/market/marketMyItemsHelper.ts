@@ -93,7 +93,7 @@ function createSoldClaimHistoryRow(claim: ClaimItem, marketFee: number): MarketH
   const data = soldPoke || soldItem || { name: 'Venta GTS' };
   const amount = typeof claim.asset_data?.data === 'number' ? claim.asset_data.data : ZERO_AMOUNT;
   return {
-    id: claim.source_id || claim.id,
+    id: claim.source_id,
     seller_id: (claim as { user_id?: string }).user_id || '',
     seller_name: '',
     listing_type: listingType,
@@ -109,7 +109,7 @@ function createPurchasedClaimHistoryRow(claim: ClaimItem): MarketHistoryRow {
   const listingType: MarketListingType = isPokemon ? 'pokemon' : 'item';
   const data = claim.asset_data?.data || { name: isPokemon ? 'Pokémon' : 'Objeto' };
   return {
-    id: claim.source_id || claim.id,
+    id: claim.source_id,
     seller_id: (claim as { user_id?: string }).user_id || '',
     seller_name: '',
     listing_type: listingType,

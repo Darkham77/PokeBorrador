@@ -24,7 +24,7 @@ export default defineAuditConfig({
     includeTestsInCodeAudit: false,
     testFragmentationWhitelist: ['src/logic/battle/battleEngine.ts'],
     ignoreGlobs: ['node_modules/**', 'dist/**', 'scratch/**', '.tsbuildinfo/**'],
-    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'test aventura', 'auditor_fault_suite'],
+    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'test aventura'],
     ignoredPatterns: ['src/logic/db/migrations_data.ts']
   },
   persistence: {
@@ -39,6 +39,7 @@ export default defineAuditConfig({
   domain: {
     timezoneVariable: 'APP_TIMEZONE',
     timezoneHelperModule: '@/logic/utils/timeUtils',
+    loggerModule: 'src/logic/utils/logger.ts',
     zLayersFile: 'src/logic/constants/visuals.ts',
     finiteDomainTypes: [
       'PokemonId',
@@ -74,7 +75,9 @@ export default defineAuditConfig({
         alternative: 'OFFICIAL_SERVERS_BY_ID[serverId]',
         definingFile: 'src/data/system/official_servers.ts'
       }
-    ]
+    ],
+    allowedStoreSetterPrefixes: ['set', 'update', 'equip', 'clear'],
+    caseNormalizationExemptTokens: ['rpg', 'pvp', 'pve', 'fsm', 'dex', 'hp', 'atk', 'def', 'spa', 'spd', 'spe', 'iv', 'ev']
   },
   styles: {
     zLayersEnabled: true,
@@ -89,10 +92,12 @@ export default defineAuditConfig({
     maxClientChunkErrorBytes: 2500 * 1024,
     exemptChunkPrefixes: [
       'worker-vendor-pkmn',
+      'worker-vendor-randoms',
       'worker-game-data',
       'vendor-pkmn-sim',
       'game-data-pokemon',
-      'vendor-randoms'
+      'vendor-randoms',
+      'db-migrations-data'
     ]
   },
   templates: {

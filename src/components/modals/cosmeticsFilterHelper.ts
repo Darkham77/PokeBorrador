@@ -53,7 +53,7 @@ export function resolveCosmeticLockNotification(
     return `Este ${itemType} es exclusivo para Administradores`;
   }
   if (style.requiredClass) {
-    const className = style.requiredClass.toUpperCase();
+    const className = style.requiredClass.toUpperCase(); // text-ok: UI text display localization string
     if (ctx.playerClass !== style.requiredClass) {
       return `Este ${itemType} es exclusivo para la profesión ${className}`;
     }

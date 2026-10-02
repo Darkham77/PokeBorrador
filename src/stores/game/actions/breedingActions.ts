@@ -14,7 +14,10 @@ export function useBreedingActions(
     const { recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory')
     const { getEggSpecies } = await import('@/logic/breeding/breedingEngine')
     
-    const rawSpeciesId = egg.pokemonId || egg.id
+    const rawSpeciesId = egg.id
+    if (!rawSpeciesId) {
+      throw new Error(`Cannot hatch egg: missing egg.id`)
+    }
     const speciesId = getEggSpecies(rawSpeciesId)
     const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))
     const p = makePokemon(speciesId, 1, {

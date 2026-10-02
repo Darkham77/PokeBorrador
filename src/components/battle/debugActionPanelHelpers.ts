@@ -132,10 +132,10 @@ function resolveSwapTarget(
 ): SwapTargetInfo {
   const baseNum = resolveBaseNumber(String(baseIdVal ?? '').trim(), pdexOrder);
   const targetBase = String(baseNum);
-  const cleanVar = String(rawVariantVal ?? '').trim().toLowerCase();
+  const cleanVar = String(rawVariantVal ?? '').trim().toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
   const variantVal = (cleanVar === '0' || cleanVar === '') ? '' : cleanVar;
   const targetId = constructPokemonId(targetBase, variantVal, genderVal);
-  const isFemale = genderVal.toLowerCase() === 'f';
+  const isFemale = genderVal === 'f' || genderVal === 'F';
   return { targetId, targetBase, variantVal, isFemale };
 }
 

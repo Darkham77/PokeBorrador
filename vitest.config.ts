@@ -43,7 +43,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
-      '@fgp/auditor': path.resolve(import.meta.dirname, './packages/auditor/src/index.ts'),
       'virtual:pwa-register': path.resolve(import.meta.dirname, './tests/helpers/pwaRegisterMock.ts'),
     },
     dedupe: ['vue', 'pinia', 'vue-router'],

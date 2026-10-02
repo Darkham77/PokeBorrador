@@ -16,10 +16,11 @@ Pokemon Mechanics Team / System Architects.
 - **Friendship & Step Counter Persistence (`friendship` & `friendshipSteps`)**:
   - `friendship?: number` stores the 0–255 value (default 70 for wild/gift, 120 for hatched eggs).
   - `friendshipSteps?: number` stores the individual step accumulator (0–127) towards the canonical 128-step friendship cycle. It MUST be preserved across party swaps, PC box storage, and database persistence roundtrips.
+- **PokemonEgg Species Identifier Single Source of Truth**: The species identifier for `PokemonEgg` is strictly and exclusively `egg.id` (`PokemonSpeciesId`), matching `Pokemon.id`. It is STRICTLY FORBIDDEN to use fallback chains like `egg.pokemonId || egg.id`. All hatching, rendering, and validation logic must read `egg.id` directly and fail loudly with descriptive errors if absent.
 
 ## Verification
 
-- Run `npm run lint` and `npm run validate:domain-types`.
+- Run `npm run lint` and `npm run audit suites=validate_domain_types`.
 
 ## Child DOX Index
 

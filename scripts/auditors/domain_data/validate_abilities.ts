@@ -11,16 +11,12 @@ import { BaseAuditor } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { ABILITY_TRANSLATIONS_ES } from '../../../src/data/battle/abilities.ts';
 import { Dex, toID } from '@pkmn/sim';
-import { ENABLED_POKEMON_IDS } from '../../../src/data/system/constants.ts';
+import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 
 enableCompileCache();
 
 const DATA_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
 type AbilityTranslationId = keyof typeof ABILITY_TRANSLATIONS_ES;
-
-function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
-  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id);
-}
 
 function hasAbilityTranslation(id: string): id is AbilityTranslationId {
   return Object.hasOwn(ABILITY_TRANSLATIONS_ES, id);
@@ -97,7 +93,7 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
         });
       } else {
         const trans = ABILITY_TRANSLATIONS_ES[abId];
-        if (!trans.name || trans.name.trim() === '') {
+        if (!trans.name?.trim()) {
           this.addViolation({
             ruleId: 'ability-empty-field',
             severity: 'error',
@@ -107,7 +103,7 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
             context: `${abId}.name`
           });
         }
-        if (!trans.desc || trans.desc.trim() === '') {
+        if (!trans.desc?.trim()) {
           this.addViolation({
             ruleId: 'ability-empty-field',
             severity: 'error',

@@ -185,41 +185,41 @@ const NATURE_TO_SHOWDOWN: Record<string, string> = {
 
 const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
 
-function canLearnMove(speciesId: string, moveId: string): boolean {
-  let currId: string | undefined = Dex.toID(speciesId);
-  const normMoveId = Dex.toID(moveId);
-  while (currId) {
-    const data = Dex.data.Learnsets[currId];
-    if (data && data.learnset && data.learnset[normMoveId]) {
+function canLearnMove(rawSpecies: string, rawMove: string): boolean {
+  let currKey: string | undefined = Dex.toID(rawSpecies);
+  const normMoveKey = Dex.toID(rawMove);
+  while (currKey) {
+    const data = Dex.data.Learnsets[currKey];
+    if (data && data.learnset && data.learnset[normMoveKey]) {
       return true;
     }
-    const species = Dex.species.get(currId);
-    currId = species.prevo ? Dex.toID(species.prevo) : undefined;
+    const species = Dex.species.get(currKey);
+    currKey = species.prevo ? Dex.toID(species.prevo) : undefined;
   }
   return false;
 }
 
-function getMovesAtLevel(speciesId: string, level: number): string[] {
+function getMovesAtLevel(rawSpecies: string, level: number): string[] {
   const moves: Array<{ id: string; lv: number }> = [];
-  let currId: string | undefined = Dex.toID(speciesId);
+  let currKey: string | undefined = Dex.toID(rawSpecies);
   
-  while (currId) {
-    const data = Dex.data.Learnsets[currId];
+  while (currKey) {
+    const data = Dex.data.Learnsets[currKey];
     if (data && data.learnset) {
-      for (const [moveId, sources] of Object.entries(data.learnset)) {
+      for (const [moveKey, sources] of Object.entries(data.learnset)) {
         for (const src of sources) {
           const match = src.match(/^(\d+)L(\d+)$/);
           if (match) {
             const lv = parseInt(match[2]!, 10);
             if (lv <= level) {
-              moves.push({ id: moveId, lv });
+              moves.push({ id: moveKey, lv });
             }
           }
         }
       }
     }
-    const species = Dex.species.get(currId);
-    currId = species.prevo ? Dex.toID(species.prevo) : undefined;
+    const species = Dex.species.get(currKey);
+    currKey = species.prevo ? Dex.toID(species.prevo) : undefined;
   }
 
   moves.sort((a, b) => a.lv - b.lv);
@@ -359,22 +359,24 @@ function migratePokemonAbility(poke: Record<string, unknown>, abilityMap: Map<st
   if (abilityObj.exists && validAbilities.includes(abilityObj.id)) {
     poke.ability = abilityObj.id;
   } else {
-    const fallbackAbility = validAbilities[0] || 'overgrow';
-    console.log(`[Heal Migration] Pokémon: ${String(poke.name || poke.species)} - Replaced illegal ability "${rawAbility}" with "${fallbackAbility}"`);
+    const fallbackAbility = validAbilities[0] ?? 'overgrow';
+    const pokeLabel = poke.name ? String(poke.name) : String(poke.species);
+    console.log(`[Heal Migration] Pokémon: ${pokeLabel} - Replaced illegal ability "${rawAbility}" with "${fallbackAbility}"`);
     poke.ability = fallbackAbility;
   }
 }
 
 function healIllegalPokemonMoves(poke: Record<string, unknown>): void {
   if (!poke.species || !poke.moves || !Array.isArray(poke.moves)) return;
-  const speciesId = String(poke.species);
+  const rawSpecies = String(poke.species);
   const legalMoves: Array<{ id: string; name: string }> = [];
   const currentMoveIds = new Set<string>();
   let healedAny = false;
 
   for (const m of poke.moves as Array<{ id?: string; name?: string }>) {
     if (m && m.id) {
-      if (canLearnMove(speciesId, m.id)) {
+      const rawMove = String(m.id);
+      if (canLearnMove(rawSpecies, rawMove)) {
         legalMoves.push({ id: m.id, name: Dex.moves.get(m.id).name || m.id });
         currentMoveIds.add(m.id);
       } else {
@@ -387,7 +389,7 @@ function healIllegalPokemonMoves(poke: Record<string, unknown>): void {
 
   const originalCount = poke.moves.length;
   const level = (poke as { level?: number }).level || 5;
-  const pool = getMovesAtLevel(speciesId, level);
+  const pool = getMovesAtLevel(rawSpecies, level);
 
   for (const poolMoveId of pool) {
     if (legalMoves.length >= originalCount) break;
@@ -401,7 +403,8 @@ function healIllegalPokemonMoves(poke: Record<string, unknown>): void {
     legalMoves.push({ id: pool[0]!, name: Dex.moves.get(pool[0]!).name || pool[0]! });
   }
 
-  console.log(`[Heal Migration] Pokémon: ${String(poke.name || poke.species)} (Lvl ${level}) - Replaced illegal moves. Result:`, legalMoves.map(m => m.id));
+  const pokeLabel = poke.name ? String(poke.name) : String(poke.species);
+  console.log(`[Heal Migration] Pokémon: ${pokeLabel} (Lvl ${level}) - Replaced illegal moves. Result:`, legalMoves.map(m => m.id));
   poke.moves = legalMoves;
 }
 
@@ -412,7 +415,8 @@ function migratePokemonMoves(poke: Record<string, unknown>, moveMap: Map<string,
   for (const m of poke.moves as Array<{ id?: string; name?: string } | null>) {
     if (!m) continue;
     count++;
-    const normMove = normalize(m.name || m.id || '');
+    const rawMoveIdentifier = m.name ? m.name : (m.id ? m.id : '');
+    const normMove = normalize(rawMoveIdentifier);
     const resolvedId = moveMap.get(normMove) || normMove;
     const move = Dex.moves.get(resolvedId);
     m.id = move.exists ? move.id : resolvedId;

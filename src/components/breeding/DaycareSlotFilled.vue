@@ -242,7 +242,7 @@ const heldItemSprite = computed(() => {
           v-else
           class="emoji item-emoji-fallback"
         >📦</span>
-        {{ pokemon.heldItem.toUpperCase() }}
+        {{ pokemon.heldItem }}
       </div>
       <div
         v-else

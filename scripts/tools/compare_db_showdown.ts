@@ -8,7 +8,7 @@ enableCompileCache();
 // Importar dinámicamente las bases de datos de Poké Vicio
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
 import { pokemonDataProvider } from '../../src/logic/providers/pokemonDataProvider.ts';
-import { requirePokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 
@@ -97,12 +97,12 @@ function comparePokemonTypes(
 }
 
 function comparePokemonAbilities(
-  coreId: string,
+  coreId: PokemonSpeciesId,
   coreName: string,
   sdPoke: ShowdownPokeSpec,
   pokemonDiffsTable: string[]
 ): number {
-  const coreAbilities = pokemonDataProvider.getSpeciesAbilities(requirePokemonSpeciesId(coreId));
+  const coreAbilities = pokemonDataProvider.getSpeciesAbilities(coreId);
   const sdAbilities = sdPoke.abilities || [];
   const coreAbiStr = coreAbilities.slice().sort().map(a => toID(a)).join(', ');
   const sdAbiStr = sdAbilities.slice().sort().map((a: string) => toID(a)).join(', ');
@@ -142,7 +142,7 @@ function comparePokemonSpecies(normalizedShowdownPoke: Map<string, ShowdownPokeS
     matchingPokemon++;
     statsDiscrepancies += comparePokemonStats(corePoke, sdPoke, pokemonDiffsTable);
     typeDiscrepancies += comparePokemonTypes(corePoke, sdPoke, pokemonDiffsTable);
-    abilityDiscrepancies += comparePokemonAbilities(coreId, corePoke.name, sdPoke, pokemonDiffsTable);
+    abilityDiscrepancies += comparePokemonAbilities(requirePokemonSpeciesId(coreId), corePoke.name, sdPoke, pokemonDiffsTable);
   }
 
   return {

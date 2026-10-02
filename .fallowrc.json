@@ -2,7 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "ignorePatterns": [
     "scratch/**",
-    "auditor_fault_suite/**",
     "scripts/e2e/fuzzer/**",
     "scripts/e2e/battle/**",
     "supabase/**",

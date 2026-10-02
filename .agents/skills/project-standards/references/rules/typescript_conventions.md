@@ -3,7 +3,7 @@
 > **Scope & Authority**: This document governs **compiler integrity, domain type enforcement, typed JSON wrappers, Java-style strict typing, zero-hiding security policies, and Fallow health governance (≥85/100)** across Poké Vicio.
 >
 > 🛑 **Domain Boundaries & Redirection**:
-> - For full domain typing methodology and union derivation principles ➔ See [@/domain-type-first](../../../domain-type-first/SKILL.md).
+> - For full domain typing methodology and union derivation principles ➔ See **@/domain-type-first**.
 > - For database schemas, Valibot parsing, and SQLite/Supabase DTOs ➔ See [Database & Persistence](./database_and_persistence.md) and [Save System Manual](../technical/save_system_manual.md).
 > - For game engine states and constants ➔ See [Game Engine & State](./game_engine_and_state.md).
 

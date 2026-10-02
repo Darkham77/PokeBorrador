@@ -42,14 +42,14 @@ function toggleFastRanked() {
         <PVTooltip
           v-for="c in ['entrenador', 'criador', 'cazabichos', 'rocket']"
           :key="c"
-          :title="`Cambiar tu clase a ${c.toUpperCase()}.`"
+          :title="`Cambiar tu clase a ${c}.`"
         >
           <button
-            class="small-btn"
+            class="small-btn uppercase-btn"
             :class="{ active: game.state.playerClass === c }"
             @click.stop="setPlayerClass(c)"
           >
-            {{ c.toUpperCase() }}
+            {{ c }}
           </button>
         </PVTooltip>
         <PVTooltip title="Resetear tu clase de jugador.">
@@ -128,4 +128,8 @@ function toggleFastRanked() {
 
 <style scoped lang="scss">
 @use "@/styles/components/debug";
+
+.uppercase-btn {
+  text-transform: uppercase;
+}
 </style>

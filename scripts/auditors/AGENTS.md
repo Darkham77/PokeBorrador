@@ -32,7 +32,7 @@ Tooling / Quality Engineers.
 
 ## Work Guidance
 
-- Refer to the dedicated skill [auditor-framework](../../.agents/skills/auditor-framework/SKILL.md) for detailed implementation patterns, architectural standards, and bundled templates.
+- Refer to the dedicated skill **@/auditor** (bundled in `@francogp/auditor`) for detailed implementation patterns, architectural standards, and bundled templates.
 - Subclass `FileScanAuditor` for line-by-line file scanners and `BaseAuditor` for multi-source/composite audits.
 - Keep sub-auditors fast and deterministic.
 

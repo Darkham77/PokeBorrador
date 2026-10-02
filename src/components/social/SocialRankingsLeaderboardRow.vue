@@ -33,23 +33,27 @@ const FACTION_LABELS: Readonly<Record<string, string>> = {
   galactic: 'Galactic'
 }
 
+const normalizeFactionKey = (faction: string | undefined | null): string => {
+  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined') return '';
+  return faction.trim().toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
+};
+
 const getFactionColor = (faction: string | undefined | null) => {
-  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined' || faction.trim() === '') {
-    return DEFAULT_FACTION_COLOR
-  }
-  return FACTION_COLORS[faction.toLowerCase()] || DEFAULT_FACTION_COLOR
-}
+  const key = normalizeFactionKey(faction);
+  if (!key) return DEFAULT_FACTION_COLOR;
+  return FACTION_COLORS[key] ?? DEFAULT_FACTION_COLOR;
+};
 
 const getFactionLabel = (faction: string | undefined | null) => {
-  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined' || faction.trim() === '') {
-    return ''
-  }
-  return FACTION_LABELS[faction.toLowerCase()] || faction
-}
+  const key = normalizeFactionKey(faction);
+  if (!key) return '';
+  return FACTION_LABELS[key] ?? (faction ?? '');
+};
 
 const isFactionValid = (faction: string | undefined | null) => {
-  return !!(faction && faction !== 'null' && faction !== 'NULL' && faction !== 'undefined' && faction.trim() !== '' && faction.toLowerCase() !== 'none')
-}
+  const key = normalizeFactionKey(faction);
+  return Boolean(key && key !== 'none');
+};
 </script>
 
 <template>

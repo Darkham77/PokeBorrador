@@ -542,7 +542,6 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     _checkPostTurn,
     // fallow-ignore-next-line unused-store-member
     _forfeit,
-    // fallow-ignore-next-line unused-store-member
     endBattle
   }
 })

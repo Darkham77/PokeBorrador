@@ -78,10 +78,10 @@ export async function generatePokemonDatabase(): Promise<void> {
 
     const movesMap = new Map<string, number>();
     const compatMovesSet = new Set<string>();
-    let currentId: string | undefined = speciesId;
+    let currentSpeciesSlug: string | undefined = speciesId;
 
-    while (currentId) {
-      const learnsetData = await Dex.forGen(ACTIVE_GENERATION).learnsets.get(currentId);
+    while (currentSpeciesSlug) {
+      const learnsetData = await Dex.forGen(ACTIVE_GENERATION).learnsets.get(currentSpeciesSlug);
       if (learnsetData && learnsetData.learnset) {
         for (const [moveId, methods] of Object.entries(learnsetData.learnset)) {
           let minLevel = Infinity;
@@ -119,13 +119,13 @@ export async function generatePokemonDatabase(): Promise<void> {
         }
       }
 
-      const speciesInfo = Dex.forGen(ACTIVE_GENERATION).species.get(currentId);
+      const speciesInfo = Dex.forGen(ACTIVE_GENERATION).species.get(currentSpeciesSlug);
       if (speciesInfo.prevo) {
-        currentId = String(toID(speciesInfo.prevo));
-      } else if (speciesInfo.baseSpecies && String(toID(speciesInfo.baseSpecies)) !== currentId) {
-        currentId = String(toID(speciesInfo.baseSpecies));
+        currentSpeciesSlug = String(toID(speciesInfo.prevo));
+      } else if (speciesInfo.baseSpecies && String(toID(speciesInfo.baseSpecies)) !== currentSpeciesSlug) {
+        currentSpeciesSlug = String(toID(speciesInfo.baseSpecies));
       } else {
-        currentId = undefined;
+        currentSpeciesSlug = undefined;
       }
     }
 

@@ -325,7 +325,7 @@ export function packFeetCoordinates(
 
 function resolveSpeciesCryFallback(
   spec: ReturnType<typeof Dex.species.all>[number],
-  specId: string,
+  specId: string, // infra-id-ok: Showdown Dex species cry asset key
   existingCries: Set<string>,
   packed: PackedFeetData,
   pipelineWarnings: string[]

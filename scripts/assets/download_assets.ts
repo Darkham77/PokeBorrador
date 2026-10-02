@@ -43,7 +43,7 @@ const POKESPRITE_FOLDERS = [ // no-domain: Non-domain utility collection or data
 ] as const;
 
 // Multi-source sprite URLs for items
-const ITEM_SOURCES: Array<(name: string, cleanId: string) => string> = [
+const ITEM_SOURCES: Array<(name: string, cleanItemSlug: string) => string> = [
   // 1. Serebii Direct
   (name) => `https://www.serebii.net/itemdex/sprites/${name}.png`,
   (name) => `https://www.serebii.net/itemdex/sprites/sv/${name}.png`,
@@ -57,7 +57,7 @@ const ITEM_SOURCES: Array<(name: string, cleanId: string) => string> = [
 
   // 4. Pokémon Showdown Item Icons
   (name) => `https://play.pokemonshowdown.com/sprites/itemicons/${name}.png`,
-  (_name, cleanId) => `https://play.pokemonshowdown.com/sprites/itemicons/${cleanId}.png`,
+  (_name, cleanItemSlug) => `https://play.pokemonshowdown.com/sprites/itemicons/${cleanItemSlug}.png`,
   (name) => `https://play.pokemonshowdown.com/sprites/itemsprites/${name}.png`,
 
   // 5. PokémonDB
@@ -142,10 +142,10 @@ function isAllowedAssetUrl(parsed: URL): boolean {
   return parsed.protocol === 'https:' && ALLOWED_ASSET_HOSTS.has(parsed.hostname);
 }
 
-async function fetchBufferWithFallback(candidateNames: string[], cleanId: string): Promise<{ buffer: Buffer; sourceUrl: string; matchedName: string } | null> {
+async function fetchBufferWithFallback(candidateNames: string[], cleanItemSlug: string): Promise<{ buffer: Buffer; sourceUrl: string; matchedName: string } | null> {
   for (const name of candidateNames) {
     for (const sourceFn of ITEM_SOURCES) {
-      const url = sourceFn(name, cleanId);
+      const url = sourceFn(name, cleanItemSlug);
       const parsedUrl = new URL(url);
       if (!isAllowedAssetUrl(parsedUrl)) continue;
 

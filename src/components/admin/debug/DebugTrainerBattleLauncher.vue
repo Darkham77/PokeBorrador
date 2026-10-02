@@ -103,7 +103,7 @@ const emit = defineEmits<{
             :class="{ active: gymDifficulty === d, [d]: true }"
             @click.stop="gymDifficulty = d"
           >
-            {{ d.toUpperCase() }}
+            {{ d }}
           </button>
         </div>
       </div>

@@ -55,8 +55,8 @@ const computedRewardTooltipDescription = computed(() => {
   }
 
   // Fallback static descriptions for general rewards
-  const labelLower = props.rewardLabel.toLowerCase()
-  const valLower = props.rewardVal.toLowerCase()
+  const labelLower = props.rewardLabel.toLowerCase() // text-ok: UI text display localization string
+  const valLower = props.rewardVal.toLowerCase() // text-ok: UI text display localization string
   if (labelLower.includes('peso') || props.rewardIcon === '₱' || valLower.includes('peso')) {
     return 'Poké-Pesos (₱). Moneda principal del juego.'
   }

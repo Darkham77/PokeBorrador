@@ -46,14 +46,18 @@ export const logger = {
     if (isProduction) return;
     if (isBrowser) {
       if (typeof message === 'string') {
+        // console-ok: Centralized logger implementation
         console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', ...args);
       } else {
+        // console-ok: Centralized logger implementation
         console.log(`%c[${tag}]%c`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', message, ...args);
       }
     } else {
       if (typeof message === 'string') {
+        // console-ok: Centralized logger implementation
         console.log(`[${styleText('blue', tag)}] ${message}`, ...args);
       } else {
+        // console-ok: Centralized logger implementation
         console.log(`[${styleText('blue', tag)}]`, message, ...args);
       }
     }
@@ -63,14 +67,18 @@ export const logger = {
     if (isProduction) return;
     if (isBrowser) {
       if (typeof message === 'string') {
+        // console-ok: Centralized logger implementation
         console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, ...args);
       } else {
+        // console-ok: Centralized logger implementation
         console.log(`%c[${tag}]%c`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, message, ...args);
       }
     } else {
       if (typeof message === 'string') {
+        // console-ok: Centralized logger implementation
         console.log(`[${styleText('green', tag)}] ${message}`, ...args);
       } else {
+        // console-ok: Centralized logger implementation
         console.log(`[${styleText('green', tag)}]`, message, ...args);
       }
     }
@@ -112,14 +120,18 @@ export const logger = {
     if (isProduction) return;
     if (isBrowser) {
       if (typeof message === 'string') {
+        // console-ok: Centralized logger implementation
         console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', ...args);
       } else {
+        // console-ok: Centralized logger implementation
         console.log(`%c[${tag}]%c`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', message, ...args);
       }
     } else {
       if (typeof message === 'string') {
+        // console-ok: Centralized logger implementation
         console.log(`[${styleText('gray', tag)}] ${message}`, ...args);
       } else {
+        // console-ok: Centralized logger implementation
         console.log(`[${styleText('gray', tag)}]`, message, ...args);
       }
     }

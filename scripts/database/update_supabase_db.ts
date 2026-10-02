@@ -48,12 +48,17 @@ export async function updateSupabaseDb(): Promise<void> {
 
 
 
-  for (const profile of targetProfiles) {
-    let conf = serverConfigs[profile];
-    if (!conf) {
-      const found = Object.keys(serverConfigs).find(p => serverConfigs[p]?.ID === profile);
-      if (found) conf = serverConfigs[found];
+  // Indexar configuraciones por perfil e ID para búsqueda O(1)
+  const profileToConfig = new Map<string, (typeof serverConfigs)[string]>();
+  for (const [key, config] of Object.entries(serverConfigs)) {
+    profileToConfig.set(key, config);
+    if (config?.ID) {
+      profileToConfig.set(config.ID, config);
     }
+  }
+
+  for (const profile of targetProfiles) {
+    const conf = profileToConfig.get(profile);
     if (!conf) {
       console.error(styleText('red', `❌ Error: El perfil o ID "${profile}" no existe en el archivo .env.`));
       continue;

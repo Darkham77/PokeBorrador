@@ -48,13 +48,14 @@ export async function generateMovesDatabase(): Promise<void> {
   const DRAGON_RAGE_FIXED_DAMAGE = 40;
 
   for (const [id, trans] of Object.entries(movesJson)) {
-    const move = Dex.forGen(ACTIVE_GENERATION).moves.get(id) || Dex.moves.get(id);
-    const espName = trans.name || (move?.exists ? move.name : id);
+    const move = Dex.forGen(ACTIVE_GENERATION).moves.get(id);
+    const fallbackName = move?.exists ? move.name : id;
+    const espName = trans.name ? trans.name : fallbackName;
 
     if (id === 'recharge') {
       result[id] = {
         id,
-        name: espName || 'Recargando',
+        name: trans.name ? trans.name : 'Recargando',
         power: 0,
         acc: PERFECT_ACCURACY_FLAG,
         type: 'normal',

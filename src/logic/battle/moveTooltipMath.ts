@@ -94,9 +94,9 @@ export function calculateMoveModifierInfo(
 ): { type: string; text: string } | null {
   const cleanWeather = typeof weather === 'string' && isWeatherId(weather) ? weather : undefined;
   const mechWeather = getMechanicalWeather(weather);
-  const moveId = move.id || '';
+  const moveId = move.id;
 
-  const specialMod = isPokemonMoveId(moveId) ? getSpecialMoveModifier(moveId, cleanWeather, mechWeather) : null;
+  const specialMod = typeof moveId === 'string' && isPokemonMoveId(moveId) ? getSpecialMoveModifier(moveId, cleanWeather, mechWeather) : null;
   if (specialMod) return specialMod;
 
   if (mechWeather === WEATHER_MECHANICAL.FOG) {

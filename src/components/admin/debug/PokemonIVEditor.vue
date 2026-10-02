@@ -24,7 +24,7 @@ const emit = defineEmits<{
           :key="stat"
           class="iv-item"
         >
-          <label>{{ stat.toUpperCase() }}</label>
+          <label>{{ stat }}</label>
           <input
             :id="`debug-iv-${stat}`"
             :value="ivs[stat]"
@@ -56,6 +56,7 @@ const emit = defineEmits<{
 
     label { 
       font-size: 9px; 
+      text-transform: uppercase;
       color: Rgba(255, 255, 255, 0.4); 
       text-align: center;
     }

@@ -59,7 +59,9 @@ async function downloadFile(url: string, destPath: string): Promise<boolean> {
 /**
  * Descarga los sprites y gritos para un Pokémon específico.
  */
-export async function downloadPokemonAssets(pokemonId: string): Promise<{
+export async function downloadPokemonAssets(
+  pokemonId: string // infra-id-ok: Showdown sprite download filename identifier
+): Promise<{
   front: { file: string; isAnimated: boolean };
   back: { file: string; isAnimated: boolean };
   frontShiny: { file: string; isAnimated: boolean };

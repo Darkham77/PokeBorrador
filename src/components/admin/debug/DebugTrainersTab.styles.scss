@@ -258,6 +258,7 @@
 .sim-diff-btn {
   @include pixelated;
   font-size: 8px;
+  text-transform: uppercase;
   padding: 6px 12px;
   border-radius: 6px;
   border: 1px solid Rgba(255, 255, 255, 0.15);

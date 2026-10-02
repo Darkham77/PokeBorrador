@@ -57,7 +57,7 @@ const getTypeEmoji = (type: string) => {
         <PVTooltip
           v-for="t in types"
           :key="t"
-          :title="t.toUpperCase()"
+          :title="t === 'all' ? 'Todos' : t"
         >
           <button
             :id="`market-filters-type-${t}`"

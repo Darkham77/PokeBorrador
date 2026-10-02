@@ -39,15 +39,15 @@ export interface MissingSpriteError {
   reason: MissingSpriteReason;
 }
 
-export function checkRawAssetExistence(itemId: string): { exists: boolean; path?: string } {
+export function checkRawAssetExistence(itemSlug: string): { exists: boolean; path?: string } {
   const possiblePaths = [
-    resolve(process.cwd(), '_raw-assets/public/assets/sprites/items', `${itemId}.png`),
-    resolve(process.cwd(), '_raw-assets/public/assets/sprites/items', `${itemId}.webp`),
-    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting', `${itemId}.png`),
-    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier0', `${itemId}.png`),
-    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier1', `${itemId}.png`),
-    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier2', `${itemId}.png`),
-    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier3', `${itemId}.png`),
+    resolve(process.cwd(), '_raw-assets/public/assets/sprites/items', `${itemSlug}.png`),
+    resolve(process.cwd(), '_raw-assets/public/assets/sprites/items', `${itemSlug}.webp`),
+    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting', `${itemSlug}.png`),
+    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier0', `${itemSlug}.png`),
+    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier1', `${itemSlug}.png`),
+    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier2', `${itemSlug}.png`),
+    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier3', `${itemSlug}.png`),
   ];
 
   for (const p of possiblePaths) {

@@ -9,7 +9,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '../../../src/data/system/constants.ts';
+import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 import { BaseAuditor } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
@@ -18,10 +18,6 @@ enableCompileCache();
 
 const UTILS_FILE = path.resolve(process.cwd(), 'src/logic/pokemon/pokemonUtils.ts');
 type MoveTranslationId = keyof typeof MOVE_TRANSLATIONS_ES;
-
-function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
-  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id);
-}
 
 function hasMoveTranslation(id: string): id is MoveTranslationId {
   return Object.hasOwn(MOVE_TRANSLATIONS_ES, id);

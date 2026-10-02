@@ -15,7 +15,7 @@ defineProps<Props>()
       :key="stat"
       class="stat-item"
     >
-      <label>{{ stat.toUpperCase() }}</label>
+      <label>{{ stat }}</label>
       <div class="stat-value">
         {{ stats[stat] }}
       </div>
@@ -40,6 +40,7 @@ defineProps<Props>()
 
     label {
       font-size: 8px;
+      text-transform: uppercase;
       color: Rgba(255, 255, 255, 0.4);
       margin-bottom: 4px;
     }

@@ -20,5 +20,5 @@ Frontend Developers / UI Components Team.
 ## Verification
 
 - `npm run lint`
-- `npm run validate:component-styles`
+- `npm run audit suites=validate_component_styles`
 - `npm run test`

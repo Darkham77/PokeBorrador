@@ -159,7 +159,7 @@ if (!isMainThread) {
 
     parentPort?.postMessage({
       success: true,
-      pokemonId,
+      pokemonSlug: pokemonId,
       suffix,
       animationsFound: frontAnalysis.attackRange !== null ? 1 : 0,
       details: extraDetails,
@@ -177,8 +177,8 @@ if (!isMainThread) {
 // CÓDIGO PRINCIPAL (ORQUESTADOR DE HILOS CON WORKER POOL)
 // -----------------------------------------------------------------------------
 if (isMainThread) {
-  const extraAnimationsReport: { pokemonId: string; suffix: string; animationsFound: number; details: string }[] = [];
-  const warningsReport: { pokemonId: string; suffix: string; warning: string }[] = [];
+  const extraAnimationsReport: { pokemonSlug: string; suffix: string; animationsFound: number; details: string }[] = [];
+  const warningsReport: { pokemonSlug: string; suffix: string; warning: string }[] = [];
 
   const writeFinalReport = async (): Promise<void> => {
     const reportPath = path.join(SCRATCH_DIR, 'sprite_optimization_report.md');
@@ -193,7 +193,7 @@ if (isMainThread) {
       mdContent += `| Pokémon ID | Sufijo | Animaciones Totales | Detalles de Segmentación |\n`;
       mdContent += `| ---------- | ------ | ------------------- | ------------------------- |\n`;
       for (const item of extraAnimationsReport) {
-        mdContent += `| **${item.pokemonId}** | \`${item.suffix || 'Ninguno'}\` | ${item.animationsFound} | ${item.details} |\n`;
+        mdContent += `| **${item.pokemonSlug}** | \`${item.suffix || 'Ninguno'}\` | ${item.animationsFound} | ${item.details} |\n`;
       }
       mdContent += `\n`;
     }
@@ -203,7 +203,7 @@ if (isMainThread) {
       mdContent += `| Pokémon ID | Sufijo | Advertencia |\n`;
       mdContent += `| ---------- | ------ | ----------- |\n`;
       for (const item of warningsReport) {
-        mdContent += `| **${item.pokemonId}** | \`${item.suffix || 'Ninguno'}\` | ${item.warning} |\n`;
+        mdContent += `| **${item.pokemonSlug}** | \`${item.suffix || 'Ninguno'}\` | ${item.warning} |\n`;
       }
       mdContent += `\n`;
     }
@@ -373,12 +373,12 @@ if (isMainThread) {
         });
 
         worker.on('message', (msg: unknown) => {
-          const payload = msg as { success: boolean; details?: string; pokemonId: string; suffix: string; animationsFound: number; warning?: string; error?: string };
+          const payload = msg as { success: boolean; details?: string; pokemonSlug: string; suffix: string; animationsFound: number; warning?: string; error?: string };
           if (payload.success) {
             completedCount++;
             if (payload.details) {
               extraAnimationsReport.push({
-                pokemonId: payload.pokemonId,
+                pokemonSlug: payload.pokemonSlug,
                 suffix: payload.suffix,
                 animationsFound: payload.animationsFound,
                 details: payload.details
@@ -386,7 +386,7 @@ if (isMainThread) {
             }
             if (payload.warning) {
               warningsReport.push({
-                pokemonId: payload.pokemonId,
+                pokemonSlug: payload.pokemonSlug,
                 suffix: payload.suffix,
                 warning: payload.warning
               });
