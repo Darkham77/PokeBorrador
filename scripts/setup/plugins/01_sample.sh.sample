@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Plugin de inicialización específico de proyecto (Linux/macOS)
+# Coloca aquí tus tareas post-instalación específicas (ej. copiar plantillas, configurar BD)
+# echo "Ejecutando plugin de configuración local..."

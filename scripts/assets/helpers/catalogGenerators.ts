@@ -10,7 +10,7 @@ import fsSync from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { Dex, toID } from '@pkmn/sim';
-import { safeResolve, safeJoin, safeWriteFile, safeReadFile } from '@fgp/auditor';
+import { safeResolve, safeJoin, safeWriteFile, safeReadFile } from '@francogp/auditor';
 import type { SpriteShadowOverride, SpriteShadowOverridesMap, PackedFeetTuple, GlobalShadowConfig } from '../../../src/types/pokemon/spriteShadows.ts';
 
 export interface AnimatedSpriteData {

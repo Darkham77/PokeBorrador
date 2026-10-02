@@ -4,7 +4,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
 
 ## Core Rules & Audit Guidelines
 
-- **Audit Orchestrator & Gatekeeper Framework**: Master audit execution (`audit_full.ts`) and the pre-commit gatekeeper (`audit_for_commit.ts`) reside in `packages/auditor/src/cli/` within `@fgp/auditor`. They execute all built-in suites and host extensions declared in `audit.config.ts`.
+- **Audit Orchestrator & Gatekeeper Framework**: Master audit execution (`audit_full.ts`) and the pre-commit gatekeeper (`audit_for_commit.ts`) reside in `node_modules/@francogp/auditor/src/cli/` within `@francogp/auditor`. They execute all built-in suites and host extensions declared in `audit.config.ts`.
 - **Administrative CLI Contracts**: Maintenance scripts MUST implement `node:util parseArgs` with explicit typed options and provide `--help`:
   - `admin_supabase_users.ts` (`npm run database:admin server=<profile> action=<action> email=<email> [password=<pass> | new-email=<email> | username=<name>]`)
   - `admin_rename.ts` (`npm run admin:rename user=<id_or_name> name=<new_name>`)

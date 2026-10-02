@@ -25,7 +25,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@fgp/auditor';
+import { BaseAuditor } from '@francogp/auditor';
 import { ENABLED_POKEMON_IDS_SET } from '../../../src/data/system/constants.ts';
 import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { GYMS, type Gym } from '../../../src/data/world/gyms.ts';

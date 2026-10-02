@@ -25,7 +25,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { BaseAuditor, SharedAstContext } from '@fgp/auditor';
+import { BaseAuditor, SharedAstContext } from '@francogp/auditor';
 
 enableCompileCache();
 

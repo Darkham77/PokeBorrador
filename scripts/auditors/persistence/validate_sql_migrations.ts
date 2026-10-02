@@ -13,7 +13,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { enableCompileCache } from 'node:module';
 import { translatePostgresToSqlite, splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { BaseAuditor } from '@fgp/auditor';
+import { BaseAuditor } from '@francogp/auditor';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
 
 enableCompileCache();

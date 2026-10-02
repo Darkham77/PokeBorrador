@@ -9,8 +9,13 @@ try {
   const mod = await import('@francogp/auditor');
   defineFn = mod.defineAuditConfig;
 } catch {
-  const mod = await import('../packages/auditor/src/core/auditConfig.ts');
-  defineFn = mod.defineAuditConfig;
+  try {
+    const mod = await import('./packages/auditor/src/core/auditConfig.ts');
+    defineFn = mod.defineAuditConfig;
+  } catch {
+    const mod = await import('../packages/auditor/src/core/auditConfig.ts');
+    defineFn = mod.defineAuditConfig;
+  }
 }
 
 export default defineFn({

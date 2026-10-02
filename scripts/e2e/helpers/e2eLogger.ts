@@ -1,7 +1,7 @@
 import { type Page, type Locator } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { sanitizePath } from '@fgp/auditor';
+import { sanitizePath } from '@francogp/auditor';
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
   MAX_UI_SETTLE_TIMEOUT_MS,

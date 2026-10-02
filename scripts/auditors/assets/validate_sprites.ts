@@ -8,7 +8,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@fgp/auditor';
+import { BaseAuditor } from '@francogp/auditor';
 import { Dex } from '@pkmn/sim';
 
 enableCompileCache();

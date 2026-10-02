@@ -1,0 +1,3 @@
+# Plugin de inicialización específico de proyecto (Windows)
+# Coloca aquí tus tareas post-instalación específicas (ej. copiar plantillas, configurar BD)
+# Write-Host "Ejecutando plugin de configuracion local..." -ForegroundColor Cyan

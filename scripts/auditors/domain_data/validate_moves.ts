@@ -10,7 +10,7 @@ import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '../../../src/data/system/constants.ts';
-import { BaseAuditor } from '@fgp/auditor';
+import { BaseAuditor } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
 

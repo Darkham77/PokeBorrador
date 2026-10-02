@@ -20,7 +20,7 @@ import { enableCompileCache } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
-import { safeResolve, safeJoin } from '@fgp/auditor';
+import { safeResolve, safeJoin } from '@francogp/auditor';
 
 enableCompileCache();
 

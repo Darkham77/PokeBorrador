@@ -9,7 +9,7 @@ Architecture & DevOps Engineers.
 ## Local Contracts
 
 - **Supabase Client**: Host scripts interact with Supabase instances via `supabaseClient.ts`, supporting multi-server configurations and containerized local Docker environments.
-- **Auditor Framework Location**: Core auditor base classes, contracts, streaming runners, and unified themes reside in the standalone workspace package `@fgp/auditor` (`packages/auditor/`).
+- **Auditor Framework Location**: Core auditor base classes, contracts, streaming runners, and unified themes reside in the standalone workspace package `@francogp/auditor` (`node_modules/@francogp/auditor/`).
 
 ## Key Files
 

@@ -13,7 +13,7 @@ import {
   extractObjectLiteralKeys,
   extractSchemaKeys
 } from '../../../scripts/auditors/persistence/validate_save_persistence_parity.ts';
-import { SharedAstContext } from '@fgp/auditor';
+import { SharedAstContext } from '@francogp/auditor';
 
 describe('SavePersistenceParityAuditor', () => {
   describe('extractInterfaceKeys', () => {

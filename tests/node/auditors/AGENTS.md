@@ -1,6 +1,6 @@
 # Purpose
 
-Unit tests for host-specific extension sub-auditors in Poké Vicio. Unit tests for generic auditor suites reside in `packages/auditor/tests/`.
+Unit tests for host-specific extension sub-auditors in Poké Vicio. Unit tests for generic auditor suites reside in `node_modules/@francogp/auditor/tests/`.
 
 ## Ownership
 

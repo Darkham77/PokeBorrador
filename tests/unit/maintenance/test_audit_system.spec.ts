@@ -12,7 +12,7 @@ import {
   renderFindingsDetail,
   renderMarkdownReport,
   formatStatusBadge
-} from '@fgp/auditor';
+} from '@francogp/auditor';
 import {
   findSpriteCollisions,
   findMissingSprites
@@ -50,7 +50,7 @@ describe('Audit System & Dynamic Auto-Discovery Engine', () => {
       expect(task.name).toBeTruthy();
       expect(task.command).toBe('node');
       expect(task.args).toContain('--permission');
-      expect(task.scriptPath).toMatch(/^(?:packages\/auditor\/src\/suites|scripts\/auditors)\//);
+      expect(task.scriptPath).toMatch(/^(?:(?:node_modules\/)?@francogp\/auditor\/dist\/suites|scripts\/auditors)\//);
     }
   });
 
@@ -336,7 +336,7 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
     it('automatically persists complete structured JSON to scratch/audits/<family>/<id>.json', async () => {
       const fs = await import('node:fs/promises');
       const path = await import('node:path');
-      const { setupAuditor } = await import('@fgp/auditor');
+      const { setupAuditor } = await import('@francogp/auditor');
 
       process.env.AUDIT_SUBPROCESS = 'true';
       const testAuditor = setupAuditor({

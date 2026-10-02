@@ -44,7 +44,7 @@ import { toID } from '../../src/logic/utils/strings.ts';
 import type { GameState } from '../../src/types/system/game.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 
-import type { FindingSeverity } from '@fgp/auditor';
+import type { FindingSeverity } from '@francogp/auditor';
 
 enableCompileCache();
 

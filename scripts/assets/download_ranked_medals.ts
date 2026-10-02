@@ -11,7 +11,7 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import sharp from 'sharp';
 
-import { safeResolve, safeWriteFile, safeFetch } from '@fgp/auditor';
+import { safeResolve, safeWriteFile, safeFetch } from '@francogp/auditor';
 
 enableCompileCache();
 

@@ -1,4 +1,4 @@
-import { defineAuditConfig } from './packages/auditor/src/core/auditConfig.ts';
+import { defineAuditConfig } from '@francogp/auditor';
 
 export default defineAuditConfig({
   name: 'Poké Vicio',
@@ -12,8 +12,19 @@ export default defineAuditConfig({
     codeRoots: ['src', 'scripts', 'database'],
     dataRoots: ['src/data'],
     constantsRoots: ['src/logic/constants', 'src/constants'],
+    componentsRoots: ['src/components'],
+    viewsRoots: ['src/views'],
+    storesRoots: ['src/stores'],
+    composablesRoots: ['src/composables'],
+    typesRoots: ['src/types'],
+    stylesRoots: ['src/styles'],
+    logicRoots: ['src/logic'],
+    exemptFiles: [],
+    testFilePatterns: ['.spec.', '.test.', '.simulation.'],
+    includeTestsInCodeAudit: false,
+    testFragmentationWhitelist: ['src/logic/battle/battleEngine.ts'],
     ignoreGlobs: ['node_modules/**', 'dist/**', 'scratch/**', '.tsbuildinfo/**'],
-    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'test aventura'],
+    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'test aventura', 'auditor_fault_suite'],
     ignoredPatterns: ['src/logic/db/migrations_data.ts']
   },
   persistence: {
@@ -52,17 +63,30 @@ export default defineAuditConfig({
       'offerId', 'tradeId', 'p_trade_id', 'buyerId', 'buyer_id', 'senderId', 'sender_id',
       'receiver_id', 'p_receiver_id', 'requestId', 'requester_id', 'addressee_id',
       'relId', 'claimId', 'currentSessionId', 'current_session_id', 'targetChatId',
-      'seatId', 'opponentId', 'opponent_id', 'player_id'
+      'seatId', 'opponentId', 'opponent_id', 'player_id', 'serverId', 'server_id',
+      'selectedServerId', 'selected_server_id', 'assetId', 'asset_id'
     ],
-    fallbackIdPatterns: ['heldItem', 'item', 'species', 'ability', 'move', 'moveId', 'itemId', 'speciesId', 'abilityId']
-  },
-  templates: {
-    requireInputIds: false
+    fallbackIdPatterns: ['heldItem', 'item', 'species', 'ability', 'move', 'moveId', 'itemId', 'speciesId', 'abilityId'],
+    o1CatalogPatterns: [
+      {
+        name: 'OFFICIAL_SERVERS',
+        pattern: '\\bOFFICIAL_SERVERS\\.(?:find|filter|some|findLast)\\s*\\(',
+        alternative: 'OFFICIAL_SERVERS_BY_ID[serverId]',
+        definingFile: 'src/data/system/official_servers.ts'
+      }
+    ]
   },
   styles: {
+    zLayersEnabled: true,
+    baseScssFile: 'src/styles/core/_base.scss',
+    zLayersScssFile: 'src/styles/core/_base.scss',
+    zLayersTsFile: 'src/logic/constants/visuals.ts',
     globalUtilityClasses: ['pv-button-retro']
   },
   bundle: {
+    enabled: true,
+    maxClientChunkWarnBytes: 1500 * 1024,
+    maxClientChunkErrorBytes: 2500 * 1024,
     exemptChunkPrefixes: [
       'worker-vendor-pkmn',
       'worker-game-data',
@@ -70,6 +94,25 @@ export default defineAuditConfig({
       'game-data-pokemon',
       'vendor-randoms'
     ]
+  },
+  templates: {
+    requireInputIds: false
+  },
+  agentPlugin: {
+    enabled: true
+  },
+  fallow: {
+    enabled: true,
+    security: {
+      enabled: true
+    },
+    enforceTargets: false,
+    maxTargetPriority: 'critical',
+    similarCode: {
+      enabled: true,
+      threshold: 0.95,
+      ignoreSameFile: true
+    }
   },
   customFamilies: [
     {

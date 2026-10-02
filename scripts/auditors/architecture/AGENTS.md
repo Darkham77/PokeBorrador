@@ -2,7 +2,7 @@
 
 ## Purpose & Scope
 
-This directory contains host-specific architecture sub-auditor extensions for Poké Vicio. Generic architecture suites (AST rules, Fallow integration, Z-Index, CSS duplicates, bundle budget, Vue SFC hygiene, etc.) reside in `packages/auditor/src/suites/architecture/`.
+This directory contains host-specific architecture sub-auditor extensions for Poké Vicio. Generic architecture suites (AST rules, Fallow integration, Z-Index, CSS duplicates, bundle budget, Vue SFC hygiene, etc.) reside in `node_modules/@francogp/auditor/src/suites/architecture/`.
 
 ## Directory Structure & Files
 
@@ -11,7 +11,7 @@ This directory contains host-specific architecture sub-auditor extensions for Po
 
 ## Local Governance & Rules
 
-- All host extensions in this family extend `BaseAuditor` or `FileScanAuditor` from `@fgp/auditor`.
+- All host extensions in this family extend `BaseAuditor` or `FileScanAuditor` from `@francogp/auditor`.
 - **Mandatory Showdown Decoupling & Zero-Ignore Governance**: Client application code must remain strictly decoupled from `@pkmn/sim` and `@pkmn/randoms`. The auditor `validate_client_sim_decoupling.ts` enforces this with 100% hard errors (exit code 1) and absolutely zero ignore directives or bypass tokens (`// sim-ok` is strictly forbidden).
 - **Battle UI Branching Governance**: Ensures combat arena and controls are never duplicated across game modes.
 - Both suites are registered in `audit.config.ts` under `extensions`.

@@ -15,7 +15,7 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
 
-import { safeResolve, safeJoin } from '@fgp/auditor';
+import { safeResolve, safeJoin } from '@francogp/auditor';
 import {
   findFeetPointsFromBuffer,
   analyzeImageBufferBounds

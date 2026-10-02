@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectRepositoryFiles } from '@fgp/auditor';
+import { collectRepositoryFiles } from '@francogp/auditor';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const TARGET_EXTENSIONS = new Set(['.ts', '.vue']); // runtime-set: Fast O(1) membership lookup set

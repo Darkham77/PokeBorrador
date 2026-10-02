@@ -5,7 +5,7 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { safeResolve, safeJoin } from '@fgp/auditor';
+import { safeResolve, safeJoin } from '@francogp/auditor';
 
 const __filename = fileURLToPath(import.meta.url);
 

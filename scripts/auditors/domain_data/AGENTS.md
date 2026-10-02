@@ -2,7 +2,7 @@
 
 ## Purpose & Scope
 
-This directory contains domain data consistency validators for Poké Vicio comparing local databases against the official `@pkmn/sim` Pokémon Showdown engine. Generic domain suites (`validate_domain_types.ts`, `validate_o1_data_structures.ts`) reside in `packages/auditor/src/suites/domain_data/`.
+This directory contains domain data consistency validators for Poké Vicio comparing local databases against the official `@pkmn/sim` Pokémon Showdown engine. Generic domain suites (`validate_domain_types.ts`, `validate_o1_data_structures.ts`) reside in `node_modules/@francogp/auditor/src/suites/domain_data/`.
 
 ## Directory Structure & Files
 
@@ -16,5 +16,5 @@ This directory contains domain data consistency validators for Poké Vicio compa
 ## Local Governance & Rules
 
 - Dex lookups must use `Dex.forGen(ACTIVE_GENERATION)` canonical authority.
-- All auditors in this family extend `BaseAuditor` or `FileScanAuditor` from `@fgp/auditor` and adhere to the `StandardAuditResult` contract.
+- All auditors in this family extend `BaseAuditor` or `FileScanAuditor` from `@francogp/auditor` and adhere to the `StandardAuditResult` contract.
 - Registered in `audit.config.ts` under `extensions`.

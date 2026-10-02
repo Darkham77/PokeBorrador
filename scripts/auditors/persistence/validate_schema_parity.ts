@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
-import { BaseAuditor } from '@fgp/auditor';
+import { BaseAuditor } from '@francogp/auditor';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';

@@ -16,7 +16,7 @@
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { BaseAuditor } from '@fgp/auditor';
+import { BaseAuditor } from '@francogp/auditor';
 
 export type AssetUsageRuleId =
   | 'asset-hardcoded-path-template'

@@ -8,7 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor } from '@fgp/auditor';
+import { BaseAuditor, FileScanAuditor } from '@francogp/auditor';
 
 enableCompileCache();
 

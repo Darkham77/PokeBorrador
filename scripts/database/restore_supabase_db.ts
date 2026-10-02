@@ -19,7 +19,7 @@ import { parseArgs, styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
 import { buildDatabaseUrl, getValidatedServerConfigs, parseServerArguments } from '../lib/supabaseClient.ts';
-import { safeResolve, safeJoin } from '@fgp/auditor';
+import { safeResolve, safeJoin } from '@francogp/auditor';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();

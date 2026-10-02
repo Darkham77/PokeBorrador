@@ -9,11 +9,21 @@
     "types": ["node"],
     "paths": {
       "@/*": ["./src/*"],
-      "@/styles/*": ["./src/styles/*"],
-      "@fgp/auditor": ["./packages/auditor/src/index.ts"],
-      "@fgp/auditor/*": ["./packages/auditor/src/*"]
+      "@/styles/*": ["./src/styles/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "scripts/**/*.ts", "packages/**/*.ts", "tests/**/*.ts", "tests/**/*.tsx", "vite.config.ts", "ui-demo/**/*.ts", "ui-demo/**/*.vue"],
-  "exclude": []
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "vite.config.ts",
+    "ui-demo/**/*.ts",
+    "ui-demo/**/*.vue"
+  ],
+  "exclude": [
+    "auditor_fault_suite"
+  ]
 }
