@@ -1,0 +1,29 @@
+// Trigger: z-index-out-of-scale, z-index-hardcoded
+.bad-z-layer {
+  z-index: 88888;
+}
+
+// Trigger: line-height-overlap
+.bad-typography {
+  font-size: 24px;
+  line-height: 0.4;
+}
+
+// Trigger: css-duplicate-block
+.box-duplicate {
+  margin: 10px;
+  padding: 5px;
+  display: flex;
+}
+
+.box-duplicate {
+  margin: 10px;
+  padding: 5px;
+  display: flex;
+}
+
+// Trigger: dead-css-class
+.dead-css-class-totally-unused {
+  background-color: yellow;
+  color: purple;
+}
