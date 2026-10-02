@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-BMMlt-LT.js";export{e as default};

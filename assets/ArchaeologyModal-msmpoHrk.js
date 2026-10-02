@@ -1,1 +1,0 @@
-import{t as e}from"./ArchaeologyModal-CH7Npmpz.js";export{e as default};

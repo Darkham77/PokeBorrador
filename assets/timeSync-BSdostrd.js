@@ -1,0 +1,1 @@
+import{t as e}from"./timeSync-QgIsDpDu.js";export{e as syncServerTime};
