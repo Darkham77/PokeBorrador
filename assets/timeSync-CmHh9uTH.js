@@ -1,0 +1,1 @@
+import{t as e}from"./timeSync-P-QMN2k_.js";export{e as syncServerTime};

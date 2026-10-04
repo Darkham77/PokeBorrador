@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-BOUiPkPm.js";export{e as default};
