@@ -344,8 +344,9 @@ onUnmounted(() => {
 .box-pokemon-card {
   @include premium-card-hover(var(--tier-color, #1e293b), 1.02, -4px);
   @include pokemon-card-standard(20px);
+
   transform: Translatez(0); 
-  border-color: var(--tier-color, Rgba(255, 255, 255, 0.15));
+  border-color: var(--tier-color, Rgb(255 255 255 / 15%));
   
   &.is-premium-tier {
     @include pokemon-card-premium-tier;
@@ -353,14 +354,14 @@ onUnmounted(() => {
 
   &.is-on-mission, &.is-on-event, &.is-busy {
     .box-card-sprite {
+      opacity: 0.6;
       will-change: transform, filter, opacity;
       filter: Grayscale(1);
-      opacity: 0.6;
     }
     .card-info {
+      opacity: 0.8;
       will-change: transform, filter, opacity;
       filter: Grayscale(0.5);
-      opacity: 0.8;
     }
   }
 
@@ -368,11 +369,11 @@ onUnmounted(() => {
     position: absolute;
     top: 6px;
     right: 6px;
+    z-index: calc(var(--z-low) + 5);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    z-index: calc(var(--z-low) + 5);
     pointer-events: auto;
 
     .tier-badge {
@@ -394,31 +395,31 @@ onUnmounted(() => {
   }
 
   .box-sprite-wrapper {
-    width: 100%;
-    flex: 1 1 auto;
-    min-height: 64px;
     position: relative;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 64px;
+    flex: 1 1 auto;
     overflow: visible;
     pointer-events: none;
 
     :deep(.pv-fx-wrapper),
     :deep(.pv-fx-sprite-layer) {
-      overflow: visible;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      overflow: visible;
       pointer-events: none;
     }
 
     :deep(.box-card-sprite) {
       width: 83px !important;
-      height: 83px !important;
       min-width: 83px !important;
-      min-height: 83px !important;
       max-width: none !important;
+      height: 83px !important;
+      min-height: 83px !important;
       max-height: none !important;
       object-fit: contain;
       pointer-events: none;
@@ -428,7 +429,6 @@ onUnmounted(() => {
   // --- FAST / PERFORMANCE MODE OVERRIDES ---
   &.fast-mode,
   &.performance-mode {
-    
     will-change: auto; 
     
     &:hover {
@@ -441,12 +441,12 @@ onUnmounted(() => {
     }
 
     &.selected {
-      background: Rgba(var(--tier-color-rgb), 0.2) !important;
+      background: Rgb(var(--tier-color-rgb), 0.2) !important;
       border-color: var(--tier-color) !important;
       box-shadow: none !important;
       
       &:hover {
-        background: Rgba(var(--tier-color-rgb), 0.3) !important;
+        background: Rgb(var(--tier-color-rgb), 0.3) !important;
         box-shadow: none !important;
       }
     }
@@ -454,23 +454,23 @@ onUnmounted(() => {
 
   .selected-border-pulse {
     position: absolute;
-    inset: 0;
+    z-index: var(--z-low);
     border: 2px solid var(--red);
     border-radius: inherit;
+    inset: 0;
     pointer-events: none;
-    z-index: var(--z-low);
   }
 
   .box-illegal-danger-badge {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 48px;
     height: 48px;
-    background: Rgba(239, 68, 68, 0.2);
     border: 2px dashed #ef4444;
     border-radius: 6px;
+    background: Rgb(239 68 68 / 20%);
 
     .danger-icon {
       font-size: 1.4rem;
@@ -478,9 +478,9 @@ onUnmounted(() => {
     }
 
     .danger-label {
+      color: #ff6b6b;
       font-size: 0.55rem;
       font-weight: 900;
-      color: #ff6b6b;
       letter-spacing: 0.5px;
       margin-top: 1px;
     }

@@ -9,6 +9,7 @@ import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
 import { toPokemonType } from '@/data/battle/types'
 import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { Z_LAYERS, SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals'
+import { MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { useBattleStore } from '@/stores/battle/battle'
 import {
@@ -150,7 +151,7 @@ const onHover = (isEntering: boolean) => {
   if (!el || isDisabled.value) return
 
   if (isEntering) {
-    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth <= 768
+    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth <= MOBILE_SCREEN_BREAKPOINT_PX
     gsap.to(el, { 
       scale: isSmallScreen ? SCALE_DEFAULT_BASE_FACTOR : HOVER_SCALED_MULT, 
       filter: 'Brightness(1.1)',

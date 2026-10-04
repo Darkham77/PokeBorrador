@@ -71,14 +71,14 @@ async function handleWatch() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
   padding: 4px 8px;
-  background: Rgba(15, 23, 42, 0.9);
-  border: 1px solid Rgba(234, 179, 8, 0.6);
+  border: 1px solid Rgb(234 179 8 / 60%);
   border-radius: 6px;
+  background: Rgb(15 23 42 / 90%);
   font-family: 'Press Start 2P', monospace, sans-serif;
   font-size: 0.62rem;
-  box-shadow: 0 2px 6px Rgba(0, 0, 0, 0.4);
+  margin-top: 4px;
+  box-shadow: 0 2px 6px Rgb(0 0 0 / 40%);
 
   .badge-code-info {
     display: flex;
@@ -97,12 +97,12 @@ async function handleWatch() {
 
   .watch-replay-btn {
     padding: 3px 6px;
-    background: linear-gradient(180deg, #3b82f6, #1d4ed8);
     border: 1px solid #60a5fa;
     border-radius: 4px;
-    color: #ffffff;
-    font-size: 0.55rem;
+    background: Linear-Gradient(180deg, #3b82f6, #1d4ed8);
+    color: #fff;
     font-family: inherit;
+    font-size: 0.55rem;
     font-weight: bold;
     cursor: pointer;
 

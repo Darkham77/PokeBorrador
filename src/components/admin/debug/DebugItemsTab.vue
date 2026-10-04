@@ -115,31 +115,32 @@ function onBtnDown(e: Event) {
 .search-input {
   width: 100%;
   padding: 12px 16px;
-  background: Rgba(0, 0, 0, 0.4);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: $white;
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 12px;
+  background: Rgb(0 0 0 / 40%);
+  color: $white;
   font-size: 16px;
   
   &:focus { outline: none; border-color: var(--purple); }
 }
 
 .add-all-btn {
+  @include pixelated;
+
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
-  border: 1px solid Rgba(255, 255, 255, 0.2);
-  color: white;
+  border: 1px solid Rgb(255 255 255 / 20%);
   border-radius: 12px;
+  background: Linear-Gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  color: white;
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  @include pixelated;
-  box-shadow: 0 4px 12px Rgba(126, 34, 206, 0.3);
+  box-shadow: 0 4px 12px Rgb(126 34 206 / 30%);
 
   &:hover {
-    box-shadow: 0 6px 16px Rgba(126, 34, 206, 0.5);
-    background: linear-gradient(135deg, #b55fe6 0%, #8b2ad6 100%);
+    background: Linear-Gradient(135deg, #b55fe6 0%, #8b2ad6 100%);
+    box-shadow: 0 6px 16px Rgb(126 34 206 / 50%);
   }
 }
 
@@ -147,8 +148,8 @@ function onBtnDown(e: Event) {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1;
   min-height: 0;
+  flex: 1;
   overscroll-behavior: contain;
 }
 
@@ -157,20 +158,20 @@ function onBtnDown(e: Event) {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: Rgba(255, 255, 255, 0.03);
   border: 1px solid transparent;
   border-radius: 14px;
+  background: Rgb(255 255 255 / 3%);
   cursor: pointer;
   
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.07);
-    border-color: Rgba(255, 255, 255, 0.1);
+    background: Rgb(255 255 255 / 7%);
     transform: Translatex(4px);
+    border-color: Rgb(255 255 255 / 10%);
   }
 
-  .name { font-size: 16px; flex: 1; font-weight: 600; color: $text; }
-  .add { font-size: 8px; color: $green; @include pixelated; }
+  .name { color: $text; font-size: 16px; font-weight: 600; flex: 1; }
+  .add { @include pixelated; color: $green; font-size: 8px; }
   .icon { font-size: 16px; }
 }
 </style>

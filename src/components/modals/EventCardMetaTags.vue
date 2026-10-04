@@ -59,23 +59,24 @@ const isUpcomingDateValid = computed(() => Boolean(props.isUpcoming && props.occ
 
 .tags-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
 
   .type-tag {
-    font-size: 7px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: Rgba(59, 130, 246, 0.1);
-    border: 1px solid Rgba(59, 130, 246, 0.3);
-    color: #60a5fa;
-    font-weight: bold;
-    width: fit-content;
     @include pixelated;
+
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    width: fit-content;
+    padding: 2px 6px;
+    border: 1px solid rgb(59 130 246 / 30%);
+    border-radius: 4px;
+    background: rgb(59 130 246 / 10%);
+    color: #60a5fa;
+    font-size: 7px;
+    font-weight: bold;
     line-height: 1.35;
 
     .emoji {
@@ -84,51 +85,52 @@ const isUpcomingDateValid = computed(() => Boolean(props.isUpcoming && props.occ
     }
 
     &.competition {
-      background: Rgba(245, 158, 11, 0.15);
+      background: rgb(245 158 11 / 15%);
       color: #fbbf24;
-      border-color: Rgba(245, 158, 11, 0.3);
+      border-color: rgb(245 158 11 / 30%);
     }
 
     &.passive_bonus {
-      background: Rgba(168, 85, 247, 0.15);
+      background: rgb(168 85 247 / 15%);
       color: #c084fc;
-      border-color: Rgba(168, 85, 247, 0.3);
+      border-color: rgb(168 85 247 / 30%);
     }
 
     &.shiny {
-      background: Rgba(234, 179, 8, 0.15);
+      background: rgb(234 179 8 / 15%);
       color: #facc15;
-      border-color: Rgba(234, 179, 8, 0.3);
+      border-color: rgb(234 179 8 / 30%);
     }
 
     &.spawn {
-      background: Rgba(34, 197, 94, 0.15);
+      background: rgb(34 197 94 / 15%);
       color: #4ade80;
-      border-color: Rgba(34, 197, 94, 0.3);
+      border-color: rgb(34 197 94 / 30%);
     }
 
     &.fishing {
-      background: Rgba(14, 165, 233, 0.15);
+      border: 1px solid rgb(14 165 233 / 30%);
+      background: rgb(14 165 233 / 15%);
       color: #38bdf8;
-      border: 1px solid Rgba(14, 165, 233, 0.3);
     }
   }
 
   .catch-window-tag {
     @include pixelated;
-    font-size: 7px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: Rgba(250, 204, 21, 0.12);
-    border: 1px solid Rgba(250, 204, 21, 0.35);
-    color: var(--yellow);
-    font-weight: bold;
-    width: fit-content;
-    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    width: fit-content;
+    padding: 2px 6px;
+    border: 1px solid rgb(250 204 21 / 35%);
+    border-radius: 4px;
+    background: rgb(250 204 21 / 12%);
+    color: var(--yellow);
+    font-size: 7px;
+    font-weight: bold;
     line-height: 1.35;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 50%);
 
     .emoji {
       font-size: 8px;

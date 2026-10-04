@@ -177,15 +177,15 @@ const getTierColor = (t?: string) => {
 @use "@/styles/core/tools" as *;
 
 .battle-quick-bag {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  height: auto !important;
-  min-height: 100%; // Fix flex scroll collapse
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
   @include gpu-layer;
   @include smooth-scroll;
+
+  height: auto !important;
+  min-height: 100%; // Fix flex scroll collapse
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  overflow: hidden auto !important;
 
   &::-webkit-scrollbar:horizontal {
     display: none !important;
@@ -194,39 +194,39 @@ const getTierColor = (t?: string) => {
 }
 
 .quick-bag-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 76px); // Rellena con más columnas de 76px si el espacio lo permite
-  gap: 8px;
-  width: 100%;
-  padding: 12px 10px 10px 10px;
-  justify-content: center;
-  align-content: start;
-  min-height: 100%;
   position: relative;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, 76px); // Rellena con más columnas de 76px si el espacio lo permite
+  width: 100%;
+  min-height: 100%;
+  padding: 12px 10px 10px;
+  place-content: start center;
 }
 
 .quick-item-card {
+  @include item-tier-card;
+
   position: relative;
   z-index: calc(var(--z-base) + 1);
-  background: Rgba(30, 41, 59, 0.8);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 12px; 
-  padding: 0;
-  cursor: pointer;
-  
-  aspect-ratio: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; 
+  padding: 0;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  background: Rgb(30 41 59 / 80%);
+  cursor: pointer;
+  aspect-ratio: 1;
   overflow: visible !important; // Permitir que el badge respire por debajo
 
   &::after {
-    content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, Rgba(255, 255, 255, 0.05), transparent);
-    pointer-events: none;
     border-radius: inherit; // Mantener la forma
+    background: Linear-Gradient(135deg, Rgb(255 255 255 / 5%), transparent);
+    content: '';
+    inset: 0;
+    pointer-events: none;
   }
 
   &.is-disabled {
@@ -234,49 +234,47 @@ const getTierColor = (t?: string) => {
     cursor: not-allowed;
     pointer-events: none;
   }
-
-  @include item-tier-card;
 }
 
 .card-inner {
-  width: 100%;
-  height: 100%;
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  position: relative;
+  align-items: center;
+  width: 100%;
+  height: 100%;
   
   .item-bg-glow {
     position: absolute;
+    z-index: var(--z-base);
     width: 60%;
     height: 60%;
-    background: Radial-Gradient(circle, Rgba(255, 255, 255, 0.1) 0%, Transparent 70%);
+    background: Radial-Gradient(circle, Rgb(255 255 255 / 10%) 0%, transparent 70%);
     will-change: transform, filter, opacity;
     filter: Blur(5px);
-    z-index: var(--z-base);
   }
 }
 
 .item-sprite-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 40px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transform: Translatey(-8px); // Subir un poco más el sprite
-  position: relative;
   
   .item-sprite {
+    @include sprite-render;
+
     position: absolute;
     min-width: 60px; 
     min-height: 60px;
-    @include sprite-render;
     will-change: transform, filter, opacity;
     filter: 
-      Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5))
+      Drop-Shadow(0 4px 8px Rgb(0 0 0 / 50%))
       Brightness(1.1); 
-    
     pointer-events: none;
   }
 }
@@ -284,34 +282,35 @@ const getTierColor = (t?: string) => {
 // Sprite scale handled entirely by GSAP in hoverEnter.ts / hoverLeave.ts
 
 .item-qty-badge {
+  @include pixelated;
+
   position: absolute;
   bottom: -6px; // Aire por debajo del contenedor
   left: 50%;
-  transform: Translatex(-50%); 
-  background: Rgba(0, 0, 0, 0.85);
-  border: 1px solid var(--yellow);
-  color: white;
-  font-size: 8px; 
-  padding: 1px 6px;
-  border-radius: 4px;
-  @include pixelated;
-  text-shadow: 1px 1px 0px black;
   z-index: var(--z-low);
+  width: max-content; 
+  padding: 1px 6px;
+  border: 1px solid var(--yellow);
+  border-radius: 4px; 
+  background: Rgb(0 0 0 / 85%);
+  color: white;
+  font-size: 8px;
+  transform: Translatex(-50%);
+  text-shadow: 1px 1px 0 black;
   white-space: nowrap;
-  width: max-content;
 }
 
 .empty-bag-overlay {
   position: absolute;
-  inset: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   opacity: 0.2;
+  inset: 0;
   pointer-events: none;
   
   .empty-icon { font-size: 24px; margin-bottom: 4px; }
-  .empty-text { font-size: 8px; @include pixelated; }
+  .empty-text { @include pixelated; font-size: 8px; }
 }
 </style>

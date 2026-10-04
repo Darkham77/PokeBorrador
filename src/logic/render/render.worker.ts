@@ -14,6 +14,8 @@ interface RenderState {
   entities: Array<{ id: string; x: number; y: number; type: string }>;
 }
 
+const MOCK_TILE_GRID_SIZE_PX = 32 as const;
+
 let state: RenderState = {
   camera: { x: 0, y: 0 },
   player: { x: 100, y: 100 },
@@ -34,7 +36,7 @@ function renderLoop() {
 
   context.strokeStyle = '#2d3748';
   context.lineWidth = 1;
-  const gridSize = 32;
+  const gridSize = MOCK_TILE_GRID_SIZE_PX;
 
   // Draw a simple grid representing game tiles
   for (let x = 0; x < canvas.width + state.camera.x + gridSize; x += gridSize) {

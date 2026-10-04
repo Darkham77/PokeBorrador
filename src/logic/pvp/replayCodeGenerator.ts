@@ -13,6 +13,7 @@ import {
   type ReplayChoiceStep
 } from '@/types/battle/pvp.ts';
 import { isSeasonalThemeId } from '@/data/system/rankedData.ts';
+import { parseJsonSafe } from '@/logic/utils/jsonUtils.ts';
 import type { SideID } from '@pkmn/sim';
 
 const BATTLE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -41,19 +42,6 @@ export function formatBattleCodeInput(raw: string): string {
   const afterBtl = cleaned.slice(3);
   if (afterBtl.length <= PART_LENGTH) return `BTL-${afterBtl}`;
   return `BTL-${afterBtl.slice(0, PART_LENGTH)}-${afterBtl.slice(PART_LENGTH, PART_LENGTH * 2)}`;
-}
-
-function parseJsonSafe<T>(val: unknown, fallback: T): T {
-  if (!val) return fallback;
-  if (typeof val === 'object') return val as T;
-  if (typeof val === 'string') {
-    try {
-      return JSON.parse(val) as T;
-    } catch {
-      return fallback;
-    }
-  }
-  return fallback;
 }
 
 export function parseBattleReplayRecord(data: unknown): BattleReplayRecord {

@@ -11,6 +11,7 @@
  */
 
 import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { CAZABICHOS_STREAK_SHINY_STEP } from '@/logic/constants/gameplay';
 import type { AbilityId } from '@/data/battle/abilities';
 import type { Pokemon, PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { NatureId } from '@/data/battle/natures';
@@ -45,7 +46,6 @@ import type { FactionId } from '@/types/system/game';
 
 const MAX_CAZABICHOS_IV_FLOOR = 20;
 const CAZABICHOS_IV_FLOOR_PER_STREAK = 5;
-const CAZABICHOS_STREAK_SHINY_STEP = 0.75;
 const DOMINANCE_IV_FLOOR = 15;
 const DOMINANCE_SHINY_MULT = 1.3;
 const ARCHAEOLOGY_EQUIPPED_TOOL_MULTIPLIER = 1.5 as const;

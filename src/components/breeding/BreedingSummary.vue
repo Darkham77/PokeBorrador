@@ -170,7 +170,7 @@ const getCompatText = (label: string) => {
           </template>
           <template v-else-if="!hasVigor">
             <span class="emoji timer-icon font-large">💤</span>
-            <span style="color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgba(239, 68, 68, 0.4);">CANSADOS (SIN VIGOR)</span>
+            <span style="color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgb(239 68 68 / 40%);">CANSADOS (SIN VIGOR)</span>
           </template>
           <template v-else>
             <span class="emoji timer-icon">⏳</span>
@@ -253,6 +253,7 @@ const getCompatText = (label: string) => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .breeding-summary {
   display: flex;
   flex-direction: column;
@@ -287,13 +288,14 @@ const getCompatText = (label: string) => {
 
   .timer {
     @include pixelated;
-    font-size: 10px;
-    color: $white;
-    margin-top: 8px;
+
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 8px;
+    color: $white;
+    font-size: 10px;
+    margin-top: 8px;
 
     .timer-icon {
       font-size: 26px;
@@ -314,12 +316,12 @@ const getCompatText = (label: string) => {
 }
 
 .forecast-card {
-  background: Rgba(30, 41, 59, 0.85);
-  border-radius: 16px;
-  padding: 12px;
-  border: 1px solid Rgba(255, 51, 102, 0.25);
-  box-shadow: 0 10px 30px Rgba(0,0,0,0.3);
   width: 100%;
+  padding: 12px;
+  border: 1px solid Rgb(255 51 102 / 25%);
+  border-radius: 16px;
+  background: Rgb(30 41 59 / 85%);
+  box-shadow: 0 10px 30px Rgb(0 0 0 / 30%);
   box-sizing: border-box;
   
   .forecast-header {
@@ -328,77 +330,76 @@ const getCompatText = (label: string) => {
     gap: 8px;
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 1px solid Rgba(255,255,255,0.05);
+    border-bottom: 1px solid Rgb(255 255 255 / 5%);
     
     .icon { font-size: 16px; }
     h4 {
+      color: $white;
       font-size: 11px;
       font-weight: 800;
-      color: $white;
+      line-height: 1.5;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      line-height: 1.5;
     }
   }
 }
 
 .forecast-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 8px;
+  grid-template-columns: 1fr 1fr;
   margin-bottom: 12px;
 }
 
 .forecast-item {
   display: flex !important;
   flex-direction: column !important;
-  align-items: stretch !important;
   justify-content: flex-start !important;
-  width: 100% !important;
-  box-sizing: border-box;
+  align-items: stretch !important;
   gap: 6px;
+  width: 100% !important;
   padding: 8px !important;
-  background: Rgba(0,0,0,0.2);
-  border-radius: 10px;
   border: 1px solid transparent;
-  
+  border-radius: 10px;
+  background: Rgb(0 0 0 / 20%);
+  box-sizing: border-box;
   cursor: help;
   
   .label {
-    font-size: 8px;
     color: $muted;
+    font-size: 8px;
     font-weight: 600;
-    text-align: left;
     line-height: 1.4;
+    text-align: left;
   }
   
   .value {
-    font-size: 10px;
     color: $white;
+    font-size: 10px;
     font-weight: 700;
-    text-align: left;
     line-height: 1.4;
+    text-align: left;
   }
   
   &.active {
-    border-color: Rgba(255, 51, 102, 0.35);
-    background: Rgba(255, 51, 102, 0.04);
+    background: Rgb(255 51 102 / 4%);
+    border-color: Rgb(255 51 102 / 35%);
     .value { color: #ff668f; }
   }
   
   &.positive {
-    border-color: Rgba(34, 197, 94, 0.4);
-    background: Rgba(34, 197, 94, 0.05);
-    .value { color: Rgba(74, 222, 128, 1); }
+    background: Rgb(34 197 94 / 5%);
+    border-color: Rgb(34 197 94 / 40%);
+    .value { color: Rgb(74 222 128 / 100%); }
   }
 }
 
 .forecast-help {
   padding-top: 10px;
-  border-top: 1px dashed Rgba(51, 65, 85, 1);
+  border-top: 1px dashed Rgb(51 65 85 / 100%);
   p {
+    color: Rgb(148 163 184 / 100%);
     font-size: 9px;
-    color: Rgba(148, 163, 184, 1);
     line-height: 1.6;
   }
 }

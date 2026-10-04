@@ -66,13 +66,13 @@ const struggleMoveData = computed<Move>(() => {
 // Forcejeo: se superpone al grid sin alterar el tamaño del HUD
 .struggle-overlay {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(10, 10, 20, 0.82);
-  backdrop-filter: Blur(2px);
   z-index: calc(var(--z-base) + 10);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgb(10 10 20 / 82%);
+  inset: 0;
+  backdrop-filter: blur(2px);
   pointer-events: all;
 
   :deep(.move-slot-wrapper) {

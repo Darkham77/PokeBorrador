@@ -3,21 +3,22 @@
 
 /* Move Tooltip Premium Style */
 .bat-move-tooltip {
+  @include gpu-layer;
+
   position: fixed;
   z-index: var(--z-tooltip);
-  background: Rgba(10, 15, 25, 0.95);
+  display: none;
+  width: 260px;
+  padding: 16px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: 12px;
+  background: Rgb(10 15 25 / 95%);
+  transform: Translatez(0);
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
-  @include gpu-layer;
-  transform: Translatez(0);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
   border-left: 4px solid var(--move-color, $white);
-  border-radius: 12px;
-  padding: 16px;
-  width: 260px;
-  box-shadow: 0 10px 40px Rgba(0, 0, 0, 0.8), 0 0 20px Rgba(var(--move-color-rgb, 255, 255, 255), 0.1);
+  box-shadow: 0 10px 40px Rgb(0 0 0 / 80%), 0 0 20px Rgb(var(--move-color-rgb, 255, 255, 255), 0.1);
   pointer-events: none;
-  display: none;
 }
 
 .bat-move-tooltip-header {
@@ -26,28 +27,29 @@
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
 }
 
 .bat-move-tooltip-name {
   @include pixelated;
-  font-size: 10px;
+
   color: $white;
+  font-size: 10px;
 }
 
 .bat-move-tooltip-type {
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--move-color);
-  background: Rgba(255, 255, 255, 0.05);
   padding: 2px 8px;
   border-radius: 6px;
+  background: Rgb(255 255 255 / 5%);
+  color: var(--move-color);
+  font-size: 9px;
+  font-weight: 800;
 }
 
 .bat-move-tooltip-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 10px;
+  grid-template-columns: 1fr 1fr;
   margin-bottom: 12px;
 }
 
@@ -58,26 +60,26 @@
 }
 
 .bat-move-tooltip-stat-label {
+  color: Rgb(255 255 255 / 40%);
   font-size: 9px;
-  color: Rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .bat-move-tooltip-stat-value {
-  font-size: 11px;
   color: $white;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .bat-move-tooltip-desc {
-  font-size: 11px;
-  color: Rgba(255, 255, 255, 0.7);
-  line-height: 1.4;
-  font-style: italic;
-  background: Rgba(0, 0, 0, 0.2);
   padding: 8px;
   border-radius: 8px;
+  background: Rgb(0 0 0 / 20%);
+  color: Rgb(255 255 255 / 70%);
+  font-size: 11px;
+  line-height: 1.4;
+  font-style: italic;
 }
 
 /* Volatile Status Overlays */
@@ -85,17 +87,17 @@
   position: absolute;
   top: -24px;
   left: 50%;
-  transform: Translatex(-50%);
-  width: 40px;
-  height: 20px;
-  pointer-events: none;
   z-index: calc(var(--z-base) + 15);
   display: flex;
   justify-content: space-around;
+  width: 40px;
+  height: 20px;
+  transform: Translatex(-50%);
+  pointer-events: none;
 
   &::before, &::after {
-    content: '⭐';
     font-size: 14px;
+    content: '⭐';
   }
 }
 
@@ -103,68 +105,68 @@
   position: absolute;
   top: -28px;
   left: 50%;
-  transform: Translatex(-50%);
-  font-size: 20px;
-  pointer-events: none;
   z-index: calc(var(--z-base) + 15);
+  font-size: 20px;
+  transform: Translatex(-50%);
+  pointer-events: none;
   filter: Drop-Shadow(0 0 6px red);
 }
 
 .fx-substitute-doll {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: calc(var(--z-base) + 10);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  inset: 0;
   pointer-events: none;
 
   .doll-icon {
     font-size: 48px;
-    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.6));
+    filter: Drop-Shadow(0 4px 8px Rgb(0 0 0 / 60%));
   }
 }
 
 /* Arena Hazards */
 .fx-hazards-overlay {
   position: absolute;
+  z-index: calc(var(--z-base) + 5);
   inset: 0;
   pointer-events: none;
-  z-index: calc(var(--z-base) + 5);
 
   &.stealthrock::before {
-    content: '🪨 🪨 🪨';
     position: absolute;
+    right: 20%;
     bottom: 25%;
     left: 20%;
-    right: 20%;
     display: flex;
     justify-content: space-around;
     font-size: 22px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
+    content: '🪨 🪨 🪨';
+    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 80%));
   }
 
   &.spikes::after {
-    content: '⚙️ ⚙️ ⚙️';
     position: absolute;
+    right: 15%;
     bottom: 15%;
     left: 15%;
-    right: 15%;
     display: flex;
     justify-content: space-around;
     font-size: 18px;
-    filter: sepia(1) Hue-Rotate(90deg);
+    content: '⚙️ ⚙️ ⚙️';
+    filter: sepia(1) hue-Rotate(90deg);
   }
 
   &.toxicspikes::after {
-    content: '🟣 🟣 🟣';
     position: absolute;
+    right: 15%;
     bottom: 15%;
     left: 15%;
-    right: 15%;
     display: flex;
     justify-content: space-around;
     font-size: 16px;
+    content: '🟣 🟣 🟣';
     filter: Drop-Shadow(0 0 6px #a855f7);
   }
 }
@@ -172,18 +174,18 @@
 /* Pseudoweathers (Trick Room & Gravity) */
 .fx-trickroom-grid {
   position: absolute;
+  z-index: calc(var(--z-base) + 7);
+  background: Radial-Gradient(circle, Rgb(168 85 247 / 25%) 0%, Rgb(88 28 135 / 40%) 100%);
   inset: 0;
   pointer-events: none;
-  z-index: calc(var(--z-base) + 7);
-  background: radial-gradient(circle, Rgba(168, 85, 247, 0.25) 0%, Rgba(88, 28, 135, 0.4) 100%);
   mix-blend-mode: screen;
-  box-shadow: inset 0 0 50px Rgba(168, 85, 247, 0.5);
+  box-shadow: inset 0 0 50px Rgb(168 85 247 / 50%);
 }
 
 .fx-gravity-overlay {
   position: absolute;
+  z-index: calc(var(--z-base) + 7);
+  background: Linear-Gradient(180deg, Rgb(37 99 235 / 30%) 0%, Rgb(17 24 39 / 50%) 100%);
   inset: 0;
   pointer-events: none;
-  z-index: calc(var(--z-base) + 7);
-  background: linear-gradient(180deg, Rgba(37, 99, 235, 0.3) 0%, Rgba(17, 24, 39, 0.5) 100%);
 }

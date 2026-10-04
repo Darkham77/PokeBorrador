@@ -4,37 +4,38 @@
 
 
 .daycare-slot-legacy {
-  background: $card-dark;
-  border: 2px solid Rgba(255,255,255,0.06);
-  border-radius: 16px;
-  padding: 20px;
-  min-height: 250px;
+  position: relative;
   display: flex;
   flex-direction: column;
-  position: relative;
+  min-height: 250px;
+  padding: 20px;
+  border: 2px solid Rgb(255 255 255 / 6%);
+  border-radius: 16px;
+  background: $card-dark;
 
-  @media (max-width: 950px) {
+  @media (width <= 950px) {
     min-height: 180px;
     padding: 12px;
   }
 
   &.empty {
-    border-style: dashed;
-    cursor: pointer;
     justify-content: center;
     align-items: center;
-    background: Rgba(0,0,0,0.2);
+    background: Rgb(0 0 0 / 20%);
+    border-style: dashed;
+    cursor: pointer;
   }
 }
 
 .slot-marker {
   @include pixelated;
+
+  color: $muted;
   font-size: 7px;
   text-transform: uppercase;
-  color: $muted;
   margin-bottom: 20px;
 
-  @media (max-width: 950px) {
+  @media (width <= 950px) {
     margin-bottom: 8px;
   }
 }
@@ -42,12 +43,12 @@
 .slot-empty {
   text-align: center;
   .plus-icon { 
+    color: Rgb(51 65 85 / 100%); 
     font-size: 30px; 
-    color: Rgba(51, 65, 85, 1); 
     margin-bottom: 10px; 
     will-change: transform;
   }
-  .hint { @include pixelated; font-size: 7px; color: Rgba(71, 85, 105, 1); }
+  .hint { @include pixelated; color: Rgb(71 85 105 / 100%); font-size: 7px; }
 }
 
 .slot-filled {
@@ -65,20 +66,20 @@
 }
 
 .sprite-box {
+  display: flex; justify-content: center; align-items: center;
   width: 80px; height: 80px;
-  display: flex; align-items: center; justify-content: center;
-  filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.35));
+  filter: Drop-Shadow(0 4px 6px Rgb(0 0 0 / 35%));
   will-change: transform, filter;
   
-  .pixel-sprite { width: 76px; height: 76px; @include pixelated; }
+  .pixel-sprite { @include pixelated; width: 76px; height: 76px; }
 }
 
 .poke-info {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  flex: 1;
 
   .p-name-stack-daycare {
     display: flex;
@@ -89,15 +90,17 @@
 
     .name {
       @include pixelated;
+
+      color: $white;
       font-size: 11px;
       font-weight: 900;
-      color: $white;
       text-transform: uppercase;
       text-shadow: 1px 1px 0 #000;
     }
 
     .species-subtitle {
       @include pixel-perfect(6.5px);
+
       color: var(--yellow);
       opacity: 0.8;
       text-transform: uppercase;
@@ -107,8 +110,8 @@
 
   .lv-gender-line {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 6px;
     margin-bottom: 6px;
 
@@ -116,15 +119,15 @@
 
   .iv-grid-daycare {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 4px;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+    padding: 6px;
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: 8px;
+    background: Rgb(0 0 0 / 25%);
     margin-top: 4px;
     margin-bottom: 6px;
-    background: Rgba(0, 0, 0, 0.25);
-    padding: 6px;
-    border-radius: 8px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-    width: 100%;
     box-sizing: border-box;
 
     .iv-item {
@@ -132,30 +135,32 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      background: Rgba(0, 0, 0, 0.2);
       padding: 4px;
+      border: 1px solid Rgb(255 255 255 / 3%);
       border-radius: 6px;
-      border: 1px solid Rgba(255, 255, 255, 0.03);
+      background: Rgb(0 0 0 / 20%);
 
       .label {
-        font-size: 7px;
-        color: Rgba(255, 255, 255, 0.4);
         @include pixelated;
+
+        color: Rgb(255 255 255 / 40%);
+        font-size: 7px;
       }
 
       .val {
+        color: $green;
+        font-family: monospace;
         font-size: 10px;
         font-weight: bold;
-        font-family: monospace;
-        color: $green;
       }
     }
   }
 
   .nature-line {
     @include pixelated;
-    font-size: 8px;
+
     color: $coin-gold;
+    font-size: 8px;
     font-weight: bold;
     
     .nature-text {
@@ -168,8 +173,8 @@
 
 .vigor-status {
   margin-bottom: 15px;
-  .label { font-size: 9px; font-weight: bold; color: $muted; margin-bottom: 6px; }
-  .vigor-bar-bg { height: 4px; background: Rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
+  .label { color: $muted; font-size: 9px; font-weight: bold; margin-bottom: 6px; }
+  .vigor-bar-bg { height: 4px; border-radius: 2px; background: Rgb(0 0 0 / 40%); overflow: hidden; }
   .vigor-fill { height: 100%; }
 }
 
@@ -183,29 +188,31 @@
 
 
   .item-badge {
+    @include pixelated;
+
     padding: 8px 12px; border-radius: 10px; font-size: 10px;
     text-align: center;
     text-transform: uppercase;
-    @include pixelated;
-    &.active { 
-      background: Rgba($pokecenter-pink, 0.08); 
-      border: 1px solid Rgba($pokecenter-pink, 0.2); 
-      color: $white;
+    &.active {
       display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 6px;
+      align-items: center;
+      gap: 6px; 
+      border: 1px solid Rgba($pokecenter-pink, 0.2); 
+      background: Rgba($pokecenter-pink, 0.08); 
+      color: $white;
       white-space: nowrap;
     }
-    &.none { background: Rgba(0,0,0,0.2); color: Rgba(148, 163, 184, 0.6); font-style: italic; border: 1px dashed Rgba(255,255,255,0.08); }
+    &.none { border: 1px dashed Rgb(255 255 255 / 8%); background: Rgb(0 0 0 / 20%); color: Rgb(148 163 184 / 60%); font-style: italic; }
   }
 
   .item-mini-sprite {
+    @include pixelated;
+
     width: 14px;
     height: 14px;
-    object-fit: contain;
-    @include pixelated;
     transform: Scale(4.5);
+    object-fit: contain;
     transform-origin: center;
     margin-right: 18px; /* Offset to prevent overlapping text while exceeding visual bounds */
   }
@@ -217,7 +224,8 @@
 }
 
 .withdraw-btn-retro {
-  margin-top: auto;
   @include btn-vicio('danger', 'sm', true);
+
   width: 100%;
+  margin-top: auto;
 }

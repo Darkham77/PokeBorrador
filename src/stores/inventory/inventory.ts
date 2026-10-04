@@ -20,6 +20,7 @@ export type { Item }
 
 import { ITEM_SELL_REFUND_FACTOR } from '@/logic/constants/items.ts'
 
+const SELL_ALL_QUANTITY_TOKEN = 999 as const
 const VALUABLE_ITEM_IDS = ['nugget', 'pearl', 'bigpearl', 'stardust', 'starpiece'] as const satisfies readonly ItemId[]
 type ValuableItemId = (typeof VALUABLE_ITEM_IDS)[number]
 const VALUABLE_ITEM_IDS_SET: ReadonlySet<string> = new Set(VALUABLE_ITEM_IDS)
@@ -224,7 +225,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     const itemInfo = getItemById(itemId)
     
     const inventoryQty = gameStore.state.inventory[itemId] || 0
-    const sellQty = qty === 999 ? inventoryQty : Math.min(qty, inventoryQty)
+    const sellQty = qty === SELL_ALL_QUANTITY_TOKEN ? inventoryQty : Math.min(qty, inventoryQty)
     
     const gain = Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * sellQty
     

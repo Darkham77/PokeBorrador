@@ -36,3 +36,6 @@ tsconfig.tsbuildinfo
 
 # Local server profile configurations (environment-specific overrides)
 src/data/system/servers.local.json
+
+# Auditor tool caches (Added by @francogp/auditor)
+.stylelintcache

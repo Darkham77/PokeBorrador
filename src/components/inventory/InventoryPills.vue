@@ -155,83 +155,84 @@ onMounted(async () => {
 }
 
 .hud-pill {
-  width: 65px;
-  height: 65px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 65px;
+  height: 65px;
   padding: 4px 2px;
   overflow: hidden;
-  gap: 4px;
 
   &.clickable-pill {
     cursor: pointer;
     will-change: background-color;
-    &:hover { background: Rgba($white, 0.05); }
+    &:hover { background: rgba($white, 0.05); }
   }
 
   .pill-value {
     @include pixelated;
-    text-transform: uppercase;
-    text-align: center;
-    white-space: nowrap;
+
     display: inline-block;
     width: auto;
     max-width: 100%;
     margin: 0;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   &.money-pill {
-    border-color: Rgba($green, 0.3);
+    border-color: rgba($green, 0.3);
     .pill-value, .currency-icon-money {
       color: var(--green);
-      text-shadow: 0 0 8px Rgba($green, 0.4);
+      text-shadow: 0 0 8px rgba($green, 0.4);
     }
   }
 
   &.bc-pill {
-    border-color: Rgba($purple, 0.3);
+    border-color: rgba($purple, 0.3);
     .pill-value, .currency-icon-bc {
       color: var(--purple);
-      text-shadow: 0 0 8px Rgba($purple, 0.4);
+      text-shadow: 0 0 8px rgba($purple, 0.4);
     }
   }
 
   &.war-pill {
-    border-color: Rgba(239, 68, 68, 0.3);
+    border-color: rgb(239 68 68 / 30%);
     .pill-value, .war-icon {
       color: #EF4444;
-      text-shadow: 0 0 8px Rgba(239, 68, 68, 0.4);
+      text-shadow: 0 0 8px rgb(239 68 68 / 40%);
     }
   }
 }
 
 .currency-icon-money {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 18px;
   font-size: 18px;
   line-height: 1;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .currency-icon-bc {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 18px;
   font-size: 16px;
   line-height: 1;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .war-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 18px;
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
   font-size: 14px;
   line-height: 1;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 </style>

@@ -138,19 +138,19 @@ onMounted(() => {
 @use "@/styles/core/tools" as *;
 
 .daycare-modal-container {
-  padding: 24px;
+  --daycare-pink: #f36;
+
   display: flex;
   flex-direction: column;
   gap: 24px;
   max-height: 80dvh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  --daycare-pink: #ff3366;
+  padding: 24px;
+  overflow: hidden auto;
 
-  @media (max-width: 950px) {
+  @media (width <= 950px) {
+    gap: 16px;
     max-height: calc(100dvh - 64px);
     padding: 16px;
-    gap: 16px;
   }
 }
 
@@ -158,21 +158,22 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: Rgba(255, 51, 102, 0.06);
-  border: 1px solid Rgba(255, 51, 102, 0.2);
-  border-radius: 12px;
   padding: 12px 16px;
-  box-shadow: 0 0 10px Rgba(255, 51, 102, 0.02);
+  border: 1px solid rgb(255 51 102 / 20%);
+  border-radius: 12px;
+  background: rgb(255 51 102 / 6%);
+  box-shadow: 0 0 10px rgb(255 51 102 / 2%);
   
   .hint-icon {
     font-size: 18px;
   }
   p {
-    margin: 0;
-    font-size: 10px;
-    color: Rgba(255, 255, 255, 0.75);
-    line-height: 1.4;
     @include pixelated;
+
+    margin: 0;
+    color: rgb(255 255 255 / 75%);
+    font-size: 10px;
+    line-height: 1.4;
   }
 }
 
@@ -184,10 +185,10 @@ onMounted(() => {
 
 .slots-container {
   display: grid;
+  align-items: stretch;
+  gap: 12px;
   grid-template-columns: 1fr 290px 1fr;
   grid-template-areas: "slot-a compat slot-b";
-  gap: 12px;
-  align-items: stretch;
 
   .daycare-slot-a {
     grid-area: slot-a;
@@ -201,7 +202,7 @@ onMounted(() => {
     grid-area: compat;
   }
   
-  @media (max-width: 950px) {
+  @media (width <= 950px) {
     grid-template-columns: 1fr 1fr;
     grid-template-areas: 
       "slot-a slot-b"
@@ -212,7 +213,7 @@ onMounted(() => {
     }
   }
 
-  @media (max-width: 550px) {
+  @media (width <= 550px) {
     grid-template-columns: 1fr;
     grid-template-areas: 
       "slot-a"
@@ -222,18 +223,18 @@ onMounted(() => {
   
   // Make Slot components flex-1
   & > :deep(.daycare-slot-legacy) {
-    flex: 1;
     min-height: unset;
-    background: Rgba(20, 10, 15, 0.55);
-    border: 2px solid Rgba(255, 51, 102, 0.12);
-    box-shadow: inset 0 0 15px Rgba(255, 51, 102, 0.02);
+    border: 2px solid rgb(255 51 102 / 12%);
+    background: rgb(20 10 15 / 55%);
+    flex: 1;
+    box-shadow: inset 0 0 15px rgb(255 51 102 / 2%);
     
     &.empty {
-      background: Rgba(0, 0, 0, 0.25);
-      border-color: Rgba(255, 51, 102, 0.2);
+      background: rgb(0 0 0 / 25%);
+      border-color: rgb(255 51 102 / 20%);
       &:hover {
         border-color: var(--daycare-pink);
-        box-shadow: 0 0 12px Rgba(255, 51, 102, 0.15);
+        box-shadow: 0 0 12px rgb(255 51 102 / 15%);
         .plus-icon {
           color: var(--daycare-pink);
         }
@@ -243,26 +244,26 @@ onMounted(() => {
 }
 
 .compat-summary-wrapper {
-  width: 290px;
   z-index: calc(var(--z-map-floor) + 1);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: Rgba(255, 51, 102, 0.02);
-  border: 1px solid Rgba(255, 51, 102, 0.1);
-  border-radius: 16px;
+  width: 290px;
   padding: 12px;
-  box-shadow: inset 0 0 20px Rgba(255, 51, 102, 0.03);
+  border: 1px solid rgb(255 51 102 / 10%);
+  border-radius: 16px;
+  background: rgb(255 51 102 / 2%);
+  box-shadow: inset 0 0 20px rgb(255 51 102 / 3%);
   
-  @media (max-width: 950px) {
+  @media (width <= 950px) {
     width: 100%;
   }
 }
 
 .divider-line {
-  border-top: 1px solid Rgba(255, 51, 102, 0.35);
   width: 100%;
+  border-top: 1px solid rgb(255 51 102 / 35%);
 }
 
 .warehouse-section {

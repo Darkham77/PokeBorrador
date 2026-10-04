@@ -6,9 +6,9 @@ import type { NatureId } from '@/data/battle/natures'
 import type { AbilityId } from '@/data/battle/abilities'
 
 function createDemoPokemon(config: {
-  uid: string
+  uid: string // domain-ok: Open dynamic text or non-domain string payload
   id: PokemonSpeciesId
-  name: string
+  name: string // domain-ok: Open dynamic text or non-domain string payload
   level: number
   hp: number
   maxHp: number

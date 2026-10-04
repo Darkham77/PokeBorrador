@@ -47,7 +47,7 @@ const emit = defineEmits<{
       >
         <button
           id="debug-creator-walk-egg-btn"
-          class="btn-vicio-primary secondary"
+          class="btn-vicio-secondary"
           @click.stop="emit('action', 'egg_silent')"
         >
           CAMINAR HUEVO
@@ -60,7 +60,7 @@ const emit = defineEmits<{
       >
         <button
           id="debug-creator-anim-egg-btn"
-          class="btn-vicio-primary secondary"
+          class="btn-vicio-secondary"
           @click.stop="emit('action', 'egg_anim')"
         >
           HUEVO ANIM.
@@ -73,7 +73,7 @@ const emit = defineEmits<{
       >
         <button
           id="debug-creator-warehouse-egg-btn"
-          class="btn-vicio-primary secondary"
+          class="btn-vicio-secondary"
           @click.stop="emit('action', 'egg_warehouse')"
         >
           HUEVO ALMACÉN

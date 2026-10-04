@@ -155,8 +155,8 @@ const emit = defineEmits<{
   flex-direction: column;
   align-items: center;
   padding: 16px 0 0;
-  background: transparent;
   border: none;
+  background: transparent;
 }
 
 .avatar-wrap {
@@ -165,30 +165,31 @@ const emit = defineEmits<{
 }
 
 .identity-details-card {
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 
   .detail-row {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     padding: 8px 12px;
-    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid rgb(255 255 255 / 5%);
     border-radius: 8px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+    background: rgb(255 255 255 / 3%);
 
     .label {
-      font-size: 8px;
-      color: Rgba(255, 255, 255, 0.4);
       @include pixelated;
+
+      color: rgb(255 255 255 / 40%);
+      font-size: 8px;
     }
 
     .value-wrap {
-      flex: 1;
       display: flex;
       justify-content: center;
+      flex: 1;
 
       &.name-value-wrap {
         display: inline-flex;
@@ -200,15 +201,16 @@ const emit = defineEmits<{
 
 
     .value {
-      font-size: 10px;
-      color: var(--white);
       @include pixelated;
 
+      color: var(--white);
+      font-size: 10px;
+
       &.class-val {
-        color: var(--yellow);
         display: flex;
         align-items: center;
         gap: 6px;
+        color: var(--yellow);
       }
 
       &.faction-val {
@@ -217,17 +219,18 @@ const emit = defineEmits<{
     }
 
     .row-action-btn {
-      font-size: 8px;
-      padding: 4px 8px;
-      background: Rgba(255, 255, 255, 0.05);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      color: var(--yellow);
-      cursor: pointer;
       @include pixelated;
 
+      padding: 4px 8px;
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 4px;
+      background: rgb(255 255 255 / 5%);
+      color: var(--yellow);
+      font-size: 8px;
+      cursor: pointer;
+
       &:hover {
-        background: Rgba(255, 255, 255, 0.1);
+        background: rgb(255 255 255 / 10%);
         border-color: var(--yellow);
       }
     }
@@ -244,23 +247,25 @@ const emit = defineEmits<{
     margin-top: 8px;
 
     .cosmetics-btn {
-      flex: 1;
       @include btn-vicio('primary', 'sm', true);
-      font-size: 8px;
+
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 4px;
+      font-size: 8px;
+      flex: 1;
     }
 
     .class-mgmt-btn {
-      flex: 1;
       @include btn-vicio('secondary', 'sm', true);
-      font-size: 8px;
+
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 4px;
+      font-size: 8px;
+      flex: 1;
     }
   }
 }

@@ -72,7 +72,7 @@ const emit = defineEmits<{
         >
       </div>
       <div style="flex: 1;">
-        <label style="font-size: 0.75rem; color: #a78bfa;">Nivel Máx</label>
+        <label style=" color: #a78bfa;font-size: 0.75rem;">Nivel Máx</label>
         <input
           v-model.number="maxLevel"
           type="number"

@@ -2,48 +2,48 @@
 @use "@/styles/core/tools" as *;
 
 /* Screen Size Optimizations */
-@media (max-height: 680px) {
+@media (height <= 680px) {
   body .selection-container {
     padding-top: 8px; 
     
-    & .filters-bar { gap: 4px; margin-bottom: 2px; padding: 0 15px; }
+    & .filters-bar { gap: 4px; padding: 0 15px; margin-bottom: 2px; }
     & .ps-sort-btns button { padding: 6px; font-size: 7px; }
     & .ps-tags-bar { gap: 5px; }
-    & .ps-tags-bar button { height: 24px; padding: 0 6px; gap: 4px; }
-    & .ps-vertical-list { gap: 10px; padding: 5px 15px 15px 15px; }
-    & .list-item { min-height: 80px; padding: 10px; gap: 12px; }
-    & .poke-preview { width: 56px; height: 56px; overflow: visible !important; background: transparent !important; border: none !important; box-shadow: none !important; img { width: 68px; height: 68px; } }
+    & .ps-tags-bar button { gap: 4px; height: 24px; padding: 0 6px; }
+    & .ps-vertical-list { gap: 10px; padding: 5px 15px 15px; }
+    & .list-item { gap: 12px; min-height: 80px; padding: 10px; }
+    & .poke-preview { width: 56px; height: 56px; border: none !important; background: transparent !important; overflow: visible !important; box-shadow: none !important; img { width: 68px; height: 68px; } }
     
     & .modal-footer {
       gap: 5px;
-      & .count { margin-bottom: 0; font-size: 7px; }
+      & .count { font-size: 7px; margin-bottom: 0; }
       & .btn-confirm { 
         padding: 8px !important;
-        font-size: 10px !important;
         border-radius: 8px !important;
+        font-size: 10px !important;
       }
     }
   }
 }
 
-@media (max-height: 500px) {
+@media (height <= 500px) {
   .modal-content-premium {
-body .modal-header-premium { padding: 8px 16px !important; min-height: 40px !important; }
+body .modal-header-premium { min-height: 40px !important; padding: 8px 16px !important; }
 body .modal-footer-premium { padding: 8px 20px !important; }
   }
 
   body .selection-container {
     & .ps-tags-section { display: none; } 
-    & .filters-bar { margin-bottom: 0; gap: 2px; }
-    & .ps-vertical-list { padding-top: 2px; padding-bottom: 5px; gap: 8px; }
+    & .filters-bar { gap: 2px; margin-bottom: 0; }
+    & .ps-vertical-list { gap: 8px; padding-top: 2px; padding-bottom: 5px; }
     & .list-item { min-height: 60px; padding: 8px; border-radius: 12px; }
-    & .poke-preview { width: 40px; height: 40px; overflow: visible !important; background: transparent !important; border: none !important; box-shadow: none !important; img { width: 48px; height: 48px; } }
+    & .poke-preview { width: 40px; height: 40px; border: none !important; background: transparent !important; overflow: visible !important; box-shadow: none !important; img { width: 48px; height: 48px; } }
     & .poke-details .top-line .name-group .name { font-size: 7px; }
     & .poke-details .bottom-line { gap: 6px; }
   }
 }
 
-@media (max-height: 400px) {
+@media (height <= 400px) {
   .selection-container { 
     padding-top: 4px; 
     & .ps-sort-btns { display: none !important; } 

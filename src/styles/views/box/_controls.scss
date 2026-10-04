@@ -2,37 +2,38 @@
 @use "../../core/tools" as *;
 
 .box-controls-wrapper {
-  margin-bottom: 0;
   position: relative;
+  margin-bottom: 0;
 }
 
 .box-controls-compact {
   @include shell-premium(Rgba(15, 23, 42, 0.95));
-  padding: 12px 20px;
-  border-radius: 20px;
+
   display: flex;
   flex-wrap: wrap; 
   gap: 16px 24px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.3);
+  padding: 12px 20px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px Rgb(0 0 0 / 30%);
   overflow: hidden;
 
   .search-row-integrated {
     display: flex;
-    gap: 16px;
     align-items: center;
-    flex: 1 1 650px; 
+    gap: 16px; 
     min-width: 0;
+    flex: 1 1 650px;
 
-    @media (max-width: 768px) {
-      flex: 1 1 100%;
+    @media (width <= 768px) {
       flex-wrap: wrap;
       gap: 12px;
+      flex: 1 1 100%;
       
       .box-search-wrapper {
-        flex: 1 1 100%;
         width: 100%;
         min-width: 0;
+        flex: 1 1 100%;
         order: -1;
       }
     }
@@ -40,26 +41,26 @@
 
   .tags-row-compact {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    flex: 1 1 500px; 
+    align-items: center;
+    gap: 16px; 
     min-width: 300px;
+    flex: 1 1 500px;
     
-    @media (max-width: 1360px) {
+    @media (width <= 1360px) {
       padding-top: 12px;
-      border-top: 1px solid Rgba(255, 255, 255, 0.03);
+      border-top: 1px solid Rgb(255 255 255 / 3%);
       flex-basis: 100%;
     }
   }
 }
 
 .box-search-wrapper {
-  flex: 1;
-  min-width: 200px;
   position: relative;
   display: flex;
   align-items: center;
+  min-width: 200px;
+  flex: 1;
 
   .box-search-icon {
     position: absolute;
@@ -69,43 +70,44 @@
     pointer-events: none;
   }
 
-  .box-search-input {
+  .box-search-input { 
+    @include pixelated;
+
     width: 100%;
-    height: 40px; 
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    padding: 0 44px 0 44px; 
-    border-radius: 12px;
+    height: 40px;
+    padding: 0 44px;
+    border: 1px solid Rgb(255 255 255 / 10%); 
+    border-radius: 12px; 
+    background: Rgb(0 0 0 / 30%);
     color: var(--white);
     font-size: 8px;
-    line-height: 40px; 
-    @include pixelated;
+    line-height: 40px;
     outline: none;
+
+    &:focus {
+      background: Rgb(255 255 255 / 5%);
+      outline: none;
+      border-color: var(--yellow);
+      box-shadow: 0 0 15px Rgb(234 179 8 / 10%);
+    }
 
     &::placeholder {
       color: var(--gray);
       opacity: 0.5;
-    }
-
-    &:focus {
-      outline: none;
-      background: Rgba(255, 255, 255, 0.05);
-      border-color: var(--yellow);
-      box-shadow: 0 0 15px Rgba(234, 179, 8, 0.1);
     }
   }
 
   .box-search-clear {
     position: absolute;
     right: 12px;
-    background: none;
-    border: none;
-    color: Rgba(255, 255, 255, 0.5);
-    font-size: 16px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
     z-index: var(--z-low);
+    padding: 0;
+    border: none;
+    background: none;
+    color: Rgb(255 255 255 / 50%);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
 
     &:hover {
       color: var(--white);
@@ -115,53 +117,54 @@
 
 .box-tabs {
   display: flex;
-  background: Rgba(0, 0, 0, 0.3);
-  padding: 6px;
-  border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  overflow-x: auto;
   gap: 4px;
+  padding: 6px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 12px;
+  background: Rgb(0 0 0 / 30%);
+  overflow-x: auto;
   
   &::-webkit-scrollbar { height: 4px; }
   
   .box-tab-btn {
+    @include pixelated;
+
     padding: 10px 20px;
     border: none;
+    border-radius: 8px;
     background: none;
     color: var(--gray);
-    @include pixelated;
     font-size: 8px;
     cursor: pointer;
-    border-radius: 8px;
     white-space: nowrap;
 
-    &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.05); }
+    &:hover { background: Rgb(255 255 255 / 5%); color: var(--white); }
     &.active {
-      background: Rgba(255, 255, 255, 0.1);
+      border: 1px solid Rgb(255 255 255 / 10%);
+      background: Rgb(255 255 255 / 10%);
       color: var(--white);
       transform: Scale(1.05);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
     }
   }
 
   .box-buy-new-btn {
     @include btn-vicio('warning', 'sm', false);
-    margin-left: 12px;
-    width: fit-content; 
-    flex: 0 0 auto;
-    height: 32px;
-    font-size: 7px;
-    border-radius: 8px;
-    padding: 0 12px;
 
-    .btn-price {
-      margin-left: 4px;
-      opacity: 0.8;
+    width: fit-content;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 7px;
+    margin-left: 12px; 
+    flex: 0 0 auto;
+
+    &:hover {
+      transform: Translatey(-2px) Scale(1.02);
+      box-shadow: 0 4px 15px Rgb(255 184 0 / 20%);
     }
 
-    @media (max-width: 900px) {
-      & .btn-price { display: none; }
-      padding: 0 8px;
+    .btn-price {
+      opacity: 0.8;
       margin-left: 4px;
     }
 
@@ -172,9 +175,10 @@
       margin-left: 2px;
     }
 
-    &:hover {
-      transform: Translatey(-2px) Scale(1.02);
-      box-shadow: 0 4px 15px Rgba(255, 184, 0, 0.2);
+    @media (width <= 900px) {
+      padding: 0 8px;
+      margin-left: 4px;
+      & .btn-price { display: none; }
     }
   }
 }

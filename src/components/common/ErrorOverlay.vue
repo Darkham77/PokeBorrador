@@ -9,12 +9,14 @@ import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import { logger } from '@/logic/utils/logger'
 
+const CLIPBOARD_COPIED_DUR_MS = 2000 as const
+
 const errorStore = useErrorStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const authStore = useAuthStore()
 const userAction = ref('')
-const { copy, copied } = useClipboard({ copiedDuring: 2000 })
+const { copy, copied } = useClipboard({ copiedDuring: CLIPBOARD_COPIED_DUR_MS })
 
 const accumulatedDetails = computed(() => {
   return errorStore.errors.map((err, index) => {
@@ -156,45 +158,47 @@ const transitionHooks = useGsapTransition({
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 /* RESTORING EXACT LEGACY ERROR OVERLAY STYLES */
 .error-overlay {
+  @include gpu-layer;
+
   position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.9);
   z-index: var(--z-critical);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 20px;
+  background: Rgb(0 0 0 / 90%);
+  font-family: var(--font-ui);
+  inset: 0;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  font-family: var(--font-ui);
-  @include gpu-layer;
 }
 
 .error-card {
-  background: Rgba(26, 26, 46, 1);
-  border: 3px solid var(--red);
-  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 600px;
   max-height: 90dvh;
-  box-shadow: 0 0 50px Rgba(255, 59, 59, 0.3);
-  display: flex;
-  flex-direction: column;
+  border: 3px solid var(--red);
+  border-radius: 24px;
+  background: Rgb(26 26 46 / 100%);
+  box-shadow: 0 0 50px Rgb(255 59 59 / 30%);
   overflow: hidden; /* Scrollbars stay inside the border */
 }
 
 .error-header {
-  background: Linear-Gradient(135deg, var(--red), #c0392b);
-  padding: 24px 20px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 15px;
-  color: white;
   min-height: 80px;
+  padding: 24px 20px;
+  background: Linear-Gradient(135deg, var(--red), #c0392b);
+  color: white;
   box-sizing: border-box;
 }
 
@@ -204,29 +208,32 @@ const transitionHooks = useGsapTransition({
 
 .error-title {
   @include pixelated;
+
   font-size: 14px;
   letter-spacing: 1px;
 }
 
 .error-content {
-  flex: 1;
-  padding: 24px;
-  color: Rgba(234, 234, 234, 1);
-  min-height: 0;
   @include smooth-scroll;
+
+  min-height: 0;
+  padding: 24px;
+  color: Rgb(234 234 234 / 100%);
+  flex: 1;
 }
 
 .error-intro {
+  color: Rgb(170 170 170 / 100%);
   font-size: 14px;
-  margin-bottom: 25px;
   line-height: 1.5;
-  color: Rgba(170, 170, 170, 1);
+  margin-bottom: 25px;
 }
 
 .error-sub-title {
   @include pixelated;
-  font-size: 9px;
+
   color: var(--yellow);
+  font-size: 9px;
   margin-bottom: 10px;
 }
 
@@ -242,14 +249,14 @@ const transitionHooks = useGsapTransition({
   textarea {
     width: 100%;
     height: 60px;
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(255, 255, 255, 0.2);
-    color: white;
     padding: 8px;
+    border: 1px solid Rgb(255 255 255 / 20%);
     border-radius: 4px;
-    resize: vertical;
+    background: Rgb(0 0 0 / 30%);
+    color: white;
     font-family: inherit;
     font-size: 0.9em;
+    resize: vertical;
     box-sizing: border-box;
 
     &:focus {
@@ -259,19 +266,19 @@ const transitionHooks = useGsapTransition({
   }
 
   .sub-text {
+    color: Rgb(170 170 170 / 100%);
     font-size: 0.8em;
-    color: Rgba(170, 170, 170, 1);
     margin-top: 4px;
   }
 }
 
 .error-stack {
-  background: Rgba(0, 0, 0, 0.3);
   padding: 15px;
   border-radius: 12px;
+  background: Rgb(0 0 0 / 30%);
+  color: Rgb(187 187 187 / 100%);
   font-family: 'Courier New', Courier, monospace;
   font-size: 12px;
-  color: Rgba(187, 187, 187, 1);
   overflow-x: auto;
   margin-bottom: 25px;
   white-space: pre-wrap;
@@ -280,16 +287,16 @@ const transitionHooks = useGsapTransition({
 
 
 .error-game-context {
-  background: Rgba(255, 255, 255, 0.05);
   padding: 15px;
   border-radius: 12px;
+  background: Rgb(255 255 255 / 5%);
   margin-bottom: 24px;
 }
 
 .error-context-item {
+  color: Rgb(204 204 204 / 100%);
   font-size: 13px;
   margin-bottom: 6px;
-  color: Rgba(204, 204, 204, 1);
 
   strong {
     color: var(--purple);
@@ -297,11 +304,11 @@ const transitionHooks = useGsapTransition({
 }
 
 .error-footer {
-  padding: 20px;
-  background: Rgba(0, 0, 0, 0.2);
   display: flex;
-  gap: 12px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+  background: Rgb(0 0 0 / 20%);
 }
 </style>

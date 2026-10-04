@@ -27,10 +27,12 @@ const ARCHAEOLOGY_MOUNTAIN_ENCOUNTER_RATE = 0.05;
 const FOSSIL_CLONING_BASE_COST = 3000;
 const FOSSIL_CLONING_EXTRA_FOSSIL_COST = 1000;
 const BASE_SHINY_CHANCE_DENOMINATOR = 4096;
+const RARITY_DIFFICULTY_CEILING = 101 as const;
+const FOSSIL_CLONING_SHINY_STEP = 0.25 as const;
 
 export function calculateFishingTotalNotes(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
-  const diffFactor = 101 - safeRarity;
+  const diffFactor = RARITY_DIFFICULTY_CEILING - safeRarity;
   return Math.min(MAX_FISHING_NOTES, 5 + Math.floor(diffFactor / 7));
 }
 
@@ -43,7 +45,7 @@ export function calculateFishingTotalNotes(rarity: number): number {
  */
 export function calculateFishingSpeedBase(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
-  const diffFactor = 101 - safeRarity;
+  const diffFactor = RARITY_DIFFICULTY_CEILING - safeRarity;
   return Math.round(Math.max(MIN_FISHING_COLLAPSE_SPEED_MS, MAX_FISHING_COLLAPSE_SPEED_MS - (diffFactor * 7.5)) * 1.1);
 }
 
@@ -56,7 +58,7 @@ export function calculateFishingSpeedBase(rarity: number): number {
  */
 export function calculateFishingHitWindow(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
-  const diffFactor = 101 - safeRarity;
+  const diffFactor = RARITY_DIFFICULTY_CEILING - safeRarity;
   return Math.max(100, MAX_FISHING_HIT_WINDOW_MS - (diffFactor / 1.3));
 }
 
@@ -115,6 +117,6 @@ export function calculateCloningRerolls(extraQty: number, randomSource: () => nu
  */
 export function calculateCloningShinyChance(extraQty: number): number {
   const safeQty = Math.max(0, Math.min(6, extraQty));
-  const multiplier = 1 + 0.25 * safeQty;
+  const multiplier = 1 + FOSSIL_CLONING_SHINY_STEP * safeQty;
   return multiplier / BASE_SHINY_CHANCE_DENOMINATOR;
 }

@@ -11,6 +11,7 @@ const CANVAS_W = 6400
 const CANVAS_H = 4400
 const CARD_W = 320
 const CARD_H = 220
+const MIN_CAMERA_OVERLAY_SCALE = 0.25 as const;
 
 export function useAdventureLayout(options: {
   cameraScale: Ref<number>
@@ -36,7 +37,7 @@ export function useAdventureLayout(options: {
     return ADVENTURE_NODE_IDS.filter(id => options.mapLocationsById.value[id])
   })
 
-  const worldOverlayScale = computed(() => 1 / Math.max(options.cameraScale.value, 0.25))
+  const worldOverlayScale = computed(() => 1 / Math.max(options.cameraScale.value, MIN_CAMERA_OVERLAY_SCALE))
 
 const OVERLAY_X_OFFSET_RIGHT = 20
 const OVERLAY_Y_OFFSET_TOP = 18

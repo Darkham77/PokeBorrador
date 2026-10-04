@@ -32,18 +32,19 @@
 
     .card-title {
       @include pixelated;
-      font-size: 13px;
-      color: var(--yellow, #facc15);
+
       margin: 0;
+      color: var(--yellow, #facc15);
+      font-size: 13px;
       letter-spacing: 0.5px;
       white-space: nowrap;
     }
 
     .section-desc {
+      color: var(--gray, #94a3b8);
       font-size: 10px;
       line-height: 1.45;
       padding-bottom: 2px;
-      color: var(--gray, #94a3b8);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -56,10 +57,10 @@
 }
 
 .pending-awards-card {
-  background: Rgba(234, 179, 8, 0.1);
-  border: 1px solid Rgba(234, 179, 8, 0.3);
-  border-radius: 8px;
   padding: 12px;
+  border: 1px solid rgb(234 179 8 / 30%);
+  border-radius: 8px;
+  background: rgb(234 179 8 / 10%);
 
   .awards-header {
     display: flex;
@@ -69,16 +70,17 @@
 
     h3 {
       @include pixelated;
-      font-size: 10px;
-      color: var(--yellow, #facc15);
+
       margin: 0;
+      color: var(--yellow, #facc15);
+      font-size: 10px;
     }
   }
 
   .awards-body {
     .awards-hint {
-      font-size: 11px;
       color: var(--gray, #94a3b8);
+      font-size: 11px;
       margin-bottom: 10px;
     }
   }
@@ -93,18 +95,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 10px;
-    background: Rgba(0, 0, 0, 0.3);
-    border-radius: 6px;
     gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: rgb(0 0 0 / 30%);
   }
 
   .award-info {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    flex: 1;
     min-width: 0;
+    flex: 1;
   }
 
   .award-name-row {
@@ -114,18 +116,19 @@
   }
 
   .award-name {
+    color: #fff;
     font-size: 11px;
     font-weight: bold;
-    color: #ffffff;
   }
 
   .legacy-badge {
     @include pixelated;
-    font-size: 7px;
+
     padding: 1px 4px;
     border-radius: 4px;
-    background: Rgba(239, 68, 68, 0.2);
+    background: rgb(239 68 68 / 20%);
     color: #fca5a5;
+    font-size: 7px;
   }
 
   .award-actions-wrap {
@@ -156,8 +159,8 @@
 
 .events-single-row {
   display: grid;
-  grid-template-columns: repeat(var(--visible-slots, 2), minmax(0, 1fr));
   gap: 12px;
+  grid-template-columns: repeat(var(--visible-slots, 2), minmax(0, 1fr));
   width: 100%;
   box-sizing: border-box;
   will-change: transform;
@@ -165,35 +168,35 @@
 
 .carousel-pagination-bar {
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 8px;
   margin: 4px auto 0;
   padding: 4px 10px;
-  background: Rgba(0, 0, 0, 0.45);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
+  border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 20px;
-  box-shadow: 0 2px 8px Rgba(0, 0, 0, 0.3);
-  backdrop-filter: Blur(4px);
+  background: rgb(0 0 0 / 45%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+  backdrop-filter: blur(4px);
 
   .carousel-nav-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     width: 22px;
     height: 22px;
-    background: Rgba(255, 255, 255, 0.08);
-    border: 1px solid Rgba(255, 255, 255, 0.15);
-    border-radius: 50%;
-    color: var(--white, #ffffff);
-    font-size: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
     padding: 0;
+    border: 1px solid rgb(255 255 255 / 15%);
+    border-radius: 50%;
+    background: rgb(255 255 255 / 8%);
+    color: var(--white, #fff);
+    font-size: 8px;
+    cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: Rgba(250, 204, 21, 0.2);
-      border-color: var(--yellow, #facc15);
+      background: rgb(250 204 21 / 20%);
       color: var(--yellow, #facc15);
+      border-color: var(--yellow, #facc15);
     }
 
     &:disabled {
@@ -209,54 +212,55 @@
 
     .carousel-dot {
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       padding: 3px 2px;
-      background: transparent;
       border: none;
+      background: transparent;
       cursor: pointer;
 
       .dot-indicator {
         display: block;
         width: 8px;
         height: 6px;
+        border: 1px solid rgb(255 255 255 / 15%);
         border-radius: 3px;
-        background: Rgba(255, 255, 255, 0.25);
-        border: 1px solid Rgba(255, 255, 255, 0.15);
+        background: rgb(255 255 255 / 25%);
       }
 
       &.active .dot-indicator {
         width: 18px;
         background: var(--yellow, #facc15);
-        border-color: Rgba(250, 204, 21, 0.8);
-        box-shadow: 0 0 8px Rgba(250, 204, 21, 0.6);
+        border-color: rgb(250 204 21 / 80%);
+        box-shadow: 0 0 8px rgb(250 204 21 / 60%);
       }
     }
   }
 
   .carousel-page-indicator {
     @include pixelated;
-    font-size: 8px;
+
+    padding: 0 4px;
     color: #cbd5e1;
+    font-size: 8px;
     white-space: nowrap;
     letter-spacing: 0.5px;
-    padding: 0 4px;
   }
 }
 
 .no-events-card {
-  grid-column: 1 / -1;
-  text-align: center;
   padding: 24px;
-  background: Rgba(18, 22, 34, 0.6);
-  border: 1px dashed Rgba(255, 255, 255, 0.1);
+  border: 1px dashed rgb(255 255 255 / 10%);
   border-radius: 10px;
+  background: rgb(18 22 34 / 60%);
   color: var(--gray, #94a3b8);
   font-size: 11px;
+  text-align: center;
+  grid-column: 1 / -1;
 
   .no-events-icon {
-    font-size: 24px;
     display: block;
+    font-size: 24px;
     margin-bottom: 6px;
   }
 }
@@ -268,24 +272,28 @@
 }
 
 .accordion-panel {
-  background: Rgba(18, 22, 34, 0.6);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 8px;
+  background: rgb(18 22 34 / 60%);
   overflow: visible;
 }
 
 .accordion-toggle {
-  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
   padding: 10px 14px;
-  background: transparent;
   border: none;
-  color: var(--white, #ffffff);
+  background: transparent;
+  color: var(--white, #fff);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
+
+  &:hover {
+    background: rgb(255 255 255 / 4%);
+  }
 
   .accordion-title-wrap {
     display: inline-flex;
@@ -296,27 +304,23 @@
 
     .emoji {
       display: inline-flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       line-height: 1;
       flex-shrink: 0;
     }
   }
 
-  &:hover {
-    background: Rgba(255, 255, 255, 0.04);
-  }
-
   .toggle-arrow {
-    font-size: 9px;
-    color: var(--gray, #94a3b8);
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    color: var(--gray, #94a3b8);
+    font-size: 9px;
   }
 }
 
 .accordion-body {
   padding: 12px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgb(255 255 255 / 6%);
 }

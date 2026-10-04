@@ -23,6 +23,7 @@ const FAIL_FEEDBACK_DELAY_SEC = 1
 const INITIAL_SPAWN_DELAY_SEC = 0.8
 const ICON_BOUNCE_Y_PX = -10
 const ICON_BOUNCE_DURATION_SEC = 1
+const DEFAULT_WILD_FISHING_LEVEL = 10 as const
 
 const DEFAULT_RARITY = 50
 const MS_PER_SECOND = 1000
@@ -62,7 +63,7 @@ const difficulty = computed<MinigameDifficulty>(() => {
   if (props.difficulty && props.difficulty in FISHING_DIFFICULTIES) {
     return props.difficulty
   }
-  return calculateFishingDifficulty(props.rarity || DEFAULT_RARITY, props.pokemon?.level || 10)
+  return calculateFishingDifficulty(props.rarity || DEFAULT_RARITY, props.pokemon?.level || DEFAULT_WILD_FISHING_LEVEL)
 })
 
 const diffConfig = computed(() => FISHING_DIFFICULTIES[difficulty.value])
@@ -349,31 +350,31 @@ const handleCloseModal = () => {
 
 .rhythm-container {
   position: relative;
-  width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 12px 8px 16px;
   align-items: center;
+  width: 100%;
+  padding: 12px 8px 16px;
 }
 
 .fishing-hint {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 12px;
-  background: Rgba(10, 132, 255, 0.1);
-  padding: 10px 16px;
-  border-radius: 16px;
-  border: 1px solid Rgba(10, 132, 255, 0.2);
   width: 100%;
+  padding: 10px 16px;
+  border: 1px solid Rgb(10 132 255 / 20%);
+  border-radius: 16px;
+  background: Rgb(10 132 255 / 10%);
+  margin-bottom: 12px;
 
   .fishing-text {
     width: 100%;
     text-align: center;
     p {
-      font-size: 11px;
-      color: #dfcbb5;
       margin: 0;
+      color: #dfcbb5;
+      font-size: 11px;
       span {
         color: #fef08a;
         font-weight: bold;
@@ -384,28 +385,29 @@ const handleCloseModal = () => {
 
 .stats-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  width: 100%;
-  justify-content: center;
   flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
 }
 
 .stat-pill {
   @include pixelated;
-  font-size: 9px;
-  color: var(--white);
-  background: Rgba(255, 255, 255, 0.05);
+
   padding: 6px 12px;
+  border: 1px solid Rgb(10 132 255 / 30%);
   border-radius: 12px;
-  border: 1px solid Rgba(10, 132, 255, 0.3);
+  background: Rgb(255 255 255 / 5%);
+  color: var(--white);
+  font-size: 9px;
   white-space: nowrap;
 }
 
 .rhythm-counter {
-  text-align: center;
-  font-size: 9px;
   color: #fff;
+  font-size: 9px;
+  text-align: center;
   letter-spacing: 1px;
 }
 
@@ -413,11 +415,11 @@ const handleCloseModal = () => {
   position: relative;
   width: 380px;
   height: 380px;
-  background: Rgba(0, 0, 0, 0.4);
+  border: 2px solid Rgb(10 132 255 / 20%);
   border-radius: 20px;
-  border: 2px solid Rgba(10, 132, 255, 0.2);
+  background: Rgb(0 0 0 / 40%);
   overflow: hidden;
-  box-shadow: inset 0 0 20px Rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 20px Rgb(0 0 0 / 80%);
 }
 
 .rhythm-note {
@@ -430,36 +432,37 @@ const handleCloseModal = () => {
   touch-action: none;
 
   .rhythm-circle {
+    @include pixelated;
+
+    position: relative;
+    z-index: calc(var(--z-map-floor) + 1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
-    background: Rgba(10, 132, 255, 0.2);
     border: 3px solid var(--blue, #0a84ff);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: Rgb(10 132 255 / 20%);
     color: #fff;
-    @include pixelated;
     font-size: 16px;
-    box-shadow: 0 0 15px Rgba(10, 132, 255, 0.4);
-    z-index: calc(var(--z-map-floor) + 1);
-    position: relative;
+    box-shadow: 0 0 15px Rgb(10 132 255 / 40%);
   }
 
   .rhythm-ring {
     position: absolute;
-    inset: 0;
-    border: 4px solid Rgba(10, 132, 255, 0.8);
+    border: 4px solid Rgb(10 132 255 / 80%);
     border-radius: 50%;
-    pointer-events: none;
     opacity: 0;
+    inset: 0;
+    pointer-events: none;
   }
 
   &.success .rhythm-circle {
-    background: Rgba(34, 197, 94, 0.2);
-    border-color: #22c55e;
+    background: Rgb(34 197 94 / 20%);
     transform: Scale(1.2);
-    box-shadow: 0 0 30px Rgba(34, 197, 94, 0.6);
+    border-color: #22c55e;
+    box-shadow: 0 0 30px Rgb(34 197 94 / 60%);
   }
 }
 
@@ -467,16 +470,16 @@ const handleCloseModal = () => {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: Translate(-50%, -50%);
-  font-size: 14px;
-  color: #ff4d4d;
-  text-shadow: 0 0 10px Rgba(255, 77, 77, 0.5);
-  background: Rgba(0, 0, 0, 0.9);
-  padding: 12px 24px;
-  border-radius: 12px;
-  border: 1px solid Rgba(255, 77, 77, 0.3);
   z-index: var(--z-map-spawns);
+  padding: 12px 24px;
+  border: 1px solid Rgb(255 77 77 / 30%);
+  border-radius: 12px;
+  background: Rgb(0 0 0 / 90%);
+  color: #ff4d4d;
+  font-size: 14px;
   text-align: center;
-  box-shadow: 0 4px 20px Rgba(0, 0, 0, 0.5);
+  transform: Translate(-50%, -50%);
+  text-shadow: 0 0 10px Rgb(255 77 77 / 50%);
+  box-shadow: 0 4px 20px Rgb(0 0 0 / 50%);
 }
 </style>

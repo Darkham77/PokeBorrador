@@ -3,13 +3,14 @@ import { ref } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { ItemId } from '@/data/inventory/itemIds'
 import type { PokemonType } from '@/data/battle/types'
+import type { PokemonGender } from '@/types/pokemon/pokemon'
 
 interface DockPokemon {
   uid: string
   id: number
   name: string
   level: number
-  gender: 'm' | 'f'
+  gender: PokemonGender
   tier: string
   tierColor: string
   passive: string

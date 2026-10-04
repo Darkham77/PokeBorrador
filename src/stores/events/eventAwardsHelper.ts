@@ -3,15 +3,12 @@ import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores'
 import type { PokemonCompetitionTrophy, PokemonCompetitionRank } from '@/types/pokemon/pokemon'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { GameStatKey } from '@/types/system/game'
+import { parseJsonSafe } from '@/logic/utils/jsonUtils'
 
 export function parseAwardPrizePayload(rawPrize: unknown): Record<string, unknown> | null { // open-record: Generic key-value data dictionary container
   if (!rawPrize) return null
   if (typeof rawPrize === 'string') {
-    try {
-      return JSON.parse(rawPrize) as Record<string, unknown> // open-record: Generic key-value data dictionary container
-    } catch {
-      return null
-    }
+    return parseJsonSafe<Record<string, unknown> | null>(rawPrize, null)
   }
   if (typeof rawPrize === 'object') {
     return rawPrize as Record<string, unknown> // open-record: Generic key-value data dictionary container

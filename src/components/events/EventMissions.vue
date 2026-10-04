@@ -134,14 +134,14 @@ const getMissionRewardItem = (mission: DaycareMission) => {
 
 .missions-grid {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 16px;
+  grid-template-columns: 1fr;
   
-  @media (min-width: 600px) {
+  @media (width >= 600px) {
     grid-template-columns: 1fr 1fr;
   }
   
-  @media (min-width: 950px) {
+  @media (width >= 950px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
 }

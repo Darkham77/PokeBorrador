@@ -2,29 +2,30 @@
 @use "@/styles/core/tools" as *;
 
 .debug-menu {
-  background: Rgba(15, 15, 25, 0.99);
-  border: 2px solid var(--yellow);
-  border-radius: 8px;
+  @include gpu-layer;
+
+  display: flex;
+  flex-direction: column;
   width: 340px;
   max-width: 90dvw;
   max-height: 500px;
-  display: flex;
-  flex-direction: column;
+  border: 2px solid var(--yellow);
+  border-radius: 8px;
+  background: Rgb(15 15 25 / 99%);
   overflow: hidden;
   pointer-events: all;
-  box-shadow: 0 15px 50px Rgba(0, 0, 0, 0.9);
+  box-shadow: 0 15px 50px Rgb(0 0 0 / 90%);
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
-  @include gpu-layer;
   margin-bottom: 12px;
 
   .debug-header {
-    background: Rgba(234, 179, 8, 0.15);
-    padding: 10px 16px;
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+    padding: 10px 16px;
+    background: Rgb(234 179 8 / 15%);
+    border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
     .icon {
       font-size: 14px;
@@ -33,41 +34,43 @@
 
     .title {
       @include pixelated;
-      font-size: 8px;
+
       color: var(--yellow);
+      font-size: 8px;
       flex: 1;
       letter-spacing: 0.5px;
     }
 
     .close-mini {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-      opacity: 0.5;
-      font-size: 12px;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       padding: 2px 6px;
+      border: none;
       border-radius: 4px;
+      background: none;
+      color: white;
+      font-size: 12px;
+      opacity: 0.5;
+      cursor: pointer;
 
       &:hover {
+        background: Rgb(255 255 255 / 10%);
         opacity: 1;
-        background: Rgba(255, 255, 255, 0.1);
       }
     }
   }
 
   .debug-scroll-area {
-    padding: 16px;
-    min-height: 0;
-    overflow-y: auto;
-    flex: 1;
     @include smooth-scroll;
+
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-height: 0;
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
   }
 }
 
@@ -83,8 +86,8 @@
   width: 100%;
 
   .debug-btn {
-    flex: 1;
     min-width: 0;
+    flex: 1;
   }
 }
 
@@ -93,27 +96,28 @@
   flex-direction: column;
   gap: 8px;
   padding: 10px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgb(255 255 255 / 8%);
   border-radius: 8px;
+  background: Rgb(255 255 255 / 3%);
 
   .section-label {
-    font-size: 7px;
-    color: var(--yellow);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     @include pixelated;
+
     display: flex;
     align-items: center;
     gap: 6px;
+    color: var(--yellow);
+    font-size: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 
     &::before {
-      content: '';
       display: inline-block;
       width: 4px;
       height: 4px;
-      background: var(--yellow);
       border-radius: 1px;
+      background: var(--yellow);
+      content: '';
     }
   }
 }
@@ -121,48 +125,55 @@
 .debug-btn {
   @include btn-vicio-base;
   @include btn-vicio-size('xs');
+
   height: 24px;
-  font-size: 7px;
-  text-align: center;
   padding: 0 6px;
-  white-space: nowrap;
   border-radius: 6px;
+  font-size: 7px;
   font-weight: normal;
+  text-align: center;
+  white-space: nowrap;
 
   &.kill-btn {
     @include btn-vicio-variant('danger', 'xs');
+
     border-radius: 6px;
   }
 
   &.heal-btn {
     @include btn-vicio-variant('success', 'xs');
+
     border-radius: 6px;
   }
 
   &.exp-btn {
     @include btn-vicio-variant('info', 'xs');
+
     width: 100%;
     border-radius: 6px;
   }
 
   &.pp-drain-btn {
     @include btn-vicio-variant('secondary', 'xs');
+
     width: 100%;
     border-radius: 6px;
   }
 
   &.catch-btn {
     @include btn-vicio-variant('primary', 'xs');
-    border-radius: 6px;
+
     height: 24px;
+    border-radius: 6px;
     font-size: 7px;
     font-weight: normal;
   }
 
   &.crit-catch-btn {
     @include btn-vicio-variant('warning', 'xs');
-    border-radius: 6px;
+
     height: 24px;
+    border-radius: 6px;
     font-size: 7px;
     font-weight: normal;
   }
@@ -170,43 +181,44 @@
 
 .btn-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 6px;
+  grid-template-columns: 1fr 1fr;
 }
 
 .btn-grid-4 {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 4px;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .mini-btn {
   @include btn-vicio-base;
   @include btn-vicio-size('xs');
+
   height: 24px;
-  font-size: 7px;
   padding: 0 6px;
+  border: 1px solid Rgb(255 255 255 / 15%);
   border-radius: 6px;
-  background: Rgba(20, 20, 30, 0.95);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  color: Rgba(255, 255, 255, 0.85);
-  box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.3);
+  background: Rgb(20 20 30 / 95%);
+  color: Rgb(255 255 255 / 85%);
+  font-size: 7px;
   font-weight: normal;
+  box-shadow: 0 2px 4px Rgb(0 0 0 / 30%);
   text-shadow: 1px 1px 0 #000;
 
   &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: Rgba(255, 255, 255, 0.35);
+    background: Rgb(255 255 255 / 12%);
     color: #fff;
+    border-color: Rgb(255 255 255 / 35%);
   }
 
   &.active {
-    background: var(--yellow) !important;
     border: 1px solid var(--yellow) !important;
+    background: var(--yellow) !important;
     color: #000 !important;
-    text-shadow: none !important;
     font-weight: normal !important;
-    box-shadow: 0 2px 1.5px Rgba(180, 83, 9, 0.99), 0 0 10px Rgba(250, 204, 21, 0.4) !important;
+    text-shadow: none !important;
+    box-shadow: 0 2px 1.5px Rgb(180 83 9 / 99%), 0 0 10px Rgb(250 204 21 / 40%) !important;
 
     &:hover:not(:disabled) {
       filter: Brightness(1.1);
@@ -220,8 +232,8 @@
 
 .swap-controls-triple {
   display: flex;
-  gap: 6px;
   align-items: center;
+  gap: 6px;
   width: 100%;
   height: 26px;
 }
@@ -230,10 +242,10 @@
   display: flex;
   align-items: center;
   height: 100%;
-  flex: 1.5;
-  background: Rgba(0, 0, 0, 0.5);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border: 1px solid Rgb(255 255 255 / 15%);
   border-radius: 6px;
+  background: Rgb(0 0 0 / 50%);
+  flex: 1.5;
   overflow: hidden;
 
   &:focus-within {
@@ -241,19 +253,20 @@
   }
 
   .swap-btn {
-    background: Rgba(255, 255, 255, 0.05);
-    border: none;
-    color: Rgba(255, 255, 255, 0.8);
-    cursor: pointer;
+    @include pixelated;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 24px;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    @include pixelated;
-    font-weight: normal;
     padding: 0;
+    border: none;
+    background: Rgb(255 255 255 / 5%);
+    color: Rgb(255 255 255 / 80%);
+    font-size: 10px;
+    font-weight: normal;
+    cursor: pointer;
     box-shadow: none;
     flex-shrink: 0;
 
@@ -264,41 +277,42 @@
   }
 
   .base-id-input {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    color: white;
     @include pixelated;
+
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: white;
     font-size: 8px;
     text-align: center;
-    min-width: 0;
     flex: 1;
     outline: none;
 
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
-      -webkit-appearance: none;
       margin: 0;
+      appearance: none;
     }
-    &[type=number] {
-      -moz-appearance: textfield;
+    &[type="number"] {
       appearance: textfield;
     }
   }
 }
 
 .swap-input-mini {
-  flex: 0.8;
+  @include pixelated;
+
   min-width: 0;
   height: 100%;
-  background: Rgba(0, 0, 0, 0.5);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border: 1px solid Rgb(255 255 255 / 15%);
   border-radius: 6px;
+  background: Rgb(0 0 0 / 50%);
   color: #fff;
-  text-align: center;
   font-size: 8px;
-  @include pixelated;
+  text-align: center;
+  flex: 0.8;
   outline: none;
 
   &:focus {
@@ -307,17 +321,18 @@
 }
 
 .swap-select-mini {
-  flex: 0.9;
+  @include pixelated;
+
   min-width: 0;
   height: 100%;
-  background: Rgba(0, 0, 0, 0.5);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border: 1px solid Rgb(255 255 255 / 15%);
   border-radius: 6px;
+  background: Rgb(0 0 0 / 50%);
   color: #fff;
   font-size: 7px;
-  @include pixelated;
-  cursor: pointer;
   text-align: center;
+  flex: 0.9;
+  cursor: pointer;
   outline: none;
 
   &:focus {
@@ -337,18 +352,19 @@
   margin-top: 4px;
 
   .debug-btn {
-    flex: 1;
     min-width: 0;
     height: 24px;
+    flex: 1;
     margin-top: 0;
   }
 }
 
 .debug-footer {
+  @include pixelated;
+
+  color: Rgb(250 204 21 / 60%);
   font-size: 6px;
   text-align: center;
-  color: Rgba(250, 204, 21, 0.6);
-  @include pixelated;
   padding-top: 4px;
   letter-spacing: 1px;
 }

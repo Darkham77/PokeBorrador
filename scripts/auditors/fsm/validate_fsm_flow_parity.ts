@@ -79,10 +79,12 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
       id: 'validate_fsm_flow_parity',
       name: 'FSM Flow Parity Validator',
       description: 'Secuencia de combate discrepante con el manual',
+      icon: '🔄',
       family: 'fsm',
       ruleIds: FSM_FLOW_PARITY_RULES,
+      packageName: 'FSM',
       ruleDescriptions: {
-        'fsm-flow-sequence-missing': 'Secuencia de eventos FSM ausente en código'
+        'fsm-flow-sequence-missing': 'Secuencia FSM ausente en código'
       },
       requiredFiles: [PARITY_MANUAL_PATH]
     });

@@ -216,7 +216,7 @@ function handlePillLeave(e: MouseEvent) {
         </div>
         <button
           v-if="isUnlocked(m.elo) && !isClaimed(m.id)"
-          class="btn-vicio-claim text-outline"
+          class="btn-vicio-claim"
           @click.stop="goToHomeRewards"
         >
           RECLAMAR EN INICIO

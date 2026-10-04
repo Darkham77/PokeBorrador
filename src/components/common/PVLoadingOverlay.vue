@@ -237,19 +237,20 @@ watch(() => props.icon, (newIcon) => {
 @use "@/styles/core/tools" as *;
 
 .loading-overlay-fixed {
+  @include gpu-layer;
+
   position: fixed;
-  inset: 0;
+  z-index: v-bind('Z_LAYERS.MAX');
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100dvw;
   height: 100dvh;
-  background: Rgba(7, 8, 14, 0.85);
-  backdrop-filter: Blur(15px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 20px;
-  z-index: v-bind('Z_LAYERS.MAX');
+  background: Rgb(7 8 14 / 85%);
+  inset: 0;
+  backdrop-filter: Blur(15px);
   box-sizing: border-box;
-  @include gpu-layer;
 
   &.is-critical {
     z-index: v-bind('Z_LAYERS.CRITICAL');
@@ -258,72 +259,73 @@ watch(() => props.icon, (newIcon) => {
 
 .loading-overlay-absolute {
   position: absolute;
-  inset: 0;
+  z-index: v-bind('Z_LAYERS.MAP_SPAWNS');
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
-  background: Rgba(7, 8, 14, 0.9);
-  backdrop-filter: Blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 15px;
-  z-index: v-bind('Z_LAYERS.MAP_SPAWNS');
-  box-sizing: border-box;
   border-radius: inherit;
+  background: Rgb(7 8 14 / 90%);
+  inset: 0;
+  backdrop-filter: Blur(8px);
+  box-sizing: border-box;
 }
 
 .pv-loading-card {
-  background: Rgba(15, 18, 32, 0.95);
-  border-radius: 24px;
+  @include gpu-layer;
+
   width: 100%;
   max-width: 420px;
   padding: 40px;
+  border-radius: 24px;
+  background: Rgb(15 18 32 / 95%);
   text-align: center;
   box-sizing: border-box;
-  @include gpu-layer;
 
   &.default {
-    border: 2px solid Rgba(59, 130, 246, 0.4);
-    box-shadow: 0 0 50px Rgba(59, 130, 246, 0.15),
-                inset 0 0 20px Rgba(59, 130, 246, 0.05);
+    border: 2px solid Rgb(59 130 246 / 40%);
+    box-shadow: 0 0 50px Rgb(59 130 246 / 15%),
+                inset 0 0 20px Rgb(59 130 246 / 5%);
 
     .loading-title { color: var(--yellow); }
     .spinner { border-top-color: var(--yellow); }
     .status-text { color: var(--yellow); }
-    .wifi-icon { filter: Drop-Shadow(0 0 15px Rgba(59, 130, 246, 0.5)); }
+    .wifi-icon { filter: Drop-Shadow(0 0 15px Rgb(59 130 246 / 50%)); }
   }
 
   &.error {
-    border: 2px solid Rgba(239, 68, 68, 0.4);
-    box-shadow: 0 0 50px Rgba(239, 68, 68, 0.2),
-                inset 0 0 20px Rgba(239, 68, 68, 0.1);
+    border: 2px solid Rgb(239 68 68 / 40%);
+    box-shadow: 0 0 50px Rgb(239 68 68 / 20%),
+                inset 0 0 20px Rgb(239 68 68 / 10%);
 
-    .loading-title { color: Rgba(239, 68, 68, 1); }
-    .spinner { border-top-color: Rgba(239, 68, 68, 1); }
-    .status-text { color: Rgba(239, 68, 68, 1); }
-    .wifi-icon { filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.5)); }
+    .loading-title { color: Rgb(239 68 68 / 100%); }
+    .spinner { border-top-color: Rgb(239 68 68 / 100%); }
+    .status-text { color: Rgb(239 68 68 / 100%); }
+    .wifi-icon { filter: Drop-Shadow(0 0 15px Rgb(239 68 68 / 50%)); }
   }
 
   &.warning {
-    border: 2px solid Rgba(245, 158, 11, 0.4);
-    box-shadow: 0 0 50px Rgba(245, 158, 11, 0.15),
-                inset 0 0 20px Rgba(245, 158, 11, 0.05);
+    border: 2px solid Rgb(245 158 11 / 40%);
+    box-shadow: 0 0 50px Rgb(245 158 11 / 15%),
+                inset 0 0 20px Rgb(245 158 11 / 5%);
 
-    .loading-title { color: Rgb(245, 158, 11); }
-    .spinner { border-top-color: Rgb(245, 158, 11); }
-    .status-text { color: Rgb(245, 158, 11); }
-    .wifi-icon { filter: Drop-Shadow(0 0 15px Rgba(245, 158, 11, 0.5)); }
+    .loading-title { color: Rgb(245 158 11); }
+    .spinner { border-top-color: Rgb(245 158 11); }
+    .status-text { color: Rgb(245 158 11); }
+    .wifi-icon { filter: Drop-Shadow(0 0 15px Rgb(245 158 11 / 50%)); }
   }
 
   &.purple {
-    border: 2px solid Rgba(168, 85, 247, 0.4);
-    box-shadow: 0 0 50px Rgba(168, 85, 247, 0.15),
-                inset 0 0 20px Rgba(168, 85, 247, 0.05);
+    border: 2px solid Rgb(168 85 247 / 40%);
+    box-shadow: 0 0 50px Rgb(168 85 247 / 15%),
+                inset 0 0 20px Rgb(168 85 247 / 5%);
 
-    .loading-title { color: Rgb(168, 85, 247); }
-    .spinner { border-top-color: Rgb(168, 85, 247); }
-    .status-text { color: Rgb(168, 85, 247); }
-    .wifi-icon { filter: Drop-Shadow(0 0 15px Rgba(168, 85, 247, 0.5)); }
+    .loading-title { color: Rgb(168 85 247); }
+    .spinner { border-top-color: Rgb(168 85 247); }
+    .status-text { color: Rgb(168 85 247); }
+    .wifi-icon { filter: Drop-Shadow(0 0 15px Rgb(168 85 247 / 50%)); }
   }
 }
 
@@ -337,27 +339,30 @@ watch(() => props.icon, (newIcon) => {
 }
 
 .loading-title {
+  @include pixelated;
+
   font-size: 15px;
   margin-top: 0;
   margin-bottom: 20px;
-  @include pixelated;
   letter-spacing: 1px;
 }
 
 .msg {
-  color: Rgba(255, 255, 255, 0.7);
+  @include pixelated;
+
+  color: Rgb(255 255 255 / 70%);
   font-size: 13px;
   line-height: 1.6;
   margin-top: 0;
   margin-bottom: 32px;
-  @include pixelated;
 }
 
 .card-body-content {
-  margin-bottom: 24px;
-  color: Rgba(255, 255, 255, 0.9);
-  font-size: 13px;
   @include pixelated;
+
+  color: Rgb(255 255 255 / 90%);
+  font-size: 13px;
+  margin-bottom: 24px;
 }
 
 .status-indicator {
@@ -371,31 +376,33 @@ watch(() => props.icon, (newIcon) => {
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid Rgba(255, 255, 255, 0.05);
+  border: 3px solid Rgb(255 255 255 / 5%);
   border-radius: 50%;
   will-change: transform;
 }
 
 .status-text {
+  @include pixelated;
+
   font-size: 10px;
   text-transform: uppercase;
-  @include pixelated;
 }
 
 .actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
   margin-top: 24px;
   margin-bottom: 12px;
-  width: 100%;
 }
 
 .footer {
+  @include pixelated;
+
+  color: Rgb(255 255 255 / 20%);
   font-size: 8px;
-  color: Rgba(255, 255, 255, 0.2);
   margin-top: 20px;
   margin-bottom: 0;
-  @include pixelated;
 }
 </style>

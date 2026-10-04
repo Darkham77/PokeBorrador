@@ -76,35 +76,35 @@ function getKoColorClass(koText: string) {
 }
 
 .ko-chance-badge {
-  font-size: $tooltip-badge-size;
-  text-transform: uppercase;
   padding: 1px 4px;
   border-radius: 3px;
+  font-size: $tooltip-badge-size;
   font-weight: bold;
+  text-transform: uppercase;
   
   &.ko-guaranteed {
+    border: 1px solid rgb(255 69 58 / 25%);
+    background: rgb(255 69 58 / 15%);
     color: #ff453a;
-    background: Rgba(255, 69, 58, 0.15);
-    border: 1px solid Rgba(255, 69, 58, 0.25);
-    text-shadow: 0 0 3px Rgba(255, 69, 58, 0.3);
+    text-shadow: 0 0 3px rgb(255 69 58 / 30%);
   }
   
   &.ko-high {
+    border: 1px solid rgb(255 159 10 / 25%);
+    background: rgb(255 159 10 / 15%);
     color: #ff9f0a;
-    background: Rgba(255, 159, 10, 0.15);
-    border: 1px solid Rgba(255, 159, 10, 0.25);
   }
 
   &.ko-medium {
+    border: 1px solid rgb(255 214 10 / 25%);
+    background: rgb(255 214 10 / 15%);
     color: #ffd60a;
-    background: Rgba(255, 214, 10, 0.15);
-    border: 1px solid Rgba(255, 214, 10, 0.25);
   }
 
   &.ko-low {
+    border: 1px solid rgb(48 209 88 / 25%);
+    background: rgb(48 209 88 / 10%);
     color: #30d158;
-    background: Rgba(48, 209, 88, 0.1);
-    border: 1px solid Rgba(48, 209, 88, 0.25);
   }
 }
 </style>

@@ -82,15 +82,15 @@ const getTypeEmoji = (type: string) => {
 }
 
 .filter-group {
-  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 15px;
 }
 
 .group-label {
-  font-size: 10px;
   color: var(--gray);
+  font-size: 10px;
   margin-bottom: 8px;
 }
 
@@ -102,18 +102,18 @@ const getTypeEmoji = (type: string) => {
 
 .tag-btn {
   padding: 6px 10px;
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.04);
+  background: rgb(255 255 255 / 4%);
   color: var(--gray);
   font-size: 8px;
   cursor: pointer;
   text-transform: capitalize;
 
   &.active {
-    border-color: var(--blue);
-    background: Rgba(10, 132, 255, 0.2);
+    background: rgb(10 132 255 / 20%);
     color: $white;
+    border-color: var(--blue);
   }
 }
 
@@ -124,20 +124,20 @@ const getTypeEmoji = (type: string) => {
 }
 
 .type-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 32px;
   height: 32px;
+  border: 1px solid rgb(255 255 255 / 6%);
   border-radius: 10px;
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  background: Rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgb(0 0 0 / 20%);
   font-size: 16px;
+  cursor: pointer;
 
   &.active {
+    background: rgb(0 122 255 / 20%);
     border-color: var(--blue);
-    background: Rgba(0, 122, 255, 0.2);
   }
 }
 </style>

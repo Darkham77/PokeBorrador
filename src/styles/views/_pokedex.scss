@@ -1,15 +1,16 @@
 @use "@/styles/core/tools" as *;
 
 .pokedex-view {
-  padding: 0;
-  background: transparent;
-  min-height: 0;
+  @include gpu-layer;
+
+  z-index: var(--z-base);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  @include gpu-layer;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
   pointer-events: auto !important;
-  z-index: var(--z-base);
 
   @include responsive(950px) {
     gap: 10px;
@@ -18,6 +19,7 @@
 
 .pokedex-header {
   @include shell-premium(Rgba(15, 23, 42, 0.95));
+
   padding: 20px 30px;
   border-radius: 24px;
   
@@ -27,10 +29,11 @@
   }
   
   .header-content {
+
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     gap: 16px;
 
     @include responsive(950px) {
@@ -43,14 +46,14 @@
   .title-group {
     h1 {
       @include pixelated;
-      font-size: 24px;
-      color: var(--white);
-      margin: 0 0 12px 0;
+      @include pixelated;
+
+      margin: 0 0 12px;
       background: Linear-Gradient(to bottom, var(--white), var(--gray));
-      -webkit-background-clip: text;
+      color: var(--white);
+      font-size: 24px;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      @include pixelated;
 
       @include responsive(950px) {
         font-size: 18px;
@@ -58,13 +61,14 @@
       }
     }
     .subtitle {
+      @include pixelated;
+
+      margin: 0;
       color: var(--gray);
       font-size: 8px;
-      letter-spacing: 4px;
-      margin: 0;
-      text-transform: uppercase;
       font-weight: 700;
-      @include pixelated;
+      letter-spacing: 4px;
+      text-transform: uppercase;
 
       @include responsive(950px) {
         letter-spacing: 2px;
@@ -74,85 +78,91 @@
 }
 
 .stats-grid {
+
   display: flex;
   gap: 20px;
 
   @include responsive(950px) {
+    justify-content: center;
     gap: 12px;
     width: 100%;
-    justify-content: center;
   }
 
   .stat-card {
-    background: Rgba(255, 255, 255, 0.03);
-    padding: 12px 20px;
-    border-radius: 16px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+    @include will-animate(transform, background-color);
+
     display: flex;
     flex-direction: column;
     align-items: center;
     min-width: 110px;
-    @include will-animate(transform, background-color);
+    padding: 12px 20px;
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: 16px;
+    background: Rgb(255 255 255 / 3%);
     
 
     &:hover {
-      background: Rgba(255, 255, 255, 0.08);
+      background: Rgb(255 255 255 / 8%);
       transform: Translatey(-2px);
-      border-color: Rgba(255, 255, 255, 0.1);
+      border-color: Rgb(255 255 255 / 10%);
     }
 
     .stat-label {
-      font-size: 8px;
-      color: var(--gray);
-      margin-bottom: 8px;
       @include pixelated;
+
+      color: var(--gray);
+      font-size: 8px;
+      margin-bottom: 8px;
     }
     span.stat-value {
+      @include pixelated;
+
+      color: var(--white);
       font-size: 24px;
       font-weight: 700;
-      color: var(--white);
-      @include pixelated;
       
-      small { font-size: 8px; color: var(--gray); margin-left: 4px; }
+      small { color: var(--gray); font-size: 8px; margin-left: 4px; }
     }
 
     &.highlight {
-      background: Rgba(255, 184, 0, 0.05);
-      border-color: Rgba(255, 184, 0, 0.2);
+      background: Rgb(255 184 0 / 5%);
+      border-color: Rgb(255 184 0 / 20%);
       
       span.stat-value { 
         color: var(--yellow); 
-        text-shadow: 0 0 15px Rgba(255, 184, 0, 0.3); 
+        text-shadow: 0 0 15px Rgb(255 184 0 / 30%); 
       }
     }
   }
 }
 
 .pokedex-grid {
+
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   padding-bottom: 120px;
 
   @include responsive(950px) {
-    padding-bottom: 100px;
-    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
     gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    padding-bottom: 100px;
   }
 }
 
 .pdx-pokemon-card {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 110px;
   @include premium-card-hover($blue, 1.02, -4px);
-  width: 100%;
   @include card-premium;
-  padding: 12px;
-  cursor: pointer;
+
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 110px;
+  cursor: pointer;
 
   &:hover:not(.is-unseen) {
     & .pdx-pokemon-sprite { @include pokemon-sprite-hover-standard; }
@@ -170,26 +180,27 @@
     position: absolute;
     top: 10px;
     left: 12px;
-    font-size: 11px;
-    color: Rgba(255, 255, 255, 0.2);
+    color: Rgb(255 255 255 / 20%);
     font-family: 'VT323', monospace;
+    font-size: 11px;
   }
 
   .pdex-sprite-container {
+    position: relative;
+    z-index: var(--z-base);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 75px;
     height: 75px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     margin-top: 4px;
     margin-bottom: 2px;
-    z-index: var(--z-base);
-    position: relative;
 
     .pdx-pokemon-sprite {
+      @include pokemon-sprite-base-standard;
+
       width: 100%;
       height: 100%;
-      @include pokemon-sprite-base-standard;
       
       &:not(.silhouette) {
         will-change: transform, filter, opacity;
@@ -202,29 +213,30 @@
     }
 
     .unknown-placeholder {
-      font-size: 32px;
-      color: Rgba(255, 255, 255, 0.08);
       @include pixelated;
-      text-shadow: 0 0 15px Rgba(255, 255, 255, 0.05);
+
+      color: Rgb(255 255 255 / 8%);
+      font-size: 32px;
+      text-shadow: 0 0 15px Rgb(255 255 255 / 5%);
     }
   }
 
   .card-footer {
-    width: 100%;
+    z-index: var(--z-base);
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
     min-height: 20px;
     margin-bottom: 4px;
-    z-index: var(--z-base);
 
     .pdx-pokemon-name {
+      @include pixelated;
+
       color: var(--gray);
       font-size: 8px;
-      @include pixelated;
-      text-transform: uppercase;
       text-align: center;
-      
+      text-transform: uppercase;
       letter-spacing: 0.5px;
     }
   }

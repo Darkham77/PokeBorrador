@@ -1,6 +1,6 @@
 <template>
   <svg
-    style="visibility: hidden; position: absolute;"
+    style=" position: absolute;visibility: hidden;"
     width="0"
     height="0"
     xmlns="http://www.w3.org/2000/svg"

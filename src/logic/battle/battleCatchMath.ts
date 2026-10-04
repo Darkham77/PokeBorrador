@@ -1,8 +1,21 @@
 import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages, CatchRateResult } from './battleMathTypes.ts'
-const CATCH_MATH_65535_MAX = 65535
-const CATCH_MATH_256_MAX = 256
-const CATCH_MATH_255_MAX = 255
-import { getEffectiveStatPure } from './battleMath.ts'
+const CATCH_MATH_65535_MAX = 65535;
+const CATCH_MATH_256_MAX = 256;
+const CATCH_MATH_255_MAX = 255;
+const POKEDEX_CRITICAL_THRESHOLDS = {
+  VERY_LOW: 15,
+  LOW: 50,
+  MEDIUM: 100,
+  HIGH: 150,
+  VERY_HIGH: 200,
+} as const;
+const CATCH_MATH_FALLBACK_HP = 10;
+const DEFAULT_FALLBACK_CATCH_RATE = 45;
+const SHAKE_POWER_EXPONENT = 0.25;
+const ESCAPE_BASE_MULTIPLIER = 32;
+const ESCAPE_ATTEMPT_BONUS = 30;
+
+import { getEffectiveStatPure } from './battleMath.ts';
 
 import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import type { ItemId } from '@/data/inventory/items';
@@ -35,12 +48,12 @@ const BALL_BEHAVIORS: Partial<Record<ItemId, { guaranteed?: boolean, mult?: numb
 }
 
 export function getPokedexCriticalFactor(pokedexCount: number): number {
-  if (pokedexCount < 15) return 0
-  if (pokedexCount < 50) return 0.5
-  if (pokedexCount < 100) return 1.0
-  if (pokedexCount < 150) return 1.5
-  if (pokedexCount < 200) return 2.0
-  return 2.5
+  if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.VERY_LOW) return 0;
+  if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.LOW) return 0.5;
+  if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.MEDIUM) return 1.0;
+  if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.HIGH) return 1.5;
+  if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.VERY_HIGH) return 2.0;
+  return 2.5;
 }
 
 export function calculateCriticalCaptureThreshold(a: number, pokedexCount: number): number {
@@ -114,10 +127,10 @@ export function calculateCatchRatePure(
   }
 
   const ballMult = resolveBallMultiplier(rawBallType, pokemon, ctx);
-  const currenthp = pokemon.hp ?? 10;
-  const maxHp = pokemon.maxHp ?? 10;
+  const currenthp = pokemon.hp ?? CATCH_MATH_FALLBACK_HP;
+  const maxHp = pokemon.maxHp ?? CATCH_MATH_FALLBACK_HP;
   const hpFactor = (3 * maxHp - 2 * currenthp) / (3 * maxHp);
-  const catchRate = pokemon.catchRate ?? 45;
+  const catchRate = pokemon.catchRate ?? DEFAULT_FALLBACK_CATCH_RATE;
 
   const statusMult = resolveStatusMultiplier(pokemon.status);
   const eventBonus = eventCatchMult - 1;
@@ -132,7 +145,7 @@ export function calculateCatchRatePure(
   }
 
   const finalRate = Math.max(1, rawRate);
-  const b = Math.floor(CATCH_MATH_65535_MAX * Math.pow(finalRate / CATCH_MATH_255_MAX, 0.25));
+  const b = Math.floor(CATCH_MATH_65535_MAX * Math.pow(finalRate / CATCH_MATH_255_MAX, SHAKE_POWER_EXPONENT));
 
   const pokedexCount = ctx.pokedexCount ?? 0;
   const ccThreshold = calculateCriticalCaptureThreshold(finalRate, pokedexCount);
@@ -202,7 +215,7 @@ export function calculateEscapeChancePure(
   }
 
   const enemyQuarter = Math.max(1, Math.floor(safeESpe / 4))
-  const f = Math.floor((pSpe * 32) / enemyQuarter) + 30 * attempts
+  const f = Math.floor((pSpe * ESCAPE_BASE_MULTIPLIER) / enemyQuarter) + ESCAPE_ATTEMPT_BONUS * attempts
   if (f >= CATCH_MATH_256_MAX) {
     return true
   }

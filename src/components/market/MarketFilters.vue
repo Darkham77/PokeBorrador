@@ -187,12 +187,13 @@ const resetFilters = () => {
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
+
 .market-filters {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 14px;
   margin: 20px;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 3%);
   margin-bottom: 16px;
 }
 
@@ -212,72 +213,73 @@ const resetFilters = () => {
 
 .label {
   @include pixelated;
-  font-size: 8px;
-  color: var(--blue-light);
+
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: var(--blue-light);
+  font-size: 8px;
   line-height: 1.35;
 
   .emoji {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     font-size: 9px;
     line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 }
 
 .arrow {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   color: var(--gray);
   font-size: 9px;
   line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .mode-switch {
   display: flex;
-  background: Rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-  padding: 3px;
   gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgb(0 0 0 / 30%);
 }
 
 .mode-switch button {
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 5px;
-  line-height: 1.35;
   padding: 4px 10px;
-  font-size: 9px;
-  border-radius: 7px;
   border: 1px solid transparent;
-  cursor: pointer;
+  border-radius: 7px;
   background: transparent;
   color: var(--gray);
+  font-size: 9px;
+  line-height: 1.35;
+  cursor: pointer;
 
   .emoji {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     font-size: 10px;
     line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 }
 
 .mode-switch button.active {
   background: var(--blue);
   color: $white;
-  border-color: #000000;
+  border-color: #000;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .context-label {
-  font-size: 9px;
   color: var(--gray);
+  font-size: 9px;
   opacity: 0.6;
 }
 
@@ -288,9 +290,9 @@ const resetFilters = () => {
 .search-input {
   width: 100%;
   padding: 10px 14px;
-  background: Rgba(0, 0, 0, 0.4);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 8px;
+  background: rgb(0 0 0 / 40%);
   color: $white;
   font-size: 10px;
   outline: none;
@@ -302,24 +304,24 @@ const resetFilters = () => {
 }
 
 .filter-body {
-  border-top: 1px solid Rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgb(255 255 255 / 6%);
   padding-top: 14px;
 }
 
 .filter-group {
-  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 15px;
 }
 
 .group-header {
-  font-size: 10px;
-  color: var(--yellow);
-  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--yellow);
+  font-size: 10px;
+  margin-bottom: 8px;
 
   .price-title {
     display: inline-flex;
@@ -341,8 +343,8 @@ const resetFilters = () => {
 }
 
 .group-label {
-  font-size: 10px;
   color: var(--gray);
+  font-size: 10px;
   margin-bottom: 8px;
 }
 
@@ -354,9 +356,9 @@ const resetFilters = () => {
 
 .tag-btn {
   padding: 6px 10px;
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.04);
+  background: rgb(255 255 255 / 4%);
   color: var(--gray);
   font-size: 8px;
   cursor: pointer;
@@ -364,20 +366,20 @@ const resetFilters = () => {
 }
 
 .tag-btn.active {
-  border-color: var(--blue);
-  background: Rgba(10, 132, 255, 0.2);
+  background: rgb(10 132 255 / 20%);
   color: $white;
+  border-color: var(--blue);
 }
 
 .reset-btn {
   width: 100%;
-  margin-top: 15px;
   padding: 10px;
   border: none;
-  color: var(--gray);
-  background: Rgba(255, 255, 255, 0.03);
   border-radius: 12px;
+  background: rgb(255 255 255 / 3%);
+  color: var(--gray);
   font-size: 11px;
+  margin-top: 15px;
   cursor: pointer;
 }
 </style>

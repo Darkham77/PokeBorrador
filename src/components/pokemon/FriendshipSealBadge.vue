@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import { gsap } from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
+import { DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay'
 import type { ComponentPillSize } from '@/types/system/game'
 
 interface Props {
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  friendship: 70,
+  friendship: DEFAULT_FRIENDSHIP_VALUE,
   size: 'md',
   showTooltip: true,
 })
@@ -128,18 +129,18 @@ function onMouseLeave() {
 
 .friendship-seal-badge {
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   cursor: pointer;
   user-select: none;
   transform-origin: center center;
 
   .seal-icon {
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     line-height: 1;
-    filter: Drop-Shadow(0 1px 2px Rgba(0, 0, 0, 0.8));
+    filter: Drop-Shadow(0 1px 2px Rgb(0 0 0 / 80%));
   }
 
   // Sizes
@@ -161,11 +162,11 @@ function onMouseLeave() {
   }
 
   &.tier-radiant_prism .seal-icon {
-    filter: Drop-Shadow(0 0 4px Rgba(217, 70, 239, 0.8)) Drop-Shadow(0 1px 2px Rgba(0, 0, 0, 0.8));
+    filter: Drop-Shadow(0 0 4px Rgb(217 70 239 / 80%)) Drop-Shadow(0 1px 2px Rgb(0 0 0 / 80%));
   }
 
   &.tier-best_friends .seal-icon {
-    filter: Drop-Shadow(0 0 5px Rgba(250, 204, 21, 0.9)) Drop-Shadow(0 1px 2px Rgba(0, 0, 0, 0.8));
+    filter: Drop-Shadow(0 0 5px Rgb(250 204 21 / 90%)) Drop-Shadow(0 1px 2px Rgb(0 0 0 / 80%));
   }
 }
 </style>

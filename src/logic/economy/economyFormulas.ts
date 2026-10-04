@@ -24,6 +24,10 @@ export const HEAL_COST_TIER_MULTIPLIERS: Record<string, number> = {
   'F': 1
 };
 
+const ROCKET_HEAL_BASE_PRICE = 20 as const;
+const ROCKET_HEAL_PRICE_PER_LEVEL = 3 as const;
+const DEFAULT_FALLBACK_MOVE_PP = 20 as const;
+
 /**
  * Calculates the individual healing cost for a single Pokemon.
  */
@@ -31,7 +35,7 @@ export function calculateIndividualHealCost(pokemon: Pokemon, trainerLevel: numb
   if (playerClass !== 'rocket') return 0;
   
   const tierInfo = getPokemonTier(pokemon);
-  const basePrice = 20 + (trainerLevel * 3);
+  const basePrice = ROCKET_HEAL_BASE_PRICE + (trainerLevel * ROCKET_HEAL_PRICE_PER_LEVEL);
   const multiplier = HEAL_COST_TIER_MULTIPLIERS[tierInfo.tier] || 1;
   
   return Math.floor(basePrice * multiplier);
@@ -43,7 +47,7 @@ export function calculateIndividualHealCost(pokemon: Pokemon, trainerLevel: numb
 export function pokemonNeedsHealing(p: Pokemon): boolean {
   const isDamaged = p.hp < p.maxHp;
   const hasStatus = !!p.status;
-  const needsPP = p.moves?.some(m => m && m.pp < (m.maxPP || 20)) || false;
+  const needsPP = p.moves?.some(m => m && m.pp < (m.maxPP || DEFAULT_FALLBACK_MOVE_PP)) || false;
   
   return isDamaged || hasStatus || needsPP;
 }

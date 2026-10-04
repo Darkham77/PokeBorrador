@@ -112,54 +112,59 @@ const handlePanelClick = (event: Event) => {
 
 .trainer-lv {
   @include pixelated;
-  font-size: 8px;
+
   color: var(--gray);
+  font-size: 8px;
   margin-top: 2px;
   
   span { color: var(--yellow); }
 }
+
 .exp-bar-container {
-  margin-top: 5px;
-  background: Rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  height: 5px;
   width: 140px;
+  height: 5px;
+  border-radius: 10px;
+  background: Rgb(255 255 255 / 10%);
+  margin-top: 5px;
   overflow: hidden;
 }
 
 .exp-bar-fill {
   height: 100%;
-  background: Linear-Gradient(90deg, Rgba(199, 125, 255, 1), Rgba(155, 77, 202, 1));
   border-radius: 10px;
+  background: Linear-Gradient(90deg, Rgb(199 125 255 / 100%), Rgb(155 77 202 / 100%));
   
 }
 
 .class-label {
-  display: none;
-  margin-top: 4px;
-  font-size: 8px;
   @include pixelated;
+
+  display: none;
+  font-size: 8px;
+  margin-top: 4px;
 }
+
 .pointer-cursor { cursor: pointer; }
 
 .alert-badge {
+  @include pixelated;
+
   position: absolute;
   top: -2px;
   right: -2px;
-  background: Rgba(239, 68, 68, 1);
-  color: white;
+  z-index: var(--z-base);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 18px;
   height: 18px;
+  border: 2px solid var(--white);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  @include pixelated;
+  background: Rgb(239 68 68 / 100%);
+  color: white;
   font-size: 8px;
   font-weight: bold;
-  border: 2px solid var(--white);
-  box-shadow: 0 0 10px Rgba(239, 68, 68, 0.5);
-  z-index: var(--z-base);
+  box-shadow: 0 0 10px Rgb(239 68 68 / 50%);
 }
 
 

@@ -86,12 +86,13 @@ onUnmounted(() => {
 
 .retro-btn {
   @include pixelated;
-  font-size: 8px;
+
   padding: 8px 12px;
+  border: 2px solid rgb(255 255 255 / 10%);
   border-radius: 6px;
-  border: 2px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 5%);
   color: var(--white);
+  font-size: 8px;
   cursor: pointer;
 
   &:disabled {
@@ -108,21 +109,23 @@ onUnmounted(() => {
 
   .timer-box {
     .label {
-      display: block;
-      font-size: 7px;
-      color: #94a3b8;
-      margin-bottom: 3px;
       @include pixelated;
+
+      display: block;
+      color: #94a3b8;
+      font-size: 7px;
+      margin-bottom: 3px;
     }
     .value {
       @include pixelated;
-      font-size: 8px;
+
       color: #f87171;
-      text-shadow: 0 0 6px Rgba(248, 113, 113, 0.4);
+      font-size: 8px;
+      text-shadow: 0 0 6px rgb(248 113 113 / 40%);
 
       &.upcoming-value {
         color: #93c5fd;
-        text-shadow: 0 0 6px Rgba(147, 197, 253, 0.4);
+        text-shadow: 0 0 6px rgb(147 197 253 / 40%);
       }
     }
   }
@@ -135,32 +138,34 @@ onUnmounted(() => {
   
   .upcoming-badge {
     @include pixelated;
-    font-size: 8px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    background: Rgba(59, 130, 246, 0.15);
-    border: 1px solid #60a5fa;
-    color: #60a5fa;
-    text-shadow: 0 0 8px Rgba(59, 130, 246, 0.4);
+
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    padding: 6px 12px;
+    border: 1px solid #60a5fa;
+    border-radius: 6px;
+    background: rgb(59 130 246 / 15%);
+    color: #60a5fa;
+    font-size: 8px;
+    text-shadow: 0 0 8px rgb(59 130 246 / 40%);
   }
 
   .active-badge {
     @include pixelated;
-    font-size: 8px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    background: Rgba(34, 197, 94, 0.18);
-    border: 1.5px solid #4ade80;
-    color: #4ade80;
-    font-weight: bold;
-    text-shadow: 0 0 8px Rgba(74, 222, 128, 0.6);
-    box-shadow: 0 0 10px Rgba(74, 222, 128, 0.25);
+
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    padding: 6px 12px;
+    border: 1.5px solid #4ade80;
+    border-radius: 6px;
+    background: rgb(34 197 94 / 18%);
+    color: #4ade80;
+    font-size: 8px;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgb(74 222 128 / 60%);
+    box-shadow: 0 0 10px rgb(74 222 128 / 25%);
   }
 }
 </style>

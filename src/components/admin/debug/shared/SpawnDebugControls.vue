@@ -16,37 +16,42 @@ const debugStore = useDebugStore()
 
 const DEFAULT_SHINY_RATE = 3000
 const PRESET_SHINY_ALWAYS_RATE = 1
+const MASUDA_METHOD_SHINY_RATE = 512
+const PRESET_PERCENT_TEN = 10
+const PRESET_PERCENT_TWENTY = 20
+const PRESET_PERCENT_FIFTY = 50
+const PRESET_PERCENT_EIGHTY = 80
 
 const SHINY_PRESETS: readonly DebugPresetOption[] = [
   { label: '✨ 100% (1/1)', value: 1, tooltip: '100% probabilidad Shiny garantizada' },
   { label: '1% (1/100)', value: 100, tooltip: '1% probabilidad Shiny (1 en 100)' },
-  { label: 'Masuda (1/512)', value: 512, tooltip: 'Ratio Método Masuda (1 en 512)' }
+  { label: 'Masuda (1/512)', value: MASUDA_METHOD_SHINY_RATE, tooltip: 'Ratio Método Masuda (1 en 512)' }
 ]
 
 const PERCENT_STANDARD_PRESETS: readonly DebugPresetOption[] = [
   { label: '0%', value: 0 },
-  { label: '50%', value: 50 },
+  { label: '50%', value: PRESET_PERCENT_FIFTY },
   { label: '100%', value: 100 }
 ]
 
 const RIVAL_PRESETS: readonly DebugPresetOption[] = [
   { label: '0%', value: 0 },
-  { label: '10%', value: 10 },
-  { label: '50%', value: 50 },
+  { label: '10%', value: PRESET_PERCENT_TEN },
+  { label: '50%', value: PRESET_PERCENT_FIFTY },
   { label: '100%', value: 100 }
 ]
 
 const GUARDIAN_PRESETS: readonly DebugPresetOption[] = [
   { label: '0%', value: 0 },
-  { label: '50%', value: 50 },
-  { label: '80%', value: 80 },
+  { label: '50%', value: PRESET_PERCENT_FIFTY },
+  { label: '80%', value: PRESET_PERCENT_EIGHTY },
   { label: '100%', value: 100 }
 ]
 
 const DEFENDER_PRESETS: readonly DebugPresetOption[] = [
   { label: '0%', value: 0 },
-  { label: '20%', value: 20 },
-  { label: '50%', value: 50 },
+  { label: '20%', value: PRESET_PERCENT_TWENTY },
+  { label: '50%', value: PRESET_PERCENT_FIFTY },
   { label: '100%', value: 100 }
 ]
 
@@ -256,15 +261,15 @@ const activeOverridesSummary = computed(() => {
 }
 
 .reset-all-btn {
-  background: Rgba(34, 197, 94, 0.1);
   border: 1px dashed var(--green);
+  background: rgb(34 197 94 / 10%);
   color: var(--green);
   margin-top: 4px;
 
   &:hover {
-    background: Rgba(34, 197, 94, 0.2);
-    border-style: solid;
+    background: rgb(34 197 94 / 20%);
     color: white;
+    border-style: solid;
   }
 }
 
@@ -274,7 +279,7 @@ const activeOverridesSummary = computed(() => {
 }
 
 .clean-summary {
-  color: Rgba(148, 163, 184, 0.8) !important;
+  color: rgb(148 163 184 / 80%) !important;
   font-size: 7px !important;
 }
 </style>

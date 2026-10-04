@@ -151,11 +151,11 @@ const close = () => {
 }
 
 .target-info {
+  color: rgb(255 255 255 / 60%);
   font-size: 13px;
-  color: Rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
   text-align: center;
   margin-bottom: 16px;
-  line-height: 1.4;
 }
 
 .move-list {
@@ -177,20 +177,21 @@ const close = () => {
 
 .maxed-label {
   @include pixelated;
+
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: Translate(-50%, -50%);
+  z-index: calc(var(--z-map-floor) + 1);
+  padding: 6px 14px;
+  border: 1px solid rgb(255 214 10 / 40%);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 85%);
+  color: var(--yellow);
   font-size: 11px;
   font-weight: bold;
-  color: var(--yellow);
+  transform: translate(-50%, -50%);
   pointer-events: none;
-  background: Rgba(0, 0, 0, 0.85);
-  padding: 6px 14px;
-  border-radius: 8px;
-  border: 1px solid Rgba(255, 214, 10, 0.4);
-  box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.5);
-  z-index: calc(var(--z-map-floor) + 1);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 50%);
   letter-spacing: 0.5px;
 }
 </style>

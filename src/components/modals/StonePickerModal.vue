@@ -180,8 +180,8 @@ const getPokemonName = (id: string) => {
 }
 
 .stone-help {
+  color: Rgb(255 255 255 / 50%);
   font-size: 13px;
-  color: Rgba(255, 255, 255, 0.5);
   text-align: center;
   margin-bottom: 24px;
   
@@ -201,10 +201,18 @@ const getPokemonName = (id: string) => {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
   padding: 12px;
+  border: 1px solid Rgb(255 255 255 / 6%);
+  border-radius: 16px;
+  background: Rgb(255 255 255 / 3%);
+
+  &:not(.disabled):hover {
+    background: Rgb(251 191 36 / 10%);
+    transform: Translatex(4px);
+    border-color: var(--yellow);
+    
+    .stone-name { color: var(--yellow); }
+  }
   
 
   &.disabled {
@@ -212,29 +220,22 @@ const getPokemonName = (id: string) => {
     will-change: transform, filter, opacity;
   filter: Grayscale(1);
   }
-
-  &:not(.disabled):hover {
-    background: Rgba(251, 191, 36, 0.1);
-    border-color: var(--yellow);
-    transform: Translatex(4px);
-    
-    .stone-name { color: var(--yellow); }
-  }
 }
 
 .stone-sprite-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 44px;
   height: 44px;
-  background: Rgba(0, 0, 0, 0.2);
   border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: Rgb(0 0 0 / 20%);
   
   .stone-sprite {
+    @include sprite-render;
+
     width: 36px;
     height: 36px;
-    @include sprite-render;
   }
   
   .fallback-icon { font-size: 24px; }
@@ -243,29 +244,29 @@ const getPokemonName = (id: string) => {
 .stone-details {
   flex: 1;
   .stone-name {
-    font-weight: 700;
-    font-size: 14px;
     color: white;
+    font-size: 14px;
+    font-weight: 700;
     
   }
   .evo-target {
+    color: Rgb(255 255 255 / 30%);
     font-size: 11px;
-    color: Rgba(255, 255, 255, 0.3);
     margin-top: 2px;
   }
 }
 
 .use-btn-vicio {
-  background: Rgba(251, 191, 36, 0.15);
-  border: 1px solid Rgba(251, 191, 36, 0.3);
-  color: var(--yellow);
   @include pixelated;
-  font-size: 8px;
+  @include pixelated;
+
   padding: 10px 14px;
+  border: 1px solid Rgb(251 191 36 / 30%);
   border-radius: 8px;
+  background: Rgb(251 191 36 / 15%);
+  color: var(--yellow);
+  font-size: 8px;
   cursor: pointer;
-  
-  @include pixelated;
 
   &:hover:not(:disabled) {
     background: var(--yellow);
@@ -274,8 +275,8 @@ const getPokemonName = (id: string) => {
   }
 
   &:disabled {
-    cursor: not-allowed;
     opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 </style>

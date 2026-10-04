@@ -66,15 +66,15 @@ const CURE_STATUS_MESSAGES: Record<string, string> = {
 };
 
 const RADIX_DECIMAL = 10 as const;
-const DEFAULT_FALLBACK_HP = 0 as const;
+const SHOWDOWN_PARSED_FALLBACK_HP = 0 as const;
 
 function parseShowdownHp(hpString: string, currentMaxHp: number): number {
   const [hpRatio] = hpString.trim().split(' ');
-  if (!hpRatio) return DEFAULT_FALLBACK_HP;
+  if (!hpRatio) return SHOWDOWN_PARSED_FALLBACK_HP;
 
   const hpParts = hpRatio.split('/');
   const parsedHp = parseInt(hpParts[0] || '0', RADIX_DECIMAL);
-  if (isNaN(parsedHp)) return DEFAULT_FALLBACK_HP;
+  if (isNaN(parsedHp)) return SHOWDOWN_PARSED_FALLBACK_HP;
 
   if (hpParts[1]) {
     const parsedMax = parseInt(hpParts[1], RADIX_DECIMAL);

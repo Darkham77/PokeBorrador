@@ -13,6 +13,7 @@
 import type { Pokemon, StatusClearTarget } from '../../types/pokemon/pokemon.ts';
 import type { ItemEffectResult } from '../../types/inventory/items.ts';
 import { calculateTotalBaseStats, calculateTotalIVs, calculateRocketSellPriceRaw } from '../pokemon/statsMath.ts';
+import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts';
 
 // ── Target Validation ─────────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ export function restorePPPure(
 
   for (const m of moves) {
     if (!m) continue;
-    const max = m.maxPP || 35;
+    const max = m.maxPP || DEFAULT_MAX_PP_FALLBACK;
     if (m.pp < max) {
       const prev = m.pp;
       const newPP = Math.min(max, (m.pp || 0) + amount);

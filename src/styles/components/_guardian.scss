@@ -20,27 +20,28 @@
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  pointer-events: auto !important;
-  background: $black !important;
-  border-radius: 8px !important;
-  padding: 4px !important;
-  border: 1.5px solid Rgba(255, 255, 255, 0.3) !important;
   width: auto !important;
   height: auto !important;
-  box-shadow: 0 4px 15px Rgba(0,0,0,0.6) !important;
+  padding: 4px !important;
+  border: 1.5px solid Rgb(255 255 255 / 30%) !important;
+  border-radius: 8px !important;
+  background: $black !important;
+  pointer-events: auto !important;
+  box-shadow: 0 4px 15px Rgb(0 0 0 / 60%) !important;
   cursor: pointer !important;
 }
 
 /* The small sprite icon - Force small size even on PC (Literal 33) */
 .guardian-mini-sprite {
-  width: 32px !important;
-  height: 32px !important;
-  min-width: 32px !important;
-  min-height: 32px !important;
-  object-fit: contain !important;
   @include pixelated;
-  margin: 0 !important;
+
   display: block !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  margin: 0 !important;
+  object-fit: contain !important;
   
   &:not(.is-low-power *) {
     @include gpu-layer;
@@ -49,7 +50,7 @@
   &:not(.spawn-silhouette) {
     &:not(.is-low-power *) {
       will-change: transform, filter, opacity;
-      filter: Drop-Shadow(0 0 5px Rgba(255,255,255,0.4));
+      filter: Drop-Shadow(0 0 5px Rgb(255 255 255 / 40%));
     }
     
     .is-low-power & {
@@ -58,13 +59,14 @@
     }
     
     &.captured {
-      filter: Grayscale(100%);
       opacity: 0.8 !important;
+      filter: Grayscale(100%);
     }
   }
 
   &.spawn-silhouette {
     @include pokemon-silhouette;
+
     transform: none;
     
     .is-low-power & {
@@ -76,21 +78,21 @@
 /* Label styling (Literal 46) */
 .guardian-label {
   display: block !important;
-  font-size: 8px !important;
-  font-weight: 900 !important;
-  color: $white !important;
-  text-transform: uppercase !important;
-  background: Rgba(255, 62, 62, 1) !important; /* Red for pending */
   padding: 2px 5px !important;
   border-radius: 4px !important;
+  background: Rgb(255 62 62 / 100%) !important; /* Red for pending */
+  color: $white !important;
+  font-family: var(--font-ui) !important; // Was 'Nunito'
+  font-size: 8px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
   margin-top: 3px !important;
   letter-spacing: 0.5px !important;
-  font-family: var(--font-ui) !important; // Was 'Nunito'
   white-space: nowrap !important;
-  box-shadow: 0 2px 4px Rgba(0,0,0,0.4) !important;
+  box-shadow: 0 2px 4px Rgb(0 0 0 / 40%) !important;
   
   &.captured {
-    background: Rgba(34, 197, 94, 1) !important; /* Vivid Green for captured */
+    background: Rgb(34 197 94 / 100%) !important; /* Vivid Green for captured */
   }
 }
 

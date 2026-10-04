@@ -142,50 +142,69 @@ const getHpClass = (pct: number) => {
   width: 100%;
 }
 
-.hp-bar-outer, .exp-bar-outer {
+%bar-outer-base {
   width: 100%;
   height: 8px;
-  background: Rgba(0,0,0,0.4);
   border-radius: 4px;
+  background: rgb(0 0 0 / 40%);
   overflow: hidden;
   margin-bottom: 4px;
-  box-shadow: inset 0 0 0 1px Rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     height: 6px;
     margin-bottom: 2px;
   }
 }
 
-.exp-bar-outer { height: 4px; @media (max-width: 600px) { height: 3px; } }
-.hp-bar-inner { 
-  height: 100%; 
-  /* transition handled by GSAP */
-  @include will-animate(width);
+.hp-bar-outer {
+  @extend %bar-outer-base;
 }
-.exp-bar-inner { 
-  height: 100%; 
-  background: var(--blue); 
-  width: 0;
+
+.exp-bar-outer {
+  @extend %bar-outer-base;
+
+  height: 4px;
+
+  @media (width <= 600px) {
+    height: 3px;
+  }
+}
+
+.hp-bar-inner { 
   /* transition handled by GSAP */
-  @include will-animate(width);
+  @include will-animate(width); 
+
+  height: 100%;
+}
+
+.exp-bar-inner {
+  /* transition handled by GSAP */
+  @include will-animate(width); 
+
+  width: 0; 
+  height: 100%; 
+  background: var(--blue);
 }
 
 .hp-high { background: #10b981; }
+
 .hp-mid { background: #f59e0b; }
+
 .hp-low { background: #ef4444; }
 
 .hp-values {
   @include pixelated;
+
   display: block;
   width: 100%;
   font-size: 8px;
   text-align: right;
-  margin-bottom: 4px;
   opacity: 1;
+  margin-bottom: 4px;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     font-size: 7px;
     margin-bottom: 2px;
   }

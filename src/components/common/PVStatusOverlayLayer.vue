@@ -107,22 +107,22 @@ const isLayerVisible = computed(() => {
 <style scoped lang="scss">
 .pv-fx-status-overlay {
   position: absolute;
+  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 3);
   inset: 0;
   pointer-events: none;
-  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 3);
   overflow: visible;
 }
 
 .status-particle {
   position: absolute;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
   font-size: 32px !important;
   line-height: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
-  -webkit-font-smoothing: none;
   opacity: 0;
+  -webkit-font-smoothing: none;
   visibility: hidden;
   pointer-events: none;
   transform-origin: 50% 50%;
@@ -152,30 +152,32 @@ const isLayerVisible = computed(() => {
 .shiny-asset-wrapper,
 .freeze-asset-wrapper {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
 }
 
 .shiny-asset {
+  @include pixelated;
+
   width: 32px;
   height: 32px;
   object-fit: contain;
-  filter: sepia(1) Saturate(12) Hue-Rotate(-15deg) Brightness(1.1);
-  @include pixelated;
+  filter: sepia(1) Saturate(12) hue-Rotate(-15deg) Brightness(1.1);
 }
 
 .freeze-asset {
+  @include pixelated;
+
   width: 32px;
   height: 32px;
   object-fit: contain;
   filter: Brightness(0) Invert(1)
-          Drop-Shadow(1px 0 0 Rgba(0, 255, 255, 0.95))
-          Drop-Shadow(-1px 0 0 Rgba(0, 255, 255, 0.95))
-          Drop-Shadow(0 1px 0 Rgba(0, 255, 255, 0.95))
-          Drop-Shadow(0 -1px 0 Rgba(0, 255, 255, 0.95))
-          Drop-Shadow(0 0 6px Rgba(0, 255, 255, 0.8));
-  @include pixelated;
+          Drop-Shadow(1px 0 0 Rgb(0 255 255 / 95%))
+          Drop-Shadow(-1px 0 0 Rgb(0 255 255 / 95%))
+          Drop-Shadow(0 1px 0 Rgb(0 255 255 / 95%))
+          Drop-Shadow(0 -1px 0 Rgb(0 255 255 / 95%))
+          Drop-Shadow(0 0 6px Rgb(0 255 255 / 80%));
 }
 </style>

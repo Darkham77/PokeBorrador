@@ -8,18 +8,20 @@
 
   .header-main-title {
     @include pixelated;
-    font-size: 10px;
-    color: var(--white);
-    letter-spacing: 2px;
+
     margin: 0;
+    color: var(--white);
+    font-size: 10px;
+    letter-spacing: 2px;
   }
 
   .header-sub-title {
     @include pixelated;
-    font-size: 7px;
-    color: var(--gray);
-    opacity: 0.6;
+
     margin: 0;
+    color: var(--gray);
+    font-size: 7px;
+    opacity: 0.6;
   }
 }
 
@@ -32,16 +34,16 @@
 .integrated-badge {
   display: flex;
   align-items: center;
-  background: Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 6px 16px;
   gap: 16px;
+  padding: 6px 16px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 12px;
+  background: rgb(0 0 0 / 30%);
 
   .badge-divider {
     width: 1px;
     height: 14px;
-    background: Rgba(255, 255, 255, 0.1);
+    background: rgb(255 255 255 / 10%);
   }
 }
 

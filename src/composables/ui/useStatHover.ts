@@ -7,11 +7,16 @@ interface StatHoverOptions {
   duration?: number
 }
 
+const DEFAULT_HOVER_Y_OFFSET_PX = -3 as const;
+const DEFAULT_HOVER_SCALE_FACTOR = 1.02 as const;
+const DEFAULT_HOVER_BRIGHTNESS = 1.18 as const;
+const DEFAULT_STAT_HOVER_DURATION_SEC = 0.22 as const;
+
 const DEFAULT_HOVER_OPTIONS: Required<StatHoverOptions> = {
-  y: -3,
-  scale: 1.02,
-  brightness: 1.18,
-  duration: 0.22
+  y: DEFAULT_HOVER_Y_OFFSET_PX,
+  scale: DEFAULT_HOVER_SCALE_FACTOR,
+  brightness: DEFAULT_HOVER_BRIGHTNESS,
+  duration: DEFAULT_STAT_HOVER_DURATION_SEC
 }
 
 /**

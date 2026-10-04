@@ -91,12 +91,14 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
       id: 'validate_fsm_diagrams',
       name: 'FSM Diagrams Validator',
       description: 'Estados o transiciones de FSM discrepantes con Mermaid',
+      icon: '📊',
       family: 'fsm',
       ruleIds: FSM_DIAGRAM_RULES,
+      packageName: 'FSM',
       ruleDescriptions: {
-        'fsm-state-missing-in-js': 'Estado de Mermaid no definido en TypeScript',
-        'fsm-undocumented-js-state': 'Estado en TypeScript no documentado en Mermaid',
-        'fsm-transition-missing-in-js': 'Transición de Mermaid ausente en TypeScript'
+        'fsm-state-missing-in-js': 'Estado Mermaid no definido en TS',
+        'fsm-undocumented-js-state': 'Estado en TS no documentado en Mermaid',
+        'fsm-transition-missing-in-js': 'Transición Mermaid ausente en TS'
       },
       requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH]
     });

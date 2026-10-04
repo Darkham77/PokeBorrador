@@ -190,18 +190,24 @@ function triggerSampleError() {
 
   label {
     @include pixelated;
-    font-size: 8px;
+
     color: $muted;
-    @include pixelated;
+    font-size: 8px;
   }
 }
 
-.button-row, .button-column {
+%button-group-base {
   display: flex;
   gap: 10px;
 }
 
+.button-row {
+  @extend %button-group-base;
+}
+
 .button-column {
+  @extend %button-group-base;
+
   flex-direction: column;
 }
 
@@ -210,15 +216,16 @@ function triggerSampleError() {
   gap: 10px;
 
   input {
-    flex: 1;
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: $white;
-    padding: 12px 15px;
-    height: 40px;
     @include pixelated;
+
+    height: 40px;
+    padding: 12px 15px;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 8px;
+    background: rgb(0 0 0 / 30%);
+    color: $white;
     font-size: 8px;
+    flex: 1;
     outline: none;
 
     &:focus { border-color: var(--purple); }
@@ -228,20 +235,21 @@ function triggerSampleError() {
 
 
 .hint {
-  font-size: 8px;
-  color: $muted;
   margin: 0;
+  color: $muted;
+  font-size: 8px;
   line-height: 1.4;
 }
 
 .simulation-summary-box {
-  background: Rgba(34, 197, 94, 0.12);
-  border: 1px solid Rgba(34, 197, 94, 0.3);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 8px;
-  color: #86efac;
-  line-height: 1.4;
   @include pixelated;
+
+  padding: 8px 10px;
+  border: 1px solid rgb(34 197 94 / 30%);
+  border-radius: 6px;
+  background: rgb(34 197 94 / 12%);
+  color: #86efac;
+  font-size: 8px;
+  line-height: 1.4;
 }
 </style>

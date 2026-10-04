@@ -214,7 +214,7 @@ watch(trainerExpPct, (newPct) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_profile-shared.scss";
+@use "@/styles/components/_profile-shared";
 
 .xp-card {
   .xp-details {
@@ -224,12 +224,13 @@ watch(trainerExpPct, (newPct) => {
   }
 
   .xp-numbers {
+    @include pixelated;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
-    @include pixelated;
-    font-size: 8px;
     color: var(--white);
+    font-size: 8px;
     letter-spacing: 0.5px;
   }
 
@@ -238,31 +239,31 @@ watch(trainerExpPct, (newPct) => {
   }
 
   .xp-percent {
-    color: Rgba(255, 255, 255, 0.6);
+    color: Rgb(255 255 255 / 60%);
   }
 
   .xp-bar-container {
+    position: relative;
     width: 100%;
     height: 10px;
-    background: Rgba(0, 0, 0, 0.4);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgb(255 255 255 / 10%);
     border-radius: 6px;
+    background: Rgb(0 0 0 / 40%);
     overflow: hidden;
-    position: relative;
   }
 
   .xp-bar-fill {
     height: 100%;
     border-radius: 5px;
-    background-image: linear-gradient(90deg, Rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, Rgba(255,255,255,0.15) 50%, Rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+    background-image: Linear-Gradient(90deg, Rgb(255 255 255 / 15%) 25%, transparent 25%, transparent 50%, Rgb(255 255 255 / 15%) 50%, Rgb(255 255 255 / 15%) 75%, transparent 75%, transparent);
     background-size: 20px 20px;
   }
 
   .xp-remaining-text {
-    font-size: 11px;
-    color: Rgba(255, 255, 255, 0.6);
-    line-height: 1.4;
+    color: Rgb(255 255 255 / 60%);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
 
     strong {
       font-weight: 700;
@@ -272,43 +273,44 @@ watch(trainerExpPct, (newPct) => {
   .xp-unlocks {
     margin-top: 16px;
     padding-top: 12px;
-    border-top: 1px dashed Rgba(255, 255, 255, 0.08);
+    border-top: 1px dashed Rgb(255 255 255 / 8%);
   }
 
   .unlocks-title {
+    color: Rgb(255 255 255 / 70%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: Rgba(255, 255, 255, 0.7);
     margin-bottom: 8px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   }
 
   .unlocks-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .unlock-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 11px;
-    color: Rgba(203, 213, 225, 0.85);
-    line-height: 1.4;
+    color: Rgb(203 213 225 / 85%);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
   }
 
   .unlock-lvl {
     @include pixelated;
-    font-size: 7px;
-    background: Rgba(255, 255, 255, 0.1);
-    color: var(--yellow);
-    border-radius: 4px;
+
     padding: 2px 4px;
+    border-radius: 4px;
+    background: Rgb(255 255 255 / 10%);
+    color: var(--yellow);
+    font-size: 7px;
     font-weight: bold;
     flex-shrink: 0;
   }

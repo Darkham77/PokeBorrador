@@ -30,6 +30,9 @@ export interface CustomPokemonSet extends PokemonSet {
   uid?: string;
 }
 
+const DEFAULT_GENERATED_TEAM_LEVEL = 50 as const;
+const DEFAULT_GENERATED_TEAM_SIZE = 3 as const;
+
 const debugLogs: string[] = []; // no-domain: Non-domain utility collection or data structure
 function logDebug(msg: string) {
   debugLogs.push(msg);
@@ -423,7 +426,7 @@ function handleForcedEndBattle(): void {
 }
 
 function handleGenerateTrainerTeam(payload: WorkerEventPayload): void {
-  const { requestId, level = 50, teamSize = 3, allowedSpecies = [], aceSpeciesId } = payload;
+  const { requestId, level = DEFAULT_GENERATED_TEAM_LEVEL, teamSize = DEFAULT_GENERATED_TEAM_SIZE, allowedSpecies = [], aceSpeciesId } = payload;
   const speciesSet = new Set(allowedSpecies);
   const team = TrainerTeamGenerator.generateTeam({
     level,
@@ -438,7 +441,7 @@ function handleGenerateTrainerTeam(payload: WorkerEventPayload): void {
 }
 
 function handleGenerateRivalTeam(payload: WorkerEventPayload): void {
-  const { requestId, level = 50, teamSize = 3, aceSpeciesId, allowedSpecies } = payload;
+  const { requestId, level = DEFAULT_GENERATED_TEAM_LEVEL, teamSize = DEFAULT_GENERATED_TEAM_SIZE, aceSpeciesId, allowedSpecies } = payload;
   const speciesSet = allowedSpecies ? new Set(allowedSpecies) : undefined;
   const team = RivalTeamGenerator.generateTeam({
     level,

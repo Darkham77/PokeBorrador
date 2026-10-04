@@ -34,6 +34,9 @@ const MAX_PERFECT_IV_VAL = 31;
 const REWARD_QTY_MASTER = 4;
 const REWARD_QTY_MID = 3;
 const REWARD_QTY_BASE = 2;
+const MISSION_LEVEL_VARIANCE_RANGE = 16;
+const MISSION_BASE_TOTAL_IV_REQUIREMENT = 90;
+const MISSION_TOTAL_IV_RANDOM_SPAN = 21;
 
 const POOLS: Record<DaycareMissionDifficulty, readonly PokemonSpeciesId[]> = {
   novice: ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'zubat', 'geodude', 'sandshrew', 'nidoranf', 'nidoranm', 'magikarp', 'ekans', 'paras'],
@@ -168,12 +171,12 @@ function generateMissionRequirement(trainerLevel: number): { requirement: Missio
   let reqText = '';
 
   if (type === 'level') {
-    const minLvl = Math.max(5, Math.min(100, trainerLevel + Math.floor(Math.random() * 16) - 5));
+    const minLvl = Math.max(5, Math.min(100, trainerLevel + Math.floor(Math.random() * MISSION_LEVEL_VARIANCE_RANGE) - 5));
     requirement.minLevel = minLvl;
     reqText = `Nv. ${minLvl}+`;
   } else if (type === 'iv_total') {
-    const baseIv = 90 + Math.min(trainerLevel, 60);
-    const minIvTotal = baseIv + Math.floor(Math.random() * 21);
+    const baseIv = MISSION_BASE_TOTAL_IV_REQUIREMENT + Math.min(trainerLevel, 60);
+    const minIvTotal = baseIv + Math.floor(Math.random() * MISSION_TOTAL_IV_RANDOM_SPAN);
     requirement.minIvTotal = minIvTotal;
     reqText = `${minIvTotal}+ IVs totales`;
   } else if (type === 'nature') {

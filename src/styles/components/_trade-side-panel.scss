@@ -6,18 +6,19 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background: Rgba(255, 255, 255, 0.01);
-  border: 1px solid Rgba(255, 255, 255, 0.03);
-  padding: 20px;
-  border-radius: 24px;
-  height: 100%;
-  box-sizing: border-box;
   min-width: 0;
+  height: 100%;
+  padding: 20px;
+  border: 1px solid rgb(255 255 255 / 3%);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 1%);
+  box-sizing: border-box;
 
   .side-title {
-    font-size: 10px;
     @include pixelated;
+
     color: var(--gray);
+    font-size: 10px;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
@@ -40,38 +41,45 @@
 
   .change-hint-overlay {
     position: absolute;
-    inset: 0;
-    background: Rgba(0, 0, 0, 0.7);
-    backdrop-filter: Blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 20px;
-    opacity: 0;
     z-index: var(--z-map-spawns);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    background: rgb(0 0 0 / 70%);
+    opacity: 0;
+    inset: 0;
+    backdrop-filter: blur(4px);
     pointer-events: none;
 
     span {
       @include pixelated;
-      font-size: 9px;
+
       color: var(--yellow);
+      font-size: 9px;
       letter-spacing: 1px;
     }
   }
 }
 
 .btn-open-selector {
-  width: 100%;
-  padding: 24px 16px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 2px dashed Rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  color: #888;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  padding: 24px 16px;
+  border: 2px dashed rgb(255 255 255 / 10%);
+  border-radius: 20px;
+  background: rgb(255 255 255 / 2%);
+  color: #888;
   cursor: pointer;
+
+  &:hover {
+    background: rgb(168 85 247 / 5%);
+    color: #fff;
+    border-color: var(--purple);
+  }
 
   .plus-icon {
     font-size: 24px;
@@ -81,47 +89,42 @@
 
   .btn-text {
     @include pixelated;
+
     font-size: 8px;
     letter-spacing: 1px;
-  }
-
-  &:hover {
-    background: Rgba(168, 85, 247, 0.05);
-    border-color: var(--purple);
-    color: #fff;
   }
 }
 
 .item-selection-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   gap: 12px;
-  max-height: 240px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   min-height: 0;
+  max-height: 240px;
   padding: 8px;
-  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid rgb(255 255 255 / 5%);
   border-radius: 16px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: rgb(0 0 0 / 20%);
+  overflow: hidden auto;
 
   &::-webkit-scrollbar {
     width: 6px;
   }
   &::-webkit-scrollbar-thumb {
-    background: Rgba(255, 255, 255, 0.15);
     border-radius: 3px;
+    background: rgb(255 255 255 / 15%);
   }
 }
 
 .empty-items-state {
-  padding: 16px;
-  text-align: center;
-  background: Rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
-  color: Rgba(255, 255, 255, 0.25);
-  font-size: 9px;
   @include pixelated;
+
+  padding: 16px;
+  border-radius: 16px;
+  background: rgb(0 0 0 / 10%);
+  color: rgb(255 255 255 / 25%);
+  font-size: 9px;
+  text-align: center;
 }
 
 .money-input-group {
@@ -132,15 +135,16 @@
   margin-top: auto;
 
   .money-label {
+    @include pixelated;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
-    @include pixelated;
-    font-size: 8px;
     color: var(--gray);
+    font-size: 8px;
 
     .max-text {
-      color: Rgba(255, 255, 255, 0.4);
+      color: rgb(255 255 255 / 40%);
     }
   }
 
@@ -153,75 +157,77 @@
     .currency-symbol {
       position: absolute;
       left: 16px;
+      color: $coin-gold;
       font-size: 16px;
       font-weight: bold;
-      color: $coin-gold;
       pointer-events: none;
     }
 
     .money-input {
       width: 100%;
-      background: Rgba(0, 0, 0, 0.4);
-      border: 1px solid Rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
       padding: 12px 12px 12px 36px;
+      border: 1px solid rgb(255 255 255 / 8%);
+      border-radius: 14px;
+      background: rgb(0 0 0 / 40%);
       color: $coin-gold;
-      font-weight: 900;
       font-size: 15px;
+      font-weight: 900;
       outline: none;
       box-sizing: border-box;
 
       &:focus {
-        border-color: Rgba(255, 215, 0, 0.4);
-        background: Rgba(0, 0, 0, 0.5);
-        box-shadow: 0 0 10px Rgba(255, 215, 0, 0.15);
+        background: rgb(0 0 0 / 50%);
+        border-color: rgb(255 215 0 / 40%);
+        box-shadow: 0 0 10px rgb(255 215 0 / 15%);
       }
 
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
-        -webkit-appearance: none;
         margin: 0;
+        appearance: none;
       }
-      &[type=number] {
-        -moz-appearance: textfield;
+      &[type="number"] {
+        appearance: textfield;
       }
     }
   }
 }
 
 .gift-overlay {
-  flex: 1;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: Rgba(107, 203, 119, 0.03);
-  border: 2px dashed Rgba(107, 203, 119, 0.15);
-  border-radius: 20px;
+  align-items: center;
   padding: 30px;
+  border: 2px dashed rgb(107 203 119 / 15%);
+  border-radius: 20px;
+  background: rgb(107 203 119 / 3%);
   text-align: center;
+  flex: 1;
 
   .gift-icon {
-    font-size: 40px;
     display: block;
+    font-size: 40px;
     margin-bottom: 12px;
   }
 
   .gift-title {
-    font-weight: 900;
-    font-size: 11px;
     @include pixelated;
-    color: var(--green);
+
     display: block;
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 900;
     margin-bottom: 8px;
     letter-spacing: 1px;
   }
 
   .gift-text {
-    font-size: 11px;
-    color: Rgba(255, 255, 255, 0.4);
     margin: 0;
+    color: rgb(255 255 255 / 40%);
+    font-size: 11px;
   }
 }
+
 .item-card-wrapper {
   position: relative;
   width: 100%;
@@ -229,37 +235,38 @@
 
 .qty-control-overlay {
   position: absolute;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.8);
-  backdrop-filter: Blur(4px);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   z-index: var(--z-map-spawns);
-  border: 1px solid Rgba(168, 85, 247, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
   padding: 4px;
+  border: 1px solid rgb(168 85 247 / 40%);
+  border-radius: 16px;
+  background: rgb(0 0 0 / 80%);
+  inset: 0;
+  backdrop-filter: blur(4px);
   box-sizing: border-box;
 
   .qty-btn {
+    @include pixelated;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 20px;
     height: 20px;
+    border: 1px solid rgb(255 255 255 / 10%);
     border-radius: 6px;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    background: Rgba(255, 255, 255, 0.05);
+    background: rgb(255 255 255 / 5%);
     color: white;
     font-size: 10px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    @include pixelated;
 
     &:hover:not(:disabled) {
       background: var(--purple);
-      border-color: var(--purple);
       color: white;
+      border-color: var(--purple);
     }
 
     &:disabled {
@@ -268,9 +275,9 @@
     }
 
     &.remove {
-      background: Rgba(239, 68, 68, 0.2);
-      border-color: Rgba(239, 68, 68, 0.4);
+      background: rgb(239 68 68 / 20%);
       color: #ef4444;
+      border-color: rgb(239 68 68 / 40%);
       
       &:hover {
         background: #ef4444;
@@ -281,10 +288,11 @@
 
   .qty-val {
     @include pixelated;
+
+    min-width: 16px;
+    color: var(--yellow);
     font-size: 9px;
     font-weight: bold;
-    color: var(--yellow);
-    min-width: 16px;
     text-align: center;
   }
 }

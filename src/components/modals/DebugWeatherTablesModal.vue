@@ -228,8 +228,8 @@ function toggleRoute(routeId: MapRouteId) {
     height: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background: Rgba(255, 255, 255, 0.1);
     border-radius: 10px;
+    background: rgb(255 255 255 / 10%);
   }
 }
 
@@ -238,11 +238,11 @@ function toggleRoute(routeId: MapRouteId) {
     width: 4px;
   }
   &::-webkit-scrollbar-track {
-    background: Rgba(0, 0, 0, 0.1);
+    background: rgb(0 0 0 / 10%);
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--purple);
     border-radius: 10px;
+    background: var(--purple);
   }
 }
 </style>

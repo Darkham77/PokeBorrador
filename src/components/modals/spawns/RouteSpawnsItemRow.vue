@@ -52,7 +52,7 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
           :src="reward.sprite"
           :alt="reward.name"
           class="mini-sprite"
-          style="object-fit: contain; width: 24px; height: 24px;"
+          style=" width: 24px; height: 24px;object-fit: contain;"
         >
       </div>
       <div class="poke-name-wrap">
@@ -75,7 +75,7 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
         <span
           class="status-tag"
           :class="reward.statusClass"
-          style="font-size: 9px; padding: 2px 4px;"
+          style=" padding: 2px 4px;font-size: 9px;"
         >
           {{ reward.type }}
         </span>
@@ -85,7 +85,7 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
     <!-- Details/Description -->
     <div
       class="col-multiplier row-cell flex-align"
-      style="font-size: 9px; opacity: 0.8; white-space: normal; line-height: 1.2;"
+      style="font-size: 9px; line-height: 1.2; opacity: 0.8; white-space: normal;"
     >
       {{ reward.description || 'Fósil desenterrable en la zona' }}
     </div>

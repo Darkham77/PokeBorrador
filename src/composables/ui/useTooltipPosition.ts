@@ -5,6 +5,8 @@ const TOOLTIP_CHROME_VERTICAL_PX = 24
 const GAP_PX = 12
 const PADDING_PX = 15
 const DOUBLE_FACTOR = 2
+const DEFAULT_FALLBACK_VIEWPORT_WIDTH_PX = 1000 as const;
+const DEFAULT_FALLBACK_VIEWPORT_HEIGHT_PX = 800 as const;
 
 function getEffectiveZoom(tooltipEl?: HTMLElement | null): number {
   if (typeof window === 'undefined') return 1
@@ -163,8 +165,8 @@ export function useTooltipPosition(
     const tipRect = tooltip.value.getBoundingClientRect()
     const scrollY = typeof window !== 'undefined' ? window.scrollY : 0
     const scrollX = typeof window !== 'undefined' ? window.scrollX : 0
-    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1000
-    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : DEFAULT_FALLBACK_VIEWPORT_WIDTH_PX
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : DEFAULT_FALLBACK_VIEWPORT_HEIGHT_PX
 
     const triggerCenter = rect.left + rect.width / 2
     isRightSide.value = triggerCenter > viewportWidth / 2

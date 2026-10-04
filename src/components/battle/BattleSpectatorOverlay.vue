@@ -48,14 +48,14 @@ const statusText = computed(() => {
 .spectator-overlay {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   padding: 12px 16px;
-  gap: 8px;
-  background: Rgba(10, 14, 24, 0.9);
-  border-top: 1px solid Rgba(239, 68, 68, 0.4);
-  box-shadow: 0 -4px 16px Rgba(0, 0, 0, 0.4);
+  background: rgb(10 14 24 / 90%);
+  border-top: 1px solid rgb(239 68 68 / 40%);
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 40%);
 }
 
 .spectator-badge-container {
@@ -68,25 +68,25 @@ const statusText = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: Rgba(239, 68, 68, 0.2);
-  border: 1px solid Rgba(239, 68, 68, 0.7);
   padding: 3px 10px;
+  border: 1px solid rgb(239 68 68 / 70%);
   border-radius: 4px;
+  background: rgb(239 68 68 / 20%);
 }
 
 .pulse-dot {
   width: 8px;
   height: 8px;
-  background-color: #ef4444;
   border-radius: 50%;
+  background-color: #ef4444;
   box-shadow: 0 0 8px #ef4444;
 }
 
 .live-text {
+  color: #ef4444;
   font-family: var(--font-pixel, monospace);
   font-size: 0.75rem;
   font-weight: bold;
-  color: #ef4444;
   letter-spacing: 0.05em;
 }
 
@@ -95,15 +95,15 @@ const statusText = computed(() => {
   align-items: center;
   gap: 4px;
   color: #94a3b8;
-  font-size: 0.8rem;
   font-family: var(--font-pixel, monospace);
+  font-size: 0.8rem;
 }
 
 .spectator-status-banner {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
   color: #e2e8f0;
+  font-size: 0.85rem;
 }
 </style>

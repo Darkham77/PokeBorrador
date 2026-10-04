@@ -75,13 +75,13 @@ const hpColor = computed(() => {
 
 <style scoped lang="scss">
 .adv-team-pkmn-card {
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
-  padding: 6px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 6px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 30%);
 }
 
 .card-header {
@@ -92,8 +92,8 @@ const hpColor = computed(() => {
 }
 
 .pkmn-name {
-  font-weight: bold;
   color: #ffcb05;
+  font-weight: bold;
 }
 
 .pkmn-level {
@@ -109,17 +109,17 @@ const hpColor = computed(() => {
 .hp-text {
   display: flex;
   justify-content: space-between;
-  font-size: 6px;
   color: #ccc;
+  font-size: 6px;
 }
 
 .hp-bar-track {
   width: 100%;
   height: 6px;
-  background: Rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(0 0 0 / 50%);
   border-radius: 3px;
+  background: rgb(255 255 255 / 10%);
   overflow: hidden;
-  border: 1px solid Rgba(0, 0, 0, 0.5);
 }
 
 .hp-bar-fill {
@@ -134,15 +134,15 @@ const hpColor = computed(() => {
 }
 
 .move-badge {
-  font-size: 6px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  padding: 2px 4px;
-  border-radius: 4px;
   display: flex;
   justify-content: space-between;
   gap: 6px;
   width: 100%;
+  padding: 2px 4px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 5%);
+  font-size: 6px;
 }
 
 .move-name {

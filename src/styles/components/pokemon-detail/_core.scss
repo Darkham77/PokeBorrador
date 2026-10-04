@@ -2,44 +2,44 @@
 @use "@/styles/core/tools" as *;
 
 @mixin pokemon-main-display($height: 80px, $margin-bottom: -40px, $sprite-translate: -20%, $sprite-size: 210px) {
-  padding: 0;
-  height: $height; 
-  margin-bottom: $margin-bottom; 
-  display: flex;
-  justify-content: center;
   position: relative;
   z-index: var(--z-base); 
+  display: flex;
+  justify-content: center;
+  height: $height;
+  padding: 0; 
+  margin-bottom: $margin-bottom; 
   pointer-events: none;
   
   & .sprite-container {
     position: relative;
     z-index: var(--z-base);
-    background: Radial-Gradient(circle, Rgba(255,255,255,0.12) 0%, transparent 80%);
     border-radius: 50%;
+    background: Radial-Gradient(circle, Rgb(255 255 255 / 12%) 0%, transparent 80%);
     
         & .main-sprite { 
-      width: $sprite-size; 
-      height: $sprite-size; 
       @include pixelated;
+
       position: relative; 
-      z-index: var(--z-base);
+      z-index: var(--z-base); 
+      width: $sprite-size; 
+      height: $sprite-size;
+      transform: Translatey($sprite-translate);
       will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.7));
-      
-      transform: Translatey($sprite-translate); 
+  filter: Drop-Shadow(0 20px 40px Rgb(0 0 0 / 70%)); 
     }
     
     .sprite-glow {
       position: absolute;
       top: 50%; left: 50%;
-      transform: Translate(-50%, -50%);
+      z-index: var(--z-base);
       width: calc($sprite-size * 0.66);
       height: calc($sprite-size * 0.66);
       border-radius: 50%;
+      opacity: 0.25;
+      transform: Translate(-50%, -50%);
       will-change: transform, filter, opacity;
   filter: Blur(50px);
-      opacity: 0.25;
-      z-index: var(--z-base);
     }
   }
 }
@@ -51,44 +51,44 @@
 }
 
 .pdex-detail-tabs {
-  display: flex;
-  background: Rgba(0, 0, 0, 0.95);
   @include gpu-layer;
-  padding: 0 16px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+
   position: relative;
   z-index: var(--z-base);
+  display: flex;
+  padding: 0 16px;
+  background: Rgb(0 0 0 / 95%);
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
   padding-top: 30px;
 
   .upd-tab-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    padding: 16px 0;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    color: Rgba(255,255,255,0.3);
+    padding: 16px 0;
+    border: none;
+    background: none;
+    color: Rgb(255 255 255 / 30%);
+    flex: 1;
     cursor: pointer;
-    
-    position: relative;
     
     .emoji { font-size: 18px; line-height: 1; }
     .tab-label { font-size: 9px; font-weight: 800; letter-spacing: 0.5px; }
     
     &.active {
+      background: Radial-Gradient(circle at bottom, Rgb(from var(--type-color, #ffd60a) r g b / 15%) 0%, transparent 70%);
       color: var(--yellow);
-      background: Radial-Gradient(circle at bottom, Rgb(from var(--type-color, #ffd60a) r g b / 0.15) 0%, transparent 70%);
       transform: Translatey(-2px);
       
       &::after {
-        content: '';
-        position: absolute;
-        bottom: 0; left: 10%; right: 10%;
+        position: absolute; right: 10%;
+        bottom: 0; left: 10%;
         height: 3px;
-        background: var(--yellow);
         border-radius: 3px 3px 0 0;
+        background: var(--yellow);
+        content: '';
         box-shadow: 0 0 15px var(--yellow);
       }
     }
@@ -96,25 +96,26 @@
 }
 
 .upd-core-body {
-  flex: 1;
-  min-height: 0;
-  position: relative;
-  z-index: var(--z-base);
-  background: Rgba(10, 12, 20, 1);
-  padding: 32px;
-  pointer-events: auto !important;
-  overflow-y: auto; // Required for content scrolling when it exceeds modal height
   @include smooth-scroll;
 
-  @media (max-width: 480px) {
-    padding: 20px 16px;
-  }
+  position: relative;
+  z-index: var(--z-base);
+  min-height: 0;
+  padding: 32px;
+  background: Rgb(10 12 20 / 100%);
+  flex: 1;
+  pointer-events: auto !important;
+  overflow-y: auto; // Required for content scrolling when it exceeds modal height
   
   &::-webkit-scrollbar { width: 8px; }
-  &::-webkit-scrollbar-track { background: Rgba(255, 255, 255, 0.05); }
+  &::-webkit-scrollbar-track { background: Rgb(255 255 255 / 5%); }
   &::-webkit-scrollbar-thumb { 
-    background: Rgba(255, 255, 255, 0.1); 
-    border-radius: 4px;
-    &:hover { background: Rgba(255, 255, 255, 0.15); }
+    border-radius: 4px; 
+    background: Rgb(255 255 255 / 10%);
+    &:hover { background: Rgb(255 255 255 / 15%); }
+  }
+
+  @media (width <= 480px) {
+    padding: 20px 16px;
   }
 }

@@ -101,13 +101,13 @@ const cycleSpeed = () => {
 
 .replay-controls-bar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
   padding: 8px 16px;
-  background: Rgba(15, 23, 42, 0.95);
-  border-top: 1px solid Rgba(59, 130, 246, 0.4);
-  box-shadow: 0 -4px 12px Rgba(0, 0, 0, 0.4);
+  background: rgb(15 23 42 / 95%);
+  border-top: 1px solid rgb(59 130 246 / 40%);
+  box-shadow: 0 -4px 12px rgb(0 0 0 / 40%);
 }
 
 .replay-turn-indicator {
@@ -117,13 +117,13 @@ const cycleSpeed = () => {
   font-family: var(--font-pixel, monospace);
 
   .label {
-    font-size: 0.75rem;
     color: #94a3b8;
+    font-size: 0.75rem;
   }
 
   .turn-numbers {
-    font-size: 0.9rem;
     color: #60a5fa;
+    font-size: 0.9rem;
     font-weight: bold;
   }
 }
@@ -136,33 +136,33 @@ const cycleSpeed = () => {
 
 .replay-btn {
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   min-width: 36px;
   height: 32px;
   padding: 2px 8px;
-  background: Rgba(30, 41, 59, 0.8);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border: 1px solid rgb(255 255 255 / 15%);
   border-radius: 4px;
+  background: rgb(30 41 59 / 80%);
   color: #f8fafc;
   font-family: var(--font-pixel, monospace);
   font-size: 0.85rem;
   cursor: pointer;
 
   &:hover {
-    background: Rgba(59, 130, 246, 0.3);
+    background: rgb(59 130 246 / 30%);
     border-color: #60a5fa;
   }
 
   &.play-btn {
-    background: Rgba(59, 130, 246, 0.25);
-    border-color: Rgba(59, 130, 246, 0.6);
+    background: rgb(59 130 246 / 25%);
     font-size: 1rem;
+    border-color: rgb(59 130 246 / 60%);
   }
 
   &.speed-btn {
-    font-size: 0.75rem;
     color: #38bdf8;
+    font-size: 0.75rem;
     font-weight: bold;
   }
 }

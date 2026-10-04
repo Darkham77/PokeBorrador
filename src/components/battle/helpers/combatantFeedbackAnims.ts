@@ -60,11 +60,16 @@ export const STATUS_FLASH_COLORS: Record<string, string> = {
   tox: '#9400d3'
 };
 
+const BLINK_STEP_INTERVAL_SEC = 0.08 as const;
+
 const BLINK_TIMELINE_STEPS = [
-  { t: 0.00, op: 0 }, { t: 0.08, op: 1 },
-  { t: 0.16, op: 0 }, { t: 0.24, op: 1 },
-  { t: 0.32, op: 0 }, { t: 0.40, op: 1 },
-  { t: 0.48, op: 1 }
+  { t: 0, op: 0 },
+  { t: 1 * BLINK_STEP_INTERVAL_SEC, op: 1 },
+  { t: 2 * BLINK_STEP_INTERVAL_SEC, op: 0 },
+  { t: 3 * BLINK_STEP_INTERVAL_SEC, op: 1 },
+  { t: 4 * BLINK_STEP_INTERVAL_SEC, op: 0 },
+  { t: 5 * BLINK_STEP_INTERVAL_SEC, op: 1 },
+  { t: 6 * BLINK_STEP_INTERVAL_SEC, op: 1 },
 ] as const;
 
 export function animateCombatantEmerging(target: HTMLElement): void {

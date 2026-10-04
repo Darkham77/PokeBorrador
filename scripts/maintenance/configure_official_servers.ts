@@ -102,7 +102,23 @@ export async function configureOfficialServers(): Promise<void> {
   await fsPromises.mkdir(outputDir, { recursive: true });
 
   await fsPromises.writeFile(OUTPUT_FILE, JSON.stringify(officialServers, null, 2) + '\n', 'utf-8');
-  console.log(styleText('green', `✨ src/data/system/servers.local.json configurado exitosamente con ${officialServers.length} servidores.\n`));
+  console.log(styleText('green', `✨ src/data/system/servers.local.json configurado exitosamente con ${officialServers.length} servidores.`));
+
+  // Sincronización automática de public/version.json con package.json (SSoT)
+  try {
+    const pkgPath = path.resolve(process.cwd(), 'package.json');
+    const pkgRaw = await fsPromises.readFile(pkgPath, 'utf-8');
+    const pkg = JSON.parse(pkgRaw) as { version?: string };
+    if (pkg.version) {
+      const normalizedVersion = pkg.version.startsWith('v') ? pkg.version : `v${pkg.version}`;
+      const publicVerPath = path.resolve(process.cwd(), 'public/version.json');
+      await fsPromises.mkdir(path.dirname(publicVerPath), { recursive: true });
+      await fsPromises.writeFile(publicVerPath, JSON.stringify({ version: normalizedVersion }, null, 2) + '\n', 'utf-8');
+      console.log(styleText('cyan', `📦 [version] Versión sincronizada automáticamente en public/version.json: ${normalizedVersion}\n`));
+    }
+  } catch (err) {
+    console.warn(styleText('yellow', `⚠️ No se pudo sincronizar public/version.json: ${(err as Error).message}\n`));
+  }
 }
 
 // Permitir ejecución directa

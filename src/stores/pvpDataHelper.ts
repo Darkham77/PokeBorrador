@@ -1,6 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { SeasonRules, PvPStats, PersonalPvPMatchSummary } from '@/types/battle/pvp'
-import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts'
+import type { DBRouter } from '@/logic/db/dbRouter'
+import { DEFAULT_INITIAL_ELO, DEFAULT_PVP_LEVEL_CAP } from '@/logic/constants/gameplay.ts'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter'
@@ -15,8 +16,7 @@ interface ProfileRow {
 }
 
 export async function fetchProfilePvPData(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: any,
+  db: DBRouter,
   userId: string
 ): Promise<{ elo: number; stats: PvPStats } | null> {
   const { data: profile } = await db.from('profiles')
@@ -37,8 +37,7 @@ export async function fetchProfilePvPData(
 }
 
 export async function fetchActiveSeasonRules(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: any
+  db: DBRouter
 ): Promise<SeasonRules | null> {
   try {
     const { data: rulesConfig } = await db
@@ -61,7 +60,7 @@ export async function fetchActiveSeasonRules(
     const currentTheme = getSeasonalThemeForMonth(now.month)
     return {
       name: currentTheme.name,
-      levelCap: 50,
+      levelCap: DEFAULT_PVP_LEVEL_CAP,
       maxPokemon: 6,
       allowedTypes: currentTheme.allowedTypes ? [...currentTheme.allowedTypes] : [],
       bannedPokemonIds: currentTheme.bannedPokemonIds ? [...currentTheme.bannedPokemonIds] : []
@@ -89,8 +88,7 @@ export function findInvalidDefendingPokemon(
 }
 
 export async function syncPvPPersonalHistory(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: any,
+  db: DBRouter,
   userId: string,
   currentHistory: PersonalPvPMatchSummary[]
 ): Promise<PersonalPvPMatchSummary[]> {

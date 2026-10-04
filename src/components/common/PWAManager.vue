@@ -112,27 +112,27 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: 20px;
   padding: 10px;
+  text-align: center;
 }
 
 .pwa-description {
+  margin: 0;
   color: white;
   font-size: 14px;
   line-height: 1.5;
-  margin: 0;
 }
 
 .permissions-list {
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: Rgba(0,0,0,0.3);
+  width: 100%;
   padding: 15px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 12px;
-  border: 1px solid Rgba(255,255,255,0.05);
+  background: Rgb(0 0 0 / 30%);
 }
 
 .permission-item {
@@ -145,22 +145,22 @@ onUnmounted(() => {
   }
   
   .p-text {
+    color: Rgb(255 255 255 / 80%);
     font-size: 12px;
-    color: Rgba(255,255,255,0.8);
   }
 }
 
 .pv-button-retro {
   @include pixelated;
-  background: var(--yellow);
-  color: black;
-  border: none;
-  padding: 12px 24px;
-  font-size: 12px;
-  cursor: pointer;
   
   width: 100%;
+  padding: 12px 24px;
+  border: none;
   border-radius: 4px;
+  background: var(--yellow);
+  color: black;
+  font-size: 12px;
+  cursor: pointer;
   box-shadow: 0 4px 0 #b39200;
   
   &:hover {

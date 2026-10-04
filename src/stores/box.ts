@@ -5,7 +5,7 @@ import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/poke
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
-import { BLACK_MARKET_CRIMINALITY_PER_SALE, BOX_BASE_BUY_COST, BOX_ADVANCED_BUY_COST } from '@/logic/constants/gameplay'
+import { BLACK_MARKET_CRIMINALITY_PER_SALE, BOX_BASE_BUY_COST, BOX_ADVANCED_BUY_COST, POKEMON_BOX_SLOT_CAPACITY } from '@/logic/constants/gameplay'
 import { isPokemonBusy } from '@/logic/constants/tags'
 
 export const useBoxStore = defineStore('box', () => {
@@ -144,7 +144,7 @@ export const useBoxStore = defineStore('box', () => {
     const p = gameStore.state.box[boxIndex]
     if (!p) return { success: false, msg: 'Pokémon no encontrado.' }
     
-    const targetStart = targetBoxIndex * 50
+    const targetStart = targetBoxIndex * POKEMON_BOX_SLOT_CAPACITY
     gameStore.state.box.splice(boxIndex, 1)
     
     // Ensure array is large enough to reach target box

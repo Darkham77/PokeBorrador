@@ -135,26 +135,26 @@ function handleMedalClick() {
 
 <style scoped lang="scss">
 .ranked-medal-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  background: Rgba(15, 23, 42, 0.6);
-  border: 1px solid Rgba(148, 163, 184, 0.2);
+  border: 1px solid Rgb(148 163 184 / 20%);
   border-radius: 8px;
-  position: relative;
+  background: Rgb(15 23 42 / 60%);
   overflow: hidden;
   cursor: pointer;
   user-select: none;
 
   .medal-icon-wrap {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 36px;
     height: 36px;
-    background: Rgba(0, 0, 0, 0.4);
     border-radius: 6px;
+    background: Rgb(0 0 0 / 40%);
     flex-shrink: 0;
 
     .tier-icon {
@@ -166,7 +166,7 @@ function handleMedalClick() {
       height: 28px;
       object-fit: contain;
       image-rendering: pixelated;
-      filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
+      filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
     }
   }
 
@@ -177,11 +177,11 @@ function handleMedalClick() {
     flex: 1;
 
     .season-name {
+      color: #e2e8f0;
       font-size: 0.75rem;
+      font-weight: 700;
       line-height: 1.45;
       padding-bottom: 2px;
-      font-weight: 700;
-      color: #e2e8f0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -196,20 +196,20 @@ function handleMedalClick() {
       margin-top: 1px;
 
       .season-date {
-        font-size: 0.65rem;
         color: #94a3b8;
+        font-size: 0.65rem;
         font-weight: 500;
         white-space: nowrap;
       }
 
       .active-tag {
+        padding: 1px 4px;
+        border: 1px solid Rgb(34 197 94 / 40%);
+        border-radius: 3px;
+        background: Rgb(34 197 94 / 20%);
+        color: #4ade80;
         font-size: 0.58rem;
         font-weight: 700;
-        padding: 1px 4px;
-        border-radius: 3px;
-        background: Rgba(34, 197, 94, 0.2);
-        color: #4ade80;
-        border: 1px solid Rgba(34, 197, 94, 0.4);
         line-height: 1.2;
         letter-spacing: 0.3px;
       }
@@ -223,24 +223,24 @@ function handleMedalClick() {
   }
 
   .podium-tag {
-    font-size: 0.65rem;
-    font-weight: 800;
     padding: 2px 6px;
     border-radius: 4px;
-    background: Rgba(148, 163, 184, 0.2);
+    background: Rgb(148 163 184 / 20%);
     color: #e2e8f0;
+    font-size: 0.65rem;
+    font-weight: 800;
 
     &.top-3 {
-      background: Rgba(234, 179, 8, 0.25);
+      border: 1px solid Rgb(234 179 8 / 40%);
+      background: Rgb(234 179 8 / 25%);
       color: #fde047;
-      border: 1px solid Rgba(234, 179, 8, 0.4);
     }
 
     &.top-1 {
-      background: Rgba(234, 179, 8, 0.4);
-      color: #fff;
       border: 1px solid #eab308;
-      box-shadow: 0 0 6px Rgba(234, 179, 8, 0.5);
+      background: Rgb(234 179 8 / 40%);
+      color: #fff;
+      box-shadow: 0 0 6px Rgb(234 179 8 / 50%);
     }
   }
 }

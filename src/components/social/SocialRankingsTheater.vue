@@ -7,6 +7,7 @@ import { useModalStore } from '@/stores/modals'
 import { formatBattleCodeInput } from '@/logic/pvp/replayCodeGenerator'
 import { isBattleCode, type BattleReplayRecord } from '@/types/battle/pvp'
 import { parseReplayRow } from './socialTheaterHelper'
+import { DEFAULT_FEATURED_REPLAYS_LIMIT } from '@/logic/pvp/rankedEngine'
 import { logger } from '@/logic/utils/logger'
 
 const emit = defineEmits<{
@@ -68,7 +69,7 @@ async function fetchFeaturedReplays() {
   listLoading.value = true
 
   try {
-    const { data, error } = await gameStore.db.rpc('fn_get_featured_replays', { p_limit: 10 }) as {
+    const { data, error } = await gameStore.db.rpc('fn_get_featured_replays', { p_limit: DEFAULT_FEATURED_REPLAYS_LIMIT }) as {
       data: Record<string, unknown>[] | null
       error: unknown
     }
@@ -242,25 +243,25 @@ onMounted(() => {
 
 .search-banner-card {
   padding: 16px;
-  background: Rgba(30, 41, 59, 0.7);
-  border: 1px solid Rgba(234, 179, 8, 0.3);
+  border: 1px solid rgb(234 179 8 / 30%);
   border-radius: 8px;
+  background: rgb(30 41 59 / 70%);
 
   .search-title-row {
     display: flex;
     align-items: center;
     gap: 8px;
+    color: #facc15;
     font-size: 0.8rem;
     font-weight: bold;
-    color: #facc15;
     margin-bottom: 6px;
   }
 
   .search-desc {
-    font-size: 0.65rem;
     color: #94a3b8;
-    margin-bottom: 12px;
+    font-size: 0.65rem;
     line-height: 1.4;
+    margin-bottom: 12px;
   }
 
   .search-input-group {
@@ -268,14 +269,14 @@ onMounted(() => {
     gap: 10px;
 
     .pv-retro-input {
-      flex: 1;
       padding: 8px 12px;
-      background: #0f172a;
       border: 1px solid #475569;
       border-radius: 4px;
+      background: #0f172a;
       color: #f8fafc;
       font-family: inherit;
       font-size: 0.75rem;
+      flex: 1;
       letter-spacing: 1px;
 
       &:focus {
@@ -292,9 +293,9 @@ onMounted(() => {
   }
 
   .search-error-msg {
-    margin-top: 8px;
-    font-size: 0.65rem;
     color: #f87171;
+    font-size: 0.65rem;
+    margin-top: 8px;
   }
 }
 
@@ -305,12 +306,12 @@ onMounted(() => {
 
   .feed-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
 
     .feed-title {
-      font-size: 0.75rem;
       color: #e2e8f0;
+      font-size: 0.75rem;
       font-weight: bold;
     }
 
@@ -318,39 +319,39 @@ onMounted(() => {
   }
 
   .loading-state, .empty-state {
-    padding: 32px 16px;
-    text-align: center;
-    color: #94a3b8;
-    font-size: 0.7rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    padding: 32px 16px;
+    color: #94a3b8;
+    font-size: 0.7rem;
+    text-align: center;
 
     .empty-icon {
       font-size: 2rem;
     }
 
     .empty-sub {
-      font-size: 0.6rem;
       color: #64748b;
+      font-size: 0.6rem;
     }
   }
 
   .replays-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 
   .replay-card {
-    padding: 12px;
-    background: #0f172a;
-    border: 1px solid #1e293b;
-    border-radius: 6px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding: 12px;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    background: #0f172a;
 
     .replay-card-header {
       display: flex;
@@ -358,43 +359,43 @@ onMounted(() => {
       align-items: center;
 
       .replay-code {
-        font-size: 0.7rem;
         color: #facc15;
+        font-size: 0.7rem;
         font-weight: bold;
       }
 
       .top10-badge {
-        font-size: 0.55rem;
         padding: 2px 6px;
-        background: #854d0e;
         border-radius: 4px;
+        background: #854d0e;
         color: #fef08a;
+        font-size: 0.55rem;
       }
     }
 
     .combatants-matchup {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 8px;
       padding: 8px;
-      background: #1e293b;
       border-radius: 4px;
+      background: #1e293b;
 
       .combatant {
         display: flex;
         flex-direction: column;
-        flex: 1;
         font-size: 0.65rem;
+        flex: 1;
 
         .trainer-name {
-          font-weight: bold;
           color: #f1f5f9;
+          font-weight: bold;
         }
 
         .trainer-meta {
-          font-size: 0.55rem;
           color: #94a3b8;
+          font-size: 0.55rem;
           text-transform: uppercase;
         }
 
@@ -404,8 +405,8 @@ onMounted(() => {
       }
 
       .vs-divider {
-        font-size: 0.6rem;
         color: #64748b;
+        font-size: 0.6rem;
         font-weight: bold;
       }
     }
@@ -416,18 +417,18 @@ onMounted(() => {
       align-items: center;
 
       .turns-count {
-        font-size: 0.6rem;
         color: #94a3b8;
+        font-size: 0.6rem;
       }
 
       .watch-btn {
         padding: 6px 10px;
-        background: #3b82f6;
         border: 1px solid #60a5fa;
-        color: #ffffff;
+        border-radius: 4px;
+        background: #3b82f6;
+        color: #fff;
         font-family: inherit;
         font-size: 0.6rem;
-        border-radius: 4px;
         cursor: pointer;
       }
     }

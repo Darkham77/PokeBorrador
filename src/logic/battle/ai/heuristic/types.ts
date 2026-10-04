@@ -227,59 +227,66 @@ const AI_PRESET_ERROR_RATE_PERFECT = 0.00;
 const AI_DEFAULT_SWITCH_COOLDOWN_TURNS = 2;
 const AI_RIVAL_SWITCH_COOLDOWN_TURNS = 1;
 
+const AI_SWITCH_AGGRESSIVENESS_NONE = 0.0;
+const AI_SWITCH_AGGRESSIVENESS_INTERMEDIATE = 0.15;
+const AI_SWITCH_AGGRESSIVENESS_TACTICAL = 0.35;
+const AI_SWITCH_AGGRESSIVENESS_ELITE = 0.50;
+const AI_SWITCH_AGGRESSIVENESS_GYM = 0.65;
+const AI_SWITCH_AGGRESSIVENESS_RIVAL = 0.85;
+
 export const AI_CONFIG_PRESETS = {
   wild: {
     errorRate: AI_PRESET_ERROR_RATE_WILD,
-    switchAggressiveness: 0.0,
+    switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_NONE,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: false,
     useInference: false,
   },
   novice: {
     errorRate: AI_PRESET_ERROR_RATE_NOVICE,
-    switchAggressiveness: 0.0,
+    switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_NONE,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: false,
     useInference: false,
   },
   intermediate: {
     errorRate: AI_PRESET_ERROR_RATE_INTERMEDIATE,
-    switchAggressiveness: 0.15,
+    switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_INTERMEDIATE,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,
   },
   tactical: {
     errorRate: AI_PRESET_ERROR_RATE_TACTICAL,
-    switchAggressiveness: 0.35,
+    switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_TACTICAL,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,
   },
   elite: {
     errorRate: AI_PRESET_ERROR_RATE_ELITE,
-    switchAggressiveness: 0.50,
+    switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_ELITE,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,
   },
   gym: {
     errorRate: AI_PRESET_ERROR_RATE_PERFECT,
-    switchAggressiveness: 0.65,
+    switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_GYM,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,
   },
   rival: {
     errorRate: AI_PRESET_ERROR_RATE_PERFECT,
-    switchAggressiveness: 0.85,
+    switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_RIVAL,
     switchCooldownTurns: AI_RIVAL_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,
   },
   npc: {
     errorRate: AI_PRESET_ERROR_RATE_TACTICAL,
-    switchAggressiveness: 0.35,
+    switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_TACTICAL,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,

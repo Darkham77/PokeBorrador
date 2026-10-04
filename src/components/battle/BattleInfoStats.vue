@@ -79,21 +79,22 @@ function getSpeciesBaseStat(key: string): number {
 @use "@/styles/core/tools" as *;
 
 .stats-comparison-grid {
+  @include pixelated;
+
   display: flex;
   flex-direction: column;
   gap: 3px;
-  @include pixelated;
   font-size: 8px;
 
   .grid-header-row {
     display: grid;
     grid-template-columns: 28px 22px 14px 18px 26px 20px 1fr;
-    column-gap: 6px;
-    text-align: right;
-    color: Rgba(255, 255, 255, 0.4);
+    color: rgb(255 255 255 / 40%);
     font-weight: bold;
+    text-align: right;
+    column-gap: 6px;
     padding-bottom: 2px;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgb(255 255 255 / 5%);
 
     .grid-header:first-child {
       text-align: left;
@@ -102,23 +103,23 @@ function getSpeciesBaseStat(key: string): number {
 
   .grid-stat-row {
     display: grid;
-    grid-template-columns: 28px 22px 14px 18px 26px 20px 1fr;
-    column-gap: 6px;
-    text-align: right;
     align-items: center;
+    grid-template-columns: 28px 22px 14px 18px 26px 20px 1fr;
     padding: 1px 0;
+    text-align: right;
+    column-gap: 6px;
 
     .stat-name-col {
+      color: rgb(255 255 255 / 60%);
       text-align: left;
-      color: Rgba(255, 255, 255, 0.6);
     }
 
     .stat-bs-col {
-      color: Rgba(255, 255, 255, 0.5);
+      color: rgb(255 255 255 / 50%);
     }
 
     .stat-val-col {
-      color: Rgba(255, 255, 255, 0.85);
+      color: rgb(255 255 255 / 85%);
     }
 
     .stat-iv-col {
@@ -130,12 +131,12 @@ function getSpeciesBaseStat(key: string): number {
     }
 
     .stat-mult-col {
-      color: Rgba(255, 255, 255, 0.5);
+      color: rgb(255 255 255 / 50%);
     }
 
     .stat-final-col {
-      font-weight: bold;
       color: #FFF;
+      font-weight: bold;
     }
 
     &.is-up {

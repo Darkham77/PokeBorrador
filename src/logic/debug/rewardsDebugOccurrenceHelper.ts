@@ -17,6 +17,7 @@ export interface PastEventMatch {
 
 const WEEKLY_LOOKBACK_DAYS_LIMIT = -14 as const;
 const MONTHLY_LOOKBACK_DAYS_LIMIT = -45 as const;
+const MAX_END_HOUR_OF_DAY = 23 as const;
 
 function matchStaticEndDate(
   event: GameEvent,
@@ -54,7 +55,7 @@ function matchWeeklySchedule(
     if (days.includes(jsDay)) {
       const targetBase = startHour < endHour ? targetDay : targetDay.add({ days: 1 })
       const endZdt = targetBase.with({
-        hour: Math.min(23, Math.floor(endHour)),
+        hour: Math.min(MAX_END_HOUR_OF_DAY, Math.floor(endHour)),
         minute: Math.round((endHour % 1) * 60),
         second: 0,
         millisecond: 0
@@ -90,7 +91,7 @@ function matchMonthlyTrigger(
     const targetDay = nowZdt.add({ days: offset })
     if (predicate(targetDay)) {
       const endZdt = targetDay.with({
-        hour: Math.min(23, Math.floor(endHour)),
+        hour: Math.min(MAX_END_HOUR_OF_DAY, Math.floor(endHour)),
         minute: Math.round((endHour % 1) * 60),
         second: 0,
         millisecond: 0

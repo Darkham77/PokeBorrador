@@ -30,8 +30,12 @@ export interface E2ECheckpointDocument {
 
 export function getCheckpointFilePath(): string {
   const envPath = process.env.E2E_CHECKPOINT_FILE_PATH;
-  if (envPath && !envPath.includes('..')) {
-    return path.resolve(envPath);
+  if (envPath) {
+    const resolved = path.resolve(envPath);
+    const rel = path.relative(process.cwd(), resolved);
+    if (!rel.startsWith('..') && !path.isAbsolute(rel)) {
+      return resolved;
+    }
   }
   return path.resolve(process.cwd(), 'scratch/e2e_checkpoints.json');
 }

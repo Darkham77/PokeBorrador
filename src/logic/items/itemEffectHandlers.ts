@@ -2,6 +2,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ItemEffectResult } from '@/types/inventory/items'
 import type { ItemId } from '@/data/inventory/items'
 import { checkStoneEvolution } from '../evolution/evolutionLogic.ts'
+import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts'
 
 export function healHp(p: Pokemon, amount: number): ItemEffectResult {
   const currentHp = Number(p.hp || 0)
@@ -55,7 +56,7 @@ export function restorePP(p: Pokemon, amount: number): ItemEffectResult {
   let changed = false;
   p.moves.forEach(m => {
     if (!m) return;
-    const max = m.maxPP || 35; // Fallback
+    const max = m.maxPP || DEFAULT_MAX_PP_FALLBACK; // Fallback
     if (m.pp < max) {
       m.pp = Math.min(max, (m.pp || 0) + amount);
       if (m.pp > 0) {

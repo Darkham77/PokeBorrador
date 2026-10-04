@@ -68,24 +68,26 @@ const emit = defineEmits<{
 
 .empty-state {
   @include flex-center;
+
   flex-direction: column;
   padding: 60px 40px;
-  text-align: center;
-  border: 2px dashed Rgba(255, 255, 255, 0.05);
+  border: 2px dashed Rgb(255 255 255 / 5%);
   border-radius: 32px;
+  text-align: center;
   
   .empty-icon {
     font-size: 40px;
+    opacity: 0.3;
     margin-bottom: 20px;
     will-change: transform, filter, opacity;
   filter: Grayscale(1);
-    opacity: 0.3;
   }
 
   p {
     @include pixelated;
-    font-size: 8px;
+
     color: var(--gray);
+    font-size: 8px;
     letter-spacing: 2px;
   }
 }

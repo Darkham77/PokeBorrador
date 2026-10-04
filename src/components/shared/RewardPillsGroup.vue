@@ -125,29 +125,30 @@ function handlePillLeave(e: MouseEvent) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
   padding: 3px 8px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 6px;
+  background: Rgb(255 255 255 / 3%);
+  color: Rgb(241 245 249 / 90%);
   font-size: 9px;
   font-weight: 600;
-  color: Rgba(241, 245, 249, 0.9);
   cursor: help;
   user-select: none;
   box-sizing: border-box;
 
   .reward-sprite {
+    @include pixelated;
+
     width: 18px;
     height: 18px;
     object-fit: contain;
-    @include pixelated;
-    filter: Drop-Shadow(0 1px 2px Rgba(0, 0, 0, 0.4));
+    filter: Drop-Shadow(0 1px 2px Rgb(0 0 0 / 40%));
   }
 
   .reward-icon {
     font-size: 11px;
-    line-height: 1;
     font-weight: 700;
+    line-height: 1;
   }
 
   .reward-label {
@@ -156,20 +157,21 @@ function handlePillLeave(e: MouseEvent) {
 
   .reward-qty {
     @include pixelated;
-    font-size: 7px;
-    color: var(--yellow);
+
     padding: 1px 4px;
+    border: 1px solid Rgb(250 204 21 / 25%);
     border-radius: 3px;
-    background: Rgba(250, 204, 21, 0.12);
-    border: 1px solid Rgba(250, 204, 21, 0.25);
+    background: Rgb(250 204 21 / 12%);
+    color: var(--yellow);
+    font-size: 7px;
     margin-left: 2px;
   }
 
   // Color Variants
   &.money {
+    background: Rgb(74 222 128 / 4%);
     color: #4ade80;
-    border-color: Rgba(74, 222, 128, 0.2);
-    background: Rgba(74, 222, 128, 0.04);
+    border-color: Rgb(74 222 128 / 20%);
 
     .reward-icon {
       color: #4ade80;
@@ -178,9 +180,9 @@ function handlePillLeave(e: MouseEvent) {
   }
 
   &.bc {
+    background: Rgb(56 189 248 / 4%);
     color: #38bdf8;
-    border-color: Rgba(56, 189, 248, 0.2);
-    background: Rgba(56, 189, 248, 0.04);
+    border-color: Rgb(56 189 248 / 20%);
 
     .reward-icon {
       font-size: 10px;
@@ -188,13 +190,13 @@ function handlePillLeave(e: MouseEvent) {
   }
 
   &.pokemon {
+    background: Rgb(244 114 182 / 4%);
     color: #f472b6;
-    border-color: Rgba(244, 114, 182, 0.2);
-    background: Rgba(244, 114, 182, 0.04);
+    border-color: Rgb(244 114 182 / 20%);
   }
 
   &.item {
-    border-color: Rgba(255, 255, 255, 0.1);
+    border-color: Rgb(255 255 255 / 10%);
   }
 }
 

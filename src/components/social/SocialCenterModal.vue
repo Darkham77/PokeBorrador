@@ -179,9 +179,8 @@ onMounted(() => {
       @include shop-header-stat(var(--purple-light));
       
       &.level .value { 
-        @extend .colored; 
         color: var(--purple-light);
-        text-shadow: 0 0 15px Rgba(192, 132, 252, 0.25);
+        text-shadow: 0 0 15px Rgb(192 132 252 / 25%);
       }
     }
   }
@@ -199,70 +198,70 @@ onMounted(() => {
 
 .modal-tabs {
   display: flex;
-  background: Rgba(0, 0, 0, 0.3);
-  padding: 8px;
   gap: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+  padding: 8px;
+  background: Rgb(0 0 0 / 30%);
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
 
   button {
-    flex: 1;
-    background: Rgba(255, 255, 255, 0.02);
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-    padding: 12px 6px;
-    color: Rgba(255, 255, 255, 0.5);
     @include pixelated;
-    font-size: 8px;
-    cursor: pointer;
-    border-radius: 12px;
     
     position: relative;
+    padding: 12px 6px;
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: 12px;
+    background: Rgb(255 255 255 / 2%);
+    color: Rgb(255 255 255 / 50%);
+    font-size: 8px;
     font-weight: bold;
+    flex: 1;
+    cursor: pointer;
     white-space: nowrap;
 
-    @media (max-width: 580px) {
-      font-size: 7px;
-      padding: 10px 4px;
-    }
-
-    @media (max-width: 480px) {
-      font-size: 6px;
-      padding: 8px 2px;
-    }
-
     &:hover:not(.active) {
-      background: Rgba(255, 255, 255, 0.05);
-      color: Rgba(255, 255, 255, 0.8);
-      border-color: Rgba(199, 125, 255, 0.15);
+      background: Rgb(255 255 255 / 5%);
+      color: Rgb(255 255 255 / 80%);
+      border-color: Rgb(199 125 255 / 15%);
     }
 
     &.active {
-      background: Rgba(168, 85, 247, 0.15);
+      background: Rgb(168 85 247 / 15%);
       color: var(--purple-light);
-      border-color: Rgba(168, 85, 247, 0.3);
+      border-color: Rgb(168 85 247 / 30%);
       box-shadow: 
-        0 4px 15px Rgba(168, 85, 247, 0.1),
-        inset 0 0 10px Rgba(168, 85, 247, 0.1);
+        0 4px 15px Rgb(168 85 247 / 10%),
+        inset 0 0 10px Rgb(168 85 247 / 10%);
     }
 
     .badge-mini {
-      font-size: 9px;
-      background: Rgba(168, 85, 247, 0.3);
-      color: var(--purple-light);
       padding: 2px 6px;
+      border: 1px solid Rgb(168 85 247 / 20%);
       border-radius: 6px;
+      background: Rgb(168 85 247 / 30%);
+      color: var(--purple-light);
+      font-size: 9px;
       margin-left: 6px;
-      border: 1px solid Rgba(168, 85, 247, 0.2);
+    }
+
+    @media (width <= 580px) {
+      padding: 10px 4px;
+      font-size: 7px;
+    }
+
+    @media (width <= 480px) {
+      padding: 8px 2px;
+      font-size: 6px;
     }
   }
 }
 
 .modal-body {
+  min-height: 380px;
+  padding: 20px;
+  background: Rgb(13 10 25 / 20%); // Premium purple tint overlay
   flex: 1;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  min-height: 380px;
-  padding: 20px;
-  background: Rgba(13, 10, 25, 0.2); // Premium purple tint overlay
 }
 
 .social-tab-content {
@@ -273,14 +272,14 @@ onMounted(() => {
 }
 
 .empty-state {
-  text-align: center;
   padding: 60px 20px;
-  color: Rgba(148, 163, 184, 0.7);
+  color: Rgb(148 163 184 / 70%);
+  text-align: center;
   
   .icon {
     font-size: 40px;
     margin-bottom: 15px;
-    filter: Drop-Shadow(0 0 12px Rgba(168, 85, 247, 0.2));
+    filter: Drop-Shadow(0 0 12px Rgb(168 85 247 / 20%));
   }
   
   p {

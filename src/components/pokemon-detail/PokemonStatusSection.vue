@@ -7,6 +7,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
+import { MAXIMUM_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay'
 
 interface Props {
   pokemon: Pokemon
@@ -21,7 +22,7 @@ const p = computed(() => props.pokemon)
 
 const friendshipDetails = computed(() => getFriendshipTooltipDetails(p.value))
 const friendshipSeal = computed(() => friendshipDetails.value.seal)
-const friendshipPct = computed(() => (friendshipDetails.value.currentValue / 255) * 100)
+const friendshipPct = computed(() => (friendshipDetails.value.currentValue / MAXIMUM_FRIENDSHIP_VALUE) * 100)
 
 const friendshipTooltipDesc = computed(() => {
   const d = friendshipDetails.value
@@ -230,9 +231,9 @@ const abilityStyle = computed(() => ({
 
 .glass-inset {
   padding: 0; // Remove padding
-  margin-bottom: 0; // Standardized gap handled by parent or previous element
-  background: none; // Remove frame
   border: none; // Remove frame
+  background: none; // Remove frame
+  margin-bottom: 0; // Standardized gap handled by parent or previous element
   box-shadow: none; // Remove frame
 }
 
@@ -253,14 +254,15 @@ const abilityStyle = computed(() => ({
 }
 
 .bar-header {
+  @include pixelated;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  @include pixelated;
-  font-size: 10px;
-  margin-bottom: 6px;
   color: var(--white);
+  font-size: 10px;
   opacity: 0.9;
+  margin-bottom: 6px;
 }
 
 .friendship-val {
@@ -271,104 +273,110 @@ const abilityStyle = computed(() => ({
 
 .progress-outer {
   height: 16px;
-  background: Rgba(0,0,0,0.4);
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 6px;
+  background: Rgb(0 0 0 / 40%);
   overflow: hidden;
-  border: 1px solid Rgba(255,255,255,0.1);
-  box-shadow: inset 0 2px 4px Rgba(0,0,0,0.3);
+  box-shadow: inset 0 2px 4px Rgb(0 0 0 / 30%);
 }
 
-.progress-inner { 
+.progress-inner {
+  @include will-animate(width); 
+
   height: 100%; 
-  
   box-shadow: 0 0 10px currentColor;
-  @include will-animate(width);
 }
-.hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); color: Rgba(16, 185, 129, 1); }
-.hp-mid { background: Linear-Gradient(90deg, Rgba(245, 158, 11, 1), Rgba(251, 191, 36, 1)); color: Rgba(245, 158, 11, 1); }
-.hp-low { background: Linear-Gradient(90deg, Rgba(239, 68, 68, 1), Rgba(248, 113, 113, 1)); color: Rgba(239, 68, 68, 1); }
 
-.exp-fill { 
-  background: Linear-Gradient(90deg, Rgba(139, 92, 246, 1), Rgba(168, 85, 247, 1)); 
-  color: Rgba(139, 92, 246, 1);
-  @include will-animate(width);
+.hp-high { background: Linear-Gradient(90deg, Rgb(16 185 129 / 100%), Rgb(52 211 153 / 100%)); color: Rgb(16 185 129 / 100%); }
+
+.hp-mid { background: Linear-Gradient(90deg, Rgb(245 158 11 / 100%), Rgb(251 191 36 / 100%)); color: Rgb(245 158 11 / 100%); }
+
+.hp-low { background: Linear-Gradient(90deg, Rgb(239 68 68 / 100%), Rgb(248 113 113 / 100%)); color: Rgb(239 68 68 / 100%); }
+
+.exp-fill {
+  @include will-animate(width); 
+
+  background: Linear-Gradient(90deg, Rgb(139 92 246 / 100%), Rgb(168 85 247 / 100%)); 
+  color: Rgb(139 92 246 / 100%);
 }
 
 .level-fill {
-  background: linear-gradient(90deg, #0ea5e9, #38bdf8, #60a5fa);
-  color: #38bdf8;
   @include will-animate(width);
+
+  background: Linear-Gradient(90deg, #0ea5e9, #38bdf8, #60a5fa);
+  color: #38bdf8;
 }
 
 .friendship-distrust {
-  background: linear-gradient(90deg, #475569, #64748b);
+  background: Linear-Gradient(90deg, #475569, #64748b);
   color: #64748b;
 }
 
 .friendship-sprout {
-  background: linear-gradient(90deg, #16a34a, #4ade80);
+  background: Linear-Gradient(90deg, #16a34a, #4ade80);
   color: #22c55e;
 }
 
 .friendship-comrade {
-  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  background: Linear-Gradient(90deg, #2563eb, #60a5fa);
   color: #3b82f6;
 }
 
 .friendship-radiant {
-  background: linear-gradient(90deg, #c026d3, #f472b6);
+  background: Linear-Gradient(90deg, #c026d3, #f472b6);
   color: #e879f9;
 }
 
 .friendship-best-friends {
-  background: linear-gradient(90deg, #d97706, #fbbf24, #fef08a);
+  background: Linear-Gradient(90deg, #d97706, #fbbf24, #fef08a);
   color: #fbbf24;
 }
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
   margin-bottom: 24px;
 }
 
 .info-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
-  padding: 16px 8px; // Slightly less horizontal padding to allow more space
   display: flex !important; // Override PVTooltip inline-flex
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  text-align: center;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  
-  cursor: help;
+  align-items: center;
   min-height: 70px; // Ensure consistent height
+  padding: 16px 8px; // Slightly less horizontal padding to allow more space
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 16px;
+  background: Rgb(255 255 255 / 3%);
+  text-align: center;
+  cursor: help;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.05);
+    background: Rgb(255 255 255 / 5%);
     transform: Translatey(-2px);
   }
 }
 
 .info-card .label {
-  display: block;
   @include pixelated;
-  font-size: 8px; // Slightly smaller to prevent overlap
+  @include pixelated;
+
+  display: block;
   color: var(--gray);
+  font-size: 8px; // Slightly smaller to prevent overlap
+  opacity: 0.8;
   text-transform: uppercase;
   margin-bottom: 8px; // Good separation
-  opacity: 0.8;
-  @include pixelated;
 }
 
 .info-card .val {
+  @include pixelated;
+  @include pixelated;
+
   display: block;
-  @include pixelated;
-  font-size: 10px; // Standardized size for all values
   color: var(--white);
-  @include pixelated;
+  font-size: 10px; // Standardized size for all values
   
   &.interactive-val {
     display: inline-block; // To keep the dotted border tight
@@ -382,40 +390,44 @@ const abilityStyle = computed(() => ({
 }
 
 .info-card .val.vigor-val,
-.vigor-val { 
-  color: var(--yellow) !important; 
-  text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3) !important;
+.vigor-val {
   display: inline-flex !important;
-  align-items: center !important;
   justify-content: center !important;
-  gap: 4px;
+  align-items: center !important;
+  gap: 4px; 
+  color: var(--yellow) !important; 
+  text-shadow: 0 0 10px Rgb(255 214 10 / 30%) !important;
 }
 
 .egg-born-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: Rgba(16, 185, 129, 0.12);
-  border: 1px solid Rgba(16, 185, 129, 0.3);
-  color: #34d399;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 10px;
-  margin: 0 auto 16px auto;
-  width: fit-content;
-  text-shadow: 0 0 5px Rgba(52, 211, 153, 0.3);
-  box-shadow: 0 0 10px Rgba(52, 211, 153, 0.1);
-  font-weight: bold;
   @include pixelated;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 0 auto 16px;
+  padding: 4px 10px;
+  border: 1px solid Rgb(16 185 129 / 30%);
+  border-radius: 6px;
+  background: Rgb(16 185 129 / 12%);
+  color: #34d399;
+  font-size: 10px;
+  font-weight: bold;
+  text-shadow: 0 0 5px Rgb(52 211 153 / 30%);
+  box-shadow: 0 0 10px Rgb(52 211 153 / 10%);
 }
 
 .mt-12 { margin-top: 12px; }
+
 .max-text { color: var(--yellow); font-size: 8px; }
+
 .level-text { color: #38bdf8; font-size: 8px; }
+
 .exp-text { color: var(--purple-light); font-size: 8px; }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .glass-inset { margin-bottom: 24px; }
   .bar-header { font-size: 8px; margin-bottom: 8px; }
   .progress-outer { height: 10px; }

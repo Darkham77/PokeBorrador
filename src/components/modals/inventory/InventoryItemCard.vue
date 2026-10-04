@@ -275,14 +275,17 @@ onMounted(() => {
 
 .inventory-item-card {
   @include card-premium(16px);
+  @include gpu-layer;
+  @include item-tier-card;
+
+  position: relative;
   width: 100%;
   min-width: 0; // Fix grid cell overflow
+  border: 1px solid Rgb(255 255 255 / 5%);
+  background: Rgb(255 255 255 / 2%);
   aspect-ratio: 1 / 1.35; // Adjusted for descriptive name space
   align-self: start; // Prevent vertical stretch
-  position: relative;
   overflow: visible !important; // Permitir que el badge respire por debajo
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
   cursor: pointer;
   container-type: inline-size;
 
@@ -291,130 +294,129 @@ onMounted(() => {
     display: flex !important;
     flex-direction: column;
     align-items: center;
+    gap: clamp(4px, 6cqw, 8px);
     width: 100%;
     height: 100%;
     padding: clamp(6px, 8cqw, 12px);
-    gap: clamp(4px, 6cqw, 8px);
     box-sizing: border-box;
   }
 
-  @include gpu-layer;
-
   &::before {
-    content: '';
     position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
-    opacity: 0.4; // Consistent base sheen
-    pointer-events: none;
     z-index: var(--z-map-floor);
     border-radius: inherit;
+    background: Radial-Gradient(circle at top right, Rgb(255 255 255 / 10%), transparent 70%);
+    opacity: 0.4; // Consistent base sheen
+    content: '';
+    inset: 0;
+    pointer-events: none;
   }
   
   // TIER VARIANTS — borders always visible, no badge needed
   &.tier-common {
-    border-color: Rgba(148, 163, 184, 0.45);
-    box-shadow: 0 0 10px Rgba(148, 163, 184, 0.15), inset 0 0 6px Rgba(148, 163, 184, 0.05);
-    .item-bg-glow { background: radial-gradient(circle, Rgba(148, 163, 184, 0.12) 0%, transparent 70%); }
+    border-color: Rgb(148 163 184 / 45%);
+    box-shadow: 0 0 10px Rgb(148 163 184 / 15%), inset 0 0 6px Rgb(148 163 184 / 5%);
+    .item-bg-glow { background: Radial-Gradient(circle, Rgb(148 163 184 / 12%) 0%, transparent 70%); }
   }
 
-  @include item-tier-card;
-
   .item-visual-wrap {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
     min-height: 0;
+    flex: 1;
 
     .item-bg-glow {
       position: absolute;
+      z-index: var(--z-base);
       width: 60%;
       height: 60%;
-      background: radial-gradient(circle, Rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      background: Radial-Gradient(circle, Rgb(255 255 255 / 10%) 0%, transparent 70%);
       will-change: transform, filter, opacity;
       filter: Blur(5px);
-      z-index: var(--z-base);
     }
 
     .item-sprite {
+      @include pixelated;
+
+      z-index: calc(var(--z-base) + 1);
       width: clamp(28px, 45cqw, 72px);
       height: clamp(28px, 45cqw, 72px);
       object-fit: contain;
-      @include pixelated;
-      z-index: calc(var(--z-base) + 1);
       will-change: transform, filter, opacity;
-      filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
+      filter: Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
     }
 
     .fallback-icon {
-      font-size: clamp(16px, 30cqw, 40px);
       z-index: calc(var(--z-base) + 1);
+      font-size: clamp(16px, 30cqw, 40px);
     }
 
     .quantity-pill {
       position: absolute;
-      bottom: clamp(2px, 4cqw, 6px);
       right: clamp(2px, 4cqw, 6px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid var(--yellow); 
-      padding: clamp(1px, 2cqw, 2px) clamp(4px, 6cqw, 8px);
-      border-radius: 6px;
-      box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.4);
+      bottom: clamp(2px, 4cqw, 6px);
       z-index: var(--z-low);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2px;
       min-width: clamp(28px, 32cqw, 36px);
-      height: clamp(14px, 16cqw, 18px);
+      height: clamp(14px, 16cqw, 18px); 
+      padding: clamp(1px, 2cqw, 2px) clamp(4px, 6cqw, 8px);
+      border: 1px solid var(--yellow);
+      border-radius: 6px;
+      background: Linear-Gradient(135deg, #1e293b, #0f172a);
+      box-shadow: 0 4px 10px Rgb(0 0 0 / 40%);
       box-sizing: border-box;
 
       .label {
-        font-size: clamp(8px, 6cqw, 9px);
         color: var(--yellow);
+        font-size: clamp(8px, 6cqw, 9px);
         margin-top: -1px; // Pixel font alignment
       }
 
       .value {
         @include pixelated;
+
+        color: white;
         font-size: clamp(8px, 6cqw, 9px);
         font-weight: 900;
-        color: white;
       }
     }
   }
 
   .item-footer {
-    width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    padding-top: clamp(2px, 3cqw, 4px);
-    border-top: 1px solid Rgba(255, 255, 255, 0.05);
+    align-items: center;
+    width: 100%;
     height: 3.8em;
+    padding-top: clamp(2px, 3cqw, 4px);
+    border-top: 1px solid Rgb(255 255 255 / 5%);
     box-sizing: border-box;
 
     .item-name {
+      @include pixelated;
+
       display: -webkit-box;
+      width: 100%;
+      color: Rgb(255 255 255 / 90%);
+      line-height: 1.45;
+      text-align: center;
       -webkit-line-clamp: 2;
       line-clamp: 2;
       -webkit-box-orient: vertical;
-      @include pixelated;
-      line-height: 1.45;
       padding-top: 2px;
       padding-bottom: 2px;
-      color: Rgba(255, 255, 255, 0.9);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: normal;
       overflow-wrap: break-word;
       word-break: normal;
-      width: 100%;
-      text-align: center;
     }
   }
 
@@ -423,31 +425,32 @@ onMounted(() => {
     position: absolute;
     bottom: -10px;
     left: 50%;
-    transform: Translatex(-50%);
+    z-index: calc(var(--z-low) + 2);
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    background: linear-gradient(135deg, #15803d, #166534);
+    padding: clamp(2px, 2cqw, 3px) clamp(6px, 8cqw, 10px);
     border: 1px solid #22c55e;
     border-radius: 99px;
-    padding: clamp(2px, 2cqw, 3px) clamp(6px, 8cqw, 10px);
-    box-shadow: 0 2px 10px Rgba(34, 197, 94, 0.45), 0 0 0 1px Rgba(34, 197, 94, 0.15);
+    background: Linear-Gradient(135deg, #15803d, #166534);
+    transform: Translatex(-50%);
+    box-shadow: 0 2px 10px Rgb(34 197 94 / 45%), 0 0 0 1px Rgb(34 197 94 / 15%);
     white-space: nowrap;
-    z-index: calc(var(--z-low) + 2);
     pointer-events: none;
 
     .pill-icon {
-      font-size: clamp(7px, 7cqw, 9px);
       color: #86efac;
-      line-height: 1;
       font-family: sans-serif !important;
+      font-size: clamp(7px, 7cqw, 9px);
+      line-height: 1;
     }
 
     .pill-amount {
       @include pixelated;
+
+      color: #dcfce7;
       font-size: clamp(6.5px, 7cqw, 8.5px);
       font-weight: 900;
-      color: #dcfce7;
       letter-spacing: 0.03em;
     }
   }
@@ -459,26 +462,26 @@ onMounted(() => {
     z-index: calc(var(--z-low) + 1);
 
     .check-box {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
       width: clamp(12px, 15cqw, 18px);
       height: clamp(12px, 15cqw, 18px);
-      background: Rgba(0, 0, 0, 0.4);
-      border: 1px solid Rgba(255, 255, 255, 0.2);
+      border: 1px solid Rgb(255 255 255 / 20%);
       border-radius: 4px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      will-change: background-color, border-color, box-shadow;
+      background: Rgb(0 0 0 / 40%);
       color: white;
+      will-change: background-color, border-color, box-shadow;
 
       .checkmark-svg {
+        display: block;
         width: 70%;
         height: 70%;
         stroke: currentColor;
-        display: block;
       }
 
       &.checked {
-        color: #000000 !important;
+        color: #000 !important;
       }
     }
   }

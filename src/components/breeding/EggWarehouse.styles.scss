@@ -10,56 +10,58 @@
   align-items: center;
   margin-bottom: 24px;
   
-  h3 { @include pixelated; font-size: 10px; color: $pokecenter-pink; margin-bottom: 6px; }
-  p { font-size: 12px; color: $muted; }
+  h3 { @include pixelated; color: $pokecenter-pink; font-size: 10px; margin-bottom: 6px; }
+  p { color: $muted; font-size: 12px; }
 
   .scanner-cooldown-text {
     @include pixelated;
-    font-size: 8px;
-    color: #ef4444;
-    margin-top: 4px;
-    background: Rgba(239, 68, 68, 0.1);
-    border: 1px solid Rgba(239, 68, 68, 0.3);
-    padding: 2px 6px;
-    border-radius: 4px;
+
     display: inline-block;
+    padding: 2px 6px;
+    border: 1px solid rgb(239 68 68 / 30%);
+    border-radius: 4px;
+    background: rgb(239 68 68 / 10%);
+    color: #ef4444;
+    font-size: 8px;
+    margin-top: 4px;
   }
 }
 
 .count-badge {
-  background: Rgba($pokecenter-pink, 0.08);
-  border: 1px solid Rgba($pokecenter-pink, 0.3);
-  color: $pokecenter-pink;
   padding: 6px 12px;
+  border: 1px solid rgba($pokecenter-pink, 0.3);
   border-radius: 99px;
+  background: rgba($pokecenter-pink, 0.08);
+  color: $pokecenter-pink;
   font-size: 12px;
   font-weight: 800;
   
   &.empty {
-    background: Rgba(148, 163, 184, 0.1);
-    border-color: Rgba(148, 163, 184, 0.2);
+    background: rgb(148 163 184 / 10%);
     color: $muted;
+    border-color: rgb(148 163 184 / 20%);
   }
 }
 
 .empty-state {
-  text-align: center;
   padding: 60px 20px;
-  color: Rgba(71, 85, 105, 1);
+  color: rgb(71 85 105 / 100%);
+  text-align: center;
   
-  .icon { margin-bottom: 16px; display: flex; justify-content: center; }
+  .icon { display: flex; justify-content: center; margin-bottom: 16px; }
   .egg-sprite-empty {
+    @include pixelated;
+
     width: 64px;
     height: 64px;
     opacity: 0.3;
-    @include pixelated;
   }
   p { font-size: 14px; }
 }
 
 .egg-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
 

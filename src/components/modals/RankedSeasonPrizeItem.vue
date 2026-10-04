@@ -75,9 +75,9 @@ const prizeType = computed(() => String(props.prize.type || ''))
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background: Rgba(15, 23, 42, 0.6);
-  border: 1px solid Rgba(148, 163, 184, 0.2);
+  border: 1px solid rgb(148 163 184 / 20%);
   border-radius: 8px;
+  background: rgb(15 23 42 / 60%);
 
   .prize-icon {
     font-size: 1.3rem;
@@ -88,15 +88,15 @@ const prizeType = computed(() => String(props.prize.type || ''))
     flex-direction: column;
 
     .prize-title {
+      color: #f8fafc;
       font-size: 0.8rem;
       font-weight: 700;
-      color: #f8fafc;
       text-transform: uppercase;
     }
 
     .prize-sub {
-      font-size: 0.7rem;
       color: #94a3b8;
+      font-size: 0.7rem;
     }
   }
 }

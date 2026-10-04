@@ -289,9 +289,9 @@ function toggleSeason(s: string | null) {
 }
 
 .btn-vicio-neutral.btn-vicio-sm {
+  height: auto;
   padding: 4px 10px;
   font-size: 8px;
-  height: auto;
 }
 
 .time-debug-controls {

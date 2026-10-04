@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { mapDbRecordToBattleReplay, parseJsonSafe } from '@/components/social/chatBattleCodeHelper'
+import { mapDbRecordToBattleReplay } from '@/components/social/chatBattleCodeHelper'
+import { parseJsonSafe } from '@/logic/utils/jsonUtils'
 import {
   formatSoldDetails,
   getFriendlySourceType,

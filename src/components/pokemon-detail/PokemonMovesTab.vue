@@ -141,11 +141,11 @@ function handleReorder(fromIndex: number, toIndex: number) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/pokemon-detail/_vicio-panes.scss";
+@use "@/styles/components/pokemon-detail/_vicio-panes";
 
 :deep(.pv-tooltip-wrapper) {
-  width: 100%;
   display: block;
+  width: 100%;
 }
 
 .infinity-emoji {

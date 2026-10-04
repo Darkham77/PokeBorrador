@@ -36,10 +36,10 @@ export const CLIENT_SIM_DECOUPLING_RULES: readonly ClientSimDecouplingRuleId[] =
 ] as const;
 
 export const CLIENT_SIM_DECOUPLING_DESCRIPTIONS: Record<ClientSimDecouplingRuleId, string> = {
-  'client-sim-value-import': 'Import de valor de @pkmn/sim en cliente',
-  'client-randoms-value-import': 'Import de @pkmn/randoms en cliente',
-  'client-sim-chunk-configured': 'Chunk de Showdown en cliente Vite',
-  'client-sim-chunk-present': 'Chunk de Showdown presente en dist'
+  'client-sim-value-import': 'Import de valor de @pkmn/sim',
+  'client-randoms-value-import': 'Import de @pkmn/randoms',
+  'client-sim-chunk-configured': 'Chunk en cliente Vite',
+  'client-sim-chunk-present': 'Chunk presente en dist'
 };
 
 export interface SimImportIssue {
@@ -232,7 +232,9 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
       id: 'validate_client_sim_decoupling',
       name: 'Client Showdown Decoupling Auditor',
       description: 'Verifica desacoplamiento total de Showdown en cliente',
+      icon: '🔌',
       family: 'architecture',
+      packageName: 'Showdown',
       ruleIds: CLIENT_SIM_DECOUPLING_RULES,
       ruleDescriptions: CLIENT_SIM_DECOUPLING_DESCRIPTIONS,
       requiresAst: true

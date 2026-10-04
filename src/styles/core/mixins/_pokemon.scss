@@ -4,12 +4,17 @@
 @use "../functions" as *;
 
 @mixin pokemon-card-standard($radius: 20px) {
-  position: relative;
   @include shell(Rgba(30, 41, 59, 0.5));
+
+  position: relative;
+  border: 1px solid Rgb(255 255 255 / 15%);
   border-radius: $radius;
   overflow: hidden; // Absolute clip
-  border: 1px solid Rgba(255, 255, 255, 0.15);
   background-clip: padding-box; // Extra safety for bg bleed
+
+  &:hover {
+    &::before { opacity: 1; }
+  }
 
   // Ensure only background-filling headers respect the radius
   > .card-header, 
@@ -18,19 +23,16 @@
     border-top-left-radius: inherit;
     border-top-right-radius: inherit;
   }
+
   // removed will-change and contain to avoid layer explosion
   
   &::before {
-    content: '';
     position: absolute;
-    inset: 0;
-    background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
+    background: Radial-Gradient(circle at top right, Rgb(255 255 255 / 10%), transparent 70%);
     opacity: 0.4; // Consistent base sheen
+    content: '';
+    inset: 0;
     pointer-events: none;
-  }
-
-  &:hover {
-    &::before { opacity: 1; }
   }
 
   &.selected {
@@ -41,118 +43,124 @@
 
 @mixin pokemon-list-item-standard($radius: 12px) {
   @include premium-card-hover(var(--tier-color, #1e293b), 1.02, -4px);
-  @include shell(transparent); 
-  background: linear-gradient(135deg, Rgba(30, 41, 59, 0.8), Rgba(15, 23, 42, 0.95)) !important;
-  border-radius: $radius;
-  position: relative;
-  overflow: hidden; // Prevent corner bleeding
-  border: 1px solid var(--tier-color, Rgba(255, 255, 255, 0.18)) !important;
-  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4), 0 0 10px Rgba(255, 255, 255, 0.02);
+  @include shell(transparent);
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.18), transparent 70%);
-    opacity: 0.5; // More present in base state
-    pointer-events: none;
-    z-index: calc(var(--z-base) + 1);
-  }
+  position: relative;
+  border: 1px solid var(--tier-color, Rgb(255 255 255 / 18%)) !important;
+  border-radius: $radius; 
+  background: Linear-Gradient(135deg, Rgb(30 41 59 / 80%), Rgb(15 23 42 / 95%)) !important;
+  overflow: hidden; // Prevent corner bleeding
+  box-shadow: 0 4px 15px Rgb(0 0 0 / 40%), 0 0 10px Rgb(255 255 255 / 2%);
 
   &:hover:not(.locked) {
     &::before { opacity: 1; }
   }
 
+  &::before {
+    position: absolute;
+    z-index: calc(var(--z-base) + 1);
+    background: Radial-Gradient(circle at top right, Rgb(255 255 255 / 18%), transparent 70%);
+    opacity: 0.5; // More present in base state
+    content: '';
+    inset: 0;
+    pointer-events: none;
+  }
+
   &.selected {
+    background: Rgb(10 132 255 / 15%) !important;
     outline: none;
     border-color: transparent !important;
     box-shadow: 
-      Inset 0 0 0 4px var(--blue),
-      0 0 25px Rgba(10, 132, 255, 0.4) !important;
-    background: Rgba(10, 132, 255, 0.15) !important;
+      inset 0 0 0 4px var(--blue),
+      0 0 25px Rgb(10 132 255 / 40%) !important;
   }
 }
 
 @mixin pokemon-sprite-base-standard {
   @include sprite-render;
+
   will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 8px 12px Rgba(0, 0, 0, 0.3));
+  filter: Drop-Shadow(0 8px 12px Rgb(0 0 0 / 30%));
 }
 
 @mixin pokemon-sprite-hover-standard {
   transform: Translatey(-6px);
   will-change: transform, filter, opacity;
-  filter: Brightness(1.1) Drop-Shadow(0 15px 25px Rgba(0, 0, 0, 0.5));
+  filter: Brightness(1.1) Drop-Shadow(0 15px 25px Rgb(0 0 0 / 50%));
 }
 
 @mixin pokemon-silhouette($outline-color: Rgba(255, 255, 255, 0.6)) {
+  opacity: 1 !important;
   will-change: transform, filter, opacity;
   filter: pokemon-silhouette-optimized();
-  opacity: 1 !important;
 }
 
 @mixin type-pill($size: 7px) {
+  @include text-outline(#000, 1px);
+
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 5px 12px; // Unified even padding
+  border: 1px solid Rgb(0 0 0 / 25%);
   border-radius: 60px;
   color: white;
-  font-weight: 900;
+  font-family: var(--font-pixel);
   font-size: $size;
+  font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.3), inset 0 1px 0 Rgba(255, 255, 255, 0.25);
-  border: 1px solid Rgba(0, 0, 0, 0.25);
-  background-image: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.22) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.3) 100%);
+  box-shadow: 0 4px 10px Rgb(0 0 0 / 30%), inset 0 1px 0 Rgb(255 255 255 / 25%);
+  background-image: Linear-Gradient(135deg, Rgb(255 255 255 / 22%) 0%, Rgb(255 255 255 / 0%) 50%, Rgb(0 0 0 / 30%) 100%);
   background-clip: padding-box;
-  @include text-outline(#000, 1px);
-  font-family: var(--font-pixel);
   white-space: nowrap;
 }
 
 @mixin type-pill-mini($size: 7px) {
+  @include text-outline(#000, 1px);
+
   display: inline-flex;
-  align-items: center;
   justify-content: center;
-  padding: 2px 6px; 
+  align-items: center;
+  padding: 2px 6px;
+  border: 1px solid Rgb(0 0 0 / 20%); 
   border-radius: 10px;
+  color: white;
   font-family: var(--font-pixel);
   font-size: $size;
-  color: white;
   text-transform: uppercase;
-  border: 1px solid Rgba(0, 0, 0, 0.2);
-  background-image: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.18) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.25) 100%);
+  background-image: Linear-Gradient(135deg, Rgb(255 255 255 / 18%) 0%, Rgb(255 255 255 / 0%) 50%, Rgb(0 0 0 / 25%) 100%);
   background-clip: padding-box;
-  @include text-outline(#000, 1px);
-  box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px Rgb(0 0 0 / 20%);
   white-space: nowrap;
 }
 
 @mixin pokemon-card-premium-tier($tier-color: var(--tier-color)) {
+  background: color-mix(in srgb, var(--tier-color, #ffd60a), transparent 92%) !important;
+
   // Restore elegant global standard - NO dirt, NO thick borders
   border-color: var(--tier-color, #ffd60a) !important;
-  background: color-mix(in srgb, var(--tier-color, #ffd60a), transparent 92%) !important;
   box-shadow: 0 0 15px color-mix(in srgb, var(--tier-color, #ffd60a), transparent 80%) !important;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border: 1px solid var(--tier-color, #ffd60a);
-    opacity: 0.6;
-    pointer-events: none;
-    z-index: calc(var(--z-base) + 5);
-    box-sizing: border-box;
-    @include gpu-layer;
-    box-shadow: Inset 0 0 10px color-mix(in srgb, var(--tier-color, #ffd60a), transparent 70%);
-  }
 
   &:hover {
     &::after {
       opacity: 1;
       border-color: var(--blue);
     }
+  }
+  
+  &::after {
+    @include gpu-layer;
+
+    position: absolute;
+    z-index: calc(var(--z-base) + 5);
+    border: 1px solid var(--tier-color, #ffd60a);
+    border-radius: inherit;
+    opacity: 0.6;
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    box-sizing: border-box;
+    box-shadow: Inset 0 0 10px color-mix(in srgb, var(--tier-color, #ffd60a), transparent 70%);
   }
 }

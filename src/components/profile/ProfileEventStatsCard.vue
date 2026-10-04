@@ -118,77 +118,77 @@ const formatNum = (num: number) => formatCurrency(num)
 
   .podium-medals-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .event-stat-icon {
     font-size: 16px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
+    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
   }
 
   .medal-icon {
     font-size: 14px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
+    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
   }
 
   .highlight-participations {
-    background: linear-gradient(135deg, Rgba(168, 85, 247, 0.08) 0%, Rgba(15, 23, 42, 0.6) 100%);
-    border-color: Rgba(168, 85, 247, 0.25);
+    background: Linear-Gradient(135deg, Rgb(168 85 247 / 8%) 0%, Rgb(15 23 42 / 60%) 100%);
+    border-color: Rgb(168 85 247 / 25%);
 
     .stat-val {
       color: #c084fc;
-      text-shadow: 0 0 10px Rgba(192, 132, 252, 0.4);
+      text-shadow: 0 0 10px Rgb(192 132 252 / 40%);
     }
   }
 
   .highlight-medals-total {
-    background: linear-gradient(135deg, Rgba(250, 204, 21, 0.08) 0%, Rgba(15, 23, 42, 0.6) 100%);
-    border-color: Rgba(250, 204, 21, 0.3);
+    background: Linear-Gradient(135deg, Rgb(250 204 21 / 8%) 0%, Rgb(15 23 42 / 60%) 100%);
+    border-color: Rgb(250 204 21 / 30%);
 
     .stat-val {
       color: #facc15;
-      text-shadow: 0 0 10px Rgba(250, 204, 21, 0.4);
+      text-shadow: 0 0 10px Rgb(250 204 21 / 40%);
     }
   }
 
   .medal-item {
-    padding: 12px 6px;
     gap: 6px;
+    padding: 12px 6px;
 
     &.gold {
-      background: linear-gradient(135deg, Rgba(234, 179, 8, 0.12) 0%, Rgba(15, 23, 42, 0.7) 100%);
-      border-color: Rgba(234, 179, 8, 0.35);
+      background: Linear-Gradient(135deg, Rgb(234 179 8 / 12%) 0%, Rgb(15 23 42 / 70%) 100%);
+      border-color: Rgb(234 179 8 / 35%);
 
       .gold-text {
         color: #fde047;
-        text-shadow: 0 0 8px Rgba(253, 224, 71, 0.5);
+        text-shadow: 0 0 8px Rgb(253 224 71 / 50%);
       }
     }
 
     &.silver {
-      background: linear-gradient(135deg, Rgba(148, 163, 184, 0.12) 0%, Rgba(15, 23, 42, 0.7) 100%);
-      border-color: Rgba(148, 163, 184, 0.35);
+      background: Linear-Gradient(135deg, Rgb(148 163 184 / 12%) 0%, Rgb(15 23 42 / 70%) 100%);
+      border-color: Rgb(148 163 184 / 35%);
 
       .silver-text {
         color: #e2e8f0;
-        text-shadow: 0 0 8px Rgba(226, 232, 240, 0.5);
+        text-shadow: 0 0 8px Rgb(226 232 240 / 50%);
       }
     }
 
     &.bronze {
-      background: linear-gradient(135deg, Rgba(249, 115, 22, 0.12) 0%, Rgba(15, 23, 42, 0.7) 100%);
-      border-color: Rgba(249, 115, 22, 0.35);
+      background: Linear-Gradient(135deg, Rgb(249 115 22 / 12%) 0%, Rgb(15 23 42 / 70%) 100%);
+      border-color: Rgb(249 115 22 / 35%);
 
       .bronze-text {
         color: #fdba74;
-        text-shadow: 0 0 8px Rgba(253, 186, 116, 0.5);
+        text-shadow: 0 0 8px Rgb(253 186 116 / 50%);
       }
     }
 
     .stat-val {
-      font-size: 13px;
       gap: 4px;
+      font-size: 13px;
     }
 
     .stat-lbl {

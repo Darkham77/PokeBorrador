@@ -16,6 +16,7 @@
 @use "@/styles/core/tools" as *;
 
 .hud-sidebar-left {
+
   position: fixed;
   bottom: 20px;
   left: 20px;
@@ -23,17 +24,17 @@
   display: flex;
   flex-direction: column-reverse;
   gap: 12px;
-  pointer-events: none;
   transform: Translatez(0);
+  pointer-events: none;
+
+  @include responsive(hud-mobile) {
+    bottom: 100px;
+  }
   
 
   /* Ensure items are clickable even if the container is passthrough */
   :deep(> *) {
     pointer-events: auto;
-  }
-
-  @include responsive(hud-mobile) {
-    bottom: 100px;
   }
 }
 </style>

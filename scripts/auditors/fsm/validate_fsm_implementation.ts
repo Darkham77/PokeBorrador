@@ -146,17 +146,22 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
       id: 'validate_fsm_implementation',
       name: 'FSM Implementation Validator',
       description: 'Fallas de implementación, idempotencia o asientos en FSM',
+      icon: '🕹️',
       family: 'fsm',
       ruleIds: FSM_IMPLEMENTATION_RULES,
       packageName: 'FSM',
       ruleDescriptions: {
         'fsm-mermaid-missing-in-js': 'Estado Mermaid no implementado',
+        'fsm-unused-constant': 'Constante de estado sin uso',
+        'fsm-orphan-substate': 'Subestado huérfano en FSM',
+        'fsm-non-atomic-timer': 'Timer no atómico en transición',
+        'fsm-unawaited-substate': 'Subestado sin await detectado',
         'fsm-missing-idempotency-guard': 'Falta guarda de idempotencia',
         'fsm-missing-seat-rule': 'Falta regla de asiento',
         'fsm-missing-level-up-cycle': 'Falta ciclo de level-up',
         'fsm-missing-persistence-mode': 'Modo sin persistencia asociada',
         'fsm-nonexistent-state-reference': 'Referencia a estado inexistente',
-        'fsm-invalid-suppression': 'Supresión inválida'
+        'fsm-invalid-suppression': 'Supresión inválida en FSM'
       },
       requiredFiles: [IMPL_MANUAL_PATH, IMPL_FSM_PATH]
     });

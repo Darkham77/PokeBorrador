@@ -3,6 +3,7 @@ import { getMapBiomeAndTags } from '../biomeHelper.ts'
 import { logger } from '../../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleState } from '@/types/battle/battle'
 import { resetActiveBattleState } from '../orchestratorStateHelper.ts'
 import { processRocketStealMechanics } from '../orchestratorRocketHelper.ts'
 import { initWorkerForBattle } from '../orchestratorWorkerInitHelper.ts'
@@ -39,8 +40,7 @@ async function executeIntroByMode(
   isTrainer: boolean,
   wasSearching: boolean,
   trainerName: string | undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  battleState: any
+  battleState: BattleState | null | undefined
 ): Promise<void> {
   const currentPlayer = ctx.activeBattle.value?.player
   const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
@@ -87,8 +87,7 @@ async function applyPostIntroSetup(
   isTrainer: boolean,
   isGym: boolean,
   trainerName: string | undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  battleState: any
+  battleState: BattleState | null
 ): Promise<void> {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('resize'))

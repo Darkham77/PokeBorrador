@@ -56,9 +56,9 @@ function handleClose() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 16px 12px;
   gap: 14px;
+  padding: 16px 12px;
+  text-align: center;
 }
 
 .offline-icon {
@@ -66,17 +66,17 @@ function handleClose() {
 }
 
 .offline-message {
+  margin: 0;
+  color: #f87171;
   font-family: var(--font-pixel);
   font-size: 11px;
-  color: #f87171;
   line-height: 1.4;
-  margin: 0;
 }
 
 .offline-actions {
-  width: 100%;
   display: flex;
   justify-content: center;
+  width: 100%;
   margin-top: 8px;
 
   button {

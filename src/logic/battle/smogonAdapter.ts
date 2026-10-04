@@ -71,12 +71,13 @@ export interface SmogonTooltipResult {
 // ── LRU cache (512 entries) ───────────────────────────────────────────────────
 
 const CACHE_SIZE = 512;
+const CACHE_EVICTION_RATIO = 0.25 as const;
 const cache = new Map<string, SmogonTooltipResult>();
 const cacheOrder: string[] = []; // no-domain: Non-domain utility collection or data structure
 
 function addToCache(key: string, result: SmogonTooltipResult): void {
   if (cache.size >= CACHE_SIZE) {
-    const toEvict = cacheOrder.splice(0, Math.floor(CACHE_SIZE * 0.25));
+    const toEvict = cacheOrder.splice(0, Math.floor(CACHE_SIZE * CACHE_EVICTION_RATIO));
     for (const k of toEvict) cache.delete(k);
   }
   cache.set(key, result);

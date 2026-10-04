@@ -197,6 +197,7 @@ async function repairAllIllegal() {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .debug-tab-content {
   display: flex;
   flex-direction: column;
@@ -205,59 +206,55 @@ async function repairAllIllegal() {
 
 .debug-section-title {
   @include pixelated;
-  font-size: 8px;
-  color: var(--yellow);
-  margin-bottom: 10px;
   @include pixelated;
+
+  color: var(--yellow);
+  font-size: 8px;
+  margin-bottom: 10px;
 }
 
 .debug-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
   padding: 16px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 3%);
   
   &.full-width { width: 100%; }
-  &.empty { 
+  &.empty {
+    @include pixelated;
+    @include pixelated; 
+
     padding: 40px 20px;
-    text-align: center;
     color: $muted;
     font-size: 8px;
-    @include pixelated;
-    @include pixelated;
+    text-align: center;
   }
 
   label {
+    @include pixelated;
+    @include pixelated;
+
     display: block;
-    @include pixelated;
-    font-size: 8px;
     color: $muted;
+    font-size: 8px;
     margin-bottom: 12px;
-    @include pixelated;
   }
 }
 
-.button-row {
-  display: flex;
-  gap: 8px;
-  
-  &.wrap { flex-wrap: wrap; }
-}
-
 .debug-danger-zone {
+  text-align: right;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px dashed Rgba(124, 58, 237, 0.3);
-  text-align: right;
+  border-top: 1px dashed rgb(124 58 237 / 30%);
 
   &.no-border { border-top: none; }
 }
 
 .danger-label {
   color: $red !important;
+  opacity: 0.8;
   margin-top: 4px;
   margin-bottom: 8px !important;
-  opacity: 0.8;
 }
 
 // Global button overrides if specific spacing is needed
@@ -268,8 +265,8 @@ async function repairAllIllegal() {
   &.wrap { flex-wrap: wrap; }
   
   button {
-    flex: 1;
     min-width: 100px;
+    flex: 1;
   }
 }
 </style>

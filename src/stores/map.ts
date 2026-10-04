@@ -18,6 +18,8 @@ import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
 
 import { gsap } from 'gsap'
 
+const TIME_TICK_SAMPLE_INTERVAL_SEC = 10 as const;
+
 export const useMapStore = defineStore('map', () => {
   const gs = useGameStore()
   const currentMap = computed<MapRouteId>({
@@ -55,7 +57,7 @@ export const useMapStore = defineStore('map', () => {
     let lastCheckedSec = 0
     const onTimeTick = (time: number) => {
       // Sample every 10 seconds of GSAP timeline execution
-      if (time - lastCheckedSec < 10) return
+      if (time - lastCheckedSec < TIME_TICK_SAMPLE_INTERVAL_SEC) return
       lastCheckedSec = time
 
       const isFrozen = isTimeTickerFrozen.value || 

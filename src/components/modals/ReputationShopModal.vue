@@ -61,10 +61,17 @@ function resolveItemSprite(item: ReputationShopItem): string {
   return catalogItem.sprite
 }
 
+const REP_COST_ULTRABALL = 15 as const
+const REP_COST_TM_EARTHQUAKE = 50 as const
+const REP_COST_REVIVE = 20 as const
+const REP_COST_FULL_HEAL = 15 as const
+const REP_COST_IV_SCANNER = 40 as const
+const REP_COST_STAR_PIECE = 30 as const
+
 const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
     id: 'repultraball',
-    repCost: 15,
+    repCost: REP_COST_ULTRABALL,
     givesId: 'ultraball',
     givesQty: 3,
     tier: 'rare',
@@ -72,7 +79,7 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   },
   {
     id: 'reptmearthquake',
-    repCost: 50,
+    repCost: REP_COST_TM_EARTHQUAKE,
     givesId: 'tm26',
     givesQty: 1,
     tier: 'legend',
@@ -80,7 +87,7 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   },
   {
     id: 'reprevive',
-    repCost: 20,
+    repCost: REP_COST_REVIVE,
     givesId: 'revive',
     givesQty: 5,
     tier: 'epic',
@@ -88,7 +95,7 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   },
   {
     id: 'repfullheal',
-    repCost: 15,
+    repCost: REP_COST_FULL_HEAL,
     givesId: 'fullheal',
     givesQty: 3,
     tier: 'rare',
@@ -96,7 +103,7 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   },
   {
     id: 'repivscanner',
-    repCost: 40,
+    repCost: REP_COST_IV_SCANNER,
     givesId: 'ivscanner',
     givesQty: 1,
     tier: 'epic',
@@ -104,7 +111,7 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   },
   {
     id: 'repstarpiece',
-    repCost: 30,
+    repCost: REP_COST_STAR_PIECE,
     givesId: 'starpiece',
     givesQty: 3,
     tier: 'rare',
@@ -258,7 +265,7 @@ const close = () => {
             <!-- Center star vertically using SVG -->
             <svg
               viewBox="0 0 24 24"
-              style="width: 10px; height: 10px; display: block;"
+              style=" display: block;width: 10px; height: 10px;"
               fill="currentColor"
             >
               <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />

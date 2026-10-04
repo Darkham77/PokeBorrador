@@ -2,25 +2,25 @@
 @use "@/styles/core/mixins" as *;
 
 .home-passive-defense-widget {
-  width: 100%;
-  box-sizing: border-box;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 
   &:not(.in-modal) {
-    background: Rgba(18, 22, 34, 0.85);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
     padding: 16px;
-    box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
+    border: 1px solid Rgb(255 255 255 / 8%);
+    border-radius: 12px;
+    background: Rgb(18 22 34 / 85%);
+    box-shadow: 0 4px 16px Rgb(0 0 0 / 40%);
   }
 
   &.in-modal {
-    background: Rgba(0, 0, 0, 0.2);
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
     padding: 16px;
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: 16px;
+    background: Rgb(0 0 0 / 20%);
   }
 }
 
@@ -28,17 +28,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
-  gap: 12px;
+  border-bottom: 1px solid Rgb(255 255 255 / 6%);
 
   .title-wrap {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex: 1;
     min-width: 0;
+    flex: 1;
 
     .card-icon {
       font-size: 20px;
@@ -54,22 +54,24 @@
 
     .card-title {
       @include pixelated;
-      font-size: 11px;
-      color: var(--yellow, #facc15);
+
       margin: 0;
+      color: var(--yellow, #facc15);
+      font-size: 11px;
       letter-spacing: 1px;
     }
 
     .card-subtitle {
-      font-size: 9px;
-      color: var(--gray, #94a3b8);
       margin: 0;
+      color: var(--gray, #94a3b8);
+      font-size: 9px;
       line-height: 1.2;
     }
   }
 
   .header-actions {
     @include widget-header-actions;
+
     flex-shrink: 0;
     margin-left: auto;
   }
@@ -80,43 +82,45 @@
 }
 
 .toggle-btn {
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  background: Rgba(255, 255, 255, 0.05);
-  color: var(--text-muted, #94a3b8);
-  font-weight: 800;
-  font-size: 8px;
-  cursor: pointer;
-  letter-spacing: 0.5px;
   @include pixelated;
 
+  padding: 5px 12px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: 20px;
+  background: Rgb(255 255 255 / 5%);
+  color: var(--text-muted, #94a3b8);
+  font-size: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+
   &.active {
-    background: Rgba(34, 197, 94, 0.15);
-    border-color: #22c55e;
+    background: Rgb(34 197 94 / 15%);
     color: #22c55e;
-    box-shadow: 0 0 10px Rgba(34, 197, 94, 0.2);
+    border-color: #22c55e;
+    box-shadow: 0 0 10px Rgb(34 197 94 / 20%);
   }
 }
 
 .def-status {
+  @include pixelated;
+
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 9px;
-  margin-bottom: 12px;
-  text-align: center;
   font-weight: 700;
-  @include pixelated;
+  text-align: center;
+  margin-bottom: 12px;
 
   &.active {
-    background: Rgba(34, 197, 94, 0.1);
-    border: 1px solid Rgba(34, 197, 94, 0.25);
+    border: 1px solid Rgb(34 197 94 / 25%);
+    background: Rgb(34 197 94 / 10%);
     color: #4ade80;
   }
 
   &.inactive {
-    background: Rgba(234, 179, 8, 0.1);
-    border: 1px solid Rgba(234, 179, 8, 0.25);
+    border: 1px solid Rgb(234 179 8 / 25%);
+    background: Rgb(234 179 8 / 10%);
     color: #facc15;
   }
 }
@@ -124,7 +128,7 @@
 .defense-team-preview {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid Rgba(255, 255, 255, 0.08);
+  border-top: 1px solid Rgb(255 255 255 / 8%);
 
   .team-preview-header {
     display: flex;
@@ -133,67 +137,69 @@
     margin-bottom: 0.5rem;
 
     .team-label {
+      @include pixelated;
+
+      margin: 0;
+      color: var(--gray, #94a3b8);
       font-size: 8px;
       font-weight: 700;
-      color: var(--gray, #94a3b8);
-      margin: 0;
-      @include pixelated;
     }
   }
 
   .defense-grid {
     display: grid;
-    grid-template-columns: repeat(var(--defense-cols, 3), 1fr);
     gap: 0.4rem;
+    grid-template-columns: repeat(var(--defense-cols, 3), 1fr);
     justify-items: center;
 
-    @media (max-width: 380px) {
+    @media (width <= 380px) {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
   .defense-card-wrapper {
     position: relative;
-    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
 
     &.ineligible-card {
       :deep(.defense-card-override) {
-        filter: Grayscale(0.85);
         opacity: 0.7;
+        filter: Grayscale(0.85);
         border-color: #ef4444 !important;
       }
     }
 
     .ineligible-cartel {
+      @include pixelated;
+
       position: absolute;
+      right: 4px;
       bottom: 6px;
       left: 4px;
-      right: 4px;
-      background: Rgba(239, 68, 68, 0.9);
+      z-index: calc(var(--z-base) + 5);
+      padding: 2px 4px;
       border: 1px solid #f87171;
       border-radius: 4px;
-      color: #ffffff;
+      background: Rgb(239 68 68 / 90%);
+      color: #fff;
       font-size: 7px;
       font-weight: 800;
       text-align: center;
-      padding: 2px 4px;
-      z-index: calc(var(--z-base) + 5);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      @include pixelated;
     }
   }
 
   .empty-team-msg {
-    font-size: 9px;
-    color: var(--gray, #94a3b8);
-    font-style: italic;
     padding: 12px 0;
+    color: var(--gray, #94a3b8);
+    font-size: 9px;
     text-align: center;
+    font-style: italic;
   }
 
   :deep(.defense-card-override) {
@@ -203,17 +209,17 @@
     min-height: 145px !important;
     margin: 0 auto !important;
     padding: 6px !important;
-    background: Rgba(15, 23, 42, 0.75) !important;
     border: 1px solid var(--tier-color);
     border-radius: 14px !important;
+    background: Rgb(15 23 42 / 75%) !important;
     cursor: pointer !important;
 
     .card-info {
-      padding-left: 0 !important;
-      text-align: center !important;
       display: flex;
       flex-direction: column;
       align-items: center;
+      text-align: center !important;
+      padding-left: 0 !important;
 
       .hp-bar-mini {
         margin: 4px auto 0 !important;
@@ -241,18 +247,19 @@
 }
 
 .defense-history-section {
-  margin-top: auto;
-  padding-top: 0.75rem;
-  border-top: 1px solid Rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid Rgb(255 255 255 / 8%);
 
   .history-label {
+    @include pixelated;
+
+    margin: 0 0 0.5rem;
+    color: var(--gray, #94a3b8);
     font-size: 8px;
     font-weight: 700;
-    color: var(--gray, #94a3b8);
-    margin: 0 0 0.5rem 0;
-    @include pixelated;
   }
 
   .history-list {
@@ -266,10 +273,10 @@
 
 
   .empty-history {
-    font-size: 9px;
-    color: var(--gray, #94a3b8);
-    font-style: italic;
     padding: 0.75rem 0;
+    color: var(--gray, #94a3b8);
+    font-size: 9px;
     text-align: center;
+    font-style: italic;
   }
 }

@@ -224,42 +224,43 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 @use "@/styles/core/tools" as *;
 
 .class-card-premium {
-  position: relative;
-  background: Rgba(30, 41, 59, 0.4);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 24px 16px;
+  @include hover-neon-yellow(1px);
+
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
   height: 100%;
+  padding: 24px 16px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  background: Rgb(30 41 59 / 40%);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
   overflow: hidden;
 
-  @include hover-neon-yellow(1px);
-
   &.is-current {
-    border-color: Rgba(34, 197, 94, 1);
+    border-color: Rgb(34 197 94 / 100%);
     &::after {
-      content: 'ACTUAL';
+      @include pixelated;
+
       position: absolute;
       top: 12px;
       right: 12px;
+      color: Rgb(34 197 94 / 100%);
       font-size: 8px;
-      @include pixelated;
-      color: Rgba(34, 197, 94, 1);
+      content: 'ACTUAL';
     }
   }
 
   .card-glow {
     position: absolute;
-    inset: 0;
     background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 70%);
     opacity: 0.05;
+    inset: 0;
     pointer-events: none;
   }
 }
@@ -267,81 +268,84 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 .avatar-circle-wrap {
   margin-bottom: 20px;
   .avatar-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 90px;
     height: 90px;
-    background: Rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border: 3px solid var(--cls-color);
+    border-radius: 50%;
+    background: Rgb(0 0 0 / 50%);
     box-shadow: 0 0 20px var(--cls-color)66;
     overflow: hidden;
   }
   .trainer-pixel-art {
+    @include sprite-render;
+
     width: 100%;
     height: 100%;
     object-fit: cover;
-    @include sprite-render;
   }
 }
 
 .class-title {
   @include pixelated;
-  font-size: 14px;
+
   color: var(--cls-color);
-  margin-bottom: 16px;
-  text-align: center;
+  font-size: 14px;
   line-height: 1.3;
+  text-align: center;
+  margin-bottom: 16px;
   text-shadow: 0 0 10px var(--cls-color)66;
 }
 
 .class-desc {
-  font-size: 12px;
-  color: Rgba(255, 255, 255, 0.6);
-  text-align: center;
-  line-height: 1.5;
-  margin-bottom: 24px;
-  min-height: 72px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  min-height: 72px;
+  color: Rgb(255 255 255 / 60%);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  margin-bottom: 24px;
 }
 
 .stats-comparison {
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
   margin-bottom: 20px;
   flex: 1;
   padding-right: 4px;
 
   .stats-section {
     h3 {
-      font-size: 9px;
       @include pixelated;
-      margin-bottom: 12px;
+
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 9px;
+      margin-bottom: 12px;
     }
 
-    &.pros h3 { color: Rgba(34, 197, 94, 1); }
-    &.cons h3 { color: Rgba(239, 68, 68, 1); }
+    &.pros h3 { color: Rgb(34 197 94 / 100%); }
+    &.cons h3 { color: Rgb(239 68 68 / 100%); }
 
     ul {
-      list-style: none;
-      padding: 0;
       display: flex;
       flex-direction: column;
       gap: 8px;
+      padding: 0;
+      list-style: none;
       li {
-        font-size: 11px;
-        color: Rgba(255, 255, 255, 0.85);
-        line-height: 1.4;
         position: relative;
         padding: 0;
+        color: Rgb(255 255 255 / 85%);
+        font-size: 11px;
+        line-height: 1.4;
 
         :deep(.pv-tooltip-wrapper) {
           display: flex !important;
@@ -353,18 +357,18 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
           display: flex;
           align-items: flex-start;
           gap: 6px;
-          line-height: 1.4;
           width: 100%;
+          line-height: 1.4;
 
           .bullet-icon {
             display: inline-flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            width: 16px;
+            height: 16px;
             font-size: 13px;
             line-height: 1.4;
             flex-shrink: 0;
-            width: 16px;
-            height: 16px;
           }
 
           .bullet-text {
@@ -386,7 +390,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
   }
 }
 
-@media (max-width: 950px) {
+@media (width <= 950px) {
   .class-card-premium {
     padding: 24px 16px;
 

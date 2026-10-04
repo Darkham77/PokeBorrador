@@ -123,73 +123,75 @@ function onImageError(e: Event) {
 
 .market-item-wrapper {
   @include shop-item-card($yellow);
-  padding: 0;
+
   gap: 0;
+  padding: 0;
 
   .seller-tag {
+    @include pixelated;
+
     display: flex;
     justify-content: space-between;
     padding: 10px 15px;
-    background: Rgba(0, 0, 0, 0.2);
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
-    font-size: 8px;
-    @include pixelated;
+    background: rgb(0 0 0 / 20%);
     color: $muted;
+    font-size: 8px;
+    border-bottom: 1px solid rgb(255 255 255 / 5%);
 
     .s-name {
-      color: var(--blue);
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      color: var(--blue);
       line-height: 1.35;
 
       .emoji {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
         font-size: 9px;
         line-height: 1;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
       }
     }
   }
 
   .listing-card-override {
-    background: transparent !important;
+    width: 100%;
     padding: 15px !important;
+    background: transparent !important;
     pointer-events: auto;
     box-shadow: none !important;
-    width: 100%;
     cursor: pointer;
 
     :deep(.list-item) {
-      transform: none;
       border: none !important;
-      box-shadow: none !important;
       background: transparent !important;
+      transform: none;
+      box-shadow: none !important;
 
       &:hover {
-        transform: none;
         border: none !important;
-        box-shadow: none !important;
         background: transparent !important;
+        transform: none;
+        box-shadow: none !important;
       }
     }
   }
 
   .explorer-item-card {
-    padding: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
+    padding: 15px;
 
     .item-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 48px;
       height: 48px;
-      background: Rgba(0, 0, 0, 0.2);
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: rgb(0 0 0 / 20%);
       flex-shrink: 0;
       .i-sprite { width: 36px; height: 36px; object-fit: contain; }
     }
@@ -198,12 +200,13 @@ function onImageError(e: Event) {
       flex: 1;
       .i-name {
         @include pixelated;
+
+        display: block;
+        color: var(--white);
         font-size: 9px;
         font-weight: bold;
-        color: var(--white);
-        display: block;
-        margin-bottom: 4px;
         line-height: 1.5;
+        margin-bottom: 4px;
         padding-top: 2px;
       }
 
@@ -214,36 +217,38 @@ function onImageError(e: Event) {
 
         .i-qty {
           @include pixelated;
-          font-size: 8px;
+
           color: $gray;
+          font-size: 8px;
         }
       }
     }
   }
 
   .tier-tag {
+    @include pixelated;
+
     position: absolute;
     top: 38px;
     right: 12px;
+    z-index: calc(var(--z-base) + 2);
+    padding: 2px 6px;
+    border: 1px solid var(--tier-color, #94a3b8);
+    border-radius: 4px;
+    background: rgb(0 0 0 / 40%);
+    color: var(--tier-color, #94a3b8);
     font-size: 7px;
     font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 4px;
-    @include pixelated;
     letter-spacing: 0.5px;
-    background: Rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--tier-color, #94a3b8);
-    color: var(--tier-color, #94a3b8);
-    z-index: calc(var(--z-base) + 2);
   }
 
   .listing-footer {
-    padding: 12px 15px;
-    background: Rgba(0, 0, 0, 0.3);
-    border-top: 1px solid Rgba(255, 255, 255, 0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 12px 15px;
+    background: rgb(0 0 0 / 30%);
+    border-top: 1px solid rgb(255 255 255 / 5%);
     margin-top: auto;
 
     .price-info {
@@ -252,16 +257,18 @@ function onImageError(e: Event) {
       gap: 2px;
 
       .price-label {
-        font-size: 7px;
-        color: $gray;
         @include pixelated;
+
+        color: $gray;
+        font-size: 7px;
       }
 
       .price-val {
-        font-size: 11px;
-        color: var(--yellow);
-        font-weight: bold;
         @include pixelated;
+
+        color: var(--yellow);
+        font-size: 11px;
+        font-weight: bold;
       }
     }
 

@@ -81,19 +81,19 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
 @use "@/styles/core/tools" as *;
 
 .status-container {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  margin-top: 4px;
   width: 100%;
-  clear: both;
   min-height: 20px;
-  position: relative;
+  margin-top: 4px;
+  clear: both;
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     gap: 2px;
-    margin-top: 3px;
     min-height: 16px;
+    margin-top: 3px;
   }
 }
 
@@ -105,12 +105,13 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
 
 .admin-only-disclaimer {
   @include pixelated;
-  font-size: 7px;
-  color: #ffd60a;
-  background: Rgba(255, 214, 10, 0.15);
-  border: 1px dashed Rgba(255, 214, 10, 0.4);
+
   padding: 4px;
+  border: 1px dashed rgb(255 214 10 / 40%);
   border-radius: 4px;
+  background: rgb(255 214 10 / 15%);
+  color: #ffd60a;
+  font-size: 7px;
   text-align: center;
   margin-bottom: 4px;
   letter-spacing: 0.5px;
@@ -119,7 +120,7 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
 
 .tooltip-divider {
   height: 1px;
-  background: Rgba(255, 255, 255, 0.1);
   margin: 4px 0;
+  background: rgb(255 255 255 / 10%);
 }
 </style>

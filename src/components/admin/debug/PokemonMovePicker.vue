@@ -175,7 +175,7 @@ function removeMove(slotIndex: number) {
     justify-content: space-between;
     align-items: center;
     
-    label { font-size: 10px; color: Rgba(255, 255, 255, 0.4); }
+    label { color: Rgb(255 255 255 / 40%); font-size: 10px; }
     
     .header-actions {
       display: flex;
@@ -183,30 +183,30 @@ function removeMove(slotIndex: number) {
     }
 
     .btn-magic-fill {
-      background: Rgba(124, 58, 237, 0.1);
-      border: 1px solid Rgba(124, 58, 237, 0.2);
-      color: var(--vicio-primary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 24px;
       height: 24px;
+      border: 1px solid Rgb(124 58 237 / 20%);
       border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: Rgb(124 58 237 / 10%);
+      color: var(--vicio-primary);
       cursor: pointer;
-      
-
-      &.btn-random-fill {
-        background: Rgba(255, 170, 0, 0.1);
-        border-color: Rgba(255, 170, 0, 0.2);
-        color: var(--yellow);
-        
-        &:hover { background: var(--yellow); color: $black; }
-      }
       
       &:hover {
         background: var(--vicio-primary);
         color: white;
         transform: Scale(1.1);
+      }
+      
+
+      &.btn-random-fill {
+        background: Rgb(255 170 0 / 10%);
+        color: var(--yellow);
+        border-color: Rgb(255 170 0 / 20%);
+        
+        &:hover { background: var(--yellow); color: $black; }
       }
     }
   }
@@ -223,71 +223,71 @@ function removeMove(slotIndex: number) {
   }
 
   .move-pill {
-    background: Rgba(255, 255, 255, 0.05);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 8px 10px;
+    border: 1px solid Rgb(255 255 255 / 10%);
+    border-radius: 8px;
+    background: Rgb(255 255 255 / 5%);
     cursor: pointer;
     
 
-    &:hover { background: Rgba(255, 255, 255, 0.1); }
+    &:hover { background: Rgb(255 255 255 / 10%); }
     
-    .mv-name { font-size: 11px; font-weight: bold; color: white; }
+    .mv-name { color: white; font-size: 11px; font-weight: bold; }
     
     .remove-move {
-      background: Rgba(239, 68, 68, 0.1);
-      border: none;
-      color: Rgba(239, 68, 68, 1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 18px;
       height: 18px;
+      border: none;
       border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
+      background: Rgb(239 68 68 / 10%);
+      color: Rgb(239 68 68 / 100%);
       font-size: 14px;
+      cursor: pointer;
       
-      &:hover { background: Rgba(239, 68, 68, 1); color: white; }
+      &:hover { background: Rgb(239 68 68 / 100%); color: white; }
     }
 
     &.empty {
-      border-style: dashed;
-      color: Rgba(255, 255, 255, 0.3);
-      font-size: 8px;
       justify-content: center;
+      color: Rgb(255 255 255 / 30%);
+      font-size: 8px;
+      border-style: dashed;
       
       &:hover { color: white; border-color: var(--vicio-primary); }
     }
   }
 
   .move-picker {
+    @include gpu-layer;
+
     position: absolute;
     bottom: 100%;
     left: 0;
+    z-index: var(--z-critical);
     width: 220px;
     max-height: 300px;
+    padding: 12px;
+    border: 1px solid Rgb(255 255 255 / 10%);
+    border-radius: 16px;
+    background: Rgb(10 12 16 / 98%);
     margin-bottom: 12px;
-    z-index: var(--z-critical);
-    background: Rgba(10, 12, 16, 0.98);
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
-  backdrop-filter: Blur(20px);
-    @include gpu-layer;
-    border-radius: 16px;
-    padding: 12px;
-    box-shadow: 0 20px 50px Rgba(0, 0, 0, 1);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 50px Rgb(0 0 0 / 100%);
 
     .move-search-input {
       width: 100%;
       padding: 10px;
-      background: Rgba(255, 255, 255, 0.05);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
+      border: 1px solid Rgb(255 255 255 / 10%);
       border-radius: 8px;
+      background: Rgb(255 255 255 / 5%);
       color: white;
       font-size: 11px;
       margin-bottom: 12px;
@@ -300,40 +300,40 @@ function removeMove(slotIndex: number) {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      max-height: 200px;
       min-height: 0;
+      max-height: 200px;
       overflow-y: auto;
       margin-bottom: 10px;
 
       .move-group-label {
-        font-size: 9px;
-        color: Rgba(255, 255, 255, 0.3);
         padding: 4px 8px;
+        color: Rgb(255 255 255 / 30%);
+        font-size: 9px;
         letter-spacing: 1px;
       }
 
       .move-item {
         padding: 8px 12px;
-        font-size: 11px;
         border-radius: 6px;
+        font-size: 11px;
         cursor: pointer;
         
         
-        &:hover { background: Rgba(124, 58, 237, 0.1); color: var(--vicio-primary); }
+        &:hover { background: Rgb(124 58 237 / 10%); color: var(--vicio-primary); }
       }
     }
 
     .close-picker {
       width: 100%;
       padding: 8px;
-      background: Rgba(255, 255, 255, 0.05);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
+      border: 1px solid Rgb(255 255 255 / 10%);
       border-radius: 8px;
-      color: Rgba(255, 255, 255, 0.5);
+      background: Rgb(255 255 255 / 5%);
+      color: Rgb(255 255 255 / 50%);
       font-size: 9px;
       cursor: pointer;
       
-      &:hover { color: white; background: Rgba(255, 255, 255, 0.1); }
+      &:hover { background: Rgb(255 255 255 / 10%); color: white; }
     }
   }
 }

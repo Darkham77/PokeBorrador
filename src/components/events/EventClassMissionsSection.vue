@@ -308,7 +308,7 @@ async function startClassMission(missionId: MissionId) {
 
 .class-missions-container {
   margin-top: 24px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgb(255 255 255 / 5%);
   padding-top: 24px;
   margin-bottom: 24px;
 
@@ -319,22 +319,24 @@ async function startClassMission(missionId: MissionId) {
     margin-bottom: 20px;
 
     h3 {
-      font-weight: 800;
       @include pixelated;
-      font-size: 10px;
-      color: var(--class-color);
+
       margin: 0;
+      color: var(--class-color);
+      font-size: 10px;
+      font-weight: 800;
     }
 
     .class-level-badge {
+      @include pixelated;
+
+      padding: 3px 8px;
+      border: 1px solid #000;
+      border-radius: 4px;
       background: var(--class-color);
       color: white;
       font-size: 9px;
       font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 4px;
-      @include pixelated;
-      border: 1px solid #000000;
       text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
     }
   }
@@ -342,14 +344,14 @@ async function startClassMission(missionId: MissionId) {
 
 .missions-grid {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 16px;
+  grid-template-columns: 1fr;
   
-  @media (min-width: 600px) {
+  @media (width >= 600px) {
     grid-template-columns: 1fr 1fr;
   }
   
-  @media (min-width: 950px) {
+  @media (width >= 950px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
 }

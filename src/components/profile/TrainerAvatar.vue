@@ -255,21 +255,21 @@ defineExpose({
 
 <style scoped lang="scss">
 .trainer-avatar-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .avatar-face-wrapper {
   display: flex;
-  align-items: center;
   justify-content: center;
-  text-align: center;
+  align-items: center;
   width: 100%;
   height: 100%;
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   line-height: 1 !important;
+  text-align: center;
 }
 
 .avatar-frame-bg {

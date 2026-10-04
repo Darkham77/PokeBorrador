@@ -5,6 +5,8 @@ const CRIT_ROLL_DENOMINATOR_GEN6_BASE = 24;
 const CRIT_ROLL_DENOMINATOR_GEN5_BASE = 16;
 const DAMAGE_ROLL_MIN_INT = 85;
 const DAMAGE_ROLL_RANGE_INT = 16;
+const DAMAGE_ROLL_MIN_RATIO = 0.85;
+const DAMAGE_ROLL_MAX_RATIO = 1.0;
 const WEATHER_BOOST_MULTIPLIER = 1.5;
 const WEATHER_REDUCTION_MULTIPLIER = 0.5;
 const DAY_CYCLE_BOOST_MULTIPLIER = 1.2;
@@ -542,11 +544,11 @@ export function calculateDamageRangePure(
   const isStatus = move.cat === 'status';
 
   if (!isStatus && (move.power ?? 0) > 0) {
-    const normalMin = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 0.85, false).dmg;
-    const normalMax = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 1.0, false).dmg;
+    const normalMin = calculateDamagePure(attacker, defender, move, ctx, dayCycle, DAMAGE_ROLL_MIN_RATIO, false).dmg;
+    const normalMax = calculateDamagePure(attacker, defender, move, ctx, dayCycle, DAMAGE_ROLL_MAX_RATIO, false).dmg;
 
-    const critMin = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 0.85, true).dmg;
-    const critMax = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 1.0, true).dmg;
+    const critMin = calculateDamagePure(attacker, defender, move, ctx, dayCycle, DAMAGE_ROLL_MIN_RATIO, true).dmg;
+    const critMax = calculateDamagePure(attacker, defender, move, ctx, dayCycle, DAMAGE_ROLL_MAX_RATIO, true).dmg;
 
     const rivalMaxHp = defender.maxHp || 100;
     const normalPctMin = Math.round((normalMin / rivalMaxHp) * 100);

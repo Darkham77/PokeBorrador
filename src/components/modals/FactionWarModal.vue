@@ -59,6 +59,10 @@ const accentColor = computed(() => {
 const openFactionChoice = () => {
   modalStore.open('FactionChoice')
 }
+
+function onDashboardEnter(el: Element, done: () => void): void {
+  gsap.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, onComplete: done })
+}
 </script>
 
 <template>
@@ -134,7 +138,7 @@ const openFactionChoice = () => {
       <!-- 2. Active Faction Dashboard -->
       <Transition
         :css="false"
-        @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, onComplete: done })"
+        @enter="onDashboardEnter"
       >
         <div
           v-if="warStore.faction"
@@ -165,7 +169,7 @@ const openFactionChoice = () => {
 
   .title-icon {
     font-size: 24px;
-    filter: Drop-Shadow(0 0 8px Rgba(250, 204, 21, 0.4));
+    filter: Drop-Shadow(0 0 8px Rgb(250 204 21 / 40%));
   }
 
   .title-text-wrap {
@@ -175,23 +179,24 @@ const openFactionChoice = () => {
 
   .main-title {
     @include pixelated;
-    font-size: 14px;
+
     color: var(--yellow);
-    text-shadow: 0 2px 0 var(--black);
+    font-size: 14px;
     line-height: 1.2;
+    text-shadow: 0 2px 0 var(--black);
   }
 
   .sub-title {
-    font-size: 10px;
     color: var(--gray);
+    font-size: 10px;
     margin-top: 2px;
   }
 }
 
 .faction-war-content-inner {
   height: 100%;
-  overflow-y: auto;
   padding: 20px;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 
@@ -200,41 +205,41 @@ const openFactionChoice = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px 0;
   width: 100%;
+  padding: 20px 0;
 }
 
 .welcome-card {
   position: relative;
-  background: Rgba(0, 0, 0, 0.4);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
   width: 100%;
   max-width: 480px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 16px;
+  background: Rgb(0 0 0 / 40%);
   overflow: hidden;
-  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px Rgb(0 0 0 / 50%);
 
   .card-glow {
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
+    left: 0;
     height: 4px;
-    background: linear-gradient(90deg, #3b82f6, var(--yellow), #ef4444);
+    background: Linear-Gradient(90deg, #3b82f6, var(--yellow), #ef4444);
   }
 
   .card-inner {
-    padding: 32px 24px;
-    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 32px 24px;
+    text-align: center;
   }
 
   .shields-art {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 16px;
     margin-bottom: 24px;
 
@@ -245,33 +250,35 @@ const openFactionChoice = () => {
       will-change: transform, filter;
 
       &.union-logo {
-        filter: Drop-Shadow(0 0 12px Rgba(59, 130, 246, 0.6));
+        filter: Drop-Shadow(0 0 12px Rgb(59 130 246 / 60%));
       }
 
       &.poder-logo {
-        filter: Drop-Shadow(0 0 12px Rgba(239, 68, 68, 0.6));
+        filter: Drop-Shadow(0 0 12px Rgb(239 68 68 / 60%));
       }
     }
 
     .vs-text {
       @include pixelated;
-      font-size: 14px;
+
       color: var(--gray);
-      text-shadow: 0 0 8px Rgba(255, 255, 255, 0.2);
+      font-size: 14px;
+      text-shadow: 0 0 8px Rgb(255 255 255 / 20%);
     }
   }
 
   h2 {
     @include pixelated;
-    font-size: 16px;
+
+    margin: 0 0 16px;
     color: var(--white);
-    margin: 0 0 16px 0;
+    font-size: 16px;
     letter-spacing: 1px;
   }
 
   .description {
-    font-size: 12px;
     color: var(--white);
+    font-size: 12px;
     line-height: 1.5;
     margin-bottom: 12px;
 
@@ -281,8 +288,8 @@ const openFactionChoice = () => {
   }
 
   .benefit {
-    font-size: 10px;
     color: var(--gray);
+    font-size: 10px;
     line-height: 1.4;
     margin-bottom: 32px;
   }

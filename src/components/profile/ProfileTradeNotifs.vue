@@ -152,33 +152,36 @@ const validationMap = computed(() => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .trade-notifs-section-legacy {
   margin-bottom: 24px;
 }
 
 .info-label {
   @include pixelated;
-  font-size: 9px;
+
   color: var(--white);
-  text-shadow: 1px 1px 0 Rgba(0, 0, 0, 1), -1px -1px 0 Rgba(0, 0, 0, 1), 1px -1px 0 Rgba(0, 0, 0, 1), -1px 1px 0 Rgba(0, 0, 0, 1);
+  font-size: 9px;
+  text-shadow: 1px 1px 0 rgb(0 0 0 / 100%), -1px -1px 0 rgb(0 0 0 / 100%), 1px -1px 0 rgb(0 0 0 / 100%), -1px 1px 0 rgb(0 0 0 / 100%);
   margin-bottom: 12px;
 }
 
 .trade-notif-card-legacy {
-  background: Rgba(0, 0, 0, 0.3);
-  border-radius: 14px;
   padding: 16px;
+  border-radius: 14px;
+  background: rgb(0 0 0 / 30%);
   margin-bottom: 10px;
   border-left: 4px solid $muted;
   
-  &.accepted { border-left-color: Rgba(34, 197, 94, 1); }
-  &.pending { border-left-color: Rgba(250, 204, 21, 1); }
+  &.accepted { border-left-color: rgb(34 197 94 / 100%); }
+  &.pending { border-left-color: rgb(250 204 21 / 100%); }
 }
 
 .notif-header {
   @include pixelated;
-  font-size: 8px;
+
   color: var(--white);
+  font-size: 8px;
   margin-bottom: 12px;
 }
 
@@ -186,11 +189,11 @@ const validationMap = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 12px;
-  background: Rgba(0, 0, 0, 0.2);
   padding: 8px 12px;
+  border: 1px solid rgb(255 255 255 / 5%);
   border-radius: 8px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: rgb(0 0 0 / 20%);
+  margin-bottom: 12px;
 
   .detail-section {
     display: flex;
@@ -199,20 +202,22 @@ const validationMap = computed(() => {
 
     .detail-label {
       @include pixelated;
+
+      color: rgb(255 255 255 / 40%);
       font-size: 6px;
-      color: Rgba(255, 255, 255, 0.4);
       text-transform: uppercase;
     }
 
     .detail-val {
       @include pixelated;
-      font-size: 8px;
+
       color: var(--white);
-      word-break: break-word;
+      font-size: 8px;
+      overflow-wrap: break-word;
 
       &.italic {
-        font-style: italic;
         color: var(--yellow);
+        font-style: italic;
       }
     }
   }
@@ -220,14 +225,15 @@ const validationMap = computed(() => {
 
 .notif-warning {
   @include pixelated;
-  font-size: 7px;
-  color: #ef4444;
-  background: Rgba(239, 68, 68, 0.1);
-  border: 1px dashed Rgba(239, 68, 68, 0.3);
+
   padding: 8px;
+  border: 1px dashed rgb(239 68 68 / 30%);
   border-radius: 8px;
-  margin-bottom: 12px;
+  background: rgb(239 68 68 / 10%);
+  color: #ef4444;
+  font-size: 7px;
   line-height: 1.4;
+  margin-bottom: 12px;
 }
 
 .notif-actions {
@@ -236,36 +242,38 @@ const validationMap = computed(() => {
 }
 
 .notif-btn {
-  flex: 1;
+  @include pixelated;
+
+  padding: 8px;
   border: none;
   border-radius: 8px;
-  padding: 8px;
-  @include pixelated;
   font-size: 6px;
+  flex: 1;
   cursor: pointer;
   
   &.accept { 
-    background: Rgba(34, 197, 94, 1); 
+    background: rgb(34 197 94 / 100%); 
     color: var(--white); 
     
     &:disabled {
-      background: Rgba(255, 255, 255, 0.05) !important;
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      color: Rgba(255, 255, 255, 0.2);
+      border: 1px solid rgb(255 255 255 / 10%);
+      background: rgb(255 255 255 / 5%) !important;
+      color: rgb(255 255 255 / 20%);
       cursor: not-allowed;
     }
   }
-  &.reject { background: Rgba(239, 68, 68, 1); color: var(--white); }
+  &.reject { background: rgb(239 68 68 / 100%); color: var(--white); }
 }
 
 .notif-action-btn {
+  @include pixelated;
+
   width: 100%;
-  background: Rgba(34, 197, 94, 1);
+  padding: 10px;
   border: none;
   border-radius: 8px;
-  padding: 10px;
+  background: rgb(34 197 94 / 100%);
   color: var(--white);
-  @include pixelated;
   font-size: 8px;
   cursor: pointer;
 }

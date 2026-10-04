@@ -44,7 +44,7 @@ defineProps<Props>()
   align-items: flex-end;
   width: 100%;
   margin-top: auto;
-  border-top: 1px solid Rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgb(255 255 255 / 8%);
   padding-top: 6px;
 }
 </style>

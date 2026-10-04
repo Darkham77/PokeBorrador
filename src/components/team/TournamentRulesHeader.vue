@@ -60,16 +60,16 @@ const emit = defineEmits<{
 
 .tournament-rules-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
-  background: Rgba(30, 41, 59, 0.75);
-  border: 1px solid Rgba(199, 125, 255, 0.35);
-  border-radius: 12px;
   padding: 8px 14px;
+  border: 1px solid rgb(199 125 255 / 35%);
+  border-radius: 12px;
+  background: rgb(30 41 59 / 75%);
   margin-bottom: 12px;
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
@@ -92,11 +92,12 @@ const emit = defineEmits<{
       }
 
       .theme-name {
+        @include pixelated;
+
+        color: #fff;
         font-size: 9px;
-        color: #ffffff;
         font-weight: bold;
         letter-spacing: 0.5px;
-        @include pixelated;
       }
     }
 
@@ -106,24 +107,25 @@ const emit = defineEmits<{
       gap: 6px;
 
       .rule-badge {
-        font-size: 7px;
-        padding: 2px 6px;
-        border-radius: 4px;
-        background: Rgba(148, 163, 184, 0.15);
-        color: var(--gray);
-        border: 1px solid Rgba(148, 163, 184, 0.3);
         @include pixelated;
 
+        padding: 2px 6px;
+        border: 1px solid rgb(148 163 184 / 30%);
+        border-radius: 4px;
+        background: rgb(148 163 184 / 15%);
+        color: var(--gray);
+        font-size: 7px;
+
         &.little-cup {
-          background: Rgba(236, 72, 153, 0.2);
+          background: rgb(236 72 153 / 20%);
           color: #f472b6;
-          border-color: Rgba(236, 72, 153, 0.4);
+          border-color: rgb(236 72 153 / 40%);
         }
 
         &.types {
-          background: Rgba(168, 85, 247, 0.2);
+          background: rgb(168 85 247 / 20%);
           color: #c084fc;
-          border-color: Rgba(168, 85, 247, 0.4);
+          border-color: rgb(168 85 247 / 40%);
         }
       }
     }
@@ -131,6 +133,7 @@ const emit = defineEmits<{
 
   .auto-adjust-btn {
     @include btn-vicio('primary', 'sm', false);
+
     display: flex;
     align-items: center;
     gap: 6px;

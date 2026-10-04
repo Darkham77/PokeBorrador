@@ -4,6 +4,9 @@ import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useWindowListener, useDocumentListener } from '@/composables/ui/useWindowListener'
 
+const DEFAULT_TOP_HUD_HEIGHT_PX = 110 as const
+const DEFAULT_BOTTOM_HUD_HEIGHT_PX = 80 as const
+
 export function useMainLayout(
   hudRef: Ref<HTMLElement | null>, 
   hudBottomRef: Ref<HTMLElement | ComponentPublicInstance | null>, 
@@ -12,8 +15,8 @@ export function useMainLayout(
   const uiStore = useUIStore()
   const gameStore = useGameStore()
 
-  const hudHeight = ref(110)
-  const hudBottomHeight = ref(gameStore.state.starterChosen ? 80 : 0)
+  const hudHeight = ref<number>(DEFAULT_TOP_HUD_HEIGHT_PX)
+  const hudBottomHeight = ref<number>(gameStore.state.starterChosen ? DEFAULT_BOTTOM_HUD_HEIGHT_PX : 0)
   const isHudHidden = ref(false)
 
   // 1. Outside Click logic

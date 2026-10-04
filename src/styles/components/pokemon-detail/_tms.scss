@@ -1,4 +1,5 @@
 @use "@/styles/core/mixins" as *;
+
 // src/styles/components/pokemon-detail/_tms.scss
 @use "@/styles/core/tools" as *;
 
@@ -8,30 +9,30 @@
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    margin-bottom: 20px;
-    background: Rgba(0,0,0,0.2);
     padding: 8px 12px;
+    border: 1px solid Rgb(255 255 255 / 5%);
     border-radius: 12px;
-    border: 1px solid Rgba(255,255,255,0.05);
+    background: Rgb(0 0 0 / 20%);
+    margin-bottom: 20px;
 
     & .search-box {
-      flex: 1;
       display: flex;
       align-items: center;
       gap: 10px;
+      flex: 1;
       
         & .icon { font-size: 14px; opacity: 0.5; }
       
       .tm-search-input {
-        flex: 1;
-        background: none;
         border: none;
+        background: none;
         color: $white;
+        font-family: Inter, sans-serif;
         font-size: 13px;
+        flex: 1;
         outline: none;
-        font-family: 'Inter', sans-serif;
         
-        &::placeholder { color: Rgba(255,255,255,0.2); }
+        &::placeholder { color: Rgb(255 255 255 / 20%); }
       }
     }
 
@@ -40,13 +41,14 @@
       gap: 4px;
       
       & .sort-btn {
-        background: Rgba(255,255,255,0.03);
-        border: 1px solid Rgba(255,255,255,0.1);
-        color: Rgba(255,255,255,0.4);
-        font-size: 8px;
         @include pixelated;
+
         padding: 6px 8px;
+        border: 1px solid Rgb(255 255 255 / 10%);
         border-radius: 6px;
+        background: Rgb(255 255 255 / 3%);
+        color: Rgb(255 255 255 / 40%);
+        font-size: 8px;
         cursor: pointer;
         
         
@@ -54,7 +56,7 @@
           background: var(--yellow);
           color: $black;
           border-color: var(--yellow);
-          box-shadow: 0 0 10px Rgba(255, 214, 10, 0.3);
+          box-shadow: 0 0 10px Rgb(255 214 10 / 30%);
         }
       }
     }
@@ -62,17 +64,22 @@
 
   .tm-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     
     .tm-item {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 12px;
-      background: Rgba(255,255,255,0.04);
+      border: 1px solid Rgb(255 255 255 / 5%);
       border-radius: 16px;
-      border: 1px solid Rgba(255,255,255,0.05);
+      background: Rgb(255 255 255 / 4%);
+      
+      &:hover:not(.incompatible) {
+        background: Rgb(255 255 255 / 8%);
+        transform: Translatey(-2px);
+      }
       
       
       &.incompatible {
@@ -82,42 +89,38 @@
       }
       
       .tm-id {
+        @include pixelated;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
         min-width: 36px; // Allow growth if needed
         height: 36px;
         padding: 0 4px; // Add horizontal padding
         border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 8px; // Slightly smaller to fit better
-        @include pixelated;
-        font-weight: 900;
         color: $black;
-        box-shadow: 0 4px 8px Rgba(0,0,0,0.3);
+        font-size: 8px; // Slightly smaller to fit better
+        font-weight: 900;
+        box-shadow: 0 4px 8px Rgb(0 0 0 / 30%);
       }
       
       .tm-info {
-        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: flex-start; // Prevent stretching
+        flex: 1;
         
-        .tm-name { font-size: 11px; font-weight: 800; color: $white; margin-bottom: 2px; }
+        .tm-name { color: $white; font-size: 11px; font-weight: 800; margin-bottom: 2px; }
       }
       
       .tm-check {
+        color: var(--yellow);
         font-size: 12px;
         font-weight: 900;
-        color: var(--yellow);
       }
       
       &.clickable-item {
         cursor: pointer;
-      }
-      
-      &:hover:not(.incompatible) {
-        background: Rgba(255,255,255,0.08);
-        transform: Translatey(-2px);
       }
     }
   }

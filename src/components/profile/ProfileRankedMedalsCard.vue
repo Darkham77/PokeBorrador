@@ -45,7 +45,7 @@ const pvpStore = usePvPStore()
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_profile-shared.scss";
+@use "@/styles/components/_profile-shared";
 
 .ranked-medals-card {
   margin-top: 10px;
@@ -56,9 +56,9 @@ const pvpStore = usePvPStore()
   align-items: center;
   gap: 10px;
   padding: 12px;
-  background: Rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgb(148 163 184 / 20%);
   border-radius: 8px;
-  border: 1px dashed Rgba(148, 163, 184, 0.2);
+  background: rgb(15 23 42 / 40%);
 
   .empty-icon {
     font-size: 1.4rem;
@@ -66,16 +66,16 @@ const pvpStore = usePvPStore()
   }
 
   .empty-text {
-    font-size: 0.8rem;
     color: #94a3b8;
+    font-size: 0.8rem;
     font-style: italic;
   }
 }
 
 .ranked-medals-shelf {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   margin-top: 6px;
 }
 </style>

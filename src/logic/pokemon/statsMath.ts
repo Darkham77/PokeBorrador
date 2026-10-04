@@ -16,6 +16,9 @@ import {
 } from '../constants/gameplay.ts';
 import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon.ts';
 
+const MAX_SINGLE_STAT_EV = 252 as const;
+const HP_FORMULA_FLAT_ADDEND = 10 as const;
+
 /**
  * Calculates the EXP needed for the current level.
  * Medium Fast curve scaled for web game: (Lv+1)^3 - Lv^3
@@ -100,7 +103,7 @@ export function calcStatsPure(
     return val;
   };
 
-  const clampEv = (val: number) => Math.min(252, Math.max(0, val));
+  const clampEv = (val: number) => Math.min(MAX_SINGLE_STAT_EV, Math.max(0, val));
 
   const hpEv = clampEv(evs?.hp ?? 0);
   const atkEv = clampEv(evs?.atk ?? 0);
@@ -109,7 +112,7 @@ export function calcStatsPure(
   const spdEv = clampEv(evs?.spd ?? 0);
   const speEv = clampEv(evs?.spe ?? 0);
 
-  const maxHp = base.hp === 1 ? 1 : Math.floor(((base.hp * 2) + ivs.hp + Math.floor(hpEv / 4)) * level / 100 + level + 10);
+  const maxHp = base.hp === 1 ? 1 : Math.floor(((base.hp * 2) + ivs.hp + Math.floor(hpEv / 4)) * level / 100 + level + HP_FORMULA_FLAT_ADDEND);
   const atk = getStat(base.atk, ivs.atk, atkEv, level, 'atk');
   let def = getStat(base.def, ivs.def, defEv, level, 'def');
   

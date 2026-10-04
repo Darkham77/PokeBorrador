@@ -40,12 +40,14 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
       id: 'validate_moves',
       name: 'Pokemon Move Validator',
       description: 'Movimientos faltantes o sin paridad con Showdown',
+      icon: '💥',
       family: 'domain_data',
       ruleIds: MOVE_RULES,
+      packageName: 'Movimientos',
       ruleDescriptions: {
-        'move-invalid-showdown': 'Movimiento no válido en Pokémon Showdown',
-        'move-missing-translation': 'Traducción al español faltante en movimiento',
-        'move-missing-effect-desc': 'Descripción de efecto faltante en movimiento'
+        'move-invalid-showdown': 'Movimiento no válido en Showdown',
+        'move-missing-translation': 'Traducción faltante en movimiento',
+        'move-missing-effect-desc': 'Descripción de efecto faltante'
       },
       requiredFiles: [UTILS_FILE]
     });

@@ -160,32 +160,33 @@ const close = () => {
 
 .modal-main-tabs {
   display: flex;
+  align-items: center;
   gap: 12px;
   margin-bottom: 16px;
-  align-items: center;
 }
 
 .modal-tab-btn {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  color: var(--gray);
-  font-size: 11px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  cursor: pointer;
   @include pixelated;
 
+  padding: 6px 14px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 3%);
+  color: var(--gray);
+  font-size: 11px;
+  cursor: pointer;
+
   &:hover {
+    background: rgb(255 255 255 / 6%);
     color: var(--white);
-    background: Rgba(255, 255, 255, 0.06);
   }
 
   &.active {
-    color: #000000;
-    font-weight: bold;
     background: var(--yellow);
+    color: #000;
+    font-weight: bold;
     border-color: var(--yellow-light);
-    box-shadow: 0 0 8px Rgba(234, 179, 8, 0.4);
+    box-shadow: 0 0 8px rgb(234 179 8 / 40%);
     text-shadow: none;
   }
 }

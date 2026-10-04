@@ -264,38 +264,39 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 @use "@/styles/core/tools" as *;
 
 .bag-view {
-  padding: 0;
-  background: Radial-Gradient(circle at top left, Rgba(59, 130, 246, 0.05), transparent),
-              Radial-Gradient(circle at bottom right, Rgba(16, 185, 129, 0.05), transparent);
   display: flex;
   justify-content: center;
+  padding: 0;
+  background: Radial-Gradient(circle at top left, Rgb(59 130 246 / 5%), transparent),
+              Radial-Gradient(circle at bottom right, Rgb(16 185 129 / 5%), transparent);
 }
 
 .bag-container {
-  width: 100%;
-  max-width: 800px;
   display: flex;
   flex-direction: column;
-  min-height: 0;
   gap: 20px;
+  width: 100%;
+  max-width: 800px;
+  min-height: 0;
 }
 
 .main-tabs-row {
   display: flex;
   gap: 12px;
-  border-bottom: 2px solid Rgba(255, 255, 255, 0.05);
+  border-bottom: 2px solid Rgb(255 255 255 / 5%);
   padding-bottom: 8px;
 }
 
 .main-tab-btn {
-  background: transparent;
+  @include pixelated;
+
+  position: relative;
+  padding: 8px 16px;
   border: none;
+  background: transparent;
   color: var(--gray);
   font-size: 14px;
-  padding: 8px 16px;
   cursor: pointer;
-  @include pixelated;
-  position: relative;
 
   &:hover {
     color: var(--white);
@@ -306,14 +307,14 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
     font-weight: bold;
 
     &::after {
-      content: '';
       position: absolute;
       bottom: -10px;
       left: 0;
       width: 100%;
       height: 3px;
-      background: var(--purple);
       border-radius: 2px;
+      background: var(--purple);
+      content: '';
       box-shadow: 0 0 8px var(--purple-light);
     }
   }
@@ -333,20 +334,22 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 
 .title-section h1 {
   @include pixelated;
-  font-size: 16px;
-  color: var(--white);
+
   margin: 0;
+  color: var(--white);
+  font-size: 16px;
 }
 
 .icon { font-size: 24px; }
 
 .money-badge {
-  background: Rgba(34, 197, 94, 0.15);
-  border: 1px solid Rgba(34, 197, 94, 0.3);
-  padding: 8px 16px;
-  border-radius: 20px;
-  color: var(--green-bright);
   @include pixelated;
+
+  padding: 8px 16px;
+  border: 1px solid Rgb(34 197 94 / 30%);
+  border-radius: 20px;
+  background: Rgb(34 197 94 / 15%);
+  color: var(--green-bright);
   font-size: 10px;
 }
 
@@ -359,9 +362,9 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 .search-input {
   width: 100%;
   padding: 12px 16px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 12px;
+  background: Rgb(255 255 255 / 5%);
   color: var(--white);
   outline: none;
 }
@@ -374,26 +377,26 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 }
 
 .tab-btn {
-  white-space: nowrap;
   padding: 8px 16px;
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 10px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.05);
+  background: Rgb(255 255 255 / 5%);
   color: var(--gray);
   font-size: 11px;
+  white-space: nowrap;
   cursor: pointer;
 
   &:hover:not(.active) {
-    background: Rgba(255, 255, 255, 0.1);
+    background: Rgb(255 255 255 / 10%);
     color: var(--white);
-    border-color: Rgba(255, 255, 255, 0.2);
+    border-color: Rgb(255 255 255 / 20%);
   }
 
   &.active {
     background: var(--purple);
     color: var(--white);
     border-color: var(--purple-light);
-    box-shadow: 0 0 10px Rgba(168, 85, 247, 0.3);
+    box-shadow: 0 0 10px Rgb(168 85 247 / 30%);
   }
 }
 
@@ -403,30 +406,31 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
 
 .sell-actions {
-  background: Rgba(16, 185, 129, 0.1);
-  border: 1px solid Rgba(16, 185, 129, 0.2);
-  padding: 16px;
-  border-radius: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 16px;
+  border: 1px solid Rgb(16 185 129 / 20%);
+  border-radius: 16px;
+  background: Rgb(16 185 129 / 10%);
 }
 
 .sell-buttons { display: flex; gap: 8px; }
 
 .btn-sell-mode {
+  @include pixelated;
+
   width: 100%;
   padding: 14px;
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.05);
+  background: Rgb(255 255 255 / 5%);
   color: var(--white);
-  @include pixelated;
   font-size: 10px;
   cursor: pointer;
 }

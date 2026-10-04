@@ -78,25 +78,26 @@ const {
 
 .move-tooltip-rich {
   @include pixelated;
+
+  min-width: 220px;
+  max-width: 260px;
+  padding: 2px;
+  color: rgb(255 255 255 / 95%);
   font-size: 9px;
   line-height: 1.5;
-  color: Rgba(255, 255, 255, 0.95);
-  max-width: 260px;
-  min-width: 220px;
-  padding: 2px;
 }
 
 .move-desc {
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .move-details-calc {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px dashed Rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgb(255 255 255 / 20%);
 }
 
 .calc-section-title {

@@ -2,94 +2,96 @@
 
 .hud-nav {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
   
   &.pos-bottom {
-    justify-content: center;
-    width: max-content;
-    max-width: calc(100% - 16px);
-    margin: 0 auto;
-    height: 70px;
-    
     // PREMIUM SHELL ENHANCED
     @include shell-premium(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
-    border-radius: 20px 20px 0 0;
-    padding: 10px 24px;
-    gap: 15px;
-    box-sizing: border-box;
 
-    @media (max-width: 480px) {
-      padding: 10px 12px;
-      gap: 6px;
-      border-radius: 16px 16px 0 0;
-    }
+    justify-content: center;
+    gap: 15px;
+    width: max-content;
+    max-width: calc(100% - 16px);
+    height: 70px;
+    margin: 0 auto;
+    padding: 10px 24px;
+    border-radius: 20px 20px 0 0;
+    box-sizing: border-box;
     
     // MULTI-LAYER REFLECTIONS & CONTRAST
     box-shadow: 
-      0 10px 40px Rgba(0, 0, 0, 0.6),
-      0 -10px 50px Rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 Rgba(255, 255, 255, 0.1); // Reflection on the top edge
+      0 10px 40px Rgb(0 0 0 / 60%),
+      0 -10px 50px Rgb(0 0 0 / 70%),
+      inset 0 1px 0 Rgb(255 255 255 / 10%); // Reflection on the top edge
     
     // Reflection parent is handled by position: fixed in parent/mobile class
 
     /* CRITICAL: Ensure submenus are NOT clipped */
     overflow: visible !important;
+
+    @media (width <= 480px) {
+      gap: 6px;
+      padding: 10px 12px;
+      border-radius: 16px 16px 0 0;
+    }
   }
 }
 
 .hud-nav-btn {
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 8px 6px;
-  color: $white;
-  cursor: pointer;
+  position: relative;
   display: flex;
   flex-direction: column; // Unificado a columna (icono arriba, texto abajo)
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 6px; // Separación estandarizada
   width: 50px;
-  height: 50px;
   min-width: 50px;
-  position: relative;
+  height: 50px;
+  padding: 8px 6px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  background: Rgb(255 255 255 / 5%);
+  color: $white;
+  cursor: pointer;
+
+  &:hover {
+    z-index: var(--z-base);
+    background: Rgb(255 255 255 / 12%);
+    border-color: Rgb(255 255 255 / 20%);
+  }
 
   .icon {
-    font-size: 16px;
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+
     // Override pixel font so size-adjust:128% does NOT inflate the emoji line-box
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    font-size: 16px;
   }
   .nav-item-label {
     @include pixelated;
-    font-weight: 400;
+
+    color: Rgb(255 255 255 / 75%);
     font-size: 7px !important;
-    color: Rgba(255, 255, 255, 0.75);
+    font-weight: 400;
     white-space: nowrap;
     text-transform: uppercase;
   }
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: Rgba(255, 255, 255, 0.2);
-    z-index: var(--z-base);
-  }
   
   &.active {
-    background: Rgba(255, 204, 0, 0.15);
+    z-index: var(--z-base);
+    background: Rgb(255 204 0 / 15%);
     border-color: var(--yellow);
     box-shadow: 
       0 0 0 2px var(--yellow),
-      0 0 30px Rgba(255, 214, 10, 0.45),
-      inset 0 0 12px Rgba(255, 214, 10, 0.1);
-    z-index: var(--z-base);
+      0 0 30px Rgb(255 214 10 / 45%),
+      inset 0 0 12px Rgb(255 214 10 / 10%);
     .nav-item-label { 
       color: var(--yellow); 
       opacity: 1; 
-      text-shadow: 0 0 8px Rgba(255, 214, 10, 0.5); 
+      text-shadow: 0 0 8px Rgb(255 214 10 / 50%); 
     }
   }
 }
@@ -101,27 +103,27 @@
 
 .hud-submenu {
   position: absolute;
+  z-index: var(--z-modal);
   display: flex;
   flex-direction: column;
+  align-items: stretch !important;
   gap: 6px !important;
-  background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
-  padding: 6px !important;
-  z-index: var(--z-modal);
   width: max-content !important;
   min-width: 0 !important;
-  align-items: stretch !important;
-  box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.7);
+  padding: 6px !important;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: 14px;
+  background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  box-shadow: 0 20px 50px Rgb(0 0 0 / 70%);
   overflow: visible !important;
 
   &::before {
-    content: '';
     position: absolute;
-    left: 0;
     right: 0;
+    left: 0;
     height: 20px;
     background: transparent;
+    content: '';
   }
 }
 
@@ -135,8 +137,8 @@
 }
 
 .pos-bottom .hud-submenu {
-  bottom: calc(100% + 5px);
   top: auto !important;
+  bottom: calc(100% + 5px);
   left: 50%;
   transform: Translatex(-50%);
   
@@ -147,53 +149,55 @@
   flex-direction: row !important;
   justify-content: flex-start !important;
   align-items: center !important;
+  gap: 10px !important;
   width: 100% !important;
   min-width: unset !important;
   height: auto !important;
   padding: 7px 11px !important;
-  gap: 10px !important;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 10px;
+  background: Rgb(255 255 255 / 5%);
   white-space: nowrap;
 
-  &:hover { 
-    background: Rgba(255, 255, 255, 0.1) !important; 
+  &:hover {
+    z-index: var(--z-base); 
+    background: Rgb(255 255 255 / 10%) !important; 
     border-color: var(--yellow) !important;
     box-shadow: 
-      0 20px 40px Rgba(0, 0, 0, 0.6),
-      inset 0 30px 60px -20px color-mix(in srgb, var(--yellow), transparent 80%),
-      0 0 20px color-mix(in srgb, var(--yellow), transparent 70%) !important;
-    z-index: var(--z-base);
+      0 20px 40px Rgb(0 0 0 / 60%),
+      inset 0 30px 60px -20px color-mix(in sRGB, var(--yellow), transparent 80%),
+      0 0 20px color-mix(in sRGB, var(--yellow), transparent 70%) !important;
   }
   
   &.active {
-    background: Rgba(255, 204, 0, 0.12);
+    background: Rgb(255 204 0 / 12%);
     border-color: var(--yellow) !important;
     box-shadow: 
-      0 20px 40px Rgba(0, 0, 0, 0.6),
-      inset 0 30px 60px -20px color-mix(in srgb, var(--yellow), transparent 80%),
-      0 0 20px color-mix(in srgb, var(--yellow), transparent 70%) !important;
+      0 20px 40px Rgb(0 0 0 / 60%),
+      inset 0 30px 60px -20px color-mix(in sRGB, var(--yellow), transparent 80%),
+      0 0 20px color-mix(in sRGB, var(--yellow), transparent 70%) !important;
   }
 
   .icon {
-    font-size: 14px;
     display: inline-flex;
-    align-items: center;
     justify-content: center;
-    line-height: 1 !important;
+    align-items: center;
     margin: 0 !important;
     padding: 0 !important;
+
     // Override pixel font so size-adjust:128% does NOT inflate the emoji line-box
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    font-size: 14px;
+    line-height: 1 !important;
   }
-  .nav-item-label { 
-    font-size: 8px; 
-    color: $white;
-    white-space: nowrap;
-    margin: 0 !important;
-    padding: 0 !important;
+  .nav-item-label {
     @include pixelated;
+
+    margin: 0 !important;
+    padding: 0 !important; 
+    color: $white; 
+    font-size: 8px;
+    white-space: nowrap;
   }
   
   &.active .nav-item-label { color: var(--yellow); }
@@ -201,45 +205,47 @@
   &.war-shop-nav-btn:hover {
     border-color: var(--red) !important;
     box-shadow: 
-      0 20px 40px Rgba(0, 0, 0, 0.6),
-      inset 0 30px 60px -20px color-mix(in srgb, var(--red), transparent 80%),
-      0 0 20px color-mix(in srgb, var(--red), transparent 70%) !important;
+      0 20px 40px Rgb(0 0 0 / 60%),
+      inset 0 30px 60px -20px color-mix(in sRGB, var(--red), transparent 80%),
+      0 0 20px color-mix(in sRGB, var(--red), transparent 70%) !important;
     .nav-item-label { color: var(--red); }
   }
 
   .hud-notification-badge {
     position: static !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    transform: none;
     margin-left: auto !important;
     margin-right: -4px !important;
-    transform: none;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
   }
 }
 
 .hud-notification-badge {
+  @include pixelated;
+
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #ef4444;
-  color: white;
-  @include pixelated;
-  font-size: 7px;
   padding: 4px 6px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px Rgba(239, 68, 68, 0.4);
+  background: #ef4444;
+  color: white;
+  font-size: 7px;
+  box-shadow: 0 2px 8px Rgb(239 68 68 / 40%);
 }
 
 .relative-box { position: relative; }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .hud-nav-btn {
     min-width: 50px;
     padding: 6px 4px;
     .nav-item-label { 
-      font-size: 8px; 
-      @include pixelated;
+      @include pixelated; 
+
+      font-size: 8px;
     }
   }
 }

@@ -54,45 +54,45 @@ const emit = defineEmits<{
 
 .admin-note {
   color: var(--yellow);
-  opacity: 0.8;
   font-size: 10px;
-  margin-top: 10px;
   line-height: 1.4;
+  opacity: 0.8;
+  margin-top: 10px;
 }
 
 .action-btn {
   width: 100%;
   padding: 16px;
-  background: Rgba(239, 68, 68, 0.1);
-  color: $white;
-  font-size: 10px;
-  font-family: var(--font-pixel);
-  font-weight: bold;
+  border: 1px solid Rgb(239 68 68 / 40%);
   border-radius: 12px;
-  box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(239, 68, 68, 0.4);
+  background: Rgb(239 68 68 / 10%);
+  color: $white;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  font-weight: bold;
+  box-shadow: 0 4px 0 Rgb(0 0 0 / 30%);
   cursor: pointer;
   
 
   &:hover {
-    transform: Translatey(-2px);
     background: $white;
-    color: Rgba(239, 68, 68, 1);
-    box-shadow: 0 6px 0 Rgba(0, 0, 0, 0.2);
+    color: Rgb(239 68 68 / 100%);
+    transform: Translatey(-2px);
+    box-shadow: 0 6px 0 Rgb(0 0 0 / 20%);
     border-color: $white;
   }
 }
 
 .secondary-btn {
-  background: Rgba(255, 255, 255, 0.05);
-  border-color: Rgba(255, 255, 255, 0.2);
-  color: Rgba(255, 255, 255, 0.7);
+  background: Rgb(255 255 255 / 5%);
+  color: Rgb(255 255 255 / 70%);
+  border-color: Rgb(255 255 255 / 20%);
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.15);
+    background: Rgb(255 255 255 / 15%);
     color: $white;
-    border-color: Rgba(255, 255, 255, 0.5);
-    box-shadow: 0 6px 0 Rgba(0, 0, 0, 0.2);
+    border-color: Rgb(255 255 255 / 50%);
+    box-shadow: 0 6px 0 Rgb(0 0 0 / 20%);
   }
 }
 </style>

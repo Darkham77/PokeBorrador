@@ -85,22 +85,23 @@ const emit = defineEmits<{
 
 <style lang="scss" scoped>
 .preview-box {
-  background: Rgba(0, 0, 0, 0.4);
-  border-radius: 16px;
-  padding: 20px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  position: relative;
+  padding: 20px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 16px;
+  background: Rgb(0 0 0 / 40%);
   overflow: hidden;
 
   .preview-sprite {
-    height: 120px;
     @include pixelated;
+
+    height: 120px;
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 10px Rgba(0, 0, 0, 0.5));
+  filter: Drop-Shadow(0 0 10px Rgb(0 0 0 / 50%));
   }
 
   .preview-flags {
@@ -108,19 +109,19 @@ const emit = defineEmits<{
     gap: 8px;
 
     .flag-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 32px;
       height: 32px;
-      background: Rgba(255, 255, 255, 0.05);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
+      border: 1px solid Rgb(255 255 255 / 10%);
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: Rgb(255 255 255 / 5%);
       cursor: pointer;
       
 
-      &:hover { background: Rgba(255, 255, 255, 0.1); }
-      &.active { border-color: var(--vicio-primary); background: Rgba(124, 58, 237, 0.1); }
+      &:hover { background: Rgb(255 255 255 / 10%); }
+      &.active { background: Rgb(124 58 237 / 10%); border-color: var(--vicio-primary); }
       
       &.male { color: $gender-male; }
       &.female { color: $gender-female; }

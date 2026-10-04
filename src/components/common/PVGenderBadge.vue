@@ -102,77 +102,77 @@ const defaultTitle = computed(() => {
 
 <style scoped lang="scss">
 .pv-gender-badge {
+  position: relative;
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  line-height: 1;
   box-sizing: border-box;
   flex-shrink: 0;
   vertical-align: middle;
-  line-height: 1;
   user-select: none;
-  position: relative;
   overflow: hidden;
 
   // SIZES with rounded corners ("redondea más las puntas, es demasiado cuadrado")
   &.mini {
     width: 14px;
     height: 14px;
-    border-radius: 5px;
     padding: 1.5px;
+    border-radius: 5px;
   }
 
   &.sm {
     width: 16px;
     height: 16px;
-    border-radius: 6px;
     padding: 2px;
+    border-radius: 6px;
   }
 
   &.md {
     width: 20px;
     height: 20px;
-    border-radius: 7px;
     padding: 2.5px;
+    border-radius: 7px;
   }
 
   &.lg {
     width: 24px;
     height: 24px;
-    border-radius: 9px;
     padding: 3px;
+    border-radius: 9px;
   }
 
   // MALE
   &.male {
-    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
-    color: #ffffff;
-    box-shadow: 0 0 6px Rgba(14, 165, 233, 0.55);
-    border: 1px solid Rgba(255, 255, 255, 0.2);
+    border: 1px solid Rgb(255 255 255 / 20%);
+    background: Linear-Gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+    color: #fff;
+    box-shadow: 0 0 6px Rgb(14 165 233 / 55%);
   }
 
   // FEMALE
   &.female {
-    background: linear-gradient(135deg, #db2777 0%, #ec4899 100%);
-    color: #ffffff;
-    box-shadow: 0 0 6px Rgba(236, 72, 153, 0.55);
-    border: 1px solid Rgba(255, 255, 255, 0.2);
+    border: 1px solid Rgb(255 255 255 / 20%);
+    background: Linear-Gradient(135deg, #db2777 0%, #ec4899 100%);
+    color: #fff;
+    box-shadow: 0 0 6px Rgb(236 72 153 / 55%);
   }
 
   .gender-svg {
+    display: block;
     width: 100%;
     height: 100%;
-    display: block;
-    filter: Drop-Shadow(0 1px 1px Rgba(0, 0, 0, 0.4));
+    filter: Drop-Shadow(0 1px 1px Rgb(0 0 0 / 40%));
   }
 
   .sr-only {
     position: absolute;
     width: 1px;
     height: 1px;
-    padding: 0;
     margin: -1px;
+    padding: 0;
     overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
     white-space: nowrap;
     border-width: 0;
   }

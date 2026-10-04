@@ -6,31 +6,22 @@
 #title-screen {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: flex-start;
-  min-height: 100dvh;
-  height: 100dvh;
+  align-items: center;
   width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
   margin: 0;
   padding: 60px 20px;
-
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   box-sizing: border-box;
 
   // On larger screens where content fits, we can center it
-  @media (min-height: 900px) {
+  @media (height >= 900px) {
     justify-content: center;
   }
 }
 
-
-#auth-screen {
-  // Vue router controls visibility.
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 
 #game-screen {
   position: relative;

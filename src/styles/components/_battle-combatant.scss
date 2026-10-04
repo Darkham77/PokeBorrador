@@ -1,47 +1,55 @@
 @use "@/styles/core/_mixins" as *;
 
-.combatant-sprite,
-.sprite-animator, 
-.sprite-rotation-layer, 
-.sprite-idle-wrapper,
-.pokemon-atmosphere-wrapper,
-.pokemon-sprite-status-wrapper,
-.pokemon-combat-image {
+%combatant-pixel-render {
   image-rendering: -webkit-optimize-contrast !important;
   #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
 }
 
+.sprite-idle-wrapper,
+.pokemon-atmosphere-wrapper,
+.pokemon-sprite-status-wrapper,
+.pokemon-combat-image {
+  @extend %combatant-pixel-render;
+}
+
 .combatant-sprite {
+  @extend %combatant-pixel-render;
+
   z-index: var(--z-map-spawns);
   display: flex;
-  align-items: flex-end;
   justify-content: center;
+  align-items: flex-end;
   overflow: visible;
 
   .combat-shadow-wrapper {
     position: absolute;
+    z-index: calc(var(--z-base) + 1);
     inset: 0;
     pointer-events: none;
-    z-index: calc(var(--z-base) + 1);
   }
 
-  .sprite-rotation-layer {
-    position: relative;
-    z-index: calc(var(--z-base) + 2);
+  %combatant-layer-base {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100% !important;
+    height: 100% !important;
+    transform-origin: bottom center;
+    will-change: transform;
   }
 
   .sprite-animator, 
-  .sprite-rotation-layer, 
   .sprite-idle-wrapper {
-    width: 100% !important;
-    height: 100% !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform-origin: bottom center;
-    will-change: transform;
+    @extend %combatant-layer-base;
+  }
+
+  .sprite-rotation-layer {
+    @extend %combatant-layer-base;
+
+    position: relative;
+    z-index: calc(var(--z-base) + 2);
   }
 
   // Las sparkles shiny son hijos del sprite-idle-wrapper, que tiene scaleX/scaleY asincrónicos
@@ -56,22 +64,22 @@
   }
 
   .pokemon-atmosphere-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: visible;
   }
 
   .pokemon-combat-image-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
     width: 100%;
     height: 100%;
     overflow: hidden !important;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
   }
 
   // Debug: radio centrado en el propio sprite (dentro de pokemon-atmosphere-wrapper)
@@ -79,42 +87,43 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: Translate(-50%, -50%);
-    border: 3px solid #00ffff;
-    background: Rgba(0, 255, 255, 0.15);
-    border-radius: 50%;
-    pointer-events: none;
     z-index: calc(var(--z-hud) - 1);
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    border: 3px solid #0ff;
+    border-radius: 50%;
+    background: Rgb(0 255 255 / 15%);
+    transform: Translate(-50%, -50%);
+    pointer-events: none;
 
     .debug-poke-radius-label {
       position: absolute;
       top: -16px;
       left: 50%;
-      transform: Translatex(-50%) Scale(calc(1 / var(--camera-scale, 1)));
-      transform-origin: center bottom;
-      background: Rgba(0, 0, 0, 0.9);
-      color: #00ffff;
+      z-index: var(--z-modal-step);
+      padding: 2px 5px;
+      border: 1px solid #0ff;
+      border-radius: 3px;
+      background: Rgb(0 0 0 / 90%);
+      color: #0ff;
       font-family: monospace, sans-serif;
       font-size: 10px;
-      line-height: 1.2;
       font-weight: bold;
-      padding: 2px 5px;
-      border-radius: 3px;
+      line-height: 1.2;
+      transform: Translatex(-50%) Scale(calc(1 / var(--camera-scale, 1)));
+      transform-origin: center bottom;
       white-space: nowrap;
-      border: 1px solid #00ffff;
-      z-index: var(--z-modal-step);
     }
   }
 
   .pokemon-combat-image {
+    @include sprite-render;
+
     width: 100%;
     height: 100%;
     object-fit: contain;
     object-position: center;
-    @include sprite-render;
     &.is-silhouette { 
       @include pokemon-silhouette;
     }
@@ -126,32 +135,35 @@
   position: absolute;
   top: 0;
   left: 0;
-  border: 1px dashed Rgba(255, 100, 0, 0.7);
-  pointer-events: none;
   z-index: var(--z-navigation);
+  border: 1px dashed Rgb(255 100 0 / 70%);
+  pointer-events: none;
 
   span {
-    position: absolute;
-    bottom: 2px;
-    right: 4px;
-    font-size: 9px;
-    color: Rgba(255, 180, 0, 1);
-    background: Rgba(0, 0, 0, 0.6);
-    padding: 1px 3px;
     @include pixelated;
+
+    position: absolute;
+    right: 4px;
+    bottom: 2px;
+    padding: 1px 3px;
+    background: Rgb(0 0 0 / 60%);
+    color: Rgb(255 180 0 / 100%);
+    font-size: 9px;
     transform: Scale(calc(1 / var(--camera-scale, 1)));
     transform-origin: bottom right;
   }
 }
 
 .sprite-animator {
+  @extend %combatant-pixel-render;
+
   position: relative;
   z-index: var(--z-map-spawns);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   overflow: visible;
 
   &.fainted {
@@ -171,17 +183,20 @@
 }
 
 .sprite-rotation-layer {
+  @extend %combatant-pixel-render;
+
+  z-index: var(--z-map-spawns);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   overflow: visible;
-  z-index: var(--z-map-spawns);
 
   &.is-floating-species { 
     transform: Translatey(-40px);
-    @media (max-width: 690px) { transform: Translatey(-18px); } 
+
+    @media (width <= 690px) { transform: Translatey(-18px); } 
   }
 }
 
@@ -195,15 +210,16 @@
 }
 
 .trapped-pokeball {
+  @include pixelated;
+
   position: absolute;
   left: 50%;
-  transform: Translatex(-50%) Translatey(-85%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: var(--z-map-ui);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: Translatex(-50%) Translatey(-85%);
   pointer-events: none;
-  @include pixelated;
   overflow: visible;
 
   img {
@@ -215,36 +231,38 @@
 }
 
 .pokeball-shadow {
+  @include pixelated;
+
   position: absolute;
   top: 85%;
   left: 50%;
-  transform: Translatex(-50%) Translatey(-50%);
+  z-index: calc(var(--z-base) - 1);
   width: 70%;
   height: 15%;
+  opacity: 0.8;
+  transform: Translatex(-50%) Translatey(-50%);
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  @include pixelated;
-  z-index: calc(var(--z-base) - 1);
   pointer-events: none;
-  opacity: 0.8;
 }
 
 .critical-capture-banner {
+  @include pixelated;
+
   position: absolute;
   top: -32px;
   left: 50%;
-  transform: Translatex(-50%);
+  z-index: calc(var(--z-map-ui) + 5);
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  transform: Translatex(-50%);
   white-space: nowrap;
   pointer-events: none;
-  z-index: calc(var(--z-map-ui) + 5);
-  background: transparent;
-  border: none;
-  padding: 0;
   box-shadow: none;
-  @include pixelated;
 
   &.standalone {
     top: 15%;
@@ -257,12 +275,13 @@
   }
 
   .crit-text {
+    @include text-outline(#000, 2px);
+
+    color: #fff;
     font-size: 24px;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #ffffff;
-    @include text-outline(#000, 2px);
   }
 }
 
@@ -270,8 +289,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  pointer-events: none;
   z-index: var(--z-low);
+  pointer-events: none;
   overflow: visible;
   filter: none;
 
@@ -280,23 +299,25 @@
   }
 
   .sparkle {
+    @include pixelated;
+
     position: absolute;
     top: 50%;
     left: 50%;
     display: block;
-    font-size: calc(var(--obj-scale, 1) * 8px);
-    @include pixelated;
-    will-change: transform, filter, opacity;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    font-size: calc(var(--obj-scale, 1) * 8px);
+    will-change: transform, filter, opacity;
 
     .shiny-asset-mini {
+      @include pixelated;
+
       width: 24px;
       height: 24px;
       object-fit: contain;
-      filter: sepia(1) Saturate(12) Hue-Rotate(-15deg) Brightness(1.1);
-      @include pixelated;
+      filter: sepia(1) Saturate(12) hue-Rotate(-15deg) Brightness(1.1);
     }
   }
 }
@@ -304,14 +325,14 @@
 .ground-effects-container {
   position: absolute;
   left: 50%;
-  transform: Translatex(-50%) Translatey(-50%);
-  width: 100%;
-  height: 20px;
-  pointer-events: none;
   z-index: calc(var(--z-map-spawns) + 5); 
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 20px;
+  transform: Translatex(-50%) Translatey(-50%);
+  pointer-events: none;
   filter: none;
 }
 
@@ -322,41 +343,41 @@
   
   &.spikes {
     .spike-item {
-      font-size: calc(var(--fx-scale, 1) * 28px);
       display: inline-block;
+      font-size: calc(var(--fx-scale, 1) * 28px);
       will-change: transform, filter, opacity;
-      filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
+      filter: Drop-Shadow(0 2px 2px Rgb(0 0 0 / 30%));
     }
   }
 
   &.stealthrock {
-    transform: Translatey(-8px);
     gap: 12px;
+    transform: Translatey(-8px);
 
     .rock-item {
-      font-size: calc(var(--fx-scale, 1) * 24px);
       display: inline-block;
+      font-size: calc(var(--fx-scale, 1) * 24px);
       will-change: transform, filter, opacity;
-      filter: Drop-Shadow(0 2px 3px Rgba(0, 0, 0, 0.5));
+      filter: Drop-Shadow(0 2px 3px Rgb(0 0 0 / 50%));
     }
   }
 
   &.toxicspikes {
-    transform: Translatey(8px);
     gap: 10px;
+    transform: Translatey(8px);
 
     .toxic-spike-item {
-      font-size: calc(var(--fx-scale, 1) * 22px);
       display: inline-block;
+      font-size: calc(var(--fx-scale, 1) * 22px);
       will-change: transform, filter, opacity;
-      filter: Drop-Shadow(0 0 4px Rgba(168, 85, 247, 0.7));
+      filter: Drop-Shadow(0 0 4px Rgb(168 85 247 / 70%));
     }
   }
   
   &.ingrain {
     .root-item {
-      font-size: calc(var(--fx-scale, 1) * 42px);
       display: inline-block;
+      font-size: calc(var(--fx-scale, 1) * 42px);
       transform: Translatey(5px);
     }
   }
@@ -365,22 +386,23 @@
 .smoke-particles-container {
   position: absolute;
   left: 50%;
+  z-index: var(--z-map-ui);
   transform: Translate(-50%, -50%);
   pointer-events: none;
-  z-index: var(--z-map-ui);
   overflow: visible;
   filter: none;
 }
 
 .smoke-particle {
+  @include pixelated;
+
   position: absolute;
   width: 14px;
   height: 14px;
-  background: #e5e7eb;
   border-radius: 50%;
-  box-shadow: 0 0 6px Rgba(156, 163, 175, 0.6);
+  background: #e5e7eb;
   opacity: 0.8;
+  box-shadow: 0 0 6px Rgb(156 163 175 / 60%);
   pointer-events: none;
   will-change: transform, opacity;
-  @include pixelated;
 }

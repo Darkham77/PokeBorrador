@@ -72,7 +72,9 @@ const badgeClass = computed(() => {
   return 'badge-auto';
 });
 
-const formatPercent = (ratio: number): number => Math.round(ratio * 10000) / 100;
+const PERCENT_PRECISION_SCALE = 10000 as const;
+
+const formatPercent = (ratio: number): number => Math.round(ratio * PERCENT_PRECISION_SCALE) / 100;
 
 const MIN_SPRITE_FRAME_SIZE_PX = 16;
 
@@ -127,11 +129,13 @@ const effectiveShadowWidthStr = computed(() => {
   return '70%';
 });
 
+const DEFAULT_GENERIC_FEET_Y_RATIO = 0.75 as const;
+
 const syncShadowInStore = () => {
   shadowStore.requestShadow(shadowKey.value, {
     side: 'generic',
     feetX: 0.5,
-    feetY: 0.75,
+    feetY: DEFAULT_GENERIC_FEET_Y_RATIO,
     entitySize: containerSize.value,
     width: effectiveShadowWidthStr.value,
     isFlying: currentIsFlying.value,

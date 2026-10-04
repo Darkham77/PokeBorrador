@@ -71,5 +71,5 @@ const requirementLabel = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_cosmetics-shared.scss";
+@use "@/styles/components/_cosmetics-shared";
 </style>

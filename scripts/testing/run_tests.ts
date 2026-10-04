@@ -6,6 +6,8 @@
 
 import { styleText } from 'node:util';
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   inspectDocker,
   ensurePostgresTestContainerReady,
@@ -14,9 +16,33 @@ import {
 } from './postgres_test_container.ts';
 
 /**
+ * Ensures public/version.json is in 100% sync with package.json (SSoT) before executing tests.
+ */
+function syncPublicVersionJson(): void {
+  try {
+    const pkgPath = path.resolve(process.cwd(), 'package.json');
+    if (!fs.existsSync(pkgPath)) return;
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as { version?: string };
+    if (!pkg.version) return;
+
+    const normalizedVersion = pkg.version.startsWith('v') ? pkg.version : `v${pkg.version}`;
+    const publicVerPath = path.resolve(process.cwd(), 'public/version.json');
+    const expectedContent = JSON.stringify({ version: normalizedVersion }, null, 2) + '\n';
+
+    if (!fs.existsSync(publicVerPath) || fs.readFileSync(publicVerPath, 'utf-8') !== expectedContent) {
+      fs.mkdirSync(path.dirname(publicVerPath), { recursive: true });
+      fs.writeFileSync(publicVerPath, expectedContent, 'utf-8');
+    }
+  } catch (err) {
+    console.warn(styleText('yellow', `⚠️ [syncPublicVersionJson] Falló sincronización de version.json: ${(err as Error).message}`));
+  }
+}
+
+/**
  * Main execution routine.
  */
 async function main(): Promise<void> {
+  syncPublicVersionJson();
   const args = process.argv.slice(2);
   const dockerInfo = await inspectDocker();
 

@@ -35,7 +35,7 @@ const emit = defineEmits<{
       <span class="field-label">Tipo de Encuentro</span>
       <div
         class="button-row"
-        style="width: 100%; display: flex;"
+        style=" display: flex;width: 100%;"
       >
         <button 
           style="flex: 1;"
@@ -74,7 +74,7 @@ const emit = defineEmits<{
     <div
       v-else
       class="gym-fields-flex"
-      style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;"
+      style=" display: flex; flex-direction: column; gap: 10px;margin-top: 10px;"
     >
       <div class="input-group vertical">
         <span class="field-label">Líder / Gimnasio</span>
@@ -93,7 +93,7 @@ const emit = defineEmits<{
         <span class="field-label">Dificultad</span>
         <div
           class="button-row"
-          style="width: 100%; display: flex;"
+          style=" display: flex;width: 100%;"
         >
           <button 
             v-for="d in (['easy', 'normal', 'hard'] as const)" 

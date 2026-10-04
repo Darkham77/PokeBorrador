@@ -83,30 +83,32 @@ const copyReplay = async () => {
 @use "@/styles/core/_mixins" as *;
 
 .camera-zoom-controls {
+  @include pixelated;
+
   position: absolute;
   bottom: 12px;
   left: 12px;
+  z-index: calc(var(--z-base) + 40);
   display: flex;
   gap: 8px;
-  z-index: calc(var(--z-base) + 40);
   pointer-events: auto;
-  @include pixelated;
 }
 
 .zoom-btn {
   @include btn-vicio('neutral', 'sm');
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 28px !important;
   height: 28px !important;
   padding: 0 !important;
-  font-size: 10px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: 4px;
+  font-size: 10px !important;
 
   .emoji {
-    line-height: 1;
     font-size: 12px;
+    line-height: 1;
   }
 }
 </style>

@@ -205,10 +205,10 @@ const handleZoomInput = (e: Event) => {
 
 .zoom-label {
   display: block;
-  font-size: 14px;
   color: var(--white);
-  margin-bottom: 20px;
+  font-size: 14px;
   font-weight: 700;
+  margin-bottom: 20px;
 }
 
 .zoom-value {
@@ -219,18 +219,19 @@ const handleZoomInput = (e: Event) => {
 .zoom-slider {
   width: 100%;
   height: 12px;
+  margin: 10px 0;
   cursor: pointer;
   accent-color: var(--yellow);
-  margin: 10px 0;
 }
 
 .zoom-labels {
+  @include pixelated;
+
   display: flex;
   justify-content: space-between;
-  margin-top: 16px;
+  color: rgb(255 255 255 / 20%);
   font-size: 8px;
-  color: Rgba(255, 255, 255, 0.2);
-  @include pixelated;
+  margin-top: 16px;
 }
 
 .setting-section {
@@ -239,10 +240,10 @@ const handleZoomInput = (e: Event) => {
 
 .setting-label {
   display: block;
-  font-size: 14px;
   color: var(--white);
-  margin-bottom: 12px;
+  font-size: 14px;
   font-weight: 700;
+  margin-bottom: 12px;
 }
 
 .power-buttons {
@@ -256,10 +257,10 @@ const handleZoomInput = (e: Event) => {
 }
 
 .power-desc {
-  margin-top: 12px;
-  font-size: 9px;
-  color: Rgba(255, 255, 255, 0.5);
-  line-height: 1.4;
   min-height: 26px;
+  color: rgb(255 255 255 / 50%);
+  font-size: 9px;
+  line-height: 1.4;
+  margin-top: 12px;
 }
 </style>

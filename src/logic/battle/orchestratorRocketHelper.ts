@@ -9,6 +9,7 @@ import { classifyNpcArchetype } from '@/logic/utils/npcSpriteRouter'
 const DEFAULT_ITEM_PRICE_FALLBACK = 100
 const HALF_FACTOR = 0.5
 const DEFAULT_ENEMY_LEVEL = 5
+const QUICK_STEAL_REWARD_XP = 15 as const;
 
 interface StolenItemEntry {
   id: ItemId
@@ -81,7 +82,7 @@ async function executePlayerRocketSteal(
     }
 
     ctx.classStore.addCriminality(CRIMINALITY_GAINED_ON_STEAL)
-    ctx.classStore.addXP?.(15)
+    ctx.classStore.addXP?.(QUICK_STEAL_REWARD_XP)
     const itemsText = stolenItemsList.map(item => `${item.name} x${item.qty}`).join(', ')
     ctx.addLog(`¡Robo Rápido exitoso! Le robaste ${itemsText} a tu oponente.`, 'log-success', 'player')
     ctx.uiStore.notify(`¡Robaste ${itemsText}! (+${CRIMINALITY_GAINED_ON_STEAL} criminalidad)`, '🏴‍☠️')

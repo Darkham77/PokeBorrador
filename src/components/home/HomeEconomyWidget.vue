@@ -161,22 +161,24 @@ const getListingTitle = (listing: MarketListing): string => {
 
   .card-title {
     @include pixelated;
-    font-size: 11px;
-    color: var(--yellow, #facc15);
+
     margin: 0;
+    color: var(--yellow, #facc15);
+    font-size: 11px;
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .gts-sub {
+    color: Rgb(255 255 255 / 50%);
     font-size: 10px;
     line-height: 1.35;
-    color: Rgba(255, 255, 255, 0.5);
   }
 }
 
 .header-actions {
   @include widget-header-actions;
+
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -193,15 +195,15 @@ const getListingTitle = (listing: MarketListing): string => {
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background: Rgba(250, 204, 21, 0.1);
-  border: 1px solid Rgba(250, 204, 21, 0.35);
+  border: 1px solid Rgb(250 204 21 / 35%);
   border-radius: 8px;
+  background: Rgb(250 204 21 / 10%);
   cursor: pointer;
 
   &:hover {
-    background: Rgba(250, 204, 21, 0.18);
+    background: Rgb(250 204 21 / 18%);
     border-color: var(--yellow, #facc15);
-    box-shadow: 0 0 12px Rgba(250, 204, 21, 0.25);
+    box-shadow: 0 0 12px Rgb(250 204 21 / 25%);
   }
 
   .alert-icon {
@@ -210,23 +212,24 @@ const getListingTitle = (listing: MarketListing): string => {
   }
 
   .alert-info {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
+    flex: 1;
 
     .alert-title {
       @include pixelated;
-      font-size: 9px;
+
       color: var(--yellow, #facc15);
+      font-size: 9px;
     }
 
     .alert-sub {
+      color: #e2e8f0;
       font-size: 9px;
       line-height: 1.45;
       padding-bottom: 2px;
-      color: #e2e8f0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -235,13 +238,14 @@ const getListingTitle = (listing: MarketListing): string => {
 
   .alert-claim-btn {
     @include pixelated;
-    font-size: 7px;
+
     padding: 4px 10px;
-    background: var(--yellow, #facc15);
-    color: #000000;
-    font-weight: bold;
     border: none;
     border-radius: 4px;
+    background: var(--yellow, #facc15);
+    color: #000;
+    font-size: 7px;
+    font-weight: bold;
     cursor: pointer;
     flex-shrink: 0;
   }
@@ -259,53 +263,55 @@ const getListingTitle = (listing: MarketListing): string => {
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 8px;
+  background: Rgb(255 255 255 / 2%);
   cursor: pointer;
   box-sizing: border-box;
   overflow: visible;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.06);
-    border-color: Rgba(250, 204, 21, 0.3);
+    background: Rgb(255 255 255 / 6%);
+    border-color: Rgb(250 204 21 / 30%);
   }
 
   .item-icon-slot {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 36px;
     height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: Rgba(0, 0, 0, 0.35);
     border-radius: 6px;
+    background: Rgb(0 0 0 / 35%);
     flex-shrink: 0;
-    position: relative;
     overflow: visible;
 
     .item-thumb {
+      @include pixelated;
+
       width: 44px;
       height: 44px;
       object-fit: contain;
-      @include pixelated;
-      filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.6));
+      filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 60%));
       pointer-events: none;
     }
   }
 
   .item-details {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
+    flex: 1;
 
     .item-title {
       @include pixelated;
+
+      color: var(--white, #fff);
       font-size: 8px;
       line-height: 1.45;
       padding-bottom: 2px;
-      color: var(--white, #ffffff);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -313,10 +319,11 @@ const getListingTitle = (listing: MarketListing): string => {
 
     .item-seller {
       @include pixelated;
+
+      color: var(--gray, #94a3b8);
       font-size: 7px;
       line-height: 1.4;
       padding-bottom: 1px;
-      color: var(--gray, #94a3b8);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -328,8 +335,9 @@ const getListingTitle = (listing: MarketListing): string => {
 
     .price-val {
       @include pixelated;
-      font-size: 8px;
+
       color: var(--yellow, #facc15);
+      font-size: 8px;
       font-weight: bold;
     }
   }
@@ -340,9 +348,9 @@ const getListingTitle = (listing: MarketListing): string => {
   align-items: center;
   gap: 8px;
   padding: 10px;
-  background: Rgba(0, 0, 0, 0.2);
-  border: 1px dashed Rgba(255, 255, 255, 0.06);
+  border: 1px dashed Rgb(255 255 255 / 6%);
   border-radius: 6px;
+  background: Rgb(0 0 0 / 20%);
   cursor: pointer;
 
   .empty-gts-icon {
@@ -350,8 +358,8 @@ const getListingTitle = (listing: MarketListing): string => {
   }
 
   .empty-gts-text {
-    font-size: 9px;
     color: var(--gray, #94a3b8);
+    font-size: 9px;
   }
 }
 </style>

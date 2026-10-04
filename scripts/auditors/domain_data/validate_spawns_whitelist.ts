@@ -54,12 +54,14 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
       id: 'validate_spawns_whitelist',
       name: 'World Spawns & Encounters Whitelist Validator',
       description: 'Spawns fuera de whitelist o niveles inválidos',
+      icon: '🗺️',
       family: 'domain_data',
       ruleIds: SPAWN_WHITELIST_RULES,
+      packageName: 'Spawns',
       ruleDescriptions: {
-        'spawns-species-whitelist': 'Pokémon fuera de la whitelist en spawns',
-        'spawns-level-range-integrity': 'Rango de niveles inválido en apariciones',
-        'spawns-encounter-rates-parity': 'Discrepancia en probabilidades de aparición'
+        'spawns-species-whitelist': 'Pokémon fuera de la whitelist',
+        'spawns-level-range-integrity': 'Rango de niveles inválido',
+        'spawns-encounter-rates-parity': 'Discrepancia en probabilidades'
       },
       requiredFiles: [
         path.resolve(process.cwd(), MAPS_FILE_PATH),

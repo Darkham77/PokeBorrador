@@ -126,34 +126,34 @@ const selectNick = (style: LockableCosmeticStyle) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_cosmetics-shared.scss";
+@use "@/styles/components/_cosmetics-shared";
 
 .cosmetics-modal-internal {
-  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 40px;
+  padding: 10px;
 }
 
 .style-card {
   .preview-area {
-    min-height: 44px;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 100%;
+    min-height: 44px;
   }
 
   .preview-nick {
     font-size: 16px;
     font-weight: 800;
-    white-space: nowrap;
     text-align: center;
+    white-space: nowrap;
   }
 }
 
 .modal-footer-internal {
   text-align: center;
-  p { font-size: 11px; color: Rgba(71, 85, 105, 1); }
+  p { color: rgb(71 85 105 / 100%); font-size: 11px; }
 }
 </style>

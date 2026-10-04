@@ -3,8 +3,6 @@
 @use 'tools' as *;
 
 :root {
-  color-scheme: dark;
-
   --red: #{$red};
   --blue: #{$blue};
   --yellow: #{$yellow};
@@ -23,7 +21,6 @@
   --pokecenter-pink: #{$pokecenter-pink};
   --purple-light: #{color.scale($purple, $lightness: 25%)};
   --blue-light: #{color.scale($blue, $lightness: 25%)};
-
   --bg-main: #{$legacy-bg};
   --bg-card: #{$legacy-card};
   --glow-yellow: #{$legacy-glow};
@@ -35,9 +32,9 @@
   --weather-noise-2-url: url('/assets/fx/pattern-noise-2.webp'); // asset-url-ok: SSoT root CSS variable for weather noise pattern 2
 
   // Premium Shell System (Replaces Premium Shell)
-  --shell-bg: Rgba(15, 18, 32, 1);
-  --shell-border: Rgba(255, 255, 255, 0.15);
-  --shell-edge: Rgba(255, 255, 255, 0.08);
+  --shell-bg: Rgb(15 18 32 / 100%);
+  --shell-border: Rgb(255 255 255 / 15%);
+  --shell-edge: Rgb(255 255 255 / 8%);
   
   // Typography Source of Truth (CSS)
   --font-pixel: 'Pokemon FireRed LeafGreen', monospace;
@@ -71,43 +68,38 @@
   // Standard Spacing System
   --ui-h-padding: clamp(10px, 4dvw, 16px);
   --ui-v-gap: 32px;
+
+  color-scheme: dark;
 }
 
 
-html, body {
+html {
   height: 100%;
   overflow: hidden !important;
   overscroll-behavior: none !important;
-  overscroll-behavior-x: none !important;
-  overscroll-behavior-y: none !important;
 }
 
 body {
-  font-family: var(--font-ui);
-  color: $text;
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: var(--darker); // Pitch black backdrop
+  color: $text;
+  font-family: var(--font-ui);
   overflow: hidden !important;
   overscroll-behavior: none !important;
-  overscroll-behavior-x: none !important;
-  overscroll-behavior-y: none !important;
-  -webkit-user-select: none;
   user-select: none;
-  background-color: var(--darker); // Pitch black backdrop
   
   // Aggressive anti-blur for the global pixel font
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
-  #{"font-smooth"}: never !important;
   text-rendering: optimizeSpeed !important;
-  -webkit-text-stroke: 0px !important;
+  -webkit-text-stroke: 0 !important;
+  #{"font-smooth"}: never !important;
 
   &.modal-open {
     overflow: hidden !important;
     overscroll-behavior: none !important;
-    overscroll-behavior-x: none !important;
-    overscroll-behavior-y: none !important;
 
     .zoom-target,
     #vue-app {
@@ -121,29 +113,27 @@ body {
   z-index: var(--z-map-floor);
   width: 100%;
   height: 100%;
+  padding: 0;
   box-sizing: border-box;
   overflow: hidden !important;
   overscroll-behavior: none !important;
-  overscroll-behavior-x: none !important;
-  overscroll-behavior-y: none !important;
-  padding: 0;
 }
 
 #app {
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
 .global-background-stars {
   position: fixed;
-  inset: 0;
   z-index: var(--z-base);
-  pointer-events: none;
   background: 
-    Radial-Gradient(1200px 600px at 10% -10%, Rgba(59, 139, 255, 0.12), transparent 60%),
-    Radial-Gradient(900px 500px at 110% 10%, Rgba(199, 125, 255, 0.12), transparent 55%),
-    Radial-Gradient(900px 500px at 50% 120%, Rgba(255, 217, 61, 0.10), transparent 60%),
+    Radial-Gradient(1200px 600px at 10% -10%, Rgb(59 139 255 / 12%), transparent 60%),
+    Radial-Gradient(900px 500px at 110% 10%, Rgb(199 125 255 / 12%), transparent 55%),
+    Radial-Gradient(900px 500px at 50% 120%, Rgb(255 217 61 / 10%), transparent 60%),
     var(--bg-main);
+  inset: 0;
+  pointer-events: none;
 }
 
 // Global UI basics
@@ -172,18 +162,18 @@ h1, h2, h3, h4, h5, h6,
 }
 
 // Ultra-aggressive global override for pixel fonts to prevent browser smoothing
-[style*="Pokemon FireRed LeafGreen"],
-.font-pixel, 
+body [style*="Pokemon FireRed LeafGreen"],
+body .font-pixel, 
 body .pixelated {
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
   font-smooth: never !important;
   text-rendering: optimizeSpeed !important;
-  -webkit-text-stroke: 0px !important;
+  -webkit-text-stroke: 0 !important;
 }
 
 // Crisp nearest-neighbor interpolation for game elements only (excluding smooth high-res artwork)
-img:not(.allow-aliasing):not(.event-banner-img):not(.event-banner),
+img:not(.allow-aliasing, .event-banner-img, .event-banner),
 canvas,
 .pixelated-img,
 .sprite,
@@ -201,14 +191,13 @@ canvas,
 .event-banner,
 img.allow-aliasing,
 img.event-banner-img {
+  transform: Translatez(0);
   image-rendering: auto !important;
-  #{"image-rendering"}: auto !important;
   -webkit-optimize-contrast: auto !important;
   -ms-interpolation-mode: bicubic !important;
-  transform: Translatez(0);
   will-change: transform;
-  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  #{"image-rendering"}: auto !important;
 }
 
 
@@ -218,14 +207,13 @@ img.event-banner-img {
 // This inflates the em-square of ANY span that inherits it, making the line-box
 // ~31px tall even at font-size:16px. Emoji (rendered by the system emoji font)
 // then align to the BASELINE of that tall line-box, appearing visually lower.
-//
 // Universal Master Class: .emoji handles flex, standalone, and inline text centering.
 // ─────────────────────────────────────────────────────────────────────────────
-.emoji:not(i):not([class*="fa"]) {
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+.emoji:not(i, [class*="fa"]) {
   display: inline-flex !important;
-  align-items: center !important;
   justify-content: center !important;
+  align-items: center !important;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   line-height: 1 !important;
   vertical-align: middle !important;
 }
@@ -238,11 +226,11 @@ img.event-banner-img {
     width: 6px !important;
   }
   &::-webkit-scrollbar-track {
-    background: Rgba(0, 0, 0, 0.1) !important;
+    background: Rgb(0 0 0 / 10%) !important;
   }
   &::-webkit-scrollbar-thumb {
-    background: Rgba(255, 255, 255, 0.3) !important;
     border-radius: 3px !important;
+    background: Rgb(255 255 255 / 30%) !important;
   }
   
   // scrollbar-width: none;
@@ -254,92 +242,94 @@ img.event-banner-img {
 }
 
 .tint-silver {
-  filter: Grayscale(1) Brightness(1.2) contrast(1.1) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
+  filter: Grayscale(1) Brightness(1.2) Contrast(1.1) Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
 }
 
 .tint-gold {
-  filter: sepia(1) Saturate(12) hue-Rotate(5deg) Brightness(0.95) contrast(1.2) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
+  filter: sepia(1) Saturate(12) hue-Rotate(5deg) Brightness(0.95) Contrast(1.2) Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
 }
 
 .tint-silver-blue {
-  filter: Saturate(0.8) hue-Rotate(180deg) Brightness(1.2) contrast(1.1) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
+  filter: Saturate(0.8) hue-Rotate(180deg) Brightness(1.2) Contrast(1.1) Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
 }
 
 .tint-red-gold {
-  filter: Saturate(1.8) hue-Rotate(330deg) Brightness(1.0) contrast(1.2) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
+  filter: Saturate(1.8) hue-Rotate(330deg) Brightness(1.0) Contrast(1.2) Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
 }
 
 // Universal Season Tournament Card (EventCard & Coliseo & Ranking shared standard)
 .season-tournament-card {
-  background: radial-gradient(circle at 50% 0%, Rgba(250, 204, 21, 0.1) 0%, transparent 70%), linear-gradient(180deg, #1e1812 0%, #12141c 100%);
-  border: 1.5px solid Rgba(250, 204, 21, 0.4);
-  box-shadow: 0 4px 18px Rgba(0, 0, 0, 0.5), 0 0 14px Rgba(250, 204, 21, 0.08), inset 0 1px 0 Rgba(255, 235, 130, 0.2);
-  border-radius: 14px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
-  padding: 12px;
   gap: 10px;
+  padding: 12px;
+  border: 1.5px solid Rgb(250 204 21 / 40%);
+  border-radius: 14px;
+  background: Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 10%) 0%, transparent 70%), Linear-Gradient(180deg, #1e1812 0%, #12141c 100%);
+  box-shadow: 0 4px 18px Rgb(0 0 0 / 50%), 0 0 14px Rgb(250 204 21 / 8%), inset 0 1px 0 Rgb(255 235 130 / 20%);
+  overflow: hidden;
+  box-sizing: border-box;
 
   .tournament-banner-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    border: 1px solid Rgb(250 204 21 / 30%);
     border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid Rgba(250, 204, 21, 0.3);
     background: transparent;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
 
     .tournament-banner-img {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
       image-rendering: auto !important;
     }
   }
 
   .tournament-details {
-    padding: 0 4px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 0 4px;
 
     .tournament-header-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
 
       .season-badge {
+        @include pixelated;
+
+        padding: 3px 7px;
+        border: 1px solid #000;
+        border-radius: 4px;
+        background: var(--yellow, #facc15);
+        color: #000;
         font-size: 7px;
         font-weight: bold;
-        color: #000000;
-        background: var(--yellow, #facc15);
-        border: 1px solid #000000;
-        padding: 3px 7px;
-        border-radius: 4px;
         letter-spacing: 0.5px;
-        @include pixelated;
       }
 
       .tournament-name {
+        @include pixelated;
+
+        margin: 0;
+        color: var(--white);
         font-size: 12px;
         font-weight: 900;
-        color: var(--white);
-        margin: 0;
         letter-spacing: 0.5px;
         text-transform: uppercase;
-        @include pixelated;
       }
     }
 
     .tournament-desc {
-      font-size: 9px;
-      color: Rgba(226, 232, 240, 0.9);
-      line-height: 1.4;
       margin: 0;
+      color: Rgb(226 232 240 / 90%);
+      font-size: 9px;
+      line-height: 1.4;
     }
 
     .tournament-badges-row {
@@ -349,21 +339,22 @@ img.event-banner-img {
       gap: 6px;
 
       .rule-badge {
-        font-size: 8px;
-        padding: 3px 8px;
-        background: Rgba(255, 255, 255, 0.05);
-        border: 1px solid Rgba(255, 255, 255, 0.12);
-        border-radius: 6px;
-        color: var(--white);
         @include pixelated;
+
         display: inline-flex;
         align-items: center;
         gap: 4px;
+        padding: 3px 8px;
+        border: 1px solid Rgb(255 255 255 / 12%);
+        border-radius: 6px;
+        background: Rgb(255 255 255 / 5%);
+        color: var(--white);
+        font-size: 8px;
 
         &.special-rule {
-          border-color: Rgba(250, 204, 21, 0.3);
+          background: Rgb(250 204 21 / 8%);
           color: #fef08a;
-          background: Rgba(250, 204, 21, 0.08);
+          border-color: Rgb(250 204 21 / 30%);
         }
 
         &.all-types {
@@ -382,16 +373,17 @@ img.event-banner-img {
       display: flex;
       align-items: center;
       gap: 10px;
-      background: Rgba(250, 204, 21, 0.06);
-      border: 1px solid Rgba(250, 204, 21, 0.25);
-      border-radius: 8px;
       padding: 6px 12px;
+      border: 1px solid Rgb(250 204 21 / 25%);
+      border-radius: 8px;
+      background: Rgb(250 204 21 / 6%);
 
       .reward-sprite {
+        @include pixelated;
+
         width: 32px;
         height: 32px;
         object-fit: contain;
-        @include pixelated;
       }
 
       .reward-text-group {
@@ -400,28 +392,29 @@ img.event-banner-img {
         gap: 2px;
 
         .reward-tag {
-          font-size: 7px;
-          color: var(--yellow);
-          font-weight: bold;
           @include pixelated;
+
+          color: var(--yellow);
+          font-size: 7px;
+          font-weight: bold;
         }
 
         .reward-name {
-          font-size: 9px;
-          font-weight: bold;
-          color: var(--white);
-          text-transform: uppercase;
           display: inline-flex;
           align-items: center;
           gap: 5px;
+          color: var(--white);
+          font-size: 9px;
+          font-weight: bold;
           line-height: 1.25;
+          text-transform: uppercase;
 
           .emoji {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
             font-size: 10px;
             line-height: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
           }
         }
       }

@@ -46,20 +46,21 @@ const emit = defineEmits<{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
   min-width: 0;
+  margin-bottom: 20px;
 
   .title-wrap {
     min-width: 0;
   }
 
   h3 { 
-    font-weight: 800; 
     @include pixelated; 
-    font-size: 10px; 
-    color: var(--yellow, #facc15); 
+
     margin: 0; 
-    word-break: break-word; 
+    color: var(--yellow, #facc15); 
+    font-size: 10px; 
+    font-weight: 800; 
+    overflow-wrap: break-word; 
   }
 
   .missions-header-actions {
@@ -69,17 +70,18 @@ const emit = defineEmits<{
     flex-shrink: 0;
 
     .refresh-count { 
-      font-size: 10px; 
-      color: var(--gray, #94a3b8); 
       @include pixelated;
-      background: Rgba(255, 255, 255, 0.05);
-      border: 1px solid Rgba(255, 255, 255, 0.08);
-      border-radius: 6px;
+
       padding: 3px 8px;
+      border: 1px solid rgb(255 255 255 / 8%);
+      border-radius: 6px;
+      background: rgb(255 255 255 / 5%); 
+      color: var(--gray, #94a3b8); 
+      font-size: 10px;
       white-space: nowrap;
 
       .refresh-label {
-        @media (max-width: 640px) {
+        @media (width <= 640px) {
           display: none;
         }
       }

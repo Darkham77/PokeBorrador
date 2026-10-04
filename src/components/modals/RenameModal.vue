@@ -232,24 +232,25 @@ const submitRename = async () => {
 @use "@/styles/core/tools" as *;
 
 .rename-modal-container {
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 16px;
 }
 
 .info-box {
-  background: Rgba(0, 0, 0, 0.2);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
   padding: 12px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 20%);
 }
 
 .desc-text {
-  font-size: 11px;
-  color: Rgba(255, 255, 255, 0.7);
-  line-height: 1.4;
   @include pixelated;
+
+  color: rgb(255 255 255 / 70%);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .input-section {
@@ -264,16 +265,16 @@ const submitRename = async () => {
     width: 100%;
 
     .vicio-input {
-      flex: 1;
-      background: Rgba(0, 0, 0, 0.4);
+      padding: 10px 14px;
       border: 2px solid var(--blue);
       border-radius: 6px;
+      background: rgb(0 0 0 / 40%);
       color: var(--white);
-      padding: 10px 14px;
       font-family: var(--font-pixel);
       font-size: 14px;
-      outline: none;
       text-align: center;
+      flex: 1;
+      outline: none;
       
 
       &:focus {
@@ -295,18 +296,19 @@ const submitRename = async () => {
 
 
 .cooldown-notice {
-  font-size: 10px;
-  color: var(--red);
-  text-align: center;
-  background: Rgba(239, 68, 68, 0.1);
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid Rgba(239, 68, 68, 0.2);
   @include pixelated;
 
+  padding: 8px;
+  border: 1px solid rgb(239 68 68 / 20%);
+  border-radius: 4px;
+  background: rgb(239 68 68 / 10%);
+  color: var(--red);
+  font-size: 10px;
+  text-align: center;
+
   .days-highlight {
-    font-weight: bold;
     color: var(--yellow);
+    font-weight: bold;
   }
 }
 
@@ -315,10 +317,11 @@ const submitRename = async () => {
   gap: 12px;
 
   button {
-    flex: 1;
+    @include pixelated;
+
     padding: 12px;
     font-size: 10px;
-    @include pixelated;
+    flex: 1;
   }
 }
 </style>

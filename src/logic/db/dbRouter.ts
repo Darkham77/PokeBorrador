@@ -19,6 +19,7 @@ export type { DBCompatibilityResponse };
 
 const MIN_TIMESTAMP_MS_STRING_LENGTH = 10;
 const MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC = 0.01;
+const PERPETUAL_SESSION_EXPIRY_TIMESTAMP = 9999999999 as const;
 
 /**
  * Unified Data Persistence Layer with Strict Session Isolation.
@@ -383,8 +384,8 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
         access_token: 'mock',
         token_type: 'bearer',
         user,
-        expires_at: 9999999999,
-        expires_in: 9999999999,
+        expires_at: PERPETUAL_SESSION_EXPIRY_TIMESTAMP,
+        expires_in: PERPETUAL_SESSION_EXPIRY_TIMESTAMP,
         refresh_token: 'mock'
       } : null;
       

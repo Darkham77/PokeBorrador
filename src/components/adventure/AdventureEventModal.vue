@@ -55,7 +55,7 @@ const eventAction = computed<EventTypeAction>(() => {
     >
       <p
         class="adv-event-desc"
-        style="line-height: 1.7; color: #c5c6c7; margin: 0;"
+        style=" margin: 0; color: #c5c6c7;line-height: 1.7;"
       >
         {{ activeEvent.desc }}
       </p>

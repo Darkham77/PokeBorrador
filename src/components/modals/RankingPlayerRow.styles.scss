@@ -5,32 +5,32 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
   padding: 10px 14px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 10px;
+  background: Rgb(255 255 255 / 2%);
   cursor: pointer;
   will-change: transform, background-color, border-color;
 
   // Top 3 distinct backgrounds
   &.rank-1 {
-    background: linear-gradient(90deg, Rgba(251, 191, 36, 0.1), Rgba(0, 0, 0, 0));
-    border-color: Rgba(251, 191, 36, 0.35);
+    background: Linear-Gradient(90deg, Rgb(251 191 36 / 10%), Rgb(0 0 0 / 0%));
+    border-color: Rgb(251 191 36 / 35%);
   }
   &.rank-2 {
-    background: linear-gradient(90deg, Rgba(148, 163, 184, 0.1), Rgba(0, 0, 0, 0));
-    border-color: Rgba(148, 163, 184, 0.35);
+    background: Linear-Gradient(90deg, Rgb(148 163 184 / 10%), Rgb(0 0 0 / 0%));
+    border-color: Rgb(148 163 184 / 35%);
   }
   &.rank-3 {
-    background: linear-gradient(90deg, Rgba(180, 83, 9, 0.1), Rgba(0, 0, 0, 0));
-    border-color: Rgba(180, 83, 9, 0.35);
+    background: Linear-Gradient(90deg, Rgb(180 83 9 / 10%), Rgb(0 0 0 / 0%));
+    border-color: Rgb(180 83 9 / 35%);
   }
 }
 
 .rank-badge {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 5px;
   width: auto;
   min-width: 32px;
@@ -42,8 +42,9 @@
 
   .generic-rank {
     @include pixelated;
-    font-size: 8px;
+
     color: #94a3b8;
+    font-size: 8px;
 
     &.top-1 { color: #f59e0b; }
     &.top-2 { color: #cbd5e1; }
@@ -51,11 +52,12 @@
   }
 
   .ranked-medal-mini {
+    @include pixelated;
+
     width: 20px;
     height: 20px;
     object-fit: contain;
     flex-shrink: 0;
-    @include pixelated;
   }
 }
 
@@ -65,31 +67,32 @@
 }
 
 .player-details {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
+  flex: 1;
 
   .player-name-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
 
     .player-name-text {
+      color: var(--white);
       font-size: 12px;
       font-weight: bold;
-      color: var(--white);
     }
 
     .faction-tag-badge {
-      font-size: 6px;
+      @include pixelated;
+
       padding: 1px 4px;
       border-radius: 4px;
       color: white;
+      font-size: 6px;
       text-transform: uppercase;
-      @include pixelated;
       letter-spacing: 0.5px;
     }
   }
@@ -98,15 +101,15 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 9px;
     color: #94a3b8;
+    font-size: 9px;
 
     .player-class-info {
       text-transform: capitalize;
     }
 
     .divider {
-      color: Rgba(255, 255, 255, 0.4);
+      color: Rgb(255 255 255 / 40%);
     }
   }
 }
@@ -117,11 +120,12 @@
 
   .score-value {
     @include pixelated;
-    font-size: 8px;
-    color: var(--yellow);
-    background: Rgba(251, 191, 36, 0.08);
-    border: 1px solid Rgba(251, 191, 36, 0.15);
+
     padding: 4px 8px;
+    border: 1px solid Rgb(251 191 36 / 15%);
     border-radius: 6px;
+    background: Rgb(251 191 36 / 8%);
+    color: var(--yellow);
+    font-size: 8px;
   }
 }

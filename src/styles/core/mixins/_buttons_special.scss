@@ -11,43 +11,44 @@
   margin-top: 4px;
 
   .gender-select-btn {
-    flex: 1;
-    background: Rgba(0, 0, 0, 0.4);
-    border: 2px solid Rgba(255, 255, 255, 0.1);
-    border-radius: $radius;
-    padding: 10px;
-    font-size: 11px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    color: Rgba(255, 255, 255, 0.6);
-    will-change: transform;
     @include pixelated;
 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+    border: 2px solid Rgb(255 255 255 / 10%);
+    border-radius: $radius;
+    background: Rgb(0 0 0 / 40%);
+    color: Rgb(255 255 255 / 60%);
+    font-size: 11px;
+    flex: 1;
+    cursor: pointer;
+    will-change: transform;
+
     &:hover {
-      border-color: Rgba(255, 255, 255, 0.3);
       color: var(--white);
+      border-color: Rgb(255 255 255 / 30%);
     }
 
     &.male {
       &.active {
-        border-color: Rgba(59, 139, 255, 1);
-        background: Rgba(59, 139, 255, 0.15);
-        color: Rgba(59, 139, 255, 1);
-        text-shadow: 0 0 8px Rgba(59, 139, 255, 0.4);
-        box-shadow: 0 0 12px Rgba(59, 139, 255, 0.1);
+        background: Rgb(59 139 255 / 15%);
+        color: Rgb(59 139 255 / 100%);
+        border-color: Rgb(59 139 255 / 100%);
+        text-shadow: 0 0 8px Rgb(59 139 255 / 40%);
+        box-shadow: 0 0 12px Rgb(59 139 255 / 10%);
       }
     }
 
     &.female {
       &.active {
-        border-color: Rgba(255, 110, 255, 1);
-        background: Rgba(255, 110, 255, 0.15);
-        color: Rgba(255, 110, 255, 1);
-        text-shadow: 0 0 8px Rgba(255, 110, 255, 0.4);
-        box-shadow: 0 0 12px Rgba(255, 110, 255, 0.1);
+        background: Rgb(255 110 255 / 15%);
+        color: Rgb(255 110 255 / 100%);
+        border-color: Rgb(255 110 255 / 100%);
+        text-shadow: 0 0 8px Rgb(255 110 255 / 40%);
+        box-shadow: 0 0 12px Rgb(255 110 255 / 10%);
       }
     }
   }
@@ -62,30 +63,30 @@
 }
 
 @mixin widget-minimize-btn {
-  padding: 0;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   width: 28px;
   min-width: 28px;
   height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(255, 255, 255, 0.06);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
+  padding: 0;
+  border: 1px solid Rgb(255 255 255 / 15%);
   border-radius: 6px;
+  background: Rgb(255 255 255 / 6%);
   color: var(--gray, #94a3b8);
   cursor: pointer;
   box-sizing: border-box;
   will-change: border-color, background-color, color, box-shadow;
 
   &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
+    background: Rgb(255 255 255 / 12%);
     color: var(--yellow, #facc15);
     border-color: var(--yellow, #facc15);
-    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.25);
+    box-shadow: 0 0 10px Rgb(250 204 21 / 25%);
   }
 
   &:active:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.18);
+    background: Rgb(255 255 255 / 18%);
   }
 
   &:disabled {
@@ -103,17 +104,17 @@
   &.claim-action-btn,
   &.claim-btn {
     background: #16a34a;
-    border-color: #4ade80;
     color: var(--white);
     font-weight: bold;
-    box-shadow: 0 2px 0 #15803d, 0 0 10px Rgba(74, 222, 128, 0.25);
-    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+    border-color: #4ade80;
+    box-shadow: 0 2px 0 #15803d, 0 0 10px Rgb(74 222 128 / 25%);
+    text-shadow: 0 1px 2px Rgb(0 0 0 / 50%);
 
     &:hover:not(:disabled) {
       background: #22c55e;
-      border-color: #86efac;
-      box-shadow: 0 3px 0 #15803d, 0 0 14px Rgba(74, 222, 128, 0.4);
       transform: Translatey(-1px);
+      border-color: #86efac;
+      box-shadow: 0 3px 0 #15803d, 0 0 14px Rgb(74 222 128 / 40%);
     }
 
     &:active:not(:disabled) {
@@ -124,81 +125,99 @@
 
   &.discard-action-btn,
   &.discard-btn {
-    background: Rgba(239, 68, 68, 0.15);
-    border-color: Rgba(239, 68, 68, 0.4);
+    background: Rgb(239 68 68 / 15%);
     color: #fca5a5;
     font-weight: bold;
-    box-shadow: 0 2px 0 Rgba(0, 0, 0, 0.4);
-    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+    border-color: Rgb(239 68 68 / 40%);
+    box-shadow: 0 2px 0 Rgb(0 0 0 / 40%);
+    text-shadow: 0 1px 2px Rgb(0 0 0 / 50%);
 
     &:hover:not(:disabled) {
       background: #ef4444;
-      border-color: #fca5a5;
       color: var(--white);
-      box-shadow: 0 3px 0 #b91c1c, 0 0 12px Rgba(239, 68, 68, 0.4);
       transform: Translatey(-1px);
+      border-color: #fca5a5;
+      box-shadow: 0 3px 0 #b91c1c, 0 0 12px Rgb(239 68 68 / 40%);
     }
 
     &.only-action {
       background: #dc2626;
-      border-color: #f87171;
       color: var(--white);
-      box-shadow: 0 2px 0 #991b1b, 0 0 10px Rgba(220, 38, 38, 0.3);
+      border-color: #f87171;
+      box-shadow: 0 2px 0 #991b1b, 0 0 10px Rgb(220 38 38 / 30%);
     }
   }
 }
 
 @mixin modal-tab-btn {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
-  font-size: 11px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-family: var(--font-pixel), sans-serif;
   @include pixelated;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  background: Rgb(255 255 255 / 3%);
+  color: #94a3b8;
+  font-family: var(--font-pixel), sans-serif;
+  font-size: 11px;
+  cursor: pointer;
   will-change: transform, background-color, border-color;
 
   &:hover:not(:disabled) {
-    color: var(--white, #ffffff);
-    background: Rgba(255, 255, 255, 0.06);
-  }
-
-  &.active {
-    color: #000000;
-    font-weight: bold;
-    background: var(--yellow, #facc15);
-    border-color: var(--yellow-light, #fde047);
-    box-shadow: 0 0 10px Rgba(234, 179, 8, 0.4);
-    text-shadow: none;
+    background: Rgb(255 255 255 / 6%);
+    color: var(--white, #fff);
   }
 
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
   }
+
+  &.active {
+    background: var(--yellow, #facc15);
+    color: #000;
+    font-weight: bold;
+    border-color: var(--yellow-light, #fde047);
+    box-shadow: 0 0 10px Rgb(234 179 8 / 40%);
+    text-shadow: none;
+  }
 }
 
 @mixin btn-refresh-header {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  border-radius: 50%;
   display: inline-flex;
-  align-items: center;
   justify-content: center;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  color: Rgba(255, 255, 255, 0.75);
-  cursor: pointer;
+  align-items: center;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
   padding: 0;
+  border: 1px solid Rgb(255 255 255 / 12%);
+  border-radius: 50%;
+  background: Rgb(255 255 255 / 5%);
+  color: Rgb(255 255 255 / 75%);
+  cursor: pointer;
   box-sizing: border-box;
   will-change: transform, border-color, background-color, color, box-shadow;
+
+  &:hover:not(:disabled) {
+    background: Rgb(255 255 255 / 12%);
+    color: var(--yellow, #facc15);
+    border-color: var(--yellow, #facc15);
+    box-shadow: 0 0 10px Rgb(250 204 21 / 25%);
+  }
+
+  &:active:not(:disabled) {
+    background: Rgb(255 255 255 / 18%);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    transform: none;
+    cursor: not-allowed;
+  }
 
   .refresh-icon {
     display: block;
@@ -209,8 +228,8 @@
 
   &.size-sm {
     width: 28px;
-    height: 28px;
     min-width: 28px;
+    height: 28px;
 
     .refresh-icon {
       width: 12px;
@@ -220,45 +239,29 @@
 
   &.size-md {
     width: 32px;
-    height: 32px;
     min-width: 32px;
+    height: 32px;
 
     .refresh-icon {
       width: 14px;
       height: 14px;
     }
   }
-
-  &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow, #facc15);
-    color: var(--yellow, #facc15);
-    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.25);
-  }
-
-  &:active:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.18);
-  }
-
-  &:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    transform: none;
-  }
 }
 
 @mixin btn-refresh-pill {
   @include pixelated;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
   height: 28px;
   padding: 0 12px;
+  border: 1px solid Rgb(255 255 255 / 12%);
   border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  color: Rgba(255, 255, 255, 0.8);
+  background: Rgb(255 255 255 / 5%);
+  color: Rgb(255 255 255 / 80%);
   font-size: 8px;
   cursor: pointer;
   box-sizing: border-box;
@@ -266,27 +269,27 @@
   white-space: nowrap;
   will-change: transform, border-color, background-color, color, box-shadow;
 
+  &:hover:not(:disabled) {
+    background: Rgb(255 255 255 / 12%);
+    color: var(--yellow, #facc15);
+    border-color: var(--yellow, #facc15);
+    box-shadow: 0 0 8px Rgb(250 204 21 / 20%);
+  }
+
+  &:active:not(:disabled) {
+    background: Rgb(255 255 255 / 18%);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    transform: none;
+    cursor: not-allowed;
+  }
+
   .refresh-icon {
     display: block;
     width: 12px;
     height: 12px;
     transform-origin: center center;
-  }
-
-  &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow, #facc15);
-    color: var(--yellow, #facc15);
-    box-shadow: 0 0 8px Rgba(250, 204, 21, 0.2);
-  }
-
-  &:active:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.18);
-  }
-
-  &:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    transform: none;
   }
 }

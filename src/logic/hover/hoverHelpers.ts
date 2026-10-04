@@ -117,21 +117,25 @@ export function resolveCssColor(colorStr: string, element?: HTMLElement): string
   return FALLBACK_CSS_COLORS[color] ?? color;
 }
 
+const HEX_SHORT_LENGTH = 3 as const;
+const HEX_FULL_LENGTH = 6 as const;
+const HEXADECIMAL_RADIX = 16 as const;
+
 /**
  * Converts a hex color to a transparent rgba color string.
  */
 function hexToRgba(hex: string, alpha: number): string {
   let c = hex.replace('#', '').trim()
-  if (c.length === 3) {
+  if (c.length === HEX_SHORT_LENGTH) {
     const r = c.charAt(0)
     const g = c.charAt(1)
     const b = c.charAt(2)
     c = r + r + g + g + b + b
   }
-  if (c.length === 6) {
-    const r = parseInt(c.substring(0, 2), 16)
-    const g = parseInt(c.substring(2, 4), 16)
-    const b = parseInt(c.substring(4, 6), 16)
+  if (c.length === HEX_FULL_LENGTH) {
+    const r = parseInt(c.substring(0, 2), HEXADECIMAL_RADIX)
+    const g = parseInt(c.substring(2, 4), HEXADECIMAL_RADIX)
+    const b = parseInt(c.substring(4, 6), HEXADECIMAL_RADIX)
     return `rgba(${r}, ${g}, ${b}, ${alpha})`
   }
   return hex

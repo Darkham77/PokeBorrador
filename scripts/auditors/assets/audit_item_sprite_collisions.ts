@@ -140,11 +140,13 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
       id: 'audit_item_sprite_collisions',
       name: 'Item Sprite Collisions Auditor',
       description: 'Colisiones de sprites o archivos faltantes en ítems',
+      icon: '🎒',
       family: 'assets',
+      packageName: 'Sprites',
       ruleIds: ITEM_SPRITE_COLLISION_RULES,
       ruleDescriptions: {
-        'item-missing-sprite': 'Sprite de ítem no encontrado en assets',
-        'item-sprite-collision': 'Colisión o solapamiento en sprite de ítem'
+        'item-missing-sprite': 'Sprite de ítem no encontrado',
+        'item-sprite-collision': 'Colisión en sprite de ítem'
       },
       requiredFiles: [itemsPath]
     });

@@ -252,4 +252,27 @@ describe('System Utilities & Save Services Domain Suite', () => {
       assert.strictEqual(mockDebug.certifiedReplayWorkerEnded, true);
     });
   });
+
+  describe('Application Version Governance & SSoT Synchronization', () => {
+    it('guarantees package.json is the Single Source of Truth matching public/version.json', () => {
+      const pkgPath = path.resolve('package.json');
+      const verPath = path.resolve('public/version.json');
+
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { version: string };
+      const ver = JSON.parse(fs.readFileSync(verPath, 'utf8')) as { version: string };
+
+      expect(pkg.version).toMatch(/^\d+\.\d+\.\d+(-build\.\d{8}-\d{6})?$/);
+      const expectedNormalized = pkg.version.startsWith('v') ? pkg.version : `v${pkg.version}`;
+      expect(ver.version).toBe(expectedNormalized);
+    });
+
+    it('verifies LoginView template binds appVersion with id="login-app-version"', () => {
+      const loginViewPath = path.resolve('src/views/auth/LoginView.vue');
+      const content = fs.readFileSync(loginViewPath, 'utf8');
+
+      expect(content).toContain('id="login-app-version"');
+      expect(content).toContain('{{ appVersion }}');
+      expect(content).toContain("typeof __APP_VERSION__ !== 'undefined'");
+    });
+  });
 });

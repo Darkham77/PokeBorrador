@@ -57,12 +57,13 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
       id: 'validate_schema_parity',
       name: 'SQL Schema Multi-Engine Parity Auditor',
       description: 'Verifica paridad de esquemas entre PostgreSQL y SQLite',
+      icon: '🗄️',
       family: 'persistence',
       ruleIds: SCHEMA_PARITY_RULES,
       packageName: 'Esquema',
       ruleDescriptions: {
         'schema-parity-missing-table': 'Tabla Postgres ausente en SQLite',
-        'schema-parity-missing-column': 'Columna Postgres ausente en SQLite'
+        'schema-parity-missing-column': 'Columna ausente en SQLite'
       }
     });
     this.migrationsDir = path.resolve(this.projectRoot, 'database/migrations');

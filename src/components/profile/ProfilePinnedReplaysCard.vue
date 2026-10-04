@@ -135,9 +135,9 @@ function getResultIcon(replay: BattleReplayRecord) {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: Rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgb(148 163 184 / 20%);
   border-radius: 8px;
-  border: 1px dashed Rgba(148, 163, 184, 0.2);
+  background: rgb(15 23 42 / 40%);
 
   .empty-icon {
     font-size: 1.4rem;
@@ -152,14 +152,14 @@ function getResultIcon(replay: BattleReplayRecord) {
   }
 
   .empty-text {
-    font-size: 0.8rem;
     color: #94a3b8;
+    font-size: 0.8rem;
     font-style: italic;
   }
 
   .empty-sub {
-    font-size: 0.65rem;
     color: #64748b;
+    font-size: 0.65rem;
   }
 }
 
@@ -170,17 +170,18 @@ function getResultIcon(replay: BattleReplayRecord) {
 }
 
 .pinned-replay-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: Rgba(15, 23, 42, 0.6);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
   @include gpu-layer;
 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 6px;
+  background: rgb(15 23 42 / 60%);
+
   &:hover {
-    border-color: Rgba(234, 179, 8, 0.4);
+    border-color: rgb(234 179 8 / 40%);
   }
 
   .replay-main-info {
@@ -189,6 +190,8 @@ function getResultIcon(replay: BattleReplayRecord) {
     gap: 10px;
 
     .result-badge {
+      @include pixelated;
+
       display: flex;
       align-items: center;
       gap: 4px;
@@ -196,18 +199,17 @@ function getResultIcon(replay: BattleReplayRecord) {
       border-radius: 4px;
       font-size: 0.55rem;
       font-weight: bold;
-      @include pixelated;
 
       &.victoria {
-        background: Rgba(34, 197, 94, 0.2);
+        border: 1px solid rgb(34 197 94 / 40%);
+        background: rgb(34 197 94 / 20%);
         color: #4ade80;
-        border: 1px solid Rgba(34, 197, 94, 0.4);
       }
 
       &.derrota {
-        background: Rgba(239, 68, 68, 0.2);
+        border: 1px solid rgb(239 68 68 / 40%);
+        background: rgb(239 68 68 / 20%);
         color: #f87171;
-        border: 1px solid Rgba(239, 68, 68, 0.4);
       }
     }
 
@@ -217,15 +219,16 @@ function getResultIcon(replay: BattleReplayRecord) {
       gap: 2px;
 
       .rival-txt {
-        font-size: 0.65rem;
         color: #f1f5f9;
+        font-size: 0.65rem;
         font-weight: bold;
       }
 
       .meta-txt {
-        font-size: 0.55rem;
-        color: #94a3b8;
         @include pixelated;
+
+        color: #94a3b8;
+        font-size: 0.55rem;
       }
     }
   }
@@ -237,24 +240,24 @@ function getResultIcon(replay: BattleReplayRecord) {
 
     .action-btn {
       display: inline-flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       width: 26px;
       height: 26px;
       border-radius: 4px;
+      font-family: inherit;
       font-size: 0.65rem;
       cursor: pointer;
-      font-family: inherit;
 
       &.watch {
-        background: #3b82f6;
         border: 1px solid #60a5fa;
-        color: #ffffff;
+        background: #3b82f6;
+        color: #fff;
       }
 
       &.unpin {
-        background: #475569;
         border: 1px solid #64748b;
+        background: #475569;
         color: #cbd5e1;
       }
     }

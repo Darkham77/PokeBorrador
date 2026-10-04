@@ -91,6 +91,8 @@ const handleClone = () => {
   extraSacrifices.value = 0 // Reset
 }
 
+const SACRIFICE_MULTIPLIER_STEP = 0.25 as const
+
 // Data table helper
 const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
   const c = calculateCloningCost(N)
@@ -98,7 +100,7 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
   const isOdd = N % 2 !== 0
   const rollsText = isOdd ? `${baseRolls}-${baseRolls + 1}` : `${baseRolls}`
   const shinyRate = calculateCloningShinyChance(N)
-  const mult = 1 + 0.25 * N
+  const mult = 1 + SACRIFICE_MULTIPLIER_STEP * N
   return {
     N,
     cost: c,

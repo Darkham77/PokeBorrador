@@ -115,34 +115,36 @@ const handleForget = () => {
 
   h2 {
     @include pixelated;
-    font-size: 14px;
+
+    margin: 0 0 12px;
     color: var(--white);
-    margin: 0 0 12px 0;
+    font-size: 14px;
   }
 
   p {
-    font-size: 13px;
-    color: var(--gray);
     margin: 0;
+    color: var(--gray);
+    font-size: 13px;
     line-height: 1.5;
     .highlight { color: var(--yellow); font-weight: 800; }
   }
 }
 
 .new-move-display {
-  margin-bottom: 24px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px dashed Rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
   padding: 12px;
+  border: 1px dashed rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 2%);
+  margin-bottom: 24px;
 
   .new-move-title {
     @include pixelated;
-    font-size: 8px;
+
     color: var(--yellow);
+    font-size: 8px;
+    text-align: center;
     margin-bottom: 8px;
     text-transform: uppercase;
-    text-align: center;
   }
 
   .new-move-slot-wrapper {
@@ -153,19 +155,20 @@ const handleForget = () => {
 
 .instruction {
   @include pixelated;
-  font-size: 8px;
+
   color: var(--gray);
+  font-size: 8px;
+  line-height: 1.8;
+  text-align: center;
   margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  text-align: center;
-  line-height: 1.8;
 }
 
 .moves-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 12px;
+  grid-template-columns: 1fr 1fr;
   margin-bottom: 24px;
 }
 
@@ -175,20 +178,21 @@ const handleForget = () => {
 }
 
 .forget-btn {
+  @include pixelated;
+
   width: 100%;
   padding: 16px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
+  border: 1px solid rgb(255 255 255 / 6%);
   border-radius: 14px;
+  background: rgb(255 255 255 / 3%);
   color: var(--gray);
-  @include pixelated;
   font-size: 9px;
   cursor: pointer;
   
   &:hover {
-    background: Rgba(239, 68, 68, 0.1);
-    color: Rgba(248, 113, 113, 1);
-    border-color: Rgba(239, 68, 68, 1);
+    background: rgb(239 68 68 / 10%);
+    color: rgb(248 113 113 / 100%);
+    border-color: rgb(239 68 68 / 100%);
   }
 }
 </style>

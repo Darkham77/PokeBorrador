@@ -1,26 +1,27 @@
 @use "@/styles/components/map-card-weather" as *;
 
 .dust-only {
-  opacity: 0.6 !important; // Aumentado para visibilidad
-  filter: Grayscale(0.2) contrast(1.1); // Recuperado parte del color original
-  will-change: transform, opacity;
-  transform: translate3d(0,0,0);
   z-index: calc(10 * 1);
+  opacity: 0.6 !important; // Aumentado para visibilidad
+  transform: Translate3d(0,0,0);
+  filter: Grayscale(0.2) Contrast(1.1); // Recuperado parte del color original
+  will-change: transform, opacity;
 }
 
 .leaf-element {
   position: absolute;
   top: -100px;
   left: -100px;
+  z-index: calc(var(--z-low) * 1); // Asegurar visibilidad sobre la lluvia
   width: clamp(6px, 2.5cqmin, 14px);
   height: clamp(5px, 1.9cqmin, 11px);
-  background: linear-gradient(135deg, #4ade80, #166534);
-  border-radius: 50% 0 50% 0;
+  border-radius: 50% 0;
+  background: Linear-Gradient(135deg, #4ade80, #166534);
   opacity: 0; // Default invisible until explicitly animated by GSAP
+  transform: Translate3d(0,0,0); // GPU Promotion
   pointer-events: none;
-  z-index: calc(var(--z-low) * 1); // Asegurar visibilidad sobre la lluvia
   will-change: transform, opacity;
-  transform: translate3d(0,0,0); // GPU Promotion
+
   // Eliminado Drop-Shadow para optimización GPU
 }
 
@@ -28,10 +29,10 @@
 
 .lightning-flash-overlay {
   position: absolute;
-  inset: 0;
+  z-index: calc(5 * 1); // Por debajo del rayo (que tiene 10)
   background: white;
   opacity: 0;
-  z-index: calc(5 * 1); // Por debajo del rayo (que tiene 10)
+  inset: 0;
   will-change: opacity;
   image-rendering: pixelated;
   pointer-events: none;
@@ -41,9 +42,9 @@
 
 .atmosphere-container {
   position: absolute;
+  z-index: calc(var(--atmo-z, 0) * 1);
   inset: 0;
-  pointer-events: none;
-  z-index: calc(var(--atmo-z, 0) * 1); 
+  pointer-events: none; 
   overflow: hidden;
   container-type: size; // Permite usar cqw/cqh para las hojas
   contain: layout style paint; // Optimización equilibrada: aisla el renderizado sin forzar buffers rígidos
@@ -55,59 +56,56 @@
 
 :deep(.weather-overlay) {
   z-index: calc(var(--atmo-z-final, var(--atmo-z, 0)) * 1) !important;
-  transform: scaleX(var(--atmo-dir, 1));
+  transform: ScaleX(var(--atmo-dir, 1));
 }
 
 .weather-canvas {
   position: absolute;
-  inset: var(--weather-mist-bleed, -100px);
+  z-index: calc(var(--z-base) + 1);
   width: calc(100% + 200px);
   height: calc(100% + 200px);
+  inset: var(--weather-mist-bleed, -100px);
   pointer-events: none;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   -webkit-optimize-contrast: active;
-  z-index: calc(var(--z-base) + 1);
 }
 
 .weather-overlay {
   &.fog .weather-canvas {
-    filter: contrast(1.4) Brightness(1.15);
+    filter: Contrast(1.4) Brightness(1.15);
   }
   &.dust_storm .weather-canvas {
-    filter: sepia(1) Saturate(2.4) Brightness(0.48) contrast(1.9);
+    filter: sepia(1) Saturate(2.4) Brightness(0.48) Contrast(1.9);
   }
   &.sandstorm .weather-canvas {
-    filter: sepia(1) Saturate(1.9) Brightness(0.68) contrast(1.55);
+    filter: sepia(1) Saturate(1.9) Brightness(0.68) Contrast(1.55);
   }
   &.strong_winds .weather-canvas {
-    filter: sepia(1) Saturate(1.5) Brightness(0.8) contrast(1.1);
+    filter: sepia(1) Saturate(1.5) Brightness(0.8) Contrast(1.1);
   }
   &.sun,
   &.intense_sun,
   &.heatwave {
     .weather-canvas {
-      inset: 0 !important;
+      z-index: var(--z-low);
       width: 100% !important;
       height: 100% !important;
-      z-index: var(--z-low);
+      inset: 0 !important;
     }
   }
 
   &.sun .weather-canvas {
-    filter: sepia(0.8) Saturate(2.5) Brightness(1.2) contrast(1.4);
-    -webkit-mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 30%, Rgba(0, 0, 0, 0.6) 65%, Rgba(0, 0, 0, 1) 88%);
-    mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 30%, Rgba(0, 0, 0, 0.6) 65%, Rgba(0, 0, 0, 1) 88%);
+    filter: sepia(0.8) Saturate(2.5) Brightness(1.2) Contrast(1.4);
+    mask-image: Radial-Gradient(ellipse at center, Rgb(0 0 0 / 0%) 30%, Rgb(0 0 0 / 60%) 65%, Rgb(0 0 0 / 100%) 88%);
   }
   &.intense_sun .weather-canvas {
-    filter: sepia(0.6) Saturate(3.0) Brightness(1.35) contrast(1.6);
-    -webkit-mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 25%, Rgba(0, 0, 0, 0.7) 60%, Rgba(0, 0, 0, 1) 85%);
-    mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 25%, Rgba(0, 0, 0, 0.7) 60%, Rgba(0, 0, 0, 1) 85%);
+    filter: sepia(0.6) Saturate(3.0) Brightness(1.35) Contrast(1.6);
+    mask-image: Radial-Gradient(ellipse at center, Rgb(0 0 0 / 0%) 25%, Rgb(0 0 0 / 70%) 60%, Rgb(0 0 0 / 100%) 85%);
   }
   &.heatwave .weather-canvas {
-    filter: sepia(1) Saturate(5.0) hue-Rotate(-25deg) Brightness(1.1) contrast(1.9);
-    -webkit-mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 20%, Rgba(0, 0, 0, 0.8) 55%, Rgba(0, 0, 0, 1) 80%);
-    mask-image: radial-gradient(ellipse at center, Rgba(0, 0, 0, 0) 20%, Rgba(0, 0, 0, 0.8) 55%, Rgba(0, 0, 0, 1) 80%);
+    filter: sepia(1) Saturate(5.0) hue-Rotate(-25deg) Brightness(1.1) Contrast(1.9);
+    mask-image: Radial-Gradient(ellipse at center, Rgb(0 0 0 / 0%) 20%, Rgb(0 0 0 / 80%) 55%, Rgb(0 0 0 / 100%) 80%);
   }
 
   // Sandwich Architecture: Pure particles layer without background tint or shadows
@@ -116,7 +114,7 @@
     box-shadow: none !important;
 
     // Suppress heavy background pseudoelements, except for camera-level atmospheric vignettes
-    &:not(.cold):not(.coldwave):not(.heatwave):not(.sun):not(.intense_sun):not(.fog):not(.snow):not(.blizzard):not(.mist):not(.wind):not(.strong_winds) {
+    &:not(.cold, .coldwave, .heatwave, .sun, .intense_sun, .fog, .snow, .blizzard, .mist, .wind, .strong_winds) {
       &::before,
       &::after {
         display: none !important;
@@ -126,10 +124,10 @@
 
   // Pure ambient layer in virtual space: NEVER render camera lens vignettes, halos, or borders on the map!
   &.is-ambient-layer {
+    box-shadow: none !important;
     &::before,
     &::after {
       display: none !important;
     }
-    box-shadow: none !important;
   }
 }

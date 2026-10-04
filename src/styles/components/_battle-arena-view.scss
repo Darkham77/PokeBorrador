@@ -2,43 +2,57 @@
 
 .battle-arena {
   position: relative;
-  width: 100%;
-  flex: 1;
-  background: black;
-  overflow: hidden;
   display: flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
+  align-items: center;
+  width: 100%;
+  background: black;
+  flex: 1;
+  overflow: hidden;
+  box-shadow: 0 10px 30px Rgb(0 0 0 / 50%);
   contain: paint layout;
   
-  @media (min-width: 1081px) {
-    grid-area: arena;
+  @media (width >= 1081px) {
     height: 100% !important;
+    grid-area: arena;
   }
 }
 
-.battle-arena-content { position: absolute; inset: 0; overflow: hidden; @include pixelated; }
-.battle-sprites { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 5); }
-.battle-status-layer { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 25); }
+.battle-arena-content { @include pixelated; position: absolute; inset: 0; overflow: hidden; }
+
+.battle-sprites { position: absolute; z-index: calc(var(--z-base) + 5); inset: 0; pointer-events: none; }
+
+.battle-status-layer { position: absolute; z-index: calc(var(--z-base) + 25); inset: 0; pointer-events: none; }
 
 .battle-info-container {
-  position: absolute; inset: 0; z-index: calc(var(--z-base) + 30);
-  padding: 2cqw; display: flex; flex-direction: column; pointer-events: none;
-  @media (max-width: 600px) { padding: 1cqw; }
+  position: absolute; z-index: calc(var(--z-base) + 30); display: flex; flex-direction: column;
+  padding: 2cqw; inset: 0; pointer-events: none;
+
+  @media (width <= 600px) { padding: 1cqw; }
 }
 
 .combatant-info-wrap { pointer-events: auto; }
+
 .enemy-side { align-self: flex-start; }
+
 .player-side { align-self: flex-end; margin-top: auto; }
 
 /* --- ANIMACIONES DE ENTRENADOR Y TRANSICIONES --- */
 .global-transition-overlay {
-  position: absolute; inset: 0; background: black; z-index: var(--z-max);
+  position: absolute; z-index: var(--z-max); background: black; inset: 0;
   pointer-events: none;
 }
 
+%arena-pixel-rendering {
+  image-rendering: -webkit-optimize-contrast !important;
+  #{"image-rendering"}: crisp-edges !important;
+  image-rendering: pixelated !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
+}
+
 .trainer-entity {
+  @extend %arena-pixel-rendering;
+
   z-index: calc(var(--z-map-spawns) + 1) !important;
   will-change: transform, opacity;
 }
@@ -47,55 +61,53 @@
   position: absolute;
   z-index: calc(var(--z-base) + 2);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   pointer-events: none;
 }
 
-.trainer-entity,
-.standing-trainer,
-.trainer-idle-wrapper,
-.pokemon-atmosphere-wrapper,
-.trainer-image {
-  image-rendering: -webkit-optimize-contrast !important;
-  #{"image-rendering"}: crisp-edges !important;
-  image-rendering: pixelated !important;
-  -ms-interpolation-mode: nearest-neighbor !important;
-}
-
 .pokemon-atmosphere-wrapper {
+  @extend %arena-pixel-rendering;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .trainer-idle-wrapper {
+  @extend %arena-pixel-rendering;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transform-origin: bottom center;
   will-change: transform;
 }
 
 .trainer-image {
+  @extend %arena-pixel-rendering;
+  @include sprite-render;
+
   width: 100%;
   height: 100%;
   object-fit: contain;
-  @include sprite-render;
 }
 
 .standing-trainer {
+  @extend %arena-pixel-rendering;
+
   pointer-events: none;
   
   .trainer-image {
+    @include sprite-render;
+
     width: 100%;
     height: 100%;
     object-fit: contain;
-    @include sprite-render;
   }
 
   &.enemy-trainer {
@@ -106,6 +118,7 @@
 
   &.player-trainer {
     z-index: calc(var(--z-map-spawns) + 4) !important;
+
     // No extra transform needed — VirtualEntity sets the correct size
   }
 }
@@ -127,24 +140,25 @@
 
 .retro-battle-dialog {
   position: absolute;
-  left: 5%;
   right: 5%;
   bottom: 8%;
+  left: 5%;
   z-index: calc(var(--z-base) + 30);
   pointer-events: all;
   
   .dialog-frame {
-    background: #141824;
-    border: 3px double Rgba(255, 255, 255, 0.6);
-    border-radius: 12px;
-    padding: 12px 18px;
-    box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.8), inset 0 0 8px Rgba(255, 255, 255, 0.05);
-    color: white;
     @include pixelated;
+
+    padding: 12px 18px;
+    border: 3px double Rgb(255 255 255 / 60%);
+    border-radius: 12px;
+    background: #141824;
+    color: white;
+    box-shadow: 0 8px 24px Rgb(0 0 0 / 80%), inset 0 0 8px Rgb(255 255 255 / 5%);
     
     .dialog-speaker {
-      font-size: 10px;
       color: #ffb703;
+      font-size: 10px;
       margin-bottom: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -152,9 +166,9 @@
     }
     
     .dialog-text {
+      color: #e5e7eb;
       font-size: 9px;
       line-height: 1.5;
-      color: #e5e7eb;
       text-shadow: 1px 1px 0 #000;
     }
   }
@@ -163,24 +177,24 @@
 
 .debug-trainer-guide {
   position: absolute;
-  inset: 0;
-  border: 2px solid cyan;
-  background-color: Rgba(0, 255, 255, 0.15);
-  box-sizing: border-box;
-  pointer-events: none;
   z-index: calc(var(--z-overlay) - 1);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  border: 2px solid cyan;
+  background-color: Rgb(0 255 255 / 15%);
+  inset: 0;
+  box-sizing: border-box;
+  pointer-events: none;
   
   span {
     color: cyan;
     font-family: monospace;
     font-size: 10px;
     font-weight: bold;
+    transform: Scale(calc(1 / var(--camera-scale, 1)));
     text-shadow: 1px 1px 0 black;
     pointer-events: none;
-    transform: Scale(calc(1 / var(--camera-scale, 1)));
     transform-origin: center center;
   }
 }
@@ -188,51 +202,52 @@
 .dialog-bubble-entity {
   z-index: calc(var(--z-base) + 30);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .speech-bubble {
-  position: relative;
-  background: white;
-  border: 8px solid #141824;
-  border-radius: 24px;
-  padding: 32px;
-  width: 100%;
-  max-width: 100%;
-  min-height: 180px;
-  box-sizing: border-box;
-  box-shadow: 12px 12px 0 Rgba(0, 0, 0, 0.15);
-  color: #141824;
   @include pixelated;
+
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  min-height: 180px;
+  padding: 32px;
+  border: 8px solid #141824;
+  border-radius: 24px;
+  background: white;
+  color: #141824;
+  box-sizing: border-box;
+  box-shadow: 12px 12px 0 Rgb(0 0 0 / 15%);
   
   .bubble-speaker {
+    color: #e76f51;
     font-size: 32px;
     font-weight: bold;
-    color: #e76f51;
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
   }
   
   .bubble-text {
+    color: #264653;
     font-size: 24px;
     line-height: 1.6;
-    color: #264653;
   }
   
   // Rabillo del bocadillo saliendo del lateral derecho y apuntando al rival (en P2 ANCHOR)
   .bubble-tail {
     position: absolute;
-    right: -100px; // Brecha de 100px hasta la esquina del entrenador, solapando 8px
     top: -26px; // Eleva el inicio de la flecha para que la punta coincida con el feetY del rival
+    right: -100px; // Brecha de 100px hasta la esquina del entrenador, solapando 8px
+    z-index: var(--z-map-grass-back);
     width: 108px; // Largo exacto para conectar con la esquina izquierda del rival
     height: 100px;
     pointer-events: none;
-    z-index: var(--z-map-grass-back);
     
     svg {
       width: 100%;
@@ -245,30 +260,31 @@
 /* --- RIVAL SPECIAL PRESENTATION ALERT --- */
 .rival-alert-overlay {
   position: absolute;
-  inset: 0;
   z-index: calc(var(--z-base) + 100);
-  pointer-events: none;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  inset: 0;
+  pointer-events: none;
 }
 
 .rival-alert-flicker {
   position: absolute;
-  inset: 0;
-  background: var(--white, #ffffff);
+  background: var(--white, #fff);
   opacity: 0;
+  inset: 0;
 }
 
 .rival-alert-exclamation {
-  position: relative;
   @include pixelated;
+
+  position: relative;
+  color: #ff3b30;
   font-size: 120px;
   font-weight: bold;
-  color: #ff3b30;
-  text-shadow: 0 0 20px Rgba(255, 59, 48, 0.8), 4px 4px 0px #000;
   opacity: 0;
   transform: Scale(0);
+  text-shadow: 0 0 20px Rgb(255 59 48 / 80%), 4px 4px 0 #000;
 }
 
 
@@ -277,13 +293,13 @@
   position: absolute;
   bottom: 12px;
   left: 50%;
-  transform: Translatex(-50%);
   z-index: calc(var(--z-modal) + 10);
-  pointer-events: auto;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 12px;
+  transform: Translatex(-50%);
+  pointer-events: auto;
 }
 
 

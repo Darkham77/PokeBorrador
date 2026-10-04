@@ -13,6 +13,13 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'cancel', listingId: string | number): void
 }>()
+
+function onListingItemImgError(e: Event): void {
+  const target = e.target as HTMLImageElement | null
+  if (target) {
+    target.src = getAssetUrl(ASSET_TYPES.ITEM, 'potion')
+  }
+}
 </script>
 
 <template>
@@ -48,7 +55,7 @@ const emit = defineEmits<{
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')" 
           :alt="getItemById(item.data.name || '')?.name || item.data.name || 'Objeto'"
           class="i-sprite pixelated"
-          @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'potion')"
+          @error="onListingItemImgError"
         >
       </div>
       <div class="card-info">

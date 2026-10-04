@@ -108,38 +108,38 @@ const onClaim = async () => {
 @use "@/styles/core/_mixins" as *;
 
 .claim-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 12px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 16px;
+  background: Rgb(255 255 255 / 3%);
   
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: Rgba(199, 125, 255, 0.2);
+    background: Rgb(255 255 255 / 5%);
     transform: Translatex(4px);
+    border-color: Rgb(199 125 255 / 20%);
   }
 }
 
 .claim-main {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
 }
 
 .asset-preview-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 36px;
   height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(0, 0, 0, 0.2);
   border-radius: 10px;
+  background: Rgb(0 0 0 / 20%);
   overflow: visible;
-  position: relative;
 }
 
 .pixel-art {
@@ -163,24 +163,24 @@ const onClaim = async () => {
   gap: 4px;
 
   .name {
-    font-size: 14px;
-    font-weight: 700;
-    color: Rgba(241, 245, 249, 1);
-    line-height: 1.2;
     display: flex;
     align-items: center;
     gap: 6px;
+    color: Rgb(241 245 249 / 100%);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
 
     .lvl-label, .qty-label {
+      color: Rgb(255 255 255 / 50%);
       font-size: 11px;
       font-weight: normal;
-      color: Rgba(255, 255, 255, 0.5);
     }
   }
 
   .meta {
+    color: Rgb(255 255 255 / 50%);
     font-size: 11px;
-    color: Rgba(255, 255, 255, 0.5);
     line-height: 1.2;
   }
 }

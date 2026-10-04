@@ -118,15 +118,16 @@ function handleOptionClick(opt: PokemonSortOption) {
 
 .pokemon-sort-bar {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 6px;
   width: 100%;
 
   .mini-label {
     @include pixelated;
-    font-size: 8px;
+
     color: var(--gray);
+    font-size: 8px;
     letter-spacing: 0.5px;
     white-space: nowrap;
     user-select: none;
@@ -137,8 +138,8 @@ function handleOptionClick(opt: PokemonSortOption) {
   .sort-items {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 4px;
     min-width: 0;
   }
@@ -149,20 +150,27 @@ function handleOptionClick(opt: PokemonSortOption) {
   }
 
   .sort-pill-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    background: Rgba(255, 255, 255, 0.03);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 6px 9px;
-    color: var(--gray);
     @include pixelated;
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 9px;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 3%);
+    color: var(--gray);
     font-size: 7.5px;
     cursor: pointer;
     white-space: nowrap;
     user-select: none;
+
+    &:hover:not(.active) {
+      background: rgb(255 255 255 / 8%);
+      color: var(--white);
+      border-color: rgb(255 255 255 / 20%);
+    }
 
     .emoji {
       font-size: 9px;
@@ -175,24 +183,18 @@ function handleOptionClick(opt: PokemonSortOption) {
     }
 
     .arrow {
-      font-size: 7px;
       color: var(--yellow);
+      font-size: 7px;
       font-weight: bold;
       margin-left: 2px;
       flex-shrink: 0;
     }
 
     &.active {
-      background: Rgba(255, 214, 10, 0.14);
-      border-color: var(--yellow);
+      background: rgb(255 214 10 / 14%);
       color: var(--yellow);
-      box-shadow: 0 0 8px Rgba(255, 214, 10, 0.2);
-    }
-
-    &:hover:not(.active) {
-      background: Rgba(255, 255, 255, 0.08);
-      color: var(--white);
-      border-color: Rgba(255, 255, 255, 0.2);
+      border-color: var(--yellow);
+      box-shadow: 0 0 8px rgb(255 214 10 / 20%);
     }
   }
 
@@ -204,8 +206,8 @@ function handleOptionClick(opt: PokemonSortOption) {
     }
 
     .sort-pill-btn {
-      padding: 5px 6px;
       gap: 2px;
+      padding: 5px 6px;
 
       .emoji {
         font-size: 10px;
@@ -213,7 +215,7 @@ function handleOptionClick(opt: PokemonSortOption) {
     }
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: 4px;
 
     .label {
@@ -225,8 +227,8 @@ function handleOptionClick(opt: PokemonSortOption) {
     }
 
     .sort-pill-btn {
-      padding: 5px 6px;
       gap: 2px;
+      padding: 5px 6px;
 
       .emoji {
         font-size: 10px;

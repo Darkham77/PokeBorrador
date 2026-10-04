@@ -85,13 +85,13 @@ onMounted(() => {
     .pulse-dot {
       width: 6px;
       height: 6px;
-      background: var(--green);
       border-radius: 50%;
+      background: var(--green);
       box-shadow: 0 0 8px var(--green);
     }
 
-    .badge-label { @include pixelated; font-size: 6px; color: var(--gray); }
-    .badge-value { @include pixelated; font-size: 7px; color: var(--white); }
+    .badge-label { @include pixelated; color: var(--gray); font-size: 6px; }
+    .badge-value { @include pixelated; color: var(--white); font-size: 7px; }
   }
 
   .hint-group {
@@ -101,7 +101,7 @@ onMounted(() => {
     
     .hint-icon { font-size: 10px; will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 4px var(--yellow)); }
-    .hint-text { @include pixelated; font-size: 6px; color: var(--gray); max-width: 250px; }
+    .hint-text { @include pixelated; max-width: 250px; color: var(--gray); font-size: 6px; }
   }
 }
 </style>

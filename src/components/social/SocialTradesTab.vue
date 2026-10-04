@@ -184,23 +184,18 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 12px;
-
-  &.tab-mounting :deep(.trade-card),
-  &.tab-mounting :deep(.claim-card) {
-    
-  }
 }
 
 /* ── Empty state ── */
 .empty-state {
-  text-align: center;
   padding: 50px 20px;
-  color: Rgba(148, 163, 184, 0.6);
+  color: Rgb(148 163 184 / 60%);
+  text-align: center;
 
   .icon {
     font-size: 40px;
     margin-bottom: 15px;
-    filter: Drop-Shadow(0 0 8px Rgba(168, 85, 247, 0.15));
+    filter: Drop-Shadow(0 0 8px Rgb(168 85 247 / 15%));
   }
 
   p { font-size: 14px; margin-bottom: 0; }

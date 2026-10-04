@@ -36,7 +36,7 @@ const tacticalRows = computed(() => resolveTacticalRows(props.activeDetails.tact
         </span>
         <span
           class="speed-values"
-          style="color: rgba(255, 255, 255, 0.4); font-size: 6.5px; margin-left: 2px;"
+          style="color: rgb(255 255 255 / 40%); font-size: 6.5px; margin-left: 2px;"
         >
           ({{ speedMatchup.attackerSpeed }} vs {{ speedMatchup.defenderSpeed }} Vel)
         </span>
@@ -86,7 +86,7 @@ const tacticalRows = computed(() => resolveTacticalRows(props.activeDetails.tact
 }
 
 .speed-values {
-  color: Rgba(255, 255, 255, 0.4);
+  color: rgb(255 255 255 / 40%);
   font-size: $tooltip-pct-range-size;
   margin-left: 2px;
 }

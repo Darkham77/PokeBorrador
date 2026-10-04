@@ -24,6 +24,8 @@ export const ADVENTURE_TRIGGER_TYPES = ['combat', 'obstacle_cut', 'obstacle_stre
 export type AdventureTriggerType = (typeof ADVENTURE_TRIGGER_TYPES)[number];
 
 const ADVENTURE_TRAINER_ENCOUNTER_PROBABILITY = 0.3
+const ADVENTURE_WILD_FALLBACK_MIN_LEVEL = 5 as const;
+const ADVENTURE_WILD_FALLBACK_MAX_LEVEL = 10 as const;
 
 interface AdventureEventsConfig {
   isTraveling: Ref<boolean>
@@ -266,8 +268,8 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     const randomSpawn = spawns[Math.floor(Math.random() * spawns.length)]!
     const name = randomSpawn.charAt(0).toUpperCase() + randomSpawn.slice(1)
 
-    const minLv = mapData.lv?.[0] || 5
-    const maxLv = mapData.lv?.[1] || 10
+    const minLv = mapData.lv?.[0] || ADVENTURE_WILD_FALLBACK_MIN_LEVEL
+    const maxLv = mapData.lv?.[1] || ADVENTURE_WILD_FALLBACK_MAX_LEVEL
     const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv
     
     const wildPoke = makePokemon(randomSpawn, level) as Pokemon

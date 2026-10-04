@@ -153,10 +153,10 @@ const isDefaultActive = () => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: Rgba(255, 255, 255, 0.02);
   padding: 8px 10px;
+  border: 1px solid rgb(255 255 255 / 6%);
   border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.06);
+  background: rgb(255 255 255 / 2%);
 }
 
 .row-header {
@@ -175,9 +175,10 @@ const isDefaultActive = () => {
     }
 
     .row-label {
-      font-size: 8px;
-      color: var(--white);
       @include pixelated;
+
+      color: var(--white);
+      font-size: 8px;
     }
 
     .info-badge {
@@ -187,47 +188,50 @@ const isDefaultActive = () => {
   }
 
   .default-tag {
-    font-size: 7px;
-    color: Rgba(148, 163, 184, 0.75);
     @include pixelated;
+
+    color: rgb(148 163 184 / 75%);
+    font-size: 7px;
   }
 }
 
 .row-controls {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 
   .input-wrapper {
     display: flex;
     align-items: center;
-    background: Rgba(0, 0, 0, 0.4);
-    border: 1px solid Rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    padding: 0 4px;
     height: 26px;
+    padding: 0 4px;
+    border: 1px solid rgb(255 255 255 / 15%);
+    border-radius: 4px;
+    background: rgb(0 0 0 / 40%);
 
     &:focus-within {
       border-color: var(--green);
-      box-shadow: 0 0 8px Rgba(34, 197, 94, 0.25);
+      box-shadow: 0 0 8px rgb(34 197 94 / 25%);
     }
 
     .affix {
-      font-size: 8px;
-      color: Rgba(255, 255, 255, 0.7);
       @include pixelated;
-      user-select: none;
+
       padding: 0 2px;
+      color: rgb(255 255 255 / 70%);
+      font-size: 8px;
+      user-select: none;
     }
 
     .numeric-input {
+      @include pixelated;
+
       width: 55px;
-      background: transparent;
+      padding: 2px 4px;
       border: none;
+      background: transparent;
       color: var(--white);
       font-size: 9px;
-      padding: 2px 4px;
-      @include pixelated;
 
       &:focus {
         outline: none;
@@ -244,19 +248,20 @@ const isDefaultActive = () => {
       @include btn-vicio-base;
       @include btn-vicio-size('xs');
       @include btn-vicio-variant('secondary', 'xs');
-      flex: 1;
+
+      min-width: 0;
       height: 26px;
       padding: 0 4px;
       font-size: 7px;
-      min-width: 0;
+      flex: 1;
 
       &.default-btn {
-        flex: 1.1;
-        border-color: Rgba(59, 130, 246, 0.4);
         color: #93c5fd;
+        flex: 1.1;
+        border-color: rgb(59 130 246 / 40%);
 
         &:hover, &.active {
-          background: Rgba(59, 130, 246, 0.3);
+          background: rgb(59 130 246 / 30%);
           color: white;
         }
       }

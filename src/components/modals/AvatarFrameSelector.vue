@@ -114,51 +114,51 @@ const selectAvatar = (style: LockableCosmeticStyle) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_cosmetics-shared.scss";
+@use "@/styles/components/_cosmetics-shared";
 
 .avatar-preview-box {
-  padding: 10px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 10px;
 }
 
 .shape-filter-tabs {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 20px;
-  background: Rgba(0, 0, 0, 0.2);
-  padding: 4px;
-  border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
   width: fit-content;
+  padding: 4px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 12px;
+  background: rgb(0 0 0 / 20%);
+  margin-bottom: 20px;
 }
 
 .filter-tab-btn {
-  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   border: none;
+  border-radius: 8px;
+  background: transparent;
   color: #94a3b8;
   font-family: inherit;
   font-size: 11px;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 
   &:hover {
+    background: rgb(255 255 255 / 3%);
     color: #f1f5f9;
-    background: Rgba(255, 255, 255, 0.03);
   }
 
   &.active {
-    color: #ffffff;
-    background: Rgba(59, 130, 246, 0.2);
-    border: 1px solid Rgba(59, 130, 246, 0.3);
-    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.1);
+    border: 1px solid rgb(59 130 246 / 30%);
+    background: rgb(59 130 246 / 20%);
+    color: #fff;
+    box-shadow: 0 0 10px rgb(59 130 246 / 10%);
   }
 }
 </style>

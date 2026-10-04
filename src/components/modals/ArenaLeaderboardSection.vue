@@ -272,18 +272,18 @@ watch(activeSort, () => {
 @use "@/styles/core/_mixins" as *;
 
 .arena-leaderboard-section {
-  margin-top: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 24px;
 }
 
 .leaderboard-header-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid Rgb(255 255 255 / 8%);
 
   .header-title-wrap {
     display: flex;
@@ -291,15 +291,16 @@ watch(activeSort, () => {
     gap: 2px;
 
     .section-title {
-      margin: 0;
-      font-size: 13px;
-      font-weight: 900;
-      color: var(--yellow, #fbbf24);
+      @include pixelated;
+
       display: flex;
       align-items: center;
       gap: 6px;
+      margin: 0;
+      color: var(--yellow, #fbbf24);
+      font-size: 13px;
+      font-weight: 900;
       letter-spacing: 0.5px;
-      @include pixelated;
 
       .emoji {
         font-size: 14px;
@@ -308,9 +309,10 @@ watch(activeSort, () => {
     }
 
     .sub-title {
-      font-size: 8px;
-      color: #94a3b8;
       @include pixelated;
+
+      color: #94a3b8;
+      font-size: 8px;
       letter-spacing: 0.5px;
     }
   }
@@ -318,30 +320,31 @@ watch(activeSort, () => {
 
 .sorting-controls {
   display: flex;
-  background: Rgba(0, 0, 0, 0.35);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 3px;
   gap: 4px;
+  padding: 3px;
+  border: 1px solid Rgb(255 255 255 / 6%);
+  border-radius: 8px;
+  background: Rgb(0 0 0 / 35%);
 
   .modal-tab-btn.sort-tab {
-    flex: 1;
-    background: transparent;
+    @include pixelated;
+
+    padding: 6px 0;
     border: none;
+    border-radius: 6px;
+    background: transparent;
     color: #94a3b8;
     font-size: 8px;
-    padding: 6px 0;
-    border-radius: 6px;
-    cursor: pointer;
     text-align: center;
-    @include pixelated;
+    flex: 1;
+    cursor: pointer;
     letter-spacing: 0.5px;
 
     &.active {
       background: var(--yellow, #fbbf24);
       color: #000;
       font-weight: bold;
-      box-shadow: 0 0 10px Rgba(251, 191, 36, 0.3);
+      box-shadow: 0 0 10px Rgb(251 191 36 / 30%);
     }
   }
 }
@@ -352,23 +355,24 @@ watch(activeSort, () => {
 
 .loading-view,
 .empty-view {
+  @include pixelated;
+
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 12px;
   padding: 40px 0;
   color: #94a3b8;
   font-size: 9px;
-  @include pixelated;
 }
 
 .retro-spinner {
   width: 24px;
   height: 24px;
-  border: 2px solid Rgba(251, 191, 36, 0.2);
-  border-top-color: var(--yellow, #fbbf24);
+  border: 2px solid Rgb(251 191 36 / 20%);
   border-radius: 50%;
+  border-top-color: var(--yellow, #fbbf24);
 }
 
 .leaderboard-list {
@@ -381,24 +385,24 @@ watch(activeSort, () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
   padding: 8px 12px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 10px;
+  background: Rgb(255 255 255 / 2%);
   cursor: pointer;
   will-change: transform, background-color, border-color;
 
   &.rank-1 {
-    background: linear-gradient(90deg, Rgba(251, 191, 36, 0.1), Rgba(0, 0, 0, 0));
-    border-color: Rgba(251, 191, 36, 0.35);
+    background: Linear-Gradient(90deg, Rgb(251 191 36 / 10%), Rgb(0 0 0 / 0%));
+    border-color: Rgb(251 191 36 / 35%);
   }
   &.rank-2 {
-    background: linear-gradient(90deg, Rgba(148, 163, 184, 0.1), Rgba(0, 0, 0, 0));
-    border-color: Rgba(148, 163, 184, 0.35);
+    background: Linear-Gradient(90deg, Rgb(148 163 184 / 10%), Rgb(0 0 0 / 0%));
+    border-color: Rgb(148 163 184 / 35%);
   }
   &.rank-3 {
-    background: linear-gradient(90deg, Rgba(180, 83, 9, 0.1), Rgba(0, 0, 0, 0));
-    border-color: Rgba(180, 83, 9, 0.35);
+    background: Linear-Gradient(90deg, Rgb(180 83 9 / 10%), Rgb(0 0 0 / 0%));
+    border-color: Rgb(180 83 9 / 35%);
   }
 }
 
@@ -409,26 +413,28 @@ watch(activeSort, () => {
   flex-shrink: 0;
 
   .crown {
-    font-size: 14px;
     min-width: 18px;
+    font-size: 14px;
     text-align: center;
   }
 
   .rank-digits {
     @include pixelated;
+
+    min-width: 18px;
+    color: #94a3b8;
     font-size: 9px;
     font-weight: bold;
-    color: #94a3b8;
-    min-width: 18px;
     text-align: center;
   }
 
   .ranked-medal-mini {
+    @include pixelated;
+
     width: 26px;
     height: 26px;
     object-fit: contain;
-    @include pixelated;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.3));
+    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 30%));
     flex-shrink: 0;
   }
 }
@@ -439,13 +445,13 @@ watch(activeSort, () => {
 
   .status-dot {
     position: absolute;
-    bottom: -2px;
     right: -2px;
+    bottom: -2px;
     width: 8px;
     height: 8px;
+    border: 1.5px solid #0f172a;
     border-radius: 50%;
     background: #64748b;
-    border: 1.5px solid #0f172a;
 
     &.online {
       background: #22c55e;
@@ -455,33 +461,34 @@ watch(activeSort, () => {
 }
 
 .player-details {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
+  flex: 1;
 
   .player-name-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-    flex-wrap: wrap;
 
     .player-name-text {
+      color: var(--white);
       font-size: 11px;
       font-weight: bold;
-      color: var(--white);
     }
 
     .faction-tag-badge {
-      font-size: 6px;
+      @include pixelated;
+
       padding: 1px 4px;
       border-radius: 4px;
       color: white;
-      text-transform: uppercase;
-      @include pixelated;
-      letter-spacing: 0.5px;
+      font-size: 6px;
       line-height: 1.25;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
   }
 
@@ -489,15 +496,15 @@ watch(activeSort, () => {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 8px;
     color: #94a3b8;
+    font-size: 8px;
 
     .player-class-info {
       text-transform: capitalize;
     }
 
     .divider {
-      color: Rgba(255, 255, 255, 0.4);
+      color: Rgb(255 255 255 / 40%);
     }
   }
 }
@@ -508,12 +515,13 @@ watch(activeSort, () => {
 
   .score-value {
     @include pixelated;
-    font-size: 8px;
-    color: var(--yellow);
-    background: Rgba(251, 191, 36, 0.08);
-    border: 1px solid Rgba(251, 191, 36, 0.15);
+
     padding: 3px 6px;
+    border: 1px solid Rgb(251 191 36 / 15%);
     border-radius: 6px;
+    background: Rgb(251 191 36 / 8%);
+    color: var(--yellow);
+    font-size: 8px;
     line-height: 1.25;
   }
 }

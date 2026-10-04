@@ -103,9 +103,9 @@ const setSort = (key: SortKey) => {
 // Default accent = yellow; can be overridden via accentColor prop → CSS var
 .sort-controls {
   --sort-accent: var(--yellow);
-  --sort-accent-bg: Rgba(255, 214, 10, 0.18);
-  --sort-accent-border: Rgba(255, 214, 10, 0.55);
-  --sort-accent-glow: Rgba(255, 214, 10, 0.2);
+  --sort-accent-bg: Rgb(255 214 10 / 18%);
+  --sort-accent-border: Rgb(255 214 10 / 55%);
+  --sort-accent-glow: Rgb(255 214 10 / 20%);
 
   display: inline-flex;
   align-items: center;
@@ -115,53 +115,54 @@ const setSort = (key: SortKey) => {
 
 .sort-btn {
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 2px;
-  height: 26px;
   min-width: 30px;
+  height: 26px;
   padding: 0 6px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 7px;
-  color: Rgba(255, 255, 255, 0.5);
-  cursor: pointer;
+  background: Rgb(255 255 255 / 5%);
+  color: Rgb(255 255 255 / 50%);
   font-family: inherit;
+  cursor: pointer;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.1);
-    border-color: Rgba(255, 255, 255, 0.2);
-    color: Rgba(255, 255, 255, 0.85);
+    background: Rgb(255 255 255 / 10%);
+    color: Rgb(255 255 255 / 85%);
+    border-color: Rgb(255 255 255 / 20%);
   }
 
   &.active {
-    background: color-mix(in srgb, var(--sort-accent) 18%, transparent);
-    border-color: color-mix(in srgb, var(--sort-accent) 55%, transparent);
+    background: color-mix(in sRGB, var(--sort-accent) 18%, transparent);
     color: var(--sort-accent);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--sort-accent) 20%, transparent);
+    border-color: color-mix(in sRGB, var(--sort-accent) 55%, transparent);
+    box-shadow: 0 0 8px color-mix(in sRGB, var(--sort-accent) 20%, transparent);
   }
 
   .sort-label {
     @include pixelated;
-    font-size: 8px;
+
     display: flex;
     align-items: center;
+    font-size: 8px;
     letter-spacing: 0.02em;
   }
 
   .sort-arrow {
-    font-size: 9px;
-    line-height: 1;
     display: flex;
     align-items: center;
     font-family: sans-serif !important;
+    font-size: 9px;
+    line-height: 1;
     opacity: 0.9;
   }
 
   .star-icon {
+    display: block;
     width: 10px;
     height: 10px;
-    display: block;
     flex-shrink: 0;
   }
 }

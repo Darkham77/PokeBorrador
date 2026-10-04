@@ -191,7 +191,7 @@ const handleArchaeologyStart = () => {
       <div
         ref="fishingCard"
         class="fishing-card"
-        style="border-color: #eab308; box-shadow: 0 0 30px rgba(234, 179, 8, 0.4);"
+        style="border-color: #eab308; box-shadow: 0 0 30px rgb(234 179 8 / 40%);"
       >
         <div 
           ref="fishingIcon" 
@@ -225,41 +225,43 @@ const handleArchaeologyStart = () => {
 
 .rival-sequence-wrapper {
   position: fixed;
-  inset: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  inset: 0;
   pointer-events: none;
 }
 
 .rival-flicker {
   position: fixed;
-  inset: 0;
   background: var(--white);
   opacity: 0.1;
+  inset: 0;
   pointer-events: none;
 }
 
 .rival-exclamation {
-  position: relative;
   @include pixelated;
+
+  position: relative;
+  color: rgb(255 59 48 / 100%);
   font-size: 80px;
-  color: Rgba(255, 59, 48, 1);
-  text-shadow: 0 0 20px Rgba(255, 59, 48, 0.6);
+  text-shadow: 0 0 20px rgb(255 59 48 / 60%);
 }
 
 /* Fishing Styles */
 .fishing-card {
   @include card-premium;
-  background: var(--card);
-  border-radius: 24px;
-  padding: 32px;
-  max-width: 380px;
-  width: 100%;
-  border: 2px solid var(--blue);
-  text-align: center;
+
   position: relative;
-  box-shadow: 0 0 30px Rgba(10, 132, 255, 0.4);
+  width: 100%;
+  max-width: 380px;
+  padding: 32px;
+  border: 2px solid var(--blue);
+  border-radius: 24px;
+  background: var(--card);
+  text-align: center;
+  box-shadow: 0 0 30px rgb(10 132 255 / 40%);
 }
 
 .fishing-icon {
@@ -269,25 +271,28 @@ const handleArchaeologyStart = () => {
 
 .fishing-title {
   @include pixelated;
-  font-size: 12px;
+
   color: var(--blue);
+  font-size: 12px;
   margin-bottom: 16px;
 }
 
 .fishing-text {
-  font-size: 14px;
-  color: Rgba(238, 238, 238, 1);
   margin: 16px 0;
+  color: rgb(238 238 238 / 100%);
+  font-size: 14px;
   line-height: 1.6;
 }
 
 .btn-fishing {
   @include btn-vicio('info', 'md', true);
+
   margin-top: 12px;
 }
 
 .btn-archaeology {
   @include btn-vicio('primary', 'md', true);
+
   margin-top: 12px;
 }
 </style>

@@ -70,7 +70,7 @@ onMounted(() => {
 
 .action-buttons {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 }
 </style>

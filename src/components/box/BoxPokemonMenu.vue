@@ -382,21 +382,21 @@ const handleSellRocket = () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: Rgba(239, 68, 68, 0.08);
-  border: 1px solid Rgba(239, 68, 68, 0.25);
-  border-radius: 12px;
-  padding: 10px 14px;
   margin: 12px 16px;
+  padding: 10px 14px;
+  border: 1px solid rgb(239 68 68 / 25%);
+  border-radius: 12px;
+  background: rgb(239 68 68 / 8%);
   
   .warning-icon {
     font-size: 16px;
   }
   
   .warning-text {
-    font-size: 7px;
-    font-family: var(--font-pixel);
-    line-height: 1.5;
     color: #f87171;
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    line-height: 1.5;
   }
 }
 </style>

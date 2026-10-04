@@ -72,22 +72,23 @@ const handleSelect = () => {
 
 <style scoped lang="scss">
 .class-modal-shell {
-  min-height: 400px;
-  height: 100%;
-  background: transparent;
-  color: $white;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 400px;
+  background: transparent;
+  color: $white;
 
-  @media (max-width: 950px) {
-    min-height: auto;
-    height: 100% !important;
-    overflow-y: auto !important;
+  @media (width <= 950px) {
     @include smooth-scroll;
+
+    height: 100% !important;
+    min-height: auto;
+    overflow-y: auto !important;
 
     // Premium scrollbar fallback for standard browser engines
     scrollbar-width: thin !important;
-    scrollbar-color: Rgba(255, 255, 255, 0.3) Rgba(0, 0, 0, 0.1) !important;
+    scrollbar-color: rgb(255 255 255 / 30%) rgb(0 0 0 / 10%) !important;
   }
 }
 </style>

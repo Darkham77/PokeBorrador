@@ -222,6 +222,20 @@ const getTrainerElement = (): HTMLElement | null => {
   return null
 }
 
+function onEnemyTrainerError(e: Event): void {
+  const target = e.target as HTMLImageElement | null
+  if (target) {
+    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender })
+  }
+}
+
+function onPlayerTrainerBackError(e: Event): void {
+  const target = e.target as HTMLImageElement | null
+  if (target) {
+    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { trainerSuffix: 'back', gender: 'h' })
+  }
+}
+
 defineExpose({
   trainerRef,
   standingTrainerRef,
@@ -263,7 +277,7 @@ defineExpose({
             :src="enemyTrainerSpriteUrl" 
             :alt="trainerName || 'Entrenador rival'"
             class="trainer-image"
-            @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender })"
+            @error="onEnemyTrainerError"
           >
         </div>
       </div>
@@ -318,7 +332,7 @@ defineExpose({
             :src="enemyTrainerSpriteUrl" 
             :alt="trainerName || 'Entrenador rival'"
             class="trainer-image"
-            @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender })"
+            @error="onEnemyTrainerError"
           >
         </div>
       </div>
@@ -370,7 +384,7 @@ defineExpose({
             :src="playerBackSpriteUrl"
             class="trainer-image player-trainer-image shadow-pixelated"
             alt="Player Trainer"
-            @error="(e: Event) => { (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { trainerSuffix: 'back', gender: 'h' }) }"
+            @error="onPlayerTrainerBackError"
           >
         </div>
       </div>

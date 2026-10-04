@@ -1,24 +1,26 @@
 @use "@/styles/core/mixins" as *;
+
 // src/styles/components/_unified-pokemon-detail.scss
 @use "@/styles/core/tools" as *;
 @use "@/styles/core/fx" as *;
 @use "@/styles/components/pokemon-detail/core" as detail;
 
 .pdex-custom-header {
-  flex: 0 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  pointer-events: none;
   z-index: var(--z-low);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 16px 24px;
+  flex: 0 0 auto;
+  pointer-events: none;
   
   .close-vicio {
     @include btn-close-premium; 
+
     position: absolute;
     top: 15px;
     right: 15px;
@@ -32,24 +34,25 @@
     pointer-events: auto;
     
     & .p-id {
-      background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgb(from var(--type-color) r g b / 0.8) 100%);
-      color: var(--white);
-      text-shadow: 1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-      font-size: 11px;
       padding: 6px 12px;
       border-radius: 6px;
+      background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgb(from var(--type-color) r g b / 80%) 100%);
+      color: var(--white);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      font-size: 11px;
       font-weight: 900;
-      box-shadow: 0 4px 15px Rgb(from var(--type-color) r g b / 0.3);
+      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+      box-shadow: 0 4px 15px Rgb(from var(--type-color) r g b / 30%);
     }
     
     & .p-name {
       @include pixelated;
-      font-size: 20px;
+
       color: var(--white);
+      font-size: 20px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      text-shadow: 0 0 20px Rgba(255, 255, 255, 0.2);
+      text-shadow: 0 0 20px Rgb(255 255 255 / 20%);
     }
   }
 
@@ -72,7 +75,7 @@
 .upd-main-display {
   @include detail.pokemon-main-display(
     $height: 140px,
-    $margin-bottom: 0px,
+    $margin-bottom: 0,
     $sprite-translate: 0%, 
     $sprite-size: 140px
   );
@@ -85,27 +88,28 @@
 .upd-core-container {
   position: relative;
   z-index: var(--z-hud);
-  background: Rgba(10, 12, 20, 1);
-  padding: 0;
-  pointer-events: auto !important;
   display: flex;
   flex-direction: column;
   min-height: 100%; // Ensure it fills the modal height
+  padding: 0;
+  background: Rgb(10 12 20 / 100%);
+  pointer-events: auto !important;
 }
 
 .pdex-detail-content {
+  @include shell-premium(Rgba(10, 12, 20, 0.98)); 
+
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 700px;
   min-width: 700px;
-  overflow: hidden; 
-  position: relative;
-  @include shell-premium(Rgba(10, 12, 20, 0.98));
+  border: 1px solid Rgb(255 255 255 / 8%);
   border-radius: 24px;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  overflow: hidden;
   box-shadow: 
-    0 40px 100px Rgba(0, 0, 0, 0.8),
-    inset 0 0 0 1px Rgba(255, 255, 255, 0.03);
+    0 40px 100px Rgb(0 0 0 / 80%),
+    inset 0 0 0 1px Rgb(255 255 255 / 3%);
   
   &.instance-mode {
     padding-bottom: 0; 
@@ -113,51 +117,52 @@
 }
 
 .instance-status-section {
-  margin-top: 24px;
-  margin-bottom: 24px;
   position: relative;
   z-index: var(--z-base);
+  margin-top: 24px;
+  margin-bottom: 24px;
 }
 
 // Specialized components for Unified View
 .premium-tabs {
-  @extend .pdex-detail-tabs;
-  margin-top: 0 !important; 
+  @include gpu-layer; 
+
   position: relative;
-  z-index: var(--z-base); 
-  background: Linear-Gradient(to bottom, Rgba(10, 12, 20, 0.95) 0%, Rgba(10, 12, 20, 1) 100%) !important;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05) !important;
-  @include gpu-layer;
-  padding: 0 !important;
+  z-index: var(--z-base);
+  padding: 0 !important; 
+  background: Linear-Gradient(to bottom, Rgb(10 12 20 / 95%) 0%, Rgb(10 12 20 / 100%) 100%) !important;
+  margin-top: 0 !important;
+  border-bottom: 1px solid Rgb(255 255 255 / 5%) !important;
 
   & .upd-tab-btn {
     padding: 12px 0 8px !important;
   }
 
   & .pdex-tab {
-    
     opacity: 0.4;
+
+    &:hover:not(.active) {
+      background: Rgb(255 255 255 / 3%);
+      opacity: 0.7;
+    }
     
     &.active {
+      background: Radial-Gradient(circle at bottom, Rgb(from var(--type-color) r g b / 10%) 0%, transparent 70%);
       opacity: 1;
-      background: Radial-Gradient(circle at bottom, Rgb(from var(--type-color) r g b / 0.1) 0%, transparent 70%);
       
       &::after {
         background: var(--type-color);
-        box-shadow: 0 0 15px Rgb(from var(--type-color) r g b / 0.5);
+        box-shadow: 0 0 15px Rgb(from var(--type-color) r g b / 50%);
       }
     }
-
-    &:hover:not(.active) {
-      opacity: 0.7;
-      background: Rgba(255, 255, 255, 0.03);
-    }
   }
+
+  @extend .pdex-detail-tabs;
 }
 
 // ... existing minor styles ...
 // Interactive Tags Global Position
-.upd-tags-central-container, .upd-floating-tags {
+.upd-tags-central-container {
   display: flex;
   justify-content: center;
 }
@@ -167,37 +172,39 @@
   top: 90px;
   right: 24px;
   z-index: var(--z-low);
+  display: flex;
+  justify-content: center;
   pointer-events: auto !important;
 }
 
   .db-info-section {
-    margin-top: 16px;
-    padding-top: 16px;
-    padding-bottom: 0; 
-    border-top: 1px solid Rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    padding-bottom: 0; 
+    border-top: 1px solid Rgb(255 255 255 / 5%);
 
     .uid-display, .capture-date-display {
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 12px;
 
       & .upd-info-label {
-        color: Rgba(255, 255, 255, 0.4);
+        margin: 0;
+        color: Rgb(255 255 255 / 40%);
         font-size: 8px;
         letter-spacing: 1px;
-        margin: 0;
       }
 
       .uid-value, .date-value {
-        font-size: 8px;
         color: var(--type-color);
-        letter-spacing: 1px;
+        font-size: 8px;
         opacity: 0.8;
-        text-shadow: 0 0 10px Rgb(from var(--type-color) r g b / 0.3);
+        letter-spacing: 1px;
+        text-shadow: 0 0 10px Rgb(from var(--type-color) r g b / 30%);
       }
     }
   }
@@ -206,9 +213,10 @@
 
 .upd-section-title {
   @include pixelated;
-  font-size: 8px;
-  color: var(--type-color);
+
   margin: 24px 0 16px;
+  color: var(--type-color);
+  font-size: 8px;
   opacity: 0.8;
 }
 
@@ -220,54 +228,56 @@
 
 .upd-sprite-container {
   position: relative;
-  display: grid;
-  place-items: center;
-  height: 160px; 
+  z-index: var(--z-base);
+  display: grid; 
   width: 100%;
+  height: 160px;
+  place-items: center;
   margin-bottom: 10px;
-  overflow: visible !important;
-  z-index: var(--z-base); 
+  overflow: visible !important; 
   pointer-events: none !important;
 
   & > .pv-fx-wrapper {
     margin: 0 auto;
-    transform: translate3d(0, 10px, 0); 
-    
+    transform: Translate3d(0, 10px, 0); 
     pointer-events: none !important;
 
     &::before {
-      content: '';
+      @include gpu-layer;
+
       position: absolute;
       top: 50%; left: 50%;
-      @include gpu-layer;
-      transform: Translate3d(-50%, -50%, 0);
+      z-index: calc(var(--z-base) - 1);
       width: 280px;
       height: 280px;
-      background: Radial-Gradient(circle, Rgb(from var(--type-color) r g b / 0.35) 0%, transparent 70%);
       border-radius: 50%;
-      z-index: calc(var(--z-base) - 1);
+      background: Radial-Gradient(circle, Rgb(from var(--type-color) r g b / 35%) 0%, transparent 70%);
+      transform: Translate3d(-50%, -50%, 0);
+      content: '';
       pointer-events: none;
     }
   }
 
   & .main-sprite {
+    @include sprite-render;
+
+    display: block;
     width: 140px !important;
     height: 140px !important;
-    object-fit: contain;
-    display: block;
     margin: 0 auto;
+    object-fit: contain;
     pointer-events: auto !important;
-    @include sprite-render;
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.4));
+  filter: Drop-Shadow(0 10px 20px Rgb(0 0 0 / 40%));
   }
 }
 
 
 .p-nickname-prefix {
   @include pixelated;
-  font-size: 8px;
+
   color: var(--type-color);
+  font-size: 8px;
   opacity: 0.8;
   letter-spacing: 1px;
   margin-bottom: 4px;
@@ -283,24 +293,24 @@
 
 .upd-species-subtitle {
   @include pixelated;
+
+  color: Rgb(255 255 255 / 50%);
   font-size: 11px;
-  color: Rgba(255, 255, 255, 0.5);
   letter-spacing: 1px;
 }
 
 .edit-nick-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
   padding: 4px;
-  margin-left: 8px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
   opacity: 0.6;
-  
+  cursor: pointer;
+  margin-left: 8px;
   vertical-align: middle;
 }
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .pdex-custom-header {
     padding: 12px 16px;
     
@@ -326,17 +336,17 @@
     }
 
     .header-right {
-      margin-right: 40px;
       gap: 6px;
+      margin-right: 40px;
       
       .p-types {
         gap: 4px;
       }
 
       .m-type-tag {
-        font-size: 6px !important;
         padding: 3px 6px !important;
         border-radius: 4px !important;
+        font-size: 6px !important;
       }
     }
   }
@@ -344,30 +354,30 @@
 
 .egg-born-badge {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 6px;
-  background: Rgba(16, 185, 129, 0.12);
-  border: 1px solid Rgba(16, 185, 129, 0.3);
-  color: #34d399;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 10px;
-  margin: 0 auto 12px auto;
   width: fit-content;
-  text-shadow: 0 0 5px Rgba(52, 211, 153, 0.3);
-  box-shadow: 0 0 10px Rgba(52, 211, 153, 0.1);
+  margin: 0 auto 12px;
+  padding: 4px 10px;
+  border: 1px solid Rgb(16 185 129 / 30%);
+  border-radius: 6px;
+  background: Rgb(16 185 129 / 12%);
+  color: #34d399;
+  font-size: 10px;
   font-weight: bold;
+  text-shadow: 0 0 5px Rgb(52 211 153 / 30%);
+  box-shadow: 0 0 10px Rgb(52 211 153 / 10%);
 }
 
 .summary-trophies-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
   padding: 10px 12px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  background: Rgb(0 0 0 / 30%);
   margin-top: 14px;
   margin-bottom: 14px;
 
@@ -375,10 +385,10 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 8px;
     color: var(--yellow);
+    font-size: 8px;
     letter-spacing: 0.5px;
-    border-bottom: 1px dashed Rgba(255, 255, 255, 0.08);
+    border-bottom: 1px dashed Rgb(255 255 255 / 8%);
     padding-bottom: 6px;
 
     .trophies-header-icon {
@@ -386,23 +396,23 @@
     }
 
     .trophies-count-tag {
-      margin-left: auto;
-      background: Rgba(250, 204, 21, 0.2);
-      border: 1px solid Rgba(250, 204, 21, 0.4);
-      color: var(--yellow);
       padding: 1px 6px;
+      border: 1px solid Rgb(250 204 21 / 40%);
       border-radius: 4px;
+      background: Rgb(250 204 21 / 20%);
+      color: var(--yellow);
       font-size: 7px;
+      margin-left: auto;
     }
   }
 
   .summary-trophies-empty {
-    font-size: 8px;
-    color: var(--gray);
     padding: 6px 0;
+    color: var(--gray);
+    font-size: 8px;
     text-align: center;
-    font-style: italic;
     opacity: 0.7;
+    font-style: italic;
   }
 
   .summary-trophies-list {
@@ -416,13 +426,13 @@
     align-items: center;
     gap: 10px;
     padding: 6px 10px;
+    border: 1px solid Rgb(255 255 255 / 6%);
     border-radius: 6px;
-    background: Rgba(255, 255, 255, 0.02);
-    border: 1px solid Rgba(255, 255, 255, 0.06);
+    background: Rgb(255 255 255 / 2%);
 
     &.rank-gold {
-      border-color: Rgba(250, 204, 21, 0.35);
-      background: linear-gradient(135deg, Rgba(250, 204, 21, 0.08), Rgba(0, 0, 0, 0.3));
+      background: Linear-Gradient(135deg, Rgb(250 204 21 / 8%), Rgb(0 0 0 / 30%));
+      border-color: Rgb(250 204 21 / 35%);
 
       .trophy-rank-label {
         color: #fde047;
@@ -430,8 +440,8 @@
     }
 
     &.rank-silver {
-      border-color: Rgba(226, 232, 240, 0.35);
-      background: linear-gradient(135deg, Rgba(226, 232, 240, 0.08), Rgba(0, 0, 0, 0.3));
+      background: Linear-Gradient(135deg, Rgb(226 232 240 / 8%), Rgb(0 0 0 / 30%));
+      border-color: Rgb(226 232 240 / 35%);
 
       .trophy-rank-label {
         color: #f1f5f9;
@@ -439,8 +449,8 @@
     }
 
     &.rank-bronze {
-      border-color: Rgba(217, 119, 6, 0.35);
-      background: linear-gradient(135deg, Rgba(217, 119, 6, 0.08), Rgba(0, 0, 0, 0.3));
+      background: Linear-Gradient(135deg, Rgb(217 119 6 / 8%), Rgb(0 0 0 / 30%));
+      border-color: Rgb(217 119 6 / 35%);
 
       .trophy-rank-label {
         color: #fcd34d;
@@ -456,20 +466,20 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      flex: 1;
       min-width: 0;
+      flex: 1;
 
       .trophy-top-line {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
         gap: 8px;
 
         .trophy-event-name {
+          color: var(--white);
           font-size: 9px;
           line-height: 1.45;
           padding-bottom: 2px;
-          color: var(--white);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -483,18 +493,18 @@
 
       .trophy-bottom-line {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
         gap: 8px;
 
         .trophy-category-name {
-          font-size: 7px;
           color: #93c5fd;
+          font-size: 7px;
         }
 
         .trophy-score-value {
-          font-size: 7px;
           color: var(--green-bright);
+          font-size: 7px;
         }
       }
     }

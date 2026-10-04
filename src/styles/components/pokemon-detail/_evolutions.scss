@@ -8,18 +8,19 @@ body .evolve-pane {
     gap: 24px;
     
       & .evo-step {
+      @include will-animate(transform, box-shadow);
+
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 16px;
-      background: Rgba(255,255,255,0.03);
-      padding: 16px 20px;
-      border-radius: 20px;
-      border: 1px solid Rgba(255,255,255,0.05);
       width: fit-content;
       max-width: 100%;
       margin: 0 auto;
-      @include will-animate(transform, box-shadow);
+      padding: 16px 20px;
+      border: 1px solid Rgb(255 255 255 / 5%);
+      border-radius: 20px;
+      background: Rgb(255 255 255 / 3%);
       
       
       .evo-from, .evo-to {
@@ -32,11 +33,12 @@ body .evolve-pane {
       }
 
       & .evo-sprite {
+        @include pixelated;
+
         width: 64px;
         height: 64px;
-        @include pixelated;
         will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 5px 15px Rgba(0,0,0,0.4));
+  filter: Drop-Shadow(0 5px 15px Rgb(0 0 0 / 40%));
         
         
         &:hover { transform: Scale(1.2); }
@@ -50,76 +52,78 @@ body .evolve-pane {
         min-width: 60px;
         
     & .method { 
+          @include pixelated;
+          @include pixelated; 
+
+          color: var(--yellow); 
           font-size: 8px; 
           font-weight: 900; 
-          color: var(--yellow); 
-          text-transform: uppercase; 
-          @include pixelated;
-          @include pixelated;
+          text-transform: uppercase;
         }
           & .arrow { 
+          color: Rgb(255 255 255 / 10%); 
           font-size: 24px; 
-          color: Rgba(255,255,255,0.1); 
           line-height: 1;
         }
       }
       
       & .evo-sprite-wrap {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         width: 64px;
         height: 64px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
 
         .silhouette {
+          opacity: 1; // Solid black as requested
           will-change: transform, filter, opacity;
           filter: Brightness(0);
-          opacity: 1; // Solid black as requested
         }
 
       & .evo-unknown-placeholder {
           @include pixelated;
+
+          color: Rgb(255 255 255 / 10%);
           font-size: 24px;
-          color: Rgba(255,255,255,0.1);
         }
       }
       
       & .evo-target-name { 
-        font-size: 8px; 
-        font-weight: 900; 
         color: $white; 
+        font-size: 8px; 
+        font-weight: 900;
+        opacity: 0.9; 
         text-transform: uppercase; 
         letter-spacing: 0.5px;
-        opacity: 0.9;
         white-space: nowrap;
       }
     }
   }
   
   .no-evo {
-    text-align: center;
     padding: 40px;
-    color: Rgba(255,255,255,0.3);
+    color: Rgb(255 255 255 / 30%);
     font-size: 14px;
+    text-align: center;
     font-style: italic;
   }
 }
 
 // Mobile Responsive Fix
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .evolve-pane {
       & .evo-chain {
       gap: 12px;
       
       & .evo-step {
-        padding: 12px 10px;
         gap: 8px;
+        padding: 12px 10px;
         border-radius: 16px;
         
         .evo-from, .evo-to {
-          min-width: 60px;
           gap: 4px;
+          min-width: 60px;
         }
         
         .evo-sprite, .sprite-wrap {
@@ -134,10 +138,10 @@ body .evolve-pane {
         }
 
       & .evo-target-name {
+          max-width: 60px;
           font-size: 7px;
           line-height: 1.45;
           padding-bottom: 2px;
-          max-width: 60px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;

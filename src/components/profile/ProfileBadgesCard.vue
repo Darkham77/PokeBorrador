@@ -53,33 +53,34 @@ defineProps<{
 @use '@/styles/core/variables' as *;
 
 .profile-section-card {
-  background: Rgba(30, 41, 59, 0.4);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 12px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 8px;
+  background: Rgb(30 41 59 / 40%);
 
   .section-label {
     @include pixelated;
+
+    color: Rgb(255 255 255 / 40%);
     font-size: 8px;
-    color: Rgba(255, 255, 255, 0.4);
     letter-spacing: 0.5px;
   }
 }
 
 .badges-shelf {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  background: linear-gradient(180deg, Rgba(82, 53, 31, 0.8) 0%, Rgba(56, 36, 21, 0.9) 100%);
+  grid-template-columns: repeat(4, 1fr);
+  padding: 16px;
   border: 2px solid #3d2412;
   border-radius: 12px;
-  padding: 16px;
+  background: Linear-Gradient(180deg, Rgb(82 53 31 / 80%) 0%, Rgb(56 36 21 / 90%) 100%);
   box-shadow: 
-    inset 0 4px 8px Rgba(0, 0, 0, 0.6),
-    0 4px 10px Rgba(0, 0, 0, 0.4);
+    inset 0 4px 8px Rgb(0 0 0 / 60%),
+    0 4px 10px Rgb(0 0 0 / 40%);
 }
 
 .badge-item {
@@ -91,22 +92,24 @@ defineProps<{
 }
 
 .badge-img {
+  @include pixelated;
+
   width: 32px;
   height: 32px;
   object-fit: contain;
-  @include pixelated;
-  filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
+  filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
 
   &.locked-badge {
-    filter: Grayscale(100%) Brightness(0.5);
     opacity: 0.25;
+    filter: Grayscale(100%) Brightness(0.5);
   }
 }
 
 .badge-title {
   @include pixelated;
+
+  color: Rgb(255 255 255 / 50%);
   font-size: 6px;
-  color: Rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
 }
 </style>

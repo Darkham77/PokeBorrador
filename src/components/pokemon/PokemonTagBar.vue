@@ -178,17 +178,18 @@ function toggleCompatible() {
 
 .pokemon-tag-bar {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 6px;
-  min-width: 0;
   width: 100%;
+  min-width: 0;
   overflow: visible;
 
   .mini-label {
     @include pixelated;
-    font-size: 7px;
+
     color: var(--gray);
+    font-size: 7px;
     opacity: 0.6;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -199,8 +200,8 @@ function toggleCompatible() {
   .tag-items {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 4px;
     min-width: 0;
     overflow: visible;
@@ -214,27 +215,34 @@ function toggleCompatible() {
 
   .tag-pill-btn {
     @include pixelated;
+
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 4px;
-    font-size: 6.5px;
     padding: 5px 8px;
+    border: 1px solid rgb(255 255 255 / 8%);
     border-radius: 8px;
-    background: Rgba(255, 255, 255, 0.03);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
+    background: rgb(255 255 255 / 3%);
     color: var(--gray);
+    font-size: 6.5px;
     cursor: pointer;
     white-space: nowrap;
     user-select: none;
     flex-shrink: 0;
 
+    &:hover {
+      background: rgb(255 255 255 / 8%);
+      color: var(--white);
+      border-color: rgb(255 255 255 / 20%);
+    }
+
     .tag-icon {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
       font-size: 8.5px;
       line-height: 1.25;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       opacity: 0.85;
       flex-shrink: 0;
     }
@@ -245,17 +253,11 @@ function toggleCompatible() {
       line-height: 1.25;
     }
 
-    &:hover {
-      background: Rgba(255, 255, 255, 0.08);
-      border-color: Rgba(255, 255, 255, 0.2);
-      color: var(--white);
-    }
-
     &.active {
       background: var(--purple-low);
-      border-color: var(--purple);
       color: var(--white);
-      box-shadow: 0 0 10px Rgba(199, 125, 255, 0.2);
+      border-color: var(--purple);
+      box-shadow: 0 0 10px rgb(199 125 255 / 20%);
 
       .tag-icon {
         opacity: 1;
@@ -263,10 +265,10 @@ function toggleCompatible() {
     }
 
     &.tag-compatible.active {
-      background: Rgba(244, 63, 94, 0.2);
-      border-color: #f43f5e;
+      background: rgb(244 63 94 / 20%);
       color: #f43f5e;
-      box-shadow: 0 0 10px Rgba(244, 63, 94, 0.25);
+      border-color: #f43f5e;
+      box-shadow: 0 0 10px rgb(244 63 94 / 25%);
     }
   }
 
@@ -274,8 +276,8 @@ function toggleCompatible() {
     gap: 4px;
 
     .tag-items {
-      gap: 3px;
       flex-wrap: nowrap;
+      gap: 3px;
       overflow: visible;
     }
 
@@ -284,8 +286,8 @@ function toggleCompatible() {
     }
 
     .tag-pill-btn {
-      padding: 5px 6px;
       gap: 0;
+      padding: 5px 6px;
 
       .tag-icon {
         font-size: 9px;
@@ -297,11 +299,11 @@ function toggleCompatible() {
     @include tag-bar-compact;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     @include tag-bar-compact;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     .mini-label {
       display: none;
     }

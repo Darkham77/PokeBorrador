@@ -18,6 +18,13 @@ const emit = defineEmits<{
   (e: 'randomizeSprite'): void
   (e: 'loadPolice'): void
 }>()
+
+function onTrainerImgError(e: Event): void {
+  const target = e.target as HTMLImageElement | null
+  if (target) {
+    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')
+  }
+}
 </script>
 
 <template>
@@ -32,16 +39,16 @@ const emit = defineEmits<{
       </button>
     </div>
 
-    <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
       <div class="trainer-sprite-preview">
         <img 
           :src="getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite)" 
           :alt="trainerName || 'Entrenador'"
           class="trainer-sprite-img"
-          @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
+          @error="onTrainerImgError"
         >
       </div>
-      <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+      <div style=" display: flex; flex-direction: column; gap: 8px;flex: 1;">
         <div class="input-group vertical">
           <div
             class="label-row"
@@ -129,7 +136,7 @@ const emit = defineEmits<{
     >
       <button 
         class="btn-vicio-secondary sm"
-        style="background: rgba(59, 139, 255, 0.15); border-color: rgba(59, 139, 255, 0.3); color: #5ea2ff;"
+        style="background: rgb(59 139 255 / 15%); color: #5ea2ff; border-color: rgb(59 139 255 / 30%);"
         @click.stop="emit('loadPolice')"
       >
         <span class="emoji">🚨</span> CARGAR OFICIAL DE POLICÍA

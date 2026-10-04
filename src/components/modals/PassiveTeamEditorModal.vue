@@ -75,8 +75,8 @@ if (typeof window !== 'undefined') {
 }
 
 .editor-help-text {
+  color: rgb(255 255 255 / 50%);
   font-size: 11px;
-  color: Rgba(255, 255, 255, 0.5);
   line-height: 1.5;
   margin-bottom: 24px;
 }
@@ -86,27 +86,28 @@ if (typeof window !== 'undefined') {
 }
 
 .loading-placeholder {
-  text-align: center;
+  @include pixelated;
+
   padding: 40px;
   color: var(--gray);
-  @include pixelated;
   font-size: 10px;
+  text-align: center;
 }
 
 // Global injections styles (Legacy)
 :deep(.passive-poke-slot) {
-  background: Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 12px;
+  background: rgb(0 0 0 / 30%);
+  margin-bottom: 8px;
 
   &.empty {
-    border-style: dashed;
     opacity: 0.5;
+    border-style: dashed;
   }
 }
 </style>

@@ -141,18 +141,18 @@ const isRocketExtorted = (loc: MapLocation): boolean => {
 <style scoped>
 .map-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 15px;
+  grid-template-columns: repeat(3, 1fr);
   padding: 5px;
 }
 
-@media (max-width: 940px) {
+@media (width <= 940px) {
   .map-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 660px) {
+@media (width <= 660px) {
   .map-grid {
     grid-template-columns: 1fr;
   }

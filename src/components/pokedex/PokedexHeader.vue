@@ -45,7 +45,7 @@ defineProps<Props>()
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
-@use "@/styles/components/_premium-header-shared.scss";
+@use "@/styles/components/_premium-header-shared";
 
 .pokedex-header-premium {
   @include premium-header;
@@ -61,14 +61,15 @@ defineProps<Props>()
 
     &.highlight .badge-value {
       color: var(--yellow);
-      text-shadow: 0 0 8px Rgba(255, 215, 0, 0.3);
+      text-shadow: 0 0 8px rgb(255 215 0 / 30%);
     }
 
-    .badge-label { @include pixelated; font-size: 6px; color: var(--gray); }
+    .badge-label { @include pixelated; color: var(--gray); font-size: 6px; }
     .badge-value { 
       @include pixelated; 
-      font-size: 8px; 
-      color: var(--white);
+
+      color: var(--white); 
+      font-size: 8px;
       
       small { font-size: 6px; opacity: 0.6; }
     }

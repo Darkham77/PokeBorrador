@@ -297,57 +297,57 @@ const onEnter = (el: Element, done: () => void) => {
   --info-zone-width: 16px; 
   --move-panel-max-width: calc(((var(--move-card-max-width) + var(--info-zone-width)) * 2) + var(--move-panel-gap));
   --shortcut-zone-width: 160px;
-  
-  padding: 0 !important; 
+
+  position: relative; 
+  z-index: var(--z-hud); 
   display: flex;
   flex-direction: column;
   gap: 0;
-  position: relative;
-  overflow: visible !important; 
-  z-index: var(--z-hud);
+  padding: 0 !important;
+  overflow: visible !important;
   
-  @media (max-width: 959px) {
+  @media (width <= 959px) {
     padding: 0;
     flex-shrink: 0;
     margin-bottom: -2px;
   }
 
-  @media (max-width: 420px) {
+  @media (width <= 420px) {
     padding: 0 !important;
   }
 }
 
 .battle-controls-layout {
+  @include shell-premium(#141824, 0);
+
   display: flex;
-  align-items: stretch; // Estirar para coincidir con la altura del centro
   justify-content: flex-start;
+  align-items: stretch; // Estirar para coincidir con la altura del centro
   gap: 5px; // Gap mínimo entre zonas
-  
   width: 100%;
   max-width: 100%;
   margin: 0;
-  @include shell-premium(#141824, 0);
-  border-radius: 0 !important;
   border: none;
-  border-top: 1px solid Rgba(255, 255, 255, 0.2);
+  border-radius: 0 !important;
+  border-top: 1px solid Rgb(255 255 255 / 20%);
 
   &.is-ui-locked {
+    opacity: 0.6;
     will-change: transform, filter, opacity;
   filter: Grayscale(1);
-    opacity: 0.6;
     pointer-events: none;
   }
 
-  @media (max-width: 775px) {
+  @media (width <= 775px) {
+    justify-content: center;
     .quick-shortcut-zone {
       display: none !important;
     }
-    justify-content: center;
 
     .controls-content {
-      flex: 1 1 auto;
       width: 100%;
       max-width: var(--move-panel-max-width);
+      flex: 1 1 auto;
     }
   }
 }
@@ -359,42 +359,43 @@ const onEnter = (el: Element, done: () => void) => {
   min-height: 100%; // Se estira al alto del contenedor vía align-items: stretch del padre
   overflow-y: auto; // Scrollbar cuando Pokémon o items no caben
   overflow-x: hidden !important;
-  border-left: 1px solid Rgba(255, 255, 255, 0.05);
-  border-right: 1px solid Rgba(255, 255, 255, 0.05);
+  border-left: 1px solid Rgb(255 255 255 / 5%);
+  border-right: 1px solid Rgb(255 255 255 / 5%);
 
   &::-webkit-scrollbar:horizontal {
     display: none !important;
     height: 0 !important;
   }
   
-  &.zone-team { 
+  &.zone-team {
+    min-width: 120px;
+    max-width: 745px; 
+
     // 6×115px (tarjetas) + 5×6px (gaps) + 8px (padding grid) + 17px (scrollbar) = 745px
     flex: 0 1 745px;
-    max-width: 745px;
-    min-width: 120px;
   }
-  &.zone-bag { 
+  &.zone-bag {
+    min-width: 90px; 
     flex: 1 1 90px; // Crece para rellenar el espacio vacío que zone-team no ocupa
-    min-width: 90px;
   }
   &.zone-spacer {
-    flex: 1 1 0;
     min-width: 0;
     border: none;
+    flex: 1 1 0;
     pointer-events: none;
   }
 }
 
 .controls-content {
-  flex: 0 0 var(--move-panel-max-width); // El panel de movimientos es rígido y no se puede achicar ni deformar
-  width: var(--move-panel-max-width);
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 0 !important;
-  margin: 0 !important; // Junto a la zona de Pokémon, sin márgenes extra
-  position: relative;
   justify-content: flex-start;
+  gap: 0;
+  width: var(--move-panel-max-width);
+  margin: 0 !important; // Junto a la zona de Pokémon, sin márgenes extra
+  padding: 0 !important;
+  flex: 0 0 var(--move-panel-max-width); // El panel de movimientos es rígido y no se puede achicar ni deformar
 }
 
 :deep(.moves-grid-vicio) {

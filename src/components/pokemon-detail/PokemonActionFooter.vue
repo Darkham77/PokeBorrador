@@ -71,12 +71,13 @@ const hasActions = computed(() => {
 
 .modal-footer {
   padding: 24px 32px;
-  border-top: 1px solid Rgba(255,255,255,0.08);
-  background: Rgba(0,0,0,0.1);
+  background: rgb(0 0 0 / 10%);
+  border-top: 1px solid rgb(255 255 255 / 8%);
 }
 
 .evolutionary {
   @include btn-vicio-primary;
+
   width: 100%;
 }
 
@@ -87,16 +88,18 @@ const hasActions = computed(() => {
 
   .price {
     @include pixelated;
+
+    color: var(--yellow);
     font-size: 14px;
     font-weight: 900;
-    color: var(--yellow);
     text-align: center;
-    text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3);
+    text-shadow: 0 0 10px rgb(255 214 10 / 30%);
   }
 }
 
 .buy-btn {
   @include btn-vicio-primary;
+
   width: 100%;
 }
 </style>

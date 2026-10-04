@@ -162,18 +162,18 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 @use "@/styles/core/_mixins" as *;
 
 .map-view-container {
-  padding: 0 0 40px;
   width: 100%;
+  padding: 0 0 40px;
   box-sizing: border-box;
 }
 
 .map-top-bar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: stretch;
   gap: 16px;
   margin-bottom: 12px;
-  flex-wrap: wrap;
 }
 
 .legacy-divider {
@@ -185,16 +185,17 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 
 .legacy-divider::before,
 .legacy-divider::after {
+  height: 4px;
+  background: rgb(255 255 255 / 10%);
   content: '';
   flex: 1;
-  height: 4px;
-  background: Rgba(255, 255, 255, 0.1);
 }
 
 .divider-text {
   @include pixelated;
-  font-size: 10px;
+
   color: var(--gray, #94a3b8);
+  font-size: 10px;
   letter-spacing: 2px;
 }
 </style>

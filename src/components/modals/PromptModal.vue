@@ -101,26 +101,26 @@ const handleCancel = () => {
   
   p {
     margin: 0 0 16px;
+    color: Rgb(255 255 255 / 70%);
+    font-family: Inter, sans-serif;
     font-size: 14px;
-    color: Rgba(255, 255, 255, 0.7);
-    font-family: 'Inter', sans-serif;
   }
   
   .prompt-input {
     width: 100%;
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
     padding: 12px 16px;
+    border: 1px solid Rgb(255 255 255 / 10%);
+    border-radius: 12px;
+    background: Rgb(0 0 0 / 30%);
     color: var(--white);
-    font-family: 'Inter', sans-serif;
+    font-family: Inter, sans-serif;
     font-size: 16px;
     outline: none;
     
     
     &:focus {
       border-color: var(--yellow);
-      box-shadow: 0 0 12px Rgba(255, 214, 10, 0.2);
+      box-shadow: 0 0 12px Rgb(255 214 10 / 20%);
     }
   }
 }
@@ -130,16 +130,16 @@ const handleCancel = () => {
   gap: 12px;
   
   button {
-    flex: 1;
+    @include pixelated;
+    @include pixelated;
+
     padding: 14px;
     border: none;
     border-radius: 12px;
     font-size: 9px;
     font-weight: 700;
-    @include pixelated;
+    flex: 1;
     cursor: pointer;
-    
-    @include pixelated;
     
     &:active {
       transform: Scale(0.95);
@@ -147,18 +147,18 @@ const handleCancel = () => {
   }
   
   .btn-cancel {
-    background: Rgba(255, 255, 255, 0.05);
-    color: Rgba(255, 255, 255, 0.5);
+    background: Rgb(255 255 255 / 5%);
+    color: Rgb(255 255 255 / 50%);
     &:hover {
-      background: Rgba(255, 255, 255, 0.1);
+      background: Rgb(255 255 255 / 10%);
       color: var(--white);
     }
   }
   
   .btn-confirm {
     background: var(--yellow);
-    color: Rgba(0, 0, 0, 1);
-    box-shadow: 0 4px 15px Rgba(255, 214, 10, 0.3);
+    color: Rgb(0 0 0 / 100%);
+    box-shadow: 0 4px 15px Rgb(255 214 10 / 30%);
     &:hover {
       background: $yellow;
     }

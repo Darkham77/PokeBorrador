@@ -19,6 +19,8 @@ import { registerBattleTools } from './debug/sections/battleTools.ts'
 
 import type { DebugTool } from '@/types/system/debug.ts'
 
+const DEBUG_TRAINER_CHANCE_PERCENT = 50 as const
+const DEBUG_GUARDIAN_CHANCE_PERCENT = 80 as const
 
 export const useDebugStore = defineStore('debug', () => {
   const auth = useAuthStore()
@@ -121,9 +123,9 @@ export const useDebugStore = defineStore('debug', () => {
 
     // Bind reactive state directly to the window object so static logic can access them
     if (globalTarget.__VITE_DEBUG__) {
-      Reflect.set(globalTarget.__VITE_DEBUG__, 'trainerChance50', trainerChance50.value || trainerChancePct.value === 50)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'trainerChance50', trainerChance50.value || trainerChancePct.value === DEBUG_TRAINER_CHANCE_PERCENT)
       Reflect.set(globalTarget.__VITE_DEBUG__, 'forceRival', forceRival.value || rivalChancePct.value === 100)
-      Reflect.set(globalTarget.__VITE_DEBUG__, 'forceGuardian80', forceGuardian80.value || guardianChancePct.value === 80)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'forceGuardian80', forceGuardian80.value || guardianChancePct.value === DEBUG_GUARDIAN_CHANCE_PERCENT)
       Reflect.set(globalTarget.__VITE_DEBUG__, 'forceShiny100', forceShiny100.value || shinyRateOverride.value === 1)
       Reflect.set(globalTarget.__VITE_DEBUG__, 'shinyRateOverride', shinyRateOverride.value)
       Reflect.set(globalTarget.__VITE_DEBUG__, 'trainerChancePct', trainerChancePct.value)

@@ -95,20 +95,21 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
 
 .profile-stat-grid-legacy {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .legacy-stat-item {
-  background: Rgba(15, 23, 42, 0.95);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  padding: 16px 12px;
-  text-align: center;
+  @include gpu-layer;
+
   display: flex;
   flex-direction: column;
   gap: 10px;
-  @include gpu-layer;
+  padding: 16px 12px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 18px;
+  background: Rgb(15 23 42 / 95%);
+  text-align: center;
   cursor: default;
   filter: Brightness(1);
 
@@ -118,12 +119,12 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
 
   &.highlight {
     &.money {
-      background: linear-gradient(135deg, Rgba(107, 203, 119, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
-      border-color: Rgba(107, 203, 119, 0.2);
+      background: Linear-Gradient(135deg, Rgb(107 203 119 / 5%) 0%, Rgb(15 23 42 / 40%) 100%);
+      border-color: Rgb(107 203 119 / 20%);
       
       .legacy-stat-val {
         color: $green;
-        text-shadow: 0 0 10px Rgba(107, 203, 119, 0.4);
+        text-shadow: 0 0 10px Rgb(107 203 119 / 40%);
       }
       .currency-icon-money {
         color: $green;
@@ -131,12 +132,12 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
     }
     
     &.bc {
-      background: linear-gradient(135deg, Rgba(199, 125, 255, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
-      border-color: Rgba(199, 125, 255, 0.2);
+      background: Linear-Gradient(135deg, Rgb(199 125 255 / 5%) 0%, Rgb(15 23 42 / 40%) 100%);
+      border-color: Rgb(199 125 255 / 20%);
       
       .legacy-stat-val {
         color: $purple;
-        text-shadow: 0 0 10px Rgba(199, 125, 255, 0.5);
+        text-shadow: 0 0 10px Rgb(199 125 255 / 50%);
       }
       .currency-icon-bc {
         color: $purple;
@@ -144,12 +145,12 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
     }
 
     &.reputation {
-      background: linear-gradient(135deg, Rgba(74, 222, 128, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
-      border-color: Rgba(74, 222, 128, 0.2);
+      background: Linear-Gradient(135deg, Rgb(74 222 128 / 5%) 0%, Rgb(15 23 42 / 40%) 100%);
+      border-color: Rgb(74 222 128 / 20%);
       
       .legacy-stat-val {
         color: #4ade80;
-        text-shadow: 0 0 10px Rgba(74, 222, 128, 0.5);
+        text-shadow: 0 0 10px Rgb(74 222 128 / 50%);
       }
     }
   }
@@ -157,18 +158,20 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
 
 .legacy-stat-val {
   @include pixelated;
-  font-size: 14px;
-  color: $white;
+
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 8px;
+  color: $white;
+  font-size: 14px;
 }
 
 .legacy-stat-lbl {
   @include pixelated;
+
+  color: Rgb(255 255 255 / 30%);
   font-size: 6px;
-  color: Rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
 }

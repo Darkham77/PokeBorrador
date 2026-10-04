@@ -29,13 +29,16 @@ const ARCHAEOLOGY_NORMAL_DIFFICULTY_EASY_PCT = 40;
 const ARCHAEOLOGY_NORMAL_DIFFICULTY_MEDIUM_PCT = 70;
 const ARCHAEOLOGY_NORMAL_DIFFICULTY_HARD_PCT = 90;
 
+const DEFAULT_ARCHAEOLOGY_RARITY = 50;
+const ARCHAEOLOGY_RARE_THRESHOLD = 15;
+
 const MANHATTAN_MAX_INITIAL_DISTANCE = 999;
 
 export function calculateArchaeologyDifficulty(
   rarity: number,
   randRoll: number = Math.random() * 100
 ): MinigameDifficulty {
-  const isRare = (rarity || 50) < 15;
+  const isRare = (rarity || DEFAULT_ARCHAEOLOGY_RARITY) < ARCHAEOLOGY_RARE_THRESHOLD;
 
   if (isRare) {
     if (randRoll < ARCHAEOLOGY_RARE_DIFFICULTY_EASY_PCT) return 'easy';

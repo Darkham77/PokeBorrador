@@ -49,5 +49,5 @@ const barWidthPct = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_profile-shared.scss";
+@use "@/styles/components/_profile-shared";
 </style>

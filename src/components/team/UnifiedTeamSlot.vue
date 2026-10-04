@@ -31,6 +31,8 @@ const DRAG_MOVE_THRESHOLD_SQ = 16
 const SCROLL_MARGIN_PX = 80
 const SCROLL_BASE_SPEED_PX = 3
 const SCROLL_MAX_EXTRA_SPEED_PX = 10
+const DRAG_CARD_OPACITY = 0.92 as const
+const UNBOUNDED_COORDINATE = 9999 as const
 
 const emit = defineEmits<{
   select: [index: number]
@@ -70,7 +72,7 @@ const cardDragStyle = computed(() => {
     zIndex: Z_LAYERS.CRITICAL,
     pointerEvents: 'none' as const,
     position: 'relative' as const,
-    opacity: 0.92,
+    opacity: DRAG_CARD_OPACITY,
     boxShadow: '0 16px 32px rgba(0, 0, 0, 0.6)'
   }
 })
@@ -123,12 +125,12 @@ function stopAutoScrollLoop() {
   }
 }
 
-const minDeltaX = ref(-9999)
-const maxDeltaX = ref(9999)
+const minDeltaX = ref<number>(-UNBOUNDED_COORDINATE)
+const maxDeltaX = ref<number>(UNBOUNDED_COORDINATE)
 const initSlotTop = ref(0)
 const initSlotHeight = ref(0)
-const containerTop = ref(-9999)
-const containerBottom = ref(9999)
+const containerTop = ref<number>(-UNBOUNDED_COORDINATE)
+const containerBottom = ref<number>(UNBOUNDED_COORDINATE)
 
 // ── UNIFIED POINTER DRAG ENGINE ──────────────────────────────────────────────
 
@@ -372,66 +374,66 @@ onUnmounted(() => {
 @use "@/styles/core/_mixins" as *;
 
 .team-slot {
+  position: relative;
+  display: flex;
   width: 100%;
   min-height: 260px;
-  display: flex;
-  position: relative;
   user-select: none;
-  -webkit-user-select: none;
   touch-action: none;
   overscroll-behavior: contain;
 
-  @media (max-width: 580px) {
+  @media (width <= 580px) {
     min-height: 190px;
   }
 
   &.is-drag-over {
-    outline: 2px solid var(--blue);
     border-radius: 20px;
-    box-shadow: 0 0 20px Rgba(10, 132, 255, 0.5);
+    outline: 2px solid var(--blue);
+    box-shadow: 0 0 20px rgb(10 132 255 / 50%);
 
-    @media (max-width: 580px) {
+    @media (width <= 580px) {
       border-radius: 12px;
     }
   }
 }
 
 .empty-placeholder {
-  flex: 1;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 2px dashed Rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 12px;
+  border: 2px dashed rgb(255 255 255 / 10%);
+  border-radius: 20px;
+  background: rgb(255 255 255 / 2%);
+  flex: 1;
   cursor: pointer;
   will-change: transform, border-color, background-color, box-shadow;
 
-  @media (max-width: 580px) {
-    border-radius: 12px;
+  @media (width <= 580px) {
     gap: 6px;
     padding: 8px;
+    border-radius: 12px;
   }
 
   .plus-icon {
+    color: rgb(255 255 255 / 30%);
     font-size: 32px;
-    color: Rgba(255, 255, 255, 0.3);
     will-change: transform, filter, color;
 
-    @media (max-width: 580px) {
+    @media (width <= 580px) {
       font-size: 20px;
     }
   }
 
   .label {
     @include pixelated;
-    font-size: 8px;
+
     color: var(--gray);
+    font-size: 8px;
     will-change: color;
 
-    @media (max-width: 580px) {
+    @media (width <= 580px) {
       font-size: 7px;
     }
   }
@@ -439,15 +441,15 @@ onUnmounted(() => {
 
 .pvp-slot {
   .empty-placeholder {
-    border-color: Rgba(199, 125, 255, 0.3);
+    border-color: rgb(199 125 255 / 30%);
   }
 }
 
 .slot-card-wrapper {
+  position: relative;
+  display: flex;
   width: 100%;
   height: 100%;
-  display: flex;
-  position: relative;
   will-change: transform;
 
   img {

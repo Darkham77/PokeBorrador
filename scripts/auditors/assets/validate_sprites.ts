@@ -36,10 +36,12 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
       id: 'validate_sprites',
       name: 'Pokemon Sprite Auditor',
       description: 'Sprites faltantes en catálogo de assets de Pokémon',
+      icon: '👾',
       family: 'assets',
+      packageName: 'Sprites',
       ruleIds: SPRITE_RULES,
       ruleDescriptions: {
-        'sprite-missing-asset': 'Sprite no encontrado en assets de Pokémon'
+        'sprite-missing-asset': 'Sprite no encontrado en Pokémon'
       },
       requiredFiles: [STATIC_SPRITES_DIR]
     });

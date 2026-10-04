@@ -152,23 +152,23 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
   justify-content: space-between;
   align-items: center;
   padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid Rgb(255 255 255 / 6%);
 }
 
 .title-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1;
   min-width: 0;
+  flex: 1;
 
   .card-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     font-size: 20px;
     line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     flex-shrink: 0;
   }
 
@@ -181,30 +181,32 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 
   .card-title {
     @include pixelated;
-    font-size: 11px;
-    color: var(--yellow, #facc15);
+
     margin: 0;
+    color: var(--yellow, #facc15);
+    font-size: 11px;
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .buffs-sub {
+    color: Rgb(255 255 255 / 50%);
     font-size: 10px;
     line-height: 1.35;
-    color: Rgba(255, 255, 255, 0.5);
   }
 }
 
 .header-actions {
   @include widget-header-actions;
+
   flex-shrink: 0;
   margin-left: auto;
 }
 
 .buffs-grid {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 8px;
+  grid-template-columns: 1fr;
   width: 100%;
 }
 
@@ -212,68 +214,69 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: Rgba(15, 23, 42, 0.95);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.45);
-  cursor: pointer;
   min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  background: Rgb(15 23 42 / 95%);
+  box-shadow: 0 4px 12px Rgb(0 0 0 / 45%);
+  cursor: pointer;
   box-sizing: border-box;
 
   &:hover {
-    border-color: Rgba(250, 204, 21, 0.4);
-    background: Rgba(250, 204, 21, 0.04);
-    box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.55);
+    background: Rgb(250 204 21 / 4%);
+    border-color: Rgb(250 204 21 / 40%);
+    box-shadow: 0 4px 16px Rgb(0 0 0 / 55%);
   }
 
   &.is-event-card {
-    border-color: Rgba(56, 189, 248, 0.25);
-    background: Rgba(56, 189, 248, 0.04);
+    background: Rgb(56 189 248 / 4%);
+    border-color: Rgb(56 189 248 / 25%);
 
     &:hover {
       border-color: #38bdf8;
-      box-shadow: 0 0 14px Rgba(56, 189, 248, 0.3);
+      box-shadow: 0 0 14px Rgb(56 189 248 / 30%);
     }
   }
 }
 
 .buff-icon-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 32px;
   height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(255, 255, 255, 0.04);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgb(255 255 255 / 8%);
   border-radius: 8px;
+  background: Rgb(255 255 255 / 4%);
   flex-shrink: 0;
 
   .buff-emoji {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", sans-serif;
     font-size: 20px;
     line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    filter: Drop-Shadow(0 2px 3px Rgba(0, 0, 0, 0.6));
+    filter: Drop-Shadow(0 2px 3px Rgb(0 0 0 / 60%));
     user-select: none;
   }
 
   .buff-icon-img {
+    @include pixelated;
+
     width: 22px;
     height: 22px;
     object-fit: contain;
-    @include pixelated;
   }
 }
 
 .buff-info-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  flex: 1;
 }
 
 .buff-title-row {
@@ -285,10 +288,11 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 
 .buff-label {
   @include pixelated;
+
+  color: var(--white, #fff);
   font-size: 8px;
   line-height: 1.45;
   padding-bottom: 2px;
-  color: var(--white, #ffffff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -296,17 +300,18 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 
 .buff-badge-pill {
   @include pixelated;
-  font-size: 6px;
+
   padding: 1px 5px;
+  border: 1px solid Rgb(250 204 21 / 30%);
   border-radius: 3px;
-  background: Rgba(250, 204, 21, 0.15);
-  border: 1px solid Rgba(250, 204, 21, 0.3);
+  background: Rgb(250 204 21 / 15%);
   color: var(--yellow, #facc15);
+  font-size: 6px;
 
   &.is-event {
-    background: Rgba(56, 189, 248, 0.15);
-    border-color: Rgba(56, 189, 248, 0.3);
+    background: Rgb(56 189 248 / 15%);
     color: #38bdf8;
+    border-color: Rgb(56 189 248 / 30%);
   }
 }
 
@@ -319,11 +324,12 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 
 .buff-time-text {
   @include pixelated;
-  font-size: 8px;
-  color: var(--yellow, #facc15);
+
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  color: var(--yellow, #facc15);
+  font-size: 8px;
 
   .timer-icon {
     font-size: 9px;

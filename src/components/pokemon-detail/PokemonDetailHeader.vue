@@ -33,7 +33,7 @@ const emit = defineEmits<{
         <button 
           v-if="isInstance" 
           class="edit-nick-btn" 
-          style="font-size: 10px; padding: 0; opacity: 0.5; cursor: pointer; flex-shrink: 0;"
+          style=" padding: 0;font-size: 10px; opacity: 0.5; cursor: pointer; flex-shrink: 0;"
           @click.stop="emit('editNickname')"
         >
           <span class="emoji">✏️</span>

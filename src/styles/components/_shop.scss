@@ -18,8 +18,8 @@
     .stat-node {
       @include shop-header-stat;
       
-      &.money .value { @extend .colored; color: var(--green); text-shadow: 0 0 15px Rgba(74, 222, 128, 0.2); }
-      &.level .value { @extend .colored; color: var(--yellow); text-shadow: 0 0 15px Rgba(250, 204, 21, 0.2); }
+      &.money .value { @extend .colored; color: var(--green); text-shadow: 0 0 15px Rgb(74 222 128 / 20%); }
+      &.level .value { @extend .colored; color: var(--yellow); text-shadow: 0 0 15px Rgb(250 204 21 / 20%); }
     }
   }
 }
@@ -37,76 +37,77 @@
 }
 
 .shop-main {
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
-  background: Rgba(255, 255, 255, 0.01);
+  min-height: 0;
+  background: Rgb(255 255 255 / 1%);
+  flex: 1;
 }
 
 .shop-search-wrapper {
-  padding: 10px 16px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
-  background: Rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 10px 16px;
+  background: Rgb(0 0 0 / 10%);
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
 
   .search-input-container {
     position: relative;
-    flex: 1; // Grow to fill remaining space, NOT width: 100%
     min-width: 0;
+    flex: 1; // Grow to fill remaining space, NOT width: 100%
 
     .search-icon {
       position: absolute;
-      left: 12px;
       top: 50%;
-      transform: Translatey(-50%);
-      font-size: 13px;
-      opacity: 0.4;
-      pointer-events: none;
+      left: 12px;
+
       // Fix emoji vertical alignment
       display: flex;
       align-items: center;
-      line-height: 1;
       font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+      font-size: 13px;
+      line-height: 1;
+      opacity: 0.4;
+      transform: Translatey(-50%);
+      pointer-events: none;
     }
 
     .shop-search-bar {
       width: 100%;
-      background: Rgba(0, 0, 0, 0.3);
-      border: 1px solid Rgba(255, 255, 255, 0.08);
       padding: 8px 32px 8px 34px;
+      border: 1px solid Rgb(255 255 255 / 8%);
       border-radius: 10px;
+      background: Rgb(0 0 0 / 30%);
       color: white;
-      outline: none;
       font-size: 12px;
+      outline: none;
       
       &:focus {
+        background: Rgb(0 0 0 / 40%);
         border-color: var(--yellow);
-        background: Rgba(0, 0, 0, 0.4);
-        box-shadow: 0 0 12px Rgba(250, 204, 21, 0.12);
+        box-shadow: 0 0 12px Rgb(250 204 21 / 12%);
       }
 
       &::placeholder {
-        color: Rgba(255, 255, 255, 0.3);
+        color: Rgb(255 255 255 / 30%);
       }
     }
 
     .clear-btn {
       position: absolute;
-      right: 12px;
       top: 50%;
-      transform: Translatey(-50%);
-      background: none;
-      border: none;
-      color: Rgba(255, 255, 255, 0.4);
-      cursor: pointer;
-      font-size: 12px;
-      padding: 4px;
+      right: 12px;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      padding: 4px;
+      border: none;
+      background: none;
+      color: Rgb(255 255 255 / 40%);
+      font-size: 12px;
+      transform: Translatey(-50%);
+      cursor: pointer;
 
       &:hover {
         color: white;
@@ -115,90 +116,92 @@
   }
 
   .toggle-fav-filter-btn {
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 8px 12px;
-    color: Rgba(255, 255, 255, 0.4);
-    cursor: pointer;
-    font-size: 12px;
     display: flex;
     align-items: center;
     gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid Rgb(255 255 255 / 8%);
+    border-radius: 10px;
+    background: Rgb(0 0 0 / 30%);
+    color: Rgb(255 255 255 / 40%);
+    font-size: 12px;
+    cursor: pointer;
     flex-shrink: 0;
 
+    &:hover {
+      background: Rgb(255 255 255 / 5%);
+      color: Rgb(255 255 255 / 80%);
+      border-color: Rgb(255 255 255 / 15%);
+    }
+
     .fav-star {
-      font-size: 13px;
       display: flex;
       align-items: center;
+      font-size: 13px;
       line-height: 1;
     }
 
-    &:hover {
-      background: Rgba(255, 255, 255, 0.05);
-      color: Rgba(255, 255, 255, 0.8);
-      border-color: Rgba(255, 255, 255, 0.15);
-    }
-
     &.active {
-      background: Rgba(250, 204, 21, 0.12);
-      border-color: Rgba(250, 204, 21, 0.4);
+      background: Rgb(250 204 21 / 12%);
       color: var(--yellow);
-      box-shadow: 0 0 10px Rgba(250, 204, 21, 0.15);
+      border-color: Rgb(250 204 21 / 40%);
+      box-shadow: 0 0 10px Rgb(250 204 21 / 15%);
     }
   }
 }
 
 .shop-grid-wrapper {
-  flex: 1;
-  padding: 20px;
-  overflow-y: scroll !important; // Force scrollbar to prevent layout jump
   @include premium-gradient;
 
-  @media (max-width: 950px) {
-    padding: 12px;
-  }
+  padding: 20px;
+  flex: 1;
+  overflow-y: scroll !important; // Force scrollbar to prevent layout jump
 
   .shop-premium-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    padding-bottom: 20px;
     position: relative;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    padding-bottom: 20px;
 
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
+    @media (width <= 768px) {
       gap: 12px;
+      grid-template-columns: 1fr;
     }
+  }
+
+  @media (width <= 950px) {
+    padding: 12px;
   }
 }
 
 .shop-empty-state {
-  grid-column: 1 / -1;
-  height: 250px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 16px;
+  height: 250px;
   opacity: 0.5;
+  grid-column: 1 / -1;
 
   .empty-icon {
     font-size: 36px;
-    filter: Drop-Shadow(0 0 10px Rgba(255,255,255,0.1));
+    filter: Drop-Shadow(0 0 10px Rgb(255 255 255 / 10%));
   }
 
   .empty-text {
     text-align: center;
     h3 { 
       @include pixelated; 
-      font-size: 10px; 
+
       color: white; 
+      font-size: 10px; 
       margin-bottom: 6px;
     }
     p { 
+      color: Rgb(255 255 255 / 40%); 
       font-size: 12px; 
-      color: Rgba(255, 255, 255, 0.4); 
     }
   }
 }

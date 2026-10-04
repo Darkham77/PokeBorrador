@@ -159,15 +159,15 @@ const handleEggClick = (egg: PokemonEgg) => {
 @use "@/styles/core/_mixins" as *;
 
 .home-breeding-widget {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
   width: 100%;
+  padding: 12px 14px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 12px;
+  background: Rgb(18 22 34 / 85%);
+  box-shadow: 0 4px 16px Rgb(0 0 0 / 40%);
   box-sizing: border-box;
 
   &.cols-3 {
@@ -187,18 +187,19 @@ const handleEggClick = (egg: PokemonEgg) => {
   gap: 8px;
 
   .title-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     font-size: 16px;
     line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .widget-title {
     @include pixelated;
-    font-size: 10px;
-    color: var(--yellow, #facc15);
+
     margin: 0;
+    color: var(--yellow, #facc15);
+    font-size: 10px;
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
@@ -210,23 +211,23 @@ const handleEggClick = (egg: PokemonEgg) => {
 
 .eggs-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 100%;
 
   &.grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    @media (max-width: 400px) {
+    @media (width <= 400px) {
       grid-template-columns: 1fr;
     }
   }
 
-  @media (max-width: 400px) {
+  @media (width <= 400px) {
     grid-template-columns: 1fr;
   }
 }
@@ -235,60 +236,61 @@ const handleEggClick = (egg: PokemonEgg) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: Rgba(15, 23, 42, 0.95);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.45);
-  cursor: pointer;
   min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  background: Rgb(15 23 42 / 95%);
+  box-shadow: 0 4px 12px Rgb(0 0 0 / 45%);
+  cursor: pointer;
 
-  @media (max-width: 480px) {
-    padding: 8px 10px;
+  @media (width <= 480px) {
     gap: 8px;
+    padding: 8px 10px;
   }
 
   &:hover {
     transform: Translatey(-2px);
-    border-color: Rgba(255, 255, 255, 0.2);
-    box-shadow: 0 6px 16px Rgba(0, 0, 0, 0.55);
+    border-color: Rgb(255 255 255 / 20%);
+    box-shadow: 0 6px 16px Rgb(0 0 0 / 55%);
   }
 
   &.is-ready {
-    border-color: Rgba(34, 197, 94, 0.4);
-    background: Rgba(34, 197, 94, 0.08);
-    box-shadow: 0 0 12px Rgba(34, 197, 94, 0.2);
+    background: Rgb(34 197 94 / 8%);
+    border-color: Rgb(34 197 94 / 40%);
+    box-shadow: 0 0 12px Rgb(34 197 94 / 20%);
 
     &:hover {
-      border-color: Rgba(34, 197, 94, 0.7);
-      box-shadow: 0 0 16px Rgba(34, 197, 94, 0.35);
+      border-color: Rgb(34 197 94 / 70%);
+      box-shadow: 0 0 16px Rgb(34 197 94 / 35%);
     }
   }
 }
 
 .egg-icon {
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 34px;
   height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(255, 255, 255, 0.04);
   border-radius: 8px;
+  background: Rgb(255 255 255 / 4%);
   flex-shrink: 0;
-  box-shadow: inset 0 0 6px Rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 6px Rgb(0 0 0 / 30%);
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     width: 28px;
     height: 28px;
   }
 
   .egg-sprite-img {
-    width: 26px;
-    height: 26px;
     @include pixelated;
 
-    @media (max-width: 480px) {
+    width: 26px;
+    height: 26px;
+
+    @media (width <= 480px) {
       width: 20px;
       height: 20px;
     }
@@ -303,11 +305,11 @@ const handleEggClick = (egg: PokemonEgg) => {
 }
 
 .egg-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  flex: 1;
 }
 
 .egg-status-row {
@@ -320,13 +322,14 @@ const handleEggClick = (egg: PokemonEgg) => {
 
 .egg-status {
   @include pixelated;
+
+  min-width: 0;
+  color: var(--gray, #94a3b8);
   font-size: 7px;
   line-height: 1.45;
-  color: var(--gray, #94a3b8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
   padding-left: 2px;
   padding-bottom: 1px;
 
@@ -338,9 +341,10 @@ const handleEggClick = (egg: PokemonEgg) => {
 
 .egg-pct {
   @include pixelated;
+
+  color: var(--yellow, #facc15);
   font-size: 7px;
   line-height: 1.35;
-  color: var(--yellow, #facc15);
   flex-shrink: 0;
   padding-right: 2px;
 }
@@ -348,27 +352,28 @@ const handleEggClick = (egg: PokemonEgg) => {
 .progress-track {
   width: 100%;
   height: 4px;
-  background: Rgba(255, 255, 255, 0.08);
   border-radius: 2px;
+  background: Rgb(255 255 255 / 8%);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #38bdf8, #818cf8);
   border-radius: 2px;
+  background: Linear-Gradient(90deg, #38bdf8, #818cf8);
   overflow: hidden;
 
   &.fill-ready {
-    background: linear-gradient(90deg, #22c55e, #4ade80);
+    background: Linear-Gradient(90deg, #22c55e, #4ade80);
   }
 }
 
 .steps-remaining {
   @include pixelated;
+
+  color: var(--gray, #94a3b8);
   font-size: 6px;
   line-height: 1.45;
-  color: var(--gray, #94a3b8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -381,12 +386,13 @@ const handleEggClick = (egg: PokemonEgg) => {
 
   .empty-btn {
     @include pixelated;
-    font-size: 7px;
+
     padding: 4px 8px;
-    background: Rgba(255, 255, 255, 0.06);
-    border: 1px solid Rgba(255, 255, 255, 0.15);
+    border: 1px solid Rgb(255 255 255 / 15%);
     border-radius: 4px;
+    background: Rgb(255 255 255 / 6%);
     color: var(--yellow, #facc15);
+    font-size: 7px;
     cursor: pointer;
   }
 }

@@ -81,8 +81,8 @@ onMounted(() => {
 
 .missions-modal-content-inner {
   height: 100%;
-  overflow-y: auto;
   padding: 20px;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 </style>

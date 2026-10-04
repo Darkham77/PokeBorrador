@@ -68,7 +68,11 @@ const openClassSelection = () => {
       v-else
       v-gsap-hover="{ scale: 1.01, y: -1 }"
       class="no-class-card"
+      role="button"
+      tabindex="0"
       @click.stop="openClassSelection"
+      @keydown.enter.prevent="openClassSelection"
+      @keydown.space.prevent="openClassSelection"
     >
       <span class="emoji no-class-icon">🎓</span>
       <div class="no-class-info">
@@ -105,22 +109,24 @@ const openClassSelection = () => {
 
   .card-title {
     @include pixelated;
-    font-size: 11px;
-    color: var(--class-accent, var(--yellow));
+
     margin: 0;
+    color: var(--class-accent, var(--yellow));
+    font-size: 11px;
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .class-sub {
+    color: rgb(255 255 255 / 50%);
     font-size: 10px;
     line-height: 1.35;
-    color: Rgba(255, 255, 255, 0.5);
   }
 }
 
 .header-actions {
   @include widget-header-actions;
+
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -132,15 +138,15 @@ const openClassSelection = () => {
   width: 100%;
 
   :deep(.profile-section-card) {
-    background: Rgba(15, 23, 42, 0.6);
-    border: 1px solid Rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
     padding: 12px 14px;
+    border: 1px solid rgb(255 255 255 / 6%);
+    border-radius: 10px;
+    background: rgb(15 23 42 / 60%);
     box-sizing: border-box;
 
     &:hover {
-      border-color: Rgba(255, 255, 255, 0.12);
-      background: Rgba(15, 23, 42, 0.8);
+      background: rgb(15 23 42 / 80%);
+      border-color: rgb(255 255 255 / 12%);
     }
   }
 }
@@ -150,13 +156,13 @@ const openClassSelection = () => {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: Rgba(250, 204, 21, 0.05);
-  border: 1px dashed Rgba(250, 204, 21, 0.3);
+  border: 1px dashed rgb(250 204 21 / 30%);
   border-radius: 8px;
+  background: rgb(250 204 21 / 5%);
   cursor: pointer;
 
   &:hover {
-    background: Rgba(250, 204, 21, 0.1);
+    background: rgb(250 204 21 / 10%);
     border-color: var(--yellow, #facc15);
   }
 
@@ -168,30 +174,32 @@ const openClassSelection = () => {
   .no-class-info {
     display: flex;
     flex-direction: column;
-    flex: 1;
     min-width: 0;
+    flex: 1;
 
     .no-class-title {
       @include pixelated;
-      font-size: 10px;
+
       color: var(--yellow, #facc15);
+      font-size: 10px;
     }
 
     .no-class-sub {
-      font-size: 9px;
       color: #cbd5e1;
+      font-size: 9px;
     }
   }
 
   .no-class-btn {
     @include pixelated;
-    font-size: 8px;
+
     padding: 6px 12px;
-    background: var(--yellow, #facc15);
-    color: #000000;
-    font-weight: bold;
     border: none;
     border-radius: 6px;
+    background: var(--yellow, #facc15);
+    color: #000;
+    font-size: 8px;
+    font-weight: bold;
     cursor: pointer;
     flex-shrink: 0;
   }

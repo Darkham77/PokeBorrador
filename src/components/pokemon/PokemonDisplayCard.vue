@@ -268,13 +268,13 @@ function handleCardClick() {
 .pokemon-illegal-danger-badge {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   width: 64px;
   height: 64px;
-  background: Rgba(239, 68, 68, 0.2);
   border: 2px dashed #ef4444;
   border-radius: 8px;
+  background: Rgb(239 68 68 / 20%);
 
   .danger-icon {
     font-size: 1.8rem;
@@ -282,40 +282,40 @@ function handleCardClick() {
   }
 
   .danger-label {
+    color: #ff6b6b;
     font-size: 0.65rem;
     font-weight: 900;
-    color: #ff6b6b;
     letter-spacing: 0.5px;
     margin-top: 2px;
   }
 }
 
 .pokemon-display-card.is-rule-violated {
-  border-color: Rgba(239, 68, 68, 0.85) !important;
-  box-shadow: 0 0 12px Rgba(239, 68, 68, 0.4) !important;
+  border-color: Rgb(239 68 68 / 85%) !important;
+  box-shadow: 0 0 12px Rgb(239 68 68 / 40%) !important;
 
   .sprite-section,
   .pokemon-info,
   .top-row {
-    filter: Grayscale(0.85);
     opacity: 0.75;
+    filter: Grayscale(0.85);
   }
 }
 
 .rule-violation-cartel {
   position: absolute;
   top: 36px;
-  left: 6px;
   right: 6px;
+  left: 6px;
   z-index: var(--z-modal-step);
-  background: Rgba(185, 28, 28, 0.95);
-  border: 1px solid Rgba(254, 202, 202, 0.8);
-  border-radius: 6px;
-  padding: 3px 6px;
   display: flex;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.6);
+  padding: 3px 6px;
+  border: 1px solid Rgb(254 202 202 / 80%);
+  border-radius: 6px;
+  background: Rgb(185 28 28 / 95%);
+  box-shadow: 0 4px 12px Rgb(0 0 0 / 60%);
   pointer-events: none;
 
   .emoji {
@@ -324,10 +324,10 @@ function handleCardClick() {
   }
 
   .violation-reason-text {
+    color: #fff;
     font-size: 8px;
     line-height: 1.45;
     padding-bottom: 2px;
-    color: #ffffff;
     letter-spacing: 0.2px;
     white-space: normal;
     overflow: hidden;

@@ -9,14 +9,22 @@ import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { BattleConditionKey } from '@/types/battle/battle';
 import type { SideID } from '@pkmn/sim';
 
+const WEIGHT_POKEMON_ADVANTAGE = 0.20 as const;
+const WEIGHT_HP_ADVANTAGE = 0.15 as const;
+const WEIGHT_HAZARD_ADVANTAGE = 0.10 as const;
+const WEIGHT_SPEED_ADVANTAGE = 0.15 as const;
+const WEIGHT_TYPE_MATCHUP_ADVANTAGE = 0.15 as const;
+const WEIGHT_STATUS_ADVANTAGE = 0.10 as const;
+const WEIGHT_WIN_CONDITION_VIABILITY = 0.15 as const;
+
 const POSITION_WEIGHTS = {
-  pokemonAdvantage: 0.20,
-  hpAdvantage: 0.15,
-  hazardAdvantage: 0.10,
-  speedAdvantage: 0.15,
-  typeMatchupAdvantage: 0.15,
-  statusAdvantage: 0.10,
-  winConditionViability: 0.15,
+  pokemonAdvantage: WEIGHT_POKEMON_ADVANTAGE,
+  hpAdvantage: WEIGHT_HP_ADVANTAGE,
+  hazardAdvantage: WEIGHT_HAZARD_ADVANTAGE,
+  speedAdvantage: WEIGHT_SPEED_ADVANTAGE,
+  typeMatchupAdvantage: WEIGHT_TYPE_MATCHUP_ADVANTAGE,
+  statusAdvantage: WEIGHT_STATUS_ADVANTAGE,
+  winConditionViability: WEIGHT_WIN_CONDITION_VIABILITY,
   MAX_HAZARD_LAYERS_NORMALIZER: 5,
   MIDPOINT_OFFSET_HALF: 0.5,
   RANGE_EXPANDER_DOUBLE: 2,

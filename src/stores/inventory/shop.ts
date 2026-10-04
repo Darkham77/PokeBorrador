@@ -8,7 +8,7 @@ import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { getItemById, SHOP_ITEMS, BC_SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
 import { PLAYER_CLASSES } from '@/data/player/playerClasses'
 import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
-import { MAX_ITEM_PURCHASE_QTY, ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER, GREAT_BALL_INVENTORY_COUNT_MULT, ULTRA_BALL_INVENTORY_COUNT_MULT, DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
+import { MAX_ITEM_PURCHASE_QTY, ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER, GREAT_BALL_INVENTORY_COUNT_MULT, ULTRA_BALL_INVENTORY_COUNT_MULT, DEFAULT_MOVE_PP, BLACK_MARKET_DEFAULT_DISCOUNT, BATTLE_COIN_TO_MONEY_RATE } from '@/logic/constants/gameplay.ts'
 import { hashString, mulberry32 } from '@/logic/utils/math'
 import { getGMT3Date } from '@/logic/utils/timeUtils'
 
@@ -250,8 +250,8 @@ export const useShopStore = defineStore('shop', () => {
     const item = getItemById(itemId)
     if (!item) return
 
-    const discount = PLAYER_CLASSES.rocket.modifiers?.shopDiscount || 0.20
-    const priceInMoney = Math.floor(((item.bcPrice || 0) * 50) * (1 - discount))
+    const discount = PLAYER_CLASSES.rocket.modifiers?.shopDiscount || BLACK_MARKET_DEFAULT_DISCOUNT
+    const priceInMoney = Math.floor(((item.bcPrice || 0) * BATTLE_COIN_TO_MONEY_RATE) * (1 - discount))
     
     if (gameStore.state.money < priceInMoney) {
       useUIStore().notify('No tenés suficiente dinero (₽).', '❌')

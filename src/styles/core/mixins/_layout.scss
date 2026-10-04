@@ -3,13 +3,13 @@
 @use "../variables" as vars;
 
 @mixin premium-gradient {
-  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Rgba(0, 0, 0, 0.15) 100%);
+  background: Linear-Gradient(180deg, Rgb(255 255 255 / 3%) 0%, Rgb(0 0 0 / 15%) 100%);
 }
 
 @mixin flex-center {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 @mixin responsive($breakpoint) {
@@ -25,69 +25,70 @@
 }
 
 @mixin responsive-zoom {
-  @media (max-width: 467px) { zoom: 0.9; }
-  @media (max-width: 420px) { zoom: 0.8; }
-  @media (max-width: 380px) { zoom: 0.7; }
-  @media (max-width: 340px) { zoom: 0.6; }
+  @media (width <= 467px) { zoom: 0.9; }
+
+  @media (width <= 420px) { zoom: 0.8; }
+
+  @media (width <= 380px) { zoom: 0.7; }
+
+  @media (width <= 340px) { zoom: 0.6; }
 }
 
 @mixin pixelated {
-  // Typography sharpening (Aggressive anti-blur)
-  -webkit-font-smoothing: none !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  #{"font-smooth"}: never !important;
-  text-rendering: optimizeSpeed !important;
-  font-variant-ligatures: none !important;
-  -webkit-text-stroke: 0px !important; // Prevent subtle font weight blurring
-  -webkit-backface-visibility: hidden !important;
-  backface-visibility: hidden !important;
   // Core pixel font mapping
   font-family: var(--font-pixel) !important;
   line-height: 1.35; // Safe default line-height for multiline pixel text inheritance
-}
-
-@mixin pixelated-proportional {
   // Typography sharpening (Aggressive anti-blur)
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
-  #{"font-smooth"}: never !important;
   text-rendering: optimizeSpeed !important;
   font-variant-ligatures: none !important;
-  -webkit-text-stroke: 0px !important;
-  -webkit-backface-visibility: hidden !important;
+  -webkit-text-stroke: 0 !important; // Prevent subtle font weight blurring
   backface-visibility: hidden !important;
-  
+  #{"font-smooth"}: never !important;
+}
+
+@mixin pixelated-proportional {
   // Core proportional pixel font mapping (No bitmap-like pixel scaling)
   font-family: var(--font-pixel-proportional) !important;
   line-height: 1.35; // Safe default line-height for multiline pixel text inheritance
+  // Typography sharpening (Aggressive anti-blur)
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeSpeed !important;
+  font-variant-ligatures: none !important;
+  -webkit-text-stroke: 0 !important;
+  backface-visibility: hidden !important;
+  #{"font-smooth"}: never !important;
 }
 
 @mixin tooltip-premium {
   @include pixelated;
-  background: Rgba(10, 12, 20, 1) !important;
+
+  z-index: var(--z-tooltip);
+  padding: 10px 14px;
   border: 2px solid var(--yellow) !important;
   border-radius: 8px;
-  padding: 10px 14px;
-  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8), inset 0 1px 1px Rgba(255, 255, 255, 0.05);
+  background: Rgb(10 12 20 / 100%) !important;
   color: white;
   
   // High-fidelity pixel isolation
-  font-family: 'Pokemon FireRed LeafGreen' !important;
+  font-family: 'Pokemon FireRed LeafGreen', monospace !important;
   font-size: 8px !important; // Original size
+  font-weight: normal !important;
   line-height: 1.4 !important;
+  box-shadow: 0 10px 30px Rgb(0 0 0 / 80%), inset 0 1px 1px Rgb(255 255 255 / 5%);
   letter-spacing: 0 !important;
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
-  #{"font-smooth"}: never !important;
-  
-  font-weight: normal !important;
-  z-index: var(--z-tooltip);
   pointer-events: none;
   image-rendering: pixelated !important;
+  #{"font-smooth"}: never !important;
 }
 
 @mixin pixel-perfect($size: 8px) {
   @include pixelated;
+
   font-size: $size;
 }
 
@@ -99,14 +100,13 @@
 }
 
 @mixin allow-aliasing {
+  transform: Translatez(0);
   image-rendering: auto !important;
-  #{"image-rendering"}: auto !important;
   -webkit-optimize-contrast: auto !important;
   -ms-interpolation-mode: bicubic !important;
-  transform: Translatez(0);
   will-change: transform;
-  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  #{"image-rendering"}: auto !important;
 }
 
 
@@ -115,21 +115,21 @@
   
   
   &:hover {
+    z-index: var(--z-map-spawns);
     border-color: var(--yellow) !important;
     box-shadow: 
       0 0 0 #{$border-width} var(--yellow),
-      0 0 20px Rgba(255, 214, 10, 0.4),
-      0 0 40px Rgba(255, 214, 10, 0.2),
-      inset 0 0 10px Rgba(255, 214, 10, 0.1) !important;
-    z-index: var(--z-map-spawns);
+      0 0 20px Rgb(255 214 10 / 40%),
+      0 0 40px Rgb(255 214 10 / 20%),
+      inset 0 0 10px Rgb(255 214 10 / 10%) !important;
   }
 }
 
 @mixin text-truncate {
+  line-height: 1.45;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.45;
   padding-bottom: 2px;
 }
 
@@ -147,8 +147,8 @@
 
 @mixin emoji-icon($font-size: 11px) {
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
   font-size: $font-size;
   line-height: 1;

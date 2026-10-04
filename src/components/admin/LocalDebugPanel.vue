@@ -134,24 +134,25 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 }
 
 .trigger-btn {
-  background: Linear-Gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 24px;
   @include pixelated;
   @include pixelated;
-  font-size: 8px;
-  cursor: pointer;
-  box-shadow: 0 8px 25px Rgba(124, 58, 237, 0.4);
-  border: 1px solid Rgba(255, 255, 255, 0.2);
+
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 10px 20px;
+  border: none;
+  border: 1px solid Rgb(255 255 255 / 20%);
+  border-radius: 24px;
+  background: Linear-Gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  color: white;
+  font-size: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px Rgb(124 58 237 / 40%);
 
   &:hover {
     transform: Translatey(-2px) Scale(1.05);
-    box-shadow: 0 12px 30px Rgba(124, 58, 237, 0.5);
+    box-shadow: 0 12px 30px Rgb(124 58 237 / 50%);
   }
 }
 
@@ -163,65 +164,67 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 }
 
 .debug-status-bar {
-  padding: 12px 20px;
-  background: Rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 12px 20px;
+  background: Rgb(0 0 0 / 20%);
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
 }
 
 .badge {
-  font-size: 8px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 800;
-  text-transform: uppercase;
   @include pixelated;
   @include pixelated;
+
   width: fit-content;
   margin: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
 
-  &.offline { background: Rgba(52, 211, 153, 0.1); color: $green; border: 1px solid Rgba(52, 211, 153, 0.2); }
-  &.admin { background: Rgba(248, 113, 113, 0.1); color: $red; border: 1px solid Rgba(248, 113, 113, 0.2); }
+  &.offline { border: 1px solid Rgb(52 211 153 / 20%); background: Rgb(52 211 153 / 10%); color: $green; }
+  &.admin { border: 1px solid Rgb(248 113 113 / 20%); background: Rgb(248 113 113 / 10%); color: $red; }
   &.shadow-btn {
-    background: Rgba(168, 85, 247, 0.15);
+    border: 1px solid Rgb(168 85 247 / 30%);
+    background: Rgb(168 85 247 / 15%);
     color: var(--purple, #c084fc);
-    border: 1px solid Rgba(168, 85, 247, 0.3);
     cursor: pointer;
     margin-left: auto;
     &:hover {
-      background: Rgba(168, 85, 247, 0.25);
-      border-color: Rgba(168, 85, 247, 0.5);
+      background: Rgb(168 85 247 / 25%);
+      border-color: Rgb(168 85 247 / 50%);
     }
   }
 }
 
 .debug-nav {
   display: flex;
-  background: Rgba(255, 255, 255, 0.02);
-  padding: 4px;
   gap: 4px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  background: Rgb(255 255 255 / 2%);
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
 
   button {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: $muted;
     @include pixelated;
     @include pixelated;
-    font-size: 8px;
+
     padding: 14px 4px;
-    cursor: pointer;
+    border: none;
     border-radius: 12px;
+    background: transparent;
+    color: $muted;
+    font-size: 8px;
+    flex: 1;
+    cursor: pointer;
     
 
-    &:hover { color: $white; background: Rgba(255, 255, 255, 0.05); }
+    &:hover { background: Rgb(255 255 255 / 5%); color: $white; }
     &.active {
-      background: Rgba(124, 58, 237, 0.15);
+      background: Rgb(124 58 237 / 15%);
       color: $purple;
-      box-shadow: inset 0 0 10px Rgba(124, 58, 237, 0.1), 0 2px 0 Rgba(0,0,0,0.2);
+      box-shadow: inset 0 0 10px Rgb(124 58 237 / 10%), 0 2px 0 Rgb(0 0 0 / 20%);
     }
   }
 }
@@ -240,19 +243,20 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: Rgba(255, 255, 255, 0.05);
     border-radius: 10px;
-    &:hover { background: Rgba(255, 255, 255, 0.1); }
+    background: Rgb(255 255 255 / 5%);
+    &:hover { background: Rgb(255 255 255 / 10%); }
   }
 }
 
 .empty-state {
-  text-align: center;
+  @include pixelated;
+  @include pixelated;
+
   padding: 60px 20px;
   color: $muted;
-  @include pixelated;
-  @include pixelated;
   font-size: 8px;
   line-height: 1.6;
+  text-align: center;
 }
 </style>

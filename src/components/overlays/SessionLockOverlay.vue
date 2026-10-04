@@ -46,26 +46,27 @@ const emit = defineEmits<{
 
 .lock-content {
   .warning-box {
-    margin-top: 10px;
+    @include pixelated;
+
     padding: 12px;
-    background: Rgba(0, 150, 255, 0.1);
     border: 1px dashed var(--blue);
+    background: Rgb(0 150 255 / 10%);
     color: var(--blue);
     font-size: 10px;
-    @include pixelated;
+    margin-top: 10px;
   }
 }
 
 .action-btn {
   width: 100%;
   padding: 16px;
-  background: Rgba(255, 255, 255, 0.1);
-  font-size: 10px;
-  font-family: var(--font-pixel);
-  font-weight: bold;
+  border: 1px solid Rgb(255 255 255 / 20%);
   border-radius: 12px;
-  box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(255, 255, 255, 0.2);
+  background: Rgb(255 255 255 / 10%);
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  font-weight: bold;
+  box-shadow: 0 4px 0 Rgb(0 0 0 / 30%);
   cursor: pointer;
   
   
@@ -78,17 +79,17 @@ const emit = defineEmits<{
       background: $white;
       color: var(--green);
       transform: Translatey(-2px);
-      box-shadow: 0 6px 0 Rgba(0, 0, 0, 0.2);
+      box-shadow: 0 6px 0 Rgb(0 0 0 / 20%);
     }
   }
 }
 
 .risk-btn {
-  background: none;
   border: none;
+  background: none;
+  color: $white;
   font-family: var(--font-pixel);
   font-size: 8px;
-  color: $white;
   opacity: 0.5;
   cursor: pointer;
   text-decoration: underline;
@@ -96,8 +97,8 @@ const emit = defineEmits<{
   
   
   &:hover {
+    color: #f33;
     opacity: 1;
-    color: #ff3333;
   }
 }
 </style>

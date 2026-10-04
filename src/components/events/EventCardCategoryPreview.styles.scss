@@ -1,89 +1,90 @@
 @use "@/styles/core/mixins" as *;
 
 .compact-competition-preview {
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px solid Rgba(250, 204, 21, 0.2);
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid Rgb(250 204 21 / 20%);
+  border-radius: 8px;
+  background: Rgb(0 0 0 / 25%);
+  margin-bottom: 12px;
   cursor: pointer;
   box-sizing: border-box;
-  width: 100%;
 
   &:hover {
-    background: Rgba(250, 204, 21, 0.05);
-    border-color: Rgba(250, 204, 21, 0.4);
+    background: Rgb(250 204 21 / 5%);
+    border-color: Rgb(250 204 21 / 40%);
   }
 
   .comp-preview-header {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
     gap: 6px;
-    flex-wrap: wrap;
-    box-sizing: border-box;
     width: 100%;
+    margin-bottom: 6px;
+    box-sizing: border-box;
 
     .header-title-group {
       display: inline-flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 6px;
       min-width: 0;
-      flex-wrap: wrap;
     }
 
     .comp-preview-title {
-      font-size: 7.5px;
-      color: var(--yellow);
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      white-space: nowrap;
       min-width: 0;
+      color: var(--yellow);
+      font-size: 7.5px;
+      white-space: nowrap;
     }
 
     .comp-preview-badge {
-      font-size: 6.5px;
-      padding: 2px 5px;
-      border-radius: 4px;
-      background: Rgba(255, 255, 255, 0.08);
-      color: #94a3b8;
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      white-space: nowrap;
-      flex-shrink: 0;
       display: inline-flex;
       align-items: center;
       gap: 2px;
+      padding: 2px 5px;
+      border: 1px solid Rgb(255 255 255 / 10%);
+      border-radius: 4px;
+      background: Rgb(255 255 255 / 8%);
+      color: #94a3b8;
+      font-size: 6.5px;
       line-height: 1.35;
+      white-space: nowrap;
+      flex-shrink: 0;
       box-sizing: border-box;
 
       &.enrolled {
-        background: Rgba(74, 222, 128, 0.15);
+        background: Rgb(74 222 128 / 15%);
         color: var(--green-bright);
-        border-color: Rgba(74, 222, 128, 0.4);
+        border-color: Rgb(74 222 128 / 40%);
       }
     }
 
     .auto-fill-btn {
       @include pixelated;
-      font-size: 7px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: Rgba(250, 204, 21, 0.15);
-      border: 1px solid Rgba(250, 204, 21, 0.4);
-      color: var(--yellow, #facc15);
-      cursor: pointer;
+
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      padding: 4px 8px;
+      border: 1px solid Rgb(250 204 21 / 40%);
+      border-radius: 4px;
+      background: Rgb(250 204 21 / 15%);
+      color: var(--yellow, #facc15);
+      font-size: 7px;
+      cursor: pointer;
       flex-shrink: 0;
 
       &:hover:not(:disabled) {
-        background: Rgba(250, 204, 21, 0.25);
+        background: Rgb(250 204 21 / 25%);
         border-color: var(--yellow, #facc15);
       }
 
@@ -98,44 +99,51 @@
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    margin-bottom: 6px;
     width: 100%;
+    margin-bottom: 6px;
     box-sizing: border-box;
 
     .species-tab-btn {
       @include pixelated;
-      height: 22px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: Rgba(255, 255, 255, 0.04);
-      border: 1px solid Rgba(255, 255, 255, 0.12);
-      color: var(--gray, #94a3b8);
-      font-size: 7.5px;
+
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      cursor: pointer;
+      height: 22px;
+      padding: 2px 6px;
+      border: 1px solid Rgb(255 255 255 / 12%);
+      border-radius: 4px;
+      background: Rgb(255 255 255 / 4%);
+      color: var(--gray, #94a3b8);
+      font-size: 7.5px;
       line-height: 1.35;
+      cursor: pointer;
       white-space: nowrap;
       box-sizing: border-box;
+
+      &:hover {
+        background: Rgb(255 255 255 / 9%);
+        color: #fff;
+        border-color: Rgb(255 255 255 / 25%);
+      }
 
       .tab-poke-sprite {
         width: 16px;
         height: 16px;
         object-fit: contain;
         flex-shrink: 0;
-        filter: Drop-Shadow(0 1px 2px Rgba(0, 0, 0, 0.5));
+        filter: Drop-Shadow(0 1px 2px Rgb(0 0 0 / 50%));
         image-rendering: pixelated;
       }
 
       .tab-global-icon {
-        font-size: 10px;
-        line-height: 1.35;
         display: inline-flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
         width: 16px;
         height: 16px;
+        font-size: 10px;
+        line-height: 1.35;
         flex-shrink: 0;
       }
 
@@ -146,81 +154,82 @@
 
       .tab-check-pill {
         display: inline-flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
+        padding: 1px 3px;
+        border-radius: 3px;
         font-size: 7px;
         line-height: 1.35;
-        border-radius: 3px;
-        padding: 1px 3px;
 
         &.complete {
-          background: Rgba(74, 222, 128, 0.25);
+          border: 1px solid Rgb(74 222 128 / 60%);
+          background: Rgb(74 222 128 / 25%);
           color: var(--green-bright, #4ade80);
-          border: 1px solid Rgba(74, 222, 128, 0.6);
           font-weight: bold;
         }
 
         &.partial {
-          background: Rgba(255, 255, 255, 0.08);
+          border: 1px solid Rgb(255 255 255 / 15%);
+          background: Rgb(255 255 255 / 8%);
           color: var(--gray, #94a3b8);
-          border: 1px solid Rgba(255, 255, 255, 0.15);
           font-size: 6.5px;
         }
       }
 
-      &:hover {
-        background: Rgba(255, 255, 255, 0.09);
-        border-color: Rgba(255, 255, 255, 0.25);
-        color: #ffffff;
-      }
-
       &.active {
-        background: Rgba(250, 204, 21, 0.15);
-        border-color: var(--yellow, #facc15);
+        background: Rgb(250 204 21 / 15%);
         color: var(--yellow, #facc15);
-        box-shadow: 0 0 6px Rgba(250, 204, 21, 0.2);
+        border-color: var(--yellow, #facc15);
+        box-shadow: 0 0 6px Rgb(250 204 21 / 20%);
 
         &.is-complete {
+          color: #fff;
           border-color: var(--green-bright, #4ade80);
-          color: #ffffff;
-          box-shadow: 0 0 6px Rgba(74, 222, 128, 0.25);
+          box-shadow: 0 0 6px Rgb(74 222 128 / 25%);
         }
       }
 
       &.is-complete:not(.active) {
-        border-color: Rgba(74, 222, 128, 0.35);
+        background: Rgb(74 222 128 / 6%);
         color: #e2e8f0;
-        background: Rgba(74, 222, 128, 0.06);
+        border-color: Rgb(74 222 128 / 35%);
       }
     }
   }
 
   .comp-categories-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 6px;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
 
     :deep(.pv-tooltip-wrapper) {
-      width: 100%;
       display: flex;
+      width: 100%;
     }
 
     .comp-slot-chip {
       @include pixelated;
-      background: Rgba(255, 255, 255, 0.04);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      padding: 4px 6px;
+
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 6px;
-      cursor: pointer;
       width: 100%;
-      box-sizing: border-box;
-      color: Rgba(255, 255, 255, 0.85);
+      padding: 4px 6px;
+      border: 1px solid Rgb(255 255 255 / 10%);
+      border-radius: 6px;
+      background: Rgb(255 255 255 / 4%);
+      color: Rgb(255 255 255 / 85%);
       font-size: 8px;
+      cursor: pointer;
+      box-sizing: border-box;
       will-change: transform, background-color, border-color;
+
+      &:hover {
+        background: Rgb(250 204 21 / 15%);
+        transform: Translatey(-1px);
+        border-color: var(--yellow);
+      }
 
       .chip-content {
         display: flex;
@@ -229,13 +238,13 @@
         min-width: 0;
 
         .chip-metric-icon {
-          font-size: 11px;
-          line-height: 1;
           display: inline-flex;
-          align-items: center;
           justify-content: center;
+          align-items: center;
           width: 18px;
           height: 18px;
+          font-size: 11px;
+          line-height: 1;
           flex-shrink: 0;
         }
 
@@ -247,39 +256,33 @@
       }
 
       .chip-status-pill {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
         width: 16px;
         height: 16px;
+        border: 1px solid Rgb(250 204 21 / 35%);
         border-radius: 4px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        background: Rgb(250 204 21 / 15%);
+        color: var(--yellow);
         font-size: 8px;
         font-weight: bold;
-        background: Rgba(250, 204, 21, 0.15);
-        color: var(--yellow);
-        border: 1px solid Rgba(250, 204, 21, 0.35);
         flex-shrink: 0;
       }
 
-      &:hover {
-        background: Rgba(250, 204, 21, 0.15);
-        border-color: var(--yellow);
-        transform: Translatey(-1px);
-      }
-
       &.enrolled {
-        background: Rgba(74, 222, 128, 0.08);
-        border-color: Rgba(74, 222, 128, 0.4);
+        background: Rgb(74 222 128 / 8%);
         color: #86efac;
+        border-color: Rgb(74 222 128 / 40%);
 
-        .chip-status-pill {
-          background: Rgba(74, 222, 128, 0.2);
-          color: var(--green-bright);
+        &:hover {
+          background: Rgb(74 222 128 / 18%);
           border-color: var(--green-bright);
         }
 
-        &:hover {
-          background: Rgba(74, 222, 128, 0.18);
+        .chip-status-pill {
+          background: Rgb(74 222 128 / 20%);
+          color: var(--green-bright);
           border-color: var(--green-bright);
         }
       }

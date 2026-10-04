@@ -5,12 +5,22 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
 import { isPokemonBusy } from '@/logic/constants/tags.ts';
 
+import {
+  ALPHANUMERIC_RADIX,
+  RANDOM_STRING_SUBSTRING_START,
+  RANDOM_STRING_SUBSTRING_END
+} from '@/logic/constants/gameplay.ts';
+
 interface OfflineSaveData {
   box?: Pokemon[];
   team?: Pokemon[];
   inventory?: Record<string, number>;
   money?: number;
   [key: string]: unknown;
+}
+
+function generateClaimId(): string {
+  return 'claim_' + Math.random().toString(ALPHANUMERIC_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END);
 }
 
 function validateTradeOfferPokemon(poke: Pokemon | null): DBResponse | null {
@@ -233,14 +243,14 @@ function enqueueTradeClaims(
   itemsObj: Record<string, number> | null
 ): void {
   if (pokeObj) {
-    const claimId = 'claim_' + Math.random().toString(36).substring(2, 11)
+    const claimId = generateClaimId()
     sqliteDb.run(
       "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
       [claimId, recipientUserId, String(tradeId), JSON.stringify({ type: 'pokemon', data: pokeObj })]
     )
   }
   if (money > 0) {
-    const claimId = 'claim_' + Math.random().toString(36).substring(2, 11)
+    const claimId = generateClaimId()
     sqliteDb.run(
       "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
       [claimId, recipientUserId, String(tradeId), JSON.stringify({ type: 'money', data: money })]
@@ -249,7 +259,7 @@ function enqueueTradeClaims(
   if (itemsObj) {
     for (const [itemName, qty] of Object.entries(itemsObj)) {
       if (qty > 0) {
-        const claimId = 'claim_' + Math.random().toString(36).substring(2, 11)
+        const claimId = generateClaimId()
         sqliteDb.run(
           "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
           [claimId, recipientUserId, String(tradeId), JSON.stringify({ type: 'item', data: { name: itemName, qty } })]
@@ -336,14 +346,14 @@ export async function emulateRejectTrade(
   const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record: Generic key-value data dictionary container
 
   if (offerPokeObj) {
-    const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+    const claimId = generateClaimId();
     sqliteDb.run(
       "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
       [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'pokemon', data: offerPokeObj })]
     );
   }
   if (trade.offer_money > 0) {
-    const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+    const claimId = generateClaimId();
     sqliteDb.run(
       "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
       [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'money', data: trade.offer_money })]
@@ -352,7 +362,7 @@ export async function emulateRejectTrade(
   if (offerItemsObj) {
     for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) { // open-record: Generic key-value data dictionary container
       if (qty > 0) {
-        const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+        const claimId = generateClaimId();
         sqliteDb.run(
           "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
           [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'item', data: { name: itemName, qty } })]

@@ -71,16 +71,15 @@ const shadowStyle = computed(() => {
   position: absolute;
   top: var(--shadow-y, 90%);
   left: var(--shadow-x, 50%);
+  z-index: var(--shadow-z-index, 1);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   image-rendering: -webkit-optimize-contrast !important;
-  #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
   transform-origin: center center;
-  
   will-change: opacity;
   pointer-events: none;
-  z-index: var(--shadow-z-index, 1);
+  #{"image-rendering"}: crisp-edges !important;
 }
 </style>

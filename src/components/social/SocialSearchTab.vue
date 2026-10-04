@@ -200,33 +200,34 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 .search-filters {
   display: flex;
   gap: 12px;
-  margin-bottom: 0;
-  background: Rgba(0, 0, 0, 0.2);
-  border: 1px solid Rgba(199, 125, 255, 0.1);
-  border-radius: 12px;
   padding: 10px 14px;
+  border: 1px solid Rgb(199 125 255 / 10%);
+  border-radius: 12px;
+  background: Rgb(0 0 0 / 20%);
+  margin-bottom: 0;
 }
 
 .filter-group {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
 }
 
 .filter-label {
   @include pixelated;
+
+  color: Rgb(255 255 255 / 40%);
   font-size: 7px;
-  color: Rgba(255, 255, 255, 0.4);
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
 .filter-select {
-  background: Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(199, 125, 255, 0.15);
-  border-radius: 8px;
   padding: 8px 12px;
+  border: 1px solid Rgb(199 125 255 / 15%);
+  border-radius: 8px;
+  background: Rgb(0 0 0 / 30%);
   color: var(--white);
   font-size: 11px;
   outline: none;
@@ -239,7 +240,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 
   &:focus, &:hover {
     border-color: var(--purple-light);
-    box-shadow: 0 0 10px Rgba(157, 78, 221, 0.1);
+    box-shadow: 0 0 10px Rgb(157 78 221 / 10%);
   }
 
   option {
@@ -249,35 +250,35 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 }
 
 .search-bar {
-  margin-bottom: 0;
   position: relative;
+  margin-bottom: 0;
 
   input {
     width: 100%;
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(199, 125, 255, 0.2);
-    border-radius: 12px;
     padding: 12px 16px;
+    border: 1px solid Rgb(199 125 255 / 20%);
+    border-radius: 12px;
+    background: Rgb(0 0 0 / 30%);
     color: var(--white);
     font-size: 14px;
     outline: none;
 
     &:focus { 
       border-color: var(--purple-light); 
-      box-shadow: 0 0 15px Rgba(157, 78, 221, 0.15); 
+      box-shadow: 0 0 15px Rgb(157 78 221 / 15%); 
     }
   }
   
   .loader-mini {
     position: absolute;
-    right: 12px;
     top: 50%;
-    transform: Translatey(-50%);
+    right: 12px;
     width: 16px;
     height: 16px;
-    border: 2px solid Rgba(255, 255, 255, 0.1);
-    border-top-color: var(--purple-light);
+    border: 2px solid Rgb(255 255 255 / 10%);
     border-radius: 50%;
+    transform: Translatey(-50%);
+    border-top-color: var(--purple-light);
   }
 }
 
@@ -300,16 +301,16 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   cursor: pointer;
 
   &:hover {
-    text-decoration: underline;
     opacity: 0.85;
+    text-decoration: underline;
   }
 }
 
 .no-results {
-  text-align: center;
   padding: 40px 20px;
-  color: Rgba(148, 163, 184, 0.7);
+  color: Rgb(148 163 184 / 70%);
   font-size: 14px;
+  text-align: center;
 }
 </style>
 

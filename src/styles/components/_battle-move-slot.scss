@@ -1,22 +1,29 @@
 @use "@/styles/core/tools" as *;
 @use "@/styles/tokens/colors" as *;
-@use "@/styles/components/pokemon-detail/_vicio-panes.scss";
+@use "@/styles/components/pokemon-detail/_vicio-panes";
 
 // Re-expose component styles locally to preserve styles when rendered inside BattleMovesGrid
 .move-slot-wrapper {
   position: relative;
-  width: 100%;
+  z-index: var(--z-base);
   display: flex;
   align-items: stretch;
-  z-index: var(--z-base);
+  width: 100%;
+  min-height: 52px;
   border: 1px solid var(--m-type-color); 
   border-radius: 12px;
   overflow: hidden;
   box-sizing: border-box;
-  min-height: 52px;
   user-select: none;
   filter: Brightness(1) Grayscale(0);
   will-change: filter, transform;
+
+  &:hover:not(.is-dragging, .is-disabled) {
+    .move-info-zone {
+      color: $white;
+      text-shadow: 0 0 5px var(--m-type-color);
+    }
+  }
 
   &.is-dragging {
     opacity: 0.4;
@@ -25,22 +32,15 @@
   }
 
   &.is-drag-over {
+    background: Rgb(255 214 10 / 10%) !important;
     border-color: var(--yellow) !important;
-    background: Rgba(255, 214, 10, 0.1) !important;
-    box-shadow: 0 0 20px Rgba(255, 214, 10, 0.2);
-  }
-
-  &:hover:not(.is-dragging):not(.is-disabled) {
-    .move-info-zone {
-      color: $white;
-      text-shadow: 0 0 5px var(--m-type-color);
-    }
+    box-shadow: 0 0 20px Rgb(255 214 10 / 20%);
   }
 
   &.is-disabled {
+    opacity: 0.6;
     will-change: transform, filter, opacity;
     filter: Grayscale(1);
-    opacity: 0.6;
     cursor: not-allowed;
     
     .move-info-zone {
@@ -52,7 +52,7 @@
     padding-right: 16px;
     .info-tooltip-wrapper {
       right: 0;
-      border-left: 1px solid Rgba(255, 255, 255, 0.1);
+      border-left: 1px solid Rgb(255 255 255 / 10%);
     }
     .move-card-vicio {
       padding-right: 4px !important;
@@ -63,7 +63,7 @@
     padding-left: 16px;
     .info-tooltip-wrapper {
       left: 0;
-      border-right: 1px solid Rgba(255, 255, 255, 0.1);
+      border-right: 1px solid Rgb(255 255 255 / 10%);
     }
     .move-card-vicio {
       padding-left: 4px !important;
@@ -74,72 +74,72 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 16px;
-    display: flex;
     z-index: var(--z-base);
+    display: flex;
+    width: 16px;
 
-    @media (max-width: 420px) {
+    @media (width <= 420px) {
       width: 12px;
     }
   }
 
   .move-card-vicio {
-    flex: 1;
-    min-width: 0;
-    width: 100% !important;
-    max-width: none !important;
-    min-height: 0 !important;
     z-index: calc(var(--z-base) + 2);
+    width: 100% !important;
+    min-width: 0;
+    max-width: none !important;
     height: 100%;
+    min-height: 0 !important;
     margin: 0;
-    background: none !important;
     border: none !important;
-    box-shadow: none !important;
-    transform: none;
     border-radius: 0 !important;
+    background: none !important;
+    transform: none;
+    flex: 1;
+    box-shadow: none !important;
     overflow: visible !important;
 
     &:hover {
       background: none !important;
-      border-color: transparent !important;
       transform: none;
+      border-color: transparent !important;
       box-shadow: none !important;
 
       &::before {
-        opacity: 0 !important;
         display: none !important;
+        opacity: 0 !important;
       }
     }
   }
 
   .weather-aura-overlay {
     position: absolute;
-    inset: 0;
-    pointer-events: none;
     z-index: calc(var(--z-base) + 1);
     border-radius: 12px;
+    inset: 0;
+    pointer-events: none;
 
     &.weather-rain {
-      box-shadow: inset 0 0 14px Rgba(59, 130, 246, 0.75);
+      box-shadow: inset 0 0 14px Rgb(59 130 246 / 75%);
     }
     &.weather-sun {
-      box-shadow: inset 0 0 14px Rgba(245, 158, 11, 0.75);
+      box-shadow: inset 0 0 14px Rgb(245 158 11 / 75%);
     }
     &.weather-thunderstorm {
-      box-shadow: inset 0 0 14px Rgba(139, 92, 246, 0.75);
+      box-shadow: inset 0 0 14px Rgb(139 92 246 / 75%);
     }
     &.weather-hail-snow {
-      box-shadow: inset 0 0 14px Rgba(255, 255, 255, 0.65);
+      box-shadow: inset 0 0 14px Rgb(255 255 255 / 65%);
     }
     &.weather-fog {
-      box-shadow: inset 0 0 14px Rgba(156, 163, 175, 0.65);
+      box-shadow: inset 0 0 14px Rgb(156 163 175 / 65%);
     }
   }
 
   &.is-empty {
+    opacity: 0.6;
     cursor: default;
     border-style: dotted;
-    opacity: 0.6;
     
     &:hover {
       transform: none;
@@ -151,28 +151,29 @@
 }
 
 .move-info-zone {
+  @include pixelated;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
   background: none;
-  color: Rgba(255, 255, 255, 0.6);
+  color: Rgb(255 255 255 / 60%);
   font-size: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: help;
   user-select: none;
-  @include pixelated;
 
-  @media (max-width: 420px) {
+  @media (width <= 420px) {
     font-size: 8px;
   }
 }
 
-.move-card-vicio {
-  text-align: left; 
+.move-card-vicio { 
   width: 100%;
   height: 100%;
   margin: 0;
+  text-align: left;
   user-select: none;
 
   &:disabled:not(.is-draggable) {
@@ -186,12 +187,12 @@
 }
 
 .empty-slot-hint {
-  font-size: 9px;
   max-width: 160px;
-  text-align: center;
-  line-height: 1.4;
-  color: Rgba(255, 255, 255, 0.9);
   padding: 4px;
+  color: Rgb(255 255 255 / 90%);
+  font-size: 9px;
+  line-height: 1.4;
+  text-align: center;
 }
 
 .empty-move-placeholder-wrap {
@@ -199,27 +200,27 @@
   height: 100%;
   
   :deep(.pv-tooltip-wrapper) {
+    display: flex;
     width: 100%;
     height: 100%;
-    display: flex;
   }
 }
 
 .empty-move-placeholder {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 100%;
-  width: 100%;
-  opacity: 0.4;
+  align-items: center;
   gap: 4px;
+  width: 100%;
+  height: 100%;
   color: $white;
+  opacity: 0.4;
 
   .slot-num {
     font-size: 8px;
-    letter-spacing: 1px;
     opacity: 0.7;
+    letter-spacing: 1px;
   }
   
   .empty-text {
@@ -230,27 +231,27 @@
 
 .stat-boosted {
   color: #10B981 !important;
-  text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
+  text-shadow: 0 0 2px Rgb(16 185 129 / 40%);
 }
 
 .stat-penalized {
   color: #EF4444 !important;
-  text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
+  text-shadow: 0 0 2px Rgb(239 68 68 / 40%);
 }
 
 .arrow {
   display: inline-block;
   font-size: 7px;
+  line-height: 1;
   margin-left: 1px;
   vertical-align: middle;
-  line-height: 1;
 
   &.up {
     color: #10B981;
-    text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
+    text-shadow: 0 0 2px Rgb(16 185 129 / 40%);
   }
   &.down {
     color: #EF4444;
-    text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
+    text-shadow: 0 0 2px Rgb(239 68 68 / 40%);
   }
 }

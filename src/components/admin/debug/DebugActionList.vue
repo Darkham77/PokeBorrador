@@ -66,11 +66,12 @@ defineEmits<{
 .debug-section {
   .section-title {
     @include pixelated;
-    font-size: 8px;
+
     color: var(--yellow);
+    font-size: 8px;
+    opacity: 0.8;
     margin-bottom: 12px;
     letter-spacing: 1px;
-    opacity: 0.8;
   }
 }
 
@@ -81,20 +82,20 @@ defineEmits<{
 }
 
 .debug-btn-long {
-  width: 100%;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  color: white;
-  padding: 14px 16px;
-  border-radius: 12px;
-  cursor: pointer;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 12px;
+  background: Rgb(255 255 255 / 3%);
+  color: white;
+  cursor: pointer;
   margin-bottom: 8px;
   
   &:hover {
-    background: Rgba(255, 255, 255, 0.08);
+    background: Rgb(255 255 255 / 8%);
     transform: Translatex(4px);
   }
 
@@ -112,7 +113,7 @@ defineEmits<{
       gap: 2px;
       
       .label { @include pixelated; font-size: 8px; }
-      .desc { font-size: 9px; color: Rgba(255, 255, 255, 0.4); }
+      .desc { color: Rgb(255 255 255 / 40%); font-size: 9px; }
     }
   }
 }

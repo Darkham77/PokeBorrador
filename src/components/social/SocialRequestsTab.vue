@@ -125,10 +125,10 @@ watch(() => socialStore.pendingRequests.map((r) => r.id).join(','), () => {
 }
 
 .empty-state {
-  text-align: center;
   padding: 40px 20px;
-  color: Rgba(148, 163, 184, 1);
-  .icon { font-size: 40px; margin-bottom: 15px; opacity: 0.5; }
+  color: Rgb(148 163 184 / 100%);
+  text-align: center;
+  .icon { font-size: 40px; opacity: 0.5; margin-bottom: 15px; }
   p { font-size: 14px; margin-bottom: 20px; }
 }
 
@@ -148,8 +148,8 @@ watch(() => socialStore.pendingRequests.map((r) => r.id).join(','), () => {
   
 
   &:hover {
-    text-decoration: underline;
     opacity: 0.85;
+    text-decoration: underline;
   }
 }
 </style>

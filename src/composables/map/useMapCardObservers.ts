@@ -1,4 +1,5 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay'
 
 const WIDE_CARD_BREAKPOINT_PX = 350;
 
@@ -24,7 +25,7 @@ export function useMapCardObservers(
       })
       resizeObserver.observe(cardRef.value)
 
-      const isMobileDevice = windowWidth.value < 768
+      const isMobileDevice = windowWidth.value < MOBILE_SCREEN_BREAKPOINT_PX
       const marginValue = isMobileDevice ? '180px' : '1200px'
 
       intersectionObserver = new IntersectionObserver((entries) => {

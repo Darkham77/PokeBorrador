@@ -49,13 +49,14 @@ const handleBackgroundError = (e: Event) => {
 @use "@/styles/core/tools" as *;
 
 .arena-bg {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  object-fit: cover;
-  z-index: calc(var(--z-base) + 1);
-  filter: var(--weather-filter, Brightness(1) contrast(1));
-  will-change: filter;
   @include pixelated;
+
+  position: absolute;
+  top: 0; left: 0;
+  z-index: calc(var(--z-base) + 1); width: 100%; height: 100%;
+  object-fit: cover;
+  filter: var(--weather-filter, Brightness(1) Contrast(1));
+  will-change: filter;
 }
 
 .battle-environment {

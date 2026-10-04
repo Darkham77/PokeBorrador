@@ -43,6 +43,7 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
       id: 'validate_combat_invariants',
       name: 'Combat Engine & Showdown Invariants Auditor',
       description: 'Invariantes rotas de Showdown o bifurcación binaria p1/p2',
+      icon: '🛡️',
       family: 'fsm',
       ruleIds: COMBAT_INVARIANTS_RULES,
       packageName: 'Combate',

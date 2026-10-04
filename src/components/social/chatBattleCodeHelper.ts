@@ -5,6 +5,7 @@ import type {
   ReplayChoiceStep
 } from '@/types/battle/pvp'
 import { isSeasonalThemeId } from '@/data/system/rankedData'
+import { parseJsonSafe } from '@/logic/utils/jsonUtils'
 import type { SideID } from '@pkmn/sim'
 
 const DEFAULT_REPLAY_ELO = 1000 as const
@@ -19,17 +20,6 @@ const DEFAULT_REPLAY_COMBATANT: ReplayCombatantSummary = {
   elo: DEFAULT_REPLAY_ELO,
   team: []
 } as const
-
-export function parseJsonSafe<T>(val: unknown, fallback: T): T {
-  if (typeof val === 'string') {
-    try {
-      return JSON.parse(val) as T
-    } catch {
-      return fallback
-    }
-  }
-  return (val as T) || fallback
-}
 
 function resolveReplayThemeId(raw: Record<string, unknown>): BattleReplayRecord['themeId'] {
   if (isSeasonalThemeId(raw.theme_id)) return raw.theme_id

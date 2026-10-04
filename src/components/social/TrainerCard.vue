@@ -121,54 +121,55 @@ function getFactionLabel(faction?: string | null): string {
 }
 
 .faction-tag-badge {
-  font-size: 6px;
+  @include pixelated;
+
   padding: 1px 4px;
   border-radius: 4px;
   color: white;
-  text-transform: uppercase;
-  @include pixelated;
-  letter-spacing: 0.5px;
+  font-size: 6px;
   line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .trainer-card {
-  border-radius: 16px;
-  border-width: 1px;
-  border-style: solid;
-  padding: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-sizing: border-box;
   width: 100%;
+  padding: 12px;
+  border-radius: 16px;
+  border-width: 1px;
+  border-style: solid;
+  box-sizing: border-box;
   cursor: pointer;
 
 
   &.normal {
-    background: Rgba(255, 255, 255, 0.03);
-    border-color: Rgba(255, 255, 255, 0.1);
+    background: Rgb(255 255 255 / 3%);
+    border-color: Rgb(255 255 255 / 10%);
 
     &:hover {
-      background: Rgba(255, 255, 255, 0.05);
-      border-color: Rgba(255, 255, 255, 0.3);
+      background: Rgb(255 255 255 / 5%);
+      border-color: Rgb(255 255 255 / 30%);
     }
   }
 
   &.pending {
-    background: Rgba(157, 78, 221, 0.05);
-    border-color: Rgba(157, 78, 221, 0.25);
+    background: Rgb(157 78 221 / 5%);
+    border-color: Rgb(157 78 221 / 25%);
 
     &:hover {
-      background: Rgba(157, 78, 221, 0.08);
-      border-color: Rgba(157, 78, 221, 0.45);
+      background: Rgb(157 78 221 / 8%);
+      border-color: Rgb(157 78 221 / 45%);
     }
   }
 }
 
 .trainer-main {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
 }
 
 .trainer-info {
@@ -177,23 +178,23 @@ function getFactionLabel(faction?: string | null): string {
   gap: 4px;
 
   .name {
+    color: var(--white);
     font-size: 14px;
     font-weight: 700;
-    color: var(--white);
     line-height: 1.2;
   }
 
   .meta {
+    color: Rgb(255 255 255 / 50%);
     font-size: 11px;
-    color: Rgba(255, 255, 255, 0.5);
     line-height: 1.2;
   }
 }
 
 .trainer-actions {
   display: flex;
-  gap: 6px;
   align-items: center;
+  gap: 6px;
 }
 
 .clickable-avatar {
@@ -210,8 +211,8 @@ function getFactionLabel(faction?: string | null): string {
   cursor: pointer;
 
   &:hover {
-    text-decoration: underline;
     opacity: 0.85;
+    text-decoration: underline;
   }
 }
 </style>

@@ -198,34 +198,34 @@ const consumeItem = () => {
 }
 
 .relearner-help {
+  color: rgb(255 255 255 / 60%);
   font-size: 13px;
-  color: Rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
   text-align: center;
   margin-bottom: 16px;
-  line-height: 1.4;
 }
 
 .moves-list {
+  @include smooth-scroll;
+
   display: flex;
   flex-direction: column;
   gap: 12px;
   max-height: 380px;
-  overflow-y: auto;
-  overflow-x: hidden;
   padding: 6px 12px;
-  @include smooth-scroll;
+  overflow: hidden auto;
 }
 
 .move-slot-row-relearner {
   width: 100%;
-  box-sizing: border-box;
   padding: 4px 6px;
+  box-sizing: border-box;
 }
 
 .empty-msg {
-  text-align: center;
   padding: 40px 20px;
-  color: Rgba(255, 255, 255, 0.3);
+  color: rgb(255 255 255 / 30%);
   font-size: 11px;
+  text-align: center;
 }
 </style>

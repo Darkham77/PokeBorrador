@@ -39,14 +39,16 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       id: 'validate_pokemon',
       name: 'Pokemon DB Integrity Validator',
       description: 'Especies no válidas, stats erróneos o learnsets rotos',
+      icon: '🐾',
       family: 'domain_data',
       ruleIds: POKEMON_DB_RULES,
+      packageName: 'Pokémon',
       ruleDescriptions: {
-        'pokemon-invalid-species': 'Especie no válida en catálogo canónico',
-        'pokemon-base-stat-mismatch': 'Discrepancia en estadísticas base de Pokémon',
-        'pokemon-type-mismatch': 'Discrepancia de tipos elementales en especie',
-        'pokemon-invalid-learnset-move': 'Movimiento no válido en el learnset',
-        'pokemon-missing-learnset': 'Learnset vacío o no definido para especie'
+        'pokemon-invalid-species': 'Especie no válida en catálogo',
+        'pokemon-base-stat-mismatch': 'Discrepancia en stats base',
+        'pokemon-type-mismatch': 'Discrepancia de tipos elementales',
+        'pokemon-invalid-learnset-move': 'Movimiento inválido en learnset',
+        'pokemon-missing-learnset': 'Learnset vacío o no definido'
       },
       requiredFiles: [DB_FILE]
     });

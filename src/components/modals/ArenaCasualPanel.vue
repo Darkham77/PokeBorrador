@@ -264,11 +264,11 @@ $gray: #94a3b8;
 
   .rules-config-card,
   .room-code-card {
-    background: Rgba(255, 255, 255, 0.02);
-    border: 1px solid Rgba(255, 255, 255, 0.07);
-    border-radius: 14px;
     padding: 16px;
-    box-shadow: inset 0 0 12px Rgba(255, 255, 255, 0.02);
+    border: 1px solid Rgb(255 255 255 / 7%);
+    border-radius: 14px;
+    background: Rgb(255 255 255 / 2%);
+    box-shadow: inset 0 0 12px Rgb(255 255 255 / 2%);
   }
 
   .card-header {
@@ -278,9 +278,9 @@ $gray: #94a3b8;
     margin-bottom: 14px;
 
     .header-icon {
-      font-size: 16px;
       display: inline-flex;
       align-items: center;
+      font-size: 16px;
     }
 
     .header-text {
@@ -290,18 +290,19 @@ $gray: #94a3b8;
     }
 
     .panel-subtitle {
+      @include pixelated;
+
+      margin: 0;
+      color: var(--white, #fff);
       font-size: 9px;
       font-weight: 800;
-      color: var(--white, #fff);
-      margin: 0;
-      @include pixelated;
       letter-spacing: 0.5px;
     }
 
     .panel-desc {
-      font-size: 8px;
-      color: $gray;
       margin: 0;
+      color: $gray;
+      font-size: 8px;
       line-height: 1.4;
     }
   }
@@ -314,21 +315,22 @@ $gray: #94a3b8;
 
   .config-row {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     gap: 12px;
 
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
       flex-direction: column;
       align-items: flex-start;
       gap: 8px;
     }
 
     .config-label {
-      font-size: 8px;
-      color: $gray;
-      font-weight: 600;
       @include pixelated;
+
+      color: $gray;
+      font-size: 8px;
+      font-weight: 600;
     }
 
     .pill-group {
@@ -336,29 +338,30 @@ $gray: #94a3b8;
       gap: 8px;
 
       .rule-pill-btn {
+        @include pixelated;
+
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: Rgba(0, 0, 0, 0.35);
-        border: 1px solid Rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
         padding: 6px 12px;
+        border: 1px solid Rgb(255 255 255 / 10%);
+        border-radius: 8px;
+        background: Rgb(0 0 0 / 35%);
         color: $gray;
         font-size: 8px;
-        @include pixelated;
         cursor: pointer;
 
         .pill-icon {
-          font-size: 10px;
           display: inline-flex;
           align-items: center;
+          font-size: 10px;
         }
 
         &.active {
-          background: Rgba(59, 130, 246, 0.18);
-          border-color: var(--blue-light, #29b6f6);
+          background: Rgb(59 130 246 / 18%);
           color: var(--white, #fff);
-          box-shadow: 0 0 10px Rgba(41, 182, 246, 0.25), inset 0 0 6px Rgba(41, 182, 246, 0.15);
+          border-color: var(--blue-light, #29b6f6);
+          box-shadow: 0 0 10px Rgb(41 182 246 / 25%), inset 0 0 6px Rgb(41 182 246 / 15%);
         }
       }
     }
@@ -370,23 +373,24 @@ $gray: #94a3b8;
     align-items: center;
     gap: 14px;
     padding: 18px;
-    background: radial-gradient(circle at 50% 30%, Rgba(2, 136, 209, 0.15) 0%, Rgba(0, 0, 0, 0.4) 100%);
     border: 1px solid var(--blue-light, #29b6f6);
     border-radius: 12px;
-    box-shadow: 0 0 20px Rgba(41, 182, 246, 0.15), inset 0 0 15px Rgba(41, 182, 246, 0.08);
+    background: Radial-Gradient(circle at 50% 30%, Rgb(2 136 209 / 15%) 0%, Rgb(0 0 0 / 40%) 100%);
+    box-shadow: 0 0 20px Rgb(41 182 246 / 15%), inset 0 0 15px Rgb(41 182 246 / 8%);
 
     .room-active-header {
       .active-badge {
+        @include pixelated;
+
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: Rgba(34, 197, 94, 0.15);
-        border: 1px solid Rgba(34, 197, 94, 0.4);
-        border-radius: 12px;
         padding: 3px 10px;
-        font-size: 7.5px;
+        border: 1px solid Rgb(34 197 94 / 40%);
+        border-radius: 12px;
+        background: Rgb(34 197 94 / 15%);
         color: #4ade80;
-        @include pixelated;
+        font-size: 7.5px;
 
         .pulse-dot {
           width: 6px;
@@ -405,9 +409,10 @@ $gray: #94a3b8;
       gap: 6px;
 
       .code-label {
-        font-size: 7.5px;
-        color: $gray;
         @include pixelated;
+
+        color: $gray;
+        font-size: 7.5px;
         letter-spacing: 0.5px;
       }
 
@@ -417,30 +422,33 @@ $gray: #94a3b8;
         gap: 12px;
 
         .code-number {
+          @include pixelated;
+
+          color: var(--yellow, #ffd700);
           font-size: 24px;
           font-weight: 900;
           letter-spacing: 4px;
-          color: var(--yellow, #ffd700);
-          @include pixelated;
-          filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.4));
+          filter: Drop-Shadow(0 0 10px Rgb(255 215 0 / 40%));
         }
 
         .copy-btn {
           @include btn-vicio('secondary', 'sm');
-          font-size: 7.5px;
-          padding: 4px 10px;
+
           gap: 4px;
+          padding: 4px 10px;
+          font-size: 7.5px;
         }
       }
     }
 
     .waiting-indicator {
+      @include pixelated;
+
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 8px;
       color: $gray;
-      @include pixelated;
+      font-size: 8px;
 
       .spinner-emoji {
         font-size: 12px;
@@ -449,30 +457,31 @@ $gray: #94a3b8;
 
     .cancel-room-btn {
       @include btn-vicio('danger', 'sm');
-      font-size: 8px;
+
       padding: 6px 16px;
+      font-size: 8px;
     }
   }
 
   .room-actions-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 12px;
+    grid-template-columns: 1fr 1fr;
 
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
       grid-template-columns: 1fr;
     }
 
     .action-box {
-      background: Rgba(0, 0, 0, 0.3);
-      border: 1px solid Rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 14px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 14px;
-      box-shadow: inset 0 0 10px Rgba(0, 0, 0, 0.3);
+      padding: 14px;
+      border: 1px solid Rgb(255 255 255 / 8%);
+      border-radius: 10px;
+      background: Rgb(0 0 0 / 30%);
+      box-shadow: inset 0 0 10px Rgb(0 0 0 / 30%);
 
       .box-top {
         display: flex;
@@ -486,67 +495,71 @@ $gray: #94a3b8;
         gap: 8px;
 
         .box-icon {
-          font-size: 14px;
           display: inline-flex;
           align-items: center;
+          font-size: 14px;
         }
 
         h4 {
-          margin: 0;
-          font-size: 8.5px;
-          color: var(--white, #fff);
           @include pixelated;
+
+          margin: 0;
+          color: var(--white, #fff);
+          font-size: 8.5px;
           letter-spacing: 0.5px;
         }
       }
 
       .box-desc {
-        font-size: 8px;
-        color: $gray;
         margin: 0;
+        color: $gray;
+        font-size: 8px;
         line-height: 1.4;
       }
 
       .action-btn {
         &.create-btn {
           @include btn-vicio('primary', 'md', true);
-          font-size: 8px;
+
           gap: 6px;
+          font-size: 8px;
         }
 
         &.join-btn {
           @include btn-vicio('success', 'md');
-          font-size: 8px;
+
           padding: 6px 16px;
+          font-size: 8px;
         }
       }
 
       .join-input-wrap {
         display: flex;
-        gap: 8px;
         align-items: center;
+        gap: 8px;
 
         .code-input {
-          flex: 1;
+          @include pixelated;
+
           min-width: 0;
           height: 32px;
-          background: Rgba(0, 0, 0, 0.6);
-          border: 1px solid Rgba(255, 255, 255, 0.18);
+          padding: 0 8px;
+          border: 1px solid Rgb(255 255 255 / 18%);
           border-radius: 8px;
+          background: Rgb(0 0 0 / 60%);
           color: var(--yellow, #ffd700);
-          @include pixelated;
           font-size: 11px;
           font-weight: 800;
           text-align: center;
+          flex: 1;
           letter-spacing: 2px;
           text-transform: uppercase;
-          padding: 0 8px;
-          box-shadow: inset 0 2px 4px Rgba(0, 0, 0, 0.5);
+          box-shadow: inset 0 2px 4px Rgb(0 0 0 / 50%);
 
           &:focus {
             outline: none;
             border-color: var(--yellow, #ffd700);
-            box-shadow: 0 0 10px Rgba(255, 215, 0, 0.25), inset 0 2px 4px Rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 10px Rgb(255 215 0 / 25%), inset 0 2px 4px Rgb(0 0 0 / 50%);
           }
         }
       }

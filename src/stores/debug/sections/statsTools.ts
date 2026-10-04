@@ -10,6 +10,10 @@ import { requireFactionId } from '@/types/system/game'
 import { requirePlayerClassId } from '@/data/player/playerClasses'
 import type { BattleDifficulty } from '@/types/battle/battle'
 
+const GYM_DIFFICULTY_LEVEL_EASY = 15 as const;
+const GYM_DIFFICULTY_LEVEL_NORMAL = 35 as const;
+const GYM_DIFFICULTY_LEVEL_HARD = 75 as const;
+const GYM_SIMULATED_MONEY_PER_LEVEL = 10 as const;
 
 export function registerStatsTools(debug: DebugSystem) {
   const game = useGameStore()
@@ -214,9 +218,13 @@ export function registerStatsTools(debug: DebugSystem) {
       progress.attempts++
 
       // Simular recompensas adicionales basadas en dificultad (EXP y Dinero aproximado)
-      const diffLevels: Record<string, number> = { easy: 15, normal: 35, hard: 75 }
-      const level = diffLevels[difficulty] || 15
-      const moneyGained = level * 10 * (difficulty === 'hard' ? 3 : difficulty === 'normal' ? 2 : 1)
+      const diffLevels: Record<string, number> = {
+        easy: GYM_DIFFICULTY_LEVEL_EASY,
+        normal: GYM_DIFFICULTY_LEVEL_NORMAL,
+        hard: GYM_DIFFICULTY_LEVEL_HARD,
+      };
+      const level = diffLevels[difficulty] || GYM_DIFFICULTY_LEVEL_EASY;
+      const moneyGained = level * GYM_SIMULATED_MONEY_PER_LEVEL * (difficulty === 'hard' ? 3 : difficulty === 'normal' ? 2 : 1);
       game.state.money += moneyGained
       
       const msg = isFirstWin 

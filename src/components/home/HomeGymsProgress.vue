@@ -190,41 +190,43 @@ const openGyms = () => {
 
   .card-title {
     @include pixelated;
-    font-size: 11px;
-    color: var(--yellow, #facc15);
+
     margin: 0;
+    color: var(--yellow, #facc15);
+    font-size: 11px;
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .gyms-sub {
+    color: Rgb(255 255 255 / 50%);
     font-size: 10px;
     line-height: 1.35;
-    color: Rgba(255, 255, 255, 0.5);
   }
 }
 
 .header-actions {
   @include widget-header-actions;
+
   flex-shrink: 0;
   margin-left: auto;
 }
 
 .rematches-banner {
-  background: linear-gradient(135deg, Rgba(234, 88, 12, 0.25) 0%, Rgba(180, 83, 9, 0.2) 100%);
-  border: 1px solid Rgba(249, 115, 22, 0.4);
-  border-radius: 8px;
-  padding: 8px 12px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid Rgb(249 115 22 / 40%);
+  border-radius: 8px;
+  background: Linear-Gradient(135deg, Rgb(234 88 12 / 25%) 0%, Rgb(180 83 9 / 20%) 100%);
   cursor: pointer;
-  box-shadow: 0 2px 12px Rgba(234, 88, 12, 0.2);
+  box-shadow: 0 2px 12px Rgb(234 88 12 / 20%);
 
   &:hover {
-    background: linear-gradient(135deg, Rgba(234, 88, 12, 0.35) 0%, Rgba(180, 83, 9, 0.3) 100%);
-    border-color: #f97316;
+    background: Linear-Gradient(135deg, Rgb(234 88 12 / 35%) 0%, Rgb(180 83 9 / 30%) 100%);
     transform: Translatey(-1px);
+    border-color: #f97316;
   }
 
   .rematches-banner-left {
@@ -237,75 +239,75 @@ const openGyms = () => {
     }
 
     .banner-title {
+      color: #fdba74;
       font-size: 11px;
       font-weight: bold;
-      color: #fdba74;
       letter-spacing: 0.5px;
     }
   }
 
   .banner-btn {
+    padding: 3px 8px;
+    border: 1px solid Rgb(249 115 22 / 40%);
+    border-radius: 4px;
+    background: Rgb(249 115 22 / 30%);
+    color: #fed7aa;
     font-size: 10px;
     font-weight: bold;
-    color: #fed7aa;
-    background: Rgba(249, 115, 22, 0.3);
-    padding: 3px 8px;
-    border-radius: 4px;
-    border: 1px solid Rgba(249, 115, 22, 0.4);
   }
 }
 
 .medals-row {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
   gap: 8px;
+  grid-template-columns: repeat(8, 1fr);
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     grid-template-columns: repeat(4, 1fr);
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 .medal-slot {
-  background: Rgba(0, 0, 0, 0.35);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 8px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
+  width: 100%;
+  padding: 8px 4px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  background: Rgb(0 0 0 / 35%);
   cursor: pointer;
   filter: Grayscale(1) Opacity(0.4);
   box-sizing: border-box;
-  width: 100%;
-
-  &.has-rematch {
-    border-color: Rgba(249, 115, 22, 0.5);
-    background: Rgba(249, 115, 22, 0.08);
-    filter: none;
-    box-shadow: 0 0 10px Rgba(249, 115, 22, 0.2);
-  }
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.06);
-    border-color: Rgba(255, 255, 255, 0.2);
+    background: Rgb(255 255 255 / 6%);
     transform: Translatey(-2px);
+    border-color: Rgb(255 255 255 / 20%);
+  }
+
+  &.has-rematch {
+    background: Rgb(249 115 22 / 8%);
+    border-color: Rgb(249 115 22 / 50%);
+    filter: none;
+    box-shadow: 0 0 10px Rgb(249 115 22 / 20%);
   }
 
   .medal-icon-wrap {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 32px;
     height: 32px;
+    border: 1px solid Rgb(255 255 255 / 8%);
     border-radius: 8px;
-    background: Rgba(255, 255, 255, 0.04);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: Rgb(255 255 255 / 4%);
 
     .badge-sprite-img {
       width: 24px;
@@ -318,11 +320,11 @@ const openGyms = () => {
       position: absolute;
       top: -6px;
       left: -6px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
       font-size: 11px;
       line-height: 1.25 !important;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       filter: Drop-Shadow(0 0 4px #f97316);
     }
 
@@ -330,13 +332,13 @@ const openGyms = () => {
       position: absolute;
       top: -6px;
       right: -6px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
       font-size: 9px;
       line-height: 1.25 !important;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-      filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.8));
+      filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 80%));
     }
   }
 
@@ -345,81 +347,84 @@ const openGyms = () => {
     flex-direction: column;
     align-items: center;
     gap: 3px;
-    text-align: center;
     width: 100%;
+    text-align: center;
 
     .leader-name {
       @include pixelated;
+
+      max-width: 100%;
+      color: var(--white);
       font-size: 7px;
       line-height: 1.45;
       padding-bottom: 1px;
-      color: var(--white);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 100%;
     }
 
     .diff-chips-row {
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 3px;
       width: 100%;
     }
 
     .diff-chip {
       @include pixelated;
-      font-size: 6px;
-      line-height: 1.35;
-      padding: 0;
-      border-radius: 3px;
-      font-weight: 800;
-      text-align: center;
+
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
       width: 14px;
       height: 13px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      padding: 0;
+      border: 1px dashed Rgb(255 255 255 / 15%);
+      border-radius: 3px;
+      background: Rgb(255 255 255 / 4%);
+      color: Rgb(255 255 255 / 30%);
+      font-size: 6px;
+      font-weight: 800;
+      line-height: 1.35;
+      text-align: center;
       box-sizing: border-box;
-      background: Rgba(255, 255, 255, 0.04);
-      border: 1px dashed Rgba(255, 255, 255, 0.15);
-      color: Rgba(255, 255, 255, 0.3);
 
       &.won {
         border-style: solid;
 
         &.is-easy {
-          background: Rgba(74, 222, 128, 0.2);
-          border-color: Rgba(74, 222, 128, 0.6);
+          background: Rgb(74 222 128 / 20%);
           color: #4ade80;
+          border-color: Rgb(74 222 128 / 60%);
         }
 
         &.is-normal {
-          background: Rgba(56, 189, 248, 0.2);
-          border-color: Rgba(56, 189, 248, 0.6);
+          background: Rgb(56 189 248 / 20%);
           color: #38bdf8;
+          border-color: Rgb(56 189 248 / 60%);
         }
 
         &.is-hard {
-          background: Rgba(250, 204, 21, 0.2);
-          border-color: Rgba(250, 204, 21, 0.6);
+          background: Rgb(250 204 21 / 20%);
           color: #facc15;
-          box-shadow: 0 0 6px Rgba(250, 204, 21, 0.25);
+          border-color: Rgb(250 204 21 / 60%);
+          box-shadow: 0 0 6px Rgb(250 204 21 / 25%);
         }
       }
     }
 
     .badge-status {
       @include pixelated;
+
+      color: Rgb(148 163 184 / 70%);
       font-size: 6px;
       line-height: 1.35;
-      color: Rgba(148, 163, 184, 0.7);
 
       &.mastered {
         color: #facc15;
         font-weight: bold;
-        text-shadow: 0 0 4px Rgba(250, 204, 21, 0.4);
+        text-shadow: 0 0 4px Rgb(250 204 21 / 40%);
       }
 
       &.partial {
@@ -430,31 +435,31 @@ const openGyms = () => {
   }
 
   &.is-conquered {
-    filter: none;
+    background: Rgb(250 204 21 / 4%);
     opacity: 1;
-    border-color: Rgba(250, 204, 21, 0.35);
-    background: Rgba(250, 204, 21, 0.04);
-
-    .medal-icon-wrap {
-      background: Linear-Gradient(135deg, Rgba(255, 215, 0, 0.2) 0%, Rgba(255, 215, 0, 0.05) 100%);
-      border-color: var(--yellow);
-      box-shadow: 0 0 12px Rgba(250, 204, 21, 0.3);
-    }
+    filter: none;
+    border-color: Rgb(250 204 21 / 35%);
 
     &:hover {
       border-color: var(--yellow);
-      box-shadow: 0 4px 16px Rgba(250, 204, 21, 0.2);
+      box-shadow: 0 4px 16px Rgb(250 204 21 / 20%);
+    }
+
+    .medal-icon-wrap {
+      background: Linear-Gradient(135deg, Rgb(255 215 0 / 20%) 0%, Rgb(255 215 0 / 5%) 100%);
+      border-color: var(--yellow);
+      box-shadow: 0 0 12px Rgb(250 204 21 / 30%);
     }
   }
 
   &.is-mastered {
-    border-color: Rgba(250, 204, 21, 0.6);
-    background: Radial-Gradient(circle at 50% 0%, Rgba(250, 204, 21, 0.12) 0%, Rgba(250, 204, 21, 0.02) 100%), Rgba(18, 22, 34, 0.95);
-    box-shadow: 0 0 14px Rgba(250, 204, 21, 0.2);
+    background: Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 12%) 0%, Rgb(250 204 21 / 2%) 100%), Rgb(18 22 34 / 95%);
+    border-color: Rgb(250 204 21 / 60%);
+    box-shadow: 0 0 14px Rgb(250 204 21 / 20%);
 
     &:hover {
       border-color: #facc15;
-      box-shadow: 0 0 20px Rgba(250, 204, 21, 0.35);
+      box-shadow: 0 0 20px Rgb(250 204 21 / 35%);
     }
   }
 }

@@ -23,13 +23,15 @@ interface Props {
   awards?: AwardItem[]
 }
 
+const DEFAULT_PREVIEW_FINAL_ELO = 1650 as const
+
 const props = withDefaults(defineProps<Props>(), {
   id: undefined,
   show: true,
   seasonName: 'Temporada 1',
   tier: 'oro',
   rank: undefined,
-  finalElo: 1650,
+  finalElo: DEFAULT_PREVIEW_FINAL_ELO,
   awards: () => []
 })
 
@@ -203,7 +205,7 @@ function handleClose() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_profile-shared.scss";
+@use "@/styles/components/_profile-shared";
 
 .ranked-season-reward-content {
   display: flex;
@@ -216,18 +218,18 @@ function handleClose() {
   text-align: center;
 
   .season-title {
+    margin: 0;
+    color: #fde047;
     font-size: 1.15rem;
     font-weight: 800;
-    color: #fde047;
-    margin: 0;
     text-transform: uppercase;
-    text-shadow: 0 0 8px Rgba(234, 179, 8, 0.4);
+    text-shadow: 0 0 8px Rgb(234 179 8 / 40%);
   }
 
   .season-subtitle {
-    font-size: 0.8rem;
+    margin: 3px 0 10px;
     color: #94a3b8;
-    margin: 3px 0 10px 0;
+    font-size: 0.8rem;
   }
 }
 
@@ -235,11 +237,11 @@ function handleClose() {
   display: inline-flex;
   align-items: center;
   gap: 12px;
+  margin: 0 auto;
   padding: 8px 18px;
-  background: Rgba(15, 23, 42, 0.8);
   border: 2px solid;
   border-radius: 12px;
-  margin: 0 auto;
+  background: Rgb(15 23 42 / 80%);
 
   .tier-icon {
     font-size: 1.8rem;
@@ -250,7 +252,7 @@ function handleClose() {
     height: 36px;
     object-fit: contain;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 2px 6px Rgba(0, 0, 0, 0.5));
+    filter: Drop-Shadow(0 2px 6px Rgb(0 0 0 / 50%));
     flex-shrink: 0;
   }
 
@@ -267,20 +269,20 @@ function handleClose() {
     }
 
     .final-elo {
-      font-size: 0.8rem;
       color: #cbd5e1;
+      font-size: 0.8rem;
       font-weight: 600;
     }
   }
 
   .top-podium-pill {
     padding: 3px 8px;
-    background: Rgba(234, 179, 8, 0.3);
     border: 1px solid #eab308;
+    border-radius: 6px;
+    background: Rgb(234 179 8 / 30%);
     color: #fef08a;
     font-size: 0.7rem;
     font-weight: 800;
-    border-radius: 6px;
   }
 }
 
@@ -289,9 +291,9 @@ function handleClose() {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: Rgba(30, 41, 59, 0.6);
-  border: 1px solid Rgba(148, 163, 184, 0.2);
+  border: 1px solid Rgb(148 163 184 / 20%);
   border-radius: 8px;
+  background: Rgb(30 41 59 / 60%);
 
   .reset-icon {
     font-size: 1.4rem;
@@ -300,8 +302,8 @@ function handleClose() {
   .reset-text {
     display: flex;
     flex-direction: column;
-    font-size: 0.75rem;
     color: #94a3b8;
+    font-size: 0.75rem;
 
     strong {
       color: #38bdf8;
@@ -313,10 +315,10 @@ function handleClose() {
 
 .unlocked-prizes-section {
   .section-heading {
+    margin: 0 0 8px;
+    color: #cbd5e1;
     font-size: 0.8rem;
     font-weight: 700;
-    color: #cbd5e1;
-    margin: 0 0 8px 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -336,14 +338,14 @@ function handleClose() {
   .claim-rewards-btn {
     width: 100%;
     padding: 12px;
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: #0f172a;
-    background: linear-gradient(135deg, #fde047 0%, #eab308 100%);
     border: none;
     border-radius: 8px;
+    background: Linear-Gradient(135deg, #fde047 0%, #eab308 100%);
+    color: #0f172a;
+    font-size: 0.85rem;
+    font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 0 10px Rgba(234, 179, 8, 0.4);
+    box-shadow: 0 0 10px Rgb(234 179 8 / 40%);
 
     &:disabled {
       opacity: 0.5;

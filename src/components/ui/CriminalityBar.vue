@@ -6,10 +6,12 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { calculatePoliceBonusLevel } from '@/logic/player/classMath'
 import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 
+const SLIDE_TRANSITION_OFFSET_PX = 30 as const
+
 const classStore = usePlayerClassStore()
 const uiStore = useUIStore()
 const battleStore = useBattleStore()
-const { beforeEnter, enter, leave } = useGsapTransition({ type: 'slide-right', xOffset: 30 })
+const { beforeEnter, enter, leave } = useGsapTransition({ type: 'slide-right', xOffset: SLIDE_TRANSITION_OFFSET_PX })
 
 const isFastMode = computed(() => {
   return uiStore.isFastMode || battleStore.isBattleActive
@@ -77,61 +79,62 @@ const percentLabelText = computed(() => {
 
 .criminality-container {
   position: fixed;
-  right: calc(6px + var(--scrollbar-width, 0px));
   top: 0;
+  right: calc(6px + var(--scrollbar-width, 0px));
   bottom: 0;
-  margin-block: auto;
-  height: fit-content;
-  width: 24px; // Aumentado para dar aire lateral
+  z-index: var(--z-base);
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: var(--z-base);
-  pointer-events: none;
+  width: 24px; // Aumentado para dar aire lateral
+  height: fit-content;
   padding: 20px 10px;
-  background: Rgba(0, 0, 0, 0.8); // Solidez al 80% para contraste puro
   border-radius: 20px;
-  box-shadow: 0 0 30px Rgba(0, 0, 0, 0.9); // Aura oscura eficiente
+  background: rgb(0 0 0 / 80%); // Solidez al 80% para contraste puro
+  margin-block: auto;
+  pointer-events: none;
+  box-shadow: 0 0 30px rgb(0 0 0 / 90%); // Aura oscura eficiente
 }
 
 .label {
-  writing-mode: vertical-lr;
-  transform: Rotate(180deg);
-  font-size: 8px;
-  color: Rgba(239, 68, 68, 1);
-  margin-bottom: 8px;
-  text-shadow: 1px 1px var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
   @include pixelated;
+
+  color: rgb(239 68 68 / 100%);
+  font-size: 8px;
+  transform: rotate(180deg);
+  writing-mode: vertical-lr;
+  margin-bottom: 8px;
+  text-shadow: 1px 1px var(--black), 0 0 5px rgb(239 68 68 / 40%);
 }
 
 .bar-bg {
-  width: 12px;
-  height: 200px;
-  background: var(--black);
-  border: 2px solid Rgba(51, 51, 51, 1);
-  border-radius: 10px;
   display: flex;
   align-items: flex-end;
+  width: 12px;
+  height: 200px;
+  border: 2px solid rgb(51 51 51 / 100%);
+  border-radius: 10px;
+  background: var(--black);
   overflow: hidden;
-  box-shadow: 0 0 10px Rgba(0, 0, 0, 0.5), inset 0 0 5px Rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 10px rgb(0 0 0 / 50%), inset 0 0 5px rgb(0 0 0 / 80%);
 }
 
 .bar-fill {
-  width: 100%;
-  background: Rgba(239, 68, 68, 1);
-  
-  box-shadow: 0 0 15px Rgba(239, 68, 68, 1);
   position: relative;
+  width: 100%;
+  background: rgb(239 68 68 / 100%);
+  box-shadow: 0 0 15px rgb(239 68 68 / 100%);
 }
 
 .percent-label {
-  margin-top: 8px;
+  @include pixelated;
+
+  color: rgb(239 68 68 / 100%);
   font-size: 10px;
   font-weight: 800;
-  color: Rgba(239, 68, 68, 1);
-  text-shadow: 1px 1px var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
+  transform: rotate(180deg);
+  margin-top: 8px;
+  text-shadow: 1px 1px var(--black), 0 0 5px rgb(239 68 68 / 40%);
   writing-mode: vertical-lr;
-  transform: Rotate(180deg);
-  @include pixelated;
 }
 </style>

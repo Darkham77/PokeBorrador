@@ -105,30 +105,31 @@ function handleBuy(listing: MarketListing) {
 @use "@/styles/core/_mixins" as *;
 
 .market-explorer {
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
 .listings-grid-unified {
   @include shop-grid-wrapper-unified;
+
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  grid-auto-rows: min-content;
   align-items: start;
   gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-auto-rows: min-content;
 }
 
 .loading-state, .empty-state {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 40px;
   color: $muted;
   text-align: center;
-  padding: 40px;
+  flex: 1;
   
   .empty-icon { font-size: 48px; opacity: 0.2; margin-bottom: 16px; }
   p { font-size: 13px; }
@@ -137,22 +138,23 @@ function handleBuy(listing: MarketListing) {
 .loader {
   width: 32px;
   height: 32px;
-  border: 3px solid Rgba(56, 189, 248, 0.2);
-  border-top-color: Rgba(56, 189, 248, 1);
+  border: 3px solid rgb(56 189 248 / 20%);
   border-radius: 50%;
+  border-top-color: rgb(56 189 248 / 100%);
   margin-bottom: 16px;
 }
 
 .gts-pagination {
+  @include pixelated;
+
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 15px;
-  margin-top: 15px;
   padding: 10px 0;
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
-  @include pixelated;
   font-size: 10px;
+  margin-top: 15px;
+  border-top: 1px solid rgb(255 255 255 / 5%);
 
   .page-info {
     color: var(--yellow);
@@ -160,9 +162,9 @@ function handleBuy(listing: MarketListing) {
 }
 
 .listings-grid-wrapper {
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 </style>

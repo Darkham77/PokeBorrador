@@ -6,6 +6,12 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
 import { isPokemonBusy } from '@/logic/constants/tags.ts';
 
+import {
+  ALPHANUMERIC_RADIX,
+  RANDOM_STRING_SUBSTRING_START,
+  RANDOM_STRING_SUBSTRING_END
+} from '@/logic/constants/gameplay.ts';
+
 interface OfflineSaveData {
   box?: Record<string, unknown>[];
   team?: Record<string, unknown>[];
@@ -19,10 +25,8 @@ interface ClaimAssetPayload {
   data: Record<string, unknown> | number | string;
 }
 
-const MAX_MARKET_LISTINGS_PER_USER = 10;
-const BASE_36_RADIX = 36;
-const RANDOM_STRING_SUBSTRING_START = 2;
-const RANDOM_STRING_SUBSTRING_END = 11;
+const MAX_MARKET_LISTINGS_PER_USER = 10 as const;
+const MARKET_TAX_REMAINDER_MULTIPLIER = 0.95 as const;
 
 function validatePublishListing(
   listingType: MarketListingType,
@@ -125,7 +129,7 @@ export async function emulatePublishListing(
   );
 
   await persistSQLite();
-  return { data: 'list_' + Math.random().toString(BASE_36_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END), error: null };
+  return { data: 'list_' + Math.random().toString(ALPHANUMERIC_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END), error: null };
 }
 
 export async function emulateBuyListing(
@@ -166,7 +170,7 @@ export async function emulateBuyListing(
     }
   }
 
-  const claimIdBuyer = 'claim_' + Math.random().toString(36).substring(2, 11);
+  const claimIdBuyer = 'claim_' + Math.random().toString(ALPHANUMERIC_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END);
   const buyerAssetPayload = {
     type: listing.listing_type === 'pokemon' ? 'pokemon' : 'item',
     data: assetDataObj
@@ -176,8 +180,8 @@ export async function emulateBuyListing(
     [claimIdBuyer, userId, p_listing_id, JSON.stringify(buyerAssetPayload)]
   );
 
-  const claimIdSeller = 'claim_' + Math.random().toString(36).substring(2, 11);
-  const finalPayment = Math.floor(price * 0.95);
+  const claimIdSeller = 'claim_' + Math.random().toString(ALPHANUMERIC_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END);
+  const finalPayment = Math.floor(price * MARKET_TAX_REMAINDER_MULTIPLIER);
   const sellerAssetPayload: Record<string, unknown> = { // open-record: Generic key-value data dictionary container
     type: 'money',
     data: finalPayment

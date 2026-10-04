@@ -11,9 +11,24 @@ import { logger } from '@/logic/utils/logger'
 import { isItemId, type ItemId } from '@/data/inventory/items'
 import { COMBATANT_DAMAGE_SHAKE_DUR_SEC } from '@/logic/constants/animations'
 
-const CATCH_SPARKLE_DURATION_SEC = 1.5
-const CATCH_CELEBRATION_DURATION_SEC = 1.5
-const WILD_FAINT_ANIM_DURATION_SEC = 1.3
+const CATCH_SPARKLE_DURATION_SEC = 1.5;
+const CATCH_CELEBRATION_DURATION_SEC = 1.5;
+const WILD_FAINT_ANIM_DURATION_SEC = 1.3;
+
+const CATCH_SPARKLE_PARTICLE_COUNT = 12;
+const CATCH_SPARKLE_BASE_X_PX = 60;
+const CATCH_SPARKLE_X_SPREAD_PX = 120;
+const CATCH_SPARKLE_BASE_Y_PX = 60;
+const CATCH_SPARKLE_Y_SPREAD_PX = 40;
+const CATCH_SPARKLE_FALL_DISTANCE_PX = 90;
+
+const CRITICAL_CAPTURE_BURST_COUNT = 8;
+const CRITICAL_CAPTURE_BURST_DURATION_SEC = 1.2;
+const CRITICAL_CAPTURE_BASE_DISTANCE_PX = 40;
+const CRITICAL_CAPTURE_SPREAD_DISTANCE_PX = 25;
+const CRITICAL_CAPTURE_BASE_Y_OFFSET_PX = 35;
+const CRITICAL_CAPTURE_SPREAD_Y_RANGE_PX = 30;
+const CRITICAL_CAPTURE_FALL_OFFSET_PX = 25;
 
 interface CatchSparkle {
   id: string;
@@ -99,16 +114,16 @@ export function useBattleCaptureAnimations(
 
   const triggerCatchSparkles = (side: string) => {
     const tl = createTimeline()
-    const count = 12
+    const count = CATCH_SPARKLE_PARTICLE_COUNT
     
     tl.to({}, {
       duration: CATCH_SPARKLE_DURATION_SEC,
       onStart: () => {
         for (let i = 0; i < count; i++) {
           const direction = i % 2 === 0 ? -1 : 1
-          const tx = direction * (60 + Math.random() * 120) 
-          const ty = -(60 + Math.random() * 40) 
-          const tf = ty + (90 + Math.random() * 40) 
+          const tx = direction * (CATCH_SPARKLE_BASE_X_PX + Math.random() * CATCH_SPARKLE_X_SPREAD_PX) 
+          const ty = -(CATCH_SPARKLE_BASE_Y_PX + Math.random() * CATCH_SPARKLE_Y_SPREAD_PX) 
+          const tf = ty + (CATCH_SPARKLE_FALL_DISTANCE_PX + Math.random() * CATCH_SPARKLE_Y_SPREAD_PX) 
           const scale = 0.5 + Math.random() * 0.8
           
           catchSparkles.value.push({
@@ -131,17 +146,17 @@ export function useBattleCaptureAnimations(
     isCriticalCaptureActive.value[side] = true
     useAudioStore().play('criticalThrow')
     const tl = createTimeline()
-    const count = 8
+    const count = CRITICAL_CAPTURE_BURST_COUNT
     
     tl.to({}, {
-      duration: 1.2,
+      duration: CRITICAL_CAPTURE_BURST_DURATION_SEC,
       onStart: () => {
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2
-          const dist = 40 + Math.random() * 25
+          const dist = CRITICAL_CAPTURE_BASE_DISTANCE_PX + Math.random() * CRITICAL_CAPTURE_SPREAD_DISTANCE_PX
           const tx = Math.cos(angle) * dist
-          const ty = -(35 + Math.random() * 30)
-          const tf = ty + 25
+          const ty = -(CRITICAL_CAPTURE_BASE_Y_OFFSET_PX + Math.random() * CRITICAL_CAPTURE_SPREAD_Y_RANGE_PX)
+          const tf = ty + CRITICAL_CAPTURE_FALL_OFFSET_PX
           const scale = 0.6 + Math.random() * 0.5
           
           catchSparkles.value.push({

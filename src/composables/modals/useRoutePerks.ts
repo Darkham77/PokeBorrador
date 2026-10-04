@@ -12,7 +12,13 @@ import { useModalStore } from '@/stores/modals'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
-import { BUFF_DURATION_30_MIN_MS, DURATION_24_HOURS_MS, ONE_HOUR_MS, ONE_MINUTE_MS } from '@/logic/constants/items'
+import {
+  BUFF_DURATION_30_MIN_MS,
+  DURATION_24_HOURS_MS,
+  ONE_HOUR_MS,
+  ONE_MINUTE_MS,
+  ONE_SECOND_MS
+} from '@/logic/constants/items'
 
 export interface UseRoutePerksParams {
   map: Ref<MapLocation>
@@ -88,11 +94,11 @@ export function useRoutePerks(params: UseRoutePerksParams) {
 
     if (playerClass.value === 'rocket' && classData.extortedRouteId === map.value.id) {
       const timestamp = Number(classData.extortedRouteTimestamp || 0)
-      const diff = (24 * 3600 * 1000) - (now - timestamp)
+      const diff = DURATION_24_HOURS_MS - (now - timestamp)
       if (diff > 0) {
-        const hours = Math.floor(diff / (3600 * 1000))
-        const mins = Math.floor((diff % (3600 * 1000)) / (60 * 1000))
-        const secs = Math.floor((diff % (60 * 1000)) / 1000)
+        const hours = Math.floor(diff / ONE_HOUR_MS)
+        const mins = Math.floor((diff % ONE_HOUR_MS) / ONE_MINUTE_MS)
+        const secs = Math.floor((diff % ONE_MINUTE_MS) / ONE_SECOND_MS)
         timeRemainingText.value = `${hours}h ${mins}m ${secs}s`
       } else {
         timeRemainingText.value = ''
@@ -100,10 +106,10 @@ export function useRoutePerks(params: UseRoutePerksParams) {
       }
     } else if (playerClass.value === 'entrenador' && classData.officialRouteId === map.value.id) {
       const timestamp = Number(classData.officialRouteTimestamp || 0)
-      const diff = (30 * 60 * 1000) - (now - timestamp)
+      const diff = BUFF_DURATION_30_MIN_MS - (now - timestamp)
       if (diff > 0) {
-        const mins = Math.floor(diff / (60 * 1000))
-        const secs = Math.floor((diff % (60 * 1000)) / 1000)
+        const mins = Math.floor(diff / ONE_MINUTE_MS)
+        const secs = Math.floor((diff % ONE_MINUTE_MS) / ONE_SECOND_MS)
         timeRemainingText.value = `${mins}m ${secs}s`
       } else {
         timeRemainingText.value = ''

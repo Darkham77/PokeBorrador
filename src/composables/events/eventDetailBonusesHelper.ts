@@ -12,6 +12,8 @@ import type { Prize, ExtendedEventConfig, BonusItem, Schedule } from './useEvent
 
 const ALL_DAY_HOURS = 24;
 const ALL_DAY_THRESHOLD = 23.9;
+const LAST_HOUR_OF_DAY = 23;
+const LAST_MINUTE_OF_HOUR = 59;
 const WEEK_DAYS_COUNT = 7;
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
 
@@ -162,7 +164,7 @@ function formatZdtTime(zdt: Temporal.ZonedDateTime): string {
 
 function isZdtAllDay(startZdt: Temporal.ZonedDateTime, endZdt: Temporal.ZonedDateTime): boolean {
   const isStart = startZdt.hour === 0 && startZdt.minute === 0;
-  const isEnd = (endZdt.hour === 23 && endZdt.minute >= 59) || (endZdt.hour === 0 && endZdt.minute === 0);
+  const isEnd = (endZdt.hour === LAST_HOUR_OF_DAY && endZdt.minute >= LAST_MINUTE_OF_HOUR) || (endZdt.hour === 0 && endZdt.minute === 0);
   return isStart && isEnd;
 }
 

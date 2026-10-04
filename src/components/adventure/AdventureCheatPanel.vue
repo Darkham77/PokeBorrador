@@ -42,6 +42,9 @@ const adjustItem = (itemId: ItemId, amount: number) => {
 }
 
 const MAX_INVENTORY_CLEAR_QTY = 999
+const TEST_PIKACHU_LEVEL = 20 as const
+const TEST_ABRA_LEVEL = 15 as const
+const TEST_CHARIZARD_LEVEL = 25 as const
 
 const clearTestItems = () => {
   const inv = gameStore.state.inventory || {}
@@ -61,9 +64,9 @@ const injectTestTeam = () => {
     return
   }
   
-  const pika = makePokemon('pikachu', 20)
-  const abra = makePokemon('abra', 15)
-  const char = makePokemon('charizard', 25)
+  const pika = makePokemon('pikachu', TEST_PIKACHU_LEVEL)
+  const abra = makePokemon('abra', TEST_ABRA_LEVEL)
+  const char = makePokemon('charizard', TEST_CHARIZARD_LEVEL)
   
   if (char) {
     char.ability = 'flamebody'
@@ -100,14 +103,14 @@ const healActiveTeam = () => {
       <div style="display: flex; gap: 4px; width: 100%;">
         <button 
           class="adv-hm-btn" 
-          style="flex: 1; font-size: 6px; padding: 4px; font-family: var(--font-pixel);"
+          style=" padding: 4px; font-family: var(--font-pixel); font-size: 6px;flex: 1;"
           @click="injectTestTeam"
         >
           <span class="emoji">🐣</span> Inyectar Equipo
         </button>
         <button 
           class="adv-hm-btn" 
-          style="flex: 1; font-size: 6px; padding: 4px; font-family: var(--font-pixel);"
+          style=" padding: 4px; font-family: var(--font-pixel); font-size: 6px;flex: 1;"
           @click="healActiveTeam"
         >
           <span class="emoji">🏥</span> Curar Todo
@@ -116,7 +119,7 @@ const healActiveTeam = () => {
 
       <div
         class="adv-team-scroll"
-        style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;"
+        style=" display: flex; flex-direction: column; gap: 6px;max-height: 180px; overflow-y: auto; padding-right: 4px;"
       >
         <AdventureCheatTeamCard
           v-for="pkmn in gameStore.state.team"
@@ -126,7 +129,7 @@ const healActiveTeam = () => {
 
         <div 
           v-if="!gameStore.state.team || gameStore.state.team.length === 0"
-          style="color: #888; font-size: 8px; text-align: center; padding: 12px; font-family: var(--font-pixel);"
+          style=" padding: 12px;color: #888; font-family: var(--font-pixel); font-size: 8px; text-align: center;"
         >
           Tu equipo está vacío. ¡Usa Inyectar Equipo!
         </div>
@@ -146,31 +149,31 @@ const healActiveTeam = () => {
       </h3>
       <button 
         class="adv-hm-btn" 
-        style="width: 100%; font-size: 8px; padding: 4px; font-family: var(--font-pixel);"
+        style="width: 100%; padding: 4px; font-family: var(--font-pixel); font-size: 8px;"
         @click="clearTestItems"
       >
         <span class="emoji">🗑️</span> Limpiar Test Items
       </button>
       <div
         class="adv-cheat-item-scroll"
-        style="max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 4px;"
+        style=" display: flex; flex-direction: column; gap: 4px;max-height: 120px; overflow-y: auto; padding-right: 4px;"
       >
         <div
           class="adv-cheat-item-row"
-          style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px;"
+          style="display: flex; justify-content: space-between; align-items: center; padding: 4px; border-radius: 4px; background: rgb(0 0 0 / 20%); font-size: 8px;"
         >
           <span style="font-family: var(--font-pixel);"><span class="emoji">🚲</span> Bici ({{ gameStore.state.inventory?.['bicycle'] || 0 }})</span>
           <div style="display: flex; gap: 2px;">
             <button
               class="adv-hm-btn"
-              style="padding: 2px 4px; min-width: auto; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
               @click="adjustItem('bicycle', 1)"
             >
               +1
             </button>
             <button
               class="adv-hm-btn"
-              style="padding: 2px 4px; min-width: auto; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
               @click="adjustItem('bicycle', -1)"
             >
               -1
@@ -181,29 +184,29 @@ const healActiveTeam = () => {
           v-for="item in filteredShopItems" 
           :key="item.id" 
           class="adv-cheat-item-row" 
-          style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px;"
+          style="display: flex; justify-content: space-between; align-items: center; padding: 4px; border-radius: 4px; background: rgb(0 0 0 / 20%); font-size: 8px;"
         >
-          <span style="font-family: var(--font-pixel); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 120px;">
+          <span style=" max-width: 120px;font-family: var(--font-pixel); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
             <span class="emoji">{{ item.icon }}</span> {{ item.name }} ({{ gameStore.state.inventory?.[item.id] || 0 }})
           </span>
           <div style="display: flex; gap: 2px; flex-shrink: 0;">
             <button
               class="adv-hm-btn"
-              style="padding: 2px 4px; min-width: auto; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
               @click="adjustItem(item.id, 1)"
             >
               +1
             </button>
             <button
               class="adv-hm-btn"
-              style="padding: 2px 4px; min-width: auto; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
               @click="adjustItem(item.id, 10)"
             >
               +10
             </button>
             <button
               class="adv-hm-btn"
-              style="padding: 2px 4px; min-width: auto; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
               @click="adjustItem(item.id, -1)"
             >
               -1

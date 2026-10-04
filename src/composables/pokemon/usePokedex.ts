@@ -11,10 +11,12 @@ function toPokemonSpeciesIds(values: readonly string[]): PokemonSpeciesId[] {
   return values.map(requirePokemonSpeciesId)
 }
 
+const SEARCH_INPUT_DEBOUNCE_MS = 150 as const;
+
 export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<readonly PokemonSpeciesId[]>, _currentGen: Ref<number>) {
   const uiStore = useUIStore()
   const searchQuery = ref('')
-  const debouncedSearchQuery = refDebounced(searchQuery, 150)
+  const debouncedSearchQuery = refDebounced(searchQuery, SEARCH_INPUT_DEBOUNCE_MS)
   const sortBy = ref('number') // 'number' | 'name'
   const sortOrder = ref<'asc' | 'desc'>('asc')
 

@@ -70,6 +70,9 @@ export const BUFF_DURATION_40_MIN_SEC = 2400;
 export const BUFF_DURATION_60_MIN_SEC = 3600;
 
 // --- Duration constants in milliseconds ---
+/** Duration of 1 second in milliseconds. */
+export const ONE_SECOND_MS = 1_000;
+
 /** Duration of 1 minute in milliseconds. */
 export const ONE_MINUTE_MS = 60_000;
 

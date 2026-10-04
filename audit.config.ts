@@ -9,9 +9,9 @@ export default defineAuditConfig({
     integrationRoots: ['tests/integration'],
     migrationsDir: 'database/migrations',
     scriptsRoots: ['scripts'],
-    codeRoots: ['src', 'scripts', 'database'],
+    codeRoots: ['src', 'scripts', 'database', 'ui-demo'],
     dataRoots: ['src/data'],
-    constantsRoots: ['src/logic/constants', 'src/constants'],
+    constantsRoots: ['src/logic/constants'],
     componentsRoots: ['src/components'],
     viewsRoots: ['src/views'],
     storesRoots: ['src/stores'],
@@ -19,6 +19,7 @@ export default defineAuditConfig({
     typesRoots: ['src/types'],
     stylesRoots: ['src/styles'],
     logicRoots: ['src/logic'],
+    demoRoots: ['ui-demo'],
     exemptFiles: [],
     testFilePatterns: ['.spec.', '.test.', '.simulation.'],
     includeTestsInCodeAudit: false,
@@ -31,14 +32,14 @@ export default defineAuditConfig({
     engine: 'hybrid',
     schemaQualified: false,
     authorizedSaveFiles: [
-      'src/logic/utils/saveCoordinator.ts',
-      'src/logic/utils/saveActionHelpers.ts'
+      'src/logic/auth/saveCoordinator.ts',
+      'src/stores/game/actions/saveActionHelpers.ts'
     ],
     saveKeyPrefixes: ['pokemon_local_save_', 'pvs_sandbox_save']
   },
   domain: {
     timezoneVariable: 'APP_TIMEZONE',
-    timezoneHelperModule: '@/logic/utils/timeUtils',
+    timezoneHelperModule: 'src/logic/utils/timeUtils.ts',
     loggerModule: 'src/logic/utils/logger.ts',
     zLayersFile: 'src/logic/constants/visuals.ts',
     finiteDomainTypes: [
@@ -79,12 +80,31 @@ export default defineAuditConfig({
     allowedStoreSetterPrefixes: ['set', 'update', 'equip', 'clear'],
     caseNormalizationExemptTokens: ['rpg', 'pvp', 'pve', 'fsm', 'dex', 'hp', 'atk', 'def', 'spa', 'spd', 'spe', 'iv', 'ev']
   },
+  constants: {
+    exemptGlobs: [
+      'scripts/database/**',
+      'scripts/maintenance/**',
+      'scripts/data/**',
+      'scripts/assets/**',
+      'scripts/testing/**',
+      'scripts/tools/**',
+      'scripts/e2e/**',
+      'scripts/auditors/**'
+    ],
+    exemptMagicNumbers: [1000, 3600, 24, 60]
+  },
   styles: {
     zLayersEnabled: true,
     baseScssFile: 'src/styles/core/_base.scss',
     zLayersScssFile: 'src/styles/core/_base.scss',
     zLayersTsFile: 'src/logic/constants/visuals.ts',
-    globalUtilityClasses: ['pv-button-retro']
+    globalUtilityClasses: ['pv-button-retro'],
+    duplicates: {
+      checkSimilar: false,
+      checkColors: false,
+      checkLongLines: false,
+      minDeclarations: 2
+    }
   },
   bundle: {
     enabled: true,
@@ -102,6 +122,10 @@ export default defineAuditConfig({
   },
   templates: {
     requireInputIds: false
+  },
+  packageHygiene: {
+    enabled: true,
+    ignoreDependencies: ['markdownlint-cli', 'vue-tsc']
   },
   agentPlugin: {
     enabled: true

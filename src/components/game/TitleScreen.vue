@@ -212,8 +212,8 @@ const handleMouseLeave = (event: MouseEvent) => {
 .title-description {
   color: var(--gray);
   font-size: 14px;
-  margin-bottom: 30px;
   text-align: center;
+  margin-bottom: 30px;
 }
 
 .starter-img-container {
@@ -223,63 +223,65 @@ const handleMouseLeave = (event: MouseEvent) => {
 }
 
 .starter-sprite {
+  @include pixelated;
+
   width: 160px;
   height: 160px;
-  @include pixelated;
 }
 
 .title-footer {
-  margin-top: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 15px;
+  margin-top: 40px;
 }
 
 .logout-btn-trigger {
   @include btn-vicio('danger', 'md');
+
+  min-width: 220px;
   padding: 14px 28px;
   font-size: 9px;
-  min-width: 220px;
 }
 
 .logout-hint {
-  font-size: 10px;
   color: var(--gray);
-  font-style: italic;
-  opacity: 0.8;
+  font-size: 10px;
   text-align: center;
+  opacity: 0.8;
+  font-style: italic;
 }
 
-@media (max-height: 850px), (max-width: 600px) {
+@media (height <= 850px), (width <= 600px) {
   .title-description {
-    margin-bottom: 15px;
     font-size: 12px;
+    margin-bottom: 15px;
   }
   
   .starter-img-container {
+    position: relative;
     height: 90px;
     margin-bottom: 4px;
-    position: relative;
     overflow: visible;
   }
   
   .starter-sprite {
-    width: 160px;
-    height: 160px;
     position: absolute;
     top: 50%;
+    width: 160px;
+    height: 160px;
     transform: Translatey(-55%);
   }
   
   .title-footer {
-    margin-top: 15px;
     gap: 8px;
+    margin-top: 15px;
   }
   
   .logout-btn-trigger {
-    padding: 10px 20px;
     min-width: 180px;
+    padding: 10px 20px;
   }
 }
 </style>

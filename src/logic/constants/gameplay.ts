@@ -232,6 +232,12 @@ export const BATTLE_TOTAL_STAGES_COUNT = 13;
 /** Criminality points added per Pokémon sold in black-market mode. */
 export const BLACK_MARKET_CRIMINALITY_PER_SALE = 10;
 
+/** Default black market discount multiplier for Rocket members (20%). */
+export const BLACK_MARKET_DEFAULT_DISCOUNT = 0.20;
+
+/** Conversion exchange rate from Battle Coins (BC) to Pokédollars (50₽ per BC). */
+export const BATTLE_COIN_TO_MONEY_RATE = 50;
+
 /** Base cost in Pokédollars to purchase the first box slot. */
 export const BOX_BASE_BUY_COST = 500_000;
 
@@ -339,6 +345,9 @@ export const SMALL_SCREEN_BREAKPOINT_PX = 950;
 /** Mobile screen breakpoint in pixels for low power mode auto trigger (768px). */
 export const MOBILE_SCREEN_BREAKPOINT_PX = 768;
 
+/** Default fallback window width in pixels for SSR/headless environment (1024px). */
+export const DEFAULT_WINDOW_WIDTH_PX = 1024;
+
 /** Default season duration in months (3 months). */
 export const SEASON_DURATION_MONTHS = 3;
 
@@ -379,6 +388,9 @@ export const CRIADOR_VIGOR_RESTORE_CHANCE = 0.15;
 
 /** Default fallback PP for move initialization (20 PP). */
 export const DEFAULT_MOVE_PP = 20;
+
+/** Default fallback maximum PP for moves when unspecified in catalog (35 PP). */
+export const DEFAULT_MAX_PP_FALLBACK = 35;
 
 /** Obey level caps mapped by number of defeated gym badges (0..8). */
 export const OBEY_LEVEL_BY_BADGES: Record<number, number> = {
@@ -446,4 +458,30 @@ export const TRAINER_HIGH_IV_THRESHOLD = 120;
 
 /** Trainer class catch rate penalty rate (10%). */
 export const TRAINER_IV_PENALTY_RATE = 0.10;
+
+/** Number of Pokémon slots available in each storage box (50). */
+export const POKEMON_BOX_SLOT_CAPACITY = 50;
+
+/** Default number of storage boxes unlocked for a trainer (4). */
+export const DEFAULT_POKEMON_BOX_COUNT = 4;
+
+/** Default level cap for PvP competitive seasons (50). */
+export const DEFAULT_PVP_LEVEL_CAP = 50;
+
+/** Maximum number of Pokémon in an active party team (6). */
+export const MAX_POKEMON_TEAM_SIZE = 6;
+
+/** Base 36 radix used for generating random alphanumeric tokens and IDs. */
+export const ALPHANUMERIC_RADIX = 36;
+
+/** Substring start index for extracting pseudo-random alphanumeric slices from Math.random().toString(36). */
+export const RANDOM_STRING_SUBSTRING_START = 2;
+
+/** Substring end index for extracting 9-character random token slice. */
+export const RANDOM_STRING_SUBSTRING_END = 11;
+
+/** Bug Catcher (Cazabichos) streak shiny boost multiplier step (+75% per streak). */
+export const CAZABICHOS_STREAK_SHINY_STEP = 0.75;
+
+
 

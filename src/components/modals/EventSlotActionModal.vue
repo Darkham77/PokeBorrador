@@ -147,26 +147,27 @@ const handleWithdraw = () => {
 @use "@/styles/core/_mixins" as *;
 
 .slot-action-modal-body {
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  padding: 16px;
 }
 
 .category-header-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: Rgba(250, 204, 21, 0.1);
-  border: 1px solid Rgba(250, 204, 21, 0.3);
-  padding: 6px 12px;
-  border-radius: 8px;
   width: fit-content;
+  padding: 6px 12px;
+  border: 1px solid rgb(250 204 21 / 30%);
+  border-radius: 8px;
+  background: rgb(250 204 21 / 10%);
 
   .cat-label {
     @include pixelated;
-    font-size: 8px;
+
     color: var(--yellow, #facc15);
+    font-size: 8px;
     letter-spacing: 0.5px;
   }
 }
@@ -175,21 +176,21 @@ const handleWithdraw = () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: Rgba(0, 0, 0, 0.4);
-  border: 1px solid Rgba(74, 222, 128, 0.3);
-  border-radius: 10px;
   padding: 12px;
+  border: 1px solid rgb(74 222 128 / 30%);
+  border-radius: 10px;
+  background: rgb(0 0 0 / 40%);
 
   .pokemon-sprite-box {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 48px;
     height: 48px;
-    background: Rgba(255, 255, 255, 0.05);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border: 1px solid rgb(255 255 255 / 10%);
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+    background: rgb(255 255 255 / 5%);
     flex-shrink: 0;
 
     .pokemon-sprite-img {
@@ -208,11 +209,11 @@ const handleWithdraw = () => {
   }
 
   .pokemon-details {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    flex: 1;
 
     .pokemon-name-row {
       display: flex;
@@ -220,44 +221,46 @@ const handleWithdraw = () => {
       gap: 8px;
 
       .pokemon-name {
-        font-weight: bold;
+        color: var(--white, #fff);
         font-size: 12px;
-        color: var(--white, #ffffff);
+        font-weight: bold;
       }
 
       .pokemon-level {
         @include pixelated;
-        font-size: 7px;
+
         color: var(--yellow, #facc15);
+        font-size: 7px;
       }
     }
 
     .registered-value-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 6px;
-      flex-wrap: wrap;
 
       .metric-label {
-        font-size: 8px;
         color: #94a3b8;
+        font-size: 8px;
         font-weight: bold;
       }
 
       .metric-val {
         @include pixelated;
-        font-size: 8px;
+
         color: var(--green-bright, #4ade80);
+        font-size: 8px;
       }
     }
   }
 }
 
 .instruction-hint {
-  font-size: 11px;
-  color: #cbd5e1;
-  line-height: 1.4;
   margin: 0;
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .action-buttons-list {

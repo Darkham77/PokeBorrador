@@ -13,7 +13,7 @@ import type { AuthUser } from '@/types/auth/auth'
 import { ref, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import type { DBRouter } from '@/logic/db/dbRouter'
-import { canSaveState, updateSessionPlaytime, handleSaveRollback } from '@/stores/game/actions/saveActionHelpers'
+import { canSaveState, updateSessionPlaytime, handleSaveRollback, saveSandboxLocalState } from '@/stores/game/actions/saveActionHelpers'
 import { saveCoordinator } from '@/logic/auth/saveCoordinator'
 
 const LOAD_RETRY_DELAY_SEC = 1.5;
@@ -285,9 +285,7 @@ export function useSaveActions(
     }
 
     if (isSandboxActive.value) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('pvs_sandbox_save', JSON.stringify(state))
-      }
+      saveSandboxLocalState(state)
       return { success: true }
     }
     if (!authStore.user) return { success: false }

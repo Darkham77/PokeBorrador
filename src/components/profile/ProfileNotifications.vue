@@ -93,14 +93,16 @@ function getTimestamp(n: NotificationItem): number {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .legacy-info-row {
   margin-bottom: 24px;
 }
 
 .info-label {
   @include pixelated;
+
+  color: rgb(255 255 255 / 40%);
   font-size: 8px;
-  color: Rgba(255, 255, 255, 0.4);
   letter-spacing: 1px;
 }
 
@@ -112,44 +114,45 @@ function getTimestamp(n: NotificationItem): number {
 }
 
 .history-btn-legacy {
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 6px 12px;
-  color: Rgba(250, 204, 21, 1);
   @include pixelated;
+
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  color: rgb(250 204 21 / 100%);
   font-size: 6px;
   cursor: pointer;
-  &:hover { background: Rgba(255, 255, 255, 0.08); }
+  &:hover { background: rgb(255 255 255 / 8%); }
 }
 
 .history-container-legacy {
-  background: Rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 4px;
-  max-height: 240px;
-  overflow-y: auto;
   min-height: 0;
+  max-height: 240px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 20%);
+  overflow-y: auto;
 }
 
 .notification-entry-legacy {
   display: flex;
   gap: 12px;
   padding: 12px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgb(255 255 255 / 3%);
   &:last-child { border-bottom: none; }
   
   .notif-icon { font-size: 16px; }
   .notif-body { flex: 1; }
-  .notif-text { font-size: 12px; color: Rgba(203, 213, 225, 1); line-height: 1.4; }
-  .notif-time { font-size: 9px; color: Rgba(71, 85, 105, 1); margin-top: 4px; }
+  .notif-text { color: rgb(203 213 225 / 100%); font-size: 12px; line-height: 1.4; }
+  .notif-time { color: rgb(71 85 105 / 100%); font-size: 9px; margin-top: 4px; }
 }
 
 .empty-notif-legacy {
   padding: 20px;
-  text-align: center;
+  color: rgb(71 85 105 / 100%);
   font-size: 11px;
-  color: Rgba(71, 85, 105, 1);
+  text-align: center;
 }
 
 </style>

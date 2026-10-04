@@ -3,43 +3,41 @@
 
 .base-modal-root {
   position: fixed;
-  inset: 0;
   display: block;
+  inset: 0;
   pointer-events: none; // Ensure the root doesn't block clicks/scrolls
   zoom: var(--modal-zoom, var(--app-zoom, 1));
 }
 
 .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.85);
   @include gpu-layer;
-  z-index: var(--z-base);
-  pointer-events: auto;
-  
-  will-change: opacity;
   @include will-animate(opacity);
+
+  position: fixed;
+  z-index: var(--z-base);
+  background: Rgb(0 0 0 / 85%);
+  inset: 0;
+  pointer-events: auto;
+  will-change: opacity;
 
   &.transparent {
     background: transparent !important;
-    -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     pointer-events: none !important;
   }
 
   &.no-blur {
-    -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
 }
 
 .base-modal-teleport-wrapper {
   position: fixed;
-  inset: 0;
   z-index: calc(var(--z-base) + 1);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  inset: 0;
   pointer-events: none;
 
   > * {
@@ -106,46 +104,36 @@
 }
 
 .base-modal-card {
-  position: relative;
-  pointer-events: auto;
-  box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9);
-  display: flex;
-  flex-direction: column;
-  background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-  backface-visibility: hidden;
-  -webkit-font-smoothing: none;
-  opacity: 1;
-  transform: Translate3d(0, 0, 0);
-  will-change: transform, opacity;
   @include will-animate(transform, opacity);
   @include pixelated; // Force pixel-art fidelity globally in modals
 
   // GPU Acceleration via mixin or direct property
   @include gpu-layer;
 
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  opacity: 1;
+  transform: Translate3d(0, 0, 0);
+  pointer-events: auto;
+  box-shadow: 0 40px 100px Rgb(0 0 0 / 90%);
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: none;
+  will-change: transform, opacity;
+
   .type-center & {
     // Width gestionado por cardStyles
   }
   
   .type-side &, .type-side-right &, .type-right & {
-    border-left: 1px solid Rgba(255, 255, 255, 0.1);
+    border-left: 1px solid Rgb(255 255 255 / 10%);
   }
 
   .type-side-left &, .type-left & {
-    border-right: 1px solid Rgba(255, 255, 255, 0.1);
-  }
-
-  @media (max-width: 480px) {
-    .error-footer {
-      flex-direction: column;
-    }
-
-    .error-btn {
-      width: 100%;
-      justify-content: center;
-    }
+    border-right: 1px solid Rgb(255 255 255 / 10%);
   }
 
   .type-top & {
@@ -161,23 +149,21 @@
   // Force fullscreen absolute priority
   .type-fullscreen & {
     width: 100dvw !important;
-    height: 100dvh !important;
-    height: 100dvh !important;
     max-width: 100dvw !important;
+    height: 100dvh !important;
     max-height: 100dvh !important;
-    max-height: 100dvh !important;
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
     margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     overflow: hidden !important;
 
     .modal-scrollable-content.padding-raw {
-      overflow: hidden !important;
       display: flex !important;
       flex-direction: column !important;
-      flex: 1 !important;
       min-height: 0 !important;
+      overflow: hidden !important;
+      flex: 1 !important;
     }
   }
 
@@ -193,12 +179,12 @@
   &.corners-right { border-radius: 0 24px 24px 0 !important; }
 
   &.variant-retro {
-    background: Rgba(26, 28, 46, 1) !important;
     border: 2px solid var(--modal-accent) !important;
     border-radius: 4px !important;
+    background: Rgb(26 28 46 / 100%) !important;
     box-shadow: 
-      0 0 30px Rgba(0, 0, 0, 0.8), 
-      inset 0 0 20px Rgba(255, 255, 255, 0.05);
+      0 0 30px Rgb(0 0 0 / 80%), 
+      inset 0 0 20px Rgb(255 255 255 / 5%);
 
     .type-center & {
       border-radius: 30px !important;
@@ -219,17 +205,28 @@
       display: none !important;
     }
   }
+
+  @media (width <= 480px) {
+    .error-footer {
+      flex-direction: column;
+    }
+
+    .error-btn {
+      justify-content: center;
+      width: 100%;
+    }
+  }
 }
 
 .modal-header-premium {
-  padding: 16px 24px;
-  min-height: 64px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+  min-height: 64px;
+  padding: 16px 24px;
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     min-height: 50px;
     padding: 10px 16px;
   }
@@ -241,34 +238,26 @@
   gap: 10px;
 
   .modal-header-emoji {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     font-size: 16px;
     line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 }
 
 .modal-title-text {
   @include pixelated;
-  font-size: 12px;
+
   color: var(--yellow, $coin-gold);
+  font-size: 12px;
   letter-spacing: 1px;
 }
 
-.modal-close-btn, .modal-close-btn-floating {
+%modal-close-btn-base {
   @include btn-close-premium;
 
   &.is-solid {
-    & .close-icon-wrapper {
-      background: Rgba(15, 23, 42, 0.95);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.5);
-      
-      &::before {
-        color: $white;
-      }
-    }
     
     &:hover {
       & .close-icon-wrapper {
@@ -278,34 +267,48 @@
         }
       }
     }
+    & .close-icon-wrapper {
+      border: 1px solid Rgb(255 255 255 / 10%);
+      background: Rgb(15 23 42 / 95%);
+      box-shadow: 0 4px 12px Rgb(0 0 0 / 50%);
+      
+      &::before {
+        color: $white;
+      }
+    }
   }
 }
 
+.modal-close-btn {
+  @extend %modal-close-btn-base;
+}
+
 .modal-close-btn-floating {
+  @extend %modal-close-btn-base;
   position: absolute;
   top: 14px;
   right: 14px;
   z-index: var(--z-low);
 
+  &:hover .close-icon-wrapper {
+    background: Rgb(30 41 59 / 98%) !important;
+    border-color: Rgb(255 255 255 / 40%) !important;
+  }
+
   & .close-icon-wrapper {
-    background: Rgba(15, 23, 42, 0.92) !important;
-    border: 1px solid Rgba(255, 255, 255, 0.2) !important;
-    box-shadow: 0 4px 14px Rgba(0, 0, 0, 0.7);
+    border: 1px solid Rgb(255 255 255 / 20%) !important;
+    background: Rgb(15 23 42 / 92%) !important;
+    box-shadow: 0 4px 14px Rgb(0 0 0 / 70%);
     
     &::before {
       color: $white;
     }
   }
 
-  &:hover .close-icon-wrapper {
-    background: Rgba(30, 41, 59, 0.98) !important;
-    border-color: Rgba(255, 255, 255, 0.4) !important;
-  }
-
   &.is-yellow-solid .close-icon-wrapper {
-    background: var(--yellow) !important;
     border: 1px solid var(--yellow) !important;
-    box-shadow: 0 4px 12px Rgba(255, 217, 61, 0.4);
+    background: var(--yellow) !important;
+    box-shadow: 0 4px 12px Rgb(255 217 61 / 40%);
     
     &::before {
       color: $black;
@@ -316,20 +319,22 @@
 
 .modal-footer-premium {
   padding: 16px 32px 24px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
-  background: Rgba(0, 0, 0, 0.2);
+  background: Rgb(0 0 0 / 20%);
+  border-top: 1px solid Rgb(255 255 255 / 5%);
 }
 
 /* Transitions */
+
 /* Transitions handled by GSAP */
 
 .modal-scrollable-content {
-  flex: 1;
+  @include smooth-scroll;
+
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  position: relative;
-  @include smooth-scroll;
+  flex: 1;
   
   &.padding-standard { 
     padding: 16px; 

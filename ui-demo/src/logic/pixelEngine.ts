@@ -39,9 +39,14 @@ const RADIUS_XXL = 16;
 
 const DEFAULT_FRAME_BORDER_WIDTH = 1;
 
-const pixelState = {
+interface PixelState {
+  scale: number;
+  model: CornerModelId;
+}
+
+const pixelState: PixelState = {
   scale: 3,
-  model: 'bresenham' as CornerModelId
+  model: 'bresenham'
 };
 
 function generatePoints(radius: number, pixelSize: number, offset = 0): RawCoord[] {

@@ -3,33 +3,33 @@
 .species-tabs-panel {
   display: flex;
   flex-direction: column;
-  background: Rgba(0, 0, 0, 0.35);
-  border: 1.5px solid Rgba(250, 204, 21, 0.25);
+  border: 1.5px solid rgb(250 204 21 / 25%);
   border-radius: 10px;
+  background: rgb(0 0 0 / 35%);
 
   .species-tabs-panel-header {
-    background: Rgba(0, 0, 0, 0.4);
-    padding: 8px 8px 6px 8px;
-    border-bottom: 1.5px solid Rgba(250, 204, 21, 0.3);
+    padding: 8px 8px 6px;
     border-radius: 9px 9px 0 0;
+    background: rgb(0 0 0 / 40%);
+    border-bottom: 1.5px solid rgb(250 204 21 / 30%);
 
     .species-panel-intro {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 6px;
+      align-items: center;
       padding: 0 2px;
+      margin-bottom: 6px;
 
       .species-panel-title {
-        font-size: 7.5px;
         color: var(--yellow);
-        letter-spacing: 0.5px;
+        font-size: 7.5px;
         font-weight: bold;
+        letter-spacing: 0.5px;
       }
 
       .species-panel-hint {
+        color: rgb(255 255 255 / 50%);
         font-size: 6px;
-        color: Rgba(255, 255, 255, 0.5);
       }
     }
 
@@ -37,23 +37,22 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 2px 2px 6px 2px;
+      padding: 2px 2px 6px;
+      overflow: auto hidden;
       scrollbar-width: thin;
-      scrollbar-color: Rgba(250, 204, 21, 0.4) Rgba(0, 0, 0, 0.2);
+      scrollbar-color: rgb(250 204 21 / 40%) rgb(0 0 0 / 20%);
 
       &::-webkit-scrollbar {
-        height: 4px;
         display: block;
+        height: 4px;
       }
       &::-webkit-scrollbar-track {
-        background: Rgba(0, 0, 0, 0.2);
         border-radius: 2px;
+        background: rgb(0 0 0 / 20%);
       }
       &::-webkit-scrollbar-thumb {
-        background: Rgba(250, 204, 21, 0.4);
         border-radius: 2px;
+        background: rgb(250 204 21 / 40%);
 
         &:hover {
           background: var(--yellow);
@@ -65,22 +64,22 @@
         align-items: center;
         gap: 5px;
         padding: 4px 8px;
-        background: Rgba(255, 255, 255, 0.05);
-        border: 1px solid Rgba(255, 255, 255, 0.15);
+        border: 1px solid rgb(255 255 255 / 15%);
         border-radius: 6px;
+        background: rgb(255 255 255 / 5%);
         cursor: pointer;
         white-space: nowrap;
         flex-shrink: 0;
 
         &:hover {
-          background: Rgba(255, 255, 255, 0.1);
-          border-color: Rgba(250, 204, 21, 0.5);
+          background: rgb(255 255 255 / 10%);
+          border-color: rgb(250 204 21 / 50%);
         }
 
         &.active {
-          background: Rgba(250, 204, 21, 0.15);
-          border-color: Rgba(250, 204, 21, 0.85);
-          box-shadow: 0 0 8px Rgba(250, 204, 21, 0.25);
+          background: rgb(250 204 21 / 15%);
+          border-color: rgb(250 204 21 / 85%);
+          box-shadow: 0 0 8px rgb(250 204 21 / 25%);
 
           .species-tab-name {
             color: var(--yellow);
@@ -95,16 +94,16 @@
         }
 
         .species-tab-name {
+          color: rgb(255 255 255 / 80%);
           font-size: 7.5px;
-          color: Rgba(255, 255, 255, 0.8);
         }
 
         .species-tab-check {
-          font-size: 6px;
-          color: #4ade80;
-          background: Rgba(74, 222, 128, 0.2);
           padding: 0 3px;
           border-radius: 3px;
+          background: rgb(74 222 128 / 20%);
+          color: #4ade80;
+          font-size: 6px;
           font-weight: bold;
         }
       }
@@ -112,12 +111,12 @@
   }
 
   .species-tab-panel-body {
-    background: Rgba(18, 26, 41, 0.95);
-    padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    padding: 8px;
     border-radius: 0 0 9px 9px;
+    background: rgb(18 26 41 / 95%);
 
     .species-slots-wrapper {
       display: flex;

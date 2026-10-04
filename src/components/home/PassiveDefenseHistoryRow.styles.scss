@@ -4,18 +4,18 @@
 .history-row {
   display: flex;
   align-items: center;
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
   gap: 10px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 25%);
+  font-size: 0.75rem;
   cursor: pointer;
   will-change: background-color, border-color;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.04);
-    border-color: Rgba(255, 255, 255, 0.2);
+    background: rgb(255 255 255 / 4%);
+    border-color: rgb(255 255 255 / 20%);
   }
 
   &.victory {
@@ -28,17 +28,17 @@
 
   .trainer-avatar-col {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     flex-shrink: 0;
   }
 
   .rep-details {
     display: flex;
     flex-direction: column;
-    flex: 1;
     gap: 2px;
     min-width: 0;
+    flex: 1;
 
     .trainer-header-row {
       display: flex;
@@ -46,41 +46,44 @@
       gap: 6px;
 
       .rep-opponent {
+        @include pixelated;
+
         color: #fff;
         font-size: 9px;
-        @include pixelated;
       }
 
       .rep-faction-badge {
-        font-size: 6px;
-        background: Rgba(255, 255, 255, 0.08);
-        border: 1px solid Rgba(255, 255, 255, 0.15);
-        border-radius: 4px;
-        padding: 1px 4px;
-        color: Rgba(203, 213, 225, 0.8);
         @include pixelated;
 
+        padding: 1px 4px;
+        border: 1px solid rgb(255 255 255 / 15%);
+        border-radius: 4px;
+        background: rgb(255 255 255 / 8%);
+        color: rgb(203 213 225 / 80%);
+        font-size: 6px;
+
         &.union {
-          border-color: Rgba(59, 130, 246, 0.5);
+          background: rgb(59 130 246 / 12%);
           color: #60a5fa;
-          background: Rgba(59, 130, 246, 0.12);
+          border-color: rgb(59 130 246 / 50%);
         }
 
         &.poder {
-          border-color: Rgba(239, 68, 68, 0.5);
+          background: rgb(239 68 68 / 12%);
           color: #f87171;
-          background: Rgba(239, 68, 68, 0.12);
+          border-color: rgb(239 68 68 / 50%);
         }
       }
     }
 
     .rep-meta-row {
+      @include pixelated;
+
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 7px;
       color: var(--gray, #94a3b8);
-      @include pixelated;
+      font-size: 7px;
     }
   }
 
@@ -92,26 +95,28 @@
     flex-shrink: 0;
 
     .result-badge {
-      font-size: 8px;
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      letter-spacing: 0.5px;
       @include pixelated;
 
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 8px;
+      letter-spacing: 0.5px;
+
       &.victory {
-        background: Rgba(34, 197, 94, 0.15);
+        background: rgb(34 197 94 / 15%);
         color: #22c55e;
       }
 
       &.defeat {
-        background: Rgba(239, 68, 68, 0.15);
+        background: rgb(239 68 68 / 15%);
         color: #ef4444;
       }
     }
 
     .elo-delta-badge {
-      font-size: 8px;
       @include pixelated;
+
+      font-size: 8px;
 
       &.gain {
         color: #4ade80;

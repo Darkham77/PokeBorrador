@@ -157,20 +157,22 @@ const handleConfirm = () => {
   gap: 16px;
   
   .item-mini-sprite {
+    @include pixelated;
+
     width: 32px;
     height: 32px;
-    @include pixelated;
   }
 
   .title-wrap {
     .main-title {
       @include pixelated;
-      font-size: 11px;
+
       color: var(--yellow);
+      font-size: 11px;
     }
     .sub-title {
+      color: rgb(255 255 255 / 60%);
       font-size: 11px;
-      color: Rgba(255, 255, 255, 0.6);
       font-weight: 700;
       margin-top: 2px;
     }
@@ -183,31 +185,32 @@ const handleConfirm = () => {
 
   .selector-label {
     @include pixelated;
+
+    color: rgb(255 255 255 / 60%);
     font-size: 8px;
-    color: Rgba(255, 255, 255, 0.6);
     margin-bottom: 24px;
   }
 
   .selector-controls {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 20px;
     margin-bottom: 24px;
 
     .control-btn {
       width: 44px;
       height: 44px;
+      border: 1px solid rgb(255 255 255 / 10%);
       border-radius: 12px;
-      background: Rgba(255, 255, 255, 0.05);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
+      background: rgb(255 255 255 / 5%);
       color: white;
       font-size: 20px;
       cursor: pointer;
       
 
       &:hover:not(:disabled) {
-        background: Rgba(255, 255, 255, 0.1);
+        background: rgb(255 255 255 / 10%);
         border-color: var(--yellow);
       }
       &:disabled { opacity: 0.3; }
@@ -217,57 +220,59 @@ const handleConfirm = () => {
       position: relative;
       
       .quantity-input {
-        width: 110px;
-        background: Rgba(0, 0, 0, 0.4);
-        border: 2px solid Rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 12px;
-        text-align: center;
-        color: white;
         @include pixelated;
+
+        width: 110px;
+        padding: 12px;
+        border: 2px solid rgb(255 255 255 / 10%);
+        border-radius: 12px;
+        background: rgb(0 0 0 / 40%);
+        color: white;
         font-size: 20px;
+        text-align: center;
         outline: none;
         &:focus { border-color: var(--yellow); }
       }
 
       .max-badge {
+        @include pixelated;
+
         position: absolute;
         top: -8px;
         right: -8px;
+        padding: 2px 6px;
+        border: none;
+        border-radius: 4px;
         background: var(--yellow);
         color: black;
-        border: none;
-        padding: 2px 6px;
-        border-radius: 4px;
         font-size: 8px;
         font-weight: 900;
         cursor: pointer;
-        @include pixelated;
       }
     }
   }
 
   .profit-summary {
-    background: Rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgb(0 0 0 / 20%);
 
     .summary-line {
       display: flex;
       justify-content: space-between;
       align-items: center;
       
-      .label { font-size: 8px; color: Rgba(255, 255, 255, 0.4); font-weight: 700; }
-      .value { font-size: 11px; color: white; font-weight: 800; }
+      .label { color: rgb(255 255 255 / 40%); font-size: 8px; font-weight: 700; }
+      .value { color: white; font-size: 11px; font-weight: 800; }
 
       &.total {
         margin-top: 4px;
         padding-top: 8px;
-        border-top: 1px solid Rgba(255, 255, 255, 0.1);
-        .value { color: $green; @include pixelated; font-size: 12px; }
+        border-top: 1px solid rgb(255 255 255 / 10%);
+        .value { @include pixelated; color: $green; font-size: 12px; }
       }
     }
   }

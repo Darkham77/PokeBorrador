@@ -1,7 +1,7 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { NATURES, isNatureId, toNatureId, type NatureId } from '@/data/battle/natures';
 import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
+import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE, DEFAULT_MAX_PP_FALLBACK } from '@/logic/constants/gameplay';
 import { getMovesAtLevel, initializePokemonVigor } from '@/logic/pokemon/pokemonUtils';
 import { getActivePinia } from 'pinia';
 import { getSpeciesBoosts, getGlobalMultipliers, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
@@ -137,7 +137,7 @@ function syncMoveDetails(m: Move, moveData: NonNullable<ReturnType<typeof pokemo
   m.acc = moveData.acc || 100;
   m.cat = moveData.cat || 'physical';
   m.effect = moveData.effect;
-  const basePP = moveData.pp || 35;
+  const basePP = moveData.pp || DEFAULT_MAX_PP_FALLBACK;
   if (!m.maxPP || m.maxPP < basePP) m.maxPP = basePP;
   m.selfKO = moveData.selfKO;
   m.recoil = moveData.recoil;

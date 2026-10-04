@@ -57,10 +57,10 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .debug-content {
-  flex: 1;
-  padding: 20px 16px;
-  overflow-y: auto;
   min-height: 0;
+  padding: 20px 16px;
+  flex: 1;
+  overflow-y: auto;
   overscroll-behavior: contain;
 }
 </style>

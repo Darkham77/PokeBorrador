@@ -50,6 +50,12 @@ export interface PhysicalDimensionTier {
   maxDeviation: number;
 }
 
+const DEVIATION_THRESHOLDS = {
+  MODERATE: 0.06,
+  LARGE: 0.09,
+  EXTREME: 0.125,
+} as const;
+
 const TIER_CONFIGS: Record<PhysicalDimensionTierId, PhysicalDimensionTier> = {
   XXS: {
     id: 'XXS',
@@ -57,54 +63,54 @@ const TIER_CONFIGS: Record<PhysicalDimensionTierId, PhysicalDimensionTier> = {
     name: 'Miniatura',
     cssClass: 'tier-xxs',
     minDeviation: -Infinity,
-    maxDeviation: -0.125
+    maxDeviation: -DEVIATION_THRESHOLDS.EXTREME
   },
   XS: {
     id: 'XS',
     label: 'XS',
     name: 'Pequeño',
     cssClass: 'tier-xs',
-    minDeviation: -0.125,
-    maxDeviation: -0.09
+    minDeviation: -DEVIATION_THRESHOLDS.EXTREME,
+    maxDeviation: -DEVIATION_THRESHOLDS.LARGE
   },
   S: {
     id: 'S',
     label: 'S',
     name: 'Bajo',
     cssClass: 'tier-s',
-    minDeviation: -0.09,
-    maxDeviation: -0.06
+    minDeviation: -DEVIATION_THRESHOLDS.LARGE,
+    maxDeviation: -DEVIATION_THRESHOLDS.MODERATE
   },
   M: {
     id: 'M',
     label: 'M',
     name: 'Normal',
     cssClass: 'tier-m',
-    minDeviation: -0.06,
-    maxDeviation: 0.06
+    minDeviation: -DEVIATION_THRESHOLDS.MODERATE,
+    maxDeviation: DEVIATION_THRESHOLDS.MODERATE
   },
   L: {
     id: 'L',
     label: 'L',
     name: 'Alto',
     cssClass: 'tier-l',
-    minDeviation: 0.06,
-    maxDeviation: 0.09
+    minDeviation: DEVIATION_THRESHOLDS.MODERATE,
+    maxDeviation: DEVIATION_THRESHOLDS.LARGE
   },
   XL: {
     id: 'XL',
     label: 'XL',
     name: 'Grande',
     cssClass: 'tier-xl',
-    minDeviation: 0.09,
-    maxDeviation: 0.125
+    minDeviation: DEVIATION_THRESHOLDS.LARGE,
+    maxDeviation: DEVIATION_THRESHOLDS.EXTREME
   },
   XXL: {
     id: 'XXL',
     label: 'XXL',
     name: 'Titán',
     cssClass: 'tier-xxl',
-    minDeviation: 0.125,
+    minDeviation: DEVIATION_THRESHOLDS.EXTREME,
     maxDeviation: Infinity
   }
 };

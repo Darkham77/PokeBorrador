@@ -3,27 +3,28 @@
 
 .pv-gym-card {
   @include shell-premium($radius: 24px);
-  padding: 0;
-  overflow: hidden;
+
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding: 0;
+  overflow: hidden;
 
   &.defeated {
-    border-color: Rgba(107, 203, 119, 0.4);
-    box-shadow: 0 10px 40px Rgba(34, 197, 94, 0.15);
+    border-color: Rgb(107 203 119 / 40%);
+    box-shadow: 0 10px 40px Rgb(34 197 94 / 15%);
   }
 
   &.locked {
+    opacity: 0.5;
     filter: Grayscale(1);
     will-change: filter;
-    opacity: 0.5;
     pointer-events: none;
     &::after {
-      content: '';
       position: absolute;
+      background: Rgb(0 0 0 / 20%);
+      content: '';
       inset: 0;
-      background: Rgba(0, 0, 0, 0.2);
     }
   }
 
@@ -31,36 +32,36 @@
 }
 
 .pv-card-header {
-  padding: 24px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid Rgb(255 255 255 / 8%);
   
   &::before {
-    content: '';
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
+    left: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, Rgba(255, 255, 255, 0.1), transparent);
+    background: Linear-Gradient(90deg, transparent, Rgb(255 255 255 / 10%), transparent);
+    content: '';
   }
 }
 
 .header-main {
   display: flex;
-  gap: 20px;
   align-items: center;
+  gap: 20px;
 }
 
 .leader-info {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+  flex: 1;
 }
 
 .type-row {
@@ -71,103 +72,109 @@
   .type-icon { font-size: 20px; }
   .gym-tag {
     @include pixelated;
+
     font-size: 9px;
-    letter-spacing: 0.5px;
     line-height: 1.4;
+    letter-spacing: 0.5px;
   }
 }
 
 .location { 
-  font-size: 11px; 
   color: var(--gray); 
+  font-size: 11px;
+  line-height: 1.4; 
   opacity: 0.8;
-  line-height: 1.4;
 }
 
 .leader-title {
+  color: var(--gray);
   font-size: 12px;
   font-weight: 700;
-  color: var(--gray);
   line-height: 1.4;
-  span { 
+  span {
+    @include pixelated; 
+
     color: var(--white);
-    @include pixelated;
     font-size: 9px;
-    margin-left: 5px;
     line-height: 1.4;
+    margin-left: 5px;
   }
 }
 
 .badges-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
   margin-top: 4px;
 }
 
 .leader-sprite-box {
-  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 90px;
   height: 90px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 50%;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 2px 10px Rgba(0, 0, 0, 0.5);
+  background: Rgb(0 0 0 / 20%);
+  flex-shrink: 0;
+  box-shadow: inset 0 2px 10px Rgb(0 0 0 / 50%);
 
   .leader-sprite {
-    height: 100px;
-    width: auto;
     @include pixelated;
-    filter: Drop-Shadow(0 5px 10px Rgba(0,0,0,0.5));
+
+    width: auto;
+    height: 100px;
+    filter: Drop-Shadow(0 5px 10px Rgb(0 0 0 / 50%));
     will-change: filter, transform;
   }
 }
 
 .pv-card-footer {
-  padding: 20px 24px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 20px 24px 24px;
   margin-top: auto;
 }
 
 .progress-txt {
-  font-size: 10px;
-  color: var(--gray);
   @include pixelated;
+
+  color: var(--gray);
+  font-size: 10px;
   opacity: 0.7;
   
   .text-won {
-    color: Rgba(34, 197, 94, 1);
-    text-shadow: 0 0 8px Rgba(34, 197, 94, 0.3);
+    color: Rgb(34 197 94 / 100%);
+    text-shadow: 0 0 8px Rgb(34 197 94 / 30%);
   }
 }
 
 .locked-tag {
-  color: Rgba(239, 68, 68, 1);
-  font-size: 10px;
-  background: Rgba(239, 68, 68, 0.1);
-  padding: 8px 16px;
-  border-radius: 12px;
-  border: 1px solid Rgba(239, 68, 68, 0.2);
-  text-align: center;
   @include pixelated;
+
+  padding: 8px 16px;
+  border: 1px solid Rgb(239 68 68 / 20%);
+  border-radius: 12px;
+  background: Rgb(239 68 68 / 10%);
+  color: Rgb(239 68 68 / 100%);
+  font-size: 10px;
+  text-align: center;
 }
 
 .won-tag {
-  color: Rgba(34, 197, 94, 1);
+  @include pixelated;
+
+  padding: 8px 16px;
+  border: 1px solid Rgb(34 197 94 / 30%);
+  border-radius: 12px;
+  background: Rgb(34 197 94 / 10%);
+  color: Rgb(34 197 94 / 100%);
   font-size: 10px;
   font-weight: 700;
-  background: Rgba(34, 197, 94, 0.1);
-  padding: 8px 16px;
-  border-radius: 12px;
-  border: 1px solid Rgba(34, 197, 94, 0.3);
   text-align: center;
-  @include pixelated;
   margin-bottom: 12px;
 }
 
@@ -180,62 +187,64 @@
 .diff-selector {
   display: flex;
   gap: 6px;
-  background: Rgba(0, 0, 0, 0.3);
   padding: 4px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 10px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(0 0 0 / 30%);
 }
 
 .diff-btn {
-  flex: 1;
   @include pixelated;
-  font-size: 7px;
+
   padding: 8px 4px;
-  border-radius: 6px;
   border: 1px solid transparent;
+  border-radius: 6px;
   background: transparent;
   color: var(--gray);
+  font-size: 7px;
+  flex: 1;
   cursor: pointer;
+  
+  &:hover:not(.active) {
+    background: Rgb(255 255 255 / 3%);
+    color: var(--white);
+  }
 
     &.active {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: Rgba(255, 255, 255, 0.1);
+    background: Rgb(255 255 255 / 5%);
     color: var(--white);
-    box-shadow: 0 2px 10px Rgba(0, 0, 0, 0.3);
+    border-color: Rgb(255 255 255 / 10%);
+    box-shadow: 0 2px 10px Rgb(0 0 0 / 30%);
     
-    &.easy { color: Rgba(34, 197, 94, 1); border-color: Rgba(34, 197, 94, 0.3); }
-    &.normal { color: $coin-gold; border-color: Rgba(255, 215, 0, 0.3); }
-    &.hard { color: Rgba(239, 68, 68, 1); border-color: Rgba(239, 68, 68, 0.3); }
+    &.easy { color: Rgb(34 197 94 / 100%); border-color: Rgb(34 197 94 / 30%); }
+    &.normal { color: $coin-gold; border-color: Rgb(255 215 0 / 30%); }
+    &.hard { color: Rgb(239 68 68 / 100%); border-color: Rgb(239 68 68 / 30%); }
   }
   
   .won-dot {
-    margin-left: 4px;
+    color: Rgb(34 197 94 / 100%);
     font-size: 8px;
-    color: Rgba(34, 197, 94, 1);
-  }
-  
-  &:hover:not(.active) {
-    background: Rgba(255, 255, 255, 0.03);
-    color: var(--white);
+    margin-left: 4px;
   }
 }
 
 .pv-challenge-btn {
-  padding: 14px;
-  border: 1px solid Rgba(255, 255, 255, 0.2);
-  border-radius: 14px;
   @include pixelated;
-  font-size: 10px;
+
+  padding: 14px;
+  border: 1px solid Rgb(255 255 255 / 20%);
+  border-radius: 14px;
   color: var(--white);
+  font-size: 10px;
   font-weight: 900;
   cursor: pointer;
-  text-shadow: 0 2px 0 Rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 0 Rgb(0 0 0 / 50%);
 
   &:hover { 
     transform: Scale(1.02) Translatey(-2px);
     filter: Brightness(1.1);
     will-change: filter, transform;
-    border-color: Rgba(255, 255, 255, 0.4);
+    border-color: Rgb(255 255 255 / 40%);
   }
   
   &:active {
@@ -244,17 +253,18 @@
 }
 
 .rematch-challenge-btn {
-  padding: 12px;
-  border: 1px solid Rgba(249, 115, 22, 0.6);
-  border-radius: 14px;
   @include pixelated;
-  font-size: 10px;
+
+  padding: 12px;
+  border: 1px solid Rgb(249 115 22 / 60%);
+  border-radius: 14px;
+  background: Linear-Gradient(135deg, #ea580c 0%, #c2410c 100%);
   color: var(--white);
+  font-size: 10px;
   font-weight: 900;
   cursor: pointer;
-  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
-  box-shadow: 0 4px 15px Rgba(234, 88, 12, 0.4);
-  text-shadow: 0 2px 0 Rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 15px Rgb(234 88 12 / 40%);
+  text-shadow: 0 2px 0 Rgb(0 0 0 / 50%);
 
   &:hover {
     transform: Scale(1.02) Translatey(-2px);
@@ -269,14 +279,14 @@
 
 .rematch-completed-tag {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 6px;
   padding: 8px;
-  background: Rgba(34, 197, 94, 0.1);
-  border: 1px solid Rgba(34, 197, 94, 0.3);
+  border: 1px solid Rgb(34 197 94 / 30%);
   border-radius: 10px;
-  font-size: 9px;
+  background: Rgb(34 197 94 / 10%);
   color: #4ade80;
+  font-size: 9px;
   font-weight: bold;
 }

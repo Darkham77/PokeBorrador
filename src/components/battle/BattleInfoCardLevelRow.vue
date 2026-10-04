@@ -58,15 +58,15 @@ const tooltipTitle = computed(() => {
             <span
               v-if="natureData?.up"
               class="stat-mod mod-up"
-              style="color: #32d74b; font-weight: bold; font-size: 7.5px; text-transform: uppercase;"
+              style="color: #32d74b; font-size: 7.5px; font-weight: bold; text-transform: uppercase;"
             ><span class="emoji">▲</span> {{ natureData.up }} (+10%)</span>
             <span
               v-if="natureData?.down"
               class="stat-mod mod-down"
-              style="color: #ff453a; font-weight: bold; font-size: 7.5px; text-transform: uppercase;"
+              style="color: #ff453a; font-size: 7.5px; font-weight: bold; text-transform: uppercase;"
             ><span class="emoji">▼</span> {{ natureData.down }} (-10%)</span>
           </div>
-          <p style="margin: 4px 0 0 0; font-size: 8px; color: #aeaebe; line-height: 1.4;">
+          <p style="margin: 4px 0 0; color: #aeaebe; font-size: 8px; line-height: 1.4;">
             {{ natureData?.desc || 'Sin efecto en estadísticas.' }}
           </p>
         </div>

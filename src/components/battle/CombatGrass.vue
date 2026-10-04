@@ -237,35 +237,36 @@ onUnmounted(() => {
 
 .combat-grass-container {
   position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
+  inset: 0;
   pointer-events: none;
   overflow: visible;
-  filter: var(--atmosphere-filter, Brightness(1) contrast(1));
+  filter: var(--atmosphere-filter, Brightness(1) Contrast(1));
 }
 
 .bush-ground-anchor {
   position: absolute;
   left: 50%;
-  transform: Translatex(-50%) Translatey(-85%);
-  width: 100%;
-  height: 0;
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  width: 100%;
+  height: 0;
+  transform: Translatex(-50%) Translatey(-85%);
 }
 
 .bush-wrapper {
+  @include pixelated;
+
   position: absolute; 
   width: calc(var(--bush-size, 60px) * 1px);
   height: calc(var(--bush-size, 60px) * 1px);
-  @include pixelated;
 
-  &.tint-desert .pixel-bush { filter: sepia(0.5) Saturate(0.7) Hue-Rotate(10deg) Brightness(0.95); }
-  &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) Hue-Rotate(20deg); }
-  &.tint-arctic .pixel-bush { filter: Saturate(0) Brightness(1.8) contrast(1.15); }
-  &.tint-cave .pixel-bush   { filter: sepia(0.3) Saturate(0.95) Hue-Rotate(-15deg) Brightness(0.9); }
+  &.tint-desert .pixel-bush { filter: sepia(0.5) Saturate(0.7) hue-Rotate(10deg) Brightness(0.95); }
+  &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) hue-Rotate(20deg); }
+  &.tint-arctic .pixel-bush { filter: Saturate(0) Brightness(1.8) Contrast(1.15); }
+  &.tint-cave .pixel-bush   { filter: sepia(0.3) Saturate(0.95) hue-Rotate(-15deg) Brightness(0.9); }
 }
 
 .pixel-bush { 

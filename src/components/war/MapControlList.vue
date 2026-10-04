@@ -27,13 +27,15 @@ const getMapImage = (mapId: MapRouteId) => {
   return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: mapStore.currentCycle || 'day' })
 }
 
+const NEUTRAL_DOMINANCE_PERCENT = 50 as const
+
 const allMaps = computed(() => {
   const maps = pokemonDataProvider.getMaps() as MapData[]
   return maps.map(m => {
     const mapId = requireMapRouteId(m.id)
     const data = warStore.mapDominance[mapId] || { union: 0, poder: 0, winner: null }
     const total = (Number(data.union ?? 0)) + (Number(data.poder ?? 0))
-    const unionPct = total > 0 ? ((data.union ?? 0) / total) * 100 : 50
+    const unionPct = total > 0 ? ((data.union ?? 0) / total) * 100 : NEUTRAL_DOMINANCE_PERCENT
     const rawWinner = data.winner || ((data.union ?? 0) > (data.poder ?? 0) ? 'union' : (data.poder ?? 0) > (data.union ?? 0) ? 'poder' : null)
     const winner: FactionId | null = isFactionId(rawWinner) ? rawWinner : null
     
@@ -132,10 +134,11 @@ const filteredMaps = computed(() => {
 
 .wc-section-title {
   @include pixelated;
+
+  color: rgb(85 85 85 / 100%);
   font-size: 10px;
-  color: Rgba(85, 85, 85, 1);
-  margin-bottom: 16px;
   text-align: center;
+  margin-bottom: 16px;
 }
 
 /* REGION TABS */
@@ -143,33 +146,34 @@ const filteredMaps = computed(() => {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
   padding-bottom: 8px;
 }
 
 .region-tab-btn {
   @include pixelated;
-  font-size: 9px;
-  padding: 6px 12px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  color: var(--gray);
-  cursor: pointer;
+
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 2%);
+  color: var(--gray);
+  font-size: 9px;
+  cursor: pointer;
   
 
   &:hover:not(.disabled) {
-    background: Rgba(255, 255, 255, 0.08);
+    background: rgb(255 255 255 / 8%);
     color: var(--white);
   }
 
   &.active {
-    background: Rgba(255, 255, 255, 0.1);
-    border-color: var(--yellow);
+    background: rgb(255 255 255 / 10%);
     color: var(--yellow);
+    border-color: var(--yellow);
   }
 
   &.disabled {
@@ -178,10 +182,10 @@ const filteredMaps = computed(() => {
   }
 
   .coming-soon {
-    font-size: 6px;
     color: var(--gray);
-    margin-top: 2px;
+    font-size: 6px;
     opacity: 0.7;
+    margin-top: 2px;
   }
 }
 
@@ -192,43 +196,43 @@ const filteredMaps = computed(() => {
 }
 
 .map-row {
-  background: Rgba(255, 255, 255, 0.03);
   padding: 10px;
+  border: 1px solid rgb(255 255 255 / 5%);
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 3%);
   
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.06);
+    background: rgb(255 255 255 / 6%);
   }
 
-  &.union { border-left: 4px solid Rgba(59, 130, 246, 1); }
-  &.poder { border-left: 4px solid Rgba(239, 68, 68, 1); }
+  &.union { border-left: 4px solid rgb(59 130 246 / 100%); }
+  &.poder { border-left: 4px solid rgb(239 68 68 / 100%); }
 }
 
 .map-row-content {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
 }
 
 .map-thumbnail {
   width: 88px;
   height: 88px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
   background-size: cover;
   background-position: center;
-  border-radius: 8px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 0 6px Rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 0 6px rgb(0 0 0 / 60%);
   flex-shrink: 0;
   image-rendering: pixelated;
 }
 
 .map-details {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex: 1;
 }
 
 .map-info {
@@ -237,41 +241,42 @@ const filteredMaps = computed(() => {
   align-items: center;
 
   .map-name {
+    color: rgb(204 204 204 / 100%);
     font-size: 11px;
     font-weight: 600;
-    color: Rgba(204, 204, 204, 1);
   }
 
   .winner-badge {
-    font-size: 8px;
     @include pixelated;
+
     padding: 2px 6px;
     border-radius: 4px;
+    font-size: 8px;
     
-    .union & { background: Rgba(59, 130, 246, 1); color: var(--white); }
-    .poder & { background: Rgba(239, 68, 68, 1); color: var(--white); }
+    .union & { background: rgb(59 130 246 / 100%); color: var(--white); }
+    .poder & { background: rgb(239 68 68 / 100%); color: var(--white); }
   }
 }
 
 .dominance-bar {
-  height: 8px;
-  background: $black;
-  border-radius: 4px;
-  overflow: hidden;
   display: flex;
+  height: 8px;
+  border-radius: 4px;
+  background: $black;
+  overflow: hidden;
   
   .bar-fill {
-    height: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: white;
     font-size: 7px;
     font-weight: bold;
-    color: white;
     
 
-    &.union { background: Rgba(59, 130, 246, 1); box-shadow: inset 0 0 10px Rgba(0, 0, 0, 0.3); }
-    &.poder { background: Rgba(239, 68, 68, 1); box-shadow: inset 0 0 10px Rgba(0, 0, 0, 0.3); }
+    &.union { background: rgb(59 130 246 / 100%); box-shadow: inset 0 0 10px rgb(0 0 0 / 30%); }
+    &.poder { background: rgb(239 68 68 / 100%); box-shadow: inset 0 0 10px rgb(0 0 0 / 30%); }
   }
 }
 </style>

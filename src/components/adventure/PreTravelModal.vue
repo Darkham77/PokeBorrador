@@ -38,45 +38,45 @@ const activeTravelModifiers = computed(() => {
     <div style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-pixel);">
       <div style="display: flex; gap: 12px; overflow: hidden; flex: 1;">
         <!-- Left Column: Active Buffs Preview -->
-        <div style="flex: 1; background: rgba(0,0,0,0.3); border: 2px solid #3c5aa6; padding: 10px; border-radius: 4px; display: flex; flex-direction: column; gap: 8px;">
+        <div style=" display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 2px solid #3c5aa6; border-radius: 4px; background: rgb(0 0 0 / 30%);flex: 1;">
           <h4
             class="adv-pixel-text"
-            style="font-size: 8px; margin: 0 0 4px 0; color: #ffcb05; border-bottom: 1px solid #3c5aa6; padding-bottom: 4px;"
+            style=" margin: 0 0 4px; color: #ffcb05;font-size: 8px; border-bottom: 1px solid #3c5aa6; padding-bottom: 4px;"
           >
             Buffs de Ruta Activos
           </h4>
           <div style="display: flex; flex-direction: column; gap: 6px; font-size: 8px; line-height: 1.4;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
               <span><span class="emoji">🚲</span> Velocidad:</span>
               <span :style="{ color: hasBicycle ? '#4caf50' : '#888' }">
                 {{ hasBicycle ? 'Rápido' : 'Normal' }}
               </span>
             </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
               <span><span class="emoji">🚫</span> Encuentros:</span>
               <span :style="{ color: activeTravelModifiers.encounterRateMod < 0 ? '#ff9800' : '#fff' }">
                 {{ activeTravelModifiers.encounterRateMod === -100 ? 'Ninguno' : (activeTravelModifiers.encounterRateMod < 0 ? activeTravelModifiers.encounterRateMod + '%' : 'Estándar') }}
               </span>
             </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
               <span><span class="emoji">🧠</span> Exp. Combate:</span>
               <span :style="{ color: activeTravelModifiers.expMultiplier > 1 ? '#4caf50' : '#fff' }">
                 x{{ activeTravelModifiers.expMultiplier.toFixed(1) }}
               </span>
             </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
               <span><span class="emoji">💰</span> Recompensas:</span>
               <span :style="{ color: activeTravelModifiers.moneyMultiplier > 1 ? '#4caf50' : '#fff' }">
                 x{{ activeTravelModifiers.moneyMultiplier.toFixed(1) }}
               </span>
             </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
               <span><span class="emoji">✨</span> Chance Shiny:</span>
               <span :style="{ color: activeTravelModifiers.shinyChanceMod > 1 ? '#e91e63' : '#fff' }">
                 x{{ activeTravelModifiers.shinyChanceMod.toFixed(1) }}
               </span>
             </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
               <span><span class="emoji">🔥</span> Tipo Foco:</span>
               <span :style="{ color: activeTravelModifiers.typeFocus ? '#00bcd4' : '#fff', textTransform: activeTravelModifiers.typeFocus ? 'uppercase' : 'none' }">
                 {{ activeTravelModifiers.typeFocus ? activeTravelModifiers.typeFocus : 'Ninguno' }}
@@ -86,19 +86,19 @@ const activeTravelModifiers = computed(() => {
         </div>
 
         <!-- Right Column: Selectable Buff Consumibles -->
-        <div style="flex: 1.2; display: flex; flex-direction: column; gap: 6px;">
+        <div style=" display: flex; flex-direction: column; gap: 6px;flex: 1.2;">
           <h4
             class="adv-pixel-text"
-            style="font-size: 8px; margin: 0; color: #ffcb05;"
+            style=" margin: 0; color: #ffcb05;font-size: 8px;"
           >
             Seleccionar Consumibles
           </h4>
-          <div style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 4px; max-height: 180px; padding-right: 4px;">
+          <div style=" display: flex; flex-direction: column; gap: 4px; max-height: 180px;overflow-y: auto; flex: 1; padding-right: 4px;">
             <div 
               v-for="item in filteredBuffItems" 
               :key="item.id" 
               class="adv-toggle-control" 
-              style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px; cursor: pointer; margin: 0;"
+              style="display: flex; align-items: center; gap: 8px; margin: 0; padding: 4px 8px; border-radius: 4px; background: rgb(255 255 255 / 5%); cursor: pointer;"
               @click="emit('toggleItem', item.id)"
             >
               <input 
@@ -106,14 +106,14 @@ const activeTravelModifiers = computed(() => {
                 :checked="selectedTravelItems.has(item.id)" 
                 style="margin: 0; pointer-events: none;"
               >
-              <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 8px;">
                 <span><span class="emoji">{{ item.icon }}</span> {{ item.name }}</span>
                 <span style="color: #ffcb05;">x{{ inventory?.[item.id] || 0 }}</span>
               </div>
             </div>
             <div
               v-if="filteredBuffItems.length === 0"
-              style="font-size: 8px; color: #888; text-align: center; margin-top: 20px;"
+              style=" color: #888;font-size: 8px; text-align: center; margin-top: 20px;"
             >
               No tienes consumibles de buffs en tu mochila. ¡Inyéctalos en el panel lateral para probar!
             </div>
@@ -122,17 +122,17 @@ const activeTravelModifiers = computed(() => {
       </div>
 
       <!-- Buttons -->
-      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; flex-shrink: 0;">
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; flex-shrink: 0;">
         <button
           class="btn-vicio-danger"
-          style="padding: 6px 12px; font-size: 8px; min-width: auto; height: auto;"
+          style=" min-width: auto; height: auto;padding: 6px 12px; font-size: 8px;"
           @click="emit('cancel')"
         >
           Cancelar
         </button>
         <button
           class="btn-vicio-primary"
-          style="padding: 6px 12px; font-size: 8px; min-width: auto; height: auto;"
+          style=" min-width: auto; height: auto;padding: 6px 12px; font-size: 8px;"
           @click="emit('confirm')"
         >
           Confirmar y Partir <span class="emoji">🚲</span>

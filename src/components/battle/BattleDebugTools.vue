@@ -153,174 +153,187 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 @use "@/styles/core/tools" as *;
 
 .battle-debug-tools {
+  @include pixelated;
+
   position: relative;
-  width: 100%;
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-start;
-  pointer-events: none;
+  width: 100%;
   min-height: 0; 
   padding: 0;
-  @include pixelated;
+  pointer-events: none;
   
   &.is-open { pointer-events: all; }
 }
 
 .debug-triggers-row {
   display: flex;
-  gap: 8px;
-  pointer-events: all;
   justify-content: flex-start;
+  gap: 8px;
   width: 100%;
+  pointer-events: all;
 }
 
-.debug-trigger, .effects-trigger, .time-trigger, .spawn-trigger {
+%debug-trigger-base {
   @include btn-vicio('info', 'xs', true);
-  background: Rgba(20, 20, 30, 0.95);
-  font-size: 7px;
-  height: 24px;
-  padding: 0 14px;
-  border-radius: 6px;
+  @include pixelated;
+
   display: flex;
   align-items: center;
   gap: 6px;
+  height: 24px;
+  padding: 0 14px;
+  border-radius: 6px;
+  background: rgb(20 20 30 / 95%);
+  font-size: 7px;
   text-shadow: 1px 1px 0 $black;
-  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.6);
-  @include pixelated;
+  box-shadow: 0 4px 15px rgb(0 0 0 / 60%);
 }
 
 .debug-trigger {
+  @extend %debug-trigger-base;
+
   border: 2px solid var(--yellow);
   color: var(--yellow);
   &:hover, &.active { background: var(--yellow); color: $black; text-shadow: none; }
 }
 
 .effects-trigger {
+  @extend %debug-trigger-base;
+
   border: 2px solid var(--purple);
   color: var(--purple);
   &:hover, &.active { background: var(--purple); color: white; }
 }
 
 .effects-menu {
-  background: Rgba(15, 15, 25, 0.99);
-  border: 2px solid var(--purple);
-  border-radius: 8px;
+  @include gpu-layer;
+
+  display: flex;
+  flex-direction: column;
   width: 340px;
   max-width: 90dvw;
   max-height: 500px;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
+  border: 2px solid var(--purple);
+  border-radius: 8px;
+  background: rgb(15 15 25 / 99%);
+  overflow: hidden auto;
   pointer-events: all;
-  box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
+  box-shadow: 0 15px 50px rgb(0 0 0 / 90%);
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
-  @include gpu-layer;
   margin-bottom: 12px;
 
   .effects-header {
-    background: Rgba(124, 58, 237, 0.15);
-    padding: 10px 16px;
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+    padding: 10px 16px;
+    background: rgb(124 58 237 / 15%);
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; font-size: 8px; color: var(--purple); flex: 1; }
-    .close-mini { background: none; border: none; color: white; cursor: pointer; opacity: 0.5; &:hover { opacity: 1; } }
+    .title { @include pixelated; color: var(--purple); font-size: 8px; flex: 1; }
+    .close-mini { border: none; background: none; color: white; opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
   }
 
   .effects-scroll-area {
-    padding: 16px;
+    @include smooth-scroll;
+
     min-height: 0;
+    padding: 16px;
     overflow-y: auto;
     flex: 1;
-    @include smooth-scroll;
   }
 }
 
 .time-menu {
-  background: Rgba(15, 15, 25, 0.99);
-  border: 2px solid var(--blue);
-  border-radius: 8px;
+  @include gpu-layer;
+
+  display: flex;
+  flex-direction: column;
   width: 340px;
   max-width: 90dvw;
   max-height: 500px;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+  background: rgb(15 15 25 / 99%);
+  overflow: hidden auto;
   pointer-events: all;
-  box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
-  @include gpu-layer;
+  box-shadow: 0 15px 50px rgb(0 0 0 / 90%);
   margin-bottom: 12px;
 
   .time-header {
-    background: Rgba(59, 130, 246, 0.15);
-    padding: 10px 16px;
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+    padding: 10px 16px;
+    background: rgb(59 130 246 / 15%);
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; font-size: 8px; color: var(--blue); flex: 1; }
-    .close-mini { background: none; border: none; color: white; cursor: pointer; opacity: 0.5; &:hover { opacity: 1; } }
+    .title { @include pixelated; color: var(--blue); font-size: 8px; flex: 1; }
+    .close-mini { border: none; background: none; color: white; opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
   }
 
   .time-scroll-area {
-    padding: 16px;
+    @include smooth-scroll;
+
     min-height: 0;
+    padding: 16px;
     overflow-y: auto;
     flex: 1;
-    @include smooth-scroll;
   }
 }
 
 .time-trigger {
+  @extend %debug-trigger-base;
+
   border: 2px solid var(--blue);
   color: var(--blue);
   &:hover, &.active { background: var(--blue); color: white; text-shadow: none; }
 }
 
 .spawn-menu {
-  background: Rgba(15, 15, 25, 0.99);
-  border: 2px solid var(--green);
-  border-radius: 8px;
+  @include gpu-layer;
+
+  display: flex;
+  flex-direction: column;
   width: 340px;
   max-width: 90dvw;
   max-height: 500px;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
+  border: 2px solid var(--green);
+  border-radius: 8px;
+  background: rgb(15 15 25 / 99%);
+  overflow: hidden auto;
   pointer-events: all;
-  box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
-  @include gpu-layer;
+  box-shadow: 0 15px 50px rgb(0 0 0 / 90%);
   margin-bottom: 12px;
 
   .spawn-header {
-    background: Rgba(34, 197, 94, 0.15);
-    padding: 10px 16px;
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+    padding: 10px 16px;
+    background: rgb(34 197 94 / 15%);
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; font-size: 8px; color: var(--green); flex: 1; }
-    .close-mini { background: none; border: none; color: white; cursor: pointer; opacity: 0.5; &:hover { opacity: 1; } }
+    .title { @include pixelated; color: var(--green); font-size: 8px; flex: 1; }
+    .close-mini { border: none; background: none; color: white; opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
   }
 
   .spawn-scroll-area {
-    padding: 16px;
+    @include smooth-scroll;
+
     min-height: 0;
+    padding: 16px;
     overflow-y: auto;
     flex: 1;
-    @include smooth-scroll;
   }
 }
 
 .spawn-trigger {
+  @extend %debug-trigger-base;
+
   border: 2px solid var(--green);
   color: var(--green);
   &:hover, &.active { background: var(--green); color: $black; text-shadow: none; }

@@ -5,6 +5,7 @@ import { formatCurrency } from '@/logic/utils/formatters'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
 import type { Item } from '@/types/inventory/items'
 import type { ItemId } from '@/data/inventory/items'
+import { BLACK_MARKET_DEFAULT_DISCOUNT, BATTLE_COIN_TO_MONEY_RATE } from '@/logic/constants/gameplay'
 
 interface Props {
   item: Item
@@ -15,8 +16,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  discount: 0.20,
-  bcToMoneyRate: 50
+  discount: BLACK_MARKET_DEFAULT_DISCOUNT,
+  bcToMoneyRate: BATTLE_COIN_TO_MONEY_RATE
 })
 
 const emit = defineEmits<{

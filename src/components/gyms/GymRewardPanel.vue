@@ -118,11 +118,11 @@ const tmRewardText = computed(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: Rgba(0, 0, 0, 0.35);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
   padding: 10px 14px;
-  box-shadow: inset 0 2px 8px Rgba(0, 0, 0, 0.4);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 12px;
+  background: Rgb(0 0 0 / 35%);
+  box-shadow: inset 0 2px 8px Rgb(0 0 0 / 40%);
 }
 
 .reward-badge-img {
@@ -130,11 +130,11 @@ const tmRewardText = computed(() => {
   height: 24px;
   object-fit: contain;
   image-rendering: pixelated;
-  filter: Drop-Shadow(0 0 4px Rgba(255, 215, 0, 0.4));
+  filter: Drop-Shadow(0 0 4px Rgb(255 215 0 / 40%));
   will-change: filter;
 
   &.claimed-badge {
-    filter: Drop-Shadow(0 0 6px Rgba(255, 215, 0, 0.75));
+    filter: Drop-Shadow(0 0 6px Rgb(255 215 0 / 75%));
   }
 }
 
@@ -147,18 +147,20 @@ const tmRewardText = computed(() => {
 
 .reward-title {
   @include pixelated;
-  font-size: 6px;
+
   color: var(--gray);
+  font-size: 6px;
   opacity: 0.6;
   letter-spacing: 0.5px;
 }
 
 .medal-name {
   @include pixelated;
-  font-size: 8px;
+
   color: $coin-gold;
-  text-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
+  font-size: 8px;
   line-height: 1.4;
+  text-shadow: 0 0 8px Rgb(255 214 10 / 30%);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -173,32 +175,33 @@ const tmRewardText = computed(() => {
 
 .tm-reward {
   @include pixelated;
-  font-size: 6px;
-  color: #fff;
-  background: Rgba(255, 255, 255, 0.1);
+
   padding: 2px 6px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 4px;
+  background: Rgb(255 255 255 / 10%);
+  color: #fff;
+  font-size: 6px;
   align-self: flex-start;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
 
   &.tm-claimed {
-    opacity: 0.5;
-    background: Rgba(255, 255, 255, 0.03);
+    background: Rgb(255 255 255 / 3%);
     color: #aaa;
+    opacity: 0.5;
   }
 
   &.tm-chance-normal {
-    opacity: 1;
+    border: 1px dashed Rgb(76 201 240 / 30%);
+    background: Rgb(76 201 240 / 5%);
     color: #4cc9f0;
-    background: Rgba(76, 201, 240, 0.05);
-    border: 1px dashed Rgba(76, 201, 240, 0.3);
+    opacity: 1;
   }
 
   &.tm-chance-hard {
-    opacity: 1;
+    border: 1px dashed Rgb(255 215 0 / 30%);
+    background: Rgb(255 215 0 / 5%);
     color: #ffd700;
-    background: Rgba(255, 215, 0, 0.05);
-    border: 1px dashed Rgba(255, 215, 0, 0.3);
+    opacity: 1;
   }
 }
 
@@ -208,29 +211,30 @@ const tmRewardText = computed(() => {
 }
 
 .reward-pill {
-  font-size: 6px;
-  padding: 2px 6px;
-  border-radius: 4px;
   @include pixelated;
+
+  padding: 2px 6px;
   border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 6px;
 
   &.exp {
+    background: Rgb(76 201 240 / 10%);
     color: #4cc9f0;
-    background: Rgba(76, 201, 240, 0.1);
-    border-color: Rgba(76, 201, 240, 0.2);
+    border-color: Rgb(76 201 240 / 20%);
   }
 
   &.money {
+    background: Rgb(255 215 0 / 10%);
     color: #ffd700;
-    background: Rgba(255, 215, 0, 0.1);
-    border-color: Rgba(255, 215, 0, 0.2);
+    border-color: Rgb(255 215 0 / 20%);
   }
 
   &.claimed {
+    background: Rgb(255 255 255 / 3%);
     color: #888;
-    background: Rgba(255, 255, 255, 0.03);
-    border-color: Rgba(255, 255, 255, 0.05);
     opacity: 0.55;
+    border-color: Rgb(255 255 255 / 5%);
     
     s {
       opacity: 0.7;

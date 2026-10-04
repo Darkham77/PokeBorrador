@@ -39,14 +39,14 @@ const types = computed<PokemonType[]>(() => {
 <style scoped lang="scss">
 .pokemon-type-pills {
   display: flex;
-  justify-content: center;
-  gap: 4px;
-  align-items: center;
   flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
 
   &.ssm {
-    flex-wrap: nowrap !important;
     flex-direction: row;
+    flex-wrap: nowrap !important;
     gap: 2px;
     width: auto;
     max-width: 100%;

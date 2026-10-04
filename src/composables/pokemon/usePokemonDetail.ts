@@ -15,6 +15,7 @@ import { toPokemonType } from '@/data/battle/types'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MoveCategory } from '@/data/battle/moves'
 import { calculateInstancePhysicalData } from '@/logic/pokemon/physicalDimensionsMath'
+import { DEFAULT_MAX_PP_FALLBACK } from '@/logic/constants/gameplay'
 
 const MAX_BASE_STAT_VALUE = 255;
 
@@ -191,7 +192,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     return species.value.learnset.map(m => {
       const resolvedId = m.id || ''
       const data = pokemonDataProvider.getMoveData(resolvedId)
-      const basePP = data?.pp || 35
+      const basePP = data?.pp || DEFAULT_MAX_PP_FALLBACK
       return {
         id: resolvedId,
         level: m.lv,
@@ -213,7 +214,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       const resolvedId = (typeof m === 'string' ? m : m.id) || ''
       if (!resolvedId) return null
       const data = pokemonDataProvider.getMoveData(resolvedId)
-      const basePP = (typeof m === 'object' && m?.pp) ? m.pp : (data?.pp || 35)
+      const basePP = (typeof m === 'object' && m?.pp) ? m.pp : (data?.pp || DEFAULT_MAX_PP_FALLBACK)
       const maxPP = (typeof m === 'object' && m?.maxPP) ? m.maxPP : basePP
       return {
         ...(typeof m === 'object' ? m : {}),

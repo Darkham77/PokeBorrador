@@ -77,14 +77,14 @@ const formattedSellValue = computed(() => {
 
 .mode-actions-bar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  margin: 0 12px 16px;
   padding: 12px 20px;
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 16px;
-  margin: 0 12px 16px 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(15, 23, 42, 0.8);
-  box-shadow: 0 8px 32px Rgba(0, 0, 0, 0.4);
+  background: rgb(15 23 42 / 80%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 40%);
 
   .selection-info {
     display: flex;
@@ -92,15 +92,17 @@ const formattedSellValue = computed(() => {
     gap: 12px;
 
     .count {
-      font-size: 16px;
-      color: var(--yellow);
       @include pixelated;
+
+      color: var(--yellow);
+      font-size: 16px;
     }
 
     .label {
-      font-size: 8px;
-      color: Rgba(255, 255, 255, 0.6);
       @include pixelated;
+
+      color: rgb(255 255 255 / 60%);
+      font-size: 8px;
     }
 
     .earnings {
@@ -109,10 +111,10 @@ const formattedSellValue = computed(() => {
       gap: 4px;
       margin-left: 12px;
       padding-left: 12px;
-      border-left: 1px solid Rgba(255, 255, 255, 0.1);
+      border-left: 1px solid rgb(255 255 255 / 10%);
 
-      .currency { font-family: sans-serif; color: var(--green); }
-      .value { color: var(--white); @include pixelated; font-size: 10px; }
+      .currency { color: var(--green); font-family: sans-serif; }
+      .value { @include pixelated; color: var(--white); font-size: 10px; }
     }
   }
 

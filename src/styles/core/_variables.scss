@@ -5,30 +5,30 @@
 $hud-mobile-breakpoint: 1410px;
 
 // Core UI colors
-$red:    #ff453a;
-$blue:   #0a84ff;
+$red: #ff453a;
+$blue: #0a84ff;
 $yellow: #ffd60a;
-$green:  #32d74b;
+$green: #32d74b;
 $purple: #bf5af2;
-$dark:   #0a0a0a;
-$darker: #000000;
-$white:  #ffffff;
-$black:  #000000;
-$card:   #121212;
-$card2:  #1a1a1a;
+$dark: #0a0a0a;
+$darker: #000;
+$white: #fff;
+$black: #000;
+$card: #121212;
+$card2: #1a1a1a;
 $card-dark: #1c2128;
-$text:   #f5f5f7;
-$gray:   #94a3b8; // Slate-400: Balanced readable retro-modern gray (clearly gray, not white, not pitch dark)
-$muted:  #94a3b8; // High-contrast medium slate
+$text: #f5f5f7;
+$gray: #94a3b8; // Slate-400: Balanced readable retro-modern gray (clearly gray, not white, not pitch dark)
+$muted: #94a3b8; // High-contrast medium slate
 $coin-gold: #FFD700;
-$pokecenter-pink: #ff3366;
+$pokecenter-pink: #f36;
 $gender-male: #58a6ff;
 $gender-female: #ff80ff;
 
 // Legacy 2024 Visual Tokens (Restored v5)
-$legacy-bg:    linear-gradient(180deg, #0c0f1a 0%, #0b0f16 100%);
-$legacy-card:  linear-gradient(180deg, #1a1a1a 0%, #121212 100%);
-$legacy-glow:  Rgba(255, 217, 61, 0.25);
+$legacy-bg: Linear-Gradient(180deg, #0c0f1a 0%, #0b0f16 100%);
+$legacy-card: Linear-Gradient(180deg, #1a1a1a 0%, #121212 100%);
+$legacy-glow: Rgb(255 217 61 / 25%);
 
 // Map de breakpoints para mixins
 $breakpoints: (

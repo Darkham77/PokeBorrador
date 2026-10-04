@@ -58,6 +58,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       id: 'validate_asset_usage',
       name: 'Asset Usage & Anti-Bypass Auditor',
       description: 'Rutas de assets cableadas o bypass de getAssetUrl',
+      icon: '🖼️',
       family: 'assets',
       ruleIds: ASSET_USAGE_RULES,
       packageName: 'Asset',

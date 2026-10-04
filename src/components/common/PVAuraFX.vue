@@ -68,40 +68,40 @@ onUnmounted(() => {
 
 .pv-aura-fx-layer {
   position: absolute;
+  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   inset: 0;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 4);
   filter: none;
 }
 
 .pv-fx-screen-overlay {
   position: absolute;
-  inset: -10%;
-  pointer-events: none;
   border-radius: 50%;
   opacity: 0.6;
+  inset: -10%;
+  pointer-events: none;
   mix-blend-mode: color-dodge;
   
   &.reflect {
-    background: Radial-Gradient(circle, Transparent 40%, #ff8c00 100%);
     border: 2px solid #ff8c00;
+    background: Radial-Gradient(circle, Transparent 40%, #ff8c00 100%);
   }
   
   &.light-screen {
-    background: Radial-Gradient(circle, Transparent 40%, #ffd700 100%);
     border: 2px solid #ffd700;
+    background: Radial-Gradient(circle, Transparent 40%, #ffd700 100%);
   }
 }
 
 .pv-fx-aura-overlay {
   position: absolute;
-  inset: -5%;
-  pointer-events: none;
   border-radius: 40%;
   opacity: 0.4;
+  inset: -5%;
+  pointer-events: none;
   
   &.safeguard {
     background: Radial-Gradient(circle, #50fa7b 0%, Transparent 70%);

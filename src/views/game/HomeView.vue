@@ -277,11 +277,11 @@ onUnmounted(() => {
 
 .home-masonry-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 20px;
   align-items: start;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 380px;
 
-  @media (max-width: 1100px) {
+  @media (width <= 1100px) {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -340,15 +340,15 @@ onUnmounted(() => {
 
 .home-column-main,
 .home-column-sidebar {
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 
 .home-widget-block {
-  min-width: 0;
   width: 100%;
+  min-width: 0;
 }
 
 .widget-coliseum-dual {
@@ -356,32 +356,32 @@ onUnmounted(() => {
 
   .dual-widgets-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
     align-items: stretch;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 
-    @media (max-width: 1100px) {
+    @media (width <= 1100px) {
       grid-template-columns: 1fr;
     }
   }
 }
 
 .home-section-card {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 12px;
+  background: rgb(18 22 34 / 85%);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
 }
 
 .card-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  min-width: 0;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
-  min-width: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
 
   .title-wrap {
     display: flex;
@@ -397,11 +397,12 @@ onUnmounted(() => {
 
   .card-title {
     @include pixelated;
-    font-size: 11px;
-    color: var(--yellow, #facc15);
+
     margin: 0;
+    color: var(--yellow, #facc15);
+    font-size: 11px;
     letter-spacing: 1px;
-    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .header-actions {
@@ -409,17 +410,18 @@ onUnmounted(() => {
 
     .refresh-count-badge {
       @include pixelated;
-      font-size: 10px;
-      color: var(--gray, #94a3b8);
-      background: Rgba(255, 255, 255, 0.05);
-      border: 1px solid Rgba(255, 255, 255, 0.08);
-      border-radius: 6px;
+
       padding: 3px 8px;
+      border: 1px solid rgb(255 255 255 / 8%);
+      border-radius: 6px;
+      background: rgb(255 255 255 / 5%);
+      color: var(--gray, #94a3b8);
+      font-size: 10px;
       margin-right: 2px;
       white-space: nowrap;
 
       .refresh-label {
-        @media (max-width: 640px) {
+        @media (width <= 640px) {
           display: none;
         }
       }

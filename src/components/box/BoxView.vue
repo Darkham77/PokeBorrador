@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useBoxFilters } from '@/composables/pokemon/useBoxFilters'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { POKEMON_BOX_SLOT_CAPACITY, DEFAULT_POKEMON_BOX_COUNT } from '@/logic/constants/gameplay'
 
 // Sub-componentes
 import BoxHeader from './BoxHeader.vue'
@@ -43,7 +44,7 @@ const {
   resetFilters 
 } = useBoxFilters(computed(() => gs.value.box))
 
-const maxCapacity = computed(() => (gs.value.boxCount || 4) * 50)
+const maxCapacity = computed(() => (gs.value.boxCount || DEFAULT_POKEMON_BOX_COUNT) * POKEMON_BOX_SLOT_CAPACITY)
 
 const displayList = computed(() => {
   const list = processedBoxList.value || []
@@ -53,8 +54,8 @@ const displayList = computed(() => {
     // Already filtered or sorted list (no nulls if filtered, but let's be safe)
     return list.filter((item): item is { p: Pokemon, index: number } => item.p != null)
   } else {
-    const start = currentBoxIndex.value * 50
-    const slice = list.slice(start, start + 50)
+    const start = currentBoxIndex.value * POKEMON_BOX_SLOT_CAPACITY
+    const slice = list.slice(start, start + POKEMON_BOX_SLOT_CAPACITY)
     return slice.filter((item): item is { p: Pokemon, index: number } => item.p != null)
   }
 })

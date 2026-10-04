@@ -116,17 +116,17 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
 
 .game-view {
   min-height: 100dvh;
+  padding: 20px;
   background: var(--darker);
   color: var(--white);
-  padding: 20px;
 }
 
 .game-container {
-  max-width: 1200px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  max-width: 1200px;
   min-height: calc(100dvh - 40px);
+  margin: 0 auto;
 }
 
 .content-area {
@@ -135,29 +135,30 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
   padding-bottom: 90px; /* Space for the floating bottom nav */
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .content-area {
     padding-top: 85px;
   }
 }
 
 .bottom-nav {
+  @include gpu-layer;
+
   position: fixed;
   bottom: 20px;
   left: 50%;
-  transform: Translatex(-50%);
-  background: Rgba(0, 0, 0, 0.85);
-  -webkit-will-change: transform, opacity;
-  will-change: transform, opacity;
-  @include gpu-layer;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 8px 16px;
+  z-index: var(--z-navigation);
   display: flex;
   gap: 12px;
-  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
-  z-index: var(--z-navigation);
+  padding: 8px 16px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 20px;
+  background: Rgb(0 0 0 / 85%);
+  transform: Translatex(-50%);
   transform: Translatex(-50%) Translatez(0);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
+  box-shadow: 0 10px 30px Rgb(0 0 0 / 50%);
 }
 
 .nav-item {
@@ -167,10 +168,10 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
   gap: 4px;
   padding: 8px 16px;
   border-radius: 12px;
-  text-decoration: none;
   color: var(--gray);
   font-size: 11px;
   font-weight: bold;
+  text-decoration: none;
 }
 
 .nav-item span:first-child {
@@ -182,18 +183,18 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
 }
 
 .nav-item.active {
-  background: Rgba(255, 184, 0, 0.1);
+  background: Rgb(255 184 0 / 10%);
   color: var(--yellow);
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .game-view {
     padding: 10px;
   }
   .bottom-nav {
-    width: 90%;
     bottom: 10px;
     justify-content: space-around;
+    width: 90%;
   }
 }
 </style>

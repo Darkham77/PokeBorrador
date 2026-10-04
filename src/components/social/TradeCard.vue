@@ -208,24 +208,24 @@ async function onClaim() {
 @use "@/styles/core/_mixins" as *;
 
 .trade-card {
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 14px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 16px;
+  background: Rgb(255 255 255 / 2%);
   
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.03);
-    border-color: Rgba(199, 125, 255, 0.15);
+    background: Rgb(255 255 255 / 3%);
+    border-color: Rgb(199 125 255 / 15%);
   }
 
   &.accepted {
+    background: Rgb(34 197 94 / 3%);
     border-left: 4px solid #22c55e;
-    background: Rgba(34, 197, 94, 0.03);
-    border-color: Rgba(34, 197, 94, 0.1);
+    border-color: Rgb(34 197 94 / 10%);
   }
 
   &.incoming { border-left: 4px solid var(--purple-light); }
@@ -251,15 +251,15 @@ async function onClaim() {
   gap: 3px;
 
   .username {
+    color: var(--white);
     font-size: 14px;
     font-weight: 700;
-    color: var(--white);
     line-height: 1.2;
   }
 
   .meta {
+    color: Rgb(255 255 255 / 40%);
     font-size: 11px;
-    color: Rgba(255, 255, 255, 0.4);
     line-height: 1.2;
 
     &.text-success { color: #4ade80; font-weight: bold; }
@@ -268,56 +268,57 @@ async function onClaim() {
 
 .waiting-badge {
   @include pixelated;
-  font-size: 8px;
-  background: #1e293b;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: #facc15;
+
   padding: 4px 8px;
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 6px;
+  background: #1e293b;
+  color: #facc15;
+  font-size: 8px;
 }
 
 /* ── Message bubble ── */
 .trade-message-bubble {
-  background: Rgba(168, 85, 247, 0.04);
-  border: 1px solid Rgba(168, 85, 247, 0.08);
-  border-radius: 12px;
-  padding: 8px 12px;
   display: flex;
-  gap: 4px;
   align-items: flex-start;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid Rgb(168 85 247 / 8%);
+  border-radius: 12px;
+  background: Rgb(168 85 247 / 4%);
 
   .bubble-quote {
+    color: var(--purple-light);
     font-family: 'Courier New', Courier, monospace;
     font-size: 16px;
     font-weight: bold;
-    color: var(--purple-light);
     line-height: 1;
   }
   .msg-text {
+    color: Rgb(255 255 255 / 85%);
     font-size: 11px;
-    color: Rgba(255, 255, 255, 0.85);
-    font-style: italic;
     line-height: 1.3;
+    font-style: italic;
   }
 }
 
 /* ── Warning banner ── */
 .trade-warning-banner {
-  font-size: 11px;
-  color: #f87171;
-  background: Rgba(239, 68, 68, 0.06);
-  border: 1px dashed Rgba(239, 68, 68, 0.25);
   padding: 8px 10px;
+  border: 1px dashed Rgb(239 68 68 / 25%);
   border-radius: 8px;
+  background: Rgb(239 68 68 / 6%);
+  color: #f87171;
+  font-size: 11px;
   line-height: 1.4;
 }
 
 /* ── Success notice ── */
 .success-notice {
-  background: Rgba(34, 197, 94, 0.05);
-  border: 1px solid Rgba(34, 197, 94, 0.1);
   padding: 10px 12px;
+  border: 1px solid Rgb(34 197 94 / 10%);
   border-radius: 10px;
+  background: Rgb(34 197 94 / 5%);
   color: #e2e8f0;
   font-size: 11px;
   line-height: 1.4;
@@ -330,19 +331,19 @@ async function onClaim() {
   display: flex;
   gap: 8px;
 
-  button { flex: 1; font-weight: bold; }
+  button { font-weight: bold; flex: 1; }
 
   .accept-btn:disabled {
+    background: Rgb(255 255 255 / 5%) !important;
+    color: Rgb(255 255 255 / 20%) !important;
     opacity: 0.4;
-    cursor: not-allowed;
-    background: Rgba(255, 255, 255, 0.05) !important;
-    border-color: Rgba(255, 255, 255, 0.1) !important;
-    color: Rgba(255, 255, 255, 0.2) !important;
-    box-shadow: none !important;
     transform: none;
+    cursor: not-allowed;
+    border-color: Rgb(255 255 255 / 10%) !important;
+    box-shadow: none !important;
   }
 
-  .cancel-btn, .claim-notif-btn { flex: none; width: 100%; }
+  .cancel-btn, .claim-notif-btn { width: 100%; flex: none; }
 }
 
 /* ── Interactivity ── */
@@ -355,6 +356,6 @@ async function onClaim() {
 .clickable-username {
   cursor: pointer;
   
-  &:hover { text-decoration: underline; opacity: 0.85; }
+  &:hover { opacity: 0.85; text-decoration: underline; }
 }
 </style>

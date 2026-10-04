@@ -59,29 +59,30 @@ const emit = defineEmits<{
 }
 
 .status-badge {
+  @include pixelated;
+
   display: inline-flex;
-  align-items: center;
   justify-content: center;
-  text-align: center;
-  font-family: var(--font-pixel), "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  font-size: 8px;
+  align-items: center;
+  gap: 6px;
   padding: 8px 12px;
   border-radius: 8px;
-  @include pixelated;
-  gap: 6px;
+  font-family: var(--font-pixel), "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  font-size: 8px;
   line-height: 1.5;
+  text-align: center;
   
   &.pending {
+    border: 1px solid rgb(250 204 21 / 25%);
     background: #475569;
     color: #facc15;
-    border: 1px solid Rgba(250, 204, 21, 0.25);
     box-shadow: 0 3px 0 #334155;
   }
   
   &.friend {
+    border: 1px solid rgb(74 222 128 / 25%);
     background: #1e293b;
     color: #4ade80;
-    border: 1px solid Rgba(74, 222, 128, 0.25);
     box-shadow: 0 3px 0 #0f172a;
   }
 }

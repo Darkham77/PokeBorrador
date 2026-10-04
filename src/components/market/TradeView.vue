@@ -268,6 +268,7 @@ const requestSummary = computed(() => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .trade-modal-inner {
   padding: 8px 0;
 }
@@ -276,29 +277,31 @@ const requestSummary = computed(() => {
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 24px;
-  background: Rgba(0,0,0,0.3);
   padding: 16px;
+  border: 1px solid rgb(255 255 255 / 5%);
   border-radius: 16px;
-  border: 1px solid Rgba(255,255,255,0.05);
+  background: rgb(0 0 0 / 30%);
+  margin-bottom: 24px;
 
   .summary-box { 
-    flex: 1; 
     display: flex; 
     flex-direction: column; 
     gap: 4px; 
+    flex: 1; 
 
     .label { 
-      font-size: 8px; 
       @include pixelated;
-      color: var(--gray);
+
+      color: var(--gray); 
+      font-size: 8px;
     }
-    .value { 
-      font-size: 8px; 
+    .value {
+      @include pixelated; 
+
       color: $white; 
+      font-size: 8px; 
       font-weight: 700;
       line-height: 1.5;
-      @include pixelated;
     }
   }
 
@@ -307,10 +310,10 @@ const requestSummary = computed(() => {
 
 .trade-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: minmax(0, 1fr);
   }
 

@@ -3,28 +3,30 @@
   flex-direction: column;
   gap: 2px;
 
-  @media (max-width: 560px) {
-    align-items: flex-start;
+  @media (width <= 560px) {
     flex-direction: row;
+    align-items: flex-start;
     gap: 4px;
-    border: none;
     padding: 0;
+    border: none;
   }
 
   .d-label { 
+    color: #fff; 
     font-size: 6px; 
-    color: #ffffff; 
     opacity: 0.4; 
-    @media (max-width: 560px) { font-size: 5px; opacity: 0.6; min-width: 25px; }
+
+    @media (width <= 560px) { min-width: 25px; font-size: 5px; opacity: 0.6; }
   }
   .d-val { 
-    font-size: 7px; 
-    color: #ffffff; 
-    font-weight: 900; 
     display: flex;
     align-items: center;
-    gap: 2px;
-    @media (max-width: 560px) { font-size: 6px; }
+    gap: 2px; 
+    color: #fff; 
+    font-size: 7px; 
+    font-weight: 900;
+
+    @media (width <= 560px) { font-size: 6px; }
 
     .infinity-emoji {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;

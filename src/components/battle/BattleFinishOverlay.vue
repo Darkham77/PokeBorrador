@@ -72,18 +72,19 @@ const exitButtonConfig = computed(() => {
 @use "@/styles/core/tools" as *;
 
 .battle-finish-overlay {
+  @include gpu-layer;
+
   position: absolute;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: var(--z-overlay);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: Rgb(0 0 0 / 70%);
+  inset: 0;
   pointer-events: all;
   cursor: pointer;
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
-  @include gpu-layer;
 
   &.is-search-mode {
     align-items: flex-end;
@@ -94,38 +95,39 @@ const exitButtonConfig = computed(() => {
 .finish-actions-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
   width: 100%;
   padding: 20px;
 }
 
 .continue-btn-final {
   @include btn-vicio('info', 'md', true);
-  max-width: 300px;
-  display: flex;
-  align-items: center;
+
   z-index: calc(var(--z-overlay) + 1);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+  max-width: 300px;
+  text-align: left;
   pointer-events: all;
   cursor: pointer;
-  justify-content: flex-start;
   padding-left: 48px;
-  gap: 16px;
-  text-align: left;
   
   &.map-btn {
     @include btn-vicio('success', 'md', true);
   }
 
   .emoji {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 32px;
     font-size: 28px; 
     line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
+    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 30%));
     flex-shrink: 0;
   }
 

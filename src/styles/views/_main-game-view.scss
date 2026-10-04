@@ -2,81 +2,78 @@
 @use "../core/tools" as *;
 
 #game-screen {
-  height: 100dvh;
   display: flex;
   flex-direction: column;
+  height: 100dvh;
   overflow: hidden;
 }
 
 .main-hud-desktop {
-  @media (min-width: 1411px) {
+  @media (width >= 1411px) {
     display: flex;
     opacity: 1;
     transform: none;
   }
 }
 
-.content-area {
-  flex: 1;
+.content-area { 
+  position: relative;
   display: flex;
   flex-direction: column;
+  padding: 0;
+  flex: 1;
   overflow: visible !important; 
-  position: relative;
-  padding: 0; 
 }
 
 .tab-content {
+  @include gpu-layer;
+
   position: absolute;
-  inset: 0;
   display: block; // Switched to block to fix padding-bottom scroll issue
   min-height: 0; // Fixes flex scroll collapse
-  overflow-y: auto;
-  overflow-x: hidden;
+  inset: 0;
+  overflow: hidden auto;
   padding-top: var(--hud-top-padding, 180px);
   padding-bottom: var(--hud-bottom-padding, 100px);
   padding-inline: var(--ui-h-padding);
   box-sizing: border-box;
-  @include gpu-layer;
 }
 
 .hud-bottom-wrapper {
+  @include will-animate(transform, opacity);
+
   position: fixed;
   bottom: 0;
   left: 0;
+  z-index: var(--z-navigation);
   width: 100%;
   pointer-events: none;
-  z-index: var(--z-navigation);
-  
-  // Estado inicial Desktop: oculto
-  @media (min-width: 1411px) {
-    transform: Translatey(110%);
-    opacity: 0;
-  }
 
   // Estado inicial Móvil: siempre visible
   @include responsive(hud-mobile) {
     bottom: 0;
-    transform: Translatey(0);
-    opacity: 1 !important;
-    pointer-events: auto !important;
     display: flex;
     justify-content: center;
+    opacity: 1 !important;
+    transform: Translatey(0);
+    pointer-events: auto !important;
   }
-
-  
-  @include will-animate(transform, opacity);
 
   & > * {
     pointer-events: auto;
   }
-
-  // Fallback removido para Desktop: No queremos que aparezca nunca en resoluciones altas
+  
+  // Estado inicial Desktop: oculto
+  @media (width >= 1411px) {
+    opacity: 0;
+    transform: Translatey(110%);
+  }
 }
 
 .hud-spacer-bottom {
+  width: 100%;
   height: var(--hud-bottom-padding, 80px);
   min-height: 80px;
-  width: 100%;
   flex-shrink: 0;
   pointer-events: none;
 }
@@ -84,83 +81,88 @@
 .hidden-system {
   display: none !important;
 }
+
 .hint-banner {
+  padding: 10px 14px;
+  border-radius: 10px;
   font-size: 11px;
   margin-bottom: 12px;
-  border-radius: 10px;
-  padding: 10px 14px;
 }
+
 .rocket-hint, .release-hint {
+  border: 1px solid Rgb(239 68 68 / 20%);
+  background: Rgb(239 68 68 / 8%);
   color: var(--red);
-  background: Rgba(239, 68, 68, 0.08);
-  border: 1px solid Rgba(239, 68, 68, 0.2);
 }
+
 .overlay-fixed {
   position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.9);
   z-index: var(--z-overlay);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 0;
+  background: Rgb(0 0 0 / 90%);
   transform: Translatez(0);
+  inset: 0;
 }
 
 .private-chats-container {
+  @include will-animate(bottom, transform);
+
   position: fixed;
   right: 20px;
   bottom: 80px; /* Space for bottom nav */
+  z-index: var(--z-hud);
   display: flex;
   flex-direction: row-reverse;
   gap: 10px;
+  transform: Translate3d(0, 0, 0);
   pointer-events: none;
-  z-index: var(--z-hud);
-  transform: Translate3D(0, 0, 0);
-  
-  @include will-animate(bottom, transform);
-  
-  & > * {
-    pointer-events: auto;
-  }
 
   @include responsive(hud-mobile) {
     bottom: 100px;
+  }
+  
+  & > * {
+    pointer-events: auto;
   }
 }
 
 .mobile-only-nav {
   display: none !important; // Oculto por defecto en escritorio para evitar colisiones
-  
+
   @include responsive(hud-mobile) {
     display: flex !important;
   }
 
-  @media (max-width: 467px) { zoom: 0.9; }
-  @media (max-width: 420px) { zoom: 0.8; }
-  @media (max-width: 380px) { zoom: 0.7; }
-  @media (max-width: 340px) { zoom: 0.6; }
+  @media (width <= 467px) { zoom: 0.9; }
+
+  @media (width <= 420px) { zoom: 0.8; }
+
+  @media (width <= 380px) { zoom: 0.7; }
+
+  @media (width <= 340px) { zoom: 0.6; }
 
   // Seguridad para Desktop (> 1410px): Siempre oculto
-  @media (min-width: 1411px) { 
+  @media (width >= 1411px) { 
     display: none !important; 
   }
 }
 
 /* --- HUD Visibility States --- */
 .hud-hidden {
-  &.main-hud-desktop { 
+  &.main-hud-desktop {
+    opacity: 0; 
     transform: Translatey(-110%);
-    opacity: 0;
   }
   
   &.hud-sidebar-tools {
-    transform: Translatex(-150%);
     opacity: 0;
+    transform: Translatex(-150%);
   }
 }
 
-.hud-container, .hud-sidebar-tools, .hud-bottom-wrapper {
-  
+.hud-container, .hud-sidebar-tools {
   @include will-animate(transform, opacity);
 }

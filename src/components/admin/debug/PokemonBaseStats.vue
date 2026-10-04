@@ -26,29 +26,29 @@ defineProps<Props>()
 <style lang="scss" scoped>
 .base-stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
 
   .stat-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: Rgba(255, 255, 255, 0.05);
     padding: 6px;
+    border: 1px solid rgb(255 255 255 / 5%);
     border-radius: 8px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+    background: rgb(255 255 255 / 5%);
 
     label {
+      color: rgb(255 255 255 / 40%);
       font-size: 8px;
       text-transform: uppercase;
-      color: Rgba(255, 255, 255, 0.4);
       margin-bottom: 4px;
     }
 
     .stat-value {
+      color: var(--yellow);
       font-size: 11px;
       font-weight: bold;
-      color: var(--yellow);
     }
   }
 }

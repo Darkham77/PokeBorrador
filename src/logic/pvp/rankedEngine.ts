@@ -46,6 +46,20 @@ const ELO_THRESHOLD_PLATINO = 2100;
 const ELO_THRESHOLD_DIAMANTE = 2700;
 const ELO_THRESHOLD_MAESTRO = 3400;
 
+export const STANDARD_COMPETITIVE_LEVEL = 50;
+export const MAX_INDIVIDUAL_VALUE = 31;
+export const DIAMANTE_SPEED_INDIVIDUAL_VALUE = 28;
+export const DEFAULT_FEATURED_REPLAYS_LIMIT = 10;
+
+export const SEASONAL_BATTLE_COINS = {
+  MAESTRO: 500,
+  DIAMANTE: 350,
+  PLATINO: 250,
+  ORO: 150,
+  PLATA: 75,
+  BRONCE: 25,
+} as const;
+
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 export const RANKED_TIERS: Record<RankedTierCode, EloTier> = {
@@ -77,50 +91,64 @@ export function getSeasonalPrizesForTier(tierInput: string): SeasonalTierReward 
   switch (tier) {
     case 'maestro':
       return {
-        battleCoins: 500,
+        battleCoins: SEASONAL_BATTLE_COINS.MAESTRO,
         dungeonTickets: 6,
         tickets: { cuevaCeleste: 3, islasEspumas: 3 },
         pokemonReward: {
           species: 'eevee',
-          level: 50,
+          level: STANDARD_COMPETITIVE_LEVEL,
           shiny: true,
-          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+          ivs: {
+            hp: MAX_INDIVIDUAL_VALUE,
+            atk: MAX_INDIVIDUAL_VALUE,
+            def: MAX_INDIVIDUAL_VALUE,
+            spa: MAX_INDIVIDUAL_VALUE,
+            spd: MAX_INDIVIDUAL_VALUE,
+            spe: MAX_INDIVIDUAL_VALUE,
+          }
         }
       };
     case 'diamante':
       return {
-        battleCoins: 350,
+        battleCoins: SEASONAL_BATTLE_COINS.DIAMANTE,
         dungeonTickets: 4,
         tickets: { cuevaCeleste: 2, islasEspumas: 2 },
         pokemonReward: {
           species: 'eevee',
-          level: 50,
+          level: STANDARD_COMPETITIVE_LEVEL,
           shiny: false,
-          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 28 }
+          ivs: {
+            hp: MAX_INDIVIDUAL_VALUE,
+            atk: MAX_INDIVIDUAL_VALUE,
+            def: MAX_INDIVIDUAL_VALUE,
+            spa: MAX_INDIVIDUAL_VALUE,
+            spd: MAX_INDIVIDUAL_VALUE,
+            spe: DIAMANTE_SPEED_INDIVIDUAL_VALUE,
+          }
         }
       };
     case 'platino':
       return {
-        battleCoins: 250,
+        battleCoins: SEASONAL_BATTLE_COINS.PLATINO,
         dungeonTickets: 4,
         tickets: { cuevaCeleste: 2, islasEspumas: 2 }
       };
     case 'oro':
       return {
-        battleCoins: 150,
+        battleCoins: SEASONAL_BATTLE_COINS.ORO,
         dungeonTickets: 2,
         tickets: { cuevaCeleste: 1, islasEspumas: 1 }
       };
     case 'plata':
       return {
-        battleCoins: 75,
+        battleCoins: SEASONAL_BATTLE_COINS.PLATA,
         dungeonTickets: 1,
         tickets: { cuevaCeleste: 1, islasEspumas: 0 }
       };
     case 'bronce':
     default:
       return {
-        battleCoins: 25,
+        battleCoins: SEASONAL_BATTLE_COINS.BRONCE,
         dungeonTickets: 0,
         tickets: { cuevaCeleste: 0, islasEspumas: 0 }
       };

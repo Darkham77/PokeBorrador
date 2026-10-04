@@ -2,17 +2,17 @@
 @use "@/styles/core/mixins" as *;
 
 .rank-card {
-  background: Rgba(255, 255, 255, 0.02);
   padding: 10px 12px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 0 12px Rgba(255, 255, 255, 0.02);
+  background: Rgb(255 255 255 / 2%);
+  box-shadow: inset 0 0 12px Rgb(255 255 255 / 2%);
   container-type: inline-size;
   container-name: rank-card;
 
   .actions-buttons-group {
-    margin-top: 8px;
     width: 100%;
+    margin-top: 8px;
 
     .search-btn {
       min-height: 32px;
@@ -21,34 +21,35 @@
   }
 
   .search-status-box {
-    margin-top: 8px;
-    margin-bottom: 2px;
+    @include pixelated;
+
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 8px;
     padding: 6px 10px;
-    background: Rgba(0, 0, 0, 0.25);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
+    border: 1px solid Rgb(255 255 255 / 8%);
     border-radius: 8px;
-    font-size: 8px;
+    background: Rgb(0 0 0 / 25%);
     color: var(--yellow, #facc15);
-    @include pixelated;
+    font-size: 8px;
+    margin-top: 8px;
+    margin-bottom: 2px;
   }
 }
 
 .arena-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
   align-items: center;
+  gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
   box-sizing: border-box;
 }
 
 .rank-summary-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
   width: 100%;
 
@@ -58,15 +59,15 @@
   }
 
   .arena-stats {
+    min-width: 0;
+    max-width: 250px;
     border-top: none;
     padding-top: 0;
     flex: 1;
-    min-width: 0;
-    max-width: 250px;
     margin-left: auto;
   }
 
-  @media (max-width: 380px) {
+  @media (width <= 380px) {
     flex-direction: column;
     align-items: center;
     gap: 8px;
@@ -83,18 +84,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 0;
   min-width: 0;
+  margin-bottom: 0;
 }
 
 .tier-icon-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 44px;
   height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.2));
+  filter: Drop-Shadow(0 0 10px Rgb(255 215 0 / 20%));
   will-change: transform;
   flex-shrink: 0;
 }
@@ -106,38 +107,38 @@
 }
 
 .tier-emoji-badge {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at 35% 35%, Rgba(255, 255, 255, 0.05) 0%, Rgba(0, 0, 0, 0.4) 100%), Rgba(255, 255, 255, 0.01);
   border: 2px solid var(--tier-color);
+  border-radius: 50%;
+  background: Radial-Gradient(circle at 35% 35%, Rgb(255 255 255 / 5%) 0%, Rgb(0 0 0 / 40%) 100%), Rgb(255 255 255 / 1%);
   box-shadow: 
-    0 0 16px color-mix(in srgb, var(--tier-color) 40%, transparent), 
-    inset 0 0 10px color-mix(in srgb, var(--tier-color) 20%, transparent);
-  position: relative;
+    0 0 16px color-mix(in sRGB, var(--tier-color) 40%, transparent), 
+    inset 0 0 10px color-mix(in sRGB, var(--tier-color) 20%, transparent);
   overflow: hidden;
   box-sizing: border-box;
 
   &::before {
-    content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 50%;
-    background: linear-gradient(to bottom, Rgba(255, 255, 255, 0.08), transparent);
     border-radius: 36px 36px 0 0;
+    background: Linear-Gradient(to bottom, Rgb(255 255 255 / 8%), transparent);
+    content: '';
   }
 
   .emoji {
+    display: inline-block;
     font-size: 24px;
     line-height: 1;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5)) Drop-Shadow(0 0 8px color-mix(in srgb, var(--tier-color) 50%, transparent));
+    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 50%)) Drop-Shadow(0 0 8px color-mix(in sRGB, var(--tier-color) 50%, transparent));
     user-select: none;
-    display: inline-block;
     will-change: transform;
   }
 }
@@ -152,127 +153,132 @@
     font-size: 16px;
     font-weight: 900;
     letter-spacing: -0.5px;
-    text-shadow: 0 0 15px Rgba(255, 255, 255, 0.1);
+    text-shadow: 0 0 15px Rgb(255 255 255 / 10%);
   }
 }
 
 .tier-label {
-  font-size: 7.5px;
   @include pixelated;
-  color: Rgba(226, 232, 240, 0.95);
+
+  color: Rgb(226 232 240 / 95%);
+  font-size: 7.5px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .elo-badge {
-  align-self: flex-start;
-  display: inline-block;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  padding: 2px 8px;
-  border-radius: 6px;
   @include pixelated;
-  font-size: 7.5px;
+
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 6px;
+  background: Rgb(255 255 255 / 5%);
   color: var(--yellow);
-  text-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
+  font-size: 7.5px;
+  align-self: flex-start;
+  text-shadow: 0 0 8px Rgb(255 214 10 / 30%);
 }
 
-.stat-item { 
-  text-align: center;
-  background: Rgba(0, 0, 0, 0.15);
-  border: 1px solid Rgba(255, 255, 255, 0.02);
-  padding: 6px 4px;
-  border-radius: 6px;
+.stat-item {
   min-width: 0;
   height: auto;
+  padding: 6px 4px;
+  border: 1px solid Rgb(255 255 255 / 2%);
+  border-radius: 6px;
+  background: Rgb(0 0 0 / 15%); 
+  text-align: center;
   align-self: center;
   overflow: visible;
 
   .val { 
     display: block; 
+    color: var(--white); 
     font-size: 11px; 
-    font-weight: bold; 
-    color: var(--white);
+    font-weight: bold;
+    line-height: 1.35;
     white-space: nowrap;
     overflow: visible;
-    line-height: 1.35;
     padding-top: 1px;
   }
   .lab { 
-    font-size: 6.5px; 
+    @include pixelated; 
+
     color: var(--gray, #94a3b8); 
-    font-weight: bold; 
-    @include pixelated;
+    font-size: 6.5px; 
+    font-weight: bold;
+    line-height: 1.2;
     margin-top: 2px;
     white-space: nowrap;
-    line-height: 1.2;
   }
 }
 
 .passive-defense {
-  background: Rgba(0, 0, 0, 0.2);
   padding: 16px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 16px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(0 0 0 / 20%);
 }
 
 .def-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
   gap: 12px;
+  margin-bottom: 12px;
 
   .title-group {
     h3 { 
       margin: 0; 
+      color: var(--white); 
       font-size: 11px; 
-      font-weight: 800; 
-      color: var(--white);
+      font-weight: 800;
     }
     p { 
       margin: 4px 0 0; 
+      color: Rgb(148 163 184 / 50%); 
       font-size: 9px; 
-      color: Rgba(148, 163, 184, 0.5); 
     }
   }
 }
 
 .toggle-btn {
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
   @include pixelated;
+
+  padding: 8px 16px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  background: Rgb(255 255 255 / 3%);
+  color: Rgb(148 163 184 / 60%);
   font-size: 7px;
   cursor: pointer;
-  background: Rgba(255, 255, 255, 0.03);
-  color: Rgba(148, 163, 184, 0.6);
   will-change: background-color, color, border-color;
 
   &.active {
-    background: Rgba(34, 197, 94, 0.15);
-    color: Rgba(74, 222, 128, 1);
-    border-color: Rgba(34, 197, 94, 0.3);
-    box-shadow: 0 0 15px Rgba(34, 197, 94, 0.15);
+    background: Rgb(34 197 94 / 15%);
+    color: Rgb(74 222 128 / 100%);
+    border-color: Rgb(34 197 94 / 30%);
+    box-shadow: 0 0 15px Rgb(34 197 94 / 15%);
   }
 }
 
 .def-status { 
-  font-size: 8px; 
+  @include pixelated; 
+
   padding: 8px 12px; 
   border-radius: 8px; 
-  text-align: center; 
+  font-size: 8px; 
   font-weight: bold; 
-  @include pixelated;
+  text-align: center;
 
   &.active { 
-    background: Rgba(34, 197, 94, 0.08); 
-    color: Rgba(74, 222, 128, 1); 
-    border: 1px solid Rgba(34, 197, 94, 0.15);
+    border: 1px solid Rgb(34 197 94 / 15%); 
+    background: Rgb(34 197 94 / 8%); 
+    color: Rgb(74 222 128 / 100%);
   }
   &.inactive { 
-    background: Rgba(239, 68, 68, 0.08); 
-    color: Rgba(248, 113, 113, 1); 
-    border: 1px solid Rgba(239, 68, 68, 0.15);
+    border: 1px solid Rgb(239 68 68 / 15%); 
+    background: Rgb(239 68 68 / 8%); 
+    color: Rgb(248 113 113 / 100%);
   }
 }

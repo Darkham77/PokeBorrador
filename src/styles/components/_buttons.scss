@@ -36,17 +36,21 @@
   @include btn-vicio('neutral', 'md');
 }
 
-// Size Modifiers - MUST BE USED WITH A VARIANT
+// Size Modifiers - Can be used alone or combined with a variant
+.btn-vicio-xs {
+  @include btn-vicio-size('xs');
+}
+
 .btn-vicio-sm {
   @include btn-vicio-size('sm');
-  
-  // Re-apply variants with small depth if detected
-  &.btn-vicio-primary { @include btn-vicio-variant('primary', 'sm'); }
-  &.btn-vicio-secondary { @include btn-vicio-variant('secondary', 'sm'); }
-  &.btn-vicio-danger { @include btn-vicio-variant('danger', 'sm'); }
-  &.btn-vicio-info { @include btn-vicio-variant('info', 'sm'); }
-  &.btn-vicio-success { @include btn-vicio-variant('success', 'sm'); }
-  &.btn-vicio-neutral { @include btn-vicio-variant('neutral', 'sm'); }
+}
+
+.btn-vicio-md {
+  @include btn-vicio-size('md');
+}
+
+.btn-vicio-lg {
+  @include btn-vicio-size('lg');
 }
 
 .btn-vicio-full {

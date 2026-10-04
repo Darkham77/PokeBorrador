@@ -122,23 +122,25 @@ const handleItemImageError = (e: Event) => {
 
 .unified-badge-pill {
   @include flex-center;
+
   z-index: var(--z-low);
 
   .pill-container {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex-wrap: nowrap;
-    gap: 4px;
-    background: $black !important;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
     @include gpu-layer;
-    box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
+
+    display: flex !important;
+    flex-wrap: nowrap;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4px;
+    border: 1px solid Rgb(255 255 255 / 10%);
+    background: $black !important;
+    box-shadow: 0 4px 15px Rgb(0 0 0 / 50%);
 
     :deep(.pv-tooltip-wrapper) {
       display: flex !important;
-      align-items: center !important;
       justify-content: center !important;
+      align-items: center !important;
       height: 100%;
       
       &:hover {
@@ -148,12 +150,12 @@ const handleItemImageError = (e: Event) => {
   }
 
   &.sm {
-    .pill-container { padding: 4px; border-radius: 8px; gap: 4px; }
+    .pill-container { gap: 4px; padding: 4px; border-radius: 8px; }
     .badge-icon { 
-      font-size: 10px; 
       width: 14px !important; 
       height: 14px !important;
-      padding: 0 !important;
+      padding: 0 !important; 
+      font-size: 10px;
       &.is-text { font-size: 6px; }
 
       .badge-item-img {
@@ -167,11 +169,11 @@ const handleItemImageError = (e: Event) => {
     }
 
     :deep(.pv-tooltip-wrapper) {
+      display: inline-flex !important;
+      justify-content: center;
+      align-items: center;
       width: 14px !important;
       height: 14px !important;
-      display: inline-flex !important;
-      align-items: center;
-      justify-content: center;
 
       &:has(.is-item) {
         width: 16px !important;
@@ -185,9 +187,9 @@ const handleItemImageError = (e: Event) => {
   }
 
   &.md {
-    .pill-container { padding: 6px; border-radius: 12px; gap: 6px; }
-    .badge-icon { 
-      font-size: 14px; width: 18px; height: 18px; 
+    .pill-container { gap: 6px; padding: 6px; border-radius: 12px; }
+    .badge-icon { width: 18px; height: 18px; 
+      font-size: 14px; 
       &.is-text { font-size: 8px; }
     }
     &.vertical {
@@ -196,9 +198,9 @@ const handleItemImageError = (e: Event) => {
   }
 
   &.lg {
-    .pill-container { padding: 8px; border-radius: 20px; gap: 8px; }
-    .badge-icon { 
-      font-size: 18px; width: 22px; height: 22px; 
+    .pill-container { gap: 8px; padding: 8px; border-radius: 20px; }
+    .badge-icon { width: 22px; height: 22px; 
+      font-size: 18px; 
       &.is-text { font-size: 10px; }
     }
     &.vertical {
@@ -207,9 +209,9 @@ const handleItemImageError = (e: Event) => {
   }
 
   &.xl {
-    .pill-container { padding: 10px; border-radius: 24px; gap: 10px; }
-    .badge-icon { 
-      font-size: 22px; width: 28px; height: 28px; 
+    .pill-container { gap: 10px; padding: 10px; border-radius: 24px; }
+    .badge-icon { width: 28px; height: 28px; 
+      font-size: 22px; 
       &.is-text { font-size: 12px; }
     }
     &.vertical {
@@ -218,12 +220,12 @@ const handleItemImageError = (e: Event) => {
   }
 
   .badge-icon {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
     @include flex-center;
     @include pixelated;
-    
+
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
     color: var(--badge-color, #ccc);
     font-weight: 900;
     line-height: 1 !important;
@@ -235,7 +237,7 @@ const handleItemImageError = (e: Event) => {
 
     // NORMALIZACIÓN VISUAL ESTÁNDAR (MD, LG, XL)
     &.is-shiny { font-size: 0.85em; } 
-    &.is-iv31 { font-size: 0.75em; letter-spacing: -0.5px; font-weight: 900; font-family: var(--font-pixel) !important; @include pixelated; }
+    &.is-iv31 { @include pixelated; font-family: var(--font-pixel) !important; font-size: 0.75em; font-weight: 900; letter-spacing: -0.5px; }
     &.is-fav { 
       font-size: 0.68em; 
       transform: Translatey(-0.5px); 
@@ -249,26 +251,27 @@ const handleItemImageError = (e: Event) => {
     }
 
     .badge-item-img {
+      @include sprite-render;
+
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      @include sprite-render;
       transform: Scale(1.6); // "Zoom sufficient" as requested
+      object-fit: contain;
       will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.4));
+  filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
     }
 
     .fallback-icon {
-      font-size: 0.9em;
       display: block;
+      font-size: 0.9em;
     }
 
     &.is-inactive {
+      background: transparent !important;
       opacity: 0.65;
+      transform: none;
       will-change: transform, filter, opacity;
       filter: Grayscale(0.8) Brightness(1.3);
-      transform: none;
-      background: transparent !important;
       box-shadow: none !important;
     }
 
@@ -277,8 +280,8 @@ const handleItemImageError = (e: Event) => {
     }
 
     &.is-locked {
-      cursor: default !important;
       opacity: 0.9;
+      cursor: default !important;
     }
 
     &.can-edit {

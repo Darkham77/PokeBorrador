@@ -70,22 +70,23 @@ const hatchEgg = (egg: PokemonEgg) => {
 
 .incubating-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
   gap: 16px;
+  margin-bottom: 24px;
 
   h3 {
     @include pixelated;
+
+    color: var(--daycare-pink, #f36);
     font-size: 10px;
-    color: var(--daycare-pink, #ff3366);
     margin-bottom: 6px;
   }
   p {
-    font-size: 12px;
-    color: var(--gray, #94a3b8);
     max-width: 500px;
+    color: var(--gray, #94a3b8);
+    font-size: 12px;
     line-height: 1.4;
   }
 
@@ -97,61 +98,63 @@ const hatchEgg = (egg: PokemonEgg) => {
 }
 
 .count-badge {
-  background: Rgba(255, 51, 102, 0.08);
-  border: 1px solid Rgba(255, 51, 102, 0.3);
-  color: #ff3366;
-  padding: 6px 12px;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 800;
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgb(255 51 102 / 30%);
+  border-radius: 99px;
+  background: rgb(255 51 102 / 8%);
+  color: #f36;
+  font-size: 12px;
+  font-weight: 800;
 
   .npc-badge {
+    @include pixelated;
+
+    padding: 2px 6px;
+    border: 1px solid rgb(56 189 248 / 40%);
+    border-radius: 99px;
+    background: rgb(56 189 248 / 15%);
+    color: #38bdf8;
     font-size: 9px;
     font-weight: 700;
-    background: Rgba(56, 189, 248, 0.15);
-    border: 1px solid Rgba(56, 189, 248, 0.4);
-    color: #38bdf8;
-    padding: 2px 6px;
-    border-radius: 99px;
-    @include pixelated;
   }
 
   &.empty {
-    background: Rgba(148, 163, 184, 0.1);
-    border-color: Rgba(148, 163, 184, 0.2);
+    background: rgb(148 163 184 / 10%);
     color: var(--gray, #94a3b8);
+    border-color: rgb(148 163 184 / 20%);
   }
 }
 
 .empty-state {
-  text-align: center;
   padding: 40px 20px;
-  color: Rgba(148, 163, 184, 0.8);
-  background: Rgba(0, 0, 0, 0.15);
-  border: 1px dashed Rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgb(255 255 255 / 5%);
   border-radius: 16px;
+  background: rgb(0 0 0 / 15%);
+  color: rgb(148 163 184 / 80%);
+  text-align: center;
 
   .icon {
     font-size: 40px;
-    margin-bottom: 12px;
     opacity: 0.3;
+    margin-bottom: 12px;
   }
   p {
-    font-size: 13px;
     @include pixelated;
+
+    font-size: 13px;
   }
 }
 
 .egg-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 16px;
   justify-content: center;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     grid-template-columns: 1fr;
   }
 }

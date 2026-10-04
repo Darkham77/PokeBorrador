@@ -57,6 +57,12 @@ const preloadImages = (): Promise<[HTMLImageElement, HTMLImageElement]> => {
   })
 }
 
+const DEFAULT_LIGHTNING_X1_PERCENT = 20 as const
+const DEFAULT_LIGHTNING_X2_PERCENT = 60 as const
+const DEFAULT_FALLBACK_WIDTH_PX = 800 as const
+const DEFAULT_FALLBACK_HEIGHT_PX = 600 as const
+const GOLDEN_RATIO_FACTOR = 1.618 as const
+
 const containerRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let atmosphereContext: gsap.Context | null = null
@@ -93,7 +99,7 @@ const layer1Ref = ref<HTMLElement | null>(null)
 const layer2Ref = ref<HTMLElement | null>(null)
 const lightningRef = ref<HTMLElement | null>(null)
 
-const lightningPos = ref({ x1: 20, x2: 60 })
+const lightningPos = ref({ x1: DEFAULT_LIGHTNING_X1_PERCENT, x2: DEFAULT_LIGHTNING_X2_PERCENT })
 let weatherTimeline: gsap.core.Timeline | null = null
 
 const applyParallaxLayer = (
@@ -188,8 +194,8 @@ const initWorker = async () => {
   const ATMOSPHERE_RESIZE_THRESHOLD_PX = 20
 
   // Send initial dimensions immediately
-  const initialWidth = (containerRef.value?.clientWidth || 800) + ATMOSPHERE_CANVAS_OVERDRAW_PX
-  const initialHeight = (containerRef.value?.clientHeight || 600) + ATMOSPHERE_CANVAS_OVERDRAW_PX
+  const initialWidth = (containerRef.value?.clientWidth || DEFAULT_FALLBACK_WIDTH_PX) + ATMOSPHERE_CANVAS_OVERDRAW_PX
+  const initialHeight = (containerRef.value?.clientHeight || DEFAULT_FALLBACK_HEIGHT_PX) + ATMOSPHERE_CANVAS_OVERDRAW_PX
   worker.postMessage({
     type: 'RESIZE',
     payload: { width: initialWidth, height: initialHeight }
@@ -282,7 +288,7 @@ const initWeatherAnim = () => {
   const w = props.weather
   
   const seed1 = animSeed.value
-  const seed2 = (animSeed.value * 1.618) % 1
+  const seed2 = (animSeed.value * GOLDEN_RATIO_FACTOR) % 1
   const speedVar = 0.8 + (animSeed.value * 0.4)
 
   if (w === 'clear' || isFastModeActive.value) {

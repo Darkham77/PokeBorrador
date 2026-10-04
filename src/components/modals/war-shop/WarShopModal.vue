@@ -184,7 +184,7 @@ if (typeof window !== 'undefined') {
           <template #price-icon>
             <i
               class="fa-solid fa-bolt-lightning sort-label"
-              style="font-size: 8px; line-height: 1; color: #ef4444;"
+              style=" color: #ef4444;font-size: 8px; line-height: 1;"
             />
           </template>
         </ShopSearchControls>
@@ -234,21 +234,21 @@ if (typeof window !== 'undefined') {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: Rgba(239, 68, 68, 0.05);
-  border: 1px solid Rgba(239, 68, 68, 0.1);
+  border: 1px solid rgb(239 68 68 / 10%);
   border-radius: 12px;
+  background: rgb(239 68 68 / 5%);
   margin-bottom: 16px;
   
   .info-icon {
-    color: #ef4444;
-    font-size: 14px;
     display: flex;
     align-items: center;
+    color: #ef4444;
+    font-size: 14px;
   }
   
   .hint-text {
-    font-size: 11px;
     color: #cbd5e1;
+    font-size: 11px;
     font-style: italic;
   }
 }

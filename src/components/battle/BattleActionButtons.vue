@@ -86,12 +86,12 @@ const isInputReady = computed(() => {
 @use "@/styles/core/tools" as *;
 
 .actions-container {
+  position: relative;
+  z-index: var(--z-low);
   display: flex;
   flex-direction: column;
   gap: 0;
   overflow: visible;
-  position: relative;
-  z-index: var(--z-low);
 
   &.intro-fade {
     opacity: 0.1;
@@ -101,9 +101,9 @@ const isInputReady = computed(() => {
 
 .action-row-complex {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: var(--move-panel-gap, 12px);
   align-items: center;
+  gap: var(--move-panel-gap, 12px);
+  grid-template-columns: 1fr auto 1fr;
   overflow: visible;
 
   .action-btn {
@@ -111,6 +111,7 @@ const isInputReady = computed(() => {
     
     .text {
       @include pixelated;
+
       font-size: 8px;
     }
 

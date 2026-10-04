@@ -170,7 +170,7 @@ const totalPowerTooltipDescription = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/pokemon-detail/_vicio-panes.scss";
+@use "@/styles/components/pokemon-detail/_vicio-panes";
 
 .vp-section-header-row {
   display: flex;
@@ -188,14 +188,14 @@ const totalPowerTooltipDescription = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 8px;
-  background: Rgba(0, 0, 0, 0.4);
   padding: 4px 8px;
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: rgb(0 0 0 / 40%);
+  font-size: 8px;
 
   .ev-total-text {
-    color: Rgba(255, 255, 255, 0.8);
+    color: rgb(255 255 255 / 80%);
     letter-spacing: 0.5px;
 
     &.is-maxed {
@@ -216,15 +216,15 @@ const totalPowerTooltipDescription = computed(() => {
     font-weight: bold;
 
     &.infected {
-      background: Rgba(236, 72, 153, 0.2);
+      border: 1px solid rgb(236 72 153 / 40%);
+      background: rgb(236 72 153 / 20%);
       color: #f472b6;
-      border: 1px solid Rgba(236, 72, 153, 0.4);
     }
 
     &.cured {
-      background: Rgba(148, 163, 184, 0.2);
+      border: 1px solid rgb(148 163 184 / 40%);
+      background: rgb(148 163 184 / 20%);
       color: #94a3b8;
-      border: 1px solid Rgba(148, 163, 184, 0.4);
     }
   }
 }

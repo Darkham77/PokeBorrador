@@ -157,6 +157,7 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .war-dashboard {
   display: flex;
   flex-direction: column;
@@ -172,19 +173,20 @@ onMounted(async () => {
   border-style: solid;
   
   &.dispute {
-    background: Rgba(255, 136, 0, 0.1);
-    border-color: Rgba(255, 136, 0, 1);
-    .phase-title { color: Rgba(255, 136, 0, 1); }
+    background: Rgb(255 136 0 / 10%);
+    border-color: Rgb(255 136 0 / 100%);
+    .phase-title { color: Rgb(255 136 0 / 100%); }
   }
   
   &.dominance {
-    background: Rgba(68, 255, 68, 0.1);
-    border-color: Rgba(68, 255, 68, 1);
-    .phase-title { color: Rgba(68, 255, 68, 1); }
+    background: Rgb(68 255 68 / 10%);
+    border-color: Rgb(68 255 68 / 100%);
+    .phase-title { color: Rgb(68 255 68 / 100%); }
   }
 
   .phase-title {
     @include pixelated;
+
     font-size: 11px;
     margin-bottom: 8px;
   }
@@ -197,12 +199,12 @@ onMounted(async () => {
 
 .score-card {
   display: flex;
-  align-items: center;
   justify-content: space-around;
-  background: Rgba(255, 255, 255, 0.05);
+  align-items: center;
   padding: 24px;
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgb(255 255 255 / 5%);
 
   .team {
     display: flex;
@@ -217,6 +219,7 @@ onMounted(async () => {
     
     .count {
       @include pixelated;
+
       font-size: 20px;
     }
     
@@ -226,22 +229,23 @@ onMounted(async () => {
       margin-top: 4px;
     }
 
-    &.union { color: Rgba(59, 130, 246, 1); }
-    &.poder { color: Rgba(239, 68, 68, 1); }
+    &.union { color: Rgb(59 130 246 / 100%); }
+    &.poder { color: Rgb(239 68 68 / 100%); }
   }
 
   .vs {
     @include pixelated;
-    font-size: 12px;
+
     color: var(--gray, #666);
+    font-size: 12px;
   }
 }
 
 .personal-card {
-  background: $card2;
   padding: 20px;
+  border: 1px solid Rgb(51 51 51 / 100%);
   border-radius: 20px;
-  border: 1px solid Rgba(51, 51, 51, 1);
+  background: $card2;
 
   .card-header {
     display: flex;
@@ -250,12 +254,14 @@ onMounted(async () => {
     
     .title {
       @include pixelated;
-      font-size: 10px;
+
       color: var(--yellow, #facc15);
+      font-size: 10px;
     }
     
     .pts {
       @include pixelated;
+
       font-size: 10px;
     }
   }
@@ -263,28 +269,27 @@ onMounted(async () => {
 
 .progress-container {
   position: relative;
-  margin-bottom: 30px;
   padding: 0 10px;
+  margin-bottom: 30px;
 
   .progress-bar {
     height: 12px;
-    background: $black;
     border-radius: 6px;
+    background: $black;
     overflow: hidden;
     
     .fill {
       height: 100%;
-      background: Linear-Gradient(90deg, Rgba(59, 130, 246, 1), Rgba(96, 165, 250, 1));
-      
-      box-shadow: 0 0 10px Rgba(59, 130, 246, 0.5);
+      background: Linear-Gradient(90deg, Rgb(59 130 246 / 100%), Rgb(96 165 250 / 100%));
+      box-shadow: 0 0 10px Rgb(59 130 246 / 50%);
     }
   }
 
   .milestones {
     position: absolute;
     top: -4px;
-    left: 10px;
     right: 10px;
+    left: 10px;
     display: flex;
     justify-content: space-between;
     pointer-events: none;
@@ -297,24 +302,25 @@ onMounted(async () => {
       .dot {
         width: 20px;
         height: 20px;
-        background: Rgba(51, 51, 51, 1);
         border: 2px solid var(--black);
         border-radius: 50%;
+        background: Rgb(51 51 51 / 100%);
         margin-bottom: 4px;
         
       }
       
       .pt-label {
-        font-size: 8px;
-        color: Rgba(102, 102, 102, 1);
         @include pixelated;
+
+        color: Rgb(102 102 102 / 100%);
+        font-size: 8px;
       }
 
       &.achieved {
         .dot {
-          background: Rgba(59, 130, 246, 1);
+          background: Rgb(59 130 246 / 100%);
           border-color: var(--white);
-          box-shadow: 0 0 8px Rgba(59, 130, 246, 1);
+          box-shadow: 0 0 8px Rgb(59 130 246 / 100%);
         }
         .pt-label { color: white; }
       }
@@ -323,26 +329,26 @@ onMounted(async () => {
 }
 
 .reward-preview {
-  font-size: 11px;
-  color: Rgba(136, 136, 136, 1);
-  text-align: center;
-  background: Rgba(0,0,0,0.3);
   padding: 10px;
   border-radius: 8px;
+  background: Rgb(0 0 0 / 30%);
+  color: Rgb(136 136 136 / 100%);
+  font-size: 11px;
   line-height: 1.6; /* Generous spacing between wrapped lines */
+  text-align: center;
   
   .highlight {
-    color: var(--yellow, #facc15);
-    font-weight: bold;
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    color: var(--yellow, #facc15);
+    font-weight: bold;
     vertical-align: middle;
 
     .emoji {
       display: inline-flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       line-height: 1;
     }
   }
@@ -350,37 +356,38 @@ onMounted(async () => {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 12px;
+  grid-template-columns: 1fr 1fr;
 
   .stat-item {
-    background: Rgba(255, 255, 255, 0.05);
     padding: 16px;
+    border: 1px solid Rgb(255 255 255 / 5%);
     border-radius: 16px;
+    background: Rgb(255 255 255 / 5%);
     text-align: center;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
 
     .label {
+      color: Rgb(136 136 136 / 100%);
       font-size: 9px;
-      color: Rgba(136, 136, 136, 1);
-      margin-bottom: 8px;
       line-height: 1.4;
+      margin-bottom: 8px;
     }
     
     .value {
       @include pixelated;
-      font-size: 12px;
-      color: white;
+
       display: inline-flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 4px;
+      color: white;
+      font-size: 12px;
       vertical-align: middle;
 
       .emoji {
         display: inline-flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
         line-height: 1;
       }
     }

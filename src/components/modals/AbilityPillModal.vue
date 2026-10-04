@@ -152,8 +152,8 @@ const close = () => {
 }
 
 .target-info {
-  font-size: 13px;
   color: var(--gray);
+  font-size: 13px;
   text-align: center;
   margin-bottom: 24px;
 }
@@ -166,51 +166,52 @@ const close = () => {
 }
 
 .ability-btn {
-  background: Rgba(255,255,255,0.03);
-  border: 1px solid Rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 14px 18px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 4px;
+  padding: 14px 18px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 3%);
+  color: var(--white);
   text-align: left;
   cursor: pointer;
   will-change: transform;
-  color: var(--white);
-  gap: 4px;
   
-  &.active { 
+  &.active {
+    background: rgb(255 214 10 / 5%); 
     border-color: var(--yellow);
-    background: Rgba(255, 214, 10, 0.05);
   }
 
   .a-header {
     display: flex;
     justify-content: space-between;
-    width: 100%;
     align-items: center;
+    width: 100%;
   }
 
-  .a-name { font-weight: 800; font-size: 15px; }
+  .a-name { font-size: 15px; font-weight: 800; }
   .a-current { 
-    font-size: 8px; 
+    @include pixelated; 
+
     color: var(--yellow); 
-    @include pixelated;
+    font-size: 8px;
   }
   .a-desc {
-    font-size: 11px;
     color: var(--gray);
+    font-size: 11px;
     line-height: 1.4;
   }
 }
 
 .no-options {
-  text-align: center;
-  font-size: 12px;
-  color: Rgba(255,255,255,0.2);
   padding: 40px 20px;
-  background: Rgba(0,0,0,0.2);
+  border: 1px dashed rgb(255 255 255 / 5%);
   border-radius: 16px;
-  border: 1px dashed Rgba(255,255,255,0.05);
+  background: rgb(0 0 0 / 20%);
+  color: rgb(255 255 255 / 20%);
+  font-size: 12px;
+  text-align: center;
 }
 </style>

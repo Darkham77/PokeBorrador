@@ -78,26 +78,28 @@ const emit = defineEmits<{
 .test-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding: 0; // Removed to let BaseModal padding show
+  align-items: center;
   gap: 30px;
-  background: Rgba(255, 255, 255, 0.05); // Added background to visualize space
   width: 100%;
+  padding: 0; // Removed to let BaseModal padding show
+  background: rgb(255 255 255 / 5%); // Added background to visualize space
 }
 
 .big-number {
   @include pixelated;
-  font-size: 80px;
-  color: var(--white);
   @include pixelated;
-  text-shadow: 4px 4px 0px Rgba(0, 0, 0, 0.5);
+
   margin: 0;
+  color: var(--white);
+  font-size: 80px;
+  text-shadow: 4px 4px 0 rgb(0 0 0 / 50%);
 }
 
 .pixel-btn {
-  width: 100%;
   @include btn-vicio-primary;
+
+  width: 100%;
   padding: 15px; // Custom padding for this modal
 }
 </style>

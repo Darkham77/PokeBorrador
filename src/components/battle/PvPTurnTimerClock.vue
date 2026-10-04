@@ -129,26 +129,26 @@ watch(isUrgent, (urgent) => {
 
 .pvp-turn-timer-clock {
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin: 0 auto 6px auto;
+  align-items: center;
+  margin: 0 auto 6px;
   padding: 5px 14px;
-  background: Rgba(15, 23, 42, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border: 1px solid rgb(255 255 255 / 15%);
   border-radius: 14px;
+  background: rgb(15 23 42 / 85%);
   box-shadow: 
-    0 10px 30px Rgba(0, 0, 0, 0.5), 
-    inset 0 0 10px Rgba(255, 255, 255, 0.05);
-  backdrop-filter: Blur(8px);
+    0 10px 30px rgb(0 0 0 / 50%), 
+    inset 0 0 10px rgb(255 255 255 / 5%);
+  backdrop-filter: blur(8px);
   will-change: transform;
   user-select: none;
 
   &.is-urgent {
-    border-color: Rgba(239, 68, 68, 0.7);
+    border-color: rgb(239 68 68 / 70%);
     box-shadow: 
-      0 10px 30px Rgba(0, 0, 0, 0.5), 
-      inset 0 0 10px Rgba(239, 68, 68, 0.2), 
-      0 0 16px Rgba(239, 68, 68, 0.4);
+      0 10px 30px rgb(0 0 0 / 50%), 
+      inset 0 0 10px rgb(239 68 68 / 20%), 
+      0 0 16px rgb(239 68 68 / 40%);
 
     .ring-progress {
       stroke: #ef4444;
@@ -160,11 +160,11 @@ watch(isUrgent, (urgent) => {
   }
 
   &.is-reconnecting {
-    border-color: Rgba(245, 158, 11, 0.7);
+    border-color: rgb(245 158 11 / 70%);
     box-shadow: 
-      0 10px 30px Rgba(0, 0, 0, 0.5), 
-      inset 0 0 10px Rgba(245, 158, 11, 0.2), 
-      0 0 14px Rgba(245, 158, 11, 0.4);
+      0 10px 30px rgb(0 0 0 / 50%), 
+      inset 0 0 10px rgb(245 158 11 / 20%), 
+      0 0 14px rgb(245 158 11 / 40%);
 
     .ring-progress {
       stroke: #f59e0b;
@@ -184,21 +184,21 @@ watch(isUrgent, (urgent) => {
 
 .timer-svg-wrap {
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 40px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .timer-ring-svg {
-  transform: Rotate(-90deg);
   display: block;
+  transform: rotate(-90deg);
 }
 
 .ring-bg {
   fill: none;
-  stroke: Rgba(255, 255, 255, 0.12);
+  stroke: rgb(255 255 255 / 12%);
   stroke-width: 3.5;
 }
 
@@ -210,11 +210,12 @@ watch(isUrgent, (urgent) => {
 }
 
 .timer-number {
-  position: absolute;
   @include pixelated;
+
+  position: absolute;
+  color: #e0f2fe;
   font-size: 11px;
   font-weight: 700;
-  color: #e0f2fe;
   letter-spacing: -0.5px;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
@@ -228,8 +229,9 @@ watch(isUrgent, (urgent) => {
 
 .timer-subtext {
   @include pixelated;
-  font-size: 9px;
+
   color: var(--gray, #94a3b8);
+  font-size: 9px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
@@ -237,24 +239,26 @@ watch(isUrgent, (urgent) => {
 
 .reconnect-label {
   @include pixelated;
-  font-size: 9px;
+
   color: #fbbf24;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .strike-badge {
+  @include pixelated;
+
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  @include pixelated;
-  font-size: 8px;
-  color: #fef08a;
-  background: Rgba(245, 158, 11, 0.18);
   padding: 2px 6px;
+  border: 1px solid rgb(245 158 11 / 45%);
   border-radius: 6px;
-  border: 1px solid Rgba(245, 158, 11, 0.45);
+  background: rgb(245 158 11 / 18%);
+  color: #fef08a;
+  font-size: 8px;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 </style>

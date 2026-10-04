@@ -17,8 +17,9 @@
       
       &.elo .value { 
         @extend .colored; 
+
         color: var(--yellow);
-        text-shadow: 0 0 15px Rgba(255, 214, 10, 0.25);
+        text-shadow: 0 0 15px Rgb(255 214 10 / 25%);
       }
     }
   }
@@ -36,22 +37,22 @@
 
 .arena-nav-tabs {
   display: flex;
-  background: Rgba(0, 0, 0, 0.4);
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
-  padding: 8px 12px;
   gap: 8px;
+  padding: 8px 12px;
+  background: Rgb(0 0 0 / 40%);
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
   .modal-tab-btn {
-    flex: 1;
+    gap: 6px;
     height: 34px;
     font-size: 8px;
-    gap: 6px;
+    flex: 1;
     white-space: nowrap;
 
     .tab-icon {
-      font-size: 11px;
       display: inline-flex;
       align-items: center;
+      font-size: 11px;
     }
   }
 }
@@ -59,57 +60,58 @@
 
 .offline-mask {
   position: absolute;
-  inset: 0;
   z-index: var(--z-modal);
-  background: Rgba(10, 8, 20, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background: Rgb(10 8 20 / 90%);
+  inset: 0;
   backdrop-filter: Blur(8px);
   will-change: opacity, backdrop-filter;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
 
   .lock-card {
-    text-align: center;
     max-width: 320px;
-    background: Rgba(255, 255, 255, 0.02);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
     padding: 30px;
+    border: 1px solid Rgb(255 255 255 / 8%);
     border-radius: 20px;
-    box-shadow: 0 15px 35px Rgba(0, 0, 0, 0.5);
+    background: Rgb(255 255 255 / 2%);
+    text-align: center;
+    box-shadow: 0 15px 35px Rgb(0 0 0 / 50%);
 
     .icon { 
-      font-size: 48px; 
       display: block; 
+      font-size: 48px; 
       margin-bottom: 20px; 
-      filter: Drop-Shadow(0 0 15px Rgba(59, 130, 246, 0.4));
+      filter: Drop-Shadow(0 0 15px Rgb(59 130 246 / 40%));
       will-change: transform, filter;
     }
     
     h3 { 
       @include pixelated; 
-      font-size: 10px; 
+
       color: var(--white); 
+      font-size: 10px; 
       margin-bottom: 15px; 
       letter-spacing: 0.5px;
     }
     
-    p { 
+    p {
+      margin: 0; 
+      color: Rgb(148 163 184 / 70%); 
       font-size: 11px; 
-      color: Rgba(148, 163, 184, 0.7); 
       line-height: 1.6;
-      margin: 0;
     }
   }
 }
 
 .arena-main {
-  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   height: 100%;
-  overflow-y: auto;
   min-height: 0;
-  background: Rgba(13, 10, 25, 0.2); // Premium purple tint overlay
+  padding: 20px;
+  background: Rgb(13 10 25 / 20%); // Premium purple tint overlay
+  overflow-y: auto;
 }

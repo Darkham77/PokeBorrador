@@ -69,23 +69,22 @@ const variationStyle = computed(() => ({
 @use "@/styles/core/_mixins" as *;
 
 .pokemon-combat-image {
+  @include sprite-render;
+
   position: absolute;
   top: 0;
   left: 0;
-  height: 100%;
   max-width: none;
+  height: 100%;
+  opacity: 0;
   object-fit: fill;
   object-position: left center;
   flex-shrink: 0;
-  opacity: 0;
   pointer-events: none;
   visibility: hidden;
-
   image-rendering: -webkit-optimize-contrast !important;
-  #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
-  @include sprite-render;
 
   &.is-silhouette { 
     @include pokemon-silhouette;
@@ -96,5 +95,7 @@ const variationStyle = computed(() => ({
     pointer-events: auto;
     visibility: visible;
   }
+
+  #{"image-rendering"}: crisp-edges !important;
 }
 </style>

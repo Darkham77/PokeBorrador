@@ -79,12 +79,12 @@ const requirementLabel = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_cosmetics-shared.scss";
+@use "@/styles/components/_cosmetics-shared";
 
 .avatar-preview-box {
-  padding: 10px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 10px;
 }
 </style>

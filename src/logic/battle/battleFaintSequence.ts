@@ -13,6 +13,7 @@ const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300
 const WITHDRAW_ANIMATION_FALLBACK_DELAY_MS = 800
 const DEFEAT_SCREEN_DELAY_MS = 1500
 const EMPTY_WAIT_STAGE_DELAY_MS = 200
+const PARSE_INT_DECIMAL_RADIX = 10 as const;
 
 interface EnemyFaintResolutionActions {
   processFaint: (ctx: BattleContext, side: BattleSide) => Promise<void>
@@ -106,7 +107,7 @@ function pickCandidateByUid(team: Pokemon[], targetUid: string): Pokemon | null 
 
 function pickCandidateBySlotChoice(active: BattleState, team: Pokemon[], targetChoice: string): Pokemon | null {
   if (!targetChoice.startsWith('switch ')) return null
-  const slotIdx = parseInt(targetChoice.replace('switch ', '').trim(), 10) - 1
+  const slotIdx = parseInt(targetChoice.replace('switch ', '').trim(), PARSE_INT_DECIMAL_RADIX) - 1
   const reqPokemon = (active.enemyRequest as { side?: { pokemon?: Array<{ ident?: string }> } })?.side?.pokemon
   const rawIdent = reqPokemon?.[slotIdx]?.ident || ''
   const candidateUid = rawIdent.split(': ')[1] || ''

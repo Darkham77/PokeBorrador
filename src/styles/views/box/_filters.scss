@@ -3,26 +3,26 @@
 
 .filter-toggle-btn-premium {
   @include pixelated;
+
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 10px;
+  background: Rgb(255 255 255 / 5%);
   color: var(--gray);
   font-size: 7px;
   cursor: pointer;
-  /*  */
   white-space: nowrap;
 
-  &:hover { background: Rgba(255, 255, 255, 0.08); color: var(--white); }
+  &:hover { background: Rgb(255 255 255 / 8%); color: var(--white); }
   &.active {
     background: var(--yellow);
     color: $black;
-    border-color: var(--yellow);
     font-weight: bold;
-    box-shadow: 0 0 15px Rgba(255, 214, 10, 0.2);
+    border-color: var(--yellow);
+    box-shadow: 0 0 15px Rgb(255 214 10 / 20%);
   }
 
   .box-icon-ref { font-size: 10px; }
@@ -39,17 +39,19 @@
   gap: 10px;
 
   &.types-grid {
+    @include smooth-scroll;
+
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     max-height: 180px;
     overflow-y: auto;
     padding-right: 12px;
-    @include smooth-scroll;
     &::-webkit-scrollbar { width: 4px; }
   }
 }
 
 .sort-controls-integrated {
+
   display: flex;
   align-items: center;
   gap: 4px;
@@ -62,58 +64,59 @@
 
 .sort-group-mini {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   gap: 4px;
-  background: Rgba(255, 255, 255, 0.03);
   padding: 4px 8px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 10px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(255 255 255 / 3%);
 
   .mini-sort-btn {
     @include pixelated;
-    font-size: 7px;
+
     padding: 6px 8px;
-    border-radius: 6px;
     border: 1px solid transparent;
+    border-radius: 6px;
     background: transparent;
     color: var(--gray);
+    font-size: 7px;
     cursor: pointer;
     white-space: nowrap;
 
-    &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.05); }
+    &:hover { background: Rgb(255 255 255 / 5%); color: var(--white); }
     &.active {
-      background: Rgba(255, 214, 10, 0.1);
-      border-color: var(--yellow);
+      background: Rgb(255 214 10 / 10%);
       color: var(--yellow);
+      border-color: var(--yellow);
     }
   }
 }
 
 .direction-toggle-btn {
   @include pixelated;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 28px;
   height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 8px;
+  background: Rgb(255 255 255 / 3%);
   color: var(--yellow);
   font-size: 10px;
   cursor: pointer;
-  /*  */
 
-  &:hover { background: Rgba(255, 255, 255, 0.08); border-color: Rgba(255, 255, 255, 0.2); }
+  &:hover { background: Rgb(255 255 255 / 8%); border-color: Rgb(255 255 255 / 20%); }
 }
 
 .tags-group-mini {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
   width: 100%;
+  min-width: 0;
 
   .tags-scroll-container {
     display: flex;
@@ -126,46 +129,47 @@
     display: flex;
     align-items: baseline;
     gap: 8px;
-    margin-bottom: 24px;
     padding: 0 4px;
+    margin-bottom: 24px;
   }
 
   .mini-tag-btn {
     @include pixelated;
+
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 5px;
-    font-size: 6px;
     padding: 5px 8px;
+    border: 1px solid Rgb(255 255 255 / 8%);
     border-radius: 8px;
-    background: Rgba(255, 255, 255, 0.03);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
+    background: Rgb(255 255 255 / 3%);
     color: var(--gray);
+    font-size: 6px;
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
 
+    &:hover { background: Rgb(255 255 255 / 8%); border-color: Rgb(255 255 255 / 20%); }
+
     .box-tag-icon-inner {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
       font-size: 8px;
       line-height: 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transform: Translatey(-1px);
       opacity: 0.8;
+      transform: Translatey(-1px);
     }
 
     .tag-text-small {
       display: inline-flex;
       align-items: center;
     }
-
-    &:hover { background: Rgba(255, 255, 255, 0.08); border-color: Rgba(255, 255, 255, 0.2); }
     &.active {
       background: var(--purple-low);
-      border-color: var(--purple);
       color: var(--white);
+      border-color: var(--purple);
       & > .box-tag-icon-inner { opacity: 1; }
     }
   }
@@ -173,53 +177,54 @@
 
 .mini-label {
   @include pixelated;
-  font-size: 6px;
-  color: var(--gray);
-  opacity: 0.5;
-  white-space: nowrap;
+
   display: inline-flex;
   align-items: center;
+  color: var(--gray);
+  font-size: 6px;
+  opacity: 0.5;
+  white-space: nowrap;
 }
 
 .box-sort-btn {
-  padding: 10px 18px;
-  background: Rgba(255, 255, 255, 0.04);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  color: var(--gray);
   @include pixelated;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  background: Rgb(255 255 255 / 4%);
+  color: var(--gray);
   font-size: 8px;
   cursor: pointer;
-  border-radius: 10px;
-  /*  */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 
   &:hover { 
-    background: Rgba(255, 255, 255, 0.1);
+    background: Rgb(255 255 255 / 10%);
     color: var(--white);
     transform: Translatey(-2px);
-    border-color: Rgba(255, 255, 255, 0.2);
+    border-color: Rgb(255 255 255 / 20%);
   }
 
   &.active {
-    background: Rgba(199, 125, 255, 0.15);
-    border-color: var(--purple);
+    background: Rgb(199 125 255 / 15%);
     color: var(--white);
-    box-shadow: 0 0 15px Rgba(199, 125, 255, 0.1);
+    border-color: var(--purple);
+    box-shadow: 0 0 15px Rgb(199 125 255 / 10%);
   }
 
   &.filter-toggle-btn {
-    background: Rgba(255, 255, 255, 0.05);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgb(255 255 255 / 10%);
+    background: Rgb(255 255 255 / 5%);
     white-space: nowrap;
     
     &.active {
       background: var(--yellow);
       color: $black;
-      border-color: var(--yellow);
       font-weight: bold;
+      border-color: var(--yellow);
     }
 
     &.mini {
@@ -231,58 +236,60 @@
 
 .filter-pill {
   @include pixelated;
-  font-size: 7px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.03);
-  color: var(--gray);
-  cursor: pointer;
-  /*  */
-  white-space: nowrap;
+
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background: Rgb(255 255 255 / 3%);
+  color: var(--gray);
+  font-size: 7px;
+  cursor: pointer;
+  white-space: nowrap;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.08);
-    border-color: Rgba(255, 255, 255, 0.2);
+    background: Rgb(255 255 255 / 8%);
     color: var(--white);
+    border-color: Rgb(255 255 255 / 20%);
   }
 
   &.active {
     background: var(--pill-bg, var(--purple-low));
-    border-color: var(--pill-color, var(--purple));
     color: var(--white);
-    box-shadow: 0 0 10px var(--pill-bg, Rgba(199, 125, 255, 0.1));
+    border-color: var(--pill-color, var(--purple));
+    box-shadow: 0 0 10px var(--pill-bg, Rgb(199 125 255 / 10%));
   }
 }
 
 
 .filters-expanded-premium {
   @include shell-premium(Rgba(15, 23, 42, 0.98));
-  margin-top: 12px;
-  border-radius: 20px;
-  padding: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  box-shadow: 0 15px 40px Rgba(0, 0, 0, 0.5);
+
+  z-index: var(--z-low);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  z-index: var(--z-low);
+  padding: 20px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 20px;
+  margin-top: 12px;
+  box-shadow: 0 15px 40px Rgb(0 0 0 / 50%);
 }
 
 .filters-grid-columns {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
 
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr 1fr;
-  }
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
 
   @include responsive(mobile) {
     grid-template-columns: 1fr;
+  }
+
+  @media (width <= 1100px) {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -294,11 +301,11 @@
 }
 
 .compact-section {
-  background: Rgba(0, 0, 0, 0.2);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 16px;
   height: 100%;
+  padding: 16px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 16px;
+  background: Rgb(0 0 0 / 20%);
   
   &.full-width { width: 100%; }
   &.full-height { flex: 1; }
@@ -306,20 +313,21 @@
 
   .box-section-label {
     @include pixelated;
-    font-size: 7px;
-    color: var(--gray);
-    margin-bottom: 12px;
-    opacity: 0.6;
-    letter-spacing: 1px;
+
     display: flex;
     align-items: center;
     gap: 8px;
+    color: var(--gray);
+    font-size: 7px;
+    opacity: 0.6;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
 
     &::after {
+      height: 1px;
+      background: Linear-Gradient(to right, Rgb(255 255 255 / 5%), transparent);
       content: '';
       flex: 1;
-      height: 1px;
-      background: Linear-Gradient(to right, Rgba(255,255,255,0.05), transparent);
     }
   }
 }
@@ -333,16 +341,16 @@
 .tier-pill {
   &.active {
     background: var(--tier-bg) !important;
-    border-color: var(--tier-color) !important;
     color: var(--tier-color) !important;
+    border-color: var(--tier-color) !important;
     box-shadow: 0 0 10px var(--tier-bg);
   }
 }
 
 .types-compact-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
   gap: 4px;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
 }
 
 .iv-mini-grid {
@@ -359,55 +367,57 @@
 
   .label, .stat-name {
     @include pixelated;
-    font-size: 6px;
-    color: var(--gray);
+
     width: 65px;
-    white-space: nowrap;
+    color: var(--gray);
+    font-size: 6px;
     opacity: 0.8;
+    white-space: nowrap;
   }
 
   input[type="range"] {
-    flex: 1;
     height: 3px;
-    background: Rgba(255, 255, 255, 0.1);
     border-radius: 2px;
-    -webkit-appearance: none;
+    background: Rgb(255 255 255 / 10%);
+    flex: 1;
+    appearance: none;
     outline: none;
 
     &::-webkit-slider-thumb {
-      -webkit-appearance: none;
       width: 10px;
       height: 10px;
-      background: var(--stat-color, var(--yellow));
       border-radius: 50%;
+      background: var(--stat-color, var(--yellow));
+      appearance: none;
       cursor: pointer;
-      box-shadow: 0 0 8px var(--stat-color, Rgba(255, 184, 0, 0.4));
+      box-shadow: 0 0 8px var(--stat-color, Rgb(255 184 0 / 40%));
     }
   }
 
   .val, .stat-val {
     @include pixelated;
-    font-size: 7px;
-    color: var(--yellow);
+
     width: 25px;
+    color: var(--yellow);
+    font-size: 7px;
     text-align: right;
   }
 }
 
 .iv-any-31-btn-mini {
   @include pixelated;
+
   width: 100%;
   padding: 8px;
-  margin-top: 12px;
+  border: 1px dashed Rgb(255 255 255 / 10%);
   border-radius: 8px;
-  border: 1px dashed Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.03);
+  background: Rgb(255 255 255 / 3%);
   color: var(--gray);
   font-size: 6px;
+  margin-top: 12px;
   cursor: pointer;
-  /*  */
 
-  &:hover { background: Rgba(255, 255, 255, 0.06); }
+  &:hover { background: Rgb(255 255 255 / 6%); }
   &.active {
     background: var(--yellow);
     color: $black;
@@ -420,24 +430,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  border-top: 1px solid Rgb(255 255 255 / 5%);
   padding-top: 16px;
   margin-top: 4px;
 
   .results-badge-mini {
     @include pixelated;
-    font-size: 7px;
-    color: var(--yellow);
+
     display: flex;
     align-items: center;
     gap: 6px;
+    color: var(--yellow);
+    font-size: 7px;
     .box-icon-results { font-size: 10px; }
   }
 }
 
 .reset-action-btn-mini {
   @include btn-vicio-danger('sm', true);
-  font-size: 6px;
-  padding: 6px 16px;
+
   width: fit-content;
+  padding: 6px 16px;
+  font-size: 6px;
 }

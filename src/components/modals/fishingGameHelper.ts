@@ -12,12 +12,42 @@ import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { generateIvPure } from '@/logic/pokemon/generationMath';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 
+const FISHING_SPEED = {
+  EASY: 910,
+  MEDIUM: 780,
+  HARD: 680,
+  EXPERT: 580,
+} as const;
+
+const FISHING_SPAWN_INTERVAL = {
+  EASY: 680,
+  MEDIUM: 580,
+  HARD: 500,
+  EXPERT: 420,
+} as const;
+
+const FISHING_HIT_WINDOW = {
+  EASY: 200,
+  MEDIUM: 160,
+  HARD: 130,
+  EXPERT: 100,
+} as const;
+
+const FISHING_NOTE_COUNTS = {
+  EASY: 5,
+  MEDIUM: 8,
+  HARD: 11,
+  EXPERT: 13,
+} as const;
+
+const FISHING_MAX_LEVEL_BONUS_EXPERT = 10;
+
 export const FISHING_DIFFICULTIES = {
   easy: {
-    notes: 5,
-    speedBase: 910,
-    spawnInterval: 680,
-    hitWindow: 200,
+    notes: FISHING_NOTE_COUNTS.EASY,
+    speedBase: FISHING_SPEED.EASY,
+    spawnInterval: FISHING_SPAWN_INTERVAL.EASY,
+    hitWindow: FISHING_HIT_WINDOW.EASY,
     label: 'Fácil',
     color: '#4ade80',
     minLevelBonus: 0,
@@ -25,10 +55,10 @@ export const FISHING_DIFFICULTIES = {
     rerollIVs: false
   },
   medium: {
-    notes: 8,
-    speedBase: 780,
-    spawnInterval: 580,
-    hitWindow: 160,
+    notes: FISHING_NOTE_COUNTS.MEDIUM,
+    speedBase: FISHING_SPEED.MEDIUM,
+    spawnInterval: FISHING_SPAWN_INTERVAL.MEDIUM,
+    hitWindow: FISHING_HIT_WINDOW.MEDIUM,
     label: 'Medio',
     color: '#facc15',
     minLevelBonus: 1,
@@ -36,10 +66,10 @@ export const FISHING_DIFFICULTIES = {
     rerollIVs: false
   },
   hard: {
-    notes: 11,
-    speedBase: 680,
-    spawnInterval: 500,
-    hitWindow: 130,
+    notes: FISHING_NOTE_COUNTS.HARD,
+    speedBase: FISHING_SPEED.HARD,
+    spawnInterval: FISHING_SPAWN_INTERVAL.HARD,
+    hitWindow: FISHING_HIT_WINDOW.HARD,
     label: 'Difícil',
     color: '#fb923c',
     minLevelBonus: 4,
@@ -47,14 +77,14 @@ export const FISHING_DIFFICULTIES = {
     rerollIVs: false
   },
   expert: {
-    notes: 13,
-    speedBase: 580,
-    spawnInterval: 420,
-    hitWindow: 100,
+    notes: FISHING_NOTE_COUNTS.EXPERT,
+    speedBase: FISHING_SPEED.EXPERT,
+    spawnInterval: FISHING_SPAWN_INTERVAL.EXPERT,
+    hitWindow: FISHING_HIT_WINDOW.EXPERT,
     label: 'Experto',
     color: '#f87171',
     minLevelBonus: 7,
-    maxLevelBonus: 10,
+    maxLevelBonus: FISHING_MAX_LEVEL_BONUS_EXPERT,
     rerollIVs: true
   }
 } as const;

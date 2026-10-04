@@ -50,6 +50,25 @@ const tierColor = computed(() => {
   if (tier === 'legend') return 'var(--yellow)'
   return '#94a3b8'
 })
+
+function onItemMouseEnter(e: MouseEvent): void {
+  if (e.currentTarget) {
+    gsap.to(e.currentTarget, { x: 4, duration: 0.2, ease: 'power1.out' })
+  }
+}
+
+function onItemMouseLeave(e: MouseEvent): void {
+  if (e.currentTarget) {
+    gsap.to(e.currentTarget, { x: 0, duration: 0.2, ease: 'power1.out' })
+  }
+}
+
+function onItemImgError(e: Event): void {
+  const target = e.target as HTMLImageElement | null
+  if (target) {
+    target.src = _getAssetUrl(ASSET_TYPES.ITEM, 'potion')
+  }
+}
 </script>
 
 <template>
@@ -58,8 +77,8 @@ const tierColor = computed(() => {
     :class="[ { selected: isSelected }, tierClass ]"
     :style="{ '--tier-color': tierColor }"
     @click.stop="$emit('select')"
-    @mouseenter="(e) => gsap.to(e.currentTarget, { x: 4, duration: 0.2, ease: 'power1.out' })"
-    @mouseleave="(e) => gsap.to(e.currentTarget, { x: 0, duration: 0.2, ease: 'power1.out' })"
+    @mouseenter="onItemMouseEnter"
+    @mouseleave="onItemMouseLeave"
   >
     <PVTooltip
       :title="item.name"
@@ -74,7 +93,7 @@ const tierColor = computed(() => {
           :src="_getAssetUrl(ASSET_TYPES.ITEM, item.id)" 
           :alt="item.name || 'Objeto'"
           class="i-sprite pixelated"
-          @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(ASSET_TYPES.ITEM, 'potion')"
+          @error="onItemImgError"
         >
       </div>
       <div class="item-details">
@@ -143,131 +162,132 @@ const tierColor = computed(() => {
 @use "@/styles/core/_mixins" as *;
 
 .selectable-item-card {
+  position: relative;
+  padding: 0;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 16px;
+  background: Rgb(255 255 255 / 3%);
   content-visibility: auto;
   contain-intrinsic-size: 0 68px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 0;
   cursor: pointer;
-  position: relative;
   margin-bottom: 8px;
 
   .item-tooltip-trigger {
     display: flex !important;
     align-items: center;
-    width: 100%;
     gap: 15px;
+    width: 100%;
     padding: 12px 16px;
     box-sizing: border-box;
   }
 
   // Tier Colors & Glows
   &.tier-common {
-    border-color: Rgba(148, 163, 184, 0.35);
-    background: Rgba(148, 163, 184, 0.04);
-    .item-bg-glow {
-      background: radial-gradient(circle, Rgba(148, 163, 184, 0.3) 0%, transparent 70%);
-    }
+    background: Rgb(148 163 184 / 4%);
+    border-color: Rgb(148 163 184 / 35%);
     &:hover {
-      border-color: Rgba(148, 163, 184, 0.55);
-      background: Rgba(148, 163, 184, 0.08);
+      background: Rgb(148 163 184 / 8%);
+      border-color: Rgb(148 163 184 / 55%);
+    }
+    .item-bg-glow {
+      background: Radial-Gradient(circle, Rgb(148 163 184 / 30%) 0%, transparent 70%);
     }
   }
 
   &.tier-rare {
-    border-color: Rgba(59, 130, 246, 0.45);
-    background: Rgba(59, 130, 246, 0.08);
-    .item-bg-glow {
-      background: radial-gradient(circle, Rgba(59, 130, 246, 0.45) 0%, transparent 70%);
-    }
+    background: Rgb(59 130 246 / 8%);
+    border-color: Rgb(59 130 246 / 45%);
     &:hover {
-      border-color: Rgba(59, 130, 246, 0.75);
-      background: Rgba(59, 130, 246, 0.12);
+      background: Rgb(59 130 246 / 12%);
+      border-color: Rgb(59 130 246 / 75%);
+    }
+    .item-bg-glow {
+      background: Radial-Gradient(circle, Rgb(59 130 246 / 45%) 0%, transparent 70%);
     }
   }
 
   &.tier-epic {
-    border-color: Rgba(168, 85, 247, 0.45);
-    background: Rgba(168, 85, 247, 0.08);
-    .item-bg-glow {
-      background: radial-gradient(circle, Rgba(168, 85, 247, 0.45) 0%, transparent 70%);
-    }
+    background: Rgb(168 85 247 / 8%);
+    border-color: Rgb(168 85 247 / 45%);
     &:hover {
-      border-color: Rgba(168, 85, 247, 0.75);
-      background: Rgba(168, 85, 247, 0.12);
+      background: Rgb(168 85 247 / 12%);
+      border-color: Rgb(168 85 247 / 75%);
+    }
+    .item-bg-glow {
+      background: Radial-Gradient(circle, Rgb(168 85 247 / 45%) 0%, transparent 70%);
     }
   }
 
   &.tier-legend {
-    border-color: Rgba(245, 158, 11, 0.55);
-    background: Rgba(245, 158, 11, 0.1);
-    .item-bg-glow {
-      background: radial-gradient(circle, Rgba(245, 158, 11, 0.55) 0%, transparent 70%);
-    }
+    background: Rgb(245 158 11 / 10%);
+    border-color: Rgb(245 158 11 / 55%);
     &:hover {
-      border-color: Rgba(245, 158, 11, 0.85);
-      background: Rgba(245, 158, 11, 0.15);
+      background: Rgb(245 158 11 / 15%);
+      border-color: Rgb(245 158 11 / 85%);
+    }
+    .item-bg-glow {
+      background: Radial-Gradient(circle, Rgb(245 158 11 / 55%) 0%, transparent 70%);
     }
   }
 
   &.selected {
-    background: Rgba(56, 189, 248, 0.1);
-    border-color: Rgba(56, 189, 248, 0.5) !important;
-    box-shadow: 0 0 15px Rgba(56, 189, 248, 0.15);
+    background: Rgb(56 189 248 / 10%);
+    border-color: Rgb(56 189 248 / 50%) !important;
+    box-shadow: 0 0 15px Rgb(56 189 248 / 15%);
     
     .selection-indicator .check-circle {
-      border-color: Rgba(56, 189, 248, 1);
-      background: Rgba(56, 189, 248, 1);
+      background: Rgb(56 189 248 / 100%);
       color: white;
+      border-color: Rgb(56 189 248 / 100%);
     }
   }
 
   .item-visual {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 44px;
     height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     flex-shrink: 0;
-    position: relative;
 
     .item-bg-glow {
       position: absolute;
+      z-index: var(--z-map-floor);
       width: 100%;
       height: 100%;
-      z-index: var(--z-map-floor);
       opacity: 0.95;
       pointer-events: none;
       filter: Blur(2px);
     }
 
     .i-sprite {
+      z-index: calc(var(--z-map-floor) + 1);
       width: 32px;
       height: 32px;
       object-fit: contain;
-      z-index: calc(var(--z-map-floor) + 1);
-      filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
+      filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
     }
   }
 
   .item-details {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    flex: 1;
 
     .i-name {
       @include pixelated;
+
+      padding: 2px 0;
+      color: var(--white);
       font-size: 9px;
       font-weight: bold;
-      color: var(--white);
+      line-height: 1.5;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1.5;
-      padding: 2px 0;
     }
 
     .i-meta {
@@ -282,8 +302,9 @@ const tierColor = computed(() => {
 
         .i-qty {
           @include pixelated;
-          font-size: 8px;
+
           color: $muted;
+          font-size: 8px;
         }
       }
     }
@@ -292,64 +313,66 @@ const tierColor = computed(() => {
   .price-pills-row {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 6px;
     margin-top: 2px;
-    align-items: center;
   }
 
   .price-pill {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    border-radius: 99px;
     padding: 1.5px 6px;
-    white-space: nowrap;
     border: 1px solid transparent;
+    border-radius: 99px;
+    white-space: nowrap;
 
     .pill-label {
       @include pixelated;
+
       font-size: 6.5px;
-      opacity: 0.85;
       font-weight: bold;
+      opacity: 0.85;
     }
 
     .pill-amount {
       @include pixelated;
+
       font-size: 7px;
       font-weight: 900;
     }
 
     &.shop-pill {
-      background: linear-gradient(135deg, #15803d, #166534);
+      background: Linear-Gradient(135deg, #15803d, #166534);
       border-color: #22c55e;
       .pill-label { color: #86efac; }
       .pill-amount { color: #dcfce7; }
     }
 
     &.min-pill {
-      background: linear-gradient(135deg, #0369a1, #075985);
+      background: Linear-Gradient(135deg, #0369a1, #075985);
       border-color: #0ea5e9;
       .pill-label { color: #7dd3fc; }
       .pill-amount { color: #e0f2fe; }
     }
 
     &.avg-pill {
-      background: linear-gradient(135deg, #6d28d9, #5b21b6);
+      background: Linear-Gradient(135deg, #6d28d9, #5b21b6);
       border-color: #8b5cf6;
       .pill-label { color: #c4b5fd; }
       .pill-amount { color: #f5f3ff; }
     }
 
     &.max-pill {
-      background: linear-gradient(135deg, #c2410c, #9a3412);
+      background: Linear-Gradient(135deg, #c2410c, #9a3412);
       border-color: #f97316;
       .pill-label { color: #fdba74; }
       .pill-amount { color: #ffedd5; }
     }
 
     &.no-gts-pill {
-      background: Rgba(255, 255, 255, 0.05);
-      border-color: Rgba(255, 255, 255, 0.1);
+      background: Rgb(255 255 255 / 5%);
+      border-color: Rgb(255 255 255 / 10%);
       .pill-label { color: #94a3b8; }
       .pill-amount { color: #cbd5e1; }
     }
@@ -358,20 +381,20 @@ const tierColor = computed(() => {
   .selection-indicator {
     flex-shrink: 0;
     .check-circle {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 18px;
       height: 18px;
+      border: 2px solid Rgb(255 255 255 / 10%);
       border-radius: 50%;
-      border: 2px solid Rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: 10px;
 
       .checkmark-svg {
+        display: block;
         width: 65%;
         height: 65%;
         stroke: currentColor;
-        display: block;
       }
     }
   }

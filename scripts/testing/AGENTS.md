@@ -15,6 +15,7 @@ DevOps / QA Engineers.
 - **Dual-Engine Execution**: When Docker PostgreSQL is active, database-enabled tests run against both SQLite (in-memory) and PostgreSQL (ephemeral container). When Docker is missing, tests gracefully fallback to SQLite in RAM and display a clear summary warning.
 - **Subprocess PATH Prepending**: When launching Docker CLI, the orchestrator MUST prepend the resolved binary directory (`path.dirname(dockerBin)`) to `process.env.PATH` to ensure sibling helper binaries (`docker-credential-desktop`) are immediately discoverable.
 - **Node.js 26 Permission Addon Mandate**: Test orchestrators launching Vitest under Node 26 sandboxed permissions MUST declare `--allow-addons` to permit Rolldown platform-specific native addons (`.node`) alongside `--allow-child-process` and `--allow-net`.
+- **Automatic Version SSoT Synchronization**: The test orchestrator (`run_tests.ts`) automatically calls `syncPublicVersionJson()` before starting Vitest, ensuring `public/version.json` matches the canonical version in `package.json` with zero manual intervention.
 
 ## Key Files
 

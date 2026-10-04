@@ -1,13 +1,13 @@
 .weather-overlay {
-  &.sandstorm, &.dust_storm {
-    background: Rgba(139, 69, 19, 0.35);
+  %sandstorm-base {
+    background: Rgb(139 69 19 / 35%);
 
     & .sandstorm-layer {
       position: absolute;
+      transform: Translate3d(0,0,0);
       inset: var(--weather-layer-bleed, -600px);
       background-repeat: repeat;
       will-change: transform;
-      transform: translate3d(0,0,0);
       backface-visibility: hidden;
       image-rendering: pixelated;
     }
@@ -15,25 +15,28 @@
 
   // Tormenta de Arena: usa Ruido WebP en lugar de partículas, tintado sepia
   &.sandstorm {
+    @extend %sandstorm-base;
+
     & .layer-1 { 
+      opacity: 0.5;
+      transform: Translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0); 
       background-image: var(--weather-noise-1-url);
       background-size: 512px 512px; 
-      opacity: 0.5; 
-      filter: sepia(1) Saturate(2) Brightness(0.7) contrast(1.5);
-      transform: translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0);
+      filter: sepia(1) Saturate(2) Brightness(0.7) Contrast(1.5);
     }
     & .layer-2 { 
+      opacity: 0.55; 
+      transform: Translate3d(calc(var(--seed-x, 0) * 1.2px), calc(var(--seed-y, 0) * 1.2px), 0); 
       background-image: var(--weather-noise-2-url);
       background-size: 512px 512px; 
-      opacity: 0.55; 
-      filter: sepia(1) Saturate(1.8) Brightness(0.65) contrast(1.6); 
-      transform: translate3d(calc(var(--seed-x, 0) * 1.2px), calc(var(--seed-y, 0) * 1.2px), 0);
+      filter: sepia(1) Saturate(1.8) Brightness(0.65) Contrast(1.6);
     }
   }
 
   // Tormenta de Polvo: Partículas pixel-art canónicas y desduplicadas
   &.dust_storm {
-    background: Rgba(101, 67, 33, 0.2);
+    @extend %sandstorm-base;
+    background: Rgb(101 67 33 / 20%);
 
     & .sandstorm-layer {
       background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%238a6d51'%3E%3Crect x='23' y='45' width='6' height='6'/%3E%3Crect x='150' y='20' width='4' height='4'/%3E%3Crect x='88' y='110' width='5' height='5'/%3E%3Crect x='210' y='160' width='3' height='3'/%3E%3Crect x='45' y='200' width='6' height='6'/%3E%3Crect x='130' y='230' width='4' height='4'/%3E%3Crect x='10' y='120' width='3' height='3'/%3E%3Crect x='190' y='80' width='5' height='5'/%3E%3Crect x='240' y='240' width='4' height='4'/%3E%3Crect x='70' y='10' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E");
@@ -41,37 +44,44 @@
 
     & .layer-1 { 
       opacity: 0.95; 
-      background-size: 256px 256px; 
-      transform: translate3d(calc(var(--seed-x, 0) * 0.8px), calc(var(--seed-y, 0) * 0.8px), 0);
+      transform: Translate3d(calc(var(--seed-x, 0) * 0.8px), calc(var(--seed-y, 0) * 0.8px), 0); 
+      background-size: 256px 256px;
     }
     & .layer-2 { 
       opacity: 0.8; 
-      background-size: 512px 512px; 
-      transform: translate3d(calc(var(--seed-x, 0) * 1.5px), calc(var(--seed-y, 0) * 1.5px), 0);
+      transform: Translate3d(calc(var(--seed-x, 0) * 1.5px), calc(var(--seed-y, 0) * 1.5px), 0); 
+      background-size: 512px 512px;
     }
   }
 
   // Viento y Vientos Fuertes (Aerodinámico puro, sin capas de arena ni .mist-layer)
-  &.wind, &.strong_winds {
+  &.wind {
     background: transparent;
 
     &::after {
-      content: '';
       position: absolute;
+      z-index: var(--z-low);
+      background: Radial-Gradient(circle, transparent 60%, Rgb(255 255 255 / 10%) 100%);
+      content: '';
       inset: 0;
       pointer-events: none;
-      z-index: var(--z-low);
-      background: radial-gradient(circle, transparent 60%, Rgba(255, 255, 255, 0.1) 100%);
-      box-shadow: inset 0 0 50px Rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 0 50px Rgb(255 255 255 / 15%);
     }
   }
 
   &.strong_winds {
+    background: transparent;
+
     &::after {
-      background: radial-gradient(circle, transparent 65%, Rgba(255, 255, 255, 0.15) 100%) !important;
+      position: absolute;
+      z-index: var(--z-low);
+      background: Radial-Gradient(circle, transparent 65%, Rgb(255 255 255 / 15%) 100%) !important;
+      content: '';
+      inset: 0;
+      pointer-events: none;
       box-shadow: 
-        inset 0 0 80px Rgba(255, 255, 255, 0.2),
-        inset 0 0 160px Rgba(255, 255, 255, 0.1) !important;
+        inset 0 0 80px Rgb(255 255 255 / 20%),
+        inset 0 0 160px Rgb(255 255 255 / 10%) !important;
     }
   }
 }

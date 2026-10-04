@@ -156,20 +156,20 @@ function handleImageError(e: Event) {
 @use "@/styles/core/mixins" as *;
 
 .home-black-market-widget {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(239, 68, 68, 0.3);
-  border-radius: 12px;
-  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4), inset 0 0 12px Rgba(239, 68, 68, 0.05);
   width: 100%;
+  padding: 12px 14px;
+  border: 1px solid Rgb(239 68 68 / 30%);
+  border-radius: 12px;
+  background: Rgb(18 22 34 / 85%);
+  box-shadow: 0 4px 16px Rgb(0 0 0 / 40%), inset 0 0 12px Rgb(239 68 68 / 5%);
   box-sizing: border-box;
   cursor: pointer;
 
   &:hover {
-    border-color: Rgba(239, 68, 68, 0.5);
+    border-color: Rgb(239 68 68 / 50%);
   }
 }
 
@@ -192,19 +192,20 @@ function handleImageError(e: Event) {
       flex-direction: column;
 
       .widget-title {
+        @include pixelated;
+
+        margin: 0;
         color: #ef4444;
         font-size: 11px;
-        margin: 0;
         line-height: 1.35;
         letter-spacing: 0.5px;
-        @include pixelated;
       }
 
       .widget-sub {
         color: var(--gray, #94a3b8);
         font-size: 8.5px;
-        line-height: 1.35;
         font-weight: 500;
+        line-height: 1.35;
       }
     }
   }
@@ -217,8 +218,8 @@ function handleImageError(e: Event) {
 
 .bm-mini-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .bm-mini-card-wrapper {
@@ -234,20 +235,20 @@ function handleImageError(e: Event) {
 }
 
 .bm-mini-card {
-  width: 100%;
-  box-sizing: border-box;
-  background: Rgba(25, 15, 20, 0.7);
-  border: 1px solid Rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
-  padding: 8px 6px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  padding: 8px 6px;
+  border: 1px solid Rgb(239 68 68 / 20%);
+  border-radius: 8px;
+  background: Rgb(25 15 20 / 70%);
   text-align: center;
-  position: relative;
+  box-sizing: border-box;
 
   &:hover:not(.is-sold) {
-    border-color: Rgba(239, 68, 68, 0.6);
+    border-color: Rgb(239 68 68 / 60%);
   }
 
   &.is-sold {
@@ -257,70 +258,75 @@ function handleImageError(e: Event) {
 }
 
 .bm-mini-visual {
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px;
   margin-bottom: 4px;
 }
 
 .bm-mini-sprite {
+  @include sprite-render;
+
   width: 32px;
   height: 32px;
   object-fit: contain;
-  @include sprite-render;
 }
 
 .bm-mini-sold-badge {
+  @include pixelated;
+
   position: absolute;
-  background: Rgba(220, 38, 38, 0.95);
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: Rgb(220 38 38 / 95%);
   color: white;
   font-size: 7px;
   line-height: 1.3;
-  padding: 1px 4px;
-  border-radius: 3px;
   transform: Rotate(-10deg);
   letter-spacing: 0.5px;
-  @include pixelated;
 }
 
 .bm-mini-name {
+  @include pixelated;
+
+  display: -webkit-box;
+  max-width: 100%;
+  min-height: 24px;
   color: white;
   font-size: 8px;
   line-height: 1.45;
-  padding-bottom: 2px;
   text-align: center;
-  max-width: 100%;
+  padding-bottom: 2px;
   margin-bottom: 3px;
-  display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 24px;
-  word-break: break-word;
-  @include pixelated;
+  overflow-wrap: break-word;
 }
 
 .bm-mini-price-row {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .bm-mini-price {
+  @include pixelated;
+
   color: #4ade80;
   font-size: 9px;
   line-height: 1.35;
-  @include pixelated;
 }
 
 .bm-mini-status-sold {
+  @include pixelated;
+
   color: #94a3b8;
   font-size: 8px;
   line-height: 1.35;
-  @include pixelated;
 }
 
 .bm-mini-empty {
@@ -328,27 +334,28 @@ function handleImageError(e: Event) {
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background: Rgba(0, 0, 0, 0.2);
   border-radius: 6px;
+  background: Rgb(0 0 0 / 20%);
   color: var(--gray, #94a3b8);
   font-size: 9.5px;
 }
 
 .bm-mini-open-btn {
-  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+  @include pixelated;
+
+  width: 100%;
+  padding: 6px 10px;
   border: 1px solid #f87171;
   border-radius: 6px;
+  background: Linear-Gradient(180deg, #ef4444 0%, #b91c1c 100%);
   color: white;
-  padding: 6px 10px;
   font-size: 9px;
   line-height: 1.35;
   cursor: pointer;
   letter-spacing: 0.5px;
-  width: 100%;
-  @include pixelated;
 
   &:hover {
-    background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+    background: Linear-Gradient(180deg, #f87171 0%, #dc2626 100%);
   }
 }
 </style>

@@ -76,17 +76,18 @@ const p2Anchor = getCombatantPosition('enemy')
 @use "@/styles/core/tools" as *;
 
 .map-virtual-world {
+  @include pixelated;
+
   position: absolute;
   top: 0;
   left: 0;
   width: 3000px;
   height: 3000px;
   pointer-events: none;
-  @include pixelated;
 
   &.debug-mode {
-    background-color: Rgba(255, 0, 0, 0.05);
-    outline: 4px solid Rgba(255, 0, 0, 0.3);
+    background-color: rgb(255 0 0 / 5%);
+    outline: 4px solid rgb(255 0 0 / 30%);
   }
 }
 
@@ -97,5 +98,6 @@ const p2Anchor = getCombatantPosition('enemy')
 }
 
 /* Reusing global debug styles from _battle.scss but scoped here if needed */
+
 /* Actually, most debug styles are in _battle.scss, we just need the structure */
 </style>

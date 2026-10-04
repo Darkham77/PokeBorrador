@@ -83,52 +83,54 @@ const toggle = () => {
 @use "@/styles/core/_mixins" as *;
 
 .home-collapsible-panel {
-  background: Rgba(18, 22, 34, 0.6);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px Rgba(0, 0, 0, 0.25);
-  box-sizing: border-box;
   width: 100%;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  background: rgb(18 22 34 / 60%);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+  box-sizing: border-box;
 
   &:hover {
-    border-color: Rgba(255, 255, 255, 0.16);
+    border-color: rgb(255 255 255 / 16%);
   }
 }
 
 .accordion-toggle {
-  width: 100%;
-  margin: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  margin: 0;
   padding: 10px 14px;
-  background: transparent;
   border: none;
-  outline: none;
   border-radius: 8px;
-  color: var(--white, #ffffff);
+  background: transparent;
+  color: var(--white, #fff);
   font-size: 11px;
   font-weight: 600;
+  outline: none;
   cursor: pointer;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 
   &:focus,
-  &:focus-visible,
-  &:active {
-    outline: none;
+  &:focus-visible {
     border: none;
+    outline: none;
     box-shadow: none;
   }
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.05);
+    background: rgb(255 255 255 / 5%);
   }
 
   &:active {
-    background: Rgba(255, 255, 255, 0.08);
+    border: none;
+    background: rgb(255 255 255 / 8%);
+    outline: none;
+    box-shadow: none;
   }
 
   .accordion-title-wrap {
@@ -136,60 +138,58 @@ const toggle = () => {
     align-items: center;
     gap: 8px;
     line-height: 1.45;
-    padding-bottom: 2px;
     text-align: left;
+    padding-bottom: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 
     .emoji {
       display: inline-flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      font-size: 14px;
       line-height: 1;
       flex-shrink: 0;
-      font-size: 14px;
     }
 
     .collapse-title {
       @include pixelated;
+
+      color: var(--white, #fff);
       font-size: 11px;
       letter-spacing: 0.5px;
-      color: var(--white, #ffffff);
     }
 
     .collapse-pill-badge {
+      @include text-outline(var(--black, #000), 1px);
+
       position: static !important;
       display: inline-flex !important;
-      align-items: center !important;
       justify-content: center !important;
-      @include text-outline(var(--black, #000), 1px);
-      font-size: 8px !important;
-      font-weight: bold !important;
+      align-items: center !important;
       padding: 3px 6px !important;
       border-radius: 9999px !important;
+      font-size: 8px !important;
+      font-weight: bold !important;
       margin-left: 6px !important;
       letter-spacing: 0.5px !important;
       vertical-align: middle !important;
     }
 
     .collapse-sub {
-      font-size: 10px;
       color: var(--gray, #94a3b8);
+      font-size: 10px;
       font-weight: normal;
     }
   }
 
-  &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-  }
-
   .toggle-arrow {
-    font-size: 9px;
-    color: var(--gray, #94a3b8);
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    color: var(--gray, #94a3b8);
+    font-size: 9px;
     flex-shrink: 0;
     margin-left: 8px;
   }

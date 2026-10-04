@@ -3,17 +3,17 @@
 @use "box/controls";
 @use "box/filters";
 @use "box/grid";
-
 @use "@/styles/core/tools" as *;
 
 .box-view {
-  padding: 0 0 250px 0;
-  background: transparent;
-  min-height: 0;
+  @include gpu-layer;
+
+  z-index: var(--z-base);
   display: flex;
   flex-direction: column;
   gap: 16px; // Reduced from 32px (half of --ui-v-gap)
-  @include gpu-layer;
+  min-height: 0;
+  padding: 0 0 250px;
+  background: transparent;
   pointer-events: auto !important;
-  z-index: var(--z-base);
 }

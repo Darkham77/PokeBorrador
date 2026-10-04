@@ -425,6 +425,8 @@ function calculateStartsInLabel(isActive: boolean, startInst: Temporal.Instant, 
 
 const DAY_NAMES_FULL = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'] as const;
 const DAY_NAMES_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
+const ALL_DAY_HOURS_THRESHOLD = 23.9;
+const ALL_DAY_FULL_HOURS = 24;
 
 function formatEventHour(hr: number): string {
   const h = Math.floor(hr);
@@ -433,7 +435,7 @@ function formatEventHour(hr: number): string {
 }
 
 function formatEventTimeRange(startHour: number, endHour: number): string {
-  const isAllDay = startHour === 0 && (endHour >= 23.9 || endHour === 24);
+  const isAllDay = startHour === 0 && (endHour >= ALL_DAY_HOURS_THRESHOLD || endHour === ALL_DAY_FULL_HOURS);
   return isAllDay ? 'Todo el día' : `${formatEventHour(startHour)} – ${formatEventHour(endHour)} hs`;
 }
 

@@ -6,25 +6,25 @@
 
 /* ===== MOBILE NAVIGATION BAR (BOTTOM) ===== */
 body .nav {
-  display: none; 
+  @include gpu-layer;
+
   position: fixed;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
-  background: Rgba(0, 0, 0, 0.95);
-  @include gpu-layer;
+  z-index: var(--z-navigation);
+  display: none;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  gap: 4px;
+  padding: 8px 12px;
+  background: Rgb(0 0 0 / 95%);
+  transform: Translatez(0);
   will-change: transform, filter;
   margin-bottom: 0;
-  padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  z-index: var(--z-navigation);
-  
-  transform: Translatez(0);
-  border-top: 1px solid Rgba(255, 255, 255, 0.08);
-  justify-content: space-around;
-  box-shadow: 0 -10px 40px Rgba(0, 0, 0, 0.5);
-  flex-wrap: nowrap;
-  gap: 4px;
+  border-top: 1px solid Rgb(255 255 255 / 8%);
+  box-shadow: 0 -10px 40px Rgb(0 0 0 / 50%);
 
   @include responsive(hud-mobile) {
     display: flex !important;
@@ -32,44 +32,45 @@ body .nav {
 }
 
 .nav-btn {
-  flex: 1;
-  min-width: 0;
+  display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 4px !important;
   border: none !important;
   background: transparent !important;
-  padding: 6px 4px !important;
-  font-size: 7px !important;
-  gap: 4px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
   color: $gray;
+  font-size: 7px !important;
+  flex: 1;
+  overflow: hidden;
+
+  &:hover { color: $white; }
   
 
   span:first-child {
     font-size: 20px;
-    @media (max-width: 380px) { font-size: 16px; }
+
+    @media (width <= 380px) { font-size: 16px; }
   }
 
   span:last-child {
     display: block;
     max-width: 100%;
+    font-family: $font-pixel;
+    line-height: 1.4;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.4;
     padding-bottom: 2px;
-    font-family: $font-pixel;
   }
-
-  &:hover { color: $white; }
 
   &.active {
     color: $yellow;
     text-shadow: 0 0 8px Rgba($yellow, 0.3);
   }
 
-  @media (max-width: 380px) {
+  @media (width <= 380px) {
     font-size: 5px !important;
   }
 }
@@ -77,17 +78,18 @@ body .nav {
 /* ===== GLOBAL SUBMENUS ===== */
 .hud-submenu,
 .nav-submenu {
-  position: absolute;
   @include shell($card);
-  border-radius: 12px;
-  padding: spacing(2);
+
+  position: absolute;
+  z-index: var(--z-modal);
   display: none;
   flex-direction: column;
   gap: spacing(1);
-  z-index: var(--z-modal);
-  transform: Translatez(0);
-  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8);
   min-width: 160px;
+  padding: spacing(2);
+  border-radius: 12px;
+  transform: Translatez(0);
+  box-shadow: 0 10px 30px Rgb(0 0 0 / 80%);
   
   &.active,
   .hud-group.is-open &,
@@ -98,7 +100,7 @@ body .nav {
 
 // Notch support
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     body .nav {
       padding-bottom: calc(8px + env(safe-area-inset-bottom));
     }

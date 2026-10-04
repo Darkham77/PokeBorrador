@@ -144,37 +144,37 @@ const close = () => {
 }
 
 .target-info {
-  font-size: 13px;
   color: var(--gray);
+  font-size: 13px;
   text-align: center;
   margin-bottom: 24px;
 }
 
 .nature-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  max-height: 400px;
-  overflow-y: auto;
+  grid-template-columns: 1fr 1fr;
   min-height: 0;
+  max-height: 400px;
   padding: 8px 12px;
+  overflow-y: auto;
 
   .nature-btn {
-    background: Rgba(255,255,255,0.03);
-    border: 1px solid Rgba(255,255,255,0.08);
-    border-radius: 14px;
     padding: 14px;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 14px;
+    background: rgb(255 255 255 / 3%);
     text-align: left;
     cursor: pointer;
     will-change: transform;
     
     &.active { 
-      border-color: var(--yellow); 
-      background: Rgba(255, 214, 10, 0.05);
+      background: rgb(255 214 10 / 5%); 
+      border-color: var(--yellow);
       .n-name { color: var(--yellow); }
     }
 
-    .n-name { display: block; font-weight: 800; color: var(--white); font-size: 14px; }
+    .n-name { display: block; color: var(--white); font-size: 14px; font-weight: 800; }
     
     .n-effects {
       display: flex;
@@ -191,9 +191,9 @@ const close = () => {
       font-weight: bold;
       
       .indicator-icon {
+        display: inline-block;
         font-size: 9px;
         line-height: 1;
-        display: inline-block;
       }
       
       &.mod-up {

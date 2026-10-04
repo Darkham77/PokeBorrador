@@ -19,6 +19,7 @@ const STANDARD_BANNER_WIDTH_PX = 448
 const MIN_POKECENTER_WIDTH_PX = 360
 const BANNER_GAP_PX = 16
 const STACKED_BREAKPOINT_PX = 1024
+const DEFAULT_CONTAINER_WIDTH_PX = 1200
 
 interface Props {
   rivalEventTitle?: string
@@ -42,7 +43,7 @@ const eventStore = useEventStore()
 
 // ── Responsive Layout & Event Slots ───────────────────────────────────────────
 const containerRef = ref<HTMLElement | null>(null)
-const containerWidth = ref(1200)
+const containerWidth = ref(DEFAULT_CONTAINER_WIDTH_PX)
 
 const isStacked = computed(() => containerWidth.value < STACKED_BREAKPOINT_PX)
 const activeEvents = computed(() => eventStore.activeEvents)
@@ -207,7 +208,7 @@ useResizeObserver(containerRef, (entries) => {
 
 onMounted(() => {
   if (containerRef.value) {
-    containerWidth.value = containerRef.value.clientWidth || 1200
+    containerWidth.value = containerRef.value.clientWidth || DEFAULT_CONTAINER_WIDTH_PX
   }
 
   gsapCtx = gsap.context(() => {}, containerRef.value || undefined)

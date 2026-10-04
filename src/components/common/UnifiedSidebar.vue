@@ -91,6 +91,7 @@ const sidebarBorderColor = computed(() => {
 
 .unified-sidebar {
   @include shop-sidebar(v-bind('sidebarBorderColor'));
+
   scrollbar-width: thin;
 }
 

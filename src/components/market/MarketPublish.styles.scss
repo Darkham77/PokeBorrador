@@ -2,15 +2,16 @@
 @use "@/styles/core/_mixins" as *;
 
 .market-publish-wizard {
-  flex: 1;
-  min-height: 0;
+
   display: flex;
   flex-direction: column;
+  min-height: 0;
   padding: 0 20px 20px 0;
+  flex: 1;
 
   @include responsive(950px) {
-    padding: 10px;
     height: 100%;
+    padding: 10px;
   }
 
   .publish-header {
@@ -20,72 +21,75 @@
     margin-bottom: 20px;
 
     .limit-info {
-      font-size: 10px;
       color: $muted;
+      font-size: 10px;
       font-weight: bold;
     }
   }
 
   .mode-selector {
     display: flex;
-    background: Rgba(0, 0, 0, 0.3);
+    gap: 4px;
     padding: 4px;
     border-radius: 12px;
-    gap: 4px;
+    background: Rgb(0 0 0 / 30%);
 
     button {
+      @include pixelated;
+
       padding: 8px 16px;
       border: 1px solid transparent;
+      border-radius: 10px;
       background: transparent;
       color: $muted;
-      @include pixelated;
       font-size: 8px;
       cursor: pointer;
-      border-radius: 10px;
 
       &.active {
-        background: Rgba(56, 189, 248, 1);
+        background: Rgb(56 189 248 / 100%);
         color: $white;
-        border-color: #000000;
+        border-color: #000;
         text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-        box-shadow: 0 0 15px Rgba(56, 189, 248, 0.3);
+        box-shadow: 0 0 15px Rgb(56 189 248 / 30%);
       }
     }
   }
 
   .main-split {
-    flex: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    gap: 20px;
-    min-height: 0;
 
-    &.is-mobile-view {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow-y: auto;
-      gap: 16px;
-    }
+    display: grid;
+    gap: 20px;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    min-height: 0;
+    flex: 1;
 
     @include responsive(950px) {
       display: flex;
       flex-direction: column;
+      gap: 16px;
       height: 100%;
       overflow-y: auto;
+    }
+
+    &.is-mobile-view {
+      display: flex;
+      flex-direction: column;
       gap: 16px;
+      height: 100%;
+      overflow-y: auto;
     }
   }
 
   .selection-container {
-    flex: 1;
-    min-height: 0;
+
     display: flex;
     flex-direction: column;
     min-width: 0; // Allow shrinking
-    background: Rgba(0, 0, 0, 0.15);
+    min-height: 0;
+    border: 1px solid Rgb(255 255 255 / 5%);
     border-radius: 20px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+    background: Rgb(0 0 0 / 15%);
+    flex: 1;
     overflow: hidden;
 
     @include responsive(950px) {
@@ -94,10 +98,9 @@
   }
 
   .selection-list {
-    flex: 1;
     padding: 12px 10px;
-    overflow-x: auto; // Add horizontal scroll if cards are too wide
-    overflow-y: auto;
+    flex: 1;
+    overflow: auto; // Add horizontal scroll if cards are too wide
     
     // Ensure horizontal scrollbar is visible if needed
     &::-webkit-scrollbar:horizontal {
@@ -109,30 +112,31 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    overflow-y: auto;
     min-height: 0;
+    overflow-y: auto;
     padding-right: 6px;
   }
 
   .i-icon { font-size: 24px; }
 
   .publish-panel {
-    background: Rgba(255, 255, 255, 0.02);
-    border-radius: 24px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     padding: 20px;
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: 24px;
+    background: Rgb(255 255 255 / 2%);
     overflow-y: auto;
 
     @include responsive(950px) {
-      flex: 1;
-      height: 100%;
       justify-content: flex-start;
-      overflow-y: auto;
+      height: 100%;
       padding: 16px;
+      flex: 1;
+      overflow-y: auto;
     }
   }
 
@@ -152,73 +156,74 @@
   }
 
   .selection-hint {
-    margin: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    text-align: center;
+    align-items: center;
+    margin: auto;
     color: $muted;
-    .hint-icon { font-size: 40px; margin-bottom: 15px; opacity: 0.2; }
-    p { font-size: 13px; max-width: 200px; line-height: 1.6; }
+    text-align: center;
+    .hint-icon { font-size: 40px; opacity: 0.2; margin-bottom: 15px; }
+    p { max-width: 200px; font-size: 13px; line-height: 1.6; }
   }
 
   .form-container {
-    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
     margin: auto 0;
   }
 
   .selected-summary {
-    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;
 
     .label {
       display: block;
-      font-size: 9px;
       color: $muted;
-      margin-bottom: 5px;
+      font-size: 9px;
       line-height: 1.35;
+      margin-bottom: 5px;
     }
 
     .val {
+      color: var(--white);
       font-size: 16px;
       font-weight: 900;
-      color: var(--white);
-      text-transform: uppercase;
       line-height: 1.35;
+      text-transform: uppercase;
     }
 
     .selected-pokemon-card-wrap {
       display: flex;
       flex-direction: column;
       align-items: center;
-      cursor: pointer;
-      margin: 4px 0 6px 0;
       width: 100%;
+      margin: 4px 0 6px;
+      cursor: pointer;
 
       .selected-card-preview {
+        position: relative;
         width: 136px;
         height: 195px;
         cursor: pointer;
-        position: relative;
       }
 
       .card-click-hint {
-        margin-top: 6px;
-        font-size: 8px;
-        color: Rgba(56, 189, 248, 1);
         @include pixelated;
-        opacity: 0.85;
+
         display: flex;
         align-items: center;
         gap: 4px;
-        text-shadow: 1px 1px 0 #000;
+        color: Rgb(56 189 248 / 100%);
+        font-size: 8px;
         line-height: 1.35;
+        opacity: 0.85;
+        margin-top: 6px;
+        text-shadow: 1px 1px 0 #000;
       }
     }
 
@@ -233,7 +238,7 @@
         width: 48px;
         height: 48px;
         image-rendering: pixelated;
-        filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.4));
+        filter: Drop-Shadow(0 4px 8px Rgb(0 0 0 / 40%));
       }
     }
   }
@@ -245,77 +250,77 @@
     width: 100% !important;
 
     label {
-      display: block !important;
-      font-size: 9px;
       @include pixelated;
-      color: Rgba(56, 189, 248, 1);
-      margin-bottom: 12px !important;
+
+      display: block !important;
+      color: Rgb(56 189 248 / 100%);
+      font-size: 9px;
       text-align: center !important;
+      margin-bottom: 12px !important;
     }
 
     .price-input {
-      width: 100% !important;
-      background: var(--black);
-      border: 2px solid Rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 16px;
-      color: $coin-gold;
       @include pixelated;
+
+      width: 100% !important;
+      padding: 16px;
+      border: 2px solid Rgb(255 255 255 / 10%);
+      border-radius: 16px;
+      background: var(--black);
+      color: $coin-gold;
       font-size: 16px;
       text-align: center;
       outline: none;
       box-sizing: border-box;
 
+      &:focus { border-color: Rgb(255 215 0 / 27%); }
+
       /* Hide standard HTML5 up/down spin buttons */
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        appearance: none;
         margin: 0;
+        appearance: none;
       }
-      &[type=number] {
-        -moz-appearance: textfield;
+      &[type="number"] {
         appearance: textfield;
       }
-
-      &:focus { border-color: Rgba(255, 215, 0, 0.27); }
     }
   }
 
   .financials {
-    background: Rgba(0, 0, 0, 0.2);
-    border-radius: 16px;
-    padding: 12px 16px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: Rgb(0 0 0 / 20%);
 
     .row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11px;
-      color: Rgba(148, 163, 184, 1);
       gap: 12px;
+      color: Rgb(148 163 184 / 100%);
+      font-size: 11px;
 
       span {
         white-space: nowrap;
       }
 
       &.total {
-         border-top: 1px solid Rgba(255, 255, 255, 0.05);
+         color: var(--white);
+         font-size: 13px;
+         font-weight: bold;
+         border-top: 1px solid Rgb(255 255 255 / 5%);
          padding-top: 10px;
          margin-top: 5px;
-         font-weight: bold;
-         font-size: 13px;
-         color: var(--white);
       }
-      .neg { color: Rgba(248, 113, 113, 1); }
-      .pos { color: Rgba(34, 197, 94, 1); }
+      .neg { color: Rgb(248 113 113 / 100%); }
+      .pos { color: Rgb(34 197 94 / 100%); }
     }
   }
 
-  .empty-list { text-align: center; padding: 40px; color: $muted; font-size: 12px; }
+  .empty-list { padding: 40px; color: $muted; font-size: 12px; text-align: center; }
 
   .market-publish-filters {
     display: flex;
@@ -331,15 +336,16 @@
   }
 
   .gts-pagination {
+    @include pixelated;
+
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 15px;
-    margin-top: 15px;
     padding: 10px 0;
-    border-top: 1px solid Rgba(255, 255, 255, 0.05);
-    @include pixelated;
     font-size: 10px;
+    margin-top: 15px;
+    border-top: 1px solid Rgb(255 255 255 / 5%);
 
     .page-info {
       color: var(--yellow);

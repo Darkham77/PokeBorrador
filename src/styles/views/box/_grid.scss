@@ -3,22 +3,23 @@
 
 .box-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 6px; // Reduced from 12px
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   padding-bottom: 20px;
 }
 
 .box-pokemon-card {
   @include pokemon-card-standard(20px);
-  padding: 12px;
-  cursor: pointer;
+
   display: flex;
   flex-direction: column;
-  align-items: center;
-  overflow: hidden;
-  height: 195px;
   justify-content: space-between;
+  align-items: center;
   gap: 4px;
+  height: 195px;
+  padding: 12px;
+  cursor: pointer;
+  overflow: hidden;
 
   &:hover {
     & .box-card-sprite { 
@@ -28,23 +29,23 @@
 
   &.fast-mode,
   &.performance-mode {
-    background: Rgba(30, 41, 59, 0.95) !important;
+    background: Rgb(30 41 59 / 95%) !important;
+    animation: none !important;
     box-shadow: none !important;
     border-color: var(--tier-color) !important;
     will-change: opacity;
 
     &:hover {
+      background: Rgb(30 41 59 / 90%) !important;
       transform: none;
-      background: Rgba(30, 41, 59, 0.9) !important;
     }
 
     &::before, &::after { display: none !important; }
-    animation: none !important;
     
     & .box-card-sprite {
+      transform: none;
       will-change: transform, filter, opacity;
       filter: none;
-      transform: none;
     }
   }
 
@@ -52,11 +53,11 @@
     position: absolute;
     top: 10px;
     right: 10px;
+    z-index: var(--z-low);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    z-index: var(--z-low);
 
     .tier-badge {
       position: static !important;
@@ -77,11 +78,12 @@
   }
 
   .box-sprite-wrapper {
-    width: 100%;
-    flex: 1 1 auto;
-    min-height: 64px;
-    position: relative;
     @include flex-center;
+
+    position: relative;
+    width: 100%;
+    min-height: 64px;
+    flex: 1 1 auto;
     margin-left: 0;
     overflow: visible;
 
@@ -91,28 +93,29 @@
 
     .pv-fx-wrapper,
     .pv-fx-sprite-layer {
-      overflow: visible;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      overflow: visible;
     }
 
-    & .box-card-sprite { 
+    & .box-card-sprite {
+      @include pokemon-sprite-base-standard; 
+
       width: 83px !important;
-      height: 83px !important;
       min-width: 83px !important;
-      min-height: 83px !important;
       max-width: none !important;
+      height: 83px !important;
+      min-height: 83px !important;
       max-height: none !important;
       object-fit: contain;
-      @include pokemon-sprite-base-standard;
     }
   }
 
   .card-info {
-    flex-shrink: 0;
-    text-align: center;
     width: 100%;
+    text-align: center;
+    flex-shrink: 0;
     padding-left: 0;
 
     .with-badges & {
@@ -122,24 +125,25 @@
     .box-pokemon-name-row {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      margin-bottom: 3px;
-      line-height: 1.1;
+      align-items: center;
       width: 100%;
+      line-height: 1.1;
+      margin-bottom: 3px;
     }
 
     .box-pokemon-name {
       @include pixelated;
+
+      display: block;
+      max-width: 100%;
+      color: var(--white);
       font-size: 8px;
       line-height: 1.45;
       padding-bottom: 2px;
-      color: var(--white);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      display: block;
-      max-width: 100%;
 
       &.is-species {
         text-transform: uppercase;
@@ -151,16 +155,17 @@
 
     .box-pokemon-species-sub {
       @include pixelated;
+
+      display: block;
+      max-width: 100%;
+      color: var(--text-muted, Rgb(255 255 255 / 60%));
       font-size: 6px;
       line-height: 1.45;
       padding-bottom: 1px;
-      color: var(--text-muted, Rgba(255, 255, 255, 0.6));
       text-transform: uppercase;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      display: block;
-      max-width: 100%;
       letter-spacing: 0.3px;
       margin-top: 1px;
     }
@@ -174,18 +179,18 @@
 
       .level-gender-row {
         display: flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
         gap: 4px;
       }
     }
 
     .hp-bar-mini {
       width: 75%;
-      margin: 6px auto 0;
       height: 3px;
-      background: Rgba(255, 255, 255, 0.1);
+      margin: 6px auto 0;
       border-radius: 2px;
+      background: Rgb(255 255 255 / 10%);
       overflow: hidden;
 
       .hp-fill {
@@ -197,44 +202,45 @@
   // --- SELECTION MODE (Inventory Style) ---
   .selection-check {
     position: absolute;
-    bottom: 10px;
     right: 10px;
+    bottom: 10px;
     z-index: var(--z-mid);
 
     .check-box {
-      width: 22px;
-      height: 22px;
-      background: Rgba(0, 0, 0, 0.4);
-      border: 1px solid Rgba(255, 255, 255, 0.2);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-will-change: opacity;
-      will-change: opacity;
       @include gpu-layer;
 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 22px;
+      height: 22px;
+      border: 1px solid Rgb(255 255 255 / 20%);
+      border-radius: 6px;
+      background: Rgb(0 0 0 / 40%);
+      -webkit-will-change: opacity;
+      will-change: opacity;
+
       .checkmark-svg {
+        display: block;
         width: 65%;
         height: 65%;
         stroke: currentColor;
-        display: block;
       }
 
       &.checked {
         background: var(--red);
-        border-color: var(--red);
         color: white;
-        box-shadow: 0 0 15px Rgba(239, 68, 68, 0.5);
         transform: Scale(1.1);
+        border-color: var(--red);
+        box-shadow: 0 0 15px Rgb(239 68 68 / 50%);
       }
     }
   }
 
   &.selected {
-    border-color: var(--red) !important;
-    background: Rgba(239, 68, 68, 0.05) !important;
-    box-shadow: 0 0 30px Rgba(239, 68, 68, 0.1) !important;
+    background: Rgb(239 68 68 / 5%) !important;
     transform: Scale(0.98);
+    border-color: var(--red) !important;
+    box-shadow: 0 0 30px Rgb(239 68 68 / 10%) !important;
   }
 }

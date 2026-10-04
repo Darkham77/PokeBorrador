@@ -102,9 +102,9 @@ const openCenter = () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: fit-content;
   margin: 0;
   box-sizing: border-box;
-  width: fit-content;
 }
 
 .pokecenter-banner {
@@ -112,86 +112,88 @@ const openCenter = () => {
   width: 440px;
   max-width: 100%;
   height: auto;
-  aspect-ratio: 307 / 171;
+  border: 4px solid Rgb(255 0 127 / 100%);
   border-radius: 16px;
+  aspect-ratio: 307 / 171;
   cursor: pointer;
-  
-  box-shadow: 0 10px 40px Rgba(0, 0, 0, 0.6), inset 0 0 15px Rgba(0, 0, 0, 0.5);
-  border: 4px solid Rgba(255, 0, 127, 1);
+  box-shadow: 0 10px 40px Rgb(0 0 0 / 60%), inset 0 0 15px Rgb(0 0 0 / 50%);
   overflow: hidden;
   box-sizing: border-box;
   
   .banner-bg {
+    @include pixelated;
+
     position: absolute;
+    z-index: calc(var(--z-base) + 1);
+    border-radius: 14px;
     inset: -2px;
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    z-index: calc(var(--z-base) + 1);
-    border-radius: 14px;
-    @include pixelated;
   }
 
   &::after {
-    content: '';
     position: absolute;
-    inset: -2px;
-    background: linear-gradient(to top, var(--black, #000000) 0%, Rgba(0, 0, 0, 0.6) 30%, transparent 55%);
     z-index: calc(var(--z-base) + 2);
-    pointer-events: none;
     border-radius: 14px;
+    background: Linear-Gradient(to top, var(--black, #000) 0%, Rgb(0 0 0 / 60%) 30%, transparent 55%);
+    content: '';
+    inset: -2px;
+    pointer-events: none;
   }
 
   &.on-cooldown {
-    border-color: Rgba(107, 114, 128, 1) !important;
+    border-color: Rgb(107 114 128 / 100%) !important;
     cursor: not-allowed;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     max-width: 100%;
   }
 }
 
 .banner-overlay {
   position: absolute;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
-  padding: 16px 20px;
-  text-align: left;
   z-index: calc(var(--z-base) + 3);
+  padding: 16px 20px;
   border-radius: 0 0 16px 16px;
-  background: linear-gradient(to top, Rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+  background: Linear-Gradient(to top, Rgb(0 0 0 / 60%) 0%, transparent 100%);
+  text-align: left;
 }
 
 .banner-title {
   @include pixelated;
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 2px;
-  text-shadow: 0 3px 8px Rgba(0, 0, 0, 1);
-  white-space: nowrap;
+
   display: flex;
   align-items: center;
   gap: 6px;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  text-shadow: 0 3px 8px Rgb(0 0 0 / 100%);
+  white-space: nowrap;
 
   .title-icon {
     font-size: 16px;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     font-size: 15px;
   }
 }
 
 .banner-desc {
   @include pixelated;
+
+  max-width: 90%;
+  color: Rgb(255 255 255 / 85%);
   font-size: 8px;
   font-weight: 400 !important;
-  color: Rgba(255, 255, 255, 0.85);
-  max-width: 90%;
-  text-shadow: 0 2px 4px Rgba(0, 0, 0, 1);
+  text-shadow: 0 2px 4px Rgb(0 0 0 / 100%);
 }
 
 .banner-tag-tooltip {
@@ -209,24 +211,25 @@ const openCenter = () => {
 }
 
 .banner-tag {
+  @include pixelated;
+
   position: absolute;
   top: 12px;
   right: 12px;
-  background: Rgba(16, 185, 129, 1);
-  color: var(--white);
-  padding: 5px 10px;
-  border-radius: 8px;
-  @include pixelated;
-  font-size: 8px;
-  box-shadow: 0 4px 10px Rgba(16, 185, 129, 0.3);
   z-index: calc(var(--z-base) + 4);
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: Rgb(16 185 129 / 100%);
+  color: var(--white);
+  font-size: 8px;
+  box-shadow: 0 4px 10px Rgb(16 185 129 / 30%);
 
   &.cooldown {
-    background: Rgba(75, 85, 99, 1);
-    box-shadow: 0 4px 10px Rgba(75, 85, 99, 0.3);
+    background: Rgb(75 85 99 / 100%);
+    box-shadow: 0 4px 10px Rgb(75 85 99 / 30%);
   }
 }
 </style>

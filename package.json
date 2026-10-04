@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.0-build.20261002-172710",
+  "version": "0.6.1-build.20261004-023211",
   "private": true,
   "type": "module",
   "engines": {
@@ -71,7 +71,7 @@
     "test:combat:weather": "npm run test:unit tests/unit/battle/battle_weather_and_field_suite.spec.ts",
     "sim:fuzzer:report": "npm run sim:fuzzer > scripts/e2e/results/fuzzer_report.txt",
     "lint": "npm run audit:lint",
-    "lint:fix": "npm run audit:lint fix",
+    "lint:fix": "auditor preset=lint fix",
     "env:configure": "npm run supabase:manage generate && npm run servers:configure",
     "servers:configure": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/maintenance/configure_official_servers.ts",
     "database:update": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/database/update_supabase_db.ts",
@@ -98,6 +98,7 @@
     "auditor:version": "auditor-version -v",
     "audit:changed": "auditor changed-since=main",
     "audit:lint": "auditor preset=lint",
+    "audit:build": "auditor preset=build",
     "audit:md": "auditor preset=md",
     "audit:for-commit": "auditor-commit",
     "audit:findings": "auditor-findings",
@@ -109,6 +110,10 @@
     "audit:complexity:top": "auditor-complexity top=50",
     "audit:complexity:json": "auditor-complexity json",
     "audit:bundle": "auditor-bundle",
+    "audit:similar": "auditor-similar",
+    "audit:review": "auditor-review",
+    "audit:css": "auditor-css",
+    "auditor:sync-env": "auditor-sync-env",
     "audit:fallow": "auditor-fallow category=all",
     "audit:fallow:dupes": "auditor-fallow category=dupes",
     "audit:fallow:circular": "auditor-fallow category=circular",
@@ -147,7 +152,7 @@
     "validate:persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
     "validate:save-persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
     "validate:schema-parity": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_schema_parity.ts",
-    "validate:tools": "auditor --task=validate_build_tools"
+    "audit:fix": "auditor fix"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",
@@ -201,7 +206,8 @@
     "ws": "^8.18.1"
   },
   "overrides": {
-    "serialize-javascript": "^7.0.5"
+    "serialize-javascript": "^7.0.5",
+    "js-yaml": "^5.4.2"
   },
   "allowScripts": {
     "@parcel/watcher": true,

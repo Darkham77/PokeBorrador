@@ -135,30 +135,31 @@ onMounted(() => {
 @use "@/styles/core/tools" as *;
 
 .battle-log {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  padding: 4px 10px;
-  overflow-y: auto !important;
-  display: block;
   @include smooth-scroll;
   @include gpu-layer;
+
+  display: block;
+  width: 100%;
+  min-height: 0;
+  padding: 4px 10px;
+  flex: 1;
+  overflow-y: auto !important;
 
   /* Estilos de Scrollbar */
   &::-webkit-scrollbar {
     width: 6px;
   }
   &::-webkit-scrollbar-track {
-    background: Rgba(0, 0, 0, 0.2);
     border-radius: 3px;
+    background: Rgb(0 0 0 / 20%);
   }
   &::-webkit-scrollbar-thumb {
-    background: Rgba(255, 255, 255, 0.15);
+    border: 1px solid Rgb(0 0 0 / 20%);
     border-radius: 3px;
-    border: 1px solid Rgba(0, 0, 0, 0.2);
+    background: Rgb(255 255 255 / 15%);
     
     &:hover {
-      background: Rgba(255, 255, 255, 0.25);
+      background: Rgb(255 255 255 / 25%);
     }
   }
 
@@ -169,7 +170,7 @@ onMounted(() => {
     width: 100%;
   }
 
-  @media (max-width: 560px) {
+  @media (width <= 560px) {
     padding: 10px !important;
     .log-scroll-inner {
       gap: 4px !important;
@@ -178,77 +179,84 @@ onMounted(() => {
 }
 
 .log-entry {
-  font-family: var(--font-pixel), monospace;
-  font-size: 10px;
-  line-height: 1.4;
   @include pixelated;
-  color: Rgba(255,255,255,0.9);
-  padding-bottom: 4px;
-  border-bottom: 1px solid Rgba(255,255,255,0.05);
+
   display: flex;
   align-items: center;
   gap: 8px; 
-  min-height: 32px;
+  min-height: 28px !important;
+  border-radius: 4px 0 0 4px;
+  color: Rgb(255 255 255 / 90%);
+  font-family: var(--font-pixel), monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  padding-left: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
   will-change: transform, opacity;
 
+  &:hover {
+    background-color: Rgb(255 255 255 / 3%) !important;
+  }
+
   .log-icon-wrapper {
-    flex-shrink: 0;
-    width: 42px; // Ancho base estándar para TODOS los casos
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: relative;
     z-index: var(--z-low);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 42px; // Ancho base estándar para TODOS los casos
+    height: 32px;
+    flex-shrink: 0;
 
     // Estilos específicos para AVATAR (Entrenador)
     &.trainer {
-      .log-icon {
-        width: 42px !important;
-        height: 42px !important;
-        max-width: none !important;
-        max-height: none !important;
-        object-fit: contain; 
+      .log-icon { 
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
-        transform: Translate(-50%, -50%);
-        will-change: transform, filter, opacity;
-        filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
-        border-radius: 0;
+        width: 42px !important;
+        max-width: none !important;
+        height: 42px !important;
+        max-height: none !important;
         border: none !important;
+        border-radius: 0;
         background: transparent !important;
+        transform: Translate(-50%, -50%);
+        object-fit: contain;
+        will-change: transform, filter, opacity;
+        filter: Drop-Shadow(0 4px 8px Rgb(0 0 0 / 40%));
       }
     }
 
     // Estilos para el Avatar del Jugador
     &.player_avatar {
-      .log-icon {
-        width: 28px !important;
-        height: 28px !important;
-        max-width: none !important;
-        max-height: none !important;
-        object-fit: cover; 
+      .log-icon { 
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
+        width: 28px !important;
+        max-width: none !important;
+        height: 28px !important;
+        max-height: none !important;
+        border: 1px solid Rgb(255 255 255 / 10%);
+        border-radius: 4px;
+        background-color: var(--player-class-color, Rgb(0 0 0 / 20%)) !important;
         transform: Translate(-50%, -50%);
+        object-fit: cover;
         will-change: transform, filter, opacity;
         filter: none;
-        border-radius: 4px;
-        border: 1px solid Rgba(255, 255, 255, 0.1);
-        background-color: var(--player-class-color, Rgba(0, 0, 0, 0.2)) !important;
       }
     }
     
     // Estilos específicos para ITEMS (Objetos) - Reducidos a la mitad
     &.item {
       .log-icon {
-        width: 28px !important;
-        height: 28px !important;
         position: relative !important;
         top: auto !important;
         left: auto !important;
+        width: 28px !important;
+        height: 28px !important;
         transform: none;
       }
     }
@@ -256,9 +264,9 @@ onMounted(() => {
     &.egg,
     &.npc_egg {
       display: flex;
-      align-items: center;
       justify-content: center;
-      filter: Drop-Shadow(0 2px 5px Rgba(0, 0, 0, 0.45));
+      align-items: center;
+      filter: Drop-Shadow(0 2px 5px Rgb(0 0 0 / 45%));
     }
     
     &.empty {
@@ -268,55 +276,56 @@ onMounted(() => {
 
   .log-icon {
     @include pixelated;
-    width: 56px !important; 
-    height: 56px !important;
-    max-width: none !important;
-    max-height: none !important;
-    object-fit: contain;
-    will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+
     position: absolute;
     top: 50%;
     left: 50%;
+    width: 56px !important;
+    max-width: none !important; 
+    height: 56px !important;
+    max-height: none !important;
     transform: Translate(-50%, -50%);
+    object-fit: contain;
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 4px 8px Rgb(0 0 0 / 40%));
   }
 
   .log-emoji {
     @include pixelated;
-    font-size: 16px; // Reducido para evitar desbordes
-    line-height: 1;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
-    will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
     
     // Centrado absoluto con prioridad máxima - Forzamos minúscula para asegurar compatibilidad
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+    font-size: 16px; // Reducido para evitar desbordes
+    line-height: 1;
     transform: Translate(-50%, -50%);
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
   }
 
   .log-text {
-    flex: 1;
     position: relative;
     z-index: var(--z-base);
+    flex: 1;
   }
 
-  @media (max-width: 560px) {
-    font-size: 8px !important;
-    padding: 2px 0 !important;
-    margin: 0 !important;
-    line-height: 1.3 !important;
-    border-bottom: 1px solid Rgba(255,255,255,0.03) !important;
-    min-height: 0 !important;
+  @media (width <= 560px) {
     gap: 8px !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 2px 0 !important;
+    font-size: 8px !important;
+    line-height: 1.3 !important;
+    border-bottom: 1px solid Rgb(255 255 255 / 3%) !important;
 
     .log-icon-wrapper {
       width: 28px !important;
       height: 28px !important;
     }
     
-    .log-icon:not(.trainer .log-icon):not(.item .log-icon) {
+    .log-icon:not(.trainer .log-icon, .item .log-icon) {
       width: 38px !important;
       height: 38px !important;
     }
@@ -336,24 +345,30 @@ onMounted(() => {
 
 /* Side-based backgrounds (Only 2 bands) */
 .log-entry.side-player {
-  background: Linear-Gradient(90deg, Rgba(0, 255, 127, 0.15) 0%, Transparent 80%);
-  border-left: 2px solid Rgba(0, 255, 127, 0.4);
+  background: Linear-Gradient(90deg, Rgb(0 255 127 / 15%) 0%, transparent 80%);
+  border-left: 2px solid Rgb(0 255 127 / 40%);
 }
+
 .log-entry.side-enemy {
-  background: Linear-Gradient(90deg, Rgba(255, 65, 54, 0.15) 0%, Transparent 80%);
-  border-left: 2px solid Rgba(255, 65, 54, 0.4);
+  background: Linear-Gradient(90deg, Rgb(255 65 54 / 15%) 0%, transparent 80%);
+  border-left: 2px solid Rgb(255 65 54 / 40%);
 }
 
 /* Compatibility with new types (Text only overrides) */
 :deep(.log-info) { color: var(--yellow); font-weight: 500; }
-:deep(.log-player) { color: Rgba(0, 255, 127, 1); }
-:deep(.log-enemy) { color: Rgba(255, 65, 54, 1); }
-:deep(.log-catch) { color: Rgba(177, 13, 201, 1); }
+
+:deep(.log-player) { color: Rgb(0 255 127 / 100%); }
+
+:deep(.log-enemy) { color: Rgb(255 65 54 / 100%); }
+
+:deep(.log-catch) { color: Rgb(177 13 201 / 100%); }
 
 /* Semantic types */
-:deep(.log-damage) { color: Rgba(255, 65, 54, 1); }
-:deep(.log-heal) { color: Rgba(0, 255, 127, 1); }
-:deep(.log-status) { color: Rgba(177, 13, 201, 1); }
+:deep(.log-damage) { color: Rgb(255 65 54 / 100%); }
+
+:deep(.log-heal) { color: Rgb(0 255 127 / 100%); }
+
+:deep(.log-status) { color: Rgb(177 13 201 / 100%); }
 
 /* Recompensas Unificadas de Fin de Combate */
 :deep(.reward-entry-unified) {
@@ -369,10 +384,10 @@ onMounted(() => {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px;
-  color: Rgba(255, 255, 255, 0.95);
+  color: Rgb(255 255 255 / 95%);
 
   strong {
-    color: #ffffff;
+    color: #fff;
     font-weight: 700;
   }
 }
@@ -404,16 +419,4 @@ onMounted(() => {
   color: #fb7185;
   font-weight: 500;
 }
-
-.log-entry {
-  padding-left: 6px;
-  border-radius: 4px 0 0 4px;
-  
-  min-height: 28px !important;
-  
-  &:hover {
-    background-color: Rgba(255, 255, 255, 0.03) !important;
-  }
-}
-
 </style>

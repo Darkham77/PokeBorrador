@@ -64,7 +64,7 @@ defineProps<{
         </div>
         <div
           class="formula-text smogon-desc-text"
-          style="text-shadow: none; font-size: 7px; line-height: 1.2;"
+          style=" font-size: 7px; line-height: 1.2;text-shadow: none;"
         >
           {{ activeDetails.smogonDesc }}
         </div>

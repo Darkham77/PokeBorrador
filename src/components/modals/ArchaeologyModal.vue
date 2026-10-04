@@ -9,6 +9,14 @@ const DIG_FOSSIL_COUNTER_DURATION_SEC = 0.3;
 const DIG_FOSSIL_TILE_FLASH_DURATION_SEC = 0.2;
 const DIG_OUTCOME_ANIM_DURATION_SEC = 0.5;
 const DIG_PARTICLE_BASE_SCALE_OUT = 0.5;
+const DEFAULT_ARCHAEOLOGY_RARITY = 50 as const;
+const DEFAULT_ARCHAEOLOGY_GRID_SIZE = 5 as const;
+const DEFAULT_ARCHAEOLOGY_MAX_ENERGY = 12 as const;
+const DEFAULT_TOTAL_FOSSIL_PARTS = 3 as const;
+const OUTCOME_CLOSE_DELAY_SEC = 1.2 as const;
+const FAIL_GRID_OPACITY = 0.5 as const;
+const DUST_PARTICLES_COUNT = 6 as const;
+const DUST_DURATION_VARIANCE_SEC = 0.3 as const;
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -61,18 +69,18 @@ const difficulty = computed<MinigameDifficulty>(() => {
   if (props.difficulty && props.difficulty in ARCHAEOLOGY_DIFFICULTIES) {
     return props.difficulty
   }
-  return calculateArchaeologyDifficulty(props.rarity || 50)
+  return calculateArchaeologyDifficulty(props.rarity || DEFAULT_ARCHAEOLOGY_RARITY)
 })
 
-const gridSize = ref(5)
-const maxEnergy = ref(12)
-const totalFossilParts = ref(3)
+const gridSize = ref<number>(DEFAULT_ARCHAEOLOGY_GRID_SIZE)
+const maxEnergy = ref<number>(DEFAULT_ARCHAEOLOGY_MAX_ENERGY)
+const totalFossilParts = ref<number>(DEFAULT_TOTAL_FOSSIL_PARTS)
 
 type Tile = ArchaeologyTile
 
 // State
 const grid = ref<Tile[]>([])
-const energy = ref(12)
+const energy = ref<number>(DEFAULT_ARCHAEOLOGY_MAX_ENERGY)
 const fossilsFound = ref(0)
 const gameActive = ref(true)
 const feedback = ref('¡Excavá las rocas con cuidado!')
@@ -168,7 +176,7 @@ function win() {
     duration: DIG_OUTCOME_ANIM_DURATION_SEC
   })
 
-  scheduleGameplayDelay(1.2, () => {
+  scheduleGameplayDelay(OUTCOME_CLOSE_DELAY_SEC, () => {
     emit('win', difficulty.value)
     emit('close')
   })
@@ -182,12 +190,12 @@ function fail() {
 
   // Crack grid animation
   gsap.to('.archaeology-grid', {
-    opacity: 0.5,
+    opacity: FAIL_GRID_OPACITY,
     filter: 'grayscale(1)',
     duration: DIG_OUTCOME_ANIM_DURATION_SEC
   })
 
-  scheduleGameplayDelay(1.2, () => {
+  scheduleGameplayDelay(OUTCOME_CLOSE_DELAY_SEC, () => {
     emit('fail')
     emit('close')
   })
@@ -199,7 +207,7 @@ function createDustParticles(target: Element) {
   const parent = target.parentElement
   if (!parent) return
 
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < DUST_PARTICLES_COUNT; i++) {
 const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50
 
     const particle = document.createElement('div')
@@ -228,7 +236,7 @@ const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50
       y: Math.sin(angle) * velocity - DUST_PARTICLE_TOP_OFFSET_PX, // push up slightly
       opacity: 0,
       scale: DIG_PARTICLE_BASE_SCALE_OUT,
-      duration: DIG_OUTCOME_ANIM_DURATION_SEC + Math.random() * 0.3,
+      duration: DIG_OUTCOME_ANIM_DURATION_SEC + Math.random() * DUST_DURATION_VARIANCE_SEC,
       ease: 'power2.out',
       onComplete: () => particle.remove()
     })
@@ -340,11 +348,11 @@ const handleCloseModal = () => {
 
 .archaeology-container {
   position: relative;
-  width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 12px 8px 16px;
   align-items: center;
+  width: 100%;
+  padding: 12px 8px 16px;
 }
 
 .archaeology-header {
@@ -354,62 +362,64 @@ const handleCloseModal = () => {
 
   h3 {
     @include pixelated;
-    font-size: 14px;
+
     color: #eab308;
+    font-size: 14px;
     margin-bottom: 8px;
-    text-shadow: 0 0 10px Rgba(234, 179, 8, 0.4);
+    text-shadow: 0 0 10px rgb(234 179 8 / 40%);
   }
 
   p {
-    font-size: 12px;
     color: #dfcbb5;
+    font-size: 12px;
     span { color: #fef08a; font-weight: bold; }
   }
 }
 
 .stats-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  width: 100%;
-  justify-content: center;
   flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .stat-pill {
   @include pixelated;
-  font-size: 8px;
-  color: var(--white);
-  background: Rgba(255, 255, 255, 0.05);
+
   padding: 6px 10px;
+  border: 1px solid rgb(234 179 8 / 30%);
   border-radius: 12px;
-  border: 1px solid Rgba(234, 179, 8, 0.3);
+  background: rgb(255 255 255 / 5%);
+  color: var(--white);
+  font-size: 8px;
   white-space: nowrap;
 }
 
 .archaeology-grid {
+  position: relative;
   display: grid;
+  gap: 6px;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(5, 1fr);
-  gap: 6px;
   width: 300px;
   height: 300px;
-  background: Rgba(24, 15, 6, 0.5);
   padding: 8px;
-  border-radius: 16px;
   border: 2px solid #ca8a04;
-  position: relative;
+  border-radius: 16px;
+  background: rgb(24 15 6 / 50%);
 }
 
 .tile {
-  background: #78350f;
-  border-radius: 8px;
-  border: 1px solid #451a03;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #451a03;
+  border-radius: 8px;
+  background: #78350f;
+  cursor: pointer;
   overflow: hidden;
 
   &:hover:not(.is-dug) {
@@ -418,10 +428,10 @@ const handleCloseModal = () => {
 
   .rock-texture {
     position: absolute;
-    inset: 4px;
-    background: #b45309;
-    border-radius: 4px;
     border: 1px solid #78350f;
+    border-radius: 4px;
+    background: #b45309;
+    inset: 4px;
   }
 
   &.is-dug {
@@ -434,15 +444,17 @@ const handleCloseModal = () => {
     background: #fef08a;
     box-shadow: inset 0 0 10px #eab308;
     .fossil-sprite {
+      @include sprite-render;
+
       width: 32px;
       height: 32px;
       object-fit: contain;
-      @include sprite-render;
     }
   }
 
   .clue-tag {
     @include pixelated;
+
     font-size: 10px;
     font-weight: bold;
     
@@ -457,10 +469,10 @@ const handleCloseModal = () => {
 }
 
 .game-feedback {
-  margin-top: 20px;
-  text-align: center;
-  font-size: 11px;
-  color: #dfcbb5;
   min-height: 20px;
+  color: #dfcbb5;
+  font-size: 11px;
+  text-align: center;
+  margin-top: 20px;
 }
 </style>

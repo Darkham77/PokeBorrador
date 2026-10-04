@@ -41,7 +41,9 @@ type OpacityPresetKey =
   | 'INTENSE_SUN_MIN'
   | 'INTENSE_SUN_MAX'
   | 'HEATWAVE_MIN'
-  | 'HEATWAVE_MAX';
+  | 'HEATWAVE_MAX'
+  | 'SUN_SECONDARY_FACTOR'
+  | 'HEATWAVE_SECONDARY_FACTOR';
 
 const ATMOSPHERE_OPACITY_PRESETS: Record<OpacityPresetKey, number> = {
   FOG_MIN: 0.8,
@@ -63,6 +65,8 @@ const ATMOSPHERE_OPACITY_PRESETS: Record<OpacityPresetKey, number> = {
   INTENSE_SUN_MAX: 0.65,
   HEATWAVE_MIN: 0.65,
   HEATWAVE_MAX: 0.80,
+  SUN_SECONDARY_FACTOR: 0.85,
+  HEATWAVE_SECONDARY_FACTOR: 0.95,
 };
 
 /** Physics divisors for fog/mist drift speed calculations. */
@@ -220,7 +224,7 @@ function calculateAtmosphereOpacity(w: string, pulse: number, isLowPower: boolea
   }
   if (w === 'sun') {
     const op = ATMOSPHERE_OPACITY_PRESETS.SUN_MIN + (ATMOSPHERE_OPACITY_PRESETS.SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.SUN_MIN) * pulse;
-    return { op1: op, op2: op * 0.85 };
+    return { op1: op, op2: op * ATMOSPHERE_OPACITY_PRESETS.SUN_SECONDARY_FACTOR };
   }
   if (w === 'intense_sun') {
     const op = ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN + (ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN) * pulse;
@@ -228,7 +232,7 @@ function calculateAtmosphereOpacity(w: string, pulse: number, isLowPower: boolea
   }
   if (w === 'heatwave') {
     const op = ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN + (ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MAX - ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN) * pulse;
-    return { op1: op, op2: op * 0.95 };
+    return { op1: op, op2: op * ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_SECONDARY_FACTOR };
   }
   return { op1: ATMOSPHERE_OPACITY_PRESETS.WIND_MAX, op2: ATMOSPHERE_OPACITY_PRESETS.WIND_MIN };
 }

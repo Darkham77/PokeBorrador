@@ -78,20 +78,20 @@ const battleCode = computed(() => extractBattleCode(msg.text))
 
 .message-row {
   display: flex;
-  gap: 12px;
   align-items: flex-start;
+  gap: 12px;
 }
 
 .message-content {
-  flex: 1;
-  background: Rgba(255, 255, 255, 0.03);
-  border-radius: 0 12px 12px 12px;
   padding: 8px 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 0 12px 12px;
+  background: Rgb(255 255 255 / 3%);
+  flex: 1;
 
   &.is-me {
-    background: Rgba(157, 78, 221, 0.15);
-    border-color: Rgba(157, 78, 221, 0.3);
+    background: Rgb(157 78 221 / 15%);
+    border-color: Rgb(157 78 221 / 30%);
   }
 }
 
@@ -117,8 +117,8 @@ const battleCode = computed(() => extractBattleCode(msg.text))
   cursor: pointer;
 
   &:hover {
-    text-decoration: underline;
     opacity: 0.85;
+    text-decoration: underline;
   }
 }
 </style>

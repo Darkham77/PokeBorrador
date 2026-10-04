@@ -4,12 +4,13 @@
 
 /* ===== HUD NAVIGATION (SINGLE SOURCE OF TRUTH) ===== */
 .hud-container .hud-nav {
+
   display: flex;
-  gap: spacing(2);
-  align-items: center;
-  flex: 1;
   justify-content: center;
+  align-items: center;
+  gap: spacing(2);
   min-width: 0;
+  flex: 1;
 
   @include responsive(hud-mobile) {
     display: none !important;
@@ -17,22 +18,21 @@
 }
 
 .hud-nav-btn {
-  @include pills.hud-pill-base; 
-  
-  background: Rgba(26, 26, 32, 1);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  @include pills.hud-pill-base;
+  @include will-animate(transform, box-shadow, filter);
+
+  gap: spacing(1.5);
+  height: auto;
   padding: spacing(2) spacing(3.5);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 12px; 
+  background: Rgb(26 26 32 / 100%);
   color: $white;
   font-family: $font-ui;
-  font-weight: 700;
   font-size: 13px;
-  gap: spacing(1.5);
-  @include will-animate(transform, box-shadow, filter);
-  
+  font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 6px 16px Rgba(0, 0, 0, 0.35), inset 0 1px 0 Rgba(255, 255, 255, 0.12);
-  height: auto; 
+  box-shadow: 0 6px 16px Rgb(0 0 0 / 35%), inset 0 1px 0 Rgb(255 255 255 / 12%); 
 
   i, span:first-child {
     font-size: 16px;
@@ -47,16 +47,16 @@
     background: Rgba($yellow, 0.15);
     color: $yellow;
     border-color: $yellow;
-    box-shadow: 0 10px 24px Rgba(0, 0, 0, 0.45), 0 0 18px Rgba($yellow, 0.35);
+    box-shadow: 0 10px 24px Rgb(0 0 0 / 45%), 0 0 18px Rgba($yellow, 0.35);
     i, span:first-child { color: $yellow; }
   }
 
   /* COMPACT MODE FOR NAVIGATION */
   @container (max-width: 1775px) {
     flex-direction: column !important;
-    padding: 6px 4px !important;
     gap: 2px !important;
     min-width: 55px;
+    padding: 6px 4px !important;
     
     i, span:first-child { font-size: 14px; }
     & .nav-item-label { font-size: 10px; }
@@ -78,12 +78,12 @@
 
 .hud-items {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 10px;
   flex-shrink: 0;
 
-  @media (max-width: 1360px) {
+  @media (width <= 1360px) {
     flex-wrap: wrap;
     justify-content: center;
   }

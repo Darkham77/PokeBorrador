@@ -101,10 +101,11 @@ const handleSelect = (actionType: ItemMenuAction) => {
 
 .action-menu-header {
   @include pixelated;
-  font-size: 10px;
-  color: var(--yellow);
-  text-align: center;
+
   width: 100%;
+  color: var(--yellow);
+  font-size: 10px;
+  text-align: center;
 }
 
 .action-menu-body {

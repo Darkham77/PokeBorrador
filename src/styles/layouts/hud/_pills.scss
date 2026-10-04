@@ -2,130 +2,135 @@
 @use '../../core/tools' as *;
 
 @mixin hud-pill-base {
+  @include will-animate(transform, box-shadow, filter);
+
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  min-width: 65px;
-  width: auto;
-  height: 65px;
-  border-radius: 18px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: var(--white);
-  @include will-animate(transform, box-shadow, filter);
-  
+  align-items: center;
   gap: 2px;
+  width: auto;
+  min-width: 65px;
+  height: 65px;
   padding: 4px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 18px;
+  background: Rgb(255 255 255 / 5%);
+  color: var(--white);
 
   &.money-pill {
-    background: Rgba(107, 203, 119, 0.12);
-    border-color: Rgba(107, 203, 119, 0.25);
+    background: Rgb(107 203 119 / 12%);
+    border-color: Rgb(107 203 119 / 25%);
     .pill-value, .currency-icon-money {
       color: var(--green);
-      text-shadow: 0 0 8px Rgba(107, 203, 119, 0.4);
+      text-shadow: 0 0 8px Rgb(107 203 119 / 40%);
     }
   }
 
   &.bc-pill {
-    background: Rgba(199, 125, 255, 0.12);
-    border-color: Rgba(199, 125, 255, 0.25);
+    background: Rgb(199 125 255 / 12%);
+    border-color: Rgb(199 125 255 / 25%);
     .pill-value, .currency-icon-bc, .fa-coins {
       color: var(--purple);
-      text-shadow: 0 0 8px Rgba(199, 125, 255, 0.5);
+      text-shadow: 0 0 8px Rgb(199 125 255 / 50%);
     }
   }
 
   &.badge-pill {
-    background: Rgba(255, 217, 61, 0.12);
-    border-color: Rgba(255, 217, 61, 0.25);
+    background: Rgb(255 217 61 / 12%);
+    border-color: Rgb(255 217 61 / 25%);
     .pill-value, .fa-medal {
       color: var(--yellow);
-      text-shadow: 0 0 8px Rgba(255, 217, 61, 0.5);
+      text-shadow: 0 0 8px Rgb(255 217 61 / 50%);
     }
   }
 
   &.ball-pill {
-    background: Rgba(255, 59, 59, 0.12);
-    border-color: Rgba(255, 59, 59, 0.25);
+    background: Rgb(255 59 59 / 12%);
+    border-color: Rgb(255 59 59 / 25%);
     & .pill-value {
       color: var(--red);
-      text-shadow: 0 0 8px Rgba(255, 59, 59, 0.4);
+      text-shadow: 0 0 8px Rgb(255 59 59 / 40%);
     }
     .ball-icon-wrap {
-      background: Rgba(255, 59, 59, 0.1);
       border-radius: 50%;
-      box-shadow: 0 0 10px Rgba(255, 59, 59, 0.4);
-      transform: Scale3D(0.9, 0.9, 1);
+      background: Rgb(255 59 59 / 10%);
+      transform: Scale3d(0.9, 0.9, 1);
+      box-shadow: 0 0 10px Rgb(255 59 59 / 40%);
     }
   }
 
   &.egg-pill {
-    background: Rgba(180, 140, 80, 0.12);
-    border-color: Rgba(180, 140, 80, 0.25);
+    background: Rgb(180 140 80 / 12%);
+    border-color: Rgb(180 140 80 / 25%);
     .pill-value, span:first-child {
-      color: Rgba(180, 140, 80, 1);
-      text-shadow: 0 0 8px Rgba(180, 140, 80, 0.5);
+      color: Rgb(180 140 80 / 100%);
+      text-shadow: 0 0 8px Rgb(180 140 80 / 50%);
     }
   }
 
   &.time-pill {
+    gap: 0;
     padding: 4px 2px;
-    gap: 0px;
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: Rgba(255, 255, 255, 0.1);
+    background: Rgb(255 255 255 / 5%);
+    border-color: Rgb(255 255 255 / 10%);
     #time-icon {
-      text-shadow: 0 0 8px Rgba(255, 255, 255, 0.4);
+      text-shadow: 0 0 8px Rgb(255 255 255 / 40%);
     }
   }
 }
 
+%hud-card-element-base {
+  border: 1px solid Rgb(255 255 255 / 5%);
+  background: var(--bg-card);
+  color: var(--white);
+  opacity: 1;
+}
+
 .hud-pill,
-.hud-sq-btn,
 .time-pill,
 .money-pill,
 .bc-pill,
 .badge-pill,
 .ball-pill,
 .egg-pill {
-  background: var(--bg-card);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  opacity: 1;
-  color: var(--white);
+  @extend %hud-card-element-base;
 }
 
 
 .hud-container .hud-pill {
   @include hud-pill-base;
 
-  i, span:first-child { 
-    font-size: 18px;
-    &.currency-icon-money { 
-      font-size: 22px; 
-      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    }
-    margin-bottom: 0px;
-    @include flex-center;
-    height: 24px;
+  container-type: inline-size;
+
+  &:hover {
+    background: Rgb(30 41 59 / 90%);
+    transform: Translatey(-3px);
   }
 
-  container-type: inline-size;
+  i, span:first-child {
+    @include flex-center;
+
+    height: 24px; 
+    font-size: 18px;
+    margin-bottom: 0;
+    &.currency-icon-money { 
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important; 
+      font-size: 22px;
+    }
+  }
 
     & .pill-value {
     @include pixelated;
+
+    display: block;
+    width: 100%;
+    margin: 0;
     font-size: 12px;
     font-weight: 400;
-    display: block;
+    line-height: 1.1;
     text-align: center;
     white-space: nowrap;
-    line-height: 1.1;
-    margin: 0;
-    width: 100%;
-  }
-
-  &:hover {
-    background: Rgba(30, 41, 59, 0.9);
-    transform: Translatey(-3px);
   }
 
   &.badge-pill {
@@ -138,104 +143,107 @@
   }
 
   &.egg-pill {
-    i { color: Rgba(188, 142, 100, 1); }
-    & .pill-value { color: Rgba(188, 142, 100, 1); }
+    i { color: Rgb(188 142 100 / 100%); }
+    & .pill-value { color: Rgb(188 142 100 / 100%); }
   }
 }
 
 .hud-sq-btn {
+  @extend %hud-card-element-base;
+  @include will-animate(transform, box-shadow, border-color);
+
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  gap: 6px; // 6px de separación entre emoji y texto
   width: 50px;
   height: 50px;
-  border-radius: 12px;
-  color: var(--white);
-  @include will-animate(transform, box-shadow, border-color);
-  
-  cursor: pointer;
   padding: 8px 6px;
-  gap: 6px; // 6px de separación entre emoji y texto
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  background: Rgb(255 255 255 / 5%);
+  color: var(--white);
+  cursor: pointer;
   container-type: inline-size;
-  
-  span:first-child, i {
-    font-size: 16px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-  }
-
-  span:not(:first-child):not(.hud-notification-badge) {
-    @include pixelated;
-    font-size: 7px !important;
-    font-weight: 400;
-    text-transform: uppercase;
-    color: Rgba(255, 255, 255, 0.7);
-    letter-spacing: 0;
-    white-space: nowrap;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
 
   &:active {
     transform: Scale(0.95);
   }
+  
+  span:first-child, i {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    font-size: 16px;
+    line-height: 1 !important;
+  }
+
+  span:not(:first-child, .hud-notification-badge) {
+    @include pixelated;
+
+    margin: 0 !important;
+    padding: 0 !important;
+    color: Rgb(255 255 255 / 70%);
+    font-size: 7px !important;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
 
   &.active {
-    border-color: var(--yellow) !important;
     color: var(--yellow) !important;
+    border-color: var(--yellow) !important;
     box-shadow: 
-      0 20px 40px Rgba(0, 0, 0, 0.6),
-      inset 0 30px 60px -20px color-mix(in srgb, var(--yellow), transparent 80%),
-      0 0 20px color-mix(in srgb, var(--yellow), transparent 70%) !important;
-    span:not(:first-child):not(.hud-notification-badge) { color: var(--yellow) !important; }
+      0 20px 40px Rgb(0 0 0 / 60%),
+      inset 0 30px 60px -20px color-mix(in sRGB, var(--yellow), transparent 80%),
+      0 0 20px color-mix(in sRGB, var(--yellow), transparent 70%) !important;
+    span:not(:first-child, .hud-notification-badge) { color: var(--yellow) !important; }
   }
 }
 
 .hud-notification-badge {
+  @include pixelated;
+  @include text-outline(var(--black, #000), 1px);
+
   position: absolute !important;
   top: -4px !important;
   right: -4px !important;
+  z-index: var(--z-map-spawns) !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: unset !important;
+  height: auto !important;
+  padding: 4px 6px !important;
+  border: none !important;
+  border-radius: 8px !important;
   background: #ef4444 !important;
   color: white !important;
-  border: none !important;
-  @include pixelated;
-  @include text-outline(var(--black, #000), 1px);
   font-size: 7px !important;
-  padding: 4px 6px !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 8px Rgba(239, 68, 68, 0.4) !important;
-  width: auto !important;
-  height: auto !important;
-  min-width: unset !important;
-  display: inline-block !important;
-  z-index: var(--z-map-spawns) !important;
+  box-shadow: 0 2px 8px Rgb(239 68 68 / 40%) !important;
 
   &.green,
   &.is-active {
     background: #22c55e !important;
-    box-shadow: 0 2px 8px Rgba(34, 197, 94, 0.4) !important;
     color: white !important;
+    box-shadow: 0 2px 8px Rgb(34 197 94 / 40%) !important;
   }
 
   &.gray,
   &.is-inactive {
     background: #475569 !important;
-    box-shadow: none !important;
     color: #e2e8f0 !important;
+    box-shadow: none !important;
   }
 
   &.orange {
     background: #f59e0b !important;
-    box-shadow: 0 2px 8px Rgba(245, 158, 11, 0.4) !important;
     color: #1e293b !important;
+    box-shadow: 0 2px 8px Rgb(245 158 11 / 40%) !important;
   }
 }

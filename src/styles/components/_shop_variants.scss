@@ -22,8 +22,8 @@
         @extend .colored; 
         .currency-icon-purple {
           color: #c084fc;
-          filter: Drop-Shadow(0 0 5px Rgba(168, 85, 247, 0.5));
           font-size: 14px;
+          filter: Drop-Shadow(0 0 5px Rgb(168 85 247 / 50%));
           margin-right: 4px;
         }
       }
@@ -37,7 +37,8 @@
 
   .bc-shop-sidebar {
     @include shop-sidebar(Rgba(168, 85, 247, 0.1));
-    background: Rgba(13, 10, 25, 0.4);
+
+    background: Rgb(13 10 25 / 40%);
 
     .cat-btn {
       @include shop-sidebar-button(#c084fc);
@@ -46,27 +47,28 @@
 }
 
 .bc-shop-grid-wrapper {
-  flex: 1;
-  padding: 20px;
-  overflow-y: scroll !important;
   @include premium-gradient;
-  background-color: Rgba(13, 10, 25, 0.2); // Subtle purple tint over standard gradient
 
-  @media (max-width: 950px) {
-    padding: 12px;
-  }
+  padding: 20px;
+  background-color: Rgb(13 10 25 / 20%); // Subtle purple tint over standard gradient
+  flex: 1;
+  overflow-y: scroll !important;
 
   .bc-shop-premium-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    padding-bottom: 20px;
     position: relative;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    padding-bottom: 20px;
 
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
+    @media (width <= 768px) {
       gap: 12px;
+      grid-template-columns: 1fr;
     }
+  }
+
+  @media (width <= 950px) {
+    padding: 12px;
   }
 }
 
@@ -90,8 +92,8 @@
         @extend .colored; 
         .currency-icon-red {
           color: #ef4444;
-          filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
           font-size: 14px;
+          filter: Drop-Shadow(0 0 5px Rgb(239 68 68 / 50%));
           margin-right: 4px;
         }
       }
@@ -118,11 +120,12 @@
       
       &.reputation .value { 
         @extend .colored; 
+
         color: #3b82f6;
-        text-shadow: 0 0 10px Rgba(59, 130, 246, 0.5);
+        text-shadow: 0 0 10px Rgb(59 130 246 / 50%);
         .rep-star-icon {
           color: #fbbf24;
-          filter: Drop-Shadow(0 0 5px Rgba(251, 191, 36, 0.5));
+          filter: Drop-Shadow(0 0 5px Rgb(251 191 36 / 50%));
           margin-right: 4px;
         }
       }
@@ -140,16 +143,17 @@
     @include shop-header-title(#ef4444);
 
     .rocket-badge {
-      background: Rgba(239, 68, 68, 0.15);
-      border: 1px solid Rgba(239, 68, 68, 0.4);
+      @include pixelated;
+
+      padding: 2px 6px;
+      border: 1px solid Rgb(239 68 68 / 40%);
+      border-radius: 4px;
+      background: Rgb(239 68 68 / 15%);
       color: #f87171;
       font-size: 7px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      text-shadow: 0 0 5px Rgba(239, 68, 68, 0.5);
       font-weight: bold;
+      text-shadow: 0 0 5px Rgb(239 68 68 / 50%);
       letter-spacing: 0;
-      @include pixelated;
     }
   }
 
@@ -157,9 +161,9 @@
     display: flex;
     gap: 24px;
 
-    @media (max-width: 768px) {
-      width: 100%;
+    @media (width <= 768px) {
       justify-content: space-between;
+      width: 100%;
     }
 
     .stat-node {
@@ -167,13 +171,15 @@
 
       &.money .value {
         @extend .colored;
+
         color: var(--green, #4ade80);
-        text-shadow: 0 0 15px Rgba(74, 222, 128, 0.25);
+        text-shadow: 0 0 15px Rgb(74 222 128 / 25%);
       }
       &.level .value {
         @extend .colored;
+
         color: var(--yellow);
-        text-shadow: 0 0 15px Rgba(250, 204, 21, 0.2);
+        text-shadow: 0 0 15px Rgb(250 204 21 / 20%);
       }
     }
   }
@@ -184,7 +190,8 @@
 
   .rep-shop-sidebar {
     @include shop-sidebar(Rgba(59, 130, 246, 0.1));
-    background: Rgba(10, 15, 25, 0.4);
+
+    background: Rgb(10 15 25 / 40%);
 
     .cat-btn {
       @include shop-sidebar-button(#3b82f6);
@@ -193,26 +200,27 @@
 }
 
 .rep-shop-grid-wrapper {
-  flex: 1;
-  padding: 20px;
-  overflow-y: scroll !important;
   @include premium-gradient;
-  background-color: Rgba(10, 15, 25, 0.2);
 
-  @media (max-width: 950px) {
-    padding: 12px;
-  }
+  padding: 20px;
+  background-color: Rgb(10 15 25 / 20%);
+  flex: 1;
+  overflow-y: scroll !important;
 
   .rep-shop-premium-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    padding-bottom: 20px;
     position: relative;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    padding-bottom: 20px;
 
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
+    @media (width <= 768px) {
       gap: 12px;
+      grid-template-columns: 1fr;
     }
+  }
+
+  @media (width <= 950px) {
+    padding: 12px;
   }
 }

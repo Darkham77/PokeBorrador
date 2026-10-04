@@ -13,8 +13,10 @@ const emit = defineEmits<{
   (e: 'turn-change', turn: number): void
 }>()
 
+const CLIPBOARD_COPIED_DUR_MS = 2000 as const
+
 const replayerBarRef = ref<HTMLElement | null>(null)
-const { copy, copied } = useClipboard({ copiedDuring: 2000 })
+const { copy, copied } = useClipboard({ copiedDuring: CLIPBOARD_COPIED_DUR_MS })
 let autoPlayTween: gsap.core.Tween | null = null
 
 watch(copied, (isCopied) => {
@@ -210,55 +212,55 @@ onUnmounted(() => {
   position: absolute;
   bottom: 12px;
   left: 50%;
-  transform: Translatex(-50%);
   z-index: var(--z-hud);
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   gap: 16px;
   width: calc(100% - 32px);
   max-width: 1050px;
   padding: 10px 18px;
-  background: Rgba(15, 23, 42, 0.94);
-  backdrop-filter: Blur(8px);
-  border: 2px solid Rgba(234, 179, 8, 0.5);
+  border: 2px solid Rgb(234 179 8 / 50%);
   border-radius: 12px;
-  box-shadow: 0 8px 32px Rgba(0, 0, 0, 0.6), inset 0 1px 0 Rgba(255, 255, 255, 0.1);
+  background: Rgb(15 23 42 / 94%);
   color: #f8fafc;
   font-family: 'Press Start 2P', monospace, sans-serif;
+  transform: Translatex(-50%);
+  backdrop-filter: Blur(8px);
+  box-shadow: 0 8px 32px Rgb(0 0 0 / 60%), inset 0 1px 0 Rgb(255 255 255 / 10%);
 }
 
 .replayer-info-section {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 
   .theater-badge {
     padding: 4px 8px;
-    background: #854d0e;
     border: 1px solid #eab308;
     border-radius: 4px;
-    font-size: 0.65rem;
+    background: #854d0e;
     color: #fef08a;
+    font-size: 0.65rem;
   }
 
   .theme-badge {
     padding: 4px 8px;
-    background: #1e293b;
     border: 1px solid #334155;
     border-radius: 4px;
-    font-size: 0.6rem;
+    background: #1e293b;
     color: #94a3b8;
+    font-size: 0.6rem;
   }
 
   .fog-badge {
     padding: 4px 8px;
-    background: Rgba(71, 85, 105, 0.6);
     border: 1px dashed #64748b;
     border-radius: 4px;
-    font-size: 0.6rem;
+    background: Rgb(71 85 105 / 60%);
     color: #cbd5e1;
+    font-size: 0.6rem;
   }
 }
 
@@ -269,22 +271,22 @@ onUnmounted(() => {
 
   .ctrl-btn {
     padding: 8px 14px;
+    border: 1px solid transparent;
     border-radius: 6px;
+    font-family: inherit;
     font-size: 0.68rem;
     font-weight: bold;
     cursor: pointer;
-    font-family: inherit;
-    border: 1px solid transparent;
 
     &.primary {
-      background: linear-gradient(180deg, #3b82f6, #1d4ed8);
-      color: #ffffff;
+      background: Linear-Gradient(180deg, #3b82f6, #1d4ed8);
+      color: #fff;
       border-color: #60a5fa;
     }
 
     &.action {
-      background: linear-gradient(180deg, #10b981, #047857);
-      color: #ffffff;
+      background: Linear-Gradient(180deg, #10b981, #047857);
+      color: #fff;
       border-color: #34d399;
 
       &:disabled {
@@ -302,13 +304,13 @@ onUnmounted(() => {
 
   .turn-counter {
     padding: 6px 12px;
-    background: #020617;
     border: 1px solid #1e293b;
     border-radius: 6px;
+    background: #020617;
 
     .turn-val {
-      font-size: 0.68rem;
       color: #facc15;
+      font-size: 0.68rem;
       letter-spacing: 1px;
     }
   }
@@ -325,33 +327,33 @@ onUnmounted(() => {
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background: #0f172a;
     border: 1px solid #eab308;
     border-radius: 6px;
+    background: #0f172a;
+    color: #fef08a;
     font-family: inherit;
     font-size: 0.65rem;
-    color: #fef08a;
     cursor: pointer;
 
     .copy-indicator {
       position: absolute;
       top: -24px;
       right: 0;
-      background: #22c55e;
-      color: #ffffff;
       padding: 2px 6px;
       border-radius: 4px;
+      background: #22c55e;
+      color: #fff;
       font-size: 0.55rem;
-      box-shadow: 0 2px 8px Rgba(0, 0, 0, 0.4);
+      box-shadow: 0 2px 8px Rgb(0 0 0 / 40%);
     }
   }
 
   .exit-btn {
     padding: 6px 12px;
-    background: #ef4444;
     border: 1px solid #f87171;
     border-radius: 6px;
-    color: #ffffff;
+    background: #ef4444;
+    color: #fff;
     font-family: inherit;
     font-size: 0.65rem;
     font-weight: bold;
@@ -359,7 +361,7 @@ onUnmounted(() => {
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .tactical-replayer-bar {
     flex-direction: column;
     gap: 10px;

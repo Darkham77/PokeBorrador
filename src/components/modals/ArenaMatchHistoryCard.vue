@@ -79,13 +79,13 @@ const emit = defineEmits<{
 
 .match-card {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: Rgba(15, 23, 42, 0.7);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgb(255 255 255 / 8%);
   border-radius: 12px;
+  background: Rgb(15 23 42 / 70%);
   backdrop-filter: Blur(8px);
 
   &.victory {
@@ -109,27 +109,27 @@ const emit = defineEmits<{
   min-width: 80px;
 
   .result-badge {
-    font-family: 'Pokemon FireRed LeafGreen', monospace;
-    font-size: 10px;
     padding: 2px 6px;
     border-radius: 4px;
+    font-family: 'Pokemon FireRed LeafGreen', monospace;
+    font-size: 10px;
 
     &.victory {
-      background: Rgba(16, 185, 129, 0.2);
+      border: 1px solid Rgb(16 185 129 / 40%);
+      background: Rgb(16 185 129 / 20%);
       color: #34d399;
-      border: 1px solid Rgba(16, 185, 129, 0.4);
     }
 
     &.defeat {
-      background: Rgba(239, 68, 68, 0.2);
+      border: 1px solid Rgb(239 68 68 / 40%);
+      background: Rgb(239 68 68 / 20%);
       color: #f87171;
-      border: 1px solid Rgba(239, 68, 68, 0.4);
     }
 
     &.draw {
-      background: Rgba(245, 158, 11, 0.2);
+      border: 1px solid Rgb(245 158 11 / 40%);
+      background: Rgb(245 158 11 / 20%);
       color: #fbbf24;
-      border: 1px solid Rgba(245, 158, 11, 0.4);
     }
   }
 
@@ -159,46 +159,46 @@ const emit = defineEmits<{
     gap: 6px;
 
     .rival-label {
+      color: var(--gray, #94a3b8);
       font-family: 'Pokemon FireRed LeafGreen', monospace;
       font-size: 9px;
-      color: var(--gray, #94a3b8);
     }
 
     .rival-name {
+      color: #f8fafc;
       font-family: 'Pokemon FireRed LeafGreen', monospace;
       font-size: 12px;
-      color: #f8fafc;
     }
   }
 
   .meta-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-    flex-wrap: wrap;
 
     .meta-pill {
-      font-family: 'Pokemon FireRed LeafGreen', monospace;
-      font-size: 8px;
       padding: 1px 5px;
       border-radius: 4px;
-      background: Rgba(255, 255, 255, 0.08);
+      background: Rgb(255 255 255 / 8%);
       color: var(--gray, #94a3b8);
+      font-family: 'Pokemon FireRed LeafGreen', monospace;
+      font-size: 8px;
 
       &.ranked {
-        background: Rgba(234, 179, 8, 0.15);
+        background: Rgb(234 179 8 / 15%);
         color: #fde047;
       }
 
       &.casual {
-        background: Rgba(59, 130, 246, 0.15);
+        background: Rgb(59 130 246 / 15%);
         color: #93c5fd;
       }
     }
 
     .meta-turns {
-      font-size: 10px;
       color: var(--gray, #94a3b8);
+      font-size: 10px;
     }
   }
 }
@@ -213,12 +213,12 @@ const emit = defineEmits<{
     align-items: center;
     gap: 4px;
     padding: 6px 10px;
-    background: linear-gradient(180deg, #2563eb, #1d4ed8);
     border: 1px solid #60a5fa;
     border-radius: 8px;
+    background: Linear-Gradient(180deg, #2563eb, #1d4ed8);
+    color: #fff;
     font-family: 'Pokemon FireRed LeafGreen', monospace;
     font-size: 10px;
-    color: #ffffff;
     cursor: pointer;
   }
 
@@ -227,11 +227,11 @@ const emit = defineEmits<{
     align-items: center;
     gap: 4px;
     padding: 6px 8px;
-    background: Rgba(255, 255, 255, 0.06);
-    border: 1px solid Rgba(255, 255, 255, 0.12);
+    border: 1px solid Rgb(255 255 255 / 12%);
     border-radius: 8px;
-    cursor: pointer;
+    background: Rgb(255 255 255 / 6%);
     color: var(--gray, #94a3b8);
+    cursor: pointer;
 
     .code-snippet {
       font-family: 'Pokemon FireRed LeafGreen', monospace;
@@ -240,15 +240,15 @@ const emit = defineEmits<{
   }
 }
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .match-card {
     flex-direction: column;
     align-items: flex-start;
   }
 
   .match-actions-col {
-    width: 100%;
     justify-content: flex-end;
+    width: 100%;
   }
 }
 </style>

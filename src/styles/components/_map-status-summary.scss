@@ -2,36 +2,36 @@
 @use "@/styles/core/tools" as *;
 
 .map-view-container {
-  padding: 0 0 10px;
   width: 100%;
+  padding: 0 0 10px;
 }
 
 .pc-split-container {
   display: flex;
-  gap: 16px;
-  margin-bottom: 10px;
   align-items: stretch;
+  gap: 16px;
   width: 100%;
+  margin-bottom: 10px;
 
   .pc-left {
-    flex: 1 1 360px;
+    display: flex;
+    flex-direction: column;
     min-width: 320px;
     min-height: 250px;
     max-height: 250px;
-    display: flex;
-    flex-direction: column;
+    flex: 1 1 360px;
     order: 2;
   }
 
   .pc-right {
-    flex: 0 0 auto;
     display: flex;
     align-items: stretch;
     gap: 16px;
+    max-width: calc(var(--visible-slots, 1) * 250px * var(--event-aspect, 1.7916) + (var(--visible-slots, 1) - 1) * 16px);
     height: 250px;
     max-height: 250px;
+    flex: 0 0 auto;
     order: 1;
-    max-width: calc(var(--visible-slots, 1) * 250px * var(--event-aspect, 1.7916) + (var(--visible-slots, 1) - 1) * 16px);
   }
 
   &.is-stacked {
@@ -46,19 +46,19 @@
     }
 
     .pc-right {
+      justify-content: center;
       width: 100%;
       height: auto;
       max-height: 250px;
-      align-self: center;
-      justify-content: center;
       margin: 0 auto;
+      align-self: center;
       order: 1;
     }
 
     .event-banners-grid {
-      width: 100%;
-      justify-content: center;
       flex-wrap: nowrap;
+      justify-content: center;
+      width: 100%;
     }
 
     .event-carousel-viewport {
@@ -69,10 +69,10 @@
     }
 
     .event-tooltip-container {
-      flex: 1 1 0;
-      max-width: calc(250px * var(--event-aspect, 1.7916));
       width: 100%;
+      max-width: calc(250px * var(--event-aspect, 1.7916));
       height: auto;
+      flex: 1 1 0;
     }
 
     .carousel-slide-wrapper {
@@ -80,7 +80,7 @@
     }
   }
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     flex-direction: column;
     align-items: center;
 
@@ -92,19 +92,19 @@
     }
 
     .pc-right {
+      justify-content: center;
       width: 100%;
       height: auto;
       max-height: 250px;
-      align-self: center;
-      justify-content: center;
       margin: 0 auto;
+      align-self: center;
       order: 1;
     }
 
     .event-banners-grid {
-      width: 100%;
-      justify-content: center;
       flex-wrap: nowrap;
+      justify-content: center;
+      width: 100%;
     }
 
     .event-carousel-viewport {
@@ -115,10 +115,10 @@
     }
 
     .event-tooltip-container {
-      flex: 1 1 0;
-      max-width: calc(250px * var(--event-aspect, 1.7916));
       width: 100%;
+      max-width: calc(250px * var(--event-aspect, 1.7916));
       height: auto;
+      flex: 1 1 0;
     }
 
     .carousel-slide-wrapper {
@@ -129,78 +129,78 @@
 
 .event-banners-grid {
   display: flex;
+  align-items: stretch;
   gap: 16px;
   height: 100%;
-  align-items: stretch;
 }
 
 .event-carousel-viewport {
   display: flex;
-  height: 100%;
   width: 100%;
+  height: 100%;
   flex: 0 0 auto;
 }
 
 .event-tooltip-container {
+  position: relative;
   display: flex !important;
-  flex: 0 0 auto;
   width: calc(250px * var(--event-aspect, 1.7916));
   height: 250px;
+  flex: 0 0 auto;
   aspect-ratio: var(--event-aspect, 1.7916);
-  position: relative;
 }
 
 .event-banner-slider {
+  position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden;
-  position: relative;
   transform: Translatez(0);
+  overflow: hidden;
   backface-visibility: hidden;
 }
 
 .carousel-track {
   display: flex;
+  gap: 16px;
   width: 100%;
   height: 100%;
-  gap: 16px;
-  will-change: transform;
   transform: Translatez(0);
+  will-change: transform;
   backface-visibility: hidden;
 }
 
 .carousel-slide-wrapper {
-  flex: 0 0 calc((100% - (var(--visible-slots, 1) - 1) * 16px) / var(--visible-slots, 1));
+  position: relative;
+  display: flex !important;
   width: calc((100% - (var(--visible-slots, 1) - 1) * 16px) / var(--visible-slots, 1));
   height: 250px;
+  flex: 0 0 calc((100% - (var(--visible-slots, 1) - 1) * 16px) / var(--visible-slots, 1));
   aspect-ratio: var(--event-aspect, 1.7916);
-  display: flex !important;
-  position: relative;
 }
 
 .carousel-slide {
   width: 100%;
   height: 100%;
+  border: 4px solid Rgb(255 214 10 / 90%);
   border-radius: 20px;
-  border: 4px solid Rgba(255, 214, 10, 0.9);
-  box-shadow: 
-    0 10px 30px Rgba(0, 0, 0, 0.6),
-    0 0 20px Rgba(255, 214, 10, 0.25);
-  cursor: pointer;
   transform: Translatez(0);
+  box-shadow: 
+    0 10px 30px Rgb(0 0 0 / 60%),
+    0 0 20px Rgb(255 214 10 / 25%);
+  cursor: pointer;
   backface-visibility: hidden;
 }
 
 .single-event-banner {
   width: 100%;
   height: 100%;
+  border: 4px solid Rgb(255 214 10 / 90%);
   border-radius: 20px;
-  border: 4px solid Rgba(255, 214, 10, 0.9);
-  box-shadow: 
-    0 10px 30px Rgba(0, 0, 0, 0.6),
-    0 0 20px Rgba(255, 214, 10, 0.25);
-  cursor: pointer;
   transform: Translatez(0);
+  box-shadow: 
+    0 10px 30px Rgb(0 0 0 / 60%),
+    0 0 20px Rgb(255 214 10 / 25%);
+  cursor: pointer;
   backface-visibility: hidden;
 }
 
@@ -217,26 +217,26 @@
   position: absolute;
   bottom: 8px;
   left: 50%;
-  transform: Translatex(-50%);
+  z-index: var(--z-modal-step);
   display: flex;
   gap: 6px;
-  z-index: var(--z-modal-step);
+  transform: Translatex(-50%);
   pointer-events: auto;
 
   .carousel-dot {
     width: 7px;
     height: 7px;
-    border-radius: 50%;
-    background: Rgba(255, 255, 255, 0.4);
-    border: 1px solid Rgba(255, 255, 255, 0.3);
-    cursor: pointer;
     padding: 0;
+    border: 1px solid Rgb(255 255 255 / 30%);
+    border-radius: 50%;
+    background: Rgb(255 255 255 / 40%);
+    cursor: pointer;
     outline: none;
 
     &.active {
-      background: Rgba(255, 214, 10, 0.95);
+      background: Rgb(255 214 10 / 95%);
       transform: Scale(1.35);
-      border-color: Rgba(255, 214, 10, 0.6);
+      border-color: Rgb(255 214 10 / 60%);
     }
   }
 }
@@ -246,75 +246,74 @@
 
 .pc-banner-grid {
   display: flex;
-  flex: 1;
   width: 100%;
   min-height: 0;
+  flex: 1;
 }
 
 .pc-banner {
   @include shell-premium(Rgba(15, 23, 42, 0.95));
-  border-radius: 16px;
-  padding: 12px 16px; // Reduced vertical padding
+
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
-  position: relative;
+  min-height: 85px;
+  padding: 12px 16px; // Reduced vertical padding
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 16px;
+  transform: Translatez(0);
   cursor: pointer;
   overflow: visible !important; // Ignorar el overflow para permitir que los personajes sobresalgan
-  
-  min-height: 85px;
-  
-  border: 1px solid Rgba(255, 255, 255, 0.1);
   box-shadow: 
-    0 8px 30px Rgba(0, 0, 0, 0.5), 
-    inset 0 1px 1px Rgba(255, 255, 255, 0.12),
-    inset 0 -1px 2px Rgba(0, 0, 0, 0.3);
-  
-  transform: Translatez(0);
+    0 8px 30px Rgb(0 0 0 / 50%), 
+    inset 0 1px 1px Rgb(255 255 255 / 12%),
+    inset 0 -1px 2px Rgb(0 0 0 / 30%);
   backface-visibility: hidden;
   will-change: transform, background;
 
   &::after {
-    content: '';
     position: absolute;
-    inset: 0;
-    border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(180deg, Rgba(255,255,255,0.08), Rgba(255,255,255,0.01));
-    -webkit-mask: linear-gradient(var(--white) 0 0) content-box, linear-gradient(var(--white) 0 0);
-    mask: linear-gradient(var(--white) 0 0) content-box, linear-gradient(var(--white) 0 0);
-    -webkit-mask-composite: xor;
+    border-radius: inherit;
+    background: Linear-Gradient(180deg, Rgb(255 255 255 / 8%), Rgb(255 255 255 / 1%));
+    content: '';
+    inset: 0;
+    mask: Linear-Gradient(var(--white) 0 0) content-box, Linear-Gradient(var(--white) 0 0);
+    mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
   }
 }
 
 .pc-banner-icon {
+  @include flex-center;
+
   width: 44px;
   height: 44px;
-  @include flex-center;
-  background: Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
+  background: Rgb(255 255 255 / 5%);
   font-size: 24px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 10px Rgba(0,0,0,0.3);
+  box-shadow: inset 0 0 10px Rgb(0 0 0 / 30%);
 }
 
 .pc-banner-content-wrapper {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  flex: 1;
 }
 
 .pc-banner-title {
   @include pixelated;
+  @include pixelated;
+
+  color: var(--gray);
   font-size: 8px;
   font-weight: 700; // Keep titles bold
-  color: var(--gray);
   text-transform: uppercase;
-  @include pixelated;
   letter-spacing: 1px;
   white-space: normal; // Allow wrapping if extremely tight
 }
@@ -328,15 +327,16 @@
 }
 
 .pc-banner-text {
-  @include pixelated;
+  @include pixelated; 
+
+  min-width: 0;
+  color: var(--white);
   font-size: 8px;
   font-weight: 400 !important; // Remove bold
   line-height: 1.4;
-  color: var(--white);
-  flex: 1 1 180px; 
-  min-width: 0;
+  flex: 1 1 180px;
   white-space: normal; // Ensure wrapping
-  word-break: break-word;
+  overflow-wrap: break-word;
   
   span { 
     color: var(--yellow);
@@ -344,11 +344,12 @@
   }
   
   .text-highlight { 
-    color: var(--yellow); 
     @include pixelated;
+
+    display: block; 
+    color: var(--yellow);
     font-size: 8px !important; // Match base text size
     font-weight: normal !important;
-    display: block;
     margin-bottom: 4px;
     white-space: normal;
   }
@@ -357,61 +358,63 @@
 .pc-banner-spawns {
   display: flex;
   align-items: flex-end;
-  margin-left: auto; // Push to right if sharing row
-  height: 24px; // Altura fija pequeña para que la card no se estire
-  flex-shrink: 0;
   gap: 4px;
+  height: 24px; // Altura fija pequeña para que la card no se estire
+  margin-left: auto; // Push to right if sharing row
+  flex-shrink: 0;
   overflow: visible !important;
 
   .sprite-container {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
     width: 36px;
     height: 24px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
     will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 4px 6px Rgba(0,0,0,0.4));
+    filter: Drop-Shadow(0 4px 6px Rgb(0 0 0 / 40%));
     overflow: visible !important;
   }
 
   img {
-    width: 48px; // Sprite un poco más grande (de 32px a 48px)
-    height: 48px;
-    object-fit: contain;
     @include pixelated; // Usar técnica de pixelado sin capa GPU/transform para evitar blur
-    overflow: visible !important;
+
     position: absolute;
     bottom: -4px; // Sobresale ligeramente por abajo
     left: -6px; // Centrado exacto horizontal sin usar transform (36px container vs 48px img)
+    width: 48px; // Sprite un poco más grande (de 32px a 48px)
+    height: 48px;
+    object-fit: contain;
+    overflow: visible !important;
   }
 
   .sprite-fallback {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 24px;
     height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    background: Rgba(255, 255, 255, 0.05);
     border-radius: 6px;
+    background: Rgb(255 255 255 / 5%);
     color: $muted;
+    font-size: 14px;
   }
 
   .sprite-counter {
-    margin-left: 4px;
     @include pixelated;
-    font-size: 8px;
-    color: var(--yellow);
-    background: $black !important;
-    padding: 4px 6px;
-    border-radius: 6px;
-    border: 1px solid Rgba(255, 217, 61, 0.2);
     @include pixelated;
+
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     min-width: 28px;
+    padding: 4px 6px;
+    border: 1px solid Rgb(255 217 61 / 20%);
+    border-radius: 6px;
+    background: $black !important;
+    color: var(--yellow);
+    font-size: 8px;
+    margin-left: 4px;
   }
 }
 
@@ -419,14 +422,15 @@
 
 .pixelated { 
   @include pixelated;
+
   -ms-interpolation-mode: nearest-neighbor;
 }
 
-@media (max-width: 1100px) {
+@media (width <= 1100px) {
   /* Removed rogue global HUD overrides */
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   /* Removed layout overrides to preserve unified styles defined at the top */
   
   .pc-banner-text {

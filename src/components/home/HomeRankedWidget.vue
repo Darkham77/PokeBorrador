@@ -35,33 +35,33 @@ import HomeWidgetMinimizeBtn from "./HomeWidgetMinimizeBtn.vue";
 @use "@/styles/core/mixins" as *;
 
 .home-ranked-widget {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
-  width: 100%;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
   height: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 12px;
+  background: rgb(18 22 34 / 85%);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
+  box-sizing: border-box;
 }
 
 .card-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
   gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
 
   .title-wrap {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex: 1;
     min-width: 0;
+    flex: 1;
 
     .card-icon {
       font-size: 20px;
@@ -77,22 +77,24 @@ import HomeWidgetMinimizeBtn from "./HomeWidgetMinimizeBtn.vue";
 
     .card-title {
       @include pixelated;
-      font-size: 11px;
-      color: var(--yellow, #facc15);
+
       margin: 0;
+      color: var(--yellow, #facc15);
+      font-size: 11px;
       letter-spacing: 1px;
     }
 
     .card-subtitle {
-      font-size: 9px;
-      color: var(--gray, #94a3b8);
       margin: 0;
+      color: var(--gray, #94a3b8);
+      font-size: 9px;
       line-height: 1.35;
     }
   }
 
   .header-actions {
     @include widget-header-actions;
+
     flex-shrink: 0;
     margin-left: auto;
   }

@@ -8,6 +8,7 @@ import {
   DUST_LAYER_TWO_DRIFT_X_PX
 } from './atmosphereSandstormHelper.ts'
 
+const GOLDEN_RATIO_FACTOR = 1.618 as const
 const SANDSTORM_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['sandstorm', 'strong_winds', 'dust_storm']) // runtime-set: Fast O(1) membership lookup set
 
 export function useAtmosphereSandstormAnim(
@@ -35,7 +36,7 @@ export function useAtmosphereSandstormAnim(
       if (w === 'strong_winds') {
         applyStrongWindSizes(l1, l2)
       }
-      applyParallaxLayer(l2, k.s2X, k.s2Y, DUST_LAYER_TWO_DRIFT_X_PX, 0, speed2, (animSeed * 1.618) % 1)
+      applyParallaxLayer(l2, k.s2X, k.s2Y, DUST_LAYER_TWO_DRIFT_X_PX, 0, speed2, (animSeed * GOLDEN_RATIO_FACTOR) % 1)
     }
   }
 

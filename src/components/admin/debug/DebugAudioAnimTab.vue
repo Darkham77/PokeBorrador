@@ -326,35 +326,37 @@ const isEffectActive = (type: string, category: string) => {
 
 .section-label {
   @include pixelated;
-  font-size: 7px;
-  color: Rgba(255, 255, 255, 0.4);
-  margin-bottom: 8px;
+
   display: block;
+  color: Rgb(255 255 255 / 40%);
+  font-size: 7px;
+  margin-bottom: 8px;
 }
 
 .side-toggle {
   display: flex;
-  background: Rgba(0, 0, 0, 0.2);
+  gap: 4px;
   padding: 4px;
   border-radius: 12px;
-  gap: 4px;
+  background: Rgb(0 0 0 / 20%);
 
   button {
-    flex: 1;
+    @include pixelated;
+
     padding: 10px;
     border: none;
-    background: transparent;
-    color: Rgba(255, 255, 255, 0.4);
-    @include pixelated;
-    font-size: 8px;
     border-radius: 8px;
+    background: transparent;
+    color: Rgb(255 255 255 / 40%);
+    font-size: 8px;
+    flex: 1;
     cursor: pointer;
     
 
     &.active {
       background: var(--purple);
       color: white;
-      box-shadow: 0 4px 15px Rgba(124, 58, 237, 0.3);
+      box-shadow: 0 4px 15px Rgb(124 58 237 / 30%);
     }
   }
 }
@@ -362,53 +364,55 @@ const isEffectActive = (type: string, category: string) => {
 .debug-section {
   .section-title {
     @include pixelated;
-    font-size: 8px;
+
     color: var(--yellow);
+    font-size: 8px;
+    opacity: 0.8;
     margin-bottom: 12px;
     letter-spacing: 1px;
-    opacity: 0.8;
   }
 }
 
 .button-grid-small {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .button-grid-3 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .debug-btn {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  color: white;
-  padding: 12px 8px;
-  border-radius: 12px;
-  cursor: pointer;
+  @include pixelated;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  @include pixelated;
+  padding: 12px 8px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 12px;
+  background: Rgb(255 255 255 / 3%);
+  color: white;
   font-size: 7px;
+  cursor: pointer;
   
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.08);
-    border-color: Rgba(255, 255, 255, 0.15);
+    background: Rgb(255 255 255 / 8%);
     transform: Translatey(-2px);
+    border-color: Rgb(255 255 255 / 15%);
   }
 
   &.active {
     background: var(--purple);
     border-color: white;
-    box-shadow: 0 4px 12px Rgba(124, 58, 237, 0.4);
+    box-shadow: 0 4px 12px Rgb(124 58 237 / 40%);
     
-    .icon { will-change: transform, filter, opacity;
+    .icon {
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px white); }
   }
@@ -424,19 +428,20 @@ const isEffectActive = (type: string, category: string) => {
 
 .stat-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  background: Rgba(255, 255, 255, 0.03);
+  align-items: center;
   padding: 6px 12px;
   border-radius: 8px;
+  background: Rgb(255 255 255 / 3%);
   
   .stat-label {
     @include pixelated;
-    font-size: 8px;
+
     display: flex;
     align-items: center;
     gap: 8px;
-    color: Rgba(255, 255, 255, 0.7);
+    color: Rgb(255 255 255 / 70%);
+    font-size: 8px;
     .icon { font-size: 12px; }
   }
 }
@@ -447,18 +452,19 @@ const isEffectActive = (type: string, category: string) => {
 }
 
 .mini-tool-btn {
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: white;
+  @include pixelated;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 28px;
   height: 22px;
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 4px;
-  @include pixelated;
+  background: Rgb(255 255 255 / 5%);
+  color: white;
   font-size: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   
   
   &:hover {
@@ -466,8 +472,8 @@ const isEffectActive = (type: string, category: string) => {
     border-color: white;
   }
   
-  &.minus { color: #ff5555; }
+  &.minus { color: #f55; }
   &.plus { color: #50fa7b; }
-  &.reset { color: Rgba(255, 255, 255, 0.3); font-size: 10px; }
+  &.reset { color: Rgb(255 255 255 / 30%); font-size: 10px; }
 }
 </style>

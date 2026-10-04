@@ -5,55 +5,55 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-height: 75dvh;
   min-height: 0;
+  max-height: 75dvh;
 }
 
 .region-tabs {
   display: flex;
   gap: 8px;
   padding-bottom: 12px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
-  overflow-x: auto;
-  overflow-y: hidden;
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
+  overflow: auto hidden;
   flex-shrink: 0;
 }
 
 .tab-btn {
   @include pixelated;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: var(--muted);
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 8px;
+
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  background: Rgb(255 255 255 / 5%);
+  color: var(--muted);
+  font-size: 8px;
   white-space: nowrap;
+
+  &:hover:not(.empty) {
+    background: Rgb(255 255 255 / 10%);
+    color: var(--white);
+  }
 
   .region-dot {
     width: 6px;
     height: 6px;
-    background: currentColor;
     border-radius: 50%;
+    background: currentColor;
     opacity: 0.3;
-  }
-
-  &:hover:not(.empty) {
-    background: Rgba(255, 255, 255, 0.1);
-    color: var(--white);
   }
 
   &.active {
     background: var(--purple-gradient);
-    border-color: var(--purple-light);
     color: var(--white);
-    box-shadow: 0 4px 12px Rgba(123, 63, 228, 0.3);
+    border-color: var(--purple-light);
+    box-shadow: 0 4px 12px Rgb(123 63 228 / 30%);
 
     .region-dot {
-      opacity: 1;
       background: $white;
+      opacity: 1;
       box-shadow: 0 0 5px $white;
     }
   }
@@ -69,16 +69,16 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  overflow-y: auto;
   min-height: 0;
+  overflow-y: auto;
   padding-right: 15px;
 }
 
 .empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 60px 20px;
   text-align: center;
   opacity: 0.5;
@@ -89,12 +89,13 @@
   }
   p {
     @include pixelated;
+
     font-size: 10px;
   }
 }
 
 .route-section {
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
   padding-bottom: 15px;
   
   &:last-child {
@@ -104,70 +105,72 @@
 
 .route-title {
   @include pixelated;
-  font-size: 12px;
-  color: var(--yellow);
-  margin-bottom: 10px;
+
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: Rgb(255 255 255 / 2%);
+  color: var(--yellow);
+  font-size: 12px;
+  margin-bottom: 10px;
   cursor: pointer;
   user-select: none;
-  padding: 6px 8px;
-  background: Rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.06);
+    background: Rgb(255 255 255 / 6%);
   }
 
   .arrow {
-    font-size: 8px;
-    color: var(--muted);
     width: 10px;
+    color: var(--muted);
+    font-size: 8px;
   }
 
   .id-tag {
-    font-size: 8px;
-    color: var(--muted);
-    background: Rgba(0, 0, 0, 0.3);
     padding: 2px 6px;
     border-radius: 4px;
+    background: Rgb(0 0 0 / 30%);
+    color: var(--muted);
+    font-size: 8px;
   }
 }
 
 .seasons-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
-  margin-top: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   padding: 10px;
-  background: Rgba(0, 0, 0, 0.15);
   border-radius: 8px;
+  background: Rgb(0 0 0 / 15%);
+  margin-top: 10px;
 }
 
 .season-card {
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 15px;
   position: relative;
+  padding: 15px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 10px;
+  background: Rgb(0 0 0 / 25%);
   overflow: hidden;
 
   &::before {
-    content: "";
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
+    left: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, Rgba(255, 255, 255, 0.1), transparent);
+    background: Linear-Gradient(90deg, transparent, Rgb(255 255 255 / 10%), transparent);
+    content: "";
   }
 }
 
 .season-title {
   @include pixelated;
-  font-size: 10px;
+
   color: var(--white);
+  font-size: 10px;
   margin-bottom: 15px;
   letter-spacing: 1px;
 }
@@ -183,31 +186,32 @@
   flex-direction: column;
   gap: 10px;
   padding: 12px;
-  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgb(255 255 255 / 4%);
   border-radius: 8px;
-  border: 1px solid Rgba(255, 255, 255, 0.04);
+  background: Rgb(255 255 255 / 2%);
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: Rgba(255, 255, 255, 0.08);
+    background: Rgb(255 255 255 / 5%);
+    border-color: Rgb(255 255 255 / 8%);
   }
 }
 
 .cycle-name {
   @include pixelated;
-  font-size: 8px;
-  color: var(--white);
-  opacity: 0.8;
-  text-transform: uppercase;
+
   display: flex;
   align-items: center;
   gap: 6px;
+  color: var(--white);
+  font-size: 8px;
+  opacity: 0.8;
+  text-transform: uppercase;
   
   &::after {
+    height: 1px;
+    background: Linear-Gradient(90deg, Rgb(255 255 255 / 10%), transparent);
     content: "";
     flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, Rgba(255, 255, 255, 0.1), transparent);
   }
 }
 
@@ -218,16 +222,17 @@
 }
 
 .prob-tag {
+  @include pixelated;
+
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: Rgba(0, 0, 0, 0.4);
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 9px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  @include pixelated;
   min-width: 140px;
+  padding: 10px 12px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 8px;
+  background: Rgb(0 0 0 / 40%);
+  font-size: 9px;
 
   .prob-header {
     display: flex;
@@ -239,15 +244,15 @@
     font-size: 14px;
   }
   .label {
-    opacity: 0.6;
     font-size: 7px;
+    opacity: 0.6;
     flex: 1;
     letter-spacing: 0.5px;
   }
   .chance {
     color: var(--yellow);
-    font-weight: bold;
     font-size: 10px;
+    font-weight: bold;
   }
 
   .weather-spawns {
@@ -255,7 +260,7 @@
     flex-direction: column;
     gap: 6px;
     padding-top: 6px;
-    border-top: 1px dashed Rgba(255, 255, 255, 0.1);
+    border-top: 1px dashed Rgb(255 255 255 / 10%);
   }
 
   .spawn-group {
@@ -264,8 +269,8 @@
     gap: 4px;
 
     .group-label {
-      font-size: 6px;
       color: var(--muted);
+      font-size: 6px;
       text-transform: uppercase;
     }
 
@@ -276,11 +281,12 @@
     }
 
     .mini-sprite {
+      @include sprite-render;
+
       width: 20px;
       height: 20px;
       object-fit: contain;
-      @include sprite-render;
-      filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.5));
+      filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 50%));
     }
 
     &.exclusive .group-label {
@@ -289,37 +295,37 @@
   }
 
   &.clear { border-left: 3px solid $yellow; }
-  &.sun { border-left: 3px solid #ffcc00; }
-  &.intense_sun { border-left: 3px solid #ffaa00; }
+  &.sun { border-left: 3px solid #fc0; }
+  &.intense_sun { border-left: 3px solid #fa0; }
   &.heatwave { border-left: 3px solid $red; }
   
   &.rain { border-left: 3px solid $blue; }
-  &.heavy_rain { border-left: 3px solid #0055ff; }
+  &.heavy_rain { border-left: 3px solid #05f; }
   &.storm { border-left: 3px solid $purple; }
-  &.thunderstorm { border-left: 3px solid #cc33ff; }
+  &.thunderstorm { border-left: 3px solid #c3f; }
   
-  &.sandstorm { border-left: 3px solid #ff9933; }
-  &.dust_storm { border-left: 3px solid #cc7722; }
+  &.sandstorm { border-left: 3px solid #f93; }
+  &.dust_storm { border-left: 3px solid #c72; }
   
   &.snow { border-left: 3px solid $white; }
-  &.cold { border-left: 3px solid #00ffff; }
-  &.hail { border-left: 3px solid #99ffff; }
-  &.blizzard { border-left: 3px solid #55ffff; }
-  &.coldwave { border-left: 3px solid #0088ff; }
+  &.cold { border-left: 3px solid #0ff; }
+  &.hail { border-left: 3px solid #9ff; }
+  &.blizzard { border-left: 3px solid #5ff; }
+  &.coldwave { border-left: 3px solid #08f; }
   
   &.fog { border-left: 3px solid $gray; }
   &.mist { border-left: 3px solid #b0c4de; }
   
-  &.wind { border-left: 3px solid #99ff99; }
-  &.strong_winds { border-left: 3px solid #33cc33; }
+  &.wind { border-left: 3px solid #9f9; }
+  &.strong_winds { border-left: 3px solid #3c3; }
 
   .type-modifiers {
     display: flex;
     flex-direction: column;
     gap: 4px;
     padding: 6px 0;
-    border-top: 1px solid Rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+    border-top: 1px solid Rgb(255 255 255 / 5%);
+    border-bottom: 1px solid Rgb(255 255 255 / 5%);
 
     .mod-group {
       display: flex;

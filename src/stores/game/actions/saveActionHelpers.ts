@@ -38,6 +38,12 @@ export function canSaveState(state: GameState, isModalOpen: (name: string) => bo
   return { allowed: true };
 }
 
+export function saveSandboxLocalState(state: unknown): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('pvs_sandbox_save', JSON.stringify(state));
+  }
+}
+
 export function updateSessionPlaytime(state: GameState, sessionStartTime: number | null): number {
   const now = Temporal.Now.instant().epochMilliseconds;
   if (sessionStartTime !== null) {

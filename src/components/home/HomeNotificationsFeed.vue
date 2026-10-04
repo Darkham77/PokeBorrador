@@ -119,28 +119,29 @@ onUnmounted(() => {
 @use "@/styles/core/_mixins" as *;
 
 .home-notifications-feed {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 12px;
+  background: rgb(18 22 34 / 85%);
   box-sizing: border-box;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
 }
 
 .feed-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
   gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
 }
 
 .header-actions {
   @include widget-header-actions;
+
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -149,14 +150,15 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 1;
   min-width: 0;
+  flex: 1;
 
   .feed-title {
     @include pixelated;
-    font-size: 10px;
-    color: var(--yellow, #facc15);
+
     margin: 0;
+    color: var(--yellow, #facc15);
+    font-size: 10px;
     letter-spacing: 1px;
   }
 }
@@ -166,8 +168,7 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 6px;
   max-height: 580px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   padding-right: 4px;
 
   &::-webkit-scrollbar {
@@ -175,13 +176,13 @@ onUnmounted(() => {
   }
 
   &::-webkit-scrollbar-track {
-    background: Rgba(0, 0, 0, 0.2);
     border-radius: 3px;
+    background: rgb(0 0 0 / 20%);
   }
 
   &::-webkit-scrollbar-thumb {
-    background: Rgba(255, 255, 255, 0.15);
     border-radius: 3px;
+    background: rgb(255 255 255 / 15%);
 
     &:hover {
       background: var(--yellow, #facc15);
@@ -193,16 +194,16 @@ onUnmounted(() => {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 6px 10px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  box-sizing: border-box;
   width: 100%;
+  padding: 6px 10px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 3%);
+  box-sizing: border-box;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.06);
-    border-color: Rgba(255, 255, 255, 0.12);
+    background: rgb(255 255 255 / 6%);
+    border-color: rgb(255 255 255 / 12%);
   }
 }
 
@@ -213,18 +214,18 @@ onUnmounted(() => {
 }
 
 .notif-content {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  flex: 1;
 }
 
 .notif-text {
-  font-size: 11px;
   color: #e2e8f0;
+  font-size: 11px;
   line-height: 1.4;
-  word-break: break-word;
+  overflow-wrap: break-word;
 
   .notif-title {
     color: var(--yellow, #facc15);
@@ -233,15 +234,15 @@ onUnmounted(() => {
 }
 
 .notif-time {
-  font-size: 9px;
   color: var(--gray, #94a3b8);
+  font-size: 9px;
 }
 
 .empty-feed {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 8px;
   padding: 30px 16px;
   color: var(--gray, #94a3b8);

@@ -6,44 +6,45 @@
 
 .cloning-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
   gap: 16px;
+  margin-bottom: 24px;
   
   h3 {
     @include pixelated;
+
+    color: var(--daycare-pink, #f36);
     font-size: 10px;
-    color: var(--daycare-pink, #ff3366);
     margin-bottom: 6px;
   }
   p {
-    font-size: 12px;
-    color: var(--gray, #94a3b8);
     max-width: 500px;
+    color: var(--gray, #94a3b8);
+    font-size: 12px;
     line-height: 1.4;
   }
 }
 
 .cloning-body {
   display: grid;
-  grid-template-columns: 250px 1fr;
   gap: 20px;
+  grid-template-columns: 250px 1fr;
 
-  @media (max-width: 820px) {
-    grid-template-columns: 1fr;
+  @media (width <= 820px) {
     gap: 16px;
+    grid-template-columns: 1fr;
   }
 }
 
 .section-label {
+  display: block;
+  color: var(--gray);
   font-family: var(--font-pixel);
   font-size: 8px;
-  color: var(--gray);
   letter-spacing: 0.5px;
   margin-bottom: 12px;
-  display: block;
   text-transform: uppercase;
 }
 
@@ -54,52 +55,53 @@
 }
 
 .fossil-card {
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 10px 12px;
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid Rgb(255 255 255 / 6%);
+  border-radius: 12px;
+  background: Rgb(255 255 255 / 2%);
   cursor: pointer;
 
   &.active {
-    background: Rgba(202, 138, 4, 0.08);
-    border-color: Rgba(202, 138, 4, 0.5);
-    box-shadow: 0 0 12px Rgba(202, 138, 4, 0.15);
+    background: Rgb(202 138 4 / 8%);
+    border-color: Rgb(202 138 4 / 50%);
+    box-shadow: 0 0 12px Rgb(202 138 4 / 15%);
   }
 }
 
 .fossil-icon-wrapper {
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 44px;
   height: 44px;
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: Rgb(0 0 0 / 25%);
   flex-shrink: 0;
 
   .fossil-sprite {
+    @include sprite-render;
+
     width: 28px;
     height: 28px;
     object-fit: contain;
-    @include sprite-render;
   }
 
   .fossil-count {
     position: absolute;
-    bottom: -4px;
     right: -4px;
+    bottom: -4px;
+    padding: 2px 5px;
+    border: 1px solid Rgb(0 0 0 / 50%);
+    border-radius: 4px;
     background: #ca8a04;
     color: #fff;
     font-family: var(--font-pixel);
     font-size: 7px;
-    padding: 2px 5px;
-    border-radius: 4px;
-    border: 1px solid Rgba(0, 0, 0, 0.5);
 
     &.empty {
       background: #475569;
@@ -114,83 +116,83 @@
   white-space: nowrap;
 
   .fossil-title {
+    color: #fff;
     font-size: 12px;
     font-weight: 700;
-    color: #fff;
     white-space: nowrap;
   }
 
   .fossil-result {
-    font-size: 10px;
     color: var(--gray);
+    font-size: 10px;
     white-space: nowrap;
   }
 }
 
 .cloning-panel {
-  background: Rgba(0, 0, 0, 0.15);
-  border: 1px solid Rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
-  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 20px;
+  border: 1px solid Rgb(255 255 255 / 4%);
+  border-radius: 16px;
+  background: Rgb(0 0 0 / 15%);
 }
 
 .cloning-target-preview {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
   padding: 14px;
+  border: 1px solid Rgb(255 255 255 / 4%);
+  border-radius: 12px;
+  background: Rgb(255 255 255 / 2%);
 
   .egg-preview-box {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 48px;
     height: 48px;
     flex-shrink: 0;
-    filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.35));
+    filter: Drop-Shadow(0 4px 6px Rgb(0 0 0 / 35%));
   }
 
   .preview-text {
     h4 {
+      color: #fff;
       font-size: 13px;
       font-weight: 700;
-      color: #fff;
       margin-bottom: 4px;
     }
     p {
-      font-size: 11px;
       color: var(--gray);
+      font-size: 11px;
     }
   }
 }
 
 /* Interactive Matrix Table */
 .matrix-table-container {
-  border: 1px solid Rgba(255, 255, 255, 0.06);
+  border: 1px solid Rgb(255 255 255 / 6%);
   border-radius: 12px;
+  background: Rgb(0 0 0 / 20%);
   overflow: hidden;
-  background: Rgba(0, 0, 0, 0.2);
 }
 
 .matrix-table {
   width: 100%;
-  border-collapse: collapse;
   font-size: 11px;
+  border-collapse: collapse;
   table-layout: fixed;
 
   th {
-    background: Rgba(255, 255, 255, 0.03);
+    padding: 12px 14px;
+    background: Rgb(255 255 255 / 3%);
     color: var(--gray);
     font-family: var(--font-pixel);
     font-size: 8px;
-    padding: 12px 14px;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid Rgb(255 255 255 / 6%);
     text-transform: uppercase;
     white-space: nowrap;
 
@@ -203,8 +205,8 @@
 
   td {
     padding: 12px 14px;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.03);
     color: #fff;
+    border-bottom: 1px solid Rgb(255 255 255 / 3%);
     white-space: nowrap;
     vertical-align: middle;
 
@@ -220,7 +222,7 @@
   cursor: pointer;
 
   &.active {
-    background: Rgba(202, 138, 4, 0.12) !important;
+    background: Rgb(202 138 4 / 12%) !important;
     box-shadow: inset 3px 0 0 #ca8a04;
 
     td {
@@ -229,7 +231,7 @@
     }
 
     .mult-label {
-      background: Rgba(191, 90, 242, 0.25);
+      background: Rgb(191 90 242 / 25%);
       color: #bf5af2;
     }
 
@@ -239,8 +241,8 @@
   }
 
   &.disabled {
+    background: Rgb(0 0 0 / 10%);
     opacity: 0.35;
-    background: Rgba(0, 0, 0, 0.1);
 
     .cost-cell {
       color: var(--gray);
@@ -252,13 +254,13 @@
   color: #bf5af2;
 
   .mult-label {
-    font-size: 8px;
-    background: Rgba(255, 255, 255, 0.05);
+    display: inline-block;
     padding: 2px 4px;
     border-radius: 4px;
-    margin-left: 6px;
+    background: Rgb(255 255 255 / 5%);
     color: var(--gray);
-    display: inline-block;
+    font-size: 8px;
+    margin-left: 6px;
   }
 }
 
@@ -270,10 +272,10 @@
 .status-summary-bar {
   display: flex;
   justify-content: space-between;
-  background: Rgba(0, 0, 0, 0.2);
-  border: 1px dashed Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
   padding: 12px 16px;
+  border: 1px dashed Rgb(255 255 255 / 8%);
+  border-radius: 12px;
+  background: Rgb(0 0 0 / 20%);
 
   .status-item {
     display: flex;
@@ -281,21 +283,21 @@
     gap: 4px;
 
     .lbl {
-      font-size: 10px;
       color: var(--gray);
-      text-transform: uppercase;
       font-family: var(--font-pixel);
+      font-size: 10px;
       font-size: 7px;
+      text-transform: uppercase;
     }
 
     .val {
+      color: #fff;
       font-size: 14px;
       font-weight: 700;
-      color: #fff;
 
       &.error-text {
         color: #ff453a;
-        text-shadow: 0 0 6px Rgba(255, 69, 58, 0.2);
+        text-shadow: 0 0 6px Rgb(255 69 58 / 20%);
       }
     }
   }
@@ -314,29 +316,29 @@
   position: absolute;
   bottom: calc(100% + 10px);
   left: 50%;
-  transform: Translatex(-50%);
-  background: Rgba(220, 38, 38, 0.95);
-  color: #fff;
-  border: 1px solid Rgba(220, 38, 38, 0.5);
-  border-radius: 8px;
-  padding: 8px 12px;
-  box-shadow: 0 4px 12px Rgba(220, 38, 38, 0.4);
   z-index: var(--z-map-spawns);
-  white-space: nowrap;
-  pointer-events: none;
-  font-size: 8px; // Scale for Press Start 2P/pixel fonts
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid Rgb(220 38 38 / 50%);
+  border-radius: 8px;
+  background: Rgb(220 38 38 / 95%);
+  color: #fff;
+  font-size: 8px; // Scale for Press Start 2P/pixel fonts
+  transform: Translatex(-50%);
+  box-shadow: 0 4px 12px Rgb(220 38 38 / 40%);
+  white-space: nowrap;
+  pointer-events: none;
 
   &::after {
-    content: '';
     position: absolute;
     top: 100%;
     left: 50%;
     transform: Translatex(-50%);
+    content: '';
     border-width: 6px;
     border-style: solid;
-    border-color: Rgba(220, 38, 38, 0.95) transparent transparent transparent;
+    border-color: Rgb(220 38 38 / 95%) transparent transparent;
   }
 }

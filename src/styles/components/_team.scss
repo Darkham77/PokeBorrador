@@ -4,24 +4,26 @@
 
 .team-section {
   @include card-premium;
+
   padding: spacing(4);
+  background: Linear-Gradient(180deg, Rgb(255 255 255 / 5%) 0%, Rgb(0 0 0 / 20%) 100%) !important;
   margin-bottom: spacing(4);
-  background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.05) 0%, Rgba(0, 0, 0, 0.2) 100%) !important;
 }
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: spacing(3);
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   overflow: visible !important; 
 }
 
 .team-card {
   @include pokemon-card-standard(20px);
+  @include gpu-layer;
+
   padding: 12px;
   text-align: center;
   cursor: pointer;
-  @include gpu-layer;
 
   &:hover {
     & .team-sprite { @include pokemon-sprite-hover-standard; }
@@ -29,19 +31,19 @@
 }
 
 .team-pokemon-name {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  color: $white;
   font-family: $font-pixel;
   font-size: 8px;
   margin-bottom: spacing(2);
-  color: $white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
 }
 
 .team-pokemon-level {
-  font-size: 11px;
   color: $yellow;
+  font-size: 11px;
   font-weight: 700;
   margin-bottom: spacing(2);
 }
@@ -57,37 +59,38 @@
 }
 
 .team-tier-badge {
+  padding: 3px 6px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 6px;
   font-family: $font-pixel;
   font-size: 6px;
-  padding: 3px 6px;
-  border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 
-  &.tier-s-plus { color: $coin-gold; background: Rgba(255, 215, 0, 0.18); border-color: Rgba(255, 215, 0, 0.3); }
-  &.tier-s { color: Rgba(255, 165, 0, 1); background: Rgba(255, 165, 0, 0.15); border-color: Rgba(255, 165, 0, 0.3); }
-  &.tier-a { color: $purple; background: Rgba(191, 90, 242, 0.15); border-color: Rgba(191, 90, 242, 0.3); }
-  &.tier-b { color: $blue; background: Rgba(10, 132, 255, 0.15); border-color: Rgba(10, 132, 255, 0.3); }
-  &.tier-c { color: $green; background: Rgba(50, 215, 75, 0.15); border-color: Rgba(50, 215, 75, 0.3); }
+  &.tier-s-plus { background: Rgb(255 215 0 / 18%); color: $coin-gold; border-color: Rgb(255 215 0 / 30%); }
+  &.tier-s { background: Rgb(255 165 0 / 15%); color: Rgb(255 165 0 / 100%); border-color: Rgb(255 165 0 / 30%); }
+  &.tier-a { background: Rgb(191 90 242 / 15%); color: $purple; border-color: Rgb(191 90 242 / 30%); }
+  &.tier-b { background: Rgb(10 132 255 / 15%); color: $blue; border-color: Rgb(10 132 255 / 30%); }
+  &.tier-c { background: Rgb(50 215 75 / 15%); color: $green; border-color: Rgb(50 215 75 / 30%); }
 }
 
 
-  & .gender-badge {
-  display: inline-flex;
+.gender-badge {
   @include flex-center;
+
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 4px;
   font-size: 10px;
   line-height: 1;
   vertical-align: middle;
-  padding: 2px;
-  border-radius: 4px;
   
-  &.male, &.gender-male { color: Rgba(89, 166, 255, 1); }
-  &.female, &.gender-female { color: Rgba(255, 126, 185, 1); }
+  &.male, &.gender-male { color: Rgb(89 166 255 / 100%); }
+  &.female, &.gender-female { color: Rgb(255 126 185 / 100%); }
 }
 
 .shiny-badge-mini {
   display: inline-flex;
   font-size: 10px;
   will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 2px Rgba(255, 215, 0, 0.4));
+  filter: Drop-Shadow(0 0 2px Rgb(255 215 0 / 40%));
 }

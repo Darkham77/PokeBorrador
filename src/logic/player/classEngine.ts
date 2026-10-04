@@ -53,10 +53,34 @@ export function getClassModifier(playerClass: string, type: string, context: Mod
   return m[type] ?? DEFAULT_NEUTRAL_MODIFIER;
 }
 
+export const STANDARD_MISSION_COST = {
+  SHORT: 5000,
+  MEDIUM: 10000,
+  LONG: 20000,
+} as const;
+
+export const CRIADOR_MISSION_COST = {
+  SHORT: 300,
+  MEDIUM: 600,
+  LONG: 1000,
+} as const;
+
+export const BUG_IV_FLOORS_MAP = {
+  SHORT: 5,
+  MEDIUM: 10,
+  LONG: 15,
+} as const;
+
+export const BUG_SHINY_DIVISORS_MAP = {
+  SHORT: 2,
+  MEDIUM: 4,
+  LONG: 8,
+} as const;
+
 const CAZABICHOS_MISSION_DATA: Record<string, Record<string, unknown>> = {
-  mission_6h: { cost: 5000, ivFloor: 5, shinyDiv: 2 },
-  mission_12h: { cost: 10000, ivFloor: 10, shinyDiv: 4 },
-  mission_24h: { cost: 20000, ivFloor: 15, shinyDiv: 8 }
+  mission_6h: { cost: STANDARD_MISSION_COST.SHORT, ivFloor: BUG_IV_FLOORS_MAP.SHORT, shinyDiv: BUG_SHINY_DIVISORS_MAP.SHORT },
+  mission_12h: { cost: STANDARD_MISSION_COST.MEDIUM, ivFloor: BUG_IV_FLOORS_MAP.MEDIUM, shinyDiv: BUG_SHINY_DIVISORS_MAP.MEDIUM },
+  mission_24h: { cost: STANDARD_MISSION_COST.LONG, ivFloor: BUG_IV_FLOORS_MAP.LONG, shinyDiv: BUG_SHINY_DIVISORS_MAP.LONG }
 };
 
 const ROCKET_MISSION_DATA: Record<string, Record<string, unknown>> = {
@@ -66,16 +90,16 @@ const ROCKET_MISSION_DATA: Record<string, Record<string, unknown>> = {
 };
 
 const ENTRENADOR_MISSION_DATA: Record<string, Record<string, unknown>> = {
-  mission_6h: { cost: 5000, blocks: 1, bonusLevel: false },
-  mission_12h: { cost: 10000, blocks: 2, bonusLevel: false },
-  mission_24h: { cost: 20000, blocks: 4, bonusLevel: true }
+  mission_6h: { cost: STANDARD_MISSION_COST.SHORT, blocks: 1, bonusLevel: false },
+  mission_12h: { cost: STANDARD_MISSION_COST.MEDIUM, blocks: 2, bonusLevel: false },
+  mission_24h: { cost: STANDARD_MISSION_COST.LONG, blocks: 4, bonusLevel: true }
 };
 
 const CRIADOR_VIGOR_SAVE_CHANCE_24H = 0.10;
 const CRIADOR_MISSION_DATA: Record<string, Record<string, unknown>> = {
-  mission_6h: { cost: 300, blocks: 1, vigorSaveChance: 0 },
-  mission_12h: { cost: 600, blocks: 2, vigorSaveChance: 0 },
-  mission_24h: { cost: 1000, blocks: 4, vigorSaveChance: CRIADOR_VIGOR_SAVE_CHANCE_24H }
+  mission_6h: { cost: CRIADOR_MISSION_COST.SHORT, blocks: 1, vigorSaveChance: 0 },
+  mission_12h: { cost: CRIADOR_MISSION_COST.MEDIUM, blocks: 2, vigorSaveChance: 0 },
+  mission_24h: { cost: CRIADOR_MISSION_COST.LONG, blocks: 4, vigorSaveChance: CRIADOR_VIGOR_SAVE_CHANCE_24H }
 };
 
 /**

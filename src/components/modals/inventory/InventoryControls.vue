@@ -131,19 +131,20 @@ const startMode = (mode: string) => {
 @use "@/styles/core/_mixins" as *;
 
 .inventory-controls {
+  @include gpu-layer;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
   padding: 12px 20px;
-  background: Rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
-  @include gpu-layer;
+  background: rgb(255 255 255 / 5%);
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
 }
 
 .search-section {
-  flex: 1;
   min-width: 0;
+  flex: 1;
 
   .search-wrapper {
     display: flex;
@@ -151,9 +152,10 @@ const startMode = (mode: string) => {
     gap: 6px;
 
     .search-input-wrap {
-      flex: 1;
-      min-width: 0;
       @include premium-search-input;
+
+      min-width: 0;
+      flex: 1;
     }
   }
 }
@@ -172,14 +174,16 @@ const startMode = (mode: string) => {
 
   .count {
     @include pixelated;
-    font-size: 12px;
+
     color: var(--yellow);
+    font-size: 12px;
   }
 
   .label {
     @include pixelated;
+
+    color: rgb(255 255 255 / 40%);
     font-size: 7px;
-    color: Rgba(255, 255, 255, 0.4);
   }
 }
 
@@ -195,7 +199,7 @@ const startMode = (mode: string) => {
   &.neutral { @include btn-vicio('neutral', 'sm'); }
 }
 
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
   .inventory-controls {
     flex-direction: column;
     align-items: stretch;

@@ -16,6 +16,9 @@ import { getMapWeatherConfig } from '@/logic/encounters/routeWeatherDomainHelper
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { DominanceInfo } from '@/types/system/stores'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay'
+
+const DEFAULT_SPAWN_RATE_PERCENT = 10 as const
 
 interface SpawnPool {
   generic: PokemonSpeciesId[]
@@ -260,7 +263,7 @@ function buildWeatherTimeText(
       if (!id) return { id: null, key: `empty-${index}` }
       const { isSeen, isCaught } = resolvePokedexStatus(id, seenPokedex, caughtPokedex, uiStore.debugPokedexMode)
       const pool = props.spawnPool || { generic: [], specific: [], rates: {} }
-      const rate = pool.rates?.[id] || 10
+      const rate = pool.rates?.[id] || DEFAULT_SPAWN_RATE_PERCENT
       const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
       const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok: UI text display localization string
       const typeInfo = (isSeen && data) ? `Tipo: ${getFormattedTypes(data)}` : ''
@@ -292,7 +295,7 @@ function buildWeatherTimeText(
   })
 
   const keepWarm = computed(() => {
-    const isMobileDevice = uiStore.windowWidth < 768
+    const isMobileDevice = uiStore.windowWidth < MOBILE_SCREEN_BREAKPOINT_PX
     return !isMobileDevice && !uiStore.isLowPowerActive
   })
 

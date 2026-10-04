@@ -115,32 +115,32 @@ const formatDate = (timestamp: number) => {
   .trophies-empty-state {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     padding: 36px 16px;
-    background: Rgba(0, 0, 0, 0.25);
-    border: 1px dashed Rgba(255, 255, 255, 0.15);
+    border: 1px dashed Rgb(255 255 255 / 15%);
     border-radius: 8px;
+    background: Rgb(0 0 0 / 25%);
     text-align: center;
 
     .empty-icon {
       font-size: 32px;
-      margin-bottom: 8px;
       opacity: 0.6;
+      margin-bottom: 8px;
     }
 
     .empty-title {
-      font-size: 10px;
       color: var(--yellow);
+      font-size: 10px;
       margin-bottom: 6px;
     }
 
     .empty-desc {
-      font-size: 11px;
-      color: var(--gray);
       max-width: 320px;
-      line-height: 1.4;
       margin: 0;
+      color: var(--gray);
+      font-size: 11px;
+      line-height: 1.4;
     }
   }
 
@@ -155,53 +155,53 @@ const formatDate = (timestamp: number) => {
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
+    border: 1px solid Rgb(255 255 255 / 10%);
     border-radius: 8px;
-    background: Rgba(0, 0, 0, 0.35);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    background: Rgb(0 0 0 / 35%);
 
     &.rank-gold {
-      border-color: Rgba(250, 204, 21, 0.4);
-      background: linear-gradient(135deg, Rgba(250, 204, 21, 0.08), Rgba(0, 0, 0, 0.4));
-      box-shadow: 0 0 10px Rgba(250, 204, 21, 0.05);
+      background: Linear-Gradient(135deg, Rgb(250 204 21 / 8%), Rgb(0 0 0 / 40%));
+      border-color: Rgb(250 204 21 / 40%);
+      box-shadow: 0 0 10px Rgb(250 204 21 / 5%);
 
       .trophy-rank-badge {
+        border: 1px solid Rgb(250 204 21 / 30%);
+        background: Rgb(250 204 21 / 15%);
         color: #fde047;
-        background: Rgba(250, 204, 21, 0.15);
-        border: 1px solid Rgba(250, 204, 21, 0.3);
       }
     }
 
     &.rank-silver {
-      border-color: Rgba(226, 232, 240, 0.4);
-      background: linear-gradient(135deg, Rgba(226, 232, 240, 0.08), Rgba(0, 0, 0, 0.4));
+      background: Linear-Gradient(135deg, Rgb(226 232 240 / 8%), Rgb(0 0 0 / 40%));
+      border-color: Rgb(226 232 240 / 40%);
 
       .trophy-rank-badge {
+        border: 1px solid Rgb(226 232 240 / 30%);
+        background: Rgb(226 232 240 / 15%);
         color: #f1f5f9;
-        background: Rgba(226, 232, 240, 0.15);
-        border: 1px solid Rgba(226, 232, 240, 0.3);
       }
     }
 
     &.rank-bronze {
-      border-color: Rgba(217, 119, 6, 0.4);
-      background: linear-gradient(135deg, Rgba(217, 119, 6, 0.08), Rgba(0, 0, 0, 0.4));
+      background: Linear-Gradient(135deg, Rgb(217 119 6 / 8%), Rgb(0 0 0 / 40%));
+      border-color: Rgb(217 119 6 / 40%);
 
       .trophy-rank-badge {
+        border: 1px solid Rgb(217 119 6 / 30%);
+        background: Rgb(217 119 6 / 15%);
         color: #fcd34d;
-        background: Rgba(217, 119, 6, 0.15);
-        border: 1px solid Rgba(217, 119, 6, 0.3);
       }
     }
 
     .trophy-medal-box {
-      font-size: 28px;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       width: 42px;
       height: 42px;
-      background: Rgba(255, 255, 255, 0.04);
       border-radius: 8px;
+      background: Rgb(255 255 255 / 4%);
+      font-size: 28px;
       flex-shrink: 0;
     }
 
@@ -213,27 +213,27 @@ const formatDate = (timestamp: number) => {
 
       .trophy-header-row {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
       }
 
       .trophy-rank-badge {
-        font-size: 7px;
         padding: 2px 6px;
         border-radius: 4px;
+        font-size: 7px;
         font-weight: bold;
       }
 
       .trophy-date {
-        font-size: 7px;
         color: var(--gray);
+        font-size: 7px;
       }
 
       .trophy-event-title {
+        margin: 2px 0 0;
+        color: var(--white);
         font-size: 12px;
         font-weight: bold;
-        color: var(--white);
-        margin: 2px 0 0 0;
       }
 
       .trophy-category-row,
@@ -244,18 +244,18 @@ const formatDate = (timestamp: number) => {
 
         .category-lbl,
         .score-lbl {
-          font-size: 6px;
           color: var(--gray);
+          font-size: 6px;
         }
 
         .category-val {
-          font-size: 7px;
           color: #93c5fd;
+          font-size: 7px;
         }
 
         .score-val {
-          font-size: 7px;
           color: var(--green-bright);
+          font-size: 7px;
         }
       }
     }

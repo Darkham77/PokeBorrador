@@ -23,6 +23,8 @@ import { calculateEloDelta, applyEloDelta } from '@/logic/pvp/eloRatingMath.ts'
 import { resolveDefendingTeam, createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper'
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter'
 
+const PVP_WIN_BATTLE_COINS = 15 as const;
+const PVP_LOSS_BATTLE_COINS = 5 as const;
 
 export const RANKED_REWARD_TIER_MARKS = [
   { name: 'Plata', elo: 1200, color: '#9E9E9E' },
@@ -402,7 +404,7 @@ export const usePvPStore = defineStore('pvp', () => {
     gameStore.state.eloRating = elo.value
 
     // Reward Battle Coins (15 for win, 5 for loss)
-    const bcEarned = won ? 15 : 5
+    const bcEarned = won ? PVP_WIN_BATTLE_COINS : PVP_LOSS_BATTLE_COINS
     gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + bcEarned
     
     if (won) {

@@ -95,8 +95,10 @@ export function generateWildAdventureEncounter(
     if (typeMatch) chosenSpawn = typeMatch
   }
   const pokemonName = chosenSpawn.charAt(0).toUpperCase() + chosenSpawn.slice(1)
-  const minLv = mapData.lv?.[0] || 5
-  const maxLv = mapData.lv?.[1] || 10
+  const DEFAULT_MAP_MIN_LEVEL = 5 as const
+  const DEFAULT_MAP_MAX_LEVEL = 10 as const
+  const minLv = mapData.lv?.[0] || DEFAULT_MAP_MIN_LEVEL
+  const maxLv = mapData.lv?.[1] || DEFAULT_MAP_MAX_LEVEL
   const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv
 
   const generated = makePokemon(chosenSpawn, level, { shinyMultiplier })

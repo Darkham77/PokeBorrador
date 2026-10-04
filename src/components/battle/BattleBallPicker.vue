@@ -222,13 +222,13 @@ defineExpose({
 @use "@/styles/core/_tools" as t;
 
 .catch-btn-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px; 
-  height: 64px;
   position: relative;
   z-index: var(--z-low);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 64px; 
+  height: 64px;
   overflow: visible;
 
   &.menu-open {
@@ -237,19 +237,19 @@ defineExpose({
 }
 
 .btn-catch-ball {
+  position: relative;
+  z-index: var(--z-map-spawns); 
+  display: block;
   width: 64px;
   height: 64px;
+  padding: 0;
+  border: 3px solid #0a0a0a !important;
   border-radius: 50% !important;
   background: white !important;
-  position: relative; 
-  display: block;
-  border: 3px solid #0a0a0a !important;
-  box-shadow: 0 6px 15px Rgba(0,0,0,0.4), inset 0 -3px 0 Rgba(0,0,0,0.1) !important;
+  transform: Translatez(0);
+  box-shadow: 0 6px 15px Rgb(0 0 0 / 40%), inset 0 -3px 0 Rgb(0 0 0 / 10%) !important;
   cursor: pointer;
-  overflow: hidden;
-  padding: 0;
-  z-index: var(--z-map-spawns);
-  transform: Translatez(0); 
+  overflow: hidden; 
   transform-origin: center center;
   transform-style: preserve-3d;
   will-change: transform, filter, box-shadow;
@@ -257,15 +257,12 @@ defineExpose({
 
   &:hover:not(:disabled) {
     filter: Brightness(1.1);
-    box-shadow: 0 10px 20px Rgba(0,0,0,0.5), Inset 0 -3px 0 Rgba(0,0,0,0.1) !important;
-  }
-
-  &:active:not(:disabled) {
+    box-shadow: 0 10px 20px Rgb(0 0 0 / 50%), inset 0 -3px 0 Rgb(0 0 0 / 10%) !important;
   }
 
   &:disabled {
-    filter: Grayscale(0.8);
     opacity: 0.7;
+    filter: Grayscale(0.8);
     cursor: not-allowed;
   }
 
@@ -275,74 +272,76 @@ defineExpose({
   }
 
   &::before {
-    content: '';
     position: absolute;
     top: 0;
     left: 0;
+    z-index: var(--z-map-floor);
     width: 100%;
     height: 50%;
     background: #ef5350;
+    content: '';
     border-bottom: 3px solid #0a0a0a;
-    z-index: var(--z-map-floor);
   }
 
   &::after {
-    content: '';
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: Translate(-50%, -50%);
+    z-index: calc(var(--z-map-floor) + 1);
     width: 18px;
     height: 18px;
-    background: white;
     border: 3px solid #0a0a0a;
     border-radius: 50%;
-    z-index: calc(var(--z-map-floor) + 1);
-    box-shadow: 0 0 0 3px white, 0 0 10px Rgba(0,0,0,0.2);
+    background: white;
+    transform: Translate(-50%, -50%);
+    content: '';
+    box-shadow: 0 0 0 3px white, 0 0 10px Rgb(0 0 0 / 20%);
   }
 
   .sr-only { display: none; }
 }
 
 .ball-dropdown-menu {
+  @include m.shell-premium(Rgba(15, 23, 42, 0.95), 24px);
+
   position: absolute;
   bottom: calc(100% + 20px);
   left: 50%;
-  transform: Translatex(-50%);
-  @include m.shell-premium(Rgba(15, 23, 42, 0.95), 24px);
-  backdrop-filter: Blur(12px);
-  will-change: transform, opacity, backdrop-filter;
-  padding: 12px;
+  z-index: var(--z-max);
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 260px;
-  max-height: calc(75dvh / var(--app-zoom, 1));
   min-height: 0; // Force proper flexbox child shrinking
-  z-index: var(--z-max);
+  max-height: calc(75dvh / var(--app-zoom, 1));
+  padding: 12px;
+  transform: Translatex(-50%);
+  backdrop-filter: Blur(12px);
+  will-change: transform, opacity, backdrop-filter;
   pointer-events: auto;
   &::after {
-    content: '';
     position: absolute;
-    inset: 0;
+    border: 1px solid Rgb(255 255 255 / 20%);
     border-radius: inherit;
-    border: 1px solid Rgba(255, 255, 255, 0.2);
+    content: '';
+    inset: 0;
     pointer-events: none;
-    box-shadow: inset 0 0 15px Rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 15px Rgb(255 255 255 / 5%);
   }
 }
 
 .menu-header {
   padding: 0 8px 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
   flex-shrink: 0;
   
   .header-label {
-    font-size: 7px;
-    color: #86868b;
-    letter-spacing: 2px;
-    font-weight: 900;
     @include m.pixelated;
+
+    color: #86868b;
+    font-size: 7px;
+    font-weight: 900;
+    letter-spacing: 2px;
   }
 }
 
@@ -350,118 +349,56 @@ defineExpose({
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
   padding: 2px;
+  flex: 1;
+  overflow: hidden auto;
   scrollbar-width: thin;
-  scrollbar-color: Rgba(255, 255, 255, 0.4) Rgba(0, 0, 0, 0.25);
+  scrollbar-color: Rgb(255 255 255 / 40%) Rgb(0 0 0 / 25%);
   scroll-behavior: auto !important;
 
   // Custom retro scrollbar
   &::-webkit-scrollbar {
-    width: 6px;
     display: block !important;
+    width: 6px;
   }
   &::-webkit-scrollbar-track {
-    background: Rgba(0, 0, 0, 0.2);
     border-radius: 3px;
+    background: Rgb(0 0 0 / 20%);
   }
   &::-webkit-scrollbar-thumb {
-    background: Rgba(255, 255, 255, 0.4);
+    border: 1px solid Rgb(0 0 0 / 20%);
     border-radius: 3px;
-    border: 1px solid Rgba(0, 0, 0, 0.2);
+    background: Rgb(255 255 255 / 40%);
     &:hover {
-      background: Rgba(255, 255, 255, 0.55);
+      background: Rgb(255 255 255 / 55%);
     }
   }
 
   .ball-tooltip-wrapper {
-    width: 100%;
     display: block;
+    width: 100%;
     flex-shrink: 0;
   }
 }
 
 .ball-option-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   padding: 6px 12px;
-  background: Rgba(255, 255, 255, 0.01);
   border: 1px solid transparent;
   border-radius: 12px;
+  background: Rgb(255 255 255 / 1%);
   color: white;
-  cursor: pointer;
-  width: 100%;
   text-align: left;
-  position: relative;
+  cursor: pointer;
   overflow: hidden;
-  
-
-  .ball-sprite-wrapper {
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: Rgba(255, 255, 255, 0.03);
-    border-radius: 8px;
-    flex-shrink: 0;
-
-    .ball-icon-mini {
-      width: 36px;
-      height: 36px;
-      @include m.pixelated;
-      will-change: transform;
-      filter: Drop-Shadow(0 4px 6px Rgba(0,0,0,0.5));
-    }
-  }
-
-  .ball-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    
-    .ball-name {
-      font-size: 8px;
-      font-weight: 900;
-      text-transform: Uppercase;
-      letter-spacing: 0.5px;
-      color: white;
-      @include m.pixelated;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.4;
-      display: inline-flex;
-      align-items: center;
-    }
-  }
-
-  .ball-qty {
-    font-size: 7px;
-    color: #ffd60a;
-    font-weight: 700;
-    @include m.pixelated;
-    margin-right: 4px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-  }
-
-  .ball-action-arrow {
-    font-size: 8px;
-    color: #ffd60a;
-    opacity: 0.3;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-  }
 
   &:hover {
     @include m.shell-hover-blue;
+
     transform: none; // Zero movement to prevent sticking
     outline: none;
     
@@ -473,6 +410,71 @@ defineExpose({
       color: white;
       opacity: 1;
     }
+  }
+  
+
+  .ball-sprite-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: Rgb(255 255 255 / 3%);
+    flex-shrink: 0;
+
+    .ball-icon-mini {
+      @include m.pixelated;
+
+      width: 36px;
+      height: 36px;
+      will-change: transform;
+      filter: Drop-Shadow(0 4px 6px Rgb(0 0 0 / 50%));
+    }
+  }
+
+  .ball-info {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 1;
+    
+    .ball-name {
+      @include m.pixelated;
+
+      display: inline-flex;
+      align-items: center;
+      color: white;
+      font-size: 8px;
+      font-weight: 900;
+      line-height: 1.4;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .ball-qty {
+    @include m.pixelated;
+
+    display: flex;
+    align-items: center;
+    color: #ffd60a;
+    font-size: 7px;
+    font-weight: 700;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  .ball-action-arrow {
+    display: flex;
+    align-items: center;
+    color: #ffd60a;
+    font-size: 8px;
+    opacity: 0.3;
+    flex-shrink: 0;
   }
 }
 </style>

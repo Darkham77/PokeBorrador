@@ -2,31 +2,18 @@
 @use 'sass:string';
 @use '../core/tools' as *;
 
-.location-card {
+%location-card {
   @include card-premium;
-  padding: spacing(5);
-  cursor: pointer;
-  
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 20px Rgba(0, 0, 0, 0.3);
   @include gpu-layer;
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: var(--bg-image);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    will-change: transform, filter, opacity;
-    z-index: var(--z-base);
-    
-  }
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: spacing(5);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 4px 20px Rgb(0 0 0 / 30%);
 
   &:hover {
     @include premium-card-hover($yellow, 1.05, -8px);
@@ -34,6 +21,19 @@
     &::before {
       will-change: transform, filter, opacity;
     }
+  }
+
+  &::before {
+    position: absolute;
+    z-index: var(--z-base);
+    content: '';
+    inset: 0;
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    will-change: transform, filter, opacity;
+    
   }
 
   &.locked {
@@ -44,23 +44,27 @@
   }
 }
 
+.location-card {
+  @extend %location-card;
+}
+
 // Gym specialized cards
 .gym-card {
-  @extend .location-card;
-  &::before { display: none; } // Gyms use background colors or sprites
-  
   display: flex;
   align-items: center;
   gap: spacing(4);
   border-width: 2px;
   
-  &:hover:not(.gym-defeated):not(.gym-locked) {
-    @include premium-card-hover($red, 1.05, 0px);
+  &:hover:not(.gym-defeated, .gym-locked) {
+    @include premium-card-hover($red, 1.05, 0);
   }
+  &::before { display: none; } // Gyms use background colors or sprites
 
   &.gym-defeated {
-    border-color: $green;
     opacity: 0.7;
+    border-color: $green;
     cursor: default;
   }
+
+  @extend %location-card;
 }

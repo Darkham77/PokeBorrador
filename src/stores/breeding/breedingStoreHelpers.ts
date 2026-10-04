@@ -29,6 +29,7 @@ import {
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB.ts';
 import { isEnabledPokemonId } from '@/data/system/constants.ts';
+import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils.ts';
 import { calculateBreedingCost } from '@/stores/breedingActions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareWarehouseItem } from '@/types/breeding/breeding.ts';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon.ts';
@@ -146,7 +147,7 @@ export interface DepositValidationResult {
 function isSpeciesEligibleForBreeding(pokemon: Pokemon): boolean {
   const isFossil = isFossilPokemonSpeciesId(pokemon.id);
   const isLegendary = isLegendaryPokemonSpeciesId(pokemon.id);
-  const maxVig = pokemon.maxVigor !== undefined ? pokemon.maxVigor : 10;
+  const maxVig = pokemon.maxVigor !== undefined ? pokemon.maxVigor : DEFAULT_MAX_VIGOR;
   return maxVig > 0 && !isFossil && !isLegendary;
 }
 

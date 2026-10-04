@@ -104,12 +104,12 @@ const selectTab = (tabId: string) => {
   width: 100%;
   height: 600px;
   max-height: 85dvh;
-  overflow: hidden;
   background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  overflow: hidden;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 
-  @media (max-width: 900px) {
+  @media (width <= 900px) {
     display: flex;
     flex-direction: column;
     height: 90dvh;
@@ -118,127 +118,124 @@ const selectTab = (tabId: string) => {
 }
 
 .library-sidebar {
-  background: Rgba(10, 10, 15, 0.4);
-  border-right: 1px solid Rgba(255, 255, 255, 0.05);
-  overflow: hidden;
-  height: 100%;
   position: relative;
+  height: 100%;
+  background: Rgb(10 10 15 / 40%);
+  border-right: 1px solid Rgb(255 255 255 / 5%);
+  overflow: hidden;
 
-  @media (max-width: 900px) {
+  @media (width <= 900px) {
     width: 100%;
     height: auto;
     border-right: none;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid Rgb(255 255 255 / 10%);
   }
 }
 
 .library-nav {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto !important;
-  overflow-x: hidden;
+  display: block;
   min-height: 0; // Prevent flex collapse
   padding: 8px; // Reducido al mínimo para maximizar espacio
-  display: block;
+  inset: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
   
-  @media (max-width: 900px) {
+  @media (width <= 900px) {
     position: relative;
     display: flex;
     flex-direction: row;
     padding: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: auto hidden;
   }
 
   .library-nav-item {
-    margin-bottom: 6px;
-    padding: 12px 16px; // Ajustado
-    border-radius: 10px;
-    cursor: pointer;
-    
     @include pixelated;
-    font-size: 12px;
-    line-height: 1.2;
-    font-weight: 400;
-    color: var(--gray, #94a3b8);
     @include pixelated;
+
     display: flex;
     align-items: center;
     gap: 12px;
+    padding: 12px 16px; // Ajustado
     border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--gray, #94a3b8);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    cursor: pointer;
 
     &:last-child {
       margin-bottom: 0;
     }
 
     &:hover {
-      background: Rgba(255, 255, 255, 0.04);
+      background: Rgb(255 255 255 / 4%);
       color: $white;
-      border-color: Rgba(250, 204, 21, 0.2);
+      border-color: Rgb(250 204 21 / 20%);
     }
 
     &.active {
-      background: Rgba(250, 204, 21, 0.1);
-      border-color: Rgba(250, 204, 21, 0.3);
+      background: Rgb(250 204 21 / 10%);
       color: var(--yellow);
-      box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.2);
+      border-color: Rgb(250 204 21 / 30%);
+      box-shadow: 0 4px 15px Rgb(0 0 0 / 20%);
     }
 
-    @media (max-width: 900px) {
-      white-space: nowrap;
+    @media (width <= 900px) {
       padding: 10px 14px;
+      transform: none;
+      white-space: nowrap;
       margin-bottom: 0;
       margin-right: 8px;
-      transform: none;
     }
   }
 }
 
 .library-content {
-  overflow-y: auto !important;
-  background: Rgba(0, 0, 0, 0.08);
+  position: relative;
   height: 100%;
   min-height: 0; // Prevent flex collapse
-  position: relative;
+  background: Rgb(0 0 0 / 8%);
+  overflow-y: auto !important;
 }
 
 .library-article {
+  @include pixelated;
+
   width: 100%;
   padding: 24px 32px;
-  line-height: 1.8;
   color: #ddd;
-  @include pixelated;
   font-size: 8px;
+  line-height: 1.8;
 
   :deep(h1) {
-    font-size: 12px;
     color: var(--yellow);
+    font-size: 12px;
     margin-bottom: 24px;
-    text-shadow: 3px 3px 0px Rgba(0,0,0,0.8);
+    text-shadow: 3px 3px 0 Rgb(0 0 0 / 80%);
   }
 
   :deep(h3) {
-    color: var(--purple, $purple);
     margin: 32px 0 16px;
+    color: var(--purple, $purple);
     font-size: 10px;
     font-weight: 800;
-    text-shadow: 2px 2px 0px Rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 0 Rgb(0 0 0 / 50%);
   }
 
   :deep(p) {
+    color: Rgb(255 255 255 / 85%);
     margin-bottom: 20px;
-    color: Rgba(255, 255, 255, 0.85);
   }
 
   :deep(ul) {
     margin-bottom: 20px;
     padding-left: 20px;
     li { 
-      margin-bottom: 10px; 
-      color: Rgba(255, 255, 255, 0.8);
+      color: Rgb(255 255 255 / 80%); 
+      margin-bottom: 10px;
     }
   }
 
@@ -249,22 +246,24 @@ const selectTab = (tabId: string) => {
 
   :deep(table) {
     width: 100%;
+    margin: 24px 0;
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: 12px;
+    background: Rgb(255 255 255 / 2%);
     border-collapse: separate;
     border-spacing: 0;
-    margin: 24px 0;
-    background: Rgba(255, 255, 255, 0.02);
-    border-radius: 12px;
     overflow: hidden;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
     
-    th, td {
+    %cell-base {
       padding: 12px 16px;
       text-align: left;
-      border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid Rgb(255 255 255 / 5%);
     }
     
     th { 
-      background: Rgba(255, 255, 255, 0.05);
+      @extend %cell-base;
+
+      background: Rgb(255 255 255 / 5%);
       color: var(--yellow);
       font-size: 10px;
       text-transform: uppercase;
@@ -275,16 +274,18 @@ const selectTab = (tabId: string) => {
     }
     
     td {
+      @extend %cell-base;
+
       font-size: 8px;
     }
   }
 
   :deep(.class-info-box) {
-    background: Rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
     padding: 24px;
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: 12px;
+    background: Rgb(255 255 255 / 3%);
     margin-bottom: 24px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
   }
 }
 </style>

@@ -112,15 +112,16 @@ const getStatLabel = (key: string) => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .vicio-stat-bar-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
   width: 100%;
   margin-bottom: 16px;
-  position: relative;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
@@ -134,54 +135,58 @@ const getStatLabel = (key: string) => {
   gap: 15px;
   min-width: 130px;
 
-  @media (max-width: 480px) {
-    min-width: 0;
-    width: 100%;
+  @media (width <= 480px) {
     justify-content: flex-start;
     gap: 10px;
+    width: 100%;
+    min-width: 0;
   }
 
   .stat-label {
     @include pixelated;
-    font-size: 10px;
-    color: Rgba(148, 163, 184, 1);
-    width: 55px;
     @include pixelated;
-    @media (max-width: 480px) { font-size: 8px; width: 45px; }
+
+    width: 55px;
+    color: Rgb(148 163 184 / 100%);
+    font-size: 10px;
+
+    @media (width <= 480px) { width: 45px; font-size: 8px; }
   }
   .stat-value {
     @include pixelated;
-    font-size: 16px;
-    color: var(--white);
-    font-weight: bold;
-    min-width: 50px;
-    text-align: right;
     @include pixelated;
-    @media (max-width: 480px) { font-size: 12px; min-width: 40px; }
+
+    min-width: 50px;
+    color: var(--white);
+    font-size: 16px;
+    font-weight: bold;
+    text-align: right;
+
+    @media (width <= 480px) { min-width: 40px; font-size: 12px; }
   }
 }
 
-.stat-visuals {
-  flex: 1;
+.stat-visuals { 
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px; 
-  position: relative;
+  gap: 6px;
   min-width: 0; 
   padding: 2px 0;
+  flex: 1;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     width: 100%;
     order: 3;
   }
 }
 
 .track {
-  width: 100%;
-  background: Rgba(0, 0, 0, 0.4);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  overflow: hidden;
   position: relative;
+  width: 100%;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  background: Rgb(0 0 0 / 40%);
+  overflow: hidden;
 }
 
 .fill {
@@ -193,50 +198,59 @@ const getStatLabel = (key: string) => {
 .main-track {
   height: 18px;
   border-radius: 9px;
-  @media (max-width: 480px) { height: 12px; }
+
+  @media (width <= 480px) { height: 12px; }
 }
+
 .main-fill {
   box-shadow: 0 0 15px var(--glow);
 }
+
 .iv-track {
   height: 10px;
   border-radius: 5px;
   margin-top: 2px;
-  @media (max-width: 480px) { height: 8px; }
+
+  @media (width <= 480px) { height: 8px; }
 }
+
 .iv-fill {
-  box-shadow: inset 0 0 5px Rgba(255,255,255,0.2);
+  box-shadow: inset 0 0 5px Rgb(255 255 255 / 20%);
 }
 
 .stat-meta {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 12px;
   min-width: 45px;
-  justify-content: center;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     position: absolute;
     top: 0;
     right: 0;
-    min-width: 0;
     gap: 8px;
+    min-width: 0;
   }
 
   .grade {
     @include pixelated;
+    @include pixelated;
+
     font-size: 12px;
     font-weight: bold;
     text-shadow: 0 0 5px currentColor;
-    @include pixelated;
-    @media (max-width: 480px) { font-size: 10px; }
+
+    @media (width <= 480px) { font-size: 10px; }
   }
   .iv-num {
     @include pixelated;
+    @include pixelated;
+
     font-size: 9px;
     opacity: 0.9;
-    @include pixelated;
-    @media (max-width: 480px) { font-size: 8px; }
+
+    @media (width <= 480px) { font-size: 8px; }
   }
 }
 

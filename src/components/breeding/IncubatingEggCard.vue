@@ -129,46 +129,46 @@ const progress = computed(() => {
 @use "@/styles/core/_mixins" as *;
 
 .egg-card {
-  background: Linear-Gradient(135deg, Rgba(30, 15, 26, 0.75) 0%, Rgba(15, 5, 12, 0.92) 100%);
-  border: 1px solid Rgba(255, 51, 102, 0.15);
-  border-radius: 16px;
-  padding: 10px 14px;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  position: relative;
-  overflow: hidden;
   width: 100%;
   max-width: 450px;
   margin: 0 auto;
-  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.35), inset 0 0 15px Rgba(255, 51, 102, 0.05);
+  padding: 10px 14px;
+  border: 1px solid Rgb(255 51 102 / 15%);
+  border-radius: 16px;
+  background: Linear-Gradient(135deg, Rgb(30 15 26 / 75%) 0%, Rgb(15 5 12 / 92%) 100%);
+  overflow: hidden;
+  box-shadow: 0 4px 15px Rgb(0 0 0 / 35%), inset 0 0 15px Rgb(255 51 102 / 5%);
 
-  @media (max-width: 520px) {
-    padding: 10px 12px;
+  @media (width <= 520px) {
     max-width: 320px;
+    padding: 10px 12px;
   }
 
   &.ready {
-    border-color: Rgba(34, 197, 94, 0.35);
-    background: Linear-Gradient(135deg, Rgba(20, 35, 25, 0.75) 0%, Rgba(8, 18, 12, 0.92) 100%);
-    box-shadow: 0 4px 15px Rgba(34, 197, 94, 0.1), inset 0 0 15px Rgba(34, 197, 94, 0.05);
+    background: Linear-Gradient(135deg, Rgb(20 35 25 / 75%) 0%, Rgb(8 18 12 / 92%) 100%);
+    border-color: Rgb(34 197 94 / 35%);
+    box-shadow: 0 4px 15px Rgb(34 197 94 / 10%), inset 0 0 15px Rgb(34 197 94 / 5%);
 
     &:hover {
-      border-color: Rgba(34, 197, 94, 0.65);
-      background: Linear-Gradient(135deg, Rgba(26, 46, 33, 0.8) 0%, Rgba(12, 26, 18, 0.96) 100%);
-      box-shadow: 0 6px 22px Rgba(34, 197, 94, 0.18), inset 0 0 15px Rgba(34, 197, 94, 0.08);
+      background: Linear-Gradient(135deg, Rgb(26 46 33 / 80%) 0%, Rgb(12 26 18 / 96%) 100%);
+      border-color: Rgb(34 197 94 / 65%);
+      box-shadow: 0 6px 22px Rgb(34 197 94 / 18%), inset 0 0 15px Rgb(34 197 94 / 8%);
     }
   }
 
   &.npc-egg-card {
-    border-color: Rgba(239, 68, 68, 0.35);
-    background: linear-gradient(135deg, Rgba(38, 12, 16, 0.75) 0%, Rgba(20, 6, 8, 0.92) 100%);
-    box-shadow: 0 4px 15px Rgba(239, 68, 68, 0.12), inset 0 0 15px Rgba(239, 68, 68, 0.05);
+    background: Linear-Gradient(135deg, Rgb(38 12 16 / 75%) 0%, Rgb(20 6 8 / 92%) 100%);
+    border-color: Rgb(239 68 68 / 35%);
+    box-shadow: 0 4px 15px Rgb(239 68 68 / 12%), inset 0 0 15px Rgb(239 68 68 / 5%);
 
     &:hover {
-      border-color: Rgba(239, 68, 68, 0.55);
-      background: linear-gradient(135deg, Rgba(48, 16, 22, 0.8) 0%, Rgba(26, 8, 11, 0.96) 100%);
-      box-shadow: 0 6px 20px Rgba(239, 68, 68, 0.2), inset 0 0 15px Rgba(239, 68, 68, 0.08);
+      background: Linear-Gradient(135deg, Rgb(48 16 22 / 80%) 0%, Rgb(26 8 11 / 96%) 100%);
+      border-color: Rgb(239 68 68 / 55%);
+      box-shadow: 0 6px 20px Rgb(239 68 68 / 20%), inset 0 0 15px Rgb(239 68 68 / 8%);
     }
   }
 }
@@ -182,24 +182,25 @@ const progress = computed(() => {
 }
 
 .egg-visual {
+  position: relative;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   width: 48px;
   height: 48px;
-  position: relative;
-  filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.3));
+  filter: Drop-Shadow(0 4px 6px Rgb(0 0 0 / 30%));
   
   .egg-sprite {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
   }
 
   .egg-sprite-img {
+    @include pixelated;
+
     width: 38px;
     height: 38px;
-    @include pixelated;
   }
 
   .shiny-star {
@@ -212,11 +213,11 @@ const progress = computed(() => {
 }
 
 .egg-details {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  flex: 1;
 
   .name-row {
     display: flex;
@@ -226,11 +227,12 @@ const progress = computed(() => {
   }
 
   .name {
-    font-size: 11px;
     @include pixelated;
+
+    color: #fff;
+    font-size: 11px;
     line-height: 1.45;
     padding-bottom: 2px;
-    color: #ffffff;
     letter-spacing: 0.5px;
     white-space: nowrap;
     overflow: hidden;
@@ -238,15 +240,16 @@ const progress = computed(() => {
   }
 
   .npc-origin-badge {
+    @include pixelated;
+
+    padding: 1px 5px;
+    border: 1px solid Rgb(239 68 68 / 40%);
+    border-radius: 99px;
+    background: Rgb(239 68 68 / 15%);
+    color: #f87171;
     font-size: 7.5px;
     font-weight: 700;
-    color: #f87171;
-    background: Rgba(239, 68, 68, 0.15);
-    border: 1px solid Rgba(239, 68, 68, 0.4);
-    padding: 1px 5px;
-    border-radius: 99px;
     letter-spacing: 0.5px;
-    @include pixelated;
     flex-shrink: 0;
   }
 }
@@ -258,18 +261,18 @@ const progress = computed(() => {
 }
 
 .progress-bar-wrapper {
-  height: 8px;
-  background: Rgba(0, 0, 0, 0.45);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 99px;
-  overflow: hidden;
   position: relative;
+  height: 8px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 99px;
+  background: Rgb(0 0 0 / 45%);
+  overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background: Linear-Gradient(90deg, #ff3366 0%, #a855f7 100%);
   border-radius: 99px;
+  background: Linear-Gradient(90deg, #f36 0%, #a855f7 100%);
 }
 
 .ready .progress-bar {
@@ -277,38 +280,41 @@ const progress = computed(() => {
 }
 
 .progress-text {
+  @include pixelated;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 8.5px;
   color: #94a3b8;
-  @include pixelated;
+  font-size: 8.5px;
   white-space: nowrap;
 }
 
 .egg-footer-status {
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
   margin-top: 2px;
 }
 
 .hatch-btn {
-  font-size: 7.5px;
-  padding: 6px 12px;
-  width: 100%;
   @include pixelated;
-  box-shadow: 0 4px 12px Rgba(34, 197, 94, 0.2);
+
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 7.5px;
+  box-shadow: 0 4px 12px Rgb(34 197 94 / 20%);
 }
 
 .walking-label {
-  font-size: 8px;
-  color: var(--gray, #94a3b8);
   @include pixelated;
-  opacity: 0.8;
+
   display: inline-block;
+  color: var(--gray, #94a3b8);
+  font-size: 8px;
   text-align: center;
+  opacity: 0.8;
   margin-top: 2px;
 }
 </style>

@@ -147,6 +147,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
       id: 'validate_showdown_parity',
       name: 'Pokemon Showdown Protocol Parity Auditor',
       description: 'Verifica paridad del protocolo Pokémon Showdown',
+      icon: '⚡',
       family: 'fsm',
       ruleIds: SHOWDOWN_PARITY_RULES,
       packageName: 'Showdown',

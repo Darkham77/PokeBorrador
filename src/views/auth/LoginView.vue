@@ -66,7 +66,7 @@ const activeAuthForm = computed(() => resolveActiveAuthForm(serverMode.value, au
 const banStatus = computed(() => parseBanStatus(error.value))
 const standardError = computed(() => resolveStandardErrorMessage(error.value))
 
-const appVersion = __APP_VERSION__
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.6.0'
 
 const switchAuthTab = (tab: string) => {
   authTab.value = tab
@@ -255,7 +255,10 @@ const handleServerChange = () => {
 </script>
 
 <template>
-  <div id="auth-screen">
+  <div
+    id="auth-screen"
+    :style="{ backgroundImage: wallpaperUrl }"
+  >
     <div class="login-background-stars" />
 
     <div class="login-header-logo">
@@ -409,7 +412,7 @@ const handleServerChange = () => {
             <span class="emoji">📲</span> INSTALAR APP (FULLSCREEN)
           </button>
         </div>
-        {{ appVersion }}
+        <span id="login-app-version">{{ appVersion }}</span>
       </div>
     </div>
   </div>
@@ -419,7 +422,4 @@ const handleServerChange = () => {
 @use "@/styles/core/tools" as *;
 @use "@/styles/views/login";
 
-#auth-screen {
-  background-image: v-bind(wallpaperUrl);
-}
 </style>

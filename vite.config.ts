@@ -312,74 +312,42 @@ function devDbImportPlugin() {
 
 // ─── Version System ───────────────────────────────────────────────────────────
 // The developer's LOCAL build is the single source of truth for the version.
-// CI (GitHub Actions) MUST use the already-committed version.json, never
-// recalculate it, so that the deployed web app and the DB always match.
-
-const isCI = !!process.env.GITHUB_ACTIONS;
+// Canonical application version derived from package.json (Single Source of Truth)
+// managed via auditor-version (@francogp/auditor).
 const isVitest = !!process.env.VITEST;
 
-/** Read the version already committed to public/version.json (used in CI). */
-function readCommittedVersion(): string {
+function getPackageVersion(): string {
   try {
-    const verPath = path.resolve(import.meta.dirname, 'public', 'version.json');
-    const parsed: unknown = JSON.parse(fs.readFileSync(verPath, 'utf-8'));
+    const pkgPath = path.resolve(import.meta.dirname, 'package.json');
+    const parsed: unknown = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
     if (parsed && typeof parsed === 'object' && 'version' in parsed && typeof (parsed as Record<string, unknown>).version === 'string') {
-      return (parsed as { version: string }).version;
+      const ver = (parsed as { version: string }).version;
+      return ver.startsWith('v') ? ver : `v${ver}`;
     }
   } catch (_e) {
-    // Silently ignore — fallback below
+    // Silently ignore
   }
-  return '';
+  return 'v0.6.0';
 }
 
-/** Compute a fresh version from current local time (used for local builds). */
-function computeLocalVersion(): string {
-  let tz = 'UTC';
-  if (process.env.VITE_TIMEZONE) tz = process.env.VITE_TIMEZONE;
-  else if (process.env.TZ) tz = process.env.TZ;
-  else {
-    try {
-      const envContent = fs.readFileSync(path.resolve(import.meta.dirname, '.env'), 'utf-8');
-      const m = envContent.match(/^VITE_TIMEZONE\s*=\s*(.+)$/m);
-      if (m?.[1]) tz = m[1].trim();
-    } catch (_e) {
-      // Silently ignore
-    }
-  }
-  const now = Temporal.Now.instant().toZonedDateTimeISO(tz);
-  return 'v' + now.year.toString() +
-    '.' + now.month.toString().padStart(2, '0') +
-    '.' + now.day.toString().padStart(2, '0') +
-    '.' + now.hour.toString().padStart(2, '0') +
-    now.minute.toString().padStart(2, '0');
-}
-
-// In CI: reuse the committed version. Locally: compute from current time.
-const appVersion: string = isCI
-  ? (readCommittedVersion() || computeLocalVersion())
-  : computeLocalVersion();
+const appVersion: string = getPackageVersion();
 
 /**
- * Plugin que gestiona public/version.json:
- * - LOCAL: escribe la versión recién calculada (fuente de verdad para el commit).
- * - CI:    NO toca version.json; usa el ya commiteado por el desarrollador.
+ * Plugin que sincroniza public/version.json con la versión canónica de package.json
  */
 function versionPlugin() {
   return {
     name: 'version-json-writer',
     buildStart() {
-      if (isCI) {
-        console.log(`📦 [version] CI build — usando versión commiteada: ${appVersion}`);
-        return;
-      }
       try {
         const publicDir = path.resolve(import.meta.dirname, 'public');
         if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
-        fs.writeFileSync(
-          path.resolve(publicDir, 'version.json'),
-          JSON.stringify({ version: appVersion }, null, 2)
-        );
-        console.log(`📦 [version] Build local — versión registrada: ${appVersion}`);
+        const verPath = path.resolve(publicDir, 'version.json');
+        const content = JSON.stringify({ version: appVersion }, null, 2) + '\n';
+        if (!fs.existsSync(verPath) || fs.readFileSync(verPath, 'utf-8') !== content) {
+          fs.writeFileSync(verPath, content, 'utf-8');
+          console.log(`📦 [version] Versión sincronizada en public/version.json: ${appVersion}`);
+        }
       } catch (e) {
         console.error('Failed to write version.json:', e);
       }
@@ -566,7 +534,7 @@ export default defineConfig({
     ] : [])
   ],
   define: {
-    __BUILD_TIME__: JSON.stringify(appVersion.slice(1, 5)),
+    __BUILD_TIME__: JSON.stringify(appVersion.match(/build\.(\d{8}-\d{6})/)?.[1] || appVersion),
     __APP_VERSION__: JSON.stringify(appVersion)
   },
   resolve: {

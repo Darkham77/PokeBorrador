@@ -25,6 +25,7 @@ import { getGMT3Date } from '@/logic/utils/timeUtils'
 import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEvents.ts'
 import { gameBus } from '@/logic/events/gameBus.ts'
 import { saveCoordinator } from '@/logic/auth/saveCoordinator.ts'
+import { saveSandboxLocalState } from '@/stores/game/actions/saveActionHelpers.ts'
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore()
@@ -218,9 +219,7 @@ export const useGameStore = defineStore('game', () => {
     if (!isSandboxActive.value) return
     
     // Guardar el estado del sandbox localmente antes de salir
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('pvs_sandbox_save', JSON.stringify(state))
-    }
+    saveSandboxLocalState(state)
     
     // Limpiar y restaurar la partida real
     Object.keys(state).forEach(key => {

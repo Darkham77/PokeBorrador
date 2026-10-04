@@ -186,12 +186,12 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .pv-status-fx-layer {
   position: absolute;
+  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   inset: 0;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 3);
   filter: none;
 }
 </style>

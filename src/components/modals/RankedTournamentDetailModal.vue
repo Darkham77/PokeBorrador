@@ -172,9 +172,9 @@ const getPokemonRewardSprite = (species: string, isShiny = true) => {
 <style scoped lang="scss">
 .ranked-tournament-detail-content {
   width: 100%;
-  box-sizing: border-box;
   max-height: 80dvh;
-  overflow-y: auto;
   padding: 4px 0;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 </style>

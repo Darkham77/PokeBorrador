@@ -7,8 +7,8 @@
 
 .weather-overlay {
   position: absolute;
-  inset: 0;
   z-index: calc(var(--z-map-weather) * 1) !important;
+  inset: 0;
   pointer-events: none;
 }
 

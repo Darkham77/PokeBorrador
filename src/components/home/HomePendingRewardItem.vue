@@ -102,14 +102,14 @@ const getSourceLabel = (item: UnifiedRewardItem): { icon: string; text: string }
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
   padding: 10px 14px;
+  border: 1px solid Rgb(255 255 255 / 6%);
   border-radius: 8px;
+  background: Rgb(255 255 255 / 3%);
 
   &.is-legacy {
-    background: Rgba(239, 68, 68, 0.04);
-    border-color: Rgba(239, 68, 68, 0.15);
+    background: Rgb(239 68 68 / 4%);
+    border-color: Rgb(239 68 68 / 15%);
   }
 }
 
@@ -117,67 +117,71 @@ const getSourceLabel = (item: UnifiedRewardItem): { icon: string; text: string }
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
   min-width: 0;
+  flex: 1;
 }
 
 .award-name-row {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
 .source-badge {
   @include pixelated;
-  font-size: 7.5px;
-  background: Rgba(250, 204, 21, 0.15);
-  border: 1px solid Rgba(250, 204, 21, 0.35);
-  color: #facc15;
-  padding: 2px 6px;
-  border-radius: 4px;
+
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 2px 6px;
+  border: 1px solid Rgb(250 204 21 / 35%);
+  border-radius: 4px;
+  background: Rgb(250 204 21 / 15%);
+  color: #facc15;
+  font-size: 7.5px;
   letter-spacing: 0.5px;
 }
 
 .award-name {
   @include pixelated;
+
+  color: var(--white, #fff);
   font-size: 10px;
-  color: var(--white, #ffffff);
 }
 
 .award-sub-meta {
-  font-size: 8px;
   color: var(--gray, #94a3b8);
+  font-size: 8px;
   line-height: 1.25;
 }
 
 .category-badge {
   @include pixelated;
-  font-size: 7px;
-  background: Rgba(59, 130, 246, 0.15);
-  border: 1px solid Rgba(59, 130, 246, 0.3);
-  color: #60a5fa;
-  padding: 2px 6px;
-  border-radius: 4px;
+
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 2px 6px;
+  border: 1px solid Rgb(59 130 246 / 30%);
+  border-radius: 4px;
+  background: Rgb(59 130 246 / 15%);
+  color: #60a5fa;
+  font-size: 7px;
 }
 
 .legacy-badge {
   @include pixelated;
-  font-size: 7px;
-  background: Rgba(239, 68, 68, 0.2);
-  border: 1px solid Rgba(239, 68, 68, 0.4);
-  color: #f87171;
-  padding: 2px 6px;
-  border-radius: 4px;
+
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 2px 6px;
+  border: 1px solid Rgb(239 68 68 / 40%);
+  border-radius: 4px;
+  background: Rgb(239 68 68 / 20%);
+  color: #f87171;
+  font-size: 7px;
 }
 
 .award-pills-wrap {
@@ -194,31 +198,32 @@ const getSourceLabel = (item: UnifiedRewardItem): { icon: string; text: string }
 
 .retro-btn {
   @include pixelated;
-  font-size: 8px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 8px;
+  cursor: pointer;
   box-sizing: border-box;
 
   &.claim-action-btn {
-    background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
     border: 1px solid #4ade80;
-    color: #ffffff;
-    box-shadow: 0 2px 6px Rgba(34, 197, 94, 0.25);
+    background: Linear-Gradient(180deg, #22c55e 0%, #16a34a 100%);
+    color: #fff;
+    box-shadow: 0 2px 6px Rgb(34 197 94 / 25%);
   }
 
   &.discard-action-btn {
-    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
     border: 1px solid #f87171;
-    color: #ffffff;
-    box-shadow: 0 2px 6px Rgba(239, 68, 68, 0.25);
+    background: Linear-Gradient(180deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+    box-shadow: 0 2px 6px Rgb(239 68 68 / 25%);
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .award-item {
     flex-direction: column;
     align-items: stretch;

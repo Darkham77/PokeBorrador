@@ -42,45 +42,45 @@ const emit = defineEmits<{
 <style lang="scss" scoped>
 .iv-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  background: Rgba(255, 255, 255, 0.03);
+  grid-template-columns: repeat(3, 1fr);
   padding: 8px;
+  border: 1px solid rgb(255 255 255 / 5%);
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 3%);
 
   .iv-item {
     display: flex;
     flex-direction: column;
     gap: 4px;
 
-    label { 
+    label {
+      color: rgb(255 255 255 / 40%); 
       font-size: 9px; 
+      text-align: center; 
       text-transform: uppercase;
-      color: Rgba(255, 255, 255, 0.4); 
-      text-align: center;
     }
     
     input { 
       width: 100%;
       padding: 6px 2px;
-      background: Rgba(0, 0, 0, 0.4);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      color: var(--yellow);
-      text-align: center;
-      font-size: 11px;
+      border: 1px solid rgb(255 255 255 / 10%);
       border-radius: 6px;
+      background: rgb(0 0 0 / 40%);
+      color: var(--yellow);
+      font-size: 11px;
+      text-align: center;
       outline: none;
-      -moz-appearance: textfield;
-      
-      &::-webkit-outer-spin-button,
-      &::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
+      appearance: textfield;
       
       &:focus {
         border-color: var(--vicio-primary);
+      }
+      
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        margin: 0;
+        appearance: none;
       }
     }
   }

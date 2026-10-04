@@ -13,6 +13,11 @@ export interface GsapTransitionOptions {
   scaleOffset?: MaybeRefOrGetter<number>
 }
 
+const DEFAULT_TRANSITION_OFFSET_PX = 15 as const
+const DEFAULT_TRANSITION_SCALE = 0.95 as const
+const DEFAULT_ENTER_DURATION_SEC = 0.3 as const
+const DEFAULT_LEAVE_DURATION_SEC = 0.25 as const
+
 /**
  * useGsapTransition
  * Returns a set of GSAP-powered Transition hooks for Vue's <Transition :css="false">.
@@ -20,9 +25,9 @@ export interface GsapTransitionOptions {
 export function useGsapTransition(options: GsapTransitionOptions = {}) {
   const onBeforeEnter = (el: Element) => {
     const type = toValue(options.type) || 'fade'
-    const yOffset = toValue(options.yOffset) ?? 15
-    const xOffset = toValue(options.xOffset) ?? 15
-    const scaleOffset = toValue(options.scaleOffset) ?? 0.95
+    const yOffset = toValue(options.yOffset) ?? DEFAULT_TRANSITION_OFFSET_PX
+    const xOffset = toValue(options.xOffset) ?? DEFAULT_TRANSITION_OFFSET_PX
+    const scaleOffset = toValue(options.scaleOffset) ?? DEFAULT_TRANSITION_SCALE
 
     const fromVars: gsap.TweenVars = { opacity: 0 }
 
@@ -42,7 +47,7 @@ export function useGsapTransition(options: GsapTransitionOptions = {}) {
   }
 
   const onEnter = (el: Element, done: () => void) => {
-    const duration = toValue(options.duration) ?? 0.3
+    const duration = toValue(options.duration) ?? DEFAULT_ENTER_DURATION_SEC
     const ease = toValue(options.easeEnter) ?? 'power2.out'
 
     gsap.to(el, {
@@ -58,11 +63,11 @@ export function useGsapTransition(options: GsapTransitionOptions = {}) {
 
   const onLeave = (el: Element, done: () => void) => {
     const type = toValue(options.type) || 'fade'
-    const duration = toValue(options.duration) ?? 0.25
+    const duration = toValue(options.duration) ?? DEFAULT_LEAVE_DURATION_SEC
     const ease = toValue(options.easeLeave) ?? 'power2.in'
-    const yOffset = toValue(options.yOffset) ?? 15
-    const xOffset = toValue(options.xOffset) ?? 15
-    const scaleOffset = toValue(options.scaleOffset) ?? 0.95
+    const yOffset = toValue(options.yOffset) ?? DEFAULT_TRANSITION_OFFSET_PX
+    const xOffset = toValue(options.xOffset) ?? DEFAULT_TRANSITION_OFFSET_PX
+    const scaleOffset = toValue(options.scaleOffset) ?? DEFAULT_TRANSITION_SCALE
 
     const toVars: gsap.TweenVars = {
       opacity: 0,

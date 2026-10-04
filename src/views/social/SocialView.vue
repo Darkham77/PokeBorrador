@@ -94,37 +94,38 @@ function selectTab(tab: string) {
 @use "@/styles/core/tools" as *;
 
 .social-view {
-  min-height: 100%;
   display: flex;
   flex-direction: column;
-  background: transparent;
+  min-height: 100%;
   padding: 0;
+  background: transparent;
 }
 
 .tabs-nav {
-  display: flex;
-  border-bottom: 2px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(0, 0, 0, 0.95);
+  @include gpu-layer;
+
   position: sticky;
   top: 0;
   z-index: var(--z-base);
-  @include gpu-layer;
+  display: flex;
+  background: rgb(0 0 0 / 95%);
+  border-bottom: 2px solid rgb(255 255 255 / 10%);
 }
 
 .tab-link {
-  flex: 1;
-  background: none;
-  border: none;
-  padding: 20px 10px;
-  color: var(--gray);
   @include pixelated;
-  font-size: 8px;
-  cursor: pointer;
+
   position: relative;
-  
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 20px 10px;
+  border: none;
+  background: none;
+  color: var(--gray);
+  font-size: 8px;
+  flex: 1;
+  cursor: pointer;
 
   .tab-label {
     position: relative;
@@ -133,22 +134,26 @@ function selectTab(tab: string) {
 
   &.active {
     color: var(--white);
-    &:after {
-      content: '';
+    &::after {
       position: absolute;
       bottom: -2px;
       left: 10%;
       width: 80%;
       height: 2px;
       background: var(--white);
+      content: '';
       box-shadow: 0 0 10px var(--white);
     }
   }
 
   &.rankings {
     color: var(--yellow);
+
+    &:hover .glow-box, &.active .glow-box {
+      opacity: 1;
+    }
     &.active {
-      &:after {
+      &::after {
         background: var(--yellow);
         box-shadow: 0 0 10px var(--yellow);
       }
@@ -156,15 +161,11 @@ function selectTab(tab: string) {
 
     .glow-box {
       position: absolute;
-      inset: 5px;
-      background: Rgba(255, 184, 0, 0.05);
       border-radius: 8px;
+      background: rgb(255 184 0 / 5%);
       opacity: 0;
+      inset: 5px;
       
-    }
-
-    &:hover .glow-box, &.active .glow-box {
-      opacity: 1;
     }
   }
 
@@ -172,23 +173,24 @@ function selectTab(tab: string) {
     position: absolute;
     top: 8px;
     right: 4px;
-    background: var(--red);
-    color: var(--white);
-    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 16px;
     height: 16px;
-    font-size: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 50%;
+    background: var(--red);
+    color: var(--white);
     font-family: sans-serif;
-    box-shadow: 0 2px 4px Rgba(0,0,0,0.4);
+    font-size: 8px;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 40%);
   }
 }
 
 .social-view-content {
-  padding: 15px var(--ui-h-padding);
-  background: Rgba(0,0,0,0.1);
   @include gpu-layer;
+
+  padding: 15px var(--ui-h-padding);
+  background: rgb(0 0 0 / 10%);
 }
 </style>

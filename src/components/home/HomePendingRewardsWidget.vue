@@ -59,26 +59,26 @@ const {
 @use "@/styles/core/_mixins" as *;
 
 .awards-box {
-  background: Rgba(34, 197, 94, 0.06);
-  border: 1px solid Rgba(34, 197, 94, 0.25);
-  border-radius: 12px;
   padding: 4px;
+  border: 1px solid Rgb(34 197 94 / 25%);
+  border-radius: 12px;
+  background: Rgb(34 197 94 / 6%);
   margin-bottom: 14px;
   box-sizing: border-box;
-  box-shadow: 0 0 16px Rgba(34, 197, 94, 0.08);
+  box-shadow: 0 0 16px Rgb(34 197 94 / 8%);
 
   .box-inner {
-    background: Rgba(0, 0, 0, 0.35);
-    border-radius: 8px;
     padding: 12px 14px;
+    border-radius: 8px;
+    background: Rgb(0 0 0 / 35%);
   }
 
   .awards-header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
     gap: 8px;
+    margin-bottom: 10px;
   }
 
   .header-actions {
@@ -87,28 +87,30 @@ const {
 
   h3 {
     @include pixelated;
-    font-size: 10px;
-    color: var(--green-bright, #4ade80);
-    margin: 0;
+
     display: flex;
     align-items: center;
     gap: 6px;
+    margin: 0;
+    color: var(--green-bright, #4ade80);
+    font-size: 10px;
     letter-spacing: 0.5px;
   }
 
   .claim-all-btn {
-    background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
-    border: 1px solid #4ade80;
-    border-radius: 6px;
-    color: #ffffff;
-    font-size: 8px;
-    padding: 5px 12px;
-    cursor: pointer;
+    @include pixelated;
+
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 8px Rgba(34, 197, 94, 0.3);
-    @include pixelated;
+    padding: 5px 12px;
+    border: 1px solid #4ade80;
+    border-radius: 6px;
+    background: Linear-Gradient(180deg, #22c55e 0%, #15803d 100%);
+    color: #fff;
+    font-size: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px Rgb(34 197 94 / 30%);
   }
 
   .awards-list {

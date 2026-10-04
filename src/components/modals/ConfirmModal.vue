@@ -93,10 +93,10 @@ const handleCancel = () => {
   
   p {
     margin: 0;
+    color: Rgb(255 255 255 / 80%);
+    font-family: Inter, sans-serif;
     font-size: 14px;
     line-height: 1.6;
-    color: Rgba(255, 255, 255, 0.8);
-    font-family: 'Inter', sans-serif;
     text-align: center;
   }
 }
@@ -104,10 +104,11 @@ const handleCancel = () => {
 // Retro Yellow Variant Styles
 :deep(.variant-retro) {
   .confirm-body p {
-    color: $coin-gold; // Gold/Yellow text for retro
     @include pixelated;
+
+    color: $coin-gold; // Gold/Yellow text for retro
     font-size: 12px;
-    text-shadow: 2px 2px 0 Rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 0 Rgb(0 0 0 / 50%);
   }
 
   .confirm-footer {
@@ -117,13 +118,14 @@ const handleCancel = () => {
       color: var(--muted);
     }
     .btn-confirm {
+      border: 2px solid $black;
       background: Linear-Gradient(135deg, $coin-gold, #b8860b);
       color: $black;
-      border: 2px solid $black;
-      box-shadow: 4px 4px 0 Rgba(0,0,0,0.3);
+      box-shadow: 4px 4px 0 Rgb(0 0 0 / 30%);
       
       &:hover {
         background: Linear-Gradient(135deg, $white, $coin-gold);
+
         // Handled by GSAP
       }
     }
@@ -135,13 +137,14 @@ const handleCancel = () => {
   gap: 12px;
   
   button {
-    flex: 1;
+    @include pixelated;
+
     padding: 14px;
     border: none;
     border-radius: 12px;
     font-size: 10px;
     font-weight: 700;
-    @include pixelated;
+    flex: 1;
     cursor: pointer;
     
     
@@ -151,24 +154,25 @@ const handleCancel = () => {
   }
   
   .btn-cancel {
-    background: Rgba(255, 255, 255, 0.05);
-    color: Rgba(255, 255, 255, 0.5);
+    background: Rgb(255 255 255 / 5%);
+    color: Rgb(255 255 255 / 50%);
     &:hover {
-      background: Rgba(255, 255, 255, 0.1);
+      background: Rgb(255 255 255 / 10%);
       color: var(--white);
     }
   }
   
   .btn-confirm {
     @include btn-vicio-primary;
+
     padding: 14px; 
 
     &.is-danger {
       background: Linear-Gradient(135deg, var(--red), #dc2626);
-      box-shadow: 0 4px 15px Rgba(220, 38, 38, 0.4);
+      box-shadow: 0 4px 15px Rgb(220 38 38 / 40%);
       &:hover {
         background: Linear-Gradient(135deg, #ef4444, #b91c1c);
-        box-shadow: 0 6px 20px Rgba(220, 38, 38, 0.5);
+        box-shadow: 0 6px 20px Rgb(220 38 38 / 50%);
       }
     }
   }

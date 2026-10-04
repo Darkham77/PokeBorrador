@@ -79,39 +79,38 @@ async function handleLogout() {
 .action-btn {
   width: 100%;
   padding: 16px;
-  background: Rgba(255, 255, 255, 0.1);
-  font-size: 11px;
-  font-family: var(--font-pixel);
-  font-weight: 900;
-  border-radius: 16px;
   border: none;
+  border-radius: 16px;
+  background: Rgb(255 255 255 / 10%);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  font-weight: 900;
   cursor: pointer;
-  
-  box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 0 Rgb(0 0 0 / 30%);
 
   &.reclaim-btn {
+    border: 1px solid Rgb(255 255 255 / 20%);
     background: var(--yellow);
     color: #111;
-    border: 1px solid Rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 20px Rgba(255, 214, 10, 0.2);
+    box-shadow: 0 10px 20px Rgb(255 214 10 / 20%);
 
     &:hover {
       background: $white;
       transform: Translatey(-2px);
-      box-shadow: 0 12px 24px Rgba(255, 255, 255, 0.3);
+      box-shadow: 0 12px 24px Rgb(255 255 255 / 30%);
     }
   }
 
   &.danger-btn {
-    background: Rgba(255, 59, 59, 0.1);
+    border: 1px solid Rgb(255 59 59 / 30%);
+    background: Rgb(255 59 59 / 10%);
     color: var(--red);
-    border: 1px solid Rgba(255, 59, 59, 0.3);
 
     &:hover {
       background: var(--red);
       color: $white;
       transform: Translatey(-2px);
-      box-shadow: 0 8px 16px Rgba(255, 59, 59, 0.2);
+      box-shadow: 0 8px 16px Rgb(255 59 59 / 20%);
     }
   }
 }

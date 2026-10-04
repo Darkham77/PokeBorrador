@@ -163,27 +163,28 @@ const confirmDiscard = (awardId: string, eventName: string) => {
 @use "@/styles/core/_mixins" as *;
 
 .awards-box {
-  background: Rgba(34, 197, 94, 0.06);
-  border: 1px solid Rgba(34, 197, 94, 0.25);
-  border-radius: 12px;
   padding: 4px;
+  border: 1px solid rgb(34 197 94 / 25%);
+  border-radius: 12px;
+  background: rgb(34 197 94 / 6%);
   margin-bottom: 16px;
   box-sizing: border-box;
 
   .box-inner {
-    background: Rgba(0, 0, 0, 0.35);
-    border-radius: 8px;
     padding: 12px;
+    border-radius: 8px;
+    background: rgb(0 0 0 / 35%);
   }
 
   h3 {
     @include pixelated;
-    font-size: 9px;
-    color: var(--green-bright, #4ade80);
-    margin: 0 0 10px 0;
+
     display: flex;
     align-items: center;
     gap: 6px;
+    margin: 0 0 10px;
+    color: var(--green-bright, #4ade80);
+    font-size: 9px;
   }
 
   .awards-list {
@@ -200,72 +201,74 @@ const confirmDiscard = (awardId: string, eventName: string) => {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    background: Rgba(255, 255, 255, 0.03);
-    border: 1px solid Rgba(255, 255, 255, 0.06);
     padding: 10px 14px;
+    border: 1px solid rgb(255 255 255 / 6%);
     border-radius: 8px;
+    background: rgb(255 255 255 / 3%);
     margin-bottom: 8px;
-
-    &.is-legacy {
-      background: Rgba(239, 68, 68, 0.04);
-      border-color: Rgba(239, 68, 68, 0.2);
-    }
 
     &:last-child {
       margin-bottom: 0;
+    }
+
+    &.is-legacy {
+      background: rgb(239 68 68 / 4%);
+      border-color: rgb(239 68 68 / 20%);
     }
 
     .award-info {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      flex: 1;
       min-width: 0;
+      flex: 1;
     }
 
     .award-name-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
     }
 
     .legacy-badge {
       @include pixelated;
-      font-size: 7px;
+
       padding: 2px 6px;
+      border: 1px solid rgb(239 68 68 / 40%);
       border-radius: 4px;
-      background: Rgba(239, 68, 68, 0.15);
-      border: 1px solid Rgba(239, 68, 68, 0.4);
+      background: rgb(239 68 68 / 15%);
       color: #fca5a5;
+      font-size: 7px;
       letter-spacing: 0.5px;
     }
 
     .category-badge {
       @include pixelated;
-      font-size: 7px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: Rgba(59, 130, 246, 0.15);
-      border: 1px solid Rgba(59, 130, 246, 0.4);
-      color: #93c5fd;
-      letter-spacing: 0.5px;
+
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      padding: 2px 6px;
+      border: 1px solid rgb(59 130 246 / 40%);
+      border-radius: 4px;
+      background: rgb(59 130 246 / 15%);
+      color: #93c5fd;
+      font-size: 7px;
+      letter-spacing: 0.5px;
     }
 
     .award-name {
-      font-weight: bold;
+      color: var(--white, #fff);
       font-size: 11px;
-      color: var(--white, #ffffff);
+      font-weight: bold;
     }
 
     .award-pills-wrap {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 6px;
-      flex-wrap: wrap;
     }
 
     .award-actions-wrap {
@@ -279,17 +282,17 @@ const confirmDiscard = (awardId: string, eventName: string) => {
 
 .retro-btn {
   @include pixelated;
-  font-size: 8px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  white-space: nowrap;
-
   @include event-award-action-buttons;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 8px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 </style>

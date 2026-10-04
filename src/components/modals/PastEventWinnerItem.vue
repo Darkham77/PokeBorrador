@@ -241,37 +241,37 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   display: flex;
   align-items: center;
   gap: 10px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  padding: 6px 12px;
-  border-radius: 8px;
   min-height: 42px;
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 2%);
   box-sizing: border-box;
 
   &.rank-1 {
-    border-color: Rgba(255, 215, 0, 0.3);
-    background: Rgba(255, 215, 0, 0.05);
+    background: rgb(255 215 0 / 5%);
+    border-color: rgb(255 215 0 / 30%);
   }
 
   &.rank-2 {
-    border-color: Rgba(192, 192, 192, 0.3);
-    background: Rgba(192, 192, 192, 0.04);
+    background: rgb(192 192 192 / 4%);
+    border-color: rgb(192 192 192 / 30%);
   }
 
   &.rank-3 {
-    border-color: Rgba(205, 127, 50, 0.3);
-    background: Rgba(205, 127, 50, 0.04);
+    background: rgb(205 127 50 / 4%);
+    border-color: rgb(205 127 50 / 30%);
   }
 }
 
 // Right Column (Flows inline by default, wraps to 2 lines on small screens)
 .winner-content-wrap {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   gap: 4px 8px;
-  flex: 1;
   min-width: 0;
+  flex: 1;
 }
 
 // Trainer Profile Group (Avatar + Name)
@@ -284,8 +284,8 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
 
 .winner-avatar-wrap {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 2px;
   flex-shrink: 0;
   cursor: pointer;
@@ -297,20 +297,20 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   cursor: pointer;
 
   .player-name {
+    color: var(--white);
     font-size: 10.5px;
     font-weight: bold;
-    color: var(--white);
     white-space: nowrap;
 
     &:hover:not([class*="custom-"]) {
       color: var(--yellow);
-      text-shadow: 0 0 6px Rgba(250, 204, 21, 0.3);
+      text-shadow: 0 0 6px rgb(250 204 21 / 30%);
     }
   }
 }
 
 .entry-divider-dot {
-  color: Rgba(255, 255, 255, 0.25);
+  color: rgb(255 255 255 / 25%);
   font-size: 10px;
   flex-shrink: 0;
 }
@@ -318,12 +318,12 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
 // Pokemon & Metric Details Group
 .winner-details-group {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   gap: 4px 6px;
+  min-width: 0;
   font-size: 8.5px;
   line-height: 1.35;
-  min-width: 0;
 
   .winner-poke-pill {
     display: inline-flex;
@@ -335,19 +335,19 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    cursor: pointer;
-    border-radius: 4px;
     padding: 1px 4px 1px 2px;
-    background: Rgba(255, 255, 255, 0.04);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 4px;
+    background: rgb(255 255 255 / 4%);
+    cursor: pointer;
 
     &:hover {
-      background: Rgba(255, 215, 0, 0.08);
-      border-color: Rgba(255, 215, 0, 0.35);
+      background: rgb(255 215 0 / 8%);
+      border-color: rgb(255 215 0 / 35%);
 
       .entry-poke {
         color: var(--white);
-        text-shadow: 0 0 6px Rgba(250, 204, 21, 0.4);
+        text-shadow: 0 0 6px rgb(250 204 21 / 40%);
       }
     }
   }
@@ -366,27 +366,27 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   }
 
   .entry-metric-sep {
-    color: Rgba(255, 255, 255, 0.25);
+    color: rgb(255 255 255 / 25%);
     font-size: 9px;
   }
 
   .score-val {
     color: var(--green-bright);
-    text-shadow: 0 0 6px Rgba(74, 222, 128, 0.25);
-    word-break: break-word;
+    text-shadow: 0 0 6px rgb(74 222 128 / 25%);
+    overflow-wrap: break-word;
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .winner-item {
-    padding: 6px 8px;
-    gap: 8px;
     align-items: flex-start;
+    gap: 8px;
+    padding: 6px 8px;
   }
 
   .rank-badge {
-    padding-top: 4px;
     min-width: 28px;
+    padding-top: 4px;
 
     .medal {
       font-size: 13px;

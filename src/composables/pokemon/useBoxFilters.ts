@@ -9,6 +9,8 @@ import type { PokemonFilterTagId } from '@/logic/constants/tags'
 export const FRIENDSHIP_SEAL_TIER_FILTERS = ['all', ...FRIENDSHIP_SEAL_TIERS] as const
 type FriendshipSealTierFilter = (typeof FRIENDSHIP_SEAL_TIER_FILTERS)[number]
 
+const DEFAULT_FILTER_DEBOUNCE_MS = 150 as const;
+
 interface FilterState {
   tier: string
   type: string
@@ -49,7 +51,7 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>, options?: { debounce
   const isFiltersOpen = ref(false)
 
   const isTestEnv = typeof process !== 'undefined' && (!!process.env.VITEST || process.env.NODE_ENV === 'test')
-  const defaultDebounce = isTestEnv ? 0 : 150
+  const defaultDebounce = isTestEnv ? 0 : DEFAULT_FILTER_DEBOUNCE_MS
   const debounceDuration = options?.debounceMs ?? defaultDebounce
   
 const MAX_TOTAL_IVS = 186

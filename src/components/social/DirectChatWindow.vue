@@ -161,54 +161,54 @@ onMounted(() => {
 @use "sass:string";
 
 .chat-panel {
-  width: 100%;
-  height: 100%;
-  background: Rgba(13, 17, 23, 0.98);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: Rgb(13 17 23 / 98%);
 }
 
 .messages-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+  padding: 15px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .chat-start-hint {
+  color: Rgb(255 255 255 / 50%);
   font-size: 9px;
-  color: Rgba(255, 255, 255, 0.5);
   text-align: center;
   margin-bottom: 5px;
   font-style: italic;
 }
 
 .empty-state {
-  text-align: center;
   padding: 40px 20px;
-  color: Rgba(148, 163, 184, 1);
+  color: Rgb(148 163 184 / 100%);
   font-size: 12px;
+  text-align: center;
 }
 
 .message-row {
   display: flex;
-  gap: 12px;
   align-items: flex-start;
+  gap: 12px;
 }
 
 .message-content {
-  flex: 1;
-  background: Rgba(255, 255, 255, 0.03);
-  border-radius: 0 12px 12px 12px;
   padding: 8px 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 0 12px 12px;
+  background: Rgb(255 255 255 / 3%);
+  flex: 1;
 
   &.is-me {
-    background: Rgba(157, 78, 221, 0.15);
-    border-color: Rgba(157, 78, 221, 0.3);
+    background: Rgb(157 78 221 / 15%);
+    border-color: Rgb(157 78 221 / 30%);
   }
 }
 
@@ -222,8 +222,8 @@ onMounted(() => {
 
 .chat-footer {
   padding: 20px;
-  background: Rgba(0, 0, 0, 0.2);
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(0 0 0 / 20%);
+  border-top: 1px solid Rgb(255 255 255 / 5%);
 
   .input-container {
     display: flex;
@@ -232,36 +232,36 @@ onMounted(() => {
   }
 
   input {
-    flex: 1;
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(199, 125, 255, 0.2);
-    border-radius: 8px;
     padding: 10px 12px;
+    border: 1px solid Rgb(199 125 255 / 20%);
+    border-radius: 8px;
+    background: Rgb(0 0 0 / 30%);
     color: var(--white);
     font-size: 13px;
+    flex: 1;
     outline: none;
 
     &:focus { border-color: var(--purple-light); }
   }
 
   .send-btn {
-    background: var(--purple);
-    border: none;
-    border-radius: 8px;
     width: 38px;
     height: 38px;
+    border: none;
+    border-radius: 8px;
+    background: var(--purple);
     color: var(--white);
     cursor: pointer;
 
-    &:hover:not(:disabled) { background: Rgba(157, 78, 221, 1); transform: Scale(1.05); }
+    &:hover:not(:disabled) { background: Rgb(157 78 221 / 100%); transform: Scale(1.05); }
     &:disabled { opacity: 0.3; }
   }
 
   .hint {
-    font-size: 10px;
     margin: 0;
+    color: Rgb(255 255 255 / 50%);
+    font-size: 10px;
     text-align: right;
-    color: Rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -278,8 +278,8 @@ onMounted(() => {
   cursor: pointer;
 
   &:hover {
-    text-decoration: underline;
     opacity: 0.85;
+    text-decoration: underline;
   }
 }
 </style>

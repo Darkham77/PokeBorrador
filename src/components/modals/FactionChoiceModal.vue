@@ -115,6 +115,7 @@ const getAssetUrlLocal = getAssetUrl
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .faction-content {
   padding: 8px 12px 20px;
 }
@@ -124,16 +125,17 @@ const getAssetUrlLocal = getAssetUrl
   margin-bottom: 24px;
   
   .intro-text {
-    font-size: 14px;
     color: $white;
-    margin-bottom: 8px;
+    font-size: 14px;
     line-height: 1.4;
+    margin-bottom: 8px;
   }
   
   .cost-text {
     @include pixelated;
-    font-size: 9px;
+
     color: $white;
+    font-size: 9px;
     
     .coin { color: var(--yellow, $coin-gold); }
   }
@@ -146,29 +148,16 @@ const getAssetUrlLocal = getAssetUrl
 }
 
 .faction-btn {
-  width: 100%;
-  padding: 24px;
-  background: Rgba(0, 0, 0, 0.4);
-  border-radius: 16px;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  
+  width: 100%;
+  padding: 24px;
+  border-radius: 16px;
+  background: Rgb(0 0 0 / 40%);
   text-align: center;
-
-  &.union-btn {
-    border: 2px solid #3b82f6;
-    box-shadow: inset 0 0 20px Rgba(59, 130, 246, 0.1);
-    &:hover:not(:disabled) { background: Rgba(59, 130, 246, 0.1); transform: Scale(1.02); }
-  }
-
-  &.poder-btn {
-    border: 2px solid #ef4444;
-    box-shadow: inset 0 0 20px Rgba(239, 68, 68, 0.1);
-    &:hover:not(:disabled) { background: Rgba(239, 68, 68, 0.1); transform: Scale(1.02); }
-  }
+  cursor: pointer;
 
   &:disabled {
     opacity: 0.5;
@@ -176,14 +165,26 @@ const getAssetUrlLocal = getAssetUrl
     will-change: transform, filter, opacity;
   filter: Grayscale(0.8);
   }
+
+  &.union-btn {
+    border: 2px solid #3b82f6;
+    box-shadow: inset 0 0 20px Rgb(59 130 246 / 10%);
+    &:hover:not(:disabled) { background: Rgb(59 130 246 / 10%); transform: Scale(1.02); }
+  }
+
+  &.poder-btn {
+    border: 2px solid #ef4444;
+    box-shadow: inset 0 0 20px Rgb(239 68 68 / 10%);
+    &:hover:not(:disabled) { background: Rgb(239 68 68 / 10%); transform: Scale(1.02); }
+  }
 }
 
 .faction-icon-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100px;
   height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin-bottom: 8px;
 }
 
@@ -201,17 +202,19 @@ const getAssetUrlLocal = getAssetUrl
 
 .faction-name {
   @include pixelated;
+
   font-size: 16px;
   letter-spacing: 1px;
 }
 
 .faction-motto {
-  font-size: 12px;
   color: $white;
+  font-size: 12px;
   opacity: 0.8;
 }
 
 .union-text { color: #60a5fa; }
+
 .poder-text { color: #f87171; }
 </style>
 

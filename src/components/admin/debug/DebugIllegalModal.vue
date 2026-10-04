@@ -54,55 +54,55 @@ const emit = defineEmits<{
 <style scoped>
 .creator-illegal-modal-overlay {
   position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: calc(var(--z-max) - 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgb(0 0 0 / 75%);
+  inset: 0;
 }
 
 .creator-illegal-modal {
-  background: #1e232d;
-  border: 2px solid #ff4444;
-  border-radius: 8px;
-  padding: 1.5rem;
-  max-width: 500px;
   width: 90%;
+  max-width: 500px;
+  padding: 1.5rem;
+  border: 2px solid #f44;
+  border-radius: 8px;
+  background: #1e232d;
   color: #fff;
-  box-shadow: 0 0 20px Rgba(255, 68, 68, 0.4);
+  box-shadow: 0 0 20px rgb(255 68 68 / 40%);
 }
 
 .illegal-title {
-  margin: 0 0 0.75rem 0;
-  color: #ff5555;
+  margin: 0 0 0.75rem;
+  color: #f55;
   font-size: 1.1rem;
   font-weight: bold;
 }
 
 .illegal-desc {
+  color: #ccc;
   font-size: 0.9rem;
   margin-bottom: 1rem;
-  color: #ccc;
 }
 
 .illegal-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1.25rem 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   max-height: 250px;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
   overflow-y: auto;
 }
 
 .illegal-item {
-  background: Rgba(255, 68, 68, 0.1);
-  border-left: 3px solid #ff4444;
   padding: 0.5rem;
+  background: rgb(255 68 68 / 10%);
+  color: #fcc;
   font-size: 0.85rem;
-  color: #ffcccc;
+  border-left: 3px solid #f44;
 }
 
 .modal-footer {

@@ -39,11 +39,13 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
       id: 'validate_abilities',
       name: 'Pokemon Ability Validator',
       description: 'Valida base de datos canónica y paridad de habilidades',
+      icon: '✨',
       family: 'domain_data',
       ruleIds: ABILITY_RULES,
+      packageName: 'Habilidades',
       ruleDescriptions: {
-        'ability-invalid-showdown': 'Habilidad no válida en Pokémon Showdown',
-        'ability-missing-translation': 'Traducción al español faltante en habilidad',
+        'ability-invalid-showdown': 'Habilidad no válida en Showdown',
+        'ability-missing-translation': 'Traducción faltante en habilidad',
         'ability-empty-field': 'Campo obligatorio vacío en habilidad'
       },
       requiredFiles: [DATA_FILE]

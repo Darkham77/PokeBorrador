@@ -98,58 +98,61 @@ const handleSortClick = (key: string) => {
 
 .pokedex-controls {
   @include shell-premium(Rgba(15, 23, 42, 0.95));
-  padding: 12px 24px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  margin-bottom: 0;
   @include gpu-layer;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 24px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 20px;
+  margin-bottom: 0;
 
   @include responsive(950px) {
     flex-direction: column;
     align-items: stretch;
-    padding: 16px;
     gap: 12px;
+    padding: 16px;
   }
 }
 
 .gen-tabs {
   display: flex;
-  background: Rgba(0, 0, 0, 0.3);
-  padding: 4px;
-  border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
   gap: 4px;
+  padding: 4px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 12px;
+  background: Rgb(0 0 0 / 30%);
 
   .tab-btn {
+    @include pixelated;
+
     padding: 8px 16px;
     border: none;
+    border-radius: 8px;
     background: none;
     color: var(--gray);
-    @include pixelated;
     font-size: 8px;
     cursor: pointer;
-    border-radius: 8px;
     will-change: transform, background-color, color;
 
-    &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.05); }
+    &:hover { background: Rgb(255 255 255 / 5%); color: var(--white); }
     &.active {
-      background: Rgba(255, 255, 255, 0.1);
+      border: 1px solid Rgb(255 255 255 / 10%);
+      background: Rgb(255 255 255 / 10%);
       color: var(--white);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
     }
   }
 }
 
 .controls-right {
+
   display: flex;
+  justify-content: flex-end;
   align-items: center;
   gap: 20px;
   flex: 1;
-  justify-content: flex-end;
 
   @include responsive(950px) {
     flex-direction: column;
@@ -162,98 +165,102 @@ const handleSortClick = (key: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: Rgba(0, 0, 0, 0.2);
   padding: 4px 8px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 10px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(0 0 0 / 20%);
 
   .sort-label {
     @include pixelated;
-    font-size: 6px;
+
     color: var(--gray);
-    margin-right: 4px;
+    font-size: 6px;
     opacity: 0.6;
+    margin-right: 4px;
   }
 
   .pdex-sort-btn {
+    @include flex-center;
+    @include pixelated;
+
+    gap: 3px;
     min-width: 28px;
     height: 28px;
     padding: 0 6px;
-    gap: 3px;
-    @include flex-center;
-    background: Rgba(255, 255, 255, 0.03);
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgb(255 255 255 / 5%);
     border-radius: 6px;
+    background: Rgb(255 255 255 / 3%);
     color: var(--gray);
-    @include pixelated;
     font-size: 8px;
     cursor: pointer;
     will-change: transform, background-color, border-color, color;
 
     &.active {
       background: var(--yellow-low);
-      border-color: var(--yellow);
       color: var(--yellow);
+      border-color: var(--yellow);
     }
   }
 }
 
 .search-wrapper {
+
   position: relative;
-  flex: 0 1 300px;
   display: flex;
   align-items: center;
+  flex: 0 1 300px;
 
   @include responsive(950px) {
-    flex: none;
     width: 100%;
+    flex: none;
   }
 
   .pdex-search-icon {
     position: absolute;
-    left: 12px;
     top: 50%;
-    transform: Translatey(-50%);
+    left: 12px;
     font-size: 12px;
     opacity: 0.4;
+    transform: Translatey(-50%);
     pointer-events: none;
     font-style: normal;
   }
 
   .pdex-search-input {
+    @include pixelated;
+
     width: 100%;
     height: 40px;
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
     padding: 0 12px 0 36px;
+    border: 1px solid Rgb(255 255 255 / 10%);
     border-radius: 10px;
+    background: Rgb(0 0 0 / 30%);
     color: var(--white);
     font-size: 8px;
-    @include pixelated;
     outline: none;
     will-change: background-color, border-color;
+
+    &:focus {
+      background: Rgb(255 255 255 / 5%);
+      border-color: var(--yellow);
+    }
 
     &::placeholder {
       color: var(--gray);
       opacity: 0.4;
-    }
-
-    &:focus {
-      background: Rgba(255, 255, 255, 0.05);
-      border-color: var(--yellow);
     }
   }
 
   .clear-btn {
     position: absolute;
     right: 12px;
-    background: none;
-    border: none;
-    color: Rgba(255, 255, 255, 0.5);
-    font-size: 16px;
-    cursor: pointer;
-    line-height: 1;
     padding: 0;
+    border: none;
+    background: none;
+    color: Rgb(255 255 255 / 50%);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
 
     &:hover { color: white; }
   }

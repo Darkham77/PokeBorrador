@@ -24,6 +24,10 @@ import { generateDebugTeamList } from './debugTrainerTeamHelper.ts'
 const POLICE_PRESET_AVG_LEVEL_BASE = 30
 const POLICE_PRESET_LEVEL_BOOST = 2
 const POLICE_PRESET_IV_VAL = 20
+const DEFAULT_GEN_MIN_LEVEL = 10
+const DEFAULT_GEN_MAX_LEVEL = 15
+const MIN_POLICE_LEVEL = 10
+const DEFAULT_ADD_POKEMON_LEVEL = 10
 
 interface ExtendedPokemon extends Pokemon {
   _revealed?: boolean
@@ -77,8 +81,8 @@ export function useDebugTrainers() {
   const gymDifficulty = ref<BattleDifficulty>('normal')
 
   const genTeamSize = ref(3)
-  const genMinLevel = ref(10)
-  const genMaxLevel = ref(15)
+  const genMinLevel = ref(DEFAULT_GEN_MIN_LEVEL)
+  const genMaxLevel = ref(DEFAULT_GEN_MAX_LEVEL)
   const genForceShiny = ref(false)
   const genGuardianProb = ref(0.01)
 
@@ -210,7 +214,7 @@ export function useDebugTrainers() {
     const teamAlive = gameStore.state.team.filter((p: Pokemon | null) => p && p.hp > 0)
     const averagePlayerLevel = teamAlive.length === 0 ? POLICE_PRESET_AVG_LEVEL_BASE : Math.floor(teamAlive.reduce((acc: number, cur: Pokemon | null) => acc + (cur?.level || 0), 0) / teamAlive.length)
 
-    const lvl = Math.max(10, averagePlayerLevel + POLICE_PRESET_LEVEL_BOOST)
+    const lvl = Math.max(MIN_POLICE_LEVEL, averagePlayerLevel + POLICE_PRESET_LEVEL_BOOST)
 
     pool.forEach(id => {
       const p = pokemonDebugService.generate({
@@ -227,7 +231,7 @@ export function useDebugTrainers() {
 
   function addPokemonToTeam() {
     if (enemyTeam.value.length >= 6) return
-    const p = pokemonDebugService.generate({ id: 'rattata', level: 10 })
+    const p = pokemonDebugService.generate({ id: 'rattata', level: DEFAULT_ADD_POKEMON_LEVEL })
     if (p) {
       enemyTeam.value.push(p)
       selectedPokeIndex.value = enemyTeam.value.length - 1

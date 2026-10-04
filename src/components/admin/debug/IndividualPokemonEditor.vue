@@ -278,7 +278,7 @@ watch(() => activePoke.value?.level, (newLv) => {
       <!-- Col 2: Natures & Stats -->
       <div
         class="editor-sub-card"
-        style="margin-top: 12px; border-top: 1px dashed rgba(255, 255, 255, 0.08); padding-top: 12px;"
+        style="margin-top: 12px; border-top: 1px dashed rgb(255 255 255 / 8%); padding-top: 12px;"
       >
         <DebugSearchSelect
           v-model="activePokeNature"
@@ -347,7 +347,7 @@ watch(() => activePoke.value?.level, (newLv) => {
       <!-- Col 3: Moves & Details -->
       <div
         class="editor-sub-card"
-        style="margin-top: 12px; border-top: 1px dashed rgba(255, 255, 255, 0.08); padding-top: 12px;"
+        style="margin-top: 12px; border-top: 1px dashed rgb(255 255 255 / 8%); padding-top: 12px;"
       >
         <PokemonMovePicker 
           v-model="activePokeMoves"

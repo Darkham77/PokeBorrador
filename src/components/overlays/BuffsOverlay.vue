@@ -185,35 +185,35 @@ const handleClassMissionClick = () => {
 }
 
 .buff-badge {
+  @include gpu-layer;
+  @include gpu-layer;
+
   display: inline-flex;
   align-items: center;
   height: 36px;
-  box-sizing: border-box;
-  background: Rgba(0, 0, 0, 0.9);
+  padding: 0 10px;
   border: 1.5px solid var(--yellow, #ffd93d);
   border-radius: 12px;
-  padding: 0 10px;
+  background: Rgb(0 0 0 / 90%);
+  box-sizing: border-box;
   pointer-events: auto; /* Tooltip needs pointer */
-  @include gpu-layer;
-  box-shadow: 0 4px 6px Rgba(0,0,0,0.3);
-  
+  box-shadow: 0 4px 6px Rgb(0 0 0 / 30%);
   cursor: help;
-  @include gpu-layer;
 
   &:hover {
-    background: Rgba(0, 0, 0, 0.8);
+    background: Rgb(0 0 0 / 80%);
+    transform: Translatex(4px);
     border-color: var(--yellow, #ffd93d);
     box-shadow: 0 0 0 1px var(--yellow, #ffd93d);
-    transform: Translatex(4px);
   }
 
   &.is-event-badge {
     cursor: pointer;
 
     &:hover {
-      border-color: #ffe066;
-      box-shadow: 0 0 8px Rgba(255, 217, 61, 0.5);
       transform: Translatex(4px);
+      border-color: #ffe066;
+      box-shadow: 0 0 8px Rgb(255 217 61 / 50%);
     }
   }
 
@@ -221,8 +221,8 @@ const handleClassMissionClick = () => {
     cursor: pointer;
 
     &:hover {
-      box-shadow: 0 0 10px Rgba(255, 255, 255, 0.4);
       transform: Translatex(4px);
+      box-shadow: 0 0 10px Rgb(255 255 255 / 40%);
     }
 
     .is-done-text {
@@ -233,51 +233,53 @@ const handleClassMissionClick = () => {
 }
 
 .buff-icon-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 24px;
   height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin-right: 8px;
   flex-shrink: 0;
   overflow: visible;
 }
 
 .buff-emoji {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", sans-serif;
   font-size: 22px;
   line-height: 1;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   text-align: center;
-  filter: Drop-Shadow(0 2px 3px Rgba(0, 0, 0, 0.6));
-  user-select: none;
   transform: Translatey(-2px);
+  filter: Drop-Shadow(0 2px 3px Rgb(0 0 0 / 60%));
+  user-select: none;
 }
 
 .buff-icon {
+  @include sprite-render;
+
   width: 24px;
   height: 24px;
-  @include sprite-render;
   object-fit: contain;
   will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.5));
+  filter: Drop-Shadow(0 2px 2px Rgb(0 0 0 / 50%));
 }
 
 .buff-info {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .buff-time {
+  @include pixelated;
+
   color: var(--yellow, #ffd93d);
   font-size: 12px;
   font-weight: 700;
-  @include pixelated;
 }
 </style>
 

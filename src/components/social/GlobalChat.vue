@@ -236,35 +236,36 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 }
 
 .chat-toggle-btn {
-  background: Rgba(13, 17, 23, 0.98);
-  border: 1px solid Rgba(199, 125, 255, 0.3);
-  border-radius: 12px;
-  padding: 10px 16px;
-  color: $white;
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid Rgb(199 125 255 / 30%);
+  border-radius: 12px;
+  background: Rgb(13 17 23 / 98%);
+  color: $white;
   cursor: pointer;
-  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 15px Rgb(0 0 0 / 40%);
 
   &:hover {
+    background: Rgb(13 17 23 / 95%);
     transform: Translatey(-2px);
     border-color: var(--purple-light);
-    background: Rgba(13, 17, 23, 0.95);
   }
 
   .icon { font-size: 18px; }
   .label { 
     @include pixelated;
+
     font-size: 8px;
     letter-spacing: 0.5px;
   }
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     flex-direction: column;
     gap: 4px;
-    padding: 8px;
     min-width: 60px;
+    padding: 8px;
 
     .icon { font-size: 16px; }
     .label { font-size: 6px; }
@@ -272,45 +273,45 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 }
 
 .chat-panel {
-  width: 100%;
-  height: 100%;
-  background: Rgba(13, 17, 23, 0.98);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: Rgb(13 17 23 / 98%);
 }
 
 .messages-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0; // Fix flex collapse for scroll stability
+  padding: 15px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .message-row {
   display: flex;
-  gap: 12px;
   align-items: flex-start;
+  gap: 12px;
 }
 
 .message-content {
-  flex: 1;
-  background: Rgba(255, 255, 255, 0.03);
-  border-radius: 0 12px 12px 12px;
   padding: 8px 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 0 12px 12px;
+  background: Rgb(255 255 255 / 3%);
+  flex: 1;
 }
 
 .message-meta {
   @include chat-message-meta;
 
   .username {
-    &.rocket { color: Rgba(248, 113, 113, 1); }
-    &.cazabichos { color: Rgba(74, 222, 128, 1); }
-    &.criador { color: Rgba(192, 132, 252, 1); }
-    &.entrenador { color: Rgba(96, 165, 250, 1); }
+    &.rocket { color: Rgb(248 113 113 / 100%); }
+    &.cazabichos { color: Rgb(74 222 128 / 100%); }
+    &.criador { color: Rgb(192 132 252 / 100%); }
+    &.entrenador { color: Rgb(96 165 250 / 100%); }
   }
 }
 
@@ -320,8 +321,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
 .chat-footer {
   padding: 20px;
-  background: Rgba(0, 0, 0, 0.2);
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(0 0 0 / 20%);
+  border-top: 1px solid Rgb(255 255 255 / 5%);
 
   .input-container {
     display: flex;
@@ -330,13 +331,13 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   }
 
   input {
-    flex: 1;
-    background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(199, 125, 255, 0.2);
-    border-radius: 8px;
     padding: 10px 12px;
+    border: 1px solid Rgb(199 125 255 / 20%);
+    border-radius: 8px;
+    background: Rgb(0 0 0 / 30%);
     color: $white;
     font-size: 13px;
+    flex: 1;
     outline: none;
 
     &:focus { border-color: var(--purple-light); }
@@ -344,26 +345,36 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   }
 
   .send-btn {
-    background: var(--purple);
-    border: none;
-    border-radius: 8px;
     width: 38px;
     height: 38px;
+    border: none;
+    border-radius: 8px;
+    background: var(--purple);
     color: $white;
     cursor: pointer;
 
-    &:hover:not(:disabled) { background: Rgba(157, 78, 221, 1); transform: Scale(1.05); }
+    &:hover:not(:disabled) { background: Rgb(157 78 221 / 100%); transform: Scale(1.05); }
     &:disabled { opacity: 0.3; }
   }
 
-  .hint, .hint-error {
-    font-size: 10px;
+  %hint-base {
     margin: 0;
+    font-size: 10px;
     text-align: right;
   }
 
-  .hint { color: Rgba(255, 255, 255, 0.5); }
-  .hint-error { color: Rgba(248, 113, 113, 1); font-weight: 700; }
+  .hint {
+    @extend %hint-base;
+
+    color: Rgb(255 255 255 / 50%);
+  }
+
+  .hint-error {
+    @extend %hint-base;
+
+    color: Rgb(248 113 113 / 100%);
+    font-weight: 700;
+  }
 }
 
 .clickable-avatar {
@@ -379,8 +390,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   cursor: pointer;
 
   &:hover {
-    text-decoration: underline;
     opacity: 0.85;
+    text-decoration: underline;
   }
 }
 </style>

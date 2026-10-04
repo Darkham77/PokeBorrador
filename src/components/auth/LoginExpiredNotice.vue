@@ -28,18 +28,18 @@ const emit = defineEmits<{
 @use "@/styles/views/login" as *;
 
 .session-expired-panel {
-  background: Rgba(255, 68, 68, 0.1);
-  border-color: #ff4444;
-  box-shadow: 0 0 15px Rgba(255, 68, 68, 0.2);
+  background: rgb(255 68 68 / 10%);
+  border-color: #f44;
+  box-shadow: 0 0 15px rgb(255 68 68 / 20%);
 }
 
 .expired-title {
-  color: #ff4444;
-  text-shadow: 0 0 5px Rgba(255, 68, 68, 0.4);
+  color: #f44;
+  text-shadow: 0 0 5px rgb(255 68 68 / 40%);
 }
 
 .expired-btn {
-  background: #ff4444;
+  background: #f44;
   color: white;
   box-shadow: 0 4px 0 #b30000;
 }

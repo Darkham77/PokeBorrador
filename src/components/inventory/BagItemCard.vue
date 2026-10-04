@@ -116,25 +116,25 @@ const onItemMouseLeave = (event: MouseEvent) => {
 @use "@/styles/core/tools" as *;
 
 .item-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  padding: 16px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 3%);
   cursor: default;
-  position: relative;
 }
 
 .item-card:hover {
-  background: Rgba(255, 255, 255, 0.06);
+  background: rgb(255 255 255 / 6%);
 }
 
 .item-card.selected {
+  background: rgb(16 185 129 / 5%);
   border-color: var(--green-bright);
-  background: Rgba(16, 185, 129, 0.05);
 }
 
 .item-icon-container {
@@ -144,37 +144,38 @@ const onItemMouseLeave = (event: MouseEvent) => {
 }
 
 .item-sprite {
+  @include sprite-render;
+
   width: 100%;
   height: 100%;
-  @include sprite-render;
   object-fit: contain;
 }
 
 .bag-item-qty {
   position: absolute;
-  bottom: -4px;
   right: -4px;
+  bottom: -4px;
+  z-index: calc(v-bind('Z_LAYERS.MAP_FLOOR') + 1);
+  padding: 2px 6px;
+  border-radius: 6px;
   background: var(--purple);
   color: var(--white);
   font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  z-index: calc(v-bind('Z_LAYERS.MAP_FLOOR') + 1);
 }
 
 .item-name {
+  color: var(--white);
   font-size: 12px;
   font-weight: bold;
   text-align: center;
-  color: var(--white);
 }
 
 .use-btn {
   padding: 6px 16px;
-  border-radius: 8px;
   border: none;
+  border-radius: 8px;
   background: var(--purple);
   color: var(--white);
   font-size: 10px;
@@ -190,20 +191,20 @@ const onItemMouseLeave = (event: MouseEvent) => {
 
 .sell-qty-selector input {
   width: 40px;
-  background: Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 30%);
   color: var(--white);
   text-align: center;
-  border-radius: 4px;
 }
 
 .sell-qty-selector button {
-  background: Rgba(255, 255, 255, 0.1);
-  border: none;
-  color: var(--white);
   width: 24px;
   height: 24px;
+  border: none;
   border-radius: 4px;
+  background: rgb(255 255 255 / 10%);
+  color: var(--white);
   cursor: pointer;
 }
 </style>

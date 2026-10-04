@@ -18,24 +18,25 @@ defineProps<{
 
 .rank-badge {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 3px;
   min-width: 32px;
-  justify-content: center;
   flex-shrink: 0;
 
   .medal {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     font-size: 14px;
     line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .pos-text {
     @include pixelated;
-    font-size: 8px;
+
     color: var(--gray-light);
+    font-size: 8px;
   }
 }
 </style>

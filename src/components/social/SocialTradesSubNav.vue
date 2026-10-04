@@ -56,40 +56,40 @@ const emit = defineEmits<{
 
 .trades-sub-nav {
   display: flex;
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px solid Rgba(199, 125, 255, 0.1);
-  padding: 4px;
-  border-radius: 12px;
   gap: 6px;
+  padding: 4px;
+  border: 1px solid rgb(199 125 255 / 10%);
+  border-radius: 12px;
+  background: rgb(0 0 0 / 25%);
   margin-bottom: 18px;
 
   button {
-    flex: 1;
-    position: relative;
-    background: transparent;
-    border: 1px solid transparent;
-    padding: 8px 12px;
-    color: Rgba(255, 255, 255, 0.5);
     @include pixelated;
-    font-size: 8px;
-    cursor: pointer;
-    border-radius: 8px;
-    
+
+    position: relative;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: rgb(255 255 255 / 50%);
+    font-size: 8px;
     font-weight: bold;
+    flex: 1;
+    cursor: pointer;
 
     &:hover:not(.active) {
-      background: Rgba(255, 255, 255, 0.03);
-      color: Rgba(255, 255, 255, 0.8);
+      background: rgb(255 255 255 / 3%);
+      color: rgb(255 255 255 / 80%);
     }
 
     &.active {
-      background: Rgba(168, 85, 247, 0.12);
+      background: rgb(168 85 247 / 12%);
       color: var(--purple-light);
-      border-color: Rgba(168, 85, 247, 0.25);
+      border-color: rgb(168 85 247 / 25%);
     }
   }
 }

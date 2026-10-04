@@ -8,6 +8,12 @@ interface CameraOptions {
   canvasHeight: number
 }
 
+const CAMERA_ZOOM_STEP = 0.25 as const
+const CAMERA_MIN_SCALE = 0.25 as const
+const CAMERA_MAX_SCALE = 2 as const
+const CAMERA_ZOOM_DURATION_SEC = 0.3 as const
+const DEFAULT_CENTER_DURATION_SEC = 0.8 as const
+
 /**
  * Composable that manages a GSAP-powered 2D camera for the adventure map canvas.
  * Provides smooth panning via `centerOnNode()` and manual drag-to-pan.
@@ -52,7 +58,7 @@ export function useAdventureCamera(options: CameraOptions) {
    * Center the camera on a specific pixel coordinate in canvas space.
    * Uses GSAP for smooth animation.
    */
-  function centerOnPoint(targetX: number, targetY: number, duration = 0.8) {
+  function centerOnPoint(targetX: number, targetY: number, duration: number = DEFAULT_CENTER_DURATION_SEC) {
     const vp = viewportRef.value
     if (!vp) return
 
@@ -139,13 +145,15 @@ export function useAdventureCamera(options: CameraOptions) {
 
   function onPointerUp() {
     isDragging.value = false
-  }  function zoomIn(getTarget?: () => { x: number, y: number } | undefined) {
-    const targetScale = Math.min(cameraScale.value + 0.25, 2)
+  }
+
+  function zoomIn(getTarget?: () => { x: number, y: number } | undefined) {
+    const targetScale = Math.min(cameraScale.value + CAMERA_ZOOM_STEP, CAMERA_MAX_SCALE)
     if (cameraScale.value === targetScale) return
     const target = getTarget ? getTarget() : null
     gsap.to(cameraScale, {
       value: targetScale,
-      duration: 0.3,
+      duration: CAMERA_ZOOM_DURATION_SEC,
       onUpdate: () => {
         if (target) jumpToPoint(target.x, target.y)
       }
@@ -153,12 +161,12 @@ export function useAdventureCamera(options: CameraOptions) {
   }
 
   function zoomOut(getTarget?: () => { x: number, y: number } | undefined) {
-    const targetScale = Math.max(cameraScale.value - 0.25, 0.25)
+    const targetScale = Math.max(cameraScale.value - CAMERA_ZOOM_STEP, CAMERA_MIN_SCALE)
     if (cameraScale.value === targetScale) return
     const target = getTarget ? getTarget() : null
     gsap.to(cameraScale, {
       value: targetScale,
-      duration: 0.3,
+      duration: CAMERA_ZOOM_DURATION_SEC,
       onUpdate: () => {
         if (target) jumpToPoint(target.x, target.y)
       }

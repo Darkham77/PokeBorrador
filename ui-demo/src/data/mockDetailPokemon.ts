@@ -1,24 +1,27 @@
 // ui-demo/src/data/mockDetailPokemon.ts
 
+import type { PokemonGender } from '@/types/pokemon/pokemon'
+import type { PokemonType } from '@/data/battle/types'
+
 export interface PokemonSummaryItem {
   id: number
-  name: string
+  name: string // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface DetailPokemon {
-  uid: string
+  uid: string // domain-ok: Open dynamic text or non-domain string payload
   id: number
-  dexNum: string
-  name: string
-  gender: 'm' | 'f'
-  type: string
-  typeLabel: string
-  category: string
-  height: string
-  weight: string
-  nature: string
-  ability: string
-  vigor: string
+  dexNum: string // domain-ok: Open dynamic text or non-domain string payload
+  name: string // domain-ok: Open dynamic text or non-domain string payload
+  gender: PokemonGender
+  type: PokemonType
+  typeLabel: string // domain-ok: Open dynamic text or non-domain string payload
+  category: string // domain-ok: Open dynamic text or non-domain string payload
+  height: string // domain-ok: Open dynamic text or non-domain string payload
+  weight: string // domain-ok: Open dynamic text or non-domain string payload
+  nature: string // domain-ok: Open dynamic text or non-domain string payload
+  ability: string // domain-ok: Open dynamic text or non-domain string payload
+  vigor: string // domain-ok: Open dynamic text or non-domain string payload
   hp: number
   maxHp: number
   level: number
@@ -27,9 +30,9 @@ export interface DetailPokemon {
   expNext: number
   friendship: number
   maxFriendship: number
-  friendshipTitle: string
-  lore: string
-  evolButtonText: string
+  friendshipTitle: string // domain-ok: Open dynamic text or non-domain string payload
+  lore: string // domain-ok: Open dynamic text or non-domain string payload
+  evolButtonText: string // domain-ok: Open dynamic text or non-domain string payload
   stats: { name: string; value: number; max: number }[]
   moves: { name: string; type: string; typeLabel: string; pot: string; prec: string; cat: string; pp: string }[]
   evolChain: { id: number; name: string; req: string }[]

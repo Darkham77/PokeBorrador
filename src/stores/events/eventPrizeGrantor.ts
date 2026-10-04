@@ -8,16 +8,21 @@ import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useUIStore } from '@/stores/ui.ts'
 import type { PendingAward } from '@/types/system/stores.ts'
+import {
+  DEFAULT_POKEMON_BOX_COUNT,
+  POKEMON_BOX_SLOT_CAPACITY,
+  MAX_POKEMON_TEAM_SIZE
+} from '@/logic/constants/gameplay.ts'
 
 export type EventPrizeGameStore = ReturnType<typeof useGameStore>
 export type EventPrizeUIStore = ReturnType<typeof useUIStore>
 
 export function getAvailablePokemonStorageSlots(gameStore: EventPrizeGameStore): number {
   const teamOccupied = gameStore.state?.team ? gameStore.state.team.filter(p => p != null).length : 0
-  const boxCount = gameStore.state?.boxCount || 4
-  const boxCapacity = boxCount * 50
+  const boxCount = gameStore.state?.boxCount || DEFAULT_POKEMON_BOX_COUNT
+  const boxCapacity = boxCount * POKEMON_BOX_SLOT_CAPACITY
   const boxOccupied = gameStore.state?.box ? gameStore.state.box.filter(p => p != null).length : 0
-  const totalCapacity = 6 + boxCapacity
+  const totalCapacity = MAX_POKEMON_TEAM_SIZE + boxCapacity
   const totalOccupied = teamOccupied + boxOccupied
   return Math.max(0, totalCapacity - totalOccupied)
 }

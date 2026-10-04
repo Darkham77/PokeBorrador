@@ -9,6 +9,8 @@ import type { BaseStats } from '../pokemon/statsMath.ts';
 import { hasMoveData } from '../../data/battle/movesData.ts';
 import type { PokemonSpeciesId } from '../../data/pokemon/pokedex.ts';
 
+const DEFAULT_FALLBACK_BASE_SPEED = 45 as const;
+
 /**
  * Resuelve las estadísticas base de una especie desde la base de datos del juego.
  */
@@ -20,7 +22,7 @@ export function resolveBaseStats(speciesId: PokemonSpeciesId): BaseStats {
     def: data.def,
     spa: data.spa ?? data.atk,
     spd: data.spd ?? data.def,
-    spe: data.spe ?? 45
+    spe: data.spe ?? DEFAULT_FALLBACK_BASE_SPEED
   };
 }
 

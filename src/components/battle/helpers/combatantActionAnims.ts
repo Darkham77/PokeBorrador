@@ -35,15 +35,21 @@ import {
   ATTACK_DEFAULT_NY_ENEMY,
 } from '@/logic/constants/animations';
 
-const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = [
-  { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
-  { t: 0.21, op: 0 }, { t: 0.29, op: 1 },
-  { t: 0.37, op: 0 }, { t: 0.45, op: 1 },
-  { t: 0.53, op: 0 }, { t: 0.61, op: 1 },
-  { t: 0.69, op: 0 }, { t: 0.77, op: 1 },
-  { t: 0.85, op: 0 }, { t: 0.93, op: 1 },
-  { t: 0.98, op: 0 }
-] as const;
+const FAINT_BLINK_INTERVAL_SEC = 0.08;
+const FAINT_BLINK_INITIAL_DELAY_SEC = 0.05;
+const FAINT_BLINK_CYCLE_COUNT = 6;
+const FAINT_FINAL_CUTOFF_SEC = 0.98;
+
+const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = ((): readonly { t: number; op: number }[] => {
+  const steps: { t: number; op: number }[] = [];
+  for (let i = 0; i < FAINT_BLINK_CYCLE_COUNT; i++) {
+    const offTime = Number((FAINT_BLINK_INITIAL_DELAY_SEC + (i * 2) * FAINT_BLINK_INTERVAL_SEC).toFixed(2));
+    const onTime = Number((offTime + FAINT_BLINK_INTERVAL_SEC).toFixed(2));
+    steps.push({ t: offTime, op: 0 }, { t: onTime, op: 1 });
+  }
+  steps.push({ t: FAINT_FINAL_CUTOFF_SEC, op: 0 });
+  return Object.freeze(steps);
+})();
 
 const VOICE_MOVE_IDS = [
   'growl', 'roar', 'sing', 'hypervoice', 'metalsound', 'perishsong', 'uproar',

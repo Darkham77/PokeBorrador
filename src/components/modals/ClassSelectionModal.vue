@@ -85,51 +85,54 @@ const handleSelect = async (id: PlayerClassId) => {
 @use "@/styles/core/tools" as *;
 
 .class-selection-container {
-  padding: 20px;
+  @include smooth-scroll;
+
   display: flex;
   flex-direction: column;
   gap: 32px;
-  overflow-y: auto;
   max-height: 85dvh;
-  @include smooth-scroll;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 .selection-header {
   text-align: center;
   .selection-subtitle {
-    font-size: 12px;
-    color: Rgba(255, 255, 255, 0.5);
     @include pixelated;
-    line-height: 1.6;
+    @include pixelated;
+
     max-width: 800px;
     margin: 0 auto;
-    @include pixelated;
+    color: rgb(255 255 255 / 50%);
+    font-size: 12px;
+    line-height: 1.6;
   }
 }
 
 .classes-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
   perspective: 1000px;
 }
 
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
   .classes-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .classes-grid { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 950px) {
+@media (width <= 950px) {
   .class-selection-container {
-    padding: 16px;
+    @include smooth-scroll;
+
     gap: 20px;
     height: 100%;
     min-height: 0;
+    padding: 16px;
     overflow-y: auto;
-    @include smooth-scroll;
   }
 }
 </style>

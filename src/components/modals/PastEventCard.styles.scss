@@ -1,22 +1,22 @@
 @use "@/styles/core/tools" as *;
 
 .past-event-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
   padding: 12px 14px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  background: Rgb(255 255 255 / 3%);
 
   &.user-won {
-    background: Rgba(34, 197, 94, 0.04);
-    border-color: Rgba(34, 197, 94, 0.3);
+    background: Rgb(34 197 94 / 4%);
+    border-color: Rgb(34 197 94 / 30%);
   }
 }
 
 .card-top {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 8px 12px;
   margin-bottom: 10px;
 }
@@ -41,46 +41,43 @@
 
   .event-title-row {
     display: flex;
-    align-items: center;
     flex-wrap: wrap;
+    align-items: center;
     gap: 6px;
     min-width: 0;
   }
 
   .event-name {
     @include pixelated;
-    font-size: 10px;
-    color: var(--white);
+
     margin: 0;
+    color: var(--white);
+    font-size: 10px;
     line-height: 1.35;
-    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .event-info-btn {
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 20px;
-    height: 20px;
     min-width: 20px;
+    height: 20px;
     min-height: 20px;
-    padding: 0;
     margin: 0;
+    padding: 0;
+    border: 1px solid Rgb(255 255 255 / 20%);
     border-radius: 4px;
-    background: Rgba(255, 255, 255, 0.08);
-    border: 1px solid Rgba(255, 255, 255, 0.2);
+    background: Rgb(255 255 255 / 8%);
     cursor: pointer;
-    box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px Rgb(0 0 0 / 30%);
     flex-shrink: 0;
 
-    .info-icon {
-      @include emoji-icon(11px);
-    }
-
     &:hover:not(:disabled) {
-      background: Rgba(255, 255, 255, 0.18);
-      border-color: Rgba(250, 204, 21, 0.6);
-      box-shadow: 0 0 8px Rgba(250, 204, 21, 0.3);
+      background: Rgb(255 255 255 / 18%);
+      border-color: Rgb(250 204 21 / 60%);
+      box-shadow: 0 0 8px Rgb(250 204 21 / 30%);
     }
 
     &:disabled,
@@ -91,13 +88,17 @@
       box-shadow: none;
       pointer-events: auto;
     }
+
+    .info-icon {
+      @include emoji-icon(11px);
+    }
   }
 
   .event-date {
-    font-size: 9px;
     color: var(--gray);
-    margin-top: 2px;
+    font-size: 9px;
     line-height: 1.35;
+    margin-top: 2px;
   }
 }
 
@@ -109,17 +110,17 @@
 
 .retro-btn {
   @include pixelated;
-  font-size: 8px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-
   @include event-award-action-buttons;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 8px;
+  cursor: pointer;
 
   &.mini {
     padding: 4px 8px;
@@ -128,22 +129,23 @@
   }
 
   &.claim-all-btn {
-    background: linear-gradient(135deg, Rgba(16, 185, 129, 0.3) 0%, Rgba(5, 150, 105, 0.4) 100%);
-    border-color: Rgba(52, 211, 153, 0.6);
+    background: Linear-Gradient(135deg, Rgb(16 185 129 / 30%) 0%, Rgb(5 150 105 / 40%) 100%);
     color: #ecfdf5;
-    box-shadow: 0 0 8px Rgba(16, 185, 129, 0.3);
     font-weight: bold;
+    border-color: Rgb(52 211 153 / 60%);
+    box-shadow: 0 0 8px Rgb(16 185 129 / 30%);
   }
 }
 
 .claimed-badge {
   @include pixelated;
-  font-size: 8px;
+
   padding: 4px 8px;
+  border: 1px solid Rgb(34 197 94 / 40%);
   border-radius: 4px;
-  background: Rgba(34, 197, 94, 0.15);
-  border: 1px solid Rgba(34, 197, 94, 0.4);
+  background: Rgb(34 197 94 / 15%);
   color: var(--green-bright);
+  font-size: 8px;
 
   &.mini {
     padding: 3px 6px;
@@ -153,34 +155,36 @@
 
 .winner-badge {
   @include pixelated;
-  font-size: 8px;
+
   padding: 4px 8px;
+  border: 1px solid Rgb(255 215 0 / 40%);
   border-radius: 4px;
-  background: Rgba(255, 215, 0, 0.15);
-  border: 1px solid Rgba(255, 215, 0, 0.4);
+  background: Rgb(255 215 0 / 15%);
   color: var(--yellow);
+  font-size: 8px;
 }
 
 .podium-box {
-  background: Rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
   padding: 8px 10px;
+  border-radius: 8px;
+  background: Rgb(0 0 0 / 30%);
 }
 
 .podium-title {
   @include pixelated;
-  font-size: 8px;
+
   color: var(--gray);
+  font-size: 8px;
+  line-height: 1.35;
   margin-bottom: 6px;
   letter-spacing: 0.5px;
-  line-height: 1.35;
 }
 
 .no-winners {
-  font-size: 9px;
-  color: var(--gray);
-  font-style: italic;
   padding: 4px 0;
+  color: var(--gray);
+  font-size: 9px;
+  font-style: italic;
 }
 
 .categories-podium-list {
@@ -196,7 +200,7 @@
 
   &.other-awards-block {
     margin-top: 4px;
-    border-top: 1px dashed Rgba(255, 255, 255, 0.12);
+    border-top: 1px dashed Rgb(255 255 255 / 12%);
     padding-top: 8px;
   }
 
@@ -204,12 +208,12 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 7px;
     color: var(--yellow);
-    letter-spacing: 0.5px;
-    border-bottom: 1px dashed Rgba(255, 255, 255, 0.08);
-    padding-bottom: 3px;
+    font-size: 7px;
     line-height: 1.35;
+    letter-spacing: 0.5px;
+    border-bottom: 1px dashed Rgb(255 255 255 / 8%);
+    padding-bottom: 3px;
 
     .cat-icon {
       font-size: 10px;
@@ -218,31 +222,31 @@
 
   .category-user-award {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
     flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
     gap: 8px 12px;
-    background: Rgba(255, 255, 255, 0.04);
-    border: 1px solid Rgba(255, 215, 0, 0.25);
-    border-radius: 6px;
     padding: 6px 10px;
+    border: 1px solid Rgb(255 215 0 / 25%);
+    border-radius: 6px;
+    background: Rgb(255 255 255 / 4%);
     margin-top: 4px;
 
     .user-award-left {
       display: flex;
-      align-items: center;
       flex-wrap: wrap;
+      align-items: center;
       gap: 8px;
       min-width: 0;
 
       .user-award-label {
-        font-size: 8px;
-        color: var(--yellow);
-        letter-spacing: 0.5px;
-        white-space: nowrap;
         display: inline-flex;
         align-items: center;
         gap: 4px;
+        color: var(--yellow);
+        font-size: 8px;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
       }
 
       .award-pills-wrap {
@@ -268,7 +272,7 @@
   width: 100%;
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .past-event-card {
     padding: 10px 8px;
   }

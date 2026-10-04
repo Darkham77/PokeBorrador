@@ -154,28 +154,28 @@ defineProps<{
 }
 
 .status-desc-box {
-  margin-top: 4px;
-  background: Rgba(0, 0, 0, 0.15);
-  border: 1px dotted Rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  padding: 4px 6px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 4px 6px;
+  border: 1px dotted rgb(255 255 255 / 8%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 15%);
+  margin-top: 4px;
 
   .stat-lbl {
+    color: rgb(255 255 255 / 50%);
     font-size: $tooltip-stat-label-size;
-    color: Rgba(255, 255, 255, 0.5);
     font-weight: bold;
     letter-spacing: 0.3px;
     text-transform: uppercase;
   }
 
   .status-desc-text {
+    color: rgb(255 255 255 / 80%);
     font-size: $tooltip-breakdown-item-size;
     line-height: 1.3;
-    color: Rgba(255, 255, 255, 0.8);
-    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
 

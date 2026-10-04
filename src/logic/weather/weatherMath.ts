@@ -28,6 +28,7 @@ import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
 const DAY_CYCLE_TOTAL_HOURS = 8;
 export const PROBABILITY_PERCENT_SCALE = 100;
 const WEATHER_SESSION_SEED_RANGE = 1000;
+const FALLBACK_WEATHER_SESSION_SEED = 42 as const;
 
 /**
  * Deterministically maps an epoch-millisecond timestamp to a day phase.
@@ -112,7 +113,7 @@ function initSessionWeatherSeed(): number {
       globalThis.crypto.getRandomValues(array);
       return array[0]! % WEATHER_SESSION_SEED_RANGE;
     }
-    return 42;
+    return FALLBACK_WEATHER_SESSION_SEED;
   };
 
   if (typeof window !== 'undefined') {

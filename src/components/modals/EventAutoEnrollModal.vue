@@ -209,14 +209,14 @@ const handleConfirm = async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 20px;
-  background: linear-gradient(180deg, Rgba(15, 23, 42, 0.98), Rgba(8, 12, 21, 0.99));
-  border: 2px solid Rgba(251, 191, 36, 0.35);
-  border-radius: 16px;
-  box-shadow: 0 16px 40px Rgba(0, 0, 0, 0.8), inset 0 1px 0 Rgba(255, 255, 255, 0.1);
-  max-width: 440px;
   width: 100%;
+  max-width: 440px;
+  padding: 20px;
+  border: 2px solid Rgb(251 191 36 / 35%);
+  border-radius: 16px;
+  background: Linear-Gradient(180deg, Rgb(15 23 42 / 98%), Rgb(8 12 21 / 99%));
   color: #f8fafc;
+  box-shadow: 0 16px 40px Rgb(0 0 0 / 80%), inset 0 1px 0 Rgb(255 255 255 / 10%);
   box-sizing: border-box;
 }
 
@@ -225,7 +225,7 @@ const handleConfirm = async () => {
   align-items: center;
   gap: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
   .header-icon {
     font-size: 28px;
@@ -237,16 +237,16 @@ const handleConfirm = async () => {
     gap: 2px;
 
     .title {
-      font-size: 11px;
-      color: #fbbf24;
-      letter-spacing: 0.5px;
       margin: 0;
+      color: #fbbf24;
+      font-size: 11px;
+      letter-spacing: 0.5px;
     }
 
     .event-name {
+      color: #e2e8f0;
       font-size: 13px;
       font-weight: bold;
-      color: #e2e8f0;
     }
   }
 }
@@ -256,17 +256,17 @@ const handleConfirm = async () => {
   align-items: center;
   gap: 14px;
   padding: 10px 14px;
-  background: Rgba(30, 41, 59, 0.6);
+  border: 1px solid Rgb(255 255 255 / 8%);
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  background: Rgb(30 41 59 / 60%);
 
   .sprite-wrap {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 60px;
     height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 
     .pokemon-sprite {
       width: 56px;
@@ -288,14 +288,14 @@ const handleConfirm = async () => {
     gap: 4px;
 
     .pokemon-name {
+      color: #fff;
       font-size: 13px;
-      color: #ffffff;
       font-weight: bold;
     }
 
     .pokemon-sub {
-      font-size: 11px;
       color: #94a3b8;
+      font-size: 11px;
       line-height: 1.3;
     }
   }
@@ -306,9 +306,9 @@ const handleConfirm = async () => {
   flex-direction: column;
   gap: 10px;
   padding: 12px 14px;
-  background: Rgba(251, 191, 36, 0.08);
-  border: 1px solid Rgba(251, 191, 36, 0.25);
+  border: 1px solid Rgb(251 191 36 / 25%);
   border-radius: 12px;
+  background: Rgb(251 191 36 / 8%);
 
   .cat-header {
     display: flex;
@@ -320,15 +320,15 @@ const handleConfirm = async () => {
     }
 
     .cat-title {
-      font-size: 11px;
       color: #fbbf24;
+      font-size: 11px;
     }
   }
 
   .score-comparison {
     display: flex;
-    align-items: center;
     justify-content: space-around;
+    align-items: center;
     gap: 10px;
 
     .score-col {
@@ -338,15 +338,15 @@ const handleConfirm = async () => {
       gap: 2px;
 
       .col-label {
-        font-size: 10px;
         color: #94a3b8;
+        font-size: 10px;
         text-transform: uppercase;
       }
 
       .col-value {
+        color: #cbd5e1;
         font-size: 14px;
         font-weight: bold;
-        color: #cbd5e1;
 
         &.highlight {
           color: #38bdf8;
@@ -355,12 +355,12 @@ const handleConfirm = async () => {
       }
 
       .delta-badge {
-        font-size: 11px;
-        font-weight: bold;
-        color: #10b981;
-        background: Rgba(16, 185, 129, 0.15);
         padding: 1px 6px;
         border-radius: 4px;
+        background: Rgb(16 185 129 / 15%);
+        color: #10b981;
+        font-size: 11px;
+        font-weight: bold;
       }
     }
 
@@ -377,8 +377,8 @@ const handleConfirm = async () => {
   gap: 8px;
 
   .selection-hint {
-    font-size: 11px;
     color: #94a3b8;
+    font-size: 11px;
   }
 
   .categories-list {
@@ -394,23 +394,23 @@ const handleConfirm = async () => {
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    background: Rgba(30, 41, 59, 0.5);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgb(255 255 255 / 10%);
     border-radius: 8px;
+    background: Rgb(30 41 59 / 50%);
     cursor: pointer;
 
     &:hover {
-      background: Rgba(30, 41, 59, 0.8);
-      border-color: Rgba(251, 191, 36, 0.4);
+      background: Rgb(30 41 59 / 80%);
+      border-color: Rgb(251 191 36 / 40%);
     }
 
     &.active {
-      background: Rgba(251, 191, 36, 0.12);
+      background: Rgb(251 191 36 / 12%);
       border-color: #fbbf24;
 
       .radio-circle {
-        border-color: #fbbf24;
         background: #fbbf24;
+        border-color: #fbbf24;
         box-shadow: inset 0 0 0 2px #0f172a;
       }
     }
@@ -422,16 +422,16 @@ const handleConfirm = async () => {
       .radio-circle {
         width: 14px;
         height: 14px;
-        border-radius: 50%;
         border: 2px solid #64748b;
+        border-radius: 50%;
       }
     }
 
     .card-info {
-      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 2px;
+      flex: 1;
 
       .card-title-row {
         display: flex;
@@ -443,14 +443,14 @@ const handleConfirm = async () => {
         }
 
         .cat-title {
-          font-size: 11px;
           color: #f1f5f9;
+          font-size: 11px;
         }
       }
 
       .cat-score {
-        font-size: 10px;
         color: #94a3b8;
+        font-size: 10px;
 
         .score-num {
           color: #38bdf8;
@@ -461,12 +461,12 @@ const handleConfirm = async () => {
 
     .card-delta {
       .delta-pill {
-        font-size: 10px;
-        font-weight: bold;
-        color: #10b981;
-        background: Rgba(16, 185, 129, 0.15);
         padding: 2px 6px;
         border-radius: 4px;
+        background: Rgb(16 185 129 / 15%);
+        color: #10b981;
+        font-size: 10px;
+        font-weight: bold;
       }
     }
   }
@@ -478,16 +478,16 @@ const handleConfirm = async () => {
   margin-top: 4px;
 
   .enroll-confirm-btn {
-    flex: 2;
     padding: 10px 14px;
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #0f172a;
-    font-weight: bold;
-    font-size: 9px;
-    border-radius: 8px;
     border: none;
+    border-radius: 8px;
+    background: Linear-Gradient(135deg, #f59e0b, #d97706);
+    color: #0f172a;
+    font-size: 9px;
+    font-weight: bold;
+    flex: 2;
     cursor: pointer;
-    box-shadow: 0 4px 12px Rgba(245, 158, 11, 0.4);
+    box-shadow: 0 4px 12px Rgb(245 158 11 / 40%);
 
     &:disabled {
       opacity: 0.6;
@@ -496,17 +496,17 @@ const handleConfirm = async () => {
   }
 
   .enroll-dismiss-btn {
-    flex: 1;
     padding: 10px 14px;
-    background: Rgba(255, 255, 255, 0.08);
+    border: 1px solid Rgb(255 255 255 / 12%);
+    border-radius: 8px;
+    background: Rgb(255 255 255 / 8%);
     color: #94a3b8;
     font-size: 9px;
-    border-radius: 8px;
-    border: 1px solid Rgba(255, 255, 255, 0.12);
+    flex: 1;
     cursor: pointer;
 
     &:hover {
-      background: Rgba(255, 255, 255, 0.12);
+      background: Rgb(255 255 255 / 12%);
       color: #cbd5e1;
     }
   }

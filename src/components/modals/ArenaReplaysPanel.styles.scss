@@ -13,41 +13,44 @@ $gray: #94a3b8;
     display: flex;
     gap: 8px;
     padding: 4px;
-    background: Rgba(0, 0, 0, 0.25);
-    border: 1px solid Rgba(255, 255, 255, 0.08);
+    border: 1px solid Rgb(255 255 255 / 8%);
     border-radius: 12px;
+    background: Rgb(0 0 0 / 25%);
 
     .sub-tab-btn {
-      flex: 1;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 6px;
       padding: 8px 12px;
-      background: transparent;
       border: 1px solid transparent;
       border-radius: 8px;
+      background: transparent;
       color: $gray;
       font-family: 'Pokemon FireRed LeafGreen', monospace;
       font-size: 10px;
+      flex: 1;
       cursor: pointer;
 
       &.active {
-        background: Rgba(59, 130, 246, 0.2);
-        border-color: Rgba(59, 130, 246, 0.5);
-        color: #ffffff;
+        background: Rgb(59 130 246 / 20%);
+        color: #fff;
+        border-color: Rgb(59 130 246 / 50%);
       }
     }
   }
 
-  .replay-search-card,
-  .live-matches-card,
-  .recent-replays-card {
-    background: Rgba(255, 255, 255, 0.02);
-    border: 1px solid Rgba(255, 255, 255, 0.07);
-    border-radius: 14px;
+  %arena-card-base {
     padding: 16px;
-    box-shadow: inset 0 0 12px Rgba(255, 255, 255, 0.02);
+    border: 1px solid Rgb(255 255 255 / 7%);
+    border-radius: 14px;
+    background: Rgb(255 255 255 / 2%);
+    box-shadow: inset 0 0 12px Rgb(255 255 255 / 2%);
+  }
+
+  .replay-search-card,
+  .recent-replays-card {
+    @extend %arena-card-base;
   }
 
   .card-header {
@@ -57,9 +60,9 @@ $gray: #94a3b8;
     margin-bottom: 14px;
 
     .header-icon {
-      font-size: 16px;
       display: inline-flex;
       align-items: center;
+      font-size: 16px;
     }
 
     .header-text {
@@ -69,11 +72,12 @@ $gray: #94a3b8;
     }
 
     .panel-subtitle {
+      @include pixelated;
+
+      margin: 0;
+      color: var(--white, #fff);
       font-size: 9px;
       font-weight: 800;
-      color: var(--white, #fff);
-      margin: 0;
-      @include pixelated;
       letter-spacing: 0.5px;
 
       &.live-subtitle {
@@ -82,67 +86,69 @@ $gray: #94a3b8;
     }
 
     .panel-desc {
-      font-size: 8px;
-      color: $gray;
       margin: 0;
+      color: $gray;
+      font-size: 8px;
       line-height: 1.4;
     }
   }
 
   .search-bar {
     display: flex;
-    gap: 10px;
     align-items: center;
+    gap: 10px;
 
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
       flex-direction: column;
       align-items: stretch;
     }
 
     .search-input-wrap {
-      flex: 1;
+      position: relative;
       display: flex;
       align-items: center;
-      position: relative;
+      flex: 1;
 
       .input-prefix-icon {
         position: absolute;
         left: 10px;
-        font-size: 11px;
-        pointer-events: none;
         display: inline-flex;
         align-items: center;
+        font-size: 11px;
+        pointer-events: none;
       }
 
       .code-input {
+        @include pixelated;
+
         width: 100%;
         height: 36px;
         padding: 0 12px 0 32px;
-        background: Rgba(0, 0, 0, 0.5);
-        border: 1px solid Rgba(255, 255, 255, 0.18);
+        border: 1px solid Rgb(255 255 255 / 18%);
         border-radius: 8px;
+        background: Rgb(0 0 0 / 50%);
         color: var(--yellow, #ffd700);
-        @include pixelated;
         font-size: 10px;
         font-weight: 700;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        box-shadow: inset 0 2px 4px Rgba(0, 0, 0, 0.5);
+        box-shadow: inset 0 2px 4px Rgb(0 0 0 / 50%);
 
         &:focus {
           outline: none;
           border-color: var(--blue-light, #29b6f6);
-          box-shadow: 0 0 10px Rgba(41, 182, 246, 0.25), inset 0 2px 4px Rgba(0, 0, 0, 0.5);
+          box-shadow: 0 0 10px Rgb(41 182 246 / 25%), inset 0 2px 4px Rgb(0 0 0 / 50%);
         }
       }
     }
 
     .search-btn {
       @include btn-vicio('primary', 'md');
-      font-size: 8px;
+
       gap: 6px;
-      padding: 0 18px;
       height: 36px;
+      padding: 0 18px;
+      font-size: 8px;
       white-space: nowrap;
 
       &:disabled {
@@ -153,81 +159,86 @@ $gray: #94a3b8;
   }
 
   .live-matches-card {
-    background: Rgba(239, 68, 68, 0.04);
-    border-color: Rgba(239, 68, 68, 0.2);
+    @extend %arena-card-base;
+
+    background: Rgb(239 68 68 / 4%);
+    border-color: Rgb(239 68 68 / 20%);
 
     .live-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
+      grid-template-columns: repeat(2, 1fr);
 
-      @media (max-width: 600px) {
+      @media (width <= 600px) {
         grid-template-columns: 1fr;
       }
     }
 
     .live-match-item {
-      background: Rgba(0, 0, 0, 0.35);
-      border: 1px solid Rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 10px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 10px 12px;
+      border: 1px solid Rgb(255 255 255 / 8%);
+      border-radius: 8px;
+      background: Rgb(0 0 0 / 35%);
 
       .trainers-row {
+        @include pixelated;
+
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 8.5px;
         color: var(--white, #fff);
-        @include pixelated;
+        font-size: 8.5px;
 
         .vs-tag {
-          font-size: 7.5px;
           color: $gray;
+          font-size: 7.5px;
         }
       }
 
       .turn-tag {
-        font-size: 7.5px;
-        color: $gray;
         @include pixelated;
+
+        color: $gray;
+        font-size: 7.5px;
       }
 
       .spectate-btn {
         @include btn-vicio('danger', 'sm');
-        font-size: 7.5px;
-        padding: 4px 10px;
+
         gap: 4px;
+        padding: 4px 10px;
+        font-size: 7.5px;
       }
     }
   }
 
   .replays-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
 
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
       grid-template-columns: 1fr;
     }
 
     .replay-item-card {
-      background: Rgba(0, 0, 0, 0.35);
-      border: 1px solid Rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 8px;
+      padding: 12px;
+      border: 1px solid Rgb(255 255 255 / 8%);
+      border-radius: 10px;
+      background: Rgb(0 0 0 / 35%);
       cursor: pointer;
-      box-shadow: inset 0 0 8px Rgba(0, 0, 0, 0.2);
+      box-shadow: inset 0 0 8px Rgb(0 0 0 / 20%);
 
       &:hover {
-        background: Rgba(255, 255, 255, 0.04);
+        background: Rgb(255 255 255 / 4%);
         border-color: var(--yellow, #ffd700);
-        box-shadow: 0 0 12px Rgba(255, 215, 0, 0.15);
+        box-shadow: 0 0 12px Rgb(255 215 0 / 15%);
       }
 
       .replay-top {
@@ -236,17 +247,19 @@ $gray: #94a3b8;
         align-items: center;
 
         .code-badge {
-          color: var(--yellow, #ffd700);
           @include pixelated;
+
+          color: var(--yellow, #ffd700);
           font-size: 8px;
           font-weight: 700;
           letter-spacing: 0.5px;
         }
 
         .turns-badge {
+          @include pixelated;
+
           color: $gray;
           font-size: 7.5px;
-          @include pixelated;
         }
       }
 
@@ -258,28 +271,31 @@ $gray: #94a3b8;
         font-weight: 700;
 
         .trainer {
-          color: var(--white, #fff);
+          @include pixelated;
+
           max-width: 42%;
+          color: var(--white, #fff);
+          line-height: 1.45;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          @include pixelated;
-          line-height: 1.45;
           padding-bottom: 2px;
         }
 
         .vs {
+          @include pixelated;
+
           color: $gray;
           font-size: 7.5px;
-          @include pixelated;
         }
       }
 
       .watch-replay-btn {
         @include btn-vicio('secondary', 'sm', true);
-        font-size: 7.5px;
-        padding: 5px 10px;
+
         gap: 6px;
+        padding: 5px 10px;
+        font-size: 7.5px;
         margin-top: 2px;
       }
     }
@@ -288,46 +304,47 @@ $gray: #94a3b8;
   .empty-replays-box {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    text-align: center;
-    padding: 32px 16px;
-    background: Rgba(0, 0, 0, 0.2);
-    border: 1px dashed Rgba(255, 255, 255, 0.12);
-    border-radius: 12px;
+    align-items: center;
     gap: 8px;
+    padding: 32px 16px;
+    border: 1px dashed Rgb(255 255 255 / 12%);
+    border-radius: 12px;
+    background: Rgb(0 0 0 / 20%);
+    text-align: center;
 
     .empty-icon-halo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 48px;
       height: 48px;
+      border: 1px solid Rgb(255 255 255 / 8%);
       border-radius: 50%;
-      background: Rgba(255, 255, 255, 0.03);
-      border: 1px solid Rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: Rgb(255 255 255 / 3%);
       margin-bottom: 4px;
 
       .empty-icon {
         font-size: 22px;
-        filter: Drop-Shadow(0 0 10px Rgba(59, 130, 246, 0.3));
+        filter: Drop-Shadow(0 0 10px Rgb(59 130 246 / 30%));
       }
     }
 
     .empty-title {
+      @include pixelated;
+
       margin: 0;
+      color: var(--white, #fff);
       font-size: 9px;
       font-weight: 800;
-      color: var(--white, #fff);
-      @include pixelated;
       letter-spacing: 0.5px;
     }
 
     .empty-desc {
-      margin: 0;
-      font-size: 8px;
-      color: $gray;
       max-width: 360px;
+      margin: 0;
+      color: $gray;
+      font-size: 8px;
       line-height: 1.5;
     }
   }

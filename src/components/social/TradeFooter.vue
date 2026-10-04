@@ -61,6 +61,7 @@ const handleGiftChange = (e: Event) => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .trade-footer-controls {
   display: flex;
   flex-direction: column;
@@ -71,10 +72,10 @@ const handleGiftChange = (e: Event) => {
 .trade-message-input {
   width: 100%;
   height: 60px;
-  background: Rgba(0,0,0,0.3);
-  border: 1px solid Rgba(255,255,255,0.1);
-  border-radius: 14px;
   padding: 12px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 14px;
+  background: Rgb(0 0 0 / 30%);
   color: $white;
   font-size: 12px;
   resize: none;
@@ -88,7 +89,7 @@ const handleGiftChange = (e: Event) => {
   align-items: center;
   gap: 20px;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     flex-direction: column;
     align-items: stretch;
   }
@@ -100,25 +101,26 @@ const handleGiftChange = (e: Event) => {
   gap: 12px; 
   cursor: pointer;
   input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--purple); }
-  .toggle-label { font-size: 10px; @include pixelated; color: $white; }
+  .toggle-label { @include pixelated; color: $white; font-size: 10px; }
 }
 
 .send-offer-btn {
+  @include pixelated;
+
   padding: 16px 32px;
-  background: Linear-Gradient(135deg, var(--purple), Rgba(142, 36, 170, 1));
   border: none;
   border-radius: 14px;
+  background: Linear-Gradient(135deg, var(--purple), Rgb(142 36 170 / 100%));
   color: $white;
-  @include pixelated;
   font-size: 9px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 15px Rgba(168, 85, 247, 0.3);
+  box-shadow: 0 4px 15px Rgb(168 85 247 / 30%);
   
 
   &:hover:not(:disabled) {
     transform: Translatey(-2px);
-    box-shadow: 0 6px 20px Rgba(168, 85, 247, 0.5);
+    box-shadow: 0 6px 20px Rgb(168 85 247 / 50%);
     will-change: transform, filter, opacity;
   filter: Brightness(1.1);
   }

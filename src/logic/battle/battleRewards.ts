@@ -13,6 +13,9 @@ export function calculateBaseExp(enemyPoke: Pokemon) {
   return Math.floor(enemyPoke.level * 4)
 }
 
+const TRAINER_OR_GYM_MONEY_MULTIPLIER = 20 as const;
+const WILD_BATTLE_MONEY_MULTIPLIER = 2 as const;
+
 export interface RewardOptions {
   isActive?: boolean;
   classMult?: number;
@@ -78,7 +81,7 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
 
 export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = {}) {
   const { bcMult = 1, totalMoneyMult = 1, isTrainer = false, isGym = false } = options
-  const multiplier = (isTrainer || isGym) ? 20 : 2
+  const multiplier = (isTrainer || isGym) ? TRAINER_OR_GYM_MONEY_MULTIPLIER : WILD_BATTLE_MONEY_MULTIPLIER
   const baseMoney = enemyPoke.level * multiplier * bcMult
   return Math.floor(baseMoney * totalMoneyMult)
 }

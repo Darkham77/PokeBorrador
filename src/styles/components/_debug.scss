@@ -12,11 +12,12 @@
   &.full-width { width: 100%; }
   
   label {
+    @include pixelated;
+    @include pixelated;
+
     display: block;
-    @include pixelated;
-    @include pixelated;
+    color: rgb(148 163 184 / 100%);
     font-size: 7px;
-    color: Rgba(148, 163, 184, 1);
     margin-bottom: 12px;
     text-transform: uppercase;
   }
@@ -24,8 +25,8 @@
 
 .input-group {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 
   &.vertical {
     flex-direction: column;
@@ -33,30 +34,31 @@
   }
 
   input {
-    flex: 1;
-    background: Rgba(0, 0, 0, 0.4);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    color: var(--white);
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 12px;
     height: 32px;
+    padding: 8px 12px;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 10px;
+    background: rgb(0 0 0 / 40%);
+    color: var(--white);
+    font-size: 12px;
+    flex: 1;
     
 
     &:focus {
       outline: none;
-      border-color: Rgba(124, 58, 237, 1);
-      box-shadow: 0 0 15px Rgba(124, 58, 237, 0.2);
+      border-color: rgb(124 58 237 / 100%);
+      box-shadow: 0 0 15px rgb(124 58 237 / 20%);
     }
   }
 
   button {
     @include btn-vicio('primary', 'sm');
-    height: 32px;
-    min-width: 80px;
+
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    min-width: 80px;
+    height: 32px;
   }
 }
 
@@ -67,23 +69,24 @@
   
   &.wrap {
     button {
-      flex: 0 0 auto;
       width: auto;
       min-width: 60px;
       padding: 0 16px;
+      flex: 0 0 auto;
     }
   }
 
   button {
     @include btn-vicio-base;
-    @include btn-vicio-size('sm');
-    flex: 0 0 auto;
+    @include btn-vicio-size('sm'); 
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: auto;
     min-width: 60px;
-    height: 30px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    height: 30px;
+    flex: 0 0 auto;
     
     &:not([class*="btn-vicio-"]) {
       @include btn-vicio-variant('secondary', 'sm');
@@ -102,33 +105,34 @@
 }
 
 .full-btn {
+  @include pixelated;
+  @include pixelated;
+
   width: 100%;
   padding: 14px;
-  background: Rgba(124, 58, 237, 0.05);
-  border: 1px dashed Rgba(124, 58, 237, 0.3);
-  color: Rgba(192, 132, 252, 1);
+  border: 1px dashed rgb(124 58 237 / 30%);
   border-radius: 16px;
-  @include pixelated;
-  @include pixelated;
+  background: rgb(124 58 237 / 5%);
+  color: rgb(192 132 252 / 100%);
   font-size: 7px;
   cursor: pointer;
   margin-top: 10px;
   
 
-  &:hover { background: Rgba(124, 58, 237, 0.1); border-style: solid; color: var(--white); }
+  &:hover { background: rgb(124 58 237 / 10%); color: var(--white); border-style: solid; }
 }
 
 .debug-info-box {
-  background: Rgba(0, 0, 0, 0.3);
-  padding: 14px;
-  border-radius: 16px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  margin-top: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 16px;
+  background: rgb(0 0 0 / 30%);
+  color: rgb(148 163 184 / 100%);
   font-size: 11px;
-  color: Rgba(148, 163, 184, 1);
+  margin-top: 10px;
 
-  strong { color: Rgba(251, 191, 36, 1); @include pixelated; @include pixelated; font-size: 8px; }
+  strong { @include pixelated; @include pixelated; color: rgb(251 191 36 / 100%); font-size: 8px; }
 }

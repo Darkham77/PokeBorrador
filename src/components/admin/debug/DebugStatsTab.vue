@@ -23,7 +23,8 @@ const game = useGameStore()
 const pvp = usePvPStore()
 const gymsStore = useGymsStore()
 
-const debugMoney = ref(10000)
+const DEFAULT_DEBUG_MONEY_INPUT = 10000 as const
+const debugMoney = ref(DEFAULT_DEBUG_MONEY_INPUT)
 const debugElo = ref(pvp.elo)
 const debugLevel = ref(game.state.trainerLevel)
 const debugBattleCoins = ref(game.state.battleCoins || 0)
@@ -264,7 +265,8 @@ function setFaction(f: string) {
 
 .badges-debug-card {
   grid-column: span 2;
-  @media (max-width: 768px) {
+
+  @media (width <= 768px) {
     grid-column: span 1;
   }
 
@@ -287,13 +289,14 @@ function setFaction(f: string) {
     display: flex;
     align-items: center;
     gap: 4px;
-    background: Rgba(0, 0, 0, 0.3);
     padding: 2px 4px;
+    border: 1px solid Rgb(255 255 255 / 5%);
     border-radius: 6px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+    background: Rgb(0 0 0 / 30%);
 
     span {
       @include pixelated;
+
       font-size: 5px;
       opacity: 0.5;
       margin-right: 2px;
@@ -302,43 +305,44 @@ function setFaction(f: string) {
 
   .sim-diff-btn {
     @include pixelated;
-    font-size: 6px;
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--gray);
-    cursor: pointer;
     
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    width: 18px;
+    height: 18px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--gray);
+    font-size: 6px;
+    cursor: pointer;
 
     &.active {
-      background: Rgba(255, 255, 255, 0.05);
+      background: Rgb(255 255 255 / 5%);
       color: var(--white);
-      &.easy { border-color: Rgba(34, 197, 94, 0.5); color: #22c55e; }
-      &.normal { border-color: Rgba(255, 215, 0, 0.5); color: #ffd700; }
-      &.hard { border-color: Rgba(239, 68, 68, 0.5); color: #ef4444; }
+      &.easy { color: #22c55e; border-color: Rgb(34 197 94 / 50%); }
+      &.normal { color: #ffd700; border-color: Rgb(255 215 0 / 50%); }
+      &.hard { color: #ef4444; border-color: Rgb(239 68 68 / 50%); }
     }
   }
 
   .reset-btn-debug {
     @include pixelated;
-    font-size: 6px;
-    background: Rgba(239, 68, 68, 0.15);
-    border: 1px solid Rgba(239, 68, 68, 0.3);
-    color: #ff6b6b;
+
     padding: 4px 10px;
+    border: 1px solid Rgb(239 68 68 / 30%);
     border-radius: 6px;
+    background: Rgb(239 68 68 / 15%);
+    color: #ff6b6b;
+    font-size: 6px;
     cursor: pointer;
     
 
     &:hover {
-      background: Rgba(239, 68, 68, 0.3);
-      border-color: #ff6b6b;
+      background: Rgb(239 68 68 / 30%);
       transform: Translatey(-1px);
+      border-color: #ff6b6b;
     }
     
     &:active {
@@ -351,48 +355,47 @@ function setFaction(f: string) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
   width: 100%;
+  margin-top: 8px;
 }
 
 .badge-debug-item {
-  flex: 1 1 calc(12.5% - 8px);
-  min-width: 65px;
-  max-width: 95px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  align-items: center;
+  min-width: 65px;
+  max-width: 95px;
   padding: 8px 4px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  background: Rgb(255 255 255 / 3%);
+  opacity: 0.45;
+  flex: 1 1 calc(12.5% - 8px);
   cursor: pointer;
-  
   user-select: none;
   filter: Grayscale(100%);
   will-change: filter;
-  opacity: 0.45;
   box-sizing: border-box;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.08);
-    border-color: Rgba(255, 255, 255, 0.2);
-    transform: Translatey(-2px);
+    background: Rgb(255 255 255 / 8%);
     opacity: 0.75;
+    transform: Translatey(-2px);
+    border-color: Rgb(255 255 255 / 20%);
     filter: none;
   }
 
   &.active {
-    filter: none;
+    background: Rgb(255 215 0 / 8%);
     opacity: 1;
-    background: Rgba(255, 215, 0, 0.08);
-    border-color: Rgba(255, 215, 0, 0.45);
-    box-shadow: 0 0 10px Rgba(255, 215, 0, 0.15), inset 0 0 4px Rgba(255, 215, 0, 0.1);
+    filter: none;
+    border-color: Rgb(255 215 0 / 45%);
+    box-shadow: 0 0 10px Rgb(255 215 0 / 15%), inset 0 0 4px Rgb(255 215 0 / 10%);
 
     .badge-lbl {
       color: #ffd700;
-      text-shadow: 0 0 6px Rgba(255, 215, 0, 0.3);
+      text-shadow: 0 0 6px Rgb(255 215 0 / 30%);
     }
   }
 
@@ -404,11 +407,11 @@ function setFaction(f: string) {
   }
 
   .badge-lbl {
+    color: Rgb(255 255 255 / 50%);
     font-family: var(--font-pixel, monospace);
     font-size: 8px;
-    text-transform: uppercase;
-    color: Rgba(255, 255, 255, 0.5);
     text-align: center;
+    text-transform: uppercase;
     white-space: nowrap;
     margin-top: 2px;
   }

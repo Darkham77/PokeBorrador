@@ -4,11 +4,10 @@
 .spawns-report-scroll {
   display: flex;
   flex-direction: column;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgb(255 255 255 / 8%);
   border-radius: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  background: Rgba(0, 0, 0, 0.2);
+  background: Rgb(0 0 0 / 20%);
+  overflow: auto hidden;
   overscroll-behavior-x: contain !important;
   touch-action: pan-x pan-y !important;
   padding-bottom: 10px; // Espacio para que el scrollbar horizontal no se reporte
@@ -18,14 +17,14 @@
   }
 
   &::-webkit-scrollbar-track {
-    background: Rgba(0, 0, 0, 0.2);
     border-radius: 6px;
+    background: Rgb(0 0 0 / 20%);
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--modal-accent, var(--yellow-dark, #8b6d11));
+    border: 1px solid Rgb(255 255 255 / 10%);
     border-radius: 6px;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    background: var(--modal-accent, var(--yellow-dark, #8b6d11));
 
     &:hover {
       filter: Brightness(1.2);
@@ -34,20 +33,20 @@
 
   @supports (scrollbar-width: thin) {
     scrollbar-width: thin;
-    scrollbar-color: var(--modal-accent, var(--yellow-dark, #8b6d11)) Rgba(0, 0, 0, 0.2);
+    scrollbar-color: var(--modal-accent, var(--yellow-dark, #8b6d11)) Rgb(0 0 0 / 20%);
   }
 }
 
 .report-table-header {
   display: flex;
+  min-width: 680px; // Evita que se encojan las columnas en mobile
   padding: 12px 16px;
-  background: Rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
+  background: Rgb(255 255 255 / 3%);
+  color: var(--yellow);
   font-family: var(--font-pixel);
   font-size: 9px;
-  color: var(--yellow);
+  border-bottom: 1px solid Rgb(255 255 255 / 8%);
   text-transform: uppercase;
-  min-width: 680px; // Evita que se encojan las columnas en mobile
 }
 
 .report-rows {
@@ -57,16 +56,16 @@
 }
 
 .report-row {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 45px;
   display: flex;
   align-items: center;
-  padding: 8px 16px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.04);
   min-width: 680px; // Mantiene el mismo ancho mínimo
+  padding: 8px 16px;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 45px;
+  border-bottom: 1px solid Rgb(255 255 255 / 4%);
 
   &:hover {
-    background-color: Rgba(255, 255, 255, 0.02);
+    background-color: Rgb(255 255 255 / 2%);
   }
 
   &.is-unseen {
@@ -74,8 +73,8 @@
   }
 
   &.blocked {
+    background: Rgb(0 0 0 / 30%);
     opacity: 0.4;
-    background: Rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -107,8 +106,8 @@
 
 .col-stats {
   width: 10%;
-  flex-shrink: 0;
   text-align: center;
+  flex-shrink: 0;
 }
 
 // Cell styling
@@ -129,38 +128,40 @@
 // Mini Sprite & Caught indicator
 .mini-sprite-wrapper {
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 48px;
   height: 48px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(255 255 255 / 3%);
+  flex-shrink: 0;
   margin-right: 12px;
 
   .mini-sprite {
+    @include sprite-render;
+
     width: 40px;
     height: 40px;
     object-fit: contain;
-    @include sprite-render;
 
     &.spawn-silhouette {
       @include pokemon-silhouette;
+
       opacity: 0.55;
     }
   }
 
   .unknown-placeholder {
-    font-family: var(--font-pixel);
-    font-size: 16px;
-    color: var(--gray);
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
+    color: var(--gray);
+    font-family: var(--font-pixel);
+    font-size: 16px;
   }
 }
 
@@ -171,21 +172,21 @@
 }
 
 .poke-name {
+  color: #fff;
   font-family: var(--font-pixel);
   font-size: 10px;
-  color: #fff;
-  letter-spacing: 0.5px;
   line-height: 1.4;
+  letter-spacing: 0.5px;
 }
 
 .unseen-tag {
-  font-size: 7px;
-  font-family: var(--font-pixel);
-  color: #ff453a;
-  background: Rgba(255, 69, 58, 0.1);
+  width: fit-content;
   padding: 1px 4px;
   border-radius: 2px;
-  width: fit-content;
+  background: Rgb(255 69 58 / 10%);
+  color: #ff453a;
+  font-family: var(--font-pixel);
+  font-size: 7px;
 }
 
 .hidden-info-placeholder {
@@ -196,70 +197,70 @@
 
 // Status Tags
 .status-tag {
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
   font-family: var(--font-pixel);
   font-size: 8px;
-  padding: 4px 8px;
-  border-radius: 4px;
   text-transform: uppercase;
-  border: 1px solid transparent;
 
   &.common {
-    background: Rgba(134, 134, 139, 0.1);
+    background: Rgb(134 134 139 / 10%);
     color: var(--gray);
-    border-color: Rgba(134, 134, 139, 0.2);
+    border-color: Rgb(134 134 139 / 20%);
   }
 
   &.visitor {
-    background: Rgba(191, 90, 242, 0.15);
+    background: Rgb(191 90 242 / 15%);
     color: #bf5af2;
-    border-color: Rgba(191, 90, 242, 0.3);
-    box-shadow: 0 0 8px Rgba(191, 90, 242, 0.2);
+    border-color: Rgb(191 90 242 / 30%);
+    box-shadow: 0 0 8px Rgb(191 90 242 / 20%);
   }
 
   &.exclusive {
-    background: Rgba(255, 214, 10, 0.15);
+    background: Rgb(255 214 10 / 15%);
     color: #ffd60a;
-    border-color: Rgba(255, 214, 10, 0.3);
-    box-shadow: 0 0 8px Rgba(255, 214, 10, 0.2);
+    border-color: Rgb(255 214 10 / 30%);
+    box-shadow: 0 0 8px Rgb(255 214 10 / 20%);
   }
 
   &.buffed {
-    background: Rgba(50, 215, 75, 0.15);
+    background: Rgb(50 215 75 / 15%);
     color: #32d74b;
-    border-color: Rgba(50, 215, 75, 0.3);
+    border-color: Rgb(50 215 75 / 30%);
   }
 
   &.debuffed {
-    background: Rgba(255, 69, 58, 0.15);
+    background: Rgb(255 69 58 / 15%);
     color: #ff453a;
-    border-color: Rgba(255, 69, 58, 0.3);
+    border-color: Rgb(255 69 58 / 30%);
   }
 
   &.blocked {
-    background: Rgba(0, 0, 0, 0.5);
+    background: Rgb(0 0 0 / 50%);
     color: #86868b;
-    border-color: Rgba(255, 255, 255, 0.1);
+    border-color: Rgb(255 255 255 / 10%);
   }
 
   &.event-boosted {
-    background: Rgba(244, 114, 182, 0.2);
+    background: Rgb(244 114 182 / 20%);
     color: #f472b6;
-    border-color: Rgba(244, 114, 182, 0.4);
-    box-shadow: 0 0 8px Rgba(244, 114, 182, 0.25);
     font-weight: bold;
+    border-color: Rgb(244 114 182 / 40%);
+    box-shadow: 0 0 8px Rgb(244 114 182 / 25%);
   }
 }
 
 // Multipliers
 .mult-value {
-  font-family: var(--font-pixel);
-  font-size: 8px;
   padding: 2px 6px;
   border-radius: 3px;
+  font-family: var(--font-pixel);
+  font-size: 8px;
 
   &.visitor-text, &.exclusive-text {
+    background: Rgb(255 255 255 / 10%);
     color: #fff;
-    background: Rgba(255, 255, 255, 0.1);
   }
 
   &.buffed-text {
@@ -297,16 +298,16 @@
   align-items: center;
 
   .active-prob {
+    color: #fff;
     font-family: var(--font-pixel);
     font-size: 8px; // Reducido para que entre sin saltar de línea
-    color: #fff;
     white-space: nowrap; // Evita que se divida en 2 renglones
 
     .diff-text {
+      display: inline-block;
       font-size: 7px;
       white-space: nowrap;
       margin-left: 2px;
-      display: inline-block;
 
       &.boosted {
         color: #30d158;
@@ -319,45 +320,45 @@
 }
 
 .prob-visual-progress {
-  height: 6px;
-  background: Rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-  overflow: hidden;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
   display: flex;
+  height: 6px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: 3px;
+  background: Rgb(255 255 255 / 5%);
+  overflow: hidden;
 
   .fill {
     height: 100%;
     
     &.base-fill {
-      background: #3a86ff; // Azul base para probabilidad estándar no alterada
       border-radius: 3px 0 0 3px;
+      background: #3a86ff; // Azul base para probabilidad estándar no alterada
     }
 
     &.base-fill-reduced {
-      background: #3a86ff; // Azul base reducido por penalización
       border-radius: 3px 0 0 3px;
+      background: #3a86ff; // Azul base reducido por penalización
     }
 
     &.extra-fill {
-      background: #30d158; // Verde para la probabilidad extra ganada por clima
       border-radius: 0 3px 3px 0;
-      box-shadow: 0 0 4px Rgba(48, 209, 88, 0.5);
+      background: #30d158; // Verde para la probabilidad extra ganada por clima
+      box-shadow: 0 0 4px Rgb(48 209 88 / 50%);
     }
 
     &.lost-fill {
-      background: Rgba(255, 69, 58, 0.45); // Rojo translúcido indicando probabilidad perdida
       border-radius: 0 3px 3px 0;
-      border-left: 1px dashed Rgba(255, 69, 58, 0.6);
+      background: Rgb(255 69 58 / 45%); // Rojo translúcido indicando probabilidad perdida
+      border-left: 1px dashed Rgb(255 69 58 / 60%);
     }
   }
 }
 
 // Stats Column
 .stat-total-value {
+  color: #fff;
   font-family: var(--font-pixel);
   font-size: 10px;
-  color: #fff;
 }
 
 // Encounter probability color utilities
@@ -375,20 +376,20 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: #fff;
   font-family: var(--font-pixel);
   font-size: 10px;
-  color: #fff;
+  line-height: 1.35;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
   text-transform: uppercase;
-  line-height: 1.35;
 
   .title-emoji {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     font-size: 14px;
     line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .title-text {
@@ -402,11 +403,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  color: var(--gray);
   font-family: var(--font-pixel);
   font-size: 9px;
-  color: var(--gray);
-  margin-left: 8px;
   opacity: 0.85;
+  margin-left: 8px;
 
   &.bonus-text {
     color: #30d158;

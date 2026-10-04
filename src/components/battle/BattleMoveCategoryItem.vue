@@ -37,11 +37,13 @@ defineProps<{
 
   .cat-short { 
     display: none; 
-    @media (max-width: 560px) { display: inline; }
+
+    @media (width <= 560px) { display: inline; }
   }
   .cat-full { 
     display: inline; 
-    @media (max-width: 560px) { display: none; }
+
+    @media (width <= 560px) { display: none; }
   }
 }
 
@@ -52,23 +54,25 @@ defineProps<{
   gap: 2px;
   
   .mv-pp-label { 
-    font-size: 6px; 
     color: var(--yellow); 
+    font-size: 6px; 
     opacity: 0.7; 
-    @media (max-width: 560px) { font-size: 5px; opacity: 0.6; min-width: 25px; }
+
+    @media (width <= 560px) { min-width: 25px; font-size: 5px; opacity: 0.6; }
   }
   .mv-pp-val { 
-    font-size: 7px; 
     color: $white; 
+    font-size: 7px; 
     font-weight: 900; 
-    @media (max-width: 560px) { font-size: 6px; }
+
+    @media (width <= 560px) { font-size: 6px; }
   }
 
-  @media (max-width: 560px) {
-    margin-top: 4px;
-    align-items: flex-start;
+  @media (width <= 560px) {
     flex-direction: row;
+    align-items: flex-start;
     gap: 4px;
+    margin-top: 4px;
   }
 }
 </style>

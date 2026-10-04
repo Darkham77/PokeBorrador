@@ -9,46 +9,48 @@
 }
 
 .pv-tooltip {
-  position: absolute;
-  visibility: hidden;
-  opacity: 0;
   @include tooltip-premium;
+
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
   width: max-content;
   max-width: min(350px, 90dvw);
-  white-space: normal;
-  word-wrap: break-word;
+  opacity: 0;
   transform: Translatey(10px) Translatex(-50%) Translatez(0);
-  left: 50%;
-  bottom: 125%;
+  visibility: hidden;
+  white-space: normal;
+  overflow-wrap: break-word;
   
   &::after {
-    content: '';
     position: absolute;
     top: 100%;
     left: 50%;
-    transform: Translatex(-50%);
     border: 6px solid transparent;
-    border-top-color: Rgba(255, 217, 61, 0.4);
+    transform: Translatex(-50%);
+    content: '';
+    border-top-color: Rgb(255 217 61 / 40%);
   }
 }
 
 .pv-tooltip-container:hover .pv-tooltip {
-  visibility: visible;
   opacity: 1;
   transform: Translatey(0) Translatex(-50%);
+  visibility: visible;
 }
 
 .pv-tooltip-title {
   @include pixelated;
+
+  display: block;
+  color: $yellow;
   font-family: $font-pixel;
   font-size: 8px;
-  color: $yellow;
   padding-bottom: 8px;
   margin-bottom: 8px;
-  display: block;
   text-transform: uppercase;
-  text-shadow: 1px 1px 0px Rgba(0, 0, 0, 0.5);
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
+  text-shadow: 1px 1px 0 Rgb(0 0 0 / 50%);
+  border-bottom: 1px solid Rgb(255 255 255 / 8%);
 
   &:last-child {
     margin-bottom: 0;
@@ -59,27 +61,28 @@
 
 .pv-tooltip-desc {
   @include pixelated;
+
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   gap: 4px;
-  color: Rgba(255, 255, 255, 0.9);
+  color: Rgb(255 255 255 / 90%);
   font-size: 9px;
   line-height: 1.5;
 }
 
 /* Position Variants (Literal 1288) */
 .pv-to-right .pv-tooltip {
-  left: calc(100% + 10px);
-  bottom: auto;
   top: 50%;
+  bottom: auto;
+  left: calc(100% + 10px);
   transform: Translatey(-50%) Translatex(-10px);
   
   &::after {
     top: 50%;
     left: -12px;
-    transform: Translatey(-50%);
     border: 6px solid transparent;
+    transform: Translatey(-50%);
     border-right-color: $yellow;
     border-top-color: transparent;
   }
@@ -90,17 +93,14 @@
 }
 
 .pv-to-left .pv-tooltip {
-  right: calc(100% + 10px);
-  left: auto;
-  bottom: auto;
-  top: 50%;
   transform: Translatey(-50%) Translatex(10px);
+  inset: 50% calc(100% + 10px) auto auto;
   
   &::after {
     top: 50%;
     right: -12px;
-    transform: Translatey(-50%);
     border: 6px solid transparent;
+    transform: Translatey(-50%);
     border-left-color: $yellow;
     border-top-color: transparent;
   }
@@ -116,8 +116,8 @@
   transform: Translatey(-10px) Translatex(-50%);
   
   &::after {
-    bottom: 100%;
     top: auto;
+    bottom: 100%;
     border: 6px solid transparent;
     border-bottom-color: $yellow;
     border-top-color: transparent;
@@ -130,96 +130,102 @@
 
 /* FIXED MOVE TOOLTIP (Literal 1250) */
 .move-tooltip {
-  position: fixed;
   @include tooltip-premium;
+
+  position: fixed;
+  display: none;
   width: 300px;
   max-width: min(380px, 85dvw);
   white-space: normal;
-  word-wrap: break-word;
-  display: none;
+  overflow-wrap: break-word;
 }
 
 /* ===== MODAL TOOLTIPS (Natures/Abilities) ===== */
 .tooltip-box {
-  display: none;
+  @include tooltip-premium;
+
   position: absolute;
   bottom: calc(100% + 12px);
   left: 50%;
-  transform: Translatex(-50%) Translatey(10px) Translatez(0);
-  @include tooltip-premium;
+  display: none;
   width: 240px;
-  opacity: 0;
-  visibility: hidden;
   text-align: left;
+  opacity: 0;
+  transform: Translatex(-50%) Translatey(10px) Translatez(0);
+  visibility: hidden;
   white-space: normal;
   will-change: transform, filter, opacity;
 
   .tooltip-wrap:hover &, .tooltip-wrap.touched & {
     display: block;
     opacity: 1;
-    visibility: visible;
     transform: Translatex(-50%) Translatey(0);
+    visibility: visible;
   }
 
   .tooltip-title {
-    display: block;
     @include pixelated;
-    font-size: 8px;
+
+    display: block;
     color: var(--yellow);
+    font-size: 8px;
     margin-bottom: 8px;
     text-transform: uppercase;
-    text-shadow: 1px 1px 0px Rgba(0, 0, 0, 0.8);
+    text-shadow: 1px 1px 0 Rgb(0 0 0 / 80%);
   }
 }
 
 .tooltip-up { color: $green; font-weight: 700; }
+
 .tooltip-down { color: $red; font-weight: 700; }
+
 .tooltip-neutral { color: $gray; font-style: italic; }
 
 /* ===== GLOBAL HP BAR COLORS ===== */
 .hp-high { background: Linear-Gradient(90deg, $green, #28a745); }
+
 .hp-mid  { background: Linear-Gradient(90deg, $yellow, #eab308); }
+
 .hp-low  { background: Linear-Gradient(90deg, $red, #dc2626); }
 
 /* ===== INTERACTIVE POKEMON TAGS ===== */
 .poke-tag {
   display: inline-flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   width: 28px;
   height: 28px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 8px;
+  background: Rgb(255 255 255 / 5%);
+  font-size: 14px;
   cursor: pointer;
   pointer-events: auto !important;
-  font-size: 14px;
-  -webkit-user-select: none;
   user-select: none;
   margin-left: 8px;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.12);
-    transform: scale3d(1.1, 1.1, 1) Translatey(-1px);
-    border-color: Rgba(255, 255, 255, 0.2);
+    background: Rgb(255 255 255 / 12%);
+    transform: Scale3d(1.1, 1.1, 1) Translatey(-1px);
+    border-color: Rgb(255 255 255 / 20%);
   }
 
   &:active {
-    transform: scale3d(0.95, 0.95, 1);
+    transform: Scale3d(0.95, 0.95, 1);
   }
 
   &.active {
     &.tag-favorite {
-      background: Rgba(255, 217, 61, 0.15) !important;
-      border-color: Rgba(255, 217, 61, 0.3) !important;
+      background: Rgb(255 217 61 / 15%) !important;
       color: var(--yellow) !important;
-      box-shadow: 0 0 10px Rgba(255, 217, 61, 0.1);
+      border-color: Rgb(255 217 61 / 30%) !important;
+      box-shadow: 0 0 10px Rgb(255 217 61 / 10%);
     }
     &.tag-heart {
-      background: Rgba(255, 69, 58, 0.15) !important;
-      border-color: Rgba(255, 69, 58, 0.3) !important;
+      background: Rgb(255 69 58 / 15%) !important;
       color: $red !important;
-      box-shadow: 0 0 10px Rgba(255, 69, 58, 0.1);
+      border-color: Rgb(255 69 58 / 30%) !important;
+      box-shadow: 0 0 10px Rgb(255 69 58 / 10%);
     }
   }
 }

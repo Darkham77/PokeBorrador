@@ -24,6 +24,8 @@ const SLIDE_OFFSET_PX = 30
 const DRAG_DAMPENING_BOUNDARY = 0.25
 const DRAG_DAMPENING_NORMAL = 0.85
 const SWIPE_LOCK_AXIS_THRESHOLD_PX = 8
+const DEFAULT_FALLBACK_CONTAINER_WIDTH_PX = 1200
+const UPCOMING_EVENTS_LOOKAHEAD_DAYS = 14
 
 const eventStore = useEventStore()
 const modalStore = useModalStore()
@@ -41,7 +43,7 @@ const showHistory = computed({
 const sectionRef = ref<HTMLElement | null>(null)
 const containerRef = ref<HTMLElement | null>(null)
 const eventsRowRef = ref<HTMLElement | null>(null)
-const containerWidth = ref(1200)
+const containerWidth = ref(DEFAULT_FALLBACK_CONTAINER_WIDTH_PX)
 let gsapCtx: gsap.Context | null = null
 let resizeObserver: ResizeObserver | null = null
 
@@ -221,7 +223,7 @@ const pagedActiveEvents = computed(() => {
 
 // Upcoming occurrences (fetches up to 14 days ahead and fills all remaining empty slots on the single row, NEVER in carousel)
 const upcomingOccurrences = computed(() => {
-  const occs = getUpcomingEventOccurrences(allEvents.value || [], getServerInstant(), 14)
+  const occs = getUpcomingEventOccurrences(allEvents.value || [], getServerInstant(), UPCOMING_EVENTS_LOOKAHEAD_DAYS)
   return occs.toSorted((a, b) => Temporal.Instant.compare(a.startInstant, b.startInstant))
 })
 

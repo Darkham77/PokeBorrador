@@ -66,16 +66,17 @@ function onLeave(el: Element, done: () => void) {
 
 <style scoped lang="scss">
 .toast-stack {
+  @include gpu-layer;
+
   position: fixed;
   top: 100px; // Below HUD
   right: 20px;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: var(--z-toast);
-  pointer-events: none;
   max-width: 300px;
-  @include gpu-layer;
+  pointer-events: none;
 
   &.is-fullscreen-toast {
     top: 90px;
@@ -84,32 +85,33 @@ function onLeave(el: Element, done: () => void) {
 }
 
 .toast-item {
-  pointer-events: all;
-  background: Rgba(10, 12, 18, 0.98);
-  -webkit-will-change: opacity;
-  will-change: opacity;
   @include gpu-layer;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  border-left: 3px solid var(--yellow, Rgba(241, 196, 15, 1));
-  padding: 10px 14px;
-  border-radius: 14px;
-  box-shadow: 0 8px 30px Rgba(0, 0, 0, 0.6);
+
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-ui);
+  padding: 10px 14px;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 14px;
+  background: rgb(10 12 18 / 98%);
   color: white;
+  font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0px;
+  pointer-events: all;
+  -webkit-will-change: opacity;
+  will-change: opacity;
+  border-left: 3px solid var(--yellow, rgb(241 196 15 / 100%));
+  box-shadow: 0 8px 30px rgb(0 0 0 / 60%);
+  letter-spacing: 0;
   
   .toast-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
     font-size: 18px;
     flex-shrink: 0;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .toast-icon-img {
@@ -126,15 +128,12 @@ function onLeave(el: Element, done: () => void) {
 }
 
 /* Responsive */
-@media (max-width: 800px) {
+@media (width <= 800px) {
   .toast-stack {
-    top: 90px;
-    bottom: auto;
-    left: auto;
-    right: 20px;
-    max-width: calc(100dvw - 40px);
-    align-items: flex-end;
     z-index: var(--z-critical); // Ensure it's above EVERYTHING
+    align-items: flex-end;
+    max-width: calc(100dvw - 40px);
+    inset: 90px 20px auto auto;
   }
 }
 </style>

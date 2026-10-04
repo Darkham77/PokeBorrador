@@ -2,81 +2,82 @@
 
 #auth-screen {
   @include smooth;
+
   position: fixed !important;
-  inset: 0;
   z-index: var(--z-hud);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 20px;
   background-color: var(--black);
+  font-family: var(--font-pixel), sans-serif;
+  inset: 0;
   background-repeat: no-repeat;
   background-position: center center !important;
   background-size: cover !important;
   background-attachment: fixed;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100dvh;
-  padding: 20px;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  font-family: var(--font-pixel), sans-serif;
 }
 
 .login-background-stars {
   position: fixed;
   top: 0;
   left: 0;
+  z-index: var(--z-base);
   width: 100%;
   height: 100%;
+  background: Radial-Gradient(ellipse at 20% 50%, Rgb(59 139 255 / 5%) 0%, transparent 60%),
+    Radial-Gradient(ellipse at 80% 20%, Rgb(199 125 255 / 5%) 0%, transparent 60%);
   pointer-events: none;
-  z-index: var(--z-base);
-  background: Radial-Gradient(ellipse at 20% 50%, Rgba(59, 139, 255, 0.05) 0%, transparent 60%),
-    Radial-Gradient(ellipse at 80% 20%, Rgba(199, 125, 255, 0.05) 0%, transparent 60%);
 }
 
 .auth-card {
-  border-radius: 24px;
-  padding: 40px 32px;
+  @include gpu-layer;
+
+  z-index: var(--z-base);
   width: 100%;
   max-width: 400px;
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 80px Rgba(0, 0, 0, 0.6);
-  background: Rgba(15, 15, 18, 0.75);
-  -webkit-backdrop-filter: Blur(12px);
+  padding: 40px 32px;
+  border: 1px solid Rgb(255 255 255 / 12%);
+  border-radius: 24px;
+  background: Rgb(15 15 18 / 75%);
+  transform: Translatez(0);
+  box-shadow: 0 20px 80px Rgb(0 0 0 / 60%);
   backdrop-filter: Blur(12px);
   padding-top: 50px; // Espacio extra para el logo que se superpone
-  
   -webkit-will-change: opacity, transform;
   will-change: opacity, transform;
-  @include gpu-layer;
-  z-index: var(--z-base);
-  transform: Translatez(0);
 }
 
 .login-header-logo {
+  @include gpu-layer;
+
   position: relative;
   z-index: calc(var(--z-base) + 2);
-  margin-bottom: -40px; // Ajustado para no tapar demasiado el texto
-  pointer-events: none;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: -40px; // Ajustado para no tapar demasiado el texto
+  pointer-events: none;
   will-change: transform, opacity;
-  @include gpu-layer;
 
   img {
     @include smooth;
-    image-rendering: auto !important;
+
     width: 280px;
     max-width: 85dvw;
     height: auto;
-    filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.4)) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.1));
+    image-rendering: auto !important;
+    filter: Drop-Shadow(0 10px 20px Rgb(0 0 0 / 40%)) Drop-Shadow(0 0 15px Rgb(255 255 255 / 10%));
     pointer-events: none;
-    -webkit-user-select: none;
     user-select: none;
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .auth-card {
     padding: 100px 20px 24px; // Más espacio para evitar solapamiento en pantallas muy pequeñas
     border-radius: 20px;
@@ -102,17 +103,19 @@
 
 .auth-logo {
   @include pixelated;
-  font-size: 20px;
+
   color: var(--red);
+  font-size: 20px;
   text-align: center;
   margin-bottom: 6px;
-  text-shadow: 0 0 20px Rgba(255, 59, 59, 0.5);
+  text-shadow: 0 0 20px Rgb(255 59 59 / 50%);
 }
 
 .auth-sub {
   @include pixelated;
-  font-size: 8px;
+
   color: var(--yellow);
+  font-size: 8px;
   text-align: center;
   margin-bottom: 28px;
   letter-spacing: 2px;
@@ -121,25 +124,26 @@
 .auth-tabs {
   display: flex;
   gap: 0;
-  margin-bottom: 24px;
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 12px;
+  margin-bottom: 24px;
   overflow: hidden;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
 }
 
 .auth-tab {
-  flex: 1;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
   @include pixelated;
+
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: var(--gray);
+  font-family: var(--font-pixel), sans-serif;
   font-size: 9px;
   font-weight: 700;
-  background: transparent;
-  border: none;
-  color: var(--gray);
+  text-align: center;
+  flex: 1;
+  cursor: pointer;
   will-change: color;
-  font-family: var(--font-pixel), sans-serif;
   text-transform: uppercase;
 
   &.active {
@@ -151,12 +155,12 @@
 .auth-input {
   width: 100%;
   padding: 10px 14px;
-  background: Rgba(255, 255, 255, 0.06);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
+  border: 1px solid Rgb(255 255 255 / 12%);
   border-radius: 12px;
+  background: Rgb(255 255 255 / 6%);
   color: var(--text);
-  font-size: 13px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
   line-height: 1.5;
   margin-bottom: 12px;
   will-change: border-color;
@@ -174,35 +178,37 @@
 
 .auth-btn {
   @include btn-vicio('primary', 'md', true);
-  margin-top: 12px;
+
+  height: 46px;
+  padding: 0 16px;
   
   // Custom tweaks for login view context if needed
   font-size: 9px;
-  height: 46px;
-  padding: 0 16px;
+  margin-top: 12px;
 
   .auth-btn-icon {
+    @include sprite-render;
+
     width: 32px;
     height: 32px;
+    transform: Translatey(-1px);
     object-fit: contain;
-    @include sprite-render;
     flex-shrink: 0;
     pointer-events: none;
     user-select: none;
     -webkit-user-drag: none;
-    transform: Translatey(-1px);
   }
 }
 
 .auth-error {
-  background: Rgba(255, 59, 59, 0.15);
-  border: 1px solid Rgba(255, 59, 59, 0.3);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--red);
-  margin-bottom: 12px;
   display: none;
+  padding: 10px 14px;
+  border: 1px solid Rgb(255 59 59 / 30%);
+  border-radius: 10px;
+  background: Rgb(255 59 59 / 15%);
+  color: var(--red);
+  font-size: 12px;
+  margin-bottom: 12px;
 
   &.show {
     display: block;
@@ -210,20 +216,21 @@
 }
 
 .auth-ban-card {
-  background: Rgba(239, 68, 68, 0.1);
-  border: 2px solid Rgba(239, 68, 68, 0.4);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 24px;
-  text-align: center;
   display: none;
+  padding: 16px;
+  border: 2px solid Rgb(239 68 68 / 40%);
+  border-radius: 16px;
+  background: Rgb(239 68 68 / 10%);
+  text-align: center;
+  margin-bottom: 24px;
   will-change: transform;
 
   &.show { display: block; }
 
   .ban-title {
-    color: var(--red);
     @include pixelated;
+
+    color: var(--red);
     font-size: 10px;
     margin-bottom: 12px;
   }
@@ -236,20 +243,20 @@
   }
 
   .ban-hint {
-    color: Rgba(255, 255, 255, 0.4);
+    color: Rgb(255 255 255 / 40%);
     font-size: 10px;
   }
 }
 
 .auth-success {
-  background: Rgba(107, 203, 119, 0.15);
-  border: 1px solid Rgba(107, 203, 119, 0.3);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--green);
-  margin-bottom: 12px;
   display: none;
+  padding: 10px 14px;
+  border: 1px solid Rgb(107 203 119 / 30%);
+  border-radius: 10px;
+  background: Rgb(107 203 119 / 15%);
+  color: var(--green);
+  font-size: 12px;
+  margin-bottom: 12px;
 
   &.show {
     display: block;
@@ -262,8 +269,9 @@
 
 .server-selector-label { 
   @include pixelated;
-  font-size: 7px;
+
   color: var(--gray);
+  font-size: 7px;
   text-align: center;
   margin-bottom: 8px;
   letter-spacing: 1px;
@@ -273,26 +281,27 @@
 .server-tabs {
   display: flex;
   gap: 0;
+  border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
 }
 
 .login-server-tab {
-  flex: 1;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px;
-  line-height: 1.25;
-  padding: 8px;
-  text-align: center;
-  cursor: pointer;
   @include pixelated;
-  font-size: 8px;
-  background: transparent;
+
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 6px;
+  padding: 8px;
   border: none;
+  background: transparent;
   color: var(--gray);
+  font-size: 8px;
+  line-height: 1.25;
+  text-align: center;
+  flex: 1;
+  cursor: pointer;
   will-change: color, background-color;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -305,22 +314,23 @@
   &.active {
     background: Linear-Gradient(135deg, var(--blue), var(--purple));
     color: var(--white);
-    box-shadow: 0 2px 10px Rgba(59, 139, 255, 0.3);
+    box-shadow: 0 2px 10px Rgb(59 139 255 / 30%);
   }
 }
 
 .auth-loading-text {
-  text-align: center;
   padding: 12px;
   color: var(--gray);
   font-size: 8px;
+  text-align: center;
 }
 
 .auth-version-footer {
-  text-align: center;
-  color: Rgba(255, 255, 255, 0.2);
-  font-size: 8px;
   @include pixelated;
+
+  color: Rgb(255 255 255 / 20%);
+  font-size: 8px;
+  text-align: center;
   margin-top: 24px;
 }
 
@@ -343,50 +353,53 @@
   }
 
   .server-label {
-    display: block;
     @include pixelated;
+
+    display: block;
+    color: Rgb(255 255 255 / 40%);
     font-size: 8px;
-    color: Rgba(255, 255, 255, 0.4);
     text-transform: uppercase;
   }
 
   .status-indicator {
     @include pixelated;
-    font-size: 8px;
+
     padding: 2px 6px;
     border-radius: 4px;
+    font-size: 8px;
     
     &.checking { color: var(--yellow); }
     &.online { 
-      color: #00ff00;
-      text-shadow: 0 0 5px Rgba(0, 255, 0, 0.5);
+      color: #0f0;
+      text-shadow: 0 0 5px Rgb(0 255 0 / 50%);
     }
-    &.offline { color: #ff4444; }
+    &.offline { color: #f44; }
   }
 }
 
 .internet-alert {
-  background: Rgba(255, 68, 68, 0.2);
-  border: 1px solid #ff4444;
-  color: #ff4444;
   @include pixelated;
-  font-size: 10px;
+
   padding: 12px;
+  border: 1px solid #f44;
   border-radius: 10px;
-  margin-bottom: 16px;
+  background: Rgb(255 68 68 / 20%);
+  color: #f44;
+  font-size: 10px;
   text-align: center;
+  margin-bottom: 16px;
   will-change: opacity;
 }
 
 .server-select {
+  font-size: 10px;
   cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
   padding-right: 40px !important;
-  border-color: Rgba(255, 255, 255, 0.2);
-  font-size: 10px;
+  border-color: Rgb(255 255 255 / 20%);
   
   option {
     background: #1a1a1a;
@@ -398,13 +411,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 20px 10px;
-  background: Rgba(255, 170, 0, 0.1);
-  border: 2px solid #ffaa00;
-  box-shadow: 0 0 15px Rgba(255, 170, 0, 0.2);
-  border-radius: 8px;
   margin: 15px 0;
+  padding: 20px 10px;
+  border: 2px solid #fa0;
+  border-radius: 8px;
+  background: Rgb(255 170 0 / 10%);
+  text-align: center;
+  box-shadow: 0 0 15px Rgb(255 170 0 / 20%);
 
   .update-icon {
     font-size: 32px;
@@ -413,54 +426,57 @@
 
   .update-title {
     @include pixelated;
+
+    color: #fa0;
     font-size: 14px;
-    color: #ffaa00;
     margin-bottom: 12px;
-    text-shadow: 0 0 5px Rgba(255, 170, 0, 0.4);
+    text-shadow: 0 0 5px Rgb(255 170 0 / 40%);
   }
 
   .update-message {
+    color: #fff;
+    font-family: inherit;
     font-size: 11px;
-    color: #ffffff;
     line-height: 1.5;
     margin-bottom: 20px;
-    font-family: inherit;
   }
 
   .update-btn {
     @include btn-vicio('warning', 'md', false);
+
     width: 100%;
     margin-top: 10px;
   }
 
   .pwa-progress-wrapper {
-    width: 100%;
-    margin-top: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    width: 100%;
+    margin-top: 15px;
   }
 
   .pwa-progress-container {
+    position: relative;
     width: 100%;
     height: 12px;
-    background: #111;
     border: 2px solid #333;
     border-radius: 6px;
+    background: #111;
     overflow: hidden;
-    position: relative;
   }
 
   .pwa-progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #ffaa00, #ffd400);
-    box-shadow: 0 0 8px #ffaa00;
+    background: Linear-Gradient(90deg, #fa0, #ffd400);
+    box-shadow: 0 0 8px #fa0;
   }
 
   .pwa-progress-text {
     @include pixelated;
+
+    color: #fa0;
     font-size: 8px;
-    color: #ffaa00;
   }
 }

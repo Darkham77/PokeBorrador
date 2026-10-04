@@ -80,18 +80,18 @@ onUnmounted(() => {
   position: fixed;
   top: 12px;
   left: 50%;
-  transform: Translatex(-50%);
   z-index: calc(var(--z-overlay) - 1);
-  background: Rgba(239, 68, 68, 0.92);
-  border: 2px solid #fca5a5;
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
-  color: #ffffff;
-  padding: 6px 14px;
-  border-radius: 20px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 6px 14px;
+  border: 2px solid #fca5a5;
+  border-radius: 20px;
+  background: Rgb(239 68 68 / 92%);
+  color: #fff;
   font-size: 11px;
+  transform: Translatex(-50%);
+  box-shadow: 0 4px 12px Rgb(0 0 0 / 40%);
   letter-spacing: 0.5px;
   pointer-events: none;
 }

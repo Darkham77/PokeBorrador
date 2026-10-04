@@ -9,26 +9,34 @@
 
 // 1. BASE: The structural skeleton
 @mixin btn-vicio-base {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  line-height: 1.5;
-  border: none;
-  font-family: var(--font-pixel), "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  cursor: pointer;
   @include pixelated;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   gap: 12px;
+  border: none;
+  font-family: var(--font-pixel), "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  line-height: 1.5;
+  text-align: center;
+  cursor: pointer;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+
+  &:disabled {
+    opacity: 0.6;
+    transform: none;
+    filter: Grayscale(1);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 
   // Icon Standardization
   .icon, i, .fas, .far {
-    font-size: 1.4em;
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    font-size: 1.4em;
     line-height: 1;
     
     // Fine-tune vertical alignment for pixel fonts/emojis
@@ -43,21 +51,13 @@
     gap: 2px;
     text-align: left;
   }
-
-  &:disabled {
-    filter: Grayscale(1);
-    opacity: 0.6;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-  }
 }
 
 // 2. SIZE: Dimensions and depth
 @mixin btn-vicio-size($size: 'md') {
-  $padding: 18px;
-  $font-size: 11px;
-  $radius: 15px;
+  $padding: 10px 18px;
+  $font-size: 10px;
+  $radius: 10px;
   $depth: 4px;
 
   @if $size == 'xs' {
@@ -70,66 +70,76 @@
     $font-size: 8px;
     $radius: 8px;
     $depth: 3px;
+  } @else if $size == 'lg' {
+    $padding: 14px 22px;
+    $font-size: 12px;
+    $radius: 12px;
+    $depth: 4px;
   }
 
-  padding: $padding;
-  font-size: $font-size;
-  border-radius: $radius;
-  
   // Set the depth variable for variants to consume
   --v-depth: #{$depth};
+
+  padding: $padding;
+  border-radius: $radius;
+  font-size: $font-size;
 }
 
 // 3. VARIANT: Colors and 3D shadows
 @mixin btn-vicio-variant($variant: 'primary', $size: 'md') {
   $base-color: #facc15; // default yellow
-  $shadow: Rgba(180, 83, 9, 0.99);
+  $shadow: Rgb(180 83 9 / 99%);
   $text: #000;
 
   @if $variant == 'secondary' {
     $base-color: #7c3aed;
-    $shadow: Rgba(91, 33, 182, 0.99);
+    $shadow: Rgb(91 33 182 / 99%);
     $text: #fff;
   } @else if $variant == 'danger' {
     $base-color: #ef4444;
-    $shadow: Rgba(153, 27, 27, 0.99);
+    $shadow: Rgb(153 27 27 / 99%);
     $text: #fff;
   } @else if $variant == 'info' {
     $base-color: #60a5fa;
-    $shadow: Rgba(37, 99, 235, 0.99);
+    $shadow: Rgb(37 99 235 / 99%);
     $text: #fff;
   } @else if $variant == 'success' {
     $base-color: #22c55e;
-    $shadow: Rgba(21, 128, 61, 0.99);
+    $shadow: Rgb(21 128 61 / 99%);
     $text: #fff;
   } @else if $variant == 'neutral' {
     $base-color: #94a3b8;
-    $shadow: Rgba(71, 85, 105, 0.99);
+    $shadow: Rgb(71 85 105 / 99%);
     $text: #fff;
   }
 
   // Use the CSS variable for the main background to support dynamic themes,
   // but use the SASS color for the active/hover manipulations.
   $bg-render: $base-color;
+
   @if $variant == 'primary' {
     $bg-render: var(--yellow, #{$base-color});
   }
 
+  $depth: 4px;
+
+  @if $size == 'xs' {
+    $depth: 2px;
+  } @else if $size == 'sm' {
+    $depth: 3px;
+  }
+
   background: $bg-render;
   color: $text;
-  
+  box-shadow: 0 var(--v-depth, #{$depth}) 1.5px $shadow;
+
   @if $text == #fff {
     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   }
 
-  $depth: 4px;
-  @if $size == 'xs' { $depth: 2px; }
-  @else if $size == 'sm' { $depth: 3px; }
-
-  box-shadow: 0 $depth 1.5px $shadow;
-
   &:hover:not(:disabled) {
     filter: Brightness(1.1);
+
     // Transform and box-shadow raising are handled by GSAP
   }
 
@@ -138,17 +148,17 @@
   }
 
   &.active {
+    border: 2px solid Rgb(255 255 255 / 80%);
     background: color.scale($base-color, $lightness: 15%);
-    box-shadow: 
-      0 $depth 1.5px $shadow,
-      0 0 15px Rgba($base-color, 0.4);
-    border: 2px solid Rgba(255, 255, 255, 0.8);
     transform: none;
+    box-shadow: 
+      0 var(--v-depth, #{$depth}) 1.5px $shadow,
+      0 0 15px Rgba($base-color, 0.4);
     
     &:hover:not(:disabled) {
       background: color.scale($base-color, $lightness: 20%);
       transform: Translatey(-1px);
-      box-shadow: 0 ($depth + 1px) 1.5px $shadow, 0 0 20px Rgba($base-color, 0.6);
+      box-shadow: 0 (calc(var(--v-depth, #{$depth}) + 1px)) 1.5px $shadow, 0 0 20px Rgba($base-color, 0.6);
     }
   }
 }
@@ -158,54 +168,32 @@
   @include btn-vicio-base;
   @include btn-vicio-size($size);
   @include btn-vicio-variant($variant, $size);
+
   @if $fullWidth { width: 100%; } @else { width: auto; }
 }
 
 // Legacy aliases for backward compatibility
 @mixin btn-vicio-primary($size: 'md', $fullWidth: false) { @include btn-vicio('primary', $size, $fullWidth); }
+
 @mixin btn-vicio-secondary($size: 'md', $fullWidth: false) { @include btn-vicio('secondary', $size, $fullWidth); }
+
 @mixin btn-vicio-danger($size: 'md', $fullWidth: false) { @include btn-vicio('danger', $size, $fullWidth); }
+
 @mixin btn-vicio-success($size: 'md', $fullWidth: false) { @include btn-vicio('success', $size, $fullWidth); }
 
 
 @mixin btn-close-premium {
+  z-index: var(--z-low);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 44px;
   height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
   border: none;
   border-radius: 50%;
+  background: none;
   cursor: pointer;
-  z-index: var(--z-low);
   pointer-events: auto;
-
-  & .close-icon-wrapper {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: Rgba(255, 255, 255, 0.05);
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 10px;
-      height: 10px;
-      transform: Translate(-50%, -50%);
-      transform-origin: center center;
-      background-color: currentColor;
-      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect x='0' y='0' width='2' height='2'/%3E%3Crect x='8' y='0' width='2' height='2'/%3E%3Crect x='2' y='2' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='2' y='6' width='2' height='2'/%3E%3Crect x='6' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='8' y='8' width='2' height='2'/%3E%3C/svg%3E") no-repeat center;
-      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect x='0' y='0' width='2' height='2'/%3E%3Crect x='8' y='0' width='2' height='2'/%3E%3Crect x='2' y='2' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='2' y='6' width='2' height='2'/%3E%3Crect x='6' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='8' y='8' width='2' height='2'/%3E%3C/svg%3E") no-repeat center;
-      mask-size: contain;
-      -webkit-mask-size: contain;
-      color: Rgba(255, 255, 255, 0.6);
-    }
-  }
   
   &:hover {
     // Scale and parent wrapper transitions are handled by GSAP
@@ -219,37 +207,63 @@
   &:active {
     // Press shrink is handled by GSAP
   }
+
+  & .close-icon-wrapper {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: 50%;
+    background: Rgb(255 255 255 / 5%);
+
+    &::before {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      background-color: currentColor;
+      color: Rgb(255 255 255 / 60%);
+      transform: Translate(-50%, -50%);
+      content: '';
+      transform-origin: center center;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect x='0' y='0' width='2' height='2'/%3E%3Crect x='8' y='0' width='2' height='2'/%3E%3Crect x='2' y='2' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='2' y='6' width='2' height='2'/%3E%3Crect x='6' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='8' y='8' width='2' height='2'/%3E%3C/svg%3E") no-repeat center;
+      mask-size: contain;
+    }
+  }
 }
 
 @mixin item-tier-card {
   &.tier-rare {
-    border-color: Rgba(59, 130, 246, 0.55);
-    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.2), inset 0 0 6px Rgba(59, 130, 246, 0.08);
-    .item-bg-glow { background: radial-gradient(circle, Rgba(59, 130, 246, 0.18) 0%, transparent 70%); }
+    border-color: Rgb(59 130 246 / 55%);
+    box-shadow: 0 0 10px Rgb(59 130 246 / 20%), inset 0 0 6px Rgb(59 130 246 / 8%);
+    .item-bg-glow { background: Radial-Gradient(circle, Rgb(59 130 246 / 18%) 0%, transparent 70%); }
   }
 
   &.tier-epic {
-    border-color: Rgba(168, 85, 247, 0.55);
-    box-shadow: 0 0 10px Rgba(168, 85, 247, 0.2), inset 0 0 6px Rgba(168, 85, 247, 0.08);
-    .item-bg-glow { background: radial-gradient(circle, Rgba(168, 85, 247, 0.18) 0%, transparent 70%); }
+    border-color: Rgb(168 85 247 / 55%);
+    box-shadow: 0 0 10px Rgb(168 85 247 / 20%), inset 0 0 6px Rgb(168 85 247 / 8%);
+    .item-bg-glow { background: Radial-Gradient(circle, Rgb(168 85 247 / 18%) 0%, transparent 70%); }
   }
 
   &.tier-legend {
-    border-color: Rgba(245, 158, 11, 0.65);
-    box-shadow: 0 0 12px Rgba(245, 158, 11, 0.25), inset 0 0 8px Rgba(245, 158, 11, 0.1);
-    .item-bg-glow { background: radial-gradient(circle, Rgba(245, 158, 11, 0.2) 0%, transparent 70%); }
+    border-color: Rgb(245 158 11 / 65%);
+    box-shadow: 0 0 12px Rgb(245 158 11 / 25%), inset 0 0 8px Rgb(245 158 11 / 10%);
+    .item-bg-glow { background: Radial-Gradient(circle, Rgb(245 158 11 / 20%) 0%, transparent 70%); }
   }
 }
 
 @mixin premium-header {
-  padding: 12px 24px;
-  border-radius: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  margin-bottom: 0;
   @include gpu-layer;
   @include shell-premium;
 
+  padding: 12px 24px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 20px;
+  margin-bottom: 0;
+
   .header-layout {
+
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -271,59 +285,59 @@
   .search-icon {
     position: absolute;
     left: 10px;
-    font-size: 13px;
-    opacity: 0.5;
-    pointer-events: none;
     display: flex;
     align-items: center;
-    line-height: 1;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    font-size: 13px;
+    line-height: 1;
+    opacity: 0.5;
+    pointer-events: none;
   }
 
   .premium-search-input {
     width: 100%;
-    background: Rgba(0, 0, 0, 0.2);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    padding: 7px 30px;
+    border: 1px solid Rgb(255 255 255 / 10%);
     border-radius: 10px;
-    padding: 7px 30px 7px 30px;
+    background: Rgb(0 0 0 / 20%);
     color: white;
     font-size: 12px;
 
     &:focus {
-      background: Rgba(0, 0, 0, 0.4);
+      background: Rgb(0 0 0 / 40%);
       border-color: var(--yellow);
-      box-shadow: 0 0 12px Rgba(255, 214, 10, 0.1);
+      box-shadow: 0 0 12px Rgb(255 214 10 / 10%);
       outline: none;
     }
   }
 
   .clear-btn {
     position: absolute;
-    right: 8px;
     top: 50%;
-    transform: Translatey(-50%);
-    background: none;
-    border: none;
-    color: Rgba(255, 255, 255, 0.5);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 0;
+    right: 8px;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 16px;
     height: 16px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: Rgb(255 255 255 / 50%);
+    font-size: 16px;
+    transform: Translatey(-50%);
+    cursor: pointer;
 
     &:hover { color: white; }
   }
 }
 
 @mixin chat-message-text {
+  margin: 0;
+  color: Rgb(203 213 225 / 100%);
   font-size: 13px;
-  color: Rgba(203, 213, 225, 1);
   line-height: 1.4;
   word-break: break-all;
-  margin: 0;
 }
 
 @mixin chat-message-meta {
@@ -333,14 +347,14 @@
   margin-bottom: 4px;
 
   .username {
+    color: Rgb(226 232 240 / 100%);
     font-size: 11px;
     font-weight: 700;
-    color: Rgba(226, 232, 240, 1);
   }
 
   .time {
+    color: Rgb(255 255 255 / 50%);
     font-size: 9px;
-    color: Rgba(255, 255, 255, 0.5);
     white-space: nowrap;
     flex-shrink: 0;
     margin-left: 8px;
@@ -349,36 +363,37 @@
 
 @mixin widget-action-btn {
   @include pixelated;
-  font-size: 8px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
+
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  color: var(--white, #ffffff);
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: 6px;
+  background: Rgb(255 255 255 / 5%);
+  color: var(--white, #fff);
+  font-size: 8px;
   cursor: pointer;
   box-sizing: border-box;
   white-space: nowrap;
   letter-spacing: 0.5px;
 
-  .btn-icon {
-    font-size: 12px;
-    line-height: 1;
-  }
-
   &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow, #facc15);
+    background: Rgb(255 255 255 / 12%);
     color: var(--yellow, #facc15);
-    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.2);
+    border-color: var(--yellow, #facc15);
+    box-shadow: 0 0 10px Rgb(250 204 21 / 20%);
   }
 
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+  }
+
+  .btn-icon {
+    font-size: 12px;
+    line-height: 1;
   }
 }
 
@@ -386,11 +401,12 @@
 
 @mixin btn-vicio-claim {
   @include btn-vicio('success', 'sm');
-  font-size: 8px;
+
   padding: 6px 14px;
+  font-size: 8px;
+  font-weight: bold;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  font-weight: bold;
 }
 
 

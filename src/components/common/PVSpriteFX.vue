@@ -212,6 +212,7 @@ const allActiveFXDebug = computed(() => {
 const BORDER_RADIUS_CIRCLE_PERCENT = '50%'
 const DEBUG_OVERLAY_TRANSLATE_PERCENT = -50
 const DEBUG_CENTER_OFFSET_PERCENT = 50
+const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as const
 
     const style: Record<string, string> = { 
       position: 'absolute', 
@@ -224,7 +225,7 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
     if (shape === 'circle') {
       const radius = area.x[1]; style.width = `${radius * 2}%`; style.height = `${radius * 2}%`; style.top = `${DEBUG_CENTER_OFFSET_PERCENT + offset.y}%`; style.left = `${DEBUG_CENTER_OFFSET_PERCENT + offset.x}%`; style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`
     } else {
-      const xRange = area.x; const yRange = area.y || [-10, 10]; style.width = `${xRange[1] - xRange[0]}%`; style.height = `${yRange[1] - yRange[0]}%`; style.left = `${DEBUG_CENTER_OFFSET_PERCENT + (xRange[0] + xRange[1]) / 2 + offset.x}%`; style.top = `${DEBUG_CENTER_OFFSET_PERCENT + (yRange[0] + yRange[1]) / 2 + offset.y}%`; style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`
+      const xRange = area.x; const yRange = area.y || DEFAULT_DEBUG_Y_RANGE_PERCENT; style.width = `${xRange[1] - xRange[0]}%`; style.height = `${yRange[1] - yRange[0]}%`; style.left = `${DEBUG_CENTER_OFFSET_PERCENT + (xRange[0] + xRange[1]) / 2 + offset.x}%`; style.top = `${DEBUG_CENTER_OFFSET_PERCENT + (yRange[0] + yRange[1]) / 2 + offset.y}%`; style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`
     }
     return { id: fx.type, style, label: `${fx.type.toUpperCase()} (${shape})` }
   })
@@ -291,8 +292,7 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
 
-.pv-fx-wrapper,
-.pv-fx-sprite-layer {
+%pixel-fx-render {
   image-rendering: -webkit-optimize-contrast !important;
   #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;
@@ -300,36 +300,42 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
 }
 
 .pv-fx-wrapper {
-  width: fit-content; height: fit-content; position: relative;
-  display: flex; align-items: center; justify-content: center;
+  @extend %pixel-fx-render;
+
+  position: relative;
+  display: flex; justify-content: center; align-items: center;
+  width: fit-content; height: fit-content;
 
   &.is-simplified {
     :deep(img:not(.is-silhouette)), :deep(.sprite-layer), :deep(.pokemon-sprite:not(.is-silhouette)) {
+      transform: none;
+      animation: none !important;
       will-change: filter, transform, opacity;
       filter: none;
-      animation: none !important;
-      transform: none;
     }
   }
 
   &.is-cursed :deep(img) {
-    filter: Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8)) Brightness(0.6) contrast(1.2) Saturate(0.5);
+    filter: Drop-Shadow(0 0 15px Rgb(75 0 130 / 80%)) Brightness(0.6) Contrast(1.2) Saturate(0.5);
   }
 
   &.is-confused :deep(img) {
     will-change: transform, filter, opacity;
-    filter: Hue-Rotate(180deg) Saturate(0.5);
+    filter: hue-Rotate(180deg) Saturate(0.5);
   }
 
   &.is-focus-energy :deep(img) {
     will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.1);
+    filter: Drop-Shadow(0 0 10px Rgb(255 0 0 / 70%)) Brightness(1.1);
   }
 }
+
 .pv-fx-sprite-layer {
-  position: relative; display: flex; align-items: center; justify-content: center;
+  @extend %pixel-fx-render;
+
+  position: relative;
+  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 2); display: flex; justify-content: center; align-items: center;
   width: 100%; height: 100%;
-  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 2);
   will-change: transform;
 
   &.is-guardian {
@@ -342,19 +348,19 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
 }
 
 .debug-guide {
-  position: absolute; top: 50%; left: 50%; transform: Translate(-50%, -50%);
-  border: 1px dashed; border-radius: 50%; pointer-events: none; z-index: calc(v-bind('Z_LAYERS.OVERLAY') - 1);
-  display: flex; align-items: center; justify-content: center;
+  position: absolute; top: 50%; left: 50%; z-index: calc(v-bind('Z_LAYERS.OVERLAY') - 1);
+  display: flex; justify-content: center; align-items: center;
+  border: 1px dashed; border-radius: 50%; transform: Translate(-50%, -50%); pointer-events: none;
   .label {
-    position: absolute; bottom: -18px; background: Rgba(0, 0, 0, 0.9); color: white;
-    font-family: monospace, sans-serif; font-size: 10px; line-height: 1.2; font-weight: bold;
-    padding: 2px 5px; border-radius: 3px; white-space: nowrap;
-    transform: Scale(calc(1 / var(--camera-scale, 1)));
+    position: absolute; bottom: -18px;
+    padding: 2px 5px; border-radius: 3px; background: Rgb(0 0 0 / 90%); color: white;
+    font-family: monospace, sans-serif; font-size: 10px; font-weight: bold; line-height: 1.2;
+    transform: Scale(calc(1 / var(--camera-scale, 1))); white-space: nowrap;
     transform-origin: center top;
   }
-  &.debug-fx-radius {
-    border-color: #ff9900; background: Rgba(255, 153, 0, 0.2); border: 2px solid #ff9900;
-    .label { border: 1px solid #ff9900; background: Rgba(40, 20, 0, 0.9); color: #ffbb33; }
+  &.debug-fx-radius { border: 2px solid #f90; background: Rgb(255 153 0 / 20%);
+    border-color: #f90;
+    .label { border: 1px solid #f90; background: Rgb(40 20 0 / 90%); color: #fb3; }
   }
 }
 </style>

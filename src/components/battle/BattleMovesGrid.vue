@@ -229,8 +229,8 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .moves-grid-vicio {
   display: grid;
+  gap: var(--move-panel-gap, 12px);
   grid-template-columns: 1fr 1fr;
   grid-template-rows: repeat(2, minmax(58px, 1fr));
-  gap: var(--move-panel-gap, 12px);
 }
 </style>

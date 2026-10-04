@@ -56,28 +56,28 @@ const isPenalized = computed(() => !props.isInfinite && props.value < props.base
 
 .stat-boosted {
   color: #10B981 !important;
-  text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
+  text-shadow: 0 0 2px rgb(16 185 129 / 40%);
 }
 
 .stat-penalized {
   color: #EF4444 !important;
-  text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
+  text-shadow: 0 0 2px rgb(239 68 68 / 40%);
 }
 
 .arrow {
   display: inline-block;
   font-size: 7px;
+  line-height: 1;
   margin-left: 1px;
   vertical-align: middle;
-  line-height: 1;
 
   &.up {
     color: #10B981;
-    text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
+    text-shadow: 0 0 2px rgb(16 185 129 / 40%);
   }
   &.down {
     color: #EF4444;
-    text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
+    text-shadow: 0 0 2px rgb(239 68 68 / 40%);
   }
 }
 </style>

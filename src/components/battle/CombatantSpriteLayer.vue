@@ -81,47 +81,49 @@ const emit = defineEmits<{
 @use "@/styles/core/_mixins" as *;
 
 .pokemon-atmosphere-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: visible;
 }
 
 .pokemon-sprite-status-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: visible;
-  position: relative;
 }
 
 .pokemon-combat-image-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
   width: 100%;
   height: 100%;
   overflow: hidden !important;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
 }
 
 .pokemon-combat-image {
+  @include sprite-render;
+
   width: 100%;
   height: 100%;
   object-fit: contain;
   object-position: center;
   image-rendering: -webkit-optimize-contrast !important;
-  #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
-  @include sprite-render;
 
   &.is-silhouette { 
     @include pokemon-silhouette;
   }
+
+  #{"image-rendering"}: crisp-edges !important;
 }
 </style>

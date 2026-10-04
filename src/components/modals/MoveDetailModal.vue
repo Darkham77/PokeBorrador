@@ -129,8 +129,8 @@ const description = computed(() => {
 
 .type-cat-row {
   display: flex;
-  gap: 16px;
   align-items: center;
+  gap: 16px;
 }
 
 
@@ -138,134 +138,134 @@ const description = computed(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: Rgba(255, 255, 255, 0.03);
   padding: 8px 16px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(255 255 255 / 3%);
 
   .icon { font-size: 14px; }
   .text {
+    color: #888;
     font-size: 9px;
     font-weight: bold;
-    color: #888;
     letter-spacing: 0.5px;
   }
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 16px;
+  grid-template-columns: 1fr 1fr;
 }
 
 .stat-item {
-  background: Rgba(255, 255, 255, 0.02);
   padding: 20px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 18px;
+  background: Rgb(255 255 255 / 2%);
   text-align: center;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
   
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.04);
-    border-color: var(--move-accent);
+    background: Rgb(255 255 255 / 4%);
     transform: Translatey(-2px);
+    border-color: var(--move-accent);
   }
 
   .label {
     display: block;
-    font-size: 8px;
     color: #666;
+    font-size: 8px;
     margin-bottom: 10px;
     letter-spacing: 1px;
   }
 
   .val {
+    color: $white;
+    font-family: Outfit, sans-serif;
     font-size: 26px;
     font-weight: 900;
-    color: $white;
-    font-family: 'Outfit', sans-serif;
     
     small {
       font-size: 14px;
-      margin-left: 2px;
       opacity: 0.5;
+      margin-left: 2px;
     }
   }
 }
 
 .pp-info {
-  background: Rgb(from var(--move-accent, #ffffff) r g b / 0.1);
-  padding: 18px 24px;
-  border-radius: 18px;
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  position: relative;
+  padding: 18px 24px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: 18px;
+  background: Rgb(from var(--move-accent, #fff) r g b / 10%);
   overflow: hidden;
 
   &::before {
-    content: '';
     position: absolute;
-    left: 0;
     top: 0;
     bottom: 0;
+    left: 0;
     width: 4px;
     background: var(--move-accent);
+    content: '';
   }
 
   .label { 
-    font-size: 9px; 
     color: #aaa; 
+    font-size: 9px; 
     font-weight: bold;
     letter-spacing: 1px;
   }
   
   .val { 
+    color: var(--move-accent); 
     font-size: 20px; 
-    font-weight: 900; 
-    color: var(--move-accent);
-    text-shadow: 0 0 10px Rgb(from var(--move-accent, #ffffff) r g b / 0.1);
+    font-weight: 900;
+    text-shadow: 0 0 10px Rgb(from var(--move-accent, #fff) r g b / 10%);
   }
 }
 
 .description-box {
-  background: Rgba(0, 0, 0, 0.2);
+  @include gpu-layer;
+
   padding: 24px;
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgb(0 0 0 / 20%);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(5px);
-  backdrop-filter: Blur(5px);
-  @include gpu-layer;
 }
 
 .desc-title {
-  font-size: 8px;
   color: var(--move-accent);
+  font-size: 8px;
+  opacity: 0.9;
   margin-bottom: 14px;
   letter-spacing: 1.5px;
-  opacity: 0.9;
 }
 
 .desc-text {
-  font-size: 13px;
-  line-height: 1.6;
-  color: #eee;
-  font-weight: 400;
   margin: 0;
+  color: #eee;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.6;
   text-wrap: balance;
 }
 
 .action-btn {
   width: 100%;
   padding: 18px;
-  background: Rgba(255, 255, 255, 0.03);
-  color: #aaa;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 16px;
+  background: Rgb(255 255 255 / 3%);
+  color: #aaa;
   font-size: 10px;
   cursor: pointer;
   
@@ -273,9 +273,9 @@ const description = computed(() => {
   &:hover {
     background: var(--move-accent);
     color: $white;
-    border-color: transparent;
     transform: Translatey(-3px);
-    box-shadow: 0 10px 20px Rgba(0, 0, 0, 0.4), 0 0 15px Rgb(from var(--move-accent, #ffffff) r g b / 0.1);
+    border-color: transparent;
+    box-shadow: 0 10px 20px Rgb(0 0 0 / 40%), 0 0 15px Rgb(from var(--move-accent, #fff) r g b / 10%);
   }
 }
 
@@ -283,21 +283,21 @@ const description = computed(() => {
   border-top: 1px solid var(--move-accent) !important;
   
   &::after {
-    content: '';
     position: absolute;
     top: 0;
     left: 50%;
-    transform: Translatex(-50%);
     width: 60px;
     height: 3px;
-    background: var(--move-accent);
     border-radius: 0 0 4px 4px;
+    background: var(--move-accent);
+    transform: Translatex(-50%);
+    content: '';
     box-shadow: 0 0 15px var(--move-accent);
   }
 }
 
 // Glass inset helper
 .glass-inset {
-  box-shadow: inset 0 2px 10px Rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 10px Rgb(0 0 0 / 20%);
 }
 </style>

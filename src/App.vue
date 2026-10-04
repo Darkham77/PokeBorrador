@@ -335,64 +335,63 @@ const handleReclaim = async () => {
 @use "@/styles/core/tools" as *;
 
 #vue-app {
-  width: 100dvw;
-  height: 100dvh;
-  max-width: 100dvw;
-  max-height: 100dvh;
-  overflow: hidden;
-  overscroll-behavior: none !important;
-  overscroll-behavior-x: none !important;
-  overscroll-behavior-y: none !important;
   position: relative;
+  width: 100dvw;
+  max-width: 100dvw;
+  height: 100dvh;
+  max-height: 100dvh;
   margin: 0;
   padding: 0;
   background: $darker;
+  overflow: hidden;
+  overscroll-behavior: none !important;
 }
 
 .pwa-progress-wrapper {
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  width: 100%;
   margin-top: 15px;
 }
 
 .pwa-progress-container {
+  position: relative;
   width: 100%;
   height: 16px;
-  background: Rgba(0, 0, 0, 0.5);
   border: 2px solid var(--yellow);
   border-radius: 4px;
+  background: Rgb(0 0 0 / 50%);
   overflow: hidden;
-  position: relative;
 }
 
 .pwa-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--yellow) 0%, #ffc107 100%);
+  background: Linear-Gradient(90deg, var(--yellow) 0%, #ffc107 100%);
   box-shadow: 0 0 8px var(--yellow);
 }
 
 .pwa-progress-text {
+  @include pixelated;
+
+  color: #fff;
   font-family: var(--font-pixel);
   font-size: 8px;
-  color: #fff;
   text-shadow: 1px 1px 0 #000;
-  @include pixelated;
 }
 
 .pv-button-retro {
   @include pixelated;
-  background: var(--yellow);
-  color: black;
-  border: none;
-  padding: 12px 24px;
-  font-size: 12px;
-  cursor: pointer;
   
   width: 100%;
+  padding: 12px 24px;
+  border: none;
   border-radius: 4px;
+  background: var(--yellow);
+  color: black;
+  font-size: 12px;
+  cursor: pointer;
   box-shadow: 0 4px 0 #b39200;
   margin-top: 15px;
   
@@ -408,8 +407,9 @@ const handleReclaim = async () => {
 }
 
 .zoom-target {
-  zoom: var(--app-zoom, 1);
   @include gpu-layer;
+
+  zoom: var(--app-zoom, 1);
   will-change: zoom, transform;
 }
 

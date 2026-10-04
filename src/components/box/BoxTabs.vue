@@ -47,19 +47,19 @@ const emit = defineEmits<{
 
 .box-tabs {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  gap: 16px;
   flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
   
   .tabs-list {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
-    flex: 1 1 auto;
     min-width: 0;
+    flex: 1 1 auto;
   }
 
   .tabs-extra-actions {
@@ -68,38 +68,39 @@ const emit = defineEmits<{
     gap: 12px;
     flex-shrink: 0;
     
-    @media (max-width: 768px) {
-      width: 100%;
+    @media (width <= 768px) {
       justify-content: flex-end;
+      width: 100%;
       margin-top: 4px;
       padding-top: 8px;
-      border-top: 1px solid Rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgb(255 255 255 / 5%);
     }
   }
 
-  @media (max-width: 1100px) {
+  @media (width <= 1100px) {
     padding: 12px;
   }
 }
 
 .box-buy-new-btn {
   @include btn-vicio('primary', 'sm', false);
-  margin-left: 8px;
+
   height: 32px;
-  font-size: 7px;
-  border-radius: 8px;
   padding: 0 12px;
+  border-radius: 8px;
+  font-size: 7px;
+  margin-left: 8px;
   flex-shrink: 0;
 
   .btn-price {
-    margin-left: 4px;
     opacity: 0.8;
+    margin-left: 4px;
   }
 
-  @media (max-width: 900px) {
-    .btn-price { display: none; }
+  @media (width <= 900px) {
     padding: 0 8px;
     margin-left: 4px;
+    .btn-price { display: none; }
   }
 
   .currency-symbol {

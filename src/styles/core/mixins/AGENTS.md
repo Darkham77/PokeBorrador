@@ -25,7 +25,9 @@ Frontend Developers.
   - In custom pixel fonts (`Pokemon FireRed LeafGreen`), descenders (`g`, `p`, `q`, `y`, `j`) extend down to `y = -204`. Truncated text containers MUST never use `line-height < 1.4` without bottom padding; otherwise the browser line box clips the bottom glyph strokes.
 - **Unified Card & Empty-State Mixins (`_shell.scss`)**:
   - Home dashboard cards and widgets must reuse `@mixin home-section-card` to standardize card surface geometry, padding, shadows, and backdrop filters.
-  - Dashed placeholder and unconfigured states must reuse `@mixin empty-state-card` for consistent empty-state layout and button styling.
+- **Button Mixin Evaluation Order & Contrast Standard (`_buttons.scss`)**:
+  - In `btn-vicio-variant($variant, $size)`, CSS properties (`background`, `color`, `box-shadow`) MUST be emitted strictly after evaluating all `@if $variant == ...` blocks to prevent variant collapsing into the default palette.
+  - Any button with white text (`#fff`) MUST enforce a 4-way black text outline (`text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;`) for accessibility and retro readability.
 
 ## Child DOX Index
 

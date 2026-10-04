@@ -109,16 +109,16 @@ defineProps<{
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 30px 16px;
-  background: Rgba(15, 23, 42, 0.6);
-  border: 1px dashed Rgba(251, 191, 36, 0.3);
-  border-radius: 12px;
   gap: 8px;
+  padding: 30px 16px;
+  border: 1px dashed Rgb(251 191 36 / 30%);
+  border-radius: 12px;
+  background: Rgb(15 23 42 / 60%);
+  text-align: center;
 
   .podium-empty-icon { font-size: 32px; }
-  .podium-empty-title { font-family: var(--font-pixel); font-size: 10px; color: #fbbf24; margin: 0; }
-  .podium-empty-desc { font-family: var(--font-ui); font-size: 9px; color: #94a3b8; max-width: 320px; line-height: 1.4; }
+  .podium-empty-title { margin: 0; color: #fbbf24; font-family: var(--font-pixel); font-size: 10px; }
+  .podium-empty-desc { max-width: 320px; color: #94a3b8; font-family: var(--font-ui); font-size: 9px; line-height: 1.4; }
 }
 
 .podium-display {
@@ -129,8 +129,8 @@ defineProps<{
 
 .podium-steps-container {
   display: flex;
-  align-items: flex-end;
   justify-content: center;
+  align-items: flex-end;
   gap: 8px;
   padding: 10px 0;
 }
@@ -144,31 +144,31 @@ defineProps<{
 
   .podium-crown { font-size: 18px; }
   .podium-player-name {
+    max-width: 100%;
+    color: #f8fafc;
     font-family: var(--font-pixel);
     font-size: 8px;
     line-height: 1.45;
-    padding-bottom: 2px;
-    color: #f8fafc;
     text-align: center;
+    padding-bottom: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 100%;
   }
-  .podium-elo { font-family: var(--font-ui); font-size: 8px; color: #fbbf24; font-weight: bold; }
+  .podium-elo { color: #fbbf24; font-family: var(--font-ui); font-size: 8px; font-weight: bold; }
 
   .pedestal {
-    width: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    width: 100%;
     border-radius: 6px 6px 0 0;
-    .pedestal-num { font-family: var(--font-pixel); font-size: 16px; font-weight: bold; color: Rgba(255, 255, 255, 0.8); }
+    .pedestal-num { color: Rgb(255 255 255 / 80%); font-family: var(--font-pixel); font-size: 16px; font-weight: bold; }
   }
 
-  &.step-first .pedestal { height: 70px; background: linear-gradient(180deg, #f59e0b, #78350f); border: 1px solid #fbbf24; }
-  &.step-second .pedestal { height: 50px; background: linear-gradient(180deg, #94a3b8, #334155); border: 1px solid #cbd5e1; }
-  &.step-third .pedestal { height: 35px; background: linear-gradient(180deg, #d97706, #451a03); border: 1px solid #b45309; }
+  &.step-first .pedestal { height: 70px; border: 1px solid #fbbf24; background: Linear-Gradient(180deg, #f59e0b, #78350f); }
+  &.step-second .pedestal { height: 50px; border: 1px solid #cbd5e1; background: Linear-Gradient(180deg, #94a3b8, #334155); }
+  &.step-third .pedestal { height: 35px; border: 1px solid #b45309; background: Linear-Gradient(180deg, #d97706, #451a03); }
 }
 
 .podium-rest-list {
@@ -179,33 +179,33 @@ defineProps<{
 
 .podium-rest-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   padding: 6px 12px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
+  border: 1px solid Rgb(255 255 255 / 6%);
   border-radius: 6px;
+  background: Rgb(255 255 255 / 2%);
   font-size: 9px;
 
-  .rest-rank { font-family: var(--font-pixel); color: #64748b; width: 24px; }
-  .rest-name { font-family: var(--font-pixel); color: #f8fafc; flex: 1; }
+  .rest-rank { width: 24px; color: #64748b; font-family: var(--font-pixel); }
+  .rest-name { color: #f8fafc; font-family: var(--font-pixel); flex: 1; }
   .rest-tier { color: #94a3b8; margin-right: 10px; }
   .rest-elo { color: #f59e0b; font-weight: bold; }
 }
 
 .loader {
-  text-align: center;
   padding: 30px;
   color: #94a3b8;
   font-size: 10px;
+  text-align: center;
 
   .spinner {
     width: 24px;
     height: 24px;
-    border: 2px solid Rgba(255, 255, 255, 0.1);
-    border-top-color: #fbbf24;
-    border-radius: 50%;
     margin: 0 auto 10px;
+    border: 2px solid Rgb(255 255 255 / 10%);
+    border-radius: 50%;
+    border-top-color: #fbbf24;
   }
 }
 </style>

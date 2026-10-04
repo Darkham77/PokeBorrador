@@ -60,10 +60,12 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
       id: 'validate_spanish_ids',
       name: 'Spanish Logic Strings & Leaks Auditor',
       description: 'Garantiza IDs en inglés y traducciones en español',
+      icon: '🇪🇸',
       family: 'domain_data',
       ruleIds: SPANISH_ID_RULES,
+      packageName: 'Dominio',
       ruleDescriptions: {
-        'spanish-logic-id': 'ID en español en vez del identificador inglés'
+        'spanish-logic-id': 'ID en español en vez del inglés'
       },
       roots,
       allowedExtensions: new Set(['.ts', '.vue'])

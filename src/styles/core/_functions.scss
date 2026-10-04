@@ -9,12 +9,12 @@
 // Helper para outlines de sprites (Sharp 4-Way)
 // DEPRECATED: Usar pokemon-outline-optimized() para 1px
 @function pokemon-outline-1px($color: $darker) {
-  @return url(#pixel-outline-optimized);
+  @return url("#pixel-outline-optimized");
 }
 
 // LEGACY: Usar pokemon-outline-optimized() para 1px
 @function pokemon-outline-2px($color: $darker) {
-  @return url(#pixel-outline-optimized-3px);
+  @return url("#pixel-outline-optimized-3px");
 }
 
 @function pokemon-outline-performance($color: $darker) {
@@ -22,12 +22,13 @@
 }
 
 @function pokemon-outline-optimized() {
-  @return url(#pixel-outline-optimized-3px);
+  @return url("#pixel-outline-optimized-3px");
 }
 
 @function pokemon-silhouette-optimized() {
-  @return url(#pixel-silhouette-optimized);
+  @return url("#pixel-silhouette-optimized");
 }
+
 @function aura-red-classic($color: #ff0000) {
   @return Drop-Shadow(0 0 2px $color) Drop-Shadow(0 0 5px $color);
 }

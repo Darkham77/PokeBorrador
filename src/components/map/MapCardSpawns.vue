@@ -121,11 +121,11 @@ defineExpose({
 .spawn-tooltip-trigger {
   position: relative;
   z-index: calc(var(--z-map-floor) + 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   pointer-events: auto;
 }
 </style>

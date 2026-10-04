@@ -11,7 +11,7 @@ import { MODAL_METADATA } from '@/logic/modals/metadata.ts'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { ItemId } from '@/data/inventory/items'
 import type { PokemonMoveId } from '@/data/battle/moves'
-import { SMALL_SCREEN_BREAKPOINT_PX, MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay.ts'
+import { SMALL_SCREEN_BREAKPOINT_PX, MOBILE_SCREEN_BREAKPOINT_PX, DEFAULT_WINDOW_WIDTH_PX } from '@/logic/constants/gameplay.ts'
 import type { LowPowerModeSetting } from '@/types/system/game'
 
 
@@ -48,7 +48,7 @@ export const useUIStore = defineStore('ui', () => {
   const debugPokedexMode = ref<'none' | 'seen' | 'caught' | null>(null)
 
   // Screen width tracking for dynamic reactivity (resizing support)
-  const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+  const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : DEFAULT_WINDOW_WIDTH_PX)
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', () => {
       windowWidth.value = window.innerWidth

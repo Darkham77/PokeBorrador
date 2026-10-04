@@ -1,99 +1,98 @@
 @use "@/styles/core/mixins" as *;
+
 // src/styles/components/_map-card-render.scss
 @use 'sass:string';
 @use '../core/tools' as *;
 @use './map-card-info';
 
 .map-card {
+  @include pixelated;
+
   position: relative;
-  height: 220px;
-  background: transparent; 
-  border-radius: 20px;
-  border: 2px solid Rgba(255, 255, 255, 0.2);
-  padding: 15px;
-  cursor: pointer;
-  overflow: hidden;
   z-index: var(--z-base);
   display: flex;
   flex-direction: column;
   align-items: center;
-  @include pixelated;
+  height: 220px;
+  padding: 15px;
+  border: 2px solid Rgb(255 255 255 / 20%); 
+  border-radius: 20px;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
   will-change: transform, border-color, box-shadow;
 
   // Disable inherited location-card background to prevent sharp corners showing behind
   &::before, &.location-card::before {
     display: none !important;
-    content: none !important;
     background: none !important;
-    background-image: none !important;
+    content: none !important;
   }
 
   .map-card-bg {
+    @include pixelated;
+
     position: absolute;
+    z-index: var(--z-base); // Capa base del fondo 
+    border-radius: 18px;
+    transform: none;
     inset: 0; 
-    border-radius: 18px; 
     background-image: var(--bg-image);
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
-    z-index: var(--z-base); // Capa base del fondo
-    transform: none; 
-    filter: var(--weather-only-filter, Brightness(1) contrast(1));
+    background-repeat: no-repeat; 
+    filter: var(--weather-only-filter, Brightness(1) Contrast(1));
     will-change: filter, opacity;
-    
-    @include pixelated;
     image-rendering: -webkit-optimize-contrast !important;
-    #{"image-rendering"}: crisp-edges !important;
     image-rendering: pixelated !important;
-    -webkit-backface-visibility: visible !important;
     backface-visibility: visible !important;
     -ms-interpolation-mode: nearest-neighbor !important;
+    #{"image-rendering"}: crisp-edges !important;
   }
 
   // Vignette
   .map-card-overlay {
     position: absolute;
-    inset: 0;
+    z-index: var(--z-map-overlay); // Constante centralizada (9)
     border-radius: 18px;
-    background: linear-gradient(to top, 
-      Rgba(0, 0, 0, 0.85) 0%, 
-      Rgba(0, 0, 0, 0.2) 50%, 
-      Rgba(0, 0, 0, 0.8) 100%
+    background: Linear-Gradient(to top, 
+      Rgb(0 0 0 / 85%) 0%, 
+      Rgb(0 0 0 / 20%) 50%, 
+      Rgb(0 0 0 / 80%) 100%
     );
     opacity: 0.35;
+    inset: 0;
     will-change: opacity, background;
-    
-    z-index: var(--z-map-overlay); // Constante centralizada (9)
     pointer-events: none;
   }
 
   &.is-hovered {
     .map-card-bg { 
-      filter: var(--atmosphere-filter-hover, Brightness(1.0) contrast(1.2)); 
+      filter: var(--atmosphere-filter-hover, Brightness(1.0) Contrast(1.2)); 
     }
   }
 
   &.is-low-power {
     &.is-hovered {
       .map-card-bg {
-        filter: var(--weather-only-filter, Brightness(1) contrast(1));
+        filter: var(--weather-only-filter, Brightness(1) Contrast(1));
       }
     }
   }
 
   &.locked, &.safari-locked {
+    opacity: 1 !important;
     will-change: transform, filter, opacity;
     filter: none;
-    opacity: 1 !important;
 
     .map-card-bg { 
       filter: Grayscale(1) Brightness(0.4); 
     }
     
     .location-header, .location-spawns, .guardian-status-badge, .faction-dominance {
+      opacity: 0.4;
       will-change: transform, filter, opacity;
       filter: Grayscale(1) Brightness(0.6);
-      opacity: 0.4;
     }
   }
 
@@ -105,18 +104,17 @@
 /* Spawns */
 .location-spawns {
   position: absolute;
-  top: 58px; 
-  bottom: 15px; 
-  left: 50px;  // Clears the 32px pills at left:6px + gap
-  right: 8px;  // Closer to the right border
+  z-index: var(--z-map-spawns) !important;
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: var(--z-map-spawns) !important; 
+  align-items: center;
+  inset: 58px 8px 15px 50px;  // Closer to the right border  // Clears the 32px pills at left:6px + gap 
   pointer-events: none;
 }
 
 .spawn-grid-container {
+  @include pixelated;
+
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   grid-template-rows: repeat(var(--grid-rows), minmax(0, 1fr));
@@ -125,37 +123,36 @@
   height: 100%;
   margin: 0 auto;
   pointer-events: none;
-  @include pixelated;
 
   &.show-debug-grid .spawn-slot {
-    outline: 1px solid Rgba(255, 0, 255, 1);
-    background: Rgba(255, 0, 255, 0.05);
+    background: Rgb(255 0 255 / 5%);
+    outline: 1px solid Rgb(255 0 255 / 100%);
   }
 }
 
 .spawn-slot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   overflow: visible;
 
   .spawn-content {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .sprite-wrapper {
+    position: relative;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: calc(100% * var(--sprite-scale));
     height: calc(100% * var(--sprite-scale));
-    position: relative;
     pointer-events: auto;
     
     &.atmospheric-spawn, &.rare-spawn {
@@ -167,74 +164,78 @@
     }
 
     .caught-badge {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 1.5px solid var(--black);
-      background: Linear-Gradient(to bottom, var(--red) 50%, var(--white) 50%);
-      box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.4);
-      z-index: var(--z-base);
-      pointer-events: none;
       @include smooth;
 
+      position: absolute;
+      right: -2px;
+      bottom: -2px;
+      z-index: var(--z-base);
+      width: 12px;
+      height: 12px;
+      border: 1.5px solid var(--black);
+      border-radius: 50%;
+      background: Linear-Gradient(to bottom, var(--red) 50%, var(--white) 50%);
+      box-shadow: 0 1px 3px Rgb(0 0 0 / 40%);
+      pointer-events: none;
+
       &::after {
-        content: '';
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: Translate(-50%, -50%);
         width: 4px;
         height: 4px;
-        background: white;
         border: 1px solid var(--black);
         border-radius: 50%;
+        background: white;
+        transform: Translate(-50%, -50%);
+        content: '';
       }
       
       &::before {
-        content: '';
         position: absolute;
         top: 50%;
-        left: 0;
         right: 0;
+        left: 0;
         height: 1.5px;
         background: var(--black);
         transform: Translatey(-50%);
+        content: '';
       }
     }
   }
 
   .pokemon-atmosphere-wrapper, .spawn-atmosphere-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: visible;
   }
 
   img {
+    @include pixelated;
+
     width: 100%;
     height: 100%;
     padding: 0;
     object-fit: contain;
-    @include pixelated;
     
     &:not(.is-low-power *) {
       will-change: transform, filter, opacity;
     }
     
-    &:not(.spawn-silhouette):not(.is-pre-rendered) {
-      &.pixelated, & {
-        filter: pokemon-outline-optimized();
-      }
+    &:not(.spawn-silhouette, .is-pre-rendered) {
+      filter: pokemon-outline-optimized();
+    }
+    
+    &:hover {
+      z-index: calc(var(--z-map-spawns) + 1) !important;
     }
 
     &.spawn-silhouette:not(.is-pre-rendered) {
-      filter: pokemon-silhouette-optimized();
       opacity: 1 !important;
+      filter: pokemon-silhouette-optimized();
     }
 
     // Fast mode toggle
@@ -242,67 +243,65 @@
     .performance-mode & {
       filter: none;
     }
-    
-    &:hover {
-      z-index: calc(var(--z-map-spawns) + 1) !important;
-    }
   }
 }
 
 /* Lock Overlay */
 .lock-overlay {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: var(--z-low);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  inset: 0;
   pointer-events: none;
 }
 
 .lock-text {
   @include pixelated;
   @include pixelated;
-  font-size: 13px;
-  text-align: center;
-  line-height: 1.4;
+
   padding: 0 10px;
-  color: Rgba(255, 71, 71, 1);
-  text-shadow: 0 0 10px Rgba(255, 0, 0, 0.8), 0 2px 4px Rgba(0,0,0,1);
+  color: Rgb(255 71 71 / 100%);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  text-shadow: 0 0 10px Rgb(255 0 0 / 80%), 0 2px 4px Rgb(0 0 0 / 100%);
   letter-spacing: 1px;
 }
 
 .safari-locked .lock-text {
-  color: Rgba(255, 165, 0, 1);
-  text-shadow: 0 0 10px Rgba(255, 165, 0, 0.8), 0 2px 4px Rgba(0,0,0,1);
+  color: Rgb(255 165 0 / 100%);
+  text-shadow: 0 0 10px Rgb(255 165 0 / 80%), 0 2px 4px Rgb(0 0 0 / 100%);
 }
 
 /* Miscellaneous */
 .dom-badge {
   @include map-pill-base;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
   width: 32px;
   min-width: 32px;
   height: 32px;
   padding: 0;
   font-size: 16px;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
 
   .pill-content {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     line-height: 1;
     text-align: center;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
   }
   
   &.winning {
     color: var(--yellow);
-    border-color: Rgba(255, 215, 0, 0.3);
+    border-color: Rgb(255 215 0 / 30%);
   }
 }
 
@@ -315,6 +314,6 @@
 .faction-logo {
   width: 32px;
   height: 32px;
-  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
+  filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 80%));
 }
 

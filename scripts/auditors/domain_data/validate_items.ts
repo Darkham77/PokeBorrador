@@ -63,19 +63,21 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
       id: 'validate_items',
       name: 'Item Integrity Validator',
       description: 'Ítems faltantes, sin categoría o con efectos inválidos',
+      icon: '🧪',
       family: 'domain_data',
       ruleIds: ITEM_RULES,
+      packageName: 'Ítems',
       ruleDescriptions: {
-        'item-missing-field': 'Campo faltante en ítem del catálogo',
-        'item-sprite-not-found': 'Sprite de ítem no encontrado en assets',
-        'item-unknown-category': 'Categoría desconocida en catálogo de ítems',
-        'item-missing-healing-effect': 'Efecto curativo faltante en ítem medicinal',
-        'item-invalid-healing-effect': 'Efecto curativo inválido en ítem medicinal',
+        'item-missing-field': 'Campo faltante en ítem',
+        'item-sprite-not-found': 'Sprite de ítem no encontrado',
+        'item-unknown-category': 'Categoría desconocida en ítem',
+        'item-missing-healing-effect': 'Efecto curativo faltante',
+        'item-invalid-healing-effect': 'Efecto curativo inválido',
         'item-missing-held-type': 'Tipo de ítem equipado faltante',
-        'item-english-desc-leak': 'Descripción en inglés filtrada en ítem',
-        'item-english-name-leak': 'Nombre en inglés filtrado en ítem',
-        'item-phantom-healing': 'Efecto curativo fantasma sin item curativo',
-        'item-sprite-collision': 'Colisión de sprites en catálogo de ítems'
+        'item-english-desc-leak': 'Descripción en inglés filtrada',
+        'item-english-name-leak': 'Nombre en inglés filtrado',
+        'item-phantom-healing': 'Efecto curativo fantasma sin ítem',
+        'item-sprite-collision': 'Colisión de sprites en ítems'
       },
       requiredFiles: [SHOP_FILE, BATTLE_FILE]
     });

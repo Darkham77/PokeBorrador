@@ -136,11 +136,12 @@ const handleMove = (targetBoxIndex: number) => {
   
   .move-message {
     @include pixelated;
+
+    color: var(--white);
     font-size: 11px;
+    line-height: 1.5;
     text-align: center;
     margin-bottom: 25px;
-    color: var(--white);
-    line-height: 1.5;
     text-transform: uppercase;
 
     .p-name {
@@ -152,57 +153,56 @@ const handleMove = (targetBoxIndex: number) => {
 
 .boxes-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
+  grid-template-columns: repeat(2, 1fr);
   margin-bottom: 30px;
 }
 
 .box-select-btn {
-  @include shell(Rgba(30, 41, 59, 0.4)); 
-  padding: 1px;
+  @include shell(Rgba(30, 41, 59, 0.4));
+
   position: relative;
-  cursor: pointer;
-  
-  border-radius: 12px;
-  overflow: hidden;
   display: flex;
-  flex-direction: column;
-
-  .btn-inner {
-    padding: 20px 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    z-index: var(--z-base);
-    position: relative;
-    width: 100%;
-  }
-
-  .border-glow {
-    position: absolute;
-    inset: 0;
-    background: Radial-Gradient(circle at center, Rgba(255,255,255,0.05) 0%, transparent 70%);
-    opacity: 0;
-    
-    z-index: calc(var(--z-base) - 1);
-  }
+  flex-direction: column; 
+  padding: 1px;
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
 
   &:hover:not(:disabled) {
     transform: Translatey(-4px);
     border-color: var(--yellow) !important;
-    box-shadow: 0 10px 25px Rgba(0, 0, 0, 0.3), 0 0 15px Rgba(251, 191, 36, 0.2);
+    box-shadow: 0 10px 25px Rgb(0 0 0 / 30%), 0 0 15px Rgb(251 191 36 / 20%);
     
     .border-glow { opacity: 1; }
     .box-number { color: var(--yellow); }
   }
 
   &:disabled {
+    opacity: 0.4;
     cursor: not-allowed;
     will-change: transform, filter, opacity;
   filter: Grayscale(1);
-    opacity: 0.4;
+  }
+
+  .btn-inner {
+    position: relative;
+    z-index: var(--z-base);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 20px 10px;
+    background: transparent;
+  }
+
+  .border-glow {
+    position: absolute;
+    z-index: calc(var(--z-base) - 1);
+    background: Radial-Gradient(circle at center, Rgb(255 255 255 / 5%) 0%, transparent 70%);
+    opacity: 0;
+    inset: 0;
   }
 
   &.is-current {
@@ -217,8 +217,9 @@ const handleMove = (targetBoxIndex: number) => {
 
   .box-number {
     @include pixelated;
-    font-size: 10px;
+
     color: var(--white);
+    font-size: 10px;
     
   }
 
@@ -229,13 +230,14 @@ const handleMove = (targetBoxIndex: number) => {
     
     .count {
       @include pixelated;
-      font-size: 14px;
+
       color: var(--white);
+      font-size: 14px;
       font-weight: 900;
     }
     .max {
-      font-size: 8px;
       color: var(--gray);
+      font-size: 8px;
     }
   }
 
@@ -244,14 +246,15 @@ const handleMove = (targetBoxIndex: number) => {
     
     .tag {
       @include pixelated;
-      font-size: 6px;
+
       padding: 3px 8px;
       border-radius: 4px;
+      font-size: 6px;
       text-transform: uppercase;
 
       &.current { background: var(--blue); color: white; }
       &.full { background: var(--red); color: white; }
-      &.available { background: Rgba(255, 255, 255, 0.05); color: var(--gray); }
+      &.available { background: Rgb(255 255 255 / 5%); color: var(--gray); }
     }
   }
 }
@@ -262,6 +265,7 @@ const handleMove = (targetBoxIndex: number) => {
   .btn-cancel {
     @include btn-vicio('neutral', 'lg', true);
     @include pixelated;
+
     font-size: 10px;
   }
 }

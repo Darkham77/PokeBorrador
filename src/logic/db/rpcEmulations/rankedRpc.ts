@@ -2,10 +2,19 @@ import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.
 import { logger } from '@/logic/utils/logger.ts';
 import { getServerInstant } from '@/logic/utils/timeUtils.ts';
 import { MIN_INITIAL_ELO, ELO_SOFT_RESET_DIVISOR } from '@/logic/pvp/eloRatingMath.ts';
+import {
+  STANDARD_COMPETITIVE_LEVEL,
+  MAX_INDIVIDUAL_VALUE,
+  DIAMANTE_SPEED_INDIVIDUAL_VALUE,
+  SEASONAL_BATTLE_COINS,
+  DEFAULT_FEATURED_REPLAYS_LIMIT,
+} from '@/logic/pvp/rankedEngine.ts';
+import { ALPHANUMERIC_RADIX } from '@/logic/constants/gameplay.ts';
 import type { DBResponse } from '@/types/system/database';
 
 const RECENT_AWARD_LOCKOUT_MS = 600000 as const; // 10 minutes in ms
 const MIN_MATCHES_FOR_RANKED = 5 as const;
+const MAX_FEATURED_REPLAYS_LIMIT = 50 as const;
 
 interface StoredEligiblePlayer {
   id: string;
@@ -58,43 +67,43 @@ function generateTierPrizes(tier: string, seasonName: string, rank: number, elo:
   switch (tier) {
     case 'maestro':
       prizes.push(
-        { type: 'pokemon', species: 'eevee', level: 50, shiny: true, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } },
+        { type: 'pokemon', species: 'eevee', level: STANDARD_COMPETITIVE_LEVEL, shiny: true, ivs: { hp: MAX_INDIVIDUAL_VALUE, atk: MAX_INDIVIDUAL_VALUE, def: MAX_INDIVIDUAL_VALUE, spa: MAX_INDIVIDUAL_VALUE, spd: MAX_INDIVIDUAL_VALUE, spe: MAX_INDIVIDUAL_VALUE } },
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 3 },
         { type: 'item', item: 'Ticket Islas Espumas', qty: 3 },
-        { type: 'bc', amount: 500, battleCoins: 500 }
+        { type: 'bc', amount: SEASONAL_BATTLE_COINS.MAESTRO, battleCoins: SEASONAL_BATTLE_COINS.MAESTRO }
       );
       break;
     case 'diamante':
       prizes.push(
-        { type: 'pokemon', species: 'eevee', level: 50, shiny: false, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 28 } },
+        { type: 'pokemon', species: 'eevee', level: STANDARD_COMPETITIVE_LEVEL, shiny: false, ivs: { hp: MAX_INDIVIDUAL_VALUE, atk: MAX_INDIVIDUAL_VALUE, def: MAX_INDIVIDUAL_VALUE, spa: MAX_INDIVIDUAL_VALUE, spd: MAX_INDIVIDUAL_VALUE, spe: DIAMANTE_SPEED_INDIVIDUAL_VALUE } },
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 2 },
         { type: 'item', item: 'Ticket Islas Espumas', qty: 2 },
-        { type: 'bc', amount: 350, battleCoins: 350 }
+        { type: 'bc', amount: SEASONAL_BATTLE_COINS.DIAMANTE, battleCoins: SEASONAL_BATTLE_COINS.DIAMANTE }
       );
       break;
     case 'platino':
       prizes.push(
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 2 },
         { type: 'item', item: 'Ticket Islas Espumas', qty: 2 },
-        { type: 'bc', amount: 250, battleCoins: 250 }
+        { type: 'bc', amount: SEASONAL_BATTLE_COINS.PLATINO, battleCoins: SEASONAL_BATTLE_COINS.PLATINO }
       );
       break;
     case 'oro':
       prizes.push(
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 1 },
         { type: 'item', item: 'Ticket Islas Espumas', qty: 1 },
-        { type: 'bc', amount: 150, battleCoins: 150 }
+        { type: 'bc', amount: SEASONAL_BATTLE_COINS.ORO, battleCoins: SEASONAL_BATTLE_COINS.ORO }
       );
       break;
     case 'plata':
       prizes.push(
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 1 },
-        { type: 'bc', amount: 75, battleCoins: 75 }
+        { type: 'bc', amount: SEASONAL_BATTLE_COINS.PLATA, battleCoins: SEASONAL_BATTLE_COINS.PLATA }
       );
       break;
     default:
       prizes.push(
-        { type: 'bc', amount: 25, battleCoins: 25 }
+        { type: 'bc', amount: SEASONAL_BATTLE_COINS.BRONCE, battleCoins: SEASONAL_BATTLE_COINS.BRONCE }
       );
       break;
   }
@@ -309,22 +318,27 @@ async function checkReplayParticipantsTop10(p1UserUid: string, p2UserUid: string
 function resolveBattleReplayCode(rawCode?: unknown): string {
   const trimmed = String(rawCode || '').trim();
   if (trimmed) return trimmed;
-  const p1 = Math.random().toString(36).substring(2, 6).toUpperCase();
-  const p2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const p1 = Math.random().toString(ALPHANUMERIC_RADIX).substring(2, 6).toUpperCase();
+  const p2 = Math.random().toString(ALPHANUMERIC_RADIX).substring(2, 6).toUpperCase();
   return `BTL-${p1}-${p2}`;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleExistingReplayViews(existing: any, battleCode: string): Promise<DBResponse> {
+interface ExistingReplayRecord {
+  id?: unknown;
+  is_top10_archived?: unknown;
+  created_at?: unknown;
+}
+
+async function handleExistingReplayViews(existing: ExistingReplayRecord, battleCode: string): Promise<DBResponse> {
   await queryLocal('UPDATE battle_replays SET views_count = views_count + 1 WHERE battle_code = ?', [battleCode]);
   await persistSQLite();
   return {
     data: {
       ok: true,
-      replayId: String(existing.id),
+      replayId: String(existing.id ?? ''),
       battleCode,
       isTop10Archived: Boolean(existing.is_top10_archived),
-      createdAt: String(existing.created_at)
+      createdAt: String(existing.created_at ?? '')
     },
     error: null
   };
@@ -470,7 +484,7 @@ export async function emulateGetFeaturedReplays(
   _sqliteDb: SQLiteDatabase,
   params: Record<string, unknown> = {}
 ): Promise<DBResponse> {
-  const limit = Math.min(50, Math.max(1, Number(params.p_limit ?? params.limit ?? 10)));
+  const limit = Math.min(MAX_FEATURED_REPLAYS_LIMIT, Math.max(1, Number(params.p_limit ?? params.limit ?? DEFAULT_FEATURED_REPLAYS_LIMIT)));
 
   try {
     const rows = await queryLocal(`

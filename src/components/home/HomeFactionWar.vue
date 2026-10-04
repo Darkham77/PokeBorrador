@@ -136,32 +136,32 @@ onMounted(() => {
 @use "@/styles/core/_mixins" as *;
 
 .home-faction-war {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px 16px;
-  box-sizing: border-box;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 12px;
+  background: Rgb(18 22 34 / 85%);
+  box-sizing: border-box;
+  box-shadow: 0 4px 16px Rgb(0 0 0 / 40%);
 }
 
 .card-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
   gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid Rgb(255 255 255 / 6%);
 }
 
 .title-wrap {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  flex: 1;
   min-width: 0;
+  flex: 1;
 
   .card-icon {
     font-size: 16px;
@@ -178,29 +178,31 @@ onMounted(() => {
 
   .card-title {
     @include pixelated;
-    font-size: 10px;
-    color: var(--yellow, #facc15);
+
     margin: 0;
-    letter-spacing: 0.5px;
+    color: var(--yellow, #facc15);
+    font-size: 10px;
     line-height: 1.35;
+    letter-spacing: 0.5px;
   }
 
   .phase-pill {
     @include pixelated;
-    font-size: 7px;
+
     padding: 2px 6px;
     border-radius: 4px;
+    font-size: 7px;
     align-self: flex-start;
 
     &.is-dispute {
-      background: Rgba(239, 68, 68, 0.15);
-      border: 1px solid Rgba(239, 68, 68, 0.4);
+      border: 1px solid Rgb(239 68 68 / 40%);
+      background: Rgb(239 68 68 / 15%);
       color: #f87171;
     }
 
     &.is-dominance {
-      background: Rgba(34, 197, 94, 0.15);
-      border: 1px solid Rgba(34, 197, 94, 0.4);
+      border: 1px solid Rgb(34 197 94 / 40%);
+      background: Rgb(34 197 94 / 15%);
       color: #4ade80;
     }
   }
@@ -208,6 +210,7 @@ onMounted(() => {
 
 .header-actions {
   @include widget-header-actions;
+
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -223,9 +226,9 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: 8px;
+  background: Rgb(255 255 255 / 2%);
 }
 
 .team-score {
@@ -235,10 +238,11 @@ onMounted(() => {
   flex-shrink: 0;
 
   .faction-logo {
+    @include pixelated;
+
     width: 28px;
     height: 28px;
     object-fit: contain;
-    @include pixelated;
   }
 
   .score-data {
@@ -252,13 +256,14 @@ onMounted(() => {
 
     .team-name {
       @include pixelated;
+
       font-size: 8px;
       letter-spacing: 0.5px;
     }
 
     .team-count {
+      color: Rgb(255 255 255 / 60%);
       font-size: 10px;
-      color: Rgba(255, 255, 255, 0.6);
     }
   }
 
@@ -272,11 +277,11 @@ onMounted(() => {
 }
 
 .progress-bar-container {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  flex: 1;
 }
 
 .bar-labels {
@@ -287,71 +292,76 @@ onMounted(() => {
 
   .percent-label.union {
     @include pixelated;
+
     color: #60a5fa;
   }
 
   .percent-label.poder {
     @include pixelated;
+
     color: #f87171;
   }
 
   .vs-text {
     @include pixelated;
+
+    color: Rgb(255 255 255 / 30%);
     font-size: 8px;
-    color: Rgba(255, 255, 255, 0.3);
   }
 }
 
 .dual-progress-bar {
-  height: 8px;
-  border-radius: 4px;
-  background: Rgba(0, 0, 0, 0.4);
-  overflow: hidden;
   display: flex;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  height: 8px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: 4px;
+  background: Rgb(0 0 0 / 40%);
+  overflow: hidden;
 
   .union-fill {
     height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    background: Linear-Gradient(90deg, #3b82f6, #60a5fa);
   }
 
   .poder-fill {
     height: 100%;
-    background: linear-gradient(90deg, #ef4444, #f87171);
+    background: Linear-Gradient(90deg, #ef4444, #f87171);
   }
 }
 
 .user-war-summary {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .summary-chip {
-  flex: 1;
-  min-width: 140px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  min-width: 140px;
   padding: 6px 10px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
+  border: 1px solid Rgb(255 255 255 / 6%);
   border-radius: 6px;
+  background: Rgb(255 255 255 / 3%);
+  flex: 1;
 
   .chip-label {
     @include pixelated;
+
+    color: Rgb(255 255 255 / 50%);
     font-size: 7px;
-    color: Rgba(255, 255, 255, 0.5);
   }
 
   .chip-value {
     @include pixelated;
-    font-size: 8px;
-    color: var(--white, #ffffff);
+
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    color: var(--white, #fff);
+    font-size: 8px;
 
     &.union {
       color: #60a5fa;

@@ -48,6 +48,15 @@ const FISHING_BITE_MULTIPLIER_BOOSTED = 2.0;
 
 const SNOW_WEATHERS: readonly WeatherId[] = ['snow', 'blizzard', 'cold', 'hail', 'coldwave'];
 
+const PICKUP_BRACKET_FIRST_MAX_LEVEL = 20 as const;
+const PICKUP_BRACKET_SECOND_MIN_LEVEL = 21 as const;
+const PICKUP_BRACKET_SECOND_MAX_LEVEL = 40 as const;
+const PICKUP_BRACKET_THIRD_MIN_LEVEL = 41 as const;
+const PICKUP_BRACKET_THIRD_MAX_LEVEL = 60 as const;
+const PICKUP_BRACKET_FOURTH_MIN_LEVEL = 61 as const;
+const PICKUP_BRACKET_FOURTH_MAX_LEVEL = 80 as const;
+const PICKUP_BRACKET_FIFTH_MIN_LEVEL = 81 as const;
+
 // --- PICKUP LEVEL-BRACKET LOOT TABLES ---
 const PICKUP_LOOT_TABLES: {
   readonly minLevel: number;
@@ -56,26 +65,26 @@ const PICKUP_LOOT_TABLES: {
 }[] = [
   {
     minLevel: 1,
-    maxLevel: 20,
+    maxLevel: PICKUP_BRACKET_FIRST_MAX_LEVEL,
     pool: ['potion', 'antidote', 'paralyzeheal', 'awakening', 'burnheal', 'greatball', 'repel', 'pokeball']
   },
   {
-    minLevel: 21,
-    maxLevel: 40,
+    minLevel: PICKUP_BRACKET_SECOND_MIN_LEVEL,
+    maxLevel: PICKUP_BRACKET_SECOND_MAX_LEVEL,
     pool: ['superpotion', 'greatball', 'repel', 'fullheal', 'revive', 'nugget']
   },
   {
-    minLevel: 41,
-    maxLevel: 60,
+    minLevel: PICKUP_BRACKET_THIRD_MIN_LEVEL,
+    maxLevel: PICKUP_BRACKET_THIRD_MAX_LEVEL,
     pool: ['hyperpotion', 'ultraball', 'fullheal', 'revive', 'maxrepel', 'nugget']
   },
   {
-    minLevel: 61,
-    maxLevel: 80,
+    minLevel: PICKUP_BRACKET_FOURTH_MIN_LEVEL,
+    maxLevel: PICKUP_BRACKET_FOURTH_MAX_LEVEL,
     pool: ['maxpotion', 'ultraball', 'revivemax', 'nugget', 'rarecandy']
   },
   {
-    minLevel: 81,
+    minLevel: PICKUP_BRACKET_FIFTH_MIN_LEVEL,
     maxLevel: 100,
     pool: ['fullrestore', 'revivemax', 'nugget', 'rarecandy', 'leftovers', 'destinyknot']
   }

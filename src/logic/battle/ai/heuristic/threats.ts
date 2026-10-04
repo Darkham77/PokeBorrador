@@ -28,6 +28,10 @@ const SETUP_BOOSTED_WEIGHT = 0.4;
 const SETUP_PRIORITY_WEIGHT = 0.1;
 const DEFENSIVE_WALL_MAX_DAMAGE_THRESHOLD = 34;
 const DEFENSIVE_WALL_SCORE_STEP = 0.3;
+const LATE_GAME_SETUP_BONUS = 0.10 as const;
+const LATE_GAME_MAX_SETUP_WEIGHT = 0.40 as const;
+const LATE_GAME_DAMAGE_REDUCTION = 0.05 as const;
+const LATE_GAME_MIN_DAMAGE_WEIGHT = 0.20 as const;
 
 function calculateSpeedThreat(
   opp: HeuristicPokemonState,
@@ -126,8 +130,8 @@ export function evaluateThreats(
     const setupPotential = calculateSetupPotential(opp, moveList);
     const defensiveWallValue = calculateDefensiveWallValue(opp, myAlive, calc, snapshot);
 
-    const setupW = lateGame ? Math.min(THREAT_WEIGHTS.setupPotential + 0.10, 0.40) : THREAT_WEIGHTS.setupPotential;
-    const dmgW = lateGame ? Math.max(THREAT_WEIGHTS.damageThreat - 0.05, 0.20) : THREAT_WEIGHTS.damageThreat;
+    const setupW = lateGame ? Math.min(THREAT_WEIGHTS.setupPotential + LATE_GAME_SETUP_BONUS, LATE_GAME_MAX_SETUP_WEIGHT) : THREAT_WEIGHTS.setupPotential;
+    const dmgW = lateGame ? Math.max(THREAT_WEIGHTS.damageThreat - LATE_GAME_DAMAGE_REDUCTION, LATE_GAME_MIN_DAMAGE_WEIGHT) : THREAT_WEIGHTS.damageThreat;
 
     threats.push({
       pokemon: opp.name,

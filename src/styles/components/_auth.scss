@@ -2,78 +2,76 @@
 @use '../core/tools' as *;
 
 .title-logo {
+  background: Linear-Gradient(135deg, $yellow, $red, $blue);
   font-family: $font-pixel;
   font-size: clamp(24px, 5dvw, 48px);
-  background: Linear-Gradient(135deg, $yellow, $red, $blue);
-  -webkit-background-clip: text;
-  -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;;;;;;;;;;;
+  text-align: center; background-clip: text;;;;;;;;;;;;;;;;;;
   -webkit-text-fill-color: transparent;
   margin-bottom: 8px;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 20px Rgba($yellow, 0.4));
-  text-align: center;
 }
 
 .title-sub {
+  color: $purple;
   font-family: $font-pixel;
   font-size: 12px;
-  color: $purple;
+  text-align: center;
   margin-bottom: 50px;
   letter-spacing: 3px;
-  text-align: center;
 }
 
 .starter-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  margin: 30px auto;
+  grid-template-columns: repeat(3, 1fr);
   width: 100%;
   max-width: 700px;
-  align-items: stretch;
-  justify-items: center;
+  margin: 30px auto;
+  place-items: stretch center;
   
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
+  @media (width <= 1024px) {
     gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
   }
   
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     grid-template-columns: 1fr;
     max-width: 280px;
   }
 }
 
 .starter-card {
-  background: Rgba(255, 255, 255, 0.05);
   @include gpu-layer;
-  border: 1.5px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 24px 16px;
-  cursor: pointer;
+
   position: relative;
-  overflow: visible; // Allowed overflow for sprites
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
   max-width: 180px;
+  padding: 24px 16px;
+  border: 1.5px solid Rgb(255 255 255 / 10%);
+  border-radius: 24px;
+  background: Rgb(255 255 255 / 5%);
+  cursor: pointer;
+  overflow: visible; // Allowed overflow for sprites
 
   &::before {
-    content: '';
     position: absolute;
-    inset: 0;
-    opacity: var(--glow-opacity, 0);
     z-index: var(--z-base);
+    opacity: var(--glow-opacity, 0);
+    content: '';
+    inset: 0;
   }
 
-  &.grass::before { background: radial-gradient(circle at 50% 0%, Rgba($green, 0.25), transparent 70%); }
-  &.fire::before { background: radial-gradient(circle at 50% 0%, Rgba($red, 0.25), transparent 70%); }
-  &.water::before { background: radial-gradient(circle at 50% 0%, Rgba($blue, 0.25), transparent 70%); }
+  &.grass::before { background: Radial-Gradient(circle at 50% 0%, Rgba($green, 0.25), transparent 70%); }
+  &.fire::before { background: Radial-Gradient(circle at 50% 0%, Rgba($red, 0.25), transparent 70%); }
+  &.water::before { background: Radial-Gradient(circle at 50% 0%, Rgba($blue, 0.25), transparent 70%); }
 
   & > * { position: relative; z-index: var(--z-base); }
 }
@@ -86,11 +84,11 @@
 }
 
 .starter-type {
-  font-size: 11px;
-  font-weight: 700;
+  display: inline-block;
   padding: 3px 10px;
   border-radius: 20px;
-  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
   margin-top: 2px;
 
   &.type-grass { background: Rgba($green, 0.12); color: $green; }
@@ -99,18 +97,18 @@
 }
 
 .starter-stats {
+  width: 100%;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
-  width: 100%;
+  border-top: 1px solid Rgb(255 255 255 / 5%);
 }
 
 .stat-mini {
-  font-size: 10px;
-  color: $gray;
   display: flex;
   justify-content: space-between;
   margin: 2px 0;
+  color: $gray;
+  font-size: 10px;
   
   span:last-child {
     color: $white;
@@ -120,14 +118,14 @@
 }
 
 // Low-height or small viewports responsive layout adjustments
-@media (max-height: 850px), (max-width: 600px) {
+@media (height <= 850px), (width <= 600px) {
   .title-sub {
     margin-bottom: 20px;
   }
   
   .starter-grid {
-    margin: 15px auto;
     gap: 10px;
+    margin: 15px auto;
   }
 
   .starter-card {
@@ -150,62 +148,72 @@
 }
 
 .title-btn {
-  font-family: $font-pixel;
-  font-size: 11px;
   padding: 16px 40px;
   border: none;
   border-radius: 50px;
   background: Linear-Gradient(135deg, $red, $purple);
   color: white;
+  font-family: $font-pixel;
+  font-size: 11px;
   cursor: pointer;
   margin-top: 20px;
   box-shadow: 0 4px 20px Rgba($red, 0.4);
 
   &:hover {
-    transform: scale3d(1.05, 1.05, 1);
+    transform: Scale3d(1.05, 1.05, 1);
     box-shadow: 0 6px 30px Rgba($red, 0.6);
   }
 }
 
 /* Authentication Screen Specifics */
 .auth-divider {
-  text-align: center;
+  position: relative;
+  margin: 16px 0;
   color: $gray;
   font-size: 12px;
-  margin: 16px 0;
-  position: relative;
+  text-align: center;
   
-  &::before, &::after {
-    content: '';
+  %divider-line {
     position: absolute;
     top: 50%;
     width: 42%;
     height: 1px;
-    background: Rgba(255, 255, 255, 0.1);
+    background: Rgb(255 255 255 / 10%);
+    content: '';
   }
-  &::before { left: 0; }
-  &::after { right: 0; }
+
+  &::before {
+    @extend %divider-line;
+
+    left: 0;
+  }
+
+  &::after {
+    @extend %divider-line;
+
+    right: 0;
+  }
 }
 
 .server-tab {
-  cursor: pointer;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: $gray;
   font-family: $font-pixel;
   font-size: 8px;
-  background: transparent;
-  border: none;
-  color: $gray;
+  cursor: pointer;
   letter-spacing: 1px;
-  padding: 8px 16px;
-  border-radius: 8px;
+
+  &:not(.active):hover {
+    background: Rgba($blue, 0.08);
+    color: $blue;
+  }
 
   &.active {
     background: Linear-Gradient(135deg, $blue, $purple);
     color: $white;
     box-shadow: 0 2px 10px Rgba($blue, 0.3);
-  }
-
-  &:not(.active):hover {
-    color: $blue;
-    background: Rgba($blue, 0.08);
   }
 }

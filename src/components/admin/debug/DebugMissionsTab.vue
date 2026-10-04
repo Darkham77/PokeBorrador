@@ -77,20 +77,20 @@ const clear = () => {
 @use "@/styles/components/debug";
 
 .mission-status {
-  font-size: 8px;
-  color: $muted;
   margin: 10px 0;
+  color: $muted;
+  font-size: 8px;
   span { color: var(--yellow); font-weight: bold; }
 }
 
 .debug-json {
-  font-size: 8px;
-  background: Rgba(0,0,0,0.3);
+  min-height: 0;
+  max-height: 200px;
   padding: 10px;
   border-radius: 8px;
+  background: rgb(0 0 0 / 30%);
   color: $green;
-  max-height: 200px;
-  min-height: 0;
+  font-size: 8px;
   overflow-y: auto;
   white-space: pre-wrap;
 }
@@ -100,7 +100,7 @@ const clear = () => {
 }
 
 .small-btn {
-  &.primary { border-color: $purple; color: $purple; }
-  &.danger { border-color: $red; color: $red; }
+  &.primary { color: $purple; border-color: $purple; }
+  &.danger { color: $red; border-color: $red; }
 }
 </style>
