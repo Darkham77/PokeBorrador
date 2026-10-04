@@ -19,16 +19,16 @@ To guarantee the operation of critical systems (PWA, Service Workers, Animations
 
 Before upgrading any Core Stack library, verify that `vite-plugin-pwa` supports the new Vite major (`npm info vite-plugin-pwa peerDependencies`). A migration is only successful if `npm run build` produces a functional `sw.js` and `npm run audit` passes with 0 errors.
 
-### 🛡️ Native Tooling & Antivirus Exclusions Protocol (Fallow, CSS Checker & Addons)
+### 🛡️ Native Tooling & Antivirus Exclusions Protocol (Fallow & Addons)
 
-The project relies on high-performance native binaries distributed through npm (`fallow` for AST architecture audits and `css-checker-kit` for SCSS duplication analysis), as well as native bundler bindings. Because these tools employ native cryptographic verification (Ed25519 and SHA-256 signatures) rather than commercial Microsoft Authenticode certificates on their PE binaries, **Windows Defender** or **Smart App Control** may flag false positive alerts or background execution toasts.
+The project relies on high-performance native binaries distributed through npm (`fallow` for AST architecture audits), as well as native bundler bindings. Because these tools employ native cryptographic verification (Ed25519 and SHA-256 signatures) rather than commercial Microsoft Authenticode certificates on their PE binaries, **Windows Defender** or **Smart App Control** may flag false positive alerts or background execution toasts.
 
 To ensure total cross-platform resilience and clean developer setup:
 1. **Antivirus Exclusions Protocol (Single Source of Truth)**: Developers MUST add the project root directory (`PokeBorrador`) to their antivirus exclusion list (`Windows Security > Virus & threat protection > Manage settings > Exclusions > Add an exclusion > Folder`).
 2. **Zero System Registry Tampering Mandate**: Workspace automation scripts (`setup-windows.ps1`) MUST NEVER attempt intrusive system-wide registry alterations (`VerifiedAndReputablePolicyState`, `AppModelUnlock`, `citool.exe`) to silence security alerts. Scripts must remain lightweight, clean, and portable.
 3. **Automated Setup Unblocking**: `setup-windows.ps1` unblocks downloaded native files (`.node`, `.dll`, `.exe`) in `node_modules` via `Unblock-File` and configures npm security policies (`ignore-scripts true`).
 4. **WASI Fallback Dependency**: Maintain `@rolldown/binding-wasm32-wasi` declared in `devDependencies`. If the OS blocks the native MSVC binding, Rolldown automatically and transparently falls back to WASI execution without halting development.
-5. **Build Tool Validation**: `setup-windows.ps1` and `setup-linux.sh` automatically trigger `npm run validate:tools` post-install to compile and verify all native tooling.
+5. **Build Tool Validation**: `setup-windows.ps1` and `setup-linux.sh` automatically trigger `npm run audit` post-install to verify all native tooling and lint standards.
 
 ---
 
@@ -65,7 +65,7 @@ Whenever asked to "actualiza el entorno de trabajo", "actualizar el entorno de t
 ### 🛠️ Diagnostic & Maintenance Commands
 
 - **Update Tools & Clean Dependencies (Single Command)**: `./setup-linux.sh [--declared-versions]` (Linux/macOS) / `.\setup-windows.ps1 [-DeclaredVersions]` (Windows)
-- **Verify Build Tools**: `npm run validate:tools` (verifies and compiles native binary `css-checker-kit`)
+- **Verify Build Tools & Architecture**: `npm run audit` (the primary project quality gatekeeper; executes all audit suites)
 - **Build & Bundle Analysis**: `npm run build:analyze` (builds production bundle with `ANALYZE='true'`, generates visual interactive treemap in `scratch/bundle_stats.html`)
 - **Audit Bundle Chunks & Budgets**: `npm run audit:bundle` (verifies bundle chunk sizes and critical budget limits)
 - **Verify Vulnerabilities**: `npm audit`

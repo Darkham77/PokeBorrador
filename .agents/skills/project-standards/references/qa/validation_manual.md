@@ -136,7 +136,10 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
 - `npm run audit:md`: Unified documentation and DOX integrity suite (preset=md).
 - `npm run lint`: Fast developer lint executing 10 core sub-auditors in parallel (`npm run audit:lint`).
-- `npm run lint:fix`: Auto-fixes lint and formatting issues via `npm run audit:lint fix`.
+- `npm run lint:fix`: Auto-fixes lint and formatting issues via `auditor preset=lint fix`.
+- `npm run audit:css`: Audits SCSS stylesheets and Vue SFC `<style>` blocks in-memory via Stylelint.
+- `npm run audit:similar`: Semantic similarity detection using Fallow AST graph.
+- `npm run audit:review`: Graph-guided review brief with blast radius and structural risk analysis.
 - `npm run audit:summary` / `npm run audit:errors`: Consolidated Box-Drawing report of errors and warnings from `scratch/audits/latest_audit.json`.
 - `npm run audit:findings json`: Structured JSON report for AI agents and CLI tools with zero intermediate tooling.
 - `npm run test:node`: Runs the pure logic test suite under Vitest via the centralized orchestrator `scripts/testing/run_tests.ts --project node` (supporting dual SQLite and ephemeral Docker PostgreSQL validation).

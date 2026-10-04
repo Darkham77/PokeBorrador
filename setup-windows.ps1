@@ -327,14 +327,7 @@ if (Test-Path $nodeModulesDir) {
     Get-ChildItem -Path $nodeModulesDir -Include "*.node", "*.dll", "*.exe" -Recurse -ErrorAction SilentlyContinue | Unblock-File -ErrorAction SilentlyContinue
 }
 
-# 11. Validar y compilar herramientas nativas auxiliares si existe el script
-if ($pkgContent.scripts -and $pkgContent.scripts.'validate:tools') {
-    Write-Host ""
-    Write-Host "[BUILD-TOOLS] Validando herramientas nativas auxiliares..." -ForegroundColor Cyan
-    npm run validate:tools
-}
-
-# 12. Ejecutar Plugins Específicos del Proyecto (scripts\setup\plugins\*.ps1)
+# 11. Ejecutar Plugins Específicos del Proyecto (scripts\setup\plugins\*.ps1)
 $pluginsDir = Join-Path $PSScriptRoot "scripts\setup\plugins"
 if (Test-Path $pluginsDir) {
     Get-ChildItem -Path $pluginsDir -Filter "*.ps1" -ErrorAction SilentlyContinue | Sort-Object Name | ForEach-Object {

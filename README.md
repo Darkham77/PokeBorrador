@@ -47,9 +47,9 @@ audit-level=high
 >[!NOTE]
 > **Nota sobre `ignore-scripts`**: Al activar esto, algunos paquetes legítimos que compilan binarios nativos (como `node-gyp` o herramientas de profiling) podrían fallar al instalarse. Si confías plenamente en un paquete específico y necesitas ejecutar sus scripts de compilación, puedes compilarlo manualmente usando `npm rebuild` o ejecutándolo de forma aislada una única vez con `npm run <script> --ignore-scripts=false`.
 
-### 🛡️ Exclusiones de Antivirus y Windows Defender (Fallow y CSS Checker)
+### 🛡️ Exclusiones de Antivirus y Windows Defender (Fallow)
 
-El proyecto utiliza herramientas auxiliares de alto rendimiento compiladas en binarios nativos y distribuidas a través de npm (`fallow` para auditorías de arquitectura/AST y `css-checker-kit` para análisis de duplicación de estilos SCSS).
+El proyecto utiliza herramientas auxiliares de alto rendimiento compiladas en binarios nativos y distribuidas a través de npm (`fallow` para auditorías de arquitectura/AST).
 
 Debido a que estas herramientas emplean verificación criptográfica nativa (Ed25519 y firmas SHA-256) en lugar de certificados comerciales de Microsoft en sus binarios PE, **Windows Defender** o **Smart App Control** pueden emitir notificaciones informativas o alertas de falsos positivos al intentar ejecutarlas en segundo plano.
 
@@ -230,7 +230,7 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | Comando | Descripción |
 | :-- | :-- |
 | `npm run lint` | **Fast Developer Lint**: Ejecuta las 10 suites esenciales de calidad en paralelo mediante `npm run audit:lint`. |
-| `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint (`npm run audit:lint fix`). |
+| `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint (`auditor preset=lint fix`). |
 | `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores descubiertos dinámicamente con concurrencia acotada, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. |
 | `npm run audit:lint` | **Preset de Linting**: Ejecuta en paralelo el preset de 10 suites de código fuente. |
 | `npm run audit:md` | **Auditoría Documental y DOX**: Suite unificada (~2s) que ejecuta en paralelo la validación de jerarquía `AGENTS.md`, enlaces relativos, sintaxis Markdown y reglas de Markdownlint (preset `md`). |
@@ -246,7 +246,9 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad y complejidad Fallow, tokens SCSS, reactividad Pinia y componentes Vue. |
 | `npm run audit:fallow` | **Codebase Intelligence (Fallow)**: Dashboard consolidado de métricas, dependencias circulares, duplicaciones, exportaciones huérfanas y vulnerabilidades CWE. |
 | `npm run audit:complexity` | **Hotspots de Complejidad**: Reporta funciones con mayor complejidad ciclomática y cognitiva (`npm run audit:complexity:top`). |
-| `npm run audit suites=validate_css_duplicates` | **Auditoría de Estilos y Clases**: Detecta selectores duplicados y clases redundantes en SCSS y bloques `<style>` vía `css-checker`. |
+| `npm run audit:css` | **Auditoría de Estilos y Clases**: Audita hojas SCSS y bloques `<style>` de Vue mediante Stylelint en memoria. |
+| `npm run audit:similar` | **Descubrimiento Semántico**: Encuentra funciones o bloques semánticamente similares a través del AST de Fallow. |
+| `npm run audit:review` | **Brief de Revisión Inteligente**: Genera un reporte guiado por grafo con blast radius y riesgos estructurales para revisión de código. |
 | `npm run audit:bundle` | **Presupuesto de Bundles**: Audita los tamaños de chunks de producción y desacoplamiento del cliente. |
 | `npm run build:analyze` | **Treemap Interactivo de Bundles**: Dispara la compilación de producción con visualizador gráfico en `scratch/bundle_stats.html`. |
 
@@ -263,7 +265,7 @@ Cada regla arquitectónica y de dominio cuenta con su propio sub-auditor modular
 | `npm run audit suites=validate_type_check` | Verificación estricta de tipos TypeScript y Vue SFC con `vue-tsc --noEmit`. |
 | `npm run audit suites=validate_z_index` | Paridad 1:1 estricta entre `Z_LAYERS` (TypeScript) y variables CSS `--z-*` en `_base.scss` (soporta `--fix`). |
 | `npm run audit suites=validate_duplicate_constants` | Detección de declaraciones de constantes idénticas o divergentes entre módulos mediante AST compartido. |
-| `npm run audit suites=validate_css_duplicates` | Detección de selectores CSS y reglas duplicadas en hojas SCSS y SFC de Vue. |
+| `npm run audit:css` | Audita reglas SCSS, mixins y selectores CSS en hojas de estilo y componentes Vue vía Stylelint. |
 | `npm run audit suites=validate_pinia_reactivity` | Audita stores de Pinia contra desestructuración reactiva indebida y accesos de estado desenvueltos. |
 | `npm run audit suites=validate_reactive_leaks` | Detección de fugas de memoria, observadores sin limpiar y listeners huérfanos. |
 | `npm run audit suites=validate_reactive_purity` | Asegura pureza y ausencia de efectos secundarios en mutaciones y getters reactivos. |

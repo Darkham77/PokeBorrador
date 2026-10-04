@@ -9,7 +9,6 @@
   },
   "scripts": {
     "preinstall": "node --experimental-strip-types scripts/maintenance/check_environment.ts",
-    "postinstall": "cd node_modules/css-checker-kit && npm run postinstall",
     "dev": "npm run servers:configure && node -e \"if(process.platform === 'win32') try { require('child_process').execSync('chcp 65001') } catch (e) {}\" && vite",
     "ui-demo": "vite --open /ui-demo/index.html",
     "build": "npm run servers:configure && npm run audit && vite build",
@@ -179,7 +178,6 @@
     "@vitejs/plugin-vue": "^6.0.9",
     "@vitest/coverage-v8": "^5.0.1",
     "@vue/test-utils": "^2.5.1",
-    "css-checker-kit": "^0.4.2",
     "eslint": "^10.10.0",
     "eslint-formatter-codeframe": "^7.32.2",
     "eslint-plugin-unused-imports": "^4.4.1",
@@ -211,7 +209,6 @@
   },
   "allowScripts": {
     "@parcel/watcher": true,
-    "css-checker-kit": true,
     "esbuild": true
   }
 }

@@ -37,7 +37,6 @@
     "postgres",
     "@pkmn/sim",
     "eslint-formatter-codeframe",
-    "css-checker-kit",
     "@rolldown/binding-wasm32-wasi",
     "ws",
     "sql.js",

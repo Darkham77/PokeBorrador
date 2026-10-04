@@ -149,7 +149,7 @@ LOCAL_BIN="$HOME/.local/bin"
 mkdir -p "$LOCAL_BIN"
 
 echo -e "\n🔗 Sincronizando enlaces simbólicos en $LOCAL_BIN..."
-for bin_name in node npm npx corepack css-checker; do
+for bin_name in node npm npx corepack; do
     if [ -e "$NODE_BIN_DIR/$bin_name" ]; then
         ln -sf "$NODE_BIN_DIR/$bin_name" "$LOCAL_BIN/$bin_name"
     fi
@@ -188,13 +188,7 @@ echo -e "\n📦 Instalando dependencias del proyecto con npm ci..."
 cd "$SCRIPT_DIR"
 npm ci
 
-# 8. Validar y compilar herramientas nativas auxiliares si el script está definido
-if grep -q '"validate:tools"' "$PKG_PATH"; then
-    echo -e "\n🔧 Validando herramientas nativas auxiliares (npm run validate:tools)..."
-    npm run validate:tools
-fi
-
-# 9. Ejecutar Plugins Específicos del Proyecto (scripts/setup/plugins/*.sh)
+# 8. Ejecutar Plugins Específicos del Proyecto (scripts/setup/plugins/*.sh)
 PLUGINS_DIR="$SCRIPT_DIR/scripts/setup/plugins"
 if [ -d "$PLUGINS_DIR" ]; then
     for plugin_script in "$PLUGINS_DIR"/*.sh; do
@@ -206,15 +200,10 @@ if [ -d "$PLUGINS_DIR" ]; then
     done
 fi
 
-# 10. Gancho npm opcional: env:post-setup
+# 9. Gancho npm opcional: env:post-setup
 if grep -q '"env:post-setup"' "$PKG_PATH"; then
     echo -e "\n🪝 Ejecutando gancho post-setup (npm run env:post-setup)..."
     npm run env:post-setup
-fi
-
-# Sincronizar binarios nativos generados hacia ~/.local/bin
-if [ -e "$NODE_BIN_DIR/css-checker" ]; then
-    ln -sf "$NODE_BIN_DIR/css-checker" "$LOCAL_BIN/css-checker"
 fi
 
 echo "======================================================"
