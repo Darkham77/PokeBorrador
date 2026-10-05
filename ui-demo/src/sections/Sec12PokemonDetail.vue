@@ -35,7 +35,7 @@ defineExpose({
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">🔍</span>
-      <span>12. Modal de Información / Detalle (Canónico 1:1 con Media & UnifiedPokemonDetailModal)</span>
+      <span>12. Modal de Información / Detalle (Canónico 1:1 con Media &amp; UnifiedPokemonDetailModal)</span>
     </h2>
 
     <!-- Selector de Muestra de Pokémon -->

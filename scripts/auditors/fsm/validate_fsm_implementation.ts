@@ -24,7 +24,7 @@ export async function discoverFsmRelatedFiles() {
       relevant.push({ path: file, content });
     }
   }
-  return relevant;
+  return { relevant, allFiles };
 }
 
 export function parseMermaid(manualCode: string) {
@@ -163,16 +163,28 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
         'fsm-nonexistent-state-reference': 'Referencia a estado inexistente',
         'fsm-invalid-suppression': 'Supresión inválida en FSM'
       },
-      requiredFiles: [IMPL_MANUAL_PATH, IMPL_FSM_PATH]
+      requiredFiles: [IMPL_MANUAL_PATH, IMPL_FSM_PATH],
+      coverage: {
+        include: ['src/**/*.{ts,vue}', '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md']
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    this.recordScanned('.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+    this.recordScanned('src/logic/battle/battleStateMachine.ts');
+
     this.context.logStep(1, 3, 'Parsing Mermaid diagrams and FSM constants...');
     const manualCode = await fs.readFile(IMPL_MANUAL_PATH, 'utf-8');
     const fsmCode = await fs.readFile(IMPL_FSM_PATH, 'utf-8');
-    const fileData = await discoverFsmRelatedFiles();
-    this.filesScannedCount = fileData.length;
+    const { relevant: fileData, allFiles } = await discoverFsmRelatedFiles();
+
+    for (const f of allFiles) {
+      this.recordScanned(path.relative(this.projectRoot, f).replace(/\\/g, '/'));
+    }
+    for (const r of FSM_IMPLEMENTATION_RULES) {
+      this.markRuleEvaluated(r);
+    }
 
     const externalCode = fileData.filter(f => !f.path.includes('battleStateMachine.ts')).map(d => d.content).join('\n\n');
     const allCode = fileData.map(d => d.content).join('\n\n');

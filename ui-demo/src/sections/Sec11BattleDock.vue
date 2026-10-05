@@ -207,7 +207,7 @@ const quickBagItems: QuickBagItem[] = [
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">⚔️</span>
-      <span>11. Barra Inferior de Combate (BattleArenaControls, QuickTeam & QuickBag Canónicos 1:1)</span>
+      <span>11. Barra Inferior de Combate (BattleArenaControls, QuickTeam &amp; QuickBag Canónicos 1:1)</span>
     </h2>
 
     <div class="pv-panel-wrap has-cast-shadow">
@@ -388,10 +388,10 @@ const quickBagItems: QuickBagItem[] = [
                 class="pv-curve-md dock-center-pokeball"
                 title="Acción Central Poké Ball"
               >
-                <div class="pokeball-top" />
-                <div class="pokeball-center-line" />
-                <div class="pokeball-button" />
-                <div class="pokeball-bottom" />
+                <span class="pokeball-top" />
+                <span class="pokeball-center-line" />
+                <span class="pokeball-button" />
+                <span class="pokeball-bottom" />
               </button>
 
               <button

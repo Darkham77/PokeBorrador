@@ -154,11 +154,16 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
       ruleDescriptions: {
         'missing-protocol-token': 'Token de protocolo sin handler'
       },
-      requiresAst: true
+      requiresAst: true,
+      coverage: {
+        include: ['src/logic/battle/showdownBridge*.ts']
+      }
     });
   }
 
   public override async runAudit(astContext?: SharedAstContext): Promise<void> {
+    this.markRuleEvaluated('missing-protocol-token');
+
     const battleFiles = await this.context.collectFiles(['src/logic/battle'], new Set(['.ts']));
     const bridgeFiles = battleFiles.filter(f => {
       const base = path.basename(f);
@@ -171,7 +176,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
     this.context.logStep(1, 2, `Parsing handlers in ${bridgeFiles.length} showdownBridge files...`);
 
     for (const relPath of bridgeFiles) {
-      this.filesScannedCount++;
+      this.recordScanned(path.relative(this.projectRoot, relPath).replace(/\\/g, '/'));
       const fullPath = path.resolve(this.projectRoot, relPath);
       const code = fs.readFileSync(fullPath, 'utf-8');
 

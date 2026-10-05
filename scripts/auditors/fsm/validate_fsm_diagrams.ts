@@ -100,14 +100,22 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
         'fsm-undocumented-js-state': 'Estado en TS no documentado en Mermaid',
         'fsm-transition-missing-in-js': 'Transición Mermaid ausente en TS'
       },
-      requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH]
+      requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH],
+      coverage: {
+        include: ['.agents/skills/project-standards/references/battle/battle_mechanics_manual.md', 'src/logic/battle/battleStateMachine.ts']
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    this.recordScanned('.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+    this.recordScanned('src/logic/battle/battleStateMachine.ts');
+    this.markRuleEvaluated('fsm-state-missing-in-js');
+    this.markRuleEvaluated('fsm-undocumented-js-state');
+    this.markRuleEvaluated('fsm-transition-missing-in-js');
+
     const manualCode = await fs.readFile(DIAGRAM_MANUAL_PATH, 'utf-8');
     const fsmCode = await fs.readFile(DIAGRAM_FSM_PATH, 'utf-8');
-    this.filesScannedCount = 2;
 
     const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
     const { allKeys: jsKeys, jsTransitions } = parseJsFsm(fsmCode);

@@ -67,14 +67,23 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
         path.resolve(process.cwd(), MAPS_FILE_PATH),
         path.resolve(process.cwd(), GYMS_FILE_PATH),
         path.resolve(process.cwd(), GYM_REMATCHES_FILE_PATH)
-      ]
+      ],
+      coverage: {
+        include: [MAPS_FILE_PATH, GYMS_FILE_PATH, GYM_REMATCHES_FILE_PATH]
+      }
     });
   }
 
   public override runAudit(): void {
+    this.recordScanned(MAPS_FILE_PATH);
+    this.recordScanned(GYMS_FILE_PATH);
+    this.recordScanned(GYM_REMATCHES_FILE_PATH);
+    this.markRuleEvaluated('spawns-species-whitelist');
+    this.markRuleEvaluated('spawns-level-range-integrity');
+    this.markRuleEvaluated('spawns-encounter-rates-parity');
+
     // 1. Audit Maps (FIRE_RED_MAPS)
     const { maps, lineMap } = this.parseMaps();
-    this.filesScannedCount++;
 
     for (const map of maps) {
       const mapLine = lineMap.get(map.id) || 1;
@@ -245,7 +254,6 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     // 3. Audit Gym Rematches (GYM_REMATCHES)
     const rematchFullPath = path.resolve(this.projectRoot, GYM_REMATCHES_FILE_PATH);
     const rematchContent = fs.readFileSync(rematchFullPath, 'utf-8');
-    this.filesScannedCount++;
 
     const rematchPokemonRegex = /pokemon:\s*\[([^\]]+)\]/g;
     let rMatch: RegExpExecArray | null;

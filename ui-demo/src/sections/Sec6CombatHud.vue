@@ -6,7 +6,7 @@
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">⚔️</span>
-      <span>6. HUD de Combate (Wingull Lv12, Pikachu Lv25 & Quick Team Bar)</span>
+      <span>6. HUD de Combate (Wingull Lv12, Pikachu Lv25 &amp; Quick Team Bar)</span>
     </h2>
 
     <div class="grid-2">

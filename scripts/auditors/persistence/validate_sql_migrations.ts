@@ -76,17 +76,29 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         'sql-migration-dbversion-desync': 'Desincronización db_version',
         'sql-migration-sqlite-exec-failure': 'Fallo en SQLite en memoria'
       },
-      requiredFiles: [MIGRATIONS_DIR]
+      requiredFiles: [MIGRATIONS_DIR],
+      coverage: {
+        include: ['database/migrations/*.sql']
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    for (const rule of SQL_MIGRATION_RULES) {
+      this.markRuleEvaluated(rule);
+    }
+
     const dirEntries = await fs.readdir(MIGRATIONS_DIR);
+    for (const file of dirEntries) {
+      if (file.endsWith('.sql')) {
+        this.recordScanned(path.posix.join('database/migrations', file));
+      }
+    }
+
     const baseSqlFiles = dirEntries
       .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
       .sort((a, b) => a.localeCompare(b));
 
-    this.filesScannedCount = baseSqlFiles.length;
     this.context.logStep(1, 2, `Validating timestamps and db_version sync across ${baseSqlFiles.length} migrations...`);
 
     const sqliteFiles = dirEntries.filter(f => f.endsWith('.sqlite.sql'));

@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.1-build.20261004-023211",
+  "version": "0.6.2-build.20261004-231933",
   "private": true,
   "type": "module",
   "engines": {
@@ -151,6 +151,25 @@
     "validate:persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
     "validate:save-persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
     "validate:schema-parity": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_schema_parity.ts",
+    "validate:types": "auditor suite=validate_type_check",
+    "validate:items:summary": "npm run validate:items -- --summary",
+    "validate:items:report": "npm run validate:items -- --report",
+    "validate:abilities:summary": "npm run validate:abilities -- --summary",
+    "validate:abilities:report": "npm run validate:abilities -- --report",
+    "validate:moves:summary": "npm run validate:moves -- --summary",
+    "validate:moves:report": "npm run validate:moves -- --report",
+    "validate:fsm:summary": "npm run validate:fsm -- --summary",
+    "validate:fsm:report": "npm run validate:fsm -- --report",
+    "validate:domain-types": "auditor suite=validate_domain_types",
+    "validate:o1": "auditor suite=validate_o1_data_structures",
+    "validate:ephemeral-storage-isolation": "auditor suite=validate_ephemeral_storage_isolation",
+    "validate:test-fragmentation:summary": "auditor suite=validate_test_fragmentation",
+    "validate:audit-headers": "auditor suite=validate_audit_headers",
+    "validate:component-styles": "auditor suite=validate_component_styles",
+    "validate:line-height": "auditor suite=validate_typography_line_height",
+    "validate:emojis": "auditor suite=validate_console_cleanliness",
+    "validate:z-index": "auditor suite=validate_z_index",
+    "validate:markdown-links": "auditor suite=validate_markdown_links",
     "audit:fix": "auditor fix"
   },
   "dependencies": {

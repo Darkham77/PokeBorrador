@@ -148,17 +148,23 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
         'item-missing-sprite': 'Sprite de ítem no encontrado',
         'item-sprite-collision': 'Colisión en sprite de ítem'
       },
-      requiredFiles: [itemsPath]
+      requiredFiles: [itemsPath],
+      coverage: {
+        include: ['src/data/inventory/items.json']
+      }
     });
     this.itemsJsonPath = itemsPath;
   }
 
   public override async runAudit(): Promise<void> {
+    this.recordScanned('src/data/inventory/items.json');
+    this.markRuleEvaluated('item-missing-sprite');
+    this.markRuleEvaluated('item-sprite-collision');
+
     this.context.logStep(1, 2, 'Reading inventory item catalog...');
     const raw = readFileSync(this.itemsJsonPath, 'utf-8');
     const parsed = JSON.parse(raw) as { SHOP_ITEMS?: ShopItem[] };
     const shopItems = parsed.SHOP_ITEMS || [];
-    this.filesScannedCount = shopItems.length;
 
     this.context.logStep(2, 2, `Auditing ${shopItems.length} items for missing sprites and collisions...`);
     const missingSprites = findMissingSprites(shopItems);

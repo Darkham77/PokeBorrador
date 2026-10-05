@@ -94,7 +94,7 @@ export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
       }
     }
   } catch {
-    // .env file not present or unreadable, ignore and proceed to process.env
+    // catch-ok: .env file not present or unreadable, ignore and proceed to process.env
   }
 
   // 2. Parse / overlay from process.env (CI/CD environments, GitHub Actions secrets)
@@ -129,7 +129,7 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
           dbUrl = `postgres://postgres.${tenant}:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
         }
       } catch {
-        // ignore
+        // catch-ok: URL parsing failure, fallback to empty dbUrl
       }
     }
   }
@@ -153,8 +153,10 @@ export function findServerConfig(
 ): ServerConfig | null { // result-ok: Operation result wrapper payload
   const direct = serverConfigs[profileOrId];
   if (direct) return direct;
-  const matchKey = Object.keys(serverConfigs).find(k => serverConfigs[k]?.ID === profileOrId);
-  return matchKey ? (serverConfigs[matchKey] || null) : null;
+  for (const conf of Object.values(serverConfigs)) {
+    if (conf.ID === profileOrId) return conf;
+  }
+  return null;
 }
 
 export function parseServerArguments(args: string[], baseProfiles: string[], allAvailable: string[]): string[] {

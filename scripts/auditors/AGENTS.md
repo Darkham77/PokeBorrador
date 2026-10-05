@@ -29,6 +29,7 @@ Tooling / Quality Engineers.
   2. **Disk (`scratch/audits/`)**: Writes structured JSON conforming to `StandardAuditResult` to `scratch/audits/<family>/<id>.json` (and `scratch/audits/latest_audit.json` for global runs).
 - **Official NPM Scripts Execution Mandate**: All developer verification, linting, and audit tasks MUST be invoked through official scripts defined in `package.json` (`npm run audit`, `npm run audit:findings`, `npm run lint`).
 - **Direct Execution Guard Mandate**: CLI entrypoints MUST be guarded with `if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) { await BaseAuditor.runCli(new MyAuditor()); }`.
+- **Sub-Auditor Coverage Tracing Contract**: Every host sub-auditor subclassing `BaseAuditor` that defines rules and scanned file patterns MUST declare `coverage: { include: [...] }` in its constructor configuration, invoke `this.markRuleEvaluated(ruleId)` for every evaluated rule ID, and record inspected files via `this.recordScanned(relPath)` to maintain 100% parity with the `validate_audit_coverage` suite.
 
 ## Work Guidance
 

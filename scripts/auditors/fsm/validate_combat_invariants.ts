@@ -57,6 +57,9 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
   }
 
   protected override scanFile(relPath: string, content: string): void {
+    this.markRuleEvaluated('showdown-healthy-status-null-prohibition');
+    this.markRuleEvaluated('battle-multi-seat-hardcoding');
+
     // 1. Audit status null assignments
     this.auditStatusNull(relPath, content);
 

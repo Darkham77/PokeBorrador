@@ -83,7 +83,7 @@ function onSelectPokemon(item: SelectionDemoPokemon) {
             title="Cerrar"
             @click="emit('close')"
           >
-            <div class="close-icon-wrapper" />
+            <span class="close-icon-wrapper" />
           </button>
         </div>
 

@@ -79,11 +79,20 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         'item-phantom-healing': 'Efecto curativo fantasma sin ítem',
         'item-sprite-collision': 'Colisión de sprites en ítems'
       },
-      requiredFiles: [SHOP_FILE, BATTLE_FILE]
+      requiredFiles: [SHOP_FILE, BATTLE_FILE],
+      coverage: {
+        include: ['src/data/inventory/items.json', 'src/logic/items/itemEffects.ts']
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    this.recordScanned('src/data/inventory/items.json');
+    this.recordScanned('src/logic/items/itemEffects.ts');
+    for (const r of ITEM_RULES) {
+      this.markRuleEvaluated(r);
+    }
+
     this.context.logStep(1, 2, 'Loading and parsing SHOP_ITEMS and HEALING_ITEMS...');
     const battleContent = await fs.readFile(BATTLE_FILE, 'utf8');
     const jsonRaw = await fs.readFile(SHOP_FILE, 'utf8');
@@ -92,8 +101,6 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
     const shopItems: ShopItem[] = rawShopItems
       .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
       .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
-
-    this.filesScannedCount = shopItems.length;
 
     const healingItems = new Set<string>();
     const healingRegex = /^\s+'([^']+)':\s*\(?[\s\S]*?\)?\s*=>/gm;

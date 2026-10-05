@@ -43,11 +43,16 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
       ruleDescriptions: {
         'sprite-missing-asset': 'Sprite no encontrado en Pokémon'
       },
-      requiredFiles: [STATIC_SPRITES_DIR]
+      requiredFiles: [STATIC_SPRITES_DIR],
+      coverage: {
+        include: ['public/assets/sprites/pokemon/**']
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    this.markRuleEvaluated('sprite-missing-asset');
+
     this.context.logStep(1, 2, 'Collecting unique species across Gen 1-9...');
     const allSpecies = Dex.forGen(9).species.all();
     const checkedNumbers = new Set<string>();
@@ -69,7 +74,6 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
       itemsToValidate.push(form);
     }
 
-    this.filesScannedCount = itemsToValidate.length;
     this.context.logStep(2, 2, `Validating ${itemsToValidate.length} sprite sets...`);
 
     let missingCount = 0;

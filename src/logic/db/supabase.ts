@@ -5,7 +5,7 @@
 import { DBRouter } from './dbRouter.ts'
 import { safeStorage } from '../utils/storage.ts'
 import type { SessionMode } from '@/types/system/database'
-import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '../../data/system/official_servers.ts'
+import { OFFICIAL_SERVERS_BY_ID, DEFAULT_SERVER } from '../../data/system/official_servers.ts'
 
 import { isLocalEnvironment } from '../utils/env.ts'
 
@@ -14,7 +14,7 @@ const isLocal = isLocalEnvironment()
 
 // Get stored server or use default
 const storedServerId = safeStorage.getItem('pokevicio_selected_server_id')
-const selectedServer = OFFICIAL_SERVERS.find(s => s.id === storedServerId) || DEFAULT_SERVER
+const selectedServer = (storedServerId ? OFFICIAL_SERVERS_BY_ID[storedServerId] : undefined) || DEFAULT_SERVER
 
 // Determine initial mode explicitly from session context
 const storedMode = safeStorage.getItem('pokevicio_session_mode') as SessionMode
@@ -31,7 +31,7 @@ export const supabase = new DBRouter(
  * Utility to switch the active server and persist the choice.
  */
 export const switchServer = (serverId: string) => {
-  const server = OFFICIAL_SERVERS.find(s => s.id === serverId)
+  const server = OFFICIAL_SERVERS_BY_ID[serverId]
   if (!server) return
   
   supabase.updateConfig({ url: server.url, key: server.anonKey })

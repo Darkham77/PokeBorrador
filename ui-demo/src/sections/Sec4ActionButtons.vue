@@ -6,7 +6,7 @@
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">🔘</span>
-      <span>4. Botones Parametrizables (7 Variantes, 4 Escalas & Icon Buttons)</span>
+      <span>4. Botones Parametrizables (7 Variantes, 4 Escalas &amp; Icon Buttons)</span>
     </h2>
 
     <div class="pv-panel-wrap has-cast-shadow">
@@ -67,7 +67,7 @@
         </div>
 
         <div class="sub-label">
-          ESCALAS XS, SM, MD, LG & BOTÓN DESHABILITADO:
+          ESCALAS XS, SM, MD, LG &amp; BOTÓN DESHABILITADO:
         </div>
         <div class="pill-cluster mb-16">
           <button
@@ -108,7 +108,7 @@
         </div>
 
         <div class="sub-label">
-          BOTONES DE ICONO CUADRADOS RETRO (HUD & MODALES):
+          BOTONES DE ICONO CUADRADOS RETRO (HUD &amp; MODALES):
         </div>
         <div class="pill-cluster">
           <button

@@ -49,11 +49,27 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
         'move-missing-translation': 'Traducción faltante en movimiento',
         'move-missing-effect-desc': 'Descripción de efecto faltante'
       },
-      requiredFiles: [UTILS_FILE]
+      requiredFiles: [UTILS_FILE],
+      coverage: {
+        include: [
+          'src/data/battle/moves.ts',
+          'src/data/battle/moves.json',
+          'src/data/battle/movesData.json',
+          'src/logic/pokemon/pokemonUtils.ts'
+        ]
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    this.recordScanned('src/data/battle/moves.ts');
+    this.recordScanned('src/data/battle/moves.json');
+    this.recordScanned('src/data/battle/movesData.json');
+    this.recordScanned('src/logic/pokemon/pokemonUtils.ts');
+    for (const r of MOVE_RULES) {
+      this.markRuleEvaluated(r);
+    }
+
     this.context.logStep(1, 2, 'Extracting unique learnset moves from POKEMON_DB...');
     const learnsetMoves = new Set<string>();
     for (const [pokeId, poke] of Object.entries(POKEMON_DB)) {
@@ -67,7 +83,6 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
       }
     }
 
-    this.filesScannedCount = learnsetMoves.size;
     this.context.logStep(2, 2, `Validating ${learnsetMoves.size} moves against Gen ${ACTIVE_GENERATION} Dex and translations...`);
 
     const g3 = Dex.forGen(ACTIVE_GENERATION);

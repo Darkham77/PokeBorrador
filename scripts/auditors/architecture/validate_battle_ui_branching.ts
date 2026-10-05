@@ -67,6 +67,9 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
   }
 
   protected override scanFile(relPath: string, content: string): void {
+    this.markRuleEvaluated('ui-branching-raw-flag');
+    this.markRuleEvaluated('ui-branching-escape');
+
     const templateMatch = /<template>([\s\S]*?)<\/template>/i.exec(content);
     if (!templateMatch) return;
 

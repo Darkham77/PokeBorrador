@@ -16,7 +16,7 @@ function cleanFuzzerGeneratedFiles() {
         fs.unlinkSync(path.join(resultsDir, file));
         console.log(`🗑️ Eliminado artefacto generado previo: ${file}`);
       } catch (_e) {
-        /* ignore */
+        // catch-ok: Ignore unlinking errors if file was already removed or locked
       }
     }
   }

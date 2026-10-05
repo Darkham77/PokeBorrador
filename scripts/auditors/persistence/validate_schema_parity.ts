@@ -64,12 +64,18 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
       ruleDescriptions: {
         'schema-parity-missing-table': 'Tabla Postgres ausente en SQLite',
         'schema-parity-missing-column': 'Columna ausente en SQLite'
+      },
+      coverage: {
+        include: ['database/migrations/*.sql']
       }
     });
     this.migrationsDir = path.resolve(this.projectRoot, 'database/migrations');
   }
 
   public override async runAudit(): Promise<void> {
+    this.markRuleEvaluated('schema-parity-missing-table');
+    this.markRuleEvaluated('schema-parity-missing-column');
+
     this.context.logStep(1, 3, 'Parseando esquemas y columnas de migraciones PostgreSQL...');
     const pgTables = this.parsePostgresSchema();
 
@@ -117,12 +123,16 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
     const pgTables = new Map<string, Set<string>>();
     if (!fs.existsSync(this.migrationsDir)) return pgTables;
 
-    const entries = fs.readdirSync(this.migrationsDir)
-      .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql'))
+    const allSqlFiles = fs.readdirSync(this.migrationsDir).filter(f => f.endsWith('.sql'));
+    for (const file of allSqlFiles) {
+      this.recordScanned(path.posix.join('database/migrations', file));
+    }
+
+    const entries = allSqlFiles
+      .filter(f => !f.endsWith('.sqlite.sql'))
       .sort((a, b) => a.localeCompare(b));
 
     for (const file of entries) {
-      this.filesScannedCount++;
       const content = fs.readFileSync(path.join(this.migrationsDir, file), 'utf-8');
 
       // 1. Match CREATE TABLE [IF NOT EXISTS] [public.]tableName ( ... )

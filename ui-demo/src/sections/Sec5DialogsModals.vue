@@ -63,7 +63,7 @@ function onAccordionToggle(panelNum: number, event: Event) {
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">💬</span>
-      <span>5. Diálogos, Paneles, Modales & Acordeón Nativo (HTML Living Standard)</span>
+      <span>5. Diálogos, Paneles, Modales &amp; Acordeón Nativo (HTML Living Standard)</span>
     </h2>
 
     <div class="grid-2">
@@ -194,7 +194,7 @@ function onAccordionToggle(panelNum: number, event: Event) {
       <!-- Diálogos y Popover Nativo -->
       <div class="pv-frame-panel pv-panel-surface">
         <div class="sub-label">
-          <span>SUPERPOSICIONES NATIVAS (&lt;dialog&gt;, POPOVER & &lt;aside&gt;):</span>
+          <span>SUPERPOSICIONES NATIVAS (&lt;dialog&gt;, POPOVER &amp; &lt;aside&gt;):</span>
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <!-- Trigger Dialog -->

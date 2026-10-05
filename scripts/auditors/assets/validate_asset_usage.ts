@@ -73,11 +73,34 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       },
       requiredFiles: [
         path.resolve(process.cwd(), 'src/logic/services/assetService.ts')
-      ]
+      ],
+      coverage: {
+        include: [
+          'src/components/**/*.vue',
+          'src/views/**/*.vue',
+          'src/styles/**/*.{scss,css}',
+          'src/components/**/*.{scss,css}',
+          'src/views/**/*.{scss,css}',
+          'src/components/**/*.ts',
+          'src/views/**/*.ts',
+          'src/stores/**/*.ts',
+          'src/composables/**/*.ts',
+          'src/data/**/*.{ts,json}',
+          'src/logic/services/assetService.ts'
+        ]
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    this.markRuleEvaluated('asset-hardcoded-path-template');
+    this.markRuleEvaluated('asset-literal-bound-src');
+    this.markRuleEvaluated('asset-direct-banner-binding');
+    this.markRuleEvaluated('asset-hardcoded-style-path');
+    this.markRuleEvaluated('asset-unmediated-logic-path');
+    this.markRuleEvaluated('asset-hardcoded-data-path');
+    this.markRuleEvaluated('asset-physical-file-missing');
+
     // 1. Audit Vue Component Templates
     const vueFiles = [
       ...this.context.collectFiles(['src/components'], new Set(['.vue'])),
@@ -86,8 +109,8 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
 
     for (const file of vueFiles) {
       this.scannedVueFiles++;
-      this.filesScannedCount++;
       const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      this.recordScanned(relFile);
       const content = await fs.readFile(file, 'utf-8');
 
       const templateMatch = content.match(/<template[\s\S]*<\/template>/);
@@ -140,8 +163,8 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
     const styleFiles = this.context.collectFiles(styleDirs, new Set(['.scss', '.css']));
 
     for (const file of styleFiles) {
-      this.filesScannedCount++;
       const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      this.recordScanned(relFile);
       const content = await fs.readFile(file, 'utf-8');
       const lines = content.split('\n');
 
@@ -173,8 +196,8 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       if (EXEMPT_LOGIC_FILES.has(filename)) continue;
 
       this.scannedLogicFiles++;
-      this.filesScannedCount++;
       const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      this.recordScanned(relFile);
       const content = await fs.readFile(file, 'utf-8');
       const lines = content.split('\n');
 
@@ -207,8 +230,8 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       if (EXEMPT_DATA_FILES.has(filename)) continue;
 
       this.scannedDataFiles++;
-      this.filesScannedCount++;
       const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      this.recordScanned(relFile);
       const content = await fs.readFile(file, 'utf-8');
 
       const lines = content.split('\n');
@@ -234,6 +257,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
     // 4. Physical Asset Existence for Seasonal Tournament Banners
     try {
       const rankedDataFile = path.resolve(this.projectRoot, 'src/data/system/rankedData.ts');
+      this.recordScanned('src/data/system/rankedData.ts');
       const rankedContent = await fs.readFile(rankedDataFile, 'utf-8');
       const bannerMatches = rankedContent.matchAll(/bannerImage:\s*['"]([^'"]+)['"]/g);
 

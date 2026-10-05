@@ -69,7 +69,7 @@ function step(delta: number) {
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">📝</span>
-      <span>2. Formularios Básicos & Grupos A y B (HTML Living Standard)</span>
+      <span>2. Formularios Básicos &amp; Grupos A y B (HTML Living Standard)</span>
     </h2>
 
     <div class="pv-panel-wrap has-cast-shadow">
@@ -110,6 +110,7 @@ function step(delta: number) {
                 <input
                   v-model="passwordVal"
                   type="password"
+                  autocomplete="current-password"
                   class="pv-input"
                   placeholder="Contraseña..."
                   @input="onInputChange('password', '••••••••')"
@@ -281,7 +282,7 @@ function step(delta: number) {
                   v-model="rememberMe"
                   type="checkbox"
                 >
-                <div class="pv-frame-pill pv-pixel-checkbox">
+                <span class="pv-frame-pill pv-pixel-checkbox">
                   <svg
                     ref="checkMarkRef"
                     class="pv-checkbox-mark"
@@ -295,7 +296,7 @@ function step(delta: number) {
                       stroke-linecap="square"
                     />
                   </svg>
-                </div>
+                </span>
                 <span>Recordar mi cuenta en este dispositivo</span>
               </label>
             </div>
@@ -309,13 +310,13 @@ function step(delta: number) {
                   v-model="musicEnabled"
                   type="checkbox"
                 >
-                <div class="pv-frame-pill pv-toggle-track">
-                  <div
+                <span class="pv-frame-pill pv-toggle-track">
+                  <span
                     ref="toggleThumbRef"
                     class="pv-frame-pill pv-toggle-thumb"
                     :style="{ left: musicEnabled ? '27px' : '3px' }"
                   />
-                </div>
+                </span>
                 <span
                   class="toggle-status-text"
                   :class="{ active: musicEnabled }"

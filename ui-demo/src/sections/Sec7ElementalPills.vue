@@ -33,7 +33,7 @@ const statuses = [
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">🏷️</span>
-      <span>7. Pills de Tipos Elementales, Estados Alterados & Géneros</span>
+      <span>7. Pills de Tipos Elementales, Estados Alterados &amp; Géneros</span>
     </h2>
 
     <div class="pv-panel-wrap has-cast-shadow">
@@ -54,7 +54,7 @@ const statuses = [
         </div>
 
         <div class="sub-label">
-          ESTADOS ALTERADOS & GLIFOS DE GÉNERO CENTRADOS:
+          ESTADOS ALTERADOS &amp; GLIFOS DE GÉNERO CENTRADOS:
         </div>
         <div class="pill-cluster">
           <span

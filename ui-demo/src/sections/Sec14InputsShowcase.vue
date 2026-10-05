@@ -130,7 +130,7 @@ function syncAllData() {
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">🕹️</span>
-      <span>14. Catálogo Completo de Inputs (Grupos C, D, E & Extras Semánticos)</span>
+      <span>14. Catálogo Completo de Inputs (Grupos C, D, E &amp; Extras Semánticos)</span>
     </h2>
 
     <div class="pv-panel-wrap has-cast-shadow">
@@ -186,12 +186,12 @@ function syncAllData() {
                     type="checkbox"
                     @change="onFieldChange('optTerms', optTerms)"
                   >
-                  <div class="pv-frame-pill pv-pixel-checkbox">
+                  <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="optTerms"
                       style="font-size: 8px; color: #ffd60a;"
                     >✓</span>
-                  </div>
+                  </span>
                   <span>Acepto los términos</span>
                 </label>
                 <label class="pv-checkbox-row">
@@ -200,12 +200,12 @@ function syncAllData() {
                     type="checkbox"
                     @change="onFieldChange('optNewsletter', optNewsletter)"
                   >
-                  <div class="pv-frame-pill pv-pixel-checkbox">
+                  <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="optNewsletter"
                       style="font-size: 8px; color: #ffd60a;"
                     >✓</span>
-                  </div>
+                  </span>
                   <span>Boletín de eventos</span>
                 </label>
               </div>
@@ -226,12 +226,12 @@ function syncAllData() {
                     name="plan-tier-demo"
                     @change="onFieldChange('planTier', planTier)"
                   >
-                  <div class="pv-frame-pill pv-pixel-checkbox">
+                  <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="planTier === 'free'"
                       style="font-size: 7px; color: #38bdf8;"
                     >●</span>
-                  </div>
+                  </span>
                   <span>Pase Gratuito</span>
                 </label>
                 <label class="pv-checkbox-row">
@@ -242,12 +242,12 @@ function syncAllData() {
                     name="plan-tier-demo"
                     @change="onFieldChange('planTier', planTier)"
                   >
-                  <div class="pv-frame-pill pv-pixel-checkbox">
+                  <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="planTier === 'pro'"
                       style="font-size: 7px; color: #38bdf8;"
                     >●</span>
-                  </div>
+                  </span>
                   <span>Pase Maestro (Pro)</span>
                 </label>
               </div>
@@ -398,7 +398,7 @@ function syncAllData() {
         <fieldset class="pv-frame-control pv-fieldset">
           <legend class="pv-frame-pill pv-legend">
             <span>⚙️</span>
-            <span>CONTROLES ADICIONALES: TEXTAREA, SELECT, PROGRESS & METER</span>
+            <span>CONTROLES ADICIONALES: TEXTAREA, SELECT, PROGRESS &amp; METER</span>
           </legend>
 
           <div class="input-grid-cols-4">

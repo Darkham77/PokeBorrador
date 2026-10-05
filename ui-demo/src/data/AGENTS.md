@@ -18,5 +18,5 @@ Frontend / UI Engineers.
 
 ## Verification
 
-- `npm run validate:domain-types`
-- `npm run validate:types`
+- `npm run lint`
+- `npm run audit`

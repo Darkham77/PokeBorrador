@@ -49,7 +49,7 @@ class FuzzerMemoryStore {
         existingDoc = JSON.parse(fs.readFileSync(certifiedPath, 'utf8')) as { battle?: unknown[]; items?: unknown[] };
       }
     } catch {
-      // ignore
+      // catch-ok: Fallback to empty existing doc if file cannot be read or parsed
     }
     const certifiedDocument = {
       battle: this.battle.length > 0 ? this.battle : (existingDoc.battle || []),

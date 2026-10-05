@@ -315,12 +315,27 @@ export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistencePar
         'persistence-redundant-nullability': 'optional(nullable) redundante'
       },
       requiresAst: true,
-      requiredFiles: [GAME_TYPES_PATH, SCHEMAS_PATH, SERIALIZER_PATH, INITIAL_STATE_PATH]
+      requiredFiles: [GAME_TYPES_PATH, SCHEMAS_PATH, SERIALIZER_PATH, INITIAL_STATE_PATH],
+      coverage: {
+        include: [
+          'src/types/system/game.ts',
+          'src/logic/validation/schemas.ts',
+          'src/logic/auth/saveSerializer.ts',
+          'src/stores/gameInitialState.ts'
+        ]
+      }
     });
   }
 
   public override async runAudit(astContext?: SharedAstContext): Promise<void> {
-    this.filesScannedCount = 4;
+    this.recordScanned('src/types/system/game.ts');
+    this.recordScanned('src/logic/validation/schemas.ts');
+    this.recordScanned('src/logic/auth/saveSerializer.ts');
+    this.recordScanned('src/stores/gameInitialState.ts');
+    for (const r of SAVE_PERSISTENCE_PARITY_RULES) {
+      this.markRuleEvaluated(r);
+    }
+
     const astEngine = astContext ?? new SharedAstContext();
 
     this.context.logStep(1, 4, 'Leyendo y parseando contratos fuente de tipos, esquemas y serializadores...');

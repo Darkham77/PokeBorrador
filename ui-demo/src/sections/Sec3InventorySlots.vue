@@ -12,7 +12,7 @@ function selectSlot(index: number) {
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">🎒</span>
-      <span>3. Ranuras de Inventario, PC Storage & Movimientos de Batalla</span>
+      <span>3. Ranuras de Inventario, PC Storage &amp; Movimientos de Batalla</span>
     </h2>
 
     <div class="pv-panel-wrap has-cast-shadow">

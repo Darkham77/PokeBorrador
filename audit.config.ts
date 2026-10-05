@@ -24,9 +24,33 @@ export default defineAuditConfig({
     testFilePatterns: ['.spec.', '.test.', '.simulation.'],
     includeTestsInCodeAudit: false,
     testFragmentationWhitelist: ['src/logic/battle/battleEngine.ts'],
-    ignoreGlobs: ['node_modules/**', 'dist/**', 'scratch/**', '.tsbuildinfo/**'],
+    ignoreGlobs: [
+      'node_modules/**',
+      'dist/**',
+      'scratch/**',
+      '.tsbuildinfo/**',
+      'external/**',
+      'showdown/**',
+      'backup_legacy_code/**',
+      'test aventura/**'
+    ],
     ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'test aventura'],
     ignoredPatterns: ['src/logic/db/migrations_data.ts']
+  },
+  coverage: {
+    enabled: true,
+    exemptGlobs: [
+      { glob: 'src/data/ai/random-sets.json', reason: 'Heuristic AI random movesets database' }
+    ],
+    acknowledgedDegradations: [
+      { glob: 'scripts/**', policy: 'scripts', reason: 'Maintenance and simulation scripts running in CLI Node environment' },
+      { glob: 'src/data/**', policy: 'data', reason: 'Domain data catalogs and tabular game mini-databases' },
+      { glob: 'ui-demo/**', policy: 'demo', reason: 'Interactive UI demo sandbox and test harness components' },
+      { glob: 'ui-demo/src/data/**', policy: 'data', reason: 'UI demo mock catalogs' }
+    ]
+  },
+  documentation: {
+    allowedNpxBinaries: ['kill-port']
   },
   persistence: {
     engine: 'hybrid',

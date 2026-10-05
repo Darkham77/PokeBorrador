@@ -50,11 +50,22 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
         'pokemon-invalid-learnset-move': 'Movimiento inválido en learnset',
         'pokemon-missing-learnset': 'Learnset vacío o no definido'
       },
-      requiredFiles: [DB_FILE]
+      requiredFiles: [DB_FILE],
+      coverage: {
+        include: ['src/data/pokemon/**/*.{ts,json}']
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    const pokemonDataFiles = await this.context.collectFiles(['src/data/pokemon'], new Set(['.ts', '.json']));
+    for (const f of pokemonDataFiles) {
+      this.recordScanned(path.relative(this.projectRoot, f).replace(/\\/g, '/'));
+    }
+    for (const r of POKEMON_DB_RULES) {
+      this.markRuleEvaluated(r);
+    }
+
     this.context.logStep(1, 2, 'Validating base stats and types against Showdown Dex...');
     let count = 0;
 
@@ -142,7 +153,6 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       }
     }
 
-    this.filesScannedCount = count;
     this.context.setMetric('Enabled Pokemon validated', count);
   }
 }

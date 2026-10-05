@@ -237,7 +237,10 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
       packageName: 'Showdown',
       ruleIds: CLIENT_SIM_DECOUPLING_RULES,
       ruleDescriptions: CLIENT_SIM_DECOUPLING_DESCRIPTIONS,
-      requiresAst: true
+      requiresAst: true,
+      coverage: {
+        include: ['src/**/*.{ts,vue,js}', 'vite.config.ts']
+      }
     });
   }
 
@@ -256,6 +259,10 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
       }
 
       filesScanned++;
+      this.recordScanned(relPath);
+      this.markRuleEvaluated('client-sim-value-import');
+      this.markRuleEvaluated('client-randoms-value-import');
+
       const content = fs.readFileSync(file, 'utf8');
       const sf = astContext?.getSourceFile(file, content);
       const issues = scanSourceForSimImports(content, relPath, sf);
@@ -276,6 +283,8 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
     this.context.logStep(2, 3, 'Verificando configuración de manualChunks en vite.config.ts...');
     const viteConfigPath = path.resolve(cwd, 'vite.config.ts');
     if (fs.existsSync(viteConfigPath)) {
+      this.recordScanned('vite.config.ts');
+      this.markRuleEvaluated('client-sim-chunk-configured');
       const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
       const configIssues = checkViteConfigForSimChunks(viteContent);
       for (const ci of configIssues) {
@@ -289,21 +298,28 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
           context: ci.snippet
         });
       }
+    } else {
+      this.markRuleNotApplicable('client-sim-chunk-configured', 'vite.config.ts no existe en el proyecto');
     }
 
     this.context.logStep(3, 3, 'Comprobando existencia de chunks de Showdown en dist/assets/...');
     const distAssetsDir = path.resolve(cwd, 'dist/assets');
-    const distChunks = checkDistAssetsForSimChunks(distAssetsDir);
-    for (const chunk of distChunks) {
-      totalIssuesFound++;
-      this.addViolation({
-        ruleId: 'client-sim-chunk-present',
-        file: `dist/assets/${chunk.chunkName}`,
-        line: 1,
-        message: `Chunk indebido detectado en dist/assets: "${chunk.chunkName}" (${chunk.sizeKB} KB). Showdown debe eliminarse del cliente.`,
-        severity: 'error',
-        context: chunk.chunkName
-      });
+    if (fs.existsSync(distAssetsDir)) {
+      this.markRuleEvaluated('client-sim-chunk-present');
+      const distChunks = checkDistAssetsForSimChunks(distAssetsDir);
+      for (const chunk of distChunks) {
+        totalIssuesFound++;
+        this.addViolation({
+          ruleId: 'client-sim-chunk-present',
+          file: `dist/assets/${chunk.chunkName}`,
+          line: 1,
+          message: `Chunk indebido detectado en dist/assets: "${chunk.chunkName}" (${chunk.sizeKB} KB). Showdown debe eliminarse del cliente.`,
+          severity: 'error',
+          context: chunk.chunkName
+        });
+      }
+    } else {
+      this.markRuleNotApplicable('client-sim-chunk-present', 'El directorio dist/assets no existe antes del build');
     }
 
     this.context.setMetric('Archivos de Cliente Escaneados', filesScanned);

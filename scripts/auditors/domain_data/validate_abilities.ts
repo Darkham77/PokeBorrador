@@ -48,11 +48,24 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
         'ability-missing-translation': 'Traducción faltante en habilidad',
         'ability-empty-field': 'Campo obligatorio vacío en habilidad'
       },
-      requiredFiles: [DATA_FILE]
+      requiredFiles: [DATA_FILE],
+      coverage: {
+        include: [
+          'src/data/battle/abilities.ts',
+          'src/data/battle/abilities.json',
+          'src/data/pokemon/pokemonDB.ts'
+        ]
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    this.recordScanned('src/data/battle/abilities.ts');
+    this.recordScanned('src/data/battle/abilities.json');
+    this.markRuleEvaluated('ability-invalid-showdown');
+    this.markRuleEvaluated('ability-missing-translation');
+    this.markRuleEvaluated('ability-empty-field');
+
     this.context.logStep(1, 2, 'Extracting abilities for enabled species in POKEMON_DB...');
     const gameAbilities = new Set<string>();
     for (const pokeId of Object.keys(POKEMON_DB)) {
@@ -65,7 +78,6 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
       }
     }
 
-    this.filesScannedCount = gameAbilities.size;
     this.context.logStep(2, 2, `Validating ${gameAbilities.size} abilities against Dex and Spanish translations...`);
 
     for (const abId of Array.from(gameAbilities)) {

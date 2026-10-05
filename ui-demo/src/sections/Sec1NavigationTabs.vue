@@ -79,7 +79,7 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">📑</span>
-      <span>1. Pestañas de Navegación, Controles Segmentados & WAI-ARIA Tabs</span>
+      <span>1. Pestañas de Navegación, Controles Segmentados &amp; WAI-ARIA Tabs</span>
     </h2>
 
     <div class="pv-panel-wrap has-cast-shadow">

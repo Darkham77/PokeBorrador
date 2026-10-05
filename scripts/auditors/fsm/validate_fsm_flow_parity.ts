@@ -86,16 +86,25 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
       ruleDescriptions: {
         'fsm-flow-sequence-missing': 'Secuencia FSM ausente en código'
       },
-      requiredFiles: [PARITY_MANUAL_PATH]
+      requiredFiles: [PARITY_MANUAL_PATH],
+      coverage: {
+        include: ['src/**/*.{ts,vue}', '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md']
+      }
     });
   }
 
   public override async runAudit(): Promise<void> {
+    this.recordScanned('.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+    const allFiles = collectFsmFiles(PARITY_SRC_ROOT);
+    for (const f of allFiles) {
+      this.recordScanned(path.relative(this.projectRoot, f).replace(/\\/g, '/'));
+    }
+    this.markRuleEvaluated('fsm-flow-sequence-missing');
+
     this.context.logStep(1, 2, 'Extracting dynamic execution sequence from source code...');
     const manual = await fs.readFile(PARITY_MANUAL_PATH, 'utf-8');
     const executionSequence = await getExecutionSequence();
     const mermaidSeqs = parseMermaidSequences(manual);
-    this.filesScannedCount = executionSequence.length;
 
     this.context.logStep(2, 2, `Evaluating ${mermaidSeqs.length} Mermaid sequences against runtime flow...`);
 

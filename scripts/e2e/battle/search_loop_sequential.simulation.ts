@@ -249,7 +249,7 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
                    fsmState === 'INITIALIZING';
           }, undefined, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
         } catch {
-          // Timeout reached or state advanced, continue to isBattle check
+          // catch-ok: Timeout reached or state advanced, continue to isBattle check
         }
 
         const isBattle = await page.evaluate(() => {
