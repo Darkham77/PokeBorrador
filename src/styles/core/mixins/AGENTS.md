@@ -29,6 +29,12 @@ Frontend Developers.
   - In `btn-vicio-variant($variant, $size)`, CSS properties (`background`, `color`, `box-shadow`) MUST be emitted strictly after evaluating all `@if $variant == ...` blocks to prevent variant collapsing into the default palette.
   - Any button with white text (`#fff`) MUST enforce a 4-way black text outline (`text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;`) for accessibility and retro readability.
 
+## Key Files
+
+- `_buttons_special.scss`: Module implementation.
+- `_pokemon.scss`: Module implementation.
+- `_shop-standards.scss`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -19,6 +19,11 @@ Frontend Developers / Systems Engineers.
 
 - Run standard test suites (`npm run test:node` or `npm run test`).
 
+## Key Files
+
+- `itemGlobalBuffs.ts`: Module implementation.
+- `itemTargetValidator.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

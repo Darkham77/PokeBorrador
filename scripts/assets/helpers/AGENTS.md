@@ -14,6 +14,11 @@ Asset Pipeline Engineers / Frontend Developers.
 - **Manual Shadow & Feet Overrides Ingestion Protocol**: Catalog generators (`packFeetCoordinates`, `generateAnimatedSpriteDatabase`) MUST read manual overrides from `src/data/pokemon/spriteShadowOverrides.json`. When a sprite entry exists in the overrides file, its explicit normalized coordinates (`feetX`, `feetY`) and `isFlying` status MUST take precedence over the automatic buffer analysis algorithm.
 - **Compact Extended Feet Tuple Contract**: In `pokemonFeetDatabase.json`, sprite coordinates default to `[feetY, feetX]`. When `isFlying: true` is set, a 3rd element `1` is appended: `[feetY, feetX, 1]`. When `isFlying` is false or unset, the 3rd element MUST be omitted to prevent payload inflation. The runtime getter `requireFeetPoints` returns `{ feetY, feetX, isFlying?: boolean }`.
 
+## Key Files
+
+- `assetBoundAnalyzer.ts`: Module implementation.
+- `catalogGenerators.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

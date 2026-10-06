@@ -20,6 +20,12 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `breedingData.ts`: Module implementation.
+- `hatchAuras.ts`: Module implementation.
+- `missionEngine.ts`: Module implementation.
+
 ## Child DOX Index
 
 - *This domain module does not contain nested sub-directories with independent AGENTS.md files.*

@@ -13,6 +13,10 @@ This directory contains reusable composition state logic and lifecycle helpers f
 - All UI animations for shops and items must be orchestrated using GSAP.
 - Shop components must consume state and filtering logics from hooks inside this directory.
 
+## Key Files
+
+- `useShopLogic.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

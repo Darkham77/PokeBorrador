@@ -36,3 +36,11 @@ This directory contains modular Vue components that render the Home Hub dashboar
 - **Prohibition of Faux-Bold on Pixel Fonts & Multi-Column Item Card Name Wrapping**:
   - Elements styled with `@include pixelated;` or `var(--font-pixel)` MUST NEVER declare artificial font weights (`font-weight: 700`, `800`, `900` or `bold`). Pixel art fonts are bitmap-aligned monospace typography with no native bold variants; applying artificial weight forces browsers to apply *faux-bold* by dilating pixel glyphs, clipping ascenders/descenders against line boundaries and cutting off uppercase top edges (e.g. `MERCADO NEGRO`) and descenders (`p`, `g`, `y`).
   - Mini-cards in multi-column widgets (e.g. 3-column shop previews in `HomeBlackMarketWidget.vue`) MUST NOT use single-line ellipsis truncation (`white-space: nowrap; text-overflow: ellipsis;`) for item/entity names, which cuts off compound names (e.g. `Anticongela...`, `Cascabel Co...`). Item names must declare 2-line clamping (`display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 22px; word-break: break-word;`) with `line-height: 1.35;` and `@include pixelated;`, ensuring full text visibility and uniform card heights.
+
+## Key Files
+
+- `HomeEventsSection.styles.scss`: Module implementation.
+- `HomePassiveDefenseWidget.styles.scss`: Module implementation.
+- `HomeWidgetMinimizeBtn.vue`: Module implementation.
+- `HomeWidgetRefreshBtn.vue`: Module implementation.
+- `PassiveDefenseHistoryRow.styles.scss`: Module implementation.

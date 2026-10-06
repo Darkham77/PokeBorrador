@@ -21,6 +21,25 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `MarketExplorer.vue`: Module implementation.
+- `MarketExplorerListingCard.vue`: Module implementation.
+- `MarketHistoryRowItem.vue`: Module implementation.
+- `MarketItemCard.vue`: Module implementation.
+- `MarketItemFilters.vue`: Module implementation.
+- `MarketMyItems.styles.scss`: Module implementation.
+- `MarketMyItems.vue`: Module implementation.
+- `MarketMyListingCard.vue`: Module implementation.
+- `MarketPublish.styles.scss`: Module implementation.
+- `MarketPublishForm.vue`: Module implementation.
+- `TradeView.vue`: Module implementation.
+- `marketExplorerHelper.ts`: Module implementation.
+- `marketMyItemsHelper.ts`: Module implementation.
+- `useMarketPublishActions.ts`: Module implementation.
+- `useMarketPublishInventory.ts`: Module implementation.
+- `useMarketPublishPokemon.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -20,6 +20,12 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `useMapCardObservers.ts`: Module implementation.
+- `useMapCardSprites.ts`: Module implementation.
+- `usePokemonCenterCooldown.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

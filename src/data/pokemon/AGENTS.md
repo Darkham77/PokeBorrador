@@ -21,6 +21,21 @@ Static Pokémon data, species database, EV yield databases, sprites mappings, ev
 - `pokemonFeetDatabase.ts`: Runtime accessor providing O(1) coordinate lookup with automatic shiny-to-base fallback.
 - `spriteShadowOverrides.json`: Development-generated configuration storing manually calibrated feet coordinates (feetX, feetY) and isFlying overrides per sprite.
 
+- `animatedSpriteData.ts`: Module implementation.
+- `animatedSpriteDatabase.ts`: Module implementation.
+- `eggMoves.ts`: Module implementation.
+- `evolutionData.ts`: Module implementation.
+- `evolutionDataWrapper.ts`: Module implementation.
+- `feetCoordinatesData.ts`: Module implementation.
+- `npcSpriteCatalog.ts`: Module implementation.
+- `pokedex.ts`: Module implementation.
+- `pokemonCriesDatabase.ts`: Module implementation.
+- `speciesGenders.ts`: Module implementation.
+- `speciesMetadata.ts`: Module implementation.
+- `spriteMapping.ts`: Module implementation.
+- `spriteMappingData.ts`: Module implementation.
+- `starters.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

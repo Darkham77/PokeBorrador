@@ -23,6 +23,18 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `PokemonActionFooter.vue`: Module implementation.
+- `PokemonEvolutionsTab.vue`: Module implementation.
+- `PokemonMovesTab.vue`: Module implementation.
+- `PokemonStatBar.vue`: Module implementation.
+- `PokemonStatsTab.vue`: Module implementation.
+- `PokemonStatusSection.vue`: Module implementation.
+- `PokemonTmsTab.vue`: Module implementation.
+- `pokemonSummaryHelper.ts`: Module implementation.
+- `pokemonSummaryTypes.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

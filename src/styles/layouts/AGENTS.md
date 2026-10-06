@@ -21,6 +21,12 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `_hud.scss`: Module implementation.
+- `_navigation.scss`: Module implementation.
+- `_screens.scss`: Module implementation.
+
 ## Child DOX Index
 
 - [hud/](./hud/AGENTS.md): Domain module documentation for hud.

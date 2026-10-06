@@ -22,6 +22,13 @@ Pokemon Mechanics Team / System Architects.
 
 - Run `npm run lint` and `npm run audit suites=validate_domain_types`.
 
+## Key Files
+
+- `encounters.ts`: Module implementation.
+- `friendship.ts`: Module implementation.
+- `pokemon.ts`: Module implementation.
+- `spriteShadows.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

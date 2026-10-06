@@ -12,6 +12,13 @@ Security and Architecture Developers.
 - Exports MUST remain zero-fallback and tree-shakable.
 - When validating `claimQueue` items (`claimItemSchema`), ensure optional fields (`user_id?: string`, `type?: string`) match the database table schema `claim_queue`. The asset type is canonicalized inside `asset_data.type` (`'pokemon' | 'item' | 'money' | 'currency'`).
 
+## Key Files
+
+- `authSchemas.ts`: Module implementation.
+- `battleSchemas.ts`: Module implementation.
+- `pokemonSchemas.ts`: Module implementation.
+- `socialSchemas.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

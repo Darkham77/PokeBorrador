@@ -14,6 +14,10 @@ Core Frontend / Gameplay Engineers.
 - **Map View Header Layout Pairing**: In `MapView.vue`, the top navigation bar pairs `MapPokemonCenterBanner` with `HomeBreedingWidget :columns="3"` using centered flexbox (`display: flex; justify-content: center; align-items: stretch; gap: 16px; flex-wrap: wrap;`), preventing cards from stretching across ultrawide monitors and aligning heights harmoniously above the region route grid.
 - **Main Game Tabs Content Delegation**: Tab content rendering in `MainGameView.vue` is delegated to `MainGameTabsContent.vue`, preserving `<KeepAlive>` state for core views while maintaining low cyclomatic complexity in the shell layout.
 
+## Key Files
+
+- `GymsView.vue`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -25,6 +25,11 @@ Frontend Developers / Systems Engineers.
 
 - Run standard test suites (`npm run test:node` or `npm run test`).
 
+## Key Files
+
+- `fossilEngine.ts`: Module implementation.
+- `itemMath.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [helpers](helpers/AGENTS.md) — Pure stateless helpers for item effects and TM learning compatibility.

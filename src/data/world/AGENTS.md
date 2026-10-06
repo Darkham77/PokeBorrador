@@ -16,6 +16,14 @@ Map coordinates, routes assets mapping, gyms/badges configuration, and weather-t
 - When adding or modifying maps in `FIRE_RED_MAPS`, ensure environmental boundaries are explicitly specified.
 - Keep `MAP_ROUTE_MAPPING` aligned with asset filenames without declaring ghost or duplicate map IDs.
 
+## Key Files
+
+- `gymRematches.ts`: Module implementation.
+- `gyms.ts`: Module implementation.
+- `map-assets.ts`: Module implementation.
+- `maps.ts`: Module implementation.
+- `weather-tables.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

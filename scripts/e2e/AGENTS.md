@@ -89,6 +89,15 @@ QA / Automation Engineers.
 - Run `npm run sim:e2e:pokemon` to run Pokémon friendship and UI simulations.
 - Run `npm run sim:e2e:system` to run system-level update and version lock simulations.
 
+## Key Files
+
+- `base_battle_simulation.ts`: Module implementation.
+- `base_simulation.ts`: Module implementation.
+- `e2e_constants.ts`: Module implementation.
+- `global_postgres_setup.ts`: Module implementation.
+- `global_postgres_teardown.ts`: Module implementation.
+- `simulation_config.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [abilities/](./abilities/AGENTS.md): Domain module documentation for out-of-battle abilities simulations.

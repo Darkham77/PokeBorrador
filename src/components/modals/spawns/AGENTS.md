@@ -21,3 +21,7 @@ Frontend Developers / UI Components Team.
 - `npm run lint`
 - `npm run audit suites=validate_component_styles`
 - `npm run test`
+
+## Key Files
+
+- `routeSpawnsTerrainHelper.ts`: Module implementation.

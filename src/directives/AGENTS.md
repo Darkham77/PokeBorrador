@@ -18,6 +18,12 @@ Frontend Developers.
 
 - Run standard lint checks.
 
+## Key Files
+
+- `gsapHover.ts`: Module implementation.
+- `gsapLoop.ts`: Module implementation.
+- `gsapNick.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

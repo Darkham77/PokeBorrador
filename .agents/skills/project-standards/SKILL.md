@@ -12,7 +12,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
   - **Linux / macOS (Terminal)**: `chmod +x ./setup-linux.sh && ./setup-linux.sh [--declared-versions]`
   This script automatically prompts and elevates Administrator permissions via the native Windows UAC modal dialog (`setup-windows.ps1`) or sudo when required, installs/configures NVM, aligns the Node runtime, preserves the user default NVM alias and other installed Node versions, enforces local `.npmrc` security policies (`ignore-scripts=true`, HTTPS registry, high audit level), cleans residual cache, and runs `npm ci` for a deterministic, ready-to-code workspace in a single run. By default in development, it automatically checks nodejs.org for the latest Current stable Node.js release, synchronizes `.nvmrc` and `package.json`, and updates `npm@latest` globally. For servers, CI/CD, or reproducible locked runs, passing `--declared-versions` / `-DeclaredVersions` (aliases `--locked`, `--pinned`) freezes installation strictly to versions declared in the commit without network queries, without mutating Git-tracked files, and without updating npm.
   - **IDE & Terminal Restart Recommendation**: Whenever setup scripts modify system/user environment variables, NVM symlinks, or PATH, the agent MUST explicitly advise the user to restart their IDE (or reload terminal windows) so that all child process trees inherit the updated system PATH, eliminating the need for manual PATH injections in subsequent tool executions.
-- **Zero Audit Failures Mandate**: Under NO circumstances are audit failures allowed in any Git commit or pull request. The primary quality gatekeeper is `npm run audit` (which must report exactly 0 errors). The command `npm run audit:for-commit` is STRICTLY RESERVED for the safe-commit pipeline to compare new warnings vs `origin/main`; running it for general development, documentation, or outside safe-commit is strictly forbidden.
+- **Zero Audit Failures Mandate**: Under NO circumstances are audit failures allowed in any Git commit or pull request. The primary quality gatekeeper is `npm run audit` (which must report exactly 0 errors). The ratchet mechanism compares warnings against `.auditor/audit-baseline.json` ensuring no warning regressions.
 - **Universal Quality & Audit Ecosystem**: All repository audits are organized under `scripts/auditors/` across 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation`). The single master audit runner `npm run audit` executes 100% of sub-auditors dynamically with zero omissions, displaying formatted step-by-step progress lines and a consolidated Box-Drawing summary table in the terminal while writing the complete structured JSON report with all findings to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites). AI agents needing line-level details must read `scratch/audits/latest_audit.json` directly from disk.
   - **Developer Intelligence & Reporting Commands**:
     - `npm run audit:complexity` / `npm run audit:complexity:top`: Renders ranked cyclomatic and cognitive complexity hotspots in `src/`.
@@ -117,7 +117,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Proportional Verification Protocol (Fast Lint vs Full Audit)**:
   - **Documentation & Skills (`.md`)**: Run ONLY `npm run audit:md` (~1-2s). Running heavy audits for documentation or skill edits is strictly forbidden.
   - **In-Development Code Iteration**: Run `npm run lint` (~10s) or `npm run audit` for full quality gate.
-  - **Safe-Commit Gatekeeper**: `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline to diff warnings against `origin/main`.
+  - **Full Quality Gate & Commits**: `npm run audit` validates 100% of suites and checks warnings against `.auditor/audit-baseline.json`.
 
 ---
 
@@ -243,6 +243,6 @@ Before declaring any task completed, verify code against this mandatory checklis
 - [ ] **GPU Acceleration**: Have I applied layer promotion (`will-change: transform`) and object pooling on animated/heavy elements?
 - [ ] **Pixel Parity**: Is all game content pixelated, sharp, and properly rendered with appropriate font fallbacks ('ñ' handled)?
 - [ ] **CLI-First State Verification**: Have I verified game states via `window.__VITE_DEBUG__` console commands?
-- [ ] **Proportional Verification**: For documentation/skill edits, does `npm run audit:md` pass cleanly? For code development, does `npm run audit` pass with 0 errors? (The command `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline).
+- [ ] **Proportional Verification**: For documentation/skill edits, does `npm run audit:md` pass cleanly? For code development, does `npm run audit` pass with 0 errors and zero regressions against `.auditor/audit-baseline.json`?
 - [ ] **Fallow Score Compliance**: Does `npm run fallow:health` report a score of 85 or higher?
 - [ ] **Language Parity**: Are code files (.ts, .vue) and skill files written in English, documentation in the file's native language (English or Spanish), with zero intra-file language mixing?

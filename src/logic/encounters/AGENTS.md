@@ -17,6 +17,14 @@ Game Designers / Encounter Logic Developers.
   - `generateEncounter` and `generateGroundEncounter` return `null` safely without attempting selection on empty pools (`selectFromPool`). Direct navigations to arenas (`stadium`, `gym`) redirect cleanly to the gyms tab without raising unhandled promise rejections.
 - Ensure spawn pool probabilities sum to 100% or follow standard spawn rates mapping.
 
+## Key Files
+
+- `encounterUI.ts`: Module implementation.
+- `npcEncounterChances.ts`: Module implementation.
+- `routeSpawnMath.ts`: Module implementation.
+- `routeWeatherDomainHelpers.ts`: Module implementation.
+- `specialEncounterCheckers.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

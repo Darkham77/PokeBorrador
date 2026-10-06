@@ -21,6 +21,12 @@ Frontend Developers / Event Gameplay Engineers.
 
 - Run `npm run lint` and `npm run test` to verify reactivity and business logic parity.
 
+## Key Files
+
+- `eventDetailBonusesHelper.ts`: Module implementation.
+- `useEventDetailBonuses.ts`: Module implementation.
+- `usePastEventAwards.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

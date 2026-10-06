@@ -21,6 +21,13 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `ConnectionWarning.vue`: Module implementation.
+- `HUD_Navigation.vue`: Module implementation.
+- `HUD_SidebarLeft.vue`: Module implementation.
+- `ToastNotification.vue`: Module implementation.
+
 ## Child DOX Index
 
 - [navigation/](./navigation/AGENTS.md): Modular HUD navigation groups and submenus.

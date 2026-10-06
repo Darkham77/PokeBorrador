@@ -10,6 +10,7 @@ State Management & Store Infrastructure Team.
 
 - Initialize Pinia before each test using `setActivePinia(createPinia())`.
 - Verify reactive computation of indexed maps (`pokemonByUid`), sets (`caughtSpeciesSet`, `seenSpeciesSet`), and domain state mutations.
+- `trade_store_lifecycle.spec.ts`: Unit tests for trade store lifecycle, item/pokemon offer validation, and UID locking.
 
 ## Child DOX Index
 

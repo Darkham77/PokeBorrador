@@ -25,6 +25,13 @@ Automation scripts for assets downloads, multi-core WebP sprite conversion, craf
 - `audit_item_sprite_collisions.ts`: Scans `items.json` to detect duplicate sprite usages across items and emits structured warnings.
 - `optimize_sprites.ts`: Sprite optimization and compression.
 
+- `convert_and_sync_item_sprites.ts`: Module implementation.
+- `download_badges.ts`: Module implementation.
+- `fetch_sprites.ts`: Module implementation.
+- `init_shadow_overrides.ts`: Module implementation.
+- `recompile_feet_database.ts`: Module implementation.
+- `variantImageAnalyzer.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [helpers/](./helpers/AGENTS.md): Domain module documentation for asset helper utilities.

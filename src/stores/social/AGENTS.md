@@ -21,6 +21,16 @@ Frontend Developers / Social Systems Engineers.
 
 - Run `npm run audit`.
 
+## Key Files
+
+- `chat.ts`: Module implementation.
+- `chatCosmetics.ts`: Module implementation.
+- `chatDateHelper.ts`: Module implementation.
+- `chatPrivate.ts`: Module implementation.
+- `chatSanitizer.ts`: Module implementation.
+- `social.ts`: Module implementation.
+- `socialParser.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

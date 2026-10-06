@@ -155,10 +155,16 @@ for bin_name in node npm npx corepack; do
     fi
 done
 
-# 5. Actualizar npm a la última versión global (por defecto en auto-actualización; preservada en --declared-versions)
+# 5. Actualizar npm a la versión adecuada (en auto-actualización instala npm@latest y sincroniza package.json; en --declared-versions sincroniza estrictamente con el commit)
 if [ "$UPDATE_TO_LATEST" = true ]; then
     echo -e "\n📦 Actualizando npm a la última versión global en este Node (npm@latest)..."
     npm install -g npm@latest || echo "⚠️ Advertencia: No se pudo actualizar npm globalmente. Continuando con versión actual..."
+
+    NEW_NPM_VER=$(npm -v 2>/dev/null || true)
+    if [ -n "$NEW_NPM_VER" ] && grep -q '"npm":' "$PKG_PATH"; then
+        sed -i -E "s/(\"npm\": *\">=)[^\"]*(\")/\1$NEW_NPM_VER\2/" "$PKG_PATH"
+        echo "✅ Versión de npm sincronizada a >=$NEW_NPM_VER en package.json"
+    fi
 
     for bin_name in npm npx; do
         if [ -e "$NODE_BIN_DIR/$bin_name" ]; then
@@ -166,7 +172,19 @@ if [ "$UPDATE_TO_LATEST" = true ]; then
         fi
     done
 else
-    echo -e "\n🔒 Preservando versión activa de npm ($($NODE_BIN_DIR/npm -v 2>/dev/null || npm -v))."
+    TARGET_NPM_VER=$(grep -o '"npm": *"[^"]*"' "$PKG_PATH" | grep -o '[0-9.]*' | head -n 1)
+    CURRENT_NPM_VER=$($NODE_BIN_DIR/npm -v 2>/dev/null || npm -v)
+    if [ -n "$TARGET_NPM_VER" ] && [ "$CURRENT_NPM_VER" != "$TARGET_NPM_VER" ]; then
+        echo -e "\n📦 Sincronizando npm a la versión declarada en el commit (npm@$TARGET_NPM_VER)..."
+        npm install -g "npm@$TARGET_NPM_VER" || echo "⚠️ Advertencia: No se pudo instalar npm@$TARGET_NPM_VER."
+        for bin_name in npm npx; do
+            if [ -e "$NODE_BIN_DIR/$bin_name" ]; then
+                ln -sf "$NODE_BIN_DIR/$bin_name" "$LOCAL_BIN/$bin_name"
+            fi
+        done
+    else
+        echo -e "\n🔒 Preservando versión activa de npm ($CURRENT_NPM_VER)."
+    fi
 fi
 
 # 6. Configuración de Seguridad de NPM aislada al proyecto (sin afectar el entorno global)
@@ -188,7 +206,55 @@ echo -e "\n📦 Instalando dependencias del proyecto con npm ci..."
 cd "$SCRIPT_DIR"
 npm ci
 
-# 8. Ejecutar Plugins Específicos del Proyecto (scripts/setup/plugins/*.sh)
+# 8. Inicializar Directorios Básicos del Auditor y del Proyecto
+echo -e "\n📁 Inicializando directorios básicos del auditor y del proyecto..."
+REQUIRED_DIRS=(
+    "scratch"
+    "scratch/audits"
+    "scratch/audits/architecture"
+    "scratch/audits/documentation"
+    "scratch/audits/domain_data"
+    "scratch/audits/persistence"
+    ".agents"
+    ".agents/skills"
+    "dist"
+    "scripts/setup/plugins"
+)
+
+for dir in "${REQUIRED_DIRS[@]}"; do
+    target_path="$SCRIPT_DIR/$dir"
+    if [ ! -d "$target_path" ]; then
+        mkdir -p "$target_path"
+        echo "  [+] Creado directorio: $dir"
+    else
+        echo "  [✓] Directorio detectado: $dir"
+    fi
+done
+
+# Inicializar directorio de caché persistente de Fallow similar-code si no existe
+FALLOW_USER_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/fallow/similar-code"
+if [ ! -d "$FALLOW_USER_CACHE" ]; then
+    mkdir -p "$FALLOW_USER_CACHE/models" "$FALLOW_USER_CACHE/vectors"
+    echo "  [+] Creado directorio de caché Fallow: $FALLOW_USER_CACHE"
+fi
+
+# Verificación de exclusión de scratch/ en .gitignore
+GITIGNORE_FILE="$SCRIPT_DIR/.gitignore"
+if [ -f "$GITIGNORE_FILE" ]; then
+    if ! grep -qE '^scratch/?\s*$' "$GITIGNORE_FILE"; then
+        echo -e "\n  [+] Asegurando exclusión de scratch/ en .gitignore..."
+        printf "\n# Scratch & Temporary Audits\nscratch/\n" >> "$GITIGNORE_FILE"
+        echo "  [OK] scratch/ agregado a .gitignore"
+    else
+        echo "  [✓] scratch/ ya está excluido en .gitignore"
+    fi
+else
+    echo -e "\n  [+] Creando .gitignore básico con exclusión de scratch/..."
+    printf "# Dependencies\nnode_modules/\n\n# Scratch & Temporary Audits\nscratch/\n*.log\n" > "$GITIGNORE_FILE"
+    echo "  [OK] .gitignore creado con scratch/"
+fi
+
+# 9. Ejecutar Plugins Específicos del Proyecto (scripts/setup/plugins/*.sh)
 PLUGINS_DIR="$SCRIPT_DIR/scripts/setup/plugins"
 if [ -d "$PLUGINS_DIR" ]; then
     for plugin_script in "$PLUGINS_DIR"/*.sh; do
@@ -200,11 +266,13 @@ if [ -d "$PLUGINS_DIR" ]; then
     done
 fi
 
-# 9. Gancho npm opcional: env:post-setup
+# 10. Gancho npm opcional: env:post-setup
 if grep -q '"env:post-setup"' "$PKG_PATH"; then
     echo -e "\n🪝 Ejecutando gancho post-setup (npm run env:post-setup)..."
     npm run env:post-setup
 fi
+
+
 
 echo "======================================================"
 echo " 🎉 ¡ENTORNO Y DEPENDENCIAS PREPARADOS CON ÉXITO!"

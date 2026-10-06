@@ -122,6 +122,52 @@ Frontend Developers / Systems Engineers.
 
 - Run `npm run lint`.
 
+## Key Files
+
+- `BattleArena.scoped.scss`: Module implementation.
+- `BattleArena.styles.scss`: Module implementation.
+- `BattleArenaHud.vue`: Module implementation.
+- `BattleBallPicker.vue`: Module implementation.
+- `BattleEnvironment.vue`: Module implementation.
+- `BattleGroundHazards.vue`: Module implementation.
+- `BattleInfoCard.styles.scss`: Module implementation.
+- `BattleInfoCard.vue`: Module implementation.
+- `BattleInfoCardHeader.vue`: Module implementation.
+- `BattleInfoCardIvRadar.vue`: Module implementation.
+- `BattleInfoCardStatusContainer.vue`: Module implementation.
+- `BattleInfoStats.vue`: Module implementation.
+- `BattleLog.vue`: Module implementation.
+- `BattleMoveCategoryItem.vue`: Module implementation.
+- `BattleMoveDetails.vue`: Module implementation.
+- `BattleMovesGrid.vue`: Module implementation.
+- `BattleQuickBag.vue`: Module implementation.
+- `BattleReplayCombatantPod.vue`: Module implementation.
+- `BattleReplayControls.vue`: Module implementation.
+- `BattleReplayModal.styles.scss`: Module implementation.
+- `BattleSpectatorOverlay.vue`: Module implementation.
+- `BattleTrainerSpeechBubble.vue`: Module implementation.
+- `CameraZoomControls.vue`: Module implementation.
+- `CombatGrass.vue`: Module implementation.
+- `DebugActionPanel.vue`: Module implementation.
+- `DebugActionPanelQuickButtons.vue`: Module implementation.
+- `HPBar.vue`: Module implementation.
+- `MoveTooltipFieldEffects.vue`: Module implementation.
+- `MoveTooltipModifiers.vue`: Module implementation.
+- `PartyPreviewGrid.vue`: Module implementation.
+- `StruggleOverlay.vue`: Module implementation.
+- `VirtualEntity.vue`: Module implementation.
+- `VirtualSpace.vue`: Module implementation.
+- `battleArenaControlsHelper.ts`: Module implementation.
+- `battleMovesTouchHelper.ts`: Module implementation.
+- `combatantVolatilesHelper.ts`: Module implementation.
+- `debugActionPanelHelpers.ts`: Module implementation.
+- `debugCaptureFlow.ts`: Module implementation.
+- `moveTooltipStatsGridHelper.ts`: Module implementation.
+- `moveTooltipStatusHelper.ts`: Module implementation.
+- `useBattleCombatantAnims.ts`: Module implementation.
+- `useBattleCombatantState.ts`: Module implementation.
+- `useCombatantVisualSprite.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [./helpers/AGENTS.md](./helpers/AGENTS.md): Visual battle animation helpers and GSAP bridges.

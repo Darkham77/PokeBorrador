@@ -64,6 +64,16 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `battleUiEvents.ts`: Module implementation.
+- `eventAutoEnrollHelper.ts`: Module implementation.
+- `eventCompetitionsHelper.ts`: Module implementation.
+- `eventEligibility.ts`: Module implementation.
+- `eventMultipliers.ts`: Module implementation.
+- `eventValidators.ts`: Module implementation.
+- `gameBus.ts`: Module implementation.
+
 ## Child DOX Index
 
 - *This domain module does not contain nested sub-directories with independent AGENTS.md files.*

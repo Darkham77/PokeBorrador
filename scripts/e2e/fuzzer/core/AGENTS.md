@@ -14,6 +14,20 @@ QA / Core Engine Team.
 - **choose() Return Check**: Every `simBattle.choose(side, choice)` call MUST check the boolean return. If `false`, the caller MUST apply a valid fallback (e.g. `'move 1'`) before continuing. Ignoring the return value is forbidden and causes stall loops.
 - **Certified Cases Validation**: After any change to `BattleAgent.decide()` or `ShowdownBattleAgent`, the `npm run sim:fuzzer:validate` script MUST be run to verify 100% parity with stored choices.
 
+## Key Files
+
+- `certifiedBattleCase.ts`: Module implementation.
+- `certifiedBattleInventory.ts`: Module implementation.
+- `fuzzerMemoryStore.ts`: Module implementation.
+- `fuzzer_agent.ts`: Module implementation.
+- `fuzzer_ai_engine.ts`: Module implementation.
+- `fuzzer_batch_worker.ts`: Module implementation.
+- `fuzzer_engine.ts`: Module implementation.
+- `fuzzer_medicine_cases.ts`: Module implementation.
+- `fuzzer_mock_battle_store.ts`: Module implementation.
+- `fuzzer_runner.ts`: Module implementation.
+- `fuzzer_worker.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

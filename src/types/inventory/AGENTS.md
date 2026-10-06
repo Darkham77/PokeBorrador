@@ -10,6 +10,10 @@ Inventory Team / System Architects.
 
 - Run standard type checks.
 
+## Key Files
+
+- `items.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -15,6 +15,32 @@ Backend and Systems Developers.
 - **Debug Trainer Tab Modularization (`DebugTrainerGenSettings.vue`, `DebugTrainerMetaCard.vue`, `DebugTrainerBattleLauncher.vue`)**: The trainer combat testing tab (`DebugTrainersTab.vue`) decomposes generation parameters, trainer identity/criminality controls, and battle encounter launchers into dedicated child SFCs to keep cyclomatic and cognitive complexity minimal.
 - **100% Playable Weather Debug Parity Mandate (`debugConstants.ts`)**: `DEBUG_WEATHER_EFFECTS` MUST maintain complete 1:1 parity with all 19 playable weathers registered in `WEATHER_REGISTRY` (including `cold`, `coldwave`, and `mist`). Both Map Admin and Battle Debug HUD share `TimeDebugControls.vue` as the Single Source of Truth; omitting or suppressing valid playable weathers from `DEBUG_WEATHER_EFFECTS` is strictly prohibited.
 
+## Key Files
+
+- `DebugActionList.vue`: Module implementation.
+- `DebugAudioAnimTab.vue`: Module implementation.
+- `DebugClassTab.vue`: Module implementation.
+- `DebugItemsTab.vue`: Module implementation.
+- `DebugMapTab.vue`: Module implementation.
+- `DebugMissionsTab.vue`: Module implementation.
+- `DebugModalsTab.vue`: Module implementation.
+- `DebugPokemonCreatorFooter.vue`: Module implementation.
+- `DebugPokemonTab.vue`: Module implementation.
+- `DebugSearchSelect.vue`: Module implementation.
+- `DebugStatsTab.vue`: Module implementation.
+- `DebugTimeTab.vue`: Module implementation.
+- `DebugTrainersTab.styles.scss`: Module implementation.
+- `IndividualPokemonEditor.vue`: Module implementation.
+- `PokemonBaseStats.vue`: Module implementation.
+- `PokemonIVEditor.vue`: Module implementation.
+- `PokemonMovePicker.vue`: Module implementation.
+- `PokemonPreview.vue`: Module implementation.
+- `debugAudioAnimHelper.ts`: Module implementation.
+- `debugPanelCategories.ts`: Module implementation.
+- `debugTrainerTeamHelper.ts`: Module implementation.
+- `useDebugPokemonCreator.ts`: Module implementation.
+- `useDebugTrainers.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [shared/](./shared/AGENTS.md): Domain module documentation for shared.

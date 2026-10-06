@@ -18,6 +18,15 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `_box.scss`: Module implementation.
+- `_dev-shadow-editor.scss`: Module implementation.
+- `_login.scss`: Module implementation.
+- `_main-game-view.scss`: Module implementation.
+- `_pokedex.scss`: Module implementation.
+- `_shadow-editor-card.scss`: Module implementation.
+
 ## Child DOX Index
 
 - [box/](./box/AGENTS.md): Domain module documentation for box.

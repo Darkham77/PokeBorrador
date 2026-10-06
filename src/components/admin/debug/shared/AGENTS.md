@@ -13,6 +13,10 @@ Backend and Systems Developers.
 - `SpawnDebugControls.vue`: Shared UI and logic for configuring all spawn conditions, event rates, and minigames probabilities (Fishing, Mining/Archaeology, Shinies, Trainers, Rivals, Guardians) across Admin Panel and Battle Debug HUD.
 - `DebugNumericControlRow.vue`: Generic modular component providing label with explanatory tooltip, numeric input, quick preset buttons, and a dedicated default button to restore individual settings.
 
+## Key Files
+
+- `debugControlTypes.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

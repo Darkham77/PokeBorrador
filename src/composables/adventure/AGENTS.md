@@ -18,6 +18,19 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `adventureEventHelpers.ts`: Module implementation.
+- `useAdventureCamera.ts`: Module implementation.
+- `useAdventureEvents.ts`: Module implementation.
+- `useAdventureLayout.ts`: Module implementation.
+- `useAdventureMinigames.ts`: Module implementation.
+- `useAdventureModalAnims.ts`: Module implementation.
+- `useAdventurePassives.ts`: Module implementation.
+- `useAdventureRouting.ts`: Module implementation.
+- `useAdventureSimulation.ts`: Module implementation.
+- `useAdventureTravelLoop.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [helpers/AGENTS.md](./helpers/AGENTS.md): Helper constants, utilities, and predicates for adventure simulation.

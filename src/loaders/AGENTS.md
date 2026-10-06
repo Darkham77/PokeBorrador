@@ -21,3 +21,10 @@ Frontend Developers / State Architects.
 
 - Run `npm run audit:md` to verify DOX hierarchy.
 - Run `npm run test:unit tests/unit/loaders/` for unit tests.
+
+## Key Files
+
+- `bagDataLoader.ts`: Module implementation.
+- `mapDataLoader.ts`: Module implementation.
+- `pokedexDataLoader.ts`: Module implementation.
+- `socialDataLoader.ts`: Module implementation.

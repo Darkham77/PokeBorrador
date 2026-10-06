@@ -25,6 +25,14 @@ Core Infrastructure Team / Frontend Developers.
 
 - Run standard type checks.
 
+## Key Files
+
+- `appLoadingHelper.ts`: Module implementation.
+- `appSessionHelper.ts`: Module implementation.
+- `useAppRouteGate.ts`: Module implementation.
+- `useBackNavigation.ts`: Module implementation.
+- `useRetroGamepad.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

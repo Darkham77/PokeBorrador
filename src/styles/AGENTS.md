@@ -37,6 +37,10 @@ UI / Frontend Developers.
 - [gpu_optimization_manual.md](../../.agents/skills/project-standards/references/technical/gpu_optimization_manual.md): Rendering optimizations and layers promotion.
 - [low_power_mode_manual.md](../../.agents/skills/project-standards/references/technical/low_power_mode_manual.md): Power saving rendering rules.
 
+## Key Files
+
+- `_index.scss`: Module implementation.
+
 ## Child DOX Index
 
 - [components/](./components/AGENTS.md): Domain module documentation for components.

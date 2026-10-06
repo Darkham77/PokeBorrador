@@ -16,6 +16,8 @@ DevOps / QA Engineers.
 - **Subprocess PATH Prepending**: When launching Docker CLI, the orchestrator MUST prepend the resolved binary directory (`path.dirname(dockerBin)`) to `process.env.PATH` to ensure sibling helper binaries (`docker-credential-desktop`) are immediately discoverable.
 - **Node.js 26 Permission Addon Mandate**: Test orchestrators launching Vitest under Node 26 sandboxed permissions MUST declare `--allow-addons` to permit Rolldown platform-specific native addons (`.node`) alongside `--allow-child-process` and `--allow-net`.
 - **Automatic Version SSoT Synchronization**: The test orchestrator (`run_tests.ts`) automatically calls `syncPublicVersionJson()` before starting Vitest, ensuring `public/version.json` matches the canonical version in `package.json` with zero manual intervention.
+- **Node.js 26 V8 Coverage Inspector Permission Mandate**: When executing Vitest with `--coverage` under Node.js permission model, both the test orchestrator (`run_tests.ts`) and Vitest worker pool forks (`test.execArgv` in `vitest.config.ts`) MUST pass `--allow-inspector` to permit V8 coverage session connection via `node:inspector` without `ERR_ACCESS_DENIED`.
+- **Strict Tuple CLI Arguments Mandate**: Command-line arguments in testing runners and maintenance scripts MUST be typed as immutable tuple arrays (`as const`) to avoid domain type erasure under `validate_domain_types`.
 
 ## Key Files
 

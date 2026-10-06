@@ -27,6 +27,18 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `BoxFilters.vue`: Module implementation.
+- `BoxGrid.vue`: Module implementation.
+- `BoxHeader.vue`: Module implementation.
+- `BoxMoveModal.vue`: Module implementation.
+- `BoxPokemonMenu.vue`: Module implementation.
+- `BoxPokemonMenuHeader.vue`: Module implementation.
+- `BoxPokemonMenuSummary.vue`: Module implementation.
+- `BoxTabs.vue`: Module implementation.
+- `boxPokemonCardHelper.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

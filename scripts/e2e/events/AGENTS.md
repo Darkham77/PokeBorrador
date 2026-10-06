@@ -23,3 +23,7 @@ QA / Automation Engineers.
 ## Verification
 
 - Run `npm run sim:e2e:events` to execute event scenario simulations.
+
+## Key Files
+
+- `base_event_simulation.ts`: Module implementation.

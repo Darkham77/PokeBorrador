@@ -225,7 +225,7 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 
 - **Durante el Desarrollo Activo**: Ejecuta `npm run lint` (~10 segundos) para comprobaciones unificadas ejecutando los 10 sub-auditores centrales en paralelo (`npm run audit:lint`): tipos de dominio, $O(1)$, estilos de componentes, suite de inteligencia Fallow, higiene SFC de Vue, limpieza de consola, directivas de auditoría, verificación de tipos TypeScript (`vue-tsc`), markdownlint y ESLint.
 - **Auditoría Documental y DOX**: Ejecuta `npm run audit:md` (~2 segundos) para validar en paralelo la jerarquía `AGENTS.md`, enlaces relativos, sintaxis Markdown y reglas de Markdownlint.
-- **Workflow de Safe-Commit**: El pipeline de safe-commit utiliza internamente `npm run audit:for-commit` para comparar advertencias nuevas contra `origin/main`.
+- **Workflow de Safe-Commit**: El pipeline de safe-commit utiliza internamente el comparador ratchet integrado en `npm run audit` contra la línea base registrada en `.auditor/audit-baseline.json`.
 
 | Comando | Descripción |
 | :-- | :-- |
@@ -234,7 +234,6 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores descubiertos dinámicamente con concurrencia acotada, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. |
 | `npm run audit:lint` | **Preset de Linting**: Ejecuta en paralelo el preset de 10 suites de código fuente. |
 | `npm run audit:md` | **Auditoría Documental y DOX**: Suite unificada (~2s) que ejecuta en paralelo la validación de jerarquía `AGENTS.md`, enlaces relativos, sintaxis Markdown y reglas de Markdownlint (preset `md`). |
-| `npm run audit:for-commit` | **Safe-Commit Diff Gatekeeper**: Compara cambios contra `origin/main` (estrictamente reservado para el pipeline `/safe-commit`). |
 | `npm run audit:changed` | **Auditoría de Archivos Modificados**: Ejecuta las suites de auditoría exclusivamente sobre los archivos modificados desde `main`. |
 | `npm run audit fix` | **Auto-corrección de Arquitectura**: Corrige automáticamente timers, sintaxis SASS, capas de render y directivas de importación. |
 | `npm run audit suites=audit_project` | **Reglas de Arquitectura y Estilo**: Evalúa las 43 reglas estáticas de código en archivos `.ts`, `.vue` y `.scss`. |

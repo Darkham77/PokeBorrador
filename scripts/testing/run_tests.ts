@@ -124,9 +124,14 @@ async function main(): Promise<void> {
         vitestExitCode = nodeProcess.status ?? 0;
       }
     } else {
+      const isCoverage = args.includes('--coverage');
+      const BASE_NODE_RUN_ARGS = ['--no-experimental-webstorage'] as const;
+      const nodeArgs = isCoverage
+        ? ['--allow-inspector', ...BASE_NODE_RUN_ARGS]
+        : [...BASE_NODE_RUN_ARGS];
       const vitestProcess = spawnSync(
         'node',
-        ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', ...args],
+        [...nodeArgs, './node_modules/vitest/vitest.mjs', 'run', ...args],
         {
           stdio: 'inherit',
           env: childEnv

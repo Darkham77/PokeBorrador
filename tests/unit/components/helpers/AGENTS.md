@@ -14,6 +14,7 @@ Frontend Developers / QA Engineers.
 - `modal_helpers_suite.spec.ts`: Unit tests for modal positioning, animation offsets, and large screen layout rules (`baseModalHelper.ts`).
 - `pokemon_and_profile_helpers_suite.spec.ts`: Unit tests for Pokémon detail view and trainer profile helpers.
 - `social_helpers_suite.spec.ts`: Unit tests for chat, friend list, and social UI component helpers.
+- `hover_strategies.spec.ts`: Unit tests for micro-interaction hover enter/leave strategies, element borders, and scale offsets.
 
 ## Verification
 

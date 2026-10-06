@@ -12,6 +12,10 @@ Core Logic Developers.
 - Ensure all evolution checks leave a determinable result state.
 - **Trade Evolution Catalysts (`linkcable`)**: In `checkStoneEvolution`, trade evolution items like `linkcable` must delegate dynamically to `getTradeEvolution(pokemon.id)` to trigger trade evolutions (e.g. Kadabra -> Alakazam, Machoke -> Machamp) without requiring an online multiplayer trade.
 
+## Key Files
+
+- `evolutionLogic.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

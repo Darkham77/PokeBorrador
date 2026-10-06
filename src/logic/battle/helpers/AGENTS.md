@@ -34,6 +34,33 @@ Systems Engineers / Backend Developers.
 - Run `npm run test` for all node unit tests under this directory.
 - Verify FSM synchronization E2E using `npm run sim:e2e:combat`.
 
+## Key Files
+
+- `battleCheatManager.ts`: Module implementation.
+- `battleCompletionReadiness.ts`: Module implementation.
+- `battleIntroSequencer.ts`: Module implementation.
+- `battleLifecycleInitializer.ts`: Module implementation.
+- `battleReadyEventKey.ts`: Module implementation.
+- `battleReadySwitchSlots.ts`: Module implementation.
+- `canonicalTurnRunner.ts`: Module implementation.
+- `certifiedBagItemActionResolver.ts`: Module implementation.
+- `combatReplayHelper.ts`: Module implementation.
+- `forcedSwitchRegistry.ts`: Module implementation.
+- `requestHelper.ts`: Module implementation.
+- `scriptedReplayReadiness.ts`: Module implementation.
+- `seedInitializer.ts`: Module implementation.
+- `showdownBattleAgent.ts`: Module implementation.
+- `showdownBattleFactory.ts`: Module implementation.
+- `showdownBattleRunner.ts`: Module implementation.
+- `showdownLogEnricher.ts`: Module implementation.
+- `showdownMoveChoiceHelper.ts`: Module implementation.
+- `showdownPerspectiveAdapter.ts`: Module implementation.
+- `showdownSeats.ts`: Module implementation.
+- `showdownSyncHelper.ts`: Module implementation.
+- `showdownTeamMapper.ts`: Module implementation.
+- `turnActionResolver.ts`: Module implementation.
+- `turnMoveValidator.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [**tests**/](./__tests__/AGENTS.md): Domain module documentation for **tests**.

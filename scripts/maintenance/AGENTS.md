@@ -30,6 +30,14 @@ General system maintenance scripts, import fixes, server configurations, and dev
 - [`vite-plugin-lan-pvp.ts`](./vite-plugin-lan-pvp.ts): LAN PvP dev server middleware plugin.
 - [`vite-plugin-sass-traps.ts`](./vite-plugin-sass-traps.ts): SCSS traps fixer plugin.
 
+- `audit_bundle_chunks.ts`: Module implementation.
+- `fix_node_timers_imports.ts`: Module implementation.
+- `fix_vue_imports.ts`: Module implementation.
+- `fix_vue_inline_imports.ts`: Module implementation.
+- `migrate_temporal.ts`: Module implementation.
+- `parse_lint.ts`: Module implementation.
+- `sync_to_test.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [audit_showdown/AGENTS.md](./audit_showdown/AGENTS.md): Showdown simulation parity audit runner.

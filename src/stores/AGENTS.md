@@ -83,6 +83,24 @@ State Architects / Frontend Developers.
 - Run `npm run audit` to verify store types, state consistency, and project rules.
 - Verify memory footprint and FPS stability during intense store updates.
 
+## Key Files
+
+- `audio.ts`: Module implementation.
+- `auth.ts`: Module implementation.
+- `debug.ts`: Module implementation.
+- `errorStore.ts`: Module implementation.
+- `evolution.ts`: Module implementation.
+- `game.ts`: Module implementation.
+- `gyms.ts`: Module implementation.
+- `leaderboard.ts`: Module implementation.
+- `library.ts`: Module implementation.
+- `loading.ts`: Module implementation.
+- `map.ts`: Module implementation.
+- `mapActions.ts`: Module implementation.
+- `modals.ts`: Module implementation.
+- `notifications.ts`: Module implementation.
+- `pvpDataHelper.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [auth/](./auth/AGENTS.md): Domain module documentation for auth store helpers.

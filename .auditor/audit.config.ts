@@ -49,6 +49,10 @@ export default defineAuditConfig({
       { glob: 'ui-demo/src/data/**', policy: 'data', reason: 'UI demo mock catalogs' }
     ]
   },
+  testCoverage: {
+    enabled: true,
+    enforceInAudit: false
+  },
   documentation: {
     allowedNpxBinaries: ['kill-port']
   },

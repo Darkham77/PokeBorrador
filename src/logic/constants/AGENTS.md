@@ -20,6 +20,17 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `animations.ts`: Module implementation.
+- `audio.ts`: Module implementation.
+- `encounters.ts`: Module implementation.
+- `gameplay.ts`: Module implementation.
+- `items.ts`: Module implementation.
+- `pokedexConstants.ts`: Module implementation.
+- `tags.ts`: Module implementation.
+- `visuals.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

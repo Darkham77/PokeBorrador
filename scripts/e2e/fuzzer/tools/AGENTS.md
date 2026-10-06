@@ -11,6 +11,10 @@ QA / Core Engine Team.
 - Tools must run under Node 26+ and utilize `--permission` flags.
 - They must not modify the production save database profiles.
 
+## Key Files
+
+- `validate_certified_cases.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

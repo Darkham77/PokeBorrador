@@ -25,3 +25,8 @@ State Architects / System Logic Developers.
 
 - Keep individual action handlers pure and below the 250 LOC threshold.
 - Ensure all notification messages match user-facing strings and test expectations.
+
+## Key Files
+
+- `eventAwardsHelper.ts`: Module implementation.
+- `eventPrizeGrantor.ts`: Module implementation.

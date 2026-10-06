@@ -22,6 +22,10 @@ Frontend Architecture Team.
 
 - Run standard lint and types checks.
 
+## Key Files
+
+- `index.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

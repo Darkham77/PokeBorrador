@@ -10,6 +10,10 @@ Frontend Developers.
 
 - Defines internal sub-cards, checkout layout forms, and category selectors for Battle Points transactions.
 
+## Key Files
+
+- `BCShopItemCard.vue`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

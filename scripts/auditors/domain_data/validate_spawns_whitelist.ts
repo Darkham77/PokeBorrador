@@ -195,7 +195,6 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
 
     // 2. Audit Gyms (GYMS)
     const gyms = this.parseGyms();
-    this.filesScannedCount++;
 
     for (const gym of gyms) {
       for (const sp of gym.pokemon) {

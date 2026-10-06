@@ -158,6 +158,39 @@ Frontend Developers / Systems Engineers.
 - Run `npm run test` — includes `struggle.spec.ts`, `pp_softlock.test.ts`, `faint_interrupts_log_playback.spec.ts`.
 - Run `npm run audit` for zero-error gate.
 
+## Key Files
+
+- `battleDebug.ts`: Module implementation.
+- `battleEngine.ts`: Module implementation.
+- `battleFlowHazardsHelper.ts`: Module implementation.
+- `battleHealingItemProcessor.ts`: Module implementation.
+- `battleLogger.ts`: Module implementation.
+- `battleMathTypes.ts`: Module implementation.
+- `battleMinigames.ts`: Module implementation.
+- `battleRewards.ts`: Module implementation.
+- `battleRewardsPhase.ts`: Module implementation.
+- `battleSeedManager.ts`: Module implementation.
+- `battleStateMachine.ts`: Module implementation.
+- `battleTerminationOutcomes.ts`: Module implementation.
+- `battleTurnChoiceHelper.ts`: Module implementation.
+- `battleTurnLogHelper.ts`: Module implementation.
+- `battleUiUtils.ts`: Module implementation.
+- `biomeHelper.ts`: Module implementation.
+- `cheats.ts`: Module implementation.
+- `movePowerMultipliers.ts`: Module implementation.
+- `orchestratorCallSequence.ts`: Module implementation.
+- `orchestratorPayloadHelper.ts`: Module implementation.
+- `orchestratorRocketHelper.ts`: Module implementation.
+- `orchestratorSearchPhaseHelper.ts`: Module implementation.
+- `postBattleSequenceCoordinator.ts`: Module implementation.
+- `searchLoopEncounterHelper.ts`: Module implementation.
+- `searchLoopHelpers.ts`: Module implementation.
+- `showdownAdapter.ts`: Module implementation.
+- `showdownTeamResolver.ts`: Module implementation.
+- `trainerFactory.ts`: Module implementation.
+- `trainerInventory.ts`: Module implementation.
+- `trainerSpawner.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [actions/](./actions/AGENTS.md): Domain module documentation for actions.

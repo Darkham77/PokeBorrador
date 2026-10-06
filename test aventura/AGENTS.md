@@ -15,3 +15,8 @@ Game Mechanics / World Exploration Prototyping.
 ## Verification
 
 - Run `npm run audit:md` to ensure this sandbox directory is indexed and conforming to DOX standards.
+
+## Key Files
+
+- `AdventureDebugModal.vue`: Module implementation.
+- `AdventureInventoryModal.vue`: Module implementation.

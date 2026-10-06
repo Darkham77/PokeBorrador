@@ -88,6 +88,7 @@ export default tseslint.config(
   globalIgnores([
     'dist/**',
     'dev-dist/**',
+    'coverage/**',
     'node_modules/**',
     'scratch/**',
     'tmp/**',

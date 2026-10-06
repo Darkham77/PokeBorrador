@@ -13,6 +13,12 @@ Frontend Developers.
 - `ClassDashboardAbilityItem.vue` & `ClassDashboardPenaltyItem.vue`: Modular child components rendering individual class bonuses (with level lock state, requirement hints, and level badges) and penalties with self-contained hover animations.
 - `ClassSelectionCard.vue`: Dedicated interactive card for trainer class preview, hover motion, pros/cons list with tooltips, and class selection button.
 
+## Key Files
+
+- `ClassDashboard.styles.scss`: Module implementation.
+- `ClassDashboardSidebar.vue`: Module implementation.
+- `classSelectionTypes.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -66,6 +66,12 @@ HeuristicAI (heuristicAI.ts)
 
 - `tests/unit/battle/heuristicEngine.spec.ts` — layer regression coverage (vitest)
 
+## Key Files
+
+- `aiItemEvaluator.ts`: Module implementation.
+- `heuristicHelpers.ts`: Module implementation.
+- `heuristicLayerEvaluators.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

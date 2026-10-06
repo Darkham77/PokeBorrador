@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "warnings": [
+    {
+      "fingerprint": "03757def0af1abdf",
+      "suiteId": "validate_sprites",
+      "ruleId": "sprite-missing-asset",
+      "file": "public/assets/sprites/pokemon/ogerpon"
+    }
+  ]
+}

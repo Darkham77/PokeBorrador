@@ -10,6 +10,11 @@ Frontend Developers.
 
 - Handles rendering layouts, list visual structures, and team select buttons.
 
+## Key Files
+
+- `_cards.scss`: Module implementation.
+- `_layout.scss`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

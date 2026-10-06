@@ -12,4 +12,8 @@ Battle Engine / Spectator Systems.
 - **Fog of War**: Moves, items, and abilities are revealed strictly upon occurrence in Showdown combat logs.
 - **Event-Driven & Zero Timers**: Stepping and playback are driven by user controls or GSAP timeline events without arbitrary timeouts.
 
+## Key Files
+
+- `tacticalReplayEngine.ts`: Module implementation.
+
 ## Child DOX Index

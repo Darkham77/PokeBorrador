@@ -10,6 +10,7 @@ Node.js logical tests for SQL translator compliance, global math utilities, and 
 ## Key Files
 
 - [`reproduce_official_servers_missing_local.test.ts`](./reproduce_official_servers_missing_local.test.ts): Systematic debugging reproduction test verifying TypeScript compilation and runtime exports without TS2306 when `servers.local.json` is absent.
+- [`db_router_dispatch.test.ts`](./db_router_dispatch.test.ts): Verification tests for DBRouter dispatch, offline RPC emulation, time offset manipulation, and session isolation.
 
 ## Child DOX Index
 

@@ -25,6 +25,24 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `dbCompatibility.ts`: Module implementation.
+- `dbRouter.ts`: Module implementation.
+- `idbHelper.ts`: Module implementation.
+- `lanRelayBridge.ts`: Module implementation.
+- `migrations_version.ts`: Module implementation.
+- `opfsHelper.ts`: Module implementation.
+- `proxyQuery.ts`: Module implementation.
+- `proxyQueryHelpers.ts`: Module implementation.
+- `proxyQueryLanDev.ts`: Module implementation.
+- `sqlTranslator.ts`: Module implementation.
+- `sqliteEngine.ts`: Module implementation.
+- `sqliteQueryBuilder.ts`: Module implementation.
+- `sqliteRpcEmulation.ts`: Module implementation.
+- `sqliteSchemaIntegrity.ts`: Module implementation.
+- `supabase.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [rpcEmulations/](./rpcEmulations/AGENTS.md): Domain module documentation for rpcEmulations.

@@ -10,6 +10,12 @@ Systems Designers / Game Designers.
 
 - Defines regional weather conditions schedules, seasonal probabilities, and maps tags mappings.
 
+## Key Files
+
+- `index.ts`: Module implementation.
+- `landmarks.ts`: Module implementation.
+- `routes.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

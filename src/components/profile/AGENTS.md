@@ -22,6 +22,19 @@ Frontend Developers / Systems Engineers.
 
 - Run `npm run lint` and `npm run test`.
 
+## Key Files
+
+- `ProfileAchievementsGrid.vue`: Module implementation.
+- `ProfileNotifications.vue`: Module implementation.
+- `ProfilePokedexCard.vue`: Module implementation.
+- `ProfileStatsGrid.vue`: Module implementation.
+- `ProfileTradeNotifs.vue`: Module implementation.
+- `ProfileXpCard.vue`: Module implementation.
+- `TrainerAvatar.vue`: Module implementation.
+- `TrainerPanel.vue`: Module implementation.
+- `trainerAvatarAnimHelper.ts`: Module implementation.
+- `useTrainerAvatarAnim.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

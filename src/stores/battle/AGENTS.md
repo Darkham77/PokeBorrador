@@ -22,6 +22,18 @@ Battle Engine Team / Visual FX Programmers.
 
 - Run `npm run validate:fsm:implementation` and `npm run test:node`.
 
+## Key Files
+
+- `battleEventWatchers.ts`: Module implementation.
+- `battleItemUseHelper.ts`: Module implementation.
+- `battleLogHelper.ts`: Module implementation.
+- `battleMoveSync.ts`: Module implementation.
+- `battleRechargeHelper.ts`: Module implementation.
+- `battleStoreHelper.ts`: Module implementation.
+- `buffs.ts`: Module implementation.
+- `buffsHelper.ts`: Module implementation.
+- `combatShadows.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

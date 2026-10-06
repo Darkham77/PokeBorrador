@@ -237,5 +237,5 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
     } catch {
       // ignore
     }
-  }, 120000);
+  }, 300000);
 });

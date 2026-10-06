@@ -13,6 +13,25 @@ Frontend / UI Engineers.
 - `ui_demo.scss`: Modular SCSS styling for all showcase components and catalog sections.
 - Zero manual CSS transitions or `@keyframes`; all animations must use GSAP.
 
+## Key Files
+
+- [`_app_layout.scss`](./_app_layout.scss): Layout grid and container rules.
+- [`_base.scss`](./_base.scss): Base typography and reset rules.
+- [`_components.scss`](./_components.scss): Component styles bundle.
+- [`_components_dialogs.scss`](./_components_dialogs.scss): Dialog and modal styling.
+- [`_components_hud.scss`](./_components_hud.scss): Combat HUD styling.
+- [`_components_pills.scss`](./_components_pills.scss): Elemental pills and tags styling.
+- [`_frames.scss`](./_frames.scss): Frame geometry and clip paths.
+- [`_variables.scss`](./_variables.scss): Theme variables and palettes.
+- [`_view_battle.scss`](./_view_battle.scss): Battle arena showcase styles.
+- [`_view_detail.scss`](./_view_detail.scss): Detail view showcase styles.
+- [`_view_html_showcase.scss`](./_view_html_showcase.scss): HTML showcase layout styles.
+- [`_view_inventory.scss`](./_view_inventory.scss): Inventory slot showcase styles.
+- [`_view_login.scss`](./_view_login.scss): Login view showcase styles.
+- [`_view_selection.scss`](./_view_selection.scss): Selection modal showcase styles.
+- [`_view_team.scss`](./_view_team.scss): Team management showcase styles.
+- [`ui_demo.scss`](./ui_demo.scss): Root stylesheet importing all partials.
+
 ## Verification
 
 - `npm run lint`

@@ -29,6 +29,19 @@ Frontend Developers / Systems Engineers.
 - `pokemonLearnset.ts`: Canonical move legality engine and legal move generator powered by precomputed databases and evolutionary lineage traversal.
 - `friendshipLogic.ts`: Canonical formulas for friendship gain/loss, seal metadata tiers, combat perk activation, and 128-step walking accumulation.
 
+- `evolutionEngine.ts`: Module implementation.
+- `generationMath.ts`: Module implementation.
+- `pokedexAggregator.ts`: Module implementation.
+- `pokemonGender.ts`: Module implementation.
+- `pokemonLegality.ts`: Module implementation.
+- `pokemonMath.ts`: Module implementation.
+- `pokemonSelectionFilter.ts`: Module implementation.
+- `pokemonSpeciesHelper.ts`: Module implementation.
+- `pokemonWildHeldItems.ts`: Module implementation.
+- `statEngine.ts`: Module implementation.
+- `tierEngine.ts`: Module implementation.
+- `typeEngine.ts`: Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.

@@ -283,17 +283,44 @@ if ($env:Path -notlike "*$npmRoamingPath*") {
     $env:Path = "$npmRoamingPath;" + $env:Path
 }
 
-# 7. Actualizar npm a la última versión
+# 7. Actualizar npm a la versión adecuada (en auto-actualización instala npm@latest y sincroniza package.json; en -DeclaredVersions sincroniza con el commit)
 Write-Host ""
 if ($updateToLatest) {
     Write-Host "[NPM] Actualizando npm a la última versión global (npm@latest)..." -ForegroundColor Cyan
     try {
         npm install -g npm@latest
+        $newNpmVer = (npm -v).Trim()
+        if ($newNpmVer -and (Test-Path $pkgPath)) {
+            $rawPkg = [System.IO.File]::ReadAllText($pkgPath)
+            if ($rawPkg -match '("npm":\s*">=)[^"]*(")') {
+                $updatedPkg = $rawPkg -replace '("npm":\s*">=)[^"]*(")', "`${1}$newNpmVer`${2}"
+                [System.IO.File]::WriteAllText($pkgPath, $updatedPkg)
+                Write-Host "  [OK] Versión de npm sincronizada a >=$newNpmVer en package.json" -ForegroundColor Green
+            }
+        }
     } catch {
         Write-Host "  [WARN] Advertencia al actualizar npm global: $_" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "[NPM] Preservando versión activa de npm ($((npm -v)))." -ForegroundColor Gray
+    $targetNpmVer = ""
+    if (Test-Path $pkgPath) {
+        $rawPkg = [System.IO.File]::ReadAllText($pkgPath)
+        if ($rawPkg -match '"npm":\s*">=?([0-9.]+)"') {
+            $targetNpmVer = $matches[1]
+        }
+    }
+    $currentNpmVer = (npm -v).Trim()
+    if ($targetNpmVer -and ($currentNpmVer -ne $targetNpmVer)) {
+        Write-Host "[NPM] Sincronizando npm a la versión declarada en el commit (npm@$targetNpmVer)..." -ForegroundColor Cyan
+        try {
+            npm install -g "npm@$targetNpmVer"
+            Write-Host "  [OK] npm instalado en v$targetNpmVer" -ForegroundColor Green
+        } catch {
+            Write-Host "  [WARN] Advertencia al instalar npm@${targetNpmVer}: $_" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "[NPM] Preservando versión activa de npm ($currentNpmVer)." -ForegroundColor Gray
+    }
 }
 
 # 8. Verificación de configuración NPM aislada al proyecto
@@ -327,7 +354,63 @@ if (Test-Path $nodeModulesDir) {
     Get-ChildItem -Path $nodeModulesDir -Include "*.node", "*.dll", "*.exe" -Recurse -ErrorAction SilentlyContinue | Unblock-File -ErrorAction SilentlyContinue
 }
 
-# 11. Ejecutar Plugins Específicos del Proyecto (scripts\setup\plugins\*.ps1)
+# 11. Inicializar Directorios Básicos del Auditor y del Proyecto
+Write-Host ""
+Write-Host "[DIRECTORIES] Inicializando directorios básicos del auditor y del proyecto..." -ForegroundColor Cyan
+
+$requiredDirs = @(
+    "scratch",
+    "scratch\audits",
+    "scratch\audits\architecture",
+    "scratch\audits\documentation",
+    "scratch\audits\domain_data",
+    "scratch\audits\persistence",
+    ".agents",
+    ".agents\skills",
+    "dist",
+    "scripts\setup\plugins"
+)
+
+foreach ($dir in $requiredDirs) {
+    $targetPath = Join-Path $PSScriptRoot $dir
+    if (-not (Test-Path $targetPath)) {
+        New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+        Write-Host "  [+] Creado directorio: $dir" -ForegroundColor Green
+    } else {
+        Write-Host "  [✓] Directorio detectado: $dir" -ForegroundColor Gray
+    }
+}
+
+# Inicializar directorio de caché persistente de Fallow similar-code si no existe
+$fallowBase = if ($env:LOCALAPPDATA) { $env:LOCALAPPDATA } else { Join-Path $HOME "AppData\Local" }
+$fallowUserCache = Join-Path $fallowBase "fallow\similar-code"
+if (-not (Test-Path $fallowUserCache)) {
+    New-Item -ItemType Directory -Path (Join-Path $fallowUserCache "models") -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $fallowUserCache "vectors") -Force | Out-Null
+    Write-Host "  [+] Creado directorio de caché Fallow: $fallowUserCache" -ForegroundColor Green
+}
+
+# Verificación de exclusión de scratch/ en .gitignore
+$projectGitignore = Join-Path $PSScriptRoot ".gitignore"
+if (Test-Path $projectGitignore) {
+    $gitignoreContent = [System.IO.File]::ReadAllText($projectGitignore)
+    if ($gitignoreContent -notmatch "(?m)^scratch/?\s*$") {
+        Write-Host "  [+] Asegurando exclusión de scratch/ en .gitignore..." -ForegroundColor Cyan
+        $separator = if ($gitignoreContent.EndsWith("`n")) { "`n" } else { "`n`n" }
+        $entry = "${separator}# Scratch & Temporary Audits`nscratch/`n"
+        [System.IO.File]::AppendAllText($projectGitignore, $entry, (New-Object System.Text.UTF8Encoding $false))
+        Write-Host "  [OK] scratch/ agregado a .gitignore" -ForegroundColor Green
+    } else {
+        Write-Host "  [✓] scratch/ ya está excluido en .gitignore" -ForegroundColor Gray
+    }
+} else {
+    Write-Host "  [+] Creando .gitignore básico con exclusión de scratch/..." -ForegroundColor Cyan
+    $newGitignore = "# Dependencies`nnode_modules/`n`n# Scratch & Temporary Audits`nscratch/`n*.log`n"
+    [System.IO.File]::WriteAllText($projectGitignore, $newGitignore, (New-Object System.Text.UTF8Encoding $false))
+    Write-Host "  [OK] .gitignore creado con scratch/" -ForegroundColor Green
+}
+
+# 12. Ejecutar Plugins Específicos del Proyecto (scripts\setup\plugins\*.ps1)
 $pluginsDir = Join-Path $PSScriptRoot "scripts\setup\plugins"
 if (Test-Path $pluginsDir) {
     Get-ChildItem -Path $pluginsDir -Filter "*.ps1" -ErrorAction SilentlyContinue | Sort-Object Name | ForEach-Object {

@@ -10,6 +10,13 @@ Frontend Developers.
 
 - Must support responsive rendering for inventory categories (e.g. items, berries, key items).
 
+## Key Files
+
+- `InventoryActionMenu.vue`: Module implementation.
+- `InventoryControls.vue`: Module implementation.
+- `InventoryItemCard.vue`: Module implementation.
+- `InventoryQuantityModal.vue`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

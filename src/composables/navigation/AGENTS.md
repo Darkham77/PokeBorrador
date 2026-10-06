@@ -17,6 +17,11 @@ Frontend Developers.
 
 - Maintain unitless animation parameters and coordinate lifecycle state with useUIStore.
 
+## Key Files
+
+- `homeTooltipFormatter.ts`: Module implementation.
+- `useNavigationState.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

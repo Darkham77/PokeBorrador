@@ -30,6 +30,10 @@ Game Logic Engineers / World Environment Designers.
 - `npm run test:node tests/node/world/map_environment_weather_matrix.test.ts`
 - `npm run audit:md`
 
+## Key Files
+
+- `baseMapEnvironment.ts`: Module implementation.
+
 ## Child DOX Index
 
 - *This domain module does not contain nested sub-directories with independent AGENTS.md files.*

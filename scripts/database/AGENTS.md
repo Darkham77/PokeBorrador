@@ -27,6 +27,13 @@ Automation scripts for database backup, restoration, updates, migrations generat
 - **Client Migrations Manifest PostgreSQL Purge**: `generate_migrations.ts` strictly purges PostgreSQL SQL (`sql: ''`) for all migrations that possess a companion `.sqlite.sql` file when compiling `src/logic/db/migrations_data.ts`. Because the web client exclusively executes SQLite in WebAssembly, PostgreSQL syntax (PL/pgSQL functions, triggers, RLS policies, duplicate data patches) is dead weight in the client bundle. Backend migration runners (`update_supabase_db.ts`) read `.sql` files directly from disk.
 - All scripts MUST support `--help` flag with clear ANSI formatted usage instructions.
 
+## Key Files
+
+- `generate_species_purge_migration.ts`: Module implementation.
+- `generate_universal_entity_sanitizer.ts`: Module implementation.
+- `migrate_backup_saves_to_showdown.ts`: Module implementation.
+- `seed_test_users.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

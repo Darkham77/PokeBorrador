@@ -108,6 +108,71 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `ArchaeologyModal.vue`: Module implementation.
+- `ArenaLeaderboardSection.vue`: Module implementation.
+- `ArenaMilestoneTrack.vue`: Module implementation.
+- `ArenaReplaysPanel.styles.scss`: Module implementation.
+- `BCShopModal.vue`: Module implementation.
+- `ClassMissionsModal.vue`: Module implementation.
+- `ClassSelectionModal.vue`: Module implementation.
+- `ConfirmModal.vue`: Module implementation.
+- `DaycareModal.vue`: Module implementation.
+- `DebugStackTestModal.vue`: Module implementation.
+- `DebugWeatherRouteSection.vue`: Module implementation.
+- `DebugWeatherTablesModal.vue`: Module implementation.
+- `EventMissionsModal.vue`: Module implementation.
+- `EventSlotActionModal.vue`: Module implementation.
+- `FactionChoiceModal.vue`: Module implementation.
+- `FactionWarModal.vue`: Module implementation.
+- `GlobalMarketModal.vue`: Module implementation.
+- `HealModal.vue`: Module implementation.
+- `InventoryModal.styles.scss`: Module implementation.
+- `InventoryModal.vue`: Module implementation.
+- `InventoryModalHeader.vue`: Module implementation.
+- `LibraryModal.vue`: Module implementation.
+- `MoveDetailModal.vue`: Module implementation.
+- `PassiveTeamEditorModal.vue`: Module implementation.
+- `PastEventCard.styles.scss`: Module implementation.
+- `PastEventPodiumBadge.vue`: Module implementation.
+- `PokemonSelectionFilters.vue`: Module implementation.
+- `PokemonSelectionItem.styles.scss`: Module implementation.
+- `ProfileFactionWarCard.vue`: Module implementation.
+- `ProfileIdentityCard.vue`: Module implementation.
+- `ProfileModal.vue`: Module implementation.
+- `ProfileStatsSection.vue`: Module implementation.
+- `PromptModal.vue`: Module implementation.
+- `PvPChallengeModal.styles.scss`: Module implementation.
+- `RankedTournamentDetailModal.vue`: Module implementation.
+- `RankingModal.styles.scss`: Module implementation.
+- `RankingPlayerRow.styles.scss`: Module implementation.
+- `RenameModal.vue`: Module implementation.
+- `ReputationShopModal.vue`: Module implementation.
+- `RouteSpawnsModal.styles.scss`: Module implementation.
+- `RouteSpawnsModal.vue`: Module implementation.
+- `RouteSpawnsTable.vue`: Module implementation.
+- `SeasonTournamentCard.vue`: Module implementation.
+- `SettingsModal.vue`: Module implementation.
+- `ShopModal.vue`: Module implementation.
+- `StonePickerModal.vue`: Module implementation.
+- `TeamManagementModal.styles.scss`: Module implementation.
+- `TrainerProfileModal.styles.scss`: Module implementation.
+- `TrainerProfileModal.vue`: Module implementation.
+- `UnifiedPokemonDetailModal.vue`: Module implementation.
+- `archaeologyGameHelper.ts`: Module implementation.
+- `arenaLeaderboardHelper.ts`: Module implementation.
+- `arenaRankedOverviewHelper.ts`: Module implementation.
+- `cosmeticsFilterHelper.ts`: Module implementation.
+- `debugWeatherTypes.ts`: Module implementation.
+- `eventCardHelper.ts`: Module implementation.
+- `fishingGameHelper.ts`: Module implementation.
+- `healModalHelper.ts`: Module implementation.
+- `inventoryModalHelper.ts`: Module implementation.
+- `pastEventMetricFormatter.ts`: Module implementation.
+- `renameHelpers.ts`: Module implementation.
+- `trainerProfileResolver.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [bc-shop/](./bc-shop/AGENTS.md): Domain module documentation for bc-shop.

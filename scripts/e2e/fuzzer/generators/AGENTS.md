@@ -10,6 +10,12 @@ QA / Core Engine Team.
 
 - All generated teams and items must adhere to standard Gen 9 Showdown format validation.
 
+## Key Files
+
+- `fuzzer_ai_team_generator.ts`: Module implementation.
+- `fuzzer_item_generator.ts`: Module implementation.
+- `fuzzer_team_generator.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

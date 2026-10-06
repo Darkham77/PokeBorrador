@@ -34,3 +34,13 @@ Frontend / UI Engineers.
 ## DOX Directory Navigation Index
 
 - Parent: [../AGENTS.md](../AGENTS.md)
+
+## Key Files
+
+- `Sec10SelectionFilters.vue`: Module implementation.
+- `Sec10SelectionItem.vue`: Module implementation.
+- `Sec13InventoryModal.vue`: Module implementation.
+- `Sec14InputsShowcase.vue`: Module implementation.
+- `Sec15LiveInspector.vue`: Module implementation.
+- `Sec9TeamMemberCard.vue`: Module implementation.
+- `sec9TeamTypes.ts`: Module implementation.

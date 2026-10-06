@@ -24,6 +24,10 @@ Frontend Developers.
 - Run `npm run test:unit -- tests/unit/composables/useHomeWidgetsCollapse.spec.ts` to verify state toggling, defaults, and persistence.
 - Run `npm run test:unit -- tests/unit/composables/useHomeWidgetBadges.spec.ts` to verify badge calculations and provider registration.
 
+## Key Files
+
+- `useHomeWidgetsCollapse.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

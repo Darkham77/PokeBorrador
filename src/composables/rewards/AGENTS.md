@@ -21,6 +21,10 @@ Frontend Developers / Core Gameplay Engineers.
 
 - Run `npm run test:unit tests/unit/composables/useUnifiedRewards.test.ts` to verify reward aggregation and store delegation.
 
+## Key Files
+
+- `rewardsPillExtractor.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -19,3 +19,7 @@ Frontend Developers / Battle Engine Engineers.
 ## Verification
 
 - Run `npm run test` targeting `tests/unit/battle/move_tooltip_suite.spec.ts`.
+
+## Key Files
+
+- `moveTooltipMathHelper.ts`: Module implementation.

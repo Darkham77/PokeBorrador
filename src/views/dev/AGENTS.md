@@ -24,6 +24,12 @@ Core Frontend & Asset Pipeline Engineers.
 - Run `npm run lint` and `npm run audit`.
 - Verify DEV route protection by asserting that access in production builds redirects or does not exist.
 
+## Key Files
+
+- `DevShadowEditorView.vue`: Module implementation.
+- `devShadowMathHelper.ts`: Module implementation.
+- `useShadowEditor.ts`: Module implementation.
+
 ## Child DOX Index
 
 - [components/AGENTS.md](components/AGENTS.md) - Reusable developer calibration and diagnostic components.

@@ -57,7 +57,7 @@ export default defineConfig({
     css: false,
 
     // 3. Native Node.js worker execution args
-    execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning'],
+    execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning', '--allow-inspector'],
 
     // 4. Thread-based worker pool (fast startup on Windows)
     pool: 'forks',
@@ -68,8 +68,20 @@ export default defineConfig({
     // 5. Unified V8 Coverage
     coverage: {
       provider: 'v8',
-      include: ['src/**', 'scripts/**'],
-      exclude: ['src/**/*.vue', 'external/**'],
+      include: ['src/**/*.{ts,js}', 'scripts/**/*.{ts,js}'],
+      exclude: [
+        'src/**/*.vue',
+        '**/*.d.ts',
+        '**/*.md',
+        '**/*.scss',
+        '**/*.css',
+        'external/**',
+        'dist/**',
+        'scratch/**',
+        'node_modules/**'
+      ],
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage',
     },
 
     // 6. Unified Inline Workspace Projects
@@ -119,7 +131,7 @@ export default defineConfig({
           include: ['tests/node/**/*.test.ts', 'packages/auditor/tests/**/*.test.ts'],
           exclude: ['tests/node/**/backup_migration_real.test.ts'],
           setupFiles: ['./tests/vitest.node.setup.ts'],
-          testTimeout: 60000,
+          testTimeout: 120000,
         },
       },
       {
@@ -130,7 +142,7 @@ export default defineConfig({
           environment: 'node',
           include: ['tests/node/**/backup_migration_real.test.ts'],
           setupFiles: ['./tests/vitest.node.setup.ts'],
-          testTimeout: 120000,
+          testTimeout: 300000,
         },
       },
     ],

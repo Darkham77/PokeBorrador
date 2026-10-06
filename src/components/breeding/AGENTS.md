@@ -34,6 +34,12 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `EggWarehouse.styles.scss`: Module implementation.
+- `EggWarehouseCard.styles.scss`: Module implementation.
+- `FossilCloning.styles.scss`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -20,6 +20,13 @@ Systems Designers / Inventory Programmers.
 
 - Run `npm run test:node` and standard lint checks.
 
+## Key Files
+
+- `inventory.ts`: Module implementation.
+- `inventoryHelpers.ts`: Module implementation.
+- `inventoryUseAction.ts`: Module implementation.
+- `shop.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

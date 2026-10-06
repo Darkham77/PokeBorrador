@@ -20,6 +20,10 @@ State & Type Architects / Frontend Developers.
 
 - Run `npm run audit suites=validate_domain_types` and `npm run audit suites=validate_type_check` to verify type compliance.
 
+## Key Files
+
+- `rewards.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

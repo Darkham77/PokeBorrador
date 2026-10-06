@@ -44,6 +44,28 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `BaseRefreshButton.vue`: Module implementation.
+- `EggSprite.vue`: Module implementation.
+- `ErrorOverlay.vue`: Module implementation.
+- `ModalHierarchyProvider.vue`: Module implementation.
+- `ModalHost.vue`: Module implementation.
+- `PVAuraFX.vue`: Module implementation.
+- `PVGenderBadge.vue`: Module implementation.
+- `PVHUDButton.vue`: Module implementation.
+- `PVLoadingOverlay.vue`: Module implementation.
+- `PWAManager.vue`: Module implementation.
+- `SVGFilters.vue`: Module implementation.
+- `ShopSearchControls.vue`: Module implementation.
+- `SortControls.vue`: Module implementation.
+- `UnifiedSidebar.vue`: Module implementation.
+- `atmosphereParticleHelper.ts`: Module implementation.
+- `atmosphereSandstormHelper.ts`: Module implementation.
+- `atmosphereSnowHelper.ts`: Module implementation.
+- `baseModalHelper.ts`: Module implementation.
+- `useAtmosphereRainAnim.ts`: Module implementation.
+
 ## Child DOX Index
 
 - *This domain module does not contain nested sub-directories with independent AGENTS.md files.*

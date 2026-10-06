@@ -26,6 +26,27 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `battleAnimationStateDispatcher.ts`: Module implementation.
+- `battleHudStateHelper.ts`: Module implementation.
+- `combatantStatusHelpers.ts`: Module implementation.
+- `moveTooltipCalculator.ts`: Module implementation.
+- `useBattleArenaCoordinator.ts`: Module implementation.
+- `useBattleBackground.ts`: Module implementation.
+- `useBattleCaptureAnimations.ts`: Module implementation.
+- `useBattleMinigames.ts`: Module implementation.
+- `useBattleSeats.ts`: Module implementation.
+- `useBattleShadows.ts`: Module implementation.
+- `useBattleTrainerAnimations.ts`: Module implementation.
+- `useBattleTrainerVisuals.ts`: Module implementation.
+- `useBattleTweenRegistry.ts`: Module implementation.
+- `useBattleVisuals.ts`: Module implementation.
+- `useBattleWildAnimations.ts`: Module implementation.
+- `useCombatantStatus.ts`: Module implementation.
+- `useMoveSlotData.ts`: Module implementation.
+- `useMoveTooltip.ts`: Module implementation.
+
 ## Child DOX Index
 
 - *This domain module does not contain nested sub-directories with independent AGENTS.md files.*

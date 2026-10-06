@@ -38,6 +38,27 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `eloRatingMath.ts`: Module implementation.
+- `livePvPBattleSetupHandler.ts`: Module implementation.
+- `livePvPEndBattleHandler.ts`: Module implementation.
+- `livePvPMatchmakingHandler.ts`: Module implementation.
+- `livePvPPassiveFallbackHandler.ts`: Module implementation.
+- `livePvPReconnectionHandler.ts`: Module implementation.
+- `livePvPTurnExecutionHandler.ts`: Module implementation.
+- `passiveMatchmakingHelper.ts`: Module implementation.
+- `pvpDefenseReportsHelper.ts`: Module implementation.
+- `pvpMatchHistoryHelper.ts`: Module implementation.
+- `pvpReconnectHelper.ts`: Module implementation.
+- `pvpRoomCodeHelper.ts`: Module implementation.
+- `pvpSpectatorHelper.ts`: Module implementation.
+- `pvpTeamHelper.ts`: Module implementation.
+- `rankedEngine.ts`: Module implementation.
+- `rankedSeasonRewardEngine.ts`: Module implementation.
+- `replayCodeGenerator.ts`: Module implementation.
+- `seasonTeamFilter.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

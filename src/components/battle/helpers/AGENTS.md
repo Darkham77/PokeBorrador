@@ -22,6 +22,17 @@ Frontend Developers / Battle UI Engineers.
 
 - Run `npm run lint` and `npm run test`.
 
+## Key Files
+
+- `battleAnimationsBridge.ts`: Module implementation.
+- `combatantActionAnims.ts`: Module implementation.
+- `combatantFeedbackAnims.ts`: Module implementation.
+- `combatantFeetHelper.ts`: Module implementation.
+- `combatantIdleAnims.ts`: Module implementation.
+- `combatantSparkleBallHooks.ts`: Module implementation.
+- `trainerEntranceAnims.ts`: Module implementation.
+- `trainerIdleAnims.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

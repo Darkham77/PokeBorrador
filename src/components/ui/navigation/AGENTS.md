@@ -15,6 +15,12 @@ Frontend Developers.
 
 - Use :position="position" and scoped CSS classes (.pos-top, .pos-bottom) for dropdown styling.
 
+## Key Files
+
+- `HUD_NavMarketGroup.vue`: Module implementation.
+- `HUD_NavPokemonGroup.vue`: Module implementation.
+- `HUD_NavSocialGroup.vue`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

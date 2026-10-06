@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.2-build.20261004-231933",
+  "version": "0.6.2-build.20261005-235345",
   "private": true,
   "type": "module",
   "engines": {
@@ -99,7 +99,6 @@
     "audit:lint": "auditor preset=lint",
     "audit:build": "auditor preset=build",
     "audit:md": "auditor preset=md",
-    "audit:for-commit": "auditor-commit",
     "audit:findings": "auditor-findings",
     "audit:errors": "auditor-findings severity=error",
     "audit:warnings": "auditor-findings severity=warning",
@@ -170,7 +169,8 @@
     "validate:emojis": "auditor suite=validate_console_cleanliness",
     "validate:z-index": "auditor suite=validate_z_index",
     "validate:markdown-links": "auditor suite=validate_markdown_links",
-    "audit:fix": "auditor fix"
+    "audit:fix": "auditor fix",
+    "audit:by-file": "auditor-by-file"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",

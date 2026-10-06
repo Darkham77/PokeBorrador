@@ -19,6 +19,14 @@ UI/UX Team / Profile Systems Engineers.
 
 - Run `npm run audit`.
 
+## Key Files
+
+- `cosmetics.ts`: Module implementation.
+- `playerClass.ts`: Module implementation.
+- `playerClassHelper.ts`: Module implementation.
+- `playerSearch.ts`: Module implementation.
+- `profile.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

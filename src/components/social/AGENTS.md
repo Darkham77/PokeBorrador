@@ -31,6 +31,27 @@ Frontend Developers / Systems Engineers.
 - Run standard validation scripts (`npm run lint`, `npm run audit`).
 - Verify social invite roundtrips via `tests/integration/pvp/pvpInviteLifecycle.spec.ts`.
 
+## Key Files
+
+- `ChatBattleCodeBadge.vue`: Module implementation.
+- `ClaimCard.vue`: Module implementation.
+- `SocialCenterModal.vue`: Module implementation.
+- `SocialRankings.styles.scss`: Module implementation.
+- `SocialRankingsSeasonTab.vue`: Module implementation.
+- `SocialRankingsTheater.vue`: Module implementation.
+- `SocialRequestsTab.vue`: Module implementation.
+- `TradeAssetsGrid.vue`: Module implementation.
+- `TradeCard.vue`: Module implementation.
+- `TradeFooter.vue`: Module implementation.
+- `TradeSidePanel.vue`: Module implementation.
+- `TrainerCard.vue`: Module implementation.
+- `chatBattleCodeHelper.ts`: Module implementation.
+- `claimCardHelper.ts`: Module implementation.
+- `globalChatHelper.ts`: Module implementation.
+- `socialTheaterHelper.ts`: Module implementation.
+- `socialTradesHelper.ts`: Module implementation.
+- `tradeSidePanelHelper.ts`: Module implementation.
+
 ## Child DOX Index
 
 - *This domain module does not contain nested sub-directories with independent AGENTS.md files.*

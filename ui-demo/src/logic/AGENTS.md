@@ -19,3 +19,7 @@ Frontend / UI Engineers.
 
 - `npm run lint`
 - `npm run audit`
+
+## Key Files
+
+- `useLiveInspector.ts`: Module implementation.

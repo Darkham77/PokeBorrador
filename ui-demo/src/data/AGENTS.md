@@ -20,3 +20,8 @@ Frontend / UI Engineers.
 
 - `npm run lint`
 - `npm run audit`
+
+## Key Files
+
+- `mockDetailPokemon.ts`: Module implementation.
+- `mockSelectionPokemon.ts`: Module implementation.

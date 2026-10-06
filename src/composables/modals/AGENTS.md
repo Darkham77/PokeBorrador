@@ -21,6 +21,14 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `routeSpawnsCalculationHelper.ts`: Module implementation.
+- `useRoutePerks.ts`: Module implementation.
+- `useRouteSpawnsCalculation.ts`: Module implementation.
+- `useRouteSpawnsFishing.ts`: Module implementation.
+- `useRouteSpawnsWild.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -20,6 +20,19 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
+## Key Files
+
+- `useBodyClass.ts`: Module implementation.
+- `useElementVisibility.ts`: Module implementation.
+- `useGameAnnouncer.ts`: Module implementation.
+- `useGridTransitions.ts`: Module implementation.
+- `useGsapTransition.ts`: Module implementation.
+- `useInputAnimations.ts`: Module implementation.
+- `useMainLayout.ts`: Module implementation.
+- `useStatHover.ts`: Module implementation.
+- `useVirtualPosition.ts`: Module implementation.
+- `useWindowListener.ts`: Module implementation.
+
 ## Child DOX Index
 
 - _This domain module does not contain nested sub-directories with independent AGENTS.md files._
