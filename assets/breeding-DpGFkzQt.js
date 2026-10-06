@@ -1,1 +1,0 @@
-import{t as e}from"./breeding-CE3qQz1H.js";export{e as useBreedingStore};
