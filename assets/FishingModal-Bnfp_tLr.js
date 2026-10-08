@@ -1,0 +1,1 @@
+export{t as default}from"./FishingModal-DIFjn6m7.js";

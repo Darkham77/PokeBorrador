@@ -1,0 +1,1 @@
+export{h as AUTO_BATTLE_REWARDS_DELAY_SEC,y as MAX_POKEMON_LEVEL,C as isEnabledPokemonId}from"./game-data-pokemon-Ca8Bwgro.js";
