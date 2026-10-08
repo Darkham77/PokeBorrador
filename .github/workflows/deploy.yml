@@ -47,9 +47,7 @@ jobs:
         run: npm run servers:configure
 
       - name: Build project
-        run: npm run build
-        env:
-          AUDIT_SKIP_SIMILAR: 1
+        run: npm run build:prod
 
       - name: Create SPA 404 fallback for GitHub Pages
         run: cp ./dist/index.html ./dist/404.html
