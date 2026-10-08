@@ -1,0 +1,1 @@
+import{t as e}from"./timeSync-BLxX1fQJ.js";export{e as syncServerTime};

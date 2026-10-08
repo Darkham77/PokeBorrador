@@ -1,0 +1,1 @@
+import{L as e,l as t,z as n}from"./game-data-pokemon-Ca8Bwgro.js";function r(r){let i=[r],a=r;for(;e(a);){let e=t(n(a));if(!e||i.includes(e))break;i.unshift(e),a=e}return i}function i(e){return r(e)[0]||e}export{r as n,i as t};

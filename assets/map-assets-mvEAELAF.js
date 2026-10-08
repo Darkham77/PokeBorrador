@@ -1,1 +1,0 @@
-import{et as e}from"./game-data-world-BLgcSjGT.js";export{e as requireMapRouteId};
