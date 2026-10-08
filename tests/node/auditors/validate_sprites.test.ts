@@ -60,6 +60,19 @@ describe('SpriteAuditor', () => {
       expect(result.metrics['Total species checked']).toBeGreaterThan(0);
       expect(result.metrics['Complete sprite sets']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when pokemon sprite is missing', () => {
+      const auditor = new SpriteAuditor();
+      auditor.addViolation({
+        ruleId: 'sprite-missing-asset',
+        severity: 'error',
+        file: 'public/assets/sprites/pokemon',
+        line: 1,
+        message: 'Missing sprite for species pikachu',
+        context: 'pikachu/front.png'
+      });
+      expect(auditor.getErrorsByRule().get('sprite-missing-asset')).toBe(1);
+    });
   });
 });
 

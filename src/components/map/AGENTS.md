@@ -6,7 +6,9 @@ Manage the logic and assets of map.
 
 Frontend Developers / Systems Engineers.
 
-## Directory Structure
+## Local Contracts
+
+### Directory Structure
 
 - `MapCard.vue`: Main route card orchestrator rendering background visuals, atmosphere, and subcomponents.
 - `MapCardCyclePill.vue`: Environmental cycle, season, and weather status pill in top right corner.
@@ -20,10 +22,24 @@ Frontend Developers / Systems Engineers.
 - `MapPokemonCenterBanner.vue`: Route Pokémon Center healing and daycare status banner.
 - `MapStatusSummary.vue`: Top summary banner for weather, events, and world conditions.
 
-## Local Contracts
-
 - Follow standard repository modularity guidelines.
 - **MapCard Modularity & Clean Template Decomposition (`MapCard.vue`, `MapCardLockOverlay.vue`)**: Encapsulates route lock checking, safari restriction labels, and overlay rendering into `MapCardLockOverlay.vue`, delegating styling and class computation to reactive computed properties to eliminate template cognitive complexity.
+
+## Key Files
+
+- `MapCard.styles.scss`: Module implementation.
+- `useMapCardState.ts`: Module implementation.
+- [`MapCard.vue`](./MapCard.vue): Module implementation.
+- [`MapCardCyclePill.vue`](./MapCardCyclePill.vue): Module implementation.
+- [`MapCardGuardianBadge.vue`](./MapCardGuardianBadge.vue): Module implementation.
+- [`MapCardHeader.vue`](./MapCardHeader.vue): Module implementation.
+- [`MapCardLeftPills.vue`](./MapCardLeftPills.vue): Module implementation.
+- [`MapCardLockOverlay.vue`](./MapCardLockOverlay.vue): Module implementation.
+- [`MapCardSpawns.vue`](./MapCardSpawns.vue): Module implementation.
+- [`MapCardSpawnsTrigger.vue`](./MapCardSpawnsTrigger.vue): Module implementation.
+- [`MapGrid.vue`](./MapGrid.vue): Module implementation.
+- [`MapPokemonCenterBanner.vue`](./MapPokemonCenterBanner.vue): Module implementation.
+- [`MapStatusSummary.vue`](./MapStatusSummary.vue): Module implementation.
 
 ## Work Guidance
 
@@ -34,11 +50,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `MapCard.styles.scss`: Module implementation.
-- `useMapCardState.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

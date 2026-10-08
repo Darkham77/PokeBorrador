@@ -73,5 +73,18 @@ describe('SqlMigrationAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['SQL migrations verified']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when migration integrity fails', () => {
+      const auditor = new SqlMigrationAuditor();
+      auditor.addViolation({
+        ruleId: 'sql-migration-missing-sqlite-companion',
+        severity: 'error',
+        file: 'database/migrations/20260101000000_dummy.sql',
+        line: 1,
+        message: 'Missing SQLite companion migration file',
+        context: '20260101000000_dummy.sqlite.sql'
+      });
+      expect(auditor.getErrorsByRule().get('sql-migration-missing-sqlite-companion')).toBe(1);
+    });
   });
 });

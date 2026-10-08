@@ -12,6 +12,13 @@ Frontend Developers / Event Gameplay Engineers.
 - **Zero Duplication**: Shared calculations for event bonuses, schedules, prizes, and category grouping must be centralized here.
 - **Past Event Schedule & Category Formatting (`pastEventFormatHelpers.ts`)**: Event date ranges, weekly schedule object windows, category icons, and dynamic metric titles are parsed and formatted in `pastEventFormatHelpers.ts` to uphold modularity and minimal cyclomatic complexity.
 
+## Key Files
+
+- `eventDetailBonusesHelper.ts`: Module implementation.
+- `useEventDetailBonuses.ts`: Module implementation.
+- `usePastEventAwards.ts`: Module implementation.
+- [`pastEventFormatHelpers.ts`](./pastEventFormatHelpers.ts): Module implementation.
+
 ## Work Guidance
 
 - Use standard Vue 3 Composition API patterns with `computed`, `toValue`, and `MaybeRefOrGetter`.
@@ -21,12 +28,6 @@ Frontend Developers / Event Gameplay Engineers.
 
 - Run `npm run lint` and `npm run test` to verify reactivity and business logic parity.
 
-## Key Files
-
-- `eventDetailBonusesHelper.ts`: Module implementation.
-- `useEventDetailBonuses.ts`: Module implementation.
-- `usePastEventAwards.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

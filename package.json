@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.2-build.20261005-235345",
+  "version": "0.6.3-build.20261007-224405",
   "private": true,
   "type": "module",
   "engines": {
@@ -92,6 +92,7 @@
     "assets:convert": "node --permission --experimental-strip-types --allow-worker --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/convert_assets.ts",
     "assets:organize-tiers": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts",
     "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts",
+    "dox:migrate": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/maintenance/migrate_dox_sections.ts",
     "audit": "auditor",
     "auditor:update": "auditor-update",
     "auditor:version": "auditor-version -v",
@@ -147,8 +148,8 @@
     "validate:client-sim-decoupling": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_client_sim_decoupling.ts",
     "validate:battle-ui": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_battle_ui_branching.ts",
     "validate:sql": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_sql_migrations.ts",
-    "validate:persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
-    "validate:save-persistence": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/persistence/validate_save_persistence_parity.ts",
+    "validate:persistence": "auditor tasks=validate_valibot_parity",
+    "validate:save-persistence": "auditor tasks=validate_valibot_parity",
     "validate:schema-parity": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_schema_parity.ts",
     "validate:types": "auditor suite=validate_type_check",
     "validate:items:summary": "npm run validate:items -- --summary",

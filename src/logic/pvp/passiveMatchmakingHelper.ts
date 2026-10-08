@@ -5,7 +5,7 @@ import type { ShowdownPlayerRequest } from '@/types/battle/battle.ts';
 import type { PvPAction } from '@/types/battle/pvp.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter.ts';
-import { deserializePokemonTeam } from '@/logic/auth/saveSerializer.ts';
+import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer.ts';
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { GenderId } from '@/types/system/game';
 

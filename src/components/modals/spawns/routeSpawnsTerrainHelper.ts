@@ -5,14 +5,18 @@ export interface ActivityTerrainFeature {
   fallbackText?: string
 }
 
+export const ROUTE_SPAWN_TERRAIN_TYPES = ['official', 'extorted'] as const;
+export type RouteSpawnTerrainType = (typeof ROUTE_SPAWN_TERRAIN_TYPES)[number];
+
 export interface SpecialRouteBonus {
-  type: 'official' | 'extorted'
-  label: string
-  description: string
-  cssClass: string
+  type: RouteSpawnTerrainType;
+  label: string;
+  description: string;
+  cssClass: string;
 }
 
-export type ClassRouteActionKind = 'cooldown' | 'button-official' | 'button-extort'
+export const CLASS_ROUTE_ACTION_KINDS = ['cooldown', 'button-official', 'button-extort'] as const;
+export type ClassRouteActionKind = (typeof CLASS_ROUTE_ACTION_KINDS)[number];
 
 export interface ClassRouteAction {
   kind: ClassRouteActionKind

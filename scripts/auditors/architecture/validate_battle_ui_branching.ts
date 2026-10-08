@@ -51,6 +51,10 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
   constructor(roots: readonly string[] = ['src/components/battle']) {
     super({
       id: 'validate_battle_ui_branching',
+      configKey: 'architecture.battleUiBranching',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Battle Arena UI Config Branching Auditor',
       description: 'Valida uso de uiConfig declarativo en UI de combate',
       icon: '⚔️',

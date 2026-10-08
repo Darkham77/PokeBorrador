@@ -11,6 +11,11 @@ Frontend Developers / Systems Engineers.
 - Follow standard repository modularity guidelines.
 - **Local Debug Panel Modularization (`LocalDebugPanel.vue`, `LocalDebugTabContent.vue`)**: Category tab switching and content rendering in `LocalDebugPanel.vue` is delegated to `LocalDebugTabContent.vue` to maintain low cyclomatic and cognitive complexity in the root debug tool.
 
+## Key Files
+
+- [`LocalDebugPanel.vue`](./LocalDebugPanel.vue): Module implementation.
+- [`LocalDebugTabContent.vue`](./LocalDebugTabContent.vue): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.

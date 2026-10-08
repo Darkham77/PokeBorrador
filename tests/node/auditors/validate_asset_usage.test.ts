@@ -69,5 +69,18 @@ describe('AssetUsageAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['Vue files scanned']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when unmediated asset paths exist', () => {
+      const auditor = new AssetUsageAuditor();
+      auditor.addViolation({
+        ruleId: 'asset-hardcoded-path-template',
+        severity: 'error',
+        file: 'src/components/battle/Test.vue',
+        line: 1,
+        message: 'Hardcoded asset path in template',
+        context: 'src="/assets/sprites/test.png"'
+      });
+      expect(auditor.getErrorsByRule().get('asset-hardcoded-path-template')).toBe(1);
+    });
   });
 });

@@ -48,7 +48,7 @@ Logic Developers / Game Designers.
 - **Deep Cloning, Vue Reactive Proxy Unwrapping & Zero `JSON.parse(JSON.stringify)` Mandate (`cloneReactive`, `deepToRaw`, `o1-json-clone`)**: The `JSON.parse(JSON.stringify(obj))` pattern is strictly prohibited across all logic modules, services, and tests due to dual-stringification performance penalties and garbage collector pressure. For plain serializable objects, use native `structuredClone(obj)`. However, Vue 3 `toRaw(obj)` is shallow: nested objects and arrays (e.g., `pokemon.ivs`, `pokemon.moves`, `pokemon.stats`) remain wrapped in Vue Proxies. Passing reactive Pinia state or nested proxies to native `structuredClone` triggers a fatal `DOMException / DataCloneError: #<Object> could not be cloned`. The canonical solution across Poké Vicio is `cloneReactive(obj)` and `deepToRaw(obj)` from `@/logic/utils/cloneUtils.ts`, which recursively unwraps nested reactive proxies and performs deep cloning in a single high-performance pass in memory without string allocation.
 - **Debug Simulation Realism & Reward Entity Invariant**: Debug utilities, test injectors, and simulation tools (such as `rewardsDebugSimulation.ts`) that fabricate mock Pokémon, GTS escrow claims, or event prizes MUST generate 100% schema-compliant entities populated with valid `obtainedAt` timestamps and canonical `obtainedMethod` values, guaranteeing identical behavioral parity with live production gameplay.
 
-## Domain Concepts & Glossary
+### Domain Concepts & Glossary
 
 - **Route Guardian**: A powerful alpha Pokémon that protects a specific route. Defeating or capturing it allows a player's faction to accumulate dominance points for that route.
 - **Guardian Lockout**: A daily restriction applied to a player's account. A player is allowed to defeat or capture at most one Guardian per route per calendar day. Once locked out, the Guardian will no longer appear on the route map card or trigger combat encounters for the rest of the day.
@@ -58,6 +58,20 @@ Logic Developers / Game Designers.
 - **Entity Lookup**: The process of retrieving a game entity (Pokémon, Move, Ability, Item, or Nature) from the database. It must be performed exclusively using the canonical English identifier (ID) to ensure data integrity and avoid silent fallbacks.
 - **Identity Resolution**: The mechanism by which the application verifies that an entity ID exists in the database. If the ID is invalid or cannot be resolved, the engine must immediately halt and throw an explicit error to prevent corrupt state propagation.
 - **Species Whitelist**: A global subset of Pokémon species identifiers (IDs) that are permitted across all game systems (such as combat, daycare/breeding, eggs, and enemy trainer teams). If any system requests a species whose ID is not present in this list, the data provider must prevent its generation by throwing an explicit identity resolution error.
+
+### Reference Manuals
+
+- [battle_mechanics_manual.md](../../.agents/skills/project-standards/references/battle/battle_mechanics_manual.md): Core battle engine mechanics and math formulas.
+- [game_mechanics_manual.md](../../.agents/skills/project-standards/references/core/game_mechanics_manual.md): Game loops, stats, and states.
+- [game_formulas_manual.md](../../.agents/skills/project-standards/references/core/game_formulas_manual.md): Formulas reference sheet.
+- [time_system_manual.md](../../.agents/skills/project-standards/references/core/time_system_manual.md): Cycles, weather, and seasonal timers.
+- [evolution_manual.md](../../.agents/skills/project-standards/references/systems/evolution_manual.md): Evolution system triggers.
+- [encounter_manual.md](../../.agents/skills/project-standards/references/systems/encounter_manual.md): Wild encounters multipliers.
+- [gym_system_manual.md](../../.agents/skills/project-standards/references/systems/gym_system_manual.md): Gym leaders and rematch formulas.
+- [trade_social_manual.md](../../.agents/skills/project-standards/references/systems/trade_social_manual.md): Trading profiles and social chat structures.
+- [spawn_grid_manual.md](../../.agents/skills/project-standards/references/systems/spawn_grid_manual.md): Map spawns and grids coordinates.
+- [combat_camera_manual.md](../../.agents/skills/project-standards/references/battle/combat_camera_manual.md): Viewports and battle camera triggers.
+- [animated_sprites_manual.md](../../.agents/skills/project-standards/references/technical/animated_sprites_manual.md): Sprite database structure and scales.
 
 ## Work Guidance
 
@@ -84,20 +98,6 @@ Logic Developers / Game Designers.
 
 - Run `npm run test:node` using Vitest (node project) for pure mathematical logic.
 - Run `npm run audit` to verify type integrity and avoid any `any` usage.
-
-## Reference Manuals
-
-- [battle_mechanics_manual.md](../../.agents/skills/project-standards/references/battle/battle_mechanics_manual.md): Core battle engine mechanics and math formulas.
-- [game_mechanics_manual.md](../../.agents/skills/project-standards/references/core/game_mechanics_manual.md): Game loops, stats, and states.
-- [game_formulas_manual.md](../../.agents/skills/project-standards/references/core/game_formulas_manual.md): Formulas reference sheet.
-- [time_system_manual.md](../../.agents/skills/project-standards/references/core/time_system_manual.md): Cycles, weather, and seasonal timers.
-- [evolution_manual.md](../../.agents/skills/project-standards/references/systems/evolution_manual.md): Evolution system triggers.
-- [encounter_manual.md](../../.agents/skills/project-standards/references/systems/encounter_manual.md): Wild encounters multipliers.
-- [gym_system_manual.md](../../.agents/skills/project-standards/references/systems/gym_system_manual.md): Gym leaders and rematch formulas.
-- [trade_social_manual.md](../../.agents/skills/project-standards/references/systems/trade_social_manual.md): Trading profiles and social chat structures.
-- [spawn_grid_manual.md](../../.agents/skills/project-standards/references/systems/spawn_grid_manual.md): Map spawns and grids coordinates.
-- [combat_camera_manual.md](../../.agents/skills/project-standards/references/battle/combat_camera_manual.md): Viewports and battle camera triggers.
-- [animated_sprites_manual.md](../../.agents/skills/project-standards/references/technical/animated_sprites_manual.md): Sprite database structure and scales.
 
 ## Child DOX Index
 

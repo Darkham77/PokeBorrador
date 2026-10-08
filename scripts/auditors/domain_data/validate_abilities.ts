@@ -37,6 +37,10 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
   constructor() {
     super({
       id: 'validate_abilities',
+      configKey: 'domain.abilities',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Pokemon Ability Validator',
       description: 'Valida base de datos canónica y paridad de habilidades',
       icon: '✨',
@@ -59,6 +63,85 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
     });
   }
 
+  private extractGameAbilities(): Set<AbilityTranslationId> {
+    const gameAbilities = new Set<AbilityTranslationId>();
+    for (const pokeId of Object.keys(POKEMON_DB)) {
+      if (!isEnabledPokemonId(pokeId)) continue;
+      const species = Dex.species.get(pokeId);
+      if (species && species.exists) {
+        Object.values(species.abilities).forEach(abiName => {
+          gameAbilities.add(toID(abiName) as AbilityTranslationId);
+        });
+      }
+    }
+    return gameAbilities;
+  }
+
+  private validateAbilityTranslation(abId: AbilityTranslationId, tag: string): void {
+    if (!hasAbilityTranslation(abId)) {
+      this.addViolation({
+        ruleId: 'ability-missing-translation',
+        severity: 'error',
+        file: 'src/data/battle/abilities.ts',
+        line: 1,
+        message: `${tag} Missing Spanish translation registered in abilities.ts.`,
+        context: abId
+      });
+      return;
+    }
+
+    const trans = ABILITY_TRANSLATIONS_ES[abId];
+    if (!trans.name?.trim()) {
+      this.addViolation({
+        ruleId: 'ability-empty-field',
+        severity: 'error',
+        file: 'src/data/battle/abilities.ts',
+        line: 1,
+        message: `${tag} Has empty Spanish name.`,
+        context: `${abId}.name`
+      });
+    }
+    if (!trans.desc?.trim()) {
+      this.addViolation({
+        ruleId: 'ability-empty-field',
+        severity: 'error',
+        file: 'src/data/battle/abilities.ts',
+        line: 1,
+        message: `${tag} Has empty description.`,
+        context: `${abId}.desc`
+      });
+    }
+    if (!trans.icon || trans.icon.trim() === '') {
+      this.addViolation({
+        ruleId: 'ability-empty-field',
+        severity: 'error',
+        file: 'src/data/battle/abilities.ts',
+        line: 1,
+        message: `${tag} Has empty icon.`,
+        context: `${abId}.icon`
+      });
+    }
+  }
+
+  private validateSingleAbility(abId: AbilityTranslationId): void {
+    const tag = `[${abId}]`;
+    const ability = Dex.abilities.get(abId);
+
+    if (!ability || !ability.exists) {
+      this.addViolation({
+        ruleId: 'ability-invalid-showdown',
+        severity: 'error',
+        file: 'src/data/battle/abilities.ts',
+        line: 1,
+        message: `${tag} Not a valid official ability in Dex.`,
+        context: abId
+      });
+      return;
+    }
+
+    this.validateAbilityTranslation(abId, tag);
+  }
+
   public override async runAudit(): Promise<void> {
     this.recordScanned('src/data/battle/abilities.ts');
     this.recordScanned('src/data/battle/abilities.json');
@@ -67,77 +150,12 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
     this.markRuleEvaluated('ability-empty-field');
 
     this.context.logStep(1, 2, 'Extracting abilities for enabled species in POKEMON_DB...');
-    const gameAbilities = new Set<string>();
-    for (const pokeId of Object.keys(POKEMON_DB)) {
-      if (!isEnabledPokemonId(pokeId)) continue;
-      const species = Dex.species.get(pokeId);
-      if (species && species.exists) {
-        Object.values(species.abilities).forEach(abiName => {
-          gameAbilities.add(toID(abiName));
-        });
-      }
-    }
+    const gameAbilities = this.extractGameAbilities();
 
     this.context.logStep(2, 2, `Validating ${gameAbilities.size} abilities against Dex and Spanish translations...`);
 
     for (const abId of Array.from(gameAbilities)) {
-      const tag = `[${abId}]`;
-      const ability = Dex.abilities.get(abId);
-
-      if (!ability || !ability.exists) {
-        this.addViolation({
-          ruleId: 'ability-invalid-showdown',
-          severity: 'error',
-          file: 'src/data/battle/abilities.ts',
-          line: 1,
-          message: `${tag} Not a valid official ability in Dex.`,
-          context: abId
-        });
-        continue;
-      }
-
-      if (!hasAbilityTranslation(abId)) {
-        this.addViolation({
-          ruleId: 'ability-missing-translation',
-          severity: 'error',
-          file: 'src/data/battle/abilities.ts',
-          line: 1,
-          message: `${tag} Missing Spanish translation registered in abilities.ts.`,
-          context: abId
-        });
-      } else {
-        const trans = ABILITY_TRANSLATIONS_ES[abId];
-        if (!trans.name?.trim()) {
-          this.addViolation({
-            ruleId: 'ability-empty-field',
-            severity: 'error',
-            file: 'src/data/battle/abilities.ts',
-            line: 1,
-            message: `${tag} Has empty Spanish name.`,
-            context: `${abId}.name`
-          });
-        }
-        if (!trans.desc?.trim()) {
-          this.addViolation({
-            ruleId: 'ability-empty-field',
-            severity: 'error',
-            file: 'src/data/battle/abilities.ts',
-            line: 1,
-            message: `${tag} Has empty description.`,
-            context: `${abId}.desc`
-          });
-        }
-        if (!trans.icon || trans.icon.trim() === '') {
-          this.addViolation({
-            ruleId: 'ability-empty-field',
-            severity: 'error',
-            file: 'src/data/battle/abilities.ts',
-            line: 1,
-            message: `${tag} Has empty icon.`,
-            context: `${abId}.icon`
-          });
-        }
-      }
+      this.validateSingleAbility(abId);
     }
 
     this.context.setMetric('Unique abilities validated', gameAbilities.size);

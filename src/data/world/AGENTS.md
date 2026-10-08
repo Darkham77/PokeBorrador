@@ -2,6 +2,10 @@
 
 Map coordinates, routes assets mapping, gyms/badges configuration, and weather-tables.
 
+## Ownership
+
+Poké Vicio Development Team.
+
 ## Local Contracts
 
 - **Unified Map Database SSoT (`FIRE_RED_MAPS`)**:
@@ -11,11 +15,6 @@ Map coordinates, routes assets mapping, gyms/badges configuration, and weather-t
   - Non-wild combat arenas (such as `stadium`) declare `visibleInWorldMap: false` and are excluded from the exploration map grid (`VISIBLE_WORLD_MAPS`).
   - Gym leaders fighting in `stadium` strictly adhere to `stadium` boundaries (e.g. ambient weather disabled). Future gym leaders with custom environmental conditions must declare their own specialized stadium map in `FIRE_RED_MAPS`.
 
-## Work Guidance
-
-- When adding or modifying maps in `FIRE_RED_MAPS`, ensure environmental boundaries are explicitly specified.
-- Keep `MAP_ROUTE_MAPPING` aligned with asset filenames without declaring ghost or duplicate map IDs.
-
 ## Key Files
 
 - `gymRematches.ts`: Module implementation.
@@ -24,6 +23,16 @@ Map coordinates, routes assets mapping, gyms/badges configuration, and weather-t
 - `maps.ts`: Module implementation.
 - `weather-tables.ts`: Module implementation.
 
+## Work Guidance
+
+- When adding or modifying maps in `FIRE_RED_MAPS`, ensure environmental boundaries are explicitly specified.
+- Keep `MAP_ROUTE_MAPPING` aligned with asset filenames without declaring ghost or duplicate map IDs.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

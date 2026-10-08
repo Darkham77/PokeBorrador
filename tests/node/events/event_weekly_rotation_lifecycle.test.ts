@@ -23,37 +23,46 @@ import {
 } from '../../../src/logic/events/eventEngine.ts';
 import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 
-describe('Event Weekly Rotation Lifecycle', () => {
-  function createMigratedDatabase(): DatabaseSync {
-    const db = new DatabaseSync(':memory:');
-    for (const schema of TABLES_SCHEMA) {
-      db.exec(`CREATE TABLE IF NOT EXISTS ${schema}`);
+function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: string): void {
+  try {
+    db.exec(sql);
+  } catch (err: unknown) {
+    const msg = (err as Error).message.toLowerCase();
+    const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+    const isMissing = msg.includes('no such column');
+    if (!isDuplicate && !isMissing) {
+      throw new Error(`[Migration Error] Failed in migration "${migrationId}": ${(err as Error).message}\nSQL: ${sql}`);
     }
-    db.exec("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))");
-
-    for (const m of DATABASE_MIGRATIONS as { id: string; sql: string; sqlite_sql?: string }[]) {
-      const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
-      const isSqliteSpec = m.sqlite_sql !== undefined;
-      const statements = splitSQLStatements(sqlSource);
-
-      for (const stmt of statements) {
-        const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-        if (sql) {
-          try {
-            db.exec(sql);
-          } catch (err: unknown) {
-            const msg = (err as Error).message.toLowerCase();
-            const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
-            const isMissing = msg.includes('no such column');
-            if (!isDuplicate && !isMissing) {
-              throw new Error(`[Migration Error] Failed in migration "${m.id}": ${(err as Error).message}\nSQL: ${sql}`);
-            }
-          }
-        }
-      }
-    }
-    return db;
   }
+}
+
+function applySingleMigration(db: DatabaseSync, m: { id: string; sql: string; sqlite_sql?: string }): void {
+  const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
+  const isSqliteSpec = m.sqlite_sql !== undefined;
+  const statements = splitSQLStatements(sqlSource);
+
+  for (const stmt of statements) {
+    const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
+    if (sql) {
+      executeMigrationStatement(db, sql, m.id);
+    }
+  }
+}
+
+function createMigratedDatabase(): DatabaseSync {
+  const db = new DatabaseSync(':memory:');
+  for (const schema of TABLES_SCHEMA) {
+    db.exec(`CREATE TABLE IF NOT EXISTS ${schema}`);
+  }
+  db.exec("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))");
+
+  for (const m of DATABASE_MIGRATIONS as { id: string; sql: string; sqlite_sql?: string }[]) {
+    applySingleMigration(db, m);
+  }
+  return db;
+}
+
+describe('Event Weekly Rotation Lifecycle', () => {
 
   it('determines week of month correctly across calendar boundaries', () => {
     // Week 1 (Days 1 - 7)

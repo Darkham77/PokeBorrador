@@ -24,7 +24,7 @@ Battle Engine Developers.
 - `ScriptedAI` is E2E replay only — zero game logic.
 - **Strict Prohibition on Healing Fainted Pokémon (`aiItemEvaluator.ts`)**: Opponent AI item evaluation MUST strictly verify `e.hp > 0 && !e.fainted` before considering healing items (potions) or status cures. A fainted Pokémon (`hp <= 0`) must never satisfy healing thresholds (`hp < 0.25 * maxHp`), preventing potions from being used on dead combatants. When items are consumed, updated `hp` and `status` must immediately synchronize with `battleState.enemyTeam`.
 
-## Difficulty Tiers
+### Difficulty Tiers
 
 | Preset | errorRate | switchAggressiveness | switchCooldownTurns | useInference | useStrategicEval |
 | --- | --- | --- | --- | --- | --- |
@@ -36,7 +36,7 @@ Battle Engine Developers.
 | `gym` | 0% | 70% | 1 | true | true |
 | `rival` (apex / PvP passive) | 0% | 85% | 1 | true | true |
 
-## Module Map
+### Module Map
 
 | File | Role |
 | --- | --- |
@@ -47,7 +47,7 @@ Battle Engine Developers.
 | `heuristic/` | 9-layer heuristic engine (see child AGENTS.md) |
 | `heuristic/aiItemEvaluator.ts` | Evaluator for NPC trainer item usage during battle (revives, status cures, potions) |
 
-## HeuristicAI — No-Store Fallback
+### HeuristicAI — No-Store Fallback
 
 When `buildSnapshot()` throws (playerRequest/enemyRequest null) or there is no store,
 `HeuristicAI.decideMove()` MUST use `pickBestMoveByPower(enemy)` as its fallback.
@@ -60,7 +60,7 @@ This function:
 This is correct because: in production, the snapshot always exists on normal turns.
 The fallback only applies during initialization edge cases (turn 1, forced switch pre-request).
 
-## Zero-Fallback on ID Lookups
+### Zero-Fallback on ID Lookups
 
 Never use `.id ?? m.name` or `.id || p.name` anywhere in `src/logic/`.
 If a Move or Pokemon is missing `.id`, throw immediately:
@@ -69,6 +69,23 @@ If a Move or Pokemon is missing `.id`, throw immediately:
 The project auditor detects these patterns and blocks the commit gate.
 Moves and Pokemon always have a canonical `.id` in this codebase — a missing id
 is a data integrity bug that must surface loudly, not be silenced with a name fallback.
+
+## Key Files
+
+- [`battleAI.ts`](./battleAI.ts): Module implementation.
+- [`combatAI.ts`](./combatAI.ts): Module implementation.
+- [`heuristicAI.ts`](./heuristicAI.ts): Module implementation.
+- [`scriptedAI.ts`](./scriptedAI.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 

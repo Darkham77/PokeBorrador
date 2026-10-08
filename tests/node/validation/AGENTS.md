@@ -16,6 +16,11 @@ Test Engineers / Systems Engineers.
 
 - Test runtime domain schema parsers (`schemas.ts`, GTS, Auth, Save Shield) against valid and invalid payloads.
 
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-(No child directories)
+- *This directory contains specialized domain logic and files with no subdirectories.*

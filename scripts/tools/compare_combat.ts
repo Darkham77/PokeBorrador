@@ -142,50 +142,29 @@ interface ComparisonResult {
   details: string;
 }
 
-function executeComparison(options: RunOptions): ComparisonResult {
-  const p1Spec = getRandomElement(allPokemon);
-  const p2Spec = getRandomElement(allPokemon);
-  const moveSpec = getRandomElement(allMoves);
-  const level = Math.floor(Math.random() * MAXIMUM_POKEMON_LEVEL) + 1;
-
-  // Modificadores condicionales
-  const p1AbilityEs = options.enableAbilitiesAndItems ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN)) : null;
-  const p2AbilityEs = options.enableAbilitiesAndItems ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN)) : null;
-
-  const p1Item = options.enableAbilitiesAndItems ? getRandomElement([undefined, ...Object.keys(ITEMS_MAP)]) : undefined;
-  const p2Item = options.enableAbilitiesAndItems ? getRandomElement([undefined, ...Object.keys(ITEMS_MAP)]) : undefined;
-
-  const weatherType = options.enableWeather 
-    ? getRandomElement(['clear', 'sun', 'rain', 'sandstorm', 'hail'])
-    : 'clear';
-
-  // Si deshabilitamos custom features, fijamos ciclo a 'day' (que no tiene bonus en agua/fuego)
-  const dayCycle = options.enableCustomFeatures 
-    ? getRandomElement(['morning', 'day', 'dusk', 'night'] as const)
-    : 'day'; 
-
-  const atkStages = options.enableStages ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET : 0;
-  const defStages = options.enableStages ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET : 0;
-
-  // Simulación en Showdown
+function initShowdownBattle(
+  p1Spec: (typeof allPokemon)[number],
+  p2Spec: (typeof allPokemon)[number],
+  moveSpec: (typeof allMoves)[number],
+  level: number,
+  p1AbilityEn: string,
+  p2AbilityEn: string,
+  p1ItemEn: string,
+  p2ItemEn: string,
+  weatherType: string,
+  atkStages: number,
+  defStages: number,
+  isPhysical: boolean
+): { act1: NonNullable<Battle['p1']['active'][0]>; act2: NonNullable<Battle['p2']['active'][0]>; showdownDamage: number } | null {
   const battle = new Battle({ formatid: 'gen3customgame' as never });
-  
   if (battle.actions) {
-    (battle.actions as { checkAccuracy?: () => boolean }).checkAccuracy = function() {
-      return true;
-    };
+    (battle.actions as { checkAccuracy?: () => boolean }).checkAccuracy = () => true;
   }
-
   const originalRandom = battle.prng.random;
   battle.prng.random = function(from, to) {
     if (from === SHOWDOWN_DAMAGE_VARIANCE_MIN && to === SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE) return MAXIMUM_POKEMON_LEVEL;
     return originalRandom.call(this, from, to);
   };
-
-  const p1AbilityEn = p1AbilityEs ? (ABILITY_MAP_ES_TO_EN[p1AbilityEs] ?? '') : '';
-  const p2AbilityEn = p2AbilityEs ? (ABILITY_MAP_ES_TO_EN[p2AbilityEs] ?? '') : '';
-  const p1ItemEn = p1Item ? (ITEMS_MAP[p1Item] ?? '') : '';
-  const p2ItemEn = p2Item ? (ITEMS_MAP[p2Item] ?? '') : '';
 
   battle.setPlayer('p1', {
     name: 'Player',
@@ -221,39 +200,42 @@ function executeComparison(options: RunOptions): ComparisonResult {
 
   const act1 = battle.p1.active[0];
   const act2 = battle.p2.active[0];
-  if (!act1 || !act2) {
-    return { passed: false, ourDamage: 0, showdownDamage: 0, details: 'Error al inicializar combatientes' };
-  }
+  if (!act1 || !act2) return null;
 
-  // Establecer clima en Showdown
   const sdWeather = COMPARE_COMBAT_WEATHER_MAP[weatherType];
   if (sdWeather && sdWeather !== 'clear') {
     battle.field.setWeather(sdWeather as never, act1);
   }
 
-  // Aplicar stages en Showdown (basado en tipos de Gen 3)
-  const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel']; // no-domain: Non-domain utility collection or data structure
-  const isPhysical = physicalTypes.includes(moveSpec.type.toLowerCase());
   const statKeyAtk = isPhysical ? 'atk' : 'spa';
   const statKeyDef = isPhysical ? 'def' : 'spd';
+  if (atkStages !== 0) act1.boosts[statKeyAtk] = atkStages;
+  if (defStages !== 0) act2.boosts[statKeyDef] = defStages;
 
-  if (atkStages !== 0) {
-    act1.boosts[statKeyAtk] = atkStages;
-  }
-  if (defStages !== 0) {
-    act2.boosts[statKeyDef] = defStages;
-  }
-
-  // Defender tiene suficiente HP
   act2.maxhp = HIGH_SURVIVAL_HP_CAP;
   act2.hp = HIGH_SURVIVAL_HP_CAP;
 
   battle.choose('p1', 'move 1');
   battle.choose('p2', 'move 1');
 
-  const showdownDamage = HIGH_SURVIVAL_HP_CAP - act2.hp;
+  return { act1, act2, showdownDamage: HIGH_SURVIVAL_HP_CAP - act2.hp };
+}
 
-  // Mapeamos los stats a nuestro formato PurePokemon
+function buildPureSimulationEntities(
+  p1Spec: (typeof allPokemon)[number],
+  p2Spec: (typeof allPokemon)[number],
+  moveSpec: (typeof allMoves)[number],
+  level: number,
+  act1: NonNullable<Battle['p1']['active'][0]>,
+  act2: NonNullable<Battle['p2']['active'][0]>,
+  p1AbilityEs: string | null,
+  p2AbilityEs: string | null,
+  p1Item: string | undefined,
+  p2Item: string | undefined,
+  weatherType: string,
+  atkStages: number,
+  defStages: number
+): { ourAttacker: PurePokemon; ourDefender: PurePokemon; ourMove: PureMove; ctx: PureDamageOptions } {
   const ourAttacker: PurePokemon = {
     level,
     atk: act1.storedStats.atk,
@@ -284,9 +266,9 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const ourMove: PureMove = {
     id: cleanMoveId,
     name: moveSpec.name,
-    type: toPokemonType(moveSpec.type.toLowerCase()), // string-ok: Internal string formatting or DOM token identifier
+    type: toPokemonType(moveSpec.type.toLowerCase()),
     power: moveSpec.basePower,
-    cat: getMoveCategory({ id: cleanMoveId, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower }) // string-ok: Internal string formatting or DOM token identifier
+    cat: getMoveCategory({ id: cleanMoveId, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower })
   };
 
   const weatherObj: PureBattleWeather | null = isWeatherId(weatherType) && weatherType !== 'clear' ? { type: weatherType, turns: DEFAULT_WEATHER_TURNS_COUNT } : null;
@@ -296,11 +278,57 @@ function executeComparison(options: RunOptions): ComparisonResult {
     weather: weatherObj
   };
 
+  return { ourAttacker, ourDefender, ourMove, ctx };
+}
+
+function executeComparison(options: RunOptions): ComparisonResult {
+  const p1Spec = getRandomElement(allPokemon);
+  const p2Spec = getRandomElement(allPokemon);
+  const moveSpec = getRandomElement(allMoves);
+  const level = Math.floor(Math.random() * MAXIMUM_POKEMON_LEVEL) + 1;
+
+  const p1AbilityEs = options.enableAbilitiesAndItems ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN)) : null;
+  const p2AbilityEs = options.enableAbilitiesAndItems ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN)) : null;
+
+  const p1Item = options.enableAbilitiesAndItems ? getRandomElement([undefined, ...Object.keys(ITEMS_MAP)]) : undefined;
+  const p2Item = options.enableAbilitiesAndItems ? getRandomElement([undefined, ...Object.keys(ITEMS_MAP)]) : undefined;
+
+  const weatherType = options.enableWeather ? getRandomElement(['clear', 'sun', 'rain', 'sandstorm', 'hail']) : 'clear';
+  const dayCycle = options.enableCustomFeatures ? getRandomElement(['morning', 'day', 'dusk', 'night'] as const) : 'day';
+
+  const atkStages = options.enableStages ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET : 0;
+  const defStages = options.enableStages ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET : 0;
+
+  const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel'];
+  const isPhysical = physicalTypes.includes(moveSpec.type.toLowerCase());
+
+  const p1AbilityEn = p1AbilityEs ? (ABILITY_MAP_ES_TO_EN[p1AbilityEs] ?? '') : '';
+  const p2AbilityEn = p2AbilityEs ? (ABILITY_MAP_ES_TO_EN[p2AbilityEs] ?? '') : '';
+  const p1ItemEn = p1Item ? (ITEMS_MAP[p1Item] ?? '') : '';
+  const p2ItemEn = p2Item ? (ITEMS_MAP[p2Item] ?? '') : '';
+
+  const sdResult = initShowdownBattle(
+    p1Spec, p2Spec, moveSpec, level,
+    p1AbilityEn, p2AbilityEn, p1ItemEn, p2ItemEn,
+    weatherType, atkStages, defStages, isPhysical
+  );
+  if (!sdResult) {
+    return { passed: false, ourDamage: 0, showdownDamage: 0, details: 'Error al inicializar combatientes' };
+  }
+
+  const { ourAttacker, ourDefender, ourMove, ctx } = buildPureSimulationEntities(
+    p1Spec, p2Spec, moveSpec, level,
+    sdResult.act1, sdResult.act2,
+    p1AbilityEs, p2AbilityEs, p1Item, p2Item,
+    weatherType, atkStages, defStages
+  );
+
   const ourRes = calculateDamagePure(ourAttacker, ourDefender, ourMove, ctx, dayCycle, 1.0, false);
   const ourDamage = ourRes.dmg;
+  const showdownDamage = sdResult.showdownDamage;
 
-  const sdAtk = act1.getStat(isPhysical ? 'atk' : 'spa');
-  const sdDef = act2.getStat(isPhysical ? 'def' : 'spd');
+  const sdAtk = sdResult.act1.getStat(isPhysical ? 'atk' : 'spa');
+  const sdDef = sdResult.act2.getStat(isPhysical ? 'def' : 'spd');
 
   const passed = ourDamage === showdownDamage;
   const details = `Mov: ${moveSpec.name} (Pwr: ${moveSpec.basePower}, Type: ${moveSpec.type}).

@@ -1,8 +1,4 @@
-# AGENTS.md - BATTLE FUZZER WORKSPACE CONTRACT
-
-This directory contains the automated Battle Coverage Fuzzer for Gen 9 moves, items and abilities.
-
-## Purpose
+# Purpose
 
 Simulate, test, and validate battle log synchronization between the Pokémon Showdown engine and the client-facing UI bridge (`showdownBridge`) using headless simulation runs.
 
@@ -12,6 +8,10 @@ Simulate, test, and validate battle log synchronization between the Pokémon Sho
 - **Responsibilities**: Maintenance of fuzzer execution, battle-agent logic, coverage generation, and ability scenarios.
 
 ## Local Contracts
+
+### AGENTS.md - BATTLE FUZZER WORKSPACE CONTRACT
+
+This directory contains the automated Battle Coverage Fuzzer for Gen 9 moves, items and abilities.
 
 - No runtime game-engine code is allowed here; this directory is strictly for utility and test automation.
 - All files must be written in TypeScript and adhere to Node.js 26+ requirements (relative imports require explicit `.ts` extensions).

@@ -48,6 +48,8 @@ describe('SpanishIdAuditor', () => {
 
       scan(auditor, 'src/logic/test.ts', code);
       expect(auditor.getCountsByRule().get('spanish-logic-id')!).toBeGreaterThan(0);
+      const errors = auditor.getErrorsByRule().get('spanish-logic-id') ?? 0;
+      expect(errors).toBeGreaterThan(0);
     });
 
     it('honors spanish-ok suppression comment', () => {

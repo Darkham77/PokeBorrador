@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 
+const _VERSION_LOCK_TYPES = ['database', 'server'] as const
+type VersionLockType = (typeof _VERSION_LOCK_TYPES)[number]
+
 defineProps<{
   clientVersion?: string | number
   targetVersion?: string | number
-  lockType: 'database' | 'server'
+  lockType: VersionLockType
 }>()
 
 const emit = defineEmits<{

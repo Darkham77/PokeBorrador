@@ -12,6 +12,11 @@ Frontend / UI Engineers.
 - `App.vue` manages dynamic theme switching (`Vicio Dark`, `Wingull GBA Light`, `Cyber Neon`) and responsive pixel scaling.
 - Direct relative imports must always include `.ts` extensions.
 
+## Key Files
+
+- [`App.vue`](./App.vue): Module implementation.
+- [`main.ts`](./main.ts): Module implementation.
+
 ## Work Guidance
 
 - Components must import canonical styles from `@/styles/_index.scss`.
@@ -22,7 +27,7 @@ Frontend / UI Engineers.
 - `npm run lint`
 - `npm run audit`
 
-## DOX Directory Navigation Index
+## Child DOX Index
 
 - [data/AGENTS.md](./data/AGENTS.md): Mock datasets and test fixtures.
 - [logic/AGENTS.md](./logic/AGENTS.md): Universal Bresenham pixel polygon engine.

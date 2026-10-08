@@ -11,6 +11,13 @@ Frontend Developers / Systems Engineers.
 - Follow standard repository modularity guidelines.
 - **Debug Simulation Fixture Schema Parity Mandate (`rewardsDebugSimulationHelpers.ts`)**: All simulated test fixtures, reward generators, and debug helpers that insert records directly into database tables (such as `market_listings`, `claim_queue`, `game_saves`) MUST strictly adhere to the canonical database schema (e.g. using `listing_type: 'item'` and JSON `data: { name, qty }`). Inserting legacy, synthesized, or non-existent columns (e.g. `currency`, `item_data`, `category`) is strictly prohibited and must throw errors instead of being swallowed.
 
+## Key Files
+
+- `pokemonDebugService.ts`: Module implementation.
+- `rewardsDebugOccurrenceHelper.ts`: Module implementation.
+- `rewardsDebugSimulation.ts`: Module implementation.
+- [`rewardsDebugSimulationHelpers.ts`](./rewardsDebugSimulationHelpers.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -19,12 +26,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `pokemonDebugService.ts`: Module implementation.
-- `rewardsDebugOccurrenceHelper.ts`: Module implementation.
-- `rewardsDebugSimulation.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -18,10 +18,13 @@ interface ProfileData {
 
 const DEFAULT_TRAINER_AVATAR_SIZE_PX = 40
 
+const _TRAINER_CARD_VARIANTS = ['normal', 'pending'] as const
+type TrainerCardVariant = (typeof _TRAINER_CARD_VARIANTS)[number]
+
 const props = withDefaults(defineProps<{
   profile: ProfileData
   avatarSize?: number
-  variant?: 'normal' | 'pending'
+  variant?: TrainerCardVariant
 }>(), {
   avatarSize: DEFAULT_TRAINER_AVATAR_SIZE_PX,
   variant: 'normal'

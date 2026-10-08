@@ -19,6 +19,89 @@ import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 
 const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 
+async function applyAllMigrations(db: DatabaseSync): Promise<void> {
+  const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');
+  const { translatePostgresToSqlite } = await import('../../../src/logic/db/sqlTranslator.ts');
+
+  db.exec('BEGIN TRANSACTION;');
+  for (const migration of DATABASE_MIGRATIONS) {
+    let alreadyApplied = false;
+    try {
+      const check = db.prepare('SELECT id FROM _migrations WHERE id = ?').get(migration.id);
+      if (check) alreadyApplied = true;
+    } catch { // catch-ok: _migrations might not exist yet
+    }
+
+    if (alreadyApplied) continue;
+
+    const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
+    const isSqliteSpec = migration.sqlite_sql !== undefined;
+    const statements = splitSQLStatements(sqlSource);
+
+    for (const stmt of statements) {
+      if (!stmt.trim()) continue;
+      const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
+      try {
+        db.exec(sql);
+      } catch { // catch-ok: ignore individual migration statement errors
+      }
+    }
+  }
+  db.exec('COMMIT;');
+}
+
+function serializePayloadParams(payload: Record<string, unknown>): Array<string | number | bigint | Uint8Array | null> {
+  return Object.values(payload).map(v => {
+    if (v === null || v === undefined) return null;
+    if (typeof v === 'object') return JSON.stringify(v);
+    return v as string | number;
+  });
+}
+
+function createMockDBRouter(db: DatabaseSync, existingColumnNames: Set<string>): DBRouter {
+  return {
+    mode: 'offline',
+    from: (table: string) => ({
+      select: (cols: string) => ({
+        eq: (col: string, val: unknown) => ({
+          maybeSingle: async () => {
+            const row = db.prepare(`SELECT ${cols} FROM ${table} WHERE ${col} = ?`).get(val as string);
+            return { data: row || null, error: null };
+          }
+        })
+      }),
+      update: (payload: Record<string, unknown>) => ({
+        eq: async (col: string, val: unknown) => {
+          for (const key of Object.keys(payload)) {
+            assert.ok(
+              existingColumnNames.has(key),
+              `Update payload key "${key}" does not exist in SQLite "${table}" table columns!`
+            );
+          }
+          const setClause = Object.keys(payload).map(k => `${k} = ?`).join(', ');
+          const params = serializePayloadParams(payload);
+          params.push((val ?? null) as string | number | null);
+          db.prepare(`UPDATE ${table} SET ${setClause} WHERE ${col} = ?`).run(...params);
+          return { data: payload, error: null };
+        }
+      }),
+      insert: async (payload: Record<string, unknown>) => {
+        for (const key of Object.keys(payload)) {
+          assert.ok(
+            existingColumnNames.has(key),
+            `Insert payload key "${key}" does not exist in SQLite "${table}" table columns!`
+          );
+        }
+        const keys = Object.keys(payload);
+        const placeholders = keys.map(() => '?').join(', ');
+        const params = serializePayloadParams(payload);
+        db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`).run(...params);
+        return { data: payload, error: null };
+      }
+    })
+  } as unknown as DBRouter;
+}
+
 describe('Profile Sync SQLite Column Parity', () => {
   it('updates and inserts profile fields matching exact SQLite schema columns without error', async () => {
     const tempDbPath = path.join(os.tmpdir(), `test_profile_sync_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`);
@@ -28,102 +111,16 @@ describe('Profile Sync SQLite Column Parity', () => {
       using db = new DatabaseSync(tempDbPath);
       db.exec('PRAGMA synchronous = OFF; PRAGMA journal_mode = MEMORY;');
 
-      // Run all migrations to ensure full schema
-      const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');
-      const { translatePostgresToSqlite } = await import('../../../src/logic/db/sqlTranslator.ts');
+      await applyAllMigrations(db);
 
-      db.exec('BEGIN TRANSACTION;');
-      for (const migration of DATABASE_MIGRATIONS) {
-        let alreadyApplied = false;
-        try {
-          const check = db.prepare('SELECT id FROM _migrations WHERE id = ?').get(migration.id);
-          if (check) alreadyApplied = true;
-        } catch (_) {
-          // Table _migrations might not exist yet
-        }
-
-        if (alreadyApplied) continue;
-
-        const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
-        const isSqliteSpec = migration.sqlite_sql !== undefined;
-        const statements = splitSQLStatements(sqlSource);
-
-        for (const stmt of statements) {
-          if (stmt.trim()) {
-            const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-            try {
-              db.exec(sql);
-            } catch {
-              // Ignore individual migration statement errors
-            }
-          }
-        }
-      }
-      db.exec('COMMIT;');
-
-      // Inspect SQLite columns of profiles table
       const pragmaCols = db.prepare("PRAGMA table_info('profiles')").all() as Array<{ name: string }>;
       const existingColumnNames = new Set(pragmaCols.map(c => c.name));
 
-      // Assert essential columns exist in snake_case
       assert.ok(existingColumnNames.has('capture_successes'), 'profiles table must contain capture_successes column');
       assert.ok(existingColumnNames.has('capture_attempts'), 'profiles table must contain capture_attempts column');
       assert.ok(!existingColumnNames.has('captureSuccesses'), 'profiles table must NOT contain camelCase captureSuccesses column');
 
-      // Create a mock DBRouter executing against this SQLite database
-      const mockDBRouter = {
-        mode: 'offline',
-        from: (table: string) => {
-          return {
-            select: (cols: string) => ({
-              eq: (col: string, val: unknown) => ({
-                maybeSingle: async () => {
-                  const row = db.prepare(`SELECT ${cols} FROM ${table} WHERE ${col} = ?`).get(val as string);
-                  return { data: row || null, error: null };
-                }
-              })
-            }),
-            update: (payload: Record<string, unknown>) => ({
-              eq: async (col: string, val: unknown) => {
-                // Verify all payload keys exist in table columns
-                for (const key of Object.keys(payload)) {
-                  assert.ok(
-                    existingColumnNames.has(key),
-                    `Update payload key "${key}" does not exist in SQLite "${table}" table columns!`
-                  );
-                }
-                const setClause = Object.keys(payload).map(k => `${k} = ?`).join(', ');
-                const params: Array<string | number | bigint | Uint8Array | null> = Object.values(payload).map(v => {
-                  if (v === null || v === undefined) return null;
-                  if (typeof v === 'object') return JSON.stringify(v);
-                  return v as string | number;
-                });
-                params.push((val ?? null) as string | number | null);
-                db.prepare(`UPDATE ${table} SET ${setClause} WHERE ${col} = ?`).run(...params);
-                return { data: payload, error: null };
-              }
-            }),
-            insert: async (payload: Record<string, unknown>) => {
-              // Verify all payload keys exist in table columns
-              for (const key of Object.keys(payload)) {
-                assert.ok(
-                  existingColumnNames.has(key),
-                  `Insert payload key "${key}" does not exist in SQLite "${table}" table columns!`
-                );
-              }
-              const keys = Object.keys(payload);
-              const placeholders = keys.map(() => '?').join(', ');
-              const params: Array<string | number | bigint | Uint8Array | null> = Object.values(payload).map(v => {
-                if (v === null || v === undefined) return null;
-                if (typeof v === 'object') return JSON.stringify(v);
-                return v as string | number;
-              });
-              db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`).run(...params);
-              return { data: payload, error: null };
-            }
-          };
-        }
-      } as unknown as DBRouter;
+      const mockDBRouter = createMockDBRouter(db, existingColumnNames);
 
       const existingProfile = db.prepare('SELECT id FROM profiles LIMIT 1').get() as { id: string } | undefined;
       const targetUserId = existingProfile?.id || 'local_ash';

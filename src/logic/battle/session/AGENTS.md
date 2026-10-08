@@ -19,3 +19,27 @@ Frontend Developers / Battle Engine Engineers.
   - `replayBattleSession.ts`: Step-by-step tactical replay playback driving the visual arena via `ITacticalReplayEngine`.
   - `battleSessionFactory.ts`: Factory for instantiating the correct polymorphic session based on `BattleMode`.
 - **Node.js 26+ Native Extensions Mandate**: All relative imports within session modules MUST explicitly include `.ts` extensions.
+
+## Key Files
+
+- [`baseBattleSession.ts`](./baseBattleSession.ts): Module implementation.
+- [`battleSessionFactory.ts`](./battleSessionFactory.ts): Module implementation.
+- [`gymBattleSession.ts`](./gymBattleSession.ts): Module implementation.
+- [`pveBattleSession.ts`](./pveBattleSession.ts): Module implementation.
+- [`pvpBattleSession.ts`](./pvpBattleSession.ts): Module implementation.
+- [`replayBattleSession.ts`](./replayBattleSession.ts): Module implementation.
+- [`spectatorBattleSession.ts`](./spectatorBattleSession.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

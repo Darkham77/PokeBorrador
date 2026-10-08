@@ -101,15 +101,10 @@ function createValidGameState(): GameState {
   } as unknown as GameState;
 }
 
-function migrateBackupSaves(filePath: string): Array<{ user_id: string; save_data: string }> {
-  if (!fs.existsSync(filePath)) return [];
-
-  const rawBackup = fs.readFileSync(filePath, 'utf8');
-  const backupData = JSON.parse(rawBackup) as { data?: { game_saves?: Array<{ user_id: string; save_data: unknown; last_save_id?: string; updated_at?: string }> } };
-  const gameSaves = backupData.data?.game_saves || [];
-  if (gameSaves.length === 0) return [];
-
-  using db = new DatabaseSync(':memory:');
+function seedTestGameSaves(
+  db: DatabaseSync,
+  gameSaves: Array<{ user_id: string; save_data: unknown; last_save_id?: string; updated_at?: string }>
+): void {
   for (const ddl of TABLES_SCHEMA) {
     db.exec(`CREATE TABLE IF NOT EXISTS ${ddl}`);
   }
@@ -121,53 +116,58 @@ function migrateBackupSaves(filePath: string): Array<{ user_id: string; save_dat
     const dataStr = typeof save.save_data === 'string' ? save.save_data : JSON.stringify(save.save_data);
     insertSave.run(save.user_id, dataStr, save.last_save_id || '', save.updated_at || '');
   }
+}
 
-  for (const migration of DATABASE_MIGRATIONS) {
-    if (migration.sqlite_sql !== undefined) {
-      if (migration.sqlite_sql.trim()) {
-        try {
-          db.exec(migration.sqlite_sql);
-        } catch {
-          const statements = splitSQLStatements(migration.sqlite_sql);
-          for (const stmt of statements) {
-            if (!stmt.trim()) continue;
-            try {
-              db.exec(stmt);
-            } catch (stmtErr: unknown) {
-              const msg = (stmtErr as Error).message.toLowerCase();
-              const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
-              const isMissing = msg.includes('no such column');
-              if (!isDuplicate && !isMissing) {
-                throw stmtErr;
-              }
-            }
-          }
-        }
+function applySqliteMigrationStatement(db: DatabaseSync, stmt: string): void {
+  if (!stmt.trim()) return;
+  try {
+    db.exec(stmt);
+  } catch (stmtErr: unknown) {
+    const msg = (stmtErr as Error).message.toLowerCase();
+    const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+    const isMissing = msg.includes('no such column');
+    if (!isDuplicate && !isMissing) {
+      throw stmtErr;
+    }
+  }
+}
+
+function applySingleMigration(db: DatabaseSync, migration: (typeof DATABASE_MIGRATIONS)[number]): void {
+  if (migration.sqlite_sql !== undefined) {
+    if (!migration.sqlite_sql.trim()) return;
+    try {
+      db.exec(migration.sqlite_sql);
+    } catch {
+      for (const stmt of splitSQLStatements(migration.sqlite_sql)) {
+        applySqliteMigrationStatement(db, stmt);
       }
-    } else {
-      const statements = splitSQLStatements(migration.sql);
-      for (const stmt of statements) {
-        if (stmt.trim()) {
-          const sql = translatePostgresToSqlite(stmt);
-          if (sql) {
-            try {
-              db.exec(sql);
-            } catch (stmtErr: unknown) {
-              const msg = (stmtErr as Error).message.toLowerCase();
-              const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
-              const isMissing = msg.includes('no such column');
-              if (!isDuplicate && !isMissing) {
-                throw stmtErr;
-              }
-            }
-          }
-        }
+    }
+  } else {
+    for (const stmt of splitSQLStatements(migration.sql)) {
+      if (stmt.trim()) {
+        const sql = translatePostgresToSqlite(stmt);
+        if (sql) applySqliteMigrationStatement(db, sql);
       }
     }
   }
+}
+
+function migrateBackupSaves(filePath: string): Array<{ user_id: string; save_data: string }> {
+  if (!fs.existsSync(filePath)) return [];
+
+  const rawBackup = fs.readFileSync(filePath, 'utf8');
+  const backupData = JSON.parse(rawBackup) as { data?: { game_saves?: Array<{ user_id: string; save_data: unknown; last_save_id?: string; updated_at?: string }> } };
+  const gameSaves = backupData.data?.game_saves || [];
+  if (gameSaves.length === 0) return [];
+
+  using db = new DatabaseSync(':memory:');
+  seedTestGameSaves(db, gameSaves);
+
+  for (const migration of DATABASE_MIGRATIONS) {
+    applySingleMigration(db, migration);
+  }
 
   db.exec('COMMIT;');
-
   const selectSaves = db.prepare('SELECT user_id, save_data FROM game_saves');
   return selectSaves.all() as { user_id: string; save_data: string }[];
 }

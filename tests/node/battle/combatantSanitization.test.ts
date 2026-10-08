@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { serializePokemonTeam, deserializePokemonTeam } from '@/logic/auth/saveSerializer';
+import { serializePokemonTeam, deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Combatant Sanitization - Unit Tests', () => {

@@ -37,6 +37,10 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
   constructor() {
     super({
       id: 'validate_pokemon',
+      configKey: 'domain.pokemon',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Pokemon DB Integrity Validator',
       description: 'Especies no válidas, stats erróneos o learnsets rotos',
       icon: '🐾',
@@ -57,6 +61,98 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
     });
   }
 
+  private validateBaseStats(corePoke: PokemonBaseData, species: { baseStats: Record<string, number> }, tag: string): void {
+    for (const stat of STAT_KEYS) {
+      const coreVal = corePoke[stat];
+      const sdVal = species.baseStats[stat];
+      if (coreVal !== sdVal) {
+        this.addViolation({
+          ruleId: 'pokemon-base-stat-mismatch',
+          severity: 'error',
+          file: 'src/data/pokemon/pokemonDB.ts',
+          line: 1,
+          message: `${tag} Stat mismatch in '${stat.toUpperCase()}': Game ${coreVal} vs Showdown ${sdVal}.`,
+          context: `${stat}: ${coreVal} != ${sdVal}`
+        });
+      }
+    }
+  }
+
+  private validateTypes(corePoke: PokemonBaseData, species: { types: string[] }, tag: string): void {
+    const coreTypes: string[] = []; // no-domain: Non-domain utility collection or data structure
+    if (corePoke.type) coreTypes.push(corePoke.type);
+    const type2 = (corePoke as { type2?: string }).type2;
+    if (type2) coreTypes.push(type2);
+
+    const sdTypes = species.types.map(t => t.toLowerCase());
+    const coreTypesStr = coreTypes.slice().sort().join(',');
+    const sdTypesStr = sdTypes.slice().sort().join(',');
+
+    if (coreTypesStr !== sdTypesStr) {
+      this.addViolation({
+        ruleId: 'pokemon-type-mismatch',
+        severity: 'error',
+        file: 'src/data/pokemon/pokemonDB.ts',
+        line: 1,
+        message: `${tag} Type mismatch: Game [${coreTypesStr}] vs Showdown [${sdTypesStr}].`,
+        context: `${coreTypesStr} != ${sdTypesStr}`
+      });
+    }
+  }
+
+  private validateLearnset(corePoke: PokemonBaseData, coreId: string, tag: string): void {
+    if (!corePoke.learnset || !Array.isArray(corePoke.learnset)) {
+      this.addViolation({
+        ruleId: 'pokemon-missing-learnset',
+        severity: 'error',
+        file: 'src/data/pokemon/pokemonDB.ts',
+        line: 1,
+        message: `${tag} Missing or invalid 'learnset' property.`,
+        context: coreId
+      });
+      return;
+    }
+
+    for (const moveEntry of corePoke.learnset) {
+      const moveId = toID(moveEntry.id);
+      const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId);
+
+      if (!moveData || !moveData.exists) {
+        this.addViolation({
+          ruleId: 'pokemon-invalid-learnset-move',
+          severity: 'error',
+          file: 'src/data/pokemon/pokemonDB.ts',
+          line: 1,
+          message: `${tag} Move '${moveEntry.id}' does not exist in Showdown Dex.`,
+          context: moveEntry.id
+        });
+      }
+    }
+  }
+
+  private validateSinglePokemon(coreId: string, corePoke: PokemonBaseData): boolean {
+    if (!isEnabledPokemonId(coreId)) return false;
+    const tag = `[${corePoke.name} (${coreId})]`;
+    const species = Dex.forGen(ACTIVE_GENERATION).species.get(coreId);
+
+    if (!species || !species.exists) {
+      this.addViolation({
+        ruleId: 'pokemon-invalid-species',
+        severity: 'error',
+        file: 'src/data/pokemon/pokemonDB.ts',
+        line: 1,
+        message: `${tag} Does not exist in official Showdown Dex.`,
+        context: coreId
+      });
+      return false;
+    }
+
+    this.validateBaseStats(corePoke, species, tag);
+    this.validateTypes(corePoke, species, tag);
+    this.validateLearnset(corePoke, coreId, tag);
+    return true;
+  }
+
   public override async runAudit(): Promise<void> {
     const pokemonDataFiles = await this.context.collectFiles(['src/data/pokemon'], new Set(['.ts', '.json']));
     for (const f of pokemonDataFiles) {
@@ -70,86 +166,8 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
     let count = 0;
 
     for (const [coreId, corePoke] of Object.entries(POKEMON_DB) as Array<[string, PokemonBaseData]>) {
-      if (!isEnabledPokemonId(coreId)) continue;
-      count++;
-      const tag = `[${corePoke.name} (${coreId})]`;
-      const species = Dex.forGen(ACTIVE_GENERATION).species.get(coreId);
-
-      if (!species || !species.exists) {
-        this.addViolation({
-          ruleId: 'pokemon-invalid-species',
-          severity: 'error',
-          file: 'src/data/pokemon/pokemonDB.ts',
-          line: 1,
-          message: `${tag} Does not exist in official Showdown Dex.`,
-          context: coreId
-        });
-        continue;
-      }
-
-      // A. Validar estadísticas base
-      for (const stat of STAT_KEYS) {
-        const coreVal = corePoke[stat];
-        const sdVal = species.baseStats[stat];
-        if (coreVal !== sdVal) {
-          this.addViolation({
-            ruleId: 'pokemon-base-stat-mismatch',
-            severity: 'error',
-            file: 'src/data/pokemon/pokemonDB.ts',
-            line: 1,
-            message: `${tag} Stat mismatch in '${stat.toUpperCase()}': Game ${coreVal} vs Showdown ${sdVal}.`,
-            context: `${stat}: ${coreVal} != ${sdVal}`
-          });
-        }
-      }
-
-      // B. Validar tipos
-      const coreTypes: string[] = [];
-      if (corePoke.type) coreTypes.push(corePoke.type);
-      const type2 = (corePoke as { type2?: string }).type2;
-      if (type2) coreTypes.push(type2);
-
-      const sdTypes = species.types.map(t => t.toLowerCase());
-      const coreTypesStr = coreTypes.slice().sort().join(',');
-      const sdTypesStr = sdTypes.slice().sort().join(',');
-
-      if (coreTypesStr !== sdTypesStr) {
-        this.addViolation({
-          ruleId: 'pokemon-type-mismatch',
-          severity: 'error',
-          file: 'src/data/pokemon/pokemonDB.ts',
-          line: 1,
-          message: `${tag} Type mismatch: Game [${coreTypesStr}] vs Showdown [${sdTypesStr}].`,
-          context: `${coreTypesStr} != ${sdTypesStr}`
-        });
-      }
-
-      // C. Validar movimientos del learnset
-      if (corePoke.learnset && Array.isArray(corePoke.learnset)) {
-        for (const moveEntry of corePoke.learnset) {
-          const moveId = toID(moveEntry.id);
-          const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId);
-
-          if (!moveData || !moveData.exists) {
-            this.addViolation({
-              ruleId: 'pokemon-invalid-learnset-move',
-              severity: 'error',
-              file: 'src/data/pokemon/pokemonDB.ts',
-              line: 1,
-              message: `${tag} Move '${moveEntry.id}' does not exist in Showdown Dex.`,
-              context: moveEntry.id
-            });
-          }
-        }
-      } else {
-        this.addViolation({
-          ruleId: 'pokemon-missing-learnset',
-          severity: 'error',
-          file: 'src/data/pokemon/pokemonDB.ts',
-          line: 1,
-          message: `${tag} Missing or invalid 'learnset' property.`,
-          context: coreId
-        });
+      if (this.validateSinglePokemon(coreId, corePoke)) {
+        count++;
       }
     }
 

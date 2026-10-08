@@ -24,7 +24,7 @@ Orchestrates the game simulation, E2E pipeline, and Showdown 1:1 parity source c
 
 ---
 
-## 🚦 Paso 0: Protocolo de Diagnóstico y Reanudación de Estado (Physical First)
+## 🚦 Step 0: State Diagnostics & Resumption Protocol (Physical First)
 
 Whenever instructed to start, resume, or continue a simulation workflow (e.g. *"continua"*, *"sigue"*, *"reanudar"*, or after a context refresh):
 
@@ -74,7 +74,7 @@ Whenever instructed to start, resume, or continue a simulation workflow (e.g. *"
 
 ---
 
-## 🔄 El Ciclo Canónico de 7 Pasos (Lifecycle Flow)
+## 🔄 The Canonical 7-Step Cycle (Lifecycle Flow)
 
 ```mermaid
 flowchart TD

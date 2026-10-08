@@ -1,4 +1,4 @@
-# tests/unit/components/common/
+# Purpose
 
 Unit tests for common reusable UI components.
 
@@ -13,6 +13,15 @@ Frontend Developers / QA Engineers.
 - Clean up any DOM side effects or global mocks after each test.
 - `BaseRefreshButton.spec.ts`: Unit tests for `BaseRefreshButton.vue` validating circular vector SVG rendering, size classes (`size-sm`, `size-md`), variant support (`variant="pill"`), GSAP rotation tween handling on `loading`, disabled state, and click event emissions.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
 ## Verification
 
 - Run `node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run tests/unit/components/common/` to execute common component unit tests.
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -100,14 +100,6 @@ Frontend Developers / Systems Engineers.
   - The inner modal scrollable body must use `flex: 1` so that in mobile fullscreen mode (`type="fullscreen"`) the modal background gradient covers the entire screen seamlessly without color leakage.
 - **Black Market Modal Modularization (`BlackMarketModal.vue`, `BlackMarketHeader.vue`, `BlackMarketCard.vue`, `BlackMarketModal.styles.scss`)**: The Black Market modal is cleanly decomposed into `BlackMarketHeader.vue` (Rocket rank, title and currency counter) and `BlackMarketCard.vue` (individual item showcase with tier badge, sprite, discount calculations, sold stamp, and buy action), sharing modular styles via `BlackMarketModal.styles.scss`.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `ArchaeologyModal.vue`: Module implementation.
@@ -172,6 +164,66 @@ Frontend Developers / Systems Engineers.
 - `pastEventMetricFormatter.ts`: Module implementation.
 - `renameHelpers.ts`: Module implementation.
 - `trainerProfileResolver.ts`: Module implementation.
+- `useTrainerProfileFetcher.ts`: Module implementation.
+- `useTrainerProfileStats.ts`: Module implementation.
+- [`AbilityPillModal.vue`](./AbilityPillModal.vue): Module implementation.
+- [`ArenaCasualPanel.vue`](./ArenaCasualPanel.vue): Module implementation.
+- [`ArenaMatchHistoryCard.vue`](./ArenaMatchHistoryCard.vue): Module implementation.
+- [`ArenaMatchHistorySection.vue`](./ArenaMatchHistorySection.vue): Module implementation.
+- [`ArenaModal.vue`](./ArenaModal.vue): Module implementation.
+- [`ArenaPassivePanel.vue`](./ArenaPassivePanel.vue): Module implementation.
+- [`ArenaRankedOverview.vue`](./ArenaRankedOverview.vue): Module implementation.
+- [`ArenaRankedPanel.vue`](./ArenaRankedPanel.vue): Module implementation.
+- [`ArenaReplaysPanel.vue`](./ArenaReplaysPanel.vue): Module implementation.
+- [`AvatarFrameCard.vue`](./AvatarFrameCard.vue): Module implementation.
+- [`AvatarFrameSelector.vue`](./AvatarFrameSelector.vue): Module implementation.
+- [`BlackMarketCard.vue`](./BlackMarketCard.vue): Module implementation.
+- [`BlackMarketHeader.vue`](./BlackMarketHeader.vue): Module implementation.
+- [`BlackMarketModal.styles.scss`](./BlackMarketModal.styles.scss): Module implementation.
+- [`BlackMarketModal.vue`](./BlackMarketModal.vue): Module implementation.
+- [`CosmeticsModal.vue`](./CosmeticsModal.vue): Module implementation.
+- [`CosmeticsNickStyleCard.vue`](./CosmeticsNickStyleCard.vue): Module implementation.
+- [`EventAutoEnrollModal.vue`](./EventAutoEnrollModal.vue): Module implementation.
+- [`EventCard.vue`](./EventCard.vue): Module implementation.
+- [`EventCardActionFooter.vue`](./EventCardActionFooter.vue): Module implementation.
+- [`EventCardMetaTags.vue`](./EventCardMetaTags.vue): Module implementation.
+- [`EventDetailModal.vue`](./EventDetailModal.vue): Module implementation.
+- [`EventDetailShowcase.vue`](./EventDetailShowcase.vue): Module implementation.
+- [`EventPodiumPrizesList.vue`](./EventPodiumPrizesList.vue): Module implementation.
+- [`EventSubCompetitionsSection.vue`](./EventSubCompetitionsSection.vue): Module implementation.
+- [`FishingModal.vue`](./FishingModal.vue): Module implementation.
+- [`MoveLearningModal.vue`](./MoveLearningModal.vue): Module implementation.
+- [`MoveRelearnerModal.vue`](./MoveRelearnerModal.vue): Module implementation.
+- [`NaturePatchModal.vue`](./NaturePatchModal.vue): Module implementation.
+- [`PPUpModal.vue`](./PPUpModal.vue): Module implementation.
+- [`PastEventAwardRow.vue`](./PastEventAwardRow.vue): Module implementation.
+- [`PastEventCard.vue`](./PastEventCard.vue): Module implementation.
+- [`PastEventCardClaimAction.vue`](./PastEventCardClaimAction.vue): Module implementation.
+- [`PastEventCategoryPodiumBlock.vue`](./PastEventCategoryPodiumBlock.vue): Module implementation.
+- [`PastEventWinnerItem.vue`](./PastEventWinnerItem.vue): Module implementation.
+- [`PastEventsList.vue`](./PastEventsList.vue): Module implementation.
+- [`PokemonSelectionItem.vue`](./PokemonSelectionItem.vue): Module implementation.
+- [`PokemonSelectionModal.vue`](./PokemonSelectionModal.vue): Module implementation.
+- [`PvPChallengeModal.vue`](./PvPChallengeModal.vue): Module implementation.
+- [`PvPOpponentOfflineModal.vue`](./PvPOpponentOfflineModal.vue): Module implementation.
+- [`RankedSeasonPrizeItem.vue`](./RankedSeasonPrizeItem.vue): Module implementation.
+- [`RankedSeasonRewardModal.vue`](./RankedSeasonRewardModal.vue): Module implementation.
+- [`RankingModal.vue`](./RankingModal.vue): Module implementation.
+- [`RankingPlayerRow.vue`](./RankingPlayerRow.vue): Module implementation.
+- [`TeamManagementModal.vue`](./TeamManagementModal.vue): Module implementation.
+- [`WorldEventsUpcomingSchedule.vue`](./WorldEventsUpcomingSchedule.vue): Module implementation.
+- [`_event_category_slots.scss`](./_event_category_slots.scss): Module implementation.
+- [`_event_species_tabs.scss`](./_event_species_tabs.scss): Module implementation.
+- [`eventSubCompHelper.ts`](./eventSubCompHelper.ts): Module implementation.
+- [`useTrainerProfile.ts`](./useTrainerProfile.ts): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 

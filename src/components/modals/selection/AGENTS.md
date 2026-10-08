@@ -12,6 +12,14 @@ Frontend Developers / UI Components Team.
 - **Style Linkage & Encapsulation**: All sub-components link to `../PokemonSelectionItem.styles.scss` to maintain visual styling and design system parity.
 - **Zero Inline Duplication**: Keep template branches encapsulated and strongly typed against canonical domain schemas.
 
+## Key Files
+
+- [`PokemonSelectionItemBattleHp.vue`](./PokemonSelectionItemBattleHp.vue): Module implementation.
+- [`PokemonSelectionItemCompetition.vue`](./PokemonSelectionItemCompetition.vue): Module implementation.
+- [`PokemonSelectionItemDaycare.vue`](./PokemonSelectionItemDaycare.vue): Module implementation.
+- [`PokemonSelectionItemHeaderActions.vue`](./PokemonSelectionItemHeaderActions.vue): Module implementation.
+- [`PokemonSelectionItemPreview.vue`](./PokemonSelectionItemPreview.vue): Module implementation.
+
 ## Work Guidance
 
 - Ensure strict TypeScript props without loose `any` casts.
@@ -22,3 +30,7 @@ Frontend Developers / UI Components Team.
 - `npm run lint`
 - `npm run audit suites=validate_component_styles`
 - `npm run test`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

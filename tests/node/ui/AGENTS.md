@@ -11,6 +11,16 @@ Frontend Developers / UI State Engineers.
 - **Headless Node Environment**: Tests in this directory must only test pure algorithmic and headless UI state helpers (e.g. useSlotReorder) without requiring browser DOM or component mounting.
 - **Deterministic Array Transformations**: Slot reorder algorithms must be tested for boundary conditions (bounds checking, same-slot swaps, empty slots, and reactive array updates).
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

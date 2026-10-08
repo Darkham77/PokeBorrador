@@ -13,6 +13,7 @@ import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
 import { MINIGAME_DIFFICULTY_SELECTIONS, type MinigameDifficultySelection, type BattleMinigame } from '@/types/battle/battle'
 import { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from '@/logic/pokemon/pokemonFactory'
 import { toID } from '@/logic/utils/strings.ts'
+import { useMapStore } from '@/stores/map'
 
 const DEBUG_CREATOR_SHINY_PROB = 0.05
 const DEBUG_CREATOR_GUARDIAN_PROB = 0.01
@@ -56,6 +57,7 @@ interface MapOption {
 import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } from '@/logic/utils/routeSpawnHelpers'
 
 export function useDebugPokemonCreator() {
+  const mapStore = useMapStore()
   const config = ref<PokemonConfig>({
     id: 'bulbasaur',
     level: INITIAL_DEBUG_POKEMON_LEVEL,
@@ -67,7 +69,7 @@ export function useDebugPokemonCreator() {
     nickname: '',
     friendship: INITIAL_FRIENDSHIP_VAL,
     heldItem: '',
-    mapId: 'route1',
+    mapId: mapStore.currentMap || 'route1',
     ivs: { hp: PERFECT_IV_VAL, atk: PERFECT_IV_VAL, def: PERFECT_IV_VAL, spa: PERFECT_IV_VAL, spd: PERFECT_IV_VAL, spe: PERFECT_IV_VAL },
     moves: [],
     protocol: 'catch',
@@ -248,7 +250,9 @@ export function useDebugPokemonCreator() {
   }
 
   onMounted(() => {
-    if (allMaps.value.length > 0) {
+    if (mapStore.currentMap) {
+      config.value.mapId = mapStore.currentMap
+    } else if (allMaps.value.length > 0) {
       const firstMap = allMaps.value[0]
       if (firstMap) {
         config.value.mapId = firstMap.id

@@ -1,5 +1,5 @@
-import type { Pokemon as SimPokemon } from '@pkmn/sim';
-import type { ChoiceRequest } from '../helpers/requestHelper.ts';
+import type { Pokemon as SimPokemon, Battle, Side } from '@pkmn/sim';
+import { type ChoiceRequest, classifyRequest } from '../helpers/requestHelper.ts';
 import { resolveValidMoveChoice, getFirstValidMoveSlot } from '../helpers/showdownMoveChoiceHelper.ts';
 
 export interface RequestPokemonItem {
@@ -108,4 +108,84 @@ export function resolveReplayerCandidate(
     }
   }
   return choiceCandidate;
+}
+
+const SEAT_INDEX_MAP: Readonly<Record<string, number>> = { p1: 0, p2: 1, p3: 2, p4: 3 };
+
+export function extractSeatSide(battle: Battle | undefined, seatId: string): Side | undefined {
+  return battle?.sides.find(s => s && s.id === seatId)
+    ?? (SEAT_INDEX_MAP[seatId] !== undefined ? battle?.sides[SEAT_INDEX_MAP[seatId]!] : undefined);
+}
+
+export function resolveEffectiveRequestKind(effectiveReq: ChoiceRequest | null | undefined, sideObj: Side | undefined): string {
+  const baseKind = classifyRequest(effectiveReq);
+  if (baseKind !== 'none') return baseKind;
+  if (sideObj?.requestState === 'switch') return 'force-switch';
+  if (sideObj?.requestState === 'move') return 'move';
+  return 'none';
+}
+
+export function resolveCandidateOrFallback(
+  choiceCandidate: string | undefined,
+  isForceSwitch: boolean,
+  reqKind: string,
+  effectiveReq: ChoiceRequest | null | undefined,
+  simPokemons: SimPokemon[],
+  requestPokemons: Array<{ ident?: string; details?: string; active?: boolean; condition?: string }>,
+  activeList: (SimPokemon | null)[]
+): string | undefined {
+  if (isForceSwitch) {
+    if (choiceCandidate !== undefined) {
+      const validatedChoice = resolveExplicitChoiceHelper(choiceCandidate, true, simPokemons, requestPokemons, activeList, effectiveReq);
+      if (validatedChoice !== undefined) return validatedChoice;
+    }
+    return resolveForceSwitchFallback(reqKind, simPokemons, requestPokemons, activeList as SimPokemon[]);
+  }
+
+  if (choiceCandidate !== undefined) {
+    return resolveReplayerCandidate(choiceCandidate, reqKind, effectiveReq, simPokemons, requestPokemons, activeList as SimPokemon[]);
+  }
+
+  return undefined;
+}
+
+export function advanceSeatReplayerCandidate(
+  mode: string,
+  seatChoices: Map<string, string[]>,
+  choiceIdx: Map<string, number>,
+  seatId: string
+): string | undefined {
+  if (mode !== 'replayer') return undefined;
+  const choicesList = seatChoices.get(seatId) ?? [];
+  const currentIdx = choiceIdx.get(seatId) ?? 0;
+  if (currentIdx < choicesList.length) {
+    const candidate = choicesList[currentIdx];
+    choiceIdx.set(seatId, currentIdx + 1);
+    return candidate;
+  }
+  return undefined;
+}
+
+export function consumeCertifiedChoice(
+  mode: string,
+  seatChoices: Map<string, string[]>,
+  choiceIdx: Map<string, number>,
+  seatId: string,
+  activeRequest: ChoiceRequest | null | undefined
+): string {
+  const choicesList = seatChoices.get(seatId) ?? [];
+  const currentIdx = choiceIdx.get(seatId) ?? 0;
+
+  if (currentIdx >= choicesList.length) {
+    throw new Error(`[ShowdownBattleEngine] Required certified choice is missing. context=${JSON.stringify({ seat: seatId, choiceIndex: currentIdx, choiceCount: choicesList.length, activeRequest, mode })}`);
+  }
+
+  const rawChoice = choicesList[currentIdx] as string;
+
+  if (!rawChoice || rawChoice.trim().length === 0) {
+    throw new Error(`[ShowdownBattleEngine] Required certified choice is empty. context=${JSON.stringify({ seat: seatId, choiceIndex: currentIdx, choiceCount: choicesList.length, activeRequest, mode })}`);
+  }
+
+  choiceIdx.set(seatId, currentIdx + 1);
+  return rawChoice;
 }

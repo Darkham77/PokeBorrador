@@ -11,6 +11,11 @@ Frontend / UI Engineers.
 - `pixelEngine.ts` implements the authoritative Bresenham quadrant circle rasterization algorithm for pixelated frame clip-paths.
 - Supports dynamic scaling at 2px, 3px, and 4px grid resolutions.
 
+## Key Files
+
+- `useLiveInspector.ts`: Module implementation.
+- [`pixelEngine.ts`](./pixelEngine.ts): Module implementation.
+
 ## Work Guidance
 
 - Must not depend on UI frameworks; pure TypeScript mathematical geometry.
@@ -20,6 +25,6 @@ Frontend / UI Engineers.
 - `npm run lint`
 - `npm run audit`
 
-## Key Files
+## Child DOX Index
 
-- `useLiveInspector.ts`: Module implementation.
+- *This directory contains specialized domain logic and files with no subdirectories.*

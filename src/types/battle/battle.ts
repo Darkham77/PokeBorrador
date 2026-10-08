@@ -58,6 +58,9 @@ export type TrackedActionSource = (typeof TRACKED_ACTION_SOURCES)[number];
 export const COMBATANT_ANIM_TRIGGERS = ['attack', 'faint', 'damage'] as const;
 export type CombatantAnimTrigger = (typeof COMBATANT_ANIM_TRIGGERS)[number];
 
+export const WINNER_SIDES = ['p1', 'p2'] as const;
+export type WinnerSide = (typeof WINNER_SIDES)[number];
+
 export const COMBATANT_SPRITE_MODES = ['idle', 'variation'] as const;
 export type CombatantSpriteMode = (typeof COMBATANT_SPRITE_MODES)[number];
 
@@ -139,14 +142,20 @@ export interface BattleWeather {
  * regardless of which Pokémon originally received the effect.
  * Canonical model: Showdown `slotCondition` on `target.side.slotConditions[position]`.
  */
+export const DELAYED_SLOT_MOVES = ['futuresight', 'doomdesire'] as const;
+export type DelayedSlotMove = (typeof DELAYED_SLOT_MOVES)[number];
+
 export interface PendingSlotEffect {
-  move: 'futuresight' | 'doomdesire';
+  move: DelayedSlotMove;
   side: BattleSide;
   targetSlot: number; // 0-indexed position on target side
   turnsLeft: number;  // fires when this reaches 0
   damage: number;     // pre-computed damage
   sourceName?: string; // domain-ok: Open dynamic text or non-domain string payload — for log message only
 }
+
+export const PERSISTENCE_MODES = ['local', 'remote'] as const;
+export type PersistenceMode = (typeof PERSISTENCE_MODES)[number];
 
 export interface BattleState {
   player: Pokemon | null;
@@ -206,7 +215,7 @@ export interface BattleState {
   enemyRequest?: ShowdownPlayerRequest;
   battleLogs?: BattleLog[];
   rewardsProcessed?: boolean;
-  persistenceMode?: 'local' | 'remote';
+  persistenceMode?: PersistenceMode;
   winnerResult?: BattleWinnerResult;
   learnQueue?: unknown[];
   isPvP?: boolean;
@@ -286,7 +295,7 @@ export interface BattleCombatantProps {
   baseSize: number;
   groundY?: string; // domain-ok: Open dynamic text or non-domain string payload
   shadowKey?: string | null; // domain-ok: Open dynamic text or non-domain string payload
-  animState?: 'catching' | 'trapped' | 'releasing' | null;
+  animState?: BattleSeatSpecialState | null;
   ballId?: ItemId;
   isShaking?: boolean;
   isBlinking?: boolean;

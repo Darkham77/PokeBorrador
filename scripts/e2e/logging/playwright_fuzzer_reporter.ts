@@ -32,6 +32,58 @@ function errSync(msg: string): void {
   }
 }
 
+function logFailedTestOutput(result: TestResult): void {
+  if (result.error?.message) {
+    const errorLines = result.error.message.split('\n').slice(0, 10).join('\n   ');
+    errSync(`   Error: ${errorLines}`);
+  }
+  if (result.stdout?.length) {
+    for (const out of result.stdout) {
+      logSync(typeof out === 'string' ? out : out.toString('utf-8'));
+    }
+  }
+  if (result.stderr?.length) {
+    for (const err of result.stderr) {
+      errSync(typeof err === 'string' ? err : err.toString('utf-8'));
+    }
+  }
+}
+
+function recordFailedTestCheckpoint(test: TestCase, result: TestResult): void {
+  try {
+    if (test.location?.file) {
+      let suiteRelativePath = path.relative(process.cwd(), test.location.file);
+      let suiteName = path.basename(test.location.file);
+
+      if (suiteName.toLowerCase() === 'batchsimulationharness.ts' && test.parent) {
+        let p: typeof test.parent | undefined = test.parent;
+        while (p) {
+          if (p.location?.file && path.basename(p.location.file).toLowerCase() !== 'batchsimulationharness.ts') {
+            suiteRelativePath = path.relative(process.cwd(), p.location.file);
+            suiteName = path.basename(p.location.file);
+            break;
+          }
+          p = p.parent;
+        }
+      }
+
+      const driver = (process.env.SIM_DB_DRIVER === 'postgres' ? 'postgres' : 'sqlite') as SimDriver;
+      const batchMatch = test.title.match(/lote de fuzzer #(\d+)/i);
+      const failedBatchIndex = batchMatch ? Number(batchMatch[1]) : undefined;
+
+      recordSuiteFailure(suiteName, {
+        suiteRelativePath,
+        driver,
+        failedTestTitle: test.title,
+        failedBatchIndex,
+        errorSnippet: result.error?.message?.slice(0, 300),
+      });
+    }
+  } catch { // catch-ok: non-fatal checkpoint recording error
+    // Non-fatal
+  }
+}
+
 export default class PlaywrightFuzzerReporter implements Reporter {
   private totalTests = 0;
   private completedTests = 0;
@@ -83,53 +135,8 @@ export default class PlaywrightFuzzerReporter implements Reporter {
       logSync(`⚠️ [WORKER-${workerIndex}] Interrumpido: ${test.title}`);
     } else {
       logSync(`❌ [WORKER-${workerIndex}] [${paddedPercent}%] (${this.completedTests}/${this.totalTests}) FALLÓ: ${test.title} (${durationSec}s)`);
-      if (result.error?.message) {
-        const errorLines = result.error.message.split('\n').slice(0, 10).join('\n   ');
-        errSync(`   Error: ${errorLines}`);
-      }
-      if (result.stdout?.length) {
-        for (const out of result.stdout) {
-          logSync(typeof out === 'string' ? out : out.toString('utf-8'));
-        }
-      }
-      if (result.stderr?.length) {
-        for (const err of result.stderr) {
-          errSync(typeof err === 'string' ? err : err.toString('utf-8'));
-        }
-      }
-
-      try {
-        if (test.location?.file) {
-          let suiteRelativePath = path.relative(process.cwd(), test.location.file);
-          let suiteName = path.basename(test.location.file);
-
-          if (suiteName.toLowerCase() === 'batchsimulationharness.ts' && test.parent) {
-            let p: typeof test.parent | undefined = test.parent;
-            while (p) {
-              if (p.location?.file && path.basename(p.location.file).toLowerCase() !== 'batchsimulationharness.ts') {
-                suiteRelativePath = path.relative(process.cwd(), p.location.file);
-                suiteName = path.basename(p.location.file);
-                break;
-              }
-              p = p.parent;
-            }
-          }
-
-          const driver = (process.env.SIM_DB_DRIVER === 'postgres' ? 'postgres' : 'sqlite') as SimDriver;
-          const batchMatch = test.title.match(/lote de fuzzer #(\d+)/i);
-          const failedBatchIndex = batchMatch ? Number(batchMatch[1]) : undefined;
-
-          recordSuiteFailure(suiteName, {
-            suiteRelativePath,
-            driver,
-            failedTestTitle: test.title,
-            failedBatchIndex,
-            errorSnippet: result.error?.message?.slice(0, 300),
-          });
-        }
-      } catch { // catch-ok: non-fatal checkpoint recording error
-        // Non-fatal
-      }
+      logFailedTestOutput(result);
+      recordFailedTestCheckpoint(test, result);
     }
   }
 

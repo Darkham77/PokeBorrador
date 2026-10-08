@@ -28,16 +28,6 @@ Frontend Developers / Systems Engineers.
 - **Wall-Clock PvP Turn Timer & Minimization Immunity Mandate**: Competitive turn timers (45s turn countdown) and reconnection windows (60s reconnect timer) in `pvpTimerHelper.ts` and `PvPTimerManager` MUST NEVER pause or stall when the browser tab is minimized, unfocused, or throttled by operating system power management. Timers MUST calculate remaining duration against authoritative high-precision wall-clock timestamps (`Temporal.Now.instant().epochMilliseconds`), listen actively to `document.visibilitychange` and `window.focus`, and run background heartbeat intervals via `createWallClockInterval` from `@/logic/utils/timeUtils.ts`. If the timer expires while the tab is minimized, auto-pick (Strike 1) or automatic forfeit (Strike 2) MUST execute immediately upon time exhaustion or the moment the user refits focus.
 - **PvP Format Party Isolation & Switch Mapping SSoT**: All PvP combat actions, team preview lineups, voluntary switches, and forced faint switches MUST resolve through `getActiveCombatTeam(ctx)` in `battleTeamCoordinator.ts`. Directly mutating or accessing `gameStore.state.team` during 3v3 matches is strictly prohibited to prevent party slot mismatching.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-- **Database Procedure Parity & Automated Awarding**: Season conclusion and payout distribution MUST execute via a dedicated PostgreSQL stored procedure `public.fn_award_ranked_season_automated(target_season_name TEXT)` with `SECURITY DEFINER` and full SQLite companion emulation (`rpcEmulations/rankedRpc.ts`). It must atomically evaluate Tiers, write rewards to `public.awards`, store podium history in `public.competition_results`, apply the proportional ELO soft reset to `profiles.elo_rating`, advance `ranked_rules_config` to the next month, and lock double awarding with `last_awarded_at`.
-- Tier rewards must be claimed through the canonical `awards` table via `claim_award(award_id)`.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `eloRatingMath.ts`: Module implementation.
@@ -58,7 +48,19 @@ Frontend Developers / Systems Engineers.
 - `rankedSeasonRewardEngine.ts`: Module implementation.
 - `replayCodeGenerator.ts`: Module implementation.
 - `seasonTeamFilter.ts`: Module implementation.
+- [`pvpRoomActionsHelper.ts`](./pvpRoomActionsHelper.ts): Module implementation.
+- [`pvpTimerHelper.ts`](./pvpTimerHelper.ts): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+- **Database Procedure Parity & Automated Awarding**: Season conclusion and payout distribution MUST execute via a dedicated PostgreSQL stored procedure `public.fn_award_ranked_season_automated(target_season_name TEXT)` with `SECURITY DEFINER` and full SQLite companion emulation (`rpcEmulations/rankedRpc.ts`). It must atomically evaluate Tiers, write rewards to `public.awards`, store podium history in `public.competition_results`, apply the proportional ELO soft reset to `profiles.elo_rating`, advance `ranked_rules_config` to the next month, and lock double awarding with `last_awarded_at`.
+- Tier rewards must be claimed through the canonical `awards` table via `claim_award(award_id)`.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

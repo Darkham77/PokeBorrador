@@ -65,5 +65,18 @@ describe('PokemonDbAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['Enabled Pokemon validated']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when invalid pokemon exist', () => {
+      const auditor = new PokemonDbAuditor();
+      auditor.addViolation({
+        ruleId: 'pokemon-invalid-species',
+        severity: 'error',
+        file: 'src/data/pokemon/pokemonDB.json',
+        line: 1,
+        message: 'Invalid species in database',
+        context: 'bulbasaur'
+      });
+      expect(auditor.getErrorsByRule().get('pokemon-invalid-species')).toBe(1);
+    });
   });
 });

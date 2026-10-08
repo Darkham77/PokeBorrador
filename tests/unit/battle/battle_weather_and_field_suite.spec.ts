@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { ref } from 'vue';
-import { mapVisualToOfficialWeather, getLocalizedWeatherName, mapOfficialToVisualWeather } from '@/logic/weather/weatherGenerationProvider';
+import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider';
+import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '@/logic/weather/weatherVisualMapper';
 import { useMapStore } from '@/stores/map';
 import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere';
 import type { BattleState } from '@/types/battle/battle';

@@ -4,6 +4,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonType } from '@/data/battle/types'
 import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves'
 import type { PureBattleWeather } from '@/logic/battle/battleMathTypes'
+import type { StatModifierStatusClass } from '@/types/battle/tooltip'
 import {
   calculateStabMultiplier,
   calculateWeatherAndCyclePowerMultiplier,
@@ -183,7 +184,7 @@ export function calculateFinalAccuracy(
   return Math.max(0, Math.min(100, Math.round(finalAcc)))
 }
 
-function checkMoveSpecificModifier(moveId: PokemonMoveId, env: CombatEnvState): 'boosted' | 'penalized' | null {
+function checkMoveSpecificModifier(moveId: PokemonMoveId, env: CombatEnvState): StatModifierStatusClass | null {
   if (moveId === 'thunder' || moveId === 'hurricane') {
     if (env.isSunny) return 'penalized'
     if (env.isRaining) return 'boosted'
@@ -201,7 +202,7 @@ function checkMoveSpecificModifier(moveId: PokemonMoveId, env: CombatEnvState): 
   return null
 }
 
-function checkTypeWeatherModifier(moveType: string, env: CombatEnvState): 'boosted' | 'penalized' | null {
+function checkTypeWeatherModifier(moveType: string, env: CombatEnvState): StatModifierStatusClass | null {
   if (moveType === 'fire') {
     if (env.isRaining) return 'penalized'
     if (env.isSunActive) return 'boosted'
@@ -220,7 +221,7 @@ export function calculateMoveModifier(
   md: { id?: PokemonMoveId; type: string; cat?: string } | null,
   isBattleActive: boolean,
   env: CombatEnvState
-): 'boosted' | 'penalized' | null {
+): StatModifierStatusClass | null {
   if (!md || !isBattleActive) return null
 
   const specific = md.id ? checkMoveSpecificModifier(md.id, env) : null

@@ -12,7 +12,7 @@ import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 import { BaseAuditor } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
-import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
+import { MOVE_TRANSLATIONS_ES, type PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
 enableCompileCache();
 
@@ -34,10 +34,123 @@ export const MOVE_RULES: readonly MoveRuleId[] = [
   'move-missing-effect-desc'
 ] as const;
 
+const STATUS_EFFECT_MAP: Record<string, string> = {
+  par: 'paralyze',
+  brn: 'burn',
+  frz: 'freeze',
+  psn: 'poison',
+  tox: 'poison',
+  slp: 'sleep'
+};
+
+const STAT_ABBR_MAP: Record<string, string> = {
+  atk: 'atk',
+  def: 'def',
+  spa: 'spa',
+  spd: 'spd',
+  spe: 'spe',
+  accuracy: 'acc',
+  evasion: 'eva'
+};
+
+const SPECIAL_EFFECTS: Record<string, string> = {
+  metronome: 'metronome',
+  mirror_move: 'mirror_move',
+  sandstorm: 'sandstorm',
+  rain_dance: 'rain_dance',
+  sunny_day: 'sunny_day',
+  hail: 'hail',
+  spikes: 'spikes',
+  destiny_bond: 'destiny_bond',
+  grudge: 'grudge',
+  yawn: 'yawn',
+  rest: 'rest',
+  recover: 'heal_50',
+  slack_off: 'heal_50',
+  soft_boiled: 'heal_50',
+  synthesis: 'heal_50',
+  milk_drink: 'heal_50',
+  heal_bell: 'heal_bell',
+  fury_cutter: 'fury_cutter',
+  rapid_spin: 'rapid_spin',
+  brick_break: 'brick_break',
+  focus_punch: 'focus_punch',
+  spit_up: 'spit_up',
+  stockpile: 'stockpile',
+  dream_eater: 'dream_eater',
+  teleport: 'teleport',
+  covet: 'covet',
+  rage: 'rage',
+  future_sight: 'future_sight',
+  psych_up: 'psych_up',
+  charge: 'charge',
+  curse: 'curse',
+  flail: 'hp_scale',
+  reversal: 'hp_scale',
+  water_spout: 'hp_scale_high',
+  snore: 'flinch_30',
+  hyper_beam: 'recharge',
+};
+
+interface SecondaryEffectInput {
+  chance?: number;
+  status?: string;
+  volatileStatus?: string;
+  boosts?: Partial<Record<string, number>>;
+  self?: unknown;
+}
+
+function resolveBoostEffect(
+  boosts: Partial<Record<string, number>>,
+  isSelf: boolean,
+  chance: string
+): string | undefined {
+  const entries = Object.entries(boosts);
+  if (entries.length === 0) return undefined;
+  const [stat, val] = entries[0] as [string, number];
+  const localStat = STAT_ABBR_MAP[stat];
+  if (!localStat) return undefined;
+  const dir = val > 0 ? 'up' : 'down';
+  const who = isSelf ? 'self' : 'enemy';
+  const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
+  return `stat_${dir}_${who}_${localStat}${stage}${chance}`;
+}
+
+function resolveSecondaryEffect(sec: SecondaryEffectInput): string | undefined {
+  const chance = sec.chance !== undefined ? `_${sec.chance}` : '';
+  if (sec.status) {
+    const mapped = STATUS_EFFECT_MAP[sec.status];
+    return mapped ? `${mapped}${chance}` : undefined;
+  }
+  if (sec.volatileStatus === 'flinch') return `flinch${chance}`;
+  if (sec.volatileStatus === 'confusion') return `confuse${chance}`;
+  if (sec.boosts) {
+    return resolveBoostEffect(sec.boosts, Boolean(sec.self), chance);
+  }
+  return undefined;
+}
+
+function resolveSelfBoostEffect(self: { boosts?: Partial<Record<string, number>>; chance?: number }): string | undefined {
+  if (!self.boosts) return undefined;
+  const entries = Object.entries(self.boosts);
+  if (entries.length === 0) return undefined;
+  const [stat, val] = entries[0] as [string, number];
+  const localStat = STAT_ABBR_MAP[stat];
+  if (!localStat) return undefined;
+  const dir = val > 0 ? 'up' : 'down';
+  const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
+  const chance = self.chance !== undefined ? `_${self.chance}` : '';
+  return `stat_${dir}_self_${localStat}${stage}${chance}`;
+}
+
 export class MoveAuditor extends BaseAuditor<MoveRuleId> {
   constructor() {
     super({
       id: 'validate_moves',
+      configKey: 'domain.moves',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Pokemon Move Validator',
       description: 'Movimientos faltantes o sin paridad con Showdown',
       icon: '💥',
@@ -59,6 +172,40 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
         ]
       }
     });
+  }
+
+  private validateMoveEffectDescription(
+    moveId: PokemonMoveId,
+    g3: ReturnType<typeof Dex.forGen>,
+    registeredEffects: Set<string>
+  ): void {
+    const move = g3.moves.get(moveId);
+    if (!move || !move.exists) return;
+
+    let effect: string | undefined = SPECIAL_EFFECTS[moveId];
+    if (!effect && move.secondaries && move.secondaries.length > 0 && move.secondaries[0]) {
+      effect = resolveSecondaryEffect(move.secondaries[0]);
+    }
+    if (!effect && move.self) {
+      effect = resolveSelfBoostEffect(move.self);
+    }
+
+    if (!effect) return;
+
+    let effectBase = effect;
+    if (/_(\d+)$/.test(effect) && !effect.startsWith('heal_') && !effect.includes('self_atk_2')) {
+      effectBase = effect.replace(/_\d+$/, '');
+    }
+    if (!registeredEffects.has(effect) && !registeredEffects.has(effectBase)) {
+      this.addViolation({
+        ruleId: 'move-missing-effect-desc',
+        severity: 'error',
+        file: 'src/logic/pokemon/pokemonUtils.ts',
+        line: 1,
+        message: `[${moveId}] Uses effect '${effect}' but has no description in pokemonUtils.ts.`,
+        context: effect
+      });
+    }
   }
 
   public override async runAudit(): Promise<void> {
@@ -126,111 +273,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
           registeredEffects.add(k[1]!);
         }
 
-        const SPECIAL_EFFECTS: Record<string, string> = {
-          metronome: 'metronome',
-          mirror_move: 'mirror_move',
-          sandstorm: 'sandstorm',
-          rain_dance: 'rain_dance',
-          sunny_day: 'sunny_day',
-          hail: 'hail',
-          spikes: 'spikes',
-          destiny_bond: 'destiny_bond',
-          grudge: 'grudge',
-          yawn: 'yawn',
-          rest: 'rest',
-          recover: 'heal_50',
-          slack_off: 'heal_50',
-          soft_boiled: 'heal_50',
-          synthesis: 'heal_50',
-          milk_drink: 'heal_50',
-          heal_bell: 'heal_bell',
-          fury_cutter: 'fury_cutter',
-          rapid_spin: 'rapid_spin',
-          brick_break: 'brick_break',
-          focus_punch: 'focus_punch',
-          spit_up: 'spit_up',
-          stockpile: 'stockpile',
-          dream_eater: 'dream_eater',
-          teleport: 'teleport',
-          covet: 'covet',
-          rage: 'rage',
-          future_sight: 'future_sight',
-          psych_up: 'psych_up',
-          charge: 'charge',
-          curse: 'curse',
-          flail: 'hp_scale',
-          reversal: 'hp_scale',
-          water_spout: 'hp_scale_high',
-          snore: 'flinch_30',
-          hyper_beam: 'recharge',
-        };
-
-        learnsetMoves.forEach(moveId => {
-          const move = g3.moves.get(moveId);
-          if (!move || !move.exists) return;
-
-          let effect: string | undefined = SPECIAL_EFFECTS[moveId];
-
-          if (!effect && move.secondaries && move.secondaries.length > 0) {
-            const sec = move.secondaries[0];
-            if (sec) {
-              const chance = sec.chance !== undefined ? `_${sec.chance}` : '';
-              if (sec.status) {
-                const map: Record<string, string> = { par: 'paralyze', brn: 'burn', frz: 'freeze', psn: 'poison', tox: 'poison', slp: 'sleep' };
-                if (map[sec.status]) effect = `${map[sec.status]}${chance}`;
-              } else if (sec.volatileStatus === 'flinch') {
-                effect = `flinch${chance}`;
-              } else if (sec.volatileStatus === 'confusion') {
-                effect = `confuse${chance}`;
-              } else if (sec.boosts) {
-                const statMap: Record<string, string> = { atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe', accuracy: 'acc', evasion: 'eva' };
-                const entries = Object.entries(sec.boosts);
-                if (entries.length > 0) {
-                  const [stat, val] = entries[0] as [string, number];
-                  const localStat = statMap[stat];
-                  if (localStat) {
-                    const dir = val > 0 ? 'up' : 'down';
-                    const who = sec.self ? 'self' : 'enemy';
-                    const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
-                    effect = `stat_${dir}_${who}_${localStat}${stage}${chance}`;
-                  }
-                }
-              }
-            }
-          }
-
-          if (!effect && move.self && move.self.boosts) {
-            const statMap: Record<string, string> = { atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe', accuracy: 'acc', evasion: 'eva' };
-            const entries = Object.entries(move.self.boosts);
-            if (entries.length > 0) {
-              const [stat, val] = entries[0] as [string, number];
-              const localStat = statMap[stat];
-              if (localStat) {
-                const dir = val > 0 ? 'up' : 'down';
-                const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
-                const chance = move.self.chance !== undefined ? `_${move.self.chance}` : '';
-                effect = `stat_${dir}_self_${localStat}${stage}${chance}`;
-              }
-            }
-          }
-
-          if (effect) {
-            let effectBase = effect;
-            if (/_(\d+)$/.test(effect) && !effect.startsWith('heal_') && !effect.includes('self_atk_2')) {
-              effectBase = effect.replace(/_\d+$/, '');
-            }
-            if (!registeredEffects.has(effect) && !registeredEffects.has(effectBase)) {
-              this.addViolation({
-                ruleId: 'move-missing-effect-desc',
-                severity: 'error',
-                file: 'src/logic/pokemon/pokemonUtils.ts',
-                line: 1,
-                message: `[${moveId}] Uses effect '${effect}' but has no description in pokemonUtils.ts.`,
-                context: effect
-              });
-            }
-          }
-        });
+        learnsetMoves.forEach(moveId => this.validateMoveEffectDescription(moveId as PokemonMoveId, g3, registeredEffects));
       }
     } catch { // catch-ok: optional dex data parsing error fallback
       // Ignored

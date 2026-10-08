@@ -89,6 +89,10 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
   constructor() {
     super({
       id: 'validate_fsm_diagrams',
+      configKey: 'fsm.diagrams',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'FSM Diagrams Validator',
       description: 'Estados o transiciones de FSM discrepantes con Mermaid',
       icon: '📊',

@@ -24,6 +24,11 @@ Game Designers / Data Maintainers.
 - **Strict English ID Mandate**: Never create or use logical identifiers (`id`) in Spanish for items, Pokémon, abilities, natures, moves, or stats. All internal databases, files, and saves must use English Showdown IDs (processed with `toID`).
 - **Static Database Duplication Exemption**: Massive static databases containing duplicate literal lists (like identical learnsets for evolutions) are exempt from refactoring. Do not unify them dynamically. Add them to `ignorePatterns` in `.fallowrc.json` to bypass clone detection.
 
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
 - [ai/](./ai/AGENTS.md): Domain module documentation for ai.

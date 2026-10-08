@@ -1,70 +1,21 @@
-
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 export { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import type { Pokemon, Move, PokemonIVs, ObtainedMethod } from '@/types/pokemon/pokemon';
-import { toID } from '@/logic/utils/strings.ts';
-import { isEnabledPokemonId } from '@/data/system/constants';
-import { MOVE_TRANSLATIONS_ES, type MoveCategory } from '@/data/battle/moves';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import { calculateTotalBaseStats, calculateTotalIVs, calculateRocketSellPriceRaw } from '@/logic/pokemon/statsMath';
 import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
-import {
-  MAX_LEARNED_MOVES_SLOTS,
-  DEFAULT_ACCURACY_BASE_STAT
-} from '@/logic/constants/gameplay';
-import { isLegendaryPokemonSpeciesId, isFossilPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
-/** Default maximum vigor value for standard non-legendary Pokémon. */
-export const DEFAULT_MAX_VIGOR = 10;
+export {
+  DEFAULT_MAX_VIGOR,
+  initializePokemonVigor,
+  getVigor,
+  getMaxVigor
+} from './pokemonVigorHelper.ts';
+
+export { getMovesAtLevel } from './pokemonMovesetHelper.ts';
+export { getMoveDescription } from './pokemonMoveDescription.ts';
 
 /** Maximum IV roll bound exclusive (0 to 31 inclusive). */
 export const MAX_IV_VALUE_EXCLUSIVE = 32;
-
-function isLegendaryOrFossil(pokemonId: PokemonSpeciesId): boolean {
-  if (!pokemonId) return false;
-  const cleanId = toID(pokemonId);
-  return isLegendaryPokemonSpeciesId(cleanId) || isFossilPokemonSpeciesId(cleanId);
-}
-
-/**
- * Canonical SSoT for initializing Pokemon vigor and maxVigor.
- * Non-legendary/non-fossil wild Pokémon roll 1d4+2 (3 to 6).
- * Player-bred eggs roll 1d3 (1 to 3) with starting vigor at half maxVigor.
- * Legendary and Fossil Pokémon have 0/0 vigor.
- */
-export function initializePokemonVigor(
-  p: Pokemon,
-  obtainedMethod: ObtainedMethod = 'wild',
-  isNpcEgg = false
-): void {
-  if (!p) return;
-  if (isLegendaryOrFossil(p.id)) {
-    p.maxVigor = 0;
-    p.vigor = 0;
-    return;
-  }
-  if (typeof p.maxVigor !== 'number' || isNaN(p.maxVigor) || p.maxVigor <= 0) {
-    if (obtainedMethod === 'egg' && !isNpcEgg) {
-      p.maxVigor = Math.floor(Math.random() * 3) + 1;
-      p.vigor = Math.max(1, Math.floor(p.maxVigor / 2));
-    } else {
-      p.maxVigor = Math.floor(Math.random() * 4) + 3;
-      p.vigor = p.maxVigor;
-    }
-  }
-}
-
-export function getVigor(p: Pokemon | null | undefined): number {
-  if (!p) return 0;
-  if (isLegendaryOrFossil(p.id)) return 0;
-  return p.vigor !== undefined ? p.vigor : DEFAULT_MAX_VIGOR;
-}
-
-export function getMaxVigor(p: Pokemon | null | undefined): number {
-  if (!p) return 0;
-  if (isLegendaryOrFossil(p.id)) return 0;
-  return p.maxVigor !== undefined ? p.maxVigor : DEFAULT_MAX_VIGOR;
-}
 
 /**
  * Calculates the total power of a pokemon (BST + total IVs + EV-equivalent IV bonus).
@@ -125,129 +76,4 @@ export function isPokemonLocked(p: Pokemon | null | undefined): boolean {
   const isBideActive = !!(p.volatileCounters?.['bide'] && p.volatileCounters['bide'] > 0);
   const isTrapped = !!p.trapped;
   return isLockedMove || isTwoTurnActive || isMustRecharge || isThrashLocked || isBideActive || isTrapped;
-}
-import type { LearnsetMove, MoveBaseData } from '@/types/system/database';
-
-/**
- * Get moves a pokemon knows at a given level (up to 4, most recent)
- */
-export function getMovesAtLevel(id: string, level: number, bypassWhitelist = false): Move[] {
-  const history = getSpeciesHistory(id);
-  const allPotentialMoves: LearnsetMove[] = [];
-  const seenNames = new Set<string>();
-
-  history.forEach(spId => {
-    if (!bypassWhitelist && !isEnabledPokemonId(spId)) return;
-    const db = pokemonDataProvider.getPokemonData(spId, bypassWhitelist);
-    if (db && db.learnset) {
-      (db.learnset as LearnsetMove[]).forEach(m => {
-        if (m.lv <= level) {
-          allPotentialMoves.push(m);
-        }
-      });
-    }
-  });
-
-
-  allPotentialMoves.sort((a, b) => a.lv - b.lv);
-
-  const uniqueMoves: LearnsetMove[] = [];
-  for (let i = allPotentialMoves.length - 1; i >= 0; i--) {
-    const m = allPotentialMoves[i];
-    if (m && !seenNames.has(m.name)) {
-      uniqueMoves.unshift(m);
-      seenNames.add(m.name);
-    }
-  }
-
-  const last4 = uniqueMoves.slice(-MAX_LEARNED_MOVES_SLOTS);
-  return last4.map(m => {
-    if (!m.id) throw new Error(`[getMovesAtLevel] El movimiento en el learnset no tiene un ID válido.`);
-    const moveData = pokemonDataProvider.getMoveData(m.id)
-    if (!moveData) throw new Error(`[getMovesAtLevel] No se encontró información para el movimiento: ${m.id}`);
-    return { 
-      id: m.id,
-      name: moveData.name || '???', 
-      pp: m.pp || moveData.pp, 
-      maxPP: m.pp || moveData.pp,
-      type: moveData.type || 'normal',
-      power: moveData.power || 0,
-      acc: moveData.acc || DEFAULT_ACCURACY_BASE_STAT,
-      cat: moveData.cat as MoveCategory,
-      priority: moveData.priority,
-      effect: moveData.effect,
-      recoil: moveData.recoil,
-      selfKO: moveData.selfKO,
-      drain: moveData.drain,
-      hits: moveData.hits,
-      fixedDmg: moveData.fixedDmg,
-      ohko: moveData.ohko,
-      halfHP: moveData.halfHP,
-      endeavor: moveData.endeavor,
-      levelDmg: moveData.levelDmg,
-      counter: moveData.counter,
-      turns: moveData.turns,
-      sound: moveData.sound
-    };
-  });
-}
-
-
-
-function resolveMoveBaseData(id: string, mdProvided?: MoveBaseData | null): MoveBaseData {
-  if (mdProvided) return mdProvided;
-  if (!id) throw new Error('[getMoveDescription] El ID de movimiento no es válido.');
-  try {
-    return pokemonDataProvider.getMoveData(id);
-  } catch {
-    try {
-      const canonicalId = pokemonDataProvider.getMoveIdBySpanishName(id);
-      return pokemonDataProvider.getMoveData(canonicalId);
-    } catch (_err) { // catch-ok: Fallback to loud throw below if Spanish lookup fails
-      throw new Error(`[getMoveDescription] No se encontró el movimiento con ID o nombre: "${id}"`, { cause: _err });
-    }
-  }
-}
-
-function getSpecialMechanicDescription(md: MoveBaseData): string | null {
-  if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
-  if (md.halfHP) return "Reduce a la mitad los PS actuales del oponente.";
-  if (md.endeavor) return "Iguala los PS actuales del objetivo con los del usuario. Falla si tiene menos.";
-  if (md.recoil) return "El usuario recibe daño por retroceso al golpear.";
-  if (md.drain && md.cat !== 'status') return "Restaura PS al usuario según el daño causado.";
-  if (md.selfKO) return "El usuario se debilita para causar un daño masivo.";
-  if (md.priority && md.priority > 0) return "Ataque rápido que siempre golpea primero.";
-  if (md.levelDmg) return "Causa un daño igual al nivel del usuario.";
-  if (md.counter) return "Devuelve al rival el doble del daño físico recibido este turno.";
-  return null;
-}
-
-function getMoveEffectOrTranslationText(md: MoveBaseData): string | null {
-  const effectText = Array.isArray(md.effect)
-    ? md.effect.map(effect => effect.text).find(Boolean)
-    : md.effect?.text;
-  if (effectText) return effectText;
-
-  const cleanId = toID(md.id);
-  if (cleanId) {
-    const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record: Generic key-value data dictionary container
-    if (translated.desc) return translated.desc;
-  }
-  return null;
-}
-
-/**
- * Get display description for a move based on its effect
- */
-export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null): string {
-  const md = resolveMoveBaseData(id, mdProvided);
-  
-  const specialDesc = getSpecialMechanicDescription(md);
-  if (specialDesc) return specialDesc;
-
-  const effectOrTranslation = getMoveEffectOrTranslationText(md);
-  if (effectOrTranslation) return effectOrTranslation;
-
-  if (md.cat === 'status') return "Un movimiento que causa un efecto de estado o alteración.";
-  return "Causa daño al oponente sin efectos secundarios adicionales.";
 }

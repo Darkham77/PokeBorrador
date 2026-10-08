@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue'
+import type { RefreshButtonSize, RefreshButtonVariant } from '@/components/common/baseRefreshButtonTypes'
 
 interface Props {
   id?: string
@@ -7,8 +8,8 @@ interface Props {
   disabled?: boolean
   label?: string
   title?: string
-  size?: 'sm' | 'md'
-  variant?: 'circle' | 'pill'
+  size?: RefreshButtonSize
+  variant?: RefreshButtonVariant
 }
 
 withDefaults(defineProps<Props>(), {

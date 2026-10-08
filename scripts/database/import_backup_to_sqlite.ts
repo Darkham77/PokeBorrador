@@ -160,6 +160,155 @@ function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
   return value;
 }
 
+const INVENTORY_ALIASES: Readonly<Record<string, string>> = {
+  'potion': 'Poción',
+  'pocion': 'Poción',
+  'pocian': 'Poción',
+  'pociaon': 'Poción',
+  'superpotion': 'Súper Poción',
+  'superpocion': 'Súper Poción',
+  'hyperpotion': 'Hiper Poción',
+  'hiperpocion': 'Hiper Poción',
+  'maxpotion': 'Poción Máxima',
+  'pocionmaxima': 'Poción Máxima',
+  'firestone': 'Piedra Fuego',
+  'waterstone': 'Piedra Agua',
+  'thunderstone': 'Piedra Trueno',
+  'leafstone': 'Piedra Hoja',
+  'moonstone': 'Piedra Lunar',
+  'sunstone': 'Piedra Solar',
+  'vigorcandy': 'Caramelo de vigor',
+  'repel': 'Repelente',
+  'iman': 'Imán',
+  'elixir': 'Elixir',
+  'subidapp': 'Subida de PP',
+  'subidadepp': 'Subida de PP',
+  'mttoxico': 'MT06 Tóxico',
+  'ocasoball': 'Ocaso Ball',
+  'turnoball': 'Turno Ball',
+  'ultraball': 'Ultra Ball',
+  'masterball': 'Master Ball',
+  'superball': 'Súper Ball',
+  'pokeball': 'Pokéball',
+  'pokaball': 'Pokéball',
+  'brazalrecio': 'Brazal Recio',
+  'brazalrecia': 'Brazal Recio',
+  'cintorecio': 'Cinto Recio',
+  'cintorecia': 'Cinto Recio',
+  'pesarecia': 'Pesa Recia',
+  'bandarecia': 'Banda Recia',
+  'lenterecia': 'Lente Recia',
+  'franjarecia': 'Franja Recia',
+  'bayadeoro': 'Baya de Oro',
+  'bayaoro': 'Baya de Oro',
+  'piedraeterna': 'Piedra Eterna',
+  'lazodestino': 'Lazo Destino',
+  'caramelovigor': 'Caramelo de vigor',
+  'fishingrod': 'Caña de pescar',
+  'fishingrodgood': 'Caña Buena',
+  'fishingrodsuper': 'Supercaña',
+  'pickaxe': 'Pico de excavación',
+  'pickaxesilver': 'Pico Bueno',
+  'pickaxegold': 'Superpico',
+  'brush': 'Pincel de excavación',
+  'brushgood': 'Pincel Buena',
+  'brushsuper': 'Superpincel',
+  'carbon': 'Carbón vegetal',
+  'carbonvegetal': 'Carbón vegetal'
+};
+
+function resolveNormalizedItemName(name: string): string {
+  const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  return INVENTORY_ALIASES[norm] || name;
+}
+
+function migrateInventoryKeys(inventory: Record<string, number>): Record<string, number> {
+  const itemMapping: Record<string, string> = {};
+  for (const item of SHOP_ITEMS) {
+    itemMapping[item.name] = item.id;
+  }
+  const validIds = new Set<string>(SHOP_ITEMS.map(i => i.id));
+  validIds.add('bicycle');
+
+  const newInv: Record<string, number> = {};
+  for (const [key, qty] of Object.entries(inventory)) {
+    const resolvedName = resolveNormalizedItemName(key);
+    let mappedId = itemMapping[resolvedName];
+    if (!mappedId) {
+      if (validIds.has(key)) {
+        mappedId = key;
+      } else {
+        throw new Error(`Item no reconocido en save local: "${key}"`);
+      }
+    }
+    newInv[mappedId] = qty;
+  }
+  return newInv;
+}
+
+interface TimestampedSaveDataPayload {
+  _last_updated?: number;
+}
+
+function isTimestampedSaveDataPayload(val: unknown): val is TimestampedSaveDataPayload {
+  return typeof val === 'object' && val !== null;
+}
+
+function transformSaveData(val: unknown, mapping: Map<string, string>): unknown {
+  try {
+    const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as { inventory?: Record<string, number> } | null;
+    if (parsed?.inventory && typeof parsed.inventory === 'object') {
+      parsed.inventory = migrateInventoryKeys(parsed.inventory);
+    }
+    const transformed = replaceUserIds(parsed, mapping);
+    if (isTimestampedSaveDataPayload(transformed)) {
+      transformed._last_updated = Temporal.Now.instant().epochMilliseconds;
+      return JSON.stringify(transformed);
+    }
+    return JSON.stringify(transformed);
+  } catch {
+    return replaceUserIds(val, mapping);
+  }
+}
+
+function transformColumnValue(tableName: string, col: string, val: unknown, mapping: Map<string, string>): unknown {
+  if (tableName === 'game_saves' && col === 'save_data') {
+    return transformSaveData(val, mapping);
+  }
+  if (tableName === 'profiles' && col === 'db_version') {
+    return 3;
+  }
+  if (tableName === 'market_listings' && col === 'data') {
+    try {
+      const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
+      return JSON.stringify(replaceUserIds(parsed, mapping));
+    } catch {
+      return replaceUserIds(val, mapping);
+    }
+  }
+  return replaceUserIds(val, mapping);
+}
+
+function applyTableSpecificRowFixes(rowCopy: Record<string, unknown>, tableName: string): void {
+  if (tableName === 'game_saves') {
+    if ('id' in rowCopy) rowCopy['last_save_id'] = rowCopy['id'];
+    rowCopy['updated_at'] = Temporal.Now.instant().toString();
+  }
+  if (tableName === 'battle_invites' && 'challenger_id' in rowCopy) {
+    rowCopy['sender_id'] = rowCopy['challenger_id'];
+  }
+}
+
+function normalizeSqliteColumnValue(val: unknown): unknown {
+  if (typeof val === 'boolean') {
+    return val ? 1 : 0;
+  }
+  if (val !== null && typeof val === 'object') {
+    return JSON.stringify(val);
+  }
+  return val;
+}
+
 // Función de transformación de fila
 function transformRow(
   row: Record<string, unknown>,
@@ -169,161 +318,21 @@ function transformRow(
   hasIntPkId: boolean
 ): Record<string, unknown> {
   const newRow: Record<string, unknown> = {};
-  
-  // Clonar para evitar mutar el objeto del backup original
   const rowCopy = { ...row };
-
-  // Pre-mapeos específicos de nombres de columna
-  if (tableName === 'game_saves') {
-    if ('id' in rowCopy) {
-      rowCopy['last_save_id'] = rowCopy['id'];
-    }
-    rowCopy['updated_at'] = Temporal.Now.instant().toString();
-  }
-  if (tableName === 'battle_invites' && 'challenger_id' in rowCopy) {
-    rowCopy['sender_id'] = rowCopy['challenger_id'];
-  }
+  applyTableSpecificRowFixes(rowCopy, tableName);
 
   for (const col of Object.keys(rowCopy)) {
-    // Filtrar columnas inexistentes en SQLite local
-    if (!validCols.has(col)) {
-      continue;
-    }
+    if (!validCols.has(col)) continue;
 
-    let val = rowCopy[col];
-
-    // Omitir el campo 'id' si el SQLite local lo maneja como INTEGER PRIMARY KEY AUTOINCREMENT
-    if (col === 'id' && hasIntPkId && typeof val === 'string') {
-      continue;
-    }
-
-    // No alterar los correos electrónicos reales
+    const rawVal = rowCopy[col];
+    if (col === 'id' && hasIntPkId && typeof rawVal === 'string') continue;
     if (col === 'email' || col === 'winner_email' || col === 'player_email') {
-      newRow[col] = val;
+      newRow[col] = rawVal;
       continue;
     }
 
-    // Transformar datos de guardado (JSON)
-    if (tableName === 'game_saves' && col === 'save_data') {
-      try {
-        const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as { inventory?: Record<string, number> } | null;
-        
-        // Migrate inventory keys to IDs if present
-        if (parsed && parsed.inventory && typeof parsed.inventory === 'object') {
-          // Resolve standard names using resolved normalized strings (matching test_migration_unit mapping)
-          const resolveNormalizedName = (name: string): string => {
-            const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-            const aliases: Record<string, string> = {
-              'potion': 'Poción',
-              'pocion': 'Poción',
-              'pocian': 'Poción',
-              'pociaon': 'Poción',
-              'superpotion': 'Súper Poción',
-              'superpocion': 'Súper Poción',
-              'hyperpotion': 'Hiper Poción',
-              'hiperpocion': 'Hiper Poción',
-              'maxpotion': 'Poción Máxima',
-              'pocionmaxima': 'Poción Máxima',
-              'firestone': 'Piedra Fuego',
-              'waterstone': 'Piedra Agua',
-              'thunderstone': 'Piedra Trueno',
-              'leafstone': 'Piedra Hoja',
-              'moonstone': 'Piedra Lunar',
-              'sunstone': 'Piedra Solar',
-              'vigorcandy': 'Caramelo de vigor',
-              'repel': 'Repelente',
-              'iman': 'Imán',
-              'elixir': 'Elixir',
-              'subidapp': 'Subida de PP',
-              'subidadepp': 'Subida de PP',
-              'mttoxico': 'MT06 Tóxico',
-              'ocasoball': 'Ocaso Ball',
-              'turnoball': 'Turno Ball',
-              'ultraball': 'Ultra Ball',
-              'masterball': 'Master Ball',
-              'superball': 'Súper Ball',
-              'pokeball': 'Pokéball',
-              'pokaball': 'Pokéball',
-              'brazalrecio': 'Brazal Recio',
-              'brazalrecia': 'Brazal Recio',
-              'cintorecio': 'Cinto Recio',
-              'cintorecia': 'Cinto Recio',
-              'pesarecia': 'Pesa Recia',
-              'bandarecia': 'Banda Recia',
-              'lenterecia': 'Lente Recia',
-              'franjarecia': 'Franja Recia',
-              'bayadeoro': 'Baya de Oro',
-              'bayaoro': 'Baya de Oro',
-              'piedraeterna': 'Piedra Eterna',
-              'lazodestino': 'Lazo Destino',
-              'caramelovigor': 'Caramelo de vigor',
-              'fishingrod': 'Caña de pescar',
-              'fishingrodgood': 'Caña Buena',
-              'fishingrodsuper': 'Supercaña',
-              'pickaxe': 'Pico de excavación',
-              'pickaxesilver': 'Pico Bueno',
-              'pickaxegold': 'Superpico',
-              'brush': 'Pincel de excavación',
-              'brushgood': 'Pincel Buena',
-              'brushsuper': 'Superpincel',
-              'carbon': 'Carbón vegetal',
-              'carbonvegetal': 'Carbón vegetal'
-            };
-            return aliases[norm] || name;
-          };
-
-          const itemMapping: Record<string, string> = {};
-          for (const item of SHOP_ITEMS) {
-            itemMapping[item.name] = item.id;
-          }
-          const validIds = new Set<string>(SHOP_ITEMS.map(i => i.id));
-          validIds.add('bicycle');
-
-          const newInv: Record<string, number> = {};
-          const invObj = parsed.inventory as Record<string, number>; // open-record: Generic key-value data dictionary container
-          for (const [key, qty] of Object.entries(invObj)) {
-            const resolvedName = resolveNormalizedName(key);
-            let mappedId = itemMapping[resolvedName];
-            if (!mappedId) {
-              if (validIds.has(key)) {
-                mappedId = key;
-              } else {
-                throw new Error(`Item no reconocido en save local: "${key}"`);
-              }
-            }
-            newInv[mappedId] = qty as number;
-          }
-          parsed.inventory = newInv;
-        }
-
-        const transformed = replaceUserIds(parsed, mapping) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-        transformed._last_updated = Temporal.Now.instant().epochMilliseconds;
-        val = JSON.stringify(transformed);
-      } catch {
-        val = replaceUserIds(val, mapping);
-      }
-    } else if (tableName === 'profiles' && col === 'db_version') {
-      val = 3;
-    } else if (tableName === 'market_listings' && col === 'data') {
-      try {
-        const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
-        const transformed = replaceUserIds(parsed, mapping);
-        val = JSON.stringify(transformed);
-      } catch {
-        val = replaceUserIds(val, mapping);
-      }
-    } else {
-      val = replaceUserIds(val, mapping);
-    }
-
-    // Convertir booleanos a 0/1 para SQLite
-    if (typeof val === 'boolean') {
-      val = val ? 1 : 0;
-    } else if (val !== null && typeof val === 'object') {
-      val = JSON.stringify(val);
-    }
-
-    newRow[col] = val;
+    const transformed = transformColumnValue(tableName, col, rawVal, mapping);
+    newRow[col] = normalizeSqliteColumnValue(transformed);
   }
   return newRow;
 }

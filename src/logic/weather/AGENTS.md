@@ -12,6 +12,15 @@ Frontend Developers / Systems Engineers.
 - **Canonical Showdown Weather vs Visual Weather Separation**: Combat engine climate states (`ShowdownWeatherId`: `'sunnyday'`, `'raindance'`, `'sandstorm'`, `'snow'`, `'hail'`, `'fog'`, `'desolateland'`, `'primordialsea'`, `'deltastream'`, `'none'`) MUST remain strictly distinct from visual atmospheric environment states (`WeatherId`: `'sun'`, `'rain'`, `'storm'`, etc.). Both catalogs are derived canonically from `as const` arrays centralized in `weatherRegistry.ts`.
 - **Weather Localization Single Source of Truth (`getLocalizedWeatherName`)**: `getLocalizedWeatherName(officialWeatherId: ShowdownWeatherId | WeatherId, gen: number)` is the unique authority for localizing weather tokens into Spanish (`'Despejado'` for `none`/`clear`/`null`, `'Sol'` for `sunnyday`/`sun`, etc.). Callsites MUST NEVER provide fallback literals (e.g. `: 'Despejado'`) or duplicated string mapping dictionaries.
 
+## Key Files
+
+- `weatherCombatDescriptions.ts`: Generation-dependent battle combat descriptions for weather conditions.
+- `weatherGenerationProvider.ts`: Maps visual environmental weather to official Showdown weather identifiers across generations.
+- `weatherMath.ts`: Module implementation.
+- `weatherRegistry.ts`: Module implementation.
+- `weatherUtils.ts`: Module implementation.
+- `weatherVisualMapper.ts`: Visual weather mapping and localized Spanish naming for official Showdown weather conditions.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -22,12 +31,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `weatherGenerationProvider.ts`: Module implementation.
-- `weatherMath.ts`: Module implementation.
-- `weatherUtils.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

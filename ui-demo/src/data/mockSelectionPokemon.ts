@@ -2,6 +2,9 @@
 
 import type { PokemonGender } from '@/types/pokemon/pokemon'
 
+export const MOCK_SELECTION_SOURCES = ['team', 'box'] as const
+export type MockSelectionSource = (typeof MOCK_SELECTION_SOURCES)[number]
+
 export interface SelectionDemoPokemon {
   uid: string // domain-ok: Open dynamic text or non-domain string payload
   id: number
@@ -17,7 +20,7 @@ export interface SelectionDemoPokemon {
   tier: string // domain-ok: Open dynamic text or non-domain string payload
   tierColor: string // domain-ok: Open dynamic text or non-domain string payload
   tierBg: string // domain-ok: Open dynamic text or non-domain string payload
-  source: 'team' | 'box'
+  source: MockSelectionSource
   badges: string[] // domain-ok: Open dynamic text or non-domain string payload
   seasonViolation?: string // domain-ok: Open dynamic text or non-domain string payload
 }

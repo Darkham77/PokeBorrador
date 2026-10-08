@@ -12,6 +12,14 @@ Frontend Developers / Systems Engineers.
 - **Decomposed Card Animation Helpers (`mapCardAnimationHelpers.ts`)**:
   - Complex timeline builders for map card tags, factions, fishing bobbing, archaeology swings, and rare/atmospheric spawn auras are isolated into pure animation helper functions to maintain minimal cognitive complexity in `useMapCardAnimations.ts`.
 
+## Key Files
+
+- `useMapCardObservers.ts`: Module implementation.
+- `useMapCardSprites.ts`: Module implementation.
+- `usePokemonCenterCooldown.ts`: Module implementation.
+- [`mapCardAnimationHelpers.ts`](./mapCardAnimationHelpers.ts): Module implementation.
+- [`useMapCardAnimations.ts`](./useMapCardAnimations.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -20,12 +28,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `useMapCardObservers.ts`: Module implementation.
-- `useMapCardSprites.ts`: Module implementation.
-- `usePokemonCenterCooldown.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

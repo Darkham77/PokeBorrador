@@ -2,6 +2,15 @@
 
 Unit tests for combat damage calculations, active battle statuses, and state machine transitions.
 
+## Ownership
+
+Poké Vicio Development Team.
+
+## Local Contracts
+
+- Follow repository architecture, clean code standards, and strict domain typing.
+- Ensure strict module decoupling and zero side-effects.
+
 ## Work Guidance
 
 - **Slot Order in Switch Mocks**: Any unit test for `executeSwitch` or
@@ -26,6 +35,11 @@ Unit tests for combat damage calculations, active battle statuses, and state mac
   3. **Captures**: 4-stage wobble kinematics, status damage blinking, healing tint, and celebration (12 rotating dispersion sparkles + audio `caught`).
   4. **Status Idle Suppression**: Freeze (`frz`, `freeze`, `🧊`), paralysis, confusion, and trapped state suppression of floating/breathing idle tweens.
   5. **Escapes**: Knockback (`back.in(1.7)`), Teleport (`scaleY: 2.0`, `scaleX: 0.1`, brightness flare), and Flee (smoke burst + horizontal slide).
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 

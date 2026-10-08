@@ -13,12 +13,15 @@ export const ARCHAEOLOGY_DIFFICULTIES: Record<MinigameDifficulty, { grid: number
   expert: { grid: 8, energy: 6, parts: 6, label: 'Experto', items: 4, color: '#f87171' }
 } as const;
 
+export const ARCHAEOLOGY_CLUES = ['HOT', 'COLD', ''] as const;
+export type ArchaeologyClue = (typeof ARCHAEOLOGY_CLUES)[number];
+
 export interface ArchaeologyTile {
   r: number;
   c: number;
   isFossil: boolean;
   isDug: boolean;
-  clue: 'HOT' | 'COLD' | '';
+  clue: ArchaeologyClue;
 }
 
 const ARCHAEOLOGY_RARE_DIFFICULTY_EASY_PCT = 10;

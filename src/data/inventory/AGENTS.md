@@ -2,6 +2,10 @@
 
 Static inventory item database, prices, shop configurations, crafting tiers, vitamins, mochis, and consumable items.
 
+## Ownership
+
+Poké Vicio Development Team.
+
 ## Local Contracts
 
 - **Centralized Asset Resolution**: Item sprites MUST be resolved strictly via `getAssetUrl(ASSET_TYPES.ITEM, item.id)`. Direct manipulation or hardcoding of asset paths in application code is strictly forbidden.
@@ -11,7 +15,18 @@ Static inventory item database, prices, shop configurations, crafting tiers, vit
 ## Key Files
 
 - `itemIds.ts`: Module implementation.
+- [`items.ts`](./items.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

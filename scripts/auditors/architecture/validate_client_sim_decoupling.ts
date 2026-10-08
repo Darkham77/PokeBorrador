@@ -22,18 +22,20 @@ import { BaseAuditor, type SharedAstContext } from '@francogp/auditor';
 
 enableCompileCache();
 
-export type ClientSimDecouplingRuleId =
-  | 'client-sim-value-import'
-  | 'client-randoms-value-import'
-  | 'client-sim-chunk-configured'
-  | 'client-sim-chunk-present';
-
-export const CLIENT_SIM_DECOUPLING_RULES: readonly ClientSimDecouplingRuleId[] = [
+export const CLIENT_SIM_DECOUPLING_RULES = [
   'client-sim-value-import',
   'client-randoms-value-import',
   'client-sim-chunk-configured',
   'client-sim-chunk-present'
 ] as const;
+
+export type ClientSimDecouplingRuleId = (typeof CLIENT_SIM_DECOUPLING_RULES)[number];
+
+export const FORBIDDEN_CLIENT_SIM_IMPORTS = [
+  'client-sim-value-import',
+  'client-randoms-value-import'
+] as const;
+export type ForbiddenClientSimImport = (typeof FORBIDDEN_CLIENT_SIM_IMPORTS)[number];
 
 export const CLIENT_SIM_DECOUPLING_DESCRIPTIONS: Record<ClientSimDecouplingRuleId, string> = {
   'client-sim-value-import': 'Import de valor de @pkmn/sim',
@@ -43,7 +45,7 @@ export const CLIENT_SIM_DECOUPLING_DESCRIPTIONS: Record<ClientSimDecouplingRuleI
 };
 
 export interface SimImportIssue {
-  ruleId: 'client-sim-value-import' | 'client-randoms-value-import';
+  ruleId: ForbiddenClientSimImport;
   line: number;
   message: string;
   snippet: string;
@@ -63,6 +65,76 @@ export function isWorkerBoundaryFile(relPath: string): boolean {
     normalized.includes('showdownBattleFactory.ts') ||
     normalized.includes('showdownExecutor.ts')
   );
+}
+
+function checkPkmnSimImport(
+  node: ts.ImportDeclaration,
+  lineNum: number,
+  nodeText: string,
+  relPath: string
+): SimImportIssue | null {
+  const clause = node.importClause;
+  if (!clause) {
+    return {
+      ruleId: 'client-sim-value-import',
+      line: lineNum,
+      message: `Import no tipado o de valor en tiempo de ejecución desde @pkmn/sim en "${relPath}:${lineNum}". Solo se permite "import type".`,
+      snippet: nodeText
+    };
+  }
+
+  if (clause.isTypeOnly) return null;
+
+  if (clause.namedBindings && ts.isNamedImports(clause.namedBindings)) {
+    const nonTypeSpecifiers = clause.namedBindings.elements
+      .filter(elem => !elem.isTypeOnly)
+      .map(elem => elem.name.text);
+
+    if (nonTypeSpecifiers.length === 0) return null;
+
+    return {
+      ruleId: 'client-sim-value-import',
+      line: lineNum,
+      message: `Import de valores en tiempo de ejecución [${nonTypeSpecifiers.join(', ')}] desde @pkmn/sim en "${relPath}:${lineNum}". Use "import type".`,
+      snippet: nodeText
+    };
+  }
+
+  return {
+    ruleId: 'client-sim-value-import',
+    line: lineNum,
+    message: `Import no tipado o de valor en tiempo de ejecución desde @pkmn/sim en "${relPath}:${lineNum}". Solo se permite "import type".`,
+    snippet: nodeText
+  };
+}
+
+function checkSimImportDeclaration(
+  node: ts.ImportDeclaration,
+  sf: ts.SourceFile,
+  relPath: string
+): SimImportIssue | null {
+  const moduleSpec = node.moduleSpecifier;
+  if (!ts.isStringLiteral(moduleSpec)) return null;
+  const modName = moduleSpec.text;
+
+  const { line } = sf.getLineAndCharacterOfPosition(node.getStart());
+  const lineNum = line + 1;
+  const nodeText = node.getText(sf).trim();
+
+  if (modName === '@pkmn/randoms') {
+    return {
+      ruleId: 'client-randoms-value-import',
+      line: lineNum,
+      message: `Import de @pkmn/randoms detectado en código cliente "${relPath}:${lineNum}". Debe ejecutarse en Web Worker.`,
+      snippet: nodeText
+    };
+  }
+
+  if (modName === '@pkmn/sim') {
+    return checkPkmnSimImport(node, lineNum, nodeText, relPath);
+  }
+
+  return null;
 }
 
 /**
@@ -94,71 +166,8 @@ export function scanSourceForSimImports(
 
   ts.forEachChild(sf, (node) => {
     if (ts.isImportDeclaration(node)) {
-      const moduleSpec = node.moduleSpecifier;
-      if (!ts.isStringLiteral(moduleSpec)) return;
-      const modName = moduleSpec.text;
-
-      const { line } = sf.getLineAndCharacterOfPosition(node.getStart());
-      const lineNum = line + 1;
-      const nodeText = node.getText(sf).trim();
-
-      // 1. Check for @pkmn/randoms in client
-      if (modName === '@pkmn/randoms') {
-        issues.push({
-          ruleId: 'client-randoms-value-import',
-          line: lineNum,
-          message: `Import de @pkmn/randoms detectado en código cliente "${relPath}:${lineNum}". Debe ejecutarse en Web Worker.`,
-          snippet: nodeText
-        });
-        return;
-      }
-
-      // 2. Check for @pkmn/sim in client
-      if (modName === '@pkmn/sim') {
-        const clause = node.importClause;
-        if (!clause) {
-          issues.push({
-            ruleId: 'client-sim-value-import',
-            line: lineNum,
-            message: `Import no tipado o de valor en tiempo de ejecución desde @pkmn/sim en "${relPath}:${lineNum}". Solo se permite "import type".`,
-            snippet: nodeText
-          });
-          return;
-        }
-
-        // Allowed: pure type imports: `import type { ... } from '@pkmn/sim'`
-        if (clause.isTypeOnly) {
-          return;
-        }
-
-        // Check for inline type specifiers: `import { type Foo, type Bar } from '@pkmn/sim'`
-        if (clause.namedBindings && ts.isNamedImports(clause.namedBindings)) {
-          const nonTypeSpecifiers = clause.namedBindings.elements
-            .filter(elem => !elem.isTypeOnly)
-            .map(elem => elem.name.text);
-
-          if (nonTypeSpecifiers.length === 0) {
-            // All imported specifiers are types
-            return;
-          }
-
-          issues.push({
-            ruleId: 'client-sim-value-import',
-            line: lineNum,
-            message: `Import de valores en tiempo de ejecución [${nonTypeSpecifiers.join(', ')}] desde @pkmn/sim en "${relPath}:${lineNum}". Use "import type".`,
-            snippet: nodeText
-          });
-          return;
-        }
-
-        // Any other import (default, namespace, dynamic, or unparsed) is a runtime value import
-        issues.push({
-          ruleId: 'client-sim-value-import',
-          line: lineNum,
-          message: `Import no tipado o de valor en tiempo de ejecución desde @pkmn/sim en "${relPath}:${lineNum}". Solo se permite "import type".`,
-          snippet: nodeText
-        });
-      }
+      const issue = checkSimImportDeclaration(node, sf, relPath);
+      if (issue) issues.push(issue);
     }
   });
 
@@ -230,6 +239,10 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
   constructor() {
     super({
       id: 'validate_client_sim_decoupling',
+      configKey: 'architecture.clientSimDecoupling',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Client Showdown Decoupling Auditor',
       description: 'Verifica desacoplamiento total de Showdown en cliente',
       icon: '🔌',

@@ -72,6 +72,9 @@ function shouldApplyPreHeal(
   return Boolean(entryPre?.[sideId]) || (hasFainted && Boolean(entryPost?.[sideId]));
 }
 
+export const CHEAT_EXECUTION_PHASES = ['PRE', 'POST'] as const;
+export type CheatExecutionPhase = (typeof CHEAT_EXECUTION_PHASES)[number];
+
 export class BattleCheatManager {
   /** Certified post-turn heals are keyed by the atomic submission ordinal. */
   private readonly postHealMap: CheatMap = new Map(); // runtime-map: Fast O(1) keyed lookup dictionary
@@ -106,7 +109,7 @@ export class BattleCheatManager {
     this.applied.clear();
   }
 
-  private executeHeal(_battle: Battle, side: Side, key: string, phase: 'PRE' | 'POST'): void {
+  private executeHeal(_battle: Battle, side: Side, key: string, phase: CheatExecutionPhase): void {
     try {
       applyHealCheatToSide(side);
       syncRequestConditionsWithSimulator(side);

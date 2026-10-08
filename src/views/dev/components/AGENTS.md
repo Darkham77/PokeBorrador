@@ -14,6 +14,12 @@ Frontend Developers & Asset Pipeline Engineers.
 - `DevShadowHeaderToolbar.vue`: Top header and rebuild progress banner with global shadow calibration sliders and compilation controls.
 - `DevShadowFilterBar.vue`: Secondary filter bar with category tabs, generation/gender dropdowns, and search controls.
 
+## Key Files
+
+- [`DevShadowFilterBar.vue`](./DevShadowFilterBar.vue): Module implementation.
+- [`DevShadowHeaderToolbar.vue`](./DevShadowHeaderToolbar.vue): Module implementation.
+- [`ShadowEditorCard.vue`](./ShadowEditorCard.vue): Module implementation.
+
 ## Work Guidance
 
 - Keep card sizing and aspect ratios uniform across all entities.
@@ -24,3 +30,7 @@ Frontend Developers & Asset Pipeline Engineers.
 
 - `npm run test tests/unit/dev/shadow_editor.spec.ts`
 - `npm run lint`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

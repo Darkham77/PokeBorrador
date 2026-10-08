@@ -2,7 +2,7 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingEngine'
+import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingInheritance'
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
 import gsap from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'

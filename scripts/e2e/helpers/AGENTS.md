@@ -1,8 +1,14 @@
-# AGENTS.md - E2E Test Helpers
+# Purpose
 
 Helper utilities and background file writer queues for end-to-end browser simulations and test runners.
 
-## Governance & Rules
+## Ownership
+
+Poké Vicio Development Team.
+
+## Local Contracts
+
+### Governance & Rules
 
 - All file paths written or renamed by helper queues MUST be verified and sanitized against directory traversal (reject `..` and enforce relative path bounds).
 - Zero fallback policy: explicit error reporting on missing locator elements or invalid simulation payload states.
@@ -11,8 +17,28 @@ Helper utilities and background file writer queues for end-to-end browser simula
 ## Key Files
 
 - `batchSimulationHarness.ts`: Module implementation.
+- `battleActionExecutionHelper.ts`: In-combat battle action execution helpers (moves, items, ball throws, switches) for E2E simulations.
 - `battleEventHelpers.ts`: Module implementation.
+- `battleReplayExecutionHelper.ts`: Execution orchestrator for replaying recorded Showdown battle steps.
+- `battleScenarioSetupHelper.ts`: Scenario environment setup, team generation, and 7-pillar reset helpers for battle simulations.
 - `certifiedCaseLoader.ts`: Module implementation.
+- `e2eAutoBattleHelper.ts`: Automated battle driver and resilient combat decision helpers for E2E scenarios.
 - `e2eCheckpointManager.ts`: Module implementation.
 - `e2eLogger.ts`: Module implementation.
+- `e2eMinigameHelper.ts`: Natural driver helpers for archaeology and fishing minigames.
+- `e2eSessionHelper.ts`: Browser session bootstrap, page navigation, console interceptor, and login helpers.
 - `fileWriterQueue.ts`: Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -9,9 +9,7 @@ import type { ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { RankedSeasonMedal, PersonalPvPMatchSummary } from '@/types/battle/pvp';
 import type { MarketAssetType } from '@/logic/economy/market';
-
-export const TOOL_QUALITY_TIERS = ['standard', 'good', 'super'] as const;
-export type ToolQualityTier = (typeof TOOL_QUALITY_TIERS)[number];
+import type { GatheringToolTier } from '@/types/pokemon/encounters';
 
 export const CLAIM_ITEM_TYPES = ['pokemon', 'item', 'currency'] as const;
 export type ClaimItemType = (typeof CLAIM_ITEM_TYPES)[number];
@@ -181,11 +179,11 @@ export interface GameState {
   mewtwoTicketSecs: number;
   repelSecs: number;
   fishingRodSecs: number;
-  fishingRodType: ToolQualityTier | null;
+  fishingRodType: GatheringToolTier | null;
   pickaxeSecs: number;
-  pickaxeType: ToolQualityTier | null;
+  pickaxeType: GatheringToolTier | null;
   brushSecs: number;
-  brushType: ToolQualityTier | null;
+  brushType: GatheringToolTier | null;
   shinyBoostSecs: number;
   amuletCoinSecs: number;
   luckyEggSecs: number;

@@ -13,15 +13,6 @@ Battle Engine Team / Visual FX Programmers.
 - **Modular Switch Execution Helper (`battleSwitchHelper.ts`)**: Authoritative switch orchestration in `battleStore` is delegated to `executeBattleSwitch` in `battleSwitchHelper.ts` (enforcing trapped status checks, PvP pick commits, and error logging) to maintain strict SRP and Fallow health metrics in `battle.ts`.
 - **Synchronous Request & Trapped State Guard**: Client-side switch validations across `battleStore.isPlayerTrapped`, `battleSwitchHelper.ts`, `switchAction.ts`, and UI components (`BattleActionButtons.vue`, `BattleQuickTeam.vue`, `BattleArenaControls.vue`) MUST evaluate both `activeBattle.playerRequest.active[0].trapped` and `maybeTrapped` synchronously in addition to `player.trapped` and volatile counters (`bide`, `trapped`, `partiallytrapped`), preventing illegal voluntary switch picks when locked into multi-turn moves or trapping abilities before or during worker dispatch.
 
-## Work Guidance
-
-- Never mix visual representation timings with pure battle state evaluations.
-- Use explicit resource management or cleanup loops on unmount.
-
-## Verification
-
-- Run `npm run validate:fsm:implementation` and `npm run test:node`.
-
 ## Key Files
 
 - `battleEventWatchers.ts`: Module implementation.
@@ -33,7 +24,18 @@ Battle Engine Team / Visual FX Programmers.
 - `buffs.ts`: Module implementation.
 - `buffsHelper.ts`: Module implementation.
 - `combatShadows.ts`: Module implementation.
+- [`battle.ts`](./battle.ts): Module implementation.
+- [`battleSwitchHelper.ts`](./battleSwitchHelper.ts): Module implementation.
+
+## Work Guidance
+
+- Never mix visual representation timings with pure battle state evaluations.
+- Use explicit resource management or cleanup loops on unmount.
+
+## Verification
+
+- Run `npm run validate:fsm:implementation` and `npm run test:node`.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -12,6 +12,13 @@ Frontend Developers / State Architects.
 - **Store Integration & In-Flight Deduplication**: Loaders must delegate state retrieval to existing Pinia stores (`useSocialStore`, etc.) and respect `inFlightPromise` deduplication to prevent duplicate network calls.
 - **Fail-Fast Error Handling**: Loaders must propagate errors rather than swallowing them with empty catches.
 
+## Key Files
+
+- `bagDataLoader.ts`: Module implementation.
+- `mapDataLoader.ts`: Module implementation.
+- `pokedexDataLoader.ts`: Module implementation.
+- `socialDataLoader.ts`: Module implementation.
+
 ## Work Guidance
 
 - Avoid creating speculative loaders for views that do not actively consume them.
@@ -22,9 +29,6 @@ Frontend Developers / State Architects.
 - Run `npm run audit:md` to verify DOX hierarchy.
 - Run `npm run test:unit tests/unit/loaders/` for unit tests.
 
-## Key Files
+## Child DOX Index
 
-- `bagDataLoader.ts`: Module implementation.
-- `mapDataLoader.ts`: Module implementation.
-- `pokedexDataLoader.ts`: Module implementation.
-- `socialDataLoader.ts`: Module implementation.
+- *This directory contains specialized domain logic and files with no subdirectories.*

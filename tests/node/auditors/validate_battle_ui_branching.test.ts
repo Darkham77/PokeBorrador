@@ -83,5 +83,18 @@ describe('BattleUiBranchingAuditor', () => {
     expect(result.summary.errors).toBe(0);
     expect(result.status).toBe('passed');
   });
+
+  it('records violations with error severity when raw branching is detected', () => {
+    const auditor = new BattleUiBranchingAuditor();
+    auditor.addViolation({
+      ruleId: 'ui-branching-escape',
+      severity: 'error',
+      file: 'src/components/battle/TestControls.vue',
+      line: 1,
+      message: 'Raw cannotEscape flag branch detected',
+      context: 'battleStore.state?.cannotEscape'
+    });
+    expect(auditor.getErrorsByRule().get('ui-branching-escape')).toBe(1);
+  });
 });
 

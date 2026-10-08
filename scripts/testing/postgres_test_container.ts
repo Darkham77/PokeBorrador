@@ -60,14 +60,8 @@ export interface DockerDiscovery {
   daemonError?: string;
 }
 
-/**
- * Searches for docker executable across common system and platform paths.
- */
-export function findDockerBinary(): string | null {
-  const isWin = process.platform === 'win32';
+function findDockerInSystemPath(isWin: boolean): string | null {
   const checkCmd = isWin ? 'where.exe' : 'which';
-
-  // 1. Try finding in system PATH
   try {
     const res = spawnSync(checkCmd, ['docker'], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
     if (res.status === 0 && res.stdout) {
@@ -77,12 +71,12 @@ export function findDockerBinary(): string | null {
       }
     }
   } catch { // catch-ok: ignore and proceed to fallback paths
-    // Ignore and proceed to fallback paths
   }
+  return null;
+}
 
-  // 2. Known fallback paths by platform
+function getPlatformDockerFallbackCandidates(isWin: boolean): string[] {
   const fallbackCandidates: string[] = []; // no-domain: Non-domain utility collection or data structure
-
   if (isWin) {
     const localAppData = process.env.LOCALAPPDATA || '';
     const programFiles = process.env.ProgramFiles || 'C:\\Program Files'; // cross-platform-ok
@@ -94,7 +88,6 @@ export function findDockerBinary(): string | null {
     fallbackCandidates.push(path.join(programFiles, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe'));
     fallbackCandidates.push(path.join(programFilesX86, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe'));
   } else {
-    // Linux / macOS / Unix
     fallbackCandidates.push(
       '/usr/bin/docker',
       '/usr/local/bin/docker',
@@ -106,7 +99,18 @@ export function findDockerBinary(): string | null {
       fallbackCandidates.push(path.join(path.resolve(process.env.HOME), '.docker', 'bin', 'docker'));
     }
   }
+  return fallbackCandidates;
+}
 
+/**
+ * Searches for docker executable across common system and platform paths.
+ */
+export function findDockerBinary(): string | null {
+  const isWin = process.platform === 'win32';
+  const systemPathBinary = findDockerInSystemPath(isWin);
+  if (systemPathBinary) return systemPathBinary;
+
+  const fallbackCandidates = getPlatformDockerFallbackCandidates(isWin);
   for (const candidate of fallbackCandidates) {
     if (candidate && fs.existsSync(candidate)) {
       return candidate;

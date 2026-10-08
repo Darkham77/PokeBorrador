@@ -1,13 +1,27 @@
-# tests/node/debug/AGENTS.md
-
-## Purpose
+# Purpose
 
 Node.js logical tests for debug simulation helpers, test fixtures, and simulated database seeding.
 
-## Key Test Suites
+## Ownership
+
+Poké Vicio Development Team.
+
+## Local Contracts
+
+### Key Test Suites
 
 - `rewards_debug_simulation_market_listings.test.ts`: Unit test asserting simulated GTS claim and market listing database insertions conform strictly to the canonical schema.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

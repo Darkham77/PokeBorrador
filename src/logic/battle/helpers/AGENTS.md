@@ -24,16 +24,6 @@ Systems Engineers / Backend Developers.
 - **Archetype-Based Battle Resolution**: Battle resolution routines (such as police arrest/bail/robbery in `battleResolutionHelpers.ts`) MUST validate NPC identities exclusively via canonical archetypes (`active.trainerArchetype === 'policeman'`), never via fragile localized trainer name strings.
 - **Replayer Step Object Resolution (`showdownExecutor.ts`)**: When dispatching turns via `executeBattleTurn`, `certifiedHistoryStep` MUST resolve the concrete history step object (e.g. from `history[step - 1]`) if `options.currentStep` is provided as a number. Passing bare ordinal numbers to `BattleCheatManager` degrades cheat resolution to heuristic matching and must be avoided.
 
-## Work Guidance
-
-- Modularize complex helper logic into standalone files adhering to Fallow SSoT complexity limits.
-- Keep code fully typed with strict types from `@pkmn/sim` and local domain interfaces.
-
-## Verification
-
-- Run `npm run test` for all node unit tests under this directory.
-- Verify FSM synchronization E2E using `npm run sim:e2e:combat`.
-
 ## Key Files
 
 - `battleCheatManager.ts`: Module implementation.
@@ -60,6 +50,18 @@ Systems Engineers / Backend Developers.
 - `showdownTeamMapper.ts`: Module implementation.
 - `turnActionResolver.ts`: Module implementation.
 - `turnMoveValidator.ts`: Module implementation.
+- [`battleResolutionHelpers.ts`](./battleResolutionHelpers.ts): Module implementation.
+- [`showdownExecutor.ts`](./showdownExecutor.ts): Module implementation.
+
+## Work Guidance
+
+- Modularize complex helper logic into standalone files adhering to Fallow SSoT complexity limits.
+- Keep code fully typed with strict types from `@pkmn/sim` and local domain interfaces.
+
+## Verification
+
+- Run `npm run test` for all node unit tests under this directory.
+- Verify FSM synchronization E2E using `npm run sim:e2e:combat`.
 
 ## Child DOX Index
 

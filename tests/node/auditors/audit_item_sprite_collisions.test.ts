@@ -84,5 +84,18 @@ describe('ItemSpriteCollisionAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['Items audited']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when collisions occur', () => {
+      const auditor = new ItemSpriteCollisionAuditor();
+      auditor.addViolation({
+        ruleId: 'item-sprite-collision',
+        severity: 'error',
+        file: 'src/data/inventory/items.json',
+        line: 1,
+        message: 'Duplicate sprite path collision',
+        context: 'items/potion'
+      });
+      expect(auditor.getErrorsByRule().get('item-sprite-collision')).toBe(1);
+    });
   });
 });

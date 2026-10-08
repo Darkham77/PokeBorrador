@@ -6,7 +6,7 @@
 
 export function isLocalEnvironment(): boolean {
   if (typeof window === 'undefined') return false;
-  if (import.meta.env.DEV) return true;
+  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) return true;
 
   const hostname = window.location.hostname;
   return (
@@ -17,3 +17,10 @@ export function isLocalEnvironment(): boolean {
     hostname.endsWith('.local')
   );
 }
+
+export function isE2EEnvironment(): boolean {
+  if (typeof globalThis !== 'undefined' && Boolean(globalThis.__E2E__)) return true;
+  if (typeof window !== 'undefined' && Boolean(window.__E2E__)) return true;
+  return typeof process !== 'undefined' && process.env.VITE_E2E === 'true';
+}
+

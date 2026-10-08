@@ -21,6 +21,28 @@ Frontend / UI Engineers.
 - `Sec11BattleDock.vue`: Section 11 - Real-time battle dock with quick team, 2x2 moves, central Poké Ball, and quick bag.
 - `Sec12PokemonDetail.vue`: Section 12 - Technical Pokémon inspection linking `UnifiedPokemonDetailModal.vue`.
 
+## Key Files
+
+- `Sec10SelectionFilters.vue`: Module implementation.
+- `Sec10SelectionItem.vue`: Module implementation.
+- `Sec13InventoryModal.vue`: Module implementation.
+- `Sec14InputsShowcase.vue`: Module implementation.
+- `Sec15LiveInspector.vue`: Module implementation.
+- `Sec9TeamMemberCard.vue`: Module implementation.
+- `sec9TeamTypes.ts`: Module implementation.
+- [`Sec10SelectionModal.vue`](./Sec10SelectionModal.vue): Module implementation.
+- [`Sec11BattleDock.vue`](./Sec11BattleDock.vue): Module implementation.
+- [`Sec12PokemonDetail.vue`](./Sec12PokemonDetail.vue): Module implementation.
+- [`Sec1NavigationTabs.vue`](./Sec1NavigationTabs.vue): Module implementation.
+- [`Sec2FormControls.vue`](./Sec2FormControls.vue): Module implementation.
+- [`Sec3InventorySlots.vue`](./Sec3InventorySlots.vue): Module implementation.
+- [`Sec4ActionButtons.vue`](./Sec4ActionButtons.vue): Module implementation.
+- [`Sec5DialogsModals.vue`](./Sec5DialogsModals.vue): Module implementation.
+- [`Sec6CombatHud.vue`](./Sec6CombatHud.vue): Module implementation.
+- [`Sec7ElementalPills.vue`](./Sec7ElementalPills.vue): Module implementation.
+- [`Sec8LoginDemo.vue`](./Sec8LoginDemo.vue): Module implementation.
+- [`Sec9TeamCards.vue`](./Sec9TeamCards.vue): Module implementation.
+
 ## Work Guidance
 
 - Always adhere to the 3px canonical retro-modern pixel standard and Bresenham rasterization clip paths.
@@ -31,16 +53,6 @@ Frontend / UI Engineers.
 - `npm run lint`
 - `npm run audit`
 
-## DOX Directory Navigation Index
+## Child DOX Index
 
-- Parent: [../AGENTS.md](../AGENTS.md)
-
-## Key Files
-
-- `Sec10SelectionFilters.vue`: Module implementation.
-- `Sec10SelectionItem.vue`: Module implementation.
-- `Sec13InventoryModal.vue`: Module implementation.
-- `Sec14InputsShowcase.vue`: Module implementation.
-- `Sec15LiveInspector.vue`: Module implementation.
-- `Sec9TeamMemberCard.vue`: Module implementation.
-- `sec9TeamTypes.ts`: Module implementation.
+- *This directory contains specialized domain logic and files with no subdirectories.*

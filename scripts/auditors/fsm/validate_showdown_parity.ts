@@ -145,6 +145,10 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
   constructor() {
     super({
       id: 'validate_showdown_parity',
+      configKey: 'fsm.showdownParity',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Pokemon Showdown Protocol Parity Auditor',
       description: 'Verifica paridad del protocolo Pokémon Showdown',
       icon: '⚡',

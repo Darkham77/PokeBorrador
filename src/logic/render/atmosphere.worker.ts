@@ -22,30 +22,7 @@ import {
   FULL_CIRCLE_RAD
 } from '@/logic/constants/visuals';
 
-type OpacityPresetKey =
-  | 'FOG_MIN'
-  | 'FOG_MAX'
-  | 'MIST_LOW_POWER_BASE'
-  | 'MIST_LOW_POWER_MAX'
-  | 'MIST_NORMAL_BASE'
-  | 'MIST_NORMAL_MAX'
-  | 'WIND_MIN'
-  | 'WIND_MAX'
-  | 'STRONG_MIN'
-  | 'STRONG_MAX'
-  | 'DUST'
-  | 'SAND_OP1'
-  | 'SAND_OP2'
-  | 'SUN_MIN'
-  | 'SUN_MAX'
-  | 'INTENSE_SUN_MIN'
-  | 'INTENSE_SUN_MAX'
-  | 'HEATWAVE_MIN'
-  | 'HEATWAVE_MAX'
-  | 'SUN_SECONDARY_FACTOR'
-  | 'HEATWAVE_SECONDARY_FACTOR';
-
-const ATMOSPHERE_OPACITY_PRESETS: Record<OpacityPresetKey, number> = {
+const ATMOSPHERE_OPACITY_PRESETS = {
   FOG_MIN: 0.8,
   FOG_MAX: 0.85,
   MIST_LOW_POWER_BASE: 0.75,
@@ -67,7 +44,7 @@ const ATMOSPHERE_OPACITY_PRESETS: Record<OpacityPresetKey, number> = {
   HEATWAVE_MAX: 0.80,
   SUN_SECONDARY_FACTOR: 0.85,
   HEATWAVE_SECONDARY_FACTOR: 0.95,
-};
+} as const;
 
 /** Physics divisors for fog/mist drift speed calculations. */
 const ATMOSPHERE_DRIFT = {
@@ -337,10 +314,13 @@ interface AtmosphereWorkerMessage {
   } & Partial<AtmosphereParams>;
 }
 
+export const ATMOSPHERE_NOISE_SLOTS = ['noise1', 'noise2'] as const;
+export type AtmosphereNoiseSlot = (typeof ATMOSPHERE_NOISE_SLOTS)[number];
+
 function initNoisePattern(
   localCtx: OffscreenCanvasRenderingContext2D,
   noise: ImageBitmap | undefined,
-  slot: 'noise1' | 'noise2'
+  slot: AtmosphereNoiseSlot
 ): void {
   if (!noise) return;
   textures[slot] = noise;

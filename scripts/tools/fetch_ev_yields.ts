@@ -47,6 +47,27 @@ function cleanString(str: string): string {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 }
 
+function parsePokemonDbRow(match: RegExpExecArray): { baseId: string; fullId: string; evs: EvYield } {
+  const mainName = match[1]?.trim() || '';
+  const subText = match[2]?.trim() || '';
+  const fullName = subText ? `${mainName} ${subText}` : mainName;
+
+  const baseId = toID(cleanString(mainName));
+  const fullId = toID(cleanString(fullName));
+
+  const evs: EvYield = {};
+  for (let i = 0; i < 6; i++) {
+    const cellVal = match[3 + i]?.trim() || '';
+    const val = cellVal ? parseInt(cellVal, 10) : 0;
+    if (val > 0) {
+      const stat = STAT_COLUMNS_POKEMONDB[i];
+      if (stat) evs[stat] = val;
+    }
+  }
+
+  return { baseId, fullId, evs };
+}
+
 function parsePokemonDb(html: string): Map<string, EvYield> {
   const map = new Map<string, EvYield>();
 
@@ -55,23 +76,7 @@ function parsePokemonDb(html: string): Map<string, EvYield> {
 
   let match: RegExpExecArray | null;
   while ((match = rowRegex.exec(html)) !== null) {
-    const mainName = match[1]?.trim() || '';
-    const subText = match[2]?.trim() || '';
-    const fullName = subText ? `${mainName} ${subText}` : mainName;
-
-    const baseId = toID(cleanString(mainName));
-    const fullId = toID(cleanString(fullName));
-
-    const evs: EvYield = {};
-    for (let i = 0; i < 6; i++) {
-      const cellVal = match[3 + i]?.trim() || '';
-      const val = cellVal ? parseInt(cellVal, 10) : 0;
-      if (val > 0) {
-        const stat = STAT_COLUMNS_POKEMONDB[i];
-        if (stat) evs[stat] = val;
-      }
-    }
-
+    const { baseId, fullId, evs } = parsePokemonDbRow(match);
     if (Object.keys(evs).length > 0) {
       map.set(fullId, evs);
       if (!map.has(baseId)) {
@@ -81,6 +86,27 @@ function parsePokemonDb(html: string): Map<string, EvYield> {
   }
 
   return map;
+}
+
+const BULBAPEDIA_STATS = STAT_COLUMNS_POKEMONDB;
+
+function parseBulbapediaRow(match: RegExpExecArray): { baseId: string; fullId: string; evs: EvYield } {
+  const name = match[1]?.trim() || '';
+  const formText = match[2]?.trim() || '';
+  const fullName = formText ? `${name} ${formText}` : name;
+  const fullId = toID(cleanString(fullName));
+  const baseId = toID(cleanString(name));
+
+  const evs: EvYield = {};
+  for (let i = 0; i < BULBAPEDIA_STATS.length; i++) {
+    const val = parseInt(match[3 + i]?.trim() || '0', 10);
+    if (val > 0) {
+      const stat = BULBAPEDIA_STATS[i];
+      if (stat) evs[stat] = val;
+    }
+  }
+
+  return { baseId, fullId, evs };
 }
 
 function parseBulbapedia(html: string): Map<string, EvYield> {
@@ -89,27 +115,7 @@ function parseBulbapedia(html: string): Map<string, EvYield> {
 
   let match: RegExpExecArray | null;
   while ((match = rowRegex.exec(html)) !== null) {
-    const name = match[1]?.trim() || '';
-    const formText = match[2]?.trim() || '';
-    const fullName = formText ? `${name} ${formText}` : name;
-    const fullId = toID(cleanString(fullName));
-    const baseId = toID(cleanString(name));
-
-    const evs: EvYield = {};
-    const hp = parseInt(match[3]?.trim() || '0', 10);
-    const atk = parseInt(match[4]?.trim() || '0', 10);
-    const def = parseInt(match[5]?.trim() || '0', 10);
-    const spa = parseInt(match[6]?.trim() || '0', 10);
-    const spd = parseInt(match[7]?.trim() || '0', 10);
-    const spe = parseInt(match[8]?.trim() || '0', 10);
-
-    if (hp > 0) evs.hp = hp;
-    if (atk > 0) evs.atk = atk;
-    if (def > 0) evs.def = def;
-    if (spa > 0) evs.spa = spa;
-    if (spd > 0) evs.spd = spd;
-    if (spe > 0) evs.spe = spe;
-
+    const { baseId, fullId, evs } = parseBulbapediaRow(match);
     if (Object.keys(evs).length > 0) {
       map.set(fullId, evs);
       if (!map.has(baseId)) {
@@ -121,7 +127,7 @@ function parseBulbapedia(html: string): Map<string, EvYield> {
   return map;
 }
 
-export async function generateEvYields() {
+async function loadScrapedEvDatasets(): Promise<{ pdbData: Map<string, EvYield>; bulbaData: Map<string, EvYield> }> {
   console.log('Fetching EV Yield data from PokemonDB...');
   const pdbHtml = await fetchHtml(POKEMONDB_URL);
   const pdbData = pdbHtml ? parsePokemonDb(pdbHtml) : new Map<string, EvYield>();
@@ -136,53 +142,57 @@ export async function generateEvYields() {
     throw new Error('Both sources failed to provide data.');
   }
 
+  return { pdbData, bulbaData };
+}
+
+function findPrefixOrPartialMatch(cleanId: string, dataMap: Map<string, EvYield>): EvYield | undefined {
+  for (const [key, value] of dataMap.entries()) {
+    if (key.startsWith(cleanId) || cleanId.startsWith(key)) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
+function resolveSpeciesEvYield(
+  cleanId: string,
+  pdbData: Map<string, EvYield>,
+  bulbaData: Map<string, EvYield>
+): { ev?: EvYield; isFallback: boolean } {
+  let ev = pdbData.get(cleanId) || bulbaData.get(cleanId);
+  if (ev) return { ev, isFallback: false };
+
+  ev = findPrefixOrPartialMatch(cleanId, pdbData) || findPrefixOrPartialMatch(cleanId, bulbaData);
+  if (ev) return { ev, isFallback: false };
+
+  const prefixes = ['mega', 'gmax', 'alola', 'galar', 'hisui', 'paldea', 'totem', 'primal', 'origin'] as const; // no-domain: Non-domain utility collection or data structure
+  for (const p of prefixes) {
+    if (cleanId.includes(p)) {
+      const stripped = cleanId.replace(p, '');
+      const fallbackEv = pdbData.get(stripped) || bulbaData.get(stripped);
+      if (fallbackEv) {
+        return { ev: fallbackEv, isFallback: true };
+      }
+    }
+  }
+
+  return { ev: undefined, isFallback: false };
+}
+
+export async function generateEvYields() {
+  const { pdbData, bulbaData } = await loadScrapedEvDatasets();
   const allSpeciesKeys = Object.keys(metadataJson);
   const result: Record<string, EvYield> = {};
 
   let matched = 0;
   let fallbackToBase = 0;
-  const missing: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const missing: string[] = [];
 
   for (const speciesKey of allSpeciesKeys) {
     const cleanId = toID(speciesKey);
+    const { ev, isFallback } = resolveSpeciesEvYield(cleanId, pdbData, bulbaData);
 
-    // 1. Direct match in PokemonDB or Bulbapedia
-    let ev = pdbData.get(cleanId) || bulbaData.get(cleanId);
-
-    // 2. Special naming reconciliations (e.g. form suffixes)
-    if (!ev) {
-      for (const [key, value] of pdbData.entries()) {
-        if (key.startsWith(cleanId) || cleanId.startsWith(key)) {
-          ev = value;
-          break;
-        }
-      }
-    }
-
-    if (!ev) {
-      for (const [key, value] of bulbaData.entries()) {
-        if (key.startsWith(cleanId) || cleanId.startsWith(key)) {
-          ev = value;
-          break;
-        }
-      }
-    }
-
-    // 3. Prefix matching for megas/forms if not explicitly different
-    if (!ev) {
-      const prefixes = ['mega', 'gmax', 'alola', 'galar', 'hisui', 'paldea', 'totem', 'primal', 'origin']; // no-domain: Non-domain utility collection or data structure
-      for (const p of prefixes) {
-        if (cleanId.includes(p)) {
-          const stripped = cleanId.replace(p, '');
-          ev = pdbData.get(stripped) || bulbaData.get(stripped);
-          if (ev) {
-            fallbackToBase++;
-            break;
-          }
-        }
-      }
-    }
-
+    if (isFallback) fallbackToBase++;
     if (ev && Object.keys(ev).length > 0) {
       result[speciesKey] = ev;
       matched++;

@@ -85,8 +85,13 @@ export type PokemonIVs = Record<PokemonStatKey, number>;
 
 export type PokemonEVs = Record<PokemonStatKey, number>;
 
+export const MOVE_EFFECT_TYPES = [
+  'status', 'stat', 'flinch', 'confuse', 'trap', 'drain', 'recoil', 'recharge', 'fixed', 'multi', 'heal'
+] as const;
+export type MoveEffectType = (typeof MOVE_EFFECT_TYPES)[number];
+
 export interface MoveEffect {
-  type: 'status' | 'stat' | 'flinch' | 'confuse' | 'trap' | 'drain' | 'recoil' | 'recharge' | 'fixed' | 'multi' | 'heal';
+  type: MoveEffectType;
   status?: PokemonStatus;
   stat?: PokemonStatKey;
   stages?: number;
@@ -116,6 +121,9 @@ export interface ShowdownSecondaryEffect extends ShowdownHitEffect {
   self?: ShowdownHitEffect;
 }
 
+export const MOVE_TARGET_SCOPES = ['enemy', 'self', 'all'] as const;
+export type MoveTargetScope = (typeof MOVE_TARGET_SCOPES)[number];
+
 export interface Move {
   id?: PokemonMoveId;
   name: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -129,7 +137,7 @@ export interface Move {
   drain?: number | boolean;
   priority?: number;
   crit?: number;
-  target?: 'enemy' | 'self' | 'all';
+  target?: MoveTargetScope;
   effect?: MoveEffect | MoveEffect[];
   boosts?: MoveEffectBoosts;
   secondary?: ShowdownSecondaryEffect;

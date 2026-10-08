@@ -10,9 +10,14 @@ Database & Storage Architects.
 
 - **Multi-Engine Type Alignment**: Database interfaces must define uniform abstractions compatible with both SQLite and PostgreSQL.
 
-## Directory Structure & Files
+## Key Files
 
 - `sqlite.ts`: SQLite driver types, statements, memory database configurations, and query result structures.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
 
 ## Verification
 
@@ -20,4 +25,4 @@ Database & Storage Architects.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

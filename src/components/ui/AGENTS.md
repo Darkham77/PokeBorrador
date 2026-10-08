@@ -13,6 +13,15 @@ Frontend Developers / Systems Engineers.
 - **Criminality Bar HUD (`CriminalityBar.vue`)**: Visual gauge floating on map tab exclusively for Team Rocket members. Exposes explicit test IDs (`#criminality-bar`, `#criminality-bar-fill`, `#criminality-percent-label`), calculates excess levels via `calculatePoliceBonusLevel()`, enforces a visual height ceiling of 100%, and activates red pulse/glow upon reaching or exceeding 100% criminality.
   - **Fixed Viewport Vertical Centering**: Positioned fixed on the right viewport margin and vertically centered across the full screen using pure CSS Box Alignment (`top: 0; bottom: 0; margin-block: auto; height: fit-content;`), preventing clipping across varying display heights and avoiding GSAP transform conflicts.
 
+## Key Files
+
+- `ConnectionWarning.vue`: Module implementation.
+- `HUD_Navigation.vue`: Module implementation.
+- `HUD_SidebarLeft.vue`: Module implementation.
+- `ToastNotification.vue`: Module implementation.
+- [`ActionButtons.vue`](./ActionButtons.vue): Module implementation.
+- [`CriminalityBar.vue`](./CriminalityBar.vue): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -20,13 +29,6 @@ Frontend Developers / Systems Engineers.
 ## Verification
 
 - Run standard validation scripts.
-
-## Key Files
-
-- `ConnectionWarning.vue`: Module implementation.
-- `HUD_Navigation.vue`: Module implementation.
-- `HUD_SidebarLeft.vue`: Module implementation.
-- `ToastNotification.vue`: Module implementation.
 
 ## Child DOX Index
 

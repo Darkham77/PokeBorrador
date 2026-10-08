@@ -138,6 +138,10 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
     const itemsPath = resolve(process.cwd(), 'src/data/inventory/items.json');
     super({
       id: 'audit_item_sprite_collisions',
+      configKey: 'assets.itemSpriteCollisions',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Item Sprite Collisions Auditor',
       description: 'Colisiones de sprites o archivos faltantes en ítems',
       icon: '🎒',

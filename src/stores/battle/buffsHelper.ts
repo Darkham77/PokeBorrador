@@ -2,7 +2,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getEventCurrentWindow, safeParse, resolveWeeklyRotation, type Event as GameEvent, type EventConfig } from '@/logic/events/eventEngine'
 import { isItemId, type ItemId } from '@/data/inventory/items'
 import type { GameState } from '@/types/system/game'
-import type { ToolQualityTier } from '@/types/system/game'
+import type { GatheringToolTier } from '@/types/pokemon/encounters'
 
 export interface ActiveBuffItem {
   id: string
@@ -13,7 +13,7 @@ export interface ActiveBuffItem {
   isEmoji?: boolean
   isEvent?: boolean
   event?: GameEvent
-  tier?: ToolQualityTier
+  tier?: GatheringToolTier
 }
 
 const BUFF_DURATION_MIN = 20
@@ -127,7 +127,7 @@ interface ToolTierConfig {
   desc: string;
 }
 
-const FISHING_ROD_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
+const FISHING_ROD_CONFIGS: Record<GatheringToolTier, ToolTierConfig> = {
   standard: {
     name: 'Caña de pescar', // spanish-ok: UI Spanish text localization label
     itemId: 'fishingrod',
@@ -145,7 +145,7 @@ const FISHING_ROD_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
   }
 };
 
-const PICKAXE_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
+const PICKAXE_CONFIGS: Record<GatheringToolTier, ToolTierConfig> = {
   standard: {
     name: 'Pico de excavación', // spanish-ok: UI Spanish text localization label
     itemId: 'pickaxe',
@@ -163,7 +163,7 @@ const PICKAXE_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
   }
 };
 
-const BRUSH_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
+const BRUSH_CONFIGS: Record<GatheringToolTier, ToolTierConfig> = {
   standard: {
     name: 'Pincel de excavación', // spanish-ok: UI Spanish text localization label
     itemId: 'brush',
@@ -184,11 +184,11 @@ const BRUSH_CONFIGS: Record<ToolQualityTier, ToolTierConfig> = {
 function buildToolBuff(
   id: string,
   secs: number,
-  type: ToolQualityTier | null | undefined,
+  type: GatheringToolTier | null | undefined,
   emoji: string,
-  configs: Record<ToolQualityTier, ToolTierConfig>
+  configs: Record<GatheringToolTier, ToolTierConfig>
 ): ActiveBuffItem {
-  const resolvedType: ToolQualityTier = type || 'standard';
+  const resolvedType: GatheringToolTier = type || 'standard';
   const config = configs[resolvedType] || configs.standard;
   return {
     id,

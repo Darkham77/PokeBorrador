@@ -66,5 +66,18 @@ describe('AbilityAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['Unique abilities validated']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when invalid abilities exist', () => {
+      const auditor = new AbilityAuditor();
+      auditor.addViolation({
+        ruleId: 'ability-empty-field',
+        severity: 'error',
+        file: 'src/data/battle/abilities.json',
+        line: 1,
+        message: 'Missing required ability field',
+        context: 'overgrow'
+      });
+      expect(auditor.getErrorsByRule().get('ability-empty-field')).toBe(1);
+    });
   });
 });

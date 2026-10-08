@@ -14,6 +14,14 @@ Frontend Developers / Systems Engineers.
 - **Zero Redundancy in Deployment Badges & Tooltips**: In floating countdown badges (such as class mission deployments in `BuffsOverlay.vue`), tooltips MUST NEVER repeat the countdown timer or remaining duration already prominently visible in the badge's numeric display. The tooltip description MUST instead describe the mission's core rules, costs, class requirements, and reward conditions (`details.rulesText`). When completed, it must transition to the collection prompt (`"¡Operación finalizada! Haz clic para cobrar el botín."`).
 - **Global App Overlay Hosts (`AppVersionLockHost.vue`, `AppLoadingOverlayHost.vue`)**: Full-screen root overlays for database/server version incompatibility and global asynchronous loading states are isolated into dedicated host components (`AppVersionLockHost.vue`, `AppLoadingOverlayHost.vue`) with integrated `Teleport to="body"`, GSAP transitions, and action emits to eliminate template branching in `App.vue`.
 
+## Key Files
+
+- `SessionLockOverlay.vue`: Module implementation.
+- `VersionLockOverlay.vue`: Module implementation.
+- [`AppLoadingOverlayHost.vue`](./AppLoadingOverlayHost.vue): Module implementation.
+- [`AppVersionLockHost.vue`](./AppVersionLockHost.vue): Module implementation.
+- [`BuffsOverlay.vue`](./BuffsOverlay.vue): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -23,11 +31,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `SessionLockOverlay.vue`: Module implementation.
-- `VersionLockOverlay.vue`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

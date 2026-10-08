@@ -11,14 +11,6 @@ UI/UX Team / Profile Systems Engineers.
 - Gender is a save property (signup only). Do not query or request gender selection on login flows.
 - Class choices and achievement flags must be sanitized before persisting.
 
-## Work Guidance
-
-- Access stats and classes using central data structures to prevent desynchronization.
-
-## Verification
-
-- Run `npm run audit`.
-
 ## Key Files
 
 - `cosmetics.ts`: Module implementation.
@@ -27,6 +19,14 @@ UI/UX Team / Profile Systems Engineers.
 - `playerSearch.ts`: Module implementation.
 - `profile.ts`: Module implementation.
 
+## Work Guidance
+
+- Access stats and classes using central data structures to prevent desynchronization.
+
+## Verification
+
+- Run `npm run audit`.
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -1,7 +1,7 @@
 import type { Ref } from 'vue';
 import type { GameState, GenderId } from '@/types/system/game';
 import type { Pokemon, PokemonSelectionSource, PokemonCompetitionRank } from '@/types/pokemon/pokemon';
-import type { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty, BattleMinigame } from '@/types/battle/battle';
+import type { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty, BattleMinigame, PersistenceMode } from '@/types/battle/battle';
 import type { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
 import type { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
 import type { AuthUser, SessionMode } from '@/types/auth/auth';
@@ -66,7 +66,7 @@ export interface BattleOptions {
   trainerGender?: GenderId;
   trainerArchetype?: NpcArchetype;
   isRival?: boolean;
-  persistenceMode?: 'local' | 'remote';
+  persistenceMode?: PersistenceMode;
   cannotEscape?: boolean;
   trainerQuote?: string; // domain-ok: Open dynamic text or non-domain string payload
   fixedCycle?: DayPhase;
@@ -363,7 +363,11 @@ export interface AuthStore {
   sessionConflict: boolean;
   logout: () => Promise<void>;
 }
-export type TradeCardMode = 'incoming' | 'outgoing' | 'accepted';
+export const TRADE_CARD_MODES = ['incoming', 'outgoing', 'accepted'] as const;
+export type TradeCardMode = (typeof TRADE_CARD_MODES)[number];
+
+export const TRADE_OFFER_STATUSES = ['pending', 'accepted', 'rejected', 'claimed'] as const;
+export type TradeOfferStatus = (typeof TRADE_OFFER_STATUSES)[number];
 
 export interface TradeOffer {
   id: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -376,7 +380,7 @@ export interface TradeOffer {
   request_items: Inventory;
   request_money: number;
   message: string; // domain-ok: Open dynamic text or non-domain string payload
-  status: 'pending' | 'accepted' | 'rejected' | 'claimed';
+  status: TradeOfferStatus;
   created_at: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 

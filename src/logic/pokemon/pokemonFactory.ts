@@ -1,28 +1,33 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { NATURES, isNatureId, toNatureId, type NatureId } from '@/data/battle/natures';
-import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE, DEFAULT_MAX_PP_FALLBACK } from '@/logic/constants/gameplay';
+import { NATURES, toNatureId } from '@/data/battle/natures';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 import { getMovesAtLevel, initializePokemonVigor } from '@/logic/pokemon/pokemonUtils';
 import { getActivePinia } from 'pinia';
-import { getSpeciesBoosts, getGlobalMultipliers, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
-import type { ObtainedMethod, Pokemon, Move, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
-import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
-import { generateIvPure } from './generationMath.ts';
 import { createDefaultEvs } from './evMath.ts';
-import { getItemById, type ItemId } from '@/data/inventory/items';
-import type { MapRouteId } from '@/data/world/map-assets';
+import type { ItemId } from '@/data/inventory/items';
 import { toID } from '@/logic/utils/strings.ts';
-import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
-import { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
-import { canLearnMove } from './pokemonLearnset.ts';
+import { requireAbilityId } from '@/data/battle/abilities';
+import { assignGender } from './pokemonGender.ts';
 import { getWildHeldItem } from './pokemonWildHeldItems.ts';
 import { getPokemonPhysicalHeight, getPokemonPhysicalWeight } from './physicalDimensionsMath.ts';
 import { getServerInstant } from '@/logic/utils/timeUtils';
+import { validatePokemon } from './pokemonValidator.ts';
+import {
+  computeCreationIVs,
+  computeCreationShiny,
+  type PokemonCreationOptions
+} from './pokemonCreationHelper.ts';
+import { levelUpPokemon as executeLevelUpPokemon } from './pokemonLevelUpHelper.ts';
 
 export { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
 export { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from './pokemonLearnset.ts';
 export { getWildHeldItem, WILD_HELD_ITEMS } from './pokemonWildHeldItems.ts';
+export { validatePokemon } from './pokemonValidator.ts';
+export type { PokemonCreationOptions } from './pokemonCreationHelper.ts';
 
 export function getExpNeeded(level: number): number {
   return getExpNeededPure(level);
@@ -30,10 +35,10 @@ export function getExpNeeded(level: number): number {
 
 export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   if (!p) return;
-  
+
   const base = pokemonDataProvider.getPokemonData(p.id, bypassWhitelist);
   if (!base) return;
-  
+
   const natureDef = p.nature ? pokemonDataProvider.getNatureData(p.nature) : null;
   const natureData = natureDef ? { up: natureDef.up, down: natureDef.down } : { up: null, down: null };
   const isDittoMetalPowder = p.heldItem === 'metalpowder' && p.id === 'ditto';
@@ -70,7 +75,6 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   p.spd = calculated.spd;
   p.spe = calculated.spe;
 
-  // Asegurar que todos los stats base sean números válidos
   const stats: (keyof Pokemon)[] = ['maxHp', 'atk', 'def', 'spa', 'spd', 'spe'];
   stats.forEach(s => {
     const val = p[s] as number;
@@ -87,266 +91,12 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
 }
 
 /**
- * Validates Pokémon data to ensure all mandatory fields are present and legal.
- * Throws explicit descriptive errors on any data corruption instead of patching.
- */
-function validateSpeciesBaseData(p: Pokemon): void {
-  const base = pokemonDataProvider.getPokemonData(p.id, true);
-  if (base) {
-    const isCastformForm = p.id === 'castform' && p.form && p.form !== 'normal';
-    if (!isCastformForm) {
-      p.type = base.type;
-      p.type2 = base.type2;
-    }
-    p.isFloating = base.isFloating;
-  } else {
-    throw new Error(`[pokemonFactory] El Pokémon "${p.id}" (UID: ${p.uid}) no existe en la base de datos de especies.`);
-  }
-}
-
-function validateAbility(p: Pokemon, bypass: boolean): void {
-  if (p.ability) {
-    const normAbility = requireAbilityId(toID(p.ability));
-    if (bypass) {
-      p.ability = normAbility;
-    } else {
-      const validAbilities: AbilityId[] = pokemonDataProvider.getSpeciesAbilities(p.id).map(a => requireAbilityId(toID(a)));
-      if (validAbilities.includes(normAbility)) {
-        p.ability = normAbility;
-      } else {
-        throw new Error(`[pokemonFactory] Habilidad inválida o ilegal (${p.ability}) para especie ${p.id} (UID: ${p.uid}).`);
-      }
-    }
-  } else {
-    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) no tiene habilidad definida.`);
-  }
-}
-
-function validateHeldItem(p: Pokemon): void {
-  if (p.heldItem) {
-    const itemData = getItemById(p.heldItem);
-    p.heldItem = itemData.id;
-  }
-}
-
-function syncMoveDetails(m: Move, moveData: NonNullable<ReturnType<typeof pokemonDataProvider.getMoveData>>): void {
-  m.id = moveData.id;
-  m.name = moveData.name;
-  m.power = moveData.power || 0;
-  m.type = moveData.type || 'normal';
-  m.acc = moveData.acc || 100;
-  m.cat = moveData.cat || 'physical';
-  m.effect = moveData.effect;
-  const basePP = moveData.pp || DEFAULT_MAX_PP_FALLBACK;
-  if (!m.maxPP || m.maxPP < basePP) m.maxPP = basePP;
-  m.selfKO = moveData.selfKO;
-  m.recoil = moveData.recoil;
-  m.drain = moveData.drain;
-  m.priority = moveData.priority;
-  m.hits = moveData.hits;
-  m.fixedDmg = moveData.fixedDmg;
-  m.ohko = moveData.ohko;
-  m.halfHP = moveData.halfHP;
-  m.endeavor = moveData.endeavor;
-  m.levelDmg = moveData.levelDmg;
-  m.counter = moveData.counter;
-  m.turns = moveData.turns;
-  m.sound = moveData.sound;
-  if (m.pp === undefined) m.pp = m.maxPP;
-  if (m.pp > m.maxPP) m.pp = m.maxPP;
-}
-
-function validateAndSyncMoves(p: Pokemon, bypass: boolean): void {
-  if (!p.moves || !Array.isArray(p.moves)) {
-    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) no tiene una lista de movimientos válida.`);
-  }
-  
-  if (p.moves.some(m => m === null || m === undefined)) {
-    throw new Error(`[pokemonFactory] Movimiento nulo detectado en ${p.id} (UID: ${p.uid}).`);
-  }
-
-  p.moves.forEach((m, idx) => {
-    if (!m) return;
-    if (!m.id) {
-      throw new Error(`[pokemonFactory] Movimiento corrupto o ID inválido ("${m.id}") detectado en la posición ${idx} de ${p.id} (UID: ${p.uid}).`);
-    }
-
-    const moveData = pokemonDataProvider.getMoveData(m.id);
-    if (!moveData) {
-      throw new Error(`[pokemonFactory] Movimiento "${m.id}" no encontrado o no existe en la base de datos para ${p.id} (UID: ${p.uid}).`);
-    } else {
-      if (!bypass && !canLearnMove(p.id, m.id, p.level)) {
-        throw new Error(`[pokemonFactory] Movimiento ilegal "${m.id}" (${moveData.name}) para especie ${p.id} al nivel ${p.level} (UID: ${p.uid}).`);
-      }
-      syncMoveDetails(m, moveData);
-    }
-  });
-
-  if (p.moves.length === 0) {
-    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) tiene 0 movimientos configurados.`);
-  }
-}
-
-function validateHealthAndNature(p: Pokemon): void {
-  ensurePokemonGender(p);
-  const isGenderless = isGenderlessSpeciesId(p.id);
-  if (!p.gender && !isGenderless) {
-    throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) no tiene género definido.`);
-  }
-  if (p.hp === undefined || isNaN(p.hp)) {
-    throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) tiene HP inválido o ausente.`);
-  }
-  if (p.hp > p.maxHp) {
-    throw new Error(`[pokemonFactory] El HP de ${p.id} (UID: ${p.uid}) supera su HP máximo (${p.hp}/${p.maxHp}).`);
-  }
-
-  if (p.nature) {
-    const normNature = toID(p.nature);
-    if (isNatureId(normNature)) {
-      p.nature = toNatureId(normNature);
-    } else {
-      throw new Error(`[pokemonFactory] Naturaleza inválida o inexistente "${p.nature}" para ${p.id} (UID: ${p.uid}).`);
-    }
-  } else {
-    throw new Error(`[pokemonFactory] Naturaleza ausente para ${p.id} (UID: ${p.uid}).`);
-  }
-}
-
-function validateLevelAndExp(p: Pokemon): void {
-  if (p.level > MAX_POKEMON_LEVEL) {
-    throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) excede el nivel máximo permitido: ${p.level}/${MAX_POKEMON_LEVEL}.`);
-  }
-  
-  if (p.level === MAX_POKEMON_LEVEL) {
-    if (p.exp < 0) {
-      throw new Error(`[pokemonFactory] Experiencia negativa no permitida para nivel máximo en ${p.id} (UID: ${p.uid}).`);
-    }
-  } else {
-    const maxExpAllowed = p.expNeeded - 1;
-    if (p.exp > maxExpAllowed) {
-      throw new Error(`[pokemonFactory] La experiencia de ${p.id} (UID: ${p.uid}) supera el límite de su nivel (${p.exp}/${p.expNeeded}).`);
-    }
-  }
-}
-
-function validateVigor(p: Pokemon): void {
-  const cleanIdForCheck = p.id;
-  const isLegendary = isLegendaryPokemonSpeciesId(cleanIdForCheck);
-  const isFossil = isFossilPokemonSpeciesId(cleanIdForCheck);
-  if (isLegendary || isFossil) {
-    return;
-  }
-  if (p.maxVigor === undefined || p.maxVigor === null || isNaN(p.maxVigor)) {
-    throw new Error(`[pokemonFactory] Vigor máximo inválido o ausente en ${p.id} (UID: ${p.uid}).`);
-  }
-  if (p.vigor === undefined || p.vigor === null || isNaN(p.vigor)) {
-    throw new Error(`[pokemonFactory] Vigor actual inválido o ausente en ${p.id} (UID: ${p.uid}).`);
-  }
-  if (p.vigor > p.maxVigor) {
-    throw new Error(`[pokemonFactory] El vigor supera el vigor máximo en ${p.id} (UID: ${p.uid}) (${p.vigor}/${p.maxVigor}).`);
-  }
-}
-
-/**
- * Validates Pokémon data to ensure all mandatory fields are present and legal.
- * Throws explicit descriptive errors on any data corruption instead of patching.
- */
-export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
-  if (!p) throw new Error('[pokemonFactory] Intento de validar un Pokémon nulo o indefinido.');
-  if (!p.volatileCounters) p.volatileCounters = {};
-
-  const isDebugEnv = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
-  const bypass = bypassWhitelist || Boolean(p.isIllegal) || isDebugEnv;
-
-  validateSpeciesBaseData(p);
-  validateAbility(p, bypass);
-  validateHeldItem(p);
-  validateAndSyncMoves(p, bypass);
-  validateHealthAndNature(p);
-  validateLevelAndExp(p);
-  validateVigor(p);
-}
-
-export interface PokemonCreationOptions {
-  isShiny?: boolean;
-  nature?: NatureId;
-  ability?: AbilityId;
-  abilitySlot?: number;
-  gender?: PokemonGender;
-  heldItem?: ItemId | null;
-  heldItemRates?: { commonRate: number; rareRate: number; forceHeldChance?: number };
-  ivFloor?: number;
-  mapId?: MapRouteId;
-  shinyMultiplier?: number;
-  forceGender?: PokemonGender;
-  isGuardian?: boolean;
-  obtainedMethod?: ObtainedMethod;
-  isNpcEgg?: boolean;
-  bypassWhitelist?: boolean;
-}
-
-/**
- * Crea un objeto Pokemon completo.
- */
-function computeCreationIVs(
-  options: PokemonCreationOptions,
-  piniaActive: ReturnType<typeof getActivePinia>
-): PokemonIVs {
-  let ivFloor = options.ivFloor || 0;
-  if (piniaActive?.state?.value?.playerClass) {
-    const classState = piniaActive.state.value.playerClass as { playerClass?: string; classData?: { captureStreak?: number } };
-    if (classState.playerClass === 'cazabichos') {
-      ivFloor = Math.max(ivFloor, classState.classData?.captureStreak || 0);
-    }
-  }
-
-  const isGuardian = Boolean(options.mapId && (piniaActive?.state?.value?.war as { activeFactions?: unknown } | undefined)?.activeFactions);
-  const rand = () => generateIvPure(Math.random, ivFloor, false, isGuardian);
-
-  return {
-    hp: rand(),
-    atk: rand(),
-    def: rand(),
-    spa: rand(),
-    spd: rand(),
-    spe: rand(),
-  };
-}
-
-function computeCreationShiny(
-  id: PokemonSpeciesId,
-  options: PokemonCreationOptions,
-  piniaActive: ReturnType<typeof getActivePinia>
-): boolean {
-  if (options.isShiny !== undefined) return options.isShiny;
-
-  const debugObj = typeof window !== 'undefined' ? (window.__VITE_DEBUG__ as { forceShiny100?: boolean; shinyRateOverride?: number | null } | undefined) : undefined;
-  if (debugObj?.forceShiny100 || debugObj?.shinyRateOverride === 1) {
-    return true;
-  }
-
-  const baseShinyRate = (debugObj?.shinyRateOverride && debugObj.shinyRateOverride > 1)
-    ? debugObj.shinyRateOverride
-    : GAME_RATIOS.shinyRate;
-
-  const activeEvents = (piniaActive?.state?.value?.events as { activeEvents?: GameEvent[] } | undefined)?.activeEvents || [];
-  const speciesBonuses = getSpeciesBoosts(activeEvents, id);
-  const totalBonusMult = speciesBonuses?.shiny ? (speciesBonuses.shiny - 1) : 0;
-
-  const globalMults = getGlobalMultipliers(activeEvents);
-  const finalMult = Math.max(1, 1 + totalBonusMult);
-  const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (globalMults.shiny || 1))));
-
-  return Math.random() < (1 / finalShinyRate);
-}
-
-/**
  * Factory creating consistent, legal Pokemon objects with strict typed IDs
  */
 export function makePokemon(idVal: PokemonSpeciesId | number | string, level: number, options: PokemonCreationOptions = {}): Pokemon | null {
   if (idVal === undefined || idVal === null || idVal === '') return null;
   const id = requirePokemonSpeciesId(toID(String(idVal)));
-  
+
   if (level > MAX_POKEMON_LEVEL) level = MAX_POKEMON_LEVEL;
   const bypass = options.bypassWhitelist || false;
   const base = pokemonDataProvider.getPokemonData(id, bypass);
@@ -356,7 +106,7 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
 
   const piniaActive = getActivePinia();
   const ivs = computeCreationIVs(options, piniaActive);
-  
+
   const nature = options.nature ? toNatureId(toID(options.nature)) : NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious';
   const abilityList = pokemonDataProvider.getSpeciesAbilities(id);
   const selectedAbility = options.ability ? toID(options.ability) : abilityList[Math.floor(Math.random() * abilityList.length)];
@@ -365,15 +115,13 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
   const isShiny = computeCreationShiny(id, options, piniaActive);
 
-  const getUidStr = () => crypto.randomUUID();
-
   let heldItem: ItemId | null = options.heldItem || null;
   if (!heldItem) {
     heldItem = getWildHeldItem(id, options.heldItemRates);
   }
 
   const p: Pokemon = {
-    uid: getUidStr(),
+    uid: crypto.randomUUID(),
     id, name: base.name, type: base.type, type2: base.type2,
     isFloating: base.isFloating,
     catchRate: base.catchRate,
@@ -403,46 +151,5 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
 }
 
 export function levelUpPokemon(p: Pokemon): Move[] | null {
-  if (p.level >= MAX_POKEMON_LEVEL) return [];
-  // Everstone block
-  if (p.heldItem === 'everstone') return null;
-
-  p.level++;
-  if (p.level >= MAX_POKEMON_LEVEL) {
-    p.exp = 0;
-    p.expNeeded = 0;
-  } else {
-    p.expNeeded = getExpNeeded(p.level);
-  }
-  const oldMaxHp = p.maxHp;
-  recalcPokemonStats(p);
-  const hpGain = p.maxHp - oldMaxHp;
-  if (hpGain > 0) p.hp += hpGain;
-  p.hp = Math.min(p.hp, p.maxHp);
-
-  // Learn moves
-  const base = pokemonDataProvider.getPokemonData(p.id);
-  const pendingMoves: Move[] = [];
-  if (base && base.learnset) {
-    (base.learnset).filter(m => m.lv === p.level).forEach(m => {
-      if (!m.id) throw new Error(`[levelUpPokemon] El movimiento en el learnset no tiene un ID válido.`);
-      // Check if already knows the move by ID
-      if (!p.moves.find(em => em && em.id === m.id)) {
-        const moveData = pokemonDataProvider.getMoveData(m.id);
-        if (!moveData) throw new Error(`[levelUpPokemon] No se encontró información para el movimiento: ${m.id}`);
-        const moveObj: Move = { 
-          id: m.id, 
-          name: moveData.name, 
-          pp: m.pp || moveData.pp, 
-          maxPP: m.pp || moveData.pp 
-        };
-        if (p.moves.length < 4) {
-          p.moves.push(moveObj);
-        } else {
-          pendingMoves.push(moveObj);
-        }
-      }
-    });
-  }
-  return pendingMoves;
+  return executeLevelUpPokemon(p, recalcPokemonStats);
 }

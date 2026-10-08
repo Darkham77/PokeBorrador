@@ -26,6 +26,23 @@ Frontend Developers / Systems Engineers.
   - Dynamically calculated or fixed reward values (such as money calculated from delivered Pokémon IVs/levels in Team Rocket deployments) MUST be injected directly into the corresponding item within `rewardsList` (e.g. `₽21.295 (Fijado)` with updated tooltip explanation), maintaining a single source of truth for rewards without redundant text duplication.
   - Modular subcomponents (`MissionCardRulesBox.vue`, `MissionCardActiveOperation.vue`, `MissionCardRewards.vue`, `EventMissionsHeaderBar.vue`, `EventClassMissionsSection.vue`) encapsulate rules/requirements display, countdown progress tracking, header refresh actions, and class mission deployments to keep cyclomatic/cognitive complexity bounded.
 
+## Key Files
+
+- `EventCardCategoryPreview.styles.scss`: Module implementation.
+- `MissionCard.styles.scss`: Module implementation.
+- [`EventCardCategoryPreview.vue`](./EventCardCategoryPreview.vue): Module implementation.
+- [`EventCategorySlotChip.vue`](./EventCategorySlotChip.vue): Module implementation.
+- [`EventCategorySpeciesTabs.vue`](./EventCategorySpeciesTabs.vue): Module implementation.
+- [`EventClassMissionsSection.vue`](./EventClassMissionsSection.vue): Module implementation.
+- [`EventMissions.vue`](./EventMissions.vue): Module implementation.
+- [`EventMissionsHeaderBar.vue`](./EventMissionsHeaderBar.vue): Module implementation.
+- [`EventPendingAwardsBanner.vue`](./EventPendingAwardsBanner.vue): Module implementation.
+- [`MissionCard.vue`](./MissionCard.vue): Module implementation.
+- [`MissionCardActiveOperation.vue`](./MissionCardActiveOperation.vue): Module implementation.
+- [`MissionCardRewards.vue`](./MissionCardRewards.vue): Module implementation.
+- [`MissionCardRulesBox.vue`](./MissionCardRulesBox.vue): Module implementation.
+- [`eventCardTypes.ts`](./eventCardTypes.ts): Module implementation.
+
 ## Work Guidance
 
 - Mission and event cards must receive 100% valid entities from stores. If a required property (such as `trainerSprite` or `targetId`) is missing, fail loudly via asset validation rather than silently substituting default placeholders in the template.
@@ -35,11 +52,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `EventCardCategoryPreview.styles.scss`: Module implementation.
-- `MissionCard.styles.scss`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

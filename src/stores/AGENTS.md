@@ -59,6 +59,37 @@ State Architects / Frontend Developers.
   - Walking friendship steps accumulate on team members even when 0 eggs are currently incubating.
   - Any completed 128-step cycle that increments a Pokémon's friendship immediately schedules persistence via `gameStore.scheduleSave()` and emits a UI notification toast (`uiStore.notify`) with `'❤️'`.
 
+## Key Files
+
+- `audio.ts`: Module implementation.
+- `auth.ts`: Module implementation.
+- `debug.ts`: Module implementation.
+- `errorStore.ts`: Module implementation.
+- `evolution.ts`: Module implementation.
+- `game.ts`: Module implementation.
+- `gyms.ts`: Module implementation.
+- `leaderboard.ts`: Module implementation.
+- `library.ts`: Module implementation.
+- `loading.ts`: Module implementation.
+- `map.ts`: Module implementation.
+- `mapActions.ts`: Module implementation.
+- `modals.ts`: Module implementation.
+- `notifications.ts`: Module implementation.
+- `pvpDataHelper.ts`: Module implementation.
+- [`box.ts`](./box.ts): Module implementation.
+- [`breeding.ts`](./breeding.ts): Module implementation.
+- [`breedingActions.ts`](./breedingActions.ts): Module implementation.
+- [`daycareMissions.ts`](./daycareMissions.ts): Module implementation.
+- [`events.ts`](./events.ts): Module implementation.
+- [`gameInitialState.ts`](./gameInitialState.ts): Module implementation.
+- [`gts.ts`](./gts.ts): Module implementation.
+- [`livePvP.ts`](./livePvP.ts): Module implementation.
+- [`pvp.ts`](./pvp.ts): Module implementation.
+- [`trade.ts`](./trade.ts): Module implementation.
+- [`ui.ts`](./ui.ts): Module implementation.
+- [`update.ts`](./update.ts): Module implementation.
+- [`war.ts`](./war.ts): Module implementation.
+
 ## Work Guidance
 
 - Zero serialization (`JSON.stringify`) in watch handlers to prevent severe CPU lag.
@@ -82,24 +113,6 @@ State Architects / Frontend Developers.
 
 - Run `npm run audit` to verify store types, state consistency, and project rules.
 - Verify memory footprint and FPS stability during intense store updates.
-
-## Key Files
-
-- `audio.ts`: Module implementation.
-- `auth.ts`: Module implementation.
-- `debug.ts`: Module implementation.
-- `errorStore.ts`: Module implementation.
-- `evolution.ts`: Module implementation.
-- `game.ts`: Module implementation.
-- `gyms.ts`: Module implementation.
-- `leaderboard.ts`: Module implementation.
-- `library.ts`: Module implementation.
-- `loading.ts`: Module implementation.
-- `map.ts`: Module implementation.
-- `mapActions.ts`: Module implementation.
-- `modals.ts`: Module implementation.
-- `notifications.ts`: Module implementation.
-- `pvpDataHelper.ts`: Module implementation.
 
 ## Child DOX Index
 

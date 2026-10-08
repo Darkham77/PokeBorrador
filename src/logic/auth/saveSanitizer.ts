@@ -11,7 +11,7 @@ import { validateSaveData, type SaveDataDto } from '@/logic/validation/schemas';
 import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import { logger } from '@/logic/utils/logger';
-import { normalizeRuntimePokemonGender } from '@/logic/auth/saveSerializer';
+import { normalizeRuntimePokemonGender } from '@/logic/auth/savePokemonSerializer.ts';
 
 interface ValidationCache {
   lastBoxHash: string;
@@ -27,51 +27,12 @@ export type ValidateAndSanitizeResult =
   | { valid: true; data: SaveDataDto; hadDuplicates?: boolean; issues: string[]; error?: undefined }
   | { valid: false; data?: undefined; hadDuplicates?: boolean; issues: string[]; error: string };
 
-function sanitizeNumericFields(sanitizedData: SaveDataDto, issues: string[]): void {
-  if (sanitizedData.money < 0) {
-    sanitizedData.money = 0;
-    issues.push('Dinero negativo corregido');
-  }
-  if (sanitizedData.battleCoins < 0) {
-    sanitizedData.battleCoins = 0;
-    issues.push('BattleCoins negativos corregidos');
-  }
-  if (sanitizedData.trainerLevel < 1) {
-    sanitizedData.trainerLevel = 1;
-    issues.push('Nivel inválido corregido');
-  }
-}
-
-function sanitizeInventoryQuantities(inventory: Record<string, number> | undefined, issues: string[]): void {
-  if (!inventory) return;
-  for (const item of Object.keys(inventory)) {
-    const qty = inventory[item];
-    if (typeof qty === 'number' && qty < 0) {
-      inventory[item] = 0;
-      issues.push(`Cantidad negativa de ${item} corregida`);
-    }
-  }
-}
-
-function filterDuplicateUids(sanitizedData: SaveDataDto): void {
-  const finalUids = new Set<string>();
-  if (Array.isArray(sanitizedData.team)) {
-    sanitizedData.team = sanitizedData.team.filter((p) => {
-      if (!p || !p.uid) return true;
-      if (finalUids.has(p.uid)) return false;
-      finalUids.add(p.uid);
-      return true;
-    });
-  }
-  if (Array.isArray(sanitizedData.box)) {
-    sanitizedData.box = sanitizedData.box.filter((p) => {
-      if (!p || !p.uid) return true;
-      if (finalUids.has(p.uid)) return false;
-      finalUids.add(p.uid);
-      return true;
-    });
-  }
-}
+import {
+  sanitizeNumericFields,
+  sanitizeInventoryQuantities,
+  filterDuplicateUids,
+  sanitizeMarketSoldIds
+} from './saveSanitizerHelpers.ts';
 
 function validateCachedSaveData(data: GameState | SaveDataDto | Record<string, unknown>) {
   const rawData = typeof data === 'object' && data !== null ? (data as { box?: (Pokemon | null)[] }) : {};
@@ -94,18 +55,6 @@ function validateCachedSaveData(data: GameState | SaveDataDto | Record<string, u
     boxValidationCache.lastValidatedBox = parsedResult.output.box as Pokemon[];
   }
   return parsedResult;
-}
-
-function sanitizeMarketSoldIds(data: SaveDataDto): void {
-  if (Array.isArray(data.marketSoldSeenIds)) {
-    data.marketSoldSeenIds = [
-      ...new Set(
-        (data.marketSoldSeenIds as (string | number)[])
-          .map((id) => (id !== null && id !== undefined ? String(id).trim() : ''))
-          .filter((id) => id.length > 0 && !id.includes('invalid'))
-      )
-    ];
-  }
 }
 
 function validatePokemonEntry(

@@ -1,10 +1,20 @@
-# Maintenance Scripts Governance
+# Purpose
+
+Domain boundary and module implementation for maintenance. Defines architectural responsibilities and subsystem logic.
+
+## Ownership
+
+Poké Vicio Development Team.
+
+## Local Contracts
+
+### Maintenance Scripts Governance
 
 General system maintenance scripts, import fixes, server configurations, and development plugins.
 
-## Core Rules & Audit Guidelines
+### Core Rules & Audit Guidelines
 
-- **Audit Orchestrator & Gatekeeper Framework**: Master audit execution (`audit_full.ts`) and the pre-commit gatekeeper (`audit_for_commit.ts`) reside in `node_modules/@francogp/auditor/src/cli/` within `@francogp/auditor`. They execute all built-in suites and host extensions declared in `audit.config.ts`.
+- **Audit Orchestrator & Gatekeeper Framework**: The unified audit orchestrator (`auditor` / `npm run audit`) is provided by `@francogp/auditor`. It executes all 48 built-in suites and 18 host extensions declared in `audit.config.ts`, enforcing 0 errors and the baseline warning ratchet.
 - **Administrative CLI Contracts**: Maintenance scripts MUST implement `node:util parseArgs` with explicit typed options and provide `--help`:
   - `admin_supabase_users.ts` (`npm run database:admin server=<profile> action=<action> email=<email> [password=<pass> | new-email=<email> | username=<name>]`)
   - `admin_rename.ts` (`npm run admin:rename user=<id_or_name> name=<new_name>`)
@@ -29,6 +39,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
 - [`vite-plugin-dev-shadow-editor.ts`](./vite-plugin-dev-shadow-editor.ts): Dev shadow editor middleware plugin.
 - [`vite-plugin-lan-pvp.ts`](./vite-plugin-lan-pvp.ts): LAN PvP dev server middleware plugin.
 - [`vite-plugin-sass-traps.ts`](./vite-plugin-sass-traps.ts): SCSS traps fixer plugin.
+- [`vite-plugin-fix-pkmn-sim.ts`](./vite-plugin-fix-pkmn-sim.ts): Shared Vite plugin patching Pokemon Showdown static import syntax.
 
 - `audit_bundle_chunks.ts`: Module implementation.
 - `fix_node_timers_imports.ts`: Module implementation.
@@ -37,6 +48,18 @@ General system maintenance scripts, import fixes, server configurations, and dev
 - `migrate_temporal.ts`: Module implementation.
 - `parse_lint.ts`: Module implementation.
 - `sync_to_test.ts`: Module implementation.
+- [`check_environment.ts`](./check_environment.ts): Module implementation.
+- [`migrate_dox_sections.ts`](./migrate_dox_sections.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 

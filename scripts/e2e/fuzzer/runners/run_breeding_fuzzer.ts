@@ -1,7 +1,8 @@
 // scripts/e2e/fuzzer/runners/run_breeding_fuzzer.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { checkCompatibility, getEggSpecies, calculateInheritance, inheritNature, inheritMoves } from '../../../../src/logic/breeding/breedingEngine.ts';
+import { checkCompatibility, getEggSpecies } from '../../../../src/logic/breeding/breedingEngine.ts';
+import { calculateInheritance, inheritNature, inheritMoves } from '../../../../src/logic/breeding/breedingInheritance.ts';
 import { Dex } from '@pkmn/sim';
 import type { Pokemon, PokemonGender, PokemonIVs } from '../../../../src/types/pokemon/pokemon.ts';
 import { requirePokemonSpeciesId, isPokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';

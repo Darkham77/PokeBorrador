@@ -26,66 +26,35 @@ enableCompileCache();
 
 const BACKUPS_DIR = safeResolve(process.cwd(), 'database/backups');
 
-export async function upgradeBackup(): Promise<string> {
-  console.log(styleText('bold', '\n--- 🔄 DATABASE BACKUP UPGRADE & NORMALIZATION TOOL (Node.js 26+) ---'));
+async function resolveTargetBackupPath(serverArg?: string, fileArg?: string): Promise<string> {
+  if (fileArg) return safeResolve(process.cwd(), fileArg);
+  if (!serverArg) return '';
 
-  const rawArgs = process.argv.slice(2);
-  const normalized = rawArgs.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      server: { type: 'string', short: 's' },
-      file: { type: 'string', short: 'f' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
-
-  const serverArg = typeof values.server === 'string' ? values.server : undefined;
-  const fileArg = typeof values.file === 'string' ? values.file : positionals.find(p => p.endsWith('.json'));
-
-  let targetBackupPath = fileArg ? safeResolve(process.cwd(), fileArg) : '';
-
-  if (!targetBackupPath && serverArg) {
-    const serverBackupDir = safeJoin(BACKUPS_DIR, serverArg);
-    try {
-      const files = await fsPromises.readdir(serverBackupDir);
-      const matchingFiles = files
-        .filter(f => f.startsWith(`${serverArg}_backup_`) && f.endsWith('.json') && !f.includes('_upgraded'))
-        .sort()
-        .reverse();
-
-      if (matchingFiles.length > 0 && matchingFiles[0]) {
-        targetBackupPath = safeJoin(serverBackupDir, matchingFiles[0]);
-      }
-    } catch { // catch-ok: directory might not exist yet
-      // ignore
-    }
+  const serverBackupDir = safeJoin(BACKUPS_DIR, serverArg);
+  try {
+    const files = await fsPromises.readdir(serverBackupDir);
+    const matching = files
+      .filter(f => f.startsWith(`${serverArg}_backup_`) && f.endsWith('.json') && !f.includes('_upgraded'))
+      .sort()
+      .reverse();
+    return matching.length > 0 && matching[0] ? safeJoin(serverBackupDir, matching[0]) : '';
+  } catch {
+    return '';
   }
+}
 
-  if (!targetBackupPath) {
-    console.error(styleText('red', '❌ Error: Debes especificar un archivo de respaldo con file=<ruta> o server=<perfil>.'));
-    console.log(styleText('gray', 'Ejemplo: npm run database:upgrade-backup file=database/backups/server_franco/backup.json'));
-    process.exit(1);
+function getPrimaryKeyClause(tableName: string, cols: readonly string[]): string {
+  if (tableName === 'system_config' || tableName === 'config') return ', PRIMARY KEY ("key")';
+  if (tableName === 'game_saves' || tableName === 'passive_teams' || tableName === 'war_factions' || tableName === 'war_coins' || tableName === 'daycare_upgrades' || tableName === 'ranked_queue') {
+    return ', PRIMARY KEY ("user_id")';
   }
+  if (tableName === 'guardian_captures') return ', PRIMARY KEY ("capture_date", "map_id", "user_id")';
+  if (tableName === 'war_dominance') return ', PRIMARY KEY ("week_id", "map_id")';
+  if (cols.includes('id')) return ', PRIMARY KEY ("id")';
+  return '';
+}
 
-  console.log(styleText('cyan', `📂 Leyendo archivo de respaldo: ${targetBackupPath}...`));
-  const rawContent = await fsPromises.readFile(targetBackupPath, 'utf8');
-  
-  interface BackupObject {
-    metadata?: { profile?: string; timestamp?: string; totalTables?: number; totalRows?: number };
-    data?: Record<string, Record<string, unknown>[]>;
-    auth?: unknown;
-  }
-
-  const backupObj = JSON.parse(rawContent) as BackupObject;
-  const backupData = backupObj.data || {};
-  const tableNames = Object.keys(backupData);
-
-  console.log(styleText('green', `📦 Respaldo detectado: ${tableNames.length} tablas cargadas.`));
-
-  // 1. Inicializar SQLite con el esquema canónico y tablas del backup
-  using db = new DatabaseSync(':memory:');
+function loadBackupIntoMemorySqlite(db: DatabaseSync, backupData: Record<string, Record<string, unknown>[]>): void {
   db.exec('PRAGMA foreign_keys = OFF;');
   db.exec('BEGIN TRANSACTION;');
 
@@ -95,19 +64,7 @@ export async function upgradeBackup(): Promise<string> {
     if (!sample || typeof sample !== 'object') continue;
     const cols = Object.keys(sample);
 
-    let pkClause = '';
-    if (tableName === 'system_config' || tableName === 'config') {
-      pkClause = ', PRIMARY KEY ("key")';
-    } else if (tableName === 'game_saves' || tableName === 'passive_teams' || tableName === 'war_factions' || tableName === 'war_coins' || tableName === 'daycare_upgrades' || tableName === 'ranked_queue') {
-      pkClause = ', PRIMARY KEY ("user_id")';
-    } else if (tableName === 'guardian_captures') {
-      pkClause = ', PRIMARY KEY ("capture_date", "map_id", "user_id")';
-    } else if (tableName === 'war_dominance') {
-      pkClause = ', PRIMARY KEY ("week_id", "map_id")';
-    } else if (cols.includes('id')) {
-      pkClause = ', PRIMARY KEY ("id")';
-    }
-
+    const pkClause = getPrimaryKeyClause(tableName, cols);
     const colDefs = cols.map(c => `"${c}" TEXT`).join(', ') + pkClause;
     db.exec(`CREATE TABLE IF NOT EXISTS "${tableName}" (${colDefs})`);
 
@@ -127,93 +84,138 @@ export async function upgradeBackup(): Promise<string> {
 
   db.exec('COMMIT;');
   db.exec('CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT)');
+}
 
-  // 2. Identificar migraciones ya aplicadas
-  const selectApplied = db.prepare('SELECT id FROM _migrations');
-  const appliedRows = selectApplied.all() as { id: string }[];
-  const appliedSet = new Set(appliedRows.map(r => r.id));
+function execStatementsBestEffort(db: DatabaseSync, statements: readonly string[]): void {
+  for (const stmt of statements) {
+    const trimmed = stmt.trim();
+    if (!trimmed) continue;
+    try {
+      db.exec(trimmed);
+    } catch {
+      // catch-ok: Statement might already be applied or redundant in partial schema
+    }
+  }
+}
 
-  console.log(styleText('cyan', `🔍 Migraciones previas registradas en el backup: ${appliedSet.size}`));
+function applySqliteMigrationSource(db: DatabaseSync, sqlSource: string, isSqliteSpec: boolean): void {
+  if (isSqliteSpec) {
+    try {
+      db.exec(sqlSource);
+      return;
+    } catch {
+      execStatementsBestEffort(db, splitSQLStatements(sqlSource));
+      return;
+    }
+  }
 
-  // 3. Aplicar migraciones pendientes
+  const translatedStmts = splitSQLStatements(sqlSource)
+    .map(stmt => translatePostgresToSqlite(stmt.trim()))
+    .filter((stmt): stmt is string => Boolean(stmt));
+  execStatementsBestEffort(db, translatedStmts);
+}
+
+function applyPendingBackupMigrations(db: DatabaseSync, appliedSet: ReadonlySet<string>): number {
   let appliedCount = 0;
   for (const migration of DATABASE_MIGRATIONS) {
     if (appliedSet.has(migration.id)) continue;
-
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
-    const isSqliteSpec = migration.sqlite_sql !== undefined;
-    if (isSqliteSpec) {
-      try {
-        db.exec(sqlSource);
-      } catch {
-        const statements = splitSQLStatements(sqlSource);
-        for (const stmt of statements) {
-          if (stmt.trim()) {
-            try { db.exec(stmt); } catch { // catch-ok: ignore harmless migration redundancies during backup upgrade
-            }
-          }
-        }
-      }
-    } else {
-      const statements = splitSQLStatements(sqlSource);
-      for (const stmt of statements) {
-        if (stmt.trim()) {
-          const sql = translatePostgresToSqlite(stmt);
-          if (sql) {
-            try {
-              db.exec(sql);
-            } catch (stmtErr: unknown) {
-              const msg = (stmtErr as Error).message.toLowerCase(); // text-ok: UI text display localization string
-              const isDuplicate = msg.includes('duplicate column') || msg.includes('already exists');
-              const isMissing = msg.includes('no such column');
-              if (!isDuplicate && !isMissing) {
-                // Non-critical statement error
-              }
-            }
-          }
-        }
-      }
-    }
+    applySqliteMigrationSource(db, sqlSource, migration.sqlite_sql !== undefined);
     db.prepare('INSERT OR REPLACE INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, Temporal.Now.instant().toString());
     appliedCount++;
   }
+  return appliedCount;
+}
 
-  console.log(styleText('green', `✅ Migraciones oficiales aplicadas con éxito: ${appliedCount}`));
+interface DatabaseTableRow {
+  readonly [column: string]: unknown;
+}
 
-  // 4. Auditar y legalizar automáticamente todos los Pokémon de las cuentas
-  const { repairAccountsInSqlite } = await import('../maintenance/repair_account_legality.ts');
-  console.log(styleText('cyan', '⚖️ Auditando y legalizando Pokémon en las cuentas...'));
-  repairAccountsInSqlite({ dbInstance: db, all: true, silent: false });
+function isDatabaseTableRow(row: unknown): row is DatabaseTableRow {
+  return typeof row === 'object' && row !== null;
+}
 
-  // 5. Extraer todas las tablas actualizadas desde SQLite (migradas 100% vía SQL canónico)
+function cleanTableRow(tableName: string, r: DatabaseTableRow): Record<string, unknown> {
+  const clean: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(r)) {
+    if (tableName === 'events_config' && (k === 'active' || k === 'manual')) {
+      clean[k] = v === 1 || v === '1' || v === 'true' || v === true;
+    } else if (typeof v === 'string' && (v.startsWith('{') || v.startsWith('['))) {
+      try { clean[k] = JSON.parse(v); } catch { clean[k] = v; }
+    } else if (typeof v === 'string' && v.includes('[object Object]')) {
+      clean[k] = {};
+    } else {
+      clean[k] = v;
+    }
+  }
+  return clean;
+}
+
+function extractUpgradedBackupTables(db: DatabaseSync): Record<string, unknown[]> {
   const upgradedBackupData: Record<string, unknown[]> = {};
   const tablesStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
   const tableList = tablesStmt.all() as { name: string }[];
 
   for (const t of tableList) {
-    const rows = db.prepare(`SELECT * FROM "${t.name}"`).all() as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
-    const cleanRows = rows.map(r => {
-      const clean: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(r)) {
-        if (t.name === 'events_config' && (k === 'active' || k === 'manual')) {
-          clean[k] = v === 1 || v === '1' || v === 'true' || v === true;
-        } else if (typeof v === 'string' && (v.startsWith('{') || v.startsWith('['))) {
-          try {
-            clean[k] = JSON.parse(v);
-          } catch {
-            clean[k] = v;
-          }
-        } else if (typeof v === 'string' && v.includes('[object Object]')) {
-          clean[k] = {};
-        } else {
-          clean[k] = v;
-        }
-      }
-      return clean;
-    });
-    upgradedBackupData[t.name] = cleanRows;
+    const rawRows = db.prepare(`SELECT * FROM "${t.name}"`).all();
+    const rows = rawRows.filter(isDatabaseTableRow);
+    upgradedBackupData[t.name] = rows.map(r => cleanTableRow(t.name, r));
+  }
+  return upgradedBackupData;
+}
+
+interface BackupObject {
+  metadata?: { profile?: string; timestamp?: string; totalTables?: number; totalRows?: number };
+  data?: Record<string, Record<string, unknown>[]>;
+  auth?: unknown;
+}
+
+export async function upgradeBackup(): Promise<string> {
+  console.log(styleText('bold', '\n--- 🔄 DATABASE BACKUP UPGRADE & NORMALIZATION TOOL (Node.js 26+) ---'));
+
+  const rawArgs = process.argv.slice(2);
+  const normalized = rawArgs.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+  const { values, positionals } = parseArgs({
+    args: normalized,
+    options: {
+      server: { type: 'string', short: 's' },
+      file: { type: 'string', short: 'f' }
+    },
+    allowPositionals: true,
+    strict: false
+  });
+
+  const serverArg = typeof values.server === 'string' ? values.server : undefined;
+  const fileArg = typeof values.file === 'string' ? values.file : positionals.find(p => p.endsWith('.json'));
+  const targetBackupPath = await resolveTargetBackupPath(serverArg, fileArg);
+
+  if (!targetBackupPath) {
+    console.error(styleText('red', '❌ Error: Debes especificar un archivo de respaldo con file=<ruta> o server=<perfil>.'));
+    console.log(styleText('gray', 'Ejemplo: npm run database:upgrade-backup file=database/backups/server_franco/backup.json'));
+    process.exit(1);
   }
 
+  console.log(styleText('cyan', `📂 Leyendo archivo de respaldo: ${targetBackupPath}...`));
+  const rawContent = await fsPromises.readFile(targetBackupPath, 'utf8');
+  const backupObj = JSON.parse(rawContent) as BackupObject;
+  const backupData = backupObj.data || {};
+  console.log(styleText('green', `📦 Respaldo detectado: ${Object.keys(backupData).length} tablas cargadas.`));
+
+  using db = new DatabaseSync(':memory:');
+  loadBackupIntoMemorySqlite(db, backupData);
+
+  const appliedRows = db.prepare('SELECT id FROM _migrations').all() as { id: string }[];
+  const appliedSet = new Set(appliedRows.map(r => r.id));
+  console.log(styleText('cyan', `🔍 Migraciones previas registradas en el backup: ${appliedSet.size}`));
+
+  const appliedCount = applyPendingBackupMigrations(db, appliedSet);
+  console.log(styleText('green', `✅ Migraciones oficiales aplicadas con éxito: ${appliedCount}`));
+
+  const { repairAccountsInSqlite } = await import('../maintenance/repair_account_legality.ts');
+  console.log(styleText('cyan', '⚖️ Auditando y legalizando Pokémon en las cuentas...'));
+  repairAccountsInSqlite({ dbInstance: db, all: true, silent: false });
+
+  const upgradedBackupData = extractUpgradedBackupTables(db);
   const latestMigrationId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]?.id || '20260830230000';
   const upgradedBackup = {
     metadata: {
@@ -233,7 +235,6 @@ export async function upgradeBackup(): Promise<string> {
   const outPath = path.join(parsedPath.dir, outFilename);
 
   await fsPromises.writeFile(outPath, JSON.stringify(upgradedBackup, null, 2), 'utf8');
-
   console.log(styleText('bold', styleText('green', `\n🎉 Respaldo actualizado exitosamente!`)));
   console.log(styleText('cyan', `📁 Archivo generado: ${outPath}`));
   console.log(styleText('cyan', `📊 Tablas totales: ${upgradedBackup.metadata.totalTables} | Filas totales: ${upgradedBackup.metadata.totalRows}`));

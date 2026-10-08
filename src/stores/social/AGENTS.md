@@ -12,15 +12,6 @@ Frontend Developers / Social Systems Engineers.
 - Coordinate cosmetic loading dynamically through Pinia store lifecycle hooks.
 - Format all chat timestamps using `formatChatTimestamp` (today: `HH:mm`, prior to today: `DD/MM/YYYY HH:mm`).
 
-## Work Guidance
-
-- Ensure strict separation of local/online channels inside the chat state.
-- Keep direct chat windows synchronized to avoid message loss.
-
-## Verification
-
-- Run `npm run audit`.
-
 ## Key Files
 
 - `chat.ts`: Module implementation.
@@ -31,6 +22,15 @@ Frontend Developers / Social Systems Engineers.
 - `social.ts`: Module implementation.
 - `socialParser.ts`: Module implementation.
 
+## Work Guidance
+
+- Ensure strict separation of local/online channels inside the chat state.
+- Keep direct chat windows synchronized to avoid message loss.
+
+## Verification
+
+- Run `npm run audit`.
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

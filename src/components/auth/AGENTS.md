@@ -10,6 +10,17 @@ Frontend Developers / Systems Engineers.
 
 - Follow standard repository modularity guidelines.
 
+## Key Files
+
+- `AuthLocalLogin.vue`: Module implementation.
+- `AuthLocalSignup.vue`: Module implementation.
+- `AuthOnlineLogin.vue`: Module implementation.
+- `AuthOnlineSignup.vue`: Module implementation.
+- `AuthServerSelector.vue`: Module implementation.
+- `SessionConflictModal.vue`: Module implementation.
+- [`LoginExpiredNotice.vue`](./LoginExpiredNotice.vue): Module implementation.
+- [`LoginPwaUpdateBanner.vue`](./LoginPwaUpdateBanner.vue): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -19,15 +30,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `AuthLocalLogin.vue`: Module implementation.
-- `AuthLocalSignup.vue`: Module implementation.
-- `AuthOnlineLogin.vue`: Module implementation.
-- `AuthOnlineSignup.vue`: Module implementation.
-- `AuthServerSelector.vue`: Module implementation.
-- `SessionConflictModal.vue`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

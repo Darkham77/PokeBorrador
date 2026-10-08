@@ -51,6 +51,10 @@ export type SubCompetitionOrder = (typeof SUB_COMPETITION_ORDERS)[number];
 export const RESOLVED_SUB_COMPETITION_ORDERS = ['max', 'min'] as const;
 export type ResolvedSubCompetitionOrder = (typeof RESOLVED_SUB_COMPETITION_ORDERS)[number];
 
+// fallow-ignore-next-line unused-export
+export const COMPETITION_SCOPES = ['global', 'per_species'] as const;
+export type CompetitionScope = (typeof COMPETITION_SCOPES)[number];
+
 export interface SubCompetitionFilters {
   natures?: string[];
   abilities?: string[];
@@ -68,7 +72,7 @@ export interface SubCompetitionConfig {
   metric: SubCompetitionMetric;
   targetStat?: PokemonStatKey;
   targetSpecies?: PokemonSpeciesId;
-  speciesScope?: 'global' | 'per_species';
+  speciesScope?: CompetitionScope;
   order?: SubCompetitionOrder;
   filters?: SubCompetitionFilters;
   prizes?: {
@@ -80,7 +84,7 @@ export interface SubCompetitionConfig {
 
 export interface ResolvedSubCompetition extends SubCompetitionConfig {
   targetSpecies?: PokemonSpeciesId;
-  speciesScope: 'global' | 'per_species';
+  speciesScope: CompetitionScope;
 }
 
 export interface SubCompetitionEvaluationResult {

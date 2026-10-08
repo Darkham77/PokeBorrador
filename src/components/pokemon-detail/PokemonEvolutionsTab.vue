@@ -22,7 +22,7 @@ const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
 const getEvolutionName = (evo: Evolution): string => {
   if (!evo.isSeen) return 'Desconocido'
-  return pokemonDataProvider.getPokemonData(evo.to.toLowerCase())?.name || evo.to
+  return pokemonDataProvider.getPokemonData(evo.to)?.name || evo.to
 }
 </script>
 
@@ -54,7 +54,7 @@ const getEvolutionName = (evo: Evolution): string => {
           <div class="sprite-wrap">
             <template v-if="evo.isSeen">
               <img
-                :src="getSprite(evo.to.toLowerCase())"
+                :src="getSprite(evo.to)"
                 :alt="getEvolutionName(evo)"
                 class="evo-sprite"
                 :class="{ 'silhouette': !evo.isCaught }"

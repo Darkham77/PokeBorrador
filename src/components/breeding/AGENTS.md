@@ -6,7 +6,9 @@ Manage the logic and assets of breeding.
 
 Frontend Developers / Systems Engineers.
 
-## Directory Structure
+## Local Contracts
+
+### Directory Structure
 
 - `BreedingSummary.vue`: Daycare summary panel showing active pairs and breeding rate.
 - `DaycareSlot.vue`: Single daycare Pokémon slot for depositing/withdrawing breeding parents.
@@ -21,10 +23,26 @@ Frontend Developers / Systems Engineers.
 - `IncubatingEggs.vue`: Active incubator slots view showing egg incubation progress and walk steps.
 - `IncubatingEggCard.vue`: Atomic incubating egg card rendering egg sprite, shiny indicator, name, step progress bar, and hatch action button.
 
-## Local Contracts
-
 - Follow standard repository modularity guidelines.
 - **Hatch Animation Baby Species Parity Mandate**: When preparing the visual preview in `HatchAnimationModal.vue` (`prepareResult`), the component MUST resolve the species ID through `getEggSpecies(rawSpeciesId)` ensuring 1:1 visual parity with the baby stage, sprite, and stats created in the final save. Displaying evolved parent forms during the hatching sequence is strictly forbidden.
+
+## Key Files
+
+- `EggWarehouse.styles.scss`: Module implementation.
+- `EggWarehouseCard.styles.scss`: Module implementation.
+- `FossilCloning.styles.scss`: Module implementation.
+- [`BreedingSummary.vue`](./BreedingSummary.vue): Module implementation.
+- [`DaycareSlot.vue`](./DaycareSlot.vue): Module implementation.
+- [`DaycareSlotFilled.vue`](./DaycareSlotFilled.vue): Module implementation.
+- [`EggWarehouse.vue`](./EggWarehouse.vue): Module implementation.
+- [`EggWarehouseCard.vue`](./EggWarehouseCard.vue): Module implementation.
+- [`FossilCloning.vue`](./FossilCloning.vue): Module implementation.
+- [`HatchAnimationModal.vue`](./HatchAnimationModal.vue): Module implementation.
+- [`HatchEggCrackStage.vue`](./HatchEggCrackStage.vue): Module implementation.
+- [`HatchRevealContent.vue`](./HatchRevealContent.vue): Module implementation.
+- [`HatchStatsCard.vue`](./HatchStatsCard.vue): Module implementation.
+- [`IncubatingEggCard.vue`](./IncubatingEggCard.vue): Module implementation.
+- [`IncubatingEggs.vue`](./IncubatingEggs.vue): Module implementation.
 
 ## Work Guidance
 
@@ -34,12 +52,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `EggWarehouse.styles.scss`: Module implementation.
-- `EggWarehouseCard.styles.scss`: Module implementation.
-- `FossilCloning.styles.scss`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

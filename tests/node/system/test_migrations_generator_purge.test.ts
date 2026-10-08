@@ -62,32 +62,39 @@ describe('Client Migrations Manifest PostgreSQL Purge Specification', () => {
     expect(fallbackCount).toBeGreaterThanOrEqual(40);
   });
 
+function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: string): void {
+  try {
+    db.exec(sql);
+  } catch (err: unknown) {
+    const msg = (err as Error).message.toLowerCase();
+    const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+    const isMissing = msg.includes('no such column');
+    if (!isDuplicate && !isMissing) {
+      throw new Error(`Migration ${migrationId} failed during in-memory SQLite execution: ${(err as Error).message}`);
+    }
+  }
+}
+
+function applySingleMigration(db: DatabaseSync, m: { id: string; sql: string; sqlite_sql?: string }): void {
+  const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
+  const isSqliteSpec = m.sqlite_sql !== undefined;
+  const statements = splitSQLStatements(sqlSource);
+
+  for (const stmt of statements) {
+    if (!stmt.trim()) continue;
+    const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
+    if (!sql) continue;
+    executeMigrationStatement(db, sql, m.id);
+  }
+}
+
   it('should execute 100% of purged DATABASE_MIGRATIONS on in-memory SQLite without schema errors', () => {
     using db = new DatabaseSync(':memory:');
     initTestDatabaseSchema(db);
 
     let executedCount = 0;
     for (const m of DATABASE_MIGRATIONS as { id: string; sql: string; sqlite_sql?: string }[]) {
-      const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
-      const isSqliteSpec = m.sqlite_sql !== undefined;
-      const statements = splitSQLStatements(sqlSource);
-
-      for (const stmt of statements) {
-        if (!stmt.trim()) continue;
-        const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-        if (!sql) continue;
-
-        try {
-          db.exec(sql);
-        } catch (err: unknown) {
-          const msg = (err as Error).message.toLowerCase();
-          const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
-          const isMissing = msg.includes('no such column');
-          if (!isDuplicate && !isMissing) {
-            throw new Error(`Migration ${m.id} failed during in-memory SQLite execution: ${(err as Error).message}`);
-          }
-        }
-      }
+      applySingleMigration(db, m);
       executedCount++;
     }
 

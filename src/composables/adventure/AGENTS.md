@@ -10,14 +10,6 @@ Frontend Developers / Systems Engineers.
 
 - Follow standard repository modularity guidelines.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `adventureEventHelpers.ts`: Module implementation.
@@ -30,6 +22,14 @@ Frontend Developers / Systems Engineers.
 - `useAdventureRouting.ts`: Module implementation.
 - `useAdventureSimulation.ts`: Module implementation.
 - `useAdventureTravelLoop.ts`: Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 

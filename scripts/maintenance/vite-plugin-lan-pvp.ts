@@ -8,8 +8,11 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { WebSocketServer, type WebSocket } from 'ws';
 
+export const LAN_PVP_QUERY_TYPES = ['query', 'run'] as const;
+export type LanPvpQueryType = (typeof LAN_PVP_QUERY_TYPES)[number];
+
 interface LanPvpRequestBody {
-  type: 'query' | 'run';
+  type: LanPvpQueryType;
   sql: string;
   params?: SQLInputValue[];
 }

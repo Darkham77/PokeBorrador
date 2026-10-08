@@ -12,6 +12,12 @@ Frontend / UI Engineers.
 - Adheres 100% to project domain types (`Pokemon`, `ItemId`, `PokemonSpeciesId`, `AbilityId`).
 - Zero runtime fallbacks or loose types.
 
+## Key Files
+
+- `mockDetailPokemon.ts`: Module implementation.
+- `mockSelectionPokemon.ts`: Module implementation.
+- [`mockPokemon.ts`](./mockPokemon.ts): Module implementation.
+
 ## Work Guidance
 
 - Keep data structures immutable and typed with `as const` or explicit domain models.
@@ -21,7 +27,6 @@ Frontend / UI Engineers.
 - `npm run lint`
 - `npm run audit`
 
-## Key Files
+## Child DOX Index
 
-- `mockDetailPokemon.ts`: Module implementation.
-- `mockSelectionPokemon.ts`: Module implementation.
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -99,5 +99,18 @@ const validTransitions: Record<string, string[]> = {
       expect(result.status).toBe('passed');
       expect(result.metrics['Mermaid states']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when fsm diagram desync occurs', () => {
+      const auditor = new FsmDiagramAuditor();
+      auditor.addViolation({
+        ruleId: 'fsm-state-missing-in-js',
+        severity: 'error',
+        file: 'docs/battle_fsm.md',
+        line: 1,
+        message: 'State declared in mermaid diagram missing in TS enum',
+        context: 'UNKNOWN_STATE'
+      });
+      expect(auditor.getErrorsByRule().get('fsm-state-missing-in-js')).toBe(1);
+    });
   });
 });

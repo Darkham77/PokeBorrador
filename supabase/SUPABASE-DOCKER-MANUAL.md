@@ -1,261 +1,261 @@
-# 🐘 Supabase Self-Hosted con Docker — Manual de Despliegue
+# 🐘 Supabase Self-Hosted with Docker — Deployment Manual
 
-> **Fuente oficial:** <https://supabase.com/docs/guides/self-hosting/docker>  
-> **Última revisión:** Mayo 2026
-
----
-
-## 📋 Tabla de Contenidos
-
-1. [Antes de empezar](#1-antes-de-empezar)
-2. [Requisitos del sistema](#2-requisitos-del-sistema)
-3. [Instalando Supabase](#3-instalando-supabase)
-4. [Configurar y asegurar Supabase](#4-configurar-y-asegurar-supabase)
-5. [Iniciar y detener los servicios](#5-iniciar-y-detener-los-servicios)
-6. [Acceder a Supabase Studio (Dashboard)](#6-acceder-a-supabase-studio-dashboard)
-7. [Acceder a PostgreSQL](#7-acceder-a-postgresql)
-8. [Acceder a Edge Functions](#8-acceder-a-edge-functions)
-9. [Acceder a las APIs](#9-acceder-a-las-apis)
-10. [Configurar HTTPS](#10-configurar-https)
-11. [Actualizar Supabase](#11-actualizar-supabase)
-12. [Desinstalar](#12-desinstalar)
-13. [Temas Avanzados](#13-temas-avanzados)
-14. [Gestión de Secretos](#14-gestión-de-secretos)
+> **Official Source:** <https://supabase.com/docs/guides/self-hosting/docker>  
+> **Last Review:** May 2026
 
 ---
 
-## 1. Antes de empezar
+## 📋 Table of Contents
 
-Esta guía asume que estás cómodo con:
+1. [Before You Begin](#1-before-you-begin)
+2. [System Requirements](#2-system-requirements)
+3. [Installing Supabase](#3-installing-supabase)
+4. [Configuring and Securing Supabase](#4-configuring-and-securing-supabase)
+5. [Starting and Stopping Services](#5-starting-and-stopping-services)
+6. [Accessing Supabase Studio (Dashboard)](#6-accessing-supabase-studio-dashboard)
+7. [Accessing PostgreSQL](#7-accessing-postgresql)
+8. [Accessing Edge Functions](#8-accessing-edge-functions)
+9. [Accessing APIs](#9-accessing-apis)
+10. [Configuring HTTPS](#10-configuring-https)
+11. [Updating Supabase](#11-updating-supabase)
+12. [Uninstalling](#12-uninstalling)
+13. [Advanced Topics](#13-advanced-topics)
+14. [Secrets Management](#14-secrets-management)
 
-- ✅ Administración básica de servidores Linux
-- ✅ Docker y Docker Compose
-- ✅ Fundamentos de redes (puertos, DNS, firewalls)
+---
 
-Si sos nuevo en estos temas, considerá empezar con la [plataforma administrada de Supabase](https://supabase.com/dashboard) (gratuita).
+## 1. Before You Begin
 
-### Herramientas necesarias
+This guide assumes you are comfortable with:
 
-| Herramienta | Instalación |
+- ✅ Basic Linux server administration
+- ✅ Docker and Docker Compose
+- ✅ Networking fundamentals (ports, DNS, firewalls)
+
+If you are new to these topics, consider starting with the [managed Supabase platform](https://supabase.com/dashboard) (free tier available).
+
+### Required Tools
+
+| Tool | Installation |
 | ------------- | ------------- |
 | **Git** | <https://git-scm.com/downloads> |
 | **Docker Desktop** (Windows/macOS) | <https://docs.docker.com/desktop/install/windows-install/> |
 | **Docker Engine + Compose** (Linux VPS) | <https://docs.docker.com/engine/install/> |
-| **OpenSSL** | Incluido en Git Bash / WSL / Linux |
+| **OpenSSL** | Included in Git Bash / WSL / Linux |
 
 ---
 
-## 2. Requisitos del sistema
+## 2. System Requirements
 
-Requisitos mínimos para correr todos los componentes de Supabase (desarrollo y cargas medianas de producción):
+Minimum requirements to run all Supabase components (development and medium production workloads):
 
-| Recurso | Mínimo recomendado |
+| Resource | Recommended Minimum |
 | --------- | ------------------- |
 | CPU | 2 cores |
 | RAM | 4 GB |
-| Disco | 20 GB SSD |
-| OS | Ubuntu 22.04 LTS / Debian 12 / Windows con WSL2 |
+| Disk | 20 GB SSD |
+| OS | Ubuntu 22.04 LTS / Debian 12 / Windows with WSL2 |
 
-> **Tip:** Si no necesitás servicios como Logflare (Analytics), Realtime, Storage, imgproxy, o Edge Runtime (Functions), podés removerlos del `docker-compose.yml` para reducir los recursos necesarios.
+> **Tip:** If you do not need services like Logflare (Analytics), Realtime, Storage, imgproxy, or Edge Runtime (Functions), you can remove them from `docker-compose.yml` to reduce required system resources.
 
 ---
 
-## 3. Instalando Supabase
+## 3. Installing Supabase
 
-### Paso 3.1 — Clonar el repositorio oficial
+### Step 3.1 — Clone the Official Repository
 
 ```bash
-# Obtener el código (solo el último commit, sin historial)
+# Get the code (latest commit only, shallow clone)
 git clone --depth 1 https://github.com/supabase/supabase
 
-# Crear tu directorio de proyecto
+# Create your project directory
 mkdir supabase-project
 
-# La estructura debe verse así:
+# Directory structure should look like:
 # .
 # ├── supabase
 # └── supabase-project
 ```
 
-### Paso 3.2 — Copiar los archivos de configuración
+### Step 3.2 — Copy Configuration Files
 
 ```bash
-# Copiar los archivos compose al proyecto
+# Copy compose files to project
 cp -rf supabase/docker/* supabase-project/
 
-# Copiar el .env de ejemplo
+# Copy sample .env file
 cp supabase/docker/.env.example supabase-project/.env
 
-# Entrar al directorio del proyecto
+# Enter project directory
 cd supabase-project
 ```
 
-> **Windows PowerShell equivalente:**
+> **Windows PowerShell equivalent:**
 >
 > ```powershell
 > Copy-Item -Recurse -Force "supabase\docker\*" "supabase-project\"
 > Copy-Item "supabase\docker\.env.example" "supabase-project\.env"
 > ```
 
-### Paso 3.3 — Descargar las imágenes Docker
+### Step 3.3 — Pull Docker Images
 
 ```bash
 docker compose pull
 ```
 
-> **Nota para Docker Rootless:** Si usás Docker en modo rootless, editá `.env` y configurá:
+> **Note for Rootless Docker:** If running Docker in rootless mode, edit `.env` and set:
 >
 > ```env
 > DOCKER_SOCKET_LOCATION=/run/user/1000/docker.sock
 > ```
 >
-> De lo contrario verás el error: `container supabase-vector exited (0)`
+> Otherwise, you may encounter: `container supabase-vector exited (0)`
 
 ---
 
-## 4. Configurar y asegurar Supabase
+## 4. Configuring and Securing Supabase
 
-> ⚠️ **NUNCA inicies Supabase con las credenciales de ejemplo del `.env.example`.**  
-> Seguí estos pasos antes de levantar cualquier servicio.
+> ⚠️ **NEVER start Supabase with default credentials from `.env.example`.**  
+> Complete these steps before starting any service.
 
-### Paso 4.1 — Generar claves seguras (Quick Setup)
+### Step 4.1 — Generate Secure Keys (Quick Setup)
 
 ```bash
-# Genera passwords y secrets seguros automáticamente
+# Automatically generate secure passwords and secrets
 sh utils/generate-keys.sh
 
-# Agrega las nuevas API keys y el par de claves asimétricas
+# Add new API keys and asymmetric key pair
 sh utils/add-new-auth-keys.sh
 ```
 
-Revisá la salida de ambos scripts y verificá el archivo `.env` antes de continuar.
+Inspect output from both scripts and verify `.env` before proceeding.
 
-### Paso 4.2 — Configurar URLs de Supabase
+### Step 4.2 — Configure Supabase URLs
 
-Editá estas variables en el `.env`:
+Edit these variables in `.env`:
 
-| Variable | Descripción | Ejemplo |
+| Variable | Description | Example |
 | ---------- | ------------- | --------- |
-| `SUPABASE_PUBLIC_URL` | URL base para acceder desde Internet (Dashboard, API, Storage) | `http://tuip.com:8000` |
-| `API_EXTERNAL_URL` | Usada por Auth para configurar callbacks | `http://tuip.com:8000` |
-| `SITE_URL` | URL de redirect por defecto para Auth | `http://tuip.com:3000` |
+| `SUPABASE_PUBLIC_URL` | Base URL for internet access (Dashboard, API, Storage) | `http://your-ip.com:8000` |
+| `API_EXTERNAL_URL` | Used by Auth for redirect callbacks | `http://your-ip.com:8000` |
+| `SITE_URL` | Default redirect URL for Auth | `http://your-ip.com:3000` |
 
-**¿Qué significa `<your-domain>`?**
+**Understanding `<your-domain>`:**
 
-- **Setup básico:** Kong escucha en puerto `8000` → `http://<your-domain>:8000`
-- **Con reverse proxy:** TLS termina en puerto `443` → `https://<your-domain>`
+- **Basic setup:** Kong listens on port `8000` → `http://<your-domain>:8000`
+- **With reverse proxy:** TLS terminates on port `443` → `https://<your-domain>`
 
-### Paso 4.3 — Dónde encontrar tus credenciales
+### Step 4.3 — Where to Find Your Credentials
 
-Después de ejecutar los scripts, las credenciales importantes en `.env` son:
+After running scripts, important credentials in `.env` are:
 
-| Variable | Uso |
+| Variable | Usage |
 | ---------- | ----- |
-| `POSTGRES_PASSWORD` | Password de la DB (para connection strings y psql) |
-| `SUPABASE_PUBLISHABLE_KEY` | API key pública para el frontend (nuevo sistema) |
-| `SUPABASE_SECRET_KEY` | API key secreta para el servidor — **NUNCA exponer en frontend** |
-| `SUPABASE_PUBLIC_URL` | URL que se pasa como `supabaseUrl` a los client libraries |
-| `ANON_KEY` | (Legacy) API key pública con permisos limitados |
-| `SERVICE_ROLE_KEY` | (Legacy) API key con acceso completo a la DB — **NUNCA exponer** |
+| `POSTGRES_PASSWORD` | DB Password (for connection strings and psql) |
+| `SUPABASE_PUBLISHABLE_KEY` | Public API key for frontend (new key system) |
+| `SUPABASE_SECRET_KEY` | Secret API key for server — **NEVER expose in frontend** |
+| `SUPABASE_PUBLIC_URL` | URL passed as `supabaseUrl` to client libraries |
+| `ANON_KEY` | (Legacy) Public API key with limited permissions |
+| `SERVICE_ROLE_KEY` | (Legacy) API key with full DB access — **NEVER expose** |
 
-> Las claves generadas expiran en **5 años**. Podés verificarlas en [jwt.io](https://jwt.io) usando el valor de `JWT_SECRET`.
+> Generated keys expire in **5 years**. You can inspect them at [jwt.io](https://jwt.io) using your `JWT_SECRET`.
 
-### Paso 4.4 — Autenticación del Studio (Dashboard)
+### Step 4.4 — Studio Authentication (Dashboard)
 
-El acceso al Studio está protegido con autenticación HTTP básica.
+Studio access is protected with basic HTTP authentication.
 
-**⚠️ Configurá una password segura ANTES de iniciar Supabase.**  
-La password debe incluir al menos una letra (no solo números ni caracteres especiales).
+**⚠️ Configure a secure password BEFORE starting Supabase.**  
+The password must include at least one letter (not just numbers or symbols).
 
-Editá en `.env`:
+Edit in `.env`:
 
 ```env
 DASHBOARD_USERNAME=supabase
-DASHBOARD_PASSWORD=tu-password-segura-aqui
+DASHBOARD_PASSWORD=your-secure-password-here
 ```
 
 ---
 
-## 5. Iniciar y detener los servicios
+## 5. Starting and Stopping Services
 
-### Iniciar en modo detached (background)
+### Start in Detached Mode (Background)
 
 ```bash
 docker compose up -d
 ```
 
-### Verificar estado de los servicios
+### Check Service Health
 
 ```bash
 docker compose ps
 ```
 
-Después de ~1 minuto, todos los servicios deben mostrar `Up [...] (healthy)`.  
-Si ves estado `created` pero no `Up`, inspeccioná los logs de los contenedores:
+After ~1 minute, all services should show `Up [...] (healthy)`.  
+If you see `created` instead of `Up`, inspect container logs:
 
 ```bash
 docker compose logs
 ```
 
-O inspeccioná logs de un servicio específico (por ejemplo, analytics):
+Or inspect a specific service (e.g. analytics):
 
 ```bash
 docker compose logs analytics
 ```
 
-### Detener los servicios
+### Stop Services
 
 ```bash
 docker compose down
 ```
 
-> **⚠️ Windows: Saltos de línea CRLF**  
-> Si Kong falla al iniciar con un error de entrypoint, los archivos pueden tener saltos CRLF en lugar de LF.  
-> Volvé a clonar el repositorio, o normalizá todo el directorio `docker/` a LF.  
-> Los clones nuevos ya usan LF gracias al `.gitattributes` del repo.
+> **⚠️ Windows CRLF Line Endings:**  
+> If Kong fails to start with an entrypoint error, files may have CRLF instead of LF line breaks.  
+> Re-clone the repository or convert `docker/` files to LF.  
+> Fresh clones use LF automatically thanks to repo `.gitattributes`.
 
 ---
 
-## 6. Acceder a Supabase Studio (Dashboard)
+## 6. Accessing Supabase Studio (Dashboard)
 
-Por defecto, el dashboard está disponible en el puerto `8000` a través del API gateway (Kong).
+By default, the dashboard is accessible on port `8000` through the API gateway (Kong).
 
-| Entorno | URL |
+| Environment | URL |
 | --------- | ----- |
 | Local | <http://localhost:8000> |
-| VPS / servidor | http://\<tu-ip\>:8000 |
-| Con dominio | http://\<tu-dominio\>:8000 |
+| VPS / Server | http://\<your-ip\>:8000 |
+| With Domain | http://\<your-domain\>:8000 |
 
-Se te pedirá el usuario y contraseña configurados en [Studio authentication](#paso-44--autenticación-del-studio-dashboard).
+Log in using credentials set in [Studio Authentication](#step-44--studio-authentication-dashboard).
 
 ---
 
-## 7. Acceder a PostgreSQL
+## 7. Accessing PostgreSQL
 
-Supabase usa **Supavisor** como connection pooler para Postgres.
+Supabase uses **Supavisor** as a connection pooler for Postgres.
 
-El `POOLER_TENANT_ID` por defecto es `your-tenant-id` (configurable en `.env`).
+Default `POOLER_TENANT_ID` is `your-tenant-id` (configurable in `.env`).
 
-### Conexión en modo sesión (equivalente a conexión directa)
+### Session Mode Connection (Direct Connection Equivalent)
 
 ```bash
 psql 'postgres://postgres.[POOLER_TENANT_ID]:[POSTGRES_PASSWORD]@[your-domain]:5432/postgres'
 ```
 
-### Conexión en modo transaccional (pooling)
+### Transaction Mode Connection (Pooling)
 
 ```bash
 psql 'postgres://postgres.[POOLER_TENANT_ID]:[POSTGRES_PASSWORD]@[your-domain]:6543/postgres'
 ```
 
-> **Nota:** Al usar `psql` con parámetros, el `-U` debe ser `postgres.[POOLER_TENANT_ID]`, no solo `postgres`.
+> **Note:** When using parameterized `psql`, `-U` must be `postgres.[POOLER_TENANT_ID]`, not just `postgres`.
 
-### Exponer Postgres directamente (avanzado)
+### Exposing Postgres Directly (Advanced)
 
-Por defecto, Postgres solo es accesible a través de Supavisor. Para acceso directo:
+By default, Postgres is accessible only through Supavisor. For direct access:
 
-1. Comentar o eliminar el servicio `supavisor` en `docker-compose.yml`
-2. Agregar el mapeo de puertos al servicio `db`:
+1. Comment out or remove `supavisor` service in `docker-compose.yml`
+2. Add port mapping to `db` service:
 
 ```yaml
 # docker-compose.yml
@@ -265,45 +265,45 @@ db:
   container_name: supabase-db
 ```
 
-Luego podés conectarte con:
+Then connect with:
 
 ```text
 postgres://postgres:[POSTGRES_PASSWORD]@[your-server-ip]:5432/[POSTGRES_DB]
 ```
 
-> ⚠️ **Seguridad:** Configurá reglas de firewall para restringir el acceso solo a IPs de confianza.
+> ⚠️ **Security:** Configure firewall rules to restrict access strictly to trusted IPs.
 
 ---
 
-## 8. Acceder a Edge Functions
+## 8. Accessing Edge Functions
 
-Las Edge Functions viven en `volumes/functions/`. El setup por defecto incluye una función `hello`:
+Edge Functions live in `volumes/functions/`. Default setup includes a `hello` function:
 
 ```bash
 curl http://<your-domain>:8000/functions/v1/hello
 ```
 
-Para agregar nuevas funciones:
+To add new functions:
 
 ```bash
-# Crear la función en el directorio
-mkdir -p volumes/functions/mi-funcion
-# Crear el archivo
-touch volumes/functions/mi-funcion/index.ts
+# Create function folder
+mkdir -p volumes/functions/my-function
+# Create file
+touch volumes/functions/my-function/index.ts
 
-# Reiniciar el servicio para que las detecte
+# Restart service to detect changes
 docker compose restart functions --no-deps
 ```
 
-Ver la [guía de Edge Functions self-hosted](https://supabase.com/docs/guides/self-hosting/self-hosted-functions) para más detalles.
+See [Self-Hosted Edge Functions Guide](https://supabase.com/docs/guides/self-hosting/self-hosted-functions) for details.
 
 ---
 
-## 9. Acceder a las APIs
+## 9. Accessing APIs
 
-Todas las APIs están disponibles a través del mismo API gateway (Kong) en puerto `8000`:
+All APIs are exposed through the same API gateway (Kong) on port `8000`:
 
-| Servicio | URL |
+| Service | URL |
 | ---------- | ----- |
 | REST (PostgREST) | `http://<your-domain>:8000/rest/v1/` |
 | Auth | `http://<your-domain>:8000/auth/v1/` |
@@ -312,128 +312,128 @@ Todas las APIs están disponibles a través del mismo API gateway (Kong) en puer
 
 ---
 
-## 10. Configurar HTTPS
+## 10. Configuring HTTPS
 
-Por defecto, Supabase es accesible via HTTP. Para producción (especialmente con OAuth), necesitás HTTPS con un certificado TLS válido.
+By default, Supabase runs over HTTP. For production environments (especially OAuth), HTTPS with a valid TLS certificate is mandatory.
 
-**Solución recomendada:** Colocar un reverse proxy (Caddy o Nginx) delante del API gateway.
+**Recommended Solution:** Place a reverse proxy (Caddy or Nginx) in front of the API gateway.
 
-Ver la [guía de Configure HTTPS](https://supabase.com/docs/guides/self-hosting/self-hosted-proxy-https) para instrucciones detalladas.
+See [Configure HTTPS Guide](https://supabase.com/docs/guides/self-hosting/self-hosted-proxy-https) for detailed instructions.
 
 ---
 
-## 11. Actualizar Supabase
+## 11. Updating Supabase
 
-Se publican releases estables aproximadamente **una vez al mes**.
+Stable releases are published approximately **once per month**.
 
-### Actualizar imágenes
+### Pull Updated Images
 
 ```bash
-# Descargar las nuevas imágenes
+# Pull latest images
 docker compose pull
 
-# Reiniciar los servicios
+# Restart services
 docker compose down && docker compose up -d
 ```
 
-### Actualizar una imagen específica (ejemplo: Studio)
+### Update a Specific Image (e.g. Studio)
 
-1. Revisar las tags disponibles en [Docker Hub - supabase/studio](https://hub.docker.com/r/supabase/studio/tags)
-2. Encontrar la última versión (ej: `2025.11.26-sha-8f096b5`)
-3. Editar `docker-compose.yml`:
+1. Check available tags at [Docker Hub - supabase/studio](https://hub.docker.com/r/supabase/studio/tags)
+2. Identify latest release (e.g. `2025.11.26-sha-8f096b5`)
+3. Edit `docker-compose.yml`:
 
    ```yaml
    image: supabase/studio:2025.11.26-sha-8f096b5
    ```
 
-4. Correr:
+4. Run:
 
    ```bash
    docker compose pull
    docker compose down && docker compose up -d
    ```
 
-Ver el [changelog de Supabase self-hosted](https://github.com/supabase/supabase/blob/master/docker/CHANGELOG.md) para seguir los cambios.
+See [Supabase Self-Hosted Changelog](https://github.com/supabase/supabase/blob/master/docker/CHANGELOG.md) to track changes.
 
 ---
 
-## 12. Desinstalar
+## 12. Uninstalling
 
-> ⚠️ **PELIGRO:** Los siguientes comandos destruyen todos los datos, incluyendo la base de datos y los volúmenes de storage.
+> ⚠️ **DANGER:** The following commands destroy all persistent data, including databases and storage volumes.
 
 ```bash
-# Detener contenedores y eliminar volúmenes
+# Stop containers and remove volumes
 docker compose down -v
 
-# Eliminar datos de Postgres
+# Remove Postgres data
 rm -rf volumes/db/data
 
-# Eliminar datos de Storage
+# Remove Storage data
 rm -rf volumes/storage
 ```
 
 ---
 
-## 13. Temas Avanzados
+## 13. Advanced Topics
 
-### Arquitectura de servicios
+### Architecture Overview
 
-Supabase está construido sobre herramientas open source:
+Supabase is built on open-source tools:
 
-| Servicio | Descripción |
+| Service | Description |
 | ---------- | ------------- |
-| **Studio** | Dashboard para administrar el proyecto |
+| **Studio** | Administration web dashboard |
 | **Kong** | API gateway |
-| **Auth** | API de autenticación JWT |
-| **PostgREST** | Convierte Postgres en API REST |
-| **Realtime** | Escucha cambios en Postgres y los broadcasts |
-| **Storage** | API RESTful para archivos en S3 |
-| **imgproxy** | Procesamiento de imágenes rápido y seguro |
-| **postgres-meta** | API REST para administrar Postgres |
-| **Postgres** | Base de datos relacional principal |
-| **Edge Runtime** | Servidor para Edge Functions (Deno) |
-| **Logflare** | Plataforma de gestión de logs |
-| **Vector** | Pipeline de datos de observabilidad |
-| **Supavisor** | Connection pooler para Postgres |
+| **Auth** | JWT authentication API |
+| **PostgREST** | Converts Postgres schema to RESTful API |
+| **Realtime** | Listens to Postgres changes and broadcasts events |
+| **Storage** | RESTful API for S3-compatible file storage |
+| **imgproxy** | Fast and secure on-the-fly image transformations |
+| **postgres-meta** | REST API to manage Postgres configuration |
+| **Postgres** | Primary relational database engine |
+| **Edge Runtime** | Server for Edge Functions (Deno) |
+| **Logflare** | Log management platform |
+| **Vector** | Observability data pipeline |
+| **Supavisor** | High-performance Postgres connection pooler |
 
-### Cambiar la password de la base de datos
+### Changing Database Password
 
 ```bash
-# Después de la configuración inicial
+# After initial setup
 sh utils/db-passwd.sh
 
-# Reiniciar todos los servicios
+# Restart all services
 docker compose up -d --force-recreate
 ```
 
-El script genera una nueva password, actualiza todos los roles de la DB y modifica el `.env`.
+The script generates a new password, updates database roles, and writes changes to `.env`.
 
-### Configurar el password inicial de la DB
+### Setting Initial DB Password
 
-En `.env`, antes del primer inicio:
+In `.env`, before first launch:
 
 ```env
-POSTGRES_PASSWORD=tu-password-segura-alfanumerica
+POSTGRES_PASSWORD=your-secure-alphanumeric-password
 ```
 
-Seguí las [guías de passwords de Postgres](https://supabase.com/docs/guides/database/postgres/roles#passwords). Para evitar problemas de URL encoding, usá solo letras y números.
+Follow [Postgres Password Guidelines](https://supabase.com/docs/guides/database/postgres/roles#passwords). To prevent URL-encoding issues, use only alphanumeric characters.
 
-### Configurar API keys (sistema legacy)
+### Configuring API Keys (Legacy System)
 
-Si seguís usando el sistema de API keys legacy, configurá en `.env`:
+If using legacy API key architecture, configure in `.env`:
 
-| Variable | Descripción |
+| Variable | Description |
 | ---------- | ------------- |
-| `JWT_SECRET` | Usado por Auth, PostgREST, y otros servicios para firmar y verificar JWTs |
-| `ANON_KEY` | API key del lado del cliente con permisos limitados (rol `anon`) |
-| `SERVICE_ROLE_KEY` | API key del lado del servidor con acceso completo (rol `service_role`) |
+| `JWT_SECRET` | Used by Auth, PostgREST, and services to sign and verify JWT tokens |
+| `ANON_KEY` | Client-side API key with public permissions (`anon` role) |
+| `SERVICE_ROLE_KEY` | Server-side API key with full privileges (`service_role` role) |
 
-### Todos los secrets disponibles
+### Available System Secrets
 
-| Secret | Longitud | Generación |
+| Secret | Length | Generation Command |
 | -------- | ---------- | ------------ |
 | `SECRET_KEY_BASE` | min 64 chars | `openssl rand -base64 48` |
-| `VAULT_ENC_KEY` | exactamente 32 chars | `openssl rand -hex 16` |
+| `VAULT_ENC_KEY` | exactly 32 chars | `openssl rand -hex 16` |
 | `PG_META_CRYPTO_KEY` | min 32 chars | `openssl rand -base64 24` |
 | `LOGFLARE_PUBLIC_ACCESS_TOKEN` | min 32 chars | `openssl rand -base64 24` |
 | `LOGFLARE_PRIVATE_ACCESS_TOKEN` | min 32 chars | `openssl rand -base64 24` |
@@ -441,50 +441,50 @@ Si seguís usando el sistema de API keys legacy, configurá en `.env`:
 | `S3_PROTOCOL_ACCESS_KEY_SECRET` | — | `openssl rand -hex 32` |
 | `MINIO_ROOT_PASSWORD` | 8+ chars | `openssl rand -hex 16` |
 
-### Configurar servidor de email (SMTP)
+### Configuring Email Server (SMTP)
 
-En `.env`:
+In `.env`:
 
 ```env
-SMTP_ADMIN_EMAIL=admin@tudominio.com
+SMTP_ADMIN_EMAIL=admin@yourdomain.com
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=tu-usuario@gmail.com
-SMTP_PASS=tu-password-app
+SMTP_USER=your-user@gmail.com
+SMTP_PASS=your-app-password
 SMTP_SENDER_NAME=Poké Vicio Online
 ```
 
-Reiniciar todos los servicios para aplicar la configuración. Se recomienda usar **AWS SES** para producción.
+Restart services to apply configuration. **AWS SES** is recommended for production.
 
-### Configurar almacenamiento S3
+### Configuring S3 Storage
 
-Por defecto, todos los archivos se guardan localmente. Podés conectar Storage a un backend S3-compatible (AWS S3, RustFS, MinIO, Cloudflare R2).
+By default, files are stored locally. You can attach Storage to any S3-compatible backend (AWS S3, RustFS, MinIO, Cloudflare R2).
 
-Ver la [guía de Configure S3 Storage](https://supabase.com/docs/guides/self-hosting/self-hosted-s3).
+See [Configure S3 Storage Guide](https://supabase.com/docs/guides/self-hosting/self-hosted-s3).
 
-### Habilitar el AI Assistant de Supabase
+### Enabling Supabase AI Assistant
 
-Opcional. Agregá tu clave de OpenAI en `.env`:
+Optional. Add your OpenAI API key in `.env`:
 
 ```env
 OPENAI_API_KEY=sk-...
 ```
 
-### Configurar log_min_messages en Postgres
+### Configuring log_min_messages in Postgres
 
-Por defecto está en `fatal` para evitar logs redundantes de Realtime. Podés cambiarlo en `docker-compose.yml` usando cualquier [Severity Level de Postgres](https://www.postgresql.org/docs/current/runtime-config-logging.html#RUNTIME-CONFIG-SEVERITY-LEVELS).
+Default is `fatal` to avoid redundant Realtime logs. You can customize it in `docker-compose.yml` using any [Postgres Severity Level](https://www.postgresql.org/docs/current/runtime-config-logging.html#RUNTIME-CONFIG-SEVERITY-LEVELS).
 
-### Storage en macOS
+### Storage on macOS
 
-En macOS, los bind mounts de Docker Desktop tienen limitaciones conocidas (falta de soporte `xattr`, problemas de permisos) que pueden impedir que Storage funcione correctamente. Cambiá el bind mount por un volumen Docker con nombre en `docker-compose.yml`.
+On macOS, Docker Desktop bind mounts have known limitations (lack of `xattr` support, file permission issues) that may impact Storage. Replace bind mounts with named Docker volumes in `docker-compose.yml`.
 
 ---
 
-## 14. Gestión de Secretos
+## 14. Secrets Management
 
-Todos los secretos están en `.env` por defecto. **Para producción, se recomienda fuertemente usar un secrets manager:**
+All secrets reside in `.env` by default. **For production, using an external secrets manager is strongly recommended:**
 
-| Herramienta | Link |
+| Tool | Link |
 | ------------- | ------ |
 | **Doppler** | <https://www.doppler.com/> |
 | **Infisical** | <https://infisical.com/> |
@@ -495,13 +495,13 @@ Todos los secretos están en `.env` por defecto. **Para producción, se recomien
 
 ---
 
-## 🔗 Links útiles
+## 🔗 Useful Links
 
-- 📚 [Documentación oficial - Self-Hosting Docker](https://supabase.com/docs/guides/self-hosting/docker)
-- 🔑 [Configurar nuevas API Keys](https://supabase.com/docs/guides/self-hosting/self-hosted-auth-keys)
-- 🔒 [Agregar HTTPS con Reverse Proxy](https://supabase.com/docs/guides/self-hosting/self-hosted-proxy-https)
-- 🌐 [Configurar OAuth Providers](https://supabase.com/docs/guides/self-hosting/self-hosted-oauth)
-- 📦 [Configurar S3 Storage](https://supabase.com/docs/guides/self-hosting/self-hosted-s3)
-- ⚡ [Edge Functions self-hosted](https://supabase.com/docs/guides/self-hosting/self-hosted-functions)
+- 📚 [Official Documentation - Self-Hosting Docker](https://supabase.com/docs/guides/self-hosting/docker)
+- 🔑 [Configuring New API Keys](https://supabase.com/docs/guides/self-hosting/self-hosted-auth-keys)
+- 🔒 [Adding HTTPS with Reverse Proxy](https://supabase.com/docs/guides/self-hosting/self-hosted-proxy-https)
+- 🌐 [Configuring OAuth Providers](https://supabase.com/docs/guides/self-hosting/self-hosted-oauth)
+- 📦 [Configuring S3 Storage](https://supabase.com/docs/guides/self-hosting/self-hosted-s3)
+- ⚡ [Self-Hosted Edge Functions](https://supabase.com/docs/guides/self-hosting/self-hosted-functions)
 - 📋 [Changelog](https://github.com/supabase/supabase/blob/master/docker/CHANGELOG.md)
-- 🐳 [Supabase en Docker Hub](https://hub.docker.com/u/supabase)
+- 🐳 [Supabase on Docker Hub](https://hub.docker.com/u/supabase)

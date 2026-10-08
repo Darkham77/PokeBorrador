@@ -17,18 +17,16 @@ Frontend Developers / Systems Engineers.
 - **Static Schema Parity Mandate (`TABLES_SCHEMA` in `src/logic/db/schema.ts`)**: Whenever a new SQL migration creates a table or alters columns in `database/migrations/`, the identical schema definition MUST be added to `TABLES_SCHEMA`. This ensures that new offline SQLite databases seeded from `TABLES_SCHEMA` match migrated databases with 100% structural parity, as verified by `tests/node/system/db_schema_parity.test.ts`.
 - **Client Migrations Manifest PostgreSQL Purge**: `DATABASE_MIGRATIONS` in `src/logic/db/migrations_data.ts` (generated via `generate_migrations.ts`) strictly sets `sql: ''` for all migrations that possess a companion `.sqlite.sql` file. Because the browser client exclusively executes SQLite in WebAssembly, PostgreSQL syntax (PL/pgSQL functions, triggers, RLS policies, duplicate data patches) represents dead weight in the production bundle. Backend migration runners (`update_supabase_db.ts`) and Docker integration tests read `.sql` files directly from disk.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
+- `dbClientFactory.ts`: Module implementation.
 - `dbCompatibility.ts`: Module implementation.
+- `dbOfflineAuth.ts`: Module implementation.
+- `dbOfflineRealtime.ts`: Module implementation.
 - `dbRouter.ts`: Module implementation.
+- `dbRpcDispatcher.ts`: Module implementation.
+- `dbSessionCoordinator.ts`: Module implementation.
+- `dbTimeCoordinator.ts`: Module implementation.
 - `idbHelper.ts`: Module implementation.
 - `lanRelayBridge.ts`: Module implementation.
 - `migrations_version.ts`: Module implementation.
@@ -41,7 +39,18 @@ Frontend Developers / Systems Engineers.
 - `sqliteQueryBuilder.ts`: Module implementation.
 - `sqliteRpcEmulation.ts`: Module implementation.
 - `sqliteSchemaIntegrity.ts`: Module implementation.
+- `sqliteBufferValidator.ts`: Module implementation.
 - `supabase.ts`: Module implementation.
+- [`migrations_data.ts`](./migrations_data.ts): Module implementation.
+- [`schema.ts`](./schema.ts): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 

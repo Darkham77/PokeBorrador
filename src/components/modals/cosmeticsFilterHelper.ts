@@ -42,9 +42,12 @@ export function isCosmeticStyleLocked(
   return false;
 }
 
+export const COSMETIC_ITEM_TYPES = ['marco', 'estilo'] as const;
+export type CosmeticItemType = (typeof COSMETIC_ITEM_TYPES)[number];
+
 export function resolveCosmeticLockNotification(
   style: LockableCosmeticStyle,
-  itemType: 'marco' | 'estilo',
+  itemType: CosmeticItemType,
   ctx: CosmeticPlayerContext
 ): string | null {
   if (!isCosmeticStyleLocked(style, ctx)) return null;

@@ -18,6 +18,10 @@ Game Designers / Systems Engineers.
 - **Zero Magic Numbers & Zero Hardcoding**: Probability thresholds, level brackets, and multipliers are derived from central constants or canonical formulas.
 - **Pure Stateless Orchestration**: All coordinator functions (`resolveFieldEncounterModifiers`, `resolveFieldBreedingModifiers`, `resolveFieldBattleRewards`) MUST remain pure and stateless.
 
+## Key Files
+
+- [`fieldRulesCoordinator.ts`](./fieldRulesCoordinator.ts): Module implementation.
+
 ## Work Guidance
 
 - Use `resolveFieldEncounterModifiers` in all route, fishing, and wild encounter generators.
@@ -30,4 +34,4 @@ Game Designers / Systems Engineers.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -20,3 +20,7 @@ Frontend Developers & Asset Pipeline Engineers.
 ## Verification
 
 - `npm run test tests/unit/dev/shadow_editor.spec.ts`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

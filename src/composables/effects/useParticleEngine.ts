@@ -20,7 +20,7 @@ export interface ParticleSystemOptions {
   /** Cantidad de partículas a animar (opcional si se pasan elementos) */
   count?: number
   /** Forma de la distribución: 'rect' (caja) o 'circle' (órbita) */
-  shape?: 'rect' | 'circle'
+  shape?: ParticleShape
   /** Rango de escala relativa (ej: [0.5, 1.2]) */
   scaleRange?: [number, number]
   /** Rango de partículas activas (ej: [2, 5]) */

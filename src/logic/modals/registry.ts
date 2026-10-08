@@ -1,73 +1,17 @@
-import { defineResilientAsyncComponent as defineAsyncComponent } from '@/logic/utils/resilientComponent'
-
+import { BATTLE_MODAL_REGISTRY } from './registries/battleModals.ts';
+import { POKEMON_MODAL_REGISTRY } from './registries/pokemonModals.ts';
+import { SHOP_MODAL_REGISTRY } from './registries/shopModals.ts';
+import { SYSTEM_MODAL_REGISTRY } from './registries/systemModals.ts';
 
 /**
  * Modal Registry
- * Maps modal names to their lazy-loaded components.
+ * Maps modal names to their lazy-loaded components, decomposed into domain registries.
  */
 export const MODAL_REGISTRY = {
-  Confirm: defineAsyncComponent(() => import('@/components/modals/ConfirmModal.vue')),
-  Prompt: defineAsyncComponent(() => import('@/components/modals/PromptModal.vue')),
-  Shop: defineAsyncComponent(() => import('@/components/modals/ShopModal.vue')),
-  GlobalMarket: defineAsyncComponent(() => import('@/components/modals/GlobalMarketModal.vue')),
-  BCShop: defineAsyncComponent(() => import('@/components/modals/BCShopModal.vue')),
-  ReputationShop: defineAsyncComponent(() => import('@/components/modals/ReputationShopModal.vue')),
-  BlackMarket: defineAsyncComponent(() => import('@/components/modals/BlackMarketModal.vue')),
-  PokemonCenter: defineAsyncComponent(() => import('@/components/modals/HealModal.vue')),
-  Inventory: defineAsyncComponent(() => import('@/components/modals/InventoryModal.vue')),
-  PokemonDetail: defineAsyncComponent(() => import('@/components/modals/UnifiedPokemonDetailModal.vue')),
-  MoveDetail: defineAsyncComponent(() => import('@/components/modals/MoveDetailModal.vue')),
-  Evolution: defineAsyncComponent(() => import('@/components/evolution/EvolutionScene.vue')),
-  Settings: defineAsyncComponent(() => import('@/components/modals/SettingsModal.vue')),
-  Profile: defineAsyncComponent(() => import('@/components/modals/ProfileModal.vue')),
-  Rename: defineAsyncComponent(() => import('@/components/modals/RenameModal.vue')),
-  TrainerProfile: defineAsyncComponent(() => import('@/components/modals/TrainerProfileModal.vue')),
-  Ranking: defineAsyncComponent(() => import('@/components/modals/RankingModal.vue')),
-  BattleReplay: defineAsyncComponent(() => import('@/components/battle/BattleReplayModal.vue')),
-  Arena: defineAsyncComponent(() => import('@/components/modals/ArenaModal.vue')),
-  Library: defineAsyncComponent(() => import('@/components/modals/LibraryModal.vue')),
-  Cosmetics: defineAsyncComponent(() => import('@/components/modals/CosmeticsModal.vue')),
-  ClassSelection: defineAsyncComponent(() => import('@/components/modals/ClassSelectionModal.vue')),
-  ClassMissions: defineAsyncComponent(() => import('@/components/modals/ClassMissionsModal.vue')),
-  MoveLearning: defineAsyncComponent(() => import('@/components/modals/MoveLearningModal.vue')),
-  MoveRelearner: defineAsyncComponent(() => import('@/components/modals/MoveRelearnerModal.vue')),
-  PokemonSelection: defineAsyncComponent(() => import('@/components/modals/PokemonSelectionModal.vue')),
-  WarShop: defineAsyncComponent(() => import('@/components/modals/war-shop/WarShopModal.vue')),
-  PassiveTeamEditor: defineAsyncComponent(() => import('@/components/modals/PassiveTeamEditorModal.vue')),
-  FactionChoice: defineAsyncComponent(() => import('@/components/modals/FactionChoiceModal.vue')),
-  SocialCenter: defineAsyncComponent(() => import('@/components/social/SocialCenterModal.vue')),
-  PokedexDetail: defineAsyncComponent(() => import('@/components/modals/UnifiedPokemonDetailModal.vue')),
-  HatchAnimation: defineAsyncComponent(() => import('@/components/breeding/HatchAnimationModal.vue')),
-  Daycare: defineAsyncComponent(() => import('@/components/modals/DaycareModal.vue')),
-  DaycareMissions: defineAsyncComponent(() => import('@/components/modals/EventMissionsModal.vue')),
-  EventMissions: defineAsyncComponent(() => import('@/components/modals/EventMissionsModal.vue')),
-  FactionWar: defineAsyncComponent(() => import('@/components/modals/FactionWarModal.vue')),
-  BattleSwitch: defineAsyncComponent(() => import('@/components/modals/PokemonSelectionModal.vue')),
-  SessionConflict: defineAsyncComponent(() => import('@/components/auth/SessionConflictModal.vue')),
-  Trade: defineAsyncComponent(() => import('@/components/market/TradeView.vue')),
-  HealOverlay: defineAsyncComponent(() => import('@/components/modals/HealModal.vue')),
-  NaturePatch: defineAsyncComponent(() => import('@/components/modals/NaturePatchModal.vue')),
-  PPUp: defineAsyncComponent(() => import('@/components/modals/PPUpModal.vue')),
-  AbilityPill: defineAsyncComponent(() => import('@/components/modals/AbilityPillModal.vue')),
-  StonePicker: defineAsyncComponent(() => import('@/components/modals/StonePickerModal.vue')),
-  Fishing: defineAsyncComponent(() => import('@/components/modals/FishingModal.vue')),
-  Archaeology: defineAsyncComponent(() => import('@/components/modals/ArchaeologyModal.vue')),
-  EncounterSequence: defineAsyncComponent(() => import('@/components/game/EncounterSequence.vue')),
-  EventDetail: defineAsyncComponent(() => import('@/components/modals/EventDetailModal.vue')),
-  TeamManagement: defineAsyncComponent(() => import('@/components/modals/TeamManagementModal.vue')),
-  BoxPokemonMenu: defineAsyncComponent(() => import('@/components/box/BoxPokemonMenu.vue')),
-  BoxMove: defineAsyncComponent(() => import('@/components/box/BoxMoveModal.vue')),
-  DebugStackTest: defineAsyncComponent(() => import('@/components/modals/DebugStackTestModal.vue')),
-  DebugWeatherTables: defineAsyncComponent(() => import('@/components/modals/DebugWeatherTablesModal.vue')),
-  RouteSpawns: defineAsyncComponent(() => import('@/components/modals/RouteSpawnsModal.vue')),
-  EventSlotAction: defineAsyncComponent(() => import('@/components/modals/EventSlotActionModal.vue')),
-  PvPChallenge: defineAsyncComponent(() => import('@/components/modals/PvPChallengeModal.vue')),
-  PvPOpponentOffline: defineAsyncComponent(() => import('@/components/modals/PvPOpponentOfflineModal.vue')),
-  RankedSeasonReward: defineAsyncComponent(() => import('@/components/modals/RankedSeasonRewardModal.vue')),
-  EventAutoEnroll: defineAsyncComponent(() => import('@/components/modals/EventAutoEnrollModal.vue')),
-  RankedTournamentDetail: defineAsyncComponent(() => import('@/components/modals/RankedTournamentDetailModal.vue'))
-}
+  ...BATTLE_MODAL_REGISTRY,
+  ...POKEMON_MODAL_REGISTRY,
+  ...SHOP_MODAL_REGISTRY,
+  ...SYSTEM_MODAL_REGISTRY
+};
 
 export type ModalRegistryKey = keyof typeof MODAL_REGISTRY;
-
-

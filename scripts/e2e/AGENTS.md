@@ -49,6 +49,17 @@ QA / Automation Engineers.
 - **Parallel Test Worker Username Isolation**: In Playwright simulation suites where multiple tests execute concurrently across parallel workers, tests MUST NEVER share static usernames (e.g. `'SaveShieldUser'`). Each test spec MUST generate or declare unique usernames (`'SaveShieldUserZeroPoke'`, `'SaveShieldUserNoStarter'`, etc.) to prevent database unique constraint collisions (`profiles_username_key`) during concurrent user profile insertion in PostgreSQL.
 - **Pre-Reload Explicit Remote Save Mandate**: In persistence simulation tests validating state rehydration across page reloads under dual database mode (`driver=dual`), calling code MUST invoke an explicit remote save (`await gameStore.save(false, true, true)`) and await its full resolution before calling `page.reload()`. This ensures that remote PostgreSQL synchronization is immediately executed rather than deferred by the 60-second background save throttle.
 
+## Key Files
+
+- `base_battle_simulation.ts`: Module implementation.
+- `base_simulation.ts`: Module implementation.
+- `e2e_constants.ts`: Module implementation.
+- `global_postgres_setup.ts`: Module implementation.
+- `global_postgres_teardown.ts`: Module implementation.
+- `simulation_config.ts`: Module implementation.
+- [`e2e_helpers.ts`](./e2e_helpers.ts): Module implementation.
+- [`run_sequential_simulations.ts`](./run_sequential_simulations.ts): Module implementation.
+
 ## Work Guidance
 
 - Run the simulation suite locally using `npm run sim:e2e` (which dynamically discovers every `*.simulation.ts` file under `scripts/e2e/` and executes them one by one in strict sequential order).
@@ -89,15 +100,6 @@ QA / Automation Engineers.
 - Run `npm run sim:e2e:pokemon` to run Pokémon friendship and UI simulations.
 - Run `npm run sim:e2e:system` to run system-level update and version lock simulations.
 
-## Key Files
-
-- `base_battle_simulation.ts`: Module implementation.
-- `base_simulation.ts`: Module implementation.
-- `e2e_constants.ts`: Module implementation.
-- `global_postgres_setup.ts`: Module implementation.
-- `global_postgres_teardown.ts`: Module implementation.
-- `simulation_config.ts`: Module implementation.
-
 ## Child DOX Index
 
 - [abilities/](./abilities/AGENTS.md): Domain module documentation for out-of-battle abilities simulations.
@@ -115,3 +117,4 @@ QA / Automation Engineers.
 - [results/](./results/AGENTS.md): Domain module documentation for results.
 - [save/](./save/AGENTS.md): Domain module documentation for save.
 - [system/](./system/AGENTS.md): Domain module documentation for system-level update and session simulations.
+- [`./helpers/AGENTS.md`](./helpers/AGENTS.md): Subsystem index for ./helpers.

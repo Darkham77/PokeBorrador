@@ -11,6 +11,14 @@ Systems Designers / Inventory Programmers.
 - Deduplicate item lists via TypeScript typings and maintain strong schema validation.
 - Perform safe quantity subtraction to prevent negative quantities.
 
+## Key Files
+
+- `inventory.ts`: Module implementation.
+- `inventoryActionHelpers.ts`: Module implementation.
+- `inventoryHelpers.ts`: Module implementation.
+- `inventoryUseAction.ts`: Module implementation.
+- `shop.ts`: Module implementation.
+
 ## Work Guidance
 
 - Items are loaded dynamically using the item database definitions.
@@ -20,13 +28,6 @@ Systems Designers / Inventory Programmers.
 
 - Run `npm run test:node` and standard lint checks.
 
-## Key Files
-
-- `inventory.ts`: Module implementation.
-- `inventoryHelpers.ts`: Module implementation.
-- `inventoryUseAction.ts`: Module implementation.
-- `shop.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

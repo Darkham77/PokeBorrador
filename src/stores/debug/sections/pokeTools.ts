@@ -97,7 +97,7 @@ export function registerPokeTools(debug: DebugSystem) {
     action: async (params: Record<string, unknown> = {}) => {
       const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
       const { requireMapRouteId } = await import('@/data/world/map-assets')
-      const rawMapId = typeof params.mapId === 'string' && params.mapId ? params.mapId : 'route1'
+      const rawMapId = typeof params.mapId === 'string' && params.mapId ? params.mapId : (mapStore.currentMap || 'route1')
       const routeId = requireMapRouteId(rawMapId)
       const p = pokemonDebugService.generate(params)
       await pokemonDebugService.triggerEncounter(p, routeId)

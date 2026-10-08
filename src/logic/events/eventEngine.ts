@@ -10,7 +10,7 @@
 import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getGMT3Date } from '@/logic/utils/timeUtils.ts';
 import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
-import type { SubCompetitionConfig } from './eventCompetitions.ts';
+import type { SubCompetitionConfig, CompetitionScope } from './eventCompetitions.ts';
 
 // Re-export scheduling and date helpers
 export * from './eventSchedules.ts';
@@ -58,7 +58,7 @@ export interface EventConfig {
   banner?: string; // domain-ok: Open dynamic text or non-domain string payload
   metric?: string; // domain-ok: Open dynamic text or non-domain string payload
   hasCompetition?: boolean;
-  competitionScope?: 'global' | 'per_species';
+  competitionScope?: CompetitionScope;
   sortBy?: string; // domain-ok: Open dynamic text or non-domain string payload
   requireCaughtDuringEvent?: boolean;
   catchStartDate?: string;

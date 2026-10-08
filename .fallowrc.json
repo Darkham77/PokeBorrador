@@ -89,6 +89,129 @@
   },
   "ignoreExports": [
     {
+      "file": "src/components/battle/battleMoveSlotHelpers.ts",
+      "exports": [
+        "MOVE_SLOT_GLOW_TYPES"
+      ]
+    },
+    {
+      "file": "src/components/battle/moveTooltipStatusHelper.ts",
+      "exports": [
+        "STAT_MODIFIER_ARROWS",
+        "StatModifierArrow"
+      ]
+    },
+    {
+      "file": "src/components/modals/archaeologyGameHelper.ts",
+      "exports": [
+        "ARCHAEOLOGY_CLUES"
+      ]
+    },
+    {
+      "file": "src/components/modals/cosmeticsFilterHelper.ts",
+      "exports": [
+        "COSMETIC_ITEM_TYPES"
+      ]
+    },
+    {
+      "file": "src/components/modals/spawns/routeSpawnsTerrainHelper.ts",
+      "exports": [
+        "ROUTE_SPAWN_TERRAIN_TYPES",
+        "CLASS_ROUTE_ACTION_KINDS"
+      ]
+    },
+    {
+      "file": "src/composables/system/usePWA.ts",
+      "exports": [
+        "PWA_INSTALL_OUTCOMES"
+      ]
+    },
+    {
+      "file": "src/data/pokemon/evolutionDataWrapper.ts",
+      "exports": [
+        "EVOLUTION_TIMES"
+      ]
+    },
+    {
+      "file": "src/logic/battle/actions/specialActionsRoarHelper.ts",
+      "exports": [
+        "ROAR_ESCAPE_LOG_TYPES",
+        "executeRoarAction"
+      ]
+    },
+    {
+      "file": "src/logic/battle/helpers/battleCheatManager.ts",
+      "exports": [
+        "CHEAT_EXECUTION_PHASES"
+      ]
+    },
+    {
+      "file": "src/logic/battle/showdownAdapter.ts",
+      "exports": [
+        "SHOWDOWN_GAME_TYPES",
+        "resolveBaseStats"
+      ]
+    },
+    {
+      "file": "src/logic/battle/showdownBridgeCore.ts",
+      "exports": [
+        "WINNER_LOG_SOURCES"
+      ]
+    },
+    {
+      "file": "src/logic/battle/showdownTeamGeneratorClient.ts",
+      "exports": [
+        "TEAM_GENERATOR_TYPES"
+      ]
+    },
+    {
+      "file": "src/logic/battle/showdownWorkerClient.ts",
+      "exports": [
+        "TEAM_GENERATOR_TYPES",
+        "applyCheatsInWorker",
+        "notifyWorkerBattleWin",
+        "registerShowdownStoreResolvers"
+      ]
+    },
+    {
+      "file": "src/logic/battle/showdownWorkerDebugActions.ts",
+      "exports": [
+        "applyCheatsInWorker",
+        "notifyWorkerBattleWin"
+      ]
+    },
+    {
+      "file": "src/logic/battle/showdownWorkerInstance.ts",
+      "exports": [
+        "registerShowdownStoreResolvers"
+      ]
+    },
+    {
+      "file": "src/logic/db/dbCompatibility.ts",
+      "exports": [
+        "OUTDATED_ERROR_CODES"
+      ]
+    },
+    {
+      "file": "src/logic/events/eventCompetitionsHelper.ts",
+      "exports": [
+        "BODY_METRICS",
+        "TRAINING_METRICS"
+      ]
+    },
+    {
+      "file": "src/views/dev/utils/shadowEditorCatalogHelpers.ts",
+      "exports": [
+        "SHADOW_EDITOR_VIEWS"
+      ]
+    },
+    {
+      "file": "ui-demo/src/data/mockSelectionPokemon.ts",
+      "exports": [
+        "MOCK_SELECTION_SOURCES"
+      ]
+    },
+    {
       "file": "src/data/system/official_servers.ts",
       "exports": [
         "OFFICIAL_SERVERS_BY_ID"
@@ -188,12 +311,6 @@
       "file": "src/logic/battle/actions/specialActionsHelper.ts",
       "exports": [
         "callPokemonToBattle"
-      ]
-    },
-    {
-      "file": "src/logic/battle/actions/specialActionsRoarHelper.ts",
-      "exports": [
-        "executeRoarAction"
       ]
     },
     {
@@ -596,14 +713,6 @@
       ]
     },
     {
-      "file": "src/logic/battle/showdownWorkerClient.ts",
-      "exports": [
-        "applyCheatsInWorker",
-        "notifyWorkerBattleWin",
-        "registerShowdownStoreResolvers"
-      ]
-    },
-    {
       "file": "src/logic/validation/schemas.ts",
       "exports": [
         "activeMissionSchema",
@@ -661,7 +770,9 @@
         "InventoryStore",
         "ShopStore",
         "EVENT_REWARD_TYPES",
-        "EVENT_TYPE_KINDS"
+        "EVENT_TYPE_KINDS",
+        "TRADE_CARD_MODES",
+        "TRADE_OFFER_STATUSES"
       ]
     },
     {
@@ -712,7 +823,10 @@
         "MoveAction",
         "SparkleData",
         "BattleCombatantProps",
-        "ShowdownPlayerRequest"
+        "ShowdownPlayerRequest",
+        "WINNER_SIDES",
+        "DELAYED_SLOT_MOVES",
+        "PERSISTENCE_MODES"
       ]
     },
     {
@@ -750,12 +864,6 @@
         "AbilityBaseData",
         "SQL_PROXY_ACTIONS",
         "SQL_PROXY_COUNT_MODES"
-      ]
-    },
-    {
-      "file": "src/logic/battle/showdownAdapter.ts",
-      "exports": [
-        "resolveBaseStats"
       ]
     },
     {
@@ -1064,7 +1172,6 @@
       "file": "src/types/system/game.ts",
       "exports": [
         "isGenderId",
-        "TOOL_QUALITY_TIERS",
         "CLAIM_ITEM_TYPES",
         "TRAINER_ASSET_VIEWS",
         "COMPONENT_PILL_SIZES",
@@ -1192,7 +1299,9 @@
         "POKEMON_GENDER_NAMES",
         "POKEDEX_STATUSES",
         "POKEMON_SELECTION_SOURCES",
-        "OBTAINED_METHODS"
+        "OBTAINED_METHODS",
+        "MOVE_EFFECT_TYPES",
+        "MOVE_TARGET_SCOPES"
       ]
     },
     {
@@ -1215,7 +1324,8 @@
       "exports": [
         "ENCOUNTER_TYPES",
         "ADVENTURE_EVENT_TYPES",
-        "ROUTE_SPAWN_TABS"
+        "ROUTE_SPAWN_TABS",
+        "GATHERING_TOOL_TIERS"
       ]
     },
     {
@@ -1256,7 +1366,8 @@
       "file": "src/logic/render/atmosphere.worker.ts",
       "exports": [
         "ATMOSPHERE_WORKER_ACTIONS",
-        "AtmosphereWorkerAction"
+        "AtmosphereWorkerAction",
+        "ATMOSPHERE_NOISE_SLOTS"
       ]
     },
     {
@@ -1266,13 +1377,13 @@
       ]
     },
     {
-      "file": "src/logic/auth/saveSerializer.ts",
+      "file": "src/logic/auth/savePokemonSerializer.ts",
       "exports": [
         "withPersistedPokemonGender"
       ]
     },
     {
-      "file": "src/logic/battle/showdownBridge.ts",
+      "file": "src/logic/battle/showdownWeatherInjection.ts",
       "exports": [
         "setBridgeWeatherResolver"
       ]
@@ -1339,7 +1450,8 @@
         "RankedSeasonRulesConfig",
         "SeasonalRewardPokemonConfig",
         "SeasonalThemeConfig",
-        "PvpTurnPayload"
+        "PvpTurnPayload",
+        "PERSONAL_PVP_MATCH_RESULTS"
       ]
     },
     {
@@ -1382,6 +1494,33 @@
       "file": "src/logic/pvp/livePvPBattleSetupHandler.ts",
       "exports": [
         "executeConfirmTeamPreview"
+      ]
+    },
+    {
+      "file": "src/types/battle/tooltip.ts",
+      "exports": [
+        "STAT_MODIFIER_DIRECTIONS",
+        "STAT_MODIFIER_STATUS_CLASSES"
+      ]
+    },
+    {
+      "file": "src/components/common/baseRefreshButtonTypes.ts",
+      "exports": [
+        "REFRESH_BUTTON_SIZES",
+        "REFRESH_BUTTON_VARIANTS"
+      ]
+    },
+    {
+      "file": "src/components/evolution/evolutionTypes.ts",
+      "exports": [
+        "EVOLUTION_STEPS",
+        "EVOLUTION_SPRITE_TARGETS"
+      ]
+    },
+    {
+      "file": "src/logic/utils/spriteOutliner.worker.ts",
+      "exports": [
+        "SPRITE_OUTLINER_ACTIONS"
       ]
     }
   ],

@@ -13,6 +13,16 @@ Asset Pipeline Engineers / Quality Assurance.
 - **Historical Regression Fixtures**: Never use dynamic `git show HEAD:...` for historical parity checks; once committed, HEAD becomes the modified snapshot. Historical regression tests must assert against immutable frozen fixtures in `tests/fixtures/assets/`.
 - **Separation of Automatic Calculations & Manual Overrides**: Tests verifying coordinate databases (such as `pokemonFeetDatabase.ts`) MUST separate automatic calculation parity assertions (comparing unmodified sprites against baseline static snapshots) from manual override assertions (`spriteShadowOverrides.json`). Never mix automatic baseline regression and manual calibration overrides into a single test loop.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -13,6 +13,11 @@ Frontend Core & Diagnostic Tooling Team.
 - **Shadow Editor Catalog Builder (`shadowEditorCatalogHelpers.ts`)**: Modular entity catalog assembly (intercalated Pokémon Front/Back sprites, female variants, NPC full-body sprites, and Player/Trainer sprites) is decoupled from the composable state into pure lookup helpers to uphold modularity and minimal complexity.
 - **Zero Production Leaks**: These utilities are intended strictly for dev-only views and test fixtures.
 
+## Key Files
+
+- [`shadowEditorCatalogHelpers.ts`](./shadowEditorCatalogHelpers.ts): Module implementation.
+- [`shadowEditorClipboard.ts`](./shadowEditorClipboard.ts): Module implementation.
+
 ## Work Guidance
 
 - Keep clipboard utilities pure, portable, and free of framework state dependencies.
@@ -26,4 +31,4 @@ Frontend Core & Diagnostic Tooling Team.
 
 ## Child DOX Index
 
-None (leaf directory).
+- *This directory contains specialized domain logic and files with no subdirectories.*

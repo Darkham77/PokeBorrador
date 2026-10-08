@@ -10,14 +10,6 @@ Frontend Developers / Systems Engineers.
 
 - Follow standard repository modularity guidelines.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `_base.scss`: Module implementation.
@@ -30,6 +22,14 @@ Frontend Developers / Systems Engineers.
 - `_scrollbars.scss`: Module implementation.
 - `_tools.scss`: Module implementation.
 - `_variables.scss`: Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 

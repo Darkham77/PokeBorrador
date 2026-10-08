@@ -254,10 +254,16 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     const sim = new DebugCreatorSimWrapper(page, 'DebugCreatorWeather');
     await sim.setup();
 
-    // 1. Open TIEMPO tab
+    // 1. Set current map to route22 so sandstorm is within map boundaries
+    await page.evaluate(async () => {
+      const { useMapStore } = await import('../../../src/stores/map.ts');
+      useMapStore().currentMap = 'route22';
+    });
+
+    // 2. Open TIEMPO tab
     await openDebugTab(page, 'TIEMPO');
 
-    // 2. Set sandstorm weather
+    // 3. Set sandstorm weather
     const sandstormBtn = page.locator('#debug-weather-btn-sandstorm').first();
     await sandstormBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await sandstormBtn.click();
@@ -283,5 +289,14 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
 
     expect(weatherState).toBe('sandstorm');
     sim.finish('should manipulate cycle/weather from TIEMPO tab and verify combat weather sync', 'passed');
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(async () => {
+      const { useMapStore } = await import('../../../src/stores/map.ts');
+      const store = useMapStore();
+      store.setGlobalWeather(null);
+      store.currentMap = 'route1';
+    });
   });
 });

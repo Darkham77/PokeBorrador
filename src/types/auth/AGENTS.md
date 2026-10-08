@@ -6,14 +6,24 @@ Authentication type definitions.
 
 Auth Team / System Architects.
 
-## Verification
+## Local Contracts
 
-- Run standard type checks.
+- Follow repository architecture, clean code standards, and strict domain typing.
+- Ensure strict module decoupling and zero side-effects.
 
 ## Key Files
 
 - `auth.ts`: Module implementation.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run standard type checks.
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

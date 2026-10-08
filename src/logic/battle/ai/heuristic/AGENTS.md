@@ -8,7 +8,9 @@ threats, position score, sack order). Adapted from `external/pokemon-showdown-ai
 
 Battle Engine Developers.
 
-## Architecture
+## Local Contracts
+
+### Architecture
 
 ```text
 HeuristicAI (heuristicAI.ts)
@@ -23,7 +25,7 @@ HeuristicAI (heuristicAI.ts)
   └─ heuristicDecision()      ← 9-layer rule engine (null = no confident match)
 ```
 
-## Heuristic Layers
+### Heuristic Layers
 
 1. **Force switch** — picks best switch-in on forced replacement
 2. **Speed check** — derived for layers 3-4
@@ -35,7 +37,7 @@ HeuristicAI (heuristicAI.ts)
 8. **Pivot / Best move** — U-turn escape or highest-damage option
 9. **Bad matchup switch** — switch out when drastically outmatched
 
-## Key Constraints
+### Key Constraints
 
 - `heldItem` is ALWAYS mapped to `p.item` via `snapshotBuilder` — never read deprecated fields.
 - `itemConsumed` flag is tracked to avoid treating consumed items as active.
@@ -45,7 +47,7 @@ HeuristicAI (heuristicAI.ts)
 - `hasViableSwitchCounter()` gates mid-combat tactical switches so the AI never switches out if all bench options are worse than staying and fighting.
 - `pickBestSwitch(candidates, opponent, calc, mode)` supports `'counter'` (prioritizes preservation of high-value Pokémon) vs `'faint_replacement'` (faint resolution).
 
-## Module Map
+### Module Map
 
 | File | Role |
 | --- | --- |
@@ -62,16 +64,39 @@ HeuristicAI (heuristicAI.ts)
 | `strategyEvaluator.ts` | Aggregates all four strategy modules → `StrategicState` |
 | `heuristicEngine.ts` | 9-layer heuristic decision function |
 
-## Tests
+### Tests
 
 - `tests/unit/battle/heuristicEngine.spec.ts` — layer regression coverage (vitest)
 
 ## Key Files
 
 - `aiItemEvaluator.ts`: Module implementation.
+- `heuristicExecutionHelpers.ts`: Module implementation.
 - `heuristicHelpers.ts`: Module implementation.
 - `heuristicLayerEvaluators.ts`: Module implementation.
+- [`damageCalculator.ts`](./damageCalculator.ts): Module implementation.
+- [`heuristicEngine.ts`](./heuristicEngine.ts): Module implementation.
+- [`inferenceEngine.ts`](./inferenceEngine.ts): Module implementation.
+- [`pokemonTracker.ts`](./pokemonTracker.ts): Module implementation.
+- [`position.ts`](./position.ts): Module implementation.
+- [`sackOrder.ts`](./sackOrder.ts): Module implementation.
+- [`setsDatabase.ts`](./setsDatabase.ts): Module implementation.
+- [`snapshotBuilder.ts`](./snapshotBuilder.ts): Module implementation.
+- [`strategyEvaluator.ts`](./strategyEvaluator.ts): Module implementation.
+- [`threats.ts`](./threats.ts): Module implementation.
+- [`types.ts`](./types.ts): Module implementation.
+- [`winConditions.ts`](./winConditions.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

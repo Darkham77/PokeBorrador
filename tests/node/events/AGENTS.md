@@ -19,3 +19,7 @@ QA / Systems Engineers.
 ## Verification
 
 - Run `npm run test:node` to execute event unit tests.
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

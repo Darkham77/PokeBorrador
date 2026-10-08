@@ -76,7 +76,10 @@ const nextClassUnlocks = computed(() => {
 
   const classDef = PLAYER_CLASSES[currentClassId]
 
-  const unlocks: { level: number; desc: string; type: 'bonus' | 'mission' }[] = []
+  const _PROFILE_UNLOCK_TYPES = ['bonus', 'mission'] as const
+  type ProfileUnlockType = (typeof _PROFILE_UNLOCK_TYPES)[number]
+
+  const unlocks: { level: number; desc: string; type: ProfileUnlockType }[] = []
 
   // 1. Class bonuses
   if (classDef.bonuses && classDef.bonusLevels) {

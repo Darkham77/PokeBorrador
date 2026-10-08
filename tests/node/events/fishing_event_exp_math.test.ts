@@ -1,6 +1,7 @@
 import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { calculateBaseExp, processExpGain } from '@/logic/battle/battleRewards.ts';
+import { buildPrimaryRewardLine } from '@/logic/battle/rewards/combatantExpEvProcessor.ts';
 import { calculateEncounterTypeWeights } from '@/logic/encounters/encounterHelpers.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, EncounterState } from '@/types/pokemon/encounters';
@@ -65,9 +66,9 @@ describe('Fishing & Event Experience Mathematics', () => {
     const extraEventExp = rewardWithEvent.gained - rewardBase.gained;
     assert.strictEqual(extraEventExp, 80);
 
-    // Format string verification
-    const formattedLog = `${playerMonWithEvent.name} ganó ${rewardWithEvent.gained} EXP (+${extraEventExp} EXP evento).`;
-    assert.strictEqual(formattedLog, 'PIKACHU ganó 160 EXP (+80 EXP evento).');
+    // Format string verification in combatant reward line
+    const rewardLine = buildPrimaryRewardLine(playerMonWithEvent.name, playerMonWithEvent.level, undefined, rewardWithEvent.gained, extraEventExp);
+    assert.match(rewardLine, /\(\+\d+\s+EXP evento\)/);
   });
 
   it('correctly calculates encounter weights when fishing event bonus is active', () => {

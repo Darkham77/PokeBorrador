@@ -2,13 +2,15 @@
 import { useTemplateRef, watch, onWatcherCleanup } from 'vue'
 import { gsap } from 'gsap'
 
+import type { RefreshButtonSize, RefreshButtonVariant } from './baseRefreshButtonTypes'
+
 interface Props {
   id?: string
   loading?: boolean
   disabled?: boolean
   title?: string
-  size?: 'sm' | 'md'
-  variant?: 'circle' | 'pill'
+  size?: RefreshButtonSize
+  variant?: RefreshButtonVariant
   label?: string
   ariaLabel?: string
 }

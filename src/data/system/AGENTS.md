@@ -2,6 +2,10 @@
 
 General configuration constants, servers configuration, encyclopedic library information, and ranked reward tables.
 
+## Ownership
+
+Poké Vicio Development Team.
+
 ## Local Contracts
 
 - **Decoupled Server Configuration**: Active server configurations are written strictly to unversioned `servers.local.json` (gitignored) from `.env` or CI secrets via `npm run servers:configure`. Silent fallbacks and default mock files are strictly forbidden.
@@ -17,6 +21,16 @@ General configuration constants, servers configuration, encyclopedic library inf
 - [`rankedData.ts`](./rankedData.ts): Ranked reward and tier definitions.
 - [`weatherFamilies.ts`](./weatherFamilies.ts): Weather family groupings and constants.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -2,6 +2,10 @@
 
 Automation scripts for database backup, restoration, updates, migrations generation, test seeding, and validation.
 
+## Ownership
+
+Poké Vicio Development Team.
+
 ## Local Contracts
 
 - **Explicit Named Flags Mandate**: All database scripts accept named options via `node:util parseArgs`:
@@ -33,7 +37,23 @@ Automation scripts for database backup, restoration, updates, migrations generat
 - `generate_universal_entity_sanitizer.ts`: Module implementation.
 - `migrate_backup_saves_to_showdown.ts`: Module implementation.
 - `seed_test_users.ts`: Module implementation.
+- [`backup_supabase_db.ts`](./backup_supabase_db.ts): Module implementation.
+- [`generate_migrations.ts`](./generate_migrations.ts): Module implementation.
+- [`import_backup_to_sqlite.ts`](./import_backup_to_sqlite.ts): Module implementation.
+- [`restore_supabase_db.ts`](./restore_supabase_db.ts): Module implementation.
+- [`update_supabase_db.ts`](./update_supabase_db.ts): Module implementation.
+- [`upgrade_backup.ts`](./upgrade_backup.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

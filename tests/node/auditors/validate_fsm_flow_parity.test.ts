@@ -69,5 +69,18 @@ stateDiagram-v2
       expect(result.status).toBe('passed');
       expect(result.metrics['Mermaid seqs evaluated']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when flow parity sequence is missing', () => {
+      const auditor = new FsmFlowParityAuditor();
+      auditor.addViolation({
+        ruleId: 'fsm-flow-sequence-missing',
+        severity: 'error',
+        file: 'docs/battle_flow.md',
+        line: 1,
+        message: 'Flow sequence missing in implementation',
+        context: 'INTRO -> UNKNOWN'
+      });
+      expect(auditor.getErrorsByRule().get('fsm-flow-sequence-missing')).toBe(1);
+    });
   });
 });

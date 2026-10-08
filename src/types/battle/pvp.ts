@@ -254,6 +254,9 @@ export interface BattleReplayRecord {
 
 export const MAX_PERSONAL_MATCH_HISTORY = 20;
 
+export const PERSONAL_PVP_MATCH_RESULTS = ['victory', 'defeat', 'draw'] as const;
+export type PersonalPvPMatchResult = (typeof PERSONAL_PVP_MATCH_RESULTS)[number];
+
 export interface PersonalPvPMatchSummary {
   readonly id: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly battleCode: BattleCode;
@@ -262,7 +265,7 @@ export interface PersonalPvPMatchSummary {
   readonly opponentAvatar?: string; // domain-ok: Asset path URI string
   readonly format: PvpMatchFormat;
   readonly isRanked: boolean;
-  readonly result: 'victory' | 'defeat' | 'draw';
+  readonly result: PersonalPvPMatchResult;
   readonly deltaElo?: number;
   readonly turnsCount: number;
   readonly timestamp: string; // domain-ok: ISO date string

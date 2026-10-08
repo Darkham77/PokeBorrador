@@ -2,24 +2,7 @@ import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import * as compiler from 'vue/compiler-sfc'
 import path from 'node:path'
-
-function fixPkmnSimPlugin() {
-  return {
-    name: 'fix-pkmn-sim',
-    enforce: 'pre' as const,
-    transform(code: string, id: string) {
-      if (id.includes('@pkmn/sim') || id.includes('@pkmn/sets') || id.includes('pkmn_sim.js')) {
-        if (code.includes('static import(') || code.includes('static import (')) {
-          return {
-            code: code.replace(/static import\s*\(/g, 'static "import"('),
-            map: null,
-          }
-        }
-      }
-      return null
-    },
-  }
-}
+import { fixPkmnSimPlugin } from './scripts/maintenance/vite-plugin-fix-pkmn-sim.ts'
 
 // vitest.config.ts — Root Vitest 5 unified configuration.
 // Projects:

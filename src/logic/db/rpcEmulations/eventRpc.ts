@@ -4,7 +4,7 @@ import { getServerInstant } from '@/logic/utils/timeUtils.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { CompetitionEntryData } from '@/types/system/stores';
 import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts';
-import { resolveSubCompetitionDirection, resolveEventSubCompetitions, getSubCompTitle, type SubCompetitionConfig, type ResolvedSubCompetition, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
+import { resolveSubCompetitionDirection, resolveEventSubCompetitions, getSubCompTitle, type SubCompetitionConfig, type ResolvedSubCompetition, type Event as GameEvent, type ResolvedSubCompetitionOrder } from '@/logic/events/eventEngine.ts';
 
 const MAX_STORED_COMPETITION_RESULTS = 100;
 const DEFAULT_PRIZE_AMOUNT = 10000 as const;
@@ -68,7 +68,7 @@ function parseCompetitionEntryData(raw: string | CompetitionEntryData | undefine
 
 function parseAndSortCompetitionEntries(
   rawEntries: StoredCompetitionEntry[],
-  direction: 'min' | 'max'
+  direction: ResolvedSubCompetitionOrder
 ): ParsedCompetitionEntry[] {
   const parsedEntries = rawEntries.map((e) => {
     const dataObj = parseCompetitionEntryData(e.data);

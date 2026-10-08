@@ -15,14 +15,6 @@ Frontend Developers / Systems Engineers.
 - **Decomposed Modal Subcomponents (`PokemonDetailHeader.vue`, `PokemonDetailTabContent.vue`, `PokemonSummaryPhysicalGrid.vue`, `PokemonSummaryTrophiesSection.vue`)**:
   - Modal top identity presentation, tab switching body, physical stats grid, and competition trophy history are decoupled into dedicated subcomponents to ensure single-responsibility modularity and low cognitive complexity for `@/components/modals/UnifiedPokemonDetailModal.vue` and `PokemonSummaryTab.vue`.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `PokemonActionFooter.vue`: Module implementation.
@@ -34,7 +26,21 @@ Frontend Developers / Systems Engineers.
 - `PokemonTmsTab.vue`: Module implementation.
 - `pokemonSummaryHelper.ts`: Module implementation.
 - `pokemonSummaryTypes.ts`: Module implementation.
+- [`PokemonDetailHeader.vue`](./PokemonDetailHeader.vue): Module implementation.
+- [`PokemonDetailTabContent.vue`](./PokemonDetailTabContent.vue): Module implementation.
+- [`PokemonSummaryPhysicalGrid.vue`](./PokemonSummaryPhysicalGrid.vue): Module implementation.
+- [`PokemonSummaryTab.vue`](./PokemonSummaryTab.vue): Module implementation.
+- [`PokemonSummaryTrophiesSection.vue`](./PokemonSummaryTrophiesSection.vue): Module implementation.
+- [`PokemonTrophiesTab.vue`](./PokemonTrophiesTab.vue): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

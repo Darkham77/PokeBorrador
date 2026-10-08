@@ -15,7 +15,8 @@ import {
   LOW_HP_ABILITY_MULTIPLIER,
   STAB_STANDARD_MULTIPLIER,
   TECHNICIAN_POWER_CAP,
-  SAND_FORCE_MULTIPLIER
+  SAND_FORCE_MULTIPLIER,
+  HELD_ITEM_TYPE_BOOST_MULTIPLIER
 } from '@/logic/constants/gameplay.ts';
 
 const MIST_ACCURACY_PENALTY_PCT = 0.8;
@@ -27,7 +28,6 @@ export const WEATHER_RAIN_PENALTY_TEXT = 'Penalizado por Lluvia (0.5x)';
 export const WEATHER_SUN_BOOST_TEXT = 'Potenciado por Sol (1.5x)';
 export const WEATHER_SUN_PENALTY_TEXT = 'Penalizado por Sol (0.5x)';
 export const WEATHER_RAIN_BOOST_TEXT = 'Potenciado por Lluvia (1.5x)';
-const HELD_ITEM_TYPE_BOOST_MULTIPLIER = 1.2;
 const SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER = 0.5;
 const STAGE_MATH_BASE = 3;
 const STAGE_MIN_BOUND = -6;

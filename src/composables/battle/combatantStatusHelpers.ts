@@ -5,7 +5,7 @@ import type { PokemonType } from '@/data/battle/types'
 import { VOLATILE_STATUS_LIST } from '@/data/battle/volatileStatusMap'
 import { toID } from '@/logic/utils/strings.ts'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
-import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationProvider'
+import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts'
 import { getItemName, isItemId } from '@/data/inventory/items'
 import { logger } from '@/logic/utils/logger'
 

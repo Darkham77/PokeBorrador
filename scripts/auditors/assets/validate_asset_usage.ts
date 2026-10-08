@@ -56,6 +56,10 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
   constructor() {
     super({
       id: 'validate_asset_usage',
+      configKey: 'assets.assetUsage',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Asset Usage & Anti-Bypass Auditor',
       description: 'Rutas de assets cableadas o bypass de getAssetUrl',
       icon: '🖼️',
@@ -92,16 +96,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
     });
   }
 
-  public override async runAudit(): Promise<void> {
-    this.markRuleEvaluated('asset-hardcoded-path-template');
-    this.markRuleEvaluated('asset-literal-bound-src');
-    this.markRuleEvaluated('asset-direct-banner-binding');
-    this.markRuleEvaluated('asset-hardcoded-style-path');
-    this.markRuleEvaluated('asset-unmediated-logic-path');
-    this.markRuleEvaluated('asset-hardcoded-data-path');
-    this.markRuleEvaluated('asset-physical-file-missing');
-
-    // 1. Audit Vue Component Templates
+  private async auditVueTemplates(): Promise<void> {
     const vueFiles = [
       ...this.context.collectFiles(['src/components'], new Set(['.vue'])),
       ...this.context.collectFiles(['src/views'], new Set(['.vue']))
@@ -117,7 +112,6 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       if (!templateMatch) continue;
       const template = templateMatch[0];
 
-      // Check for static src="/assets/..." or src="/sprites/..." or src="/public/..."
       const staticSrcRegex = /(?:<img|<source|<video)[^>]*\s+src=["']\/(?:assets|sprites|public)\/[^"']+["']/gi;
       let match: RegExpExecArray | null;
       while ((match = staticSrcRegex.exec(template)) !== null) {
@@ -131,7 +125,6 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         });
       }
 
-      // Check for :src="'/assets/...'" or :src="'/sprites/...'"
       const literalBoundSrcRegex = /:src=["']'(\/(?:assets|sprites|public)\/[^']+)'["']/gi;
       while ((match = literalBoundSrcRegex.exec(template)) !== null) {
         this.addViolation({
@@ -144,7 +137,6 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         });
       }
 
-      // Check for direct banner binding without getAssetUrl
       const rawBannerBindingRegex = /:src=["'](?:currentTheme|resolvedTheme|theme)\.bannerImage["']/gi;
       while ((match = rawBannerBindingRegex.exec(template)) !== null) {
         this.addViolation({
@@ -157,8 +149,9 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         });
       }
     }
+  }
 
-    // 1b. Audit SCSS / CSS Stylesheets for Hardcoded Asset URLs
+  private async auditStylesheets(): Promise<void> {
     const styleDirs = ['src/styles', 'src/components', 'src/views'];
     const styleFiles = this.context.collectFiles(styleDirs, new Set(['.scss', '.css']));
 
@@ -186,8 +179,9 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         }
       }
     }
+  }
 
-    // 2. Audit TypeScript Logic in Components, Views, Stores, and Composables
+  private async auditTsLogic(): Promise<void> {
     const logicDirs = ['src/components', 'src/views', 'src/stores', 'src/composables'];
     const tsLogicFiles = this.context.collectFiles(logicDirs, new Set(['.ts']));
 
@@ -220,8 +214,9 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         }
       }
     }
+  }
 
-    // 3. Audit src/data/ for Hardcoded Asset Paths
+  private async auditDataFiles(): Promise<void> {
     const tsDataFiles = this.context.collectFiles(['src/data'], new Set(['.ts']));
     const jsonDataFiles = this.context.collectFiles(['src/data'], new Set(['.json']));
 
@@ -253,8 +248,9 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         }
       }
     }
+  }
 
-    // 4. Physical Asset Existence for Seasonal Tournament Banners
+  private async auditTournamentBanners(): Promise<void> {
     try {
       const rankedDataFile = path.resolve(this.projectRoot, 'src/data/system/rankedData.ts');
       this.recordScanned('src/data/system/rankedData.ts');
@@ -284,6 +280,22 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
     } catch (err) {
       this.context.addWarning(`Could not verify seasonal tournament banners: ${(err as Error).message}`);
     }
+  }
+
+  public override async runAudit(): Promise<void> {
+    this.markRuleEvaluated('asset-hardcoded-path-template');
+    this.markRuleEvaluated('asset-literal-bound-src');
+    this.markRuleEvaluated('asset-direct-banner-binding');
+    this.markRuleEvaluated('asset-hardcoded-style-path');
+    this.markRuleEvaluated('asset-unmediated-logic-path');
+    this.markRuleEvaluated('asset-hardcoded-data-path');
+    this.markRuleEvaluated('asset-physical-file-missing');
+
+    await this.auditVueTemplates();
+    await this.auditStylesheets();
+    await this.auditTsLogic();
+    await this.auditDataFiles();
+    await this.auditTournamentBanners();
 
     this.context.setMetric('Vue files scanned', this.scannedVueFiles);
     this.context.setMetric('Logic files scanned', this.scannedLogicFiles);

@@ -14,7 +14,7 @@ import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
 import { useBreedingStore } from '../../../src/stores/breeding.ts';
 import { useGameStore } from '../../../src/stores/game.ts';
 import { eggFactory } from '../../../src/logic/breeding/eggFactory.ts';
-import { inheritMoves } from '@/logic/breeding/breedingEngine';
+import { inheritMoves } from '@/logic/breeding/breedingInheritance';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
 import { useBreedingActions } from '@/stores/game/actions/breedingActions';

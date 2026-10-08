@@ -13,15 +13,20 @@ Frontend Developers.
 - **Mathematical Notification Badge & Breakdown Parity**: The total badge counter (`totalHomeNotifications`) MUST strictly match the sum of items displayed across notification tooltip breakdown lines.
 - **Granular Claim & Legacy Discard Categorization**: Breakdowns must account for all actionable notification states, including legacy discardable rewards (`isLegacy: true`), and must strictly differentiate GTS claim types (sales proceeds, purchased items/Pokémon, cancellation returns, and trade completions) rather than generic return labels.
 
-## Work Guidance
-
-- Maintain unitless animation parameters and coordinate lifecycle state with useUIStore.
-
 ## Key Files
 
 - `homeTooltipFormatter.ts`: Module implementation.
 - `useNavigationState.ts`: Module implementation.
 
+## Work Guidance
+
+- Maintain unitless animation parameters and coordinate lifecycle state with useUIStore.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

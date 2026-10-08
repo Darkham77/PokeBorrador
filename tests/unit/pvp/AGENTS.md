@@ -15,3 +15,12 @@ Frontend Developers / Systems Engineers.
 
 - Ensure strict assertions on both Host and Guest perspective mappings.
 - Validate team preview selection bounds and timer handling without unmocked intervals.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

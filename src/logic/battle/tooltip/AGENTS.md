@@ -12,6 +12,11 @@ Frontend Developers / Battle Engine Engineers.
 - **Move Tooltip Condition Builders**: `moveTooltipConditions.ts` encapsulates all status condition details (`TOOLTIP_CONDITION_DETAILS`), stage stat names (`TOOLTIP_STAGE_STAT_NAMES`), and boost calculations (`parseStatusEffectInfo`, `buildBoostInfo`, `buildConditionInfo`).
 - **Zero Fallback & Typed Stats**: All stat conversions must strictly validate with `ShowdownBoostStatKey` and `TooltipStageStatId` without naked strings.
 
+## Key Files
+
+- `moveTooltipMathHelper.ts`: Module implementation.
+- [`moveTooltipConditions.ts`](./moveTooltipConditions.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure pure calculations without side effects.
@@ -20,6 +25,6 @@ Frontend Developers / Battle Engine Engineers.
 
 - Run `npm run test` targeting `tests/unit/battle/move_tooltip_suite.spec.ts`.
 
-## Key Files
+## Child DOX Index
 
-- `moveTooltipMathHelper.ts`: Module implementation.
+- *This directory contains specialized domain logic and files with no subdirectories.*

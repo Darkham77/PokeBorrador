@@ -2,7 +2,13 @@
 
 Automation scripts for assets downloads, multi-core WebP sprite conversion, crafting tier organization, and item asset collision auditing.
 
-## Architectural Mandates & Tier Structure
+## Ownership
+
+Poké Vicio Development Team.
+
+## Local Contracts
+
+### Architectural Mandates & Tier Structure
 
 - **Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST strictly follow the 4-tier domain hierarchy mapped from `item.craftingTier`:
   - `crafting/tier0/`: Raw materials, stones, and primary crafting inputs (`item.craftingTier === 0`).
@@ -15,7 +21,7 @@ Automation scripts for assets downloads, multi-core WebP sprite conversion, craf
   2. **Zero Hardcoded Dates**: Images MUST NEVER contain burned-in calendar dates, specific years (e.g. 2024, 2026), timeslots, fixed venue names, or aspect ratio watermarks (`16:9`). Event banners must remain timeless and reusable; event dates and scheduling are managed exclusively by the database and UI engine.
   3. **Enabled Pokémon Whitelist**: Any artwork, event banners, tournament illustrations, or rewards generated or registered for the game MUST strictly and exclusively depict Pokémon from the official enabled species whitelist (`ENABLED_POKEMON_IDS` in `src/data/system/constants.ts`). Using unreleased, non-whitelisted, or custom unapproved species (such as Lucario, Garchomp, Greninja, Metagross, Tyranitar, Darkrai, Blaziken, or custom forms like Mewtwo Armored) in illustration prompts or reward tables is STRICTLY FORBIDDEN. Detailed standards are governed in [Event System Manual](../../.agents/skills/project-standards/references/systems/event_system_manual.md).
 
-## Key Files & Canonical Commands
+## Key Files
 
 - `convert_assets.ts`: Zero-config, multi-core WebP conversion pipeline reading `_raw-assets` and generating asset databases (`npm run assets:convert`).
 - `organize_item_sprites_by_tier.ts`: Re-tiering script that moves item sprites into `crafting/tier[0-3]/` based on `item.craftingTier` and synchronizes `items.json`.
@@ -31,6 +37,16 @@ Automation scripts for assets downloads, multi-core WebP sprite conversion, craf
 - `init_shadow_overrides.ts`: Module implementation.
 - `recompile_feet_database.ts`: Module implementation.
 - `variantImageAnalyzer.ts`: Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 

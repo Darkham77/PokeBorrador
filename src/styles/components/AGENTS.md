@@ -10,14 +10,6 @@ Frontend Developers / Systems Engineers.
 
 - Follow standard repository modularity guidelines.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `EventDetailModal.styles.scss`: Module implementation.
@@ -85,6 +77,14 @@ Frontend Developers / Systems Engineers.
 - `_type-pills.scss`: Module implementation.
 - `_unified-pokemon-detail.scss`: Module implementation.
 - `_war-panel.scss`: Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 

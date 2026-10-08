@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { EvolutionStep } from './evolutionTypes';
+import type { EvolutionStep, EvolutionSpriteTarget } from './evolutionTypes';
 
 const props = withDefaults(defineProps<{
   step: EvolutionStep;
-  currentShowingSprite: 'from' | 'to';
+  currentShowingSprite: EvolutionSpriteTarget;
   fromSprite: string;
   toSprite: string;
   oldName?: string;

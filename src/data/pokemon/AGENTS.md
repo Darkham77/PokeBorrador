@@ -2,6 +2,10 @@
 
 Static Pokémon data, species database, EV yield databases, sprites mappings, evolution triggers, and footprints database.
 
+## Ownership
+
+Poké Vicio Development Team.
+
 ## Local Contracts
 
 - **Compact Tuple Database Serialization**: Massive relational datasets (such as `pokemonDB.json`) must store repetitive sub-records (e.g. learnsets) as compact arrays `[level, moveId, pp]` instead of verbose repetitive JSON objects.
@@ -36,6 +40,16 @@ Static Pokémon data, species database, EV yield databases, sprites mappings, ev
 - `spriteMappingData.ts`: Module implementation.
 - `starters.ts`: Module implementation.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

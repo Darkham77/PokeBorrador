@@ -1,4 +1,4 @@
-# tests/unit/components/
+# Purpose
 
 Unit tests for standalone Vue components.
 
@@ -14,9 +14,14 @@ Frontend Developers / QA Engineers.
 - `criminalityBar.spec.ts`: Unit tests for `CriminalityBar.vue` validating visibility by class/tab, style height calculation, reactive alert pulse at 100%, and excess label text formatting with extra level bonuses.
 - `HUD_NavSocialGroup.spec.ts`: Unit tests for `HUD_NavSocialGroup.vue` asserting navigation toggle, presence of Amigos, Coliseo, and Dominancia buttons, notification badge counters, and strict elimination of legacy WorldEvents modal launcher.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
 ## Verification
 
-- Run `npm run test:unit -- tests/unit/components/` to execute component unit tests.
+- Run `npm run test:unit tests/unit/components/` to execute component unit tests.
 
 ## Child DOX Index
 

@@ -12,6 +12,13 @@ Frontend Developers / UI Components Team.
 - **Style Linkage**: Components link to `@/styles/components/_debug-weather-tables.scss` to maintain 1:1 visual parity.
 - **Domain Typing**: Use canonical domain types from `debugWeatherTypes.ts`.
 
+## Key Files
+
+- [`DebugWeatherModifiers.vue`](./DebugWeatherModifiers.vue): Module implementation.
+- [`DebugWeatherProbTag.vue`](./DebugWeatherProbTag.vue): Module implementation.
+- [`DebugWeatherSeasonCard.vue`](./DebugWeatherSeasonCard.vue): Module implementation.
+- [`DebugWeatherSpawns.vue`](./DebugWeatherSpawns.vue): Module implementation.
+
 ## Work Guidance
 
 - Keep components focused and strictly typed.
@@ -21,3 +28,7 @@ Frontend Developers / UI Components Team.
 - `npm run lint`
 - `npm run audit suites=validate_component_styles`
 - `npm run test`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

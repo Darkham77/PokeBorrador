@@ -190,11 +190,11 @@ test.describe('Fishing & EXP Event Special Scenarios Simulation', () => {
     // 6. Validar que en los logs de combate la experiencia indique el desglose del evento
     await expect.poll(async () => {
       const logs = await sim.getCombatLogMessages();
-      return logs.some(l => l.includes('EXP') && l.includes('ganó') && l.includes('EXP evento'));
+      return logs.some(l => l.includes('EXP') && l.includes('EXP evento'));
     }, { timeout: 15000 }).toBe(true);
 
     const logs = await sim.getCombatLogMessages();
-    const expLog = logs.find(l => l.includes('EXP') && l.includes('ganó'));
+    const expLog = logs.find(l => l.includes('EXP') && l.includes('EXP evento'));
     expect(expLog).toBeDefined();
     expect(expLog).toMatch(/\(\+\d+\s+EXP evento\)/);
 

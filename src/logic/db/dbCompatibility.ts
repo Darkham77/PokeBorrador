@@ -1,5 +1,6 @@
 import { CLIENT_DB_VERSION } from './migrations_version.ts';
 import { logger } from '../utils/logger.ts';
+import { isE2EEnvironment } from '../utils/env.ts';
 import type { DBRouter } from './dbRouter.ts';
 import type { DBCompatibilityResponse } from '@/types/system/database';
 import type { LoadingStore } from './sqliteEngine.ts';
@@ -11,10 +12,6 @@ declare const __APP_VERSION__: string;
  * Ensures the client version is not greater than the DB version.
  */
 
-function isE2EEnvironment(): boolean {
-  return (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
-         (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
-}
 
 async function getOptionalLoadingStore(): Promise<LoadingStore | null> {
   try {
@@ -100,11 +97,14 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
   }
 }
 
+export const OUTDATED_ERROR_CODES = ['OUTDATED_SERVER', 'OUTDATED_CLIENT'] as const;
+export type OutdatedErrorCode = (typeof OUTDATED_ERROR_CODES)[number];
+
 export interface AppCompatibilityResponse {
   compatible: boolean;
   client: string;
   server: string;
-  error?: 'OUTDATED_SERVER' | 'OUTDATED_CLIENT';
+  error?: OutdatedErrorCode;
 }
 
 export function parseAppVersion(val: unknown): string {

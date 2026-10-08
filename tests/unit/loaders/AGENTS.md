@@ -18,3 +18,7 @@ Frontend Developers / Quality Engineers.
 ## Verification
 
 - Run `npm run test:unit tests/unit/loaders/`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

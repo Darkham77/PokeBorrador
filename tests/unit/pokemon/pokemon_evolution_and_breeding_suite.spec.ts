@@ -7,15 +7,17 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { 
   checkCompatibility, 
-  calculateInheritance, 
   getBreedingBaseId, 
   getFirstEvolution, 
-  getEggSpecies, 
+  getEggSpecies
+} from '@/logic/breeding/breedingEngine'
+import {
+  calculateInheritance, 
   inheritMoves, 
   inheritAbility, 
   calculateShinyChance, 
   getGeneticsForecast 
-} from '@/logic/breeding/breedingEngine'
+} from '@/logic/breeding/breedingInheritance'
 import { useEvolutionStore } from '@/stores/evolution'
 import { useBreedingStore } from '@/stores/breeding'
 import { useGameStore } from '@/stores/game'

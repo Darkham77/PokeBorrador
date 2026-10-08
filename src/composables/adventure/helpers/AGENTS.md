@@ -11,6 +11,10 @@ Frontend Developers / Adventure System Engineers.
 - Export immutable constants and type predicates for adventure simulation components.
 - Maintain 100% strict TypeScript types with zero `any` and zero type assertion bypasses.
 
+## Key Files
+
+- `adventureSimulationConstants.ts`: Module implementation.
+
 ## Work Guidance
 
 - Keep shared constants such as canvas dimensions, glow marker thresholds, and Pokémon Center node lookups centralized here.
@@ -19,10 +23,6 @@ Frontend Developers / Adventure System Engineers.
 
 - Run `npm run audit`.
 
-## Key Files
-
-- `adventureSimulationConstants.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

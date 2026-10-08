@@ -20,6 +20,16 @@ Frontend Developers / Systems Engineers.
 - **Modal Width & Symmetrical Row Centering**: Modals hosting the complete 9-button sort bar MUST allocate sufficient container width (`max-width: 640px`) to prevent line wrapping, and MUST center both the sort bar (`.pokemon-sort-bar .sort-items`) and tag filter rows (`.ps-tags-row-unified`) with `justify-content: center` to preserve symmetry with the top search input.
 - **Decomposed Pokémon Display Card Subcomponents (`PokemonDisplayTopRow.vue`, `PokemonDisplayActionFooter.vue`)**: Badges, tier indicators, friendship seal, and footer action buttons are decoupled into dedicated subcomponents to ensure single-responsibility modularity and low cognitive complexity for `PokemonDisplayCard.vue`.
 
+## Key Files
+
+- `FriendshipSealBadge.vue`: Module implementation.
+- `pokemonDisplayCardHelper.ts`: Module implementation.
+- [`PokemonDisplayActionFooter.vue`](./PokemonDisplayActionFooter.vue): Module implementation.
+- [`PokemonDisplayCard.vue`](./PokemonDisplayCard.vue): Module implementation.
+- [`PokemonDisplayTopRow.vue`](./PokemonDisplayTopRow.vue): Module implementation.
+- [`PokemonSortBar.vue`](./PokemonSortBar.vue): Module implementation.
+- [`PokemonTagBar.vue`](./PokemonTagBar.vue): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -28,11 +38,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `FriendshipSealBadge.vue`: Module implementation.
-- `pokemonDisplayCardHelper.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

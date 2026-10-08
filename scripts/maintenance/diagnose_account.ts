@@ -82,6 +82,36 @@ interface BackupSaveRow {
   last_save_id?: string;
 }
 
+async function findUserInAuthFallback(
+  supabase: ReturnType<typeof createClient>,
+  userInput: string,
+  serverName: string
+): Promise<LoadedAccountData | null> {
+  console.log(styleText('yellow', `⚠️ No se encontró perfil directo con "${userInput}". Buscando en auth.users...`));
+  const { data: authUsers } = await supabase.auth.admin.listUsers();
+  const cleanId = toID(userInput);
+  const foundAuth = authUsers?.users.find(u => (u.email && toID(u.email) === cleanId) || u.id === userInput);
+  if (!foundAuth) {
+    console.error(styleText('red', `❌ Usuario "${userInput}" no encontrado en el servidor ${serverName}.`));
+    return null;
+  }
+  const userId = foundAuth.id;
+  const { data: saveRow, error: saveErr } = await supabase.from('game_saves').select('save_data, last_save_id').eq('user_id', userId).single();
+  if (saveErr || !saveRow) {
+    console.error(styleText('red', `❌ No se encontró partida (game_saves) para el usuario "${userId}" (${foundAuth.email}).`));
+    return null;
+  }
+  const raw = typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
+  return {
+    userId,
+    username: (foundAuth.user_metadata?.username as string) || foundAuth.email || userId,
+    email: foundAuth.email,
+    source: `Supabase [${serverName}]`,
+    rawSaveData: raw,
+    lastSaveId: saveRow.last_save_id
+  };
+}
+
 async function loadFromSupabase(serverName: string, userInput: string): Promise<LoadedAccountData | null> {
   const serverConfigs = await readAndParseEnv();
   const conf = findServerConfig(serverConfigs, serverName);
@@ -113,29 +143,7 @@ async function loadFromSupabase(serverName: string, userInput: string): Promise<
 
   const { data: profiles, error: profileErr } = await profileQuery;
   if (profileErr || !profiles || profiles.length === 0) {
-    console.log(styleText('yellow', `⚠️ No se encontró perfil directo con "${userInput}". Buscando en auth.users...`));
-    const { data: authUsers } = await supabase.auth.admin.listUsers();
-    const cleanId = toID(userInput);
-    const foundAuth = authUsers?.users.find(u => (u.email && toID(u.email) === cleanId) || u.id === userInput);
-    if (!foundAuth) {
-      console.error(styleText('red', `❌ Usuario "${userInput}" no encontrado en el servidor ${serverName}.`));
-      return null;
-    }
-    const userId = foundAuth.id;
-    const { data: saveRow, error: saveErr } = await supabase.from('game_saves').select('save_data, last_save_id').eq('user_id', userId).single();
-    if (saveErr || !saveRow) {
-      console.error(styleText('red', `❌ No se encontró partida (game_saves) para el usuario "${userId}" (${foundAuth.email}).`));
-      return null;
-    }
-    const raw = typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
-    return {
-      userId,
-      username: (foundAuth.user_metadata?.username as string) || foundAuth.email || userId,
-      email: foundAuth.email,
-      source: `Supabase [${serverName}]`,
-      rawSaveData: raw,
-      lastSaveId: saveRow.last_save_id
-    };
+    return findUserInAuthFallback(supabase, userInput, serverName);
   }
 
   const profile = profiles[0]!;
@@ -356,10 +364,7 @@ function loadAllFromBackupFile(filePath: string): LoadedAccountData[] {
   return results;
 }
 
-export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[] {
-  const findings: DiagnosticFinding[] = [];
-
-  // 1. Estructura y Schema Valibot
+function validateValibotSchema(saveData: GameState, findings: DiagnosticFinding[]): void {
   const valibotResult = validateSaveData(saveData);
   if (!valibotResult.success) {
     for (const issue of valibotResult.issues) {
@@ -373,31 +378,151 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
       });
     }
   }
+}
 
-  // 2. Inventario contra catálogo SHOP_ITEMS
+function validateInventoryItems(inventory: Record<string, number> | undefined, findings: DiagnosticFinding[]): void {
   const validItemIds: Set<string> = new Set(SHOP_ITEMS.map(i => i.id));
-  if (saveData.inventory) {
-    for (const [itemId, count] of Object.entries(saveData.inventory)) {
-      if (typeof count !== 'number' || count < 0 || !Number.isInteger(count)) {
-        findings.push({
-          severity: 'error',
-          category: 'inventory',
-          message: `Cantidad inválida para '${itemId}': ${count}`,
-          path: `inventory.${itemId}`
-        });
-      }
-      if (!validItemIds.has(itemId)) {
+  if (!inventory) return;
+  for (const [itemId, count] of Object.entries(inventory)) {
+    if (typeof count !== 'number' || count < 0 || !Number.isInteger(count)) {
+      findings.push({
+        severity: 'error',
+        category: 'inventory',
+        message: `Cantidad inválida para '${itemId}': ${count}`,
+        path: `inventory.${itemId}`
+      });
+    }
+    if (!validItemIds.has(itemId)) {
+      findings.push({
+        severity: 'warning',
+        category: 'inventory',
+        message: `Ítem '${itemId}' no registrado en SHOP_ITEMS.`,
+        path: `inventory.${itemId}`
+      });
+    }
+  }
+}
+
+function validatePokemonEntry(
+  poke: Pokemon,
+  location: string,
+  seenUids: Set<string>,
+  findings: DiagnosticFinding[]
+): void {
+  if (!poke.uid) {
+    findings.push({
+      severity: 'error',
+      category: 'pokemon',
+      message: `Pokémon sin UID en ${location}.`,
+      path: `${location}.uid`
+    });
+  } else if (seenUids.has(poke.uid)) {
+    findings.push({
+      severity: 'error',
+      category: 'pokemon',
+      message: `UID duplicado '${poke.uid}' en ${location}.`,
+      path: `${location}.uid`
+    });
+  } else {
+    seenUids.add(poke.uid);
+  }
+
+  if (poke.expNeeded === null || poke.expNeeded === undefined || typeof poke.expNeeded !== 'number') {
+    findings.push({
+      severity: 'error',
+      category: 'pokemon',
+      message: `expNeeded inválido (${poke.expNeeded}) en ${location} (${poke.name} Nivel ${poke.level}).`,
+      path: `${location}.expNeeded`
+    });
+  }
+
+  if (!isEnabledPokemonId(poke.id)) {
+    findings.push({
+      severity: 'error',
+      category: 'pokemon',
+      message: `[${location}] Especie "${poke.id}" (${poke.name}) no habilitada por la whitelist global.`,
+      path: `${location}.id`
+    });
+  }
+
+  try {
+    const legality = checkPokemonLegality(poke);
+    if (!legality.isLegal) {
+      for (const issue of legality.issues) {
         findings.push({
           severity: 'warning',
-          category: 'inventory',
-          message: `Ítem '${itemId}' no registrado en SHOP_ITEMS.`,
-          path: `inventory.${itemId}`
+          category: 'legality',
+          message: `[${location}] ${poke.name}: ${issue}`,
+          path: location
         });
       }
     }
+  } catch (legalityErr: unknown) {
+    findings.push({
+      severity: 'error',
+      category: 'pokemon',
+      message: `[${location}] ${poke.name}: Error al verificar especie/datos: ${(legalityErr as Error).message}`,
+      path: `${location}.id`
+    });
   }
+}
 
-  // 3. Pokémon con checkPokemonLegality
+function validateDaycareEggs(eggs: readonly unknown[] | undefined, findings: DiagnosticFinding[]): void {
+  if (!Array.isArray(eggs)) return;
+  for (let eIdx = 0; eIdx < eggs.length; eIdx++) {
+    const egg = eggs[eIdx];
+    if (!egg || typeof egg !== 'object') continue;
+    const eggObj = egg as { id?: unknown; pokemonId?: unknown };
+    if (typeof eggObj.id !== 'string') {
+      findings.push({
+        severity: 'error',
+        category: 'daycare',
+        message: `ID de huevo no es string en eggs[${eIdx}].`,
+        path: `eggs[${eIdx}].id`
+      });
+      continue;
+    }
+    const eggSpecies = eggObj.id || (typeof eggObj.pokemonId === 'string' ? eggObj.pokemonId : undefined);
+    if (eggSpecies && !isEnabledPokemonId(eggSpecies)) {
+      findings.push({
+        severity: 'error',
+        category: 'daycare',
+        message: `Huevo en eggs[${eIdx}] con especie no habilitada por la whitelist global: "${eggSpecies}".`,
+        path: `eggs[${eIdx}].id`
+      });
+    }
+  }
+}
+
+function validateDaycareWarehouse(warehouse: readonly unknown[] | undefined, findings: DiagnosticFinding[]): void {
+  if (!Array.isArray(warehouse)) return;
+  for (let wIdx = 0; wIdx < warehouse.length; wIdx++) {
+    const entry = warehouse[wIdx];
+    if (!entry || typeof entry !== 'object') continue;
+    const rawSpecies = String((entry as { id?: unknown }).id || '');
+    const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
+    if (cleanSpecies && !isEnabledPokemonId(cleanSpecies)) {
+      findings.push({
+        severity: 'error',
+        category: 'daycare',
+        message: `Elemento en daycareWarehouse[${wIdx}] con especie no habilitada: "${cleanSpecies}".`,
+        path: `daycareWarehouse[${wIdx}]`
+      });
+    }
+  }
+}
+
+function validateDaycareEggsAndWarehouse(saveData: GameState, findings: DiagnosticFinding[]): void {
+  validateDaycareEggs(saveData.eggs, findings);
+  validateDaycareWarehouse(saveData.daycareWarehouse, findings);
+}
+
+export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[] {
+  const findings: DiagnosticFinding[] = [];
+
+  validateValibotSchema(saveData, findings);
+  validateInventoryItems(saveData.inventory, findings);
+
   const team = saveData.team || [];
   const box = (saveData.box || []).filter((p): p is Pokemon => p !== null && p !== undefined);
   const allPokemon = [
@@ -406,113 +531,13 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
   ];
 
   const seenUids = new Set<string>();
-
   for (const { poke, location } of allPokemon) {
-    if (!poke || typeof poke !== 'object') continue;
-
-    if (!poke.uid) {
-      findings.push({
-        severity: 'error',
-        category: 'pokemon',
-        message: `Pokémon sin UID en ${location}.`,
-        path: `${location}.uid`
-      });
-    } else if (seenUids.has(poke.uid)) {
-      findings.push({
-        severity: 'error',
-        category: 'pokemon',
-        message: `UID duplicado '${poke.uid}' en ${location}.`,
-        path: `${location}.uid`
-      });
-    } else {
-      seenUids.add(poke.uid);
-    }
-
-    if (poke.expNeeded === null || poke.expNeeded === undefined || typeof poke.expNeeded !== 'number') {
-      findings.push({
-        severity: 'error',
-        category: 'pokemon',
-        message: `expNeeded inválido (${poke.expNeeded}) en ${location} (${poke.name} Nivel ${poke.level}).`,
-        path: `${location}.expNeeded`
-      });
-    }
-
-    if (!isEnabledPokemonId(poke.id)) {
-      findings.push({
-        severity: 'error',
-        category: 'pokemon',
-        message: `[${location}] Especie "${poke.id}" (${poke.name}) no habilitada por la whitelist global.`,
-        path: `${location}.id`
-      });
-    }
-
-    try {
-      const legality = checkPokemonLegality(poke);
-      if (!legality.isLegal) {
-        for (const issue of legality.issues) {
-          findings.push({
-            severity: 'warning',
-            category: 'legality',
-            message: `[${location}] ${poke.name}: ${issue}`,
-            path: location
-          });
-        }
-      }
-    } catch (legalityErr: unknown) {
-      findings.push({
-        severity: 'error',
-        category: 'pokemon',
-        message: `[${location}] ${poke.name}: Error al verificar especie/datos: ${(legalityErr as Error).message}`,
-        path: `${location}.id`
-      });
+    if (poke && typeof poke === 'object') {
+      validatePokemonEntry(poke, location, seenUids, findings);
     }
   }
 
-  // 4. Huevos (Eggs)
-  if (Array.isArray(saveData.eggs)) {
-    for (let eIdx = 0; eIdx < saveData.eggs.length; eIdx++) {
-      const egg = saveData.eggs[eIdx];
-      if (!egg) continue;
-      if (typeof egg.id !== 'string') {
-        findings.push({
-          severity: 'error',
-          category: 'daycare',
-          message: `ID de huevo no es string en eggs[${eIdx}].`,
-          path: `eggs[${eIdx}].id`
-        });
-      } else {
-        const eggSpecies = egg.id || egg.pokemonId;
-        if (eggSpecies && !isEnabledPokemonId(eggSpecies)) {
-          findings.push({
-            severity: 'error',
-            category: 'daycare',
-            message: `Huevo en eggs[${eIdx}] con especie no habilitada por la whitelist global: "${eggSpecies}".`,
-            path: `eggs[${eIdx}].id`
-          });
-        }
-      }
-    }
-  }
-
-  // 5. Guardería Depósito (daycareWarehouse)
-  const warehouse = saveData.daycareWarehouse;
-  if (Array.isArray(warehouse)) {
-    for (let wIdx = 0; wIdx < warehouse.length; wIdx++) {
-      const entry = warehouse[wIdx];
-      if (!entry || typeof entry !== 'object') continue;
-      const rawSpecies = String(entry.id || '');
-      const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
-      const targetSpecies = cleanSpecies;
-      if (targetSpecies && !isEnabledPokemonId(targetSpecies)) {
-        findings.push({
-          severity: 'error',
-          category: 'daycare',
-          message: `Elemento en daycareWarehouse[${wIdx}] con especie no habilitada: "${targetSpecies}".`,
-          path: `daycareWarehouse[${wIdx}]`
-        });
-      }
-    }
-  }
+  validateDaycareEggsAndWarehouse(saveData, findings);
 
   return findings;
 }
@@ -572,28 +597,21 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   };
 }
 
-async function main() {
-  const rawArgs = process.argv.slice(2);
-  const normalized = rawArgs.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['help', 'fix', 'all'].includes(a) ? `--${a}` : a));
+interface AccountDiagnosisSummary {
+  userId: string;
+  username: string;
+  email?: string;
+  level: number;
+  pokemonCount: number;
+  errorCount: number;
+  warningCount: number;
+  fixedByMigration: boolean;
+  errors: DiagnosticFinding[];
+  warnings: DiagnosticFinding[];
+}
 
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      user: { type: 'string', short: 'u' },
-      server: { type: 'string', short: 's' },
-      file: { type: 'string', short: 'f' },
-      db: { type: 'string', short: 'd', default: 'poke_local.db' },
-      all: { type: 'boolean', short: 'a' },
-      'save-json': { type: 'string' },
-      help: { type: 'boolean', short: 'h' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
-
-  const isHelp = values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h');
-  if (isHelp) {
-    console.log(`
+function displayHelpAndExit(): never {
+  console.log(`
 🔍 POKÉ VICIO — DIAGNÓSTICO INTEGRAL DE CUENTAS
 
 Uso:
@@ -618,115 +636,84 @@ Opciones:
   save-json=<ruta>         Exporta los datos de guardado crudos descargados a un archivo JSON local.
   help                     Muestra este mensaje de ayuda.
 `);
-    process.exit(0);
-  }
+  process.exit(0);
+}
 
-  const isAll = Boolean(values.all || rawArgs.includes('all') || values.user === 'all');
-  const userInput = (typeof values.user === 'string' && values.user !== 'all' ? values.user : undefined) || positionals.find(p => !p.startsWith('-') && !p.includes('=') && p !== 'all') || (values.server ? undefined : (positionals[0] !== 'all' ? positionals[0] : undefined));
-  const serverInput = (typeof values.server === 'string' ? values.server : undefined) || (rawArgs.some(a => a.startsWith('server=')) ? rawArgs.find(a => a.startsWith('server='))?.split('=')[1] : undefined);
-  const fileInput = typeof values.file === 'string' ? values.file : undefined;
-  const dbInput = typeof values.db === 'string' ? values.db : 'poke_local.db';
-
-  if (!isAll && !userInput) {
-    console.error(styleText('yellow', '⚠️ Debes especificar el usuario a diagnosticar con user=<id|email|username> o pasar "all" para diagnosticar todas las cuentas.'));
-    console.log(styleText('gray', 'Ejemplo: npm run database:diagnose-account server=server_franco all'));
-    process.exit(1);
-  }
-
-  console.log(styleText('bold', '\n======================================================'));
-  console.log(styleText('bold', '🧪 POKÉ VICIO — DIAGNÓSTICO DE CUENTAS & PARTIDAS'));
-  console.log(styleText('bold', '======================================================'));
-
-  let accounts: LoadedAccountData[] = [];
-
+async function resolveTargetAccounts(
+  isAll: boolean,
+  fileInput?: string,
+  serverInput?: string,
+  dbInput?: string,
+  userInput?: string
+): Promise<LoadedAccountData[]> {
   if (isAll) {
-    if (fileInput) {
-      accounts = loadAllFromBackupFile(fileInput);
-    } else if (serverInput && serverInput !== 'local') {
-      accounts = await loadAllFromSupabase(serverInput);
-    } else {
-      accounts = loadAllFromSqlite(dbInput);
-    }
+    if (fileInput) return loadAllFromBackupFile(fileInput);
+    if (serverInput && serverInput !== 'local') return await loadAllFromSupabase(serverInput);
+    return loadAllFromSqlite(dbInput || 'poke_local.db');
+  }
+
+  let singleAcc: LoadedAccountData | null;
+  if (fileInput) {
+    singleAcc = loadFromBackupFile(fileInput, userInput!);
+  } else if (serverInput && serverInput !== 'local') {
+    singleAcc = await loadFromSupabase(serverInput, userInput!);
   } else {
-    let singleAcc: LoadedAccountData | null;
-    if (fileInput) {
-      singleAcc = loadFromBackupFile(fileInput, userInput!);
-    } else if (serverInput && serverInput !== 'local') {
-      singleAcc = await loadFromSupabase(serverInput, userInput!);
-    } else {
-      singleAcc = loadFromSqlite(dbInput, userInput!);
-    }
-    if (singleAcc) accounts = [singleAcc];
+    singleAcc = loadFromSqlite(dbInput || 'poke_local.db', userInput!);
   }
+  return singleAcc ? [singleAcc] : [];
+}
 
-  if (accounts.length === 0) {
-    console.error(styleText('red', '\n❌ No se encontraron partidas para auditar.'));
-    process.exit(1);
-  }
+function processSingleAccountDiagnosis(
+  acc: LoadedAccountData,
+  index: number,
+  totalAccounts: number,
+  isAll: boolean
+): AccountDiagnosisSummary {
+  const save = acc.rawSaveData;
+  const pokes = (save.team?.length || 0) + (save.box?.filter(Boolean).length || 0);
 
-  console.log(styleText('cyan', `\n📊 Total de cuentas a diagnosticar: ${accounts.length}\n`));
+  const findings = runBatteryOfDiagnostics(save);
+  const errors = findings.filter(f => f.severity === 'error');
+  const warnings = findings.filter(f => f.severity === 'warning');
 
-  const allSummary: Array<{
-    userId: string;
-    username: string;
-    email?: string;
-    level: number;
-    pokemonCount: number;
-    errorCount: number;
-    warningCount: number;
-    fixedByMigration: boolean;
-    errors: DiagnosticFinding[];
-    warnings: DiagnosticFinding[];
-  }> = [];
+  const migSim = testInMemoryMigrations(save, acc.userId);
 
-  let totalErrors = 0;
-  let totalWarnings = 0;
-  let totalFixed = 0;
+  const statusBadge = errors.length === 0 
+    ? styleText('green', '✔ SANA')
+    : (migSim.success ? styleText('yellow', `⚠️ ${errors.length} ERR (100% Corregible)`) : styleText('red', `❌ ${errors.length} ERR (Requiere Revisión)`));
 
-  for (let i = 0; i < accounts.length; i++) {
-    const acc = accounts[i]!;
-    const save = acc.rawSaveData;
-    const pokes = (save.team?.length || 0) + (save.box?.filter(Boolean).length || 0);
-
-    const findings = runBatteryOfDiagnostics(save);
-    const errors = findings.filter(f => f.severity === 'error');
-    const warnings = findings.filter(f => f.severity === 'warning');
-
-    const migSim = testInMemoryMigrations(save, acc.userId);
-
-    totalErrors += errors.length;
-    totalWarnings += warnings.length;
-    if (migSim.success && errors.length > 0) totalFixed++;
-
-    allSummary.push({
-      userId: acc.userId,
-      username: acc.username,
-      email: acc.email,
-      level: save.trainerLevel ?? 1,
-      pokemonCount: pokes,
-      errorCount: errors.length,
-      warningCount: warnings.length,
-      fixedByMigration: migSim.success,
-      errors,
-      warnings
-    });
-
-    const statusBadge = errors.length === 0 
-      ? styleText('green', '✔ SANA')
-      : (migSim.success ? styleText('yellow', `⚠️ ${errors.length} ERR (100% Corregible)`) : styleText('red', `❌ ${errors.length} ERR (Requiere Revisión)`));
-
-    console.log(`[${i + 1}/${accounts.length}] ${styleText('bold', acc.username)} (${styleText('dim', acc.email || acc.userId)}) — Nv.${save.trainerLevel ?? 1} (${pokes} Pokes) ➔ ${statusBadge}`);
-    if (errors.length > 0 && (!isAll || accounts.length <= MAX_VERBOSE_ACCOUNTS_LIMIT)) {
-      for (const err of errors) {
-        console.log(`     ↳ [${styleText('red', err.category)}] ${err.message}`);
-      }
+  console.log(`[${index + 1}/${totalAccounts}] ${styleText('bold', acc.username)} (${styleText('dim', acc.email || acc.userId)}) — Nv.${save.trainerLevel ?? 1} (${pokes} Pokes) ➔ ${statusBadge}`);
+  if (errors.length > 0 && (!isAll || totalAccounts <= MAX_VERBOSE_ACCOUNTS_LIMIT)) {
+    for (const err of errors) {
+      console.log(`     ↳ [${styleText('red', err.category)}] ${err.message}`);
     }
   }
 
+  return {
+    userId: acc.userId,
+    username: acc.username,
+    email: acc.email,
+    level: save.trainerLevel ?? 1,
+    pokemonCount: pokes,
+    errorCount: errors.length,
+    warningCount: warnings.length,
+    fixedByMigration: migSim.success,
+    errors,
+    warnings
+  };
+}
+
+function renderGlobalSummary(
+  allSummary: AccountDiagnosisSummary[],
+  totalErrors: number,
+  totalWarnings: number,
+  totalFixed: number,
+  serverInput?: string
+): void {
   console.log('\n======================================================');
   console.log(styleText('bold', '📋 RESUMEN GLOBAL DE AUDITORÍA'));
   console.log('======================================================');
-  console.log(`👤 Cuentas auditadas: ${accounts.length}`);
+  console.log(`👤 Cuentas auditadas: ${allSummary.length}`);
   console.log(`🔴 Total Errores Críticos: ${totalErrors > 0 ? styleText('red', String(totalErrors)) : styleText('green', '0')}`);
   console.log(`🟡 Total Advertencias de Legalidad: ${totalWarnings > 0 ? styleText('yellow', String(totalWarnings)) : styleText('green', '0')}`);
   console.log(`🟢 Cuentas con errores corregibles por SQL: ${styleText('green', String(totalFixed))}`);
@@ -750,13 +737,99 @@ Opciones:
   } else if (unfixableAccounts.length > 0) {
     console.log(styleText('red', `\n❌ Hay ${unfixableAccounts.length} cuenta(s) con errores no cubiertos por las migraciones actuales. Se debe revisar caso por caso.`));
   }
+}
 
-  // Guardar reporte JSON
+function saveDiagnosisReport(allSummary: AccountDiagnosisSummary[]): void {
   const reportDir = path.resolve(process.cwd(), 'scratch/audits');
   if (!fs.existsSync(reportDir)) fs.mkdirSync(reportDir, { recursive: true });
   const reportPath = path.resolve(reportDir, 'all_accounts_diagnosis.json');
   fs.writeFileSync(reportPath, JSON.stringify(allSummary, null, 2), 'utf-8');
   console.log(styleText('dim', `\n💾 Reporte detallado guardado en: ${reportPath}\n`));
+}
+
+interface ParsedDiagnoseCli {
+  readonly isHelp: boolean;
+  readonly isAll: boolean;
+  readonly userInput?: string;
+  readonly serverInput?: string;
+  readonly fileInput?: string;
+  readonly dbInput: string;
+}
+
+function parseDiagnoseAccountCliArgs(rawArgs: string[]): ParsedDiagnoseCli {
+  const normalized = rawArgs.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['help', 'fix', 'all'].includes(a) ? `--${a}` : a));
+
+  const { values, positionals } = parseArgs({
+    args: normalized,
+    options: {
+      user: { type: 'string', short: 'u' },
+      server: { type: 'string', short: 's' },
+      file: { type: 'string', short: 'f' },
+      db: { type: 'string', short: 'd', default: 'poke_local.db' },
+      all: { type: 'boolean', short: 'a' },
+      'save-json': { type: 'string' },
+      help: { type: 'boolean', short: 'h' }
+    },
+    allowPositionals: true,
+    strict: false
+  });
+
+  const isHelp = Boolean(values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h'));
+  const isAll = Boolean(values.all || rawArgs.includes('all') || values.user === 'all');
+  const userInput = (typeof values.user === 'string' && values.user !== 'all' ? values.user : undefined) || positionals.find(p => !p.startsWith('-') && !p.includes('=') && p !== 'all') || (values.server ? undefined : (positionals[0] !== 'all' ? positionals[0] : undefined));
+  const serverInput = (typeof values.server === 'string' ? values.server : undefined) || (rawArgs.some(a => a.startsWith('server=')) ? rawArgs.find(a => a.startsWith('server='))?.split('=')[1] : undefined);
+  const fileInput = typeof values.file === 'string' ? values.file : undefined;
+  const dbInput = typeof values.db === 'string' ? values.db : 'poke_local.db';
+
+  return { isHelp, isAll, userInput, serverInput, fileInput, dbInput };
+}
+
+function executeAccountDiagnosisLoop(
+  accounts: readonly LoadedAccountData[],
+  isAll: boolean
+): { allSummary: AccountDiagnosisSummary[]; totalErrors: number; totalWarnings: number; totalFixed: number } {
+  const allSummary: AccountDiagnosisSummary[] = [];
+  let totalErrors = 0;
+  let totalWarnings = 0;
+  let totalFixed = 0;
+
+  for (let i = 0; i < accounts.length; i++) {
+    const summary = processSingleAccountDiagnosis(accounts[i]!, i, accounts.length, isAll);
+    totalErrors += summary.errorCount;
+    totalWarnings += summary.warningCount;
+    if (summary.fixedByMigration && summary.errorCount > 0) totalFixed++;
+    allSummary.push(summary);
+  }
+
+  return { allSummary, totalErrors, totalWarnings, totalFixed };
+}
+
+async function main() {
+  const { isHelp, isAll, userInput, serverInput, fileInput, dbInput } = parseDiagnoseAccountCliArgs(process.argv.slice(2));
+  if (isHelp) displayHelpAndExit();
+
+  if (!isAll && !userInput) {
+    console.error(styleText('yellow', '⚠️ Debes especificar el usuario a diagnosticar con user=<id|email|username> o pasar "all" para diagnosticar todas las cuentas.'));
+    console.log(styleText('gray', 'Ejemplo: npm run database:diagnose-account server=server_franco all'));
+    process.exit(1);
+  }
+
+  console.log(styleText('bold', '\n======================================================'));
+  console.log(styleText('bold', '🧪 POKÉ VICIO — DIAGNÓSTICO DE CUENTAS & PARTIDAS'));
+  console.log(styleText('bold', '======================================================'));
+
+  const accounts = await resolveTargetAccounts(isAll, fileInput, serverInput, dbInput, userInput);
+  if (accounts.length === 0) {
+    console.error(styleText('red', '\n❌ No se encontraron partidas para auditar.'));
+    process.exit(1);
+  }
+
+  console.log(styleText('cyan', `\n📊 Total de cuentas a diagnosticar: ${accounts.length}\n`));
+
+  const { allSummary, totalErrors, totalWarnings, totalFixed } = executeAccountDiagnosisLoop(accounts, isAll);
+
+  renderGlobalSummary(allSummary, totalErrors, totalWarnings, totalFixed, serverInput);
+  saveDiagnosisReport(allSummary);
 }
 
 if (process.argv[1]?.includes('diagnose_account')) {

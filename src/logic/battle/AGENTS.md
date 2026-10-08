@@ -146,23 +146,13 @@ Frontend Developers / Systems Engineers.
   - Late or out-of-order sendout logs at the end of battle initialization are strictly prohibited.
 - **Combatant Reward Registration Invariant (`rewardsDistributor.ts` & `battleFaintSequence.ts`)**: When processing faint sequences in wild encounters, the defeated enemy Pokémon MUST be registered as an eligible reward combatant (via `registerRewardCombatant(ctx, defeatedPokemon)`) BEFORE clearing `active.enemy` or `active._initialEnemy` to `null`. Clearing active combatants prematurely causes `resolveRewardCombatants()` to return an empty array, silently dropping all EXP, EV, and level-up rewards.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-- **Turn & Lifecycle Helper Decomposition**: Keep `battleTurn.ts` and `orchestrator.ts` strictly modular and under SRP limits by delegating turn choices/actions into `turnActionResolver.ts` and battle initialization sequences into `battleLifecycleInitializer.ts`.
-- New Showdown log handlers go in the most specific sub-module; if none fits, add to `showdownBridgeMisc.ts` and refactor later.
-- Maintain `BattleArenaControls.vue` strictly modular adhering to Fallow SSoT metrics by extracting overlay logic into dedicated `*Overlay.vue` components.
-
-## Verification
-
-- Run `npm run test` — includes `struggle.spec.ts`, `pp_softlock.test.ts`, `faint_interrupts_log_playback.spec.ts`.
-- Run `npm run audit` for zero-error gate.
-
 ## Key Files
 
 - `battleDebug.ts`: Module implementation.
 - `battleEngine.ts`: Module implementation.
+- `battleFlowFormHelper.ts`: Forecast form handling and entry ability resolution for battle flow.
 - `battleFlowHazardsHelper.ts`: Module implementation.
+- `battleFlowWeatherHelper.ts`: Weather ticks, sand/hail immunity, and atmospheric residual damage calculations.
 - `battleHealingItemProcessor.ts`: Module implementation.
 - `battleLogger.ts`: Module implementation.
 - `battleMathTypes.ts`: Module implementation.
@@ -190,6 +180,74 @@ Frontend Developers / Systems Engineers.
 - `trainerFactory.ts`: Module implementation.
 - `trainerInventory.ts`: Module implementation.
 - `trainerSpawner.ts`: Module implementation.
+- [`battleAbilityDamage.ts`](./battleAbilityDamage.ts): Module implementation.
+- [`battleCatchMath.ts`](./battleCatchMath.ts): Module implementation.
+- [`battleCatchProcessor.ts`](./battleCatchProcessor.ts): Module implementation.
+- [`battleDamageRoll.ts`](./battleDamageRoll.ts): Module implementation.
+- [`battleEnvironmentModifiers.ts`](./battleEnvironmentModifiers.ts): Module implementation.
+- [`battleFaintSequence.ts`](./battleFaintSequence.ts): Module implementation.
+- [`battleFlee.ts`](./battleFlee.ts): Module implementation.
+- [`battleFlow.ts`](./battleFlow.ts): Module implementation.
+- [`battleFormulas.ts`](./battleFormulas.ts): Module implementation.
+- [`battleItems.ts`](./battleItems.ts): Module implementation.
+- [`battleMath.ts`](./battleMath.ts): Module implementation.
+- [`battleStateSync.ts`](./battleStateSync.ts): Module implementation.
+- [`battleStatus.ts`](./battleStatus.ts): Module implementation.
+- [`battleTeamCoordinator.ts`](./battleTeamCoordinator.ts): Module implementation.
+- [`battleTurn.ts`](./battleTurn.ts): Module implementation.
+- [`battleTypeEffectiveness.ts`](./battleTypeEffectiveness.ts): Module implementation.
+- [`moveCalculator.ts`](./moveCalculator.ts): Module implementation.
+- [`moveTooltipMath.ts`](./moveTooltipMath.ts): Module implementation.
+- [`orchestrator.ts`](./orchestrator.ts): Module implementation.
+- [`orchestratorConfigHelper.ts`](./orchestratorConfigHelper.ts): Module implementation.
+- [`orchestratorRestoreHelper.ts`](./orchestratorRestoreHelper.ts): Module implementation.
+- [`orchestratorSearchPhaseHelper.ts`](./orchestratorSearchPhaseHelper.ts): Module implementation.
+- [`orchestratorStateHelper.ts`](./orchestratorStateHelper.ts): Module implementation.
+- [`orchestratorTeamHelper.ts`](./orchestratorTeamHelper.ts): Module implementation.
+- [`orchestratorWorkerInitHelper.ts`](./orchestratorWorkerInitHelper.ts): Module implementation.
+- [`resolution.ts`](./resolution.ts): Module implementation.
+- [`rewardsDistributor.ts`](./rewardsDistributor.ts): Module implementation.
+- [`searchLoop.ts`](./searchLoop.ts): Module implementation.
+- [`showdown.worker.ts`](./showdown.worker.ts): Module implementation.
+- [`showdownBridge.ts`](./showdownBridge.ts): Module implementation.
+- [`showdownBridgeCore.ts`](./showdownBridgeCore.ts): Module implementation.
+- [`showdownBridgeCtx.ts`](./showdownBridgeCtx.ts): Module implementation.
+- [`showdownBridgeFailUpkeep.ts`](./showdownBridgeFailUpkeep.ts): Module implementation.
+- [`showdownBridgeFeedback.ts`](./showdownBridgeFeedback.ts): Module implementation.
+- [`showdownBridgeField.ts`](./showdownBridgeField.ts): Module implementation.
+- [`showdownBridgeGimmicks.ts`](./showdownBridgeGimmicks.ts): Module implementation.
+- [`showdownBridgeItemAbility.ts`](./showdownBridgeItemAbility.ts): Module implementation.
+- [`showdownBridgeMisc.ts`](./showdownBridgeMisc.ts): Module implementation.
+- [`showdownBridgeStages.ts`](./showdownBridgeStages.ts): Module implementation.
+- [`showdownBridgeSwitchDrag.ts`](./showdownBridgeSwitchDrag.ts): Module implementation.
+- [`showdownBridgeVolatiles.ts`](./showdownBridgeVolatiles.ts): Volatile status start and end event handlers for Showdown log bridge.
+- [`showdownCombatantResolver.ts`](./showdownCombatantResolver.ts): Module implementation.
+- [`showdownLogFilter.ts`](./showdownLogFilter.ts): Module implementation.
+- [`showdownLogSkipper.ts`](./showdownLogSkipper.ts): Module implementation.
+- [`showdownReplayTraceHelper.ts`](./showdownReplayTraceHelper.ts): Module implementation.
+- [`showdownSetMapper.ts`](./showdownSetMapper.ts): Module implementation.
+- [`showdownSlotResolver.ts`](./showdownSlotResolver.ts): Module implementation.
+- [`showdownTeamGeneratorClient.ts`](./showdownTeamGeneratorClient.ts): Module implementation.
+- [`showdownTurnSyncHelper.ts`](./showdownTurnSyncHelper.ts): Module implementation.
+- [`showdownUidMapper.ts`](./showdownUidMapper.ts): Module implementation.
+- [`showdownWeatherInjection.ts`](./showdownWeatherInjection.ts): Module implementation.
+- [`showdownWorkerClient.ts`](./showdownWorkerClient.ts): Module implementation.
+- [`showdownWorkerDebugActions.ts`](./showdownWorkerDebugActions.ts): Module implementation.
+- [`showdownWorkerInstance.ts`](./showdownWorkerInstance.ts): Module implementation.
+- [`smogonAdapter.ts`](./smogonAdapter.ts): Module implementation.
+- [`statBreakdownHelper.ts`](./statBreakdownHelper.ts): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+- **Turn & Lifecycle Helper Decomposition**: Keep `battleTurn.ts` and `orchestrator.ts` strictly modular and under SRP limits by delegating turn choices/actions into `turnActionResolver.ts` and battle initialization sequences into `battleLifecycleInitializer.ts`.
+- New Showdown log handlers go in the most specific sub-module; if none fits, add to `showdownBridgeMisc.ts` and refactor later.
+- Maintain `BattleArenaControls.vue` strictly modular adhering to Fallow SSoT metrics by extracting overlay logic into dedicated `*Overlay.vue` components.
+
+## Verification
+
+- Run `npm run test` — includes `struggle.spec.ts`, `pp_softlock.test.ts`, `faint_interrupts_log_playback.spec.ts`.
+- Run `npm run audit` for zero-error gate.
 
 ## Child DOX Index
 

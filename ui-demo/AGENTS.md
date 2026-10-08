@@ -25,6 +25,6 @@ Frontend / UI Engineers.
 - `npm run lint`
 - `npm run audit`
 
-## DOX Directory Navigation Index
+## Child DOX Index
 
 - [src/AGENTS.md](./src/AGENTS.md): UI-Demo application source code and root layout.

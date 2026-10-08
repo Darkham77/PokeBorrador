@@ -21,4 +21,4 @@ Frontend Developers / QA Engineers.
 
 ## Child DOX Index
 
-- *This domain module does not contain nested sub-directories with independent AGENTS.md files.*
+- *This directory contains specialized domain logic and files with no subdirectories.*

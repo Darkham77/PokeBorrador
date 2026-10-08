@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import VirtualEntity from './VirtualEntity.vue'
+import BattleTrainerFigure from './BattleTrainerFigure.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers'
-import CombatShadow from './CombatShadow.vue'
 import { useCombatShadowStore } from '@/stores/battle/combatShadows'
 import {
   TRAINER_RETREAT_X_OFFSET_PX,
   TRAINER_RETREAT_Y_OFFSET_PX,
   TRAINER_RETREAT_SCALE
 } from '@/logic/constants/animations'
-import { getTrainerIdleConfig } from './helpers/trainerIdleAnims.ts'
 import type { GenderId } from '@/types/system/game'
 
 const props = defineProps<{
@@ -64,7 +62,6 @@ const playerFeetCoords = computed(() => {
   }
 })
 
-const TRAINER_GROUND_Y = '100%' as const
 const TRAINER_SHADOW_FEET_Y = 1.0
 
 const enemyTrainerSize = computed(() => props.baseEntitySizeEnemy * (props.objectScale || 2))
@@ -115,14 +112,6 @@ watch(
 const trainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
 const standingTrainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
 
-const introEnemyTrainerIdleRef = ref<HTMLElement | null>(null)
-const standingEnemyTrainerIdleRef = ref<HTMLElement | null>(null)
-const playerTrainerIdleRef = ref<HTMLElement | null>(null)
-
-let introEnemyIdleTween: gsap.core.Tween | null = null
-let standingEnemyIdleTween: gsap.core.Tween | null = null
-let playerIdleTween: gsap.core.Tween | null = null
-
 const PLAYER_TRAINER_ASPECT_WIDTH_PX = 65
 const PLAYER_TRAINER_ASPECT_HEIGHT_PX = 165
 const STANDING_PLAYER_Y_OFFSET_PX = 55
@@ -142,75 +131,12 @@ const standingPlayerY = computed(() =>
   WORLD_CONSTANTS.SAFE_ZONE_Y + WORLD_CONSTANTS.SAFE_ZONE_HEIGHT - WORLD_CONSTANTS.ENTITY_SIZE_PLAYER + STANDING_PLAYER_Y_OFFSET_PX
 )
 
-const initIntroEnemyIdleAnim = () => {
-  if (introEnemyIdleTween) {
-    introEnemyIdleTween.kill()
-    introEnemyIdleTween = null
-  }
-  if (!introEnemyTrainerIdleRef.value) return
-  gsap.killTweensOf(introEnemyTrainerIdleRef.value)
-  gsap.set(introEnemyTrainerIdleRef.value, { transformOrigin: 'bottom center' })
-  introEnemyIdleTween = gsap.to(introEnemyTrainerIdleRef.value, getTrainerIdleConfig())
-}
-
-const initStandingEnemyIdleAnim = () => {
-  if (standingEnemyIdleTween) {
-    standingEnemyIdleTween.kill()
-    standingEnemyIdleTween = null
-  }
-  if (!standingEnemyTrainerIdleRef.value) return
-  gsap.killTweensOf(standingEnemyTrainerIdleRef.value)
-  gsap.set(standingEnemyTrainerIdleRef.value, { transformOrigin: 'bottom center' })
-  standingEnemyIdleTween = gsap.to(standingEnemyTrainerIdleRef.value, getTrainerIdleConfig())
-}
-
-const initPlayerIdleAnim = () => {
-  if (playerIdleTween) {
-    playerIdleTween.kill()
-    playerIdleTween = null
-  }
-  if (!playerTrainerIdleRef.value) return
-  gsap.killTweensOf(playerTrainerIdleRef.value)
-  gsap.set(playerTrainerIdleRef.value, { transformOrigin: 'bottom center' })
-  playerIdleTween = gsap.to(playerTrainerIdleRef.value, getTrainerIdleConfig())
-}
-
-watch(introEnemyTrainerIdleRef, (el) => {
-  if (el) initIntroEnemyIdleAnim()
-})
-
-watch(standingEnemyTrainerIdleRef, (el) => {
-  if (el) initStandingEnemyIdleAnim()
-})
-
-watch(playerTrainerIdleRef, (el) => {
-  if (el) initPlayerIdleAnim()
-})
-
-onMounted(() => {
-  initPlayerIdleAnim()
-  if (props.isTrainerVisible) initIntroEnemyIdleAnim()
-  if (props.showStandingTrainers) initStandingEnemyIdleAnim()
-})
-
 onUnmounted(() => {
   if (enemyTrainerShadowKey.value) {
     shadowStore.hideShadow(enemyTrainerShadowKey.value)
   }
   if (playerTrainerShadowKey.value) {
     shadowStore.hideShadow(playerTrainerShadowKey.value)
-  }
-  if (introEnemyIdleTween) {
-    introEnemyIdleTween.kill()
-    introEnemyIdleTween = null
-  }
-  if (standingEnemyIdleTween) {
-    standingEnemyIdleTween.kill()
-    standingEnemyIdleTween = null
-  }
-  if (playerIdleTween) {
-    playerIdleTween.kill()
-    playerIdleTween = null
   }
 })
 
@@ -254,48 +180,17 @@ defineExpose({
     :h="baseEntitySizeEnemy"
     class="trainer-entity"
   >
-    <div
-      class="trainer-sprite-wrapper"
-      :style="{
-        width: `${enemyTrainerSize}px`,
-        height: `${enemyTrainerSize}px`,
-        position: 'absolute',
-        left: '50%',
-        top: TRAINER_GROUND_Y,
-        transform: `translate(calc(-${(enemyFeetCoords?.feetX ?? 0.5) * 100}%), calc(-${(enemyFeetCoords?.feetY ?? 0.95) * 100}%)) ${enemyFeetCoords?.isFlying ? 'translateY(-24px)' : ''}`
-      }"
-    >
-      <div
-        ref="introEnemyTrainerIdleRef"
-        class="trainer-idle-wrapper"
-      >
-        <div 
-          class="pokemon-atmosphere-wrapper"
-          :style="{ filter: 'var(--atmosphere-filter)' }"
-        >
-          <img 
-            :src="enemyTrainerSpriteUrl" 
-            :alt="trainerName || 'Entrenador rival'"
-            class="trainer-image"
-            @error="onEnemyTrainerError"
-          >
-        </div>
-      </div>
-    </div>
-    <CombatShadow
-      :shadow-id="enemyTrainerShadowKey"
-      :sprite-size="enemyTrainerSize"
-      :shadow-scale="enemyFeetCoords?.shadowScale"
-      :style="{
-        '--shadow-y': TRAINER_GROUND_Y
-      }"
+    <BattleTrainerFigure
+      :sprite-url="enemyTrainerSpriteUrl"
+      :alt-text="trainerName || 'Entrenador rival'"
+      :size="enemyTrainerSize"
+      :feet-coords="enemyFeetCoords"
+      :shadow-key="enemyTrainerShadowKey"
+      :show-guide="showGuides"
+      :guide-width="baseEntitySizeEnemy * (objectScale || 2)"
+      :guide-height="baseEntitySizeEnemy * (objectScale || 2)"
+      @error="onEnemyTrainerError"
     />
-    <div
-      v-if="showGuides"
-      class="debug-trainer-guide"
-    >
-      <span>{{ Math.round(baseEntitySizeEnemy * (objectScale || 2)) }}x{{ Math.round(baseEntitySizeEnemy * (objectScale || 2)) }}</span>
-    </div>
   </VirtualEntity>
 
   <!-- Standing Enemy Trainer (During active combat) -->
@@ -309,48 +204,17 @@ defineExpose({
     :h="baseEntitySizeEnemy"
     class="standing-trainer enemy-trainer"
   >
-    <div
-      class="trainer-sprite-wrapper"
-      :style="{
-        width: `${enemyTrainerSize}px`,
-        height: `${enemyTrainerSize}px`,
-        position: 'absolute',
-        left: '50%',
-        top: TRAINER_GROUND_Y,
-        transform: `translate(calc(-${(enemyFeetCoords?.feetX ?? 0.5) * 100}%), calc(-${(enemyFeetCoords?.feetY ?? 0.95) * 100}%)) ${enemyFeetCoords?.isFlying ? 'translateY(-24px)' : ''}`
-      }"
-    >
-      <div
-        ref="standingEnemyTrainerIdleRef"
-        class="trainer-idle-wrapper"
-      >
-        <div 
-          class="pokemon-atmosphere-wrapper"
-          :style="{ filter: 'var(--atmosphere-filter)' }"
-        >
-          <img 
-            :src="enemyTrainerSpriteUrl" 
-            :alt="trainerName || 'Entrenador rival'"
-            class="trainer-image"
-            @error="onEnemyTrainerError"
-          >
-        </div>
-      </div>
-    </div>
-    <CombatShadow
-      :shadow-id="enemyTrainerShadowKey"
-      :sprite-size="enemyTrainerSize"
-      :shadow-scale="enemyFeetCoords?.shadowScale"
-      :style="{
-        '--shadow-y': TRAINER_GROUND_Y
-      }"
+    <BattleTrainerFigure
+      :sprite-url="enemyTrainerSpriteUrl"
+      :alt-text="trainerName || 'Entrenador rival'"
+      :size="enemyTrainerSize"
+      :feet-coords="enemyFeetCoords"
+      :shadow-key="enemyTrainerShadowKey"
+      :show-guide="showGuides"
+      :guide-width="baseEntitySizeEnemy * (objectScale || 2) * TRAINER_RETREAT_SCALE"
+      :guide-height="baseEntitySizeEnemy * (objectScale || 2) * TRAINER_RETREAT_SCALE"
+      @error="onEnemyTrainerError"
     />
-    <div
-      v-if="showGuides"
-      class="debug-trainer-guide"
-    >
-      <span>{{ Math.round(baseEntitySizeEnemy * (objectScale || 2) * TRAINER_RETREAT_SCALE) }}x{{ Math.round(baseEntitySizeEnemy * (objectScale || 2) * TRAINER_RETREAT_SCALE) }}</span>
-    </div>
   </VirtualEntity>
 
   <!-- Standing Player Trainer (_back) -->
@@ -361,48 +225,18 @@ defineExpose({
     :h="baseEntitySizePlayer"
     class="standing-trainer player-trainer"
   >
-    <div
-      class="trainer-sprite-wrapper"
-      :style="{
-        width: `${playerTrainerSize}px`,
-        height: `${playerTrainerSize}px`,
-        position: 'absolute',
-        left: '50%',
-        top: TRAINER_GROUND_Y,
-        transform: `translate(calc(-${(playerFeetCoords?.feetX ?? 0.5) * 100}%), calc(-${(playerFeetCoords?.feetY ?? 0.95) * 100}%)) ${playerFeetCoords?.isFlying ? 'translateY(-24px)' : ''}`
-      }"
-    >
-      <div
-        ref="playerTrainerIdleRef"
-        class="trainer-idle-wrapper"
-      >
-        <div 
-          class="pokemon-atmosphere-wrapper"
-          :style="{ filter: 'var(--atmosphere-filter)' }"
-        >
-          <img 
-            :src="playerBackSpriteUrl"
-            class="trainer-image player-trainer-image shadow-pixelated"
-            alt="Player Trainer"
-            @error="onPlayerTrainerBackError"
-          >
-        </div>
-      </div>
-    </div>
-    <CombatShadow
-      :shadow-id="playerTrainerShadowKey"
-      :sprite-size="playerTrainerSize"
-      :shadow-scale="playerFeetCoords?.shadowScale"
-      :style="{
-        '--shadow-y': TRAINER_GROUND_Y
-      }"
+    <BattleTrainerFigure
+      :sprite-url="playerBackSpriteUrl"
+      alt-text="Player Trainer"
+      :size="playerTrainerSize"
+      :feet-coords="playerFeetCoords"
+      :shadow-key="playerTrainerShadowKey"
+      :show-guide="showGuides"
+      :guide-width="standingPlayerWidth * (objectScale || 2)"
+      :guide-height="baseEntitySizePlayer * (objectScale || 2)"
+      image-class="player-trainer-image shadow-pixelated"
+      @error="onPlayerTrainerBackError"
     />
-    <div
-      v-if="showGuides"
-      class="debug-trainer-guide"
-    >
-      <span>{{ Math.round(standingPlayerWidth * (objectScale || 2)) }}x{{ Math.round(baseEntitySizePlayer * (objectScale || 2)) }}</span>
-    </div>
   </VirtualEntity>
 </template>
 

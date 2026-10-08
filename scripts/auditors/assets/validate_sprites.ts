@@ -30,10 +30,87 @@ export const SPRITE_RULES: readonly SpriteRuleId[] = [
   'sprite-missing-asset'
 ] as const;
 
+function buildSpritePaths(num: string): Record<string, string> {
+  const match = num.match(/^(\d+)(.*)$/);
+  const baseNum = match ? match[1] : num;
+  const suffix = match ? match[2] : '';
+  const animFilename = `${baseNum}i${suffix}.webp`;
+
+  return {
+    staticFront: path.join(STATIC_SPRITES_DIR, `${num}.webp`),
+    staticFrontShiny: path.join(STATIC_SPRITES_DIR, `shiny/${num}.webp`),
+    animatedFront: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Front/${animFilename}`),
+    animatedBack: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Back/${animFilename}`),
+    animatedFrontShiny: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Front shiny/${animFilename}`),
+    animatedBackShiny: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Back shiny/${animFilename}`)
+  };
+}
+
+async function checkPathsExist(paths: Record<string, string>): Promise<string[]> {
+  const missing: string[] = []; // no-domain: Non-domain utility collection or data structure
+  for (const [key, filePath] of Object.entries(paths)) {
+    try {
+      await fs.access(filePath);
+    } catch { // catch-ok: file does not exist
+      missing.push(key);
+    }
+  }
+  return missing;
+}
+
+export interface SpriteValidationItem {
+  id: string;
+  num: string;
+}
+
 export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
+  private collectItemsToValidate(): SpriteValidationItem[] {
+    const allSpecies = Dex.forGen(9).species.all();
+    const checkedNumbers = new Set<string>();
+    const itemsToValidate: SpriteValidationItem[] = [];
+
+    for (const species of allSpecies) {
+      if (species.num <= 0) continue;
+      const numStr = String(species.num);
+      if (checkedNumbers.has(numStr)) continue;
+      checkedNumbers.add(numStr);
+
+      itemsToValidate.push({ id: species.id, num: numStr });
+    }
+
+    for (const form of SPECIAL_FORMS) {
+      itemsToValidate.push(form);
+    }
+
+    return itemsToValidate;
+  }
+
+  private async validateSingleSpriteSet(item: SpriteValidationItem): Promise<boolean> {
+    const { id, num } = item;
+    const paths = buildSpritePaths(num);
+    const missingDetails = await checkPathsExist(paths);
+
+    if (missingDetails.length > 0) {
+      this.addViolation({
+        ruleId: 'sprite-missing-asset',
+        severity: 'warning',
+        file: `public/assets/sprites/pokemon/${id}`,
+        line: 1,
+        message: `[${id}] (Number: ${num}) is missing: ${missingDetails.join(', ')}`,
+        context: num
+      });
+      return false;
+    }
+    return true;
+  }
+
   constructor() {
     super({
       id: 'validate_sprites',
+      configKey: 'assets.sprites',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Pokemon Sprite Auditor',
       description: 'Sprites faltantes en catálogo de assets de Pokémon',
       icon: '👾',
@@ -54,77 +131,14 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
     this.markRuleEvaluated('sprite-missing-asset');
 
     this.context.logStep(1, 2, 'Collecting unique species across Gen 1-9...');
-    const allSpecies = Dex.forGen(9).species.all();
-    const checkedNumbers = new Set<string>();
-    const itemsToValidate: Array<{ id: string; num: string }> = [];
-
-    for (const species of allSpecies) {
-      if (species.num <= 0) continue;
-      const numStr = String(species.num);
-      if (checkedNumbers.has(numStr)) continue;
-      checkedNumbers.add(numStr);
-
-      itemsToValidate.push({
-        id: species.id,
-        num: numStr
-      });
-    }
-
-    for (const form of SPECIAL_FORMS) {
-      itemsToValidate.push(form);
-    }
+    const itemsToValidate = this.collectItemsToValidate();
 
     this.context.logStep(2, 2, `Validating ${itemsToValidate.length} sprite sets...`);
 
     let missingCount = 0;
     for (const item of itemsToValidate) {
-      const { id, num } = item;
-
-      const staticPaths = {
-        staticFront: path.join(STATIC_SPRITES_DIR, `${num}.webp`),
-        staticFrontShiny: path.join(STATIC_SPRITES_DIR, `shiny/${num}.webp`)
-      };
-
-      const match = num.match(/^(\d+)(.*)$/);
-      const baseNum = match ? match[1] : num;
-      const suffix = match ? match[2] : '';
-      const animFilename = `${baseNum}i${suffix}.webp`;
-
-      const animatedPaths = {
-        animatedFront: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Front/${animFilename}`),
-        animatedBack: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Back/${animFilename}`),
-        animatedFrontShiny: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Front shiny/${animFilename}`),
-        animatedBackShiny: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Back shiny/${animFilename}`)
-      };
-
-      const missingDetails: string[] = [];
-      for (const [key, filePath] of Object.entries(staticPaths)) {
-        try {
-          await fs.access(filePath);
-        } catch {
-          missingDetails.push(key);
-        }
-      }
-
-      for (const [key, filePath] of Object.entries(animatedPaths)) {
-        try {
-          await fs.access(filePath);
-        } catch {
-          missingDetails.push(key);
-        }
-      }
-
-      if (missingDetails.length > 0) {
-        missingCount++;
-        this.addViolation({
-          ruleId: 'sprite-missing-asset',
-          severity: 'warning',
-          file: `public/assets/sprites/pokemon/${id}`,
-          line: 1,
-          message: `[${id}] (Number: ${num}) is missing: ${missingDetails.join(', ')}`,
-          context: num
-        });
-      }
+      const isValid = await this.validateSingleSpriteSet(item);
+      if (!isValid) missingCount++;
     }
 
     this.context.setMetric('Total species checked', itemsToValidate.length);

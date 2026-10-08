@@ -17,6 +17,11 @@ Frontend Developers / Systems Engineers.
 
 - Ensure clean decoupling and zero-warning type safety.
 
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
 - [auth/](./auth/AGENTS.md): Domain module documentation for auth.

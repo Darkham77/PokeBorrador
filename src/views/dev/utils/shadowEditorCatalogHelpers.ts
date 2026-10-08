@@ -45,9 +45,12 @@ function getCanonicalSpeciesMap(): Map<number, string> {
   return map;
 }
 
+export const SHADOW_EDITOR_VIEWS = ['Front', 'Back'] as const;
+export type ShadowEditorView = (typeof SHADOW_EDITOR_VIEWS)[number];
+
 function resolveAnimPath(
   pGroup: Record<string, readonly number[]>,
-  view: 'Front' | 'Back',
+  view: ShadowEditorView,
   shinyFolderSuffix: string,
   numVal: number,
   suffix: string = ''

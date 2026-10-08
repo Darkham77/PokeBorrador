@@ -159,12 +159,34 @@ describe('ValidateClientSimDecouplingAuditor', () => {
     });
   });
 
+  describe('Metadata & Configuration', () => {
+    it('initializes with correct auditor ID and architecture family', () => {
+      const auditor = new ValidateClientSimDecouplingAuditor();
+      expect(auditor.id).toBe('validate_client_sim_decoupling');
+      expect(auditor.family).toBe('architecture');
+      expect(auditor.packageName).toBe('Showdown');
+    });
+  });
+
   describe('Clean Execution', () => {
     it('reports zero errors on clean execution', async () => {
       const auditor = new ValidateClientSimDecouplingAuditor();
       const result = await auditor.finishAudit();
       expect(result.summary.errors).toBe(0);
       expect(result.status).toBe('passed');
+    });
+
+    it('records violations with error severity when sim imports are present', () => {
+      const auditor = new ValidateClientSimDecouplingAuditor();
+      auditor.addViolation({
+        ruleId: 'client-sim-value-import',
+        severity: 'error',
+        file: 'src/components/battle/BattleArena.vue',
+        line: 1,
+        message: 'Direct @pkmn/sim runtime import in client code',
+        context: "import { Dex } from '@pkmn/sim'"
+      });
+      expect(auditor.getErrorsByRule().get('client-sim-value-import')).toBe(1);
     });
   });
 });

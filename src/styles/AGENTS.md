@@ -22,6 +22,16 @@ UI / Frontend Developers.
   - Global stylesheets (`html`, `body`, `#app`, `#vue-app`) MUST declare `overscroll-behavior: none !important; overscroll-behavior-x: none !important; overscroll-behavior-y: none !important;`.
   - This prevents browser engines (Chrome, Edge, Safari, Firefox) on precision trackpads, touch screens, and horizontal gesture mice from triggering native history navigation animations (*Swipe to Navigate* / Go Back) when performing rapid horizontal movements.
 
+### Reference Manuals
+
+- [sass_styling_manual.md](../../.agents/skills/project-standards/references/technical/sass_styling_manual.md): SASS syntax traps and namespaces.
+- [gpu_optimization_manual.md](../../.agents/skills/project-standards/references/technical/gpu_optimization_manual.md): Rendering optimizations and layers promotion.
+- [low_power_mode_manual.md](../../.agents/skills/project-standards/references/technical/low_power_mode_manual.md): Power saving rendering rules.
+
+## Key Files
+
+- `_index.scss`: Module implementation.
+
 ## Work Guidance
 
 - Keep design variables (such as palette colors or border-radius configurations) centralized under `tokens/` and `core/` files.
@@ -31,15 +41,10 @@ UI / Frontend Developers.
 - **CSS Variable Propagation**: When using CSS variables to pass dynamic states (like grade colors) from JS to CSS, inject them via the `:style` attribute on the component's root element. Avoid using Vue SFC `v-bind` in CSS for variables that need to be accessed by parent elements, as Vue generates unique internal variable names that break CSS inheritance.
 - **CSS Pseudo-Class Scope Limit (`:deep`)**: Vue `:deep` selectors are only compiled inside scoped Vue components (`<style scoped>`). Using `:deep` inside global, nested, or manual SCSS files loaded outside scoped Vue contexts is strictly prohibited as it triggers parser and minification warnings.
 
-## Reference Manuals
+## Verification
 
-- [sass_styling_manual.md](../../.agents/skills/project-standards/references/technical/sass_styling_manual.md): SASS syntax traps and namespaces.
-- [gpu_optimization_manual.md](../../.agents/skills/project-standards/references/technical/gpu_optimization_manual.md): Rendering optimizations and layers promotion.
-- [low_power_mode_manual.md](../../.agents/skills/project-standards/references/technical/low_power_mode_manual.md): Power saving rendering rules.
-
-## Key Files
-
-- `_index.scss`: Module implementation.
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 

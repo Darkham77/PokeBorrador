@@ -36,10 +36,28 @@ Backend and Systems Developers.
 - `PokemonMovePicker.vue`: Module implementation.
 - `PokemonPreview.vue`: Module implementation.
 - `debugAudioAnimHelper.ts`: Module implementation.
+- `debugAudioSecondaryPredicates.ts`: Module implementation.
 - `debugPanelCategories.ts`: Module implementation.
 - `debugTrainerTeamHelper.ts`: Module implementation.
 - `useDebugPokemonCreator.ts`: Module implementation.
 - `useDebugTrainers.ts`: Module implementation.
+- [`DebugIllegalModal.vue`](./DebugIllegalModal.vue): Module implementation.
+- [`DebugPokemonCreator.vue`](./DebugPokemonCreator.vue): Module implementation.
+- [`DebugTrainerBattleLauncher.vue`](./DebugTrainerBattleLauncher.vue): Module implementation.
+- [`DebugTrainerGenSettings.vue`](./DebugTrainerGenSettings.vue): Module implementation.
+- [`DebugTrainerMetaCard.vue`](./DebugTrainerMetaCard.vue): Module implementation.
+- [`DebugTrainersTab.vue`](./DebugTrainersTab.vue): Module implementation.
+- [`debugConstants.ts`](./debugConstants.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
 
 ## Child DOX Index
 

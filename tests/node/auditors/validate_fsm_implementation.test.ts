@@ -106,6 +106,19 @@ export const BATTLE_STATES = {
       expect(result.status).toBe('passed');
       expect(result.metrics['Mermaid states']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when mermaid states are missing in JS', () => {
+      const auditor = new FsmImplementationAuditor();
+      auditor.addViolation({
+        ruleId: 'fsm-mermaid-missing-in-js',
+        severity: 'error',
+        file: 'docs/battle_fsm.md',
+        line: 1,
+        message: 'State declared in mermaid missing in constants',
+        context: 'MYSTERY_STATE'
+      });
+      expect(auditor.getErrorsByRule().get('fsm-mermaid-missing-in-js')).toBe(1);
+    });
   });
 });
 

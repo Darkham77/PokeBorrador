@@ -4,10 +4,22 @@ import type { BattleStateName, BattleSubStateName } from '../../logic/battle/bat
 import type { BattleForcedSwitchDetail, BattleReadyForInputDetail } from '../battle/battleEvents.ts';
 import type { GameStoreReadyDetail } from './gameEvents.ts';
 
+export const FILE_SYSTEM_HANDLE_KINDS = ['file', 'directory'] as const;
+export type FileSystemHandleKind = (typeof FILE_SYSTEM_HANDLE_KINDS)[number];
+
+export const TEMPORAL_DURATION_UNITS = ['milliseconds', 'seconds', 'minutes', 'hours', 'days'] as const;
+export type TemporalDurationUnit = (typeof TEMPORAL_DURATION_UNITS)[number];
+
+export const FORCED_ENCOUNTER_TYPES = ['none', 'wild', 'trainer', 'rival', 'fishing', 'archaeology'] as const;
+export type ForcedEncounterType = (typeof FORCED_ENCOUNTER_TYPES)[number];
+
+export const E2E_DATABASE_DRIVERS = ['sqlite', 'postgres'] as const;
+export type E2eDatabaseDriver = (typeof E2E_DATABASE_DRIVERS)[number];
+
 declare global {
   // FileSystem API (OPFS)
   interface FileSystemHandle {
-    kind: 'file' | 'directory';
+    kind: FileSystemHandleKind;
     name: string; // string-ok: Internal string formatting or DOM token identifier
   }
   interface FileSystemFileHandle extends FileSystemHandle {
@@ -43,7 +55,7 @@ declare global {
       toString(): string;
     }
     export interface Duration {
-      total(options: { unit: 'milliseconds' | 'seconds' | 'minutes' | 'hours' | 'days' }): number;
+      total(options: { unit: TemporalDurationUnit }): number;
       toString(): string;
     }
     export interface PlainDate {
@@ -184,7 +196,7 @@ declare global {
     useItemInBattle?: (itemId: import('@/data/inventory/items').ItemId, targetUid: string) => void;
     healAll?: () => void;
     forceFlee?: () => void | Promise<void>;
-    forceEncounterType?: 'none' | 'wild' | 'trainer' | 'rival' | 'fishing' | 'archaeology' | null;
+    forceEncounterType?: ForcedEncounterType | null;
     forceRival?: boolean;
     trainerChance50?: boolean;
     forceGuardian80?: boolean;
@@ -231,7 +243,7 @@ declare global {
     initSqlJs?: (options?: unknown) => Promise<unknown>;
     __GTS_SIMULATION__?: boolean;
     __E2E__?: boolean;
-    __E2E_DRIVER__?: 'sqlite' | 'postgres';
+    __E2E_DRIVER__?: E2eDatabaseDriver;
     __E2E_BATTLE_FLOW_COMPLETION__?: Promise<void>;
     __E2E_BATTLE_FORCED_SWITCH__?: Promise<BattleForcedSwitchDetail>;
     __E2E_BATTLE_READY_FOR_INPUT__?: Promise<BattleReadyForInputDetail>;
@@ -251,6 +263,8 @@ declare global {
   }
 
   var __VITE_DEBUG__: ViteDebugApi | undefined;
+  var __E2E__: boolean | undefined;
+  var __E2E_DRIVER__: E2eDatabaseDriver | undefined;
 }
 
 export {};

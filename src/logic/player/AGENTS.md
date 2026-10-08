@@ -14,6 +14,16 @@ Frontend Developers / Systems Engineers.
 - `classDeploymentEngine.ts`: SSoT deployment engine governing idle expeditions for all 4 classes (`rocket`, `cazabichos`, `entrenador`, `criador`). Handles deployment costs, projected valuations, bug expedition Pokémon generation with IV floors and shiny chance scalers, trainer level-up and battle coins, and breeder genetic IV enhancements with vigor consumption and hatch step reduction.
 - `classMissionsData.ts`: SSoT metadata catalog providing dialogue, activation requirements, reward formulas, and rules text for idle class deployments across all durations (6h, 12h, 24h). All item rewards must specify precise, clean labels (`DetailedMissionReward`) without ambiguous category slashes, and Rocket missions must explicitly state the permanent nature of sacrifices.
 
+## Key Files
+
+- `classEngine.ts`: Module implementation.
+- `eventRecovery.ts`: Module implementation.
+- `missionRecovery.ts`: Module implementation.
+- [`classDeploymentEngine.ts`](./classDeploymentEngine.ts): Module implementation.
+- [`classMath.ts`](./classMath.ts): Module implementation.
+- [`classMissionsData.ts`](./classMissionsData.ts): Module implementation.
+- [`identityCooldown.ts`](./identityCooldown.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -22,12 +32,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `classEngine.ts`: Module implementation.
-- `eventRecovery.ts`: Module implementation.
-- `missionRecovery.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

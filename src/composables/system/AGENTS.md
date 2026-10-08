@@ -21,10 +21,6 @@ Core Infrastructure Team / Frontend Developers.
   - Browser navigation keyboard shortcuts (`Alt + ArrowLeft/Right`, `BrowserBack/Forward`, and `Backspace` outside `<input>`, `<textarea>`, or `contenteditable` elements) MUST be intercepted with `preventDefault()`.
   - When `popstate` is received, open UI layers (modals, chat, history, hud groups) are dismissed gracefully as an in-game back action without allowing the browser to navigate away from the game view.
 
-## Verification
-
-- Run standard type checks.
-
 ## Key Files
 
 - `appLoadingHelper.ts`: Module implementation.
@@ -32,7 +28,17 @@ Core Infrastructure Team / Frontend Developers.
 - `useAppRouteGate.ts`: Module implementation.
 - `useBackNavigation.ts`: Module implementation.
 - `useRetroGamepad.ts`: Module implementation.
+- [`usePWA.ts`](./usePWA.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run standard type checks.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

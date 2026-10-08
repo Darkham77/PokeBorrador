@@ -20,6 +20,12 @@ Game Logic Engineers / World Environment Designers.
 - **Environment Registry (`mapEnvironmentRegistry.ts`)**:
   - Provides constant-time $O(1)$ lookup mapping map IDs from `FIRE_RED_MAPS` to their concrete `BaseMapEnvironment` instances. Fails loudly on unknown map IDs.
 
+## Key Files
+
+- `baseMapEnvironment.ts`: Module implementation.
+- [`concreteEnvironments.ts`](./concreteEnvironments.ts): Module implementation.
+- [`mapEnvironmentRegistry.ts`](./mapEnvironmentRegistry.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure all new map environments inherit from `BaseMapEnvironment` and are registered in `mapEnvironmentRegistry.ts`.
@@ -30,10 +36,6 @@ Game Logic Engineers / World Environment Designers.
 - `npm run test:node tests/node/world/map_environment_weather_matrix.test.ts`
 - `npm run audit:md`
 
-## Key Files
-
-- `baseMapEnvironment.ts`: Module implementation.
-
 ## Child DOX Index
 
-- *This domain module does not contain nested sub-directories with independent AGENTS.md files.*
+- *This directory contains specialized domain logic and files with no subdirectories.*

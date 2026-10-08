@@ -17,6 +17,21 @@ Frontend Developers / Systems Engineers.
 - **SaveCoordinator Architecture (`src/logic/auth/saveCoordinator.ts`)**: All save orchestration, coalescing debounce (1.5s window), batch context suppression (`withBatchSave<T>(action: () => Promise<T>): Promise<T>`), and emergency flushes (`flushPendingSave()`) MUST be encapsulated cleanly in `saveCoordinator.ts`. `gameStore.save()`, `scheduleSave()`, and domain stores delegate save dispatching to this coordinator, ensuring physical I/O writes (SQLite OPFS export and remote RPCs) are strictly bounded. A global `beforeunload` listener in the coordinator must automatically trigger `flushPendingSave()` and sync a synchronous emergency snapshot to local storage if deferred writes are pending when the browser closes.
 - **Save Queue Concurrency & Options Merging Mandate (`saveService.ts`)**: When `saveGame` executes concurrently while a previous save is in-flight, queued save requests (`PendingSaveRequest`) MUST merge priority flags and options (specifically `forceRemote: true`, `showNotif`, `db`, `notifyFn`) rather than inheriting or clobbering with the in-flight call's options. This guarantees that explicit remote saves scheduled immediately after an unforced save do not have their `forceRemote` flag dropped, preventing remote PostgreSQL cloud saves from being erroneously throttled.
 
+## Key Files
+
+- `battleSerializerHelper.ts`: Module implementation.
+- `loadService.ts`: Module implementation.
+- `profileSyncHelper.ts`: Module implementation.
+- `savePokemonSerializer.ts`: Module implementation.
+- `saveSanitizerHelpers.ts`: Module implementation.
+- `saveSerializer.ts`: Module implementation.
+- `sessionHub.ts`: Module implementation.
+- `sessionId.ts`: Module implementation.
+- `timeSync.ts`: Module implementation.
+- [`saveCoordinator.ts`](./saveCoordinator.ts): Module implementation.
+- [`saveSanitizer.ts`](./saveSanitizer.ts): Module implementation.
+- [`saveService.ts`](./saveService.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -25,16 +40,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `battleSerializerHelper.ts`: Module implementation.
-- `loadService.ts`: Module implementation.
-- `profileSyncHelper.ts`: Module implementation.
-- `saveSerializer.ts`: Module implementation.
-- `sessionHub.ts`: Module implementation.
-- `sessionId.ts`: Module implementation.
-- `timeSync.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

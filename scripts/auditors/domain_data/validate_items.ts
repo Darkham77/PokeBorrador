@@ -17,6 +17,14 @@ enableCompileCache();
 
 const SHOP_FILE   = path.resolve(process.cwd(), 'src/data/inventory/items.json');
 const BATTLE_FILE = path.resolve(process.cwd(), 'src/logic/items/itemEffects.ts');
+const ITEM_EFFECT_FILES = [
+  'src/logic/items/itemEffects.ts',
+  'src/logic/items/helpers/itemHealingEffects.ts',
+  'src/logic/items/helpers/itemEvolutionEffects.ts',
+  'src/logic/items/helpers/itemSpecialBuffEffects.ts',
+  'src/logic/items/helpers/itemEvEffects.ts',
+  'src/logic/items/helpers/itemGlobalBuffs.ts'
+] as const;
 
 export interface ShopItem {
   id: string;
@@ -57,10 +65,182 @@ export const ITEM_RULES: readonly ItemRuleId[] = [
   'item-sprite-collision'
 ] as const;
 
+const MUST_BE_USABLE = new Set([
+  'pociones', 'potions', 'utility', 'booster', 'stones', 'stone'
+]);
+const MUST_NOT_BE_USABLE = new Set([
+  'held', 'combat_held', 'pokeballs', 'breeding', 'breeding_held', 'raw_material',
+  'refined_material', 'component', 'machinery', 'tms'
+]);
+const REQUIRED_FIELDS = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'] as const;
+const VALID_CATS = new Set([
+  'pociones', 'potions', 'utility', 'tools', 'booster', 'especial', 'held', 'combat_held',
+  'pokeballs', 'stones', 'stone', 'breeding', 'breeding_held', 'healing', 'tm', 'special',
+  'raw_material', 'refined_material', 'component', 'machinery', 'tms', 'otros'
+]);
+const ALLOWED_USABLE_HELD = new Set([
+  'vigorrestorer', 'pomegberry', 'kelpsyberry', 'qualotberry', 'hondewberry', 'grepaberry', 'tamatoberry'
+]);
+const FORBIDDEN_DESC_PATTERNS = [
+  /\bholder('s)?\b/i,
+  /\braises?\b/i,
+  /\blowers?\b/i,
+  /\bboosts?\b/i,
+  /\bincreases?\b/i,
+  /\bsingle use\b/i,
+  /\battacks?\b/i,
+  /\bcannot\b/i,
+  /\bheals?\b/i,
+  /\bprevents?\b/i,
+  /\bused for\b/i,
+  /\bevolves?\b/i,
+  /\bif held by\b/i,
+  /\bgains?\b/i,
+  /\baccuracy\b/i,
+  /\bhalves\b/i,
+  /\bphysical attacks?\b/i,
+  /\bspecial attacks?\b/i,
+  /\bmoves last\b/i,
+  /\bjudgment is\b/i,
+  /\bwhen held\b/i,
+  /\bis (calculated|raised|lowered)\b/i,
+  /\bno competitive use\b/i,
+  /\bchanges its forme\b/i,
+];
+const FORBIDDEN_NAME_PATTERNS = [
+  /\b(Berry|Sweet|Plate|Orb|Specs|Vest|Herb|Policy|Drive|Memory|Mirror|Feather|Cap|Incense|Belt|Glasses)\b/i
+];
+
 export class ItemAuditor extends BaseAuditor<ItemRuleId> {
+  private validateRequiredFields(item: ShopItem, tag: string): void {
+    REQUIRED_FIELDS.forEach(f => {
+      const val = item[f];
+      if (val == null || val === '') {
+        this.addViolation({
+          ruleId: 'item-missing-field',
+          severity: 'error',
+          file: 'src/data/inventory/items.json',
+          line: item._line,
+          message: `${tag} Missing required field: '${f}'`,
+          context: `${item.id}.${f}`
+        });
+      }
+    });
+  }
+
+  private validateItemSprite(item: ShopItem, tag: string): void {
+    if (!item.sprite) return;
+    const physicalPath = path.resolve(process.cwd(), 'public/assets/sprites', `${item.sprite}.webp`);
+    if (!existsSync(physicalPath)) {
+      this.addViolation({
+        ruleId: 'item-sprite-not-found',
+        severity: 'error',
+        file: 'src/data/inventory/items.json',
+        line: item._line,
+        message: `${tag} Sprite file does not exist: '${physicalPath}'`,
+        context: item.sprite
+      });
+    }
+  }
+
+  private validateItemCategoryAndUsage(item: ShopItem, tag: string, healingItems: Set<string>): void {
+    if (item.cat && !VALID_CATS.has(item.cat)) {
+      this.addViolation({
+        ruleId: 'item-unknown-category',
+        severity: 'error',
+        file: 'src/data/inventory/items.json',
+        line: item._line,
+        message: `${tag} Unknown category: '${item.cat}'`,
+        context: item.cat
+      });
+    }
+
+    if (item.cat && MUST_BE_USABLE.has(item.cat) && item.id && !healingItems.has(item.id)) {
+      if (!item.name?.startsWith('MT')) {
+        this.addViolation({
+          ruleId: 'item-missing-healing-effect',
+          severity: 'error',
+          file: 'src/data/inventory/items.json',
+          line: item._line,
+          message: `${tag} cat='${item.cat}' but '${item.id}' has no entry in HEALING_ITEMS.`,
+          context: item.id
+        });
+      }
+    }
+
+    if (item.cat && MUST_NOT_BE_USABLE.has(item.cat) && item.id && healingItems.has(item.id)) {
+      if (!ALLOWED_USABLE_HELD.has(item.id)) {
+        this.addViolation({
+          ruleId: 'item-invalid-healing-effect',
+          severity: 'error',
+          file: 'src/data/inventory/items.json',
+          line: item._line,
+          message: `${tag} cat='${item.cat}' should NOT be in HEALING_ITEMS.`,
+          context: item.id
+        });
+      }
+    }
+
+    if ((item.cat === 'held' || item.cat === 'combat_held') && item.type !== 'held') {
+      this.addViolation({
+        ruleId: 'item-missing-held-type',
+        severity: 'error',
+        file: 'src/data/inventory/items.json',
+        line: item._line,
+        message: `${tag} cat='${item.cat}' but missing 'type: held'.`,
+        context: item.id
+      });
+    }
+  }
+
+  private validateItemLanguageLeaks(item: ShopItem, tag: string): void {
+    if (item.desc) {
+      for (const pattern of FORBIDDEN_DESC_PATTERNS) {
+        if (pattern.test(item.desc)) {
+          this.addViolation({
+            ruleId: 'item-english-desc-leak',
+            severity: 'error',
+            file: 'src/data/inventory/items.json',
+            line: item._line,
+            message: `${tag} LEAK DETECTADO en 'desc' (patrón en inglés: ${pattern}): "${item.desc}"`,
+            context: item.desc
+          });
+          break;
+        }
+      }
+    }
+
+    if (item.name) {
+      for (const pattern of FORBIDDEN_NAME_PATTERNS) {
+        if (pattern.test(item.name)) {
+          this.addViolation({
+            ruleId: 'item-english-name-leak',
+            severity: 'error',
+            file: 'src/data/inventory/items.json',
+            line: item._line,
+            message: `${tag} LEAK DETECTADO en 'name' (nombre en inglés: ${pattern}): "${item.name}"`,
+            context: item.name
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  private auditSingleShopItem(item: ShopItem, healingItems: Set<string>): void {
+    const tag = `[${item.id} (line ~${item._line})]`;
+    this.validateRequiredFields(item, tag);
+    this.validateItemSprite(item, tag);
+    this.validateItemCategoryAndUsage(item, tag, healingItems);
+    this.validateItemLanguageLeaks(item, tag);
+  }
   constructor() {
     super({
       id: 'validate_items',
+      configKey: 'domain.items',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Item Integrity Validator',
       description: 'Ítems faltantes, sin categoría o con efectos inválidos',
       icon: '🧪',
@@ -79,22 +259,38 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         'item-phantom-healing': 'Efecto curativo fantasma sin ítem',
         'item-sprite-collision': 'Colisión de sprites en ítems'
       },
-      requiredFiles: [SHOP_FILE, BATTLE_FILE],
+      requiredFiles: [SHOP_FILE, BATTLE_FILE, ...ITEM_EFFECT_FILES.map(f => path.resolve(process.cwd(), f))],
       coverage: {
-        include: ['src/data/inventory/items.json', 'src/logic/items/itemEffects.ts']
+        include: ['src/data/inventory/items.json', ...ITEM_EFFECT_FILES]
       }
     });
   }
 
   public override async runAudit(): Promise<void> {
     this.recordScanned('src/data/inventory/items.json');
-    this.recordScanned('src/logic/items/itemEffects.ts');
+    for (const file of ITEM_EFFECT_FILES) {
+      this.recordScanned(file);
+    }
     for (const r of ITEM_RULES) {
       this.markRuleEvaluated(r);
     }
 
     this.context.logStep(1, 2, 'Loading and parsing SHOP_ITEMS and HEALING_ITEMS...');
-    const battleContent = await fs.readFile(BATTLE_FILE, 'utf8');
+    const healingItems = new Set<string>();
+    const healingRegex = /^\s*['"]([a-z0-9_]+)['"]\s*:\s*/gm;
+
+    for (const relPath of ITEM_EFFECT_FILES) {
+      const fullPath = path.resolve(process.cwd(), relPath);
+      if (existsSync(fullPath)) {
+        const fileContent = await fs.readFile(fullPath, 'utf8');
+        let m: RegExpExecArray | null;
+        healingRegex.lastIndex = 0;
+        while ((m = healingRegex.exec(fileContent)) !== null) {
+          healingItems.add(m[1]!);
+        }
+      }
+    }
+
     const jsonRaw = await fs.readFile(SHOP_FILE, 'utf8');
     const jsonData = JSON.parse(jsonRaw) as { SHOP_ITEMS?: unknown[] };
     const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[];
@@ -102,164 +298,9 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
       .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
       .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
 
-    const healingItems = new Set<string>();
-    const healingRegex = /^\s+'([^']+)':\s*\(?[\s\S]*?\)?\s*=>/gm;
-    let m;
-    while ((m = healingRegex.exec(battleContent)) !== null) {
-      healingItems.add(m[1]!);
-    }
-
     this.context.logStep(2, 2, `Validating ${shopItems.length} items for fields, categories, sprites, and parity...`);
 
-    const MUST_BE_USABLE     = ['pociones', 'potions', 'utility', 'booster', 'stones', 'stone'];
-    const MUST_NOT_BE_USABLE = ['held', 'combat_held', 'pokeballs', 'breeding', 'breeding_held', 'raw_material', 'refined_material', 'component', 'machinery', 'tms'];
-    const REQUIRED_FIELDS    = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'];
-    const VALID_CATS         = [
-      'pociones', 'potions', 'utility', 'tools', 'booster', 'especial', 'held', 'combat_held', 'pokeballs', 'stones', 'stone', 'breeding', 'breeding_held',
-      'healing', 'tm', 'special', 'raw_material', 'refined_material', 'component', 'machinery', 'tms', 'otros'
-    ];
-
-    shopItems.forEach(item => {
-      const tag = `[${item.id} (line ~${item._line})]`;
-
-      REQUIRED_FIELDS.forEach(f => {
-        const val = item[f];
-        if (val == null || val === '') {
-          this.addViolation({
-            ruleId: 'item-missing-field',
-            severity: 'error',
-            file: 'src/data/inventory/items.json',
-            line: item._line,
-            message: `${tag} Missing required field: '${f}'`,
-            context: `${item.id}.${f}`
-          });
-        }
-      });
-
-      if (item.sprite) {
-        const physicalPath = path.resolve(process.cwd(), 'public/assets/sprites', `${item.sprite}.webp`);
-        if (!existsSync(physicalPath)) {
-          this.addViolation({
-            ruleId: 'item-sprite-not-found',
-            severity: 'error',
-            file: 'src/data/inventory/items.json',
-            line: item._line,
-            message: `${tag} Sprite file does not exist: '${physicalPath}'`,
-            context: item.sprite
-          });
-        }
-      }
-
-      if (item.cat && !VALID_CATS.includes(item.cat)) {
-        this.addViolation({
-          ruleId: 'item-unknown-category',
-          severity: 'error',
-          file: 'src/data/inventory/items.json',
-          line: item._line,
-          message: `${tag} Unknown category: '${item.cat}'`,
-          context: item.cat
-        });
-      }
-
-      if (item.cat && MUST_BE_USABLE.includes(item.cat) && item.id && !healingItems.has(item.id)) {
-        if (!item.name?.startsWith('MT')) {
-          this.addViolation({
-            ruleId: 'item-missing-healing-effect',
-            severity: 'error',
-            file: 'src/data/inventory/items.json',
-            line: item._line,
-            message: `${tag} cat='${item.cat}' but '${item.id}' has no entry in HEALING_ITEMS.`,
-            context: item.id
-          });
-        }
-      }
-
-      if (item.cat && MUST_NOT_BE_USABLE.includes(item.cat) && item.id && healingItems.has(item.id)) {
-        const ALLOWED_USABLE_HELD = ['vigorrestorer', 'pomegberry', 'kelpsyberry', 'qualotberry', 'hondewberry', 'grepaberry', 'tamatoberry'];
-        if (!ALLOWED_USABLE_HELD.includes(item.id)) {
-          this.addViolation({
-            ruleId: 'item-invalid-healing-effect',
-            severity: 'error',
-            file: 'src/data/inventory/items.json',
-            line: item._line,
-            message: `${tag} cat='${item.cat}' should NOT be in HEALING_ITEMS.`,
-            context: item.id
-          });
-        }
-      }
-
-      if ((item.cat === 'held' || item.cat === 'combat_held') && item.type !== 'held') {
-        this.addViolation({
-          ruleId: 'item-missing-held-type',
-          severity: 'error',
-          file: 'src/data/inventory/items.json',
-          line: item._line,
-          message: `${tag} cat='${item.cat}' but missing 'type: held'.`,
-          context: item.id
-        });
-      }
-
-      if (item.desc) {
-        const FORBIDDEN_DESC_PATTERNS = [
-          /\bholder('s)?\b/i,
-          /\braises?\b/i,
-          /\blowers?\b/i,
-          /\bboosts?\b/i,
-          /\bincreases?\b/i,
-          /\bsingle use\b/i,
-          /\battacks?\b/i,
-          /\bcannot\b/i,
-          /\bheals?\b/i,
-          /\bprevents?\b/i,
-          /\bused for\b/i,
-          /\bevolves?\b/i,
-          /\bif held by\b/i,
-          /\bgains?\b/i,
-          /\baccuracy\b/i,
-          /\bhalves\b/i,
-          /\bphysical attacks?\b/i,
-          /\bspecial attacks?\b/i,
-          /\bmoves last\b/i,
-          /\bjudgment is\b/i,
-          /\bwhen held\b/i,
-          /\bis (calculated|raised|lowered)\b/i,
-          /\bno competitive use\b/i,
-          /\bchanges its forme\b/i,
-        ];
-        for (const pattern of FORBIDDEN_DESC_PATTERNS) {
-          if (pattern.test(item.desc)) {
-            this.addViolation({
-              ruleId: 'item-english-desc-leak',
-              severity: 'error',
-              file: 'src/data/inventory/items.json',
-              line: item._line,
-              message: `${tag} LEAK DETECTADO en 'desc' (patrón en inglés: ${pattern}): "${item.desc}"`,
-              context: item.desc
-            });
-            break;
-          }
-        }
-      }
-
-      if (item.name) {
-        const FORBIDDEN_NAME_PATTERNS = [
-          /\b(Berry|Sweet|Plate|Orb|Specs|Vest|Herb|Policy|Drive|Memory|Mirror|Feather|Cap|Incense|Belt|Glasses)\b/i
-        ];
-        for (const pattern of FORBIDDEN_NAME_PATTERNS) {
-          if (pattern.test(item.name)) {
-            this.addViolation({
-              ruleId: 'item-english-name-leak',
-              severity: 'error',
-              file: 'src/data/inventory/items.json',
-              line: item._line,
-              message: `${tag} LEAK DETECTADO en 'name' (nombre en inglés: ${pattern}): "${item.name}"`,
-              context: item.name
-            });
-            break;
-          }
-        }
-      }
-    });
+    shopItems.forEach(item => this.auditSingleShopItem(item, healingItems));
 
     const shopItemIds = new Set(shopItems.map(i => i.id));
 

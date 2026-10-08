@@ -2,7 +2,13 @@
 
 Unit tests for database query router emulation, session security, state serialization, GTS/Black Market economy, event engines, modal hierarchy, and application lifecycle.
 
-## Test Index
+## Ownership
+
+Poké Vicio Development Team.
+
+## Local Contracts
+
+### Test Index
 
 - [debug_system_suite.spec.ts](./debug_system_suite.spec.ts): Diagnostics, memory leak simulation, crash log inspection, and developer tooling tests.
 - [domain_types_suite.spec.ts](./domain_types_suite.spec.ts): Compile-time and runtime validation for domain types and branded identifiers.
@@ -18,6 +24,20 @@ Unit tests for database query router emulation, session security, state serializ
 - [system_past_events_history_suite.spec.ts](./system_past_events_history_suite.spec.ts): Past events history listing, winners podium, and reward claiming workflows.
 - [system_save_and_persistence_suite.spec.ts](./system_save_and_persistence_suite.spec.ts): Game state serialization, OPFS persistence, backup saves, and local user database isolation.
 
+## Key Files
+
+- [`localStorageMock.ts`](./localStorageMock.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

@@ -22,4 +22,4 @@ QA / Simulation Engineers.
 
 ## Child DOX Index
 
-- _This directory does not contain nested sub-directories._
+- *This directory contains specialized domain logic and files with no subdirectories.*

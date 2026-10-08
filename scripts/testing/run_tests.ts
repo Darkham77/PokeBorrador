@@ -41,33 +41,19 @@ function syncPublicVersionJson(): void {
 /**
  * Main execution routine.
  */
-async function main(): Promise<void> {
-  syncPublicVersionJson();
-  const args = process.argv.slice(2);
-  const dockerInfo = await inspectDocker();
-
+async function setupTestEnvironment(dockerInfo: DockerInspectionResult): Promise<{
+  postgresReady: boolean;
+  cleanupContainer: () => void;
+}> {
   let containerStarted = false;
   let postgresReady = false;
   const dockerBin = dockerInfo.dockerBin;
 
   const cleanupContainer = () => {
-    if (containerStarted) {
+    if (containerStarted && dockerBin) {
       stopPostgresTestContainer(dockerBin);
     }
   };
-
-  // Register signal listeners for guaranteed teardown
-  process.on('SIGINT', () => {
-    cleanupContainer();
-    process.exit(130);
-  });
-  process.on('SIGTERM', () => {
-    cleanupContainer();
-    process.exit(143);
-  });
-  process.on('exit', () => {
-    cleanupContainer();
-  });
 
   if (dockerInfo.isRunning && dockerBin) {
     const containerStatus = await ensurePostgresTestContainerReady();
@@ -81,69 +67,56 @@ async function main(): Promise<void> {
     console.log(styleText('cyan', 'ℹ️  Docker no detectado o no disponible. Ejecutando tests exclusivamente en SQLite (RAM)...'));
   }
 
-  // Setup environment variables for Vitest child process
-  const childEnv: Record<string, string> = { // open-record: Generic key-value data dictionary container
-    ...(process.env as Record<string, string>) // open-record: Generic key-value data dictionary container
-  };
+  return { postgresReady, cleanupContainer };
+}
 
-  if (postgresReady) {
-    childEnv.TEST_POSTGRES_URL = POSTGRES_URL;
-  } else {
-    delete childEnv.TEST_POSTGRES_URL;
-  }
-
-  let vitestExitCode: number;
-
-  try {
-    console.log(styleText('bold', styleText('blue', '\n------------------------------------------------------------')));
-    console.log(styleText('bold', styleText('cyan', `🧪 INICIANDO EJECUCIÓN DE TESTS (${postgresReady ? 'DUAL: PostgreSQL + SQLite' : 'SQLite RAM'})`)));
-    console.log(styleText('bold', styleText('blue', '------------------------------------------------------------\n')));
-
-    if (args.length === 0) {
-      console.log(styleText('bold', styleText('cyan', '📦 [1/2] Ejecutando suite de tests unitarios y componentes (unit)...')));
-      const unitProcess = spawnSync(
-        'node',
-        ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'unit'],
-        {
-          stdio: 'inherit',
-          env: childEnv
-        }
-      );
-      if (unitProcess.status !== 0) {
-        vitestExitCode = unitProcess.status ?? 1;
-      } else {
-        console.log(styleText('bold', styleText('cyan', '\n📦 [2/2] Ejecutando suite de tests de lógica y persistencia (node)...')));
-        const nodeProcess = spawnSync(
-          'node',
-          ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'node'],
-          {
-            stdio: 'inherit',
-            env: childEnv
-          }
-        );
-        vitestExitCode = nodeProcess.status ?? 0;
-      }
-    } else {
-      const isCoverage = args.includes('--coverage');
-      const BASE_NODE_RUN_ARGS = ['--no-experimental-webstorage'] as const;
-      const nodeArgs = isCoverage
-        ? ['--allow-inspector', ...BASE_NODE_RUN_ARGS]
-        : [...BASE_NODE_RUN_ARGS];
-      const vitestProcess = spawnSync(
-        'node',
-        [...nodeArgs, './node_modules/vitest/vitest.mjs', 'run', ...args],
-        {
-          stdio: 'inherit',
-          env: childEnv
-        }
-      );
-      vitestExitCode = vitestProcess.status ?? 0;
-    }
-  } finally {
+function registerCleanupSignals(cleanupContainer: () => void): void {
+  process.on('SIGINT', () => {
     cleanupContainer();
+    process.exit(130);
+  });
+  process.on('SIGTERM', () => {
+    cleanupContainer();
+    process.exit(143);
+  });
+  process.on('exit', () => {
+    cleanupContainer();
+  });
+}
+
+function executeVitestSuite(args: string[], childEnv: Record<string, string>): number {
+  if (args.length === 0) {
+    console.log(styleText('bold', styleText('cyan', '📦 [1/2] Ejecutando suite de tests unitarios y componentes (unit)...')));
+    const unitProcess = spawnSync(
+      'node',
+      ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'unit'],
+      { stdio: 'inherit', env: childEnv }
+    );
+    if (unitProcess.status !== 0) {
+      return unitProcess.status ?? 1;
+    }
+
+    console.log(styleText('bold', styleText('cyan', '\n📦 [2/2] Ejecutando suite de tests de lógica y persistencia (node)...')));
+    const nodeProcess = spawnSync(
+      'node',
+      ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'node'],
+      { stdio: 'inherit', env: childEnv }
+    );
+    return nodeProcess.status ?? 0;
   }
 
-  // Print final summary report
+  const isCoverage = args.includes('--coverage');
+  const BASE_NODE_RUN_ARGS = ['--no-experimental-webstorage'] as const;
+  const nodeArgs = isCoverage ? ['--allow-inspector', ...BASE_NODE_RUN_ARGS] : [...BASE_NODE_RUN_ARGS];
+  const vitestProcess = spawnSync(
+    'node',
+    [...nodeArgs, './node_modules/vitest/vitest.mjs', 'run', ...args],
+    { stdio: 'inherit', env: childEnv }
+  );
+  return vitestProcess.status ?? 0;
+}
+
+function printTestSummaryReport(vitestExitCode: number, postgresReady: boolean): void {
   console.log();
   if (vitestExitCode === 0) {
     if (postgresReady) {
@@ -169,7 +142,41 @@ async function main(): Promise<void> {
     }
     console.log(styleText('red', '======================================================================'));
   }
+}
 
+/**
+ * Main execution routine.
+ */
+async function main(): Promise<void> {
+  syncPublicVersionJson();
+  const args = process.argv.slice(2);
+  const dockerInfo = await inspectDocker();
+  const { postgresReady, cleanupContainer } = await setupTestEnvironment(dockerInfo);
+  registerCleanupSignals(cleanupContainer);
+
+  const childEnv: Record<string, string> = { // open-record: Generic key-value data dictionary container
+    ...(process.env as Record<string, string>) // open-record: Generic key-value data dictionary container
+  };
+
+  if (postgresReady) {
+    childEnv.TEST_POSTGRES_URL = POSTGRES_URL;
+  } else {
+    delete childEnv.TEST_POSTGRES_URL;
+  }
+
+  let vitestExitCode: number;
+
+  try {
+    console.log(styleText('bold', styleText('blue', '\n------------------------------------------------------------')));
+    console.log(styleText('bold', styleText('cyan', `🧪 INICIANDO EJECUCIÓN DE TESTS (${postgresReady ? 'DUAL: PostgreSQL + SQLite' : 'SQLite RAM'})`)));
+    console.log(styleText('bold', styleText('blue', '------------------------------------------------------------\n')));
+
+    vitestExitCode = executeVitestSuite(args, childEnv);
+  } finally {
+    cleanupContainer();
+  }
+
+  printTestSummaryReport(vitestExitCode, postgresReady);
   process.exit(vitestExitCode);
 }
 

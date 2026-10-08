@@ -32,11 +32,16 @@ Frontend / UI Engineers.
 - [`_view_team.scss`](./_view_team.scss): Team management showcase styles.
 - [`ui_demo.scss`](./ui_demo.scss): Root stylesheet importing all partials.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
 ## Verification
 
 - `npm run lint`
 - `npm run audit`
 
-## DOX Directory Navigation Index
+## Child DOX Index
 
-- Parent: [../AGENTS.md](../AGENTS.md)
+- *This directory contains specialized domain logic and files with no subdirectories.*

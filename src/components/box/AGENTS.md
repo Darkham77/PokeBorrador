@@ -19,14 +19,6 @@ Frontend Developers / Systems Engineers.
   - A minimum vertical gap (`gap: 4px;`) MUST always be enforced between `.box-sprite-wrapper` and `.card-info` across all card variants (`.box-pokemon-card`, `.quick-card-override`) to guarantee they never collide or overlap.
 - **Box Batch Action Bar Modularization (`BoxView.vue`, `BoxModeActionsBar.vue`)**: Encapsulates the multi-selection mode action bar for Black Market batch selling and permanent Pokémon releasing into `BoxModeActionsBar.vue`, cleanly separating mode confirmation, currency estimation, and action buttons from `BoxView.vue`.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `BoxFilters.vue`: Module implementation.
@@ -38,7 +30,18 @@ Frontend Developers / Systems Engineers.
 - `BoxPokemonMenuSummary.vue`: Module implementation.
 - `BoxTabs.vue`: Module implementation.
 - `boxPokemonCardHelper.ts`: Module implementation.
+- [`BoxModeActionsBar.vue`](./BoxModeActionsBar.vue): Module implementation.
+- [`BoxPokemonCard.vue`](./BoxPokemonCard.vue): Module implementation.
+- [`BoxView.vue`](./BoxView.vue): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

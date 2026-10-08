@@ -14,14 +14,6 @@ Frontend Developers / Systems Engineers.
 - **Gym Badges Display Card**: `ProfileBadgesCard.vue` visualizes unlocked and locked Kanto gym badges (8 badges) on a retro wooden shelf layout with grayscale locked badges and badges count indicator.
 - **Pinned Battle Replays Card**: `ProfilePinnedReplaysCard.vue` renders up to 5 favorite battle replays pinned by the trainer, displaying opponent username, format, date, tier, victory/defeat badge, and a direct button to launch the tactical replay spectator or copy the Battle Code.
 
-## Work Guidance
-
-- Ensure clean decoupling, Retro-Modern aesthetics, and zero-warning type safety.
-
-## Verification
-
-- Run `npm run lint` and `npm run test`.
-
 ## Key Files
 
 - `ProfileAchievementsGrid.vue`: Module implementation.
@@ -34,7 +26,20 @@ Frontend Developers / Systems Engineers.
 - `TrainerPanel.vue`: Module implementation.
 - `trainerAvatarAnimHelper.ts`: Module implementation.
 - `useTrainerAvatarAnim.ts`: Module implementation.
+- [`ProfileBadgesCard.vue`](./ProfileBadgesCard.vue): Module implementation.
+- [`ProfileEventStatsCard.vue`](./ProfileEventStatsCard.vue): Module implementation.
+- [`ProfilePinnedReplaysCard.vue`](./ProfilePinnedReplaysCard.vue): Module implementation.
+- [`ProfileRankedMedalItem.vue`](./ProfileRankedMedalItem.vue): Module implementation.
+- [`ProfileRankedMedalsCard.vue`](./ProfileRankedMedalsCard.vue): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling, Retro-Modern aesthetics, and zero-warning type safety.
+
+## Verification
+
+- Run `npm run lint` and `npm run test`.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

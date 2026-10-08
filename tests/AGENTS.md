@@ -68,6 +68,17 @@ QA / Automation Engineers.
   - Heavy migration suites testing hundreds of migrations against massive production backup fixtures (`server_franco_backup_fixture.json`, >2 MB, >1,000 rows) take >30 seconds and MUST be excluded from standard daily developer test runs (`npm run test` and `npm run test:node`).
   - They MUST be isolated under a dedicated Vitest project (`migrations`), executed independently via `npm run test:migrations`, and enforced as a mandatory blocking quality gate inside `npm run database:generate-migrations`.
 
+### Reference Manuals
+
+- [validation_manual.md](../.agents/skills/project-standards/references/qa/validation_manual.md): Script suite reference commands.
+- [browser_testing_manual.md](../.agents/skills/project-standards/references/qa/browser_testing_manual.md): Playwright and debug bridge verification flows.
+
+## Key Files
+
+- [`dbTestHelper.ts`](./dbTestHelper.ts): Module implementation.
+- [`vitest.node.setup.ts`](./vitest.node.setup.ts): Module implementation.
+- [`vitest.setup.ts`](./vitest.setup.ts): Module implementation.
+
 ## Work Guidance
 
 - **Save & Reload State Roundtrip Verification**: Any store feature modifying player profile, class, or progression MUST include a full roundtrip unit test simulating the entire client lifecycle: store action -> state serialization (`serializeState`) -> schema validation (`validateAndSanitize`) -> fresh Pinia store rehydration (`updateState`) to guarantee zero persistence loss on browser refresh.
@@ -89,7 +100,7 @@ QA / Automation Engineers.
 - **Array Indexing and Type Narrowing in Tests**: To satisfy strict type checking under `noUncheckedIndexedAccess` without using `any` or bypassing rules, avoid referencing array elements directly (e.g. `arr[0]`). Extract them to local variables and perform explicit existence assertions or throw errors if undefined to narrow their types.
 - **Dynamic Store Loading**: In node environment tests, avoid static imports of Vue/Pinia store modules. Use dynamic imports protected by `typeof window !== 'undefined'` checks or mock them via `vi.mock()`.
 - **Extension-First Imports**: Internal imports in `tests/node/` tests may include the `.ts` extension — vite-node handles it transparently.
-- **Mandatory Dual Gatekeeper Pipeline**: In Poké Vicio quality assurance and commit workflows, **both `npm run audit` AND `npm run test` are strictly mandatory and non-negotiable**. Static architecture auditors in `scripts/auditors/` (governed by `npm run audit`) and dynamic Vitest suites executed through `scripts/testing/run_tests.ts` (governed by `npm run test`) are complementary and decoupled. **Vitest Invocation Constraint**: All test executions MUST use official npm scripts (`npm run test:node -- <path>`, `npm run test:unit -- <path>`). Never use `npx vitest` directly, as `npx` fails to resolve platform-specific Rolldown native bindings (`rolldown-binding.*.node`) and lacks required Node.js permission flags (`--allow-addons`), resulting in startup failures.
+- **Mandatory Dual Gatekeeper Pipeline**: In Poké Vicio quality assurance and commit workflows, **both `npm run audit` AND `npm run test` are strictly mandatory and non-negotiable**. Static architecture auditors in `scripts/auditors/` (governed by `npm run audit`) and dynamic Vitest suites executed through `scripts/testing/run_tests.ts` (governed by `npm run test`) are complementary and decoupled. **Vitest Invocation Constraint**: All test executions MUST use official npm scripts (`npm run test:node <path>`, `npm run test:unit <path>`). Never use `npx vitest` directly, as `npx` fails to resolve platform-specific Rolldown native bindings (`rolldown-binding.*.node`) and lacks required Node.js permission flags (`--allow-addons`), resulting in startup failures.
 - **CLI-Ready Visuals**: Battle animations must be triggerable via the debug bridge (e.g. `window.__VITE_DEBUG__.battle.animations.awaitTween('attack-player')`) for headless CLI verification.
 - **Vitest Module Isolation per Worker**: Each spec file runs in its own Vitest worker process with a fresh module registry. Module-level mutable state is automatically isolated between specs.
 - **Mock HP Safety**: Mock pokemon instances used in unit/integration tests that trigger stat recalculation (`recalcPokemonStats`) MUST have their current `hp` set to a low value (e.g., `5` or `10`) to guarantee it never exceeds the newly calculated `maxHp`.
@@ -102,11 +113,6 @@ QA / Automation Engineers.
 ## Verification
 
 - Run `npm run test` or `npm run audit` to verify test suite health.
-
-## Reference Manuals
-
-- [validation_manual.md](../.agents/skills/project-standards/references/qa/validation_manual.md): Script suite reference commands.
-- [browser_testing_manual.md](../.agents/skills/project-standards/references/qa/browser_testing_manual.md): Playwright and debug bridge verification flows.
 
 ## Child DOX Index
 

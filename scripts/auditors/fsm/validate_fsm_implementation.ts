@@ -61,6 +61,39 @@ export interface FsmConstantsInfo {
   invalidSuppressionErrors: string[];
 }
 
+const _FSM_STATE_LEVELS = ['TOP', 'SUB'] as const;
+type FsmStateLevel = (typeof _FSM_STATE_LEVELS)[number];
+
+function resolveFsmBlockTransition(line: string, currentBlock: FsmStateLevel | null): FsmStateLevel | null {
+  if (line.includes('export const BATTLE_STATES =')) return 'TOP';
+  if (line.includes('export const BATTLE_SUBSTATES =')) return 'SUB';
+  if (currentBlock && line.includes('} as const;')) return null;
+  return currentBlock;
+}
+
+function checkSuppressionComment(
+  line: string,
+  prevLine: string | undefined,
+  key: string,
+  suppressedKeys: Set<string>,
+  invalidSuppressionErrors: string[]
+): void {
+  const sameLineComment = line.includes('fsm-unused-ok') || line.includes('fsm-ignore');
+  const prevLineComment = prevLine && (prevLine.includes('fsm-unused-ok') || prevLine.includes('fsm-ignore'));
+  const commentLine = sameLineComment ? line : (prevLineComment ? prevLine : '');
+
+  if (!commentLine) return;
+
+  const match = commentLine.match(/(?:fsm-unused-ok|fsm-ignore)\s*(?::\s*(.*))?$/);
+  const reason = match?.[1]?.trim() ?? '';
+  const MIN_SUPPRESSION_REASON_LENGTH = 5;
+  if (!reason || reason.length < MIN_SUPPRESSION_REASON_LENGTH) {
+    invalidSuppressionErrors.push(`[CHECK 2] Supresión inválida para '${key}': Se requiere un comentario explicando el motivo técnico (ej. // fsm-unused-ok: motivo técnico).`);
+  } else {
+    suppressedKeys.add(key);
+  }
+}
+
 export function parseFsmConstants(fsmCode: string): FsmConstantsInfo {
   const allKeys = new Set<string>();
   const substates = new Set<string>();
@@ -68,46 +101,28 @@ export function parseFsmConstants(fsmCode: string): FsmConstantsInfo {
   const invalidSuppressionErrors: string[] = [];
 
   const lines = fsmCode.split('\n');
-  let currentBlock: 'TOP' | 'SUB' | null = null;
+  let currentBlock: FsmStateLevel | null = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!;
-    if (line.includes('export const BATTLE_STATES =')) {
-      currentBlock = 'TOP';
-      continue;
-    } else if (line.includes('export const BATTLE_SUBSTATES =')) {
-      currentBlock = 'SUB';
-      continue;
-    } else if (currentBlock && line.includes('} as const;')) {
-      currentBlock = null;
+    const nextBlock = resolveFsmBlockTransition(line, currentBlock);
+    if (nextBlock !== currentBlock) {
+      currentBlock = nextBlock;
       continue;
     }
 
     if (!currentBlock) continue;
 
     const keyMatch = line.match(/^\s*([A-Z][A-Z0-9_]+)\s*:/);
-    if (keyMatch && keyMatch[1]) {
-      const key = keyMatch[1];
-      allKeys.add(key);
-      if (currentBlock === 'SUB') {
-        substates.add(key);
-      }
+    if (!keyMatch?.[1]) continue;
 
-      const sameLineComment = line.includes('fsm-unused-ok') || line.includes('fsm-ignore');
-      const prevLineComment = i > 0 && (lines[i - 1]!.includes('fsm-unused-ok') || lines[i - 1]!.includes('fsm-ignore'));
-      const commentLine = sameLineComment ? line : (prevLineComment ? lines[i - 1]! : '');
-
-      if (commentLine) {
-        const match = commentLine.match(/(?:fsm-unused-ok|fsm-ignore)\s*(?::\s*(.*))?$/);
-        const reason = match && match[1] ? match[1].trim() : '';
-        const MIN_SUPPRESSION_REASON_LENGTH = 5;
-        if (!reason || reason.length < MIN_SUPPRESSION_REASON_LENGTH) {
-          invalidSuppressionErrors.push(`[CHECK 2] Supresión inválida para '${key}': Se requiere un comentario explicando el motivo técnico (ej. // fsm-unused-ok: motivo técnico).`);
-        } else {
-          suppressedKeys.add(key);
-        }
-      }
+    const key = keyMatch[1];
+    allKeys.add(key);
+    if (currentBlock === 'SUB') {
+      substates.add(key);
     }
+
+    checkSuppressionComment(line, lines[i - 1], key, suppressedKeys, invalidSuppressionErrors);
   }
 
   return { allKeys, substates, suppressedKeys, invalidSuppressionErrors };
@@ -144,6 +159,10 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
   constructor() {
     super({
       id: 'validate_fsm_implementation',
+      configKey: 'fsm.implementation',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'FSM Implementation Validator',
       description: 'Fallas de implementación, idempotencia o asientos en FSM',
       icon: '🕹️',

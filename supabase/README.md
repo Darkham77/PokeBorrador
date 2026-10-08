@@ -1,98 +1,98 @@
 # Supabase Configurator & Deployment Manager
 
-Herramienta de orquestación y automatización CLI (`setup_supabase.ts`) diseñada para gestionar despliegues multi-servidor de Supabase bajo un enfoque **"Cero-Contacto" (Zero-Touch)** y una arquitectura purista de Git, completamente migrada a **Node.js nativo (versión gobernada por `package.json` / `.nvmrc`)**.
+CLI orchestration and automation tool (`setup_supabase.ts`) designed to manage multi-server Supabase deployments under a **"Zero-Touch"** approach and a purist Git architecture, fully running on **native Node.js (version governed by `package.json` / `.nvmrc`)**.
 
 ---
 
-## Características Principales
+## Key Features
 
-- **Arquitectura 100% Dinámica**: No almacena archivos estáticos de Supabase (`docker-compose.yml`, `Dockerfile`, `init/`) en el repositorio. Todo se genera al vuelo en tiempo de compilación.
-- **Gestión Multi-Servidor**: Centraliza la configuración de múltiples entornos (`cloud`, `nas-franco`, `local`, etc.) en un único archivo `.env` maestro ubicado en la raíz del proyecto.
-- **Metadatos de Juego & Tenant DRY**: Incorpora de forma nativa identificadores para la UI del juego (`ID`, `NAME`, `REGION`) y aplica el principio DRY para la gestión de tenants (`TENANT_ID`), propagándolo automáticamente a los servicios de Supavisor y Storage.
-- **Despliegues Cero-Contacto**: Encapsula todas las configuraciones, scripts SQL internos de Supabase y servicios (Kong, Vector, Supavisor) dentro de una imagen Docker personalizada, evitando la necesidad de crear o editar archivos manualmente en los servidores remotos.
-- **Herencia Inteligente de Variables**: Combina automáticamente las configuraciones base oficiales de Supabase (`.env.example`) con las variables del maestro y las específicas de cada servidor, garantizando que Docker Compose levante sin errores de especificación.
-- **Interfaz CLI en Español Modernizada**: Comandos intuitivos y amigables con formato visual enriquecido y compilación ultrarrápida nativa de TypeScript (gracias a Node.js nativo).
+- **100% Dynamic Architecture**: Does not store static Supabase files (`docker-compose.yml`, `Dockerfile`, `init/`) in the repository. Everything is generated on the fly at build time.
+- **Multi-Server Management**: Centralizes configuration for multiple environments (`cloud`, `nas-franco`, `local`, etc.) in a single master `.env` file located at the project root.
+- **Game Metadata & DRY Tenant**: Natively incorporates identifiers for game UI (`ID`, `NAME`, `REGION`) and enforces the DRY principle for tenant management (`TENANT_ID`), propagating it automatically to Supavisor and Storage services.
+- **Zero-Touch Deployments**: Encapsulates all configurations, internal Supabase SQL scripts, and services (Kong, Vector, Supavisor) inside a custom Docker image, eliminating the need to manually create or edit files on remote servers.
+- **Intelligent Variable Inheritance**: Automatically merges official Supabase base configurations (`.env.example`) with master and server-specific variables, ensuring Docker Compose starts without specification errors.
+- **Modernized CLI Interface**: Intuitive, friendly commands with rich visual output and ultra-fast native TypeScript compilation (powered by native Node.js).
 
 ---
 
-## Estructura del Proyecto
+## Project Structure
 
 ```text
 Poké Vicio/
-├── .env.example         # Plantilla del archivo maestro de configuración (Raíz)
+├── .env.example         # Master configuration file template (Root)
 └── supabase/
-    ├── setup_supabase.ts    # Orquestador CLI principal (Node.js nativo)
-    └── README.md            # Esta documentación
+    ├── setup_supabase.ts    # Main CLI orchestrator (Native Node.js)
+    └── README.md            # This documentation
 ```
 
 > [!NOTE]
-> Las carpetas `docker/` (clon temporal de Supabase) y `generated/` (archivos listos para despliegue) son **artefactos de compilación**. Git las ignora automáticamente para mantener el repositorio limpio y ultraligero.
+> The `docker/` (temporary Supabase clone) and `generated/` (deployment-ready files) directories are **build artifacts**. Git automatically ignores them to keep the repository clean and lightweight.
 
 ---
 
-## Flujo de Trabajo y Arquitectura
+## Architecture & Workflow
 
 ```mermaid
 graph TD
-    A[Archivo Maestro .env en raíz] -->|Configuraciones globales y por servidor| B(setup_supabase.ts)
-    C[Supabase Oficial GitHub] -->|git sparse-checkout| D[Carpeta Temporal docker/]
-    B -->|1. clonar| D
-    D -->|2. generar| E[Carpeta generated/ con .env por servidor y docker-compose]
-    D -->|Inyección de Dockerfile e init/| F[Imagen Docker Personalizada]
-    B -->|3. construir| F
-    F -->|4. publicar| G[Docker Hub]
-    E -->|5. Despliegue| H[Servidor Remoto / NAS]
+    A[Master .env File in Root] -->|Global & Per-Server Settings| B(setup_supabase.ts)
+    C[Official Supabase GitHub] -->|git sparse-checkout| D[Temporary docker/ Folder]
+    B -->|1. clone| D
+    D -->|2. generate| E[generated/ Folder with Per-Server .env and docker-compose]
+    D -->|Inject Dockerfile & init/| F[Custom Docker Image]
+    B -->|3. build| F
+    F -->|4. publish| G[Docker Hub]
+    E -->|5. Deploy| H[Remote Server / NAS]
 ```
 
 ---
 
-## Requisitos Previos
+## Prerequisites
 
-- **Node.js** (versión gobernada por la SSoT del proyecto en `package.json` [`engines.node`] y `.nvmrc`)
-- **Docker** y **Docker Compose** (para construir y publicar imágenes)
-- **Git** (para la clonación selectiva de Supabase)
+- **Node.js** (version governed by the project SSoT in `package.json` [`engines.node`] and `.nvmrc`)
+- **Docker** and **Docker Compose** (to build and publish images)
+- **Git** (for selective Supabase cloning)
 
 ---
 
-## Configuración Inicial
+## Initial Setup
 
-1. Editá el archivo `.env` en la raíz de **Poké Vicio** para definir tus credenciales de Docker Hub y los servidores que desees gestionar:
+1. Edit the `.env` file at the root of **Poké Vicio** to define your Docker Hub credentials and the servers you want to manage:
 
 ```ini
-# === [ CONFIGURACIÓN DOCKER HUB ] ===
+# === [ DOCKER HUB CONFIGURATION ] ===
 DOCKER_USER=francogp612
 DOCKER_REPO_DB=pokevicio-db
 DOCKER_TAG_DB=latest
 
-# === [ SERVIDOR: cloud ] ===
+# === [ SERVER: cloud ] ===
 SERVER_cloud_ID=official-prod
-SERVER_cloud_NAME="Poké Vicio Oficial"
+SERVER_cloud_NAME="Poké Vicio Official"
 SERVER_cloud_REGION="Global"
 SERVER_cloud_TENANT_ID=your-tenant-id
-SERVER_cloud_SUPABASE_PUBLIC_URL=https://mi-api-cloud.midominio.com
-SERVER_cloud_POSTGRES_PASSWORD=mi_password_seguro_cloud
+SERVER_cloud_SUPABASE_PUBLIC_URL=https://my-api-cloud.mydomain.com
+SERVER_cloud_POSTGRES_PASSWORD=my_secure_cloud_password
 
-# === [ SERVIDOR: server_franco ] ===
+# === [ SERVER: server_franco ] ===
 SERVER_server_franco_ID=server_franco
-SERVER_server_franco_NAME="Servidor Franco (Docker)"
-SERVER_server_franco_REGION="Desarrollo"
+SERVER_server_franco_NAME="Server Franco (Docker)"
+SERVER_server_franco_REGION="Development"
 SERVER_server_franco_TENANT_ID=your-tenant-id
 SERVER_server_franco_SUPABASE_PUBLIC_URL=https://francogp.myqnapcloud.com:50002
-SERVER_server_franco_POSTGRES_PASSWORD=mi_password_seguro_server
+SERVER_server_franco_POSTGRES_PASSWORD=my_secure_server_password
 ```
 
 > [!TIP]
-> Si omites claves obligatorias de Supabase (como `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY` o claves de encriptación), la herramienta las **generará automáticamente de forma criptográficamente segura** utilizando la API nativa de criptografía de Node.js y las guardará en tu `.env` maestro la primera vez que ejecutes `generar`.
+> If you omit required Supabase keys (such as `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY`, or encryption keys), the tool will **automatically generate them in a cryptographically secure manner** using Node.js native crypto API and save them to your master `.env` the first time you run `generate`.
 
 ---
 
-## Referencia de Comandos CLI
+## CLI Command Reference
 
-El orquestador se ejecuta a través de `npm run supabase:manage [comando]`. Si se ejecuta sin comandos, listará los servidores configurados.
+The orchestrator is executed via `npm run supabase:manage [command]`. Running without commands lists configured servers.
 
 ### `list`
 
-Muestra una tabla resumen con todos los servidores definidos en tu `.env` maestro, sus URLs públicas y su estado de configuración.
+Displays a summary table of all servers defined in your master `.env`, their public URLs, and configuration status.
 
 ```bash
 npm run supabase:manage list
@@ -100,7 +100,7 @@ npm run supabase:manage list
 
 ### `add`
 
-Asistente interactivo para añadir o actualizar un servidor en el archivo `.env` maestro. Solicita metadatos del juego (`ID`, `NAME`, `REGION`), configuración de `Tenant ID`, dominios, puertos y credenciales del dashboard.
+Interactive wizard to add or update a server in the master `.env` file. Prompts for game metadata (`ID`, `NAME`, `REGION`), `Tenant ID` configuration, domains, ports, and dashboard credentials.
 
 ```bash
 npm run supabase:manage add
@@ -108,7 +108,7 @@ npm run supabase:manage add
 
 ### `clone`
 
-Descarga la última versión de la carpeta `docker/` oficial de Supabase mediante `git sparse-checkout` y genera dinámicamente el `Dockerfile` personalizado y la carpeta `init/`.
+Downloads the latest version of the official Supabase `docker/` folder via `git sparse-checkout` and dynamically generates the custom `Dockerfile` and `init/` folder.
 
 ```bash
 npm run supabase:manage clone
@@ -116,7 +116,7 @@ npm run supabase:manage clone
 
 ### `generate`
 
-Procesa los servidores del `.env` maestro y crea un archivo `.env` independiente para cada uno dentro de la carpeta `generated/` (ej. `generated/server_franco.env`). También copia y adapta el `docker-compose.yml` oficial inyectando los volúmenes nombrados y configuraciones de tenant.
+Processes servers from the master `.env` and creates an independent `.env` file for each in the `generated/` folder (e.g. `generated/server_franco.env`). It also copies and adapts the official `docker-compose.yml`, injecting named volumes and tenant configurations.
 
 ```bash
 npm run supabase:manage generate
@@ -124,7 +124,7 @@ npm run supabase:manage generate
 
 ### `build`
 
-Construye la imagen Docker de Postgres personalizada empaquetando todos los scripts SQL internos de Supabase y las configuraciones de Kong, Vector y Supavisor.
+Builds the custom Postgres Docker image packaging all internal Supabase SQL scripts and configurations for Kong, Vector, and Supavisor.
 
 ```bash
 npm run supabase:manage build
@@ -132,7 +132,7 @@ npm run supabase:manage build
 
 ### `publish`
 
-Inicia sesión en Docker Hub (si es necesario) y sube la imagen construida al repositorio configurado en el `.env` maestro.
+Logs into Docker Hub (if necessary) and pushes the built image to the repository configured in the master `.env`.
 
 ```bash
 npm run supabase:manage publish
@@ -140,7 +140,7 @@ npm run supabase:manage publish
 
 ### `release`
 
-Atajo de productividad que ejecuta secuencialmente `build` y `publish` en un solo paso para agilizar el lanzamiento de nuevas versiones de la imagen base.
+Productivity shortcut that sequentially runs `build` and `publish` in a single step to streamline base image releases.
 
 ```bash
 npm run supabase:manage release
@@ -148,7 +148,7 @@ npm run supabase:manage release
 
 ### `all`
 
-**El comando maestro.** Orquesta secuencialmente el ciclo de vida completo en un solo paso: `clone` -> `generate` -> `build` -> `publish`.
+**The master command.** Sequentially orchestrates the full lifecycle in a single step: `clone` -> `generate` -> `build` -> `publish`.
 
 ```bash
 npm run supabase:manage all
@@ -156,33 +156,33 @@ npm run supabase:manage all
 
 ---
 
-## Ejemplos Prácticos de Uso
+## Practical Usage Examples
 
-### Ejemplo 1: Despliegue Automatizado Completo (Zero-Touch)
+### Example 1: Full Automated Deployment (Zero-Touch)
 
-Para actualizar Supabase a la última versión, regenerar todas las configuraciones, compilar la imagen y subirla a Docker Hub en un solo paso:
+To update Supabase to the latest version, regenerate all configurations, compile the image, and push it to Docker Hub in a single step:
 
 ```bash
 npm run supabase:manage all
 ```
 
-### Ejemplo 2: Creación y Despliegue de un Nuevo Entorno (Staging)
+### Example 2: Creating and Deploying a New Environment (Staging)
 
-1. Ejecutá el asistente para agregar el servidor y configurar sus metadatos y tenant:
+1. Run the wizard to add the server and configure its metadata and tenant:
 
 ```bash
 npm run supabase:manage add
 ```
 
-*El asistente te pedirá el nombre (ej. `staging`), metadatos del juego, Tenant ID y dominios.*
+*The wizard will ask for the name (e.g. `staging`), game metadata, Tenant ID, and domains.*
 
-1. Generá los archivos de despliegue para que se creen las claves de encriptación y el archivo `generated/staging.env`:
+1. Generate deployment files so encryption keys and `generated/staging.env` are created:
 
 ```bash
 npm run supabase:manage generate
 ```
 
-1. Subí los archivos generados (`generated/docker-compose.yml` y `generated/staging.env`) a tu servidor remoto o NAS, renombrá `staging.env` a `.env` y levantá los servicios:
+1. Upload the generated files (`generated/docker-compose.yml` and `generated/staging.env`) to your remote server or NAS, rename `staging.env` to `.env`, and start services:
 
 ```bash
 docker compose up -d
@@ -190,50 +190,50 @@ docker compose up -d
 
 ---
 
-## Guía de Configuración en NAS QNAP (HTTPS & Proxy Inverso)
+## QNAP NAS Configuration Guide (HTTPS & Reverse Proxy)
 
-Para disponibilizar de manera segura la base de datos y la API de Supabase desde fuera de tu red local utilizando tu NAS QNAP y su certificado SSL de **myQNAPcloud**, sigue este flujo paso a paso:
+To securely expose the database and Supabase API outside your local network using your QNAP NAS and its **myQNAPcloud** SSL certificate, follow this step-by-step workflow:
 
-### 1. Activar DDNS y Certificado SSL Nativos
+### 1. Enable Native DDNS & SSL Certificate
 
-1. Abre la aplicación **myQNAPcloud** en la interfaz web de tu QNAP.
-2. Asegúrate de configurar un dominio DDNS personalizado (ej. `francogp.myqnapcloud.com`).
-3. En la pestaña **Certificado SSL**, solicita y activa el certificado gratuito de **Let's Encrypt**.
+1. Open the **myQNAPcloud** app on your QNAP web interface.
+2. Ensure a custom DDNS domain is configured (e.g. `francogp.myqnapcloud.com`).
+3. Under the **SSL Certificate** tab, request and activate the free **Let's Encrypt** certificate.
 
 > [!NOTE]
-> QNAP gestiona automáticamente el HTTPS y renovará el certificado cada 3 meses sin necesidad de configuraciones manuales o contenedores adicionales de Nginx/Certbot.
+> QNAP automatically manages HTTPS and renews the certificate every 3 months without requiring manual configurations or extra Nginx/Certbot containers.
 
-### 2. Configurar el Proxy Inverso en QTS (QNAP)
+### 2. Configure Reverse Proxy in QTS (QNAP)
 
-1. Ve al **Panel de Control** > **Servidor Web** > pestaña **Proxy Inverso**.
-2. Añade una nueva regla de Proxy Inverso con la siguiente configuración:
-   - **Nombre de la Regla**: `Supabase API`
-   - **Protocolo de Origen**: `HTTPS`
-   - **Nombre del Host de Origen**: Tu dominio DDNS (ej. `francogp.myqnapcloud.com`)
-   - **Puerto de Origen**: `8443`
-   - **Protocolo de Destino**: `HTTP`
-   - **Nombre del Host de Destino**: La IP privada de tu NAS (ej. `192.168.88.200`)
-   - **Puerto de Destino**: `8000` (el puerto HTTP expuesto por Kong en tu Docker).
+1. Go to **Control Panel** > **Web Server** > **Reverse Proxy** tab.
+2. Add a new Reverse Proxy rule with the following settings:
+   - **Rule Name**: `Supabase API`
+   - **Source Protocol**: `HTTPS`
+   - **Source Hostname**: Your DDNS domain (e.g. `francogp.myqnapcloud.com`)
+   - **Source Port**: `8443`
+   - **Target Protocol**: `HTTP`
+   - **Target Hostname**: Your NAS private IP (e.g. `192.168.88.200`)
+   - **Target Port**: `8000` (the HTTP port exposed by Kong in your Docker).
 
-### 3. Configurar la Redirección de Puertos (NAT) en tu Router
+### 3. Configure Port Forwarding (NAT) on Your Router
 
-Para que el tráfico externo de internet llegue correctamente al NAS, debes abrir el puerto seguro `8443` en tu router hogareño.
+For external internet traffic to properly reach the NAS, forward secure port `8443` on your home router.
 
-#### A. Configuración General (Port Forwarding Estándar)
+#### A. General Setup (Standard Port Forwarding)
 
-En la interfaz de administración web de tu router, añade una regla de reenvío:
+In your router web management interface, add a forwarding rule:
 
-- **Puerto Externo (WAN)**: `8443` (TCP)
-- **IP Interna (Destino)**: La IP privada del NAS (ej. `192.168.88.200`)
-- **Puerto Interno (Destino)**: `8443` (TCP)
+- **External Port (WAN)**: `8443` (TCP)
+- **Internal IP (Target)**: NAS private IP (e.g. `192.168.88.200`)
+- **Internal Port (Target)**: `8443` (TCP)
 
-#### B. Configuración Avanzada en Routers MikroTik (RouterOS)
+#### B. Advanced Setup for MikroTik Routers (RouterOS)
 
-Si utilizas un router MikroTik, debes configurar tanto la regla de redirección estándar (**dst-nat**) como la regla de **Hairpin NAT** (NAT Loopback). Esta última es crucial para permitir que tus dispositivos locales puedan conectarse al dominio `myqnapcloud.com` estando dentro de tu propia red local (de lo contrario, la conexión dará error al jugar por Wi-Fi desde tu casa).
+If using a MikroTik router, configure both the standard redirection rule (**dst-nat**) and the **Hairpin NAT** rule (NAT Loopback). The latter is crucial to allow local devices to connect to `myqnapcloud.com` from inside your home network (otherwise, connections fail when playing over home Wi-Fi).
 
-Abre una consola (`New Terminal`) en tu MikroTik o mediante Winbox y ejecuta:
+Open a terminal (`New Terminal`) in MikroTik or Winbox and run:
 
-**1. Redirección de Puertos (DST-NAT):**
+**1. Port Redirection (DST-NAT):**
 
 ```routeros
 /ip firewall nat
@@ -247,25 +247,25 @@ add chain=dstnat action=dst-nat to-addresses=192.168.88.200 to-ports=8443 protoc
 add chain=srcnat src-address=192.168.88.0/24 dst-address=192.168.88.200 protocol=tcp dst-port=8443 action=masquerade comment="Hairpin NAT - Supabase NAS"
 ```
 
-### 4. Evitar Conflictos de Puerto en Docker (`8443`)
+### 4. Avoid Port Conflicts in Docker (`8443`)
 
-Como QNAP se adueña de su puerto host `8443` para escuchar el HTTPS y derivarlo internamente por HTTP, **Docker no debe intentar adueñarse de ese mismo puerto host** para levantar la pasarela HTTPS interna de Kong. De lo contrario, Docker fallará al iniciar con un error de puerto ya bindeado.
+Because QNAP occupies host port `8443` to listen for HTTPS and route internally over HTTP, **Docker must not attempt to bind that same host port** for Kong's internal HTTPS gateway. Otherwise, Docker will fail to start with a port collision error.
 
-Para evitar esto:
+To prevent this:
 
-1. En tu archivo `.env` maestro en la raíz, asigna un puerto diferente y libre para el bindeo HTTPS interno de Kong agregando esta variable en tu perfil de servidor:
+1. In your master `.env` file at root, assign a different, available port for Kong's internal HTTPS binding by setting this variable in your server profile:
 
    ```ini
    SERVER_server_franco_KONG_HTTPS_PORT=50002
    ```
 
-2. Corre el script para regenerar los archivos de despliegue:
+2. Run the script to regenerate deployment files:
 
    ```bash
    npm run supabase:manage generate
    ```
 
-3. Subí el nuevo `server_franco.env` (renombrado a `.env`) y `docker-compose.yml` al servidor y recreá el contenedor:
+3. Upload the updated `server_franco.env` (renamed to `.env`) and `docker-compose.yml` to the server and recreate the container:
 
    ```bash
    docker compose down
@@ -273,24 +273,24 @@ Para evitar esto:
    ```
 
 > [!TIP]
-> Con esta arquitectura, los clientes externos de juego se comunicarán de forma segura por HTTPS a `https://francogp.myqnapcloud.com:8443`. QNAP resolverá y descifrará el SSL en su puerto `8443` y enviará las peticiones localmente en HTTP limpio al puerto `8000` del contenedor Docker, mientras que el puerto seguro de Kong Docker se bindea al `8444` del host evitando choques de puertos.
+> Under this architecture, external game clients communicate securely over HTTPS to `https://francogp.myqnapcloud.com:8443`. QNAP resolves and terminates SSL on port `8443` and forwards requests locally via clean HTTP to port `8000` of the Docker container, while Kong Docker's secure port binds to host `8444`, preventing port collisions.
 
 ---
 
-## Solución de Problemas Comunes
+## Troubleshooting Common Issues
 
 ### Error: `invalid spec: :/var/run/docker.sock:ro,z: empty section between colons`
 
-**Causa:** Estás intentando levantar Docker Compose utilizando un archivo `.env` que no posee las variables base de Supabase (como `DOCKER_SOCKET_LOCATION`).
-**Solución:** Asegurate de generar los archivos de entorno utilizando `npm run supabase:manage generate`. La herramienta se encarga de heredar automáticamente todas las variables base del archivo oficial de Supabase.
+**Cause:** Attempting to start Docker Compose using a `.env` file that lacks Supabase base variables (such as `DOCKER_SOCKET_LOCATION`).
+**Solution:** Ensure environment files are generated using `npm run supabase:manage generate`. The tool automatically inherits all base variables from official Supabase templates.
 
-### Error: `WinError 5: Acceso denegado` al clonar en Windows (Resuelto en Node.js)
+### Error: `WinError 5: Access is denied` when cloning on Windows (Resolved in Node.js)
 
-**Causa:** Git en Windows marca ciertos archivos internos como solo lectura (`readonly`), impidiendo que Python/Node los elimine directamente al limpiar carpetas temporales.
-**Solución:** En Node.js 26+ nativo, el uso de `fs.rm` con `{ recursive: true, force: true }` evita esta restricción y gestiona la limpieza de directorios temporales de manera transparente.
+**Cause:** Git on Windows marks certain internal files as read-only (`readonly`), preventing Python/Node from deleting them directly when cleaning temporary folders.
+**Solution:** In native Node.js 26+, `fs.rm` with `{ recursive: true, force: true }` bypasses this restriction and manages temporary directory cleanup transparently.
 
 ---
 
-## Licencia
+## License
 
-Distribuido bajo la Licencia MIT.
+Distributed under the MIT License.

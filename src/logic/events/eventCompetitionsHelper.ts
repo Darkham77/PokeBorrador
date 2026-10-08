@@ -64,9 +64,15 @@ export function evaluateIvsMetric(
   };
 }
 
+export const BODY_METRICS = ['weight', 'height'] as const;
+export type BodyMetric = (typeof BODY_METRICS)[number];
+
+export const TRAINING_METRICS = ['level', 'friendship'] as const;
+export type TrainingMetric = (typeof TRAINING_METRICS)[number];
+
 export function evaluateDimensionMetric(
   pokemon: Pokemon,
-  metric: 'weight' | 'height',
+  metric: BodyMetric,
   resolvedOrder: ResolvedSubCompetitionOrder
 ): SubCompetitionEvaluationResult {
   const isWeight = metric === 'weight';
@@ -90,7 +96,7 @@ export function evaluateDimensionMetric(
 
 export function evaluateStatMetric(
   pokemon: Pokemon,
-  metric: 'level' | 'friendship'
+  metric: TrainingMetric
 ): SubCompetitionEvaluationResult {
   if (metric === 'level') {
     const lvl = pokemon.level || 1;

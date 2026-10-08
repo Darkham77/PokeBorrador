@@ -84,6 +84,32 @@ interface EventRow {
   active: number;
 }
 
+function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: string): void {
+  try {
+    db.exec(sql);
+  } catch (err: unknown) {
+    const msg = (err as Error).message.toLowerCase();
+    const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+    const isMissing = msg.includes('no such column');
+    if (!isDuplicate && !isMissing) {
+      throw new Error(`[Migration Error] Failed in migration "${migrationId}": ${(err as Error).message}\nSQL: ${sql}`);
+    }
+  }
+}
+
+function applySingleMigration(db: DatabaseSync, m: { id: string; sql: string; sqlite_sql?: string }): void {
+  const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
+  const isSqliteSpec = m.sqlite_sql !== undefined;
+  const statements = splitSQLStatements(sqlSource);
+
+  for (const stmt of statements) {
+    const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
+    if (sql) {
+      executeMigrationStatement(db, sql, m.id);
+    }
+  }
+}
+
 describe('Event Database Rewards & Species Integrity', () => {
   function createMigratedDatabase(): DatabaseSync {
     const db = new DatabaseSync(':memory:');
@@ -97,25 +123,7 @@ describe('Event Database Rewards & Species Integrity', () => {
 
     // 2. Apply all migrations in sequence
     for (const m of DATABASE_MIGRATIONS as { id: string; sql: string; sqlite_sql?: string }[]) {
-      const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
-      const isSqliteSpec = m.sqlite_sql !== undefined;
-      const statements = splitSQLStatements(sqlSource);
-
-      for (const stmt of statements) {
-        const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-        if (sql) {
-          try {
-            db.exec(sql);
-          } catch (err: unknown) {
-            const msg = (err as Error).message.toLowerCase();
-            const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
-            const isMissing = msg.includes('no such column');
-            if (!isDuplicate && !isMissing) {
-              throw new Error(`[Migration Error] Failed in migration "${m.id}": ${(err as Error).message}\nSQL: ${sql}`);
-            }
-          }
-        }
-      }
+      applySingleMigration(db, m);
     }
 
     return db;
@@ -164,117 +172,101 @@ describe('Event Database Rewards & Species Integrity', () => {
     }
   }
 
-  it('migrates database and verifies ALL events in events_config have 100% valid item rewards and enabled species', () => {
-    using db = createMigratedDatabase();
+  function validateTopLevelPrizes(config: RawEventConfig, ctx: string): void {
+    if (!config.prizes) return;
+    if (config.prizes.first) validatePrize(config.prizes.first, `${ctx} > prizes.first`);
+    if (config.prizes.second) validatePrize(config.prizes.second, `${ctx} > prizes.second`);
+    if (config.prizes.third) validatePrize(config.prizes.third, `${ctx} > prizes.third`);
+  }
 
-    // Query ALL events from events_config (including inactive, legacy, and active)
-    const allEvents = db.prepare("SELECT * FROM events_config").all() as unknown as EventRow[];
+  function validateSubCompetitions(config: RawEventConfig, ctx: string): void {
+    if (!Array.isArray(config.subCompetitions)) return;
+    for (const sub of config.subCompetitions) {
+      const subCtx = `${ctx} > SubComp: ${sub.id}`;
+      assert.ok(sub.id && sub.id.length > 0, `[${subCtx}] Sub-competition is missing id`);
 
-    assert.ok(allEvents.length >= 8, `Expected at least 8 events in events_config, found ${allEvents.length}`);
-
-    for (const evt of allEvents) {
-      const ctx = `Event: ${evt.id} (${evt.name}, active=${evt.active})`;
-
-
-      let config: RawEventConfig;
-      try {
-        config = typeof evt.config === 'string' ? JSON.parse(evt.config) as RawEventConfig : evt.config;
-      } catch (err) {
-        throw new Error(`[${ctx}] Invalid JSON in config column: ${(err as Error).message}`);
+      if (sub.prizes) {
+        if (sub.prizes.first) validatePrize(sub.prizes.first, `${subCtx} > prizes.first`);
+        if (sub.prizes.second) validatePrize(sub.prizes.second, `${subCtx} > prizes.second`);
+        if (sub.prizes.third) validatePrize(sub.prizes.third, `${subCtx} > prizes.third`);
       }
+    }
+  }
 
-      // 1. Validate top-level prizes
-      if (config.prizes) {
-        if (config.prizes.first) validatePrize(config.prizes.first, `${ctx} > prizes.first`);
-        if (config.prizes.second) validatePrize(config.prizes.second, `${ctx} > prizes.second`);
-        if (config.prizes.third) validatePrize(config.prizes.third, `${ctx} > prizes.third`);
+  function validateConfigSpecies(config: RawEventConfig, ctx: string): void {
+    if (!config.species || config.species === '*') return;
+    const speciesList = config.species.split(',').map(s => s.trim().toLowerCase());
+    for (const sp of speciesList) {
+      if (sp) {
+        assert.ok(
+          isEnabledPokemonId(sp),
+          `[${ctx}] Invalid species ID in config.species: "${sp}". Must belong to ENABLED_POKEMON_IDS.`
+        );
       }
+    }
+  }
 
-      // 2. Validate sub-competitions and their prizes
-      if (Array.isArray(config.subCompetitions)) {
-        for (const sub of config.subCompetitions) {
-          const subCtx = `${ctx} > SubComp: ${sub.id}`;
-          assert.ok(sub.id && sub.id.length > 0, `[${subCtx}] Sub-competition is missing id`);
-
-          if (sub.prizes) {
-            if (sub.prizes.first) validatePrize(sub.prizes.first, `${subCtx} > prizes.first`);
-            if (sub.prizes.second) validatePrize(sub.prizes.second, `${subCtx} > prizes.second`);
-            if (sub.prizes.third) validatePrize(sub.prizes.third, `${subCtx} > prizes.third`);
-          }
-        }
-      }
-
-      // 3. Validate species
-      if (config.species && config.species !== '*') {
-        const speciesList = config.species.split(',').map(s => s.trim().toLowerCase());
-        for (const sp of speciesList) {
+  function validateWeeklyRotations(config: RawEventConfig, ctx: string): void {
+    if (!config.weeklyRotations || typeof config.weeklyRotations !== 'object') return;
+    for (const [weekNum, rot] of Object.entries(config.weeklyRotations)) {
+      const rotCtx = `${ctx} > WeeklyRotation: week ${weekNum}`;
+      if (rot.species && rot.species !== '*') {
+        const rotSpecies = rot.species.split(',').map(s => s.trim().toLowerCase());
+        for (const sp of rotSpecies) {
           if (sp) {
             assert.ok(
               isEnabledPokemonId(sp),
-              `[${ctx}] Invalid species ID in config.species: "${sp}". Must belong to ENABLED_POKEMON_IDS.`
+              `[${rotCtx}] Invalid species ID in rotation: "${sp}". Must belong to ENABLED_POKEMON_IDS.`
             );
           }
         }
       }
+      if (rot.banner) {
+        assert.ok(
+          typeof rot.banner === 'string' && rot.banner.length > 0,
+          `[${rotCtx}] Invalid banner in rotation: ${rot.banner}`
+        );
+      }
+    }
+  }
 
-      // 4. Validate weekly rotations
-      if (config.weeklyRotations && typeof config.weeklyRotations === 'object') {
-        for (const [weekNum, rot] of Object.entries(config.weeklyRotations)) {
-          const rotCtx = `${ctx} > WeeklyRotation: week ${weekNum}`;
-          if (rot.species && rot.species !== '*') {
-            const rotSpecies = rot.species.split(',').map(s => s.trim().toLowerCase());
-            for (const sp of rotSpecies) {
-              if (sp) {
-                assert.ok(
-                  isEnabledPokemonId(sp),
-                  `[${rotCtx}] Invalid species ID in rotation: "${sp}". Must belong to ENABLED_POKEMON_IDS.`
-                );
-              }
-            }
-          }
-          if (rot.banner) {
-            assert.ok(
-              typeof rot.banner === 'string' && rot.banner.length > 0,
-              `[${rotCtx}] Invalid banner in rotation: ${rot.banner}`
-            );
-          }
-        }
-      }
+  function validateEventRowConfig(evt: EventRow): void {
+    const ctx = `Event: ${evt.id} (${evt.name}, active=${evt.active})`;
+    let config: RawEventConfig;
+    try {
+      config = typeof evt.config === 'string' ? JSON.parse(evt.config) as RawEventConfig : evt.config;
+    } catch (err) {
+      throw new Error(`[${ctx}] Invalid JSON in config column: ${(err as Error).message}`);
+    }
+
+    validateTopLevelPrizes(config, ctx);
+    validateSubCompetitions(config, ctx);
+    validateConfigSpecies(config, ctx);
+    validateWeeklyRotations(config, ctx);
+  }
+
+  it('migrates database and verifies ALL events in events_config have 100% valid item rewards and enabled species', () => {
+    using db = createMigratedDatabase();
+    const allEvents = db.prepare("SELECT * FROM events_config").all() as unknown as EventRow[];
+    assert.ok(allEvents.length >= 8, `Expected at least 8 events in events_config, found ${allEvents.length}`);
+
+    for (const evt of allEvents) {
+      validateEventRowConfig(evt);
     }
   });
 
-  it('verifies ALL migrated events execute seamlessly across ALL maps, minigames, and 52 calendar weeks without errors', () => {
-    using db = createMigratedDatabase();
-    const rows = db.prepare("SELECT * FROM events_config WHERE active = 1").all() as unknown as EventRow[];
-
-    const activeEvents: GameEvent[] = rows.map(r => ({
-      id: r.id,
-      name: r.name,
-      icon: r.icon,
-      type: (r.type as GameEvent['type']) || 'passive_bonus',
-      active: true,
-      schedule: r.schedule,
-      config: r.config,
-      description: r.description
-    }));
-
-    assert.ok(activeEvents.length > 0, 'Expected active events in database');
-
-    // Verify species boost calculations for active events
+  function verifyMapEncountersAndBuffs(activeEvents: GameEvent[]): void {
     const spBoost = getSpeciesBoosts(activeEvents, 'magikarp');
     assert.ok(typeof spBoost.rate === 'number');
     assert.ok(typeof spBoost.shiny === 'number');
 
-    // 1. Test Encounter Math across all maps with active events
-    const sampleMaps = FIRE_RED_MAPS;
-    for (const map of sampleMaps) {
+    for (const map of FIRE_RED_MAPS) {
       assert.doesNotThrow(() => {
         const rates = getFinalGroundRates(map, 'day', 'clear', activeEvents);
         assert.ok(rates.pool.length >= 0);
       }, `Failed calculating ground rates on map ${map.id} with active events`);
     }
 
-    // 2. Test Multipliers & Minigame Buffs
     const mults = getGlobalMultipliers(activeEvents);
     assert.ok(typeof mults.exp === 'number');
     assert.ok(typeof mults.money === 'number');
@@ -284,11 +276,9 @@ describe('Event Database Rewards & Species Integrity', () => {
       assert.ok(typeof buffs.encounterRateMult === 'number');
       assert.ok(typeof buffs.rareDropMult === 'number');
     }
+  }
 
-    // 3. Test Year-Round Weekly Rotation and Sub-Competitions across all 52 weeks
-    const testPoke = makePokemon('pidgey', 10, { bypassWhitelist: true }) as Pokemon;
-    testPoke.obtainedAt = Temporal.Now.instant().epochMilliseconds;
-
+  function verifyYearRoundWeeklyRotations(activeEvents: GameEvent[], testPoke: Pokemon): void {
     for (let month = 1; month <= 12; month++) {
       for (let day = 1; day <= 28; day += 7) {
         const iso = `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T12:00:00Z`;
@@ -311,5 +301,28 @@ describe('Event Database Rewards & Species Integrity', () => {
         }
       }
     }
+  }
+
+  it('verifies ALL migrated events execute seamlessly across ALL maps, minigames, and 52 calendar weeks without errors', () => {
+    using db = createMigratedDatabase();
+    const rows = db.prepare("SELECT * FROM events_config WHERE active = 1").all() as unknown as EventRow[];
+
+    const activeEvents: GameEvent[] = rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      icon: r.icon,
+      type: (r.type as GameEvent['type']) || 'passive_bonus',
+      active: true,
+      schedule: r.schedule,
+      config: r.config,
+      description: r.description
+    }));
+
+    assert.ok(activeEvents.length > 0, 'Expected active events in database');
+    verifyMapEncountersAndBuffs(activeEvents);
+
+    const testPoke = makePokemon('pidgey', 10, { bypassWhitelist: true }) as Pokemon;
+    testPoke.obtainedAt = Temporal.Now.instant().epochMilliseconds;
+    verifyYearRoundWeeklyRotations(activeEvents, testPoke);
   });
 });

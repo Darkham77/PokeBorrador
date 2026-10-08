@@ -10,14 +10,6 @@ Frontend Developers / Systems Engineers.
 
 - Follow standard repository modularity guidelines.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `_box.scss`: Module implementation.
@@ -26,6 +18,14 @@ Frontend Developers / Systems Engineers.
 - `_main-game-view.scss`: Module implementation.
 - `_pokedex.scss`: Module implementation.
 - `_shadow-editor-card.scss`: Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 

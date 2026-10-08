@@ -12,6 +12,16 @@ Frontend Developers / Systems Engineers.
 - **Event-Driven Spawn Resolution Governance**:
   - Composables that compute route spawns (`useRouteSpawnsWild`, `useRouteSpawnsFishing`) MUST safely handle dynamic events by using `safeParse`, resolving weekly rotations (`resolveWeeklyRotation`), ignoring wildcard `'*'` open events, and validating species tokens with `isPokemonSpeciesId()` before invoking domain-type assertions or generating tooltips.
 
+## Key Files
+
+- `routeSpawnsCalculationHelper.ts`: Module implementation.
+- `useRoutePerks.ts`: Module implementation.
+- `useRouteSpawnsCalculation.ts`: Module implementation.
+- `useRouteSpawnsFishing.ts`: Module implementation.
+- `useRouteSpawnsWild.ts`: Module implementation.
+- [`routeSpawnsArchaeologyHelpers.ts`](./routeSpawnsArchaeologyHelpers.ts): Module implementation.
+- [`useRouteSpawnsArchaeology.ts`](./useRouteSpawnsArchaeology.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -21,14 +31,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `routeSpawnsCalculationHelper.ts`: Module implementation.
-- `useRoutePerks.ts`: Module implementation.
-- `useRouteSpawnsCalculation.ts`: Module implementation.
-- `useRouteSpawnsFishing.ts`: Module implementation.
-- `useRouteSpawnsWild.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

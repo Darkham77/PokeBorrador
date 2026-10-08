@@ -10,6 +10,69 @@ import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 
 const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 
+function isMigrationAlreadyApplied(db: DatabaseSync, id: string): boolean {
+  try {
+    const check = db.prepare('SELECT id FROM _migrations WHERE id = ?').get(id);
+    return Boolean(check);
+  } catch { // catch-ok: _migrations table might not exist yet
+    return false;
+  }
+}
+
+function executeMigrationStatements(db: DatabaseSync, migration: { id: string; sql: string; sqlite_sql?: string }): void {
+  const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
+  const isSqliteSpec = migration.sqlite_sql !== undefined;
+  const statements = splitSQLStatements(sqlSource);
+
+  for (const stmt of statements) {
+    if (!stmt.trim()) continue;
+    const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
+    try {
+      db.exec(sql);
+    } catch (err) { // catch-ok: log and continue
+      console.error(`Error executing statement in migration ${migration.id}:`, sql, (err as Error).message);
+    }
+  }
+
+  try {
+    db.prepare('INSERT INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, Temporal.Now.instant().toString());
+  } catch { // catch-ok: ignore duplicate insert error
+  }
+}
+
+function validatePokemonList(list: unknown[], slotName: string, userId: string, errors: string[]): void {
+  list.forEach((p, idx) => {
+    if (!p) return;
+    try {
+      validatePokemon(p as Parameters<typeof validatePokemon>[0]);
+    } catch (err) {
+      errors.push(`[User: ${userId}] ${slotName} slot ${idx} (${(p as { id?: string }).id}): ${(err as Error).message}`);
+    }
+  });
+}
+
+function validateSingleSave(row: { user_id: string; save_data: string }, errors: string[]): void {
+  console.log(`\nValidating migrated save for user: ${row.user_id}`);
+  try {
+    const saveData = JSON.parse(row.save_data);
+    const res = validateAndSanitize(saveData);
+    if (!res.valid || !res.data) {
+      errors.push(`[User: ${row.user_id}] Save validation failed: ${res.error}`);
+      return;
+    }
+
+    if (res.data.team) {
+      validatePokemonList(res.data.team, 'Team', row.user_id, errors);
+    }
+
+    if (res.data.box) {
+      validatePokemonList(res.data.box, 'Box', row.user_id, errors);
+    }
+  } catch (e) {
+    errors.push(`[User: ${row.user_id}] JSON Parse error: ${(e as Error).message}`);
+  }
+}
+
 describe('Local Ash DB Diagnostics', () => {
   it('should run all SQLite migrations on poke_local_ash.db and validate all saves', async () => {
     const tempDbPath = path.join(os.tmpdir(), `test_local_ash_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`);
@@ -17,90 +80,27 @@ describe('Local Ash DB Diagnostics', () => {
 
     try {
       using db = new DatabaseSync(tempDbPath);
-    
-    // 1. Run migrations first
-    const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');
-    const { translatePostgresToSqlite } = await import('../../../src/logic/db/sqlTranslator.ts');
 
-    console.log('Running database migrations...');
-    for (const migration of DATABASE_MIGRATIONS) {
-      let alreadyApplied = false;
-      try {
-        const check = db.prepare('SELECT id FROM _migrations WHERE id = ?').get(migration.id);
-        if (check) alreadyApplied = true;
-      } catch (_) {
-        // Table _migrations might not exist yet
+      const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');
+
+      console.log('Running database migrations...');
+      for (const migration of DATABASE_MIGRATIONS) {
+        if (isMigrationAlreadyApplied(db, migration.id)) continue;
+        executeMigrationStatements(db, migration);
       }
 
-      if (alreadyApplied) continue;
+      const query = db.prepare('SELECT user_id, save_data FROM game_saves');
+      const rows = query.all() as Array<{ user_id: string; save_data: string }>;
 
-      const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
-      const isSqliteSpec = migration.sqlite_sql !== undefined;
-      const statements = splitSQLStatements(sqlSource);
-      
-      for (const stmt of statements) {
-        if (stmt.trim()) {
-          const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-          try {
-            db.exec(sql);
-          } catch (err) {
-            console.error(`Error executing statement in migration ${migration.id}:`, sql, (err as Error).message);
-          }
-        }
-      }
-      
-      try {
-        db.prepare('INSERT INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, Temporal.Now.instant().toString());
-      } catch (_) {
-        // Ignore insert errors
-      }
-    }
-    
-    // 2. Validate saves after migration
-    const query = db.prepare('SELECT user_id, save_data FROM game_saves');
-    const rows = query.all() as Array<{ user_id: string; save_data: string }>;
-    
-    console.log(`Found ${rows.length} save files.`);
-    const errors: string[] = [];
-    
-    for (const row of rows) {
-      console.log(`\nValidating migrated save for user: ${row.user_id}`);
-      try {
-        const saveData = JSON.parse(row.save_data);
-        const res = validateAndSanitize(saveData);
-        if (!res.valid || !res.data) {
-          errors.push(`[User: ${row.user_id}] Save validation failed: ${res.error}`);
-          continue;
-        }
-        
-        if (res.data.team) {
-          res.data.team.forEach((p, idx: number) => {
-            try {
-              validatePokemon(p as any);
-            } catch (err) {
-              errors.push(`[User: ${row.user_id}] Team slot ${idx} (${p.id}): ${(err as Error).message}`);
-            }
-          });
-        }
-        
-        if (res.data.box) {
-          res.data.box.forEach((p, idx: number) => {
-            if (!p) return;
-            try {
-              validatePokemon(p as any);
-            } catch (err) {
-              errors.push(`[User: ${row.user_id}] Box slot ${idx} (${p.id}): ${(err as Error).message}`);
-            }
-          });
-        }
-        
-      } catch (e) {
-        errors.push(`[User: ${row.user_id}] JSON Parse error: ${(e as Error).message}`);
-      }
-    }
+      console.log(`Found ${rows.length} save files.`);
+      const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
 
-    console.log('Errors found:', errors);
-    assert.strictEqual(errors.length, 0, `There must be 0 validation errors on the local database. Found: ${errors.length}`);
+      for (const row of rows) {
+        validateSingleSave(row, errors);
+      }
+
+      console.log('Errors found:', errors);
+      assert.strictEqual(errors.length, 0, `There must be 0 validation errors on the local database. Found: ${errors.length}`);
     } finally {
       try {
         fs.unlinkSync(tempDbPath);

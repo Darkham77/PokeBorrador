@@ -66,56 +66,72 @@ describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () =>
     { moveType: 'water', defSpecies: 'geodude', defTypes: ['rock', 'ground'], expectedEff: 4 } // Doble debilidad (x4)
   ];
 
+const ATTACKER_SPECIES_BY_TYPE: Record<string, string> = {
+  electric: 'pikachu',
+  fire: 'charmander',
+  water: 'squirtle',
+  fighting: 'machop',
+  normal: 'eevee'
+};
+
+const MOVE_BY_TYPE: Record<string, string> = {
+  electric: 'thunderbolt',
+  fire: 'flamethrower',
+  normal: 'tackle',
+  fighting: 'machpunch',
+  water: 'surf'
+};
+
+function calculateSimTypeEffectiveness(
+  dex: ReturnType<typeof Dex.forGen>,
+  moveType: string,
+  defTypes: string[]
+): number {
+  let simEff = 1;
+  const attackKey = moveType.charAt(0).toUpperCase() + moveType.slice(1);
+  for (const t of defTypes) {
+    const typeData = dex.types.get(t);
+    if (!typeData) continue;
+    const damageTaken = typeData.damageTaken[attackKey];
+    if (damageTaken === 1) simEff *= 2;
+    else if (damageTaken === 2) simEff *= 0.5;
+    else if (damageTaken === 3) simEff *= 0;
+  }
+  return simEff;
+}
+
+function verifySingleTestCase(
+  tc: (typeof testCases)[number],
+  dex: ReturnType<typeof Dex.forGen>,
+  snapshot: HeuristicBattleSnapshot,
+  calculator: HeuristicDamageCalculator
+): void {
+  const simEff = calculateSimTypeEffectiveness(dex, tc.moveType, tc.defTypes);
+  assert.strictEqual(simEff, tc.expectedEff, `Sim effectiveness mismatch for ${tc.moveType} vs ${tc.defTypes}`);
+
+  snapshot.mySide.activePokemon!.species = ATTACKER_SPECIES_BY_TYPE[tc.moveType] || 'eevee';
+  snapshot.opponentSide.activePokemon!.species = tc.defSpecies;
+
+  const testMove = {
+    id: requirePokemonMoveId(MOVE_BY_TYPE[tc.moveType] || 'tackle'),
+    pp: 10,
+    disabled: false
+  };
+
+  const matchup = calculator.calcMatchup(snapshot, [testMove]);
+  const res = matchup.myAttacking[0];
+  assert.ok(res, `Failed to calculate matchup for ${testMove.id}`);
+
+  if (simEff === 0) {
+    assert.strictEqual(res.maxPercent, 0, `Expected 0 damage due to immunity for ${tc.moveType} vs ${tc.defTypes}`);
+  } else {
+    assert.ok(res.maxPercent > 0, `Expected positive damage for ${tc.moveType} vs ${tc.defTypes}`);
+  }
+}
+
   it('should match type effectiveness 1:1 between @pkmn/sim and HeuristicDamageCalculator', () => {
     for (const tc of testCases) {
-      // 1. Obtener la efectividad de tipo oficial calculada por @pkmn/sim
-      let simEff = 1;
-      for (const t of tc.defTypes) {
-        const typeData = dexGen.types.get(t);
-        if (typeData) {
-          const attackKey = tc.moveType.charAt(0).toUpperCase() + tc.moveType.slice(1);
-          const damageTaken = typeData.damageTaken[attackKey];
-          // Mapeo oficial de Showdown para damageTaken: 0 = normal, 1 = debilidad, 2 = resistencia, 3 = inmune
-          if (damageTaken === 1) simEff *= 2;
-          else if (damageTaken === 2) simEff *= 0.5;
-          else if (damageTaken === 3) simEff *= 0;
-        }
-      }
-
-      // Validar que nuestro caso de prueba tenga la efectividad esperada correcta
-      assert.strictEqual(simEff, tc.expectedEff, `Sim effectiveness mismatch for ${tc.moveType} vs ${tc.defTypes}`);
-
-      // 2. Modificar snapshot para el caso de prueba usando las especies reales
-      baseSnapshot.mySide.activePokemon!.species = tc.moveType === 'electric' ? 'pikachu' : tc.moveType === 'fire' ? 'charmander' : tc.moveType === 'water' ? 'squirtle' : tc.moveType === 'fighting' ? 'machop' : 'eevee';
-      
-      baseSnapshot.opponentSide.activePokemon!.species = tc.defSpecies;
-
-      // Un movimiento ficticio con potencia base para medir la efectividad
-      const testMove: { id: PokemonMoveId; pp: number; disabled: boolean } = { id: 'tackle', pp: 10, disabled: false };
-      
-      // Mock de base de datos de movimientos para evitar errores de smogon/calc
-      // Smogon/calc mapea tipos según el ID del movimiento, así que usamos movimientos reales que coinciden
-      const moveMapping: Record<string, string> = {
-        electric: 'thunderbolt',
-        fire: 'flamethrower',
-        normal: 'tackle',
-        fighting: 'machpunch',
-        water: 'surf'
-      };
-      testMove.id = requirePokemonMoveId(moveMapping[tc.moveType] || 'tackle');
-
-      const matchup = calc.calcMatchup(baseSnapshot, [testMove]);
-      const res = matchup.myAttacking[0];
-
-      assert.ok(res, `Failed to calculate matchup for ${testMove.id}`);
-      
-      // Si la efectividad oficial es 0 (inmunidad), el porcentaje de daño estimado debe ser exactamente 0
-      if (simEff === 0) {
-        assert.strictEqual(res.maxPercent, 0, `Expected 0 damage due to immunity for ${tc.moveType} vs ${tc.defTypes}`);
-      } else {
-        // Para efectividades mayores a 0, el porcentaje de daño debe ser mayor a 0
-        assert.ok(res.maxPercent > 0, `Expected positive damage for ${tc.moveType} vs ${tc.defTypes}`);
-      }
+      verifySingleTestCase(tc, dexGen, baseSnapshot, calc);
     }
   });
 });

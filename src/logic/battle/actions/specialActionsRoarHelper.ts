@@ -29,11 +29,14 @@ function resetBattleStages(stages: BattleStages): void {
   }
 }
 
+export const ROAR_ESCAPE_LOG_TYPES = ['log-player', 'log-enemy'] as const;
+export type RoarEscapeLogType = (typeof ROAR_ESCAPE_LOG_TYPES)[number];
+
 function handleWildRoarEscape(
   b: NonNullable<BattleContext['activeBattle']['value']>,
   side: BattleSide,
   msg: string,
-  logType: 'log-player' | 'log-enemy',
+  logType: RoarEscapeLogType,
   logOrigin: Pokemon,
   addLogFn: LogFn
 ): void {

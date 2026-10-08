@@ -16,7 +16,7 @@ import {
   inheritMoves,
   inheritAbility,
   calculateShinyChance
-} from '@/logic/breeding/breedingEngine.ts';
+} from '@/logic/breeding/breedingInheritance.ts';
 import { NATURES, isNatureId } from '@/data/battle/natures.ts';
 import type { NatureId } from '@/data/battle/natures.ts';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';

@@ -12,6 +12,8 @@ import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts'
 import { staticPrecompressPlugin } from './scripts/maintenance/vite-plugin-precompress.ts'
 import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts'
 import { devShadowEditorPlugin } from './scripts/maintenance/vite-plugin-dev-shadow-editor.ts'
+import { fixPkmnSimPlugin } from './scripts/maintenance/vite-plugin-fix-pkmn-sim.ts'
+import { isValidSqliteBuffer } from './src/logic/db/sqliteBufferValidator.ts'
 
 import { VitePWA } from 'vite-plugin-pwa'
 import basicSsl from '@vitejs/plugin-basic-ssl'
@@ -103,9 +105,9 @@ function devDbImportPlugin() {
         return path.resolve(import.meta.dirname, 'scratch/database/simulations', `${normalizedKey}.db`);
       };
 
-      server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-        // --- 1. Dedicated Manual User Backup Import Channel ---
-        if (req.url?.startsWith('/api/dev-manual-import-check')) {
+      async function handleManualImportRoute(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
+        const url = req.url ?? '';
+        if (url.startsWith('/api/dev-manual-import-check')) {
           try {
             await fsPromises.access(manualImportPath);
             res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -114,10 +116,10 @@ function devDbImportPlugin() {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ exists: false }));
           }
-          return;
+          return true;
         }
 
-        if (req.url?.startsWith('/api/dev-manual-import-db')) {
+        if (url.startsWith('/api/dev-manual-import-db')) {
           try {
             await fsPromises.access(manualImportPath);
             const binary = await fsPromises.readFile(manualImportPath);
@@ -127,182 +129,257 @@ function devDbImportPlugin() {
             });
             res.end(binary);
             console.debug('📦 [DevDB] manual_user_backup_import.db sent to client from disk.');
-            return;
           } catch {
             res.writeHead(404, { 'Content-Type': 'text/plain' });
             res.end('No manual user backup import found');
           }
-          return;
+          return true;
         }
 
-        if (req.url?.startsWith('/api/dev-manual-import-cleanup')) {
+        if (url.startsWith('/api/dev-manual-import-cleanup')) {
           try {
             await fsPromises.unlink(manualImportPath);
             console.log('📦 [DevDB] manual_user_backup_import.db cleaned up from disk.');
           } catch { /* ignore */ }
           res.writeHead(200, { 'Content-Type': 'text/plain' });
           res.end('Cleaned up');
-          return;
+          return true;
         }
 
-        // --- 2. Isolated Simulation & Tests Channel ---
-        if (req.url?.startsWith('/api/dev-sim-db-check') || req.url?.startsWith('/api/dev-import-db-check')) {
-          const simKey = getSimKey(req);
-          if (!simKey) {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ exists: false }));
-            return;
-          }
+        return false;
+      }
+
+      async function handleSimDbCheck(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        const simKey = getSimKey(req);
+        if (!simKey) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ exists: false }));
+          return;
+        }
+        const simPath = getSimDbPath(simKey);
+        try {
+          await fsPromises.access(simPath);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ exists: true }));
+        } catch {
+          const existsInRam = simDbRamBuffers.has(simKey);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ exists: existsInRam }));
+        }
+      }
+
+      async function handleSimDbCleanup(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        const simKey = getSimKey(req);
+        if (simKey) {
+          simDbRamBuffers.delete(simKey);
           const simPath = getSimDbPath(simKey);
           try {
-            await fsPromises.access(simPath);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ exists: true }));
-          } catch {
-            if (simDbRamBuffers.has(simKey)) {
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ exists: true }));
-              return;
-            }
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ exists: false }));
-          }
+            await fsPromises.unlink(simPath);
+            console.log(`📦 [DevDB] Simulation ${path.basename(simPath)} cleaned up from RAM & disk.`);
+          } catch { /* ignore */ }
+        }
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('Cleaned up');
+      }
+
+      async function handleSimDbDownload(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        const simKey = getSimKey(req);
+        if (!simKey) {
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('Simulation key missing or invalid');
           return;
         }
 
-        if (req.url?.startsWith('/api/dev-sim-db-cleanup') || req.url?.startsWith('/api/dev-import-db-cleanup')) {
-          const simKey = getSimKey(req);
-          if (simKey) {
-            simDbRamBuffers.delete(simKey);
-            const simPath = getSimDbPath(simKey);
-            try {
-              await fsPromises.unlink(simPath);
-              console.log(`📦 [DevDB] Simulation ${path.basename(simPath)} cleaned up from RAM & disk.`);
-            } catch { /* ignore */ }
+        // 1. Prioritize RAM memory buffer (most recent, instant, free of I/O race conditions)
+        const ramBuf = simDbRamBuffers.get(simKey);
+        if (ramBuf && isValidSqliteBuffer(ramBuf)) {
+          res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'Cache-Control': 'no-store'
+          });
+          res.end(ramBuf);
+          console.debug(`📦 [DevDB] Simulation ${simKey} sent to client from RAM memory.`);
+          return;
+        }
+
+        // 2. Read from disk if not available in RAM
+        const simPath = getSimDbPath(simKey);
+        try {
+          await fsPromises.access(simPath);
+          const binary = await fsPromises.readFile(simPath);
+          if (!isValidSqliteBuffer(binary)) {
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Corrupted database file on disk');
+            return;
+          }
+          res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'Cache-Control': 'no-store'
+          });
+          res.end(binary);
+          console.debug(`📦 [DevDB] Simulation ${path.basename(simPath)} sent to client from disk.`);
+          return;
+        } catch {
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('No simulation database found');
+        }
+      }
+
+      function handleSimDbExport(req: IncomingMessage, res: ServerResponse): void {
+        const simKey = getSimKey(req);
+        if (!simKey) {
+          res.writeHead(400, { 'Content-Type': 'text/plain' });
+          res.end('Simulation key required with sim_ prefix');
+          return;
+        }
+
+        let isAborted = false;
+        req.on('aborted', () => { isAborted = true; });
+        req.on('close', () => { if (!req.complete) isAborted = true; });
+
+        const chunks: Buffer[] = [];
+        req.on('data', chunk => chunks.push(chunk as Buffer));
+        req.on('end', async () => {
+          if (isAborted || !req.complete) {
+            console.warn(`⚠️ [DevDB] Simulation ${simKey} upload aborted prematurely by client. Discarding incomplete payload.`);
+            res.writeHead(400, { 'Content-Type': 'text/plain' });
+            res.end('Upload aborted');
+            return;
+          }
+
+          const buffer = Buffer.concat(chunks);
+          const rawLength = req.headers['content-length'];
+          const expectedLength = rawLength ? parseInt(rawLength, 10) : undefined;
+
+          if (!isValidSqliteBuffer(buffer, expectedLength)) {
+            console.warn(`⚠️ [DevDB] Simulation ${simKey} failed SQLite buffer validation (len: ${buffer.length}, expected: ${expectedLength}). Discarding.`);
+            res.writeHead(400, { 'Content-Type': 'text/plain' });
+            res.end('Invalid SQLite database buffer');
+            return;
+          }
+
+          simDbRamBuffers.set(simKey, buffer);
+          const simPath = getSimDbPath(simKey);
+          const tmpPath = `${simPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
+          try {
+            await fsPromises.mkdir(path.dirname(simPath), { recursive: true });
+            await fsPromises.writeFile(tmpPath, buffer);
+            await fsPromises.rename(tmpPath, simPath);
+            console.debug(`📥 [DevDB] Simulation ${path.basename(simPath)} updated in RAM and disk.`);
+          } catch (_err: unknown) {
+            await fsPromises.unlink(tmpPath).catch(() => {});
           }
           res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Cleaned up');
+          res.end('Saved');
+        });
+      }
+
+      async function handleSimDbRoute(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
+        const url = req.url ?? '';
+        if (url.startsWith('/api/dev-sim-db-check') || url.startsWith('/api/dev-import-db-check')) {
+          await handleSimDbCheck(req, res);
+          return true;
+        }
+        if (url.startsWith('/api/dev-sim-db-cleanup') || url.startsWith('/api/dev-import-db-cleanup')) {
+          await handleSimDbCleanup(req, res);
+          return true;
+        }
+        if (url.startsWith('/api/dev-sim-db') || url.startsWith('/api/dev-import-db')) {
+          await handleSimDbDownload(req, res);
+          return true;
+        }
+        if (url.startsWith('/api/dev-export-db') && req.method === 'POST') {
+          handleSimDbExport(req, res);
+          return true;
+        }
+        return false;
+      }
+
+      async function handleCleanDbDownload(res: ServerResponse): Promise<void> {
+        if (cleanDbRamBuffer) {
+          res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'Cache-Control': 'no-store'
+          });
+          res.end(cleanDbRamBuffer);
           return;
         }
-
-        if (req.url?.startsWith('/api/dev-sim-db') || req.url?.startsWith('/api/dev-import-db')) {
-          const simKey = getSimKey(req);
-          if (!simKey) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('Simulation key missing or invalid');
-            return;
-          }
-          const simPath = getSimDbPath(simKey);
-          try {
-            await fsPromises.access(simPath);
-            const binary = await fsPromises.readFile(simPath);
-            simDbRamBuffers.delete(simKey);
-            res.writeHead(200, {
-              'Content-Type': 'application/octet-stream',
-              'Cache-Control': 'no-store'
-            });
-            res.end(binary);
-            console.debug(`📦 [DevDB] Simulation ${path.basename(simPath)} sent to client from disk.`);
-            return;
-          } catch {
-            const ramBuf = simDbRamBuffers.get(simKey);
-            if (ramBuf) {
-              res.writeHead(200, {
-                'Content-Type': 'application/octet-stream',
-                'Cache-Control': 'no-store'
-              });
-              res.end(ramBuf);
-              console.debug(`📦 [DevDB] Simulation ${simKey} sent to client from RAM memory.`);
-              return;
-            }
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('No simulation database found');
-          }
-          return;
+        const dbPath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db');
+        try {
+          await fsPromises.access(dbPath);
+          const binary = await fsPromises.readFile(dbPath);
+          cleanDbRamBuffer = binary;
+          res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'Cache-Control': 'no-store'
+          });
+          res.end(binary);
+          console.debug('📦 [DevDB] Temporary clean_template.db sent to client from RAM.');
+        } catch {
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('No clean template database found');
         }
+      }
 
-        if (req.url?.startsWith('/api/dev-export-db') && req.method === 'POST') {
-          const simKey = getSimKey(req);
-          if (!simKey) {
+      function handleCleanDbExport(req: IncomingMessage, res: ServerResponse): void {
+        let isAborted = false;
+        req.on('aborted', () => { isAborted = true; });
+        req.on('close', () => { if (!req.complete) isAborted = true; });
+
+        const chunks: Buffer[] = [];
+        req.on('data', chunk => chunks.push(chunk as Buffer));
+        req.on('end', async () => {
+          if (isAborted || !req.complete) {
+            console.warn('⚠️ [DevDB] clean_template.db upload aborted prematurely by client. Discarding.');
             res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('Simulation key required with sim_ prefix');
+            res.end('Upload aborted');
             return;
           }
-          const chunks: Buffer[] = [];
-          req.on('data', chunk => chunks.push(chunk as Buffer));
-          req.on('end', async () => {
-            const buffer = Buffer.concat(chunks);
-            simDbRamBuffers.set(simKey, buffer);
-            const simPath = getSimDbPath(simKey);
-            const tmpPath = `${simPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
-            try {
-              await fsPromises.mkdir(path.dirname(simPath), { recursive: true });
-              await fsPromises.writeFile(tmpPath, buffer);
-              await fsPromises.rename(tmpPath, simPath);
-              console.debug(`📥 [DevDB] Simulation ${path.basename(simPath)} updated in RAM and disk.`);
-              res.writeHead(200, { 'Content-Type': 'text/plain' });
-              res.end('Saved');
-            } catch (_err: unknown) {
-              await fsPromises.unlink(tmpPath).catch(() => {});
-              res.writeHead(200, { 'Content-Type': 'text/plain' });
-              res.end('Saved');
-            }
-          });
-          return;
-        }
 
-        // --- 3. Clean Template Channel (Instant E2E / In-Memory Bootstrap) ---
-        if (req.url?.startsWith('/api/dev-clean-db')) {
-          if (cleanDbRamBuffer) {
-            res.writeHead(200, {
-              'Content-Type': 'application/octet-stream',
-              'Cache-Control': 'no-store'
-            });
-            res.end(cleanDbRamBuffer);
+          const buffer = Buffer.concat(chunks);
+          const rawLength = req.headers['content-length'];
+          const expectedLength = rawLength ? parseInt(rawLength, 10) : undefined;
+
+          if (!isValidSqliteBuffer(buffer, expectedLength)) {
+            console.warn(`⚠️ [DevDB] clean_template.db failed SQLite buffer validation (len: ${buffer.length}). Discarding.`);
+            res.writeHead(400, { 'Content-Type': 'text/plain' });
+            res.end('Invalid SQLite database buffer');
             return;
           }
+
+          cleanDbRamBuffer = buffer;
           const dbPath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db');
+          const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
           try {
-            await fsPromises.access(dbPath);
-            const binary = await fsPromises.readFile(dbPath);
-            cleanDbRamBuffer = binary;
-            res.writeHead(200, {
-              'Content-Type': 'application/octet-stream',
-              'Cache-Control': 'no-store'
-            });
-            res.end(binary);
-            console.debug('📦 [DevDB] Temporary clean_template.db sent to client from RAM.');
-          } catch {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('No clean template database found');
+            await fsPromises.mkdir(path.dirname(dbPath), { recursive: true });
+            await fsPromises.writeFile(tmpPath, buffer);
+            await fsPromises.rename(tmpPath, dbPath);
+            console.debug('📥 [DevDB] clean_template.db updated 100% in RAM and synchronized.');
+          } catch (_err: unknown) {
+            await fsPromises.unlink(tmpPath).catch(() => {});
           }
-          return;
-        }
+          res.writeHead(200, { 'Content-Type': 'text/plain' });
+          res.end('Success');
+        });
+      }
 
-        if (req.url?.startsWith('/api/dev-export-clean-db') && req.method === 'POST') {
-          const chunks: Buffer[] = [];
-          req.on('data', chunk => chunks.push(chunk as Buffer));
-          req.on('end', async () => {
-            const buffer = Buffer.concat(chunks);
-            cleanDbRamBuffer = buffer; // Store 100% in RAM memory
-            const dbPath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db');
-            const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
-            try {
-              await fsPromises.mkdir(path.dirname(dbPath), { recursive: true });
-              await fsPromises.writeFile(tmpPath, buffer);
-              await fsPromises.rename(tmpPath, dbPath);
-              console.debug('📥 [DevDB] clean_template.db updated 100% in RAM and synchronized.');
-              res.writeHead(200, { 'Content-Type': 'text/plain' });
-              res.end('Success');
-            } catch (_err: unknown) {
-              await fsPromises.unlink(tmpPath).catch(() => {});
-              res.writeHead(200, { 'Content-Type': 'text/plain' });
-              res.end('Success');
-            }
-          });
-          return;
+      async function handleCleanDbRoute(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
+        const url = req.url ?? '';
+        if (url.startsWith('/api/dev-clean-db')) {
+          await handleCleanDbDownload(res);
+          return true;
         }
+        if (url.startsWith('/api/dev-export-clean-db') && req.method === 'POST') {
+          handleCleanDbExport(req, res);
+          return true;
+        }
+        return false;
+      }
 
+      server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+        if (await handleManualImportRoute(req, res)) return;
+        if (await handleSimDbRoute(req, res)) return;
+        if (await handleCleanDbRoute(req, res)) return;
         next();
       });
     }
@@ -360,22 +437,36 @@ const isGithubActions = !!process.env.GITHUB_ACTIONS
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1]
 const base = process.env.VITE_BASE_URL || (isGithubActions && repoName ? `/${repoName}/` : '/')
 
-function fixPkmnSimPlugin() {
-  return {
-    name: 'fix-pkmn-sim',
-    enforce: 'pre' as const,
-    transform(code: string, id: string) {
-      if (id.includes('@pkmn/sim') || id.includes('@pkmn/sets') || id.includes('pkmn_sim.js')) {
-        if (code.includes('static import(') || code.includes('static import (')) {
-          return {
-            code: code.replace(/static import\s*\(/g, 'static "import"('),
-            map: null
-          };
-        }
-      }
-      return null;
+interface ChunkRule {
+  readonly patterns: readonly string[];
+  readonly chunk: string;
+}
+
+const CHUNK_RULES: readonly ChunkRule[] = [
+  { patterns: ['node_modules/vue', 'node_modules/pinia', 'node_modules/vue-router'], chunk: 'vendor-vue' },
+  { patterns: ['node_modules/@supabase'], chunk: 'vendor-supabase' },
+  { patterns: ['node_modules/gsap'], chunk: 'vendor-gsap' },
+  { patterns: ['node_modules/sql.js'], chunk: 'vendor-sqljs' },
+  { patterns: ['node_modules/@smogon/calc'], chunk: 'vendor-smogon-calc' },
+  { patterns: ['src/logic/db/migrations_data'], chunk: 'db-migrations-data' },
+  { patterns: ['node_modules/valibot'], chunk: 'vendor-valibot' },
+  { patterns: ['src/data/pokemon/pokemonFeetDatabase', 'src/data/pokemon/feetCoordinatesData'], chunk: 'game-data-feet' },
+  { patterns: ['src/data/pokemon/animatedSpriteDatabase', 'src/data/pokemon/animatedSpriteData'], chunk: 'game-data-sprites' },
+  { patterns: ['src/data/pokemon/pokemonDB'], chunk: 'game-data-pokemon-db' },
+  { patterns: ['src/data/pokemon/'], chunk: 'game-data-pokemon' },
+  { patterns: ['src/data/battle/'], chunk: 'game-data-battle' },
+  { patterns: ['src/data/inventory/'], chunk: 'game-data-items' },
+  { patterns: ['src/data/world/', 'src/data/weather/'], chunk: 'game-data-world' },
+  { patterns: ['src/data/player/', 'src/data/system/', 'src/data/ai/'], chunk: 'game-data-system' }
+];
+
+function resolveManualChunk(id: string): string | undefined {
+  for (const rule of CHUNK_RULES) {
+    if (rule.patterns.some(pattern => id.includes(pattern))) {
+      return rule.chunk;
     }
   }
+  return undefined;
 }
 
 // https://vitejs.dev/config/
@@ -659,54 +750,7 @@ export default defineConfig({
         warn(warning);
       },
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules/vue') || id.includes('node_modules/pinia') || id.includes('node_modules/vue-router')) {
-            return 'vendor-vue';
-          }
-          if (id.includes('node_modules/@supabase')) {
-            return 'vendor-supabase';
-          }
-          if (id.includes('node_modules/gsap')) {
-            return 'vendor-gsap';
-          }
-          if (id.includes('node_modules/sql.js')) {
-            return 'vendor-sqljs';
-          }
-          if (id.includes('node_modules/@smogon/calc')) {
-            return 'vendor-smogon-calc';
-          }
-          if (id.includes('src/logic/db/migrations_data')) {
-            return 'db-migrations-data';
-          }
-          if (id.includes('node_modules/valibot')) {
-            return 'vendor-valibot';
-          }
-          if (id.includes('src/data/pokemon/pokemonFeetDatabase') || id.includes('src/data/pokemon/feetCoordinatesData')) {
-            return 'game-data-feet';
-          }
-          if (id.includes('src/data/pokemon/animatedSpriteDatabase') || id.includes('src/data/pokemon/animatedSpriteData')) {
-            return 'game-data-sprites';
-          }
-          if (id.includes('src/data/pokemon/pokemonDB')) {
-            return 'game-data-pokemon-db';
-          }
-          if (id.includes('src/data/pokemon/')) {
-            return 'game-data-pokemon';
-          }
-          if (id.includes('src/data/battle/')) {
-            return 'game-data-battle';
-          }
-          if (id.includes('src/data/inventory/')) {
-            return 'game-data-items';
-          }
-          if (id.includes('src/data/world/') || id.includes('src/data/weather/')) {
-            return 'game-data-world';
-          }
-          if (id.includes('src/data/player/') || id.includes('src/data/system/') || id.includes('src/data/ai/')) {
-            return 'game-data-system';
-          }
-          return;
-        }
+        manualChunks: resolveManualChunk
       }
     }
   },

@@ -300,25 +300,24 @@ function runTasksInParallel(tasks: WorkerTask[], maxWorkers: number): Promise<Wo
   });
 }
 
-async function main() {
-  console.log(styleText('bold', '🚀 INICIANDO CONVERSIÓN Y PROCESAMIENTO MULTICORE DE ASSETS (Node.js 26+)'));
-  const startTime = performance.now();
+interface ConversionResultsData {
+  successfulFiles: number;
+  generatedWebps: number;
+  environmentFiles: string[];
+  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>;
+}
 
-  const pipelineWarnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const pipelineErrors: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  const files = await getFilesToConvert(SOURCE_DIR);
-  console.log(`📦 Encontrados ${files.length} archivos para procesar en ${SOURCE_DIR}`);
-
-  const maxWorkers = Math.max(1, os.cpus().length - 1);
-  console.log(`⚡ Usando pool de ${maxWorkers} workers en paralelo...`);
-
+async function convertSourceFiles(
+  files: string[],
+  maxWorkers: number,
+  pipelineErrors: string[]
+): Promise<ConversionResultsData> {
   const tasks: ProcessTask[] = files.map(f => ({ type: 'processFile', filePath: f }));
   const results = await runTasksInParallel(tasks, maxWorkers) as ProcessResult[];
 
   let successfulFiles = 0;
   let generatedWebps = 0;
-  const environmentFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const environmentFiles: string[] = [];
   const pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }> = {};
 
   for (const r of results) {
@@ -339,29 +338,66 @@ async function main() {
     }
   }
 
-  const duration = ((performance.now() - startTime) / 1000).toFixed(2);
-  console.log(styleText('green', `✅ Conversión inicial completada en ${duration}s.`));
-  console.log(`   - Archivos procesados: ${successfulFiles}/${files.length}`);
-  console.log(`   - Imágenes WebP generadas: ${generatedWebps}`);
+  return { successfulFiles, generatedWebps, environmentFiles, pokemonFeetDatabase };
+}
 
-  // Generar catálogos usando helpers especializados
-  await generateBushCatalog(environmentFiles);
-  const battleMaps = await generateBattleMapCatalog(SOURCE_DIR, MAP_ROUTE_MAPPING);
+function collectAnimatedResults(
+  analyzeResults: AnalyzeResult[],
+  animatedDbData: Record<string, AnimatedSpriteData>,
+  animatedVariationFrames: Record<string, number>,
+  pipelineErrors: string[]
+): { maxAnimatedSizeFront: number; maxAnimatedSizeBack: number } {
+  let maxAnimatedSizeFront = 0;
+  let maxAnimatedSizeBack = 0;
 
-  const databaseDir = safeResolve(process.cwd(), 'src/data/pokemon');
-  const criesDir = safeResolve(process.cwd(), 'public/cries');
-  const packedFeetData = await generateFeetAndCriesDatabase(
-    pokemonFeetDatabase,
-    criesDir,
-    databaseDir,
-    pipelineWarnings,
-    pipelineErrors
-  );
+  for (const res of analyzeResults) {
+    if (!res.success || !res.animatedData) {
+      console.error(styleText('red', `   [ERROR] No se pudo analizar frame animado ${res.filePath}: ${res.error}`));
+      pipelineErrors.push(`Análisis animado falló en ${res.filePath}: ${res.error}`);
+      continue;
+    }
+    const isBackFile = res.filePath.split(path.sep).join('/').includes('/animated/Back');
+    const key = isBackFile ? `${res.spriteKey}_back` : res.spriteKey;
 
-  const npcCatalogPath = safeResolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
-  const npcCatalogLists = await generateNpcSpriteCatalog(SOURCE_DIR, npcCatalogPath, pipelineWarnings);
+    animatedDbData[key] = res.animatedData;
 
-  // Analizar sprites animados
+    if (isBackFile) {
+      if (res.animatedData.size > maxAnimatedSizeBack) maxAnimatedSizeBack = res.animatedData.size;
+    } else {
+      if (res.animatedData.size > maxAnimatedSizeFront) maxAnimatedSizeFront = res.animatedData.size;
+    }
+
+    if (res.spriteKey.includes('v')) {
+      animatedVariationFrames[key] = res.animatedData.frames;
+    }
+  }
+  return { maxAnimatedSizeFront, maxAnimatedSizeBack };
+}
+
+function syncVariationFeetWithIdle(
+  animatedDbData: Record<string, AnimatedSpriteData>,
+  pipelineWarnings: string[]
+): void {
+  for (const key of Object.keys(animatedDbData)) {
+    if (key.includes('v')) {
+      const idleKey = key.replace(/v/, 'i');
+      const idleData = animatedDbData[idleKey];
+      if (idleData) {
+        const varData = animatedDbData[key]!;
+        animatedDbData[key] = { ...varData, feetY: idleData.feetY, feetX: idleData.feetX };
+      } else {
+        pipelineWarnings.push(`Variación ${key} no encontró idle ${idleKey}`);
+        console.log(styleText('yellow', `      [WARN] No se encontró el idle correspondiente (${idleKey}) para la variación ${key}. Se usarán sus propios pies calculados.`));
+      }
+    }
+  }
+}
+
+async function processAnimatedSprites(
+  maxWorkers: number,
+  pipelineWarnings: string[],
+  pipelineErrors: string[]
+): Promise<number> {
   console.log(styleText('yellow', `\n   📦 Generando base de datos de sprites animados en src/data/animatedSpriteDatabase.ts...`));
   const ANIMATED_FRONT_DIR = safeResolve(process.cwd(), 'public/assets/sprites/pokemon/animated/Front');
   const ANIMATED_BACK_DIR = safeResolve(process.cwd(), 'public/assets/sprites/pokemon/animated/Back');
@@ -371,94 +407,49 @@ async function main() {
   let maxAnimatedSizeBack = 0;
 
   try {
-    const frontFiles = (await fs.readdir(ANIMATED_FRONT_DIR))
-      .filter(f => f.endsWith('.webp') || f.endsWith('.png'));
-    let backFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
+    const frontFiles = (await fs.readdir(ANIMATED_FRONT_DIR)).filter(f => f.endsWith('.webp') || f.endsWith('.png'));
+    let backFiles: string[] = [];
     try {
-      backFiles = (await fs.readdir(ANIMATED_BACK_DIR))
-        .filter(f => f.endsWith('.webp') || f.endsWith('.png'));
+      backFiles = (await fs.readdir(ANIMATED_BACK_DIR)).filter(f => f.endsWith('.webp') || f.endsWith('.png'));
     } catch { // catch-ok: optional back directory might not exist yet
-      // Back opcional
     }
 
     const analyzeTasks: WorkerTask[] = [
-      ...frontFiles.map(file => ({
-        type: 'analyzeAnimated' as const,
-        filePath: safeJoin(ANIMATED_FRONT_DIR, file)
-      })),
-      ...backFiles.map(file => ({
-        type: 'analyzeAnimated' as const,
-        filePath: safeJoin(ANIMATED_BACK_DIR, file)
-      }))
+      ...frontFiles.map(file => ({ type: 'analyzeAnimated' as const, filePath: safeJoin(ANIMATED_FRONT_DIR, file) })),
+      ...backFiles.map(file => ({ type: 'analyzeAnimated' as const, filePath: safeJoin(ANIMATED_BACK_DIR, file) }))
     ];
 
     const analyzeResults = await runTasksInParallel(analyzeTasks, maxWorkers) as AnalyzeResult[];
+    const sizes = collectAnimatedResults(analyzeResults, animatedDbData, animatedVariationFrames, pipelineErrors);
+    maxAnimatedSizeFront = sizes.maxAnimatedSizeFront;
+    maxAnimatedSizeBack = sizes.maxAnimatedSizeBack;
 
-    for (const res of analyzeResults) {
-      if (!res.success || !res.animatedData) {
-        console.error(styleText('red', `   [ERROR] No se pudo analizar frame animado ${res.filePath}: ${res.error}`));
-        pipelineErrors.push(`Análisis animado falló en ${res.filePath}: ${res.error}`);
-        continue;
-      }
-      const isBackFile = res.filePath.split(path.sep).join('/').includes('/animated/Back');
-      const key = isBackFile ? `${res.spriteKey}_back` : res.spriteKey;
-      
-      animatedDbData[key] = res.animatedData;
-
-      if (isBackFile) {
-        if (res.animatedData.size > maxAnimatedSizeBack) {
-          maxAnimatedSizeBack = res.animatedData.size;
-        }
-      } else {
-        if (res.animatedData.size > maxAnimatedSizeFront) {
-          maxAnimatedSizeFront = res.animatedData.size;
-        }
-      }
-
-      if (res.spriteKey.includes('v')) {
-        animatedVariationFrames[key] = res.animatedData.frames;
-      }
-    }
-
-    // Ajustar pies de variaciones copiándolos del idle correspondiente
-    for (const key of Object.keys(animatedDbData)) {
-      if (key.includes('v')) {
-        const idleKey = key.replace(/v/, 'i');
-        const idleData = animatedDbData[idleKey];
-        if (idleData) {
-          const varData = animatedDbData[key]!;
-          animatedDbData[key] = {
-            ...varData,
-            feetY: idleData.feetY,
-            feetX: idleData.feetX
-          };
-        } else {
-          pipelineWarnings.push(`Variación ${key} no encontró idle ${idleKey}`);
-          console.log(styleText('yellow', `      [WARN] No se encontró el idle correspondiente (${idleKey}) para la variación ${key}. Se usarán sus propios pies calculados.`));
-        }
-      }
-    }
+    syncVariationFeetWithIdle(animatedDbData, pipelineWarnings);
   } catch (err) {
     console.error(styleText('red', `\n❌ ERROR: No se pudieron procesar los sprites animados: ${(err as Error).message}`));
     pipelineErrors.push(`Procesamiento de sprites animados falló: ${(err as Error).message}`);
   }
 
-  const animatedSpriteCount = await generateAnimatedSpriteDatabase(
-    animatedDbData,
-    animatedVariationFrames,
-    maxAnimatedSizeFront,
-    maxAnimatedSizeBack
-  );
+  return generateAnimatedSpriteDatabase(animatedDbData, animatedVariationFrames, maxAnimatedSizeFront, maxAnimatedSizeBack);
+}
 
-  // Resumen final
+function renderPipelineSummary(
+  animatedSpriteCount: number,
+  battleMapsCount: number,
+  npcArchetypesCount: number,
+  packedFeetCount: number,
+  criesCount: number,
+  pipelineWarnings: string[],
+  pipelineErrors: string[]
+): void {
   console.log('\n' + '━'.repeat(REPORT_SEPARATOR_LENGTH));
   console.log(styleText('bold', '📊 RESUMEN FINAL DEL PIPELINE DE ASSETS'));
   console.log('━'.repeat(REPORT_SEPARATOR_LENGTH));
   console.log(`  Sprites animados compilados   : ${animatedSpriteCount}`);
-  console.log(`  Mapas de combate indexados    : ${battleMaps.length}`);
-  console.log(`  Arquetipos de NPCs generados  : ${Object.keys(npcCatalogLists).length}`);
-  console.log(`  Entradas en POKEMON_FEET_DB   : ${Object.keys(packedFeetData.p).length}`);
-  console.log(`  Mapeos en POKEMON_CRIES_DB    : ${Object.keys(packedFeetData.c).length}`);
+  console.log(`  Mapas de combate indexados    : ${battleMapsCount}`);
+  console.log(`  Arquetipos de NPCs generados  : ${npcArchetypesCount}`);
+  console.log(`  Entradas en POKEMON_FEET_DB   : ${packedFeetCount}`);
+  console.log(`  Mapeos en POKEMON_CRIES_DB    : ${criesCount}`);
   console.log('─'.repeat(REPORT_SEPARATOR_LENGTH));
   console.log(`  ⚠️  Total Advertencias (Warnings) : ${pipelineWarnings.length}`);
   console.log(`  ❌ Total Errores (Errors)         : ${pipelineErrors.length}`);
@@ -484,6 +475,49 @@ async function main() {
   } else {
     console.log(styleText('yellow', `\n⚠️  Proceso de assets finalizado con advertencias.\n`));
   }
+}
+
+async function main() {
+  console.log(styleText('bold', '🚀 INICIANDO CONVERSIÓN Y PROCESAMIENTO MULTICORE DE ASSETS (Node.js 26+)'));
+  const startTime = performance.now();
+
+  const pipelineWarnings: string[] = [];
+  const pipelineErrors: string[] = [];
+
+  const files = await getFilesToConvert(SOURCE_DIR);
+  console.log(`📦 Encontrados ${files.length} archivos para procesar en ${SOURCE_DIR}`);
+
+  const maxWorkers = Math.max(1, os.cpus().length - 1);
+  console.log(`⚡ Usando pool de ${maxWorkers} workers en paralelo...`);
+
+  const { successfulFiles, generatedWebps, environmentFiles, pokemonFeetDatabase } = await convertSourceFiles(files, maxWorkers, pipelineErrors);
+
+  const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+  console.log(styleText('green', `✅ Conversión inicial completada en ${duration}s.`));
+  console.log(`   - Archivos procesados: ${successfulFiles}/${files.length}`);
+  console.log(`   - Imágenes WebP generadas: ${generatedWebps}`);
+
+  await generateBushCatalog(environmentFiles);
+  const battleMaps = await generateBattleMapCatalog(SOURCE_DIR, MAP_ROUTE_MAPPING);
+
+  const databaseDir = safeResolve(process.cwd(), 'src/data/pokemon');
+  const criesDir = safeResolve(process.cwd(), 'public/cries');
+  const packedFeetData = await generateFeetAndCriesDatabase(pokemonFeetDatabase, criesDir, databaseDir, pipelineWarnings, pipelineErrors);
+
+  const npcCatalogPath = safeResolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
+  const npcCatalogLists = await generateNpcSpriteCatalog(SOURCE_DIR, npcCatalogPath, pipelineWarnings);
+
+  const animatedSpriteCount = await processAnimatedSprites(maxWorkers, pipelineWarnings, pipelineErrors);
+
+  renderPipelineSummary(
+    animatedSpriteCount,
+    battleMaps.length,
+    Object.keys(npcCatalogLists).length,
+    Object.keys(packedFeetData.p).length,
+    Object.keys(packedFeetData.c).length,
+    pipelineWarnings,
+    pipelineErrors
+  );
   process.exit(0);
 }
 

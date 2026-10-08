@@ -292,12 +292,16 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
 
   logger.progress(`🚀 Inicializando servidor web persistente en ${VITE_URL}...`);
   const viteBin = path.resolve(process.cwd(), 'node_modules/vite/bin/vite.js');
+  let viteStderr = '';
   const viteProcess = spawn(process.execPath, [viteBin, '--port', String(VITE_PORT), '--strictPort'], {
-    stdio: 'ignore',
+    stdio: ['ignore', 'ignore', 'pipe'],
     env: {
       ...process.env,
       NO_UPDATE_NOTIFIER: '1'
     }
+  });
+  viteProcess.stderr?.on('data', (chunk: Buffer | string) => {
+    viteStderr += chunk.toString();
   });
 
   const startTime = Temporal.Now.instant().epochMilliseconds;
@@ -310,7 +314,8 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
   }
 
   viteProcess.kill('SIGKILL');
-  throw new Error(`[SIMULATION-RUNNER] Timeout esperando que el servidor Vite en ${VITE_URL} responda.`);
+  const details = viteStderr.trim() ? ` Detalle: ${viteStderr.trim()}` : '';
+  throw new Error(`[SIMULATION-RUNNER] Timeout esperando que el servidor Vite en ${VITE_URL} responda.${details}`);
 }
 
 
@@ -398,112 +403,311 @@ function runCommandStreamed(command: string, extraEnv: Record<string, string> = 
   });
 }
 
+async function initSequentialEnvironment(isPostgresNeeded: boolean): Promise<ChildProcess | null> {
+  logger.progress('\n==================================================');
+  logger.progress(`🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (Modo: ${selectedDriver.toUpperCase()})`);
+  logger.progress(`📅 Fecha y hora de inicio: ${formatExecutionTimestamp()}`);
+  logger.progress('==================================================');
+  logger.progress(`📋 Se detectaron dinámicamente ${activeTargets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`);
+  activeTargets.forEach((target, index) => {
+    logger.progress(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
+  });
+  logger.progress('==================================================\n');
+
+  if (isPostgresNeeded) {
+    const { ensurePostgresTestContainerReady } = await import('../testing/postgres_test_container.ts');
+    logger.progress('🐳 Inicializando contenedor efímero de PostgreSQL/Supabase para la suite secuencial...');
+    const result = await ensurePostgresTestContainerReady();
+    if (!result.isReady) {
+      throw new Error('[SIMULATION-RUNNER] Falló la preparación del contenedor PostgreSQL efímero.');
+    }
+    process.env.KEEP_POSTGRES_ALIVE = 'true';
+  }
+
+  const persistentVite = await startPersistentViteServer();
+
+  const cleanup = () => {
+    stopPersistentViteServer(persistentVite);
+    if (isPostgresNeeded) {
+      try {
+        spawnSync('docker', ['stop', '-t', '1', 'pokevicio-test-gateway', 'pokevicio-test-postgrest', 'pokevicio-test-postgres'], { stdio: 'ignore' });
+      } catch { // catch-ok: ignore failure when stopping docker test containers on exit
+      }
+    }
+  };
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('exit', cleanup);
+
+  return persistentVite;
+}
+
+function resolveFromFlagCheckpoint(): number | null {
+  if (!rawFrom) return null;
+  const fromQuery = rawFrom.toLowerCase();
+  const fromNumeric = Number.parseInt(rawFrom, 10);
+  const fromIdx = !Number.isNaN(fromNumeric) && fromNumeric >= 1 && fromNumeric <= activeTargets.length
+    ? fromNumeric - 1
+    : activeTargets.findIndex(t =>
+        t.name.toLowerCase().includes(fromQuery) ||
+        t.relativePath.toLowerCase().includes(fromQuery)
+      );
+  if (fromIdx !== -1) {
+    logger.progress('--------------------------------------------------');
+    logger.progress(`⏩ [FROM] Reanudando corrida secuencial desde suite ${fromIdx + 1}/${activeTargets.length}: [${activeTargets[fromIdx]!.name}]...`);
+    logger.progress('--------------------------------------------------\n');
+    return fromIdx;
+  }
+  return null;
+}
+
+function resolveSingleTargetCheckpoint(): 'postgres' | null {
+  if (!rawFilter || activeTargets.length !== 1) return null;
+  const target = activeTargets[0]!;
+  const cp = getSuiteCheckpoint(target.name);
+  if (cp) {
+    logger.progress('--------------------------------------------------');
+    logger.progress(`🔄 Checkpoint detectado para "${target.name}": reanudando desde motor [${cp.driver.toUpperCase()}]${cp.failedBatchIndex ? ` (lote #${cp.failedBatchIndex})` : ''}...`);
+    logger.progress(`💡 Tip: Usa 'clean=true' o 'reset=true' para forzar la ejecución desde cero.`);
+    logger.progress('--------------------------------------------------\n');
+    if (selectedDriver === 'dual' && cp.driver === 'postgres') {
+      return 'postgres';
+    }
+  }
+  return null;
+}
+
+function resolveMasterSuiteCheckpoint(): { startSuiteIndex: number; startingDriverForFirstSuite: 'sqlite' | 'postgres' | null } | null {
+  const masterCp = getMasterCheckpoint();
+  if (!masterCp) return null;
+  const resumeIdx = activeTargets.findIndex(
+    (t) =>
+      t.name.toLowerCase() === masterCp.suiteName.toLowerCase() ||
+      t.relativePath.toLowerCase() === masterCp.suiteRelativePath.toLowerCase()
+  );
+  if (resumeIdx !== -1) {
+    logger.progress('--------------------------------------------------');
+    logger.progress(`🔄 Checkpoint maestro detectado: reanudando corrida desde Suite ${resumeIdx + 1}/${activeTargets.length} [${activeTargets[resumeIdx]!.name}] (${masterCp.driver.toUpperCase()})...`);
+    logger.progress(`💡 Tip: Usa 'clean=true' o 'reset=true' para forzar la ejecución desde la Suite 1.`);
+    logger.progress('--------------------------------------------------\n');
+    return { startSuiteIndex: resumeIdx, startingDriverForFirstSuite: masterCp.driver };
+  }
+  return null;
+}
+
+function resolveStartingCheckpoint(): { startSuiteIndex: number; startingDriverForFirstSuite: 'sqlite' | 'postgres' | null } {
+  const fromIdx = resolveFromFlagCheckpoint();
+  if (fromIdx !== null) {
+    return { startSuiteIndex: fromIdx, startingDriverForFirstSuite: null };
+  }
+
+  if (isClean) {
+    return { startSuiteIndex: 0, startingDriverForFirstSuite: null };
+  }
+
+  const singleDriver = resolveSingleTargetCheckpoint();
+  if (singleDriver !== null) {
+    return { startSuiteIndex: 0, startingDriverForFirstSuite: singleDriver };
+  }
+
+  if (!rawFilter) {
+    const masterResult = resolveMasterSuiteCheckpoint();
+    if (masterResult) return masterResult;
+  }
+
+  return { startSuiteIndex: 0, startingDriverForFirstSuite: null };
+}
+
+async function executeDualDriverTarget(
+  target: SimulationTarget,
+  i: number,
+  suiteDisplayIdx: number,
+  totalDisplayCount: number,
+  skipSqlite: boolean
+): Promise<void> {
+  let sqliteSec = '0.0';
+  if (!skipSqlite) {
+    logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [1/2 SQLite] Ejecutando: ${target.name}...`);
+    const sqliteStart = Temporal.Now.instant().epochMilliseconds;
+    try {
+      await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite' });
+    } catch (_err: unknown) {
+      const durationSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(1);
+      logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [SQLite]: "${target.name}" ha fallado tras ${durationSec}s.`);
+      recordMasterSuiteFailure({
+        suiteIndex: i,
+        suiteName: target.name,
+        suiteRelativePath: target.relativePath,
+        driver: 'sqlite',
+      });
+      logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo en SQLite.\n`);
+      process.exit(1);
+    }
+    sqliteSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(1);
+    if (!rawFilter) {
+      recordMasterSuiteProgress({
+        suiteIndex: i,
+        suiteName: target.name,
+        suiteRelativePath: target.relativePath,
+        driver: 'postgres',
+      });
+    }
+  } else {
+    logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `⏭️ [1/2 SQLite] Omitido por checkpoint previo: "${target.name}" ya superó SQLite.`);
+  }
+
+  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [2/2 PostgreSQL] Ejecutando: ${target.name}...`);
+  const pgStart = Temporal.Now.instant().epochMilliseconds;
+  try {
+    await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres' });
+  } catch (_err: unknown) {
+    const durationSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
+    logger.error(`\n❌ [${suiteDisplayIdx}/${totalDisplayCount}] FAIL en [PostgreSQL]: "${target.name}" ha fallado tras ${durationSec}s.`);
+    recordMasterSuiteFailure({
+      suiteIndex: i,
+      suiteName: target.name,
+      suiteRelativePath: target.relativePath,
+      driver: 'postgres',
+    });
+    logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo en PostgreSQL.\n`);
+    process.exit(1);
+  }
+  const pgSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
+
+  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `🎉 DUAL PASS: ${target.name} (SQLite: ${sqliteSec}s | Postgres: ${pgSec}s)`);
+
+  if (!rawFilter && i + 1 < activeTargets.length) {
+    const nextTarget = activeTargets[i + 1]!;
+    recordMasterSuiteProgress({
+      suiteIndex: i + 1,
+      suiteName: nextTarget.name,
+      suiteRelativePath: nextTarget.relativePath,
+      driver: 'sqlite',
+      completedSuiteName: target.name,
+    });
+  }
+}
+
+async function executeSingleDriverTarget(
+  target: SimulationTarget,
+  i: number,
+  suiteDisplayIdx: number,
+  totalDisplayCount: number
+): Promise<void> {
+  const driverName = selectedDriver === 'postgres' ? 'PostgreSQL' : 'SQLite';
+  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [${driverName}] Ejecutando: ${target.name}...`);
+  const startTime = Temporal.Now.instant().epochMilliseconds;
+  try {
+    await runCommandStreamed(target.command, { SIM_DB_DRIVER: selectedDriver });
+    const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
+    logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✅ PASS: ${target.name} (${durationSec}s)`);
+
+    if (!rawFilter && i + 1 < activeTargets.length) {
+      const nextTarget = activeTargets[i + 1]!;
+      recordMasterSuiteProgress({
+        suiteIndex: i + 1,
+        suiteName: nextTarget.name,
+        suiteRelativePath: nextTarget.relativePath,
+        driver: selectedDriver,
+        completedSuiteName: target.name,
+      });
+    }
+  } catch (_err: unknown) {
+    const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
+    logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [${driverName}]: "${target.name}" ha fallado tras ${durationSec}s.`);
+    recordMasterSuiteFailure({
+      suiteIndex: i,
+      suiteName: target.name,
+      suiteRelativePath: target.relativePath,
+      driver: selectedDriver,
+    });
+    logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo.\n`);
+    process.exit(1);
+  }
+}
+
+async function executeIntraSuiteCleanPass(
+  target: SimulationTarget,
+  i: number,
+  suiteDisplayIdx: number,
+  totalDisplayCount: number
+): Promise<void> {
+  logger.progress('--------------------------------------------------');
+  logger.progressPercent(i + 1, activeTargets.length, `🔍 [6B: Intra-Suite Clean Pass] Verificando regresión limpia desde CERO para: "${target.name}"...`);
+  logger.progress('--------------------------------------------------');
+
+  clearSuiteCheckpoint(target.name);
+  const cleanEnv = {
+    clean: 'true',
+    RESUME: 'false',
+    RESUME_PROGRESS: 'false',
+    TEST_BATCH: '',
+    TEST_CASE: '',
+    TEST_CASE_ID: '',
+    TEST_START_FROM_INDEX: '',
+    TEST_START_FROM_CASE_ID: '',
+  };
+
+  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [6B 1/2 SQLite] Ejecutando corrida limpia desde CERO para: "${target.name}"...`);
+  const cleanSqliteStart = Temporal.Now.instant().epochMilliseconds;
+  try {
+    await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite', ...cleanEnv });
+  } catch (_err: unknown) {
+    logger.error(`\n❌ [6B: REGRESIÓN EN SQLITE] "${target.name}" falló en su validación limpia desde CERO en SQLite.`);
+    recordMasterSuiteFailure({
+      suiteIndex: i,
+      suiteName: target.name,
+      suiteRelativePath: target.relativePath,
+      driver: 'sqlite',
+    });
+    process.exit(1);
+  }
+  const cleanSqliteSec = ((Temporal.Now.instant().epochMilliseconds - cleanSqliteStart) / 1000).toFixed(1);
+
+  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [6B 2/2 PostgreSQL] Ejecutando corrida limpia desde CERO para: "${target.name}"...`);
+  const cleanPgStart = Temporal.Now.instant().epochMilliseconds;
+  try {
+    await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres', ...cleanEnv });
+  } catch (_err: unknown) {
+    logger.error(`\n❌ [6B: REGRESIÓN EN POSTGRESQL] "${target.name}" falló en su validación limpia desde CERO en PostgreSQL.`);
+    recordMasterSuiteFailure({
+      suiteIndex: i,
+      suiteName: target.name,
+      suiteRelativePath: target.relativePath,
+      driver: 'postgres',
+    });
+    process.exit(1);
+  }
+  const cleanPgSec = ((Temporal.Now.instant().epochMilliseconds - cleanPgStart) / 1000).toFixed(1);
+
+  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✨ [6B: 100% DUAL CLEAN ZERO PASS] "${target.name}" superó la prueba limpia desde CERO en ambos motores (SQLite: ${cleanSqliteSec}s | Postgres: ${cleanPgSec}s)`);
+
+  const fullIdx = targets.findIndex(t => t.name === target.name);
+  if (fullIdx !== -1 && fullIdx + 1 < targets.length) {
+    const nextTarget = targets[fullIdx + 1]!;
+    recordMasterSuiteProgress({
+      suiteIndex: fullIdx + 1,
+      suiteName: nextTarget.name,
+      suiteRelativePath: nextTarget.relativePath,
+      driver: 'sqlite',
+    });
+  }
+}
+
 async function runAllSequentialSuites(): Promise<void> {
   let persistentVite: ChildProcess | null = null;
   const isPostgresNeeded = selectedDriver === 'postgres' || selectedDriver === 'dual';
 
   try {
-    logger.progress('\n==================================================');
-    logger.progress(`🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (Modo: ${selectedDriver.toUpperCase()})`);
-    logger.progress(`📅 Fecha y hora de inicio: ${formatExecutionTimestamp()}`);
-    logger.progress('==================================================');
-    logger.progress(`📋 Se detectaron dinámicamente ${activeTargets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`);
-    activeTargets.forEach((target, index) => {
-      logger.progress(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
-    });
-    logger.progress('==================================================\n');
-
-    if (isPostgresNeeded) {
-      const { ensurePostgresTestContainerReady } = await import('../testing/postgres_test_container.ts');
-      logger.progress('🐳 Inicializando contenedor efímero de PostgreSQL/Supabase para la suite secuencial...');
-      const result = await ensurePostgresTestContainerReady();
-      if (!result.isReady) {
-        throw new Error('[SIMULATION-RUNNER] Falló la preparación del contenedor PostgreSQL efímero.');
-      }
-      process.env.KEEP_POSTGRES_ALIVE = 'true';
-    }
-
-    persistentVite = await startPersistentViteServer();
-
-    // Clean exit hooks
-    const cleanup = () => {
-      stopPersistentViteServer(persistentVite);
-      if (isPostgresNeeded) {
-        try {
-          spawnSync('docker', ['stop', '-t', '1', 'pokevicio-test-gateway', 'pokevicio-test-postgrest', 'pokevicio-test-postgres'], { stdio: 'ignore' });
-        } catch { // catch-ok: ignore failure when stopping docker test containers on exit
-          // Ignore
-        }
-      }
-    };
-    process.on('SIGINT', cleanup);
-    process.on('SIGTERM', cleanup);
-    process.on('exit', cleanup);
-
-    let startSuiteIndex = 0;
-    let startingDriverForFirstSuite: 'sqlite' | 'postgres' | null = null;
-
-    if (rawFrom) {
-      const fromQuery = rawFrom.toLowerCase();
-      const fromNumeric = Number.parseInt(rawFrom, 10);
-      let fromIdx = -1;
-      if (!Number.isNaN(fromNumeric) && fromNumeric >= 1 && fromNumeric <= activeTargets.length) {
-        fromIdx = fromNumeric - 1;
-      } else {
-        fromIdx = activeTargets.findIndex(t =>
-          t.name.toLowerCase().includes(fromQuery) ||
-          t.relativePath.toLowerCase().includes(fromQuery)
-        );
-      }
-      if (fromIdx !== -1) {
-        startSuiteIndex = fromIdx;
-        logger.progress('--------------------------------------------------');
-        logger.progress(`⏩ [FROM] Reanudando corrida secuencial desde suite ${startSuiteIndex + 1}/${activeTargets.length}: [${activeTargets[startSuiteIndex]!.name}]...`);
-        logger.progress('--------------------------------------------------\n');
-      }
-    } else if (!isClean) {
-      if (rawFilter && activeTargets.length === 1) {
-        const target = activeTargets[0]!;
-        const cp = getSuiteCheckpoint(target.name);
-        if (cp) {
-          logger.progress('--------------------------------------------------');
-          logger.progress(`🔄 Checkpoint detectado para "${target.name}": reanudando desde motor [${cp.driver.toUpperCase()}]${cp.failedBatchIndex ? ` (lote #${cp.failedBatchIndex})` : ''}...`);
-          logger.progress(`💡 Tip: Usa 'clean=true' o 'reset=true' para forzar la ejecución desde cero.`);
-          logger.progress('--------------------------------------------------\n');
-          if (selectedDriver === 'dual' && cp.driver === 'postgres') {
-            startingDriverForFirstSuite = 'postgres';
-          }
-        }
-      } else if (!rawFilter) {
-        const masterCp = getMasterCheckpoint();
-        if (masterCp) {
-          const resumeIdx = activeTargets.findIndex(
-            (t) =>
-              t.name.toLowerCase() === masterCp.suiteName.toLowerCase() ||
-              t.relativePath.toLowerCase() === masterCp.suiteRelativePath.toLowerCase()
-          );
-          if (resumeIdx !== -1) {
-            startSuiteIndex = resumeIdx;
-            startingDriverForFirstSuite = masterCp.driver;
-            logger.progress('--------------------------------------------------');
-            logger.progress(`🔄 Checkpoint maestro detectado: reanudando corrida desde Suite ${startSuiteIndex + 1}/${activeTargets.length} [${activeTargets[startSuiteIndex]!.name}] (${masterCp.driver.toUpperCase()})...`);
-            logger.progress(`💡 Tip: Usa 'clean=true' o 'reset=true' para forzar la ejecución desde la Suite 1.`);
-            logger.progress('--------------------------------------------------\n');
-          }
-        }
-      }
-    }
-
+    persistentVite = await initSequentialEnvironment(isPostgresNeeded);
+    const { startSuiteIndex, startingDriverForFirstSuite } = resolveStartingCheckpoint();
     let passedCount = startSuiteIndex;
 
     for (let i = startSuiteIndex; i < activeTargets.length; i++) {
       const target = activeTargets[i]!;
       const isFirstSuite = i === startSuiteIndex;
       const initialCp = getSuiteCheckpoint(target.name);
-      const wasResumed = Boolean(
-        (isFirstSuite && startingDriverForFirstSuite !== null) ||
-        Boolean(initialCp)
-      );
+      const wasResumed = Boolean((isFirstSuite && startingDriverForFirstSuite !== null) || Boolean(initialCp));
       const skipSqlite = isFirstSuite && selectedDriver === 'dual' && startingDriverForFirstSuite === 'postgres';
 
       const globalIdx = targets.findIndex(t => t.name === target.name);
@@ -512,169 +716,14 @@ async function runAllSequentialSuites(): Promise<void> {
 
       logger.progress('\n' + '━'.repeat(80));
       if (selectedDriver === 'dual') {
-        let sqliteSec = '0.0';
-        if (!skipSqlite) {
-          // ── Step 1: Run SQLite ─────────────────────────────────────────────
-          logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [1/2 SQLite] Ejecutando: ${target.name}...`);
-          const sqliteStart = Temporal.Now.instant().epochMilliseconds;
-          try {
-            await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite' });
-          } catch (_err: unknown) {
-            const durationSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(1);
-            logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [SQLite]: "${target.name}" ha fallado tras ${durationSec}s.`);
-            recordMasterSuiteFailure({
-              suiteIndex: i,
-              suiteName: target.name,
-              suiteRelativePath: target.relativePath,
-              driver: 'sqlite',
-            });
-            logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo en SQLite.\n`);
-            process.exit(1);
-          }
-          sqliteSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(1);
-          if (!rawFilter) {
-            recordMasterSuiteProgress({
-              suiteIndex: i,
-              suiteName: target.name,
-              suiteRelativePath: target.relativePath,
-              driver: 'postgres',
-            });
-          }
-        } else {
-          logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `⏭️ [1/2 SQLite] Omitido por checkpoint previo: "${target.name}" ya superó SQLite.`);
-        }
-
-        // ── Step 2: Run PostgreSQL ─────────────────────────────────────────
-        logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [2/2 PostgreSQL] Ejecutando: ${target.name}...`);
-        const pgStart = Temporal.Now.instant().epochMilliseconds;
-        try {
-          await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres' });
-        } catch (_err: unknown) {
-          const durationSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
-          logger.error(`\n❌ [${suiteDisplayIdx}/${totalDisplayCount}] FAIL en [PostgreSQL]: "${target.name}" ha fallado tras ${durationSec}s.`);
-          recordMasterSuiteFailure({
-            suiteIndex: i,
-            suiteName: target.name,
-            suiteRelativePath: target.relativePath,
-            driver: 'postgres',
-          });
-          logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo en PostgreSQL.\n`);
-          process.exit(1);
-        }
-        const pgSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
-
-        logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `🎉 DUAL PASS: ${target.name} (SQLite: ${sqliteSec}s | Postgres: ${pgSec}s)`);
-        passedCount++;
-
-        if (!rawFilter && i + 1 < activeTargets.length) {
-          const nextTarget = activeTargets[i + 1]!;
-          recordMasterSuiteProgress({
-            suiteIndex: i + 1,
-            suiteName: nextTarget.name,
-            suiteRelativePath: nextTarget.relativePath,
-            driver: 'sqlite',
-            completedSuiteName: target.name,
-          });
-        }
+        await executeDualDriverTarget(target, i, suiteDisplayIdx, totalDisplayCount, skipSqlite);
       } else {
-        // Single driver mode
-        const driverName = selectedDriver === 'postgres' ? 'PostgreSQL' : 'SQLite';
-        logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [${driverName}] Ejecutando: ${target.name}...`);
-        const startTime = Temporal.Now.instant().epochMilliseconds;
-        try {
-          await runCommandStreamed(target.command, { SIM_DB_DRIVER: selectedDriver });
-          const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
-          logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✅ PASS: ${target.name} (${durationSec}s)`);
-          passedCount++;
-
-          if (!rawFilter && i + 1 < activeTargets.length) {
-            const nextTarget = activeTargets[i + 1]!;
-            recordMasterSuiteProgress({
-              suiteIndex: i + 1,
-              suiteName: nextTarget.name,
-              suiteRelativePath: nextTarget.relativePath,
-              driver: selectedDriver,
-              completedSuiteName: target.name,
-            });
-          }
-        } catch (_err: unknown) {
-          const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
-          logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [${driverName}]: "${target.name}" ha fallado tras ${durationSec}s.`);
-          recordMasterSuiteFailure({
-            suiteIndex: i,
-            suiteName: target.name,
-            suiteRelativePath: target.relativePath,
-            driver: selectedDriver,
-          });
-          logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo.\n`);
-          process.exit(1);
-        }
+        await executeSingleDriverTarget(target, i, suiteDisplayIdx, totalDisplayCount);
       }
+      passedCount++;
 
-      // ── Step 6B: Mandatory Clean Zero Intra-Suite Regression Pass ─────────────
       if (wasResumed) {
-        logger.progress('--------------------------------------------------');
-        logger.progressPercent(i + 1, activeTargets.length, `🔍 [6B: Intra-Suite Clean Pass] Verificando regresión limpia desde CERO para: "${target.name}"...`);
-        logger.progress('--------------------------------------------------');
-
-        clearSuiteCheckpoint(target.name);
-        const cleanEnv = {
-          clean: 'true',
-          RESUME: 'false',
-          RESUME_PROGRESS: 'false',
-          TEST_BATCH: '',
-          TEST_CASE: '',
-          TEST_CASE_ID: '',
-          TEST_START_FROM_INDEX: '',
-          TEST_START_FROM_CASE_ID: '',
-        };
-
-        // ── 1. Clean Run on SQLite ─────────────────────────────────────────
-        logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [6B 1/2 SQLite] Ejecutando corrida limpia desde CERO para: "${target.name}"...`);
-        const cleanSqliteStart = Temporal.Now.instant().epochMilliseconds;
-        try {
-          await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite', ...cleanEnv });
-        } catch (_err: unknown) {
-          logger.error(`\n❌ [6B: REGRESIÓN EN SQLITE] "${target.name}" falló en su validación limpia desde CERO en SQLite.`);
-          recordMasterSuiteFailure({
-            suiteIndex: i,
-            suiteName: target.name,
-            suiteRelativePath: target.relativePath,
-            driver: 'sqlite',
-          });
-          process.exit(1);
-        }
-        const cleanSqliteSec = ((Temporal.Now.instant().epochMilliseconds - cleanSqliteStart) / 1000).toFixed(1);
-
-        // ── 2. Clean Run on PostgreSQL ─────────────────────────────────────
-        logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [6B 2/2 PostgreSQL] Ejecutando corrida limpia desde CERO para: "${target.name}"...`);
-        const cleanPgStart = Temporal.Now.instant().epochMilliseconds;
-        try {
-          await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres', ...cleanEnv });
-        } catch (_err: unknown) {
-          logger.error(`\n❌ [6B: REGRESIÓN EN POSTGRESQL] "${target.name}" falló en su validación limpia desde CERO en PostgreSQL.`);
-          recordMasterSuiteFailure({
-            suiteIndex: i,
-            suiteName: target.name,
-            suiteRelativePath: target.relativePath,
-            driver: 'postgres',
-          });
-          process.exit(1);
-        }
-        const cleanPgSec = ((Temporal.Now.instant().epochMilliseconds - cleanPgStart) / 1000).toFixed(1);
-
-        logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✨ [6B: 100% DUAL CLEAN ZERO PASS] "${target.name}" superó la prueba limpia desde CERO en ambos motores (SQLite: ${cleanSqliteSec}s | Postgres: ${cleanPgSec}s)`);
-
-        const fullIdx = targets.findIndex(t => t.name === target.name);
-        if (fullIdx !== -1 && fullIdx + 1 < targets.length) {
-          const nextTarget = targets[fullIdx + 1]!;
-          recordMasterSuiteProgress({
-            suiteIndex: fullIdx + 1,
-            suiteName: nextTarget.name,
-            suiteRelativePath: nextTarget.relativePath,
-            driver: 'sqlite',
-          });
-        }
+        await executeIntraSuiteCleanPass(target, i, suiteDisplayIdx, totalDisplayCount);
       }
 
       clearSuiteCheckpoint(target.name);
@@ -698,7 +747,6 @@ async function runAllSequentialSuites(): Promise<void> {
         const { stopPostgresTestContainer } = await import('../testing/postgres_test_container.ts');
         stopPostgresTestContainer();
       } catch { // catch-ok: ignore failure when stopping postgres container in finally block
-        // Ignore
       }
     }
     logger.stopIntercepting();

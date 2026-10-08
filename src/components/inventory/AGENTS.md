@@ -11,6 +11,11 @@ Frontend Developers / Systems Engineers.
 - Follow standard repository modularity guidelines.
 - **Dynamic Font Size Calculation (`fitText`)**: Numeric counters in `InventoryPills.vue` (Poké-Pesos, Battle Coins, War Coins) must dynamically downscale font size (`el.style.fontSize`) using empirical DOM `el.scrollWidth > maxW` checks against `parent.clientWidth - PILL_PADDING_SAFETY_PX`. This guarantees that large numbers (e.g. `111.201`, `999.999`) never overflow or truncate their final digits across responsive HUD breakpoints.
 
+## Key Files
+
+- `BagItemCard.vue`: Module implementation.
+- [`InventoryPills.vue`](./InventoryPills.vue): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -19,10 +24,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `BagItemCard.vue`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

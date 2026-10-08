@@ -15,6 +15,10 @@ QA / Automation Engineers.
 - Event simulations must interact with the application UI exclusively through deterministic element IDs (`#id`).
 - Combat logs and event reward distributions must be verified using typed event listeners and store state assertions.
 
+## Key Files
+
+- `base_event_simulation.ts`: Module implementation.
+
 ## Work Guidance
 
 - Use `FishingEventSimulation` and `MagikarpContestSimulationWrapper` as reusable wrappers for event E2E test flows.
@@ -24,6 +28,6 @@ QA / Automation Engineers.
 
 - Run `npm run sim:e2e:events` to execute event scenario simulations.
 
-## Key Files
+## Child DOX Index
 
-- `base_event_simulation.ts`: Module implementation.
+- *This directory contains specialized domain logic and files with no subdirectories.*

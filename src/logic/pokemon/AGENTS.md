@@ -32,15 +32,29 @@ Frontend Developers / Systems Engineers.
 - `evolutionEngine.ts`: Module implementation.
 - `generationMath.ts`: Module implementation.
 - `pokedexAggregator.ts`: Module implementation.
+- `pokemonCreationHelper.ts`: Module implementation.
+- `pokemonFilterMatcher.ts`: Module implementation.
 - `pokemonGender.ts`: Module implementation.
 - `pokemonLegality.ts`: Module implementation.
+- `pokemonLevelUpHelper.ts`: Module implementation.
 - `pokemonMath.ts`: Module implementation.
+- `pokemonMoveDescription.ts`: Module implementation.
+- `pokemonMovesetHelper.ts`: Module implementation.
 - `pokemonSelectionFilter.ts`: Module implementation.
+- `pokemonSortMetric.ts`: Module implementation.
 - `pokemonSpeciesHelper.ts`: Module implementation.
+- `pokemonValidator.ts`: Module implementation.
+- `pokemonVigorHelper.ts`: Module implementation.
 - `pokemonWildHeldItems.ts`: Module implementation.
 - `statEngine.ts`: Module implementation.
 - `tierEngine.ts`: Module implementation.
 - `typeEngine.ts`: Module implementation.
+- [`evMath.ts`](./evMath.ts): Module implementation.
+- [`physicalDimensionsMath.ts`](./physicalDimensionsMath.ts): Module implementation.
+- [`pokemonFactory.ts`](./pokemonFactory.ts): Module implementation.
+- [`pokemonFieldAbilities.ts`](./pokemonFieldAbilities.ts): Module implementation.
+- [`pokemonUtils.ts`](./pokemonUtils.ts): Module implementation.
+- [`statsMath.ts`](./statsMath.ts): Module implementation.
 
 ## Work Guidance
 
@@ -52,4 +66,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- *This domain module does not contain nested sub-directories with independent AGENTS.md files.*
+- *This directory contains specialized domain logic and files with no subdirectories.*

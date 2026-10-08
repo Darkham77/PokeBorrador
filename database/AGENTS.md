@@ -13,6 +13,11 @@ Backend / Database Engineers.
 - **Multi-Engine Behavioral Parity & Dual-Database Testing Mandate**: All migrations, schema evolutions, constraints, query behaviors, and error triggers MUST behave 100% identically across SQLite and PostgreSQL. Any bug fix or feature touching database functionality MUST be covered by tests that execute and pass across both SQLite and PostgreSQL engines (via `describeWithDatabase` from `tests/dbTestHelper.ts` or dual-driver E2E runs).
 - **Competition Entries Multi-Category Indexing**: The `competition_entries` schema MUST include a `category_id TEXT` column with a composite unique constraint `UNIQUE(event_id, category_id, player_id)` to allow players to register Pokémon across distinct sub-competitions within the same event.
 
+### Reference Manuals
+
+- [dbrouter_manual.md](../.agents/skills/project-standards/references/technical/dbrouter_manual.md): Context routing boundaries between Online and Offline.
+- [save_system_manual.md](../.agents/skills/project-standards/references/technical/save_system_manual.md): Game persistence configurations.
+
 ## Work Guidance
 
 - Client-side SQLite WASM engines do not support PG constructs (`CREATE FUNCTION`, `DROP FUNCTION`). The schema translator must intercept and strip these statements to keep migration files clean.
@@ -66,11 +71,6 @@ Backend / Database Engineers.
 ## Verification
 
 - Run `npm run validate:sql` to verify database schemas against the SQLite local environment, and `npm run test:migrations` to certify migrations against real production backup fixtures.
-
-## Reference Manuals
-
-- [dbrouter_manual.md](../.agents/skills/project-standards/references/technical/dbrouter_manual.md): Context routing boundaries between Online and Offline.
-- [save_system_manual.md](../.agents/skills/project-standards/references/technical/save_system_manual.md): Game persistence configurations.
 
 ## Child DOX Index
 

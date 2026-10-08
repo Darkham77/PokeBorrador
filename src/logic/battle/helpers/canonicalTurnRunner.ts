@@ -1,5 +1,5 @@
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { ShowdownPlayerRequest } from '@/types/battle/battle';
+import type { ShowdownPlayerRequest, WinnerSide } from '@/types/battle/battle';
 import { executeTurnInWorker, syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts';
 import { filterShowdownLogs } from '../showdownBridge.ts';
 import { parseLogsWithSkip, resolvePostTurnSwitchesAndFaints } from './turnActionResolver.ts';
@@ -8,7 +8,7 @@ export interface CanonicalTurnResult {
   logs: string[];
   isOver: boolean;
   winner: string | null;
-  winnerSide?: 'p1' | 'p2' | null;
+  winnerSide?: WinnerSide | null;
   p1Request?: ShowdownPlayerRequest;
   p2Request?: ShowdownPlayerRequest;
 }

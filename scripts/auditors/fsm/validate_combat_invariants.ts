@@ -41,6 +41,10 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
   constructor() {
     super({
       id: 'validate_combat_invariants',
+      configKey: 'fsm.combatInvariants',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'Combat Engine & Showdown Invariants Auditor',
       description: 'Invariantes rotas de Showdown o bifurcación binaria p1/p2',
       icon: '🛡️',

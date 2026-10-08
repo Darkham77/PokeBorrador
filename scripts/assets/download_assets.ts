@@ -142,34 +142,42 @@ function isAllowedAssetUrl(parsed: URL): boolean {
   return parsed.protocol === 'https:' && ALLOWED_ASSET_HOSTS.has(parsed.hostname);
 }
 
+async function tryFetchAssetBuffer(url: string): Promise<Buffer | null> {
+  const parsedUrl = new URL(url);
+  if (!isAllowedAssetUrl(parsedUrl)) return null;
+
+  try {
+    const res = await fetch(parsedUrl.href, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'image/png,image/webp,image/*,*/*;q=0.8',
+      }
+    });
+    if (!res.ok) return null;
+
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('text/html')) {
+      return null; // Ignore 404 HTML fallback pages
+    }
+    const arrayBuf = await res.arrayBuffer();
+    const buf = Buffer.from(arrayBuf);
+    // Check for valid PNG or image signature (> 50 bytes and not error page)
+    if (buf.length > 50 && buf.length !== 36570) {
+      return buf;
+    }
+  } catch { // catch-ok: try next source
+    // Try next source
+  }
+  return null;
+}
+
 async function fetchBufferWithFallback(candidateNames: string[], cleanItemSlug: string): Promise<{ buffer: Buffer; sourceUrl: string; matchedName: string } | null> {
   for (const name of candidateNames) {
     for (const sourceFn of ITEM_SOURCES) {
       const url = sourceFn(name, cleanItemSlug);
-      const parsedUrl = new URL(url);
-      if (!isAllowedAssetUrl(parsedUrl)) continue;
-
-      try {
-        const res = await fetch(parsedUrl.href, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Accept': 'image/png,image/webp,image/*,*/*;q=0.8',
-          }
-        });
-        if (res.ok) {
-          const contentType = res.headers.get('content-type') || '';
-          if (contentType.includes('text/html')) {
-            continue; // Ignore 404 HTML fallback pages
-          }
-          const arrayBuf = await res.arrayBuffer();
-          const buf = Buffer.from(arrayBuf);
-          // Check for valid PNG or image signature (> 50 bytes and not error page)
-          if (buf.length > 50 && buf.length !== 36570) {
-            return { buffer: buf, sourceUrl: url, matchedName: name };
-          }
-        }
-      } catch { // catch-ok: try next source
-        // Try next source
+      const buf = await tryFetchAssetBuffer(url);
+      if (buf) {
+        return { buffer: buf, sourceUrl: url, matchedName: name };
       }
     }
   }

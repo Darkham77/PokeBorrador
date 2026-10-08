@@ -4,7 +4,7 @@ import type { SeasonalThemeConfig, SeasonalThemeId } from '@/data/system/rankedD
 import type { PokemonType } from '@/data/battle/types';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
-import { serializePokemonTeam } from '@/logic/auth/saveSerializer.ts';
+import { serializePokemonTeam } from '@/logic/auth/savePokemonSerializer.ts';
 import { isLittleCupEligible, getPokemonDexNumber } from '@/logic/pokemon/pokemonSpeciesHelper.ts';
 
 /**

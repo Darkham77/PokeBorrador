@@ -1,10 +1,18 @@
-# AGENTS.md - GLOBAL PROJECT RULES & IDENTITY
+# Purpose
 
-This file defines the immutable DNA of the Poké Vicio project. Every AI agent interacting with this repository MUST adhere to these rules.
+This file defines the immutable DNA and global architectural governance of the Poké Vicio project. Every AI agent interacting with this repository MUST adhere to these rules.
 
 Poké Vicio is a hybrid retro-modern web video game built with Vue 3, Pinia, GSAP, and Pokémon Showdown engine (`@pkmn/sim`) logic.
 
-## Environment & Core Commands
+## Ownership
+
+Poké Vicio Core Architecture & Development Team.
+
+## Local Contracts
+
+- **AI Agent Chat Communication & Interactive Language Mandate**: The AI assistant / agent MUST strictly consult `.auditor/audit.config.ts` and communicate, converse, respond, and chat with the user in Spanish (`'es'`). This conversational chat language is explicitly separate and distinct from the repository file writing and documentation language (`config.documentation.language`), which strictly governs code comments, commit messages, documentation, markdown files, and codebase artifacts. The AI agent must dynamically consult these configurations and never confuse or conflate the chat language with the file writing language.
+
+### Environment & Core Commands
 
 - **Package Manager**: `npm`
 - **Runtime Environment**: Node.js >=26 with `--permission` model (`--allow-fs-read=*` for maintenance scripts).
@@ -23,7 +31,7 @@ Poké Vicio is a hybrid retro-modern web video game built with Vue 3, Pinia, GSA
   - **Markdownlint Configuration Standard**: Markdownlint enforces documentation cleanliness via `npm run audit:md` (`validate_markdown_lint`). Rule `MD060` (`table-column-style`) MUST be disabled (`"MD060": false`) alongside `MD013` (line length), permitting descriptive and fluid markdown tables in documentation without manual column-padding hacks or false positive failures on variable-length text links.
   - **NPM Script Single Source of Truth**: All developer tools, validators, fuzzer suites, diagnostic reporters, and maintenance routines MUST be executed via official NPM scripts declared in `package.json`. Raw direct executions (`node scripts/...`, `npx tsx ...`, `node -e "..."`) in skills or documentation are strictly forbidden. Arguments passed to npm scripts MUST use direct `key=value` parameters or clean flags without `--` (e.g., `npm run <script> param=value`, `npm run database:update server=server_franco`, `npm run audit fix`, `npm run audit:warnings category=dead-code`).
 
-## 0. Senior Developer Mindset & Laziness Ladder
+### 0. Senior Developer Mindset & Laziness Ladder
 
 You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written. Before writing any code, stop at the first rung:
 
@@ -61,7 +69,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
   1. If the file is legitimate active multithreaded logic (Web Workers, OffscreenCanvas renderers) or dynamically routed entry points, ensure it is properly referenced or documented.
   2. If the file is an active component that was simply omitted from the view tree, connect and mount it in its proper parent view.
   3. If the investigation confirms the code or file is **GENUINELY DEAD CODE** (e.g., deprecated legacy prototypes, abandoned test components, or files superseded by newer replacements), agents **MUST PROACTIVELY DELETE THE OBSOLETE FILES**, clean up any empty parent directories, and update relevant DOX (`AGENTS.md`) indices.
-- **Absolute Prohibition on Auditor & Gatekeeper Tampering & Proactive Evolution Mandate**: Agents **MUST NEVER** unilaterally alter, relax, weaken, or reinterpret the criteria, rules, regular expressions, or severity thresholds of quality gatekeepers and pre-commit scripts (such as `audit_for_commit.ts`, `audit_project.ts`, Fallow analyzers, linters, or typecheckers) to evade or suppress failures. Bypassing warnings or downgrading them (e.g., converting new warnings of unused exports or complexity into legacy or health metrics) to make a commit pass without explicit user authorization is strictly forbidden. The system must ALWAYS resolve findings cleanly at the source code level. **However, when an architectural refactor, structural modernization, or file relocation renders an auditor's target path, regex, or check obsolete or suboptimal** (e.g., relocating `:root` CSS variables from `_variables.scss` to `_base.scss`), **agents MUST PROACTIVELY SUGGEST AND EXPLAIN THE PROPOSED AUDITOR UPDATE TO THE USER**. The agent must outline: (1) why the auditor is misaligned with the improved architecture, and (2) the exact code diff proposed for the auditor script. Once the user reviews and explicitly authorizes the change, the auditor may be updated to maintain strict quality gating against the new single source of truth. Under no circumstances should the agent implement inferior source code workarounds simply to appease an outdated auditor without first offering the architectural update proposal to the user.
+- **Absolute Prohibition on Auditor & Gatekeeper Tampering & Proactive Evolution Mandate**: Agents **MUST NEVER** unilaterally alter, relax, weaken, or reinterpret the criteria, rules, regular expressions, or severity thresholds of quality gatekeepers (such as `auditor`, `audit_project`, Fallow analyzers, linters, or typecheckers) to evade or suppress failures. Bypassing warnings or downgrading them (e.g., converting new warnings of unused exports or complexity into legacy or health metrics) to make a commit pass without explicit user authorization is strictly forbidden. The system must ALWAYS resolve findings cleanly at the source code level. **However, when an architectural refactor, structural modernization, or file relocation renders an auditor's target path, regex, or check obsolete or suboptimal** (e.g., relocating `:root` CSS variables from `_variables.scss` to `_base.scss`), **agents MUST PROACTIVELY SUGGEST AND EXPLAIN THE PROPOSED AUDITOR UPDATE TO THE USER**. The agent must outline: (1) why the auditor is misaligned with the improved architecture, and (2) the exact code diff proposed for the auditor script. Once the user reviews and explicitly authorizes the change, the auditor may be updated to maintain strict quality gating against the new single source of truth. Under no circumstances should the agent implement inferior source code workarounds simply to appease an outdated auditor without first offering the architectural update proposal to the user.
 - **Mandatory Dual Gatekeeper Pipeline Mandate (`npm run audit` + `npm run test`)**: In Poké Vicio quality assurance and commit workflows, **both `npm run audit` AND `npm run test` are strictly mandatory and non-negotiable**. Static architecture auditors and dynamic Vitest suites are complementary, never mutually exclusive. Sub-auditors in `scripts/auditors/` verify AST rules, contracts, and database integrity, while Vitest verifies runtime behavior and domain logic. Every new sub-auditor MUST be paired with its own unit test in `tests/node/auditors/`.
 - **Mandatory Dynamic Loading & Domain Exports Analysis Mandate**: When remediating unused export warnings (Fallow), agents **MUST NEVER** blindly delete or strip the `export` keyword without first performing a rigorous architectural analysis. Agents must verify whether the export is: (1) required by dynamically loaded modules (dynamic routes, Vite glob imports, Web Workers, reflection), (2) consumed by testing/fuzzer runners, or (3) an intentional domain contract in `src/types/**` where canonical tuple arrays (e.g. `export const FOOS = [...] as const`) must remain exported alongside derived types for consumers and runtime validators. If the export represents a legitimate domain contract or dynamic entry point, it MUST be registered under `ignoreExports` in `.fallowrc.json` with clear architectural justification. Only strictly file-private helpers in implementation modules may have their export stripped.
 - **Mandatory Work Plan Compliance Mandate (Planning Mode & Implementation Plans)**: Whenever creating any work plan, technical design proposal, or implementation plan (`implementation_plan.md`), agents MUST obligatorily include and enforce strict compliance with:
@@ -90,21 +98,21 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - **Modern Date & Monotonic Timestamp Mandate (Zero `Date.now()`, Zero `new Date()`)**: Legacy `Date.now()` and `new Date()` are strictly forbidden across application code, tools, and scripts. For performance benchmarking, execution profiling, and sub-auditor runtime measurement, agents MUST use monotonic `performance.now()`. For timestamps, wall-clock dates, and persistence records, agents MUST use `Temporal.Now.instant().epochMilliseconds` or `Temporal.Now.instant().toString()` from native Node.js / ES `Temporal` (ECMAScript 2026 / Temporal API).
 - **Master Environment Setup Scripts Governance Mandate (`setup-linux.sh`, `setup-windows.ps1`)**: Root environment setup scripts belong canonically to `@francogp/auditor`. Applying ad-hoc local patches or logic mutations in host projects is strictly forbidden. If an issue, defect, or version gap is detected, agents MUST notify the user to request an upstream change in `@francogp/auditor`, keeping all projects synchronized without drift.
 
-## 1. Efficient Thinking & Communication
+### 1. Efficient Thinking & Communication
 
 - **Internal Reasoning**: Use English for internal reasoning, code planning, and technical analysis.
 - **User Interaction & Proposals**: All direct chat communications and temporary review proposals MUST be written in Spanish. Any proposed code changes, rule additions, or file diffs within proposals MUST be in English.
 - **Mandatory English for All Repository Files, Skills, Documentation & Examples**: All files inside the repository (source code, TypeScript definitions, tests, skills under `.agents/skills/**`, references, documentation, blueprints, configuration examples, and `.md` files) MUST ALWAYS be written strictly and exclusively in English with zero language mixing. Writing any skill, skill documentation, reference guide, or code example in Spanish or mixing languages is strictly prohibited. *Sole Exception: Interactive terminal tables and human-readable CLI audit rule descriptions (`ruleDescriptions`, `category` in `audit_rules.ts`) are declared in Spanish by deliberate UX design for the local developer console.*
 - **Mandatory Work Plan Inclusions**: All work plans and `implementation_plan.md` artifacts MUST obligatorily incorporate explicit compliance sections for `@/project-standards`, `@/domain-type-first`, and the project quality auditor rules (`npm run audit`).
 
-## 2. Core Identity: Hybrid Retro-Modern
+### 2. Core Identity: Hybrid Retro-Modern
 
 - **Visual Shell**: Modern UI shell (gradients, relief borders) + Pixel Art heart (pixelated fonts and game sprites).
 - **GSAP Exclusive Mandate**: All UI and battle animations MUST be implemented using GSAP. Manual CSS keyframes or timers for animation flow are strictly forbidden. When removing non-compliant CSS transitions/keyframes, they MUST be migrated to GSAP equivalents (`v-gsap-hover`, `useGsapTransition`, `gsap.to()`, `gsap.from()`, `gsap.timeline()`, Vue `<Transition :css="false" @enter="..." @leave="...">`, or GSAP composables) preserving 1:1 visual motion, easing, duration, and user delight.
 - **Pixel Font Charset Limitation & '#' Prohibition Mandate**: The primary pixel font (`Pokemon FireRed LeafGreen`, ripped from the GBA ROM) maps ASCII 35 (`#`, `0x23`) to the `№` Pokédex numero ligature. Using `#` anywhere in pixel-styled text (such as rankings, badges, podiums, or lists) is STRICTLY PROHIBITED. For rankings/leaderboards: Top 3 must use emojis `🥇`, `🥈`, `🥉` with `<span class="emoji crown">`. Positions 4+ must use clean Arabic numerals `{{ index + 1 }}` (or `Top {{ rank }}`), never prefixed with `#`.
 - **Fallow Code Quality Governance**: Adhere strictly to Fallow's native complexity metrics (cognitive threshold <= 20, cyclomatic threshold <= 25, Maintainability Index >= 85, zero dead code, and target refactoring recommendations) rather than arbitrary file or function line limits.
 
-## 3. Mandatory Skill Invocation (Progressive Disclosure)
+### 3. Mandatory Skill Invocation (Progressive Disclosure)
 
 Upon starting work, every agent MUST load these core skills:
 
@@ -115,7 +123,7 @@ Upon starting work, every agent MUST load these core skills:
 
 *All specialized and domain-specific skills in `.agents/skills/` (such as `@/game-simulation`, `@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`, `@/auditor`, `@/fallow`, `@/clean-code`, `@/testing-patterns`, etc.) MUST be loaded on-demand when performing their respective tasks.*
 
-## 4. Specialized Project Rules Index
+### 4. Specialized Project Rules Index
 
 For topic-specific mandates, consult the specialized rule modules under [.agents/skills/project-standards/references/rules/](.agents/skills/project-standards/references/rules/README.md):
 
@@ -127,7 +135,27 @@ For topic-specific mandates, consult the specialized rule modules under [.agents
 
 *(Note: Specific gameplay systems such as Daycare/Breeding, Gyms, Obedience, Items, War, and Spawns are governed strictly in their dedicated manuals under [references/systems/](.agents/skills/project-standards/references/systems/)).*
 
-## 5. DOX Directory Navigation Index
+### Core Auditor & Architectural Governance Mandates
+
+- **Universal English Documentation Default Mandate & Language Governance (`validate_documentation_language`)**: Across `@francogp/auditor` and all consumer host applications governed by it, all documentation, DOX indices, and learning proposals (`learning_proposal.md` generated by `learn-with-docs`) depend strictly on the language configured in `config.documentation?.language`. Whenever in doubt, or if not explicitly declared in `.auditor/audit.config.ts`, the default language is STRICTLY AND UNCONDITIONALLY English (`'en'`). This is a mandatory universal default across all projects. Natural language across repository markdown, documentation, manuals, blueprints, and AI skills under `.agents/skills/**` is governed strictly by this setting (optionally `'es'`). The engine extracts human prose while strictly stripping technical code blocks, inline code, markdown links/URLs, and YAML frontmatter. Any non-authorized language triggers blocking violations (`severity: 'error'`), with path-based exemptions configured via `config.documentation.languageExemptions`. Sub-auditors must never skip or hesitate due to unconfigured language; `'en'` applies automatically by default everywhere.
+- **Absolute Prohibition on Suppressing, Silencing, Nullifying, or Bypassing Audit Rules & Zero-Tolerance Fake Pass Mandate**: When auditing a repository or running linters/auditors, AI agents and developers are STRICTLY AND CATEGORICALLY PROHIBITED from suppressing, silencing, disabling, or nullifying auditor rules, stylelint rules, ESLint rules, or any static analysis checks (e.g., setting `"rule": null`, `"rule": "off"`, `"rule": 0`, creating dummy override configs that neuter checks, or passing arbitrary skip flags) to make an audit pass or hide findings. If the number of errors or warnings is massive (even thousands of errors), THEY ARE REAL ARCHITECTURAL OR HYGIENE DEFECTS THAT MUST BE LEGITIMATELY RESOLVED IN THE SOURCE CODE OR FIXED WITH CANONICAL TOOLS (`auditor fix`). Modernizing host configurations means elevating the codebase to meet strict modern standards and exposing defects that were previously hidden, NEVER degrading, diluting, or castrating the auditor's rules to fit legacy code. Silencing rules to achieve a fake clean pass is considered a critical architectural violation and gross misconduct.
+- **Absolute Prohibition on Backward-Compatible Code & Loud Failure Mandate**: Writing backward-compatible shims, deprecated alias suites, legacy fallback wrappers, or dual-execution adapter code across this repository is STRICTLY PROHIBITED. The architecture prioritizes clean, uncompromised modern standards over legacy tolerance. Outdated consumers, legacy configurations, and unmigrated calls MUST fail loudly with immediate, explicit, and blocking errors (`throw new Error(...)` or exit code 1) forcing immediate upgrades to canonical standards. Maintaining duplicate suites or runtime compatibility bridges that introduce bloat, duplicate findings, or maintenance hazards is completely eradicated.
+- **Prohibition on Modifying or Disabling Configurations Without Prior Programmer Consultation**: Developers and AI agents are strictly prohibited from disabling, turning off, altering, or modifying auditor configurations (`.auditor/audit.config.ts`, `eslint.config.js`, `.stylelintrc.json`, `.fallowrc.json`) when encountering errors or warnings without consulting and obtaining explicit prior authorization from the human programmer. When requesting authorization, the agent must provide a comprehensive technical explanation detailing why the modification is necessary, explicitly justifying the trade-offs, pros, and cons.
+
+## Work Guidance
+
+- Always adhere to the 3-Tier Bug Fixing Protocol when investigating or fixing any issue across the codebase.
+- Use canonical npm scripts exclusively (Rule 26) with direct key=value flags.
+- Optimize data structures proactively for constant O(1) time complexity in critical execution paths.
+- Maintain strict typing with domain types, branded IDs, and canonical tuples without any, unknown, or naked strings for finite domains.
+
+## Verification
+
+- Fast in-development quality check: `npm run lint`
+- Full unified architecture audit: `npm run audit`
+- Full automated test suite (unit and node): `npm run test`
+
+## Child DOX Index
 
 - [database/AGENTS.md](./database/AGENTS.md): Local/offline database schemas, seeds, and SQL migration logic.
 - [scripts/AGENTS.md](./scripts/AGENTS.md): Automation, build processes, diagnostic tools, and utility scripts.

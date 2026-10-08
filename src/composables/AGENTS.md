@@ -17,6 +17,11 @@ Frontend Developers.
 - Clean up window events, resize hooks, and observers inside composables using `onUnmounted` or correct lifecycle hooks to prevent memory leaks.
 - **Prohibition on Immediate Watchers for Late-Initialized Functions**: It is strictly forbidden to use immediate watchers (`{ immediate: true }`) on state properties inside composables if the watcher callback invokes variables or helper functions (such as `resetAll`) defined lower in the setup scope, as this triggers runtime reference errors (`Cannot access before initialization`) during initial mount. Always place the watcher after the referenced functions are fully defined, or run the watcher without immediate option.
 
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
 - [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.

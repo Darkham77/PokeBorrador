@@ -12,6 +12,7 @@ import {
   type FriendshipSealMetadata,
   type FriendshipSealTier,
 } from '@/types/pokemon/friendship.ts';
+import type { StatModifierDirection } from '@/types/battle/tooltip.ts';
 
 export interface FriendshipCombatPerks {
   readonly isActive: boolean;
@@ -178,7 +179,7 @@ export function calculateFriendshipLevelUpDelta(currentFriendship: number, hasSo
 export interface FriendshipTransitionLog {
   readonly message: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly type: FriendshipLogTone;
-  readonly direction: 'up' | 'down';
+  readonly direction: StatModifierDirection;
   readonly oldTier: FriendshipSealTier;
   readonly newTier: FriendshipSealTier;
 }

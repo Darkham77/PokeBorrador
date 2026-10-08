@@ -187,140 +187,151 @@ export interface PackedFeetData {
   shadow?: GlobalShadowConfig;
 }
 
+function normalizeSpriteBaseKey(key: string): string {
+  return key
+    .replace('/Back shiny/', '/Back/')
+    .replace('/Front shiny/', '/Front/')
+    .replace('/Icons shiny/', '/Icons/')
+    .replace('/Back_shiny/', '/Back/')
+    .replace('/Front_shiny/', '/Front/')
+    .replace('/Icons_shiny/', '/Icons/')
+    .replace('/shiny/', '/');
+}
+
+function resolveSpriteOverride(
+  keyPath: string,
+  overridesMap?: Record<string, SpriteShadowOverride>
+): SpriteShadowOverride | undefined {
+  if (!overridesMap) return undefined;
+  if (overridesMap[keyPath]) return overridesMap[keyPath];
+
+  const baseKeyPath = normalizeSpriteBaseKey(keyPath);
+  if (overridesMap[baseKeyPath]) return overridesMap[baseKeyPath];
+
+  const isVariationPath = keyPath.includes('v') && (keyPath.includes('/animated/Front') || keyPath.includes('/animated/Back'));
+  if (isVariationPath) {
+    const idleKey = keyPath.replace(/v(?=[^/]*\.webp$)/, 'i');
+    if (overridesMap[idleKey]) return overridesMap[idleKey];
+    const idleBaseKey = baseKeyPath.replace(/v(?=[^/]*\.webp$)/, 'i');
+    if (overridesMap[idleBaseKey]) return overridesMap[idleBaseKey];
+  }
+  return undefined;
+}
+
+function buildPackedFeetTuple(override?: SpriteShadowOverride, fallback?: { feetY: number; feetX: number }): PackedFeetTuple {
+  const feetY = override ? override.feetY : (fallback?.feetY ?? 0.95);
+  const feetX = override ? override.feetX : (fallback?.feetX ?? 0.5);
+  const isFlying = override ? override.isFlying === true : false;
+  const shadowScale = override?.shadowScale;
+  return (shadowScale !== undefined && shadowScale !== 1)
+    ? [feetY, feetX, isFlying ? 1 : 0, shadowScale]
+    : (isFlying ? [feetY, feetX, 1] : [feetY, feetX]);
+}
+
+function assignPackedTarget(key: string, tuple: PackedFeetTuple, packed: PackedFeetData): void {
+  if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
+    packed.p[key.slice('/assets/sprites/pokemon/'.length, -'.webp'.length)] = tuple;
+  } else if (key.startsWith('/assets/sprites/npc/') && key.endsWith('.webp')) {
+    packed.n[key.slice('/assets/sprites/npc/'.length, -'.webp'.length)] = tuple;
+  } else if (key.startsWith('/assets/sprites/trainers/') && key.endsWith('.webp')) {
+    packed.t[key.slice('/assets/sprites/trainers/'.length, -'.webp'.length)] = tuple;
+  }
+}
+
+function resolveShadowOverridesSync(overrides?: Record<string, SpriteShadowOverride>): Record<string, SpriteShadowOverride> {
+  if (overrides) return overrides;
+  try {
+    const overridesPath = safeResolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
+    if (fsSync.existsSync(overridesPath)) {
+      return JSON.parse(fsSync.readFileSync(overridesPath, 'utf8'));
+    }
+  } catch { // catch-ok: Overrides file optional in development
+    return {};
+  }
+  return {};
+}
+
+function backfillVariationIdleFeet(
+  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>
+): void {
+  for (const key of Object.keys(pokemonFeetDatabase)) {
+    const isVariation = key.includes('v') && (key.includes('/animated/Front') || key.includes('/animated/Back'));
+    if (!isVariation) continue;
+
+    const idleKey = key.replace(/v(?=[^/]*\.webp$)/, 'i');
+    const idleBaseKey = normalizeSpriteBaseKey(idleKey);
+    const idleVal = pokemonFeetDatabase[idleKey] ?? pokemonFeetDatabase[idleBaseKey];
+    if (idleVal) {
+      pokemonFeetDatabase[key] = idleVal;
+    }
+  }
+}
+
+function shouldSkipRedundantBaseTuple(
+  key: string,
+  baseKey: string,
+  tuple: [number, number, number, number],
+  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
+  overridesMap: Record<string, SpriteShadowOverride>
+): boolean {
+  if (!key.startsWith('/assets/sprites/pokemon/') || !key.endsWith('.webp')) {
+    return false;
+  }
+  const baseOverride = resolveSpriteOverride(baseKey, overridesMap);
+  const baseVal = pokemonFeetDatabase[baseKey];
+  if (baseKey === key || (!baseVal && !baseOverride)) {
+    return false;
+  }
+  const baseTuple = buildPackedFeetTuple(baseOverride, baseVal);
+  return (
+    baseTuple[0] === tuple[0] &&
+    baseTuple[1] === tuple[1] &&
+    baseTuple[2] === tuple[2] &&
+    baseTuple[3] === tuple[3]
+  );
+}
+
+function packExistingFeetEntries(
+  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
+  overridesMap: Record<string, SpriteShadowOverride>,
+  packed: PackedFeetData
+): void {
+  for (const key of Object.keys(pokemonFeetDatabase).sort()) {
+    const val = pokemonFeetDatabase[key]!;
+    const baseKey = normalizeSpriteBaseKey(key);
+    const override = resolveSpriteOverride(key, overridesMap);
+    const tuple = buildPackedFeetTuple(override, val);
+
+    if (shouldSkipRedundantBaseTuple(key, baseKey, tuple, pokemonFeetDatabase, overridesMap)) {
+      continue;
+    }
+    assignPackedTarget(key, tuple, packed);
+  }
+}
+
+function packRemainingOverrides(
+  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
+  overridesMap: Record<string, SpriteShadowOverride>,
+  packed: PackedFeetData
+): void {
+  for (const key of Object.keys(overridesMap).sort()) {
+    if (pokemonFeetDatabase[key]) continue;
+    const override = overridesMap[key];
+    if (!override) continue;
+    const tuple = buildPackedFeetTuple(override);
+    assignPackedTarget(key, tuple, packed);
+  }
+}
+
 export function packFeetCoordinates(
   pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
   packed: PackedFeetData,
   overrides?: Record<string, SpriteShadowOverride>
 ): void {
-  let overridesMap = overrides;
-  if (!overridesMap) {
-    try {
-      const overridesPath = safeResolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
-      if (fsSync.existsSync(overridesPath)) {
-        overridesMap = JSON.parse(fsSync.readFileSync(overridesPath, 'utf8'));
-      }
-    } catch (_err) { // catch-ok: Overrides file optional in development
-      overridesMap = {};
-    }
-  }
-
-  function getOverrideForSprite(keyPath: string): SpriteShadowOverride | undefined { // result-ok: Operation result wrapper payload
-    if (!overridesMap) return undefined;
-    if (overridesMap[keyPath]) return overridesMap[keyPath];
-
-    const baseKeyPath = keyPath
-      .replace('/Back shiny/', '/Back/')
-      .replace('/Front shiny/', '/Front/')
-      .replace('/Icons shiny/', '/Icons/')
-      .replace('/Back_shiny/', '/Back/')
-      .replace('/Front_shiny/', '/Front/')
-      .replace('/Icons_shiny/', '/Icons/')
-      .replace('/shiny/', '/');
-
-    if (overridesMap[baseKeyPath]) return overridesMap[baseKeyPath];
-
-    const isVariationPath = keyPath.includes('v') && (keyPath.includes('/animated/Front') || keyPath.includes('/animated/Back'));
-    if (isVariationPath) {
-      const idleKey = keyPath.replace(/v(?=[^/]*\.webp$)/, 'i');
-      if (overridesMap[idleKey]) return overridesMap[idleKey];
-      const idleBaseKey = baseKeyPath.replace(/v(?=[^/]*\.webp$)/, 'i');
-      if (overridesMap[idleBaseKey]) return overridesMap[idleBaseKey];
-    }
-
-    return undefined;
-  }
-
-  for (const key of Object.keys(pokemonFeetDatabase)) {
-    const isVariation = key.includes('v') && (key.includes('/animated/Front') || key.includes('/animated/Back'));
-    if (isVariation) {
-      const idleKey = key.replace(/v(?=[^/]*\.webp$)/, 'i');
-      const idleBaseKey = idleKey
-        .replace('/Back shiny/', '/Back/')
-        .replace('/Front shiny/', '/Front/')
-        .replace('/Icons shiny/', '/Icons/')
-        .replace('/Back_shiny/', '/Back/')
-        .replace('/Front_shiny/', '/Front/')
-        .replace('/Icons_shiny/', '/Icons/')
-        .replace('/shiny/', '/');
-      const idleVal = pokemonFeetDatabase[idleKey] ?? pokemonFeetDatabase[idleBaseKey];
-      if (idleVal) {
-        pokemonFeetDatabase[key] = idleVal;
-      }
-    }
-  }
-
-  for (const key of Object.keys(pokemonFeetDatabase).sort()) {
-    const val = pokemonFeetDatabase[key]!;
-
-    const baseKey = key
-      .replace('/Back shiny/', '/Back/')
-      .replace('/Front shiny/', '/Front/')
-      .replace('/Icons shiny/', '/Icons/')
-      .replace('/Back_shiny/', '/Back/')
-      .replace('/Front_shiny/', '/Front/')
-      .replace('/Icons_shiny/', '/Icons/')
-      .replace('/shiny/', '/');
-
-    const override = getOverrideForSprite(key);
-    const feetY = override ? override.feetY : val.feetY;
-    const feetX = override ? override.feetX : val.feetX;
-    const isFlying = override ? override.isFlying === true : false;
-    const shadowScale = override?.shadowScale !== undefined ? override.shadowScale : undefined;
-    const tuple: PackedFeetTuple = (shadowScale !== undefined && shadowScale !== 1)
-      ? [feetY, feetX, isFlying ? 1 : 0, shadowScale]
-      : (isFlying ? [feetY, feetX, 1] : [feetY, feetX]);
-
-    if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
-      const subKey = key.slice('/assets/sprites/pokemon/'.length, -'.webp'.length);
-
-      // Check if this is a shiny sprite identical to its base counterpart
-      const baseOverride = getOverrideForSprite(baseKey);
-      const baseVal = pokemonFeetDatabase[baseKey];
-      if (baseKey !== key && (baseVal || baseOverride)) {
-        const resolvedBaseVal = baseVal ?? { feetY: baseOverride!.feetY, feetX: baseOverride!.feetX };
-        const baseY = baseOverride ? baseOverride.feetY : resolvedBaseVal.feetY;
-        const baseX = baseOverride ? baseOverride.feetX : resolvedBaseVal.feetX;
-        const baseFlying = baseOverride ? baseOverride.isFlying === true : false;
-        const baseScale = baseOverride?.shadowScale;
-
-        if (baseY === feetY && baseX === feetX && baseFlying === isFlying && baseScale === shadowScale) {
-          // Omit 100% identical shiny entry: runtime falls back to baseKey
-          continue;
-        }
-      }
-
-      packed.p[subKey] = tuple;
-    } else if (key.startsWith('/assets/sprites/npc/') && key.endsWith('.webp')) {
-      const subKey = key.slice('/assets/sprites/npc/'.length, -'.webp'.length);
-      packed.n[subKey] = tuple;
-    } else if (key.startsWith('/assets/sprites/trainers/') && key.endsWith('.webp')) {
-      const subKey = key.slice('/assets/sprites/trainers/'.length, -'.webp'.length);
-      packed.t[subKey] = tuple;
-    }
-  }
-
-  // Pack any overrides for keys not present in pokemonFeetDatabase
-  if (overridesMap) {
-    for (const key of Object.keys(overridesMap).sort()) {
-      if (pokemonFeetDatabase[key]) continue;
-      const override = overridesMap[key];
-      if (!override) continue;
-      const shadowScale = override.shadowScale !== undefined ? override.shadowScale : undefined;
-      const tuple: PackedFeetTuple = (shadowScale !== undefined && shadowScale !== 1)
-        ? [override.feetY, override.feetX, override.isFlying ? 1 : 0, shadowScale]
-        : (override.isFlying ? [override.feetY, override.feetX, 1] : [override.feetY, override.feetX]);
-      if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
-        const subKey = key.slice('/assets/sprites/pokemon/'.length, -'.webp'.length);
-        packed.p[subKey] = tuple;
-      } else if (key.startsWith('/assets/sprites/npc/') && key.endsWith('.webp')) {
-        const subKey = key.slice('/assets/sprites/npc/'.length, -'.webp'.length);
-        packed.n[subKey] = tuple;
-      } else if (key.startsWith('/assets/sprites/trainers/') && key.endsWith('.webp')) {
-        const subKey = key.slice('/assets/sprites/trainers/'.length, -'.webp'.length);
-        packed.t[subKey] = tuple;
-      }
-    }
-  }
+  const overridesMap = resolveShadowOverridesSync(overrides);
+  backfillVariationIdleFeet(pokemonFeetDatabase);
+  packExistingFeetEntries(pokemonFeetDatabase, overridesMap, packed);
+  packRemainingOverrides(pokemonFeetDatabase, overridesMap, packed);
 }
 
 function resolveSpeciesCryFallback(
@@ -576,18 +587,10 @@ const PROGRESS_FEET_PACK_DATA_PCT = 65 as const;
 const PROGRESS_FEET_WRITE_FILES_PCT = 85 as const;
 const PROGRESS_FEET_COMPLETE_PCT = 100 as const;
 
-export async function regenerateFeetDatabase(
-  onProgress?: (progress: number, message: string) => void
-): Promise<PackedFeetData> {
-  onProgress?.(PROGRESS_FEET_INIT_PCT, 'Leyendo catálogos y base de datos estática...');
-  const jsonPath = safeResolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.json');
-  const databasePath = safeResolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.ts');
-  const overridesPath = safeResolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
-
-  const rawJson = await fs.readFile(jsonPath, 'utf8');
-  const existingPacked: PackedFeetData = JSON.parse(rawJson);
-
-  onProgress?.(PROGRESS_FEET_LOAD_OVERRIDES_PCT, 'Cargando overrides manuales de sombras...');
+async function loadShadowOverrides(overridesPath: string): Promise<{
+  overrides: Record<string, SpriteShadowOverride>;
+  globalShadowConfig?: GlobalShadowConfig;
+}> {
   let overrides: Record<string, SpriteShadowOverride> = {};
   let globalShadowConfig: GlobalShadowConfig | undefined;
   try {
@@ -604,8 +607,32 @@ export async function regenerateFeetDatabase(
   } catch { // catch-ok: no overrides file found, use defaults
     // No overrides
   }
+  return { overrides, globalShadowConfig };
+}
 
-  onProgress?.(PROGRESS_FEET_MAP_SPRITES_PCT, 'Mapeando entidades y coordenadas de sprites...');
+async function scanDirectoryForMissingSprites(
+  dirPath: string,
+  prefix: string,
+  flatDb: Record<string, { feetY: number; feetX: number }>
+): Promise<void> {
+  try {
+    const files = await fs.readdir(dirPath);
+    for (const f of files) {
+      if (f.endsWith('.webp')) {
+        const fullPath = `${prefix}${f}`;
+        if (!flatDb[fullPath]) {
+          flatDb[fullPath] = { feetY: 0.95, feetX: 0.5 };
+        }
+      }
+    }
+  } catch (err) {
+    console.error(`Error reading ${dirPath}:`, err);
+  }
+}
+
+async function populateFlatFeetDb(
+  existingPacked: PackedFeetData
+): Promise<Record<string, { feetY: number; feetX: number }>> {
   const flatDb: Record<string, { feetY: number; feetX: number }> = {};
   for (const [subKey, tuple] of Object.entries(existingPacked.p || {})) {
     flatDb[`/assets/sprites/pokemon/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
@@ -617,35 +644,28 @@ export async function regenerateFeetDatabase(
     flatDb[`/assets/sprites/trainers/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
   }
 
-  const trainersDir = safeResolve(process.cwd(), 'public/assets/sprites/trainers');
-  try {
-    const trainerFiles = await fs.readdir(trainersDir);
-    for (const f of trainerFiles) {
-      if (f.endsWith('.webp')) {
-        const fullPath = `/assets/sprites/trainers/${f}`;
-        if (!flatDb[fullPath]) {
-          flatDb[fullPath] = { feetY: 0.95, feetX: 0.5 };
-        }
-      }
-    }
-  } catch (err) {
-    console.error('Error reading trainersDir:', err);
-  }
+  await scanDirectoryForMissingSprites(safeResolve(process.cwd(), 'public/assets/sprites/trainers'), '/assets/sprites/trainers/', flatDb);
+  await scanDirectoryForMissingSprites(safeResolve(process.cwd(), 'public/assets/sprites/npc'), '/assets/sprites/npc/', flatDb);
 
-  const npcDir = safeResolve(process.cwd(), 'public/assets/sprites/npc');
-  try {
-    const npcFiles = await fs.readdir(npcDir);
-    for (const f of npcFiles) {
-      if (f.endsWith('.webp')) {
-        const fullPath = `/assets/sprites/npc/${f}`;
-        if (!flatDb[fullPath]) {
-          flatDb[fullPath] = { feetY: 0.95, feetX: 0.5 };
-        }
-      }
-    }
-  } catch (err) {
-    console.error('Error reading npcDir:', err);
-  }
+  return flatDb;
+}
+
+export async function regenerateFeetDatabase(
+  onProgress?: (progress: number, message: string) => void
+): Promise<PackedFeetData> {
+  onProgress?.(PROGRESS_FEET_INIT_PCT, 'Leyendo catálogos y base de datos estática...');
+  const jsonPath = safeResolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.json');
+  const databasePath = safeResolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.ts');
+  const overridesPath = safeResolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
+
+  const rawJson = await fs.readFile(jsonPath, 'utf8');
+  const existingPacked: PackedFeetData = JSON.parse(rawJson);
+
+  onProgress?.(PROGRESS_FEET_LOAD_OVERRIDES_PCT, 'Cargando overrides manuales de sombras...');
+  const { overrides, globalShadowConfig } = await loadShadowOverrides(overridesPath);
+
+  onProgress?.(PROGRESS_FEET_MAP_SPRITES_PCT, 'Mapeando entidades y coordenadas de sprites...');
+  const flatDb = await populateFlatFeetDb(existingPacked);
 
   const newPacked: PackedFeetData = {
     p: {},
@@ -671,33 +691,47 @@ export async function regenerateFeetDatabase(
   return newPacked;
 }
 
+function matchArchetypeFromKeywords(
+  normalized: string,
+  archetypeKeywords: Record<string, string[]>
+): string | undefined {
+  for (const [archetype, keywords] of Object.entries(archetypeKeywords)) {
+    for (const keyword of keywords) {
+      if (normalized.includes(keyword)) {
+        if (keyword === 'bea' && normalized.includes('beauty')) continue;
+        return archetype;
+      }
+    }
+  }
+  return undefined;
+}
+
+const NPC_FALLBACK_RULES = [
+  { names: ['acerola', 'allister', 'fantina'], target: 'medium' },
+  { names: ['adaman', 'irida', 'arezu', 'mai'], target: 'default' },
+  { names: ['lance', 'drake', 'dragontamer'], target: 'domador' },
+  { names: ['koga', 'janine', 'ninja'], target: 'luchador' }
+] as const;
+
+function resolveFallbackArchetype(normalized: string): string {
+  for (const rule of NPC_FALLBACK_RULES) {
+    if (rule.names.some(name => normalized.includes(name))) {
+      return rule.target;
+    }
+  }
+  return 'default';
+}
+
 function classifyNpcSprite(
   baseName: string,
   normalized: string,
   archetypeKeywords: Record<string, string[]>,
   catalogLists: Record<string, string[]>
 ): void {
-  for (const archetype of Object.keys(archetypeKeywords)) {
-    const keywords = archetypeKeywords[archetype] || [];
-    for (const keyword of keywords) {
-      if (normalized.includes(keyword)) {
-        if (keyword === 'bea' && normalized.includes('beauty')) continue;
-        if (catalogLists[archetype]) {
-          catalogLists[archetype].push(baseName);
-          return;
-        }
-      }
-    }
-  }
-
-  if (['acerola', 'allister', 'fantina'].some(n => normalized.includes(n)) && catalogLists.medium) {
-    catalogLists.medium.push(baseName);
-  } else if (['adaman', 'irida', 'arezu', 'mai'].some(n => normalized.includes(n)) && catalogLists.default) {
-    catalogLists.default.push(baseName);
-  } else if (['lance', 'drake', 'dragontamer'].some(n => normalized.includes(n)) && catalogLists.domador) {
-    catalogLists.domador.push(baseName);
-  } else if (['koga', 'janine', 'ninja'].some(n => normalized.includes(n)) && catalogLists.luchador) {
-    catalogLists.luchador.push(baseName);
+  const matched = matchArchetypeFromKeywords(normalized, archetypeKeywords);
+  const target = matched ?? resolveFallbackArchetype(normalized);
+  if (catalogLists[target]) {
+    catalogLists[target].push(baseName);
   } else if (catalogLists.default) {
     catalogLists.default.push(baseName);
   }

@@ -75,5 +75,18 @@ describe('ItemAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['SHOP_ITEMS scanned']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when invalid items exist', () => {
+      const auditor = new ItemAuditor();
+      auditor.addViolation({
+        ruleId: 'item-missing-field',
+        severity: 'error',
+        file: 'src/data/inventory/items.json',
+        line: 1,
+        message: 'Missing required item field',
+        context: 'potion'
+      });
+      expect(auditor.getErrorsByRule().get('item-missing-field')).toBe(1);
+    });
   });
 });

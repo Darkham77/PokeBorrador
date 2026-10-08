@@ -14,6 +14,12 @@ Core Frontend & Asset Pipeline Engineers.
 - **Shadow Editor Interaction Contract**: `DevShadowEditorView` MUST provide dual control mechanisms: precise sliders and numeric inputs (`feetX`, `feetY` [0..1]) alongside direct interactive canvas drag-and-drop on the sprite box, a flying mode toggle (`isFlying`), and an explicit reset button restoring defaults.
 - **Standalone Sandbox & Dev Route Decoupling Mandate (`isStandaloneDevPage`)**: Developer views (such as `/dev/shadow-editor`) are standalone full-screen sandboxes that MUST operate without standard player session prerequisites (such as having an active Pokémon party in Pinia or listening to production game bus loops). Main app layouts and navigation bars MUST detect `isStandaloneDevPage` to suppress player UI chrome (top bars, joystick, side menus) and prevent runtime crashes when loaded in isolated developer environments.
 
+## Key Files
+
+- `DevShadowEditorView.vue`: Module implementation.
+- `devShadowMathHelper.ts`: Module implementation.
+- `useShadowEditor.ts`: Module implementation.
+
 ## Work Guidance
 
 - Use high-contrast retro-modern styling adhering to global design tokens.
@@ -24,13 +30,9 @@ Core Frontend & Asset Pipeline Engineers.
 - Run `npm run lint` and `npm run audit`.
 - Verify DEV route protection by asserting that access in production builds redirects or does not exist.
 
-## Key Files
-
-- `DevShadowEditorView.vue`: Module implementation.
-- `devShadowMathHelper.ts`: Module implementation.
-- `useShadowEditor.ts`: Module implementation.
-
 ## Child DOX Index
 
 - [components/AGENTS.md](components/AGENTS.md) - Reusable developer calibration and diagnostic components.
 - [utils/AGENTS.md](utils/AGENTS.md) - Developer utility helpers for clipboard and calibration synchronization.
+- [`./components/AGENTS.md`](./components/AGENTS.md): Subsystem index for ./components.
+- [`./utils/AGENTS.md`](./utils/AGENTS.md): Subsystem index for ./utils.

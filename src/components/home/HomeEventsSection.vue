@@ -113,7 +113,10 @@ const currentPage = computed(() => {
   return Math.floor(carouselIndex.value / visibleSlots.value)
 })
 
-const animateSlideTransition = (direction: 'next' | 'prev') => {
+const _CAROUSEL_SLIDE_DIRECTIONS = ['next', 'prev'] as const
+type CarouselSlideDirection = (typeof _CAROUSEL_SLIDE_DIRECTIONS)[number]
+
+const animateSlideTransition = (direction: CarouselSlideDirection) => {
   if (!eventsRowRef.value) return
   const offset = direction === 'next' ? SLIDE_OFFSET_PX : -SLIDE_OFFSET_PX
   

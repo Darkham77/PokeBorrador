@@ -36,17 +36,10 @@ Frontend Developers / Systems Engineers.
 - **Tooltip Line Decomposition (`PVTooltip.vue`, `PVTooltipDescriptionLine.vue`)**: Encapsulates single-line description formatting, quote styles, emoji bullets, boost/debuff indicators, and divider lines into `PVTooltipDescriptionLine.vue`, reducing parent tooltip template complexity below thresholds.
 - **Tooltip Viewport Overflow & Dynamic Ellipsis Truncation (`PVTooltip.vue`)**: Large tooltips rendering extensive lists or descriptions (such as inventory breakdowns, moves, or logs) MUST NEVER exceed the visible viewport bounds or slice text lines in half horizontally. The component dynamically calculates available vertical space based on trigger position, safe padding (`PADDING_PX = 15`), gap (`GAP_PX = 12`), wrapper chrome (`TOOLTIP_CHROME_VERTICAL_PX = 24`), and UI zoom (`--app-zoom`). If content overflows, `PVTooltip` measures line heights in the DOM, renders exclusively the complete lines that fit (`displayedLines`), and appends a `.pv-tooltip-ellipsis` indicator (`...`) at the bottom. Measurement and line reduction occur during the initial transition frame before GSAP opacity fade-in to prevent visual flicker. Window resize events automatically dismiss open tooltips to prevent orphaned overlays.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-
-## Verification
-
-- Run standard validation scripts.
-
 ## Key Files
 
 - `BaseRefreshButton.vue`: Module implementation.
+- `baseRefreshButtonTypes.ts`: Type definitions and interfaces for BaseRefreshButton and related components.
 - `EggSprite.vue`: Module implementation.
 - `ErrorOverlay.vue`: Module implementation.
 - `ModalHierarchyProvider.vue`: Module implementation.
@@ -65,7 +58,32 @@ Frontend Developers / Systems Engineers.
 - `atmosphereSnowHelper.ts`: Module implementation.
 - `baseModalHelper.ts`: Module implementation.
 - `useAtmosphereRainAnim.ts`: Module implementation.
+- [`AtmosphereLayer.styles.scss`](./AtmosphereLayer.styles.scss): Module implementation.
+- [`AtmosphereLayer.vue`](./AtmosphereLayer.vue): Module implementation.
+- [`AtmosphereLeavesOverlay.vue`](./AtmosphereLeavesOverlay.vue): Module implementation.
+- [`BaseModal.vue`](./BaseModal.vue): Module implementation.
+- [`BaseModalFooter.vue`](./BaseModalFooter.vue): Module implementation.
+- [`BaseModalHeader.vue`](./BaseModalHeader.vue): Module implementation.
+- [`BaseModalOverlay.vue`](./BaseModalOverlay.vue): Module implementation.
+- [`PVSpriteFX.vue`](./PVSpriteFX.vue): Module implementation.
+- [`PVStatusFX.vue`](./PVStatusFX.vue): Module implementation.
+- [`PVStatusOverlayLayer.vue`](./PVStatusOverlayLayer.vue): Module implementation.
+- [`PVTooltip.vue`](./PVTooltip.vue): Module implementation.
+- [`PVTooltipDescriptionLine.vue`](./PVTooltipDescriptionLine.vue): Module implementation.
+- [`spritePersistentFXHelpers.ts`](./spritePersistentFXHelpers.ts): Module implementation.
+- [`statusParticleHelpers.ts`](./statusParticleHelpers.ts): Module implementation.
+- [`useAtmosphereLeafAnim.ts`](./useAtmosphereLeafAnim.ts): Module implementation.
+- [`useAtmosphereSandstormAnim.ts`](./useAtmosphereSandstormAnim.ts): Module implementation.
+- [`useAtmosphereSnowAnim.ts`](./useAtmosphereSnowAnim.ts): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+
+## Verification
+
+- Run standard validation scripts.
 
 ## Child DOX Index
 
-- *This domain module does not contain nested sub-directories with independent AGENTS.md files.*
+- *This directory contains specialized domain logic and files with no subdirectories.*

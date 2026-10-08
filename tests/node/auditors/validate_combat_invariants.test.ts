@@ -49,7 +49,8 @@ describe('CombatInvariantsAuditor', () => {
       const code = `const mon = { status: null };`;
 
       scan(auditor, 'src/logic/battle/testMon.ts', code);
-      expect(auditor.getCountsByRule().get('showdown-healthy-status-null-prohibition')!).toBeGreaterThan(0);
+      const errors = auditor.getErrorsByRule().get('showdown-healthy-status-null-prohibition') ?? 0;
+      expect(errors).toBeGreaterThan(0);
     });
 
     it('detects battle-multi-seat-hardcoding violation', () => {

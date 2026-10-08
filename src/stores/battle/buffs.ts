@@ -4,7 +4,8 @@ import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game.ts'
 import { useEventStore } from '@/stores/events.ts'
 import { isItemId, BUFF_FIELDS } from '@/data/inventory/items'
-import type { ToolQualityTier, GameState } from '@/types/system/game'
+import type { GatheringToolTier } from '@/types/pokemon/encounters'
+import type { GameState } from '@/types/system/game'
 import { getServerTime, getServerInstant, getGMT3Date } from '@/logic/utils/timeUtils'
 import {
   buildActiveEventBuffs,
@@ -109,7 +110,7 @@ function applyCumulativeBuff(s: GameState, buffName: string, seconds: number): b
 }
 
 function applyToolBuff(s: GameState, buffName: string, seconds: number, extraData: string | null): boolean {
-  const tier = (extraData as ToolQualityTier | null) || 'standard';
+  const tier = (extraData as GatheringToolTier | null) || 'standard';
   if (buffName === 'fishing-rod') {
     s.fishingRodSecs = seconds;
     s.fishingRodType = tier;

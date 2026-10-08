@@ -16,21 +16,6 @@ Frontend Developers / Systems Engineers.
 - **Asynchronous Leaderboard & Search Challenge Contract**: When challenging any player from `SocialRankings.vue` or `SocialSearchTab.vue` who is currently offline, the client does not block the interaction; it initializes an asynchronous battle against the opponent's dedicated PvP team (3v3 or 6v6 auto-filled from their save) powered by Showdown AI, recording results to `public.passive_battle_reports`.
 - **Interactive Battle Code Chat Badge Contract**: Chat messages in `GlobalChat.vue` and `DirectChatWindow.vue` containing a canonical Battle Code pattern (`\bBTL-[A-Z0-9]{4}-[A-Z0-9]{3,4}\b`) automatically render as an interactive retro card displaying combatant names, battle outcome, and an inline [VER REPETICIÓN] button that triggers the tactical replay viewer without navigating away from the active scene.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-- Coordinate interactive notifications with `ToastNotification.vue` and GSAP timelines.
-- `DirectChatMessageRow.vue`: Child message row component in `DirectChatWindow.vue` encapsulating sender avatar, level, cosmetics, styled nickname, formatted timestamp, and optional `ChatBattleCodeBadge`.
-- `SocialRankingsLeaderboardTab.vue`: Subcomponent of `SocialRankings.vue` encapsulating the global ELO leaderboard list.
-- `SocialRankingsLeaderboardRow.vue`: Atomic row component rendering an individual player rank card, badges, and challenge action.
-- `SocialTradesSubNav.vue`: Atomic sub-navigation bar for trade categories (received, sent, claims) with notification badges and hover effects in `SocialTradesTab.vue`.
-- `SocialSearchResultActions.vue`: Encapsulates action buttons (send/accept request) and status badges (pending, friend) for search result items in `SocialSearchTab.vue`.
-
-## Verification
-
-- Run standard validation scripts (`npm run lint`, `npm run audit`).
-- Verify social invite roundtrips via `tests/integration/pvp/pvpInviteLifecycle.spec.ts`.
-
 ## Key Files
 
 - `ChatBattleCodeBadge.vue`: Module implementation.
@@ -51,7 +36,35 @@ Frontend Developers / Systems Engineers.
 - `socialTheaterHelper.ts`: Module implementation.
 - `socialTradesHelper.ts`: Module implementation.
 - `tradeSidePanelHelper.ts`: Module implementation.
+- [`DirectChatMessageRow.vue`](./DirectChatMessageRow.vue): Module implementation.
+- [`DirectChatWindow.vue`](./DirectChatWindow.vue): Module implementation.
+- [`GlobalChat.vue`](./GlobalChat.vue): Module implementation.
+- [`PvPChallengeToast.vue`](./PvPChallengeToast.vue): Module implementation.
+- [`SocialFriendsTab.vue`](./SocialFriendsTab.vue): Module implementation.
+- [`SocialRankings.vue`](./SocialRankings.vue): Module implementation.
+- [`SocialRankingsLeaderboardRow.vue`](./SocialRankingsLeaderboardRow.vue): Module implementation.
+- [`SocialRankingsLeaderboardTab.vue`](./SocialRankingsLeaderboardTab.vue): Module implementation.
+- [`SocialRankingsPodium.vue`](./SocialRankingsPodium.vue): Module implementation.
+- [`SocialSearchResultActions.vue`](./SocialSearchResultActions.vue): Module implementation.
+- [`SocialSearchTab.vue`](./SocialSearchTab.vue): Module implementation.
+- [`SocialTradesSubNav.vue`](./SocialTradesSubNav.vue): Module implementation.
+- [`SocialTradesTab.vue`](./SocialTradesTab.vue): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+- Coordinate interactive notifications with `ToastNotification.vue` and GSAP timelines.
+- `DirectChatMessageRow.vue`: Child message row component in `DirectChatWindow.vue` encapsulating sender avatar, level, cosmetics, styled nickname, formatted timestamp, and optional `ChatBattleCodeBadge`.
+- `SocialRankingsLeaderboardTab.vue`: Subcomponent of `SocialRankings.vue` encapsulating the global ELO leaderboard list.
+- `SocialRankingsLeaderboardRow.vue`: Atomic row component rendering an individual player rank card, badges, and challenge action.
+- `SocialTradesSubNav.vue`: Atomic sub-navigation bar for trade categories (received, sent, claims) with notification badges and hover effects in `SocialTradesTab.vue`.
+- `SocialSearchResultActions.vue`: Encapsulates action buttons (send/accept request) and status badges (pending, friend) for search result items in `SocialSearchTab.vue`.
+
+## Verification
+
+- Run standard validation scripts (`npm run lint`, `npm run audit`).
+- Verify social invite roundtrips via `tests/integration/pvp/pvpInviteLifecycle.spec.ts`.
 
 ## Child DOX Index
 
-- *This domain module does not contain nested sub-directories with independent AGENTS.md files.*
+- *This directory contains specialized domain logic and files with no subdirectories.*

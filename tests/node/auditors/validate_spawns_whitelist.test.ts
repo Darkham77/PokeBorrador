@@ -66,5 +66,18 @@ describe('SpawnsWhitelistAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['Maps Scanned']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when unwhitelisted spawns exist', () => {
+      const auditor = new SpawnsWhitelistAuditor();
+      auditor.addViolation({
+        ruleId: 'spawns-species-whitelist',
+        severity: 'error',
+        file: 'src/data/maps/route1.json',
+        line: 1,
+        message: 'Pokemon not in whitelist found in spawn pool',
+        context: 'mewtwo'
+      });
+      expect(auditor.getErrorsByRule().get('spawns-species-whitelist')).toBe(1);
+    });
   });
 });

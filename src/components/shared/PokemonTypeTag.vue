@@ -2,10 +2,13 @@
 import { translateType, type PokemonType } from '@/data/battle/types'
 import type { ComponentPillSize } from '@/types/system/game'
 
+const _TYPE_TAG_ELEMENTS = ['span', 'button'] as const
+type TypeTagElement = (typeof _TYPE_TAG_ELEMENTS)[number]
+
 interface Props {
   type: PokemonType
   size?: ComponentPillSize
-  tag?: 'span' | 'button'
+  tag?: TypeTagElement
   active?: boolean
 }
 

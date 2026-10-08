@@ -4,10 +4,13 @@ import { logger } from '@/logic/utils/logger'
 import { gameBus } from '@/logic/events/gameBus'
 import { useUpdateStore, type UpdateExecutionOptions } from '@/stores/update'
 
+export const PWA_INSTALL_OUTCOMES = ['accepted', 'dismissed'] as const;
+export type PwaInstallOutcome = (typeof PWA_INSTALL_OUTCOMES)[number];
+
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
+    outcome: PwaInstallOutcome;
     platform: string;
   }>;
   prompt(): Promise<void>;

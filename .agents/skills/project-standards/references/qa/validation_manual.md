@@ -41,7 +41,7 @@ Core logic modules and critical system components MUST have dedicated unit tests
 
 ## 🛠️ Standards Audit (Unified Engine)
 
-The project uses a unified audit coordinator located in `scripts/maintenance/audit_full.ts`:
+The project uses a unified audit coordinator governed by `@francogp/auditor`:
 
 - **Proportional Verification Protocol**:
   - **Documentation & Skills (`.md`)**: Run ONLY `npm run audit:md` (takes ~1.8s). Running full project audits for documentation or skill edits is strictly forbidden.

@@ -24,7 +24,8 @@ import {
 import { FRIENDSHIP_BOUNDS } from '../../../src/types/pokemon/friendship.ts';
 import { DEFAULT_FRIENDSHIP_VALUE } from '../../../src/logic/constants/gameplay.ts';
 import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
-import { serializeState, deserializePokemonTeam } from '../../../src/logic/auth/saveSerializer.ts';
+import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
+import { deserializePokemonTeam } from '../../../src/logic/auth/savePokemonSerializer.ts';
 import { validateAndSanitize } from '../../../src/logic/auth/saveSanitizer.ts';
 import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
 import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';

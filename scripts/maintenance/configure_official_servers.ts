@@ -24,6 +24,66 @@ const MASTER_ENV_FILE_PATH = path.resolve(process.cwd(), '.env');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/data/system/servers.local.json');
 const CONFIGURATOR_TARGET_NODE_VERSION_LABEL = '26';
 
+function buildOfficialServerEntry(
+  profile: string,
+  conf: Record<string, string>,
+  hasExplicitDefault: boolean
+): OfficialServer | null {
+  const id = conf.ID || profile;
+  const name = conf.NAME || profile;
+  const region = conf.REGION || 'Desarrollo';
+
+  const url = conf.SUPABASE_PUBLIC_URL || conf.SUPABASE_URL || conf.SITE_URL || conf.API_EXTERNAL_URL || conf.URL || '';
+  const anonKey = conf.ANON_KEY || conf.SUPABASE_ANON_KEY || conf.KEY || '';
+
+  if (!url || !anonKey) {
+    console.warn(styleText('yellow', `⚠️ Perfil "${profile}" omitido: falta URL o anonKey.`));
+    return null;
+  }
+
+  const isDefaultVal = hasExplicitDefault
+    ? conf.IS_DEFAULT === 'true'
+    : (profile === 'cloud' || id === 'official_prod');
+
+  return {
+    id,
+    name,
+    region,
+    url,
+    anonKey,
+    ...(isDefaultVal ? { isDefault: true } : {})
+  };
+}
+
+function ensureDefaultServer(servers: OfficialServer[]): void {
+  const hasDefault = servers.some(s => s.isDefault);
+  if (!hasDefault) {
+    const prodServer = servers.find(s => s.id === 'official_prod');
+    if (prodServer) {
+      prodServer.isDefault = true;
+    } else if (servers[0]) {
+      servers[0].isDefault = true;
+    }
+  }
+}
+
+async function syncPublicVersionJson(): Promise<void> {
+  try {
+    const pkgPath = path.resolve(process.cwd(), 'package.json');
+    const pkgRaw = await fsPromises.readFile(pkgPath, 'utf-8');
+    const pkg = JSON.parse(pkgRaw) as { version?: string };
+    if (pkg.version) {
+      const normalizedVersion = pkg.version.startsWith('v') ? pkg.version : `v${pkg.version}`;
+      const publicVerPath = path.resolve(process.cwd(), 'public/version.json');
+      await fsPromises.mkdir(path.dirname(publicVerPath), { recursive: true });
+      await fsPromises.writeFile(publicVerPath, JSON.stringify({ version: normalizedVersion }, null, 2) + '\n', 'utf-8');
+      console.log(styleText('cyan', `📦 [version] Versión sincronizada automáticamente en public/version.json: ${normalizedVersion}\n`));
+    }
+  } catch (err) {
+    console.warn(styleText('yellow', `⚠️ No se pudo sincronizar public/version.json: ${(err as Error).message}\n`));
+  }
+}
+
 export async function configureOfficialServers(): Promise<void> {
   console.log(styleText('bold', `\n--- 🌐 OFFICIAL SERVERS CONFIGURATOR (Node.js ${CONFIGURATOR_TARGET_NODE_VERSION_LABEL}+) ---`));
 
@@ -53,30 +113,10 @@ export async function configureOfficialServers(): Promise<void> {
 
   for (const profile of profiles) {
     const conf = serverConfigs[profile] || {};
-    const id = conf.ID || profile;
-    const name = conf.NAME || profile;
-    const region = conf.REGION || 'Desarrollo';
-    
-    const url = conf.SUPABASE_PUBLIC_URL || conf.SUPABASE_URL || conf.SITE_URL || conf.API_EXTERNAL_URL || conf.URL || '';
-    const anonKey = conf.ANON_KEY || conf.SUPABASE_ANON_KEY || conf.KEY || '';
-
-    if (!url || !anonKey) {
-      console.warn(styleText('yellow', `⚠️ Perfil "${profile}" omitido: falta URL o anonKey.`));
-      continue;
+    const entry = buildOfficialServerEntry(profile, conf, hasExplicitDefault);
+    if (entry) {
+      serverMap.set(entry.id, entry);
     }
-
-    const isDefaultVal = hasExplicitDefault
-      ? conf.IS_DEFAULT === 'true'
-      : (profile === 'cloud' || id === 'official_prod');
-
-    serverMap.set(id, {
-      id,
-      name,
-      region,
-      url,
-      anonKey,
-      ...(isDefaultVal ? { isDefault: true } : {})
-    });
   }
 
   const officialServers = Array.from(serverMap.values());
@@ -87,16 +127,7 @@ export async function configureOfficialServers(): Promise<void> {
     );
   }
 
-  // Garantizar que siempre haya al menos un servidor marcado como default
-  const hasDefault = officialServers.some(s => s.isDefault);
-  if (!hasDefault) {
-    const prodServer = officialServers.find(s => s.id === 'official_prod');
-    if (prodServer) {
-      prodServer.isDefault = true;
-    } else if (officialServers[0]) {
-      officialServers[0].isDefault = true;
-    }
-  }
+  ensureDefaultServer(officialServers);
 
   const outputDir = path.dirname(OUTPUT_FILE);
   await fsPromises.mkdir(outputDir, { recursive: true });
@@ -104,21 +135,7 @@ export async function configureOfficialServers(): Promise<void> {
   await fsPromises.writeFile(OUTPUT_FILE, JSON.stringify(officialServers, null, 2) + '\n', 'utf-8');
   console.log(styleText('green', `✨ src/data/system/servers.local.json configurado exitosamente con ${officialServers.length} servidores.`));
 
-  // Sincronización automática de public/version.json con package.json (SSoT)
-  try {
-    const pkgPath = path.resolve(process.cwd(), 'package.json');
-    const pkgRaw = await fsPromises.readFile(pkgPath, 'utf-8');
-    const pkg = JSON.parse(pkgRaw) as { version?: string };
-    if (pkg.version) {
-      const normalizedVersion = pkg.version.startsWith('v') ? pkg.version : `v${pkg.version}`;
-      const publicVerPath = path.resolve(process.cwd(), 'public/version.json');
-      await fsPromises.mkdir(path.dirname(publicVerPath), { recursive: true });
-      await fsPromises.writeFile(publicVerPath, JSON.stringify({ version: normalizedVersion }, null, 2) + '\n', 'utf-8');
-      console.log(styleText('cyan', `📦 [version] Versión sincronizada automáticamente en public/version.json: ${normalizedVersion}\n`));
-    }
-  } catch (err) {
-    console.warn(styleText('yellow', `⚠️ No se pudo sincronizar public/version.json: ${(err as Error).message}\n`));
-  }
+  await syncPublicVersionJson();
 }
 
 // Permitir ejecución directa

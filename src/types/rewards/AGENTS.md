@@ -11,6 +11,10 @@ State & Type Architects / Frontend Developers.
 - **Canonical `as const` Unions**: Reward source categories must be derived from `UNIFIED_REWARD_SOURCES` via `(typeof UNIFIED_REWARD_SOURCES)[number]`.
 - **Zero-Any Policy**: Reward items must be strictly typed via `UnifiedRewardItem` and `UnifiedRewardsSummary`.
 
+## Key Files
+
+- `rewards.ts`: Module implementation.
+
 ## Work Guidance
 
 - Ensure all dynamic open-text fields are documented with `// domain-ok: Open dynamic text or non-domain string payload`.
@@ -20,10 +24,6 @@ State & Type Architects / Frontend Developers.
 
 - Run `npm run audit suites=validate_domain_types` and `npm run audit suites=validate_type_check` to verify type compliance.
 
-## Key Files
-
-- `rewards.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

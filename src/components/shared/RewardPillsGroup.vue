@@ -16,11 +16,13 @@ import {
   type NormalizedReward
 } from './rewardPillsNormalizers'
 
+import type { ComponentPillSize } from '@/types/system/game'
+
 interface Props {
   pills?: readonly UnifiedRewardPill[] | null
   prize?: RawPrizeData | Record<string, unknown> | null
   rewards?: Record<string, number> | null
-  size?: 'sm' | 'md'
+  size?: ComponentPillSize
 }
 
 const props = withDefaults(defineProps<Props>(), {

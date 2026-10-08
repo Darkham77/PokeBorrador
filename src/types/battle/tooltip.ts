@@ -10,6 +10,12 @@ export type TooltipStageStatName =
   | 'Evasión'
   | 'Todos los Stats';
 
+export const STAT_MODIFIER_DIRECTIONS = ['up', 'down'] as const;
+export type StatModifierDirection = (typeof STAT_MODIFIER_DIRECTIONS)[number];
+
+export const STAT_MODIFIER_STATUS_CLASSES = ['boosted', 'penalized'] as const;
+export type StatModifierStatusClass = (typeof STAT_MODIFIER_STATUS_CLASSES)[number];
+
 export interface ParsedStatusEffectInfo {
   label: string; // domain-ok: Open dynamic text or non-domain string payload
   chancePct?: number | null;
@@ -18,7 +24,7 @@ export interface ParsedStatusEffectInfo {
   isCondition?: boolean;
   isSelf?: boolean;
   targetName?: string; // domain-ok: Open dynamic text or non-domain string payload
-  direction?: 'up' | 'down';
+  direction?: StatModifierDirection;
   details?: string; // domain-ok: Open dynamic text or non-domain string payload
   effect?: string; // domain-ok: localized display text
   statName?: TooltipStageStatName;

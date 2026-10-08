@@ -10,6 +10,10 @@ Frontend Developers / Systems Engineers.
 
 - Follow standard repository modularity guidelines.
 
+## Key Files
+
+- `minigameMath.ts`: Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -18,10 +22,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `minigameMath.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

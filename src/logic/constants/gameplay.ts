@@ -11,6 +11,11 @@ export const MINIMUM_POKEMON_LEVEL = 1;
 /** Maximum legal level for Pokémon in the engine. */
 export const MAXIMUM_POKEMON_LEVEL = 100;
 
+/** Generation number constants for generation-dependent battle mechanics and weather rules. */
+export const SINNOH_GENERATION_NUM = 4;
+export const KALOS_GENERATION_NUM = 6;
+export const PALDEA_GENERATION_NUM = 9;
+
 /** Probability chance of a normal NPC trainer rewarding a baby egg upon victory (2%). */
 export const NPC_NORMAL_BABY_EGG_DROP_CHANCE = 0.02;
 
@@ -128,6 +133,9 @@ export const TECHNICIAN_POWER_CAP = 60;
 
 /** Sand Force ability power multiplier (1.3x). */
 export const SAND_FORCE_MULTIPLIER = 1.3;
+
+/** Held item type-boosting item damage multiplier (1.2x e.g. Charcoal, Mystic Water). */
+export const HELD_ITEM_TYPE_BOOST_MULTIPLIER = 1.2;
 
 /** Default base critical hit rate (6.25% or 1/16). */
 export const DEFAULT_CRIT_RATE = 0.0625;

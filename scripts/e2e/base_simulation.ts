@@ -314,6 +314,10 @@ export abstract class BaseE2ESimulation {
    * Recarga la página y espera a que los stores vuelvan a estar sincronizados y listos
    */
   public async reloadAndSync(timeoutMs?: number): Promise<void> {
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../src/stores/game.ts');
+      await useGameStore().saveGame();
+    }).catch(() => void 0);
     await this.page.reload();
     await waitForStoreReady(this.page, timeoutMs);
   }

@@ -157,15 +157,24 @@ class AntiCheatRefreshSimWrapper extends BaseBattleSimulation {
     } catch (err: unknown) {
       const debugInfo = await this.page.evaluate(() => {
         const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        const active = store?.state || store?.activeBattle;
         return {
           fsmState: store?.currentFsmState,
           fsmSubState: store?.currentSubState,
           isProcessing: store?.isProcessing,
-          over: store?.state?.over,
-          stateNull: !store?.state,
+          over: active?.over,
+          stateNull: !active,
+          winnerResult: active?.winnerResult,
+          isTrainer: active?.isTrainer,
+          isRival: active?.isRival,
+          wasSearching: active?.wasSearching,
+          enemy: active?.enemy ? { name: active.enemy.name, hp: active.enemy.hp, fainted: active.enemy.fainted } : null,
+          enemyTeam: active?.enemyTeam?.map(p => ({ name: p.name, hp: p.hp, fainted: p.fainted })),
+          recentLogs: store?.battleLogs?.slice(-10)?.map(l => l.text),
+          recentShowdownLogs: active?.rawShowdownLogs?.slice(-15),
         };
       });
-      console.error('[E2E-DEBUG] playBattle waitForFunction failed. State:', JSON.stringify(debugInfo));
+      console.error('[E2E-DEBUG] playBattle waitForFunction failed. State:', JSON.stringify(debugInfo, null, 2));
       throw err;
     }
   }

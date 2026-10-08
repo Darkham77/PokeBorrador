@@ -17,6 +17,13 @@ Frontend Developers / Systems Engineers.
 - **Showdown Healthy Status Representation**: An unafflicted Pokémon's status is represented strictly as an empty string `''`, never `null`. Target validators and item math helpers MUST evaluate status presence using `Boolean(pokemon.status)`, strictly avoiding `status !== null` checks which incorrectly evaluate healthy Pokémon as afflicted.
 - **Held Items Pre-Validation in `isValidTarget`**: Party Pokémon are always valid targets for equippable held items (`cat === 'combat_held'` or `breeding_held`). `isValidTarget` must reflect this to allow smooth equipment flows.
 
+## Key Files
+
+- `fossilEngine.ts`: Module implementation.
+- `itemMath.ts`: Module implementation.
+- [`itemEffectHandlers.ts`](./itemEffectHandlers.ts): Module implementation.
+- [`itemEffects.ts`](./itemEffects.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -25,11 +32,7 @@ Frontend Developers / Systems Engineers.
 
 - Run standard test suites (`npm run test:node` or `npm run test`).
 
-## Key Files
-
-- `fossilEngine.ts`: Module implementation.
-- `itemMath.ts`: Module implementation.
-
 ## Child DOX Index
 
 - [helpers](helpers/AGENTS.md) — Pure stateless helpers for item effects and TM learning compatibility.
+- [`./helpers/AGENTS.md`](./helpers/AGENTS.md): Subsystem index for ./helpers.

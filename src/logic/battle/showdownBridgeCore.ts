@@ -343,10 +343,13 @@ function handlePlayerToken(ctx: SBCtx): boolean {
   return true;
 }
 
+export const WINNER_LOG_SOURCES = ['player', 'enemy_trainer'] as const;
+export type WinnerLogSource = (typeof WINNER_LOG_SOURCES)[number];
+
 function handleWinTieToken(ctx: SBCtx): boolean {
   const { store, type, parts } = ctx;
   const winnerName = parts[2] || 'Entrenador';
-  let source: 'player' | 'enemy_trainer' = 'enemy_trainer';
+  let source: WinnerLogSource = 'enemy_trainer';
   let winnerResult: BattleWinnerResult = 'enemy';
   if (type === 'tie') {
     winnerResult = 'tie';

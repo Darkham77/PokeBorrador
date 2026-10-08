@@ -192,3 +192,34 @@ export function mapInventoryToItems(
 
   return items
 }
+
+const VALUABLE_ITEM_IDS = ['nugget', 'pearl', 'bigpearl', 'stardust', 'starpiece'] as const satisfies readonly ItemId[]
+type ValuableItemId = (typeof VALUABLE_ITEM_IDS)[number]
+const VALUABLE_ITEM_IDS_SET: ReadonlySet<string> = new Set(VALUABLE_ITEM_IDS)
+
+function isValuableItemId(value: ItemId): value is ValuableItemId {
+  return VALUABLE_ITEM_IDS_SET.has(value)
+}
+
+export function isItemUsableOutsideCombat(item: Pick<Item, 'id' | 'cat' | 'kind'> | null | undefined): boolean {
+  if (!item) return false
+  const cat = item.cat
+  const id = item.id
+  const kind = item.kind
+
+  if (isValuableItemId(id)) return false
+  if (cat === 'pokeballs') return false
+  if (id && id.startsWith('tm')) return true
+  if (kind === 'usable') return true
+
+  if (
+    cat === 'potions' ||
+    cat === 'stones' ||
+    isEquippableHeldItem(item) ||
+    cat === 'tools'
+  ) {
+    return true
+  }
+
+  return false
+}

@@ -9,6 +9,7 @@ import type { RankedSeasonMedal, BattleReplayRecord, BattleCode } from '@/types/
 import type { SideID } from '@pkmn/sim'
 import { isRankedTierId, isSeasonalThemeId } from '@/data/system/rankedData.ts'
 import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts'
+import { isFactionId, type FactionId } from '@/types/system/game'
 
 export interface ProfileRow {
   id: string
@@ -93,28 +94,28 @@ export interface SaveStateData {
   rankedMedals?: RankedSeasonMedal[]
 }
 
-const FACTION_LABELS: Record<string, string> = {
+const FACTION_LABELS: Record<FactionId, string> = {
   union: 'Equipo Unión',
   poder: 'Equipo Poder'
 };
 
-const FACTION_COLORS: Record<string, string> = {
+const FACTION_COLORS: Record<FactionId, string> = {
   union: 'rgba(59, 130, 246, 1)',
   poder: 'rgba(239, 68, 68, 1)'
 };
 
 export function resolveFactionLabel(f: string | null | undefined): string {
-  if (!f) return 'Sin Bando';
-  const clean = f.trim().toLowerCase();
-  if (!clean || clean === 'null' || clean === 'undefined') return 'Sin Bando';
-  return FACTION_LABELS[clean] || clean.toUpperCase();
+  if (f && isFactionId(f)) {
+    return FACTION_LABELS[f];
+  }
+  return 'Sin Bando';
 }
 
 export function resolveFactionColor(f: string | null | undefined): string {
-  if (!f) return 'rgba(148, 163, 184, 0.5)';
-  const clean = f.trim().toLowerCase();
-  if (!clean || clean === 'null' || clean === 'undefined') return 'rgba(148, 163, 184, 0.5)';
-  return FACTION_COLORS[clean] || 'rgba(148, 163, 184, 1)';
+  if (f && isFactionId(f)) {
+    return FACTION_COLORS[f];
+  }
+  return 'rgba(148, 163, 184, 0.5)';
 }
 
 export function resolveCosmeticField<T>(

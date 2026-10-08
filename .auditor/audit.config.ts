@@ -32,9 +32,10 @@ export default defineAuditConfig({
       'external/**',
       'showdown/**',
       'backup_legacy_code/**',
-      'test aventura/**'
+      'test aventura/**',
+      'supabase/docker/**'
     ],
-    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'test aventura'],
+    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'test aventura', 'supabase/docker'],
     ignoredPatterns: ['src/logic/db/migrations_data.ts']
   },
   coverage: {
@@ -54,7 +55,16 @@ export default defineAuditConfig({
     enforceInAudit: false
   },
   documentation: {
-    allowedNpxBinaries: ['kill-port']
+    allowedNpxBinaries: ['kill-port'],
+    language: 'en',
+    languageExemptions: ['docs/**', './docs/**', 'docs']
+  },
+  secretLeaks: {
+    enabled: true,
+    exemptGlobs: [
+      'tests/**',
+      'scripts/testing/**'
+    ]
   },
   persistence: {
     engine: 'hybrid',
@@ -64,6 +74,57 @@ export default defineAuditConfig({
       'src/stores/game/actions/saveActionHelpers.ts'
     ],
     saveKeyPrefixes: ['pokemon_local_save_', 'pvs_sandbox_save']
+  },
+  valibot: {
+    enabled: true,
+    targets: [
+      {
+        id: 'gameState',
+        typesFile: 'src/types/system/game.ts',
+        interfaceName: 'GameState',
+        schemaFile: 'src/logic/validation/schemas.ts',
+        schemaVarName: 'saveDataSchema',
+        ephemeralTypeAlias: 'EphemeralGameStateKeys',
+        serializerFile: 'src/logic/auth/saveSerializer.ts',
+        initialStateFile: 'src/stores/gameInitialState.ts',
+        initialStateFunctionName: 'createInitialGameState',
+        nestedTargets: [
+          {
+            id: 'playerClass',
+            interfaceName: 'PlayerClassState',
+            schemaVarName: 'classDataSchema',
+            initialStateProperty: 'classData'
+          },
+          {
+            id: 'activeMission',
+            interfaceName: 'ActiveMission',
+            schemaVarName: 'activeMissionSchema',
+            serializerFunctionName: 'serializeClassActiveMission'
+          }
+        ],
+        allowedNullableFields: [
+          'activeBattle',
+          'activeMission',
+          'playerClass',
+          'faction',
+          'fishingRodType',
+          'pickaxeType',
+          'brushType',
+          'incenseType',
+          'lastRankedSeason',
+          'nick_style',
+          'avatar_style',
+          'extortedRouteId',
+          'extortedRouteTimestamp',
+          'lastEggScanDate',
+          'officialRouteId',
+          'officialRouteTimestamp',
+          'lastResolvedWeek',
+          'last_renamed_at'
+        ],
+        allowedUnknownFields: ['chats']
+      }
+    ]
   },
   domain: {
     timezoneVariable: 'APP_TIMEZONE',
@@ -163,7 +224,7 @@ export default defineAuditConfig({
     security: {
       enabled: true
     },
-    enforceTargets: false,
+    enforceTargets: true,
     maxTargetPriority: 'critical',
     similarCode: {
       enabled: true,
@@ -204,8 +265,37 @@ export default defineAuditConfig({
     './scripts/auditors/fsm/validate_fsm_flow_parity.ts',
     './scripts/auditors/fsm/validate_fsm_implementation.ts',
     './scripts/auditors/fsm/validate_showdown_parity.ts',
-    './scripts/auditors/persistence/validate_save_persistence_parity.ts',
     './scripts/auditors/persistence/validate_schema_parity.ts',
     './scripts/auditors/persistence/validate_sql_migrations.ts'
   ]
+,
+  accessibility: {
+    enabled: true
+  },
+  architecture: {
+    enabled: true
+  },
+  dependencyVulnerabilities: {
+    enabled: true,
+    failOn: "critical"
+  },
+  eslint: {
+    enabled: true
+  },
+  htmlValidate: {
+    enabled: true
+  },
+  pinia: {
+    enabled: true
+  },
+  typeCoverage: {
+    enabled: true,
+    atLeast: 95
+  },
+  fsm: {
+    enabled: true
+  },
+  assets: {
+    enabled: true
+  }
 });

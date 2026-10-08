@@ -51,6 +51,19 @@ Frontend Developers / Systems Engineers.
 - **Future Occurrence Rotation Parity & Client Engine Propagation**:
   - Helpers and consumers resolving thematic configurations (`resolveWeeklyRotation`, `resolveEventSubCompetitions`, `getEventDisplayName`) MUST always accept and prioritize the target occurrence timestamp (`Temporal.Instant` or `Temporal.ZonedDateTime`) over current system time. When projecting future event windows, rotation weeks are computed strictly against the occurrence's `startInstant`.
 
+## Key Files
+
+- `battleUiEvents.ts`: Module implementation.
+- `eventAutoEnrollHelper.ts`: Module implementation.
+- `eventCompetitionsHelper.ts`: Module implementation.
+- `eventEligibility.ts`: Module implementation.
+- `eventMultipliers.ts`: Module implementation.
+- `eventValidators.ts`: Module implementation.
+- `gameBus.ts`: Module implementation.
+- [`eventCompetitions.ts`](./eventCompetitions.ts): Module implementation.
+- [`eventEngine.ts`](./eventEngine.ts): Module implementation.
+- [`eventSchedules.ts`](./eventSchedules.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -64,16 +77,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `battleUiEvents.ts`: Module implementation.
-- `eventAutoEnrollHelper.ts`: Module implementation.
-- `eventCompetitionsHelper.ts`: Module implementation.
-- `eventEligibility.ts`: Module implementation.
-- `eventMultipliers.ts`: Module implementation.
-- `eventValidators.ts`: Module implementation.
-- `gameBus.ts`: Module implementation.
-
 ## Child DOX Index
 
-- *This domain module does not contain nested sub-directories with independent AGENTS.md files.*
+- *This directory contains specialized domain logic and files with no subdirectories.*

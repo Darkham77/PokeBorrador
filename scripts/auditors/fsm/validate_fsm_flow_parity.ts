@@ -77,6 +77,10 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
   constructor() {
     super({
       id: 'validate_fsm_flow_parity',
+      configKey: 'fsm.flowParity',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'FSM Flow Parity Validator',
       description: 'Secuencia de combate discrepante con el manual',
       icon: '🔄',

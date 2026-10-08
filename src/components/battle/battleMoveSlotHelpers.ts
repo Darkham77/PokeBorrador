@@ -25,6 +25,9 @@ const HEX_BYTE_SLICE_SIX = 6 as const
 const DEFAULT_WHITE_RGB = '255, 255, 255' as const
 const HEX_RADIX = 16 as const
 
+export const MOVE_SLOT_GLOW_TYPES = ['gold', 'red'] as const;
+export type MoveSlotGlowType = (typeof MOVE_SLOT_GLOW_TYPES)[number];
+
 function isChoiceLocked(pokemon: Pokemon | null, move: Move): boolean {
   if (!pokemon?.heldItem || !CHOICE_ITEMS.has(pokemon.heldItem)) {
     return false

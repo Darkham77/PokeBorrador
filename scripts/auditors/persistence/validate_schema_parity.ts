@@ -49,12 +49,55 @@ function cleanIdentifier(id: string): string {
   return id.replace(/["'`]/g, '').trim().toLowerCase();
 }
 
+function applyMigrationToDb(db: DatabaseSync, migration: (typeof DATABASE_MIGRATIONS)[number]): void {
+  const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
+  const isSqliteSpec = migration.sqlite_sql !== undefined;
+  const statements = splitSQLStatements(sqlSource);
+
+  for (const stmt of statements) {
+    if (!stmt.trim()) continue;
+    const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
+    if (!sql) continue;
+
+    try {
+      db.exec(sql);
+    } catch { // catch-ok: ignored for harmless migration redundancies
+      // Ignored for harmless migration redundancies
+    }
+  }
+}
+
+function extractSqliteTables(db: DatabaseSync): Map<string, Set<string>> {
+  const sqliteTables = new Map<string, Set<string>>();
+  const tablesResult = db.prepare(`
+    SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'
+  `).all() as { name: string }[];
+
+  for (const row of tablesResult) {
+    const tableName = cleanIdentifier(row.name);
+    if (EXEMPT_TABLES.has(tableName)) continue;
+
+    const colSet = new Set<string>();
+    const colsResult = db.prepare(`PRAGMA table_info("${tableName}")`).all() as { name: string }[];
+    for (const col of colsResult) {
+      colSet.add(cleanIdentifier(col.name));
+    }
+    sqliteTables.set(tableName, colSet);
+  }
+
+  return sqliteTables;
+}
+
 export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
   private readonly migrationsDir: string;
 
   constructor() {
     super({
       id: 'validate_schema_parity',
+      configKey: 'persistence.schemaParity',
+      defaultConfig: {
+        enabled: true
+      },
       name: 'SQL Schema Multi-Engine Parity Auditor',
       description: 'Verifica paridad de esquemas entre PostgreSQL y SQLite',
       icon: '🗄️',
@@ -119,6 +162,63 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
     this.context.setMetric('Columns Checked', columnsAudited);
   }
 
+  private parseCreateTableColumns(body: string, colSet: Set<string>): void {
+    const lines = body.split('\n');
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('--') || line.startsWith('/*')) continue;
+
+      const upper = line.toUpperCase();
+      if (
+        upper.startsWith('CONSTRAINT') ||
+        upper.startsWith('PRIMARY KEY') ||
+        upper.startsWith('FOREIGN KEY') ||
+        upper.startsWith('UNIQUE') ||
+        upper.startsWith('CHECK') ||
+        upper.startsWith('EXCLUDE')
+      ) {
+        continue;
+      }
+
+      const colMatch = line.match(/^([a-zA-Z0-9_]+)\b/);
+      if (colMatch && colMatch[1]) {
+        colSet.add(cleanIdentifier(colMatch[1]));
+      }
+    }
+  }
+
+  private parseCreateTableStatements(content: string, pgTables: Map<string, Set<string>>): void {
+    const createTableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)\s*\(([\s\S]*?)\);/gi;
+    let match: RegExpExecArray | null;
+
+    while ((match = createTableRegex.exec(content)) !== null) {
+      const rawTableName = cleanIdentifier(match[1] || '');
+      if (!rawTableName || EXEMPT_TABLES.has(rawTableName)) continue;
+
+      if (!pgTables.has(rawTableName)) {
+        pgTables.set(rawTableName, new Set<string>());
+      }
+      const colSet = pgTables.get(rawTableName)!;
+      this.parseCreateTableColumns(match[2] || '', colSet);
+    }
+  }
+
+  private parseAlterTableStatements(content: string, pgTables: Map<string, Set<string>>): void {
+    const alterTableRegex = /ALTER\s+TABLE\s+(?:public\.)?([a-zA-Z0-9_]+)\s+ADD\s+COLUMN\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z0-9_]+)/gi;
+    let alterMatch: RegExpExecArray | null;
+
+    while ((alterMatch = alterTableRegex.exec(content)) !== null) {
+      const tableName = cleanIdentifier(alterMatch[1] || '');
+      const colName = cleanIdentifier(alterMatch[2] || '');
+      if (!tableName || !colName || EXEMPT_TABLES.has(tableName)) continue;
+
+      if (!pgTables.has(tableName)) {
+        pgTables.set(tableName, new Set<string>());
+      }
+      pgTables.get(tableName)!.add(colName);
+    }
+  }
+
   private parsePostgresSchema(): Map<string, Set<string>> {
     const pgTables = new Map<string, Set<string>>();
     if (!fs.existsSync(this.migrationsDir)) return pgTables;
@@ -134,105 +234,22 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
 
     for (const file of entries) {
       const content = fs.readFileSync(path.join(this.migrationsDir, file), 'utf-8');
-
-      // 1. Match CREATE TABLE [IF NOT EXISTS] [public.]tableName ( ... )
-      const createTableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)\s*\(([\s\S]*?)\);/gi;
-      let match: RegExpExecArray | null;
-
-      while ((match = createTableRegex.exec(content)) !== null) {
-        const rawTableName = cleanIdentifier(match[1] || '');
-        if (!rawTableName || EXEMPT_TABLES.has(rawTableName)) continue;
-
-        if (!pgTables.has(rawTableName)) {
-          pgTables.set(rawTableName, new Set<string>());
-        }
-        const colSet = pgTables.get(rawTableName)!;
-
-        const body = match[2] || '';
-        const lines = body.split('\n');
-        for (const rawLine of lines) {
-          const line = rawLine.trim();
-          if (!line || line.startsWith('--') || line.startsWith('/*')) continue;
-
-          const upper = line.toUpperCase();
-          if (
-            upper.startsWith('CONSTRAINT') ||
-            upper.startsWith('PRIMARY KEY') ||
-            upper.startsWith('FOREIGN KEY') ||
-            upper.startsWith('UNIQUE') ||
-            upper.startsWith('CHECK') ||
-            upper.startsWith('EXCLUDE')
-          ) {
-            continue;
-          }
-
-          const colMatch = line.match(/^([a-zA-Z0-9_]+)\b/);
-          if (colMatch && colMatch[1]) {
-            colSet.add(cleanIdentifier(colMatch[1]));
-          }
-        }
-      }
-
-      // 2. Match ALTER TABLE [public.]tableName ADD COLUMN [IF NOT EXISTS] colName
-      const alterTableRegex = /ALTER\s+TABLE\s+(?:public\.)?([a-zA-Z0-9_]+)\s+ADD\s+COLUMN\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z0-9_]+)/gi;
-      let alterMatch: RegExpExecArray | null;
-
-      while ((alterMatch = alterTableRegex.exec(content)) !== null) {
-        const tableName = cleanIdentifier(alterMatch[1] || '');
-        const colName = cleanIdentifier(alterMatch[2] || '');
-        if (!tableName || !colName || EXEMPT_TABLES.has(tableName)) continue;
-
-        if (!pgTables.has(tableName)) {
-          pgTables.set(tableName, new Set<string>());
-        }
-        pgTables.get(tableName)!.add(colName);
-      }
+      this.parseCreateTableStatements(content, pgTables);
+      this.parseAlterTableStatements(content, pgTables);
     }
 
     return pgTables;
   }
 
   private getSqliteSchema(): Map<string, Set<string>> {
-    const sqliteTables = new Map<string, Set<string>>();
-
     using db = new DatabaseSync(':memory:');
     initTestDatabaseSchema(db);
 
     for (const migration of DATABASE_MIGRATIONS) {
-      const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
-      const isSqliteSpec = migration.sqlite_sql !== undefined;
-      const statements = splitSQLStatements(sqlSource);
-
-      for (const stmt of statements) {
-        if (!stmt.trim()) continue;
-        const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-        if (!sql) continue;
-
-        try {
-          db.exec(sql);
-        } catch { // catch-ok: ignored for harmless migration redundancies
-          // Ignored for harmless migration redundancies
-        }
-      }
+      applyMigrationToDb(db, migration);
     }
 
-    const tablesResult = db.prepare(`
-      SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'
-    `).all() as { name: string }[];
-
-    for (const row of tablesResult) {
-      const tableName = cleanIdentifier(row.name);
-      if (EXEMPT_TABLES.has(tableName)) continue;
-
-      const colSet = new Set<string>();
-      const colsResult = db.prepare(`PRAGMA table_info("${tableName}")`).all() as { name: string }[];
-      for (const col of colsResult) {
-        colSet.add(cleanIdentifier(col.name));
-      }
-      sqliteTables.set(tableName, colSet);
-    }
-
-    return sqliteTables;
+    return extractSqliteTables(db);
   }
 }
 

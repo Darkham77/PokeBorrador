@@ -2,6 +2,12 @@
 import { computed } from 'vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
+import { isFactionId, type FactionId } from '@/types/system/game'
+
+const FACTION_DISPLAY_NAMES: Record<FactionId, string> = {
+  union: 'EQUIPO UNIÓN',
+  poder: 'EQUIPO PODER'
+}
 
 const props = defineProps<{
   gs: {
@@ -20,16 +26,14 @@ const props = defineProps<{
       icon: string
     } | null
   }
-  faction: string | null
+  faction: FactionId | string | null
 }>()
 
 const displayFaction = computed(() => {
-  if (!props.faction) return 'SIN FACCIÓN'
-  const clean = props.faction.trim().toLowerCase()
-  if (!clean || clean === 'null' || clean === 'undefined') return 'SIN FACCIÓN'
-  if (clean === 'union') return 'EQUIPO UNIÓN'
-  if (clean === 'poder') return 'EQUIPO PODER'
-  return clean.toUpperCase()
+  if (props.faction && isFactionId(props.faction)) {
+    return FACTION_DISPLAY_NAMES[props.faction]
+  }
+  return 'SIN FACCIÓN'
 })
 
 const emit = defineEmits<{

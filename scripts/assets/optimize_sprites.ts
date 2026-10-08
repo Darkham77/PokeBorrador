@@ -176,47 +176,75 @@ if (!isMainThread) {
 // -----------------------------------------------------------------------------
 // CÓDIGO PRINCIPAL (ORQUESTADOR DE HILOS CON WORKER POOL)
 // -----------------------------------------------------------------------------
-if (isMainThread) {
-  const extraAnimationsReport: { pokemonSlug: string; suffix: string; animationsFound: number; details: string }[] = [];
-  const warningsReport: { pokemonSlug: string; suffix: string; warning: string }[] = [];
+interface ExtraAnimationReportItem {
+  pokemonSlug: string;
+  suffix: string;
+  animationsFound: number;
+  details: string;
+}
 
-  const writeFinalReport = async (): Promise<void> => {
-    const reportPath = path.join(SCRATCH_DIR, 'sprite_optimization_report.md');
+interface WarningReportItem {
+  pokemonSlug: string;
+  suffix: string;
+  warning: string;
+}
+
+interface PokemonAnimData {
+  id: string;
+  suffix: string;
+  idle: string | null;
+  variation: string | null;
+}
+
+interface OptimizationCliOptions {
+  values: {
+    all?: boolean;
+    id?: string;
+    file?: string;
+    dir?: string;
+    range?: string;
+    'remove-original'?: boolean;
+  };
+  positionals: string[];
+}
+
+if (isMainThread) {
+  const extraAnimationsReport: ExtraAnimationReportItem[] = [];
+  const warningsReport: WarningReportItem[] = [];
+
+  function buildReportMarkdown(
+    extraAnimations: ExtraAnimationReportItem[],
+    warnings: WarningReportItem[]
+  ): string {
     let mdContent = `# Reporte de Optimización de Animaciones\n\n`;
     mdContent += `Este reporte resume el procesamiento de spritesheets optimizados y detalla los Pokémon donde se detectaron 2 o más sub-animaciones de ataque o idles adicionales, o ataques sospechosos muy cortos.\n\n`;
 
-    if (extraAnimationsReport.length === 0) {
+    if (extraAnimations.length === 0) {
       mdContent += `### ✅ No se encontraron animaciones adicionales complejas.\n`;
       mdContent += `Todos los spritesheets se dividieron correctamente en 1 Idle (\`i\`) y 1 Ataque (\`v\`).\n\n`;
     } else {
       mdContent += `## ⚠️ Pokémon con 2 o más animaciones detectadas:\n\n`;
       mdContent += `| Pokémon ID | Sufijo | Animaciones Totales | Detalles de Segmentación |\n`;
       mdContent += `| ---------- | ------ | ------------------- | ------------------------- |\n`;
-      for (const item of extraAnimationsReport) {
+      for (const item of extraAnimations) {
         mdContent += `| **${item.pokemonSlug}** | \`${item.suffix || 'Ninguno'}\` | ${item.animationsFound} | ${item.details} |\n`;
       }
       mdContent += `\n`;
     }
 
-    if (warningsReport.length > 0) {
+    if (warnings.length > 0) {
       mdContent += `## 🔍 Alertas de ataques cortos (exactamente 3 frames):\n\n`;
       mdContent += `| Pokémon ID | Sufijo | Advertencia |\n`;
       mdContent += `| ---------- | ------ | ----------- |\n`;
-      for (const item of warningsReport) {
+      for (const item of warnings) {
         mdContent += `| **${item.pokemonSlug}** | \`${item.suffix || 'Ninguno'}\` | ${item.warning} |\n`;
       }
       mdContent += `\n`;
     }
+    return mdContent;
+  }
 
-    await fs.writeFile(reportPath, mdContent, 'utf-8');
-
-    const files = await fs.readdir(FRONT_DIR);
-    interface PokemonAnimData {
-      id: string;
-      suffix: string;
-      idle: string | null;
-      variation: string | null;
-    }
+  function buildSortedManifest(files: string[]): PokemonAnimData[] {
     const manifestMap = new Map<string, PokemonAnimData>();
 
     for (const file of files) {
@@ -246,12 +274,21 @@ if (isMainThread) {
       }
     }
 
-    const sortedManifest = Array.from(manifestMap.values()).sort((a, b) => {
+    return Array.from(manifestMap.values()).sort((a, b) => {
       const numA = parseInt(a.id, 10);
       const numB = parseInt(b.id, 10);
       if (numA !== numB) return numA - numB;
       return a.suffix.localeCompare(b.suffix);
     });
+  }
+
+  const writeFinalReport = async (): Promise<void> => {
+    const reportPath = path.join(SCRATCH_DIR, 'sprite_optimization_report.md');
+    const mdContent = buildReportMarkdown(extraAnimationsReport, warningsReport);
+    await fs.writeFile(reportPath, mdContent, 'utf-8');
+
+    const files = await fs.readdir(FRONT_DIR);
+    const sortedManifest = buildSortedManifest(files);
 
     const manifestPath = path.join(SCRATCH_DIR, 'sprites_manifest.json');
     await fs.writeFile(manifestPath, JSON.stringify(sortedManifest, null, 2), 'utf-8');
@@ -261,10 +298,10 @@ if (isMainThread) {
     await fs.writeFile(jsDataPath, jsContent, 'utf-8');
   };
 
-  const main = async () => {
+  function parseCliArguments(): OptimizationCliOptions {
     const args = process.argv.slice(2);
     const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['all', 'remove-original'].includes(a) ? `--${a}` : a));
-    const { values, positionals } = parseArgs({
+    const parsed = parseArgs({
       args: normalized,
       options: {
         all: { type: 'boolean', default: false },
@@ -272,76 +309,58 @@ if (isMainThread) {
         file: { type: 'string' },
         dir: { type: 'string' },
         range: { type: 'string' },
-        // NOTE: always true — leaving bare files (e.g. 14.png) without i/v suffix
-        // corrupts the convert_assets pipeline which would generate 14.webp instead of 14i.webp
         'remove-original': { type: 'boolean', default: true }
       },
       allowPositionals: true,
       strict: false
     });
+    return {
+      values: parsed.values as OptimizationCliOptions['values'],
+      positionals: parsed.positionals
+    };
+  }
 
-    try {
-      const targetDir = typeof values.dir === 'string' ? safeResolve(process.cwd(), values.dir) : FRONT_DIR;
-      const files = await fs.readdir(targetDir);
-      const targetFiles = files.filter(file => {
-        if (!file.endsWith('.png')) return false;
-        const name = path.parse(file).name;
-        const match = name.match(/^(\d+)(.*)$/);
+  function filterTargetFiles(targetFiles: string[], values: OptimizationCliOptions['values'], positionals: string[]): string[] {
+    const fileFilter = typeof values.file === 'string' ? values.file : (positionals[0]?.endsWith('.png') ? positionals[0] : undefined);
+    const idFilter = typeof values.id === 'string' ? values.id : (positionals[0] && !positionals[0].includes('-') && !positionals[0].endsWith('.png') && positionals[0] !== 'all' ? positionals[0] : undefined);
+    const rangeFilter = typeof values.range === 'string' ? values.range : (positionals[0]?.includes('-') ? positionals[0] : undefined);
+
+    if (fileFilter) {
+      const filtered = targetFiles.filter(file => file === fileFilter || path.parse(file).name === path.parse(fileFilter).name);
+      console.log(`🎯 Filtrado por Archivo "${fileFilter}": ${filtered.length} archivo(s) encontrado(s).`);
+      return filtered;
+    }
+    if (idFilter) {
+      const filtered = targetFiles.filter(file => {
+        const match = path.parse(file).name.match(/^(\d+)(.*)$/);
         if (!match) return false;
-        const id = match[1]!;
-        if (id === '0') return false;
-        return true;
+        return match[1] === idFilter || `${match[1]}${match[2]}` === idFilter;
       });
+      console.log(`🎯 Filtrado por ID "${idFilter}": ${filtered.length} archivo(s) encontrado(s).`);
+      return filtered;
+    }
+    if (rangeFilter) {
+      const [startStr, endStr] = rangeFilter.split('-');
+      const start = parseInt(startStr || '0', 10);
+      const end = parseInt(endStr || '9999', 10);
+      const filtered = targetFiles.filter(file => {
+        const match = path.parse(file).name.match(/^(\d+)(.*)$/);
+        if (!match) return false;
+        const pid = parseInt(match[1]!, 10);
+        return pid >= start && pid <= end;
+      });
+      console.log(`🎯 Filtrado por Rango "${values.range}": ${filtered.length} archivo(s) encontrado(s).`);
+      return filtered;
+    }
+    return targetFiles;
+  }
 
-      let filteredFiles = targetFiles;
-      const fileFilter = typeof values.file === 'string' ? values.file : (positionals[0]?.endsWith('.png') ? positionals[0] : undefined);
-      const idFilter = typeof values.id === 'string' ? values.id : (positionals[0] && !positionals[0].includes('-') && !positionals[0].endsWith('.png') && positionals[0] !== 'all' ? positionals[0] : undefined);
-      const rangeFilter = typeof values.range === 'string' ? values.range : (positionals[0]?.includes('-') ? positionals[0] : undefined);
-
-      if (fileFilter) {
-        filteredFiles = targetFiles.filter(file => {
-          return file === fileFilter || path.parse(file).name === path.parse(fileFilter).name;
-        });
-        console.log(`🎯 Filtrado por Archivo "${fileFilter}": ${filteredFiles.length} archivo(s) encontrado(s).`);
-      } else if (idFilter) {
-        filteredFiles = targetFiles.filter(file => {
-          const name = path.parse(file).name;
-          const match = name.match(/^(\d+)(.*)$/);
-          if (!match) return false;
-          const pid = match[1]!;
-          const suffix = match[2]!;
-          return pid === idFilter || `${pid}${suffix}` === idFilter;
-        });
-        console.log(`🎯 Filtrado por ID "${idFilter}": ${filteredFiles.length} archivo(s) encontrado(s).`);
-      } else if (rangeFilter) {
-        const [startStr, endStr] = rangeFilter.split('-');
-        const start = parseInt(startStr || '0', 10);
-        const end = parseInt(endStr || '9999', 10);
-        filteredFiles = targetFiles.filter(file => {
-          const name = path.parse(file).name;
-          const match = name.match(/^(\d+)(.*)$/);
-          if (!match) return false;
-          const pid = parseInt(match[1]!, 10);
-          return pid >= start && pid <= end;
-        });
-        console.log(`🎯 Filtrado por Rango "${values.range}": ${filteredFiles.length} archivo(s) encontrado(s).`);
-      }
-
-      if (filteredFiles.length === 0) {
-        console.log(`❌ No se encontraron archivos para procesar.`);
-        process.exit(0);
-      }
-
-      if (!values.all && !values.id && !values.range && !values.file) {
-        console.log('Debes ejecutar con --all para procesamiento masivo, --file <nombre.png> para uno específico, --id <id>, o --range <inicio>-<fin>.');
-        process.exit(0);
-      }
-
-      // Configuración de Hilos lógicos
-      const numCPUs = os.cpus().length || 4;
-      const workerPoolLimit = values.id ? 1 : numCPUs; 
-      console.log(`🚀 Iniciando Worker Pool con límites de concurrencia: ${workerPoolLimit} hilo(s).`);
-
+  function runWorkerPool(
+    filteredFiles: string[],
+    removeOriginal: boolean,
+    workerPoolLimit: number
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
       let activeWorkers = 0;
       let completedCount = 0;
       let failedCount = 0;
@@ -359,7 +378,7 @@ if (isMainThread) {
                 console.log('\n🎉 ¡Procesamiento completado con éxito!');
                 process.exit(0);
               }
-            });
+            }).then(resolve).catch(reject);
           }
           return;
         }
@@ -369,7 +388,7 @@ if (isMainThread) {
         activeWorkers++;
 
         const worker = new Worker(__filename, {
-          workerData: { fileName: file, removeOriginal: values['remove-original'] }
+          workerData: { fileName: file, removeOriginal }
         });
 
         worker.on('message', (msg: unknown) => {
@@ -392,8 +411,6 @@ if (isMainThread) {
               });
             }
             console.log(`   [OK - HILO] Procesado con éxito: ${file} (${completedCount + failedCount}/${filteredFiles.length})`);
-            
-            // Actualizar DB en tiempo real al superar bloques de 32, o al final de listas cortas
             if (completedCount % DB_SYNC_BATCH_CHUNK_SIZE === 0 || filteredFiles.length < DB_SYNC_BATCH_CHUNK_SIZE) {
               writeFinalReport().catch((err: unknown) => console.error('Error writing interim report:', err));
             }
@@ -416,11 +433,39 @@ if (isMainThread) {
         });
       };
 
-      // Inundar la piscina de workers hasta el número total de CPUs/hilos lógicos del sistema (32 concurrentes)
       for (let w = 0; w < workerPoolLimit; w++) {
         runNextWorker();
       }
+    });
+  }
 
+  const main = async () => {
+    const { values, positionals } = parseCliArguments();
+    try {
+      const targetDir = typeof values.dir === 'string' ? safeResolve(process.cwd(), values.dir) : FRONT_DIR;
+      const files = await fs.readdir(targetDir);
+      const targetFiles = files.filter(file => {
+        if (!file.endsWith('.png')) return false;
+        const match = path.parse(file).name.match(/^(\d+)(.*)$/);
+        return match && match[1] !== '0';
+      });
+
+      const filteredFiles = filterTargetFiles(targetFiles, values, positionals);
+      if (filteredFiles.length === 0) {
+        console.log(`❌ No se encontraron archivos para procesar.`);
+        process.exit(0);
+      }
+
+      if (!values.all && !values.id && !values.range && !values.file) {
+        console.log('Debes ejecutar con --all para procesamiento masivo, --file <nombre.png> para uno específico, --id <id>, o --range <inicio>-<fin>.');
+        process.exit(0);
+      }
+
+      const numCPUs = os.cpus().length || 4;
+      const workerPoolLimit = values.id ? 1 : numCPUs;
+      console.log(`🚀 Iniciando Worker Pool con límites de concurrencia: ${workerPoolLimit} hilo(s).`);
+
+      await runWorkerPool(filteredFiles, values['remove-original'] ?? true, workerPoolLimit);
     } catch (err) {
       console.error('❌ Error general durante el procesamiento masivo:', err);
       process.exit(1);

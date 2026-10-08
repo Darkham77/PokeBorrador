@@ -24,6 +24,79 @@ export interface ImageBoundsResult {
   readonly bodyRadius: number;
 }
 
+function isPixelOpaque(data: Buffer | Uint8Array, index: number, channels: number): boolean {
+  const alpha = channels >= 4 ? (data[index + 3] ?? 0) : 255;
+  return alpha > ALPHA_PIXEL_THRESHOLD_LIMIT;
+}
+
+function scanRowHasOpaque(
+  data: Buffer | Uint8Array,
+  y: number,
+  strideWidth: number,
+  scanWidth: number,
+  channels: number
+): boolean {
+  for (let x = 0; x < scanWidth; x++) {
+    const idx = (y * strideWidth + x) * channels;
+    if (isPixelOpaque(data, idx, channels)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function findLowestOpaqueRow(
+  data: Buffer | Uint8Array,
+  strideWidth: number,
+  height: number,
+  scanWidth: number,
+  channels: number
+): number {
+  for (let y = height - 1; y >= 0; y--) {
+    if (scanRowHasOpaque(data, y, strideWidth, scanWidth, channels)) {
+      return y;
+    }
+  }
+  return -1;
+}
+
+interface BoundingBoxScan {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly hasOpaque: boolean;
+}
+
+function scanBoundingBox(
+  data: Buffer | Uint8Array,
+  strideWidth: number,
+  height: number,
+  scanWidth: number,
+  channels: number
+): BoundingBoxScan {
+  let minX = scanWidth;
+  let maxX = 0;
+  let minY = height;
+  let maxY = 0;
+  let hasOpaque = false;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < scanWidth; x++) {
+      const idx = (y * strideWidth + x) * channels;
+      if (isPixelOpaque(data, idx, channels)) {
+        hasOpaque = true;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  return { minX, maxX, minY, maxY, hasOpaque };
+}
+
 export function findFeetPointsFromBuffer(
   data: Buffer | Uint8Array,
   width: number,
@@ -35,48 +108,21 @@ export function findFeetPointsFromBuffer(
   }
 
   const size = Math.min(width, height);
-  let minX = size;
-  let maxX = 0;
-  let lowestY = -1;
-
-  // Scan the first frame to find bounding box in X
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < size; x++) {
-      const index = (y * width + x) * channels;
-      const alpha = data[index + 3] ?? 0;
-      if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-      }
-    }
+  const bbox = scanBoundingBox(data, width, height, size, channels);
+  if (!bbox.hasOpaque) {
+    return { feetY: DEFAULT_FEET_Y, feetX: DEFAULT_FEET_X };
   }
 
-  // Scan from bottom to top in the first frame to find the lowest non-empty pixel row (feetY)
-  for (let y = height - 1; y >= 0; y--) {
-    let rowHasOpaque = false;
-    for (let x = 0; x < size; x++) {
-      const index = (y * width + x) * channels;
-      const alpha = data[index + 3] ?? 0;
-      if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
-        rowHasOpaque = true;
-        break;
-      }
-    }
-    if (rowHasOpaque) {
-      lowestY = y;
-      break;
-    }
+  const lowestY = findLowestOpaqueRow(data, width, height, size, channels);
+  if (lowestY === -1) {
+    return { feetY: DEFAULT_FEET_Y, feetX: DEFAULT_FEET_X };
   }
 
-  if (lowestY !== -1) {
-    const centerX = (minX + maxX) / 2;
-    return {
-      feetY: Number((lowestY / height).toFixed(4)),
-      feetX: Number((centerX / size).toFixed(4))
-    };
-  }
-
-  return { feetY: DEFAULT_FEET_Y, feetX: DEFAULT_FEET_X };
+  const centerX = (bbox.minX + bbox.maxX) / 2;
+  return {
+    feetY: Number((lowestY / height).toFixed(4)),
+    feetX: Number((centerX / size).toFixed(4))
+  };
 }
 
 export function analyzeImageBufferBounds(
@@ -84,57 +130,23 @@ export function analyzeImageBufferBounds(
   size: number,
   channels: number
 ): ImageBoundsResult {
-  let minX = size;
-  let maxX = 0;
-  let minY = size;
-  let maxY = 0;
-  let lowestY = -1;
-  let hasOpaque = false;
-
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const idx = (y * size + x) * channels;
-      const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255;
-      if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
-        hasOpaque = true;
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-    }
+  const bbox = scanBoundingBox(data, size, size, size, channels);
+  if (!bbox.hasOpaque) {
+    return {
+      feetY: DEFAULT_FEET_Y,
+      feetX: DEFAULT_FEET_X,
+      bodyH: DEFAULT_BODY_H,
+      bodyW: DEFAULT_BODY_W,
+      bodyRadius: Number((DEFAULT_BODY_H / 2).toFixed(4))
+    };
   }
 
-  if (hasOpaque) {
-    for (let y = size - 1; y >= 0; y--) {
-      let rowHasOpaque = false;
-      for (let x = 0; x < size; x++) {
-        const idx = (y * size + x) * channels;
-        const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255;
-        if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
-          rowHasOpaque = true;
-          break;
-        }
-      }
-      if (rowHasOpaque) {
-        lowestY = y;
-        break;
-      }
-    }
-  }
-
-  let feetY = DEFAULT_FEET_Y;
-  let feetX = DEFAULT_FEET_X;
-  let bodyH = DEFAULT_BODY_H;
-  let bodyW = DEFAULT_BODY_W;
-
-  if (hasOpaque && lowestY !== -1) {
-    const centerX = (minX + maxX) / 2;
-    feetY = Number((lowestY / size).toFixed(4));
-    feetX = Number((centerX / size).toFixed(4));
-    bodyH = Number(((maxY - minY + 1) / size).toFixed(4));
-    bodyW = Number(((maxX - minX + 1) / size).toFixed(4));
-  }
+  const lowestY = findLowestOpaqueRow(data, size, size, size, channels);
+  const centerX = (bbox.minX + bbox.maxX) / 2;
+  const feetY = lowestY !== -1 ? Number((lowestY / size).toFixed(4)) : DEFAULT_FEET_Y;
+  const feetX = Number((centerX / size).toFixed(4));
+  const bodyH = Number(((bbox.maxY - bbox.minY + 1) / size).toFixed(4));
+  const bodyW = Number(((bbox.maxX - bbox.minX + 1) / size).toFixed(4));
   const bodyRadius = Number((bodyH / 2).toFixed(4));
 
   return { feetY, feetX, bodyH, bodyW, bodyRadius };

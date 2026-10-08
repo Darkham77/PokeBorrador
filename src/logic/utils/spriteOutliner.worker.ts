@@ -148,10 +148,13 @@ async function processAura(img: ImageBitmap, fillColor: string, blurRadius: numb
   return canvas.convertToBlob({ type: 'image/png' });
 }
 
+export const SPRITE_OUTLINER_ACTIONS = ['sprite', 'aura'] as const;
+export type SpriteOutlinerAction = (typeof SPRITE_OUTLINER_ACTIONS)[number];
+
 // Worker message router
 interface SpriteOutlinerMessage {
   jobId: string;
-  action: 'sprite' | 'aura';
+  action: SpriteOutlinerAction;
   url: string;
   type: SpriteOutlineType;
   fillColor: string;

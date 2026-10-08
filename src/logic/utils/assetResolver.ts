@@ -25,7 +25,7 @@ export const getResolutionSuffix = (): string => '';
  */
 export const resolveAsset = (url: string): string => {
   if (!url) return '';
-  const base = import.meta.env.BASE_URL || '/';
+  const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
   let resolved = url;
   if (url.startsWith('/')) {
     const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;

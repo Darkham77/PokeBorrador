@@ -16,6 +16,11 @@ Tooling & DevOps Engineers.
 - Keep tests isolated and fast.
 - Mock file paths and string inputs directly without touching the filesystem.
 
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-None (leaf directory).
+- *This directory contains specialized domain logic and files with no subdirectories.*

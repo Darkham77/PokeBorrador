@@ -12,6 +12,12 @@ Frontend Developers / Core Gameplay Engineers.
 - **Zero Duplication**: Components must consume the centralized composable rather than querying domain stores independently for claimable loot.
 - **Decomposed GTS Claim Processing (`gtsRewardClaimHelpers.ts`, `useUnifiedRewards.ts`)**: GTS listing cache, trade claim matching, and money/item/pokemon reward details resolution are isolated into `gtsRewardClaimHelpers.ts` to uphold Fallow code quality governance and minimal cyclomatic complexity.
 
+## Key Files
+
+- `rewardsPillExtractor.ts`: Module implementation.
+- [`gtsRewardClaimHelpers.ts`](./gtsRewardClaimHelpers.ts): Module implementation.
+- [`useUnifiedRewards.ts`](./useUnifiedRewards.ts): Module implementation.
+
 ## Work Guidance
 
 - Ensure reactive counts update automatically when domain store states change.
@@ -21,10 +27,6 @@ Frontend Developers / Core Gameplay Engineers.
 
 - Run `npm run test:unit tests/unit/composables/useUnifiedRewards.test.ts` to verify reward aggregation and store delegation.
 
-## Key Files
-
-- `rewardsPillExtractor.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

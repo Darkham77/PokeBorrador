@@ -93,6 +93,97 @@ interface AuditResult {
   shops: string[];
 }
 
+const POKE_API_KEYWORD_MATCHERS = [
+  'potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers',
+  'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl',
+  'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket',
+  'radar', 'awakening'
+] as const;
+
+function isPokeApiSprite(spriteKey: string, mappedKey: string): boolean {
+  if (AUDIT_ITEM_MAPPING[spriteKey] !== undefined) return true;
+  if (!isNaN(Number(spriteKey))) return true;
+  if (spriteKey.includes('-') || spriteKey.includes('ball') || spriteKey.includes('stone') || spriteKey.includes('repel') || spriteKey.includes('fossil')) {
+    return true;
+  }
+  return POKE_API_KEYWORD_MATCHERS.some(k => mappedKey.includes(k));
+}
+
+function buildItemPathsToCheck(itemSprite: string, spriteKey: string, mappedKey: string, publicDir: string): string[] {
+  const pathsToCheck: string[] = [ // no-domain: Non-domain utility collection or data structure
+    path.join(publicDir, 'assets/sprites', `${itemSprite}.webp`),
+    path.join(publicDir, 'assets/sprites', `${itemSprite}.png`)
+  ];
+  if (isPokeApiSprite(spriteKey, mappedKey)) {
+    pathsToCheck.push(path.join(publicDir, 'assets/sprites/items', `${mappedKey}.webp`));
+  } else {
+    pathsToCheck.push(path.join(publicDir, 'assets/items', `${spriteKey}.webp`));
+  }
+  return pathsToCheck;
+}
+
+async function checkIfAnyPathExists(paths: string[]): Promise<boolean> {
+  for (const p of paths) {
+    try {
+      await fs.access(p);
+      return true;
+    } catch { // catch-ok: path does not exist, continue search
+    }
+  }
+  return false;
+}
+
+function resolveItemShops(item: (typeof SHOP_ITEMS)[number]): string[] {
+  const shops: string[] = []; // no-domain: Non-domain utility collection or data structure
+  if (item.showInNormalShop !== false) shops.push('Poké Market (Local)');
+  if (item.showInBCShop === true) shops.push('BC Shop (Battle Club)');
+  return shops;
+}
+
+async function auditSingleShopItem(item: (typeof SHOP_ITEMS)[number], publicDir: string): Promise<AuditResult | null> {
+  if (!item.sprite) return null;
+  const spriteKey = item.sprite.replace(/\.(png|webp|jpg|jpeg|gif|bmp)$/i, '').toLowerCase();
+  const mappedKey = AUDIT_ITEM_MAPPING[spriteKey] ?? spriteKey;
+  const pathsToCheck = buildItemPathsToCheck(item.sprite, spriteKey, mappedKey, publicDir);
+  const found = await checkIfAnyPathExists(pathsToCheck);
+  const shops = resolveItemShops(item);
+
+  return {
+    id: item.id,
+    name: item.name,
+    sprite: item.sprite,
+    expectedPaths: pathsToCheck,
+    found,
+    shops
+  };
+}
+
+function printMissingItemsDetail(allMissing: readonly AuditResult[], isSummary: boolean): void {
+  if (allMissing.length === 0) {
+    console.log(styleText('green', '\n🎉 ¡Excelente! Todas las imágenes de ítems de ambas tiendas están presentes físicamente en el sistema.'));
+    return;
+  }
+  if (isSummary) {
+    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${allMissing.length} imágenes de ítems faltantes.`));
+    return;
+  }
+  console.log(styleText('red', '\n⚠️ DETALLE DE IMÁGENES FALTANTES:'));
+  const limit = 30;
+  const toPrint = allMissing.slice(0, limit);
+  toPrint.forEach(i => {
+    console.log(`   - 🚫 ${styleText('bold', i.name)} (ID: ${i.id})`);
+    console.log(`        Tiendas:       ${i.shops.join(' y ') || 'Ninguna (Solo Base)'}`);
+    i.expectedPaths.forEach(p => {
+      const relPath = path.relative(process.cwd(), p);
+      console.log(`        Ruta esperada: ${styleText('underline', relPath)}`);
+    });
+  });
+  if (allMissing.length > limit) {
+    console.log(styleText('cyan', `\n[INFO] Se muestran solo las primeras ${limit} de un total de ${allMissing.length} imágenes faltantes para evitar saturar la terminal.`));
+    console.log(styleText('cyan', `👉 Para guardar el reporte completo a un archivo: npm run audit --output=scratch/item_assets_report.txt`));
+  }
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -108,59 +199,8 @@ async function main() {
   const results: AuditResult[] = [];
 
   for (const item of SHOP_ITEMS) {
-    if (!item.sprite) continue;
-    
-    const spriteId = item.sprite.replace(/\.(png|webp|jpg|jpeg|gif|bmp)$/i, '').toLowerCase();
-    const mappedId = AUDIT_ITEM_MAPPING[spriteId] || spriteId.replace(/_/g, '-');
-    
-    const isPokeAPI = (AUDIT_ITEM_MAPPING[spriteId] !== undefined) || 
-                     !isNaN(Number(spriteId)) || 
-                     spriteId.includes('-') || 
-                     spriteId.includes('ball') || 
-                     spriteId.includes('stone') ||
-                     spriteId.includes('repel') ||
-                     spriteId.includes('fossil') ||
-                     ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening'].some(k => mappedId.includes(k));
-
-    const pathsToCheck: string[] = []; // no-domain: Non-domain utility collection or data structure
-    if (item.sprite) {
-      pathsToCheck.push(path.join(publicDir, 'assets/sprites', `${item.sprite}.webp`));
-      pathsToCheck.push(path.join(publicDir, 'assets/sprites', `${item.sprite}.png`));
-    }
-    if (isPokeAPI) {
-      pathsToCheck.push(path.join(publicDir, 'assets/sprites/items', `${mappedId}.webp`));
-    } else {
-      pathsToCheck.push(path.join(publicDir, 'assets/items', `${spriteId}.webp`));
-    }
-
-    let found = false;
-    for (const p of pathsToCheck) {
-      try {
-        await fs.access(p);
-        found = true;
-        break;
-      } catch { // catch-ok: path does not exist, continue search
-        // Continue
-      }
-    }
-
-    // Classify shops
-    const shops: string[] = []; // no-domain: Non-domain utility collection or data structure
-    if (item.showInNormalShop !== false) {
-      shops.push('Poké Market (Local)');
-    }
-    if (item.showInBCShop === true) {
-      shops.push('BC Shop (Battle Club)');
-    }
-
-    results.push({
-      id: item.id,
-      name: item.name,
-      sprite: item.sprite,
-      expectedPaths: pathsToCheck,
-      found,
-      shops
-    });
+    const res = await auditSingleShopItem(item, publicDir);
+    if (res) results.push(res);
   }
 
   // Group and print stats
@@ -186,30 +226,7 @@ async function main() {
   console.log('\n════════════════════════════════════════════════');
 
   const allMissing = results.filter(r => !r.found);
-
-  if (allMissing.length > 0) {
-    if (values.summary) {
-      console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${allMissing.length} imágenes de ítems faltantes.`));
-    } else {
-      console.log(styleText('red', '\n⚠️ DETALLE DE IMÁGENES FALTANTES:'));
-      const limit = 30;
-      const toPrint = allMissing.slice(0, limit);
-      toPrint.forEach(i => {
-        console.log(`   - 🚫 ${styleText('bold', i.name)} (ID: ${i.id})`);
-        console.log(`        Tiendas:       ${i.shops.join(' y ') || 'Ninguna (Solo Base)'}`);
-        i.expectedPaths.forEach(p => {
-          const relPath = path.relative(process.cwd(), p);
-          console.log(`        Ruta esperada: ${styleText('underline', relPath)}`);
-        });
-      });
-      if (allMissing.length > limit) {
-        console.log(styleText('cyan', `\n[INFO] Se muestran solo las primeras ${limit} de un total de ${allMissing.length} imágenes faltantes para evitar saturar la terminal.`));
-        console.log(styleText('cyan', `👉 Para guardar el reporte completo a un archivo: npm run audit --output=scratch/item_assets_report.txt`));
-      }
-    }
-  } else {
-    console.log(styleText('green', '\n🎉 ¡Excelente! Todas las imágenes de ítems de ambas tiendas están presentes físicamente en el sistema.'));
-  }
+  printMissingItemsDetail(allMissing, Boolean(values.summary));
 
   if (values.output) {
     const outputPath = path.resolve(process.cwd(), values.output as string);

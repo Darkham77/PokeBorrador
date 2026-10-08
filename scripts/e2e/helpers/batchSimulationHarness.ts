@@ -183,6 +183,153 @@ export function registerCertifiedBatchTests<T extends CertifiedTestBatch>(option
     isInitialized: boolean;
   }
 
+  interface BatchExecutionParams<TB extends CertifiedTestBatch> {
+    batch: TB;
+    index: number;
+    browser: Browser;
+    workerIndex: number;
+    suiteName: string;
+    suiteRelativePath?: string;
+    simWrapperFactory: (page: Page, testId: string) => BaseBattleSimulation;
+    getOrCreateWorkerSession: (browser: Browser, workerIndex: number) => Promise<WorkerSession>;
+    destroyWorkerSession: (workerIndex: number) => Promise<void>;
+    onFailure: () => void;
+  }
+
+  function checkBatchSkipReason<TB extends CertifiedTestBatch>(
+    index: number,
+    startIdx: number,
+    totalBatches: number,
+    batch: TB,
+    caseFilter?: string,
+    caseIdFilter?: string
+  ): { skip: boolean; reason?: string } {
+    if (index < startIdx) {
+      return { skip: true, reason: `Skipped by checkpoint resumption (batch ${index + 1}/${totalBatches})` };
+    }
+    if (caseIdFilter) {
+      const allowedIds = caseIdFilter.split(',').map(s => s.trim());
+      if (batch.id && !allowedIds.includes(batch.id)) {
+        return { skip: true, reason: 'Skipped by caseIdFilter' };
+      }
+    }
+    if (caseFilter && (index + 1) !== Number(caseFilter.trim())) {
+      return { skip: true, reason: 'Skipped by caseFilter' };
+    }
+    return { skip: false };
+  }
+
+  async function handleBatchExecutionFailure<TB extends CertifiedTestBatch>(
+    params: BatchExecutionParams<TB>,
+    sim: BaseBattleSimulation,
+    session: WorkerSession,
+    error: unknown
+  ): Promise<never> {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    params.onFailure();
+    await params.destroyWorkerSession(params.workerIndex);
+    const caseId = params.batch.id || `lote-${params.index + 1}`;
+    const logBuf = (session.page as { _e2eLogBuffer?: string[] })._e2eLogBuffer || [];
+    console.error(`[E2E-FAIL-LOGS-START: ${caseId}]\n` + logBuf.join('\n') + `\n[E2E-FAIL-LOGS-END: ${caseId}]`);
+
+    const cleanError = errorMsg.replace(new RegExp(String.fromCharCode(27) + '\\[[0-9;]*m', 'g'), '');
+    recordSuiteFailure(params.suiteName, {
+      suiteRelativePath: params.suiteRelativePath || `scripts/e2e/battle/${params.suiteName}`,
+      driver: sim.getDriver(),
+      failedBatchIndex: params.index + 1,
+      failedCaseId: params.batch.id,
+      errorSnippet: cleanError.slice(0, 200),
+    });
+
+    if (process.env.CONTINUE_ON_ERROR === 'true') {
+      console.warn(`[E2E-WARN] Ignorando error en lote ${caseId}`);
+      return undefined as never;
+    }
+    throw new Error(`[Fallo en Lote ${caseId}]: ${errorMsg}`, { cause: error });
+  }
+
+  function isInterruptedError(msg: string): boolean {
+    return msg.includes('Test ended') || msg.includes('Target page, context or browser has been closed');
+  }
+
+  function isBrowserTransientError(msg: string): boolean {
+    return msg.includes('Resulting promise was garbage collected') || msg.includes('Execution context was destroyed');
+  }
+
+  async function handleBatchRetryEvaluation<TB extends CertifiedTestBatch>(
+    error: unknown,
+    attempt: number,
+    params: BatchExecutionParams<TB>,
+    session: WorkerSession
+  ): Promise<boolean> {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (isInterruptedError(errorMsg)) {
+      await params.destroyWorkerSession(params.workerIndex);
+      throw error;
+    }
+
+    const pageWithBuf = session.page as { _e2eLogBuffer?: string[] };
+    const logBuf = pageWithBuf._e2eLogBuffer || [];
+    const isNetworkError = isTransientNetworkFailure(errorMsg, logBuf);
+    const networkReason = isTransientNetworkError(errorMsg) ? errorMsg : (logBuf.find(log => isTransientNetworkError(log)) || errorMsg);
+    const isTransientBrowserError = isBrowserTransientError(errorMsg);
+
+    const MAX_NETWORK_RETRIES = 3;
+    const MAX_BROWSER_RETRIES = 1;
+
+    if (isNetworkError && attempt <= MAX_NETWORK_RETRIES) {
+      console.warn(`⚠️ [NETWORK-RETRY] Microcorte de red detectado en lote #${params.index + 1} (${params.batch.id || 'case'}) (intento ${attempt}/${MAX_NETWORK_RETRIES}): ${networkReason.slice(0, 120)}. Purgando logs y reintentando limpio en 1s...`);
+      if (pageWithBuf._e2eLogBuffer) pageWithBuf._e2eLogBuffer.length = 0;
+      await params.destroyWorkerSession(params.workerIndex);
+      await setTimeout(1000);
+      return true;
+    }
+
+    if (isTransientBrowserError && attempt <= MAX_BROWSER_RETRIES) {
+      console.warn(`⚠️ [BATCH-HARNESS] Error transitorio de navegador en lote #${params.index + 1} (${errorMsg.slice(0, 100)}). Reintentando lote limpio (intento ${attempt + 1})...`);
+      await params.destroyWorkerSession(params.workerIndex);
+      return true;
+    }
+
+    if (isNetworkError) {
+      console.error(`\n🛑 [INFRASTRUCTURE-ERROR] Microcorte persistente de red tras ${MAX_NETWORK_RETRIES} reintentos en lote #${params.index + 1} (${params.batch.id || 'case'}). Deteniendo ejecución para revisión de red del host.\n`);
+    }
+
+    return false;
+  }
+
+  async function executeBatchAttemptWithRetries<TB extends CertifiedTestBatch>(
+    params: BatchExecutionParams<TB>
+  ): Promise<void> {
+    let attempt = 0;
+
+    while (true) {
+      attempt++;
+      const session = await params.getOrCreateWorkerSession(params.browser, params.workerIndex);
+      const sim = params.simWrapperFactory(session.page, `Worker_${params.workerIndex}`);
+      (session.page as { _e2eLogBuffer?: string[] })._e2eLogBuffer = sim.getLogBuffer();
+
+      try {
+        if (!session.isInitialized) {
+          await sim.setup();
+          session.isInitialized = true;
+        } else {
+          await sim.resetToCleanState();
+        }
+
+        await sim.setupFuzzerScenario(params.batch);
+        await sim.replayCertifiedBattle(params.batch);
+        break;
+      } catch (error: unknown) {
+        const shouldRetry = await handleBatchRetryEvaluation(error, attempt, params, session);
+        if (shouldRetry) continue;
+
+        await handleBatchExecutionFailure(params, sim, session, error);
+        return;
+      }
+    }
+  }
+
   const workerSessions = new Map<number, WorkerSession>();
 
   async function getOrCreateWorkerSession(
@@ -242,101 +389,23 @@ export function registerCertifiedBatchTests<T extends CertifiedTestBatch>(option
     test(formatTestTitle(batch, index), async ({ browser }, testInfo) => {
       test.setTimeout(getSuiteTimeoutForBatch(batch.history?.length));
 
-      // Salto oficial por checkpoint
-      if (index < startIdx) {
-        test.skip(true, `Skipped by checkpoint resumption (batch ${index + 1}/${batches.length})`);
+      const skipCheck = checkBatchSkipReason(index, startIdx, batches.length, batch, caseFilter, caseIdFilter);
+      if (skipCheck.skip) {
+        test.skip(true, skipCheck.reason);
       }
 
-      // Salto por filtros de entorno específicos
-      if (caseIdFilter) {
-        const allowedIds = caseIdFilter.split(',').map(s => s.trim());
-        if (batch.id && !allowedIds.includes(batch.id)) {
-          test.skip(true, `Skipped by caseIdFilter`);
-        }
-      }
-      if (caseFilter && (index + 1) !== Number(caseFilter.trim())) {
-        test.skip(true, `Skipped by caseFilter`);
-      }
-
-      const MAX_NETWORK_RETRIES = 3;
-      const MAX_BROWSER_RETRIES = 1;
-      let attempt = 0;
-      while (true) {
-        attempt++;
-        const session = await getOrCreateWorkerSession(browser, testInfo.workerIndex);
-        const sim = simWrapperFactory(session.page, `Worker_${testInfo.workerIndex}`);
-        (session.page as { _e2eLogBuffer?: string[] })._e2eLogBuffer = sim.getLogBuffer();
-
-        try {
-          if (!session.isInitialized) {
-            await sim.setup();
-            session.isInitialized = true;
-          } else {
-            await sim.resetToCleanState();
-          }
-
-          await sim.setupFuzzerScenario(batch);
-          await sim.replayCertifiedBattle(batch);
-          break;
-        } catch (error: unknown) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          const isInterruptedByRunner = errorMsg.includes('Test ended')
-            || errorMsg.includes('Target page, context or browser has been closed');
-          if (isInterruptedByRunner) {
-            await destroyWorkerSession(testInfo.workerIndex);
-            throw error;
-          }
-
-          const pageWithBuf = session.page as { _e2eLogBuffer?: string[] };
-          const logBuf = pageWithBuf._e2eLogBuffer || [];
-          const isNetworkError = isTransientNetworkFailure(errorMsg, logBuf);
-          const networkReason = isTransientNetworkError(errorMsg)
-            ? errorMsg
-            : (logBuf.find(log => isTransientNetworkError(log)) || errorMsg);
-          const isTransientBrowserError = errorMsg.includes('Resulting promise was garbage collected')
-            || errorMsg.includes('Execution context was destroyed');
-
-          if (isNetworkError && attempt <= MAX_NETWORK_RETRIES) {
-            console.warn(`⚠️ [NETWORK-RETRY] Microcorte de red detectado en lote #${index + 1} (${batch.id || 'case'}) (intento ${attempt}/${MAX_NETWORK_RETRIES}): ${networkReason.slice(0, 120)}. Purgando logs y reintentando limpio en 1s...`);
-            if (pageWithBuf._e2eLogBuffer) {
-              pageWithBuf._e2eLogBuffer.length = 0;
-            }
-            await destroyWorkerSession(testInfo.workerIndex);
-            await setTimeout(1000);
-            continue;
-          }
-
-          if (isTransientBrowserError && attempt <= MAX_BROWSER_RETRIES) {
-            console.warn(`⚠️ [BATCH-HARNESS] Error transitorio de navegador en lote #${index + 1} (${errorMsg.slice(0, 100)}). Reintentando lote limpio (intento ${attempt + 1})...`);
-            await destroyWorkerSession(testInfo.workerIndex);
-            continue;
-          }
-
-          if (isNetworkError) {
-            console.error(`\n🛑 [INFRASTRUCTURE-ERROR] Microcorte persistente de red tras ${MAX_NETWORK_RETRIES} reintentos en lote #${index + 1} (${batch.id || 'case'}). Deteniendo ejecución para revisión de red del host.\n`);
-          }
-
-          anyFailed = true;
-          await destroyWorkerSession(testInfo.workerIndex);
-          const caseId = batch.id || `lote-${index + 1}`;
-          console.error(`[E2E-FAIL-LOGS-START: ${caseId}]\n` + logBuf.join('\n') + `\n[E2E-FAIL-LOGS-END: ${caseId}]`);
-
-          const cleanError = errorMsg.replace(new RegExp(String.fromCharCode(27) + '\\[[0-9;]*m', 'g'), '');
-          recordSuiteFailure(suiteName, {
-            suiteRelativePath: options.suiteRelativePath || `scripts/e2e/battle/${suiteName}`,
-            driver: sim.getDriver(),
-            failedBatchIndex: index + 1,
-            failedCaseId: batch.id,
-            errorSnippet: cleanError.slice(0, 200),
-          });
-
-          if (process.env.CONTINUE_ON_ERROR === 'true') {
-            console.warn(`[E2E-WARN] Ignorando error en lote ${caseId}`);
-            return;
-          }
-          throw new Error(`[Fallo en Lote ${caseId}]: ${errorMsg}`, { cause: error });
-        }
-      }
+      await executeBatchAttemptWithRetries({
+        batch,
+        index,
+        browser,
+        workerIndex: testInfo.workerIndex,
+        suiteName,
+        suiteRelativePath: options.suiteRelativePath,
+        simWrapperFactory,
+        getOrCreateWorkerSession,
+        destroyWorkerSession,
+        onFailure: () => { anyFailed = true; }
+      });
     });
   });
 }

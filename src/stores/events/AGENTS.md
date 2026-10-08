@@ -21,12 +21,23 @@ State Architects / System Logic Developers.
 - **Post-Capture Event Eligibility & Auto-Enrollment Prompt Contract**: Following combat resolution and reward distribution, before starting the next search phase, the engine evaluates the newly caught Pokémon against all active competition events and sub-competitions (`total_ivs`, `weight` [max/min], `height` [max/min], `level` [max/min], `friendship` [max], `stat_iv` [max]). If the Pokémon qualifies and improves the player's existing record in any category (or is the player's first valid entry), an agile GSAP modal (`EventAutoEnrollModal.vue`) appears offering one-click enrollment. If it improves multiple categories, it displays an interactive category selector allowing the player to choose which category to enroll it in or replace.
 - **Greedy Competition Auto-Fill (`autoFillBestEntries` & `#event-auto-fill-btn-${event.id}`)**: Active competition cards across Home (`HomeEventsSection.vue`) and the events modal (`EventCard.vue`) feature an action button `[⚡ AUTO-RELLENAR]` (`#event-auto-fill-btn-${event.id}`). When invoked, `eventStore.autoFillBestEntries(eventId)` executes a greedy optimization algorithm across all owned Pokémon (`team` and PC `boxes`), finding the highest-scoring candidate for each category, guaranteeing zero cross-category participant collisions (one Pokémon cannot represent two categories in the same event), submitting only score-improving assignments, and notifying a consolidated toast summary.
 
+## Key Files
+
+- `eventAwardsHelper.ts`: Module implementation.
+- `eventPrizeGrantor.ts`: Module implementation.
+- [`eventAwardsActions.ts`](./eventAwardsActions.ts): Module implementation.
+- [`eventEnrollmentActions.ts`](./eventEnrollmentActions.ts): Module implementation.
+
 ## Work Guidance
 
 - Keep individual action handlers pure and below the 250 LOC threshold.
 - Ensure all notification messages match user-facing strings and test expectations.
 
-## Key Files
+## Verification
 
-- `eventAwardsHelper.ts`: Module implementation.
-- `eventPrizeGrantor.ts`: Module implementation.
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

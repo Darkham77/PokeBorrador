@@ -3,8 +3,8 @@ import type { AuthUser } from '@/types/auth/auth';
 import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
-import type { DBRouter } from '@/logic/db/dbRouter';
-import { serializeState, serializeSaveGenderCodes } from '@/logic/auth/saveSerializer';
+import { serializeState } from '@/logic/auth/saveSerializer';
+import { serializeSaveGenderCodes } from '@/logic/auth/savePokemonSerializer';
 import { validateAndSanitize, isValidState } from '@/logic/auth/saveSanitizer';
 import { syncUserProfileData } from '@/logic/auth/profileSyncHelper';
 

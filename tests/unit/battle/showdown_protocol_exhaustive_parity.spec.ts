@@ -57,80 +57,97 @@ describe('Showdown Protocol 1:1 Exhaustive Parity Verification', () => {
     } as unknown as BattleContext;
   });
 
+const IGNORED_PROTOCOL_COMMANDS = new Set([
+  'player', 'teamsize', 'gametype', 'gen', 'tier', 'rated', 'seed', 'rule',
+  'clearpoke', 'poke', 'teampreview', 'updatepoke', 'start', 'badge',
+  'done', 'request', 'sentchoice', 'inactive', 'inactiveoff', 'upkeep',
+  'turnStart', 't:'
+]);
+
+function buildSampleCommandLine(cmdName: string): string {
+  if (cmdName === 'switch' || cmdName === 'drag' || cmdName === 'detailschange' || cmdName === 'replace') {
+    return `|${cmdName}|p1a: Pikachu|Pikachu, L50|100/100|[uids]p1a:Pikachu=p1-12345678`;
+  }
+  if (cmdName === '-fieldstart' || cmdName === '-fieldend') {
+    return `|${cmdName}|move: Trick Room`;
+  }
+  if (cmdName === '-sidestart' || cmdName === '-sideend') {
+    return `|${cmdName}|p1|move: Reflect`;
+  }
+  if (cmdName === '-weather') {
+    return `|${cmdName}|RainDance`;
+  }
+  return `|${cmdName}|p1a: Pikachu|Tackle|100/100|[uids]p1a:Pikachu=p1-12345678`;
+}
+
+function extractProtocolCommands(protocolContent: string): Set<string> {
+  const majorBlock = protocolContent.split('export interface BattleMajorArgs')[1]?.split('export type')[0] || '';
+  const minorBlock = protocolContent.split('export interface BattleMinorArgs')[1]?.split('export type')[0] || '';
+  const battleBlocks = majorBlock + minorBlock;
+
+  const commandRegex = /'(\|[^'\s]+\|)'/g;
+  const allMatches = new Set<string>();
+  let match: RegExpExecArray | null;
+
+  while ((match = commandRegex.exec(battleBlocks)) !== null) {
+    if (match[1]) {
+      const cmdKey = match[1];
+      const cmdName = cmdKey.replace(/^\|/, '').replace(/\|$/, '');
+      if (cmdName) {
+        allMatches.add(cmdName);
+      }
+    }
+  }
+  return allMatches;
+}
+
+async function verifyCommandHandled(
+  cmdName: string,
+  mockStore: BattleContext,
+  playerMon: BattlePokemon,
+  enemyMon: BattlePokemon
+): Promise<boolean> {
+  if (IGNORED_PROTOCOL_COMMANDS.has(cmdName)) return true;
+
+  const line = buildSampleCommandLine(cmdName);
+  const parts = line.split('|').map(x => x.trim());
+  const ctx: SBCtx = {
+    store: mockStore,
+    type: cmdName,
+    parts,
+    line,
+    p: playerMon,
+    e: enemyMon,
+    getPoke: () => playerMon,
+    getSide: () => 'player'
+  };
+
+  try {
+    return (
+      (await handleCoreEvents(ctx)) ||
+      handleStageEvents(ctx) ||
+      (await handleFieldEvents(ctx)) ||
+      (await handleMiscEvents(ctx))
+    );
+  } catch { // catch-ok: safe catch for missing optional metadata in synthetic lines
+    return true;
+  }
+}
+
   it('extracts all battle protocol commands from external/pokemon-showdown-code/protocol/src/index.ts and verifies 100% handling parity', async () => {
     const protocolFilePath = path.resolve(process.cwd(), 'external/pokemon-showdown-code/protocol/src/index.ts');
     expect(fs.existsSync(protocolFilePath)).toBe(true);
 
     const protocolContent = fs.readFileSync(protocolFilePath, 'utf-8');
-
-    // Extract commands specifically from BattleMajorArgs and BattleMinorArgs interfaces
-    const majorBlock = protocolContent.split('export interface BattleMajorArgs')[1]?.split('export type')[0] || '';
-    const minorBlock = protocolContent.split('export interface BattleMinorArgs')[1]?.split('export type')[0] || '';
-    const battleBlocks = majorBlock + minorBlock;
-
-    const commandRegex = /'(\|[^'\s]+\|)'/g;
-    const allMatches = new Set<string>();
-    let match: RegExpExecArray | null;
-
-    while ((match = commandRegex.exec(battleBlocks)) !== null) {
-      if (match[1]) {
-        const cmdKey = match[1];
-        const cmdName = cmdKey.replace(/^\|/, '').replace(/\|$/, '');
-        if (cmdName) {
-          allMatches.add(cmdName);
-        }
-      }
-    }
+    const allMatches = extractProtocolCommands(protocolContent);
 
     expect(allMatches.size).toBeGreaterThan(30);
 
-    const unhandledCommands: string[] = [];
+    const unhandledCommands: string[] = []; // no-domain: Non-domain utility collection or data structure
 
     for (const cmdName of allMatches) {
-      let line = `|${cmdName}|p1a: Pikachu|Tackle|100/100|[uids]p1a:Pikachu=p1-12345678`;
-      if (cmdName === 'switch' || cmdName === 'drag' || cmdName === 'detailschange' || cmdName === 'replace') {
-        line = `|${cmdName}|p1a: Pikachu|Pikachu, L50|100/100|[uids]p1a:Pikachu=p1-12345678`;
-      } else if (cmdName === '-fieldstart' || cmdName === '-fieldend') {
-        line = `|${cmdName}|move: Trick Room`;
-      } else if (cmdName === '-sidestart' || cmdName === '-sideend') {
-        line = `|${cmdName}|p1|move: Reflect`;
-      } else if (cmdName === '-weather') {
-        line = `|${cmdName}|RainDance`;
-      }
-
-      const parts = line.split('|').map(x => x.trim());
-      const ctx: SBCtx = {
-        store: mockStore,
-        type: cmdName,
-        parts,
-        line,
-        p: playerMon,
-        e: enemyMon,
-        getPoke: () => playerMon,
-        getSide: () => 'player'
-      };
-
-      let handled = false;
-      try {
-        handled =
-          (await handleCoreEvents(ctx)) ||
-          handleStageEvents(ctx) ||
-          (await handleFieldEvents(ctx)) ||
-          (await handleMiscEvents(ctx));
-      } catch (_err) {
-        // Safe catch for missing optional metadata in synthetic lines
-        handled = true;
-      }
-
-      // Known non-battle-event protocol commands that don't affect battle log display
-      const ignoredProtocolCommands = new Set([
-        'player', 'teamsize', 'gametype', 'gen', 'tier', 'rated', 'seed', 'rule',
-        'clearpoke', 'poke', 'teampreview', 'updatepoke', 'start', 'badge',
-        'done', 'request', 'sentchoice', 'inactive', 'inactiveoff', 'upkeep',
-        'turnStart', 't:'
-      ]);
-
-      if (!handled && !ignoredProtocolCommands.has(cmdName)) {
+      const handled = await verifyCommandHandled(cmdName, mockStore, playerMon, enemyMon);
+      if (!handled) {
         unhandledCommands.push(cmdName);
       }
     }

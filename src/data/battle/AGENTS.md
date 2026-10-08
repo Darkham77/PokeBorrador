@@ -2,6 +2,10 @@
 
 Static battle datasets, move definitions, abilities, natures, and type matchups.
 
+## Ownership
+
+Poké Vicio Development Team.
+
 ## Local Contracts
 
 - **Canonical Showdown Nature IDs Mandate**: All nature declarations across factories, stores, breeding actions, and battle generators MUST strictly use canonical lowercase Showdown `NatureId` values (`'adamant'`, `'serious'`, `'hardy'`, etc.). Hardcoding Spanish terms (e.g., `'Serio'`, `'Firme'`) or capitalized strings (e.g., `'Hardy'`) is strictly forbidden.
@@ -18,6 +22,16 @@ Static battle datasets, move definitions, abilities, natures, and type matchups.
 - `types.ts`: Module implementation.
 - `volatileStatusMap.ts`: Module implementation.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

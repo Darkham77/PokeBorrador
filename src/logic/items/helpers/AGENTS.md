@@ -11,6 +11,16 @@ Frontend Developers / Systems Engineers.
 - Follow standard repository modularity guidelines.
 - **itemEffectsHelpers.ts**: Pure stateless helpers for resolving TM learning availability and dynamic item effects. Zero Pinia or UI dependencies.
 
+## Key Files
+
+- `itemEffectsHelpers.ts`: Module implementation.
+- `itemEvEffects.ts`: Module implementation.
+- `itemEvolutionEffects.ts`: Module implementation.
+- `itemGlobalBuffs.ts`: Module implementation.
+- `itemHealingEffects.ts`: Module implementation.
+- `itemSpecialBuffEffects.ts`: Module implementation.
+- `itemTargetValidator.ts`: Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -19,11 +29,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard test suites (`npm run test:node` or `npm run test`).
 
-## Key Files
-
-- `itemGlobalBuffs.ts`: Module implementation.
-- `itemTargetValidator.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

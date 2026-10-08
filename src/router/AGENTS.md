@@ -11,6 +11,10 @@ Frontend Architecture Team.
 - Ensure navigation guards do not deadlock loading gates.
 - **Conditional DEV-Only Routes**: Routes registered strictly for local debugging or asset calibration (e.g. `/dev/*`) must be guarded by `import.meta.env.DEV` so they are never exposed or navigable in production environments.
 
+## Key Files
+
+- `index.ts`: Module implementation.
+
 ## Work Guidance
 
 - Keep lazy loading rules active for main views to optimize bundle sizes.
@@ -22,10 +26,6 @@ Frontend Architecture Team.
 
 - Run standard lint and types checks.
 
-## Key Files
-
-- `index.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

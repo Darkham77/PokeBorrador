@@ -98,16 +98,19 @@ export interface EncounterOptions {
   eventRivalBonus?: number;
 }
 
+export const GATHERING_TOOL_TIERS = ['standard', 'good', 'super'] as const;
+export type GatheringToolTier = (typeof GATHERING_TOOL_TIERS)[number];
+
 export interface EncounterState {
   faction: FactionId | null;
   dailyGuardianCaptures?: MapRouteId[];
   repelSecs?: number;
   fishingRodSecs?: number;
-  fishingRodType?: 'standard' | 'good' | 'super' | null;
+  fishingRodType?: GatheringToolTier | null;
   pickaxeSecs?: number;
-  pickaxeType?: 'standard' | 'good' | 'super' | null;
+  pickaxeType?: GatheringToolTier | null;
   brushSecs?: number;
-  brushType?: 'standard' | 'good' | 'super' | null;
+  brushType?: GatheringToolTier | null;
   incenseSecs?: number;
   incenseType?: ItemId | null;
   articunoTicketSecs?: number;

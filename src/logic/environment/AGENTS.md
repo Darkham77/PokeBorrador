@@ -10,6 +10,11 @@ Frontend Developers / Systems Engineers.
 
 - Follow standard repository modularity guidelines.
 
+## Key Files
+
+- `bushCatalog.ts`: Module implementation.
+- `bushLibrary.ts`: Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -17,11 +22,6 @@ Frontend Developers / Systems Engineers.
 ## Verification
 
 - Run standard validation scripts.
-
-## Key Files
-
-- `bushCatalog.ts`: Module implementation.
-- `bushLibrary.ts`: Module implementation.
 
 ## Child DOX Index
 

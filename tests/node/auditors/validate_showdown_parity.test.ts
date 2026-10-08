@@ -64,5 +64,18 @@ describe('ShowdownParityAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['Tokens Audited']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when protocol token is missing', () => {
+      const auditor = new ShowdownParityAuditor();
+      auditor.addViolation({
+        ruleId: 'missing-protocol-token',
+        severity: 'error',
+        file: 'src/logic/battle/showdownWorkerClient.ts',
+        line: 1,
+        message: 'Protocol token missing handler',
+        context: '|-faint|'
+      });
+      expect(auditor.getErrorsByRule().get('missing-protocol-token')).toBe(1);
+    });
   });
 });

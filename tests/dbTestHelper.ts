@@ -100,51 +100,74 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
   resetSQLite();
   const mockStorage: Record<string, Record<string, unknown>[]> = {};
 
+  function handleInsertGameSaves(storage: Record<string, Record<string, unknown>[]>, params: unknown[]): void {
+    const p = params as [string, string, string];
+    storage.game_saves = storage.game_saves || [];
+    storage.game_saves.push({ user_id: p[0], save_data: JSON.parse(p[1]), last_save_id: p[2] });
+  }
+
+  function handleInsertMarketListings(storage: Record<string, Record<string, unknown>[]>, params: unknown[]): void {
+    const p = params as [string, string, string, string, number, string, string];
+    storage.market_listings = storage.market_listings || [];
+    storage.market_listings.push({
+      id: p[0],
+      listing_type: p[1],
+      seller_id: p[2],
+      seller_name: p[3],
+      price: p[4],
+      data: typeof p[5] === 'string' ? JSON.parse(p[5]) : p[5],
+      status: p[6] || 'active'
+    });
+  }
+
+  function handleInsertClaimQueue(storage: Record<string, Record<string, unknown>[]>, params: unknown[]): void {
+    const p = params as [string, string, string, string];
+    storage.claim_queue = storage.claim_queue || [];
+    storage.claim_queue.push({
+      user_id: p[0],
+      claim_id: p[1],
+      type: p[2],
+      data: typeof p[3] === 'string' ? JSON.parse(p[3]) : p[3]
+    });
+  }
+
+  function handleUpdateMarketListings(storage: Record<string, Record<string, unknown>[]>, params: unknown[]): void {
+    const p = params as [string, string];
+    const listings = storage.market_listings || [];
+    const listing = listings.find(l => l.id === p[1]);
+    if (listing) listing.status = p[0];
+  }
+
+  function handleUpdateGameSaves(
+    storage: Record<string, Record<string, unknown>[]>,
+    sql: string,
+    params: unknown[]
+  ): void {
+    const saves = storage.game_saves || [];
+    if (sql.includes('last_save_id = ?')) {
+      const p = params as [string, string];
+      const save = saves.find(s => s.user_id === p[1]);
+      if (save) save.last_save_id = p[0];
+    } else if (sql.includes('save_data = ?')) {
+      const p = params as [string, string];
+      const save = saves.find(s => s.user_id === p[1]);
+      if (save) save.save_data = typeof p[0] === 'string' ? JSON.parse(p[0]) : p[0];
+    }
+  }
+
   return {
     engine: 'sqlite',
     async run(sql: string, params: unknown[] = []): Promise<void> {
-      // Basic SQL runner simulation for offline unit tests
       if (sql.includes('INSERT INTO game_saves')) {
-        const p = params as [string, string, string];
-        mockStorage.game_saves = mockStorage.game_saves || [];
-        mockStorage.game_saves.push({ user_id: p[0], save_data: JSON.parse(p[1]), last_save_id: p[2] });
+        handleInsertGameSaves(mockStorage, params);
       } else if (sql.includes('INSERT INTO market_listings')) {
-        const p = params as [string, string, string, string, number, string, string];
-        mockStorage.market_listings = mockStorage.market_listings || [];
-        mockStorage.market_listings.push({
-          id: p[0],
-          listing_type: p[1],
-          seller_id: p[2],
-          seller_name: p[3],
-          price: p[4],
-          data: typeof p[5] === 'string' ? JSON.parse(p[5]) : p[5],
-          status: p[6] || 'active'
-        });
+        handleInsertMarketListings(mockStorage, params);
       } else if (sql.includes('INSERT INTO claim_queue')) {
-        const p = params as [string, string, string, string];
-        mockStorage.claim_queue = mockStorage.claim_queue || [];
-        mockStorage.claim_queue.push({
-          user_id: p[0],
-          claim_id: p[1],
-          type: p[2],
-          data: typeof p[3] === 'string' ? JSON.parse(p[3]) : p[3]
-        });
+        handleInsertClaimQueue(mockStorage, params);
       } else if (sql.includes('UPDATE market_listings SET status')) {
-        const p = params as [string, string];
-        const listings = mockStorage.market_listings || [];
-        const listing = listings.find(l => l.id === p[1]);
-        if (listing) listing.status = p[0];
+        handleUpdateMarketListings(mockStorage, params);
       } else if (sql.includes('UPDATE game_saves')) {
-        const saves = mockStorage.game_saves || [];
-        if (sql.includes('last_save_id = ?')) {
-          const p = params as [string, string];
-          const save = saves.find(s => s.user_id === p[1]);
-          if (save) save.last_save_id = p[0];
-        } else if (sql.includes('save_data = ?')) {
-          const p = params as [string, string];
-          const save = saves.find(s => s.user_id === p[1]);
-          if (save) save.save_data = typeof p[0] === 'string' ? JSON.parse(p[0]) : p[0];
-        }
+        handleUpdateGameSaves(mockStorage, sql, params);
       }
     },
     async query<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {

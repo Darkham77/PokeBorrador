@@ -37,6 +37,10 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 
   public async setupSandstormScenario(): Promise<void> {
     await this.disableAutoMode();
+    await this.page.evaluate(async () => {
+      const { useMapStore } = await import('../../../src/stores/map.ts');
+      useMapStore().currentMap = 'route22';
+    });
     await openDebugTab(this.page, 'tiempo');
     await this.page.locator('#debug-weather-btn-sandstorm').click();
     await openDebugTab(this.page, 'pokes');
@@ -113,7 +117,9 @@ test.describe('Weather Effects Verification Simulation', () => {
   test.afterEach(async ({ page }) => {
     await page.evaluate(async () => {
       const { useMapStore } = await import('../../../src/stores/map.ts');
-      useMapStore().setGlobalWeather(null);
+      const store = useMapStore();
+      store.setGlobalWeather(null);
+      store.currentMap = 'route1';
     });
   });
 });

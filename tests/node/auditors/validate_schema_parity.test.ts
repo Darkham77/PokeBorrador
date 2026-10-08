@@ -59,5 +59,18 @@ describe('SchemaParityAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['Columns Checked']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when schema column parity is broken', () => {
+      const auditor = new SchemaParityAuditor();
+      auditor.addViolation({
+        ruleId: 'schema-parity-missing-column',
+        severity: 'error',
+        file: 'database/schema.sql',
+        line: 1,
+        message: 'Column missing in sqlite companion schema',
+        context: 'profiles.updated_at'
+      });
+      expect(auditor.getErrorsByRule().get('schema-parity-missing-column')).toBe(1);
+    });
   });
 });

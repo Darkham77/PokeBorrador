@@ -14,6 +14,7 @@ import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { useBattleStore } from '@/stores/battle/battle'
 import {
   type ShowdownPlayerRequest,
+  type MoveSlotGlowType,
   isBattleMoveDisabled,
   resolveWeatherAuraClass,
   formatMoveName,
@@ -103,7 +104,7 @@ const updateGlow = () => {
   // - Gold border pulse for super effective (eff > 1) on damage moves
   // - Red border pulse for immune (eff === 0) or resisted (eff < 1)
   // - Neutral (eff === 1) resets
-  let glowType: 'gold' | 'red' | null = null
+  let glowType: MoveSlotGlowType | null = null
   if (isStatus) {
     if (eff === 0) glowType = 'red' // Inmune al tipo del movimiento de estado
   } else {

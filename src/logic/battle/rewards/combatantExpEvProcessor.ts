@@ -188,7 +188,7 @@ async function finalizePokemonLevelUp(
   await handleLevelUpEvolution(p, ctx);
 }
 
-function buildPrimaryRewardLine(
+export function buildPrimaryRewardLine(
   pokeName: string,
   level: number,
   lvlData: { levelsGained: number; moves: Move[] } | undefined,
@@ -209,7 +209,7 @@ function buildPrimaryRewardLine(
 
   let expText = '';
   if (expGained > 0) {
-    const eventExtraText = eventExtra > 0 ? ` (+${eventExtra} evento)` : '';
+    const eventExtraText = eventExtra > 0 ? ` (+${eventExtra} EXP evento)` : '';
     expText = ` • <span class="reward-exp">+${expGained} EXP${eventExtraText}</span>`;
   }
 

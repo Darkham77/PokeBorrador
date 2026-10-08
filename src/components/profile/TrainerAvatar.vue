@@ -16,6 +16,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { Z_LAYERS } from '@/logic/constants/visuals';
 import { DEFAULT_AVATAR_SIZE_PX } from '@/logic/constants/animations';
 import { useTrainerAvatarAnim } from './useTrainerAvatarAnim.ts';
+import type { GenderId } from '@/types/system/game';
 
 interface Props {
   playerClass?: string | null
@@ -66,7 +67,7 @@ const resolvedAvatarStyle = computed(() => {
   return props.avatarStyle;
 });
 
-const resolvedGender = computed((): 'h' | 'm' | undefined => {
+const resolvedGender = computed((): GenderId | undefined => {
   if (props.profile) {
     const g = props.profile.gender || props.gender;
     return g === 'm' ? 'm' : (g === 'h' ? 'h' : undefined);

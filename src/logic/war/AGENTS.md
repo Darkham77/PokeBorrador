@@ -14,6 +14,12 @@ Frontend Developers / Systems Engineers.
 - **Guardian Spawn Chance**: Base encounter chance for Guardians on conflict zone maps is strictly fixed at 1.5% (`GUARDIAN_CHANCE = 0.015`).
 - **Daily Conflict Zones**: Exactly 12 deterministic conflict zone maps are active per day in Kanto (`getConflictZones`).
 
+## Key Files
+
+- `bonusEngine.ts`: Module implementation.
+- `guardianEngine.ts`: Module implementation.
+- `warEngine.ts`: Module implementation.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
@@ -22,12 +28,6 @@ Frontend Developers / Systems Engineers.
 
 - Run standard validation scripts.
 
-## Key Files
-
-- `bonusEngine.ts`: Module implementation.
-- `guardianEngine.ts`: Module implementation.
-- `warEngine.ts`: Module implementation.
-
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

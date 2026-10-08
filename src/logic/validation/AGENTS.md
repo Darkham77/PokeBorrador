@@ -14,6 +14,20 @@ Security and Systems Developers.
 - **Canonical SSoT Domain Imports Mandate (`picklist`)**: Valibot schemas MUST NEVER re-declare domain string literals, finite status arrays, or union types inline within schema definition files. Schemas MUST import the canonical `as const` tuple directly from its domain module (e.g. `MARKET_LISTING_STATUSES` from `@/logic/economy/market.ts`) and wrap it with `picklist(TUPLE)` to guarantee compile-time alignment and $O(1)$ membership checking.
 - **Discriminated Union Performance Mandate (`variant`)**: Discriminated unions of object schemas sharing a common discriminator key (e.g. `listing_type: literal('pokemon')` vs `listing_type: literal('item')`) MUST use Valibot's `variant(discriminatorKey, [...])` rather than generic `union([...])` to ensure single-pass $O(1)$ dispatching without redundant validation traversals.
 
+## Key Files
+
+- [`schemas.ts`](./schemas.ts): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
 - [subschemas/AGENTS.md](./subschemas/AGENTS.md): Sub-schema definitions for auth, battle, pokemon, and social domains.

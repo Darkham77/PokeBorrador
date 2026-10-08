@@ -18,10 +18,6 @@ Pokemon Mechanics Team / System Architects.
   - `friendshipSteps?: number` stores the individual step accumulator (0–127) towards the canonical 128-step friendship cycle. It MUST be preserved across party swaps, PC box storage, and database persistence roundtrips.
 - **PokemonEgg Species Identifier Single Source of Truth**: The species identifier for `PokemonEgg` is strictly and exclusively `egg.id` (`PokemonSpeciesId`), matching `Pokemon.id`. It is STRICTLY FORBIDDEN to use fallback chains like `egg.pokemonId || egg.id`. All hatching, rendering, and validation logic must read `egg.id` directly and fail loudly with descriptive errors if absent.
 
-## Verification
-
-- Run `npm run lint` and `npm run audit suites=validate_domain_types`.
-
 ## Key Files
 
 - `encounters.ts`: Module implementation.
@@ -29,6 +25,15 @@ Pokemon Mechanics Team / System Architects.
 - `pokemon.ts`: Module implementation.
 - `spriteShadows.ts`: Module implementation.
 
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run `npm run lint` and `npm run audit suites=validate_domain_types`.
+
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- *This directory contains specialized domain logic and files with no subdirectories.*

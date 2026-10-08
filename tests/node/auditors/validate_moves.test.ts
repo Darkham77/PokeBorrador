@@ -66,5 +66,18 @@ describe('MoveAuditor', () => {
       expect(result.status).toBe('passed');
       expect(result.metrics['Learnset moves checked']).toBeGreaterThan(0);
     });
+
+    it('records violations with error severity when invalid moves exist', () => {
+      const auditor = new MoveAuditor();
+      auditor.addViolation({
+        ruleId: 'move-missing-effect-desc',
+        severity: 'error',
+        file: 'src/data/battle/moves.json',
+        line: 1,
+        message: 'Missing target scope for move',
+        context: 'tackle'
+      });
+      expect(auditor.getErrorsByRule().get('move-missing-effect-desc')).toBe(1);
+    });
   });
 });

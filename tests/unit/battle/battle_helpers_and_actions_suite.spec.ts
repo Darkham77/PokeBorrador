@@ -569,7 +569,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
 
     it('debería lanzar un error descriptivo si el UID no se encuentra en el request', () => {
       expect(() => ShowdownTeamResolver.getShowdownSlotForUid(mockRequest, 'invalid-uid')).toThrow(
-        '[ShowdownTeamResolver] UID "invalid-uid" no encontrado en los UIDs del request',
+        '[ShowdownSlotResolver] UID "invalid-uid" no encontrado en los UIDs del request',
       )
     })
 
@@ -590,7 +590,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
 
     it('debería fallar si se busca un slot inexistente o inválido', () => {
       expect(() => ShowdownTeamResolver.getPokemonByShowdownSlot(mockTeam, mockRequest, 99)).toThrow(
-        '[ShowdownTeamResolver] Slot de Showdown 99 no tiene un Pokémon válido',
+        '[ShowdownSlotResolver] Slot de Showdown 99 no tiene un Pokémon válido',
       )
     })
   })

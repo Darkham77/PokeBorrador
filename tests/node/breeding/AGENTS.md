@@ -15,6 +15,11 @@ Systems & QA Engineers.
 
 - Use static inlined fixtures for testing reproduction cases.
 
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
 ## Child DOX Index
 
-No child directories.
+- *This directory contains specialized domain logic and files with no subdirectories.*

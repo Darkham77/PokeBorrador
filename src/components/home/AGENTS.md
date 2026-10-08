@@ -1,8 +1,14 @@
-# Home Components Module
+# Purpose
 
 This directory contains modular Vue components that render the Home Hub dashboard (`HomeView.vue`).
 
-## Directory Structure
+## Ownership
+
+Poké Vicio Development Team.
+
+## Local Contracts
+
+### Directory Structure
 
 - `HomePendingRewardsWidget.vue`: Centralized universal pending rewards card aggregating claimable prizes from global events, ranked arena milestones, completed class deployments, and GTS market sales with bulk 'RECLAMAR TODO' support.
 - `HomePendingRewardItem.vue`: Atomic card rendering an individual claimable reward with source badge, title, category, reward pills, and claim/discard actions.
@@ -18,8 +24,6 @@ This directory contains modular Vue components that render the Home Hub dashboar
 - `HomePassiveDefenseWidget.vue`: Passive defense status monitor rendering the current 6-Pokémon defending team, live protection toggle, seasonal eligibility validation, ineligible infraction warnings, auto-deactivation on rule violation, and recent defense battle history feed with opponent trainer avatars and ELO deltas.
 - `PassiveDefenseHistoryRow.vue`: Atomic battle report card rendering opponent trainer avatar, faction badge, elapsed battle turns, formatted timestamp, victory/defeat banner, and ELO delta score.
 - `HomeNotificationsFeed.vue`: Activity feed for game notifications and combat logs with vertical scrollbar after 10 items.
-
-## Local Contracts
 
 - **Unified Card Header Actions**: All top-level action buttons located in card headers MUST use the `.card-action-btn` style (pixel font 8px, height 28px, border radius 6px, consistent hover glow).
 - **Passive Defense Season Eligibility Enforcement (`HomePassiveDefenseWidget.vue`)**: The widget resolves the active defending team via canonical `resolveDefendingTeam(gameStore.state)`. Each member is evaluated in real-time against `currentSeasonRules` via `evaluatePokemonForSeason`. If any Pokémon is ineligible, it is rendered with grayscale (`.ineligible-card`) and a red warning cartel (`.ineligible-cartel`, `⚠️ {{ reason }}`). Manual activation is blocked with an alert toast. A reactive watcher auto-deactivates passive defense in store and database immediately (0ms fail-fast) if team or seasonal mutations introduce an ineligible Pokémon, or triggers coalesced debounced synchronization (`scheduleDefenseSnapshotSync`, 1.5s window) when a valid roster is modified to prevent database upsert spam.
@@ -44,3 +48,32 @@ This directory contains modular Vue components that render the Home Hub dashboar
 - `HomeWidgetMinimizeBtn.vue`: Module implementation.
 - `HomeWidgetRefreshBtn.vue`: Module implementation.
 - `PassiveDefenseHistoryRow.styles.scss`: Module implementation.
+- [`HomeActiveBuffsWidget.vue`](./HomeActiveBuffsWidget.vue): Module implementation.
+- [`HomeBlackMarketWidget.vue`](./HomeBlackMarketWidget.vue): Module implementation.
+- [`HomeBreedingWidget.vue`](./HomeBreedingWidget.vue): Module implementation.
+- [`HomeClassMissionsWidget.vue`](./HomeClassMissionsWidget.vue): Module implementation.
+- [`HomeCollapsibleWidget.vue`](./HomeCollapsibleWidget.vue): Module implementation.
+- [`HomeEconomyWidget.vue`](./HomeEconomyWidget.vue): Module implementation.
+- [`HomeEventsSection.vue`](./HomeEventsSection.vue): Module implementation.
+- [`HomeFactionWar.vue`](./HomeFactionWar.vue): Module implementation.
+- [`HomeGymsProgress.vue`](./HomeGymsProgress.vue): Module implementation.
+- [`HomeNotificationsFeed.vue`](./HomeNotificationsFeed.vue): Module implementation.
+- [`HomePassiveDefenseWidget.vue`](./HomePassiveDefenseWidget.vue): Module implementation.
+- [`HomePendingRewardItem.vue`](./HomePendingRewardItem.vue): Module implementation.
+- [`HomePendingRewardsWidget.vue`](./HomePendingRewardsWidget.vue): Module implementation.
+- [`HomeRankedWidget.vue`](./HomeRankedWidget.vue): Module implementation.
+- [`PassiveDefenseHistoryRow.vue`](./PassiveDefenseHistoryRow.vue): Module implementation.
+
+## Work Guidance
+
+- Adhere to domain-type-first contracts without loose any/unknown or naked strings.
+- Maintain high cohesion, low complexity, and test coverage across all module modifications.
+
+## Verification
+
+- Run fast lint suite: `npm run lint`
+- Run automated tests: `npm run test`
+
+## Child DOX Index
+
+- *This directory contains specialized domain logic and files with no subdirectories.*

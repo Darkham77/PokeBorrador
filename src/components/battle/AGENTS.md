@@ -101,27 +101,6 @@ Frontend Developers / Systems Engineers.
     - When the combatant is defeated (`hp <= 0` / `fainted: true`) and NO defeat animation is in progress (`!isFainting && animState !== 'catching'`).
   - **Zero-Leak Guarantee in Vacant Arena & Sendout**: Defeated combatant status overlays MUST NEVER render or leak during intermediate transition states (vacant arena, dialogue, ball fadeout, or AI selection) prior to the next Pokémon being deployed. During replacement deployment (`animState === 'releasing'`), status overlays remain suppressed until the new Pokémon fully materializes on stage.
 
-## Work Guidance
-
-- Ensure clean decoupling and zero-warning type safety.
-- **Typed Template Refs & Expose Helpers**: When extracting child SFC subcomponents that expose DOM elements via `defineExpose`, always expose typed helper methods (e.g., `getTrainerElement(): HTMLElement | null`) instead of performing double type assertions (`as unknown as HTMLElement`) in parent watchers.
-- **Scoped SCSS in Battle Subcomponents**: All extracted battle UI subcomponents must explicitly link their scoped stylesheet (`src="@/styles/components/_battle-arena-view.scss"`) to share design tokens, GPU layers, and mixins without CSS duplication.
-- **Combat Grass & Emergence Layering (Mandatory Relative Z-Index)**: Front combat grass (`CombatGrass layer="front"`), back bush (`.back-bush-entity`), and all battle combatants (`BattleCombatant`) MUST ALWAYS use relative z-index bindings using CSS `calc(var(--z-map-spawns) + X)` values (e.g. `calc(var(--z-map-spawns) - 5)` for back bush, `calc(var(--z-map-spawns) + 1)` for front bush when behind, `calc(var(--z-map-spawns) + 2)` for enemy Pokémon, `calc(var(--z-map-spawns) + 3)` for front bush when covering, and `calc(var(--z-map-spawns) + 4)` for player Pokémon). Hardcoding small literal numeric z-indexes (`:z-index="2"`, `:z-index="4"`) is STRICTLY FORBIDDEN because inline styles override CSS cascade rules and cause automatic fixes or refactors to place Pokémon behind environmental layers. All intermediate FSM states between emergence jump start and active battle (such as `REORDER_TEAM`) MUST keep `bushIsBehind = true` to prevent z-index flicker during async worker initializations.
-- **Floating Pokémon Combat Grass Suppression Contract (`useBattleHud.ts`, `BattleArenaView.vue`)**: In search encounters, grass layers (`CombatGrass`) MUST NOT render if no enemy data is ready (`!activeEnemyData.value`) or if the enemy is floating (`enemyIsFloating = checkFloatingState(activeEnemyData.value)`). This prevents visual pop-in or sudden grass unmounting when wild flying/levitating Pokémon spawn.
-- **Complete Animation Bridge Mapping**: Local component animation bridge objects (such as `localAnimations` in `BattleArenaView.vue`) MUST explicitly map and forward ALL methods exported by domain animation composables (including `handleWithdrawRequest`, `handleReleaseRequest`, and `handleCatchRequest`). Omitting exported methods causes consumer state handlers to evaluate animation requests to `undefined`, silently bypassing critical animation sequences.
-- **Strict MoveTooltip Type Alignment**: MoveTooltip SFC subcomponents (`MoveTooltipDamage.vue`, `MoveTooltipStatsGrid.vue`, `MoveTooltipStatus.vue`) MUST import and use the derived `ActiveMoveDetails` type exported by `useMoveTooltip.ts` for their `activeDetails` prop, ensuring 1:1 parity with composable calculations and zero type mismatch warnings.
-- **Snappy Battle Animation Timings**: In-combat hit reactions (`PLAY_DAMAGE` / `-damage`) MUST use dedicated combat damage shake durations (`0.25s`) without trailing capture rest intervals. Physical attack dashes MUST follow snappy timings (~0.36s total: 0.08s windup, 0.14s strike, 0.14s return) to guarantee responsive retro-modern combat pacing.
-- **Terrain & Atmosphere Visual Decoupling**: In `BattleArenaView.vue`, visual lighting and atmospheric tinting (`useWeatherVisuals`) must be resolved via `effectiveBattleVisual` (prioritizing `fieldConditions` such as electric/psychic/misty/grassy terrains with highest precedence), whereas weather particle layers (`AtmosphereLayer`) require validated `WeatherId` values to prevent runtime render exceptions.
-- **Stadium & Map Weather/Cycle Isolation**: In `BattleArenaView.vue`, stadium combats (`locationId === 'stadium'`), gym battles, and maps with `weatherEnabled: false` strictly enforce daylight (`effectiveCycle = 'day'`) and block natural ambient weather (`effectiveBattleVisual = 'clear'`). Weather particles (`AtmosphereLayer`) and CSS atmosphere filters (`--atmosphere-filter`, `--weather-filter`) are strictly disabled inside weatherless arenas unless a battle move (*Rain Dance*, *Sunny Day*, etc.) or ability (*Drizzle*, *Drought*, etc.) actively casts in-combat weather (`battle.weather.type !== 'none' && battle.weather.type !== 'clear'`).
-- **Combat Tooltip Typography & Symbol Fallbacks**: All combat move tooltip components (`MoveTooltip.vue`, `MoveTooltipStatsGrid.vue`, `MoveTooltipDamage.vue`, `MoveTooltipStatus.vue`, `MoveTooltipDetails.vue`, `MoveTooltipTactical.vue`) MUST import and consume typography tokens and mixins exclusively from `_move-tooltip-shared.scss`. Special symbols missing from the primary bitmap pixel font (`'Pokemon FireRed LeafGreen'`), such as the infinity symbol (`.infinity-val`, `.infinity-emoji`) or em-dashes (`.dash-val`), MUST explicitly override `font-family` with `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;`, enable antialiasing (`-webkit-font-smoothing: antialiased !important;`), and scale up to 13-14px (`font-weight: 900 !important;`) to guarantee identical visual weight, stroke thickness, and vertical alignment with 8px pixel font numerals.
-- **Decomposed Move Stats & Tactical Display (`BattleMoveStatItem.vue`, `MoveTooltipCombatStatBox.vue`, `MoveTooltipPowerAccuracyBox.vue`, `moveTooltipDetailsHelper.ts`)**: Stat items with boost/penalized indicators and tactical conditional displays are decoupled into pure subcomponents and formatting helpers to guarantee minimal cyclomatic complexity and zero branch duplication across combat move buttons and tooltip cards.
-- **Decomposed Move Slot Subcomponents & Disabling Helpers (`BattleMoveEmptySlot.vue`, `battleMoveSlotHelpers.ts`)**: Empty move slot placeholders and slot styling/disabling/weather aura logic are isolated into dedicated subcomponents and pure helper modules to keep `BattleMoveSlot.vue` clean and modular.
-- **Decomposed Combatant Card & Replay Pods (`BattleInfoCardLevelRow.vue`, `BattleReplayCombatantSprite.vue`, `BattleReplayFogInspectCard.vue`, `CombatantTrappedBall.vue`, `CombatantSpriteLayer.vue`, `CombatantSpriteAnimated.vue`, `CombatantSpriteDebugGuides.vue`)**: Card level/nature/type badges, Pokéball capture and feedback transitions (`CombatantTrappedBall.vue`), sprite layers (`CombatantSpriteLayer.vue` coordinating atmospheric and clipping wrappers, `CombatantSpriteAnimated.vue` managing animated frames, and `CombatantSpriteDebugGuides.vue` for debug overlays), and replay combatant sprite and fog-of-war inspect views are extracted into dedicated child SFCs to ensure cyclomatic complexity < 10 and maintain zero template branch duplication.
-
-## Verification
-
-- Run `npm run lint`.
-
 ## Key Files
 
 - `BattleArena.scoped.scss`: Module implementation.
@@ -167,6 +146,67 @@ Frontend Developers / Systems Engineers.
 - `useBattleCombatantAnims.ts`: Module implementation.
 - `useBattleCombatantState.ts`: Module implementation.
 - `useCombatantVisualSprite.ts`: Module implementation.
+- [`BattleActionButtons.vue`](./BattleActionButtons.vue): Module implementation.
+- [`BattleArena.vue`](./BattleArena.vue): Module implementation.
+- [`BattleArenaControls.vue`](./BattleArenaControls.vue): Module implementation.
+- [`BattleArenaEnemyCombatant.vue`](./BattleArenaEnemyCombatant.vue): Module implementation.
+- [`BattleArenaPlayerCombatant.vue`](./BattleArenaPlayerCombatant.vue): Module implementation.
+- [`BattleArenaView.vue`](./BattleArenaView.vue): Module implementation.
+- [`BattleCombatant.vue`](./BattleCombatant.vue): Module implementation.
+- [`BattleCombatantStatusOverlay.vue`](./BattleCombatantStatusOverlay.vue): Module implementation.
+- [`BattleDebugTools.vue`](./BattleDebugTools.vue): Module implementation.
+- [`BattleFinishOverlay.vue`](./BattleFinishOverlay.vue): Module implementation.
+- [`BattleInfoCardLevelRow.vue`](./BattleInfoCardLevelRow.vue): Module implementation.
+- [`BattleMoveEmptySlot.vue`](./BattleMoveEmptySlot.vue): Module implementation.
+- [`BattleMoveInfoZone.vue`](./BattleMoveInfoZone.vue): Module implementation.
+- [`BattleMoveSlot.vue`](./BattleMoveSlot.vue): Module implementation.
+- [`BattleMoveStatItem.vue`](./BattleMoveStatItem.vue): Module implementation.
+- [`BattleQuickTeam.vue`](./BattleQuickTeam.vue): Module implementation.
+- [`BattleReplayCombatantSprite.vue`](./BattleReplayCombatantSprite.vue): Module implementation.
+- [`BattleReplayFogInspectCard.vue`](./BattleReplayFogInspectCard.vue): Module implementation.
+- [`BattleReplayModal.vue`](./BattleReplayModal.vue): Module implementation.
+- [`BattleTacticalReplayer.vue`](./BattleTacticalReplayer.vue): Module implementation.
+- [`BattleTrainerEntities.vue`](./BattleTrainerEntities.vue): Module implementation.
+- [`BattleTrainerFigure.vue`](./BattleTrainerFigure.vue): Module implementation.
+- [`CombatShadow.vue`](./CombatShadow.vue): Module implementation.
+- [`CombatantSpriteAnimated.vue`](./CombatantSpriteAnimated.vue): Module implementation.
+- [`CombatantSpriteDebugGuides.vue`](./CombatantSpriteDebugGuides.vue): Module implementation.
+- [`CombatantSpriteLayer.vue`](./CombatantSpriteLayer.vue): Module implementation.
+- [`CombatantTrappedBall.vue`](./CombatantTrappedBall.vue): Module implementation.
+- [`MoveTooltip.vue`](./MoveTooltip.vue): Module implementation.
+- [`MoveTooltipCombatStatBox.vue`](./MoveTooltipCombatStatBox.vue): Module implementation.
+- [`MoveTooltipDamage.vue`](./MoveTooltipDamage.vue): Module implementation.
+- [`MoveTooltipDetails.vue`](./MoveTooltipDetails.vue): Module implementation.
+- [`MoveTooltipPowerAccuracyBox.vue`](./MoveTooltipPowerAccuracyBox.vue): Module implementation.
+- [`MoveTooltipStatsGrid.vue`](./MoveTooltipStatsGrid.vue): Module implementation.
+- [`MoveTooltipStatus.vue`](./MoveTooltipStatus.vue): Module implementation.
+- [`MoveTooltipTactical.vue`](./MoveTooltipTactical.vue): Module implementation.
+- [`PvPTurnTimerClock.vue`](./PvPTurnTimerClock.vue): Module implementation.
+- [`battleMoveSlotHelpers.ts`](./battleMoveSlotHelpers.ts): Module implementation.
+- [`moveTooltipDetailsHelper.ts`](./moveTooltipDetailsHelper.ts): Module implementation.
+- [`useBattleCombatantSpriteLoop.ts`](./useBattleCombatantSpriteLoop.ts): Module implementation.
+- [`useDebugBattleActions.ts`](./useDebugBattleActions.ts): Module implementation.
+
+## Work Guidance
+
+- Ensure clean decoupling and zero-warning type safety.
+- **Typed Template Refs & Expose Helpers**: When extracting child SFC subcomponents that expose DOM elements via `defineExpose`, always expose typed helper methods (e.g., `getTrainerElement(): HTMLElement | null`) instead of performing double type assertions (`as unknown as HTMLElement`) in parent watchers.
+- **Scoped SCSS in Battle Subcomponents**: All extracted battle UI subcomponents must explicitly link their scoped stylesheet (`src="@/styles/components/_battle-arena-view.scss"`) to share design tokens, GPU layers, and mixins without CSS duplication.
+- **Combat Grass & Emergence Layering (Mandatory Relative Z-Index)**: Front combat grass (`CombatGrass layer="front"`), back bush (`.back-bush-entity`), and all battle combatants (`BattleCombatant`) MUST ALWAYS use relative z-index bindings using CSS `calc(var(--z-map-spawns) + X)` values (e.g. `calc(var(--z-map-spawns) - 5)` for back bush, `calc(var(--z-map-spawns) + 1)` for front bush when behind, `calc(var(--z-map-spawns) + 2)` for enemy Pokémon, `calc(var(--z-map-spawns) + 3)` for front bush when covering, and `calc(var(--z-map-spawns) + 4)` for player Pokémon). Hardcoding small literal numeric z-indexes (`:z-index="2"`, `:z-index="4"`) is STRICTLY FORBIDDEN because inline styles override CSS cascade rules and cause automatic fixes or refactors to place Pokémon behind environmental layers. All intermediate FSM states between emergence jump start and active battle (such as `REORDER_TEAM`) MUST keep `bushIsBehind = true` to prevent z-index flicker during async worker initializations.
+- **Floating Pokémon Combat Grass Suppression Contract (`useBattleHud.ts`, `BattleArenaView.vue`)**: In search encounters, grass layers (`CombatGrass`) MUST NOT render if no enemy data is ready (`!activeEnemyData.value`) or if the enemy is floating (`enemyIsFloating = checkFloatingState(activeEnemyData.value)`). This prevents visual pop-in or sudden grass unmounting when wild flying/levitating Pokémon spawn.
+- **Complete Animation Bridge Mapping**: Local component animation bridge objects (such as `localAnimations` in `BattleArenaView.vue`) MUST explicitly map and forward ALL methods exported by domain animation composables (including `handleWithdrawRequest`, `handleReleaseRequest`, and `handleCatchRequest`). Omitting exported methods causes consumer state handlers to evaluate animation requests to `undefined`, silently bypassing critical animation sequences.
+- **Strict MoveTooltip Type Alignment**: MoveTooltip SFC subcomponents (`MoveTooltipDamage.vue`, `MoveTooltipStatsGrid.vue`, `MoveTooltipStatus.vue`) MUST import and use the derived `ActiveMoveDetails` type exported by `useMoveTooltip.ts` for their `activeDetails` prop, ensuring 1:1 parity with composable calculations and zero type mismatch warnings.
+- **Snappy Battle Animation Timings**: In-combat hit reactions (`PLAY_DAMAGE` / `-damage`) MUST use dedicated combat damage shake durations (`0.25s`) without trailing capture rest intervals. Physical attack dashes MUST follow snappy timings (~0.36s total: 0.08s windup, 0.14s strike, 0.14s return) to guarantee responsive retro-modern combat pacing.
+- **Terrain & Atmosphere Visual Decoupling**: In `BattleArenaView.vue`, visual lighting and atmospheric tinting (`useWeatherVisuals`) must be resolved via `effectiveBattleVisual` (prioritizing `fieldConditions` such as electric/psychic/misty/grassy terrains with highest precedence), whereas weather particle layers (`AtmosphereLayer`) require validated `WeatherId` values to prevent runtime render exceptions.
+- **Stadium & Map Weather/Cycle Isolation**: In `BattleArenaView.vue`, stadium combats (`locationId === 'stadium'`), gym battles, and maps with `weatherEnabled: false` strictly enforce daylight (`effectiveCycle = 'day'`) and block natural ambient weather (`effectiveBattleVisual = 'clear'`). Weather particles (`AtmosphereLayer`) and CSS atmosphere filters (`--atmosphere-filter`, `--weather-filter`) are strictly disabled inside weatherless arenas unless a battle move (*Rain Dance*, *Sunny Day*, etc.) or ability (*Drizzle*, *Drought*, etc.) actively casts in-combat weather (`battle.weather.type !== 'none' && battle.weather.type !== 'clear'`).
+- **Combat Tooltip Typography & Symbol Fallbacks**: All combat move tooltip components (`MoveTooltip.vue`, `MoveTooltipStatsGrid.vue`, `MoveTooltipDamage.vue`, `MoveTooltipStatus.vue`, `MoveTooltipDetails.vue`, `MoveTooltipTactical.vue`) MUST import and consume typography tokens and mixins exclusively from `_move-tooltip-shared.scss`. Special symbols missing from the primary bitmap pixel font (`'Pokemon FireRed LeafGreen'`), such as the infinity symbol (`.infinity-val`, `.infinity-emoji`) or em-dashes (`.dash-val`), MUST explicitly override `font-family` with `system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;`, enable antialiasing (`-webkit-font-smoothing: antialiased !important;`), and scale up to 13-14px (`font-weight: 900 !important;`) to guarantee identical visual weight, stroke thickness, and vertical alignment with 8px pixel font numerals.
+- **Decomposed Move Stats & Tactical Display (`BattleMoveStatItem.vue`, `MoveTooltipCombatStatBox.vue`, `MoveTooltipPowerAccuracyBox.vue`, `moveTooltipDetailsHelper.ts`)**: Stat items with boost/penalized indicators and tactical conditional displays are decoupled into pure subcomponents and formatting helpers to guarantee minimal cyclomatic complexity and zero branch duplication across combat move buttons and tooltip cards.
+- **Decomposed Move Slot Subcomponents & Disabling Helpers (`BattleMoveEmptySlot.vue`, `battleMoveSlotHelpers.ts`)**: Empty move slot placeholders and slot styling/disabling/weather aura logic are isolated into dedicated subcomponents and pure helper modules to keep `BattleMoveSlot.vue` clean and modular.
+- **Decomposed Combatant Card & Replay Pods (`BattleInfoCardLevelRow.vue`, `BattleReplayCombatantSprite.vue`, `BattleReplayFogInspectCard.vue`, `CombatantTrappedBall.vue`, `CombatantSpriteLayer.vue`, `CombatantSpriteAnimated.vue`, `CombatantSpriteDebugGuides.vue`)**: Card level/nature/type badges, Pokéball capture and feedback transitions (`CombatantTrappedBall.vue`), sprite layers (`CombatantSpriteLayer.vue` coordinating atmospheric and clipping wrappers, `CombatantSpriteAnimated.vue` managing animated frames, and `CombatantSpriteDebugGuides.vue` for debug overlays), and replay combatant sprite and fog-of-war inspect views are extracted into dedicated child SFCs to ensure cyclomatic complexity < 10 and maintain zero template branch duplication.
+
+## Verification
+
+- Run `npm run lint`.
 
 ## Child DOX Index
 

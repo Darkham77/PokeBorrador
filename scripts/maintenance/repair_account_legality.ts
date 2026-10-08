@@ -53,176 +53,329 @@ export function findDefaultDb(): string | null {
  * Aplica el algoritmo de auditoría, purga de especies no habilitadas y reparación de legalidad sobre un SaveDataDto.
  * Retorna true si se modificó algún Pokémon o huevo, junto con la lista de cambios.
  */
+function purgeEggsFromIncubator(saveData: SaveDataDto, isSilent: boolean, details: string[]): boolean {
+  if (!Array.isArray(saveData.eggs)) return false;
+  const initial = saveData.eggs.length;
+  saveData.eggs = saveData.eggs.filter(egg => {
+    if (!egg) return false;
+    const eggSpecies = egg.id || egg.pokemonId;
+    if (!eggSpecies || !isEnabledPokemonId(eggSpecies)) {
+      const logMsg = `Huevo no habilitado eliminado de Incubadora: "${eggSpecies || 'desconocido'}" (UID: ${egg.uid || 'N/A'})`;
+      details.push(`  ↳ 🗑️ ${logMsg}`);
+      if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
+      return false;
+    }
+    return true;
+  });
+  return saveData.eggs.length !== initial;
+}
+
+interface DaycareWarehouseEntry {
+  readonly species?: unknown;
+  readonly id?: unknown;
+  readonly isEgg?: unknown;
+  readonly steps?: unknown;
+}
+
+function isDaycareWarehouseItem(item: unknown): item is DaycareWarehouseEntry {
+  return typeof item === 'object' && item !== null;
+}
+
+function purgeDaycareWarehouse(saveData: SaveDataDto, isSilent: boolean, details: string[]): boolean {
+  const warehouse = saveData.daycareWarehouse;
+  if (!Array.isArray(warehouse)) return false;
+  const initial = warehouse.length;
+  saveData.daycareWarehouse = warehouse.filter(item => {
+    if (!isDaycareWarehouseItem(item)) return false;
+    const rawSpecies = String(item.species || item.id || '');
+    const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
+    const targetSpecies = item.species ? String(item.species) : cleanSpecies;
+
+    if (!targetSpecies || !isEnabledPokemonId(targetSpecies)) {
+      const label = item.isEgg || item.steps !== undefined || rawSpecies.startsWith('egg_') ? 'Huevo' : 'Pokémon';
+      const logMsg = `${label} no habilitado eliminado de Guardería (Warehouse): "${targetSpecies || 'desconocido'}" (ID: ${item.id || 'N/A'})`;
+      details.push(`  ↳ 🗑️ ${logMsg}`);
+      if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
+      return false;
+    }
+    return true;
+  });
+  return saveData.daycareWarehouse.length !== initial;
+}
+
+function purgeNonEnabledPokemon(list: unknown[], locationLabel: string, isSilent: boolean, details: string[]): boolean {
+  if (!Array.isArray(list)) return false;
+  const initial = list.length;
+  const filtered = list.filter((p) => {
+    if (!p) return false;
+    const poke = p as Pokemon;
+    if (!poke.id || !isEnabledPokemonId(poke.id)) {
+      const logMsg = `Pokémon no habilitado eliminado de ${locationLabel}: "${poke.name}" (UID: ${poke.uid || 'N/A'})`;
+      details.push(`  ↳ 🗑️ ${logMsg}`);
+      if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
+      return false;
+    }
+    return true;
+  });
+  list.length = 0;
+  list.push(...filtered);
+  return filtered.length !== initial;
+}
+
+function applySaveShield(saveData: SaveDataDto, isSilent: boolean, details: string[]): boolean {
+  if (!Array.isArray(saveData.team) || saveData.team.length > 0) return false;
+
+  if (Array.isArray(saveData.box) && saveData.box.length > 0) {
+    const promoted = saveData.box.shift();
+    if (promoted) {
+      saveData.team.push(promoted);
+      const logMsg = `Save Shield: Pokémon ${promoted.name} promovido de Caja al Equipo para evitar equipo vacío.`;
+      details.push(`  ↳ 🛡️ ${logMsg}`);
+      if (!isSilent) console.log(`    ↳ 🛡️ ${logMsg}`);
+      return true;
+    }
+  }
+
+  const rescueStarter = makePokemon('bulbasaur', 5, { bypassWhitelist: true });
+  if (rescueStarter) {
+    (saveData.team as Pokemon[]).push(rescueStarter);
+    const logMsg = `Save Shield: Bulbasaur Nv. 5 legal inyectado de rescate porque la cuenta no poseía ningún Pokémon legal.`;
+    details.push(`  ↳ 🛡️ ${logMsg}`);
+    if (!isSilent) console.log(`    ↳ 🛡️ ${logMsg}`);
+    return true;
+  }
+  return false;
+}
+
+function auditAndRepairPokemonList(list: unknown[], locationLabel: string, isSilent: boolean, details: string[]): number {
+  if (!Array.isArray(list)) return 0;
+  let fixed = 0;
+  list.forEach((p, idx) => {
+    if (!p) return;
+    const poke = p as Pokemon;
+    const check = checkPokemonLegality(poke);
+    if (!check.isLegal || poke.isIllegal) {
+      const report = repairPokemonLegality(poke);
+      if (report.repaired) {
+        const header = `[${locationLabel} Slot ${idx}] ${poke.name} (UID: ${poke.uid}):`;
+        details.push(header);
+        if (!isSilent) console.log(`  ${header}`);
+        report.changes.forEach(ch => {
+          details.push(`  ↳ ${ch}`);
+          if (!isSilent) console.log(`    ↳ ✅ ${ch}`);
+        });
+        fixed++;
+      }
+    }
+  });
+  return fixed;
+}
+
+function releaseStuckEventFlags(list: unknown[], locationLabel: string, isSilent: boolean, details: string[]): boolean {
+  if (!Array.isArray(list)) return false;
+  let modified = false;
+  list.forEach((p, idx) => {
+    if (!p || typeof p !== 'object') return;
+    const poke = p as Pokemon;
+    if (poke.onEvent) {
+      poke.onEvent = false;
+      const logMsg = `[${locationLabel} Slot ${idx}] ${poke.name} (UID: ${poke.uid}) liberado de evento concluido/legacy (onEvent = false).`;
+      details.push(`  ↳ 🏆 ${logMsg}`);
+      if (!isSilent) console.log(`    ↳ 🏆 ${logMsg}`);
+      modified = true;
+    }
+  });
+  return modified;
+}
+
 export function auditAndRepairSaveData(
   saveData: SaveDataDto,
   isSilent: boolean
 ): { modified: boolean; fixedPokemonCount: number; details: string[] } {
-  let accountModified = false;
-  let accountFixedPokemonCount = 0;
-  const accountDetails: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const details: string[] = [];
+  let modified = false;
 
-  // 1. Purgar Huevos no habilitados en incubadora (saveData.eggs)
-  if (Array.isArray(saveData.eggs)) {
-    const initialEggCount = saveData.eggs.length;
-    saveData.eggs = saveData.eggs.filter(egg => {
-      if (!egg) return false;
-      const eggSpecies = egg.id || egg.pokemonId;
-      if (!eggSpecies || !isEnabledPokemonId(eggSpecies)) {
-        const logMsg = `Huevo no habilitado eliminado de Incubadora: "${eggSpecies || 'desconocido'}" (UID: ${egg.uid || 'N/A'})`;
-        accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
-        if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
-        return false;
-      }
-      return true;
-    });
-    if (saveData.eggs.length !== initialEggCount) {
-      accountModified = true;
-    }
-  }
+  if (purgeEggsFromIncubator(saveData, isSilent, details)) modified = true;
+  if (purgeDaycareWarehouse(saveData, isSilent, details)) modified = true;
+  if (purgeNonEnabledPokemon(saveData.box, 'Caja', isSilent, details)) modified = true;
+  if (purgeNonEnabledPokemon(saveData.team, 'Equipo', isSilent, details)) modified = true;
+  if (applySaveShield(saveData, isSilent, details)) modified = true;
 
-  // 2. Purgar Huevos y Pokémon no habilitados en Guardería Depósito (daycareWarehouse)
-  const warehouse = saveData.daycareWarehouse;
-  if (Array.isArray(warehouse)) {
-    const initialWhCount = warehouse.length;
-    const remainingWh = warehouse.filter(item => {
-      if (!item || typeof item !== 'object') return false;
-      const entry = item as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-      const rawSpecies = String(entry.species || entry.id || '');
-      const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
-      const targetSpecies = entry.species ? String(entry.species) : cleanSpecies;
-
-      if (!targetSpecies || !isEnabledPokemonId(targetSpecies)) {
-        const label = entry.isEgg || entry.steps !== undefined || rawSpecies.startsWith('egg_') ? 'Huevo' : 'Pokémon';
-        const logMsg = `${label} no habilitado eliminado de Guardería (Warehouse): "${targetSpecies || 'desconocido'}" (ID: ${entry.id || 'N/A'})`;
-        accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
-        if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
-        return false;
-      }
-      return true;
-    });
-    saveData.daycareWarehouse = remainingWh;
-    if (remainingWh.length !== initialWhCount) {
-      accountModified = true;
-    }
-  }
-
-  // 3. Purgar Pokémon no habilitados en Caja (saveData.box)
-  if (Array.isArray(saveData.box)) {
-    const initialBoxCount = saveData.box.length;
-    saveData.box = saveData.box.filter((p) => {
-      if (!p) return false;
-      if (!p.id || !isEnabledPokemonId(p.id)) {
-        const logMsg = `Pokémon no habilitado eliminado de Caja: "${p.name}" (UID: ${p.uid || 'N/A'})`;
-        accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
-        if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
-        return false;
-      }
-      return true;
-    });
-    if (saveData.box.length !== initialBoxCount) {
-      accountModified = true;
-    }
-  }
-
-  // 4. Purgar Pokémon no habilitados en Equipo (saveData.team)
-  if (Array.isArray(saveData.team)) {
-    const initialTeamCount = saveData.team.length;
-    saveData.team = saveData.team.filter((p) => {
-      if (!p) return false;
-      if (!p.id || !isEnabledPokemonId(p.id)) {
-        const logMsg = `Pokémon no habilitado eliminado de Equipo: "${p.name}" (UID: ${p.uid || 'N/A'})`;
-        accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
-        if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
-        return false;
-      }
-      return true;
-    });
-    if (saveData.team.length !== initialTeamCount) {
-      accountModified = true;
-    }
-  }
-
-  // 5. Garantía Save Shield: El equipo no puede quedar con 0 Pokémon
-  if (Array.isArray(saveData.team) && saveData.team.length === 0) {
-    if (Array.isArray(saveData.box) && saveData.box.length > 0) {
-      const promoted = saveData.box.shift();
-      if (promoted) {
-        saveData.team.push(promoted);
-        const logMsg = `Save Shield: Pokémon ${promoted.name} promovido de Caja al Equipo para evitar equipo vacío.`;
-        accountDetails.push(`  ↳ 🛡️ ${logMsg}`);
-        if (!isSilent) console.log(`    ↳ 🛡️ ${logMsg}`);
-        accountModified = true;
-      }
-    }
-    if (saveData.team.length === 0) {
-      const rescueStarter = makePokemon('bulbasaur', 5, { bypassWhitelist: true });
-      if (rescueStarter) {
-        (saveData.team as Pokemon[]).push(rescueStarter);
-        const logMsg = `Save Shield: Bulbasaur Nv. 5 legal inyectado de rescate porque la cuenta no poseía ningún Pokémon legal.`;
-        accountDetails.push(`  ↳ 🛡️ ${logMsg}`);
-        if (!isSilent) console.log(`    ↳ 🛡️ ${logMsg}`);
-        accountModified = true;
-      }
-    }
-  }
-
-  const auditAndRepairList = (list: unknown[], locationLabel: string) => {
-    if (!Array.isArray(list)) return;
-    list.forEach((p, idx) => {
-      if (!p) return;
-      const poke = p as Pokemon;
-      const initialCheck = checkPokemonLegality(poke);
-      if (!initialCheck.isLegal || poke.isIllegal) {
-        const report = repairPokemonLegality(poke);
-        if (report.repaired) {
-          const logHeader = `[${locationLabel} Slot ${idx}] ${poke.name} (UID: ${poke.uid}):`;
-          accountDetails.push(logHeader);
-          if (!isSilent) console.log(`  ${logHeader}`);
-          report.changes.forEach(ch => {
-            accountDetails.push(`  ↳ ${ch}`);
-            if (!isSilent) console.log(`    ↳ ✅ ${ch}`);
-          });
-          accountModified = true;
-          accountFixedPokemonCount++;
-        }
-      }
-    });
-  };
-
-  // 6. Auditar y reparar atributos de Pokémon legales restantes
-  auditAndRepairList(saveData.team, 'Equipo');
-  auditAndRepairList(saveData.box, 'Caja');
+  let fixedCount = 0;
+  fixedCount += auditAndRepairPokemonList(saveData.team, 'Equipo', isSilent, details);
+  fixedCount += auditAndRepairPokemonList(saveData.box, 'Caja', isSilent, details);
   if (Array.isArray(saveData.daycareWarehouse)) {
-    auditAndRepairList(saveData.daycareWarehouse, 'Guardería Depósito');
+    fixedCount += auditAndRepairPokemonList(saveData.daycareWarehouse, 'Guardería Depósito', isSilent, details);
   }
+  if (fixedCount > 0) modified = true;
 
-  // 7. Liberar Pokémon atrapados con onEvent = true de eventos concluidos o legacy
-  const clearStuckEventFlag = (list: unknown[], locationLabel: string) => {
-    if (!Array.isArray(list)) return;
-    list.forEach((p, idx) => {
-      if (!p || typeof p !== 'object') return;
-      const poke = p as Pokemon;
-      if (poke.onEvent) {
-        poke.onEvent = false;
-        const logMsg = `[${locationLabel} Slot ${idx}] ${poke.name} (UID: ${poke.uid}) liberado de evento concluido/legacy (onEvent = false).`;
-        accountDetails.push(`  ↳ 🏆 ${logMsg}`);
-        if (!isSilent) console.log(`    ↳ 🏆 ${logMsg}`);
-        accountModified = true;
-      }
-    });
-  };
-
-  clearStuckEventFlag(saveData.team, 'Equipo');
-  clearStuckEventFlag(saveData.box, 'Caja');
+  if (releaseStuckEventFlags(saveData.team, 'Equipo', isSilent, details)) modified = true;
+  if (releaseStuckEventFlags(saveData.box, 'Caja', isSilent, details)) modified = true;
   if (Array.isArray(saveData.daycareWarehouse)) {
-    clearStuckEventFlag(saveData.daycareWarehouse, 'Guardería Depósito');
+    if (releaseStuckEventFlags(saveData.daycareWarehouse, 'Guardería Depósito', isSilent, details)) modified = true;
   }
 
-  return {
-    modified: accountModified,
-    fixedPokemonCount: accountFixedPokemonCount,
-    details: accountDetails
-  };
+  return { modified, fixedPokemonCount: fixedCount, details };
+}
+
+function repairSqliteSingleAccount(
+  db: DatabaseSync,
+  row: { user_id: string; save_data: string },
+  isSilent: boolean,
+  summary: RepairSummary
+): void {
+  if (!isSilent) {
+    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    console.log(`👤 Evaluando cuenta: ${row.user_id}`);
+  }
+
+  let saveData: SaveDataDto;
+  try {
+    saveData = JSON.parse(row.save_data) as SaveDataDto;
+  } catch (e) {
+    const errMsg = `Error al parsear JSON del usuario ${row.user_id}: ${(e as Error).message}`;
+    if (!isSilent) console.error(`❌ ${errMsg}`);
+    summary.accountReports.push({
+      userId: row.user_id,
+      modified: false,
+      fixedPokemonCount: 0,
+      details: [errMsg]
+    });
+    return;
+  }
+
+  const { modified, fixedPokemonCount, details } = auditAndRepairSaveData(saveData, isSilent);
+
+  if (modified) {
+    const updatedJson = JSON.stringify(saveData);
+    db.prepare('UPDATE game_saves SET save_data = ? WHERE user_id = ?').run(updatedJson, row.user_id);
+    if (!isSilent) {
+      console.log(`✨ Guardado actualizado con éxito en SQLite (${fixedPokemonCount} Pokémon corregidos).`);
+    }
+    summary.accountsRepaired++;
+    summary.pokemonRepaired += fixedPokemonCount;
+  } else {
+    if (!isSilent) {
+      console.log(`  👌 Todos los Pokémon de esta cuenta son 100% legales.`);
+    }
+  }
+
+  summary.accountReports.push({
+    userId: row.user_id,
+    modified,
+    fixedPokemonCount,
+    details
+  });
+}
+
+interface ClaimQueueRow {
+  id: string; // uuid-ok: claim row id
+  asset_data: string;
+}
+
+interface MarketListingRow {
+  id: string; // uuid-ok: market row id
+  data: string;
+}
+
+function repairSingleClaimQueueItem(
+  claimRow: ClaimQueueRow,
+  db: DatabaseSync,
+  isSilent: boolean,
+  summary: RepairSummary
+): void {
+  if (!claimRow.asset_data) return;
+  try {
+    const parsed = JSON.parse(claimRow.asset_data) as { type?: string; data?: unknown };
+    if (!parsed || parsed.type !== 'pokemon' || !parsed.data || typeof parsed.data !== 'object') {
+      return;
+    }
+    const poke = parsed.data as Pokemon;
+    const initialCheck = checkPokemonLegality(poke);
+    if (!initialCheck.isLegal || poke.isIllegal || !poke.id || poke.status === null || poke.maxVigor === undefined) {
+      const report = repairPokemonLegality(poke);
+      if (report.repaired) {
+        db.prepare("UPDATE claim_queue SET asset_data = ? WHERE id = ?").run(JSON.stringify(parsed), claimRow.id);
+        summary.pokemonRepaired++;
+        if (!isSilent) console.log(`  ↳ 📦 Pokémon en claim_queue (ID: ${claimRow.id}) reparado: ${report.changes.join(', ')}`);
+      }
+    }
+  } catch (err) {
+    if (!isSilent) console.error('Error parsing claim_queue row:', err);
+  }
+}
+
+function repairSqliteClaimQueue(db: DatabaseSync, isSilent: boolean, summary: RepairSummary): void {
+  try {
+    const claimRows = db.prepare("SELECT id, asset_data FROM claim_queue").all() as ClaimQueueRow[];
+    if (!isSilent) console.log(`📦 Auditando claim_queue (${claimRows.length} registros)...`);
+    for (const claimRow of claimRows) {
+      repairSingleClaimQueueItem(claimRow, db, isSilent, summary);
+    }
+  } catch (err) {
+    if (!isSilent) console.error('Error accessing claim_queue table:', err);
+  }
+}
+
+function repairSingleMarketListingItem(
+  mRow: MarketListingRow,
+  db: DatabaseSync,
+  isSilent: boolean,
+  summary: RepairSummary
+): void {
+  if (!mRow.data) return;
+  try {
+    const poke = (typeof mRow.data === 'string' ? JSON.parse(mRow.data) : mRow.data) as Pokemon;
+    if (!poke || typeof poke !== 'object') return;
+    const initialCheck = checkPokemonLegality(poke);
+    if (!initialCheck.isLegal || poke.isIllegal || !poke.id || poke.status === null || poke.maxVigor === undefined) {
+      const report = repairPokemonLegality(poke);
+      if (report.repaired) {
+        db.prepare("UPDATE market_listings SET data = ? WHERE id = ?").run(JSON.stringify(poke), mRow.id);
+        summary.pokemonRepaired++;
+        if (!isSilent) console.log(`  ↳ 🏪 Pokémon en market_listings (ID: ${mRow.id}) reparado: ${report.changes.join(', ')}`);
+      }
+    }
+  } catch { // catch-ok: ignore corrupt market listing json parse error
+    // ignore
+  }
+}
+
+function repairSqliteMarketListings(db: DatabaseSync, isSilent: boolean, summary: RepairSummary): void {
+  try {
+    const marketRows = db.prepare("SELECT id, data FROM market_listings WHERE listing_type = 'pokemon'").all() as MarketListingRow[];
+    for (const mRow of marketRows) {
+      repairSingleMarketListingItem(mRow, db, isSilent, summary);
+    }
+  } catch { // catch-ok: market_listings table might not exist
+    // market_listings table might not exist
+  }
+}
+
+function openSqliteDbForRepair(options: RepairAccountOptions): { db: DatabaseSync; shouldClose: boolean } {
+  if (options.dbInstance) {
+    return { db: options.dbInstance, shouldClose: false };
+  }
+  const targetDbPath = options.dbPath || findDefaultDb();
+  if (!targetDbPath || !fs.existsSync(targetDbPath)) {
+    throw new Error(`No se encontró ninguna base de datos SQLite en "${targetDbPath || 'rutas por defecto'}".`);
+  }
+  return { db: new DatabaseSync(targetDbPath), shouldClose: true };
+}
+
+function fetchSqliteSaveRows(
+  db: DatabaseSync,
+  targetUserUid: string | null
+): Array<{ user_id: string; save_data: string }> {
+  let queryStr = 'SELECT user_id, save_data FROM game_saves';
+  const params: string[] = []; // no-domain: Non-domain utility collection or data structure
+  if (targetUserUid) {
+    queryStr += ' WHERE user_id = ?';
+    params.push(targetUserUid);
+  } else {
+    queryStr += ' ORDER BY user_id ASC';
+  }
+  return db.prepare(queryStr).all(...params) as Array<{ user_id: string; save_data: string }>;
 }
 
 /**
@@ -230,43 +383,21 @@ export function auditAndRepairSaveData(
  */
 export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSummary {
   const isAll = Boolean(options.all);
-  const targetUserId = isAll ? null : (options.userId || null);
-  const targetDbPath = options.dbPath || findDefaultDb();
+  const targetUserUid = isAll ? null : (options.userId || null);
   const isSilent = Boolean(options.silent);
 
-  let db: DatabaseSync;
-  let shouldClose = false;
-
-  if (options.dbInstance) {
-    db = options.dbInstance;
-  } else {
-    if (!targetDbPath || !fs.existsSync(targetDbPath)) {
-      throw new Error(`No se encontró ninguna base de datos SQLite en "${targetDbPath || 'rutas por defecto'}".`);
-    }
-    db = new DatabaseSync(targetDbPath);
-    shouldClose = true;
-  }
+  const { db, shouldClose } = openSqliteDbForRepair(options);
 
   if (!isSilent) {
     console.log(`\n📦 Evaluando base de datos SQLite ${options.dbPath ? options.dbPath : ''}...`);
     if (isAll) {
       console.log(`🌐 Modo masivo (--all): Auditando y corrigiendo todas las cuentas registradas...`);
     } else {
-      console.log(`🎯 Modo individual: Reparando cuenta "${targetUserId}"...`);
+      console.log(`🎯 Modo individual: Reparando cuenta "${targetUserUid}"...`);
     }
   }
 
-  let queryStr = 'SELECT user_id, save_data FROM game_saves';
-  const params: string[] = []; // no-domain: Non-domain utility collection or data structure
-  if (targetUserId) {
-    queryStr += ' WHERE user_id = ?';
-    params.push(targetUserId);
-  } else {
-    queryStr += ' ORDER BY user_id ASC';
-  }
-
-  const rows = db.prepare(queryStr).all(...params) as Array<{ user_id: string; save_data: string }>;
-
+  const rows = fetchSqliteSaveRows(db, targetUserUid);
   const summary: RepairSummary = {
     accountsAudited: rows.length,
     accountsRepaired: 0,
@@ -286,103 +417,11 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
   }
 
   for (const row of rows) {
-    if (!isSilent) {
-      console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      console.log(`👤 Evaluando cuenta: ${row.user_id}`);
-    }
-
-    let saveData: SaveDataDto;
-    try {
-      saveData = JSON.parse(row.save_data) as SaveDataDto;
-    } catch (e) {
-      const errMsg = `Error al parsear JSON del usuario ${row.user_id}: ${(e as Error).message}`;
-      if (!isSilent) console.error(`❌ ${errMsg}`);
-      summary.accountReports.push({
-        userId: row.user_id,
-        modified: false,
-        fixedPokemonCount: 0,
-        details: [errMsg]
-      });
-      continue;
-    }
-
-    const { modified, fixedPokemonCount, details } = auditAndRepairSaveData(saveData, isSilent);
-
-    if (modified) {
-      const updatedJson = JSON.stringify(saveData);
-      db.prepare('UPDATE game_saves SET save_data = ? WHERE user_id = ?').run(updatedJson, row.user_id);
-      if (!isSilent) {
-        console.log(`✨ Guardado actualizado con éxito en SQLite (${fixedPokemonCount} Pokémon corregidos).`);
-      }
-      summary.accountsRepaired++;
-      summary.pokemonRepaired += fixedPokemonCount;
-    } else {
-      if (!isSilent) {
-        console.log(`  👌 Todos los Pokémon de esta cuenta son 100% legales.`);
-      }
-    }
-
-    summary.accountReports.push({
-      userId: row.user_id,
-      modified,
-      fixedPokemonCount,
-      details
-    });
+    repairSqliteSingleAccount(db, row, isSilent, summary);
   }
 
-  // Auditar y reparar Pokémon en claim_queue
-  try {
-    const claimRows = db.prepare("SELECT id, asset_data FROM claim_queue").all() as Array<{ id: string; asset_data: string }>;
-    if (!isSilent) console.log(`📦 Auditando claim_queue (${claimRows.length} registros)...`);
-    for (const claimRow of claimRows) {
-      if (!claimRow.asset_data) continue;
-      try {
-        const parsed = JSON.parse(claimRow.asset_data) as { type?: string; data?: unknown };
-        if (parsed && parsed.type === 'pokemon' && parsed.data && typeof parsed.data === 'object') {
-          const poke = parsed.data as Pokemon;
-          const initialCheck = checkPokemonLegality(poke);
-          if (!initialCheck.isLegal || poke.isIllegal || !poke.id || poke.status === null || poke.maxVigor === undefined) {
-            const report = repairPokemonLegality(poke);
-            if (report.repaired) {
-              db.prepare("UPDATE claim_queue SET asset_data = ? WHERE id = ?").run(JSON.stringify(parsed), claimRow.id);
-              summary.pokemonRepaired++;
-              if (!isSilent) console.log(`  ↳ 📦 Pokémon en claim_queue (ID: ${claimRow.id}) reparado: ${report.changes.join(', ')}`);
-            }
-          }
-        }
-      } catch (err) {
-        if (!isSilent) console.error('Error parsing claim_queue row:', err);
-      }
-    }
-  } catch (err) {
-    if (!isSilent) console.error('Error accessing claim_queue table:', err);
-  }
-
-  // Auditar y reparar Pokémon en market_listings
-  try {
-    const marketRows = db.prepare("SELECT id, data FROM market_listings WHERE listing_type = 'pokemon'").all() as Array<{ id: string; data: string }>;
-    for (const mRow of marketRows) {
-      if (!mRow.data) continue;
-      try {
-        const poke = (typeof mRow.data === 'string' ? JSON.parse(mRow.data) : mRow.data) as Pokemon;
-        if (poke && typeof poke === 'object') {
-          const initialCheck = checkPokemonLegality(poke);
-          if (!initialCheck.isLegal || poke.isIllegal || !poke.id || poke.status === null || poke.maxVigor === undefined) {
-            const report = repairPokemonLegality(poke);
-            if (report.repaired) {
-              db.prepare("UPDATE market_listings SET data = ? WHERE id = ?").run(JSON.stringify(poke), mRow.id);
-              summary.pokemonRepaired++;
-              if (!isSilent) console.log(`  ↳ 🏪 Pokémon en market_listings (ID: ${mRow.id}) reparado: ${report.changes.join(', ')}`);
-            }
-          }
-        }
-      } catch { // catch-ok: ignore corrupt market listing json parse error
-        // ignore
-      }
-    }
-  } catch { // catch-ok: market_listings table might not exist
-    // market_listings table might not exist
-  }
+  repairSqliteClaimQueue(db, isSilent, summary);
+  repairSqliteMarketListings(db, isSilent, summary);
 
   if (!isSilent) {
     console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
@@ -398,6 +437,87 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
   }
 
   return summary;
+}
+
+async function fetchTargetSupabaseRows(
+  sql: postgres.Sql,
+  targetUser: string | null,
+  isAll: boolean,
+  isSilent: boolean
+): Promise<Array<{ user_id: string; save_data: unknown }>> {
+  if (isAll || !targetUser) {
+    return await sql`SELECT user_id, save_data FROM public.game_saves ORDER BY user_id ASC` as Array<{ user_id: string; save_data: unknown }>;
+  }
+  let matchedRows = await sql`SELECT user_id, save_data FROM public.game_saves WHERE user_id::text = ${targetUser}` as Array<{ user_id: string; save_data: unknown }>;
+
+  if (matchedRows.length === 0) {
+    const profiles = await sql`SELECT id, username, email FROM public.profiles WHERE username ILIKE ${targetUser} OR email ILIKE ${targetUser}` as Array<{ id: string; username: string; email: string }>;
+    if (profiles.length === 1 && profiles[0]?.id) {
+      const resolvedUuid = profiles[0].id;
+      if (!isSilent) console.log(`👤 Usuario encontrado por perfil: ${profiles[0].username} (UUID: ${resolvedUuid})`);
+      matchedRows = await sql`SELECT user_id, save_data FROM public.game_saves WHERE user_id::text = ${resolvedUuid}` as Array<{ user_id: string; save_data: unknown }>;
+    } else if (profiles.length > 1) {
+      throw new Error(`Se encontraron múltiples usuarios coincidentes con "${targetUser}". Usa el UUID explícito.`);
+    }
+  }
+
+  return matchedRows;
+}
+
+async function repairSupabaseSingleAccount(
+  sql: postgres.Sql,
+  row: { user_id: string; save_data: unknown },
+  isSilent: boolean,
+  summary: RepairSummary
+): Promise<void> {
+  if (!isSilent) {
+    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    console.log(`👤 Evaluando cuenta: ${row.user_id}`);
+  }
+
+  let saveData: SaveDataDto;
+  try {
+    if (typeof row.save_data === 'string') {
+      saveData = JSON.parse(row.save_data) as SaveDataDto;
+    } else if (row.save_data && typeof row.save_data === 'object') {
+      saveData = row.save_data as SaveDataDto;
+    } else {
+      throw new Error('Formato de save_data inválido');
+    }
+  } catch (e) {
+    const errMsg = `Error al procesar JSON del usuario ${row.user_id}: ${(e as Error).message}`;
+    if (!isSilent) console.error(`❌ ${errMsg}`);
+    summary.accountReports.push({
+      userId: row.user_id,
+      modified: false,
+      fixedPokemonCount: 0,
+      details: [errMsg]
+    });
+    return;
+  }
+
+  const { modified, fixedPokemonCount, details } = auditAndRepairSaveData(saveData, isSilent);
+
+  if (modified) {
+    const updatedJson = JSON.stringify(saveData);
+    await sql`UPDATE public.game_saves SET save_data = ${updatedJson}::jsonb, updated_at = NOW() WHERE user_id = ${row.user_id}`;
+    if (!isSilent) {
+      console.log(`✨ Guardado actualizado con éxito en Supabase (${fixedPokemonCount} Pokémon corregidos).`);
+    }
+    summary.accountsRepaired++;
+    summary.pokemonRepaired += fixedPokemonCount;
+  } else {
+    if (!isSilent) {
+      console.log(`  👌 Todos los Pokémon de esta cuenta son 100% legales.`);
+    }
+  }
+
+  summary.accountReports.push({
+    userId: row.user_id,
+    modified,
+    fixedPokemonCount,
+    details
+  });
 }
 
 /**
@@ -450,28 +570,7 @@ export async function repairAccountsInSupabase(options: RepairAccountOptions): P
   };
 
   try {
-    let rows: Array<{ user_id: string; save_data: unknown }>;
-
-    if (isAll || !targetUser) {
-      rows = await sql`SELECT user_id, save_data FROM public.game_saves ORDER BY user_id ASC` as Array<{ user_id: string; save_data: unknown }>;
-    } else {
-      // 1. Intentar buscar directamente por user_id UUID
-      let matchedRows = await sql`SELECT user_id, save_data FROM public.game_saves WHERE user_id::text = ${targetUser}` as Array<{ user_id: string; save_data: unknown }>;
-
-      // 2. Si no encuentra por UUID, buscar en profiles por username o email
-      if (matchedRows.length === 0) {
-        const profiles = await sql`SELECT id, username, email FROM public.profiles WHERE username ILIKE ${targetUser} OR email ILIKE ${targetUser}` as Array<{ id: string; username: string; email: string }>;
-        if (profiles.length === 1 && profiles[0]?.id) {
-          const resolvedUuid = profiles[0].id;
-          if (!isSilent) console.log(`👤 Usuario encontrado por perfil: ${profiles[0].username} (UUID: ${resolvedUuid})`);
-          matchedRows = await sql`SELECT user_id, save_data FROM public.game_saves WHERE user_id::text = ${resolvedUuid}` as Array<{ user_id: string; save_data: unknown }>;
-        } else if (profiles.length > 1) {
-          throw new Error(`Se encontraron múltiples usuarios coincidentes con "${targetUser}". Usa el UUID explícito.`);
-        }
-      }
-
-      rows = matchedRows;
-    }
+    const rows = await fetchTargetSupabaseRows(sql, targetUser, isAll, isSilent);
 
     summary.accountsAudited = rows.length;
 
@@ -487,54 +586,7 @@ export async function repairAccountsInSupabase(options: RepairAccountOptions): P
     }
 
     for (const row of rows) {
-      if (!isSilent) {
-        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-        console.log(`👤 Evaluando cuenta: ${row.user_id}`);
-      }
-
-      let saveData: SaveDataDto;
-      try {
-        if (typeof row.save_data === 'string') {
-          saveData = JSON.parse(row.save_data) as SaveDataDto;
-        } else if (row.save_data && typeof row.save_data === 'object') {
-          saveData = row.save_data as SaveDataDto;
-        } else {
-          throw new Error('Formato de save_data inválido');
-        }
-      } catch (e) {
-        const errMsg = `Error al procesar JSON del usuario ${row.user_id}: ${(e as Error).message}`;
-        if (!isSilent) console.error(`❌ ${errMsg}`);
-        summary.accountReports.push({
-          userId: row.user_id,
-          modified: false,
-          fixedPokemonCount: 0,
-          details: [errMsg]
-        });
-        continue;
-      }
-
-      const { modified, fixedPokemonCount, details } = auditAndRepairSaveData(saveData, isSilent);
-
-      if (modified) {
-        const updatedJson = JSON.stringify(saveData);
-        await sql`UPDATE public.game_saves SET save_data = ${updatedJson}::jsonb, updated_at = NOW() WHERE user_id = ${row.user_id}`;
-        if (!isSilent) {
-          console.log(`✨ Guardado actualizado con éxito en Supabase (${fixedPokemonCount} Pokémon corregidos).`);
-        }
-        summary.accountsRepaired++;
-        summary.pokemonRepaired += fixedPokemonCount;
-      } else {
-        if (!isSilent) {
-          console.log(`  👌 Todos los Pokémon de esta cuenta son 100% legales.`);
-        }
-      }
-
-      summary.accountReports.push({
-        userId: row.user_id,
-        modified,
-        fixedPokemonCount,
-        details
-      });
+      await repairSupabaseSingleAccount(sql, row, isSilent, summary);
     }
 
     if (!isSilent) {
