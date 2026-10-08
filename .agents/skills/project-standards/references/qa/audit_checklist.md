@@ -4,9 +4,9 @@ This checklist is used to verify the visual and functional integrity of the Pok√
 
 ## 1. Governance & Modularity
 
-- [ ] **Code Modularity & Health**: Modularity governed by Fallow SSoT (`npm run audit:fallow`). Maintainability Index ‚â• 85, cognitive and cyclomatic complexity within thresholds, and zero arbitrary raw line limits.
+- [ ] **Code Modularity & Health**: Modularity governed by Fallow SSoT (`npm run auditor:fallow`). Maintainability Index ‚â• 85, cognitive and cyclomatic complexity within thresholds, and zero arbitrary raw line limits.
 - [ ] **Architectural Reuse**: Verified that no new "islands" were created. Existing systems (`BaseModal`, `UnifiedCard`, `DBRouter`) are reused or extended.
-- [ ] **Redundancy Audit**: `npm run audit:css` shows 0 critical overlaps for core components.
+- [ ] **Redundancy Audit**: `npm run auditor:stylelint` shows 0 critical overlaps for core components.
 - [ ] **Validation Script Integrity**: All project rules in `audit_project.ts` and `audit_rules.ts` pass with 0 errors.
 
 ## 2. UI & Aesthetics
@@ -36,7 +36,7 @@ This checklist is used to verify the visual and functional integrity of the Pok√
 
 ## 5. Performance & Sync
 
-- [ ] **GPU Audit**: GPU layers and transform standards pass cleanly in `npm run audit`.
+- [ ] **GPU Audit**: GPU layers and transform standards pass cleanly in `npm run auditor`.
 - [ ] **Performance Mode**: Use `uiStore.isAnyBlockingModalOpen` to trigger the map simplification mode.
   - **Entrance**: Activate simplification AFTER the first obscuring modal finishes its opening animation.
   - **Exit**: Restore the full map AS SOON AS the last obscuring modal starts its closing animation.
@@ -47,6 +47,6 @@ This checklist is used to verify the visual and functional integrity of the Pok√
 ## 6. Automated Validations
 
 - [ ] **SASS Traps**: No lowercase `scale()`, `blur()`, etc., that cause build errors.
-- [ ] **Linting & Types**: `npm run lint` (`npm run audit:lint` executing 10 core sub-auditors concurrently in parallel: domain-types, O(1), component-styles, Fallow suite, Vue SFC hygiene, console cleanliness, audit headers, validate:types, lint:md, and ESLint) passes with 0 errors.
-- [ ] **Full Audit**: `npm run audit` passes with 0 errors and zero regressions against `.auditor/audit-baseline.json`.
-- [ ] **Markdown Relative Links**: `npm run validate:markdown-links` passes with 0 broken links.
+- [ ] **Linting & Types**: `npm run lint` (`npm run auditor:lint` executing 10 core sub-auditors concurrently in parallel: domain-types, O(1), component-styles, Fallow suite, Vue SFC hygiene, console cleanliness, audit headers, validate:types, lint:md, and ESLint) passes with 0 errors.
+- [ ] **Full Audit**: `npm run auditor` passes with 0 errors and zero regressions against `.auditor/audit-baseline.json`.
+- [ ] **Markdown Relative Links**: `npm run auditor:markdown-links` passes with 0 broken links.

@@ -17,7 +17,8 @@ const JSON_COLUMNS = [
   'data',
   'config',
   'schedule',
-  'asset_data'
+  'asset_data',
+  'defeated_gyms'
 ] as const;
 
 function hydrateLocalRow(table: string, row: Record<string, unknown>): void {

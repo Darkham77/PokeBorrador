@@ -32,7 +32,7 @@ Pokemon Mechanics Team / System Architects.
 
 ## Verification
 
-- Run `npm run lint` and `npm run audit suites=validate_domain_types`.
+- Run `npm run lint` and `npm run auditor:domain-types`.
 
 ## Child DOX Index
 

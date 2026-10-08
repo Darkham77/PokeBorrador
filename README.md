@@ -166,7 +166,7 @@ npm run dev
 
 The official production build executes a full assurance pipeline:
 
-1. **Comprehensive Audit**: Runs `npm run audit` certifying 0 architectural and domain errors.
+1. **Comprehensive Audit**: Runs `npm run auditor` certifying 0 architectural and domain errors.
 2. **Bundle Build**: Compiles optimized Vite bundle with Rolldown/ESBuild minification and chunk splitting.
 3. **PWA & Service Worker**: Generates offline PWA service worker (`sw.js`).
 4. **Static Pre-Compression**: Pre-compresses all static assets to Brotli (`.br`, Q11) and Gzip (`.gz`, L9) via `vite-plugin-precompress.ts`.
@@ -181,7 +181,7 @@ To inspect chunk size distribution and detect bundle bottlenecks:
 npm run build:analyze
 ```
 
-Generates an interactive visual treemap at `scratch/bundle_stats.html` and feeds the `npm run audit:bundle` suite.
+Generates an interactive visual treemap at `scratch/bundle_stats.html` and feeds the `npm run auditor:build` suite.
 
 ### 2. Hosting Options
 
@@ -223,32 +223,32 @@ The repository features a unified static/dynamic audit ecosystem, domain validat
 
 #### 🔄 Recommended Verification Flow
 
-- **During Active Development**: Run `npm run lint` (~10 seconds) for fast verification executing 10 core sub-auditors in parallel (`npm run audit:lint`): domain types, $O(1)$, component styles, Fallow intelligence, Vue SFC hygiene, console cleanliness, audit headers, TypeScript type check (`vue-tsc`), markdownlint, and ESLint.
-- **Documentation & DOX Audit**: Run `npm run audit:md` (~2 seconds) to validate `AGENTS.md` hierarchy, relative links, Markdown syntax, and Markdownlint rules.
-- **Safe-Commit Workflow**: The safe-commit pipeline internally uses the warning ratchet in `npm run audit` against the baseline in `.auditor/audit-baseline.json`.
+- **During Active Development**: Run `npm run lint` (~10 seconds) for fast verification executing 10 core sub-auditors in parallel (`npm run auditor:lint`): domain types, $O(1)$, component styles, Fallow intelligence, Vue SFC hygiene, console cleanliness, audit headers, TypeScript type check (`vue-tsc`), markdownlint, and ESLint.
+- **Documentation & DOX Audit**: Run `npm run auditor:md` (~2 seconds) to validate `AGENTS.md` hierarchy, relative links, Markdown syntax, and Markdownlint rules.
+- **Safe-Commit Workflow**: The safe-commit pipeline internally uses the warning ratchet in `npm run auditor` against the baseline in `.auditor/audit-baseline.json`.
 
 | Command | Description |
 | :-- | :-- |
-| `npm run lint` | **Fast Developer Lint**: Runs 10 essential quality suites in parallel via `npm run audit:lint`. |
+| `npm run lint` | **Fast Developer Lint**: Runs 10 essential quality suites in parallel via `npm run auditor:lint`. |
 | `npm run lint:fix` | **Linter Auto-Fix**: Automatically resolves formatting and syntax issues with ESLint and Markdownlint (`auditor preset=lint fix`). |
-| `npm run audit` | **Unified Global Audit**: Executes 100% of discovered sub-auditors with bounded concurrency, outputs Box-Drawing console tables, and writes structured JSON to `scratch/audits/latest_audit.json`. |
-| `npm run audit:lint` | **Linting Preset**: Executes the parallel 10-suite source code preset. |
-| `npm run audit:md` | **Documentation & DOX Audit**: Fast suite (~2s) validating `AGENTS.md` hierarchy, relative links, Markdown syntax, and Markdownlint rules (preset `md`). |
-| `npm run audit:changed` | **Changed Files Audit**: Runs audit suites exclusively against files modified since `main`. |
-| `npm run audit fix` | **Architecture Auto-Fix**: Automatically fixes timers, SASS syntax, render layers, and import directives. |
-| `npm run audit suites=audit_project` | **Architecture & Style Rules**: Evaluates 43 static code rules across `.ts`, `.vue`, and `.scss` files. |
-| `npm run audit:findings` | **Consolidated Findings Report**: Displays Box-Drawing tables of findings grouped by category (`audit:errors`, `audit:warnings`, `audit:summary`, `audit:files`). |
-| `npm run audit:family:domain` | **Domain Audit**: Validates domain types, canonical unions, and $O(1)$ data structures. |
-| `npm run audit:family:fsm` | **FSM Audit**: Validates diagrams, dynamic implementation, and battle flow parity. |
-| `npm run audit:family:persistence` | **Persistence Audit**: Validates SQL schemas, migrations, and game save serialization. |
-| `npm run audit:family:assets` | **Assets Audit**: Validates sprite collisions, canonical names, and texture atlases. |
-| `npm run audit:family:architecture` | **Architecture Audit**: Validates Fallow modularity, complexity, SCSS tokens, Pinia reactivity, and Vue SFCs. |
-| `npm run audit:fallow` | **Codebase Intelligence (Fallow)**: Consolidated dashboard for metrics, circular dependencies, duplication, orphan exports, and CWE vulnerabilities. |
-| `npm run audit:complexity` | **Complexity Hotspots**: Reports functions with highest cyclomatic and cognitive complexity (`npm run audit:complexity:top`). |
-| `npm run audit:css` | **Styles & Classes Audit**: Audits SCSS stylesheets and Vue `<style>` blocks via in-memory Stylelint. |
-| `npm run audit:similar` | **Semantic Discovery**: Detects semantically similar functions or blocks via Fallow AST embeddings. |
-| `npm run audit:review` | **Intelligent Review Brief**: Generates graph-grounded report with blast radius and structural risk for code reviews. |
-| `npm run audit:bundle` | **Bundle Budget**: Audits production chunk sizes and client decoupling. |
+| `npm run auditor` | **Unified Global Audit**: Executes 100% of discovered sub-auditors with bounded concurrency, outputs Box-Drawing console tables, and writes structured JSON to `scratch/audits/latest_audit.json`. |
+| `npm run auditor:lint` | **Linting Preset**: Executes the parallel 10-suite source code preset. |
+| `npm run auditor:md` | **Documentation & DOX Audit**: Fast suite (~2s) validating `AGENTS.md` hierarchy, relative links, Markdown syntax, and Markdownlint rules (preset `md`). |
+| `npm run auditor:changed` | **Changed Files Audit**: Runs audit suites exclusively against files modified since `main`. |
+| `npm run auditor:fix` | **Architecture Auto-Fix**: Automatically fixes timers, SASS syntax, render layers, and import directives. |
+| `npm run auditor:project` | **Architecture & Style Rules**: Evaluates 43 static code rules across `.ts`, `.vue`, and `.scss` files. |
+| `npm run auditor:findings` | **Consolidated Findings Report**: Displays Box-Drawing tables of findings grouped by category (`audit:errors`, `audit:warnings`, `audit:summary`, `audit:files`). |
+| `npm run auditor:family:domain` | **Domain Audit**: Validates domain types, canonical unions, and $O(1)$ data structures. |
+| `npm run auditor:fsm-implementation` | **FSM Audit**: Validates diagrams, dynamic implementation, and battle flow parity. |
+| `npm run auditor:family:persistence` | **Persistence Audit**: Validates SQL schemas, migrations, and game save serialization. |
+| `npm run auditor:sprites` | **Assets Audit**: Validates sprite collisions, canonical names, and texture atlases. |
+| `npm run auditor:family:architecture` | **Architecture Audit**: Validates Fallow modularity, complexity, SCSS tokens, Pinia reactivity, and Vue SFCs. |
+| `npm run auditor:fallow` | **Codebase Intelligence (Fallow)**: Consolidated dashboard for metrics, circular dependencies, duplication, orphan exports, and CWE vulnerabilities. |
+| `npm run auditor:complexity` | **Complexity Hotspots**: Reports functions with highest cyclomatic and cognitive complexity (`npm run auditor:complexity`). |
+| `npm run auditor:stylelint` | **Styles & Classes Audit**: Audits SCSS stylesheets and Vue `<style>` blocks via in-memory Stylelint. |
+| `npm run auditor:similar` | **Semantic Discovery**: Detects semantically similar functions or blocks via Fallow AST embeddings. |
+| `npm run auditor:review` | **Intelligent Review Brief**: Generates graph-grounded report with blast radius and structural risk for code reviews. |
+| `npm run auditor:build` | **Bundle Budget**: Audits production chunk sizes and client decoupling. |
 | `npm run build:analyze` | **Interactive Bundle Treemap**: Triggers production build with visual bundle map in `scratch/bundle_stats.html`. |
 
 ---
@@ -261,58 +261,58 @@ Every architectural and domain standard has its own dedicated sub-auditor execut
 
 | Command | Description |
 | :-- | :-- |
-| `npm run audit suites=validate_type_check` | Strict TypeScript and Vue SFC type verification with `vue-tsc --noEmit`. |
-| `npm run audit suites=validate_z_index` | Strict 1:1 parity between `Z_LAYERS` (TypeScript) and `--z-*` CSS variables in `_base.scss` (supports `fix=true`). |
-| `npm run audit suites=validate_duplicate_constants` | Identifies duplicate or divergent constant declarations across modules via shared AST. |
-| `npm run audit:css` | Audits SCSS rules, mixins, and selectors across stylesheets and Vue components via Stylelint. |
-| `npm run audit suites=validate_pinia_reactivity` | Audits Pinia stores against improper reactive destructuring and unwrapped state access. |
-| `npm run audit suites=validate_reactive_leaks` | Detects memory leaks, uncleaned watchers, and orphan listeners. |
-| `npm run audit suites=validate_reactive_purity` | Guarantees purity and absence of side effects in reactive mutations and getters. |
-| `npm run validate:client-sim-decoupling` | Enforces 100% strict decoupling between web client and `@pkmn/sim` runtime. |
-| `npm run audit suites=validate_component_styles` | Validates style imports, standardized SCSS mixins, and absence of orphan sheets. |
-| `npm run audit suites=validate_line_height` | Prevents font descender clipping and validates vertical rhythm. |
-| `npm run audit suites=validate_vue_sfc_hygiene` | Vue component hygiene: `<script setup>`, `scoped` styles, and SFC structure. |
-| `npm run audit suites=validate_template_ids` | Enforces deterministic, unique IDs in Vue templates for E2E automation. |
-| `npm run audit suites=validate_mobile_accessibility` | Audits touch targets and mobile responsiveness. |
-| `npm run audit suites=validate_console_cleanliness` | Bars `console.log` statements or debugging traces in production paths. |
-| `npm run audit suites=validate_error_suppression` | Eradicates empty `catch` blocks, silenced promises, and swallowed errors. |
-| `npm run audit suites=validate_audit_headers` | Bars file-level escape hatches (`fallow-ignore-file`, `@ts-nocheck`, etc.). |
-| `npm run audit suites=validate_test_hygiene` | Audits test suites against tautological assertions and excessive mocking. |
-| `npm run audit suites=validate_test_fragmentation` | Prevents micro-files (<60 LOC) and encourages cohesive test suites (300-800 LOC). |
+| `npm run auditor:type-check` | Strict TypeScript and Vue SFC type verification with `vue-tsc --noEmit`. |
+| `npm run auditor:z-index` | Strict 1:1 parity between `Z_LAYERS` (TypeScript) and `--z-*` CSS variables in `_base.scss` (supports `fix=true`). |
+| `npm run auditor:duplicate-constants` | Identifies duplicate or divergent constant declarations across modules via shared AST. |
+| `npm run auditor:stylelint` | Audits SCSS rules, mixins, and selectors across stylesheets and Vue components via Stylelint. |
+| `npm run auditor:pinia-reactivity` | Audits Pinia stores against improper reactive destructuring and unwrapped state access. |
+| `npm run auditor:reactive-leaks` | Detects memory leaks, uncleaned watchers, and orphan listeners. |
+| `npm run auditor:reactive-purity` | Guarantees purity and absence of side effects in reactive mutations and getters. |
+| `npm run auditor:client-sim-decoupling` | Enforces 100% strict decoupling between web client and `@pkmn/sim` runtime. |
+| `npm run auditor:component-styles` | Validates style imports, standardized SCSS mixins, and absence of orphan sheets. |
+| `npm run auditor:typography-line-height` | Prevents font descender clipping and validates vertical rhythm. |
+| `npm run auditor:vue-sfc-hygiene` | Vue component hygiene: `<script setup>`, `scoped` styles, and SFC structure. |
+| `npm run auditor:vue-sfc-hygiene` | Enforces deterministic, unique IDs in Vue templates for E2E automation. |
+| `npm run auditor:accessibility` | Audits touch targets and mobile responsiveness. |
+| `npm run auditor:console-cleanliness` | Bars `console.log` statements or debugging traces in production paths. |
+| `npm run auditor:error-suppression` | Eradicates empty `catch` blocks, silenced promises, and swallowed errors. |
+| `npm run auditor:audit-headers` | Bars file-level escape hatches (`fallow-ignore-file`, `@ts-nocheck`, etc.). |
+| `npm run auditor:test-hygiene` | Audits test suites against tautological assertions and excessive mocking. |
+| `npm run auditor:test-fragmentation` | Prevents micro-files (<60 LOC) and encourages cohesive test suites (300-800 LOC). |
 
 #### 📚 Documentation & Links
 
 | Command | Description |
 | :-- | :-- |
-| `npm run audit suites=validate_dox_integrity` | Validates structural `AGENTS.md` hierarchy, required sections, and `.gitignore` coverage. |
-| `npm run audit suites=validate_markdown_links` | Validates relative links, cross references, and bars absolute or environment paths. |
-| `npm run audit suites=validate_markdown_syntax` | Validates headings, tables, and Markdown syntax adhering to CommonMark. |
+| `npm run auditor:dox-integrity` | Validates structural `AGENTS.md` hierarchy, required sections, and `.gitignore` coverage. |
+| `npm run auditor:markdown-links` | Validates relative links, cross references, and bars absolute or environment paths. |
+| `npm run auditor:markdown-syntax` | Validates headings, tables, and Markdown syntax adhering to CommonMark. |
 
 #### 🎮 Domain & Game Data
 
 | Command | Description |
 | :-- | :-- |
-| `npm run audit suites=validate_domain_types` | Strict domain type and canonical union compliance (no `any` or loose strings). |
-| `npm run audit suites=validate_o1_data_structures` | $O(1)$ optimization: typed dictionaries and sets in critical execution paths. |
-| `npm run validate:pokemon` | Base stats, types, and evolution tables verified against official Showdown Dex. |
-| `npm run validate:moves` | Move integrity, secondary effects, and canonical learnsets. |
-| `npm run validate:abilities` | Passive and field abilities checked against canonical engine. |
-| `npm run validate:items` | Item catalog, categories, tiers, and sprites. |
-| `npm run validate:sprites` | Physical presence of animated sprites, thumbnails, and collision-free icons. |
-| `npm run validate:spanish-ids` | Canonical parity and mapping of Spanish localized IDs. |
-| `npm run validate:spawns` | Wild Pokémon spawn areas and encounter whitelists. |
+| `npm run auditor:domain-types` | Strict domain type and canonical union compliance (no `any` or loose strings). |
+| `npm run auditor:o1-data-structures` | $O(1)$ optimization: typed dictionaries and sets in critical execution paths. |
+| `npm run auditor:pokemon` | Base stats, types, and evolution tables verified against official Showdown Dex. |
+| `npm run auditor:moves` | Move integrity, secondary effects, and canonical learnsets. |
+| `npm run auditor:abilities` | Passive and field abilities checked against canonical engine. |
+| `npm run auditor:items` | Item catalog, categories, tiers, and sprites. |
+| `npm run auditor:sprites` | Physical presence of animated sprites, thumbnails, and collision-free icons. |
+| `npm run auditor:spanish-ids` | Canonical parity and mapping of Spanish localized IDs. |
+| `npm run auditor:spawns-whitelist` | Wild Pokémon spawn areas and encounter whitelists. |
 
 #### 🗄️ Persistence, Migrations & State Machines (FSM)
 
 | Command | Description |
 | :-- | :-- |
-| `npm run validate:sql` | Incremental execution of 96 SQL migrations in in-memory SQLite (`node:sqlite`). |
-| `npm run validate:schema-parity` | 100% structural parity between SQLite and PostgreSQL schemas. |
-| `npm run validate:save-persistence` | 1:1 parity between in-memory state (`GameState`) and persisted schema (`SaveData`). |
-| `npm run audit suites=validate_sql_anti_patterns` | Detects non-transactional queries and SQL anti-patterns. |
-| `npm run validate:fsm` | Unified FSM suite: Mermaid diagram parity, implementation, and execution flow. |
-| `npm run validate:showdown-parity` | Protocol coverage and canonical Showdown combat tokens. |
-| `npm run validate:combat-invariants` | Turn-based combat invariants, seat isolation, and command idempotency. |
+| `npm run auditor:sql-migrations` | Incremental execution of 96 SQL migrations in in-memory SQLite (`node:sqlite`). |
+| `npm run auditor:schema-parity` | 100% structural parity between SQLite and PostgreSQL schemas. |
+| `npm run auditor:family:persistence` | 1:1 parity between in-memory state (`GameState`) and persisted schema (`SaveData`). |
+| `npm run auditor:sql-anti-patterns` | Detects non-transactional queries and SQL anti-patterns. |
+| `npm run auditor:fsm-implementation` | Unified FSM suite: Mermaid diagram parity, implementation, and execution flow. |
+| `npm run auditor:showdown-parity` | Protocol coverage and canonical Showdown combat tokens. |
+| `npm run auditor:combat-invariants` | Turn-based combat invariants, seat isolation, and command idempotency. |
 
 ---
 
@@ -500,7 +500,7 @@ Summary of MikroTik commands (Winbox / SSH) to resolve asymmetric routing issues
 
 ```bash
 npm run dev               # Start development environment (Vite)
-npm run validate:types    # Strict TypeScript type check
+npm run auditor:type-check    # Strict TypeScript type check
 npm run test              # UI and component unit tests (Vitest)
 npm run build             # Production compilation
 npm run assets:download   # Download external sprites and assets (Gen 1-9, Items, Trainers)
@@ -577,8 +577,8 @@ If pulling changes from the repository (`git pull`) causes `npm run dev` to fail
 To maintain code cleanliness and architectural compliance, regularly run the official audit suites:
 
 - **In development**: Run `npm run lint` (~8-10s) to validate domain types, $O(1)$, styles, and linters.
-- **Full audit**: Run `npm run audit` to execute the `@francogp/auditor` engine with tabular console summaries and JSON output in `scratch/audits/latest_audit.json`.
-- **Findings inspection**: Use `npm run audit:findings`, `npm run audit:errors`, or `npm run audit:warnings` to break down findings by category.
+- **Full audit**: Run `npm run auditor` to execute the `@francogp/auditor` engine with tabular console summaries and JSON output in `scratch/audits/latest_audit.json`.
+- **Findings inspection**: Use `npm run auditor:findings`, `npm run auditor:errors`, or `npm run auditor:warnings` to break down findings by category.
 
 ### 3. 🖼️ Image Management (`_raw-assets`)
 
@@ -609,7 +609,7 @@ All technical architecture, localized folder rules, and interface contracts are 
 - **Document Integrity**: Any structural modification or directory addition must keep its `AGENTS.md` index updated, validated via:
 
   ```bash
-  npm run audit:md
+  npm run auditor:md
   ```
 
 ### 6. 🔍 Debugging & Console Commands
@@ -622,8 +622,8 @@ To inspect states or force test scenarios, the project exposes a secure debug pr
   - `__VITE_DEBUG__.setWeather('rain')`: Change active weather.
   - `__VITE_DEBUG__.spawnPokemon(25)`: Spawn a Pikachu encounter.
 - **Battle Auditing**: When debugging the combat state machine (FSM):
-  - `npm run validate:fsm`: Complete FSM validation suite (diagrams, implementation, and flow).
-  - `npm run validate:fsm:flow`: Checks for race conditions in state transitions.
+  - `npm run auditor:fsm-implementation`: Complete FSM validation suite (diagrams, implementation, and flow).
+  - `npm run auditor:fsm-flow-parity`: Checks for race conditions in state transitions.
 - **Security**: These commands are disabled in production for standard user accounts (see section 7).
 
 ### 7. 🛡️ Security & Moderation System (Bans)

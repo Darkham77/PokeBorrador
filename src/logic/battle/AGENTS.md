@@ -68,7 +68,7 @@ Frontend Developers / Systems Engineers.
 - **Showdown Simulation & Team Generation Worker Boundary Mandate**: Client code in `src/logic/battle/` (outside `showdown.worker.ts`) MUST NEVER import runtime values or classes from `@pkmn/sim` or `@pkmn/randoms`. All simulation steps, legality checks, and team generations MUST be delegated asynchronously to `showdown.worker.ts` via `showdownWorkerClient.ts` (`requestTrainerTeam`, `requestRivalTeam`). In headless Vitest/Node environments without worker support, test fixtures register handlers via `registerTeamGeneratorHandler()`. Static domain metadata derivation (such as species typing and base stats) MUST consume local static databases (`pokemonSpeciesHelper.ts`) in $O(1)$ time without bundling Showdown's simulation engine into the client thread.
 - **Zero-Timer & GSAP Clock Mandate (`gsapSleep`)**: All battle animations, pauses, delays, and state transitions (such as defeat screens, stage stabilization, and catch sequences) MUST be driven exclusively by GSAP (`gsapSleep` from `@/logic/utils/gsapHelpers` or `ctx.animations.awaitTween(...)`). Native `sleep(...)` and `setTimeout(...)` are strictly forbidden across `src/`. The deprecated `sleep` export in `timeUtils.ts` has been removed in favor of `gsapSleep`, guaranteeing deterministic time-scaling with `gsap.globalTimeline.timeScale(...)` in simulations.
 - **UID Parity & Real-Time Team Synchronization**: Every combatant HP update, status change, or faint event (`-damage`, `-heal`, `faint`, `-status`, `-curestatus`, `-sethp`) is instantaneously synchronized to the team arrays (`activeBattle.playerTeam`, `activeBattle.enemyTeam`, `gs.state.team`) via `syncCombatantToTeam`.
-- **FSM Validation**: For FSM transitions, run official NPM scripts: `npm run validate:fsm:diagrams`, `npm run validate:fsm:implementation`, and `npm run validate:fsm:flow` (or `npm run validate:fsm` for all).
+- **FSM Validation**: For FSM transitions, run official NPM scripts: `npm run auditor:fsm-diagrams`, `npm run auditor:fsm-implementation`, and `npm run auditor:fsm-flow-parity` (or `npm run auditor:fsm-implementation` for all).
 
 - **Showdown UID Mapping (showdownUidMapper.ts)**: All mappings and synchronization between the game's reactive database/store and Showdown's simulator MUST use the unifed `showdownUidMapper.ts` helper. Never implement ad-hoc UID resolutions, `.startsWith` lookups, index-based physical slot matching, or name-based fallbacks (which violate persistence shield rules).
 - **Unified Stat Clamping & Parity**: All stat stage calculations (including accuracy and evasion) MUST enforce an unconditional clamp bounds of `[-6, +6]` across both `battleMath.ts` and `moveCalculator.ts`. `STAGE_MULTIPLIERS_STAT` MUST use exact fractional ratios (`2/3`, `1/3`, `2/7`) for negative stages matching Pokémon Showdown `sim/pokemon.ts`. Silent catch blocks inside composables or provider lookups (such as `useCombatantStatus.ts`) MUST NOT swallow underlying errors, but safely provide default UI descriptions while logging diagnostics to `logger.debug`.
@@ -247,7 +247,7 @@ Frontend Developers / Systems Engineers.
 ## Verification
 
 - Run `npm run test` — includes `struggle.spec.ts`, `pp_softlock.test.ts`, `faint_interrupts_log_playback.spec.ts`.
-- Run `npm run audit` for zero-error gate.
+- Run `npm run auditor` for zero-error gate.
 
 ## Child DOX Index
 

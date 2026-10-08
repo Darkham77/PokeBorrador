@@ -21,7 +21,7 @@ Frontend Developers / Adventure System Engineers.
 
 ## Verification
 
-- Run `npm run audit`.
+- Run `npm run auditor`.
 
 ## Child DOX Index
 

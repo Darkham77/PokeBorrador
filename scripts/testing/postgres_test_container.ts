@@ -341,19 +341,17 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
         sqlContent = sqlContent.replace(/SET created_at = REPLACE\(created_at, ' ', 'T'\) \|\| 'Z'/g, "SET created_at = CAST(REPLACE(CAST(created_at AS TEXT), ' ', 'T') || 'Z' AS TIMESTAMPTZ)");
         sqlContent = sqlContent.replace(/DROP TABLE IF EXISTS events_config;/g, 'DROP TABLE IF EXISTS events_config CASCADE;');
         sqlContent = sqlContent.replace(/WHERE user_id = '(local_[^']+)'/g, "WHERE user_id::text = '$1'");
+        sqlContent = sqlContent.replace(/ADD COLUMN (?!IF NOT EXISTS)/g, 'ADD COLUMN IF NOT EXISTS ');
 
         try {
           await sql.begin(async (tx) => {
             await tx.unsafe(sqlContent);
-            await tx`INSERT INTO public._migrations (id) VALUES (${migrationId})`;
+            await tx`INSERT INTO public._migrations (id) VALUES (${migrationId}) ON CONFLICT (id) DO NOTHING`;
           });
         } catch (patchErr: unknown) {
           const pMsg = patchErr instanceof Error ? patchErr.message : String(patchErr);
-          if (pMsg.toLowerCase().includes('already exists') || pMsg.toLowerCase().includes('duplicate')) {
-            await sql`INSERT INTO public._migrations (id) VALUES (${migrationId}) ON CONFLICT DO NOTHING`;
-          } else {
-            throw patchErr;
-          }
+          console.error(`❌ Fallo crítico al aplicar migración ${migrationId} en PostgreSQL efímero: ${pMsg}`);
+          throw patchErr;
         }
       }
     }

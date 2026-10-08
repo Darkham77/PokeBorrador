@@ -8,23 +8,23 @@ This manual centralizes all automatic validation protocols to ensure that code a
 
 Any change in `src/data/battle/moves.ts` or in battle logic must be validated:
 
-- **Full Validation**: `npm run validate:moves` (detects duplicates, semantic errors, and learnset integrity).
+- **Full Validation**: `npm run auditor:moves` (detects duplicates, semantic errors, and learnset integrity).
 
 ### 2. Abilities (`ABILITY_DATA`)
 
-- **General Validation**: `npm run validate:abilities` (verifies descriptions, Showdown Dex parity, and implementation in `battleAbilities.ts`).
+- **General Validation**: `npm run auditor:abilities` (verifies descriptions, Showdown Dex parity, and implementation in `battleAbilities.ts`).
 
 ### 3. Items Integrity
 
-- **Full Audit**: `npm run validate:items` (ensures consistency between `SHOP_ITEMS` and `itemEffects.ts`).
+- **Full Audit**: `npm run auditor:items` (ensures consistency between `SHOP_ITEMS` and `itemEffects.ts`).
 
 ### 4. Battle Engine (FSM)
 
 Any modification to `orchestrator.ts`, `battle.ts`, or the battle state machine MUST pass these audits:
 
-- **Diagram Parity**: `npm run validate:fsm:diagrams` (detects missing states or broken transitions).
-- **Implementation Integrity**: `npm run validate:fsm:implementation` (detects race conditions and unimplemented sub-states).
-- **Sequential Flow Parity**: `npm run validate:fsm:flow` (ensures the orchestrator follows the manual's Mermaid diagrams 1:1).
+- **Diagram Parity**: `npm run auditor:fsm-diagrams` (detects missing states or broken transitions).
+- **Implementation Integrity**: `npm run auditor:fsm-implementation` (detects race conditions and unimplemented sub-states).
+- **Sequential Flow Parity**: `npm run auditor:fsm-flow-parity` (ensures the orchestrator follows the manual's Mermaid diagrams 1:1).
 
 ---
 
@@ -44,21 +44,21 @@ Core logic modules and critical system components MUST have dedicated unit tests
 The project uses a unified audit coordinator governed by `@francogp/auditor`:
 
 - **Proportional Verification Protocol**:
-  - **Documentation & Skills (`.md`)**: Run ONLY `npm run audit:md` (takes ~1.8s). Running full project audits for documentation or skill edits is strictly forbidden.
-  - **In-Development Code**: Run `npm run lint` (takes ~10s) or `npm run audit` for full quality gate.
-  - **Safe-Commit Gatekeeper**: Safe-commit uses `npm run audit` with the warning ratchet against `.auditor/audit-baseline.json`.
+  - **Documentation & Skills (`.md`)**: Run ONLY `npm run auditor:md` (takes ~1.8s). Running full project audits for documentation or skill edits is strictly forbidden.
+  - **In-Development Code**: Run `npm run lint` (takes ~10s) or `npm run auditor` for full quality gate.
+  - **Safe-Commit Gatekeeper**: Safe-commit uses `npm run auditor` with the warning ratchet against `.auditor/audit-baseline.json`.
 - **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
 - **Zero-Redundancy Guarantee**: Aggregator scripts must never duplicate sub-analyzers already embedded in `audit_project.ts` or sibling validation suites.
-- **Universal Audit Command**: `npm run audit`. Dynamically discovers and executes all sub-auditors across the 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation` — e.g. domain types, FSM diagrams, SQL migrations, sprite collisions, typography, architecture AST, DOX links). Supports `rule=<regla>` or `rule=<regla1>,<regla2>` for ultra-fast selective execution (e.g. `npm run audit rule=DOX`, `npm run audit rule=DOX,z-index`, `npm run audit rule=dupes`). It always renders the clean human summary table to the console and automatically persists the 100% complete structured JSON report to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites).
-- **Fast Documentation & DOX Audit**: `npm run audit:md`. Unified documentation quality gate (~1.8s) executing DOX hierarchy, relative links, Markdown syntax, and Markdownlint in parallel.
-- **Auto-Fix**: `npm run audit:fix`. Repairs common standard violations (Viewports, SASS filters, ESM extensions).
+- **Universal Audit Command**: `npm run auditor`. Dynamically discovers and executes all sub-auditors across the 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation` — e.g. domain types, FSM diagrams, SQL migrations, sprite collisions, typography, architecture AST, DOX links). Supports `rule=<regla>` or `rule=<regla1>,<regla2>` for ultra-fast selective execution (e.g. `npm run auditor rule=DOX`, `npm run auditor rule=DOX,z-index`, `npm run auditor rule=dupes`). It always renders the clean human summary table to the console and automatically persists the 100% complete structured JSON report to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites).
+- **Fast Documentation & DOX Audit**: `npm run auditor:md`. Unified documentation quality gate (~1.8s) executing DOX hierarchy, relative links, Markdown syntax, and Markdownlint in parallel.
+- **Auto-Fix**: `npm run auditor:fix`. Repairs common standard violations (Viewports, SASS filters, ESM extensions).
 - **Family-Specific Audits**:
-  - `npm run audit:family:domain`: Domain types, Pokemon DB, moves, abilities, items, Spanish IDs.
-  - `npm run audit:family:fsm`: Mermaid diagrams, flow parity, state machines.
-  - `npm run audit:family:persistence`: SQLite in-memory and save schema migrations.
-  - `npm run audit:family:assets`: Sprite coverage and item sprite collisions.
-  - `npm run audit:family:architecture`: AST rules, Fallow intelligence, Z-Index, CSS duplicates.
-  - `npm run audit:md` (or `npm run audit family=documentation`): Markdown relative links, syntax, and DOX hierarchy.
+  - `npm run auditor:family:domain`: Domain types, Pokemon DB, moves, abilities, items, Spanish IDs.
+  - `npm run auditor:fsm-implementation`: Mermaid diagrams, flow parity, state machines.
+  - `npm run auditor:family:persistence`: SQLite in-memory and save schema migrations.
+  - `npm run auditor:sprites`: Sprite coverage and item sprite collisions.
+  - `npm run auditor:family:architecture`: AST rules, Fallow intelligence, Z-Index, CSS duplicates.
+  - `npm run auditor:md` (or `npm run auditor family=documentation`): Markdown relative links, syntax, and DOX hierarchy.
 
 ### 🎛️ Consuming Audit Reports
 
@@ -69,13 +69,13 @@ The project uses a unified audit coordinator governed by `@francogp/auditor`:
 
 ## 🚨 Non-Negotiable Quality Rules
 
-1. **Zero-Warning**: `npm run lint` (which executes `npm run audit:lint` running 10 parallel sub-auditors) and `npm run audit` MUST return 0 errors before any commit.
+1. **Zero-Warning**: `npm run lint` (which executes `npm run auditor:lint` running 10 parallel sub-auditors) and `npm run auditor` MUST return 0 errors before any commit.
 2. **SASS Capitalization (Automated)**: SASS capitalization for CSS filters/transforms (`Scale()`, `Translate()`, etc.) is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build, meaning no manual capitalization or separate linting checks are required.
 3. **Dependency Shield**: Any script using external libraries must handle `ImportError` and provide clear installation instructions.
 4. **Audit Bypass**: If a violation is intentional by design, use the `// [PureVue-Ignore]` comment. The audit engine checks the **current line and the line immediately above** to support Vue/HTML attributes that span multiple lines.
 5. **Fallow SSoT Modularity & Large Data Boundaries**: File health and modularity are governed strictly by Fallow SSoT (`maintainability_index`, cognitive/cyclomatic complexity, and function size risk bins) rather than arbitrary raw line caps. Arbitrary bypass comments like `[PureVue-Ignore-Length]` are strictly prohibited. Massive data files or administrative panels are evaluated by complexity metrics; Fallow enforces a 5 MB file size boundary (`--max-file-size 5`) to prevent OOM.
 6. **ESLint Optimization**: To avoid `no-useless-assignment` errors, prefer using ternary operators or immediate-return logic instead of initializing variables with `null` and assigning them within `if/else` blocks.
-7. **Database Parity**: Automated sync of SQL migrations via the Vite build process is mandatory. Always verify that `npm run validate:sql` passes after schema changes.
+7. **Database Parity**: Automated sync of SQL migrations via the Vite build process is mandatory. Always verify that `npm run auditor:sql-migrations` passes after schema changes.
 8. **Automated Repair Safety (Click Propagation)**: Repair scripts MUST NOT inject `.stop` modifiers into components that rely on event bubbling (e.g., `PVTooltip`).
 9. **Maintenance Script Exemption**: Scripts located in `scripts/` are exempt from legacy audits (e.g., `Date` usage) to facilitate technical migrations and support tasks without triggering false positives.
 10. **Store-Level Event Listeners**: Window listeners used in Pinia stores (outside of the Vue component lifecycle) MUST be marked with `// [PureVue-Ignore]` if they cannot be easily replaced by standardized composables.
@@ -110,38 +110,38 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 
 ### 🛡️ Core Validation
 
-- `npm run validate:types`: TypeScript and Vue SFC type integrity validator (`validate_type_check.ts` sub-auditor wrapping `vue-tsc --noEmit`).
-- `npm run validate:sql`: SQL schema and migration validator against local engine.
-- `npm run validate:items`: Integrity audit for item and object databases.
-- `npm run validate:items:summary`: Runs item database validation in summary mode.
-- `npm run validate:items:report`: Runs item database validation and saves detailed output to `scratch/items_report.txt`.
-- `npm run validate:abilities`: Semi-integrity validation for abilities database against Showdown Dex.
-- `npm run validate:abilities:summary`: Runs ability database validation in summary mode.
-- `npm run validate:abilities:report`: Runs ability database validation and saves detailed output to `scratch/abilities_report.txt`.
-- `npm run validate:moves`: Semi-integrity validation for moves database against Showdown Dex.
-- `npm run validate:moves:summary`: Runs move database validation in summary mode.
-- `npm run validate:moves:report`: Runs move database validation and saves detailed output to `scratch/moves_report.txt`.
-- `npm run validate:pokemon`: Integrity validator for Pokemon species database.
-- `npm run validate:sprites`: Sprite integrity validator across 9 generations.
-- `npm run validate:domain-types`: Domain-Type-First contract compliance auditor.
-- `npm run validate:o1`: $O(1)$ data structures and algorithmic performance auditor.
-- `npm run audit`: Unified standards scan. Displays summary Box-Drawing table in terminal and writes full JSON to `scratch/audits/latest_audit.json`. Accepts filters (e.g. `npm run audit errors-only`, `npm run audit rule=dox`, `npm run audit family=domain_data`).
-- `npm run audit:warnings` / `npm run audit:summary`: Consolidated Box-Drawing report of all warnings and errors grouped by category from `scratch/audits/latest_audit.json`. Supports `category=<category>` (e.g., `category=complejidad`, `category=dead-code`), `top=<N>`, and `json`.
-- `npm run audit:complexity`: Calculates and summarizes cognitive and cyclomatic complexity hotspots via Fallow AST.
-- `npm run audit:complexity:top`: Lists top 50 highest complexity functions across production layers.
-- `npm run audit:fallow`: Consolidated codebase intelligence dashboard (dupes, security, dead-code, health).
-- `npm run audit:fallow:dupes`: Fallow duplicate and triplicate code detector.
-- `npm run audit:fallow:security`: Fallow CWE security analysis.
-- `npm run audit:fallow:dead-code`: Fallow unused exports, orphan files, and dependency analyzer.
-- `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
-- `npm run audit:md`: Unified documentation and DOX integrity suite (preset=md).
-- `npm run lint`: Fast developer lint executing 10 core sub-auditors in parallel (`npm run audit:lint`).
+- `npm run auditor:type-check`: TypeScript and Vue SFC type integrity validator (`validate_type_check.ts` sub-auditor wrapping `vue-tsc --noEmit`).
+- `npm run auditor:sql-migrations`: SQL schema and migration validator against local engine.
+- `npm run auditor:items`: Integrity audit for item and object databases.
+- `npm run auditor:items`: Runs item database validation in summary mode.
+- `npm run auditor:items`: Runs item database validation and saves detailed output to `scratch/items_report.txt`.
+- `npm run auditor:abilities`: Semi-integrity validation for abilities database against Showdown Dex.
+- `npm run auditor:abilities`: Runs ability database validation in summary mode.
+- `npm run auditor:abilities`: Runs ability database validation and saves detailed output to `scratch/abilities_report.txt`.
+- `npm run auditor:moves`: Semi-integrity validation for moves database against Showdown Dex.
+- `npm run auditor:moves`: Runs move database validation in summary mode.
+- `npm run auditor:moves`: Runs move database validation and saves detailed output to `scratch/moves_report.txt`.
+- `npm run auditor:pokemon`: Integrity validator for Pokemon species database.
+- `npm run auditor:sprites`: Sprite integrity validator across 9 generations.
+- `npm run auditor:domain-types`: Domain-Type-First contract compliance auditor.
+- `npm run auditor:o1-data-structures`: $O(1)$ data structures and algorithmic performance auditor.
+- `npm run auditor`: Unified standards scan. Displays summary Box-Drawing table in terminal and writes full JSON to `scratch/audits/latest_audit.json`. Accepts filters (e.g. `npm run auditor errors-only`, `npm run auditor rule=dox`, `npm run auditor family=domain_data`).
+- `npm run auditor:warnings` / `npm run auditor:summary`: Consolidated Box-Drawing report of all warnings and errors grouped by category from `scratch/audits/latest_audit.json`. Supports `category=<category>` (e.g., `category=complejidad`, `category=dead-code`), `top=<N>`, and `json`.
+- `npm run auditor:complexity`: Calculates and summarizes cognitive and cyclomatic complexity hotspots via Fallow AST.
+- `npm run auditor:complexity`: Lists top 50 highest complexity functions across production layers.
+- `npm run auditor:fallow`: Consolidated codebase intelligence dashboard (dupes, security, dead-code, health).
+- `npm run auditor:fallow:dupes`: Fallow duplicate and triplicate code detector.
+- `npm run auditor:fallow:security`: Fallow CWE security analysis.
+- `npm run auditor:fallow:dead-code`: Fallow unused exports, orphan files, and dependency analyzer.
+- `npm run auditor:fix`: Automatic standards repair (Node prefixes, Viewports).
+- `npm run auditor:md`: Unified documentation and DOX integrity suite (preset=md).
+- `npm run lint`: Fast developer lint executing 10 core sub-auditors in parallel (`npm run auditor:lint`).
 - `npm run lint:fix`: Auto-fixes lint and formatting issues via `auditor preset=lint fix`.
-- `npm run audit:css`: Audits SCSS stylesheets and Vue SFC `<style>` blocks in-memory via Stylelint.
-- `npm run audit:similar`: Semantic similarity detection using Fallow AST graph.
-- `npm run audit:review`: Graph-guided review brief with blast radius and structural risk analysis.
-- `npm run audit:summary` / `npm run audit:errors`: Consolidated Box-Drawing report of errors and warnings from `scratch/audits/latest_audit.json`.
-- `npm run audit:findings json`: Structured JSON report for AI agents and CLI tools with zero intermediate tooling.
+- `npm run auditor:stylelint`: Audits SCSS stylesheets and Vue SFC `<style>` blocks in-memory via Stylelint.
+- `npm run auditor:similar`: Semantic similarity detection using Fallow AST graph.
+- `npm run auditor:review`: Graph-guided review brief with blast radius and structural risk analysis.
+- `npm run auditor:summary` / `npm run auditor:errors`: Consolidated Box-Drawing report of errors and warnings from `scratch/audits/latest_audit.json`.
+- `npm run auditor:findings json`: Structured JSON report for AI agents and CLI tools with zero intermediate tooling.
 - `npm run test:node`: Runs the pure logic test suite under Vitest via the centralized orchestrator `scripts/testing/run_tests.ts --project node` (supporting dual SQLite and ephemeral Docker PostgreSQL validation).
 - `npm run test:migrations`: Runs the isolated dual-engine migration validation suite (`backup_migration_real.test.ts`) against the real production backup fixture (SQLite in-memory + ephemeral PostgreSQL container). Excluded from standard daily runs to preserve developer iteration speed.
 - `npm run database:test-migrations`: Convenience alias for `npm run test:migrations`.
@@ -162,17 +162,17 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run sim:e2e:combat:report`: Runs the Playwright E2E FSM tests and saves the output in `scratch/playwright_combat.log`.
 - `npm run test:combat:switch`: Runs the unit test suite verifying volatile status and stat stage resets on switch (`tests/unit/battle/battle_switch_action_suite.spec.ts`).
 - `npm run test:combat:weather`: Runs the unit test suite verifying weather and terrain effects on speed, field state, and status (`tests/unit/battle/battle_weather_and_field_suite.spec.ts`).
-- `npm run database:generate-migrations`: Scans local SQL migration files under `database/migrations/`, compiles `migrations_data.ts`, and automatically runs `npm run validate:sql` followed by `npm run test:migrations`. Rejects and aborts with exit code 1 if any migration fails against the real backup fixture. Pure code generation for Vite (`vite.config.ts`) runs in ~10ms without tests.
+- `npm run database:generate-migrations`: Scans local SQL migration files under `database/migrations/`, compiles `migrations_data.ts`, and automatically runs `npm run auditor:sql-migrations` followed by `npm run test:migrations`. Rejects and aborts with exit code 1 if any migration fails against the real backup fixture. Pure code generation for Vite (`vite.config.ts`) runs in ~10ms without tests.
 - `npm run sync:test`: **Test Repo Sync**. Copies the full source tree to sibling `pokevicio-test` repository.
 
 ### ⚔️ Battle Engine (FSM Mastery)
 
-- `npm run validate:fsm:diagrams`: 1:1 parity verifier between code and Mermaid diagrams.
-- `npm run validate:fsm:implementation`: Deep audit of FSM architectural layers.
-- `npm run validate:fsm:flow`: State sequence verifier and race condition detection.
-- `npm run validate:fsm`: Unified FSM Mastery Audit (Diagrams + Implementation + Flow).
-- `npm run validate:fsm:summary`: Runs FSM validation in summary mode.
-- `npm run validate:fsm:report`: Runs FSM validation and saves detailed output to `scratch/fsm_report.txt`.
+- `npm run auditor:fsm-diagrams`: 1:1 parity verifier between code and Mermaid diagrams.
+- `npm run auditor:fsm-implementation`: Deep audit of FSM architectural layers.
+- `npm run auditor:fsm-flow-parity`: State sequence verifier and race condition detection.
+- `npm run auditor:fsm-implementation`: Unified FSM Mastery Audit (Diagrams + Implementation + Flow).
+- `npm run auditor:fsm-implementation`: Runs FSM validation in summary mode.
+- `npm run auditor:fsm-implementation`: Runs FSM validation and saves detailed output to `scratch/fsm_report.txt`.
 
 ### ☁️ Supabase Infrastructure & Multi-Server Management
 

@@ -146,6 +146,13 @@ export interface ProfileRow {
   nick_style?: string | null // domain-ok: Open dynamic text or non-domain string payload
   avatar_style?: string | null // domain-ok: Open dynamic text or non-domain string payload
   gender?: GenderId | null
+  last_played_at?: string | null // domain-ok: ISO timestamp string
+  pokedex_caught?: number | null
+  pokedex_seen?: number | null
+  trainers_defeated?: number | null
+  wild_wins?: number | null
+  war_coins?: number | null
+  defeated_gyms?: string[] | null // domain-ok: Array of gym IDs
 }
 
 /** Shared Supabase row shape for game_saves table. */

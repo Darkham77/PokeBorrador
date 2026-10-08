@@ -13,7 +13,7 @@ import { usePlayerSearchStore } from '@/stores/player/playerSearch.ts'
 import { logger } from '@/logic/utils/logger'
 import { parseInstantSafe } from '@/logic/utils/timeUtils'
 import type { GameState } from '@/types/system/game'
-import type { ProfileRow, GameSaveRow } from '@/types/system/database'
+import type { ProfileRow } from '@/types/system/database'
 import { ONLINE_PRESENCE_WINDOW_MS, MAX_FRIEND_REQUESTS_PER_MINUTE, BATTLE_INVITE_EXPIRY_SECONDS, ONLINE_PRESENCE_PING_INTERVAL_SEC } from '@/logic/constants/gameplay.ts'
 import { ONE_MINUTE_MS } from '@/logic/constants/items.ts'
 import { parseFriendsList, parsePendingRequests } from './socialParser.ts'
@@ -163,15 +163,9 @@ export const useSocialStore = defineStore('social', () => {
             f.requester_id === authStore.user?.id ? f.addressee_id : f.requester_id
           )
 
-          const [profRes, saveRes] = await Promise.all([
-            db.from('profiles').select('*').in('id', friendIds),
-            db.from('game_saves').select('user_id,save_data,updated_at').in('user_id', friendIds)
-          ]) as [
-            { data: ProfileRow[] | null; error: unknown },
-            { data: GameSaveRow[] | null; error: unknown }
-          ]
+          const profRes = await db.from('profiles').select('*').in('id', friendIds) as { data: ProfileRow[] | null; error: unknown }
 
-          friends.value = parseFriendsList(friendIds, profRes.data || [], saveRes.data || [])
+          friends.value = parseFriendsList(friendIds, profRes.data || [])
         } else {
           friends.value = []
         }
@@ -185,15 +179,9 @@ export const useSocialStore = defineStore('social', () => {
 
         if (pending && pending.length > 0) {
           const requesterIds = pending.map((r: PendingRequest) => r.requester_id)
-          const [profRes, saveRes] = await Promise.all([
-            db.from('profiles').select('*').in('id', requesterIds),
-            db.from('game_saves').select('user_id,save_data').in('user_id', requesterIds)
-          ]) as [
-            { data: ProfileRow[] | null; error: unknown },
-            { data: GameSaveRow[] | null; error: unknown }
-          ]
+          const profRes = await db.from('profiles').select('*').in('id', requesterIds) as { data: ProfileRow[] | null; error: unknown }
 
-          pendingRequests.value = parsePendingRequests(pending, profRes.data || [], saveRes.data || [])
+          pendingRequests.value = parsePendingRequests(pending, profRes.data || [])
         } else {
           pendingRequests.value = []
         }
@@ -301,15 +289,15 @@ export const useSocialStore = defineStore('social', () => {
     try {
       const ids = friends.value.map(f => f.id)
       const { data } = await db
-        .from('game_saves')
-        .select('user_id, updated_at')
-        .in('user_id', ids) as { data: { user_id: string; updated_at: string }[] | null }
+        .from('profiles')
+        .select('id, last_played_at')
+        .in('id', ids) as { data: { id: string; last_played_at: string }[] | null }
 
       if (!data) return
       const now = Temporal.Now.instant().epochMilliseconds
       friends.value = friends.value.map(f => {
-        const row = data.find(r => r.user_id === f.id)
-        const lastSeen = parseInstantSafe(row?.updated_at)
+        const row = data.find(r => r.id === f.id)
+        const lastSeen = parseInstantSafe(row?.last_played_at)
         return {
           ...f,
           lastSeen,
@@ -327,9 +315,9 @@ export const useSocialStore = defineStore('social', () => {
     
     const ping = async () => {
       if (!authStore.user || !gameStore.db) return
-      await gameStore.db.from('game_saves').update({ 
-        updated_at: Temporal.Now.instant().toString() 
-      }).eq('user_id', authStore.user?.id)
+      await gameStore.db.from('profiles').update({ 
+        last_played_at: Temporal.Now.instant().toString() 
+      }).eq('id', authStore.user?.id)
 
       // Refresh friends' presence on every ping cycle
       await refreshFriendsPresence()

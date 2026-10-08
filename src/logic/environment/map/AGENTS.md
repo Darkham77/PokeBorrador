@@ -34,7 +34,7 @@ Game Logic Engineers / World Environment Designers.
 ## Verification
 
 - `npm run test:node tests/node/world/map_environment_weather_matrix.test.ts`
-- `npm run audit:md`
+- `npm run auditor:md`
 
 ## Child DOX Index
 

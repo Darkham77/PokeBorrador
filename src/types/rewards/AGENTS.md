@@ -22,7 +22,7 @@ State & Type Architects / Frontend Developers.
 
 ## Verification
 
-- Run `npm run audit suites=validate_domain_types` and `npm run audit suites=validate_type_check` to verify type compliance.
+- Run `npm run auditor:domain-types` and `npm run auditor:type-check` to verify type compliance.
 
 ## Child DOX Index
 

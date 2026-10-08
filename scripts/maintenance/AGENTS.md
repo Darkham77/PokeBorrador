@@ -14,7 +14,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
 
 ### Core Rules & Audit Guidelines
 
-- **Audit Orchestrator & Gatekeeper Framework**: The unified audit orchestrator (`auditor` / `npm run audit`) is provided by `@francogp/auditor`. It executes all 48 built-in suites and 18 host extensions declared in `audit.config.ts`, enforcing 0 errors and the baseline warning ratchet.
+- **Audit Orchestrator & Gatekeeper Framework**: The unified audit orchestrator (`auditor` / `npm run auditor`) is provided by `@francogp/auditor`. It executes all 48 built-in suites and 18 host extensions declared in `audit.config.ts`, enforcing 0 errors and the baseline warning ratchet.
 - **Administrative CLI Contracts**: Maintenance scripts MUST implement `node:util parseArgs` with explicit typed options and provide `--help`:
   - `admin_supabase_users.ts` (`npm run database:admin server=<profile> action=<action> email=<email> [password=<pass> | new-email=<email> | username=<name>]`)
   - `admin_rename.ts` (`npm run admin:rename user=<id_or_name> name=<new_name>`)

@@ -27,7 +27,7 @@ Core Frontend & Asset Pipeline Engineers.
 
 ## Verification
 
-- Run `npm run lint` and `npm run audit`.
+- Run `npm run lint` and `npm run auditor`.
 - Verify DEV route protection by asserting that access in production builds redirects or does not exist.
 
 ## Child DOX Index

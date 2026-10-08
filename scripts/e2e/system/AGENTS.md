@@ -23,7 +23,7 @@ QA / Automation Engineers / Core Engine Developers.
 ## Verification
 
 - Run `npm run sim:e2e:system` to verify update flows.
-- Run `npm run audit` to ensure 0 lint and structural errors.
+- Run `npm run auditor` to ensure 0 lint and structural errors.
 
 ## Child DOX Index
 

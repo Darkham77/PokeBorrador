@@ -13,7 +13,7 @@
 ## 1. Context Isolation (DBRouter)
 
 - Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts via the `DBRouter`.
-- Run `npm run validate:sql` before committing database-related changes.
+- Run `npm run auditor:sql-migrations` before committing database-related changes.
 
 ## 2. Zero-Pokemon Save Prohibition (Save Shield)
 
@@ -126,7 +126,7 @@
 
 ## 18. Separation of Concerns: SQL Migration Audits vs. Historical Save Validation
 
-- **Fast Static SQL Auditing (`npm run audit`)**: The persistence auditor (`scripts/auditors/persistence/validate_sql_migrations.ts`) is strictly focused on lightweight static validation: SQLite dialect translation syntax, monotonic timestamp progression, and `db_version` synchronization in sub-second times.
+- **Fast Static SQL Auditing (`npm run auditor`)**: The persistence auditor (`scripts/auditors/persistence/validate_sql_migrations.ts`) is strictly focused on lightweight static validation: SQLite dialect translation syntax, monotonic timestamp progression, and `db_version` synchronization in sub-second times.
 - **Heavy Fixture & Save Data Integrity Testing (`npm run test`)**: End-to-end replay of all historical migrations over real player save fixtures (`server_franco_backup_fixture.json`), along with deep validation of Pokémon species, abilities, natures, held items, inventory catalogs, and Valibot schema conformance, MUST reside exclusively in automated Vitest integration tests (`tests/node/system/backup_migration_real.test.ts`) running in parallel worker pools.
 
 ## 19. PostgreSQL PL/pgSQL Stored Procedure & Loop Variable Governance
@@ -152,7 +152,7 @@
 - **Mandatory Dual-Engine Test Coverage for Database Bugs**: Whenever investigating, repairing, or refactoring ANY bug that touches database logic (queries, migrations, schemas, RPCs, DBRouter, store serialization/rehydration, or data storage):
   1. **Tier 1 (Unit) & Tier 2 (Integrity)**: Automated reproduction and regression tests MUST execute across **ALL active database engines** (e.g. using `describeWithDatabase` from `tests/dbTestHelper.ts` or instantiating both in-memory SQLite and isolated PostgreSQL schemas). Both engines must reproduce the failure in RED and turn GREEN with identical assertion outcomes.
   2. **Tier 3 (Playwright E2E)**: Simulations validating persistence workflows MUST execute in dual-driver mode (`driver=dual` / Step 6B clean pass), verifying 100% clean passes on both `[1/2 SQLite]` and `[2/2 PostgreSQL]`.
-- **Synchronized Companion Migration Pairs**: Every schema modification, table addition, or data backfill MUST be delivered as a synchronized pair of forward-only migrations: `.sql` for PostgreSQL and `.sqlite.sql` for SQLite. Both files MUST share an identical monotonic timestamp prefix (`YYYYMMDDHHmmss`) and update `system_config` with the matching `db_version`. Validating syntax via `npm run validate:sql` is mandatory before any database commit.
+- **Synchronized Companion Migration Pairs**: Every schema modification, table addition, or data backfill MUST be delivered as a synchronized pair of forward-only migrations: `.sql` for PostgreSQL and `.sqlite.sql` for SQLite. Both files MUST share an identical monotonic timestamp prefix (`YYYYMMDDHHmmss`) and update `system_config` with the matching `db_version`. Validating syntax via `npm run auditor:sql-migrations` is mandatory before any database commit.
 - **Zero Divergence Policy (Divergence is a Bug)**: If a query, migration, or constraint succeeds in one database engine but fails, produces divergent data shapes, or behaves differently in the other (e.g., PostgreSQL throwing on unquoted identifiers, undeclared loop variables, or missing RLS policies while SQLite passes, or SQLite rejecting nested JSON expressions), this discrepancy constitutes an empirical bug that must be resolved at the source, never masked with engine-specific runtime shortcuts.
 
 ## 23. Update Lifecycle, Version Incompatibility & Atomic Logout Protocol (Save Shield & /login Mandate)

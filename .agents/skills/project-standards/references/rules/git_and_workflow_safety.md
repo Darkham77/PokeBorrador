@@ -29,7 +29,7 @@
 
 - **Root `scratch/` SSoT**: The `scratch/` directory at the project root is the exclusive, mandatory location for all temporary files, debug outputs, text reports, summaries, validation artifacts, ephemeral SQLite databases, and simulation exports (`.txt`, `.log`, `.json`, `.db`).
 - **Strict Prohibition on Source Tree Temp Folders**: Creating or referencing temporary or ephemeral directories (`temp/`, `tmp/`, `temp_*`, `tmp_*`) or temporary persistence files inside source code roots (`src/`, `database/`, `scripts/`, `tests/`, `supabase/`) is strictly prohibited.
-- **Zero `.gitignore` Temp Bypasses**: Adding `.gitignore` entries to mask or ignore temporary folders or files under source trees (e.g. `database/temp`, `src/temp`, `supabase/temp_supabase/`) is strictly forbidden. All temporary assets must be created directly in `scratch/`. Enforced continuously by `npm run validate:ephemeral-storage-isolation`.
+- **Zero `.gitignore` Temp Bypasses**: Adding `.gitignore` entries to mask or ignore temporary folders or files under source trees (e.g. `database/temp`, `src/temp`, `supabase/temp_supabase/`) is strictly forbidden. All temporary assets must be created directly in `scratch/`. Enforced continuously by `npm run auditor:ephemeral-storage-isolation`.
 
 ## 5. Root Setup Scripts SSoT & Workspace Update Governance
 
@@ -42,7 +42,7 @@
   3. By default in development, automatically queries `https://nodejs.org/dist/index.json` for the latest stable Current Node.js release, synchronizes `package.json` (`engines.node`) and `.nvmrc`, updates global npm to latest release (`npm install -g npm@latest`), and runs `npm ci`. When invoked with `--declared-versions` / `-DeclaredVersions` (aliases `--locked`, `--pinned`), freezes installation strictly to versions declared in the commit without network queries, without mutating Git-tracked files, and without updating npm.
   4. Installs and activates Node.js via NVM (`nvm install` & `nvm use`).
   5. Enforces local `.npmrc` security settings (`ignore-scripts=true`, registry HTTPS, high audit level) and applies Windows Defender folder exclusions (`Add-MpPreference`).
-  6. Cleans residual npm cache, executes `npm ci` for a deterministic workspace, unblocks native binaries in `node_modules` (`Unblock-File`), and verifies workspace tools via the unified audit framework (`npm run audit`).
+  6. Cleans residual npm cache, executes `npm ci` for a deterministic workspace, unblocks native binaries in `node_modules` (`Unblock-File`), and verifies workspace tools via the unified audit framework (`npm run auditor`).
   7. Preserves full system `PATH` integrity by additively concatenating `Machine` and `User` paths, ensuring `C:\Windows\System32` and core OS utilities remain permanently accessible.
 - **Idempotent Version Governance**: In server deployments, CI/CD pipelines, or locked runs, setup scripts MUST be invoked with `--declared-versions` / `-DeclaredVersions` to remain 100% deterministic, offline-friendly, and leave Git working tree clean without querying `nodejs.org` or mutating tracked files.
 - **Environment Audit & Pre-Check**: Pre-install checks (`node --experimental-strip-types scripts/maintenance/check_environment.ts`) automatically validate runtime environment requirements against `package.json`. Whenever outdated Node/npm versions or broken Windows NVM symlinks are detected, instruct the user to run the appropriate root setup script.
@@ -51,7 +51,7 @@
 ## 6. Artifact Governance Lifecycle (MANDATORY)
 
 To ensure rigor and traceability, every complex task MUST follow the artifact lifecycle:
-1. **Planning**: Create `implementation_plan.md`. Wait for approval from the user. Every work plan MUST obligatorily include and enforce strict compliance with `@/project-standards`, `@/domain-type-first`, and all project quality auditor rules (`npm run audit`, Fallow complexity/dead-code checks).
+1. **Planning**: Create `implementation_plan.md`. Wait for approval from the user. Every work plan MUST obligatorily include and enforce strict compliance with `@/project-standards`, `@/domain-type-first`, and all project quality auditor rules (`npm run auditor`, Fallow complexity/dead-code checks).
 2. **Execution**: Maintain `task.md` as the source of truth during implementation.
 3. **Closure**: Create `walkthrough.md` with concrete evidence (test logs, screenshots) of task success.
 

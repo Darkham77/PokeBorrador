@@ -69,7 +69,7 @@ To synchronize internal game databases (such as `pokemonDB.ts` learnsets, stats,
 - **Do Not Use Supabase Directly**: Always use `gameStore.db` or the injected router.
 - **RPCs**: If you create an RPC on the server, you MUST create its equivalent or a mock in `dbRouter.ts` so that offline mode does not break.
 - **Transactions**: There are no guaranteed multi-table transactions in the router; always design logic to be atomic at the row level whenever possible.
-- **Migration Integrity Patch**: To ensure `npm run validate:sql` passes in environments with inconsistent migration history, all new migrations MUST include `CREATE TABLE IF NOT EXISTS` blocks for the tables they affect. This prevents "no such table" errors during the isolated validation phase.
+- **Migration Integrity Patch**: To ensure `npm run auditor:sql-migrations` passes in environments with inconsistent migration history, all new migrations MUST include `CREATE TABLE IF NOT EXISTS` blocks for the tables they affect. This prevents "no such table" errors during the isolated validation phase.
 - **Unit Testing & Mocking**: When mocking `DBRouter` in unit tests, you MUST provide a dummy URL/Key to satisfy the configuration check and explicitly inject your mock client into the private `_realClient` property to prevent the lazy-initializer from attempting a real connection.
 
 ### 4. Realtime & Optimistic Updates Pattern
@@ -106,7 +106,7 @@ const isAdmin = computed(() => profileStore.isAdmin || db.isLocal);
 
 To ensure the local developer engine remains in parity with the production cloud engine:
 
-- **Forbidden Syntax**: NEVER use the `CASCADE` keyword in `DROP TABLE` or `DROP VIEW` statements, as SQLite does not support it and will fail during migration validation (`npm run validate:sql`).
+- **Forbidden Syntax**: NEVER use the `CASCADE` keyword in `DROP TABLE` or `DROP VIEW` statements, as SQLite does not support it and will fail during migration validation (`npm run auditor:sql-migrations`).
 - **Idempotency**: Use `IF EXISTS` to prevent errors during re-runs of seed scripts.
 - **Proxy Query Upsert/Insert Reusability**: In local SQLite WASM execution mode (`ProxyQuery`), `insert` queries can safely reuse `upsert` (`INSERT OR REPLACE`) logic to simplify offline query proxying while maintaining absolute compatibility with online PostgREST APIs.
 - **Auto-Parsing Known JSON Fields**: When emulating Supabase queries locally via SQLite WASM, stringified JSON columns (`save_data`, `team_data`, `data`, `config`, `schedule`, `asset_data`) must be automatically parsed within `executeLocal` before returning results to ensure seamless data consumption by Pinia stores.

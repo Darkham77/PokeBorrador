@@ -55,23 +55,23 @@ function resolveIsOnline(lastSeen?: Temporal.Instant | null): boolean {
 function buildFriendItem(
   friendUid: string,
   profile: ProfileRow | undefined,
-  saveRow: GameSaveRow | undefined
+  saveRow?: GameSaveRow | undefined
 ): Friend {
   const save = resolveSaveData(saveRow);
-  const lastSeen = parseInstantSafe(saveRow?.updated_at);
+  const lastSeen = parseInstantSafe(profile?.last_played_at || saveRow?.updated_at);
   const isOnline = resolveIsOnline(lastSeen);
   const capitalizedFallback = resolveFallbackFriendName(friendUid);
 
   return {
     id: friendUid,
-    username: resolveCandidateField(capitalizedFallback, save.trainer as string, profile?.username),
-    level: resolveCandidateField(DEFAULT_TRAINER_LEVEL, save.trainerLevel as number, profile?.trainer_level),
-    badges: resolveBadgesCount(save.badges),
-    playerClass: resolveCandidateField(EMPTY_STRING, save.playerClass as string, profile?.player_class),
-    faction: resolveCandidateField(EMPTY_STRING, save.faction as string, profile?.faction),
-    nick_style: resolveCandidateField(EMPTY_STRING, save.nick_style as string, profile?.nick_style),
-    avatar_style: resolveCandidateField(EMPTY_STRING, save.avatar_style as string, profile?.avatar_style),
-    gender: resolveCandidateField(DEFAULT_GENDER, save.gender as string, profile?.gender),
+    username: resolveCandidateField(capitalizedFallback, profile?.username, save.trainer as string),
+    level: resolveCandidateField(DEFAULT_TRAINER_LEVEL, profile?.trainer_level, save.trainerLevel as number),
+    badges: profile?.badges ?? resolveBadgesCount(save.badges),
+    playerClass: resolveCandidateField(EMPTY_STRING, profile?.player_class, save.playerClass as string),
+    faction: resolveCandidateField(EMPTY_STRING, profile?.faction, save.faction as string),
+    nick_style: resolveCandidateField(EMPTY_STRING, profile?.nick_style, save.nick_style as string),
+    avatar_style: resolveCandidateField(EMPTY_STRING, profile?.avatar_style, save.avatar_style as string),
+    gender: resolveCandidateField(DEFAULT_GENDER, profile?.gender, save.gender as string),
     isOnline,
     lastSeen,
   };
@@ -80,7 +80,7 @@ function buildFriendItem(
 export function parseFriendsList(
   friendIds: string[],
   profilesData: ProfileRow[],
-  savesData: GameSaveRow[]
+  savesData: GameSaveRow[] = []
 ): Friend[] {
   const profilesById: Record<string, ProfileRow> = Object.fromEntries(
     profilesData.map((p) => [p.id, p])
@@ -97,7 +97,7 @@ export function parseFriendsList(
 export function parsePendingRequests(
   pending: PendingRequest[],
   profilesData: ProfileRow[],
-  savesData: GameSaveRow[]
+  savesData: GameSaveRow[] = []
 ): PendingRequest[] {
   const savesByUserId: Record<string, GameSaveRow> = Object.fromEntries(
     savesData.map((s) => [s.user_id, s])
@@ -122,12 +122,12 @@ export function parsePendingRequests(
     const capitalizedFallback = reqUid.slice(0, SHORT_FALLBACK_SLICE_LENGTH).toUpperCase();
 
     profilesMap[reqUid] = {
-      username: resolveCandidateField(capitalizedFallback, save.trainer as string, p?.username),
-      nick_style: resolveCandidateField(EMPTY_STRING, save.nick_style as string, p?.nick_style),
-      trainer_level: resolveCandidateField(DEFAULT_TRAINER_LEVEL, save.trainerLevel as number, p?.trainer_level),
-      player_class: resolveCandidateField(DEFAULT_PLAYER_CLASS, save.playerClass as string, p?.player_class),
-      avatar_style: resolveCandidateField(EMPTY_STRING, save.avatar_style as string, p?.avatar_style),
-      gender: resolveCandidateField(DEFAULT_GENDER, save.gender as string, p?.gender),
+      username: resolveCandidateField(capitalizedFallback, p?.username, save.trainer as string),
+      nick_style: resolveCandidateField(EMPTY_STRING, p?.nick_style, save.nick_style as string),
+      trainer_level: resolveCandidateField(DEFAULT_TRAINER_LEVEL, p?.trainer_level, save.trainerLevel as number),
+      player_class: resolveCandidateField(DEFAULT_PLAYER_CLASS, p?.player_class, save.playerClass as string),
+      avatar_style: resolveCandidateField(EMPTY_STRING, p?.avatar_style, save.avatar_style as string),
+      gender: resolveCandidateField(DEFAULT_GENDER, p?.gender, save.gender as string),
     };
   }
 

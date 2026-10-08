@@ -73,7 +73,7 @@ When adding, renaming, or refactoring properties in `GameState` that represent d
   4. Initial State Factory: `createInitialGameState()` in `src/stores/gameInitialState.ts`.
 - **Zero Silent Dropping**: Because Valibot `v.object()` strips undeclared keys during `validateAndSanitize()`, any property omitted from `saveDataSchema` is discarded on save, causing silent progress erasure upon page reload (F5).
 - **Compile-Time Parity Enforcement**: The compile-time assertion `AssertSaveSchemaParity<SaveDataDto, PersistedGameState>` in `schemas.ts` breaks `vue-tsc` immediately if a property is added to `PersistedGameState` but omitted from `saveDataSchema`.
-- **Automated Pre-Commit Auditor**: All 86+ save fields are audited continuously by `validate_save_persistence_parity.ts` (`npm run validate:persistence`), preventing commits or deployments with missing persistence paths.
+- **Automated Pre-Commit Auditor**: All 86+ save fields are audited continuously by `validate_save_persistence_parity.ts` (`npm run auditor:family:persistence`), preventing commits or deployments with missing persistence paths.
 
 ---
 

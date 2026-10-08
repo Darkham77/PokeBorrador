@@ -34,7 +34,7 @@ State & Type Architects.
 
 ## Verification
 
-- Run `npm run audit` to verify type contracts, domain integrity, and project rules.
+- Run `npm run auditor` to verify type contracts, domain integrity, and project rules.
 
 ## Child DOX Index
 

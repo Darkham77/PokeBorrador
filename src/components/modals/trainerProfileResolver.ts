@@ -39,6 +39,12 @@ export interface ProfileRow {
   trade_volume?: number | null
   capture_attempts?: number | null
   capture_successes?: number | null
+  pokedex_caught?: number | null
+  pokedex_seen?: number | null
+  trainers_defeated?: number | null
+  wild_wins?: number | null
+  war_coins?: number | null
+  defeated_gyms?: string[] | null
 }
 
 export interface SaveStateData {
@@ -366,17 +372,5 @@ export function mapReplayRows(replaysData: unknown): BattleReplayRecord[] {
       createdAt: String(r.created_at || r.createdAt || '')
     };
   });
-}
-
-export function parseRawSaveData(saveData: unknown): SaveStateData | null {
-  if (!saveData) return null;
-  if (typeof saveData === 'string') {
-    try {
-      return JSON.parse(saveData) as SaveStateData;
-    } catch {
-      return null;
-    }
-  }
-  return typeof saveData === 'object' ? (saveData as SaveStateData) : null;
 }
 

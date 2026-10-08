@@ -221,7 +221,7 @@ The primary game font (`Pokemon FireRed LeafGreen`) has tall ascenders and deep 
 - **Zero Text Evasion on Visual Glitches**: When text appears visually clipped, chopped, or distorted in the UI, developers/agents MUST NEVER alter, delete, or paraphrase the textual copy to avoid characters with descenders (such as removing words with `j`). The root cause is ALWAYS CSS container bounds, overflow restrictions, or inadequate line-height, and MUST be resolved cleanly at the CSS/layout level.
 - **Mandatory Descender Buffer on Truncated Text**: In single-line truncated text (`overflow: hidden; text-overflow: ellipsis; white-space: nowrap;` or line clamping), developers MUST either reuse `@mixin text-truncate` or explicitly configure `line-height: 1.45` and `padding-bottom: 2px` (or `padding-bottom >= 1px`). Because the TTF baseline sits at $y = 204$ and descenders reach down to $y = -204$, tight line-heights cause the browser rendering engine to clip the lower hooks of `g`, `p`, `q`, `y`, `j`.
 - **Prohibition of Synthetic Bold on Fractional Pixel Sizes**: Forcing `font-weight: bold` or `800` on fractional font sizes (`7.5px`, `8.5px`, `11.5px`) exacerbates subpixel rasterization rounding, causing double-stroke blur and boundary clipping. Always normalize typography to integer pixel dimensions (`8px`, `9px`, `12px`) and respect the natural font weight of the pixel font.
-- **Static Auditor Governance**: Enforced with 0 errors and 0 warnings by `validate_typography_line_height.ts` (`npm run validate:line-height`). Validated exceptions may use line-level escape hatches `// descender-ok` or `// line-height-ok`.
+- **Static Auditor Governance**: Enforced with 0 errors and 0 warnings by `validate_typography_line_height.ts` (`npm run auditor:typography-line-height`). Validated exceptions may use line-level escape hatches `// descender-ok` or `// line-height-ok`.
 
 ---
 
@@ -296,7 +296,7 @@ When refactoring legacy or generic components:
   - **MANDATORY**: Use `dvh` and `dvw` (Dynamic Viewport) for any element requiring full-screen scaling.
   - **WHY**: Standard `vh`/`vw` units do not account for dynamic toolbars (URL bar, navigation) in mobile browsers like Safari. This leads to layout clipping or unwanted scrollbars.
   - **FORBIDDEN**: Legacy `vh` and `vw` units accompanied by numeric values (e.g., `100vh`).
-  - **Audit**: Enforced by the unified audit engine (`npm run audit`, rule `viewport`). Supports auto-fix via `npm run audit fix`.
+  - **Audit**: Enforced by the unified audit engine (`npm run auditor`, rule `viewport`). Supports auto-fix via `npm run auditor:fix`.
 - **Interaction Stability (Zero-Translatey)**:
   - **Rule**: Avoid vertical displacements (`TranslateY`) in the `:hover` or `:active` states of cards and interactive list elements (e.g., in inventory, battle Pokemon selectors, or boxes). The use of `TranslateY` causes visual artifacts ("ghosting") and layout shifts in dense layouts.
   - **Standard**: Use border-color transitions (`border-color`), brightness filters (`Brightness`), or uniform scale transformations (`Scale`) that do not alter the rendering flow. To neutralize unwanted inherited hover effects, apply `transform: none !important;`.
@@ -345,7 +345,7 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **FORBIDDEN**: Redefining a root class in multiple stylesheets (e.g., having `.map-card` in `_render.scss`, `_items.scss`, and `_grid.scss`).
 - **Responsive SASS**: When possible, consolidate media queries into the main component file instead of creating separate `-responsive.scss` files for the same classes. This avoids redundancy audit triggers.
 - **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
-  `npm run audit` or `npm run validate:component-styles`
+  `npm run auditor` or `npm run auditor:component-styles`
 - **Component Namespacing**: To avoid global collisions and audit-detected redundancies, all classes for new or refactored components **MUST** use a unique namespace prefix related to the component:
   - ✅ `.box-pokemon-card`, `.upd-species-subtitle`, `.pdc-action-grid`
   - ❌ `.pokemon-card`, `.species-subtitle`, `.action-grid` (Generic names forbidden)

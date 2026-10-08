@@ -46,7 +46,7 @@ QA / Automation Engineers.
   - It is STRICTLY FORBIDDEN to create micro-test files (<60 lines) for individual cases or single assertions. Each test file spawns a separate Vitest worker thread, thrashing Vite transform caches and repeatedly re-importing heavy packages like `@pkmn/sim` and `@smogon/calc`.
   - All test files MUST be organized into cohesive, domain-specific test suites with a target size of **300 to 800 lines** (`*_suite.test.ts` or `*_suite.spec.ts`).
   - Legitimate standalone process runners, benchmark files, or isolated bug reproducers are strictly governed via `TEST_FRAGMENTATION_WHITELIST` or inline `// test-fragmentation-ok: <justification>` annotations.
-  - Enforced continuously by the official auditor: `npm run audit suites=validate_test_fragmentation`.
+  - Enforced continuously by the official auditor: `npm run auditor:test-fragmentation`.
 - **Systematic Des-JSDOMization Standard & JSDOM Escape Hatch Protocol**:
   - Suites testing pure domain logic, mathematical formulas, Pinia stores without UI mounting, Showdown engine adapters, or CLI scripts MUST execute under the native Node runtime (`environment: 'node'`) rather than JSDOM.
   - Declaring `// @vitest-environment jsdom` on suites that do not mount Vue components (`@vue/test-utils`) or touch real DOM nodes is strictly prohibited and flagged automatically as `unnecessary-jsdom`.
@@ -100,7 +100,7 @@ QA / Automation Engineers.
 - **Array Indexing and Type Narrowing in Tests**: To satisfy strict type checking under `noUncheckedIndexedAccess` without using `any` or bypassing rules, avoid referencing array elements directly (e.g. `arr[0]`). Extract them to local variables and perform explicit existence assertions or throw errors if undefined to narrow their types.
 - **Dynamic Store Loading**: In node environment tests, avoid static imports of Vue/Pinia store modules. Use dynamic imports protected by `typeof window !== 'undefined'` checks or mock them via `vi.mock()`.
 - **Extension-First Imports**: Internal imports in `tests/node/` tests may include the `.ts` extension — vite-node handles it transparently.
-- **Mandatory Dual Gatekeeper Pipeline**: In Poké Vicio quality assurance and commit workflows, **both `npm run audit` AND `npm run test` are strictly mandatory and non-negotiable**. Static architecture auditors in `scripts/auditors/` (governed by `npm run audit`) and dynamic Vitest suites executed through `scripts/testing/run_tests.ts` (governed by `npm run test`) are complementary and decoupled. **Vitest Invocation Constraint**: All test executions MUST use official npm scripts (`npm run test:node <path>`, `npm run test:unit <path>`). Never use `npx vitest` directly, as `npx` fails to resolve platform-specific Rolldown native bindings (`rolldown-binding.*.node`) and lacks required Node.js permission flags (`--allow-addons`), resulting in startup failures.
+- **Mandatory Dual Gatekeeper Pipeline**: In Poké Vicio quality assurance and commit workflows, **both `npm run auditor` AND `npm run test` are strictly mandatory and non-negotiable**. Static architecture auditors in `scripts/auditors/` (governed by `npm run auditor`) and dynamic Vitest suites executed through `scripts/testing/run_tests.ts` (governed by `npm run test`) are complementary and decoupled. **Vitest Invocation Constraint**: All test executions MUST use official npm scripts (`npm run test:node <path>`, `npm run test:unit <path>`). Never use `npx vitest` directly, as `npx` fails to resolve platform-specific Rolldown native bindings (`rolldown-binding.*.node`) and lacks required Node.js permission flags (`--allow-addons`), resulting in startup failures.
 - **CLI-Ready Visuals**: Battle animations must be triggerable via the debug bridge (e.g. `window.__VITE_DEBUG__.battle.animations.awaitTween('attack-player')`) for headless CLI verification.
 - **Vitest Module Isolation per Worker**: Each spec file runs in its own Vitest worker process with a fresh module registry. Module-level mutable state is automatically isolated between specs.
 - **Mock HP Safety**: Mock pokemon instances used in unit/integration tests that trigger stat recalculation (`recalcPokemonStats`) MUST have their current `hp` set to a low value (e.g., `5` or `10`) to guarantee it never exceeds the newly calculated `maxHp`.
@@ -112,7 +112,7 @@ QA / Automation Engineers.
 
 ## Verification
 
-- Run `npm run test` or `npm run audit` to verify test suite health.
+- Run `npm run test` or `npm run auditor` to verify test suite health.
 
 ## Child DOX Index
 

@@ -67,43 +67,45 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
     if (missingIds.length === 0) return
 
     try {
-      const [profRes, saveRes] = await Promise.all([
-        db.from('profiles').select('id, username, player_class, trainer_level, avatar_style, nick_style, gender').in('id', missingIds),
-        db.from('game_saves').select('user_id, save_data').in('user_id', missingIds)
-      ]) as [
-        { data: { id: string; username?: string | null; player_class?: string | null; trainer_level?: number | null; avatar_style?: string | null; nick_style?: string | null; gender?: string | null }[] | null, error: unknown },
-        { data: { user_id: string; save_data?: unknown }[] | null, error: unknown }
-      ]
+      const { data, error } = (await db
+        .from('profiles')
+        .select('id, username, player_class, trainer_level, avatar_style, nick_style, gender')
+        .in('id', missingIds)) as {
+        data: {
+          id: string;
+          username?: string | null;
+          player_class?: string | null;
+          trainer_level?: number | null;
+          avatar_style?: string | null;
+          nick_style?: string | null;
+          gender?: string | null;
+        }[] | null;
+        error: unknown;
+      };
 
-      if (!profRes.error) {
+      if (!error && data) {
         const profilesMap = Object.fromEntries(
-          (profRes.data || []).map(prof => [prof.id, prof])
-        )
-        const savesMap = Object.fromEntries(
-          (saveRes.data || []).map(s => [s.user_id, s])
-        )
+          data.map(prof => [prof.id, prof])
+        );
 
         missingIds.forEach(id => {
-          const p = profilesMap[id]
-          const saveRow = savesMap[id]
-          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Record<string, unknown> : {} // open-record: Generic key-value data dictionary container
-
-          const fallbackName = id.startsWith('local_') ? id.replace('local_', '') : 'Entrenador'
-          const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
-          const username = (save.trainer as string) || p?.username || capitalizedFallback
+          const p = profilesMap[id];
+          const fallbackName = id.startsWith('local_') ? id.replace('local_', '') : 'Entrenador';
+          const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
+          const username = p?.username || capitalizedFallback;
 
           profileCosmetics.value[id] = {
             username,
-            player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
-            trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
-            avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
-            nick_style: (save.nick_style as string) || p?.nick_style || '',
-            gender: (save.gender as string) || p?.gender || 'h'
-          }
-        })
+            player_class: p?.player_class || 'entrenador',
+            trainer_level: p?.trainer_level || 1,
+            avatar_style: p?.avatar_style || '',
+            nick_style: p?.nick_style || '',
+            gender: p?.gender || 'h'
+          };
+        });
       }
     } catch (err) {
-      logger.error('Chat', `Error fetching profile cosmetics: ${(err as Error).message}`)
+      logger.error('Chat', `Error fetching profile cosmetics: ${(err as Error).message}`);
     }
   }
 

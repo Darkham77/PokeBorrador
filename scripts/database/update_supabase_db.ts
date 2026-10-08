@@ -56,7 +56,8 @@ function adaptMigrationSqlToPostgres(sqlContent: string): string {
   let res = sqlContent.replace(/created_at NOT LIKE/g, "CAST(created_at AS TEXT) NOT LIKE");
   res = res.replace(/SET created_at = REPLACE\(created_at, ' ', 'T'\) \|\| 'Z'/g, "SET created_at = CAST(REPLACE(CAST(created_at AS TEXT), ' ', 'T') || 'Z' AS TIMESTAMPTZ)");
   res = res.replace(/DROP TABLE IF EXISTS events_config;/g, "DROP TABLE IF EXISTS events_config CASCADE;");
-  return res.replace(/WHERE user_id = '(local_[^']+)'/g, "WHERE user_id::text = '$1'");
+  res = res.replace(/WHERE user_id = '(local_[^']+)'/g, "WHERE user_id::text = '$1'");
+  return res.replace(/ADD COLUMN (?!IF NOT EXISTS)/g, "ADD COLUMN IF NOT EXISTS ");
 }
 
 async function applySinglePostgresPatch(sql: postgres.Sql, migrationUid: string, filePath: string): Promise<boolean> {
@@ -73,17 +74,13 @@ async function applySinglePostgresPatch(sql: postgres.Sql, migrationUid: string,
   try {
     await sql.begin(async (tx) => {
       await tx.unsafe(sqlContent);
-      await tx`INSERT INTO public._migrations (id) VALUES (${migrationUid})`;
+      await tx`INSERT INTO public._migrations (id) VALUES (${migrationUid}) ON CONFLICT (id) DO NOTHING`;
     });
     console.log(styleText('green', `   ✅ Parche ${migrationUid} aplicado correctamente.`));
     return true;
   } catch (patchErr: unknown) {
     const pMsg = patchErr instanceof Error ? patchErr.message : String(patchErr);
-    if (pMsg.toLowerCase().includes('already exists') || pMsg.toLowerCase().includes('duplicate')) {
-      console.log(styleText('yellow', `   ⚠️ Parche ${migrationUid} ya estaba aplicado parcialmente (duplicado benigno). Registrando como completado.`));
-      await sql`INSERT INTO public._migrations (id) VALUES (${migrationUid}) ON CONFLICT DO NOTHING`;
-      return true;
-    }
+    console.error(styleText('red', `❌ Error fatal al aplicar parche ${migrationUid}: ${pMsg}`));
     throw patchErr;
   }
 }
@@ -174,6 +171,7 @@ async function updateSingleProfileDb(profile: string, conf: Parameters<typeof bu
   } catch (err: unknown) {
     const msg = err instanceof Error ? (err as Error).message : String(err);
     console.error(styleText('red', `❌ Error al conectar o migrar la base de datos de [${profile}]: ${msg}`));
+    throw err;
   } finally {
     await sql.end();
   }
@@ -202,13 +200,24 @@ export async function updateSupabaseDb(): Promise<void> {
     if (config?.ID) profileToConfig.set(config.ID, config);
   }
 
+  const failedProfiles: string[] = [];
   for (const profile of targetProfiles) {
     const conf = profileToConfig.get(profile);
     if (!conf) {
       console.error(styleText('red', `❌ Error: El perfil o ID "${profile}" no existe en el archivo .env.`));
+      failedProfiles.push(profile);
       continue;
     }
-    await updateSingleProfileDb(profile, conf);
+    try {
+      await updateSingleProfileDb(profile, conf);
+    } catch {
+      failedProfiles.push(profile);
+    }
+  }
+
+  if (failedProfiles.length > 0) {
+    console.error(styleText('bold', styleText('red', `\n❌ Falló la actualización de base de datos en los siguientes perfiles: ${failedProfiles.join(', ')}`)));
+    process.exit(1);
   }
 }
 

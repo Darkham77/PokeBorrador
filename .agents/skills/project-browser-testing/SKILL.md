@@ -20,7 +20,7 @@ After verifying behavior in the browser, you **MUST** run the full verification 
 
 ```bash
 npm run lint
-npm run validate:sql
+npm run auditor:sql-migrations
 npm run test
 npm run build
 ```

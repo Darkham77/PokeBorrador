@@ -442,21 +442,36 @@ async function runMigrations(): Promise<boolean> {
   const { DATABASE_MIGRATIONS } = await import('./migrations_data.ts')
 
   let hasAppliedMigrations = false
+  let lastSuccessfulMigrationId = applied.length > 0 ? applied[applied.length - 1] : null
+
   for (const m of DATABASE_MIGRATIONS as { id: string, sql: string, sqlite_sql?: string }[]) {
-    if (applied.includes(m.id)) continue
+    if (applied.includes(m.id)) {
+      lastSuccessfulMigrationId = m.id
+      continue
+    }
     logger.info('SQLite', `Applying migration: ${m.id}`)
     if (loadingStore) {
       loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false, '⚙️')
     }
     try {
+      _sqliteDb.run("BEGIN TRANSACTION")
       applySingleMigration(_sqliteDb, m)
       _sqliteDb.run("INSERT OR IGNORE INTO _migrations (id) VALUES (?)", [m.id])
+      _sqliteDb.run("COMMIT")
       hasAppliedMigrations = true
+      lastSuccessfulMigrationId = m.id
       logger.success('SQLite', `Migration applied successfully: ${m.id}`)
       if (loadingStore) loadingStore.finish('db_migration')
     } catch (e: unknown) {
+      try {
+        _sqliteDb.run("ROLLBACK")
+      } catch { // catch-ok: rollback safety
+      }
       if (loadingStore) loadingStore.finish('db_migration')
-      logger.error('SQLite', `Migration ${m.id} failed: ${(e as Error).message}`)
+      const msg = (e as Error).message || String(e)
+      logger.error('SQLite', `Migration ${m.id} failed: ${msg}`)
+      _sqliteDb.run("PRAGMA foreign_keys = ON")
+      throw new Error(`[sqliteEngine] Fatal: Migration ${m.id} failed during execution: ${msg}`, { cause: e })
     }
   }
 
@@ -464,11 +479,12 @@ async function runMigrations(): Promise<boolean> {
     await persistSQLite()
   }
 
-  if (DATABASE_MIGRATIONS.length > 0) {
-    const latestId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]!.id
-    const version = parseInt(latestId.split('_')[0] || '0')
-    logger.info('SQLite', `Updating system_config.db_version to ${version}`)
-    _sqliteDb.run("INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('db_version', ?, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))", [version])
+  if (lastSuccessfulMigrationId) {
+    const version = parseInt(lastSuccessfulMigrationId.split('_')[0] || '0')
+    if (version > 0) {
+      logger.info('SQLite', `Updating system_config.db_version to ${version}`)
+      _sqliteDb.run("INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('db_version', ?, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))", [version])
+    }
   }
 
   _sqliteDb.run("PRAGMA foreign_keys = ON")

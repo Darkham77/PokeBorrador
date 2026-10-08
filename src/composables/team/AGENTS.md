@@ -24,7 +24,7 @@ Frontend Developers / Team Management Engineers.
 
 - Run `npm run lint`.
 - Run `npm run test:unit`.
-- Run `npm run audit:md`.
+- Run `npm run auditor:md`.
 
 ## Child DOX Index
 

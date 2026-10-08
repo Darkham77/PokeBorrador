@@ -111,7 +111,7 @@ State Architects / Frontend Developers.
 
 ## Verification
 
-- Run `npm run audit` to verify store types, state consistency, and project rules.
+- Run `npm run auditor` to verify store types, state consistency, and project rules.
 - Verify memory footprint and FPS stability during intense store updates.
 
 ## Child DOX Index

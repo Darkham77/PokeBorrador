@@ -26,7 +26,7 @@ Frontend Developers / UI Components Team.
 ## Verification
 
 - `npm run lint`
-- `npm run audit suites=validate_component_styles`
+- `npm run auditor:component-styles`
 - `npm run test`
 
 ## Child DOX Index

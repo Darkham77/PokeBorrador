@@ -166,7 +166,7 @@ The parity audit compares canonical Pokémon Showdown source code in `external/p
 - **Port 5174 Isolation**: E2E simulations strictly use port 5174 (`npx kill-port 5174`).
 - **Proactive Docker Auto-Start**: Automatically starts Docker if stopped when PostgreSQL runs.
 - **Prohibition on Tautological Mocking**: Never mock the subsystem under test (`showdownWorkerClient.ts`, `@pkmn/sim`). Real engine parity is mandatory.
-- **No-Test Mandate for Documentation**: Strictly forbidden to run `test` or `sim:e2e` when editing `.md` or skills. Use only `npm run audit:md`.
+- **No-Test Mandate for Documentation**: Strictly forbidden to run `test` or `sim:e2e` when editing `.md` or skills. Use only `npm run auditor:md`.
 
 ---
 

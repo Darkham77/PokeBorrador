@@ -567,8 +567,18 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
       if (!sql) continue;
       try {
         db.exec(sql);
-      } catch { // catch-ok: ignore harmless schema migration replay errors in memory db
-        // Ignorar errores benignos de esquema
+      } catch (stmtErr: unknown) {
+        const msg = ((stmtErr as Error).message || '').toLowerCase();
+        const isDuplicate = msg.includes('duplicate column') || msg.includes('already exists');
+        const isMissing = msg.includes('no such column');
+        if (!isDuplicate && !isMissing) {
+          findings.push({
+            severity: 'error',
+            category: 'system',
+            message: `Fallo al ejecutar migración ${migration.id}: ${(stmtErr as Error).message}`,
+            path: `migration.${migration.id}`
+          });
+        }
       }
     }
   }

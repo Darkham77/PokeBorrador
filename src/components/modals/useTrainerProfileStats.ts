@@ -26,27 +26,27 @@ export function useTrainerProfileStats(
 
   const badgesCount = computed(() => {
     if (isOwnProfile.value) return gameStore.state.badges ?? gameStore.state.defeatedGyms?.length ?? 0;
-    return saveState.value?.badges ?? saveState.value?.defeatedGyms?.length ?? 0;
+    return profile.value?.badges ?? saveState.value?.badges ?? saveState.value?.defeatedGyms?.length ?? 0;
   });
 
   const pokedexCaught = computed(() => {
     if (isOwnProfile.value) return gameStore.state.pokedex?.length ?? 0;
-    return saveState.value?.pokedex?.length ?? 0;
+    return profile.value?.pokedex_caught ?? saveState.value?.pokedex?.length ?? 0;
   });
 
   const pokedexSeen = computed(() => {
     if (isOwnProfile.value) return gameStore.state.seenPokedex?.length ?? 0;
-    return saveState.value?.seenPokedex?.length ?? 0;
+    return profile.value?.pokedex_seen ?? saveState.value?.seenPokedex?.length ?? 0;
   });
 
   const trainersDefeated = computed(() => {
     if (isOwnProfile.value) return gameStore.state.stats?.trainersDefeated ?? 0;
-    return saveState.value?.stats?.trainersDefeated ?? 0;
+    return profile.value?.trainers_defeated ?? saveState.value?.stats?.trainersDefeated ?? 0;
   });
 
   const wildWins = computed(() => {
     if (isOwnProfile.value) return gameStore.state.stats?.wins ?? 0;
-    return saveState.value?.stats?.wins ?? 0;
+    return profile.value?.wild_wins ?? saveState.value?.stats?.wins ?? 0;
   });
 
   const pvpWins = computed(() =>
@@ -61,7 +61,7 @@ export function useTrainerProfileStats(
     resolveStatField(isOwnProfile.value, gameStore.state.eloRating, profile.value?.elo_rating, saveState.value?.eloRating, DEFAULT_ELO_RATING_BASE)
   );
 
-  const warCoins = computed(() => (isOwnProfile.value ? gameStore.state.warCoins ?? 0 : saveState.value?.warCoins ?? 0));
+  const warCoins = computed(() => (isOwnProfile.value ? gameStore.state.warCoins ?? 0 : profile.value?.war_coins ?? saveState.value?.warCoins ?? 0));
 
   const criminality = computed(() => {
     if (isOwnProfile.value) return (gameStore.state.classData as { criminality?: number } | undefined)?.criminality ?? 0;
@@ -86,8 +86,24 @@ export function useTrainerProfileStats(
   });
 
   const isGymDefeated = (gymId: GymId) => {
-    const list = isOwnProfile.value ? (gameStore.state.defeatedGyms || []) : (saveState.value?.defeatedGyms || []);
-    return list.includes(gymId);
+    if (isOwnProfile.value) {
+      return (gameStore.state.defeatedGyms || []).includes(gymId);
+    }
+    const gyms = profile.value?.defeated_gyms;
+    if (Array.isArray(gyms)) {
+      return gyms.some((g: unknown) => typeof g === 'string' && g === gymId);
+    }
+    if (typeof gyms === 'string') {
+      try {
+        const parsed: unknown = JSON.parse(gyms);
+        if (Array.isArray(parsed)) {
+          return parsed.some((g: unknown) => typeof g === 'string' && g === gymId);
+        }
+      } catch {
+        return false;
+      }
+    }
+    return (saveState.value?.defeatedGyms || []).includes(gymId);
   };
 
   const playtimeHours = computed(() => {

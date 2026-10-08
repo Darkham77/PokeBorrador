@@ -53,8 +53,8 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 ## 3. Strict No-Test Mandate for Documentation
 
 - Running test suites (`npm run test`, `test:node`, Vitest, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is **STRICTLY FORBIDDEN**.
-- Verification for documentation tasks is strictly limited to `npm run audit:md`.
-- Running full project audits (`npm run lint` or `npm run audit`) for documentation or skill edits is strictly forbidden.
+- Verification for documentation tasks is strictly limited to `npm run auditor:md`.
+- Running full project audits (`npm run lint` or `npm run auditor`) for documentation or skill edits is strictly forbidden.
 
 ---
 
@@ -90,7 +90,7 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 ### Anti-Fragmentation Standard (Target Size: 300 to 800 Lines)
 - Creating dozens of micro-test files (<60 lines) for individual cases is strictly prohibited. Every test file incurs a new Vitest worker thread, Vite transform cache thrashing, and repeated dependency import overhead.
 - Consolidate related test scenarios into domain-cohesive test suites with a target size of **300 to 800 lines** (e.g. `fuzzer_reproduced_cases.test.ts`, `stores_domain_suite.spec.ts`).
-- Enforced continuously by the official SSoT auditor `validate_test_fragmentation.ts` (`npm run validate:test-fragmentation:summary`) with a 60-line minimum floor.
+- Enforced continuously by the official SSoT auditor `validate_test_fragmentation.ts` (`npm run auditor:test-fragmentation`) with a 60-line minimum floor.
 
 ### Systematic Des-JSDOMization Standard
 - Test suites testing pure domain logic, formulas, Pinia stores without UI mounting, or Showdown engine adapters MUST NOT declare `// @vitest-environment jsdom`. Running pure logic under JSDOM introduces unnecessary DOM parser boots (~50s CPU penalty across suites).

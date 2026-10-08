@@ -97,7 +97,7 @@ Logic Developers / Game Designers.
 ## Verification
 
 - Run `npm run test:node` using Vitest (node project) for pure mathematical logic.
-- Run `npm run audit` to verify type integrity and avoid any `any` usage.
+- Run `npm run auditor` to verify type integrity and avoid any `any` usage.
 
 ## Child DOX Index
 

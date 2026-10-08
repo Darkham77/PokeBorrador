@@ -24,7 +24,7 @@ Frontend Developers / Systems Engineers.
 
 ## Verification
 
-- `npm run audit`
+- `npm run auditor`
 
 ## Child DOX Index
 

@@ -131,7 +131,7 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 4. **Validation**: Run the script:
 
     ```bash
-    npm run validate:items
+    npm run auditor:items
     ```
 
 ---

@@ -6,7 +6,6 @@ import {
   parseAwardMedalCounts,
   calculateDistinctEventCount,
   extractRankedMedals,
-  parseRawSaveData,
   type ProfileRow,
   type SaveStateData
 } from './trainerProfileResolver.ts';
@@ -54,27 +53,16 @@ export function useTrainerProfileFetcher(userId: ComputedRef<string | null | und
 
   const fetchOtherProfileStats = async (id: string, db: NonNullable<typeof gameStore.db>) => {
     const { data: prof, error: pErr } = await db
-      .from('profiles')
+      .from('trainer_public_profiles')
       .select('*')
       .eq('id', id)
       .maybeSingle();
     if (pErr) throw pErr;
     profile.value = (prof as ProfileRow) || null;
 
-    const { data: saveRow, error: sErr } = (await db
-      .from('game_saves')
-      .select('save_data')
-      .eq('user_id', id)
-      .maybeSingle()) as { data: { save_data: unknown } | null; error: Error | null };
-    if (sErr) throw sErr;
-
-    if (!profile.value && !saveRow?.save_data) {
+    if (!profile.value) {
       error.value = 'Perfil de entrenador no encontrado';
       return;
-    }
-
-    if (saveRow?.save_data) {
-      saveState.value = parseRawSaveData(saveRow.save_data);
     }
 
     try {

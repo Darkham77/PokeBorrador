@@ -62,5 +62,36 @@ describe('useTrainerProfile helpers & reactivity', () => {
     const profile = useTrainerProfile(() => undefined)
     expect(profile.isOwnProfile.value).toBe(false)
   })
+
+  it('resolves public trainer metrics from profile row without saveState', () => {
+    const authStore = useAuthStore()
+    authStore.user = { id: 'current-user-123' } as unknown as typeof authStore.user
+
+    const profileData = {
+      id: 'foreign-user-456',
+      username: 'MistyWater',
+      badges: 4,
+      pokedex_caught: 50,
+      pokedex_seen: 90,
+      trainers_defeated: 35,
+      wild_wins: 110,
+      war_coins: 75,
+      defeated_gyms: ['cerulean', 'vermilion']
+    }
+
+    const modal = useTrainerProfile(() => 'foreign-user-456')
+    expect(modal.isOwnProfile.value).toBe(false)
+
+    modal.profile.value = profileData
+
+    expect(modal.badgesCount.value).toBe(4)
+    expect(modal.pokedexCaught.value).toBe(50)
+    expect(modal.pokedexSeen.value).toBe(90)
+    expect(modal.trainersDefeated.value).toBe(35)
+    expect(modal.wildWins.value).toBe(110)
+    expect(modal.warCoins.value).toBe(75)
+    expect(modal.isGymDefeated('cerulean' as never)).toBe(true)
+    expect(modal.isGymDefeated('pewter' as never)).toBe(false)
+  })
 })
 

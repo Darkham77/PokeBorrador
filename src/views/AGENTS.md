@@ -23,7 +23,7 @@ Core Frontend.
 
 ## Verification
 
-- Run `npm run audit` and verify routing flows in browser or E2E tests.
+- Run `npm run auditor` and verify routing flows in browser or E2E tests.
 
 ## Child DOX Index
 

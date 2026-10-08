@@ -62,7 +62,7 @@ Frontend Developers / Systems Engineers.
 
 ## Verification
 
-- Run standard validation scripts (`npm run lint`, `npm run audit`).
+- Run standard validation scripts (`npm run lint`, `npm run auditor`).
 - Verify social invite roundtrips via `tests/integration/pvp/pvpInviteLifecycle.spec.ts`.
 
 ## Child DOX Index

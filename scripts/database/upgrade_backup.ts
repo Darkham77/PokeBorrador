@@ -86,33 +86,48 @@ function loadBackupIntoMemorySqlite(db: DatabaseSync, backupData: Record<string,
   db.exec('CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT)');
 }
 
-function execStatementsBestEffort(db: DatabaseSync, statements: readonly string[]): void {
+function isIgnorableBackupMigrationError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const msg = ((error as Error).message || '').toLowerCase();
+  const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+  const isMissing = msg.includes('no such column');
+  return isDuplicate || isMissing;
+}
+
+function execStatementsStrict(db: DatabaseSync, statements: readonly string[], migrationUid: string): void {
   for (const stmt of statements) {
     const trimmed = stmt.trim();
     if (!trimmed) continue;
     try {
       db.exec(trimmed);
-    } catch {
-      // catch-ok: Statement might already be applied or redundant in partial schema
+    } catch (stmtErr: unknown) {
+      if (!isIgnorableBackupMigrationError(stmtErr)) {
+        throw new Error(
+          `[upgrade_backup] Statement failed in migration ${migrationUid}: ${(stmtErr as Error).message}\nSQL: ${trimmed}`,
+          { cause: stmtErr }
+        );
+      }
     }
   }
 }
 
-function applySqliteMigrationSource(db: DatabaseSync, sqlSource: string, isSqliteSpec: boolean): void {
+function applySqliteMigrationSource(db: DatabaseSync, sqlSource: string, isSqliteSpec: boolean, migrationUid: string): void {
   if (isSqliteSpec) {
     try {
       db.exec(sqlSource);
       return;
-    } catch {
-      execStatementsBestEffort(db, splitSQLStatements(sqlSource));
-      return;
+    } catch (batchErr: unknown) {
+      if (!isIgnorableBackupMigrationError(batchErr)) {
+        execStatementsStrict(db, splitSQLStatements(sqlSource), migrationUid);
+        return;
+      }
     }
   }
 
   const translatedStmts = splitSQLStatements(sqlSource)
     .map(stmt => translatePostgresToSqlite(stmt.trim()))
     .filter((stmt): stmt is string => Boolean(stmt));
-  execStatementsBestEffort(db, translatedStmts);
+  execStatementsStrict(db, translatedStmts, migrationUid);
 }
 
 function applyPendingBackupMigrations(db: DatabaseSync, appliedSet: ReadonlySet<string>): number {
@@ -120,9 +135,19 @@ function applyPendingBackupMigrations(db: DatabaseSync, appliedSet: ReadonlySet<
   for (const migration of DATABASE_MIGRATIONS) {
     if (appliedSet.has(migration.id)) continue;
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
-    applySqliteMigrationSource(db, sqlSource, migration.sqlite_sql !== undefined);
-    db.prepare('INSERT OR REPLACE INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, Temporal.Now.instant().toString());
-    appliedCount++;
+    db.exec('BEGIN TRANSACTION;');
+    try {
+      applySqliteMigrationSource(db, sqlSource, migration.sqlite_sql !== undefined, migration.id);
+      db.prepare('INSERT OR REPLACE INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, Temporal.Now.instant().toString());
+      db.exec('COMMIT;');
+      appliedCount++;
+    } catch (migErr: unknown) {
+      try {
+        db.exec('ROLLBACK;');
+      } catch { // catch-ok: rollback safety
+      }
+      throw migErr;
+    }
   }
   return appliedCount;
 }

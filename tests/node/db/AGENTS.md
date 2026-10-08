@@ -15,6 +15,8 @@ Database & Systems Engineers.
 ## Key Files
 
 - [`sqlite_buffer_validator.test.ts`](./sqlite_buffer_validator.test.ts): Unit tests verifying SQLite binary buffer headers, page size boundaries, and corruption detection.
+- [`migration_runner_hardening.test.ts`](./migration_runner_hardening.test.ts): Multi-engine unit tests verifying fail-fast atomic transactions and rollback across SQLite and PostgreSQL.
+- [`supabase_best_practices_hardening.test.ts`](./supabase_best_practices_hardening.test.ts): Multi-engine unit tests verifying trainer_public_profiles view projection with zero data duplication, RLS isolation on game_saves, private chat isolation, and financial check constraints.
 
 ## Work Guidance
 
@@ -23,7 +25,7 @@ Database & Systems Engineers.
 
 ## Verification
 
-- Run suite: `npm run test:node tests/node/db/sqlite_buffer_validator.test.ts`
+- Run suite: `npm run test:node tests/node/db/migration_runner_hardening.test.ts`
 - Run lint: `npm run lint`
 
 ## Child DOX Index

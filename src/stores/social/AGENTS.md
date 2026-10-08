@@ -29,7 +29,7 @@ Frontend Developers / Social Systems Engineers.
 
 ## Verification
 
-- Run `npm run audit`.
+- Run `npm run auditor`.
 
 ## Child DOX Index
 

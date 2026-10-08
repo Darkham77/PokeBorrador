@@ -26,7 +26,7 @@ Frontend Core & Diagnostic Tooling Team.
 ## Verification
 
 - `npm run lint`
-- `npm run audit`
+- `npm run auditor`
 - `tests/unit/dev/shadow_editor.spec.ts`
 
 ## Child DOX Index

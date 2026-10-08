@@ -25,7 +25,7 @@ UI/UX Team / Profile Systems Engineers.
 
 ## Verification
 
-- Run `npm run audit`.
+- Run `npm run auditor`.
 
 ## Child DOX Index
 

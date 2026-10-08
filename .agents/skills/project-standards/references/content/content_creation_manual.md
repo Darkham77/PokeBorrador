@@ -62,7 +62,7 @@ When performing mass updates on a database file (e.g. adding properties to 200+ 
 
 1. **Automation Required**: Use TypeScript/Node maintenance scripts in `scripts/` to parse and modify the database. Manual editing for mass changes is strictly forbidden.
 2. **Deterministic Formatting**: Ensure the output maintains clean indentation, trailing commas, and sorted keys.
-3. **Verification Sample**: Run `npm run validate:pokemon` and verify that the database compiles and passes type checks.
+3. **Verification Sample**: Run `npm run auditor:pokemon` and verify that the database compiles and passes type checks.
 
 ---
 
@@ -72,5 +72,5 @@ When performing mass updates on a database file (e.g. adding properties to 200+ 
 - [ ] Secondary types and abilities registered in canonical databases.
 - [ ] Evolution mappings registered in `src/data/pokemon/evolutionData.ts`.
 - [ ] Pokédex ID and TM compatibility configured.
-- [ ] Sprites converted and verified via `npm run validate:sprites`.
-- [ ] Run `npm run audit:family:domain` with 0 errors.
+- [ ] Sprites converted and verified via `npm run auditor:sprites`.
+- [ ] Run `npm run auditor:family:domain` with 0 errors.

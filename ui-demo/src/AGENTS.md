@@ -25,7 +25,7 @@ Frontend / UI Engineers.
 ## Verification
 
 - `npm run lint`
-- `npm run audit`
+- `npm run auditor`
 
 ## Child DOX Index
 

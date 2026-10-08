@@ -42,7 +42,8 @@
     "ws",
     "sql.js",
     "html-validate",
-    "html-validate-vue"
+    "html-validate-vue",
+    "vue-tsc"
   ],
   "health": {
     "maxCyclomatic": 25,

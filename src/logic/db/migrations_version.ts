@@ -6,5 +6,5 @@
  * Decouples client version checks from the heavy migrations SQL data chunk.
  */
 
-export const CLIENT_DB_VERSION = 20260920000000;
-export const LATEST_MIGRATION_ID = '20260920000000_normalize_castform_showdown_ids';
+export const CLIENT_DB_VERSION = 20261008080000;
+export const LATEST_MIGRATION_ID = '20261008080000_harden_supabase_postgres_best_practices';

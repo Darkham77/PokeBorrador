@@ -21,7 +21,7 @@ State Architects / Security Engineers.
 
 ## Verification
 
-- Run `npm run test` and `npm run audit`.
+- Run `npm run test` and `npm run auditor`.
 
 ## Child DOX Index
 

@@ -34,7 +34,7 @@ Battle Engine Team / Visual FX Programmers.
 
 ## Verification
 
-- Run `npm run validate:fsm:implementation` and `npm run test:node`.
+- Run `npm run auditor:fsm-implementation` and `npm run test:node`.
 
 ## Child DOX Index
 

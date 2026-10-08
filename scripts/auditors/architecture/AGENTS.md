@@ -25,8 +25,8 @@ Architecture & Tooling Engineers.
 
 ## Verification
 
-- Run architecture sub-auditor suites: `npm run audit suites=validate_battle_ui_branching,validate_client_sim_decoupling`
-- Run lint suite: `npm run audit:lint`
+- Run architecture sub-auditor suites: `npm run auditor suites=validate_battle_ui_branching,validate_client_sim_decoupling`
+- Run lint suite: `npm run auditor:lint`
 
 ## Child DOX Index
 
