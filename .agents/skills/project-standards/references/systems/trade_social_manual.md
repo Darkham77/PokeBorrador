@@ -65,6 +65,7 @@ To guarantee reliable message delivery across active sessions and maintain an im
 The competitive Ranked circuit operates within the Social view (`SocialRankings.vue`), managing global standings, matchmaking, asynchronous challenges against offline trainers, and automated monthly season awards.
 
 ### 1. Matchmaking & Queue Modes
+
 1. **Live Online Matchmaking**:
    - Trainers join `public.ranked_queue` via `livePvPStore.startSearch()`.
    - The queue matches opponents within valid rank tier differentials (`isAllowedRankGap`).
@@ -79,6 +80,7 @@ The competitive Ranked circuit operates within the Social view (`SocialRankings.
    - Upon completion, ranked battles update ratings and generate a combat summary report in `public.passive_battle_reports` via `record_passive_battle_result` so the defender receives a notification upon next login.
 
 ### 2. Automated Monthly Season Awarding (`fn_award_ranked_season_automated`)
+
 - Seasons run for 1 calendar month.
 - An automated stored procedure in PostgreSQL (`fn_award_ranked_season_automated`) evaluates all participants with at least 5 matches played in the target season.
 - Rewards are placed into `public.awards` for atomic claiming via `claim_award()`.
@@ -86,6 +88,7 @@ The competitive Ranked circuit operates within the Social view (`SocialRankings.
 - When an active player logs in after a season rollover, `RankedSeasonRewardModal.vue` triggers automatically if unclaimed seasonal rewards exist.
 
 ### 3. Local Arena & Sandbox PvP Testing
+
 - When operating in offline or local development mode (`isOffline = true` or local sandbox accounts `local_*`), the Battle Arena (`ArenaModal.vue`) remains completely unlocked with a visible `MODO LOCAL` badge in the header.
 - Local accounts have full capability to test matchmaking, challenge other local instances, test ranked mechanics, and manage defense teams.
 - Direct invite polling runs via local storage / `BroadcastChannel` instead of Supabase Realtime channels.

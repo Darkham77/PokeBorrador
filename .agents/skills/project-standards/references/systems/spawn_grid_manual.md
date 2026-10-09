@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual defines the CSS Grid architecture, `ResizeObserver` responsive columns, visual layering, and Fog of War UI rendering for `MapCard.vue` and route spawn grids.
 > **Sources of Truth**:
+>
 > - Spawn Math & Encounter Rates: [`encounter_manual.md`](./encounter_manual.md)
 > - UI/UX Architecture: [`../core/ui_ux_standards.md`](../core/ui_ux_standards.md)
 > - Time Cycles & Weather: [`../core/time_system_manual.md`](../core/time_system_manual.md)
@@ -36,6 +37,7 @@ export function calculateSpawnGrid(spawnsCount, preferredCols = 3) {
 ```
 
 ### 1.2 CSS Grid Architecture & Visual Standards
+
 - **Container**: Uses `display: grid` with `grid-template-columns: repeat(var(--grid-size), 1fr)`.
 - **Scaling**: Sprites use a `--sprite-scale` variable (default `1.0`).
 - **Overflow**: `.spawn-slot` must have `overflow: visible` to allow sprites to bleed into neighboring cells when scale > 1.
@@ -47,6 +49,7 @@ export function calculateSpawnGrid(spawnsCount, preferredCols = 3) {
 ## 2. 🎨 CSS Grid & Layering Hierarchy
 
 ### 2.1 Stacking Context Isolation
+
 The `.map-card` component **MUST** use `isolation: isolate;`. This ensures negative `z-index` layers (such as weather overlays and background filters) stay strictly contained inside the card.
 
 ### 2.2 Standard Layer Hierarchy
@@ -59,6 +62,7 @@ The `.map-card` component **MUST** use `isolation: isolate;`. This ensures negat
 | **3: Content** | `& > *` | `var(--z-base)` (0) | Interactive Pokémon sprites, headers, and pills. |
 
 ### 2.3 Atmosphere & Hover Dynamics
+
 - **Default State**: Background (`::before`) uses `brightness(0.8)` so foreground sprites and pills stand out.
 - **Hover State**:
   - Background scales up slightly and brightens (`brightness(1.0)`).
@@ -80,7 +84,9 @@ The `.map-card` component **MUST** use `isolation: isolate;`. This ensures negat
 ## 4. 🔄 Synchronization & Robustness
 
 ### 4.1 Grid-to-Card State Sync
+
 The route environment state (weather, time cycle) must be evaluated at the parent grid level (`MapGrid`) and passed down to children via props (`forced-weather`). This prevents UI badge mismatches with the active encounter pool.
 
 ### 4.2 Strict Schema for Custom/Mock Maps
+
 Map definitions must explicitly provide canonical wild spawn lists (`wild: []` or populated arrays). If a custom or mock map lacks valid spawn structures, boundary validators must throw an explicit configuration error rather than applying silent dynamic fallbacks.

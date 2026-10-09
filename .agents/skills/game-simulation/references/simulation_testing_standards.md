@@ -11,17 +11,20 @@
 Whenever ANY bug, regression, or state desynchronization occurs across the project, agents MUST resolve it through the mandatory 3-Tier Bug Fixing Protocol:
 
 ### Tier 1: Isolated Unit Test (RED-to-GREEN Reproduction)
+
 - You **MUST FIRST** create an isolated, self-contained unit test in `tests/node/` (pure Node logic) or `tests/unit/` (Vue/JSDOM components) that reproduces the failure deterministically in **RED** before writing or proposing any fix in `src/`.
 - The reproduction test MUST **extract and inline all failing data, seeds, and choice streams** (or use a dedicated static JSON fixture under `tests/fixtures/battle/case_xxx.json`). Searching or querying dynamic live fuzzer outputs is strictly forbidden because regenerated fuzzer runs invalidate temporary IDs.
 - **Dual Database Mandate**: If the bug touches persistence, SQL queries, schemas, database migrations, or DBRouter, the reproduction unit test MUST be written and executed across **ALL active database engines** (SQLite and PostgreSQL via `describeWithDatabase` from `tests/dbTestHelper.ts`) to reproduce the failure in RED and verify repair in GREEN on both engines.
 - Run `npm run test:node -- <path_to_test>` (or `npm run test:unit -- <path_to_test>`) to confirm the deterministic RED failure.
 
 ### Tier 2: Integrity & Integration Test
+
 - You MUST create or update an integration test under `tests/integration/` or `tests/node/` that validates contract boundaries, schema integrity, FSM state machine lifecycle transitions, store roundtrips (`serializeState` -> `validateAndSanitize` -> `updateState`), and `@pkmn/sim` Showdown engine parity.
 - For database-related logic, integrity tests MUST assert identical schema structures, constraint enforcement, and query behavior across both SQLite and PostgreSQL.
 - This ensures the fix integrates cleanly across module boundaries without generating silent regressions.
 
 ### Tier 3: Playwright E2E Simulation (Following `@/game-simulation`)
+
 - For all bugs touching UI interactions, combat choreography, FSM orchestration, or user-facing features, verify and add Playwright E2E simulation cases governed strictly by `@/game-simulation`:
   - **Passive Joystick Law**: Simulators only react to explicit FSM readiness states and typed public application events.
   - **100% ID-Based Locators**: Element selections strictly use `#<id>` or UID/item data attributes.
@@ -39,12 +42,14 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
   1. Real `@pkmn/sim` instances in `tests/node/` (using canonical battle runners or direct simulator calls), OR
   2. The real Web Worker lifecycle in browser/Playwright E2E simulations (`scripts/e2e/`).
 - **Forbidden Mock Signatures**: Any PR or test containing:
+
   ```typescript
   vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
     showdownWorker: {},
     executeTurnInWorker: vi.fn(...)
   }))
   ```
+
   is a critical quality breach and must be rejected immediately.
 - **Mandatory Tier-3 Certification**: Whenever editing combat execution, FSM turn loops, or worker clients in `src/logic/battle/`, unit tests alone are insufficient. Agents MUST execute at least one Playwright E2E combat simulation (`npm run sim:e2e:combat` or certified fuzzer replay) to prove that the real browser Web Worker initializes and executes turns without crashing.
 
@@ -82,17 +87,20 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 ## 6. Comprehensive Test Suite Architecture, Placement Taxonomy & Anti-Fragmentation
 
 ### Strict Test Directory Taxonomy
+
 1. `tests/node/` (Real Node.js Environment): Reserved for server-side logic, database migrations, SQL queries, DBRouter operations, CLI maintenance scripts, fuzzer case replays, and pure backend modules. Never place Vue component tests or DOM-dependent code here.
 2. `tests/unit/` (Frontend Unit Suites): Reserved for Vue component tests, composables, frontend stores, and battle math. Operates under `environment: 'node'` by default. Any test file mounting Vue components or touching DOM APIs (`document`, `window`, `HTMLCanvasElement`, `localStorageMock`) MUST declare `// @vitest-environment jsdom` at line 1.
 3. `tests/integration/` (Cross-Module Integration): Reserved for multi-module flows, store roundtrips, and bridge parity. Files touching DOM must declare `// @vitest-environment jsdom`.
 4. `scripts/e2e/` (Playwright E2E Simulations): Reserved exclusively for browser simulations following `/game-simulation` protocols (`*.simulation.ts`).
 
 ### Anti-Fragmentation Standard (Target Size: 300 to 800 Lines)
+
 - Creating dozens of micro-test files (<60 lines) for individual cases is strictly prohibited. Every test file incurs a new Vitest worker thread, Vite transform cache thrashing, and repeated dependency import overhead.
 - Consolidate related test scenarios into domain-cohesive test suites with a target size of **300 to 800 lines** (e.g. `fuzzer_reproduced_cases.test.ts`, `stores_domain_suite.spec.ts`).
 - Enforced continuously by the official SSoT auditor `validate_test_fragmentation.ts` (`npm run auditor:test-fragmentation`) with a 60-line minimum floor.
 
 ### Systematic Des-JSDOMization Standard
+
 - Test suites testing pure domain logic, formulas, Pinia stores without UI mounting, or Showdown engine adapters MUST NOT declare `// @vitest-environment jsdom`. Running pure logic under JSDOM introduces unnecessary DOM parser boots (~50s CPU penalty across suites).
 - The `validate_test_fragmentation.ts` auditor enforces the `unnecessary-jsdom` rule: any test declaring JSDOM without mounting Vue components (`@vue/test-utils`) is rejected.
 - If a non-component test genuinely requires browser globals (such as Web Worker client accessing `self.onmessage`, or simulated browser storage `window.localStorage`), declare an inline justification: `// jsdom-ok: <justification>`.

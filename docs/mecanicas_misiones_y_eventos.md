@@ -389,7 +389,7 @@ graph TD
         ACTION_MINIGAME[Nota de Pesca / Fósil] -->|emit 'minigame-action'| BUS
         ACTION_CRAFT[Fabricar Ítem] -->|emit 'item-crafted'| BUS
 
-        BUS -->|Filtra & Evalua| STORE_MISSIONS[Missions & Quests Store]
+        BUS -->|"Filtra & Evalua"| STORE_MISSIONS[Missions & Quests Store]
         STORE_MISSIONS -->|Incrementa Progreso| NOTIFICATION[Notificación UI Toast / GSAP]
     end
 ```

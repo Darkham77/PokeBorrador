@@ -79,6 +79,8 @@ const totalFossilParts = ref<number>(DEFAULT_TOTAL_FOSSIL_PARTS)
 type Tile = ArchaeologyTile
 
 // State
+const gridRef = ref<HTMLElement | null>(null)
+const energyCounterRef = ref<HTMLElement | null>(null)
 const grid = ref<Tile[]>([])
 const energy = ref<number>(DEFAULT_ARCHAEOLOGY_MAX_ENERGY)
 const fossilsFound = ref(0)
@@ -121,10 +123,12 @@ function handleTileClick(tile: Tile) {
   const GRID_SHAKE_STEP_SEC = 0.05
   const GRID_SHAKE_REPEAT_COUNT = 5
   // Click Animation: Shake Grid slightly
-  gsap.fromTo('.archaeology-grid', 
-    { x: -GRID_SHAKE_OFFSET_PX },
-    { x: GRID_SHAKE_OFFSET_PX, duration: GRID_SHAKE_STEP_SEC, repeat: GRID_SHAKE_REPEAT_COUNT, yoyo: true, ease: 'none', onComplete: () => { gsap.set('.archaeology-grid', { x: 0 }) } }
-  )
+  if (gridRef.value) {
+    gsap.fromTo(gridRef.value, 
+      { x: -GRID_SHAKE_OFFSET_PX },
+      { x: GRID_SHAKE_OFFSET_PX, duration: GRID_SHAKE_STEP_SEC, repeat: GRID_SHAKE_REPEAT_COUNT, yoyo: true, ease: 'none', onComplete: () => { if (gridRef.value) gsap.set(gridRef.value, { x: 0 }) } }
+    )
+  }
 
   // Dig Animation on tile
   const tileEl = document.querySelector(`.tile[data-coord="${tile.r},${tile.c}"]`)
@@ -136,7 +140,9 @@ function handleTileClick(tile: Tile) {
   if (tile.isFossil) {
     fossilsFound.value++
     feedback.value = '¡Encontraste una pieza de fósil!'
-    gsap.fromTo('.energy-counter', { scale: DIG_FOSSIL_COUNTER_SCALE }, { scale: 1, duration: DIG_FOSSIL_COUNTER_DURATION_SEC })
+    if (energyCounterRef.value) {
+      gsap.fromTo(energyCounterRef.value, { scale: DIG_FOSSIL_COUNTER_SCALE }, { scale: 1, duration: DIG_FOSSIL_COUNTER_DURATION_SEC })
+    }
     
     // Sparkle Animation on hit
     if (tileEl) {
@@ -171,10 +177,12 @@ function win() {
   feedback.value = '¡FÓSIL EXCAVADO CON ÉXITO!'
   
   // Confetti / glow animation
-  gsap.to('.archaeology-grid', {
-    boxShadow: '0 0 40px rgba(234, 179, 8, 0.8)',
-    duration: DIG_OUTCOME_ANIM_DURATION_SEC
-  })
+  if (gridRef.value) {
+    gsap.to(gridRef.value, {
+      boxShadow: '0 0 40px rgba(234, 179, 8, 0.8)',
+      duration: DIG_OUTCOME_ANIM_DURATION_SEC
+    })
+  }
 
   scheduleGameplayDelay(OUTCOME_CLOSE_DELAY_SEC, () => {
     emit('win', difficulty.value)
@@ -189,11 +197,13 @@ function fail() {
   feedback.value = 'El fósil se ha desmoronado...'
 
   // Crack grid animation
-  gsap.to('.archaeology-grid', {
-    opacity: FAIL_GRID_OPACITY,
-    filter: 'grayscale(1)',
-    duration: DIG_OUTCOME_ANIM_DURATION_SEC
-  })
+  if (gridRef.value) {
+    gsap.to(gridRef.value, {
+      opacity: FAIL_GRID_OPACITY,
+      filter: 'grayscale(1)',
+      duration: DIG_OUTCOME_ANIM_DURATION_SEC
+    })
+  }
 
   scheduleGameplayDelay(OUTCOME_CLOSE_DELAY_SEC, () => {
     emit('fail')
@@ -287,7 +297,10 @@ const handleCloseModal = () => {
         >
           {{ ARCHAEOLOGY_DIFFICULTIES[difficulty].label.toUpperCase() }}
         </div>
-        <div class="stat-pill energy-counter">
+        <div
+          ref="energyCounterRef"
+          class="stat-pill energy-counter"
+        >
           ENERGÍA: {{ energy }}
         </div>
         <div class="stat-pill">
@@ -297,6 +310,7 @@ const handleCloseModal = () => {
 
       <div
         id="archaeology-grid"
+        ref="gridRef"
         class="archaeology-grid"
         :style="{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, gridTemplateRows: `repeat(${gridSize}, 1fr)` }"
       >

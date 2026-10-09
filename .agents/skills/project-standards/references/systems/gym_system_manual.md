@@ -9,6 +9,7 @@ This manual defines the behavior of Gym Leaders, their difficulty scaling, and t
 - **Gym Isolation**: Standard gyms maintain constant day lighting (`effectiveCycle = 'day'`) and block natural outdoor weather unless an explicit override (`fixedCycle` or `fixedWeather`) is configured.
 
 ### 1. Canonical Kanto Gym Leaders Registry
+
 | # | Gym Leader | City / Location | Elemental Type | Badge | Required Badges | Level Cap | First Victory TM | Easy Ace | Hard Ace |
 | :-: | :--- | :--- | :--- | :--- | :-: | :-: | :--- | :--- | :--- |
 | **1** | **Brock** | Ciudad Plateada (`pewter_city`) | Rock | 💎 Medalla Roca | 0 | Lv 20 | `tm39` (Rock Tomb) | Onix (Lv 14) | Onix (Lv 68) |

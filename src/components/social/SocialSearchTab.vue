@@ -60,12 +60,13 @@ function animateCards() {
 }
 
 const loaderTween = ref<gsap.core.Tween | null>(null)
+const loaderMiniRef = ref<HTMLElement | null>(null)
 
 watch(() => socialStore.searchLoading, (loading) => {
   nextTick(() => {
     if (loading) {
-      if (!loaderTween.value) {
-        loaderTween.value = gsap.to('.loader-mini', {
+      if (!loaderTween.value && loaderMiniRef.value) {
+        loaderTween.value = gsap.to(loaderMiniRef.value, {
           rotation: LOADER_SPINNER_ROTATION_DEG,
           duration: 0.8,
           repeat: -1,
@@ -113,6 +114,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
       >
       <span
         v-if="socialStore.searchLoading"
+        ref="loaderMiniRef"
         class="loader-mini"
       />
     </div>

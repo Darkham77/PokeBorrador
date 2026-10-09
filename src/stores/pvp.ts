@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger.ts'
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
 import { useAuthStore } from '@/stores/auth.ts'
@@ -98,8 +99,8 @@ export const usePvPStore = defineStore('pvp', () => {
   const isLoaded = ref(false)
 
   function consumeLoginReminderIfNeeded(): void {
-    if (!passiveTeamActive.value && typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_login_reminder_pending') === 'true') {
-      sessionStorage.removeItem('pvp_login_reminder_pending')
+    if (!passiveTeamActive.value && safeSessionStorage.getItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING) === 'true') {
+      safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING)
       uiStore.notify('Recuerda activar tu Defensa Pasiva en el Home para proteger tu ELO.', '🛡️')
     }
   }
@@ -271,9 +272,7 @@ export const usePvPStore = defineStore('pvp', () => {
     if (reason) {
       uiStore.notify(reason, '⚠️')
     }
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem('pvp_login_reminder_pending')
-    }
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING)
   }
 
   async function syncDefendingTeamSnapshot() {

@@ -6,6 +6,7 @@
  */
 
 import { logger } from '@/logic/utils/logger.ts';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import type {
   PassiveBattleReport,
@@ -93,8 +94,8 @@ function notifyUnseenDefenseReports(
   formattedReports: PassiveBattleReport[],
   notifyFn?: (msg: string, icon: string) => void
 ): void {
-  const storageKey = `pvp_last_seen_defense_report_${userUid}`;
-  const lastSeenReportId = typeof localStorage !== 'undefined' ? Number(localStorage.getItem(storageKey) || 0) : 0;
+  const storageKey = `${LOCAL_STORAGE_KEYS.PVP_LAST_SEEN_DEFENSE_REPORT_PREFIX}${userUid}`;
+  const lastSeenReportId = Number(safeStorage.getItem(storageKey) || 0);
   const newReports = formattedReports.filter(r => Number(r.id) > lastSeenReportId);
 
   if (newReports.length === 0 || !notifyFn) return;
@@ -106,8 +107,8 @@ function notifyUnseenDefenseReports(
     '🛡️'
   );
   const highestId = Math.max(...newReports.map(r => Number(r.id) || 0));
-  if (typeof localStorage !== 'undefined' && highestId > 0) {
-    localStorage.setItem(storageKey, String(highestId));
+  if (highestId > 0) {
+    safeStorage.setItem(storageKey, String(highestId));
   }
 }
 

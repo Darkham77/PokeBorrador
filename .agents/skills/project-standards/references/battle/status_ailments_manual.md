@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual serves as the Single Source of Truth for all **Major (Persistent)** and **Minor (Volatile)** Status Conditions, triggers, recovery rules, ability interactions, and Showdown engine parity in Poké Vicio.
 > **Sources of Truth**:
+>
 > - Engine delegation: `@pkmn/sim` (`showdown.worker.ts` / `external/pokemon-showdown-code/`)
 > - Combat Orchestration: [`battle_mechanics_manual.md`](./battle_mechanics_manual.md)
 > - Mathematical Formulas: [`../core/game_formulas_manual.md`](../core/game_formulas_manual.md)
@@ -28,6 +29,7 @@ In Pokémon combat, status ailments are divided into two distinct architectural 
 ## 2. 🔴 Major Status Conditions
 
 ### 1. Burn (`BRN` / `brn`)
+
 - **Primary Effect**: Halves the damage dealt by physical attacks (Attack stat is halved during damage calculation, unless the attacker has *Guts* or uses *Facade*).
 - **Residual Damage**: Causes the afflicted Pokémon to lose $\frac{1}{8}$ ($12.5\%$) of its maximum HP at the end of each turn.
   - *Ability Modifiers*: Pokémon with *Heatproof* only take $\frac{1}{16}$ ($6.25\%$) residual damage.
@@ -36,18 +38,21 @@ In Pokémon combat, status ailments are divided into two distinct architectural 
 - **Defrosting Property**: Using or being hit by certain Fire-type moves (*Flame Wheel*, *Flare Blitz*, *Scald*, *Scorching Sands*) cures freezing.
 
 ### 2. Freeze (`FRZ` / `frz`)
+
 - **Primary Effect**: The Pokémon is completely immobilized and unable to execute moves.
 - **Thaw Probability**: Every turn, a frozen Pokémon has a $20\%$ chance to naturally thaw out before selecting its move.
 - **Instant Thaw Moves**: Using *Flame Wheel*, *Flare Blitz*, *Fusion Flare*, *Sacred Fire*, *Scald*, *Pyro Ball*, or *Scorching Sands* automatically thaws the user on that turn. Being hit by a damaging Fire-type move immediately thaws the target.
 - **Immunities**: Ice-type Pokémon cannot be frozen. Harsh sunlight (*Sunny Day*, *Drought*, *Desolate Land*) and the *Magma Armor* ability prevent freezing.
 
 ### 3. Paralysis (`PAR` / `par`)
+
 - **Speed Reduction**: Cuts the Pokémon's effective Speed stat by $50\%$ (in Gen 7+; was $75\%$ in Gen 1-6).
 - **Full Paralysis**: At the start of each turn, there is a $25\%$ chance the Pokémon is "fully paralyzed" and unable to act.
 - **Immunities**: Electric-type Pokémon are completely immune to paralysis (Gen 6+). Pokémon with the *Limber* ability are immune.
 - **Abilities**: Pokémon with *Quick Feet* ignore the Speed penalty and gain $+50\%$ Speed when paralyzed.
 
 ### 4. Poison (`PSN` / `psn`)
+
 - **Regular Poison**: The Pokémon loses $\frac{1}{8}$ ($12.5\%$) of its maximum HP at the end of each turn.
 - **Bad Poison / Toxic (`TOX` / `tox`)**:
   - Incremental damage counter $T$ starts at $1$.
@@ -57,6 +62,7 @@ In Pokémon combat, status ailments are divided into two distinct architectural 
 - **Beneficial Interactions**: *Poison Heal* heals $\frac{1}{8}$ HP per turn instead of taking damage. *Toxic Boost* grants $+50\%$ physical Attack. *Merciless* guarantees critical hits against poisoned targets.
 
 ### 5. Sleep (`SLP` / `slp`)
+
 - **Duration**: Lasts between $1$ and $3$ turns (randomly rolled as a sleep counter from $2$ to $4$).
 - **Counter Decrement**: The counter decrements by $1$ at the beginning of each turn. When it reaches $0$, the Pokémon wakes up and acts on that same turn.
 - **Rest**: Self-induced sleep from *Rest* always sets the counter to exactly $3$ (sleeps for $2$ full turns, wakes on turn 3).
@@ -88,6 +94,7 @@ In Pokémon combat, status ailments are divided into two distinct architectural 
 ## 4. 🛡️ Global Status Cleaners & Protection
 
 ### Universal Moves
+
 - **`Heal Bell` / `Aromatherapy`**: Cures all major status conditions across the entire active party.
 - **`Safeguard`**: Protects the user's side of the field from all major statuses and confusion for 5 turns.
 - **`Misty Terrain`**: Protects all grounded Pokémon from major statuses and confusion.
@@ -100,6 +107,7 @@ In Pokémon combat, status ailments are divided into two distinct architectural 
 - **`Purify`**: Cures the target's major status and restores $50\%$ of the user's maximum HP.
 
 ### Universal Abilities
+
 - **`Natural Cure`**: Cures all major status ailments when the Pokémon is switched out.
 - **`Shed Skin`**: Has a $33.3\%$ chance to cure major status ailments at the end of every turn.
 - **`Hydration`**: Cures all major status ailments at the end of the turn if Rain is active.
@@ -112,6 +120,7 @@ In Pokémon combat, status ailments are divided into two distinct architectural 
 - **`Synchronize`**: When inflicted with burn, paralysis, or poison, mirrors the same condition onto the opponent.
 
 ### Universal Healing Items
+
 - **`Lum Berry`**: Consumed automatically to cure any major status condition or confusion.
 - **`Full Heal` / `Full Restore` / `Heal Powder`**: Cures any major status condition and confusion on use.
 - **Specific Berries**: `Cheri Berry` (Paralysis), `Chesto Berry` (Sleep), `Pecha Berry` (Poison), `Rawst Berry` (Burn), `Aspear Berry` (Freeze), `Persim Berry` (Confusion).

@@ -7,7 +7,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
@@ -156,7 +156,7 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
   public override async runAudit(): Promise<void> {
     const pokemonDataFiles = await this.context.collectFiles(['src/data/pokemon'], new Set(['.ts', '.json']));
     for (const f of pokemonDataFiles) {
-      this.recordScanned(path.relative(this.projectRoot, f).replace(/\\/g, '/'));
+      this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, f)));
     }
     for (const r of POKEMON_DB_RULES) {
       this.markRuleEvaluated(r);

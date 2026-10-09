@@ -15,6 +15,7 @@ import { logger } from '@/logic/utils/logger'
 import type { DBRouter } from '@/logic/db/dbRouter'
 import { canSaveState, updateSessionPlaytime, handleSaveRollback, saveSandboxLocalState } from '@/stores/game/actions/saveActionHelpers'
 import { saveCoordinator } from '@/logic/auth/saveCoordinator'
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
 
 const LOAD_RETRY_DELAY_SEC = 1.5;
 
@@ -37,9 +38,7 @@ async function fetchSaveWithRetry(
   while (attempts < maxAttempts) {
     try {
       const result = await loadBestSave(user, dbRouter)
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem('load_retry_count', '0')
-      }
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, '0')
       return { data: result.data, issues: result.issues, lastSaveId: result.lastSaveId, lastError: null }
     } catch (error) {
       attempts++
@@ -64,11 +63,9 @@ function handleSessionRetry(
   loadingStore: ReturnType<typeof useLoadingStore>,
   authStore: { logout?: () => Promise<void> }
 ) {
-  const retryCount = typeof sessionStorage !== 'undefined' ? parseInt(sessionStorage.getItem('load_retry_count') || '0', 10) : 0
+  const retryCount = parseInt(safeSessionStorage.getItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT) || '0', 10)
   if (retryCount >= 9) {
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem('load_retry_count', '0')
-    }
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, '0')
     loadingStore.setProgress('game_data', 'Error de conexión persistente', 'Redireccionando al inicio de sesión...')
     if (authStore.logout) {
       authStore.logout()
@@ -78,9 +75,7 @@ function handleSessionRetry(
     return { success: false, error: true }
   }
 
-  if (typeof sessionStorage !== 'undefined') {
-    sessionStorage.setItem('load_retry_count', (retryCount + 1).toString())
-  }
+  safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, (retryCount + 1).toString())
 
   if (retryCount < 1) {
     loadingStore.setProgress('game_data', 'Red inestable...', 'Reconectando al servidor...')

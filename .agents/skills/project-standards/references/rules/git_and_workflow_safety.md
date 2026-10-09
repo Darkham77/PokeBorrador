@@ -3,6 +3,7 @@
 > **Scope & Authority**: This document governs **Git safety confirmations, rollback protocols, uncommitted file protection, scratch directory mandates, prohibition on autonomous commits/pushes, root setup scripts SSoT, and artifact lifecycles** across Poké Vicio.
 >
 > 🛑 **Domain Boundaries & Redirection**:
+>
 > - For full Safe Commit validation pipeline and commit message standards ➔ See **@/safe-commit**.
 > - For dependency management and package hygiene ➔ See [Dependency Management Manual](../technical/dependency_management_manual.md).
 > - For DOX documentation maintenance ➔ See [Markdown Standards](../technical/markdown_standards.md) and **@/dox-navigator**.
@@ -51,6 +52,7 @@
 ## 6. Artifact Governance Lifecycle (MANDATORY)
 
 To ensure rigor and traceability, every complex task MUST follow the artifact lifecycle:
+
 1. **Planning**: Create `implementation_plan.md`. Wait for approval from the user. Every work plan MUST obligatorily include and enforce strict compliance with `@/project-standards`, `@/domain-type-first`, and all project quality auditor rules (`npm run auditor`, Fallow complexity/dead-code checks).
 2. **Execution**: Maintain `task.md` as the source of truth during implementation.
 3. **Closure**: Create `walkthrough.md` with concrete evidence (test logs, screenshots) of task success.
@@ -66,4 +68,3 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 - **NPM-First Tooling Mandate**: All developer and maintenance workflows, validators, asset generators, and simulation runners MUST be executed via official NPM scripts (`npm run <script>`).
 - **Prohibition on Raw Script Invocations in Documentation**: Agents MUST NEVER write documentation, skills, or DOX files that instruct running raw file paths (`node scripts/...`, `npx tsx ...`). If a tool is required for standard operations, register the command in `package.json` with appropriate Node.js permissions.
 - **npm 12+ Script Encapsulation**: Sub-scripts declared inside `package.json` MUST invoke native `node --permission ...` directly rather than chaining through `npm run ... -- --flag` to eliminate CLI argument collisions.
-

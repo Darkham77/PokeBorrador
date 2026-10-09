@@ -11,7 +11,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { logger } from '@/logic/utils/logger'
 import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/system/official_servers'
 import { switchServer } from '@/logic/db/supabase'
-import { safeStorage } from '@/logic/utils/storage'
+import { safeStorage, safeSessionStorage, LOCAL_STORAGE_KEYS, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
 import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors'
 import { useLoginHandlers } from '@/views/auth/useLoginHandlers'
 import {
@@ -98,18 +98,22 @@ const {
   getFriendlyErrorMessage
 })
 
+const logoRef = ref<HTMLElement | null>(null)
+const logoImgRef = ref<HTMLImageElement | null>(null)
+const authCardRef = ref<HTMLElement | null>(null)
+
 // Corregir bucle infinito si ya se está logueado
 onMounted(() => {
   // Sincronizar servidor seleccionado
-  const storedServer = safeStorage.getItem('pokevicio_selected_server_id')
+  const storedServer = safeStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_SERVER_ID)
   selectedServerId.value = storedServer || DEFAULT_SERVER.id
   switchServer(selectedServerId.value)
   checkServerHealth()
 
   // CHECK LOGOUT REASON
-  const logoutReason = sessionStorage.getItem('pokevicio_logout_reason')
+  const logoutReason = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.LOGOUT_REASON)
   if (logoutReason) {
-    sessionStorage.removeItem('pokevicio_logout_reason')
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.LOGOUT_REASON)
     if (logoutReason === 'session_invalidated') {
       sessionExpired.value = true
     }
@@ -126,31 +130,37 @@ onMounted(() => {
     return
   }
 
-  gsap.from('.login-header-logo', {
-    y: -100,
-    opacity: 0,
-    duration: 1.5,
-    ease: 'back.out(1.2)',
-    onComplete: () => {
-      gsap.set('.login-header-logo', { clearProps: 'transform' })
-    }
-  })
+  if (logoRef.value) {
+    gsap.from(logoRef.value, {
+      y: -100,
+      opacity: 0,
+      duration: 1.5,
+      ease: 'back.out(1.2)',
+      onComplete: () => {
+        if (logoRef.value) gsap.set(logoRef.value, { clearProps: 'transform' })
+      }
+    })
+  }
 
-  gsap.to('.login-header-logo img', {
-    y: LOGIN_LOGO_FLOAT_Y_PX,
-    duration: 3,
-    repeat: -1,
-    yoyo: true,
-    ease: 'sine.inOut'
-  })
+  if (logoImgRef.value) {
+    gsap.to(logoImgRef.value, {
+      y: LOGIN_LOGO_FLOAT_Y_PX,
+      duration: 3,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    })
+  }
 
-  gsap.from('.auth-card', {
-    y: LOGIN_CARD_ENTER_Y_PX,
-    opacity: 0,
-    duration: 1,
-    delay: 0.5,
-    ease: 'power3.out'
-  })
+  if (authCardRef.value) {
+    gsap.from(authCardRef.value, {
+      y: LOGIN_CARD_ENTER_Y_PX,
+      opacity: 0,
+      duration: 1,
+      delay: 0.5,
+      ease: 'power3.out'
+    })
+  }
 })
 
 function handleTabEnter(e: MouseEvent) {
@@ -261,14 +271,21 @@ const handleServerChange = () => {
   >
     <div class="login-background-stars" />
 
-    <div class="login-header-logo">
+    <div
+      ref="logoRef"
+      class="login-header-logo"
+    >
       <img
+        ref="logoImgRef"
         :src="logoUrl"
         alt="Poké Vicio Logo"
       >
     </div>
 
-    <div class="auth-card">
+    <div
+      ref="authCardRef"
+      class="auth-card"
+    >
       <div class="auth-sub">
         Te reto a dejar de jugarlo
       </div>

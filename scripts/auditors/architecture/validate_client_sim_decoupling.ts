@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, type SharedAstContext } from '@francogp/auditor';
+import { BaseAuditor, type SharedAstContext, normalizePosixPath, AuditedDocument } from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -55,7 +55,7 @@ export interface SimImportIssue {
  * Checks whether a file path belongs to an isolated Web Worker boundary.
  */
 export function isWorkerBoundaryFile(relPath: string): boolean {
-  const normalized = relPath.replace(/\\/g, '/');
+  const normalized = normalizePosixPath(relPath);
   return (
     normalized.endsWith('.d.ts') ||
     normalized.endsWith('.worker.ts') ||
@@ -154,13 +154,10 @@ export function scanSourceForSimImports(
     return [];
   }
 
-  const sf = sourceFile ?? ts.createSourceFile(
-    path.basename(relPath),
-    content,
-    ts.ScriptTarget.Latest,
-    true,
-    relPath.endsWith('.vue') ? ts.ScriptKind.TS : undefined
-  );
+  const sf = sourceFile ?? new AuditedDocument(relPath, content).getAst();
+  if (!sf) {
+    return [];
+  }
 
   const issues: SimImportIssue[] = [];
 
@@ -266,7 +263,7 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
     let totalIssuesFound = 0;
 
     for (const file of files) {
-      const relPath = path.relative(cwd, file).replace(/\\/g, '/');
+      const relPath = normalizePosixPath(path.relative(cwd, file));
       if (isWorkerBoundaryFile(relPath)) {
         continue;
       }

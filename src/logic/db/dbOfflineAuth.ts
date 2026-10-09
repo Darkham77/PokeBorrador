@@ -1,4 +1,5 @@
 import type { User, Session } from '@supabase/supabase-js';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '../utils/storage.ts';
 
 const PERPETUAL_SESSION_EXPIRY_TIMESTAMP = 9999999999 as const;
 
@@ -12,7 +13,7 @@ export interface OfflineAuthApi {
 }
 
 export function createOfflineAuthApi(isE2EPostgres: boolean): OfflineAuthApi {
-  const localUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('pokevicio_local_user') : null;
+  const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER);
   const localUser = localUserStr ? JSON.parse(localUserStr) as User : null;
   const defaultUser: User | null = isE2EPostgres ? null : {
     id: 'local_user',

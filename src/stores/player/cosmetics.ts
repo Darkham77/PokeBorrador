@@ -106,7 +106,7 @@ function checkCosmeticRequirement(
   }
 
   // --- ACTIONS ---
-  async function equipNickStyle(styleId: NickStyleId | null) {
+  async function equipNickStyle(styleId?: NickStyleId) {
     if (!authStore.user || !gameStore.db) return
     
     // Validación de seguridad antes de equipar
@@ -138,7 +138,7 @@ function checkCosmeticRequirement(
     }
   }
 
-  async function equipAvatarStyle(styleId: AvatarStyleId | null) {
+  async function equipAvatarStyle(styleId?: AvatarStyleId) {
     if (!authStore.user || !gameStore.db) return
     
     // Validación de seguridad antes de equipar

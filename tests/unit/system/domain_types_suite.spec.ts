@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { toBrand, unbrand, type Brand } from '@/types/system/branding'
-import { detectRepeatedStringUnions } from '@francogp/auditor/suites/domain_data/validate_domain_types'
+import { detectRepeatedStringUnions } from '@francogp/auditor/suites/domain_data/validate_canonical_domains'
 
 type PokemonId = Brand<string, 'PokemonSpeciesId'>
 type ItemId = Brand<string, 'ItemId'>

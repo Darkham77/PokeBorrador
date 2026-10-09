@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useTradeStore } from '@/stores/trade'
 import { useUIStore } from '@/stores/ui'
@@ -141,30 +141,47 @@ const handleSend = async () => {
   }
 }
 
+const tradeSummaryRef = ref<HTMLElement | null>(null)
+const tradeGridRef = ref<HTMLElement | null>(null)
+let ctx: gsap.Context | null = null
+
 // Entry animation using GSAP
 const animateEntry = () => {
-  if (document.querySelector('.trade-summary-bar')) {
-    gsap.fromTo('.trade-summary-bar', 
-      { y: TRADE_HEADER_ANIM_OFFSET_Y, opacity: 0 }, 
-      { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.2)' }
-    )
-  }
-  if (document.querySelector('.trade-grid .offer-side')) {
-    gsap.fromTo('.trade-grid .offer-side', 
-      { x: -TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 }, 
-      { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
-    )
-    gsap.fromTo('.trade-grid .request-side', 
-      { x: TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 }, 
-      { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
-    )
-  }
+  if (ctx) ctx.revert()
+  ctx = gsap.context(() => {
+    if (tradeSummaryRef.value) {
+      gsap.fromTo(tradeSummaryRef.value, 
+        { y: TRADE_HEADER_ANIM_OFFSET_Y, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.2)' }
+      )
+    }
+    if (tradeGridRef.value) {
+      gsap.fromTo('.trade-grid .offer-side', 
+        { x: -TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 }, 
+        { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+      )
+      gsap.fromTo('.trade-grid .request-side', 
+        { x: TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 }, 
+        { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+      )
+    }
+  }, tradeGridRef.value)
 }
+
+onUnmounted(() => {
+  if (ctx) {
+    ctx.revert()
+    ctx = null
+  }
+})
 
 watch(() => props.show, async (newVal) => {
   if (newVal) {
     await nextTick()
     animateEntry()
+  } else if (ctx) {
+    ctx.revert()
+    ctx = null
   }
 }, { immediate: true })
 
@@ -206,7 +223,10 @@ const requestSummary = computed(() => {
   >
     <div class="trade-modal-inner">
       <!-- Summary split -->
-      <div class="trade-summary-bar">
+      <div
+        ref="tradeSummaryRef"
+        class="trade-summary-bar"
+      >
         <div class="summary-box offer">
           <span class="label">TE OFREZCO:</span>
           <span class="value">{{ offerSummary }}</span>
@@ -220,7 +240,10 @@ const requestSummary = computed(() => {
         </div>
       </div>
 
-      <div class="trade-grid">
+      <div
+        ref="tradeGridRef"
+        class="trade-grid"
+      >
         <!-- Left: My Side -->
         <TradeSidePanel
           class="offer-side"

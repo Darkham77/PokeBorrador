@@ -8,7 +8,7 @@ This document is the single source of truth (SSoT) for the **Friendship** (histo
 
 Friendship is an internal 1-byte unsigned integer metric (`0` to `255`) that tracks the bond and emotional attachment between a Pokémon and its Trainer.
 
-```
+```text
 0 ──────────────── 99 ──────────────── 199 ──────── 220 ──────── 255
 [   Distrust    ]  [   Neutral/Warming   ]  [ Friendly ]  [ Max Bond ]
                               (Gen VIII+ Evo: 160)   (Gen II-VII Evo: 220)
@@ -124,7 +124,7 @@ $$\text{Stat}_{\text{Final}} = \left\lfloor \text{Stat}_{\text{Base}} \times \le
 
 In Generations VI and VII, Game Freak bifurcated the emotional mechanics into two distinct subsystems:
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          GENERATION VI & VII                           │
 ├───────────────────────────────────┬────────────────────────────────────┤
@@ -162,6 +162,7 @@ Starting in Gen VIII, these perks trigger strictly when **Friendship** reaches T
 ## 5. Master Action Tables & Modifiers
 
 Friendship gain operates under a **diminishing returns** model divided into three brackets:
+
 - **Bracket 1**: `0 – 99` (Distrustful → Quickest gains)
 - **Bracket 2**: `100 – 199` (Neutral → Moderate gains)
 - **Bracket 3**: `200 – 255` (Friendly → Slowest gains)
@@ -302,6 +303,7 @@ When implementing or extending friendship mechanics in `src/logic/` or `src/stor
 1. **Domain-Type-First Integrity**:
    - Friendship MUST be strictly typed as a bounded number contract (`0 <= friendship <= 255`).
    - Use named domain constants:
+
      ```ts
      export const FRIENDSHIP_BOUNDS = {
        MIN: 0,
@@ -315,6 +317,7 @@ When implementing or extending friendship mechanics in `src/logic/` or `src/stor
        EGG_HATCH_BASE: 120,
      } as const;
      ```
+
 2. **Zero-Ignore & Strict Typing**:
    - Never cast raw numbers directly to friendship without clamping (`Math.max(0, Math.min(255, value))`).
 3. **Event-Driven Evolution Dispatching**:
@@ -328,7 +331,7 @@ When implementing or extending friendship mechanics in `src/logic/` or `src/stor
 
 To preserve visual cleanliness and prevent card clutter across dense game screens (which already contain HP bars, level badges, IV ratings, and combat tiers), Poké Vicio rejects generic progress bars in favor of the **Friendship Seals & Ribbons System** (*Pines y Cintas de Vínculo*).
 
-```
+```text
 [0 — 49]       [50 — 99]        [100 — 159]        [160 — 219]            [220 — 255]
    ⛓️              🌱                🤝                 💎                     🎀
 Sin Vínculo     Sello Brote       Sello Amigo     Vínculo Radiante       Cinta Mejores Amigos
@@ -350,9 +353,10 @@ Sin Vínculo     Sello Brote       Sello Amigo     Vínculo Radiante       Cinta
 ### 9.2. Card Positioning & View Layouts
 
 #### A. Team Card Layout (`TeamPokemonCard.vue`)
+
 In the active team modal (6-card grid), the Friendship Seal is anchored in the **top-right sector**, adjacent to the combat tier badge (`[B]`, `[C]`, `[F]`):
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │  [✨]                            [ B ]  │  <-- Combat Tier Badge (Top-Right)
 │  [🎒]                             [🎀]  │  <-- Friendship Seal / Ribbon (18x18px)
@@ -377,9 +381,10 @@ In the active team modal (6-card grid), the Friendship Seal is anchored in the *
     > *«¡No podría quererte más! Su profundo vínculo activa ventajas milagrosas en combate.»*
 
 #### B. Storage Box Card Layout (`BoxPokemonCard.vue`)
+
 In the compact storage box grid, the pin occupies the **top-left corner**, achieving perfect symmetry with the combat tier badge in the top-right corner:
 
-```
+```text
 ┌─────────────────────────┐
 │  [🎀]             [ B ] │  <-- Friendship Seal (Top-Left), Combat Tier (Top-Right)
 │                         │
@@ -480,4 +485,3 @@ export function resolveFriendshipSeal(friendship: number): FriendshipSealMetadat
   return FRIENDSHIP_SEAL_MAP.distrust;
 }
 ```
-

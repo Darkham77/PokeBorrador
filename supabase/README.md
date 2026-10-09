@@ -34,11 +34,11 @@ Poké Vicio/
 
 ```mermaid
 graph TD
-    A[Master .env File in Root] -->|Global & Per-Server Settings| B(setup_supabase.ts)
+    A[Master .env File in Root] -->|"Global & Per-Server Settings"| B(setup_supabase.ts)
     C[Official Supabase GitHub] -->|git sparse-checkout| D[Temporary docker/ Folder]
     B -->|1. clone| D
     D -->|2. generate| E[generated/ Folder with Per-Server .env and docker-compose]
-    D -->|Inject Dockerfile & init/| F[Custom Docker Image]
+    D -->|"Inject Dockerfile & init/"| F[Custom Docker Image]
     B -->|3. build| F
     F -->|4. publish| G[Docker Hub]
     E -->|5. Deploy| H[Remote Server / NAS]

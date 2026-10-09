@@ -52,6 +52,9 @@ const currentShowingSprite = ref<'from' | 'to'>('from');
 let timeline: gsap.core.Timeline | null = null;
 const activeTweens: gsap.core.Tween[] = [];
 
+const containerRef = ref<HTMLElement | null>(null);
+let ctx: gsap.Context | null = null;
+
 // DOM Refs para las auras combinadas de destellos (flare 1 y 2)
 const flare1Ref = ref<HTMLElement | null>(null);
 const flare2Ref = ref<HTMLElement | null>(null);
@@ -73,6 +76,10 @@ const auraStyles = computed(() => {
 });
 
 const cleanupTweens = () => {
+  if (ctx) {
+    ctx.revert();
+    ctx = null;
+  }
   activeTweens.forEach(t => t.kill());
   activeTweens.length = 0;
 };
@@ -126,103 +133,110 @@ onUnmounted(() => {
 });
 
 const startSequence = () => {
-  timeline = gsap.timeline({
-    onComplete: () => {
-      step.value = 'final';
+  if (ctx) ctx.revert();
+  ctx = gsap.context(() => {
+    timeline = gsap.timeline({
+      onComplete: () => {
+        step.value = 'final';
+        nextTick(() => {
+          gsap.fromTo('.result-text', 
+            { opacity: 0, y: EVOLUTION_RESULT_TEXT_Y_OFFSET_PX },
+            { opacity: 1, y: 0, duration: EVOLUTION_RESULT_TEXT_DURATION_SEC, ease: 'power2.out' }
+          );
+        });
+      }
+    });
+
+    // 1. Intro Wait
+    timeline.to({}, { duration: EVOLUTION_INTRO_DELAY_SEC });
+
+    // 2. Flashing & Swapping Phase (Intercambio visual de sprites rápido en flashes)
+    timeline.add(() => { step.value = 'flashing'; });
+    
+    for (let i = 0; i < FLASH_COUNT; i++) {
+      timeline.add(() => { 
+        flashesDone.value = i + 1; 
+        // Intercambia el sprite mostrado: de forma alternada a medida que avanza el parpadeo
+        if (i > EVOLUTION_FLASH_SPRITE_SWAP_THRESHOLD) {
+          currentShowingSprite.value = currentShowingSprite.value === 'from' ? 'to' : 'from';
+        }
+      }, `+=${Math.max(EVOLUTION_FLASH_MIN_DELAY_SEC, EVOLUTION_FLASH_BASE_DELAY_SEC - (i * EVOLUTION_FLASH_DECAY_RATE))}`);
+    }
+
+    // 3. Transformation & Sound
+    timeline.add(() => {
+      evolutionStore.evolve();
+      step.value = 'transformed';
+      currentShowingSprite.value = 'to';
+      
+      // Reproducir grito del Pokémon evolucionado
+      if (evolutionStore.targetId) {
+        gameBus.emit('PLAY_CRY', { name: evolutionStore.targetId });
+      }
+    }, `+=${EVOLUTION_TRANSFORMED_DELAY_SEC}`);
+
+    // 4. Glow Burst, Scale & Aura Activation
+    timeline.fromTo('.glow-bg', 
+      { scale: 1, opacity: 0.2 },
+      { scale: GSAP_BURST_SCALE, opacity: 0.8, duration: GSAP_BURST_DURATION_SEC, ease: `back.out(${EVOLUTION_BURST_EASE_OVERSHOOT})` },
+      'transformed'
+    );
+
+    timeline.add(() => {
       nextTick(() => {
-        gsap.fromTo('.result-text', 
-          { opacity: 0, y: EVOLUTION_RESULT_TEXT_Y_OFFSET_PX },
-          { opacity: 1, y: 0, duration: EVOLUTION_RESULT_TEXT_DURATION_SEC, ease: 'power2.out' }
+        if (flare1Ref.value && flare2Ref.value) {
+          // Rotaciones continuas en contra-fase
+          const rot1 = gsap.to(flare1Ref.value, { rotation: 360, duration: EVOLUTION_AURA_ROTATION_SEC, repeat: -1, ease: 'none' });
+          const rot2 = gsap.to(flare2Ref.value, { rotation: -360, duration: EVOLUTION_AURA_ROTATION_SEC, repeat: -1, ease: 'none' });
+          activeTweens.push(rot1, rot2);
+
+          // Efecto respiración de escalas
+          const scale1 = gsap.fromTo(flare1Ref.value,
+            { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY },
+            { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY, duration: GSAP_AURA_SCALE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+          );
+          const scale2 = gsap.fromTo(flare2Ref.value,
+            { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY },
+            { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY, duration: GSAP_AURA_SCALE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+          );
+          activeTweens.push(scale1, scale2);
+        }
+      });
+    }, 'transformed');
+
+    // 5. Particles burst
+    timeline.add(() => {
+      particlesRef.value.forEach((el) => {
+        if (!el) return;
+        const angle = Math.random() * Math.PI * 2;
+        const distance = EVOLUTION_PARTICLE_DIST_BASE + Math.random() * EVOLUTION_PARTICLE_DIST_RANGE;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        gsap.fromTo(el,
+          { x: 0, y: 0, opacity: 1, scale: 1 },
+          {
+            x: tx,
+            y: ty,
+            opacity: 0,
+            scale: 0,
+            duration: 'random(1.2, 1.8)',
+            ease: 'power2.out'
+          }
         );
       });
-    }
-  });
+    }, 'transformed');
 
-  // 1. Intro Wait
-  timeline.to({}, { duration: EVOLUTION_INTRO_DELAY_SEC });
-
-  // 2. Flashing & Swapping Phase (Intercambio visual de sprites rápido en flashes)
-  timeline.add(() => { step.value = 'flashing'; });
-  
-  for (let i = 0; i < FLASH_COUNT; i++) {
-    timeline.add(() => { 
-      flashesDone.value = i + 1; 
-      // Intercambia el sprite mostrado: de forma alternada a medida que avanza el parpadeo
-      if (i > EVOLUTION_FLASH_SPRITE_SWAP_THRESHOLD) {
-        currentShowingSprite.value = currentShowingSprite.value === 'from' ? 'to' : 'from';
-      }
-    }, `+=${Math.max(EVOLUTION_FLASH_MIN_DELAY_SEC, EVOLUTION_FLASH_BASE_DELAY_SEC - (i * EVOLUTION_FLASH_DECAY_RATE))}`);
-  }
-
-  // 3. Transformation & Sound
-  timeline.add(() => {
-    evolutionStore.evolve();
-    step.value = 'transformed';
-    currentShowingSprite.value = 'to';
-    
-    // Reproducir grito del Pokémon evolucionado
-    if (evolutionStore.targetId) {
-      gameBus.emit('PLAY_CRY', { name: evolutionStore.targetId });
-    }
-  }, `+=${EVOLUTION_TRANSFORMED_DELAY_SEC}`);
-
-  // 4. Glow Burst, Scale & Aura Activation
-  timeline.fromTo('.glow-bg', 
-    { scale: 1, opacity: 0.2 },
-    { scale: GSAP_BURST_SCALE, opacity: 0.8, duration: GSAP_BURST_DURATION_SEC, ease: `back.out(${EVOLUTION_BURST_EASE_OVERSHOOT})` },
-    'transformed'
-  );
-
-  timeline.add(() => {
-    nextTick(() => {
-      if (flare1Ref.value && flare2Ref.value) {
-        // Rotaciones continuas en contra-fase
-        const rot1 = gsap.to(flare1Ref.value, { rotation: 360, duration: EVOLUTION_AURA_ROTATION_SEC, repeat: -1, ease: 'none' });
-        const rot2 = gsap.to(flare2Ref.value, { rotation: -360, duration: EVOLUTION_AURA_ROTATION_SEC, repeat: -1, ease: 'none' });
-        activeTweens.push(rot1, rot2);
-
-        // Efecto respiración de escalas
-        const scale1 = gsap.fromTo(flare1Ref.value,
-          { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY },
-          { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY, duration: GSAP_AURA_SCALE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
-        );
-        const scale2 = gsap.fromTo(flare2Ref.value,
-          { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY },
-          { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY, duration: GSAP_AURA_SCALE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
-        );
-        activeTweens.push(scale1, scale2);
-      }
-    });
-  }, 'transformed');
-
-  // 5. Particles burst
-  timeline.add(() => {
-    particlesRef.value.forEach((el) => {
-      if (!el) return;
-      const angle = Math.random() * Math.PI * 2;
-      const distance = EVOLUTION_PARTICLE_DIST_BASE + Math.random() * EVOLUTION_PARTICLE_DIST_RANGE;
-      const tx = Math.cos(angle) * distance;
-      const ty = Math.sin(angle) * distance;
-      
-      gsap.fromTo(el,
-        { x: 0, y: 0, opacity: 1, scale: 1 },
-        {
-          x: tx,
-          y: ty,
-          opacity: 0,
-          scale: 0,
-          duration: 'random(1.2, 1.8)',
-          ease: 'power2.out'
-        }
-      );
-    });
-  }, 'transformed');
-
-  // 6. Final Message Wait
-  timeline.to({}, { duration: EVOLUTION_FINAL_WAIT_DURATION_SEC });
+    // 6. Final Message Wait
+    timeline.to({}, { duration: EVOLUTION_FINAL_WAIT_DURATION_SEC });
+  }, containerRef.value);
 };
 
 const cancelEvolution = () => {
+  if (ctx) {
+    ctx.revert();
+    ctx = null;
+  }
   if (timeline) {
     timeline.kill();
   }
@@ -243,6 +257,7 @@ const close = () => {
       class="evolution-overlay"
     >
       <div 
+        ref="containerRef"
         class="evolution-container"
         :style="auraStyles"
       >

@@ -7,6 +7,7 @@
 > 👉 **[`@/game-simulation`](../../../game-simulation/SKILL.md)** and its specialized modules in `references/`.
 >
 > 🛑 **Domain Boundaries & Redirection**:
+>
 > - For step-by-step browser QA procedures and DevTools console commands ➔ See [Browser Testing Manual](../qa/browser_testing_manual.md).
 > - For battle engine execution details and Showdown parity ➔ See [Battle Mechanics Manual](../battle/battle_mechanics_manual.md).
 > - For full verification checklists and release gates ➔ See [Audit Checklist](../qa/audit_checklist.md).
@@ -64,6 +65,7 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 > All detailed rules, architectures, and directives for Playwright E2E simulations and the Showdown fuzzer pipeline have been consolidated into **[`@/game-simulation`](../../../game-simulation/SKILL.md)** to eliminate documentation duplication and preserve architectural integrity.
 >
 > Please consult the canonical reference modules:
+>
 > - **[Simulation Directives & Invariants](../../../game-simulation/references/simulation_directives_and_invariants.md)**: Passive joystick law, 10s timeout, `#id` locators, history schema, legality, PP conservation, flee rules, visual visibility assertions (`.toBeVisible()`).
 > - **[Fuzzer Architecture & Heuristics](../../../game-simulation/references/fuzzer_architecture_and_heuristics.md)**: Capa 0 fuzzer, IPB lifecycle, cooperative heuristics, 7-pillar worker reset (`WorkerSessionPool`).
 > - **[CLI & Troubleshooting](../../../game-simulation/references/cli_and_troubleshooting.md)**: NPM scripts, headless replayer, mass debugging, Docker auto-start, port 5174 isolation, rules for modifying tests vs `src/`.
@@ -103,12 +105,14 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
   1. Real `@pkmn/sim` instances in `tests/node/` (using canonical battle runners or direct simulator calls), OR
   2. The real Web Worker lifecycle in browser/Playwright E2E simulations (`scripts/e2e/`).
 - **Forbidden Mock Signatures**: Any PR or test containing:
+
   ```typescript
   vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
     showdownWorker: {},
     executeTurnInWorker: vi.fn(...)
   }))
   ```
+
   is considered a critical quality breach and must be rejected immediately.
 - **Mandatory Tier-3 Certification**: Whenever editing combat execution, FSM turn loops, or worker clients in `src/logic/battle/`, unit tests alone are insufficient. Agents MUST execute at least one Playwright E2E combat simulation (`npm run sim:e2e:combat` or certified fuzzer replay) to prove that the real browser Web Worker initializes and executes turns without crashing.
 

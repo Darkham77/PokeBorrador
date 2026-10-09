@@ -5,7 +5,7 @@ import { supabase } from '@/logic/db/supabase.ts'
 import { syncServerTime } from '@/logic/auth/timeSync.ts'
 import { useLoadingStore } from '@/stores/loading.ts'
 import { useModalStore } from '@/stores/modals.ts'
-import { safeStorage } from '@/logic/utils/storage.ts'
+import { safeStorage, safeSessionStorage, LOCAL_STORAGE_KEYS, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts'
 import { SESSION_ID } from '@/logic/auth/sessionId.ts'
 import type { AuthUser, SessionMode } from '@/types/auth/auth.ts'
 import { requireGenderId, type GenderId } from '@/types/system/game.ts'
@@ -124,14 +124,14 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function markPvPSessionInitialized() {
-    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_session_initialized') !== 'true') {
-      sessionStorage.setItem('pvp_session_initialized', 'true');
-      sessionStorage.setItem('pvp_login_reminder_pending', 'true');
+    if (safeSessionStorage.getItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED) !== 'true') {
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED, 'true');
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true');
     }
   }
 
   function restoreOfflineUserSession(): AuthUser | null {
-    const localUser = safeStorage.getItem('pokevicio_local_user');
+    const localUser = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER);
     if (localUser) {
       const parsed = JSON.parse(localUser) as AuthUser;
       if (!parsed.db_version) parsed.db_version = 1;
@@ -159,7 +159,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
     if (onlineResult.sessionInvalid) {
       logger.error('Auth', 'Session validation failed. Forcing logout with warning.');
-      sessionStorage.setItem('pokevicio_logout_reason', 'session_invalidated');
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOGOUT_REASON, 'session_invalidated');
       await logout();
       return true;
     }
@@ -173,8 +173,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function checkSession() {
-    if (sessionStorage.getItem('block_autologin') === 'true') {
-      sessionStorage.removeItem('block_autologin');
+    if (safeSessionStorage.getItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN) === 'true') {
+      safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN);
       user.value = null;
       session.value = null;
       loading.value = false;
@@ -274,10 +274,8 @@ export const useAuthStore = defineStore('auth', () => {
         user.value.user_metadata.gender = profile.gender || 'h'
       }
       
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem('pvp_session_initialized', 'true')
-        sessionStorage.setItem('pvp_login_reminder_pending', 'true')
-      }
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED, 'true')
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true')
 
       startSessionMonitoring()
       syncServerTime()
@@ -367,17 +365,15 @@ export const useAuthStore = defineStore('auth', () => {
       }
       user.value = userData as AuthUser
       sessionMode.value = 'offline'
-      safeStorage.setItem('pokevicio_session_mode', 'offline')
+      safeStorage.setItem(LOCAL_STORAGE_KEYS.SESSION_MODE, 'offline')
       if (supabase && typeof supabase.setMode === 'function') {
         supabase.setMode('offline')
       }
       connectionLost.value = false 
-      safeStorage.setItem('pokevicio_local_user', JSON.stringify(userData))
+      safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(userData))
       
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem('pvp_session_initialized', 'true')
-        sessionStorage.setItem('pvp_login_reminder_pending', 'true')
-      }
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED, 'true')
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true')
 
       // Sync time will handle offline state internally
       syncServerTime()
@@ -412,24 +408,22 @@ export const useAuthStore = defineStore('auth', () => {
       logger.warn('Auth', `SignOut error: ${(e as Error).message}`)
     }
 
-    safeStorage.removeItem('pokevicio_local_user')
-    safeStorage.removeItem('pokevicio_session_mode')
+    safeStorage.removeItem(LOCAL_STORAGE_KEYS.LOCAL_USER)
+    safeStorage.removeItem(LOCAL_STORAGE_KEYS.SESSION_MODE)
 
     user.value = null
     session.value = null
     sessionMode.value = 'online'
-    safeStorage.setItem('pokevicio_session_mode', 'online')
+    safeStorage.setItem(LOCAL_STORAGE_KEYS.SESSION_MODE, 'online')
     if (supabase && typeof supabase.setMode === 'function') {
       supabase.setMode('online')
     }
     connectionLost.value = false
     sessionConflict.value = false
 
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem('pvp_login_reminder_pending')
-      sessionStorage.removeItem('pvp_session_initialized')
-    }
-    sessionStorage.setItem('block_autologin', 'true')
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING)
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED)
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true')
 
     // Navigate cleanly to /login to reset reactive state without looping
     if (!preventReload && import.meta.env.MODE !== 'test') {

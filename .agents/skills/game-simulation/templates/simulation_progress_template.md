@@ -9,6 +9,7 @@ Session: <unique_session_id>
 <!-- Description of the scope requested by the user -->
 
 ## 📊 Current Status
+
 - **Overall Status**: IN_PROGRESS
 - **Last Action**: Initialized clean simulation pipeline.
 - **Resume Point**: Suite 1 (or suite indicated by checkpoint)
@@ -32,6 +33,7 @@ Session: <unique_session_id>
 > [!CRITICAL]
 > **GOLDEN RULE FOR COMMIT LEDGER CLEANLINESS:**
 > This ledger is **EXCLUSIVELY AND STRICTLY FOR BUGS DETECTED BY SIMULATION FAILURES IN THIS ACTIVE RUN**.
+>
 > - At the start of the run, this table MUST BE 100% EMPTY (zero rows).
 > - It is **STRICTLY PROHIBITED** to paste, carry over, or invent fixes from previous tasks, code refactors, or historical bug fixes (`FIX-01`, etc.).
 > - A row is registered here ONLY if a simulation FAILS in Playwright, is isolated with a RED test in Vitest (`tests/node/`), repaired in `src/`, passes in GREEN, passes Node regression, and completes its dual clean zero pass (Step 6B).

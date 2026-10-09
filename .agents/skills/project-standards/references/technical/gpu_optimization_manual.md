@@ -136,13 +136,13 @@ For SVG-based atmospheric effects (e.g., lightning bolts, storm flashes) that mu
 - **Use preserveAspectRatio="none"**: Without this attribute, the SVG viewport scales uniformly and may introduce top/bottom padding, causing effects to appear detached from the screen edge.
 - **Scope is narrow**: Only apply to SVGs whose sole job is covering the full parent height (e.g., AtmosphereLayer lightning). Never apply to game sprites, icons, or any SVG with meaningful proportions.
 - **Other effects unaffected**: Modifying preserveAspectRatio on one SVG does not affect sibling CSS overlays, canvas layers, or other weather FX — they remain independent.
- 
+
 ---
- 
+
 ## 11. Render Performance & Weather Optimization Rules (validate_render_performance.ts)
- 
+
 Enforced by the static AST/CSS auditor `scripts/auditors/architecture/validate_render_performance.ts`:
- 
+
 1. **Banned `mix-blend-mode` in Weather Layers (`render-banned-mix-blend-mode`)**:
    - `mix-blend-mode: screen` and complex blend modes force Chromium to perform synchronous framebuffer readbacks on every frame.
    - Must use direct RGBA opacity and translucent pixel art layers instead.
@@ -155,4 +155,3 @@ Enforced by the static AST/CSS auditor `scripts/auditors/architecture/validate_r
 4. **Banned Per-Frame GSAP Modifiers (`render-gsap-cpu-modifier`)**:
    - Per-frame JavaScript modifier closures (`modifiers: { x: unitize(...), y: unitize(...) }`) force main-thread CPU evaluation, float parsing, and string concatenation 60 times per second.
    - Must use GPU-accelerated native `fromTo` loops (`xPercent`, `yPercent`) with compositor hardware offloading.
-

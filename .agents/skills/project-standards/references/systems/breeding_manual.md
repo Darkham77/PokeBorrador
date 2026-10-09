@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual serves as the Single Source of Truth for Daycare operations, IV inheritance, breeding costs, fossil cloning, egg incubation, vigor attributes, and hatching modal lifecycles in Poké Vicio.
 > **Sources of Truth**:
+>
 > - Math & Cloning Formulas: [`../core/game_formulas_manual.md`](../core/game_formulas_manual.md)
 > - Item Effects & Vigor: [`item_system_manual.md`](./item_system_manual.md)
 > - UI Standards: [`../core/ui_ux_standards.md`](../core/ui_ux_standards.md)
@@ -99,12 +100,14 @@ The cloning system allows recreating ancestral Pokémon (Omanyte, Kabuto, Aeroda
 ## 9. 🎁 NPC & Rival Baby Egg Rewards & Incubator Capacity
 
 ### 1. Drop Probabilities & Exclusions
+
 - **Normal NPC Trainers**: Defeating any normal NPC trainer on routes has a **2%** chance (`NPC_NORMAL_BABY_EGG_DROP_CHANCE = 0.02`) of dropping a mysterious baby Pokémon egg (`isNpc: true`).
 - **Rivals**: Defeating a Rival has a **5%** chance (`RIVAL_BABY_EGG_DROP_CHANCE = 0.05`) of dropping a baby Pokémon egg.
 - **Strict Exclusions**: Gym battles (`isGym`), PvP battles (`isPvP`), and wild Pokémon encounters (`!isTrainer`) NEVER award eggs (0% chance).
 - **Baby Pool**: The rewarded egg is randomly chosen from the enabled baby Pokémon pool (`pichu`, `cleffa`, `igglybuff`, `togepi`, `tyrogue`, `smoochum`, `elekid`, `magby`).
 
 ### 2. Incubator Capacity & Full Slot Rules
+
 - **Slot Capacity**: The trainer's backpack incubator holds up to 6 regular Daycare eggs (`MAX_CARRIED_EGGS = 6`) plus 1 extra reserved slot for NPC eggs (`MAX_NPC_CARRIED_EGGS = 1`), for a total maximum capacity of 7 eggs (`MAX_TOTAL_CARRIED_EGGS = 7`).
 - **Full Slot Blocking**: If the trainer is already carrying 7 total eggs or already has an active NPC egg in the incubator (`npcEggs.length >= 1`), no egg reward can be obtained upon winning.
 - **Reporting**: Awarded eggs are announced in the combat log (`log-catch`) and via UI notification toasts.
@@ -115,6 +118,7 @@ The cloning system allows recreating ancestral Pokémon (Omanyte, Kabuto, Aeroda
 ## 10. 🚶‍♂️ Activity Step Distribution & Walking Friendship Coordination
 
 Activity steps earned throughout the game (`battle: 2`, `capture: 3`, `gym: 10`, `minigame: 1`) are processed centrally through `breedingStore.reduceHatchTimers(steps)`:
+
 1. **Party Walking Friendship**: Steps are accumulated onto the eligible lead Pokémon via `processWalkingFriendshipStepAccumulation` **unconditionally**, even if no eggs are currently in the incubator.
 2. **Egg Hatch Timers**: If eggs are carried in the player's team, their remaining hatch timers are reduced in tandem.
 
@@ -129,6 +133,7 @@ Hatching follows a structured 3-phase interactive lifecycle orchestrated by `Hat
 3. **Reveal Phase**: Plays `evolution_complete` audio fanfare, lifts the sprite by `-85px`, and unveils the newly born Pokémon with its genetic stats card.
 
 ### CLI Debugging Commands
+
 ```js
 // Silent creation protocol
 window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch' });

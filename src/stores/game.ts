@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { reactive, ref, shallowRef, computed, watch, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage'
 import { useAuthStore } from '@/stores/auth.ts'
 import { supabase } from '@/logic/db/supabase'
 import { createInitialGameState } from '@/stores/gameInitialState.ts'
@@ -199,14 +200,12 @@ export const useGameStore = defineStore('game', () => {
     })
     
     let initialSandbox = createInitialGameState()
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pvs_sandbox_save')
-      if (saved) {
-        try {
-          initialSandbox = JSON.parse(saved) as GameState
-        } catch (e) {
-          logger.error('SANDBOX', 'Error parsing sandbox save, using initial state:', e)
-        }
+    const saved = safeStorage.getItem(LOCAL_STORAGE_KEYS.SANDBOX_SAVE)
+    if (saved) {
+      try {
+        initialSandbox = JSON.parse(saved) as GameState
+      } catch (e) {
+        logger.error('SANDBOX', 'Error parsing sandbox save, using initial state:', e)
       }
     }
     

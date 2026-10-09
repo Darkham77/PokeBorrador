@@ -537,6 +537,7 @@ The NPC Trainer visual lifecycle across search phase, dialogue presentation, act
 ## 45. QA Manual Verification Protocols
 
 For step-by-step reproduction instructions and testing matrices for all combat animations, forced switch variants, flee & teleport physics, attack reactions, and catch sequences, consult:
+
 - **[Manual Testing Guide (Battle Animations)](../qa/manual_testing_battle_animations.md)**
 
 ---
@@ -579,16 +580,17 @@ To prevent visual effects and particles from darkening during nighttime cycles w
 1. **Physical Entity Atmosphere Scope**: The CSS variable `var(--atmosphere-filter)` is reserved strictly for environmental illumination of physical 3D arena actors and props: Pokémon sprites, trainer sprites, the physical Pokéball sphere, and ground shadows.
 2. **Prohibition on Atmospheric Cascading**: Visual effects (such as catch sparkles `.catch-success-sparkles`, status ailment particles in `PVStatusFX`, auras in `PVAuraFX`, ground hazards, and smoke) MUST NEVER be placed inside parent DOM containers that carry `filter: var(--atmosphere-filter)`. CSS filter inheritance darkens luminous particles to near-black at night.
 3. **Dedicated Weather Filter Assignment**: All combat FX, status indicators, and particles MUST explicitly declare:
+
    ```css
    filter: var(--weather-filter, none);
    ```
+
    This completely isolates visual FX from time-of-day darkening while preserving dynamic responsiveness to environmental weather (rain, sandstorm, snow, harsh sunlight).
 
 ---
 
 ## 50. Combat Spritesheet Stepping vs GSAP Orchestration
 
-1. **Spritesheet Stepping Rate**: Frame stepping in combatant spritesheet loops (`useBattleCombatantSpriteLoop.ts`) is governed by canonical constants: `POKEMON_SPRITE_IDLE_FPS = 10.4` (8 * 1.30) and `POKEMON_SPRITE_VARIATION_FPS = 13` (10 * 1.30), reflecting a 30% speedup over default rates.
+1. **Spritesheet Stepping Rate**: Frame stepping in combatant spritesheet loops (`useBattleCombatantSpriteLoop.ts`) is governed by canonical constants: `POKEMON_SPRITE_IDLE_FPS = 10.4` (8 *1.30) and `POKEMON_SPRITE_VARIATION_FPS = 13` (10* 1.30), reflecting a 30% speedup over default rates.
 2. **Decoupling from Organic Tweens**: Stepping speed adjustments apply strictly to spritesheet frame translation (`currentStep * frameWidth`). They must never alter GSAP breathing timelines, shadow pulses, floating offsets, or combat action tweens.
 3. **Design Tool Speed Parity**: All sprite preview canvases, dev tools, and inspection cards (such as `ShadowEditorCard.vue`) MUST synchronize with `POKEMON_SPRITE_IDLE_FPS` to preserve 1:1 animation timing with the active game.
-

@@ -125,10 +125,10 @@ const initXpBarAnimation = () => {
       repeat: -1
     })
 
-    // Animate the width to the initial percentage
-    gsap.set(xpBarRef.value, { width: '0%' })
+    // Animate the scaleX to the initial percentage
+    gsap.set(xpBarRef.value, { scaleX: 0, transformOrigin: 'left center' })
     widthTween = gsap.to(xpBarRef.value, {
-      width: `${trainerExpPct.value}%`,
+      scaleX: Math.max(0, Math.min(1, trainerExpPct.value / 100)),
       duration: XP_BAR_ENTRY_DURATION_SEC,
       ease: 'power2.out'
     })
@@ -144,12 +144,12 @@ onUnmounted(() => {
   if (widthTween) widthTween.kill()
 })
 
-// Watch for XP changes to animate width changes smoothly
+// Watch for XP changes to animate scale smoothly
 watch(trainerExpPct, (newPct) => {
   if (xpBarRef.value) {
     if (widthTween) widthTween.kill()
     widthTween = gsap.to(xpBarRef.value, {
-      width: `${newPct}%`,
+      scaleX: Math.max(0, Math.min(1, newPct / 100)),
       duration: XP_BAR_UPDATE_DURATION_SEC,
       ease: 'power2.out'
     })

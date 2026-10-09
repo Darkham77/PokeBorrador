@@ -299,4 +299,17 @@ export default defineAuditConfig({
   assets: {
     enabled: true
   }
+,
+  environment: {
+    enabled: true
+  },
+  packageScripts: {
+    enabled: true,
+    enforceBuildAudit: true,
+    recommendedScripts: true
+  }
+,
+  auditorHygiene: {
+    enabled: true
+  }
 });

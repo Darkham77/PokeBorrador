@@ -200,9 +200,11 @@ When writing tests or configuring battle cheats, do not trigger healing or reani
 To quickly equip the test player (`ASH`) with standard testing items (potions, revives, evolution stones, status heaters, rare candies, repels) during interactive browser testing:
 
 1. Execute the utility script:
+
    ```bash
    npm run test:populate-inventory
    ```
+
 2. Copy the generated JavaScript console snippet.
 3. In the browser DevTools console (F12) while on `https://localhost:5173`, paste and execute the snippet.
 4. The snippet updates `window.__VITE_DEBUG__.getGameStore().state.bag` with standard testing items and invokes `saveGame()` to persist the updated bag to the local database.

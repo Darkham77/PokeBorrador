@@ -5,7 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath } from '@francogp/auditor';
 import { collectFsmFiles } from './_fsmParityParser.ts';
 
 enableCompileCache();
@@ -101,7 +101,7 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
     this.recordScanned('.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
     const allFiles = collectFsmFiles(PARITY_SRC_ROOT);
     for (const f of allFiles) {
-      this.recordScanned(path.relative(this.projectRoot, f).replace(/\\/g, '/'));
+      this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, f)));
     }
     this.markRuleEvaluated('fsm-flow-sequence-missing');
 

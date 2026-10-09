@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual serves as the Single Source of Truth for all Pokémon evolution mechanics, triggers, stone interactions, friendship requirements, trade evolution holding items, and cancellation rules in Poké Vicio.
 > **Sources of Truth**:
+>
 > - Evolution Database: `src/data/pokemon/evolutionData.ts`
 > - Friendship Logic: [`friendship_mechanics_manual.md`](./friendship_mechanics_manual.md)
 > - Item System: [`item_system_manual.md`](./item_system_manual.md)
@@ -76,6 +77,7 @@
 ## 5. ⚔️ Move-Knowing Evolutions
 
 Evolution triggers upon level-up if the Pokémon knows a specific move:
+
 - **Ancient Power**: Tangela ➔ Tangrowth, Yanma ➔ Yanmega, Piloswine ➔ Mamoswine.
 - **Rollout**: Lickitung ➔ Lickilicky.
 - **Double Hit**: Aipom ➔ Ambipom.
@@ -87,6 +89,7 @@ Evolution triggers upon level-up if the Pokémon knows a specific move:
 ## 6. 🌿 Wild Evolution (Auto-Evo Generation)
 
 When the spawning system generates high-level wild Pokémon on routes:
+
 - **Stones**: $50\%$ probability of automatic evolution if species level $\ge 36$ (`WILD_STONE_EVO_MIN_LEVEL = 36`).
 - **Trade**: $50\%$ probability of automatic evolution if species level $\ge 36$ (`WILD_TRADE_EVO_MIN_LEVEL = 36`).
 
@@ -95,10 +98,12 @@ When the spawning system generates high-level wild Pokémon on routes:
 ## 7. 🛑 Cancellation & Prevention
 
 ### 1. Manual Cancellation (The B-Button)
+
 During the visual evolution sequence (`intro` and `flashing` stages), the player can click or press the **B-Button** to cancel the process:
+
 - The animation halts and displays: `¿Eh? ¡[Pokémon] ha dejado de evolucionar!`.
 - **Restriction**: Cancellation is strictly allowed for level-up and friendship evolutions. Stone-induced and trade-induced evolutions CANNOT be cancelled.
 
 ### 2. Passive Prevention (Piedra Eterna / Everstone)
-If a Pokémon holds `"Piedra Eterna"` (Everstone), any level-up or trade evolution is blocked automatically, skipping the sequence entirely.
 
+If a Pokémon holds `"Piedra Eterna"` (Everstone), any level-up or trade evolution is blocked automatically, skipping the sequence entirely.

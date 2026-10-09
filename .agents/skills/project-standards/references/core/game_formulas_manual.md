@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual documents the pure mathematical formulas, probability ratios, statistical calculations, and game balance constants that govern the Poké Vicio engine.
 > **Sources of Truth**:
+>
 > - Combat Execution: [`../battle/battle_mechanics_manual.md`](../battle/battle_mechanics_manual.md)
 > - Status Conditions: [`../battle/status_ailments_manual.md`](../battle/status_ailments_manual.md)
 > - Capture Mechanics: [`../systems/capturing_manual.md`](../systems/capturing_manual.md)
@@ -18,6 +19,7 @@ The battle engine formulas module (`battleFormulas.ts`) is driven by centralized
 - **`ACTIVE_SHOWDOWN_FORMAT`**: `'gen9customgame'` (Active combat formulas, critical hit calculations, and Showdown simulation rules).
 
 ### Bridge Integrity (Parameter Drift Prevention)
+
 The bridge between the UI and the math core (`battleFormulas.ts`) **MUST** pass all context parameters (stages, weather, terrain, day cycle) explicitly to the pure math functions. Never assume implicit parameter derivation.
 
 ---
@@ -40,6 +42,7 @@ $$\text{Stat} = \left\lfloor \left( \left\lfloor \frac{\left(2 \cdot \text{Base}
   - Neutral: $1.0$
 
 #### Complete 25-Nature Statistical & Flavor Matrix
+
 | Nature | Boosted Stat ($+10\%$) | Lowered Stat ($-10\%$) | Preferred Flavor | Disliked Flavor |
 | :--- | :--- | :--- | :--- | :--- |
 | **Hardy** | — (Neutral) | — (Neutral) | — | — |
@@ -139,20 +142,25 @@ $$\text{AccMultiplier}(S) = \frac{\max(3, 3 + S)}{\max(3, 3 - S)}$$
 ## 4. 🧬 Individual Values (IVs) Generation
 
 ### 1. Standard Wild Roll
+
 ```text
 IV = floor(Random(0, 31))
 ```
 
 ### 2. Competitive Re-roll (Guardians / Alphas)
+
 ```text
 IV_Final = max(ivFloor, max(Random(0, 31), Random(0, 31)))
 ```
+
 *Where `ivFloor` is `12` for Guardians/Alphas.*
 
 ### 3. Faction War / Contextual Floors
+
 ```text
 IV_Effective = max(ContextualBonus, IV_Generated)
 ```
+
 - **ContextualBonus**: `15` for Map Dominance, `Streak` for Bug Catchers, or `N` for specialized quest rewards.
 
 ---
@@ -174,14 +182,17 @@ IV_Effective = max(ContextualBonus, IV_Generated)
 ## 6. 🆙 Experience & Level Progression
 
 ### 1. Next Level Experience
+
 ```text
 Next_Level_XP = floor(Current_XP * 1.2)
 ```
 
 ### 2. EXP & EV Yield per Defeated or Captured Foe
+
 ```text
 Exp_Yield = floor(Enemy_Level * 4 * Distribution * ClassMultiplier * GlobalMultiplier)
 ```
+
 - **Distribution (Party-wide Gen 6–9 Engine)**:
   - `1.0`: Active combatants / participants, or living bench members holding `expshare`.
   - `0.5`: Living benched party members without `expshare`.
@@ -204,6 +215,7 @@ Dimension = Base_Dimension * factor
 ```
 
 ### Dimension Tiers
+
 | Tier | ID | Delta Range | UI Glow / Aura |
 | :--- | :--- | :--- | :--- |
 | **Miniature** | `XXS` | $< -12.5\%$ | Cyan Ice Diamond Glow |
@@ -219,9 +231,11 @@ Dimension = Base_Dimension * factor
 ## 8. 🪙 Economy & Black Market Math
 
 ### Rocket Black Market Valuation
+
 ```text
 Price = floor((Level * 50 + (TotalIVs / 186) * 500) * 0.8)
 ```
+
 *Where `TotalIVs` is the sum of all 6 genetic IVs (max 186).*
 
 ---
@@ -242,7 +256,9 @@ Price = floor((Level * 50 + (TotalIVs / 186) * 500) * 0.8)
 ## 10. 🎮 Minigame Mathematical Models
 
 ### 1. Fishing Rhythm Mechanics
+
 Difficulty factor scales inversely with species spawn rarity:
+
 ```text
 Difficulty_Factor = 101 - Rarity
 ```
@@ -252,6 +268,7 @@ Difficulty_Factor = 101 - Rarity
 - **Precision Hit Window**: $\max(100, 190 - (\text{Difficulty\_Factor} / 1.3))$ (Range: 113ms to 189ms).
 
 ### 2. Archaeology & Fossil Excavation
+
 - **Encounter Rate**: Caves $10\%$, Mountains $5\%$, Others $0\%$.
 - **Excavation Reward Weights**:
   - Fossils: $45\%$
@@ -259,6 +276,7 @@ Difficulty_Factor = 101 - Rarity
   - Ores & Gems: $30\%$ (Common $20\%$, Rare $10\%$).
 
 ### 3. Game Corner Roulette Payouts (Gen III Specification)
+
 The roulette features 12 slots (4 species: Wynaut, Azurill, Skitty, Makuhita $\times$ 3 colors: Yellow, Green, Purple). Balls remain in occupied slots for up to 6 spins before a table reset.
 
 $$\text{Payout Multiplier} = \frac{12}{\text{Empty Winning Slots}}$$
@@ -277,14 +295,17 @@ $$\text{Payout Multiplier} = \frac{12}{\text{Empty Winning Slots}}$$
 ## 11. 🦖 Daycare Genetic DNA Cloning Math
 
 ### 1. Cloning Cost Formula
+
 $$\text{Cost} = 3000 + 1000 \cdot N$$
 *Where $N$ is the number of additional sacrificed fossils ($0 \le N \le 6$). Maximum cost is $\$9,000$.*
 
 ### 2. Genetic IV Re-rolls
+
 - **Guaranteed Rolls**: $1 + \lfloor N / 2 \rfloor$ independent rolls per stat, selecting the maximum.
 - **Odd Sacrifice Bonus**: If $N$ is odd ($1, 3, 5$), grants an additional $50\%$ probability for an extra roll.
 
 ### 3. Shiny Probability Inheritance
+
 $$\text{Shiny\_Probability} = \frac{1 + 0.25 \cdot N}{4096}$$
 *Reaches up to a $2.5\times$ multiplier ($N=6$) compared to the baseline $1/4096$ Shiny rate.*
 
@@ -295,20 +316,27 @@ $$\text{Shiny\_Probability} = \frac{1 + 0.25 \cdot N}{4096}$$
 All police scaling and criminality resolution formulas are pure functions implemented in [`src/logic/player/classMath.ts`](../../../../../src/logic/player/classMath.ts).
 
 ### 1. Police Extra Level Bonus (`calculatePoliceBonusLevel`)
+
 $$\text{bonusLv} = \lfloor \frac{\max(0, \text{criminality} - 100)}{10} \rfloor$$
+
 - Every $+10\%$ criminality above $100\%$ awards $+1$ enemy level bonus.
 
 ### 2. Effective Police Level with Clamping Safeguard (`calculatePoliceEffectiveLevel`)
+
 $$\text{effectivePoliceLv} = \max(1, \min(\text{MAX\_POKEMON\_LEVEL}, \text{baseMapLv} + 5 + \text{bonusLv}))$$
+
 - Enforces strict bounds $1 \le \text{level} \le 100$, preventing illegal Pokémon generation errors or corrupt box saves.
 
 ### 3. Dynamic Police Team Size (`calculatePoliceTeamSize`)
+
 $$\text{policeTeamSize}(\text{crim}) = \begin{cases} \text{random}(3, 4) & \text{if } \text{crim} < 140\% \text{ (Local Patrol)} \\ \text{random}(4, 5) & \text{if } 140\% \le \text{crim} < 200\% \text{ (Heavy Squad)} \\ 6 & \text{if } \text{crim} \ge 200\% \text{ (Full SWAT Team)} \end{cases}$$
 
 ### 4. Arrest Bail upon Defeat (`calculatePoliceBail`)
+
 $$\text{Bail} = \lfloor \text{classLevel}^2 \times 80 \times \left(\frac{\text{criminality}}{100}\right) \rfloor$$
 
 ### 5. Police Encounter Probability (`calculatePoliceEncounterChance`)
+
 $$\text{tChance} = \left(\frac{\text{criminality}}{10}\right) \times \text{trainerBonus}$$
 
 ---
@@ -364,6 +392,7 @@ $$\text{DifficultyScore} = \text{round}\left(0.40 \cdot \text{LevelScore} + 0.60
 | **Experto (Expert)** | $\text{Score} > 85$ | 13 | $580\text{ ms}$ | $420\text{ ms}$ | $100\text{ ms}$ | $+7 \text{ to } +10$ | 1 Reroll ($\max(\text{IV}_{\text{current}}, \text{Roll})$) |
 
 ### 3. Random Level Bonus Resolution
+
 When a minigame is won, a discrete random integer is uniformly sampled from the tier's $[\text{minLevelBonus}, \text{maxLevelBonus}]$ range:
 
 $$\text{BonusLevel} = \lfloor \text{Random}() \times (\text{MaxBonus} - \text{MinBonus} + 1) \rfloor + \text{MinBonus}$$
@@ -419,7 +448,3 @@ $$\text{newElo} = \left\lfloor \max\left(1000, 1000 + \frac{\text{currentElo} - 
 | **Maestro** | `maestro` | $\ge 3400$ | `/assets/sprites/ranked_medals/maestro.webp` | 5 | Guaranteed 6 IV 31 Competitive Shiny Pokémon + 3x Ticket CC + 3x Ticket IE + 500 Battle Coins |
 
 Rewards are awarded automatically into `public.awards` by `fn_award_ranked_season_automated` (PostgreSQL) and emulated in SQLite via `src/logic/db/rpcEmulations/rankedRpc.ts`.
-
-
-
-

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { gsap } from 'gsap'
 import { logger } from '@/logic/utils/logger'
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
 import { useAuthStore } from '@/stores/auth'
 import { useLoadingStore } from '@/stores/loading'
 import { gameBus } from '@/logic/events/gameBus'
@@ -207,7 +208,7 @@ export const useUpdateStore = defineStore('update', () => {
   async function exitToLogin(): Promise<void> {
     logger.info('UpdateStore', 'Executing exit to /login...')
     resetStatus()
-    sessionStorage.setItem('block_autologin', 'true')
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true')
     try {
       await authStore.logout(true, true)
     } catch (e) {
@@ -341,7 +342,7 @@ async function transitionServiceWorker(): Promise<void> {
     }
 
     // Prevent immediate autologin on reload
-    sessionStorage.setItem('block_autologin', 'true')
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true')
 
     progress.value = UPDATE_PROGRESS_STAGES.APPLY
     progressText.value = 'Aplicando actualización...'

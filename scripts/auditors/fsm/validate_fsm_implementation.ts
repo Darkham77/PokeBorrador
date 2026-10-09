@@ -4,7 +4,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath } from '@francogp/auditor';
 import { collectFsmFiles } from './_fsmParityParser.ts';
 
 enableCompileCache();
@@ -199,7 +199,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
     const { relevant: fileData, allFiles } = await discoverFsmRelatedFiles();
 
     for (const f of allFiles) {
-      this.recordScanned(path.relative(this.projectRoot, f).replace(/\\/g, '/'));
+      this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, f)));
     }
     for (const r of FSM_IMPLEMENTATION_RULES) {
       this.markRuleEvaluated(r);
@@ -279,7 +279,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
           this.addViolation({
             ruleId: 'fsm-non-atomic-timer',
             severity: 'error',
-            file: path.relative(process.cwd(), file.path).replace(/\\/g, '/'),
+            file: normalizePosixPath(path.relative(process.cwd(), file.path)),
             line: idx + 1,
             message: `[CHECK 4] setTimeout no atómico en ${path.basename(file.path)}:${idx + 1}: ${t.slice(0, LOG_PREVIEW_TRUNCATE_LENGTH)}`,
             context: t
@@ -370,7 +370,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
     // 10. Referencias a Estados/Subestados Inexistentes (Código Basura)
     fileData.forEach(file => {
       const lines = file.content.split('\n');
-      const relFile = path.relative(process.cwd(), file.path).replace(/\\/g, '/');
+      const relFile = normalizePosixPath(path.relative(process.cwd(), file.path));
       lines.forEach((line, idx) => {
         // 10a. Referencias explícitas por objeto BATTLE_STATES/BATTLE_SUBSTATES
         const explicitMatches = line.matchAll(/\bBATTLE_(?:SUB)?STATES\.([A-Z0-9_]+)\b/g);

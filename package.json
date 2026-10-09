@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.6-build.20261008-231430",
+  "version": "0.6.7-build.20261009-133311",
   "private": true,
   "type": "module",
   "engines": {
@@ -186,7 +186,21 @@
     "auditor:fallow:dead-code": "auditor-fallow category=dead-code",
     "auditor:family:architecture": "auditor family=architecture",
     "auditor:family:domain": "auditor family=domain_data",
-    "auditor:family:persistence": "auditor family=persistence"
+    "auditor:family:persistence": "auditor family=persistence",
+    "auditor:audit-config": "auditor task=validate_audit_config",
+    "auditor:constant-hygiene": "auditor task=validate_constant_hygiene",
+    "auditor:environment-engines": "auditor task=validate_environment_engines",
+    "auditor:gsap-animations": "auditor task=validate_gsap_animations",
+    "auditor:gsap-framework-hygiene": "auditor task=validate_gsap_framework_hygiene",
+    "auditor:gsap-scrolltrigger": "auditor task=validate_gsap_scrolltrigger",
+    "auditor:type-assertion-hygiene": "auditor task=validate_type_assertion_hygiene",
+    "auditor:vue-reactivity": "auditor task=validate_vue_reactivity",
+    "auditor:vue-router": "auditor task=validate_vue_router",
+    "auditor:canonical-domains": "auditor task=validate_canonical_domains",
+    "auditor:persistence-client": "auditor task=validate_persistence_client",
+    "auditor:mermaid-syntax": "auditor task=validate_mermaid_syntax",
+    "auditor:auditor-hygiene": "auditor task=validate_auditor_hygiene",
+    "auditor:git-config": "auditor task=validate_git_config"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",

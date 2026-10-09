@@ -329,7 +329,7 @@ graph TD
     B -->|Physical| C[Wind-up Prep -> Dash to Target -> Return]
     B -->|Special| D[Radial Pulse -> Brightness 1.8x Flare -> Return]
     B -->|Status| E[Rotation ±12deg -> Brightness 1.3x -> Return]
-    B -->|Self-KO / Explosion| F[High-Freq Jitter -> Giant Flash Explosion -> Shrink 0]
+    B -->|"Self-KO / Explosion"| F[High-Freq Jitter -> Giant Flash Explosion -> Shrink 0]
 ```
 
 ### 4.2 Impact Reactions, Damage Shakes & Healing
@@ -475,7 +475,7 @@ Defined in [`battleFaintSequence.ts`](../../../../../src/logic/battle/battleFain
 graph TD
     A[HP reaches 0] --> B{Ownership}
     B -->|Wild Pokémon| C[Faint Cry -> Slide Down +80px -> 13-Step Blink -> Vanish]
-    B -->|Owned / Trainer Pokémon| D[Faint Cry -> Blue Energy Suction into Pokéball -> Vacate Seat]
+    B -->|"Owned / Trainer Pokémon"| D[Faint Cry -> Blue Energy Suction into Pokéball -> Vacate Seat]
 ```
 
 ### 6.2 Forced Switch Drawer & Whiteout Flow

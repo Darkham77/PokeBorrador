@@ -482,7 +482,7 @@ To ensure a seamless transition between full-map exploration and focused modal i
 
 To prevent visual "jitter" or layout shifts during state transitions, use **Sticky Refs** (local memory variables) that hold the last valid value while the underlying store is updating or clearing.
 
-- **Combat Anchors**: Keep ground-coordinates in a local `ref` that only updates when new _confirmed_ data arrives.
+- **Combat Anchors**: Keep ground-coordinates in a local `ref` that only updates when new *confirmed* data arrives.
 - **HUD Stability**: A Pokémon's info-card MUST stay visible during finishing animations (`isFinishing`) until the Pokémon physically leaves the screen or the HP reaches zero.
 
 ### 16. Persistent Player HUD
@@ -529,7 +529,7 @@ To maintain pixel-perfect alignment in the high-fidelity 2D combat arena:
 
 ### 2. Shadow & Ground Synchronization (Pixelated Standard)
 
-- **Rendered Parity**: Shadow positions MUST be calculated based on the _rendered_ height of the sprite (`object-fit: contain`) inside the entity square.
+- **Rendered Parity**: Shadow positions MUST be calculated based on the *rendered* height of the sprite (`object-fit: contain`) inside the entity square.
 - **Formula**: The vertical offset is derived from the ratio between the sprite's `feetY` (ground level) and the total `ENTITY_SIZE`.
 - **Pixelation Technique**: Generate shadows on a low-resolution canvas (e.g., 10x7), disable anti-aliasing (`imageSmoothingEnabled = false`), and scale up via CSS with `image-rendering: pixelated`.
 - **Centralization**: All shadow dimensions and base offsets MUST be controlled by `spatialCoordinator.ts`. Prohibit hardcoded dimensions in CSS (scoped or global) to avoid layout collisions.
@@ -666,7 +666,7 @@ To prevent overloading the HUD with irrelevant information, weather and time cyc
 
 To prevent false positive translation leaks in static database validations:
 
-- **Curse Type Exception ("???")**: The custom elemental type `"???"` used by the _Maldición (Curse)_ move in generations 2-4 MUST be registered as a valid and allowed Spanish type in any translation/database audit suite (`validate_translations.ts`), preventing false-positive mismatches.
+- **Curse Type Exception ("???")**: The custom elemental type `"???"` used by the *Maldición (Curse)* move in generations 2-4 MUST be registered as a valid and allowed Spanish type in any translation/database audit suite (`validate_translations.ts`), preventing false-positive mismatches.
 
 ### 25. High-Fidelity Vue 3 GSAP Tooltip Coordination
 
@@ -773,4 +773,3 @@ When displaying multiple status badges or condition tags side by side (e.g., sta
 
 - **Parity of Duplicated Component Contexts**: When gameplay mechanics are split across multiple component scopes (e.g., battle-specific `ArchaeologyMinigame.vue` and general-purpose `ArchaeologyModal.vue`), all logic rules, multipliers, formulas, and reward tables MUST be kept 100% identical across all instances.
 - **Modal Callback & Lifecycle Synchronization**: When implementing cleanup actions (such as `onCloseCallback` or custom close hooks) inside modals, encapsulate execution within a local handler (e.g., `handleCloseModal`) that dispatches both the local Vue event emit (`@close`) and external callbacks, ensuring predictable parent-child lifecycle coordination.
-

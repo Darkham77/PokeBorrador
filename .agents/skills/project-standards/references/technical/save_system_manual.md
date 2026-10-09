@@ -3,6 +3,7 @@
 > **Scope & Authority**: This manual is the **Single Source of Truth (SSoT) for the save system architecture**, detailing save state serialization (`saveSerializer.ts`), deserialization (`saveSanitizer.ts`), Valibot schema validation, safe storage helpers, and guest user isolation.
 >
 > 🛑 **Domain Boundaries & Redirection**:
+>
 > - For general database governance and Save Shield policies ➔ See [Database & Persistence Rules](../rules/database_and_persistence.md).
 > - For DBRouter online/offline routing logic ➔ See [DBRouter Manual](./dbrouter_manual.md).
 > - For in-flight active combat serialization ➔ See [Battle Persistence & Anti-Cheat Manual](../battle/battle_persistence_and_anti_cheat_manual.md).
@@ -117,7 +118,7 @@ Each browser tab generates a unique `SessionID`:
 
 ```mermaid
 flowchart TD
-    Start[PWA Update Detected / Lockout] --> ActiveSession{Player in-game?<br>isReady == true}
+    Start[PWA Update Detected / Lockout] --> ActiveSession{"Player in-game?<br>isReady == true"}
     ActiveSession -- Yes --> ClickUpdateActive[User clicks UPDATE NOW]
     ClickUpdateActive --> SafeLogout[Execute authStore.logout<br>Saves progress, logs out, and reloads]
     ActiveSession -- No --> ClickUpdateBlocked[User clicks UPDATE NOW]
@@ -256,7 +257,6 @@ When validating the savefile structure using Valibot:
 - **Hybrid Schema Validation**: Critical fields (such as `id` and `uid` on Pokémon or basic account IDs) MUST be strictly validated. If critical properties are missing or corrupted, the validation must fail and trigger the rollback/error handler. Secondary/optional fields (like `isShiny`, `friendship`, or new features) MUST utilize Valibot's `fallback()` or `optional()` methods to assign safe default values gracefully instead of failing the entire load/save operation.
 - **Auto-Save Validation Throttling**: Because checking large arrays of box Pokémon can cause CPU overhead, deep Valibot validation of the box/team array MUST be skipped during periodic 60-second auto-saves if the state is not marked as "dirty" (i.e., no changes were made to the boxes or team since the last successful validation). Full validation must always be executed during initial load (`loadBestSave`) and on critical manual saves (e.g., trades, badge acquisition).
 
-
 ---
 
 ## 🛡️ Administrative Security
@@ -314,10 +314,11 @@ Functions that involve `await` or `setTimeout` (especially in battle or menu tra
 ## 🐉 Daily Guardian Lockout & Test Isolation
 
 ### 1. Lockout Persistence
+
 - **State Registry**: To prevent defeated or captured guardians from reappearing on map interfaces and wild encounter tables, the lockout state MUST be stored within the player save state `gameStore.state.guardianCaptures` as a map of coordinates/IDs to date strings (e.g., `{ 'mapId_x_y': 'YYYY-MM-DD' }`).
 - **Offline Parity**: Storing this inside the client-side game state ensures that lockout calculations are instant, work offline, survive page reloads, and synchronize automatically with the cloud using the standard save upsert pipeline.
 
 ### 2. Pinia Test Isolation
+
 - **Pure Logic Guards**: When accessing global stores or reactive states from pure TypeScript logic files (e.g., combat mechanics, weather calculations, or encounter helpers), ALWAYS verify if Pinia is initialized by checking `getActivePinia()`.
 - **Reference Pattern**: If `getActivePinia()` returns a falsy value (meaning the code is running inside an isolated node unit test rather than a browser/Vue context), bypass store access or return default fallback values. This prevents tests from crashing with `Pinia not initialized` errors.
-

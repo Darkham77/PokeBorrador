@@ -141,12 +141,14 @@ npm run assets:convert
 #### Item Sprites & Crafting Tiers Hierarchy
 
 All inventory and shop item sprites in `public/assets/sprites/` MUST strictly follow the 4-tier domain hierarchy mapped from `item.craftingTier`:
+
 - `crafting/tier0/`: Raw materials, stones, and primary crafting inputs (`item.craftingTier === 0`).
 - `crafting/tier1/`: Refined materials and intermediate crafting items (`item.craftingTier === 1`).
 - `crafting/tier2/`: Advanced components and complex parts (`item.craftingTier === 2`).
 - `crafting/tier3/`: Finished products, consumables, TMs, Mochis, Pokéballs, and held battle items (`item.craftingTier === 3`).
 
 To download missing items or re-tier them:
+
 1. `npm run assets:download:items` (`scripts/assets/download_assets.ts`)
 2. `npm run assets:convert` (`scripts/assets/convert_assets.ts`)
 3. `npm run assets:organize-tiers`
@@ -202,11 +204,13 @@ To ensure game assets are correctly precached and the service worker remains sta
 To optimize performance and avoid run-time latency or 404 errors when resolving cries for variant Pokémon (e.g. Mega evolutions, specific forms), the asset pipeline pre-computes sound resources at compile time:
 
 ### 1. Compile-Time Pre-computation
+
 - All official Pokémon entries are mapped to their specific audio files under `public/cries/`.
 - If a specific variant cry is missing (e.g., `rayquazamega.mp3`), the compiler (`convert_assets.ts`) crawls the species hierarchy (`baseSpecies` and `prevo` chain) to precompute the correct fallback sound name.
 - Fallback mappings are written directly into the `c` attribute of `pokemonFeetDatabase.json` and exposed in `src/data/pokemon/pokemonFeetDatabase.ts` as `POKEMON_CRIES_DATABASE` for O(1) runtime lookups.
 
 ### 2. Compile-Time Safe Gate
+
 - The asset pipeline acts as a strict validation gate.
 - If any official Pokémon (where `num > 0` and is not a CAP/Custom fanmade) fails to resolve to any valid audio or fallback cry file, the compiler MUST log a list of affected species and abort compilation with an error code (`process.exit(1)`).
 
@@ -217,9 +221,10 @@ To optimize performance and avoid run-time latency or 404 errors when resolving 
 To maintain developer ergonomics while ensuring optimal production performance:
 
 ### 1. Human-Readable in Development (DEV)
+
 - All generated or maintained JSON files and catalogs (e.g., `pokemonFeetDatabase.json`, `animatedSpriteDatabase.json`, `npcSpriteCatalog.ts`) MUST be written using pretty-printed formatting (`JSON.stringify(..., null, 2)`) during local development and assets conversion.
 - No JSON file committed in development should be in "machine" minified format.
 
 ### 2. Maximum Optimization in Production (Build)
-- Production minification and space optimizations are handled automatically during the bundle compilation phase (`npm run build`). No manual minification should be done to files in the repository.
 
+- Production minification and space optimizations are handled automatically during the bundle compilation phase (`npm run build`). No manual minification should be done to files in the repository.

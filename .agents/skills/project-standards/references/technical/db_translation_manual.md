@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual governs the automated translation of PostgreSQL migrations into SQLite-compliant syntax for offline WASM execution (`sqliteEngine.ts`), ensuring dialect compatibility and transactional integrity.
 > **Sources of Truth**:
+>
 > - Persistence Rules: [`../rules/database_and_persistence.md`](../rules/database_and_persistence.md)
 > - DBRouter Architecture: [`dbrouter_manual.md`](./dbrouter_manual.md)
 > - Save System: [`save_system_manual.md`](./save_system_manual.md)
@@ -33,6 +34,7 @@ SQLite uses dynamic type affinity with 5 storage classes (`NULL`, `INTEGER`, `RE
 The `translatePostgresToSqlite` parser applies deterministic regex and token transformations:
 
 ### 1. Function Mapping
+
 - **`NOW()`** $\rightarrow$ `datetime('now')`
 - **`gen_random_uuid()`** $\rightarrow$ `hex(randomblob(16))` *(Mandate: function-based `DEFAULT` values MUST be enclosed in parentheses `DEFAULT (hex(randomblob(16)))`)*.
 - **`jsonb_*`** $\rightarrow$ `json_*` (e.g., `jsonb_build_object` $\rightarrow$ `json_object`, `jsonb_agg` $\rightarrow$ `json_group_array`, `jsonb_array_elements` $\rightarrow$ `json_each`).
@@ -43,13 +45,16 @@ The `translatePostgresToSqlite` parser applies deterministic regex and token tra
 - **`SUBSTRING(x FROM a FOR b)`** $\rightarrow$ `SUBSTR(x, a, b)`
 
 ### 2. Casts and Cleanup
+
 - **`::type` Casts**: PostgreSQL double-colon casts (`::TEXT`, `::BIGINT`, `::JSONB`) are stripped.
 - **`FOR UPDATE`**: Stripped (SQLite locks at database/file level).
 - **`RAISE EXCEPTION`**: Suppressed (replaced with `SELECT 1`).
 - **Foreign Keys**: `REFERENCES auth.users(id)` is mapped to `REFERENCES profiles(id)`.
 
 ### 3. Logic Skipping
+
 The offline engine automatically bypasses non-translatable server-side declarations:
+
 - `CREATE OR REPLACE FUNCTION` / `ALTER FUNCTION`
 - `COMMENT ON`
 - `CREATE POLICY` / `DROP POLICY`

@@ -22,6 +22,7 @@ import {
 import ShadowEditorCard from './components/ShadowEditorCard.vue';
 import DevShadowHeaderToolbar from './components/DevShadowHeaderToolbar.vue';
 import DevShadowFilterBar from './components/DevShadowFilterBar.vue';
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts';
 
 const router = useRouter();
 const mainScrollRef = ref<HTMLElement | null>(null);
@@ -104,27 +105,19 @@ const handlePageChange = (page: number) => {
 };
 
 const handleMainScroll = () => {
-  if (mainScrollRef.value && typeof sessionStorage !== 'undefined') {
-    try {
-      sessionStorage.setItem('dev_shadow_scroll_top', String(mainScrollRef.value.scrollTop));
-    } catch { // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
-      // sessionStorage unavailable
-    }
+  if (mainScrollRef.value) {
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.DEV_SHADOW_SCROLL_TOP, String(mainScrollRef.value.scrollTop));
   }
 };
 
 const restoreScroll = () => {
-  if (mainScrollRef.value && typeof sessionStorage !== 'undefined') {
-    try {
-      const saved = sessionStorage.getItem('dev_shadow_scroll_top');
-      if (saved !== null) {
-        const top = parseFloat(saved);
-        if (!isNaN(top) && top > 0) {
-          mainScrollRef.value.scrollTop = top;
-        }
+  if (mainScrollRef.value) {
+    const saved = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.DEV_SHADOW_SCROLL_TOP);
+    if (saved !== null) {
+      const top = parseFloat(saved);
+      if (!isNaN(top) && top > 0) {
+        mainScrollRef.value.scrollTop = top;
       }
-    } catch { // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
-      // sessionStorage unavailable
     }
   }
 };

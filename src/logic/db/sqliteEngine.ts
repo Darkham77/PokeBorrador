@@ -21,6 +21,7 @@ import { getFromIDB, setToIDB } from './idbHelper.ts'
 import { saveToOPFS, loadFromOPFS } from './opfsHelper.ts'
 import { TABLES_SCHEMA } from './schema.ts'
 import { logger } from '../utils/logger.ts'
+import { safeStorage, safeSessionStorage, LOCAL_STORAGE_KEYS, SESSION_STORAGE_KEYS } from '../utils/storage.ts'
 import { ensureSchemaIntegrity } from './sqliteSchemaIntegrity.ts'
 import { splitSQLStatements, translatePostgresToSqlite } from './sqlTranslator.ts'
 import type { SQLiteResult, SQLiteDatabase } from '@/types/database/sqlite.ts'
@@ -180,10 +181,7 @@ export function exportSQLiteSnapshot(): number[] {
 
 function resolveTargetKey(options: { sqliteKey?: string }): string {
   if (options.sqliteKey) return options.sqliteKey
-  if (typeof window !== 'undefined' && window.localStorage) {
-    return window.localStorage.getItem('pokevicio_sqlite_key') ?? _sqliteKey
-  }
-  return _sqliteKey
+  return safeStorage.getItem(LOCAL_STORAGE_KEYS.SQLITE_KEY) ?? _sqliteKey
 }
 
 type SqlJsStatic = Awaited<ReturnType<typeof initSqlJs>>
@@ -321,12 +319,8 @@ async function tryHandleManualDevImport(sqliteKey: string): Promise<boolean> {
       throw new Error(`[sqliteEngine] Failed to cleanup manual import DB file: ${String(e)}`, { cause: e })
     })
 
-    try {
-      sessionStorage.setItem('pokevicio_import_reload', 'true')
-      sessionStorage.setItem('pokevicio_import_original_path', window.location.pathname)
-    } catch (e) {
-      throw new Error(`[sqliteEngine] Failed to access sessionStorage during import reload: ${String(e)}`, { cause: e })
-    }
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.IMPORT_RELOAD, 'true')
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.IMPORT_ORIGINAL_PATH, window.location.pathname)
 
     await new Promise(resolve => setTimeout(resolve, IMPORT_RELOAD_DELAY_MS)) // timer-ok: Browser manual database import page reload delay with IMPORT_RELOAD_DELAY_MS
     window.location.reload()

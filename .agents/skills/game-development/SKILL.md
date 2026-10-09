@@ -109,6 +109,7 @@ Abstract input into ACTIONS, not raw keys:
 2. Batching (reduce draw calls via Spritesheets or batched rendering)
 3. Pooling (avoid GC spikes)
 4. LOD (detail by distance)
+
 ### 5. UI Determinism & 100% ID Locators Mandate
 
 Every interactive UI element in the game (buttons, inputs, dropdowns, switches, tabs, modals, card controls) MUST have an explicit, unique, and deterministic `id` or `:id` attribute.
@@ -134,4 +135,3 @@ Every interactive UI element in the game (buttons, inputs, dropdowns, switches, 
 ---
 
 > **Remember:** Great games come from iteration, not perfection. Prototype fast, then polish.
-

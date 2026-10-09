@@ -133,6 +133,7 @@ store.addLog(message: string, style: LogStyle, source: Pokemon | string)
 ```
 
 Available styles:
+
 - `'log-player'` — Player message (blue/green)
 - `'log-enemy'` — Enemy message (red)
 - `'log-info'` — Neutral information (grey/white)
@@ -143,15 +144,19 @@ Available styles:
 ## Special Handlers & Conventions
 
 ### `-miss` Format
+
 `parts[2]` = attacker (who missed), `parts[3]` = optional target.
 
 ### `cant` Reasons
+
 `par` (paralyzed), `slp` (asleep), `frz` (frozen), `attract` (infatuated), `recharge` (recharging), `Disable` (move disabled).
 
 ### Side Conditions (`-sidestart` / `-sideend`)
+
 `parts[2]` format is `p1: Name` or `p2: Name` (no position letter `a`). Use `parts[2].startsWith('p1')`.
 
 ### Project Conventions
+
 - **No `setTimeout`**: All waits use `await store.animations.awaitTween(...)` or GSAP timelines.
 - **No `any`**: Ensure strict typing and interface assertions.
 - **No Production `console.log`**: Use `logger.debug()` for development traces.

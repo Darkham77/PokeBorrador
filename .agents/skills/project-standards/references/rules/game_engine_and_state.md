@@ -3,6 +3,7 @@
 > **Scope & Authority**: This document governs **high-level engine invariants, Showdown integration boundaries, 4-seat generic design, UID team synchronization, visual shell rules, and illegal Pokémon quarantine** across Poké Vicio.
 >
 > 🛑 **Anti-Catch-All & Subsystem Redirection**:
+>
 > - **DO NOT ADD GAMEPLAY SUBSYSTEM RULES HERE.** Specific gameplay features, drop tables, daycare/breeding mechanics, items, and gyms belong in their respective dedicated manuals:
 >   - For Daycare, Breeding, Hatching, Egg limits, and Baby rewards ➔ [Breeding Manual](../systems/breeding_manual.md).
 >   - For Gyms, Badges, and Leaders ➔ [Gym System Manual](../systems/gym_system_manual.md).
@@ -89,10 +90,10 @@
 - **Zero-Hardcoding Out-of-Battle Rule Coordination**: All outside-battle rule modifications, Pokémon field passives, item buffs/debuffs (incenses, repels, tools, charms), player class perks, Daycare modifiers, and event multipliers MUST be aggregated and evaluated through the centralized `FieldRulesCoordinator` (`src/logic/rules/fieldRulesCoordinator.ts`). Writing disparate, ad-hoc `if (leader.ability === ...)` or item checks scattered across low-level subsystem files is STRICTLY FORBIDDEN.
 - **Canonical Out-of-Battle Abilities**: All 33 canonical field abilities are implemented in `pokemonFieldAbilities.ts` and scale dynamically with `ACTIVE_GENERATION`. Egg step reduction passives (*Flame Body*, *Magma Armor*, *Steam Engine*) provide a non-stacking $2\times$ reduction, while post-battle gathering (*Pickup*, *Honey Gather*) rolls independently per conscious party member according to official level brackets.
 
-
 ## 12. Busy Pokémon Protection & Complete Lifecycle Protocol
 
 Pokémon participating in active missions (`onMission: true`), competition events (`onEvent: true`), daycare (`inDaycare: true`), or passive defense (`onDefense: true`) are classified as busy (`isPokemonBusy`):
+
 1. **Visual Indicators**: Automatically badged with `mission` (`🧭 EN MISIÓN`) or `event` (`🏆 EN EVENTO`) via `getPokemonVisualBadges()`.
 2. **Action Locking**: Release, Black Market selling, P2P trade offers, and GTS publishing are strictly blocked across UI, Pinia stores, and database RPCs.
 3. **Lifecycle Rehabilitation & Orphan Event Liberation**: Once a mission is claimed, an event concludes, or event awards are claimed (`claimAward`) or discarded (`discardAward`), all busy flags MUST be reset to `false` via `healStuckEventPokemon`. Resetting busy flags upon legitimate event closure is an intentional business lifecycle transition, NOT an ad-hoc runtime auto-heal. State consistency between active events and Pokémon busy flags must be preserved at boundary ingestion.

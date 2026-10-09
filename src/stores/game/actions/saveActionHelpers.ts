@@ -10,6 +10,7 @@ import type { DBRouter } from '@/logic/db/dbRouter';
 import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
 
 export interface SaveRollbackPayload {
   serverData?: GameState;
@@ -39,9 +40,7 @@ export function canSaveState(state: GameState, isModalOpen: (name: string) => bo
 }
 
 export function saveSandboxLocalState(state: unknown): void {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('pvs_sandbox_save', JSON.stringify(state));
-  }
+  safeStorage.setItem(LOCAL_STORAGE_KEYS.SANDBOX_SAVE, JSON.stringify(state));
 }
 
 export function updateSessionPlaytime(state: GameState, sessionStartTime: number | null): number {

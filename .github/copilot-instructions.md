@@ -1,3 +1,5 @@
+# Copilot Instructions
+
 <!-- mermaid-ai-skills:start -->
 ## Mermaid Diagrams
 

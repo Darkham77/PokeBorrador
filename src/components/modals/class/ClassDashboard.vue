@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/player/profile'
 import { useUIStore } from '@/stores/ui'
 import type { GenderId } from '@/types/system/game'
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage'
 import ClassDashboardSidebar from './ClassDashboardSidebar.vue'
 import ClassDashboardAbilityItem from './ClassDashboardAbilityItem.vue'
 import ClassDashboardPenaltyItem from './ClassDashboardPenaltyItem.vue'
@@ -76,7 +77,7 @@ const handleSelectGender = (targetGender: GenderId) => {
       })
 
       if (authStore.user?.id.startsWith('local_')) {
-        const localUserStr = localStorage.getItem('pokevicio_local_user')
+        const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER)
         if (localUserStr) {
           interface LocalUser {
             user_metadata?: {
@@ -91,9 +92,9 @@ const handleSelectGender = (targetGender: GenderId) => {
           if (!lu.user_metadata) lu.user_metadata = {};
           lu.user_metadata.gender = targetGender;
           lu.user_metadata.last_renamed_at = nowStr;
-          localStorage.setItem('pokevicio_local_user', JSON.stringify(lu));
+          safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(lu));
         } else {
-          localStorage.setItem('pokevicio_local_user', JSON.stringify({
+          safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify({
             id: authStore.user.id,
             email: authStore.user?.email || 'entrenador@local',
             user_metadata: { 

@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual serves as the Single Source of Truth for network infrastructure configuration, Multi-WAN load balancing, and local loopback routing (Hairpin NAT) on MikroTik RouterOS for Poké Vicio's server and NAS deployments.
 > **Sources of Truth**:
+>
 > - Supabase Infrastructure: [`supabase_infrastructure_manual.md`](./supabase_infrastructure_manual.md)
 > - Database Persistence: [`../rules/database_and_persistence.md`](../rules/database_and_persistence.md)
 

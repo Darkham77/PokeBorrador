@@ -5,6 +5,7 @@
  * and remote username update.
  */
 import { validateTrainerName } from '@/logic/validation/schemas'
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage'
 import type { GenderId } from '@/types/system/game'
 import type { useGameStore } from '@/stores/game'
 
@@ -58,7 +59,7 @@ export function updateLocalUserStorage(
   nowStr: string,
   nameChanged: boolean
 ): void {
-  const localUserStr = localStorage.getItem('pokevicio_local_user')
+  const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER)
   if (localUserStr) {
     interface LocalUser {
       user_metadata?: {
@@ -74,10 +75,10 @@ export function updateLocalUserStorage(
     if (nameChanged) lu.user_metadata.username = targetName
     lu.user_metadata.gender = gender
     lu.user_metadata.last_renamed_at = nowStr
-    localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
+    safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(lu))
   } else {
-    localStorage.setItem(
-      'pokevicio_local_user',
+    safeStorage.setItem(
+      LOCAL_STORAGE_KEYS.LOCAL_USER,
       JSON.stringify({
         id: userId,
         email: email || 'entrenador@local',

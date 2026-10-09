@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { logger } from '@/logic/utils/logger'
-import { safeStorage } from '@/logic/utils/storage'
+import { safeStorage, safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
 import { resilientRouteComponent } from '@/logic/utils/resilientComponent'
 import LoginView from '@/views/auth/LoginView.vue'
 
@@ -70,11 +70,11 @@ router.beforeEach(async (to, _from) => {
   if (authStore.loading) await authStore.checkSession()
   
   // 2. Handle DB import reload
-  const isImportReload = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pokevicio_import_reload') === 'true';
+  const isImportReload = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.IMPORT_RELOAD) === 'true';
   if (isImportReload) {
-    const importOriginalPath = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('pokevicio_import_original_path') : null;
-    sessionStorage.removeItem('pokevicio_import_reload');
-    sessionStorage.removeItem('pokevicio_import_original_path');
+    const importOriginalPath = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.IMPORT_ORIGINAL_PATH);
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.IMPORT_RELOAD);
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.IMPORT_ORIGINAL_PATH);
     
     if (authStore.user && importOriginalPath !== '/login') {
       logger.info('Router', `Importación de DB completada. Redirigiendo a original: ${importOriginalPath}`);

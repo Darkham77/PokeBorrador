@@ -1,6 +1,7 @@
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
 import { processSaveInWorker, compressSaveInWorker } from '@/logic/workers/saveWorkerClient';
 import type { GameState } from '@/types/system/game';
 import type { AuthUser } from '@/types/auth/auth';
@@ -37,8 +38,8 @@ async function syncProfileDbVersion(user: AuthUser, db: DBRouter): Promise<void>
 async function migrateUserDbVersion(user: AuthUser, db: DBRouter, isLocalUser: boolean): Promise<void> {
   logger.info('LOAD', `Auto-migrando usuario offline/local a v${REQUIRED_DB_VERSION} (actual: ${user.db_version || 1})`);
   user.db_version = REQUIRED_DB_VERSION;
-  if (isLocalUser && typeof localStorage !== 'undefined') {
-    localStorage.setItem('pokevicio_local_user', JSON.stringify(user));
+  if (isLocalUser) {
+    safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(user));
     return;
   }
   if (!isLocalUser) {
@@ -131,12 +132,12 @@ async function backupAndMigrateLocalStorage(userId: string, opfsKey: string, lsR
 }
 
 function getLocalStorageRawSave(userId: string): string | null {
-  const lsKey = 'pokemon_local_save_' + userId;
-  const lsRaw = localStorage.getItem(lsKey);
+  const lsKey = `${LOCAL_STORAGE_KEYS.POKEMON_LOCAL_SAVE_PREFIX}${userId}`;
+  const lsRaw = safeStorage.getItem(lsKey);
   if (lsRaw) return lsRaw;
 
   // Legacy Fallback (v1 -> v2 migration)
-  const legacyRaw = localStorage.getItem('pokevicio_save_v3_ash');
+  const legacyRaw = safeStorage.getItem(LOCAL_STORAGE_KEYS.SAVE_V3_ASH);
   if (legacyRaw) {
     logger.info('LOAD', 'Legacy save found for migration.');
   }

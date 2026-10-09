@@ -34,6 +34,7 @@ import { calculateBreedingCost } from '@/stores/breedingActions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareWarehouseItem } from '@/types/breeding/breeding.ts';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon.ts';
 import type { PlayerClassState } from '@/types/system/game.ts';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage.ts';
 
 // ─── Egg Timer Helpers ────────────────────────────────────────────────────────
 
@@ -69,8 +70,7 @@ export function calculateNextEggTime(
 // ─── Daycare Load Helpers ─────────────────────────────────────────────────────
 
 function loadWarehouseEggsFromLocalStorage(userId: string): DaycareEgg[] {
-  if (typeof localStorage === 'undefined') return [];
-  const stored = localStorage.getItem(`daycare_warehouse_eggs_${userId}`);
+  const stored = safeStorage.getItem(`${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`);
   if (!stored) return [];
 
   try {
@@ -86,9 +86,7 @@ export function restoreWarehouseEggs(
 ): DaycareEgg[] {
   if (Array.isArray(persistedWarehouse) && persistedWarehouse.length > 0) {
     const validEggs = persistedWarehouse.filter((e): e is DaycareEgg => 'isEgg' in e && Boolean(e.isEgg));
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(`daycare_warehouse_eggs_${userId}`, JSON.stringify(validEggs));
-    }
+    safeStorage.setItem(`${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`, JSON.stringify(validEggs));
     return validEggs;
   }
 

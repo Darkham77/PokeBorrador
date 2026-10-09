@@ -93,7 +93,6 @@ The project uses a unified audit coordinator governed by `@francogp/auditor`:
 22. **Strict Prohibition of Security Bypass Comments**: Using inline comments (such as `// fallow-ignore-file security-sink` or `// fallow-ignore`) to suppress security vulnerabilities (CWE path traversals, SSRF, untrusted inputs) is STRICTLY PROHIBITED. All security findings MUST be resolved directly in code via input sanitization, path boundary checks, or URL origin allowlisting.
 23. **Robust Absolute Symbol Centering**: When positioning text symbols or icons (e.g., clear buttons containing '×') inside absolute elements, avoid relying solely on `line-height: 1` as browser font rendering engines vary and will result in vertical misalignment. ALWAYS use Flexbox centering with explicit size dimensions: `display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; top: 50%; transform: translateY(-50%);`.
 
-
 ---
 
 ## 📊 NPM Diagnostic & Maintenance Scripts Reference
@@ -101,9 +100,9 @@ The project uses a unified audit coordinator governed by `@francogp/auditor`:
 Use these scripts to verify project standards, manage servers, and run audits:
 
 ### ⚙️ Environment Setup, Tool Updates & Node Version Management
- 
+
 Whenever requested to "actualizar herramientas", "update tools", "preparar entorno", or "instalar dependencias", run the root automated setup script for the platform:
- 
+
 - `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-DeclaredVersions]`: Automated environment & tool setup for Windows (elevates to Admin, creates NVM symlink dir `C:\nvm4w`, cleans orphan APPDATA files, installs NVM, auto-updates to latest Node.js & npm@latest by default, applies local `.npmrc` security configs, and executes `npm ci`; with `-DeclaredVersions` freezes strictly to versions declared in the commit without network queries).
 - `./setup-linux.sh [--declared-versions]`: Automated environment & tool setup for Linux/macOS (installs NVM, auto-updates to latest Node.js & npm@latest by default, applies local `.npmrc` security configs, and executes `npm ci`; with `--declared-versions` freezes strictly to versions declared in the commit without network queries).
 - `node --experimental-strip-types scripts/maintenance/check_environment.ts`: Environment sanity check script (runs automatically during `preinstall` to validate runtime engine constraints).
@@ -210,6 +209,7 @@ When diagnosing, reproducing, or fixing failures across tests or E2E simulation 
    - Follow all `/game-simulation` rules: passive joystick, 100% ID-based locators (`#<id>`), 10s per-action timeout limit, zero artificial timers, and certified combat replay.
 4. **Master Regression Pass**:
    - Once all family cases pass, run the full master E2E simulation suite:
+
    ```powershell
    npm run sim:e2e
    ```

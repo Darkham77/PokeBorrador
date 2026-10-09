@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useClipboard } from '@vueuse/core'
 import { gsap } from 'gsap'
 import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts'
@@ -16,12 +16,16 @@ const emit = defineEmits<{
 const CLIPBOARD_COPIED_DUR_MS = 2000 as const
 
 const replayerBarRef = ref<HTMLElement | null>(null)
+const copyIndicatorRef = ref<HTMLElement | null>(null)
 const { copy, copied } = useClipboard({ copiedDuring: CLIPBOARD_COPIED_DUR_MS })
 let autoPlayTween: gsap.core.Tween | null = null
 
-watch(copied, (isCopied) => {
+watch(copied, async (isCopied) => {
   if (isCopied) {
-    gsap.fromTo('.copy-indicator', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.2 })
+    await nextTick()
+    if (copyIndicatorRef.value) {
+      gsap.fromTo(copyIndicatorRef.value, { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.2 })
+    }
   }
 })
 
@@ -190,6 +194,7 @@ onUnmounted(() => {
         <span class="copy-icon emoji">📋</span>
         <span
           v-if="copied"
+          ref="copyIndicatorRef"
           class="copy-indicator"
         >¡COPIADO!</span>
       </button>

@@ -2,6 +2,7 @@
 
 > **Scope**: Comprehensive reference for Effort Value (EV) mathematics, training items, consumables, battle yield distribution, stat recalculation, and Showdown/fuzzer integration across Poké Vicio.
 > **Sources of Truth**:
+>
 > - `src/logic/pokemon/evMath.ts` (Pure mathematical formulas & limits)
 > - `src/data/pokemon/evYields.ts` (Canonical species yield catalog)
 > - [Game Formulas Manual (Math SSoT)](../core/game_formulas_manual.md) (Formulas, IVs, Level & Nature scaling, stat modifications)
@@ -20,6 +21,7 @@ In Poké Vicio, Effort Values follow modern Gen 8/9 canonical rules:
 | `MIN_STAT_EVS` | `0` | Minimum EV investment in any stat. |
 
 ### Real-Time Stat Recalculation & Level 100 Rule
+
 - **Instantaneous Recalculation**: Whenever EVs change (via battle yield, vitamin, mochi, feather, or berry), `recalcPokemonStats(pokemon)` is invoked immediately.
 - **Level 100 Compatibility**: In accordance with Gen 5+ mechanics, Pokémon at Level 100 **still accumulate EVs from battles and consumables** and receive instant stat updates without requiring the legacy "box trick".
 
@@ -42,6 +44,7 @@ EV gains from defeating opponent Pokémon in battle can be boosted through held 
 
 > [!NOTE]
 > **Multiplicative Stacking**: Pokérus stacks multiplicatively with training items:
+>
 > - `Pokérus + Macho Brace`: Base yield x 4.
 > - `Pokérus + Power Item`: (Base Yield + 8) x 2.
 
@@ -52,12 +55,14 @@ EV gains from defeating opponent Pokémon in battle can be boosted through held 
 Consumables allow direct adjustment of EVs from the inventory (`src/logic/items/itemEffectHandlers.ts`):
 
 ### EV Enhancers
+
 - **Vitamins (+10 EVs)**: `hpup`, `protein`, `iron`, `calcium`, `zinc`, `carbos`.
   - *Gen 8+ Rule*: Vitamins can be used up to the full `MAX_STAT_EVS` (252) cap; they are no longer restricted to the legacy 100-EV ceiling.
 - **Mochis (+10 EVs)**: `healthmochi`, `musclemochi`, `resistmochi`, `geniusmochi`, `clevermochi`, `swiftmochi`.
 - **Feathers / Wings (+1 EV)**: `healthfeather`/`healthwing`, `musclefeather`/`musclewing`, `resistfeather`/`resistwing`, `geniusfeather`/`geniuswing`, `cleverfeather`/`cleverwing`, `swiftfeather`/`swiftwing`. Excellent for fine-tuning competitive spreads.
 
 ### EV Reduction & Reset
+
 - **EV-Reducing Berries (-10 EVs & +Friendship)**:
   - `pomegberry` (HP), `kelpsyberry` (Atk), `qualotberry` (Def), `hondewberry` (SpA), `grepaberry` (SpD), `tamatoberry` (Spe).
   - Reduces the given stat by 10 EVs (clamped to 0) and increases friendship by +10 up to 255.
@@ -125,6 +130,7 @@ The fuzzer (`fuzzer_ai_team_generator.ts`) uses these standard test spreads (eac
 ### Self-KO and extreme-recoil moves must be excluded from fuzzer generation
 
 Moves filtered from fuzzer movesets (preventing trivial 1-turn self-faints):
+
 - **Self-Faint**: `selfdestruct`, `explosion`, `mistyexplosion`, `healingwish`, `lunardance`, `memento`, `perishsong`, `destinybond`, `finalgambit`.
 - **Extreme Recoil (≥33% HP)**: `headsmash`, `volttackle`, `flareblitz`, `woodhammer`, `doubleedge`, `bravebird`, `takedown`.
 
@@ -135,7 +141,7 @@ Moves filtered from fuzzer movesets (preventing trivial 1-turn self-faints):
 ```mermaid
 graph TD
     A[Battle Defeat / Consumable Used] --> B[evMath.ts]
-    B --> C{applyEvGains / applyVitamin / applyBerry}
+    B --> C{"applyEvGains / applyVitamin / applyBerry"}
     C --> D[Clamp to 252 / 510 bounds]
     D --> E[pokemonFactory.ts: recalcPokemonStats]
     E --> F[statsMath.ts: calcStatsPure]
@@ -172,5 +178,3 @@ Understanding the mathematical synergy between EVs and Natures is essential for 
 2. **Multiplicative Nature Contribution**:
    - Natures apply a $\times 1.1$ ($+10\%$) or $\times 0.9$ ($-10\%$) multiplier to the **entire parenthesized stat sum** $(\text{Base} \cdot 2 + \text{IV} + \lfloor \text{EV}/4 \rfloor + 5)$.
    - Because Natures apply multiplicatively *after* adding EVs, a positive nature ($+10\%$) extracts greater absolute value when paired with maximum EV investment (252 EVs yield $+6.3$ extra stat points from the nature alone).
-
-

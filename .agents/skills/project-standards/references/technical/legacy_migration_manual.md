@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual governs the modernization of pre-Vue code into the current Poké Vicio Vue 3 + Pinia + GSAP architecture, maintaining 1:1 visual and behavioral parity.
 > **Sources of Truth**:
+>
 > - Skill: `@/vue-best-practices` (`.agents/skills/vue-best-practices/SKILL.md`)
 > - UI Standards: [`../core/ui_ux_standards.md`](../core/ui_ux_standards.md)
 > - Animation Standards: [`../battle/animation_standards.md`](../battle/animation_standards.md)
@@ -17,20 +18,26 @@
 ## 2. 🏛️ Migration Protocol (Migrator-Legacy-Vue)
 
 ### 1. Strict Visual Parity
+
 - Each migrated component must be identical to the original in terms of pixel-art, alignment, and animations.
 - "Improving" assets during migration without approval is prohibited; the goal is operational stability.
 
 ### 2. Logic Isolation
+
 - Extract logic from legacy `.ts` files into Vue 3 composables (`src/logic/` or `src/composables/`).
 - Enforce strict modularity and low complexity adhering to Fallow SSoT metrics (Golden Rule).
 
 ### 3. Regression Verification
+
 After migrating a critical module (e.g., the box system or inventory):
+
 - Compare behavior with legacy test cases if available.
 - Verify that the save state persists correctly between versions.
 
 ### 4. Architectural Parity & Animation Coordination
+
 When modernizing complex interactive screens or mini-games (e.g., Fossil Cloning, Daycare, etc.):
+
 - **Reactivity Model**: Always use Vue 3 Composition API (`<script setup>`) with strict types, avoiding legacy options-api wrappers or untyped structures.
 - **Workflow Coordination**: Visual state progressions and animations **MUST** be synchronized via GSAP timelines and promises, avoiding any mixing of standard CSS transitions or manual `setTimeout` timers to prevent race conditions during state transitions.
 

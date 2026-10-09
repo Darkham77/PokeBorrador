@@ -330,7 +330,7 @@ Para que estos minijuegos no sean piezas aisladas, sino motores integrados en el
 graph TD
     subgraph Arquitectura_Minijuegos["Flujo Técnico de Integración en Poké Vicio"]
         MINIGAME_UI[Modal Minijuego Vue 3 / GSAP] -->|Acción o Victoria| ENGINE[minigameMath.ts / evMath.ts]
-        ENGINE -->|Calcula Puntos & EVs| STORES[Stores: game, pokemon, quests]
+        ENGINE -->|"Calcula Puntos & EVs"| STORES[Stores: game, pokemon, quests]
         STORES -->|Persistencia Dual| DB[DBRouter: SQLite Local / Supabase Online]
         STORES -->|Emite Evento Tipado| BUS[GameBus: 'minigame-action', 'ev-gained']
         BUS -->|Actualiza Misiones| QUESTS_STORE[Missions Store]

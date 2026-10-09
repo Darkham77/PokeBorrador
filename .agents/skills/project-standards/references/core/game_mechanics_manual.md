@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual serves as the architectural overview and coordination standard for core gameplay mechanics, UI interaction standards, the `GameBus` event pipeline, and visual-logical synchronization in Poké Vicio.
 > **Sources of Truth & Subsystem Manuals**:
+>
 > - Battle State & Flow: [`../battle/battle_mechanics_manual.md`](../battle/battle_mechanics_manual.md)
 > - Math & Formulas: [`./game_formulas_manual.md`](./game_formulas_manual.md)
 > - UI/UX Standards: [`./ui_ux_standards.md`](./ui_ux_standards.md)
@@ -16,10 +17,12 @@
 ## 1. 🔄 Interaction & Selection Standards
 
 ### 1.1 Slot Selection and Replacement Parity
+
 - **Selector Callbacks**: When replacing or swapping active team members, the slot selector component MUST receive a callback that performs the atomic exchange of entity UIDs.
 - **Visual Feedback**: The slot exchange action triggers a visual swap animation while preserving the active state in the store.
 
 ### 1.2 Team Drag-and-Drop (DND) Reordering
+
 - **Position Indices**: During party reordering via Drag-and-Drop, display large pixelated numbers (1-6) over the target slots to indicate the final position.
 - **Tooltip Suppression**: Deactivate (`disabled`) all `PVTooltip` instances during dragging to prevent tooltips from obstructing drop targets.
 - **Silent Persistence**: Trigger an automatic silent save (`save(false)`) after each successful party reordering operation.
@@ -29,10 +32,12 @@
 ## 2. 🎨 UI & Component Hierarchy (Hybrid Retro-Modern)
 
 ### 2.1 Badge and Tag Hierarchy
+
 - **Semantic Independence**: Gender and Level badges MUST NOT be nested inside unified wrappers. Use dedicated flex containers so each badge maintains its independent borders, mixins, and styling.
 - **Type Pills**: Long type names (e.g., "FIGHTING", "ELECTRIC") must specify `width: auto` and `min-width` to prevent typography clipping inside the pill container.
 
 ### 2.2 Fog of War & Discovery States
+
 - **Night Silhouettes**: In dark or night environments, undiscovered/unseen Pokémon sprites must apply the `pokemon-silhouette` mixin with a 50% white contrast outline for optimal readability.
 - **Time Cycle Emojis**: Use standardized emojis (🌅, 🌞, 🌇, 🌙) in spawn tooltips to conserve layout space while reinforcing the retro aesthetic.
 - **Spoiler Shield**: Suppress specific active time details in tooltips for Pokémon that have not yet been registered as seen or caught in the Pokédex (`!isSeen && !isCaught`).
@@ -44,6 +49,7 @@
 All visual-logic decoupled communication between independent subsystems uses the native `gameBus` event pipeline.
 
 ### 3.1 Battle Animation Triggers
+
 Battle animations (faint, withdraw, send_out, status_hit) MUST be triggered via the `gameBus` using standardized event types:
 
 ```ts
@@ -56,6 +62,7 @@ gameBus.emit('animation', {
 ```
 
 ### 3.2 Component Safety & Zero-Timer Compliance
+
 Any asynchronous or delayed operation within a visual component MUST be driven by GSAP (`gsapSleep` or `gsap.delayedCall`) and verify component mount state before acting:
 
 ```ts

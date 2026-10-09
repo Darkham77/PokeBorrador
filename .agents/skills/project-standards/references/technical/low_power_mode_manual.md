@@ -60,4 +60,3 @@ It is crucial to distinguish **Low Power Mode** from **Fast Mode**:
    - **Trigger**: Automatic runtime state whenever a modal obscuring the screen opens in `modalStore.stack`, or when a battle opens over the world map (`battleStore.isBattleActive`).
    - **Action**: Completely unmounts heavy decorative elements on background views (such as 420 leaf nodes in `AtmosphereLeavesOverlay.vue`), suspends background card animations, and shuts down background weather processing.
    - **Foreground Isolation**: Foreground active views (such as the battle arena in `BattleArenaView.vue`) MUST NOT enter fast mode for themselves, preserving full 60 FPS visual rendering of active battle weather and combatants.
-

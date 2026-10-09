@@ -3,6 +3,7 @@
 > **Scope & Authority**: This document governs **compiler integrity, domain type enforcement, typed JSON wrappers, Java-style strict typing, zero-hiding security policies, and Fallow health governance (≥85/100)** across Poké Vicio.
 >
 > 🛑 **Domain Boundaries & Redirection**:
+>
 > - For full domain typing methodology and union derivation principles ➔ See **@/domain-type-first**.
 > - For database schemas, Valibot parsing, and SQLite/Supabase DTOs ➔ See [Database & Persistence](./database_and_persistence.md) and [Save System Manual](../technical/save_system_manual.md).
 > - For game engine states and constants ➔ See [Game Engine & State](./game_engine_and_state.md).
@@ -117,6 +118,7 @@
 ## 11. Justified Escape Hatches Format & Rules
 
 When an escape hatch or localized ignore annotation is strictly necessary, it MUST include a colon (`:`) followed by a clear, technical rationale explaining why the exemption is legitimate:
+
 - `// domain-ok: Open dynamic UI text string payload`
 - `// runtime-set: Fast O(1) membership lookup set`
 - `// singleton-ok: Global persistent database router instance`
@@ -144,4 +146,3 @@ Naked tags (e.g. `// domain-ok` without `: reason`) are flagged as critical erro
   - Milliseconds: `Temporal.Now.instant().epochMilliseconds`
   - ISO String: `Temporal.Now.instant().toString()`
 - **Prohibited APIs**: Legacy `Date.now()` and `new Date()` are deprecated across the project and flagged as lint errors.
-

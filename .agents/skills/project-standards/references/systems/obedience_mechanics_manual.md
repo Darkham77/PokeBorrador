@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual serves as the canonical Single Source of Truth (SSoT) for the **Obedience** (*Obediencia*) mechanic across all mainline Pokémon generations (Generation I through Generation IX, spin-offs *Colosseum*, *XD: Gale of Darkness*, and *Legends: Arceus/Z-A*), as well as the engine architecture blueprint for Poké Vicio.
 > **Related Systems**:
+>
 > - Gym Progression & Badges: [`gym_system_manual.md`](gym_system_manual.md)
 > - Mathematical Formulas: [`../core/game_formulas_manual.md`](../core/game_formulas_manual.md)
 > - Capture Rate Formulas & Badge Penalty ($BP$): [`capturing_manual.md`](capturing_manual.md)
@@ -15,9 +16,9 @@
 ```mermaid
 flowchart TD
     Prog[Player Progression] --> Cap[Max Obedience Cap: C]
-    Cap --> Compare{Evaluate Level: L}
-    Compare -->|L <= C| Obey[100% Obedience: Executes Move]
-    Compare -->|L > C| Check[Obedience Probability Roll]
+    Cap --> Compare{"Evaluate Level: L"}
+    Compare -->|"L <= C"| Obey[100% Obedience: Executes Move]
+    Compare -->|"L > C"| Check[Obedience Probability Roll]
     Check -->|Passes Roll| Obey
     Check -->|Fails Roll| Disobey[Disobedience Outcome]
     Disobey --> Outcome{Failure Type}
@@ -33,18 +34,18 @@ flowchart TD
 flowchart LR
     subgraph Classic["Classic Paradigm (Gen I – VIII)"]
         direction TB
-        C1[Current Pokemon Level] --> C2{Is Outsider / Traded?}
-        C2 -->|No: Insider OT| C3[100% Immune to Disobedience]
-        C2 -->|Yes: Outsider| C4{Level > Cap?}
+        C1[Current Pokemon Level] --> C2{"Is Outsider / Traded?"}
+        C2 -->|"No: Insider OT"| C3[100% Immune to Disobedience]
+        C2 -->|"Yes: Outsider"| C4{"Level > Cap?"}
         C4 -->|No| C3
         C4 -->|Yes| C5[Disobedience Checks]
     end
 
     subgraph Modern["Modern Paradigm (PLA & Gen IX)"]
         direction TB
-        M1[Met / Encounter Level] --> M2{Met Level <= Badge Cap at Catch?}
+        M1[Met / Encounter Level] --> M2{"Met Level <= Badge Cap at Catch?"}
         M2 -->|Yes| M3[100% Permanent Obedience even at Lv 100]
-        M2 -->|No: Caught Above Cap| M4[Disobeys Until Badge Earned]
+        M2 -->|"No: Caught Above Cap"| M4[Disobeys Until Badge Earned]
     end
 ```
 
@@ -66,6 +67,7 @@ flowchart LR
 The threshold of maximum obedience level scales according to regional progression milestones:
 
 ### 1. Generation I – IV (Kanto, Johto, Hoenn, Sinnoh)
+
 In Gens I–IV, the cap traditionally increased every 2 badges (or by total badge count in Sinnoh and *Let's Go*):
 
 | Progress Milestone | Obedience Level Cap ($C$) | Notes |
@@ -77,6 +79,7 @@ In Gens I–IV, the cap traditionally increased every 2 badges (or by total badg
 | **8 Badges** | **Lv 100** | Earth Badge / Rising Badge / Mind Badge / Beacon Badge (All levels obey). |
 
 ### 2. Generation V – VIII (Unova, Kalos, Galar)
+
 In Gens V–VIII, the cap scales continuously with every individual badge obtained:
 
 | Badges Acquired | Obedience Level Cap ($C$) | Typical Regional Progression |
@@ -92,6 +95,7 @@ In Gens V–VIII, the cap scales continuously with every individual badge obtain
 | **8 Badges** | **Lv 100** | Dragon / Wave / Iceberg / Dragon Gyms (All levels obey). |
 
 ### 3. Generation VII: Alola Island Challenge Stamps
+
 Alola replaces Gym Badges with Grand Trial Stamps:
 
 | Grand Trial Milestone | Obedience Level Cap ($C$) |
@@ -104,6 +108,7 @@ Alola replaces Gym Badges with Grand Trial Stamps:
 | **Pokémon League Champion** | **Lv 100** (All levels obey) |
 
 ### 4. Hisui (*Pokémon Legends: Arceus*) — Galaxy Team Ranks
+
 In Hisui, obedience scales with Galaxy Expedition Team Star Member Ranks:
 
 | Galaxy Rank | Research Points Required | Obedience Level Cap ($C$) |
@@ -118,6 +123,7 @@ In Hisui, obedience scales with Galaxy Expedition Team Star Member Ranks:
 | **Seventh Star or higher** (7★ – 10★) | $\ge 15,000\text{ pts}$ | **Lv 100** (All levels obey) |
 
 ### 5. Lumiose (*Pokémon Legends: Z-A*) — Z-A Royale Ranks
+
 In the Z-A Royale progression system:
 
 | Z-A Royale Tier | Obedience Level Cap ($C$) |
@@ -127,6 +133,7 @@ In the Z-A Royale progression system:
 | **Rank A** (Champion) | **Lv 100** (All levels obey) |
 
 ### 6. Generation IX: Paldea Gym Badges (*Scarlet & Violet*)
+
 Evaluated strictly against the Pokémon's **Met Level** ($L_{\text{met}}$):
 
 | Badges Acquired | Obedience Level Cap ($C$) | Wild Capture Penalty Applies Above |
@@ -142,6 +149,7 @@ Evaluated strictly against the Pokémon's **Met Level** ($L_{\text{met}}$):
 | **8 Badges** | **Lv 100** | Level 100 (No penalties) |
 
 ### 7. Poké Vicio Canonical Progression Matrix
+
 Poké Vicio implements the canonical Kanto progression with smooth 10-level increments:
 
 | # | Badge Name | Gym Leader | City / Location | Poké Vicio Obedience Cap ($C$) |
@@ -162,7 +170,7 @@ Poké Vicio implements the canonical Kanto progression with smooth 10-level incr
 
 When a trainer orders a move for a Pokémon whose applicable level $L$ exceeds the trainer's obedience cap $C$ ($L > C$), the combat engine executes a deterministic pseudo-random evaluation sequence.
 
-```
+```text
 Definitions:
   L = Pokémon Evaluation Level (Current level in Gen 1-8 outsider, Met Level in Gen 9 / PLA)
   C = Trainer's current obedience level cap
@@ -177,17 +185,18 @@ In Generations I through IV, the algorithm executes up to 3 sequential random ro
 
 ```mermaid
 flowchart TD
-    Start([Turn Action Ordered]) --> Check1{Check 1: Primary Obedience<br/>A < C ?}
-    Check1 -->|Yes: A < C| Obey[Passes: Executes Ordered Move]
-    Check1 -->|No: A >= C| Check2{Check 2: Move Redirection<br/>B < C ?}
-    Check2 -->|Yes: B < C| Swap[Uses Random Alternate Move<br/>Random target in Doubles]
-    Check2 -->|No: B >= C| Check3{Check 3: Behavioral Consequence<br/>Roll R3 vs Delta}
-    Check3 -->|R3 < Delta| Sleep[Falls Asleep<br/>Blocked if immune]
-    Check3 -->|Delta <= R3 < 2*Delta| Confusion[Hurts Itself in Confusion]
-    Check3 -->|R3 >= 2*Delta| Inaction[Loafs Around / Ignores Orders]
+    Start([Turn Action Ordered]) --> Check1{"Check 1: Primary Obedience<br/>A < C ?"}
+    Check1 -->|"Yes: A < C"| Obey[Passes: Executes Ordered Move]
+    Check1 -->|"No: A >= C"| Check2{"Check 2: Move Redirection<br/>B < C ?"}
+    Check2 -->|"Yes: B < C"| Swap[Uses Random Alternate Move<br/>Random target in Doubles]
+    Check2 -->|"No: B >= C"| Check3{"Check 3: Behavioral Consequence<br/>Roll R3 vs Delta"}
+    Check3 -->|"R3 < Delta"| Sleep[Falls Asleep<br/>Blocked if immune]
+    Check3 -->|"Delta <= R3 < 2*Delta"| Confusion[Hurts Itself in Confusion]
+    Check3 -->|"R3 >= 2*Delta"| Inaction[Loafs Around / Ignores Orders]
 ```
 
 #### 1. Primary Obedience Check
+
 1. Generate pseudo-random integer $R_1 \in [0, 255]$.
 2. Compute intermediate integer value:
    $$A = \left\lfloor \frac{(L + C) \times R_1}{256} \right\rfloor$$
@@ -198,7 +207,9 @@ flowchart TD
 $$\text{Probability of Obeying (Gen I–IV)}: P(\text{obey}) = \frac{C}{L + C}$$
 
 #### 2. Move Redirection Evaluation
+
 If Check 1 fails:
+
 1. Generate pseudo-random integer $R_2 \in [0, 255]$.
 2. Compute:
    $$B = \left\lfloor \frac{(L + C) \times R_2}{256} \right\rfloor$$
@@ -210,7 +221,9 @@ If Check 1 fails:
    - If $B \ge C$: Pokémon completely refuses to execute any attack.
 
 #### 3. Consequence Determination (Inaction, Sleep, or Confusion Damage)
+
 If $B \ge C$:
+
 1. Calculate level gap $\Delta = L - C$.
 2. Generate pseudo-random integer $R_3 \in [0, 255]$.
 3. Apply tiered outcome:
@@ -227,17 +240,20 @@ If $B \ge C$:
 ### Phase B: Generation V – IX Modernized Quadratic Curve
 
 Starting in Generation V (*Black & White*), Game Freak streamlined the algorithm:
+
 1. **Removed Move Redirection**: Disobedient Pokémon no longer execute alternate moves or attack teammates (preventing multi-target combat desynchronizations in Triple / Rotation / Tera Raid formats).
 2. **Steeper Disobedience Curve**: The primary obedience probability was made quadratic to heavily penalize severe level gaps.
 
 $$\text{Probability of Obeying (Gen V+)}: P(\text{obey}) \approx \left(\frac{C}{L + C}\right)^2$$
 
 #### Algorithmic Formulation
+
 1. Roll $R_1 \in [0, 255]$. If $\lfloor (L + C) \times R_1 / 256 \rfloor \ge C$, fail immediately.
 2. Roll $R_2 \in [0, 255]$. If $\lfloor (L + C) \times R_2 / 256 \rfloor \ge C$, fail.
 3. If both rolls pass, the Pokémon obeys.
 
 #### Comparison of Obedience Probabilities
+
 For a Level 100 Pokémon ($L = 100$) used with 0 Badges ($C = 10$ in Gen IV, $C = 20$ in Gen IX):
 
 | Scenario | Obedience Cap ($C$) | Pokémon Level ($L$) | Gen I–IV Formula ($P$) | Gen V–IX Formula ($P$) |
@@ -267,7 +283,9 @@ The combat log and battle UI communicate disobedience states through standardize
 | `"[POKEMON] ignored orders and kept sleeping!"` | `"[POKEMON] ignoró las órdenes y siguió durmiendo!"` | Fails *Snore* / *Sleep Talk*. | Gen VI – IX |
 
 ### Overworld Manifestations (*Let's Go* Auto-Battle)
+
 In Generation IX (*Scarlet & Violet*), disobedience extends directly to real-time overworld exploration:
+
 - When deployed in **Auto-Battle Mode** (*Let's Go feature*), a disobedient Pokémon ($L_{\text{met}} > C$) refuses to engage wild encounters.
 - It displays a **broken blue heart emoticon bubble** (`💔`) over its sprite/model, plays a refusal chirp, and retreats back to the trainer.
 
@@ -276,12 +294,15 @@ In Generation IX (*Scarlet & Violet*), disobedience extends directly to real-tim
 ## 5. 🛡️ Special Rules, Anti-Cheat, & Exempt Scenarios
 
 ### 1. The Fateful Encounter Anti-Cheat Lock (Gen III Mew & Deoxys)
+
 In *FireRed, LeafGreen, Emerald, Colosseum*, and *XD: Gale of Darkness*:
+
 - Mythical Pokémon **Mew** and **Deoxys** contain an internal binary flag: `fatefulEncounter` (*Obedience Bit*).
 - If generated via memory-editing devices (Action Replay, GameShark) without this bit active, the engine flags the creature as illegitimate.
 - **Sanction**: The Pokémon **UNCONDITIONALLY DISOBEYS** every battle command, regardless of whether the player holds all 8 Badges or is the Original Trainer. In addition, trading is locked.
 
 ### 2. Shadow Pokémon: Hyper Mode & Reverse Mode
+
 In the Orre region titles (*Colosseum* & *XD: Gale of Darkness*), Shadow Pokémon exhibit unique disobedience mechanics independent of level or badges:
 
 ```mermaid
@@ -312,6 +333,7 @@ flowchart TD
 | **Recovery Method** | Selecting the battle command **"Call"** (*Llamar*). | Selecting **"Call"** (*Llamar*) (also purifies Heart Gauge). |
 
 ### 3. Environments Exempt from Obedience Checks (100% Guaranteed Obedience)
+
 To maintain competitive integrity and prevent frustration in cooperative play, the following modes bypass obedience checks:
 
 | Exempt Environment / Feature | Behavior | Engine Rationale |
@@ -322,6 +344,7 @@ To maintain competitive integrity and prevent frustration in cooperative play, t
 | **Synchro Machine Mode (Gen IX DLC)** | **Direct Player Control** | The player directly controls the creature's locomotion and attacks. |
 
 ### 4. Special Move Interactions
+
 - **Multi-Turn Moves** (*Bide, Thrash, Outrage, Petal Dance, Rollout, Ice Ball*):
   - The obedience check is executed **ONLY ON TURN 1** (the initiation turn).
   - If the initial check passes, subsequent locked turns execute automatically without re-checking obedience.
@@ -331,7 +354,9 @@ To maintain competitive integrity and prevent frustration in cooperative play, t
   - If an overleveled Pokémon is ordered to use *Snore* or *Sleep Talk* while asleep, failing the check outputs `"[POKEMON] ignored orders and kept sleeping!"`.
 
 ### 5. Wild Capture Penalty ($BP$) & Met Level Persistence Synergy
+
 The obedience cap acts as a dual gatekeeper across both wild capturing and in-battle command execution:
+
 1. **In-Battle Capture Penalty ($BP$)**: If a target wild Pokémon's level $L_{\text{wild}}$ exceeds the trainer's current badge cap $C$ ($L_{\text{wild}} > C$), the base capture formula applies an exponential penalty:
    $$BP = 0.8^{\text{missing badges}}$$
    *(See [`capturing_manual.md`](capturing_manual.md) for the complete capture rate formula).*
@@ -445,6 +470,7 @@ export function calculateObedienceCheck(
 ```
 
 ### 3. Combat Loop Integration Points
+
 - **Pre-Move Hook**: Invoked in the battle engine worker immediately prior to executing the chosen move.
 - **PP Deduction**: If the Pokémon disobeys due to confusion, sleep, or loafing, PP is **NOT** deducted in Gen V+ rules.
 - **Showdown Bridge**: The `showdownBridge` logs disobedient behavior with full Spanish translation keys.

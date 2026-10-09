@@ -14,25 +14,33 @@ import SocialRankings from '@/components/social/SocialRankings.vue'
 const socialStore = useSocialStore()
 const { data: _socialSummary } = useSocialDataLoader()
 
+const contentRef = ref<HTMLElement | null>(null)
+
 // 'friends', 'rankings', 'search', 'requests'
 const activeTab = ref('friends') 
 
 function selectTab(tab: string) {
   if (activeTab.value === tab) return
+  if (!contentRef.value) {
+    activeTab.value = tab
+    return
+  }
   
-  gsap.to('.social-view-content', {
+  gsap.to(contentRef.value, {
     opacity: 0,
     y: 8,
     duration: VIEW_TAB_FADE_OUT_DURATION_SEC,
     ease: 'power2.inOut',
     onComplete: () => {
       activeTab.value = tab
-      gsap.to('.social-view-content', {
-        opacity: 1,
-        y: 0,
-        duration: VIEW_TAB_FADE_IN_DURATION_SEC,
-        ease: 'power2.out'
-      })
+      if (contentRef.value) {
+        gsap.to(contentRef.value, {
+          opacity: 1,
+          y: 0,
+          duration: VIEW_TAB_FADE_IN_DURATION_SEC,
+          ease: 'power2.out'
+        })
+      }
     }
   })
 }
@@ -78,7 +86,10 @@ function selectTab(tab: string) {
     </div>
 
     <!-- Content Area -->
-    <div class="social-view-content">
+    <div
+      ref="contentRef"
+      class="social-view-content"
+    >
       <SocialFriendsTab 
         v-if="activeTab === 'friends'" 
         @search-tab="selectTab('search')"

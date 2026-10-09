@@ -93,6 +93,7 @@ To ensure cross-compatibility and easy navigation within development environment
 ```
 
 Standard links will not display the media inline.
+
 - Provide a brief, descriptive caption.
 - **Artifact Sandbox**: If you are embedding a file in an artifact or markdown file and it is not already in the designated assets/artifacts folder, you **MUST** first copy it to the local media directory before referencing it.
 
@@ -117,4 +118,3 @@ When modernizing, reorganizing, or cleaning documentation (such as converting ra
 2. **Forensic Commit Comparison Protocol**:
    - Whenever refactoring or consolidating reference documents, agents **MUST** execute a forensic line-by-line comparison against previous commits (`git show HEAD:<path>`) across all affected topics.
    - A documentation refactor cannot be declared complete until verifying that zero game mechanics, thresholds, or domain parameters were inadvertently lost or truncated.
-

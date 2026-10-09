@@ -121,14 +121,18 @@ To prevent data drift and manual omissions when registering Castform in spawn ta
 ## 9. Wild Spawn Calculation and Balance Rules
 
 ### 9.1 Unified Spawn Probability Calculation
+
 To prevent desynchronization between combat generation and the UI spawn details modal, all ground encounter rates MUST be resolved using the unified `getFinalGroundRates` function. This function aggregates:
+
 - Base location rates.
 - Weather-specific multipliers (boost/block).
 - Weather visitor quotas (allocating a proportional 10% of total native weight to weather visitors).
 - Legendary probability capping.
 
 ### 9.2 Legendary Spawn Probability Cap (1%)
+
 Under all circumstances, weather conditions, time cycles, and routes, a single legendary Pokémon's final spawn probability MUST NOT exceed exactly **1%** when other species exist in the active pool.
+
 - **Dynamic Balancing Formula**: To cap a legendary's probability at 1% without altering the relative ratios of other species, calculate a dynamic weight cap:
   \[\text{cap} = \frac{\sum \text{Other Rates}}{99}\]
 - If a legendary's rate exceeds this cap, reduce it to the cap value. This guarantees the final legendary probability remains exactly \(\le 1\%\), while the remaining \(\ge 99\%\) is dynamically shared by non-legendary species.
@@ -153,9 +157,11 @@ All modifications to wild encounters, fishing weights, held item chances, and sp
 ## 11. Weather & Terrain Resolution Rules
 
 ### 11.1 Dual-Type Modifier Evaluation
+
 When evaluating weather spawn modifiers (boosts, debuffs, or blocks in `getWeatherMultiplier`), calculations MUST evaluate both the primary type (`type`) and the secondary type (`type2`). Dual-type species (such as Pidgey, which is Normal/Flying) must be subject to blocks affecting either of their types (e.g. storm blocking Flying types) to prevent invalid encounters from appearing on the map or report list.
 
 ### 11.2 Comprehensive Terrain Tags Display
+
 When presenting map terrain tags (under "Entorno" or similar details panel), avoid nesting ternaries in Vue templates which limit display to the first matching tag. Implement a computed list (e.g. `terrainTags`) to list all active environment flags (such as both Crystal Cave and Cave, or Volcano and Plains) simultaneously.
 
 ---
@@ -164,5 +170,3 @@ When presenting map terrain tags (under "Entorno" or similar details panel), avo
 
 - **Exploration Map Filtering**: Maps without wild Pokémon encounter pools across all schedules, weathers, and seasons (`hasMapEncounterSpawns(loc) === false`), or explicitly configured with `visibleInWorldMap: false` (such as the generic `stadium`), are automatically filtered out from the world exploration grid (`isMapVisibleInWorld(loc)`).
 - **Navigation Safety & Redirects**: Direct navigations or card clicks on combat arenas (`stadium`, `gym`) redirect cleanly to the gyms tab (`uiStore.activeTab = 'gyms'`). Encounter generators (`generateEncounter`, `generateGroundEncounter`) return `null` safely without attempting selection from an empty pool (`selectFromPool`).
-
-

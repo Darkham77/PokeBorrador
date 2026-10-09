@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual defines the standard authoring procedures and integrity rules for adding new Pokémon, moves, abilities, items, dialogues, missions, and assets to the Poké Vicio engine.
 > **Sources of Truth**:
+>
 > - Domain Types: `@/domain-type-first` (`.agents/skills/domain-type-first/SKILL.md`)
 > - Item System: [`../systems/item_system_manual.md`](../systems/item_system_manual.md)
 > - Asset Pipeline: [`../technical/asset_service_manual.md`](../technical/asset_service_manual.md)
@@ -40,16 +41,20 @@
 ## 2. 🐲 Adding a New Pokémon Species
 
 ### Step 1: POKEMON_DB (`src/data/pokemon/pokemonDB.ts`)
+
 Ensure that the species entry includes base stats, height, weight, catch rate, and learnsets containing only moves that exist in `MOVE_DATA`.
 
 ### Step 2: Types and Abilities
+
 - **Types**: Register primary and secondary types in `src/data/battle/types.ts`.
 - **Abilities**: Register in `src/data/battle/abilities.ts` -> `POKEMON_ABILITIES`. If the ability is new, verify mechanical behavior in the Showdown engine (`@pkmn/sim`).
 
 ### Step 3: Evolutions (`src/data/pokemon/evolutionData.ts`)
+
 Register species evolution triggers in `EVOLUTION_TABLE`, `STONE_EVOLUTIONS`, or `TRADE_EVOLUTIONS`.
 
 ### Step 4: Pokédex (`src/logic/constants/pokedexConstants.ts`)
+
 - Register the National Dex ID in `POKEMON_SPRITE_IDS`.
 - Insert in the `PDEX_ORDER` array.
 - Add TM compatibility in `TM_COMPAT` (aligned with Gen 9 standards).

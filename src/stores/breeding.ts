@@ -18,6 +18,7 @@ import type { ItemId } from '@/data/inventory/items';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon';
 import { MAX_CARRIED_EGGS, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage.ts';
 import {
   calculateNextEggTime,
   restoreWarehouseEggs,
@@ -63,9 +64,7 @@ export const useBreedingStore = defineStore('breeding', () => {
 
   function saveWarehouseEggs() {
     const userId = authStore.user?.id || 'default';
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(`daycare_warehouse_eggs_${userId}`, JSON.stringify(warehouseEggs.value));
-    }
+    safeStorage.setItem(`${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`, JSON.stringify(warehouseEggs.value));
     gameStore.state.daycareWarehouse = [...warehouseEggs.value];
     gameStore.scheduleSave();
   }

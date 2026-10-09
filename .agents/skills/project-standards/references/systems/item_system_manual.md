@@ -167,17 +167,20 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 ## 🎨 Asset Pipeline & Crafting Tier Sprite Standards
 
 All inventory and shop item sprites in `public/assets/sprites/` MUST strictly follow the 4-tier domain hierarchy mapped from `item.craftingTier`:
+
 - `crafting/tier0/`: Raw materials, stones, and primary crafting inputs (`item.craftingTier === 0`).
 - `crafting/tier1/`: Refined materials and intermediate crafting items (`item.craftingTier === 1`).
 - `crafting/tier2/`: Advanced components and complex parts (`item.craftingTier === 2`).
 - `crafting/tier3/`: Finished products, consumables, TMs, Mochis, Pokéballs, and held battle items (`item.craftingTier === 3`).
 
 ### Canonical Pipeline Commands
+
 1. **Download Missing Sprites**: `npm run assets:download:items` (`scripts/assets/download_assets.ts`).
 2. **Convert and Build Asset DB**: `npm run assets:convert` (`scripts/assets/convert_assets.ts`).
 3. **Re-tier and Organize Items**: `npm run assets:organize-tiers`.
 
 ### Strict Prohibitions
+
 - **Zero Flat Directories**: It is STRICTLY FORBIDDEN to create flat asset directories (such as `items/`) or alter `items.json` sprite paths away from `crafting/tier[0-3]/`.
 - **Zero Resolver Bypass**: `assetService.ts` resolves `ASSET_TYPES.ITEM` using the explicit `item.sprite` path (`crafting/tierX/<id>`) with fallback to `crafting/tier3/<id>`. Do not introduce ad-hoc folder overrides in the resolver.
 
@@ -190,5 +193,3 @@ To ensure data integrity and prevent visual desynchronization between the HUD an
 1. **Single Source of Truth (SSoT)**: Resource counters (especially Poké Balls and common items) MUST derive their totals dynamically from the full `inventory` state.
 2. **Forbidden Isolated State**: Relying on isolated state flags (e.g., `state.balls`) that are not automatically updated by inventory operations is strictly prohibited.
 3. **Aggregated HUD Displays**: For resources with multiple varieties (Poké Balls, Evolutionary Stones), the HUD pill displays the **aggregate sum** of all items in that category, while the associated `PVTooltip` provides the granular itemized breakdown.
-
-

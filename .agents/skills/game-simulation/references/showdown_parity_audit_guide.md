@@ -9,12 +9,14 @@
 ## 1. Absolute Prohibitions — Unrecoverable Errors
 
 ### PROHIBITION 1 — NEVER catalog a bug without a RED-failing test first
+
 - A suspected divergence is **NOT a bug** until a unit test written for it **fails RED** when run with `npm run test:unit -- <path>`.
 - The test must directly validate the **exact behavior** described in the Showdown canonical code — not a trivial assertion that passes for any input.
 - If a test passes GREEN on the first run (before any `src/` modification), the behavior is **already correctly implemented**. It is NOT a bug. Do not catalog it.
 - **NEVER** pre-catalog bugs based on suspicion and mark them GREEN "because the test passed". That is fabricating bugs.
 
 ### PROHIBITION 2 — NEVER fabricate bugs to fill a quota or mask errors with fallbacks
+
 - There is **NO minimum quota** of bugs per audit run.
 - It is **STRICTLY FORBIDDEN** to implement fallback values, default object returns, silent recovery adapters, or runtime auto-choice fallbacks when a missing property, asset, sprite, disabled move, or mapping error occurs. Intercepting choice rejections in `src/` to substitute default moves or call fallback agents is STRICTLY PROHIBITED. A missing value, coordinate, or invalid choice is a defect that MUST fail fast and loudly (`throw new Error(...)`). Adding a fallback to "make the build pass" or "make the test pass" masks bugs and is considered deliberate sabotage of system integrity.
 - If the diagnostic suite and manual comparison find **0 real divergences**, the correct and honest output is:
@@ -22,26 +24,31 @@
 - Inventing entries, splitting trivially, or cataloging already-resolved behavior to look productive is **STRICTLY FORBIDDEN** and constitutes deliberate deception.
 
 ### PROHIBITION 2b — NEVER introduce or tolerate naked `string` for finite domain values
+
 - It is **STRICTLY FORBIDDEN** to introduce or leave any field, parameter, or variable typed as `string` (or `string[]`) when its value belongs to a finite, known domain (e.g., Pokémon types, natures, weather mechanics, NPC archetypes, move categories, status effects, obtained methods).
 - Every such domain MUST have a strict TypeScript type declared as a union type or derived via `as const` + `keyof` / `(typeof ARRAY)[number]`, and used at every call site. Passing the wrong domain value MUST produce a TypeScript compile error — if it doesn't, the type is wrong and must be fixed.
 - During any audit, whenever a `string` field is found where a finite domain applies, it MUST be flagged as a type-safety defect and fixed by declaring the proper domain type, never by widening or adding `| string` to suppress errors.
 
 ### PROHIBITION 3 — NEVER overwrite `implementation_plan.md` or `task.md` with partial content
+
 - It is **STRICTLY FORBIDDEN** to call `write_to_file` with `Overwrite: true` on these files if the new content does not contain ALL previously cataloged REAL bugs (`BUG-001` onwards).
 - Before any write, read the current file in full with `view_file`.
 - A bug remains in the plan until its test passes GREEN and is explicitly marked `FIXED ✅`.
 - When adding new bugs: use append operations — NEVER replace the entire file with a partial subset.
 
 ### PROHIBITION 4 — NEVER skip updating `task.md` after each work phase
+
 - After finishing any phase (test creation, cataloging, fixes), the agent **MUST IMMEDIATELY** update `task.md`.
 - `task.md` uses: `[ ]` pending, `[/]` in progress, `[x]` completed.
 
 ### PROHIBITION 5 — NEVER truncate fuzzer battles artificially or maintain permanent cheats
+
 - Fuzzer battles MUST run in two distinct phases: (1) Cheat-assisted testing (IPB) while moves/abilities are untested, followed immediately by (2) Natural unassisted combat completion as soon as all items in the batch are certified `PASS`.
 - It is **STRICTLY FORBIDDEN** to introduce artificial `break` statements, early loop exits, or synthetic truncations when testing finishes.
 - Cheats MUST be turned off once testing completes, and the battle MUST execute turn-by-turn naturally until `battle.ended === true` to produce clean, complete choice streams for Playwright E2E browser replays.
 
 ### PROHIBITION 6 — NEVER reconstruct lost content from scratch without reading the transcript first
+
 - If content is lost, the MANDATORY recovery path is:
   `<appDataDir>/brain/<conversation-id>/.system_generated/logs/transcript.jsonl`
 
@@ -52,15 +59,17 @@
 The audit has two distinct, sequential stages:
 
 ### Stage 1 — INVESTIGATE ≥20 suspects (mandatory depth)
+
 - The agent MUST study at least **20 distinct candidate areas** through manual line-by-line comparison between `external/pokemon-showdown-code/` and `src/`. This is non-negotiable — it exists to force thorough inspection and prevent lazy single-bug reports.
 - For each candidate, articulate the suspicion in one sentence:
   > *"Showdown does X at `external/sim/field.ts#L220` but src/ appears to do Y instead at `src/logic/battle/battleMath.ts#L180`."*
 - A list of ≥20 suspects is the output of Stage 1. These are **unconfirmed** — they are hypotheses only.
 
 ### Stage 2 — CONFIRM each suspect with a test (gate to bug catalog)
+
 For each of the ≥20 suspects, write a test and run it:
 
-```
+```text
 SUSPECT (from Stage 1)
        ↓
 Add test describe block in tests/unit/battle/parity/
@@ -74,6 +83,7 @@ GREEN (test passes) ──→ Already working    → Discard. Do NOT catalog.
 > [!IMPORTANT]
 > **Domain File Placement for Parity Tests**:
 > Do NOT create isolated single-bug `.spec.ts` files. Always append tests to the appropriate domain file in `tests/unit/battle/parity/`:
+>
 > - `showdown_protocol_tokens.spec.ts` (token parsing)
 > - `showdown_volatiles_and_status.spec.ts` (status/volatiles)
 > - `showdown_field_weather_terrain.spec.ts` (field/hazards/weather)
@@ -88,6 +98,7 @@ The number of cataloged bugs = number of suspects that fail RED. This may be 0, 
 ## 3. Mandatory Source Inspection Procedure
 
 Before writing any test, the agent MUST:
+
 1. Read the **canonical Showdown behavior** in `external/pokemon-showdown-code/` for the suspected area.
 2. Read the **project implementation** in `src/` for the same area.
 3. Identify a **specific, concrete behavioral difference** — not naming, not comments, not style.
@@ -96,18 +107,21 @@ Before writing any test, the agent MUST:
 Only after step 4 may the agent write a test.
 
 ### What counts as a real divergence
+
 - A formula produces a **different numeric result** (wrong multiplier, wrong floor/ceil, missing factor).
 - A Showdown protocol token or event is **silently ignored** in `src/`.
 - A status/ability/item effect is **applied in the wrong order or missing entirely**.
 - An FSM state transition in Showdown has **no equivalent** in `src/`.
 
 ### What does NOT count as a divergence
+
 - `src/` already correctly implements the Showdown behavior (even if named differently).
 - A test passes GREEN without code changes — the feature works.
 - Code style, naming, or architectural differences that produce **identical results**.
 - Behaviors confirmed working by the diagnostic suite tool outputs.
 
 ### Writing tests that actually detect bugs
+
 - **Good parity test**: Calls the actual `src/` function under exact conditions where Showdown diverges, asserts the expected Showdown result explicitly (`expect(result).toBe(expectedShowdownValue)`), and fails RED before any fix.
 - **Bad (useless) parity test**: Asserts loose conditions (`toBeGreaterThan(0)`), calls stubs or mocks instead of real `src/` logic, checks only that a function exists, or passes GREEN before any code change.
 
@@ -138,19 +152,20 @@ If multiple instances of the same root cause appear across different files (e.g.
 graph TD
     A[Phase 1A: Run Diagnostic Suite npm run sim:audit] --> B[Phase 1B: Manual inspection until 20 suspects listed]
     B --> C[Phase 1C: Write + run test for each suspect in tests/unit/battle/parity/]
-    C --> D{Result?}
+    C --> D{"Result?"}
     D -- RED: real bug --> E[Catalog in Master Bug Table]
     D -- GREEN: already works --> F[Discard with note]
     E --> G[Phase 2: All confirmed RED bugs listed. Update task.md.]
     F --> G
     G --> H[Phase 3: Present confirmed bugs to user. Request Approval.]
-    H --> I{User Approves?}
+    H --> I{"User Approves?"}
     I -- No --> H
     I -- Yes --> J[Phase 4: Fix RED bugs in src/. Update task.md per fix.]
     J --> K[Phase 5: Re-run all tests GREEN. Generate walkthrough.md.]
 ```
 
 ### Phase Details
+
 - **Phase 1**: Run `npm run sim:audit`, inspect `external/` vs `src/` to collect ≥20 suspects, write a test for each in `tests/unit/battle/parity/`, run with `npm run test:unit -- tests/unit/battle/parity/`.
 - **Phase 2**: Catalog ONLY suspects that fail RED into the Master 1:1 Bug Table. If 0 fail RED, report 0 divergences honestly.
 - **Phase 3**: Present confirmed RED bugs to the user and **WAIT for explicit approval** before modifying any code in `src/`.
@@ -171,6 +186,7 @@ graph TD
 ## 8. Mandatory Audit Checklist
 
 Before declaring any audit task completed, verify:
+
 - [ ] Was the diagnostic suite `npm run sim:audit` run in Phase 1?
 - [ ] Were `implementation_plan.md` and `task.md` read in full with `view_file` before any modification?
 - [ ] **Stage 1**: Were at least **20 distinct candidate areas** investigated through manual line-by-line comparison between `external/` and `src/`?

@@ -125,6 +125,7 @@ JWT_SECRET=secret_server_456
 ## 5. Security & Zero Public Credential Reuse Mandate
 
 When configuring, parsing, or provisioning `.env` files:
+
 - **Zero Public Password Reuse**: The private `.env` file MUST NEVER reuse default or example passwords published in `.env.example`, `README.md`, SQL migrations, or commit logs (e.g. `AdminTestPassword2026!`, `OperadorTestPassword2026!`, `testpassword123`).
 - **Separation of Template vs Production**: `.env.example` represents an immutable public template; never alter it to store private server configurations or create Git history noise.
 - **Active Cross-Verification**: When asked to verify environment security, agents MUST programmatically compare every secret in `.env` against the Git repository to guarantee zero overlap with published data.
@@ -138,4 +139,3 @@ When generating or synchronizing official Supabase connection profiles from the 
   - `src/data/system/servers.local.json`: Machine-local active server configurations generated from `.env` (or CI environment variables) and **strictly ignored in `.gitignore`**. Silent mock fallbacks and default dummy files (`servers.defaults.json`) are strictly prohibited.
   - `src/data/system/servers.local.json.d.ts`: Ambient module declarations allowing TypeScript to compile cleanly even before `servers.local.json` is generated.
 - **Stable Typed Facade (`official_servers.ts`)**: Application code MUST import from the stable facade `official_servers.ts`. The facade loads `servers.local.json` and throws a noisy, descriptive error if no servers are configured or if the environment variables were omitted.
-

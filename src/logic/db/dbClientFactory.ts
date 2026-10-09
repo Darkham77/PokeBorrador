@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { logger } from '../utils/logger.ts';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '../utils/storage.ts';
 import { isE2EEnvironment } from '../utils/env.ts';
 import type { DBConfig, SessionMode, DBRouterOptions } from '../../types/system/database.ts';
 import type { E2eDatabaseDriver } from '../../types/system/env.d.ts';
@@ -62,10 +63,8 @@ export function createSupabaseClient(config: DBConfig): SupabaseClient {
     return createClient(url, key, {
       ...(isE2EPostgres ? {
         accessToken: async () => {
-          if (typeof localStorage !== 'undefined') {
-            const token = localStorage.getItem('pokevicio_auth_token');
-            if (token) return token;
-          }
+          const token = safeStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+          if (token) return token;
           return key;
         }
       } : {}),

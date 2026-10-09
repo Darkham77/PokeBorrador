@@ -29,12 +29,14 @@ Orchestrates the game simulation, E2E pipeline, and Showdown 1:1 parity source c
 Whenever instructed to start, resume, or continue a simulation workflow (e.g. *"continua"*, *"sigue"*, *"reanudar"*, or after a context refresh):
 
 ### 1. Physical Log Synchronization First
+
 - Locate the most recent physical progress log on disk:
   `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md` (sorted by date).
 - **Physical SSoT**: Prioritize this physical repository file over any memory state to restore execution progress, active suite status, and pending tasks.
 - Synchronize/recreate the brain's internal `simulation_progress.md` artifact from this physical file before issuing any simulation command.
 
 ### 2. Checkpoint Inspection
+
 - Read `scratch/e2e_checkpoints.json`.
 - Identify:
   - `doc.master.suiteIndex` and `doc.master.suiteName`: current master sequence position.
@@ -103,6 +105,7 @@ flowchart TD
 ```
 
 ### Detailed Step Protocols
+
 1. **Step 1: Fuzzer Execution & Regeneration** (`npm run sim:fuzzer` / `npm run sim:fuzzer:validate`):
    - Mandatory on clean runs or when battle engine logic (`src/logic/battle/`) changes.
 2. **Step 2: E2E Simulation Execution** (`npm run sim:e2e`):
@@ -132,9 +135,11 @@ flowchart TD
 Every simulation run maintains `simulation_progress.md` in the brain, mirrored to `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md`:
 
 ### Dynamic Simulation Table
+
 - Always generate via `npm run sim:e2e:table` (scans all `*.simulation.ts`, counts cases dynamically, sorts by complexity).
 
 ### Commit Ledger Mandates (Zero-Pollution)
+
 - **Starts 100% Empty (0 rows)**: When initiating a simulation pass, the Commit Ledger MUST be empty.
 - **Strictly Reserved for Active Simulation Failures**: Rows are added **IF AND ONLY IF** a simulation fails in this active run and is repaired through the 7-step cycle.
 - **Prohibition on Historical Pollution**: Backfilling, pre-populating, or copying past manual features or bugs into the Commit Ledger is **STRICTLY FORBIDDEN**.
@@ -147,6 +152,7 @@ Every simulation run maintains `simulation_progress.md` in the brain, mirrored t
 The parity audit compares canonical Pokémon Showdown source code in `external/pokemon-showdown-code/` against `src/` to detect and resolve real behavioral divergences (without fabricating false positives or using fallbacks):
 
 ### Audit Methodology
+
 - **Diagnostic Suite**: Run `npm run sim:audit` (`scripts/maintenance/audit_showdown/run_audit_suite.ts`) to scan automated violations in tokens, FSM states, boosts, and formulas.
 - **Two-Stage Mandate**:
   1. *Stage 1 (Investigation)*: Line-by-line inspection until listing ≥20 concrete suspects (*"Showdown does X but src/ does Y"*).

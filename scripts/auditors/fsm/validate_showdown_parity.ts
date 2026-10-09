@@ -21,7 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { BaseAuditor, SharedAstContext } from '@francogp/auditor';
+import { BaseAuditor, SharedAstContext, normalizePosixPath } from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -180,7 +180,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
     this.context.logStep(1, 2, `Parsing handlers in ${bridgeFiles.length} showdownBridge files...`);
 
     for (const relPath of bridgeFiles) {
-      this.recordScanned(path.relative(this.projectRoot, relPath).replace(/\\/g, '/'));
+      this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, relPath)));
       const fullPath = path.resolve(this.projectRoot, relPath);
       const code = fs.readFileSync(fullPath, 'utf-8');
 

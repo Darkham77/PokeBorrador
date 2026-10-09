@@ -2,6 +2,7 @@
 
 > **Scope & Authority**: This manual is the Single Source of Truth for capture calculations, Poké Ball multipliers, status multipliers, shake checks, Critical Captures ($CC$), and generational algorithms in Poké Vicio.
 > **Sources of Truth**:
+>
 > - Wild Encounter Logic: [`encounter_manual.md`](./encounter_manual.md)
 > - Mathematical Formulas: [`../core/game_formulas_manual.md`](../core/game_formulas_manual.md)
 > - Status Conditions: [`../battle/status_ailments_manual.md`](../battle/status_ailments_manual.md)
@@ -87,6 +88,7 @@ When $X < 255$, the engine calculates the **ball shake threshold** ($Y$):
 $$Y = \left\lfloor \frac{65536}{\left( \frac{255}{X} \right)^{0.1875}} \right\rfloor = \left\lfloor 65536 \cdot \left( \frac{X}{255} \right)^{0.75} \right\rfloor$$
 
 ### Breakout Resolution
+
 1. **Critical Capture Active**: The target performs **1 breakout roll**. A random integer $r \in [0, 65535]$ is generated.
    - If $r < Y$, capture succeeds (1 mid-air shake + 1 wobble).
 2. **Standard Capture**: The target performs **4 breakout rolls**. For each check $i \in \{1, 2, 3, 4\}$, generate $r_i \in [0, 65535]$.

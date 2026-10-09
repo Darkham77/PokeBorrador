@@ -47,14 +47,14 @@ Each Seat has an associated **Team Slot** that contains the party data for that 
 
 When executing turns and team swaps in battles coordinated by the Showdown worker/engine, the following rules MUST be strictly maintained:
 
-*   **Voluntary Switch (Mid-Battle)**: When the player switches active combatants voluntarily via UI menu, the FSM compiles a normal combat turn. Send the choice to the worker (`switch <index + 1>`) together with the NPC enemy action choice (`p2Choice`). In format-constrained battles (e.g. 3v3 PvP), mid-battle switches and bench indices MUST be resolved strictly against `getActiveCombatTeam(ctx)` via `battleTeamCoordinator.ts` rather than `gameStore.state.team` to avoid party slot desync.
-*   **Atomic Turn-End State Synchronization**: Background worker message receivers (`showdownWorkerClient.ts`) MUST NEVER trigger mid-turn state synchronization (`syncTeamsFromLastWorkerState()`). Doing so mid-stream during multi-hit move animations (e.g. Bone Rush) prematurely overwrites combatant HP with intermediate worker state, causing jarring HP heal-and-damage visual loops. State synchronization MUST execute strictly once at the end of the canonical turn in `canonicalTurnRunner.ts`.
-*   **Forced Switch (Faint Replacement)**: When the active combatant faints and the player is forced to send out a replacement, the worker is expecting ONLY the replacement choice. Send the selection command to the worker (`switch <index + 1>`) without enclosing any `p2Choice`. Failing to omit the opponent's choice on forced switches will cause the Showdown simulator to freeze waiting for non-existent actions.
-*   **Choice Loop Mid-Turn State Transitions (`ShowdownBattleEngine`)**: When resolving multi-seat choices, `ShowdownBattleEngine` captures `startTurn = battle.turn` and `startReqState = battle.requestState`. If an action submitted for the first seat immediately resolves the turn or triggers a forced switch, subsequent seat submissions in that same loop are halted to prevent feeding outdated commands to Showdown's state machine.
-*   **Mandatory Recharge Clamping**: During turns following `Blast Burn`, `Hyper Beam`, or `Giga Impact`, Showdown emits an active request with `moves: [{ id: 'recharge', move: 'Recharge' }]`. Move choices submitted during this state are clamped to `move 1` (`Recharge`) exclusively, preserving normal move selections in standard turns.
-*   **Atomic Stream Consumption (`ShowdownBattleRunner`)**: Choice streams in automated replays are consumed directly from `choicesBySeat` without transient engine instantiations. P1 `teamPreview` requests resolve to `'team 1'` without advancing choice stream indices.
-*   **Post-Switch FSM Transition Guard (`switchAction.ts`)**: When resolving any switch sequence (voluntary, forced, or replacement), if the entering Pokémon faints on entry (e.g. from *Stealth Rock*, *Spikes*, or entry poison damage: `newPoke.hp <= 0`) or if the battle ends (`activeBattle.over`), the FSM MUST NOT transition back to `WAIT_INPUT` or reset `isBattleSwitchForced = false`. The FSM MUST remain in `SWITCH_MENU` (or the defeat / termination state) with `isBattleSwitchForced = true` so the UI presents the replacement menu and does not lock up with an empty/fainted combatant.
-*   **Client Decoupling & RPC Team Generation Protocol**: Client UI and combat orchestration modules in `src/` must NEVER directly import `@pkmn/sim` or `@pkmn/randoms`. All Showdown execution is isolated to `showdown.worker.ts`. Team generation for trainers and rivals executes via asynchronous RPC messages (`requestTrainerTeam`, `requestRivalTeam` in `showdownWorkerClient.ts`). For headless test environments (Vitest/Node) without a worker runtime, test fixtures register generation handlers via `registerTeamGeneratorHandler()`.
+- **Voluntary Switch (Mid-Battle)**: When the player switches active combatants voluntarily via UI menu, the FSM compiles a normal combat turn. Send the choice to the worker (`switch <index + 1>`) together with the NPC enemy action choice (`p2Choice`). In format-constrained battles (e.g. 3v3 PvP), mid-battle switches and bench indices MUST be resolved strictly against `getActiveCombatTeam(ctx)` via `battleTeamCoordinator.ts` rather than `gameStore.state.team` to avoid party slot desync.
+- **Atomic Turn-End State Synchronization**: Background worker message receivers (`showdownWorkerClient.ts`) MUST NEVER trigger mid-turn state synchronization (`syncTeamsFromLastWorkerState()`). Doing so mid-stream during multi-hit move animations (e.g. Bone Rush) prematurely overwrites combatant HP with intermediate worker state, causing jarring HP heal-and-damage visual loops. State synchronization MUST execute strictly once at the end of the canonical turn in `canonicalTurnRunner.ts`.
+- **Forced Switch (Faint Replacement)**: When the active combatant faints and the player is forced to send out a replacement, the worker is expecting ONLY the replacement choice. Send the selection command to the worker (`switch <index + 1>`) without enclosing any `p2Choice`. Failing to omit the opponent's choice on forced switches will cause the Showdown simulator to freeze waiting for non-existent actions.
+- **Choice Loop Mid-Turn State Transitions (`ShowdownBattleEngine`)**: When resolving multi-seat choices, `ShowdownBattleEngine` captures `startTurn = battle.turn` and `startReqState = battle.requestState`. If an action submitted for the first seat immediately resolves the turn or triggers a forced switch, subsequent seat submissions in that same loop are halted to prevent feeding outdated commands to Showdown's state machine.
+- **Mandatory Recharge Clamping**: During turns following `Blast Burn`, `Hyper Beam`, or `Giga Impact`, Showdown emits an active request with `moves: [{ id: 'recharge', move: 'Recharge' }]`. Move choices submitted during this state are clamped to `move 1` (`Recharge`) exclusively, preserving normal move selections in standard turns.
+- **Atomic Stream Consumption (`ShowdownBattleRunner`)**: Choice streams in automated replays are consumed directly from `choicesBySeat` without transient engine instantiations. P1 `teamPreview` requests resolve to `'team 1'` without advancing choice stream indices.
+- **Post-Switch FSM Transition Guard (`switchAction.ts`)**: When resolving any switch sequence (voluntary, forced, or replacement), if the entering Pokémon faints on entry (e.g. from *Stealth Rock*, *Spikes*, or entry poison damage: `newPoke.hp <= 0`) or if the battle ends (`activeBattle.over`), the FSM MUST NOT transition back to `WAIT_INPUT` or reset `isBattleSwitchForced = false`. The FSM MUST remain in `SWITCH_MENU` (or the defeat / termination state) with `isBattleSwitchForced = true` so the UI presents the replacement menu and does not lock up with an empty/fainted combatant.
+- **Client Decoupling & RPC Team Generation Protocol**: Client UI and combat orchestration modules in `src/` must NEVER directly import `@pkmn/sim` or `@pkmn/randoms`. All Showdown execution is isolated to `showdown.worker.ts`. Team generation for trainers and rivals executes via asynchronous RPC messages (`requestTrainerTeam`, `requestRivalTeam` in `showdownWorkerClient.ts`). For headless test environments (Vitest/Node) without a worker runtime, test fixtures register generation handlers via `registerTeamGeneratorHandler()`.
 
 ### 5. Multi-Turn Forced & Locked Moves Lifecycle
 
@@ -98,7 +98,9 @@ Poké Vicio enforces a strict Zero Duplication policy across all 8 combat modes 
 ### 7. PvP Network Lifecycle: 2-Strike AFK Resolution & F5 Reconnection Protocol
 
 #### 2-Strike AFK Turn Resolution
+
 During live PvP matches (`isPvP: true`), each player has a 45-second turn countdown governed by `PvPTimerManager`. The timer is immune to browser tab minimization and OS background throttling by anchoring duration to `Temporal.Now.instant().epochMilliseconds`, listening to `visibilitychange` / `focus`, and ticking via `createWallClockInterval`.
+
 - **Manual Move Selection**: Committing a valid move or switch clears AFK strikes back to 0.
 - **Strike 1 (Turn Timeout)**: The player is notified with a ⏱️ warning. `determineLegalAutoPick()` inspects the player's active Showdown request. If a switch is forced, it auto-picks the first healthy bench Pokémon (`switch N`). If moves are active, it picks the first non-disabled move with available PP (`move N`). This prevents Showdown engine crashes and keeps the battle moving.
 - **Strike 2 (Double Turn Timeout)**: The player is assessed a second strike. Combat immediately ends in automatic forfeit. `livePvP._forfeit()` broadcasts `pvp_forfeit` over the Realtime channel, updates ELO, clears session storage, and invokes `battleStore.endBattle(false, false)` to cleanly transition FSM to `REWARDS_PHASE` -> `EMPTY_WAIT` with the `#exit-battle-btn` overlay displayed.
@@ -120,7 +122,9 @@ flowchart TD
 ```
 
 #### F5 In-Combat Reconnection Window (60s)
+
 When a PvP match begins, `saveActivePvPSession()` persists the match metadata (`matchId`, `isHost`, `opponentId`, `opponentName`, `isRanked`, `turnCount`, `timestamp`) into browser `sessionStorage`.
+
 - **Page Reload (F5)**: Upon reloading, `App.vue` (`initGameSession`) invokes `getActivePvPSession()`. If the session is under 60 seconds old, it calls `livePvPStore.reconnectBattle(session)`.
 - **Opponent Notification**: The reconnected player re-subscribes to `pvp-{matchId}`, sends a `pvp_reconnect` broadcast, and restarts the 60-second reconnection window countdown timer.
 - **Battle Finalization**: When combat terminates by win, defeat, or forfeit, `clearActivePvPSession()` removes the match key so subsequent page visits start cleanly at the map.
@@ -244,6 +248,7 @@ All animation triggers MUST be accessible via the `window.__VITE_DEBUG__.battle.
 ## 🩺 Status Conditions (Primary & Secondary)
 
 All non-volatile (primary) and volatile (secondary/stackable) status conditions, along with their generation-specific modifiers, chances, and behaviors, are detailed in the standard reference:
+
 - **Status Ailments & Effects**: See [Status Ailments Manual](./status_ailments_manual.md) for a comprehensive list (Sleep, Paralysis, Burn, Freeze, Poison, Confusion, etc.) and formulas.
 
 ---
@@ -272,8 +277,9 @@ To ensure strict parity with official Pokémon game mechanics, all medicines and
 
 💡 **Exceptions: Candies and Stat-Boosting Items**
 The only medicine category items that can be consumed at Full HP are those that alter other parameters instead of current health:
-   - **Rare Candy / Exp Candy**: Can be used at Full HP to level up.
-   - **Vitamins (HP Up, Protein, Iron, Calcium, Zinc, Carbos)**: Can be consumed to increase Effort Values (EVs), provided the target has not reached the limit for that specific stat or the global 510 EVs cap.
+
+- **Rare Candy / Exp Candy**: Can be used at Full HP to level up.
+- **Vitamins (HP Up, Protein, Iron, Calcium, Zinc, Carbos)**: Can be consumed to increase Effort Values (EVs), provided the target has not reached the limit for that specific stat or the global 510 EVs cap.
 
 ---
 
@@ -1303,7 +1309,7 @@ The battle engine uses a decoupled architecture where move effects are mapped to
   - `specialActions.ts`: For unique mechanics (Transform, Roar, Metronome).
 - **Source Propagation**: All action functions MUST receive and propagate the `src` and `tgt` objects to the `addLogFn` to maintain the visual link between the action and the combatant's sprite.
 - **Data Integrity (Move Sync)**: Moves in the player's team may have stale metadata. Before processing an effect, the engine MUST verify/sync the `effect` property from the `pokemonDataProvider` if it is missing or null.
-- **Battle Context (Team Access)**: Actions that force switches (e.g., _Roar_, _Whirlwind_) or involve team data MUST have access to `activeBattle.playerTeam`. This team reference is injected during battle initialization.
+- **Battle Context (Team Access)**: Actions that force switches (e.g., *Roar*, *Whirlwind*) or involve team data MUST have access to `activeBattle.playerTeam`. This team reference is injected during battle initialization.
 - **Technical Debugging Standard**:
   - **Technical Logs**: Internal dispatching details, target resolution, and technical blocks (e.g., "Stat already at -6") MUST use `console.log` or `console.warn` instead of the combat log.
   - **Game Logs**: Only "gameplay-relevant" failures (e.g., "Clear Body prevented the drop", "Type immunity") should be added to the user-facing `addLog`.
@@ -1329,7 +1335,7 @@ When a Pokémon successfully flees or switches via Teleport:
 
 - **Flee Anim Safety**: When a Pokémon successfully flees (fled state is active), the standard faint/exit animation (`handleFaintAnim`) MUST NOT be executed for any surviving combatants during battle resolution, as the escape action already runs its own exit transition.
 
-_Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and closes the modal, returning the player to the map. In wild battles, if the player chooses to run, the system must evaluate the escape chance based on the current generation formulas._
+*Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and closes the modal, returning the player to the map. In wild battles, if the player chooses to run, the system must evaluate the escape chance based on the current generation formulas.*
 
 ## 📈 Level Up & Move Learning
 
@@ -1657,6 +1663,7 @@ gsap.delayedCall(delayInSeconds, () => {
 ## 🔬 QA Manual Verification & Step-by-Step Testing
 
 For a complete step-by-step reproduction guide and verification matrix covering all forced switch variants, flee & teleport mechanics, attack VFX, switch workflows, faint sequences, and catch flows, consult:
+
 - **[Manual Testing Guide (Battle Animations)](../qa/manual_testing_battle_animations.md)**
 
 ---
@@ -1666,6 +1673,7 @@ For a complete step-by-step reproduction guide and verification matrix covering 
 To guarantee competitive integrity and prevent griefing or stalled battles, all live PvP matches follow a strict 45-second turn timer, a 2-strike AFK forfeit protocol, and a 60-second in-combat F5 reconnection window.
 
 ### 1. 45s Turn Timer & 2-Strike Protocol
+
 1. **Turn Clock & Presentation Isolation**: Managed by `PvPTimerManager` (`src/logic/pvp/pvpTimerHelper.ts`). Ticks down from 45 seconds during interactive player input states (`choosing`, `faint_switch`). The clock MUST NOT count down during trainer entrance or dialogue animations; it starts strictly upon completion of the intro sequence when the battle FSM transitions to `ACTIVE_BATTLE` (`WAIT_INPUT`).
 2. **Strike 1 (Warning & Auto-Pick)**: If the 45s window expires:
    - Increments player AFK strikes (`afkStrikes = 1`).
@@ -1678,6 +1686,7 @@ To guarantee competitive integrity and prevent griefing or stalled battles, all 
    - Ends combat in `battleStore`, gracefully transitioning the Showdown FSM to `REWARDS_PHASE` -> `EMPTY_WAIT` and returning the player to the map without UI locks.
 
 ### 2. In-Combat Reconnection (F5 Refresh)
+
 1. **Session Persistence**: On battle start, active match metadata (`matchId`, `isHost`, `isRanked`, `opponentId`, `opponentName`, `turnCount`) is saved to `sessionStorage` (`pvp_active_match`).
 2. **Reconnection Window**: On page reload (F5), `App.vue` (`initGameSession`) detects the active session and calls `livePvPStore.reconnectBattle`.
 3. **Channel Re-subscription & Broadcast**:
@@ -1721,6 +1730,3 @@ sequenceDiagram
     P1->>P1: Stop reconnect timer, resume active match
     end
 ```
-
-
-

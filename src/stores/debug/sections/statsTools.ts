@@ -2,6 +2,7 @@ import type { DebugSystem } from '@/types/system/debug.ts'
 import { GYM_IDS, isGymId, requireGymId, type GymId } from '@/data/world/gyms'
 
 import { logger } from '@/logic/utils/logger'
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useProfileStore } from '@/stores/player/profile'
@@ -309,13 +310,13 @@ export function registerStatsTools(debug: DebugSystem) {
       profile.profileData.last_renamed_at = undefined
       profile.updateProfile({ last_renamed_at: undefined })
 
-      const localUserStr = localStorage.getItem('pokevicio_local_user')
+      const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER)
       if (localUserStr) {
         try {
           const lu = JSON.parse(localUserStr) as { user_metadata?: Record<string, unknown> }
           if (lu.user_metadata) {
             delete lu.user_metadata.last_renamed_at
-            localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
+            safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(lu))
           }
         } catch (_e: unknown) {
           logger.warn('Failed to clean last_renamed_at from local user', _e);

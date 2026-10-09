@@ -116,6 +116,7 @@ const beforeEnter = (el: Element) => {
 }
 
 const enter = (el: Element, done: () => void) => {
+  // layout-ok: Acordeon expand/collapse requiere animacion de altura en transicion de Vue SFC
   gsap.fromTo(el, 
     { height: 0, opacity: 0 },
     { 
@@ -132,6 +133,7 @@ const enter = (el: Element, done: () => void) => {
 }
 
 const leave = (el: Element, done: () => void) => {
+  // layout-ok: Acordeon expand/collapse requiere animacion de altura en transicion de Vue SFC
   gsap.to(el, { 
     height: 0, 
     opacity: 0, 

@@ -16,7 +16,7 @@
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath, parseVueSfc } from '@francogp/auditor';
 
 export type AssetUsageRuleId =
   | 'asset-hardcoded-path-template'
@@ -104,13 +104,13 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
 
     for (const file of vueFiles) {
       this.scannedVueFiles++;
-      const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      const relFile = normalizePosixPath(path.relative(this.projectRoot, file));
       this.recordScanned(relFile);
       const content = await fs.readFile(file, 'utf-8');
 
-      const templateMatch = content.match(/<template[\s\S]*<\/template>/);
-      if (!templateMatch) continue;
-      const template = templateMatch[0];
+      const sfc = parseVueSfc(content);
+      if (!sfc.template) continue;
+      const template = sfc.template.content;
 
       const staticSrcRegex = /(?:<img|<source|<video)[^>]*\s+src=["']\/(?:assets|sprites|public)\/[^"']+["']/gi;
       let match: RegExpExecArray | null;
@@ -156,7 +156,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
     const styleFiles = this.context.collectFiles(styleDirs, new Set(['.scss', '.css']));
 
     for (const file of styleFiles) {
-      const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      const relFile = normalizePosixPath(path.relative(this.projectRoot, file));
       this.recordScanned(relFile);
       const content = await fs.readFile(file, 'utf-8');
       const lines = content.split('\n');
@@ -190,7 +190,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       if (EXEMPT_LOGIC_FILES.has(filename)) continue;
 
       this.scannedLogicFiles++;
-      const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      const relFile = normalizePosixPath(path.relative(this.projectRoot, file));
       this.recordScanned(relFile);
       const content = await fs.readFile(file, 'utf-8');
       const lines = content.split('\n');
@@ -225,7 +225,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       if (EXEMPT_DATA_FILES.has(filename)) continue;
 
       this.scannedDataFiles++;
-      const relFile = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+      const relFile = normalizePosixPath(path.relative(this.projectRoot, file));
       this.recordScanned(relFile);
       const content = await fs.readFile(file, 'utf-8');
 

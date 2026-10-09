@@ -3,6 +3,7 @@
 > **Scope & Authority**: This document governs **DBRouter online/offline context isolation, the Save Shield (0-Pokémon protection), prohibition on remote DB updates, static SQL migrations, and test fixture immutability** across Poké Vicio.
 >
 > 🛑 **Domain Boundaries & Redirection**:
+>
 > - For DBRouter query proxy architecture and Supabase RPC emulations ➔ See [DBRouter Manual](../technical/dbrouter_manual.md).
 > - For save data schemas, encryption, and Valibot validation ➔ See [Save System Manual](../technical/save_system_manual.md).
 > - For in-flight active combat reload (F5) and minigame exclusion ➔ See [Battle Persistence & Anti-Cheat Manual](../battle/battle_persistence_and_anti_cheat_manual.md).
@@ -69,6 +70,7 @@
 ## 10. PostgreSQL JSONB Unwrapping & Double-Encoding Protection Mandate
 
 - **Safe JSONB String Unwrapping**: When inspecting or updating `game_saves.save_data` in PostgreSQL PL/pgSQL migrations, scripts MUST NEVER assume `save_data` is always stored as a native object. Because legacy clients or stringified payloads may store JSON as a serialized string scalar within the `JSONB` column (`jsonb_typeof(save_data) = 'string'`), all migration loops MUST include safe unwrap logic:
+
   ```sql
   IF jsonb_typeof(v_save_data) = 'string' THEN
     BEGIN
@@ -78,6 +80,7 @@
     END;
   END IF;
   ```
+
 - **Normalization on Save**: When saving back with `UPDATE public.game_saves SET save_data = v_save_data, last_save_id = gen_random_uuid()`, the column is permanently normalized to a true JSONB object.
 
 ## 11. Production Web Bundle & DB Update Deployment Synchronization
@@ -168,4 +171,3 @@
 
 - **Mandatory RLS Policies for Mutating Operations**: Whenever Row Level Security (RLS) is enabled on any table (such as `war_dominance`), all mutations performed by authenticated game clients (`INSERT`, `UPDATE`, `UPSERT`) MUST have explicit RLS policies granted to the `authenticated` role (`WITH CHECK (true)` / `USING (true)`). A table with only `SELECT` policies will reject client-side mutations with HTTP 403 Forbidden.
 - **Prohibition on Tautological Persistence Mocks**: In unit and integration test suites, agents MUST NEVER mock out database mutations with dummy resolved values (`upsert: vi.fn().mockResolvedValue({ error: null })`) that conceal missing RLS policies or schema mismatches. Persistence contracts must be certified against genuine schema queries or static schema validators.
-

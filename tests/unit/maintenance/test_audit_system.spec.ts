@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   discoverAuditors,
   loadAuditConfig,
-  AUDIT_FAMILIES,
+  BUILTIN_AUDIT_FAMILIES,
   getActiveFamilies,
   FAMILY_METADATA,
   type StandardAuditResult,
@@ -26,9 +26,9 @@ import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
 import { ABILITY_TRANSLATIONS_ES } from '../../../src/data/battle/abilities.ts';
 
 describe('Audit System & Dynamic Auto-Discovery Engine', () => {
-  it('should have parity between AUDIT_FAMILIES and FAMILY_METADATA', () => {
-    expect(AUDIT_FAMILIES.length).toBeGreaterThan(0);
-    for (const family of AUDIT_FAMILIES) {
+  it('should have parity between BUILTIN_AUDIT_FAMILIES and FAMILY_METADATA', () => {
+    expect(BUILTIN_AUDIT_FAMILIES.length).toBeGreaterThan(0);
+    for (const family of BUILTIN_AUDIT_FAMILIES) {
       const meta = FAMILY_METADATA[family]!;
       expect(meta).toBeDefined();
       expect(meta.key).toBe(family);

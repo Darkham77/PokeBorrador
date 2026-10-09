@@ -31,6 +31,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 ## 🏛️ Core Architectural & Quality Mandates
 
 ### 1. Hybrid Retro-Modern Identity
+
 - **Visual Design**: Blends modern UI shells (premium gradients, relief borders, shining accents) with a retro pixel art heart (sharp rendering, pixelated fonts and game sprites).
 - **GSAP Exclusive Mandate**: All UI and battle animations MUST be implemented using GSAP. Manual CSS `@keyframes` or JS timers (`setTimeout`/`setInterval`) for animation flow are strictly forbidden.
 - **Mandatory GSAP Migration over Deletion Mandate (Never Delete, Always Migrate)**: Whenever any auditor (`validate_component_styles.ts`, `audit_project.ts`, Fallow, or style linters) flags manual CSS transitions (`transition: ...`) or `@keyframes` violating the GSAP mandate, agents **MUST NEVER** simply delete or strip the animation rules to silence the warning, leaving UI elements static and lifeless. Agents **MUST ACTIVELY MIGRATE** the animation to GSAP (`v-gsap-hover`, `useGsapTransition`, `gsap.to()`, `gsap.from()`, `gsap.timeline()`, Vue `<Transition :css="false" @enter="..." @leave="...">`, or GSAP composables) preserving 1:1 visual motion, easing, duration, and user delight. Auditor warnings highlight non-compliant *technology choices* (e.g. CSS keyframes), NEVER an instruction to remove the visual feature itself. The mandatory goal of audit remediation is architectural evolution with 100% visual parity.
@@ -39,6 +40,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **GBA Font Spanish Capitalization Constraint**: The primary pixel font lacks uppercase glyphs for 'Ñ' and accented vowels. Any uppercase conversion in the UI (e.g. move names) must preserve or convert these characters to their lowercase equivalents (replacing 'Ñ' with 'ñ') to avoid rendering artifacts.
 
 ### 2. Code Modularity & Quality (Fallow SSoT Governance)
+
 - **Code Quality & Modularity via Fallow SSoT**: Modularity and file health are governed strictly and exclusively by Fallow metrics, completely replacing arbitrary raw file line limits (such as 500 or 1000 lines). Quality is measured via Fallow's native intelligence: Maintainability Index (`maintainability_index`), cognitive and cyclomatic complexity thresholds, function unit size risk bins (1–15 low, 16–30 medium, 31–60 high, >60 very high risk triggering health deductions and `large_functions` reports), dead code elimination, and multi-signal refactoring targets (`--targets`). A minimum project health score of **85/100** is mandatory (`fallow health --score`). Fallow also enforces a 5 MB file size boundary (`--max-file-size 5` skips oversized files to prevent OOM).
 - **Proactive Dead Code & Legacy File Elimination**: Whenever dead code analysis or auditors report orphan or unused files, agents MUST investigate each case individually. If confirmed to be obsolete legacy code or superseded prototypes, delete the files and remove dead exports completely from the codebase instead of retaining dead weight or applying broad ignore filters.
 - **Absolute Prohibition on Magic Numbers & Value-Hardcoding**: Inline numeric literals directly inside business logic, UI components, workers, or tests are strictly forbidden. All numbers MUST be declared as descriptive `readonly` named constants or `as const` config objects. Shared constants used in multiple files MUST be exported from a central constants module. Constant identifiers MUST NOT include their numeric values (e.g. `ARCHAEOLOGY_CAVE_BASE_WEIGHT` is required, `ARCHAEOLOGY_CAVE_BASE_WEIGHT_10` is strictly forbidden). String literals containing values, fractions, or animation syntax (e.g. `"random(-10, 10)"`, `"1/16 HP"`) are string literals and do not require any suppression comments.
@@ -48,10 +50,12 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Mandatory Typed Domain Wrappers for JSON Files**: Directly importing raw `.json` files containing domain entities (items, species, moves, abilities, sets) is strictly forbidden. Every `.json` data file MUST be wrapped by a co-located TypeScript module exporting constants bounded by strict TypeScript domain union types (`ItemId`, `PokemonSpeciesId`, `AbilityId`, `PokemonMoveId`).
 
 ### 3. Architectural Reuse, Polymorphism & 4-Seat Compatibility
+
 - **Zero-Duplication & Inheritance Mandate**: Duplicating logic, structures, components, or control flows anywhere in the codebase is strictly forbidden. Refactor to extract common base classes, parameterized composables, or generic extensible components before writing new code.
 - **Mandatory 4-Seat Extensible Harness & 1v1 Active Battle Architecture**: Battle engine types, worker interfaces, state schemas, and harness adapters MUST be strictly designed and extensible to support up to 4 battle seats (`p1`–`p4`, 2vs2 double battles) when activated. The active gameplay battle orchestrator, UI HUDs, and heuristic AI execute the canonical 1v1 mode (`p1` vs `p2`), reserving `p3`/`p4` harness slots for multi-combatant expansion without duplicating core combat loops.
 
 ### 4. TypeScript Integrity & Zero-Ignore Policy
+
 - **Zero-Ignore & Zero-Any**: `@ts-ignore`, `@ts-nocheck`, and `any` are strictly forbidden across the entire repository (including Web Workers and E2E simulation files).
 - **Mandatory Domain-Type-First Governance**: Every data type, domain constant, schema, DTO, or boundary contract MUST follow `@/domain-type-first`. Naked `string` declarations for finite domains, open index signatures (`[key: string]: unknown`), wildcard unions (`| string`), open sets/maps (`new Set<string>()`/`new Map()`), and inline type casts (`as Type`, `as any`) are strictly forbidden.
 - **Absolute Prohibition on `Set`/`Map` for Domain Types**: `new Set<string>()` and `new Map()` are mutable runtime data structures, NOT type definitions. Finite domains MUST use `as const` arrays + `(typeof ARRAY)[number]` for typing, and a derived typed `ReadonlySet<T>` with `.has(val)` for constant-time $O(1)$ runtime validation (linear searches like `.includes()` are strictly forbidden in accordance with the O(1) Mandate).
@@ -59,6 +63,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **O(1) Data Structures Priority Mandate**: Prioritize $O(1)$ constant-time data structures (`Record<DomainId, T>`, `ReadonlySet<DomainId>`, `computed<Map<DomainId, ...>>`) over linear $O(N)$ searches across all static catalogs (`src/data/`), Pinia stores (`src/stores/`), and battle engine logic (`src/logic/`). Zero-allocation pure helpers MUST replace deep JSON serialization in hot simulation paths.
 
 ### 5. Event-Driven Simulation Sync & Zero-Timer Policy
+
 - **Event-Driven Architecture Coordinated with GSAP Mandate**: Application logic, UI transitions, modal lifecycles, and component readiness MUST be 100% event-driven and strictly coordinated with GSAP animations. When visual elements enter, transition, or settle, their readiness for user or simulator interaction MUST be signaled through typed CustomEvents (`GAME_UI_EVENTS`) dispatched directly from GSAP timeline/tween `onComplete` callbacks or Vue reactive settling boundaries. Simulators must never guess when a UI element is interactive: they arm a listener beforehand and react cleanly to the event.
 - **Battle Modal Exclusivity**: Before opening the battle arena/modal, the battle-entry flow MUST close every currently open modal that is not part of the battle flow. The close must complete before the arena opens, leaving the battle as the only active modal layer. This releases obsolete controls, prevents stale overlays from intercepting pointer input, and keeps all player and simulator interactions on the visible official UI.
 - **Zero-Timer & Zero-Timeout-Inflation Mandate**: `setTimeout`, `setInterval`, numeric timers, or race timeouts are strictly forbidden in application and game logic. Timers are ONLY permitted in utility scripts (`node:timers/promises`) or in E2E tests as a maximum fail-safe cap (`MAX_PER_ACTION_TIMEOUT_MS = 10000`) to terminate stuck test runs. Inflating timeouts (e.g. to 20s or 35s) or adding arbitrary sleeps to "wait for the UI" is strictly prohibited: if an interaction fails within 10s, it is guaranteed to be an uncoordinated asynchronous state/animation defect that MUST be fixed by emitting and awaiting proper GSAP/UI events.
@@ -66,6 +71,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Passive UI Driver**: A simulator is never an alternate state machine. It may inspect read-only diagnostics for assertions, but it must not infer readiness from low-level state, force a transition, or compensate for a missed event. After an event, it uses only the visible official control that a player would use.
 
 ### 6. Zero-Tolerance Turn Failure, 3-Tier Bug Fixing Protocol & Anti-Hasty-Patch Mandate
+
 - **Mandatory 3-Tier Bug Fixing Protocol**: Whenever ANY bug, failure, or behavioral inconsistency occurs across the repository, the agent MUST apply the full 3-tier protocol:
   - **Tier 1 (Isolated Unit Test - RED-to-GREEN)**: The agent **MUST FIRST** create an isolated, self-contained unit test in `tests/node/` (or `tests/unit/`) reproducing the exact failure deterministically in **RED** before touching `src/`. The test MUST **extract and inline the failing case data** (or store it in a static fixture file under `tests/fixtures/battle/`) so regenerating the fuzzer or external databases never breaks the unit test. The extracted turn-by-turn choice streams (`step.p1Choice`, `step.p2Choice`), `seed`, and history MUST be executed sequentially to reproduce in RED, and verify empirical repair in GREEN once `src/` is fixed. If the bug touches database queries, schemas, migrations, or storage persistence, the unit test MUST execute and verify RED-to-GREEN across **ALL active database engines** (e.g. SQLite and PostgreSQL via `describeWithDatabase`).
   - **Tier 2 (Integrity & Integration Test)**: Create or update an integration/integrity test in `tests/integration/` or `tests/node/` verifying cross-module contracts, schema validations, FSM state transitions, store roundtrips, and `@pkmn/sim` parity to ensure that changes do not create boundary desynchronizations. For database-related logic, integrity tests MUST assert identical schema structures, constraint enforcement, and query behavior across both SQLite and PostgreSQL.
@@ -81,6 +87,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Prohibition on Hasty Patches & Fallbacks**: Inventing hasty fallbacks (e.g. returning `'default'`, fallback moves, or mock objects) or swallowing errors (`.catch(() => true)`) to force tests or simulations to pass is strictly forbidden. Root causes MUST be diagnosed and fixed in `src/`.
 
 ### 7. Database Isolation & Persistence Safety
+
 - **Context Isolation (DBRouter)**: Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts via `DBRouter`. Run `npm run auditor:sql-migrations` before database commits.
 - **Multi-Engine Behavioral Parity & Dual-Database Test Coverage Mandate**: In architectures supporting multiple database engines (e.g. SQLite for offline/in-memory and PostgreSQL for online/Supabase), migrations, queries, constraints, error handling, and business functionality MUST behave 100% identically across all engines if that is the project's architectural intent. Whenever fixing a bug or adding features touching database logic, tests MUST execute and pass against both SQLite and PostgreSQL engines (using `describeWithDatabase` or dual-driver Playwright runs).
 - **Zero-Pokemon Save Shield**: Saving game state (to IndexedDB, LocalStorage, OPFS, or Supabase) is strictly forbidden if the team and box contain 0 Pokémon OR if `starterChosen` is `false`. Abort save operations immediately if met.
@@ -88,6 +95,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Simulator & Persistence Parity (Status Format)**: Status clearance/assignment across the entire application—including Showdown simulator, Pinia stores, and persistent saves—MUST use `''` (empty string) to denote no status (assigning `null` crashes the simulator and breaks serialization schemas). Status is strictly `PokemonStatusId | ''`, NEVER `null`.
 
 ### 8. Git Safety, Workflow & Security
+
 - **Rollback Confirmation Protocol**: Before executing destructive Git operations (`git reset --hard`, `git checkout .`, `git clean`), the agent MUST explicitly request user confirmation, disclosing the exact commands.
 - **Protection of Uncommitted Files**: Before running bulk modification scripts on uncommitted files, create temporary backups inside `scratch/`.
 - **Scratch Directory Mandate**: Temporary reports, text summaries, and debug outputs MUST be stored exclusively in `scratch/`.
@@ -95,6 +103,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Strict Zero-Hiding Security Mandate**: Suppressing or hiding security vulnerabilities (CWE path traversals, SSRF risks) using ignore files (`.fallowrc.json`), inline comments (`// fallow-ignore`), or exclusions is strictly forbidden. Every security finding MUST be resolved at its source via path sanitization and boundary checks.
 
 ### 9. Asset Pipeline, Crafting Tiers & CLI Safety Mandate
+
 - **Mandatory Centralized Asset Management Mandate (`getAssetUrl`)**: All visual assets across the entire project (sprites, trainers, items, maps, banners, badges, battle backgrounds, UI icons, ranked medals) MUST be resolved strictly and exclusively through the centralized asset service (`getAssetUrl(ASSET_TYPES.<CATEGORY>, id, options)`) from `@/logic/services/assetService`. Directly hardcoding asset path strings (`/assets/...`, `/sprites/...`, or relative asset paths) in Vue component templates, styles, Pinia stores, or static configuration files (`src/data/`) is STRICTLY FORBIDDEN. Static databases must only store canonical domain IDs; path resolution is strictly the responsibility of `assetService`. Detailed asset pipeline commands and sprite organization are governed in [Asset Service Manual](./references/technical/asset_service_manual.md).
 - **Mandatory Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) mapped from `item.craftingTier`. Detailed asset pipeline commands and sprite organization are governed in [Asset Service Manual](./references/technical/asset_service_manual.md).
 - **Mandatory Artwork Standards (Species Whitelist, Spanish Typography & Zero Hardcoded Dates)**: Any artwork, event banners, tournament illustrations, or promotional graphics generated or registered for the game MUST strictly adhere to three unified mandates:
@@ -124,6 +133,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 ## 🧭 Navigation Hub, Documentation Taxonomy & Anti-Junk-Drawer Policy
 
 ### 📚 7-Tier Documentation Taxonomy
+
 To prevent clutter, confusion, and document degradation, documentation in `references/` is strictly divided into 7 distinct tiers:
 
 1. **`references/rules/` (Developer & Engine Governance ONLY)**: Invariable architectural laws, coding constraints, and low-level engine integration rules (Showdown worker interface, 4-seat generalization, zero-timers, Zero-Any TypeScript, Git safety, Save Shield). 🛑 **NEVER put gameplay feature rules, drop tables, or daycare/egg mechanics here.**
@@ -176,6 +186,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 ### 📜 Master References Index
 
 #### 1. Specialized Agent Rule Modules (`references/rules/`)
+
 - [All Rules Index](./references/rules/README.md)
 - [TypeScript & Data Integrity](./references/rules/typescript_conventions.md)
 - [Testing & Simulations](./references/rules/testing_and_simulations.md)
@@ -184,6 +195,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [Game Engine & State](./references/rules/game_engine_and_state.md)
 
 #### 2. Technical, Infrastructure & QA Manuals (`references/technical/`, `qa/`, `content/`)
+
 - **@/domain-type-first** (bundled in `@francogp/auditor`)
 - [Browser Testing Manual](./references/qa/browser_testing_manual.md)
 - [Battle Animations QA Manual](./references/qa/manual_testing_battle_animations.md)
@@ -205,6 +217,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [Content Creation Manual](./references/content/content_creation_manual.md)
 
 #### 3. Battle, Core & Gameplay Systems Manuals (`references/battle/`, `core/`, `systems/`)
+
 - [Battle Mechanics Manual](./references/battle/battle_mechanics_manual.md)
 - [Battle AI & Heuristic Standards](./references/battle/battle_ai_standards.md)
 - [Battle Persistence & Anti-Cheat Manual](./references/battle/battle_persistence_and_anti_cheat_manual.md)

@@ -9,6 +9,7 @@
 ## 1. Complete NPM Script Reference by Execution Layer
 
 ### Layer 0: Fuzzers & Headless Replayers
+
 | Script | Command | Purpose |
 |---|---|---|
 | `sim:fuzzer` | `npm run sim:fuzzer` | Master runner: executes all domain fuzzers, regenerates `fuzzer_certified_cases.json` |
@@ -26,12 +27,14 @@
 | `sim:audit` | `npm run sim:audit` | Showdown 1:1 parity diagnostic scanner across engine & FSM |
 
 ### Layers 1 & 2: Unit & Parity Tests
+
 | Script | Command | Purpose |
 |---|---|---|
 | `test:node` | `npm run test:node` | All `tests/node/**/*.test.ts` via native `node:test` (100% green required) |
 | `test` | `npm run test` | Full Vitest test suite (`unit` + `node` workspace projects) |
 
 ### Layer 3: Playwright E2E Simulations
+
 | Script | Command | Purpose |
 |---|---|---|
 | `sim:e2e` | `npm run sim:e2e` | Dynamic sequential execution across all 58+ suites (dual driver SQLite + Postgres, halts on 1st error) |
@@ -64,6 +67,7 @@
 The master runner `scripts/e2e/run_sequential_simulations.ts` accepts clean `key=value` parameters without `--`:
 
 ### Parameters Reference
+
 - `filter=<suite_name>`: Filters execution to a single suite (or pattern) while preserving canonical global progress.
 - `from=<n|name>`: Resumes sequential execution from a specific suite index (e.g. `from=24`) or suite file basename (e.g. `from=save_shield_restrictions`).
 - `clean=true` / `reset=true`:
@@ -74,6 +78,7 @@ The master runner `scripts/e2e/run_sequential_simulations.ts` accepts clean `key
 ### Examples by Operating System
 
 #### POSIX / Linux / macOS (Terminal)
+
 ```bash
 # 1. Full Dual-Driver Certification from Scratch:
 npm run sim:e2e clean=true
@@ -93,6 +98,7 @@ TEST_CASE_ID="case-47212c07bc5d" npm run sim:fuzzer:trace
 ```
 
 #### Windows (PowerShell)
+
 ```powershell
 # 1. Full Dual-Driver Certification from Scratch:
 npm run sim:e2e clean=true
@@ -116,6 +122,7 @@ $env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace
 ## 3. Filtering Individual Test Cases & Performance Golden Rules
 
 ### Case Filter Variables
+
 ```bash
 # For Playwright E2E Browser Simulation:
 TEST_CASE=<case-id>                 # Run only this case (or comma-separated list)
@@ -131,8 +138,11 @@ TEST_CASE_ID=<case-id>              # Run headless replayer for specific case(s)
 > **PROHIBITION OF -g / --grep IN PLAYWRIGHT:**
 > It is strictly forbidden to use Playwright's `-g` or `--grep` flag to filter individual test cases (e.g. `npx playwright test -g "batch #10"`). Using `-g` can spawn misconfigured parallel worker threads without properly initializing batch state variables. Always use the project's official environment variables (`TEST_BATCH`, `TEST_CASE_ID`).
 
+---
+
 > [!IMPORTANT]
 > **GOLDEN RULE OF TESTING PERFORMANCE:**
+>
 > 1. **ALWAYS PREFER HEADLESS REPLAY FIRST:** When diagnosing combat logic, HP parity, FSM transitions, or choice streams, **NEVER** launch the full browser initially (`npm run sim:e2e:combat`). Always use the headless trace replayer (`TEST_CASE_ID=<id> npm run sim:fuzzer:trace`), which finishes in 1–2 seconds in pure Node.js.
 > 2. **MULTI-CASE FILTERING:** Execute multiple failing cases simultaneously by separating them with commas:
 >    `TEST_CASE_ID="case-47212c07bc5d,case-006487488a68" npm run sim:fuzzer:trace`
@@ -148,12 +158,14 @@ To analyze multiple E2E battle bugs simultaneously and detect common root causes
 # Windows (PowerShell):
 $env:CONTINUE_ON_ERROR="true"; npm run sim:e2e:combat
 ```
+
 ```bash
 # POSIX / Linux / macOS:
 CONTINUE_ON_ERROR="true" npm run sim:e2e:combat
 ```
 
 When `CONTINUE_ON_ERROR=true` is active:
+
 1. Playwright tests intercept FSM/HP/parity errors, write them to `scripts/e2e/results/e2e_failures/`, and exit the test block cleanly.
 2. This bypasses Playwright's `maxFailures: 1` setting, allowing all cases in the suite to execute.
 3. At completion, all failure data is consolidated into `scripts/e2e/results/e2e_simulation_failures.json` and a readable summary at `scripts/e2e/results/failed_e2e_cases.txt`.
@@ -165,16 +177,20 @@ When `CONTINUE_ON_ERROR=true` is active:
 When running simulations requiring PostgreSQL (`driver=postgres` or `driver=dual`), the test harness and agent **MUST NEVER** abort or ask the user to manually start Docker if the daemon is inactive. The agent and scripts MUST proactively start Docker automatically:
 
 - **Windows (PowerShell)**:
+
   ```powershell
   # Launch Docker Desktop application:
   Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
   # Or start the Windows service:
   Start-Service com.docker.service -ErrorAction SilentlyContinue
   ```
+
 - **Linux / macOS**:
+
   ```bash
   systemctl --user start docker || sudo systemctl start docker || open -a Docker
   ```
+
 - Poll `docker info` until the daemon responds, and verify container readiness before proceeding with PostgreSQL runs.
 
 ---
@@ -182,29 +198,35 @@ When running simulations requiring PostgreSQL (`driver=postgres` or `driver=dual
 ## 6. Environment & Tooling Troubleshooting
 
 ### Dedicated Port 5174 Isolation
+
 - All E2E simulations and Playwright runners strictly operate on port `5174` (`https://localhost:5174`).
 - Port `5173` is strictly reserved for developer interactive use.
 - Freeing port 5174: `npx kill-port 5174` (killing port 5173 is strictly forbidden).
 
 ### Playwright Browser & Dependency Installation
+
 If Playwright fails due to missing browsers, missing system libraries, or missing `ffmpeg`:
+
 ```bash
 npx playwright install --with-deps
 ```
+
 This command installs the required browser binaries along with all necessary system libraries.
 
 ---
 
 ## 7. Rules for Modifying Tests vs. `src/`
 
-### Allowed: Modify E2E Specs or Fuzzers To...
+### Allowed: Modify E2E Specs or Fuzzers To
+
 - Add `console.debug` or descriptive error logging for diagnosis.
 - Add new fuzzer scenarios (new abilities, items, edge cases).
 - Improve event emission or listeners when a real synchronization defect is found (never add polling or increase timeouts).
 - Add missing `TEST_CASE` / domain filter support.
 - Extend test coverage without weakening any existing assertion.
 
-### FORBIDDEN: Modify E2E Specs or Fuzzers To...
+### FORBIDDEN: Modify E2E Specs or Fuzzers To
+
 - Weaken, relax, or remove an assertion to make `src/` pass.
 - Skip, comment out, or ignore a failing scenario.
 - Change an expected value to match incorrect `src/` behavior.

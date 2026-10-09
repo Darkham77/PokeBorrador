@@ -19,7 +19,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor } from '@francogp/auditor';
+import { BaseAuditor, FileScanAuditor, parseVueSfc, hasLineSuppression } from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -74,11 +74,11 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
     this.markRuleEvaluated('ui-branching-raw-flag');
     this.markRuleEvaluated('ui-branching-escape');
 
-    const templateMatch = /<template>([\s\S]*?)<\/template>/i.exec(content);
-    if (!templateMatch) return;
+    const sfc = parseVueSfc(content);
+    if (!sfc.template) return;
 
-    const templateContent = templateMatch[1] || '';
-    const templateStartIndex = templateMatch.index;
+    const templateContent = sfc.template.content;
+    const templateStartIndex = sfc.template.contentStartIndex;
     const fullLines = content.split('\n');
 
     let match: RegExpExecArray | null;
@@ -114,10 +114,8 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
   }
 
   private hasSuppression(lines: readonly string[], lineIndex: number): boolean {
-    const currentLine = lines[lineIndex] || '';
-    const prevLine = lineIndex > 0 ? (lines[lineIndex - 1] || '') : '';
     const suppressionRegex = /<!--\s*ui-branching-ok:\s*\S+.*-->/i;
-    return suppressionRegex.test(currentLine) || suppressionRegex.test(prevLine);
+    return hasLineSuppression(lines, lineIndex, suppressionRegex, 3);
   }
 }
 
