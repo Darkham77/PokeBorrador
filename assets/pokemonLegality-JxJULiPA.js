@@ -1,0 +1,1 @@
+export{t as checkPokemonLegality,n as repairPokemonLegality}from"./pokemonLegality-XYo56XhT.js";
