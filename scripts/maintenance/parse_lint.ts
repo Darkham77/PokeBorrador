@@ -19,7 +19,7 @@ interface ParsedLintData {
 function isTargetFile(file: string): boolean {
   return file.startsWith('src\\') || file.startsWith('src/') ||
          file.startsWith('supabase\\') || file.startsWith('supabase/') ||
-         file.startsWith('test aventura\\') || file.startsWith('test aventura/') ||
+         file.startsWith('test_aventura\\') || file.startsWith('test_aventura/') ||
          file.startsWith('scripts\\') || file.startsWith('scripts/');
 }
 

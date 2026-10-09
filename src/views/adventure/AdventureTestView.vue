@@ -10,7 +10,7 @@ import PreTravelModal from '@/components/adventure/PreTravelModal.vue'
 import AdventureManualSidebar from '@/components/adventure/AdventureManualSidebar.vue'
 import AdventureDirectionPad from '@/components/adventure/AdventureDirectionPad.vue'
 import type { MapLocation } from '@/types/pokemon/encounters'
-import type { GraphEdge, AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import type { GraphEdge, AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import AdventureEventModal from '@/components/adventure/AdventureEventModal.vue'
 

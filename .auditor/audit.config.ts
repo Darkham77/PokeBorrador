@@ -10,6 +10,7 @@ export default defineAuditConfig({
     migrationsDir: 'database/migrations',
     scriptsRoots: ['scripts'],
     codeRoots: ['src', 'scripts', 'database', 'ui-demo'],
+    cliRoots: ['test_aventura/scripts'],
     dataRoots: ['src/data'],
     constantsRoots: ['src/logic/constants'],
     componentsRoots: ['src/components'],
@@ -32,10 +33,10 @@ export default defineAuditConfig({
       'external/**',
       'showdown/**',
       'backup_legacy_code/**',
-      'test aventura/**',
+      'test_aventura/**',
       'supabase/docker/**'
     ],
-    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'test aventura', 'supabase/docker'],
+    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'supabase/docker'],
     ignoredPatterns: ['src/logic/db/migrations_data.ts']
   },
   coverage: {

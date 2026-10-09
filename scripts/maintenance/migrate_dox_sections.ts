@@ -21,7 +21,6 @@ const IGNORED_DIRS = new Set([
   'node_modules',
   'external',
   'backup_legacy_code',
-  'test aventura',
   'supabase/docker',
   '.tsbuildinfo',
   '.git',

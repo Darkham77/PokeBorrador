@@ -7,7 +7,7 @@
     "scripts/e2e/battle/**",
     "supabase/**",
     ".agents/**",
-    "test aventura/**",
+    "test_aventura/**",
     "public/test-aventura-animations.css",
     "external/**",
     "packages/**",
@@ -675,12 +675,6 @@
       "exports": [
         "RANKED_REWARD_MILESTONES",
         "RANKED_REWARD_TIER_MARKS"
-      ]
-    },
-    {
-      "file": "test aventura/kantoGraph.ts",
-      "exports": [
-        "getGraphEdges"
       ]
     },
     {

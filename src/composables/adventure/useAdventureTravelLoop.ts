@@ -6,7 +6,7 @@
 
 import type { Ref } from 'vue'
 import { gsap } from 'gsap'
-import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import {
   CARD_W,

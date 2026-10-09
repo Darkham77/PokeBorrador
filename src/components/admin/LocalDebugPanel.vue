@@ -28,6 +28,11 @@ const openShadowEditor = () => {
   router.push('/dev/shadow-editor')
 }
 
+const openAdventureSuite = () => {
+  isOpen.value = false
+  window.open('/test_aventura/index.html', '_blank')
+}
+
 const closeForBattleEntry = () => {
   isOpen.value = false
 }
@@ -93,6 +98,14 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
             @click.stop="openShadowEditor"
           >
             <span class="emoji">🎨</span> SOMBRAS
+          </button>
+          <button
+            id="debug-adventure-suite-btn"
+            class="badge adventure-btn"
+            title="Abrir Suite Aventura y Studios"
+            @click.stop="openAdventureSuite"
+          >
+            <span class="emoji">🗺️</span> AVENTURA
           </button>
         </div>
 
@@ -195,6 +208,16 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
     &:hover {
       background: Rgb(168 85 247 / 25%);
       border-color: Rgb(168 85 247 / 50%);
+    }
+  }
+  &.adventure-btn {
+    border: 1px solid Rgb(59 130 246 / 30%);
+    background: Rgb(59 130 246 / 15%);
+    color: var(--blue, #60a5fa);
+    cursor: pointer;
+    &:hover {
+      background: Rgb(59 130 246 / 25%);
+      border-color: Rgb(59 130 246 / 50%);
     }
   }
 }

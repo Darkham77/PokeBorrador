@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import type { Ref } from 'vue'
-import { ADVENTURE_NODE_IDS, KANTO_NODE_POSITIONS, KANTO_CONNECTIONS } from '../../../test aventura/kantoGraph.ts'
-import type { AdventureNodeId, GraphEdge } from '../../../test aventura/kantoGraph.ts'
+import { ADVENTURE_NODE_IDS, KANTO_NODE_POSITIONS, KANTO_CONNECTIONS } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
+import type { AdventureNodeId, GraphEdge } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
 import type { MapLocation } from '@/types/pokemon/encounters'
 
 

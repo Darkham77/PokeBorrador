@@ -1,0 +1,1694 @@
+{
+  "version": "2.0",
+  "generatedAt": "2026-09-13T07:22:20.801Z",
+  "description": "Canonical SSoT Tiles Registry v2.0",
+  "totalTiles": 91,
+  "tiles": [
+    {
+      "id": "tile_elevation_face",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "cliff",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/poke_cliff_brown_face.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_top",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "cliff",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/poke_cliff_brown_top.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_left",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "cliff",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/poke_cliff_brown_left.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_right",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "cliff",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/poke_cliff_brown_right.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_gray_face",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "cliff",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/poke_cliff_gray_face.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_gray_top",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "cliff",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/poke_cliff_gray_top.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_dirt",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "ground",
+      "tags": [
+        "firered",
+        "path",
+        "dirt"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/dirt.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_grass",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "ground",
+      "tags": [
+        "firered",
+        "grass",
+        "ground"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/grass.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_path",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "paths",
+      "tags": [
+        "firered",
+        "path",
+        "road"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/poke_dirt_path.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_tall_grass",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "nature",
+      "tags": [
+        "firered",
+        "grass",
+        "tall_grass"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/poke_tall_grass.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_stone_plaza",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "paths",
+      "tags": [
+        "firered",
+        "path",
+        "plaza"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/stone_plaza.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_deep",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "water_bodies",
+      "tags": [
+        "firered",
+        "water",
+        "deep"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/poke_water_deep.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_calm",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "water_bodies",
+      "tags": [
+        "firered",
+        "water",
+        "calm"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/poke_water_calm.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_shore_tl",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "water_bodies",
+      "tags": [
+        "firered",
+        "water",
+        "shore"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/poke_water_shore_tl.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_shore_c",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "water_bodies",
+      "tags": [
+        "firered",
+        "water",
+        "shore"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/poke_water_shore_c.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_tree_fr",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "vegetation",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_tree_fr.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_tree_em",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "vegetation",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_tree_em.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_grass_rs",
+      "source": "ruby_sapphire",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "ruby_sapphire",
+        "vegetation",
+        "grass"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_grass_rs.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_flower",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "vegetation",
+        "flower"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_flower.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_bush",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "vegetation",
+        "bush"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_bush.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_structures_wall",
+      "source": "structures",
+      "category": "structures",
+      "subcategory": "default",
+      "tags": [
+        "structures",
+        "building",
+        "wall"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/structures/tile_structures_wall.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_structures_door",
+      "source": "structures",
+      "category": "structures",
+      "subcategory": "default",
+      "tags": [
+        "structures",
+        "building",
+        "door"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/structures/tile_structures_door.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_structures_roof",
+      "source": "firered",
+      "category": "structures",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "structures",
+        "roof"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/structures/tile_structures_roof.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_props_lamp",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "objects_props",
+        "prop",
+        "street_lamp"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_props_lamp.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_props_sign",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "objects_props",
+        "prop",
+        "signpost"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_props_sign.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_props_mailbox",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "objects_props",
+        "prop",
+        "mailbox"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_props_mailbox.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_4756bdfd4e",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_4756bdfd4e.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_b3840e05af",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_b3840e05af.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_35acffed79",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_35acffed79.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_b07ce4bfe6",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_b07ce4bfe6.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_554fe90459",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_554fe90459.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_aeed0bb8ac",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_aeed0bb8ac.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_93efbc410a",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_93efbc410a.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_b8d7bb69ce",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_b8d7bb69ce.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_3928852ac2",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "path"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_3928852ac2.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_120d7decae",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "ledge"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_120d7decae.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_1938e75eaa",
+      "source": "firered",
+      "category": "terrain",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "ledge"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/terrain/tile_terrain_1938e75eaa.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_5e550af5c2",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_5e550af5c2.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_b2b02a5e0e",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_b2b02a5e0e.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_f3cf81311b",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_f3cf81311b.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_34d262e7f2",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_34d262e7f2.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_e780c4f413",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_e780c4f413.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_bbae919e5f",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_bbae919e5f.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_2610e35f18",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_2610e35f18.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_1da2cf6c52",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_1da2cf6c52.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_577cd9fb73",
+      "source": "firered",
+      "category": "water",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "water"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/water/tile_water_577cd9fb73.png",
+      "collision": "water",
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_184ee2f2ca",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "grass"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_184ee2f2ca.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_13f0a9ea38",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "grass"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_13f0a9ea38.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_0036b62873",
+      "source": "ruby_sapphire",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "ruby_sapphire",
+        "grass"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_0036b62873.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_6d432cbe6d",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "flowers"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_6d432cbe6d.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_6b1605d4cf",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "tall_grass"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_6b1605d4cf.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_77ac70f502",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "bush"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_77ac70f502.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_9cf406a0d5",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_9cf406a0d5.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_493a154ab0",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_493a154ab0.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_9668f2a496",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_9668f2a496.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_3978273469",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_3978273469.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_8e73525ab6",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_8e73525ab6.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_f4e0a51729",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_f4e0a51729.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_bf0a3c7024",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_bf0a3c7024.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_afed389c7f",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_afed389c7f.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_3d3a41c32d",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_3d3a41c32d.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_3e24e0f99d",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_3e24e0f99d.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_a88df6ec45",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_a88df6ec45.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_6be35c9857",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_6be35c9857.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_1e7ae8dbad",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_1e7ae8dbad.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_821ff1bb4d",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_821ff1bb4d.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_d27ee608ad",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_d27ee608ad.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_31defe8241",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_31defe8241.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_32124203a1",
+      "source": "emerald",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "emerald",
+        "tree"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_32124203a1.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_7eccbe22e5",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/tile_elevation_7eccbe22e5.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_10dccf3c52",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/tile_elevation_10dccf3c52.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_e5a5b972eb",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/tile_elevation_e5a5b972eb.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_e8e8f562ef",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/tile_elevation_e8e8f562ef.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_84c75dc969",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/tile_elevation_84c75dc969.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_8e2e0bd2de",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/tile_elevation_8e2e0bd2de.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_elevation_9ee757e84a",
+      "source": "firered",
+      "category": "elevation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "mountain",
+        "cliff"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/elevation/tile_elevation_9ee757e84a.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_structures_door_test",
+      "source": "structures",
+      "category": "structures",
+      "subcategory": "default",
+      "tags": [
+        "structures",
+        "door"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/structures/tile_structures_door_test.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_objects_props_sign_test",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_objects_props_sign_test.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_objects_props_873cabc657",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "street_lamp"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_objects_props_873cabc657.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_objects_props_c305f4c3fd",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "street_lamp"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_objects_props_c305f4c3fd.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_77167d265c",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "mailbox"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_water_77167d265c.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_d2ff41d6a1",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "bench"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_terrain_d2ff41d6a1.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_terrain_5065b9bc0d",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "bench"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_terrain_5065b9bc0d.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_water_eacfe78863",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "flower_pot"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_water_eacfe78863.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_uncategorized_fc044b0dfa",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "signpost"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_uncategorized_fc044b0dfa.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_structures_3ec4411b84",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "fence_white"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_structures_3ec4411b84.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_structures_49093abef3",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "fence_wood"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_structures_49093abef3.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_objects_props_66454cdc8a",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "trash_bin"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_objects_props_66454cdc8a.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_vegetation_bd659dae6f",
+      "source": "firered",
+      "category": "vegetation",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "flowers"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/vegetation/tile_vegetation_bd659dae6f.png",
+      "collision": false,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_objects_props_7256ee1de0",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "wood_stump"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_objects_props_7256ee1de0.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "id": "tile_objects_props_d9240538d8",
+      "source": "firered",
+      "category": "objects_props",
+      "subcategory": "default",
+      "tags": [
+        "firered",
+        "prop",
+        "field_rock"
+      ],
+      "dimensions": {
+        "width": 16,
+        "height": 16
+      },
+      "file_path": "/assets/tiles/objects_props/tile_objects_props_d9240538d8.png",
+      "collision": true,
+      "grid_x": 0,
+      "grid_y": 0
+    }
+  ]
+}

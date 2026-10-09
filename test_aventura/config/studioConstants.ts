@@ -1,0 +1,1 @@
+export const STUDIO_MAX_HISTORY_STEPS = 30;

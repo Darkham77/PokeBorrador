@@ -4,7 +4,7 @@
  * Shared constants and utility identifiers for adventure map simulations.
  */
 
-import type { AdventureNodeId } from '../../../../test aventura/kantoGraph.ts'
+import type { AdventureNodeId } from '../../../../test_aventura/logic/adventure/kantoGraph.ts'
 
 export const CANVAS_W = 6400
 export const CANVAS_H = 4400

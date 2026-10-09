@@ -2,7 +2,7 @@ import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { requireMapRouteId } from '@/data/world/map-assets'
-import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
 import type { AdventureTriggerType, ActiveAdventureEvent } from './useAdventureEvents.ts'
 import type { ItemId } from '@/data/inventory/items'
 

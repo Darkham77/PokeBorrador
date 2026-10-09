@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { gsapHover as vGsapHover } from '@/directives/gsapHover'
-import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
 import type { CardinalDirection } from '@/types/system/game'
 import type { DirectionConnectionItem } from './adventureDirectionTypes'
 

@@ -1,0 +1,467 @@
+{
+  "version": "6.1-canonical",
+  "generatedAt": "2026-09-08T21:52:02.341Z",
+  "tileSize": 32,
+  "terrain": {
+    "grass": {
+      "sheet": "poke_grass_plain.png",
+      "x": 0,
+      "y": 0,
+      "collision": false
+    },
+    "dirt_path": {
+      "sheet": "poke_dirt_path.png",
+      "x": 0,
+      "y": 0,
+      "collision": false
+    },
+    "forest_grass": {
+      "sheet": "poke_forest_grass.png",
+      "x": 0,
+      "y": 0,
+      "collision": false
+    },
+    "water": {
+      "sheet": "poke_water_calm.png",
+      "x": 0,
+      "y": 0,
+      "collision": "water"
+    }
+  },
+  "prefabs": {
+    "buildings": {
+      "house_red": {
+        "id": "house_red",
+        "name": "Casa de Tejado Rojo (Pueblo Paleta)",
+        "width": 160,
+        "height": 160,
+        "doorOffset": {
+          "x": 2,
+          "y": 4
+        },
+        "parts": [
+          {
+            "sheet": "house_red.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 160,
+            "sh": 160,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "house_blue": {
+        "id": "house_blue",
+        "name": "Casa de Tejado Azul (Rival Blue)",
+        "width": 160,
+        "height": 160,
+        "doorOffset": {
+          "x": 2,
+          "y": 4
+        },
+        "parts": [
+          {
+            "sheet": "house_blue.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 160,
+            "sh": 160,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "house_green": {
+        "id": "house_green",
+        "name": "Casa Residencial Verde (Ciudad Verde)",
+        "width": 160,
+        "height": 160,
+        "doorOffset": {
+          "x": 2,
+          "y": 4
+        },
+        "parts": [
+          {
+            "sheet": "house_green.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 160,
+            "sh": 160,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "house_pewter_slate": {
+        "id": "house_pewter_slate",
+        "name": "Casa Residencial de Pizarra (Ciudad Plateada)",
+        "width": 160,
+        "height": 160,
+        "doorOffset": {
+          "x": 1,
+          "y": 4
+        },
+        "parts": [
+          {
+            "sheet": "house_pewter_slate.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 160,
+            "sh": 160,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "lab_oak": {
+        "id": "lab_oak",
+        "name": "Laboratorio de Investigación Pokémon (Prof. Oak)",
+        "width": 224,
+        "height": 192,
+        "doorOffset": {
+          "x": 3,
+          "y": 5
+        },
+        "parts": [
+          {
+            "sheet": "lab_oak.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 224,
+            "sh": 192,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "pokecenter": {
+        "id": "pokecenter",
+        "name": "Centro Pokémon Oficial",
+        "width": 160,
+        "height": 160,
+        "doorOffset": {
+          "x": 2,
+          "y": 4
+        },
+        "parts": [
+          {
+            "sheet": "pokecenter.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 160,
+            "sh": 160,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "pokemart": {
+        "id": "pokemart",
+        "name": "Tienda Pokémon (Poké Mart)",
+        "width": 128,
+        "height": 128,
+        "doorOffset": {
+          "x": 1,
+          "y": 3
+        },
+        "parts": [
+          {
+            "sheet": "pokemart.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 128,
+            "sh": 128,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "gym": {
+        "id": "gym",
+        "name": "Gimnasio Roca de Brock (Ciudad Plateada)",
+        "width": 192,
+        "height": 160,
+        "doorOffset": {
+          "x": 3,
+          "y": 4
+        },
+        "parts": [
+          {
+            "sheet": "gym.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 192,
+            "sh": 160,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "pewter_museum": {
+        "id": "pewter_museum",
+        "name": "Museo de la Ciencia de Ciudad Plateada",
+        "width": 512,
+        "height": 256,
+        "doorOffset": {
+          "x": 5,
+          "y": 7
+        },
+        "parts": [
+          {
+            "sheet": "pewter_museum.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 512,
+            "sh": 256,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "mansion_school": {
+        "id": "mansion_school",
+        "name": "Escuela Pokémon / Mansión de Ciudad Plateada",
+        "width": 224,
+        "height": 256,
+        "doorOffset": {
+          "x": 3,
+          "y": 7
+        },
+        "parts": [
+          {
+            "sheet": "mansion_school.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 224,
+            "sh": 256,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "gatehouse_route": {
+        "id": "gatehouse_route",
+        "name": "Puesto de Aduana (Ruta 2 / Bosque Verde)",
+        "width": 160,
+        "height": 160,
+        "doorOffset": {
+          "x": 2,
+          "y": 4
+        },
+        "parts": [
+          {
+            "sheet": "gatehouse_route.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 160,
+            "sh": 160,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      }
+    },
+    "trees": {
+      "tree_poke": {
+        "id": "tree_poke",
+        "name": "Árbol Canónico de Kanto (64x96 px)",
+        "width": 64,
+        "height": 96,
+        "parts": [
+          {
+            "sheet": "tree_poke.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 64,
+            "sh": 96,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "tree_viridian_forest": {
+        "id": "tree_viridian_forest",
+        "name": "Conífera Densa de Bosque Verde (64x96 px)",
+        "width": 64,
+        "height": 96,
+        "parts": [
+          {
+            "sheet": "tree_viridian_forest.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 64,
+            "sh": 96,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "tree_cuttable": {
+        "id": "tree_cuttable",
+        "name": "Arbusto Cortable (Corte)",
+        "width": 32,
+        "height": 32,
+        "parts": [
+          {
+            "sheet": "tree_cuttable.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 32,
+            "sh": 32,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      }
+    },
+    "props": {
+      "flowers_red": {
+        "id": "flowers_red",
+        "name": "Flores Rojas Residenciales",
+        "width": 32,
+        "height": 32,
+        "parts": [
+          {
+            "sheet": "flowers_red.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 32,
+            "sh": 32,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 1
+          }
+        ]
+      },
+      "fence_picket": {
+        "id": "fence_picket",
+        "name": "Valla de Madera Blanca",
+        "width": 32,
+        "height": 32,
+        "parts": [
+          {
+            "sheet": "fence_picket.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 32,
+            "sh": 32,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "signpost": {
+        "id": "signpost",
+        "name": "Cartel de Madera",
+        "width": 32,
+        "height": 32,
+        "parts": [
+          {
+            "sheet": "signpost.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 32,
+            "sh": 32,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "mailbox": {
+        "id": "mailbox",
+        "name": "Buzón Metálico Residencial",
+        "width": 32,
+        "height": 32,
+        "parts": [
+          {
+            "sheet": "mailbox.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 32,
+            "sh": 32,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 2
+          }
+        ]
+      },
+      "poke_ledge_jump": {
+        "id": "poke_ledge_jump",
+        "name": "Desnivel de Salto al Sur (Ledge)",
+        "width": 32,
+        "height": 32,
+        "parts": [
+          {
+            "sheet": "poke_ledge_jump.png",
+            "sx": 0,
+            "sy": 0,
+            "sw": 32,
+            "sh": 32,
+            "dx": 0,
+            "dy": 0,
+            "zIndex": 1
+          }
+        ]
+      }
+    }
+  },
+  "sheets": {
+    "grass.png": {
+      "file": "grass.png",
+      "width": 96,
+      "height": 192
+    },
+    "dirt.png": {
+      "file": "dirt.png",
+      "width": 96,
+      "height": 192
+    },
+    "watergrass.png": {
+      "file": "watergrass.png",
+      "width": 96,
+      "height": 192
+    },
+    "stone_plaza.png": {
+      "file": "stone_plaza.png",
+      "width": 96,
+      "height": 192
+    },
+    "autotile_plaza_stone.png": {
+      "file": "autotile_plaza_stone.png",
+      "width": 96,
+      "height": 128
+    },
+    "autotile_cliff_brown.png": {
+      "file": "autotile_cliff_brown.png",
+      "width": 96,
+      "height": 128
+    },
+    "autotile_cliff_gray.png": {
+      "file": "autotile_cliff_gray.png",
+      "width": 96,
+      "height": 128
+    },
+    "autotile_cliff_mountain.png": {
+      "file": "autotile_cliff_mountain.png",
+      "width": 96,
+      "height": 128
+    }
+  }
+}

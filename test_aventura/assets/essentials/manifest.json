@@ -1,0 +1,2982 @@
+{
+  "version": "21.0.0",
+  "generatedAt": "2026-09-21T18:13:38.957Z",
+  "standard": "rmxp_32px",
+  "autotiles": [
+    "autotile_water.png",
+    "autotile_pond.png",
+    "autotile_dirt_path.png",
+    "autotile_plaza_stone.png",
+    "autotile_cliff_mountain.png",
+    "autotile_tall_grass.png",
+    "autotile_cliff_brown.png",
+    "autotile_cliff_gray.png"
+  ],
+  "totalPrefabs": 293,
+  "categories": {
+    "buildings": 67,
+    "vegetation": 30,
+    "elevation": 112,
+    "infrastructure": 0,
+    "props": 84
+  },
+  "prefabs": [
+    {
+      "id": "daycare_cottage",
+      "name": "Cabaña de la Guardería",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/daycare_cottage.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "daycare_long_ranch",
+      "name": "Rancho de Crianza Pokémon",
+      "category": "buildings",
+      "width": 192,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/daycare_long_ranch.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "game_corner",
+      "name": "Casino Rocket Game Corner",
+      "category": "buildings",
+      "width": 224,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/game_corner.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        },
+        {
+          "dx": 7,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "gatehouse_route",
+      "name": "Aduana de Ruta",
+      "category": "buildings",
+      "width": 192,
+      "height": 224,
+      "file_path": "/assets/essentials/prefabs/buildings/gatehouse_route.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "gatehouse_route_horizontal",
+      "name": "Aduana Horizontal de Ruta",
+      "category": "buildings",
+      "width": 256,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/gatehouse_route_horizontal.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 0,
+          "dy": 4
+        },
+        {
+          "dx": 7,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "gym",
+      "name": "Gimnasio Pokémon",
+      "category": "buildings",
+      "width": 192,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/gym.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        },
+        {
+          "dx": 3,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "gym_gold",
+      "name": "Gimnasio Oficial de la Liga",
+      "category": "buildings",
+      "width": 192,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/gym_gold.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        },
+        {
+          "dx": 3,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_blue",
+      "name": "Casa Tejado Azul",
+      "category": "buildings",
+      "width": 192,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_blue.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 3,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_celadon_brick_2story",
+      "name": "house celadon brick 2story",
+      "category": "buildings",
+      "width": 128,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_celadon_brick_2story.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_celadon_condo",
+      "name": "Condominio Verde de Celadon",
+      "category": "buildings",
+      "width": 128,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_celadon_condo.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_cerulean_orange",
+      "name": "house cerulean orange",
+      "category": "buildings",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_cerulean_orange.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_gray_small",
+      "name": "Casa Pequeña de Pizarra Gris",
+      "category": "buildings",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_gray_small.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_green",
+      "name": "Casa Tejado Verde",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_green.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_green_bungalow",
+      "name": "Bungalow Verde",
+      "category": "buildings",
+      "width": 160,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_green_bungalow.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_green_plain",
+      "name": "house green plain",
+      "category": "buildings",
+      "width": 160,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_green_plain.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_green_small",
+      "name": "Casita Verde",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_green_small.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_lavender_purple",
+      "name": "house lavender purple",
+      "category": "buildings",
+      "width": 160,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_lavender_purple.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_orange",
+      "name": "Casa Tejado Naranja",
+      "category": "buildings",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_orange.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_orange_gable",
+      "name": "Casa Naranja con Buhardilla",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_orange_gable.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_orange_planters",
+      "name": "Casa Naranja con Jardineras",
+      "category": "buildings",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_orange_planters.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_pallet_blue",
+      "name": "house pallet blue",
+      "category": "buildings",
+      "width": 160,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_pallet_blue.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_pallet_red",
+      "name": "house pallet red",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_pallet_red.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_pewter_slate",
+      "name": "Casa Pizarra de Plateada",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_pewter_slate.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_purple",
+      "name": "Casa Tejado Púrpura",
+      "category": "buildings",
+      "width": 160,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_purple.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_purple_cottage",
+      "name": "Cabaña Púrpura de Lavanda",
+      "category": "buildings",
+      "width": 160,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_purple_cottage.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_purple_dormer",
+      "name": "Casa Púrpura con Buhardilla",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_purple_dormer.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_red",
+      "name": "Casa Tejado Rojo",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_red.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_teal_bungalow",
+      "name": "Bungalow Azul Turquesa",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_teal_bungalow.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_twostory_greenroof",
+      "name": "Casa de Dos Pisos Tejado Verde",
+      "category": "buildings",
+      "width": 128,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_greenroof.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_twostory_mint",
+      "name": "Casa de Dos Pisos Menta",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_mint.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_twostory_red",
+      "name": "Casa de Dos Pisos Roja",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_red.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_twostory_urban",
+      "name": "Edificio Residencial Urbano",
+      "category": "buildings",
+      "width": 128,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_urban.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_twostory_yellow_1",
+      "name": "Casa de Dos Pisos Amarilla",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_yellow_1.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "house_vermilion_ranch",
+      "name": "house vermilion ranch",
+      "category": "buildings",
+      "width": 192,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_vermilion_ranch.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 3,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_wood_brown",
+      "name": "Cabaña Rústica de Madera",
+      "category": "buildings",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_wood_brown.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "house_wood_flowers",
+      "name": "Cabaña de Madera con Flores",
+      "category": "buildings",
+      "width": 160,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/house_wood_flowers.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "lab_oak",
+      "name": "Laboratorio del Prof. Oak",
+      "category": "buildings",
+      "width": 224,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/lab_oak.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 3,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "mansion_school",
+      "name": "Escuela Pokémon / Mansión",
+      "category": "buildings",
+      "width": 224,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/mansion_school.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 3,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "pewter_museum",
+      "name": "Museo de la Ciencia de Plateada",
+      "category": "buildings",
+      "width": 512,
+      "height": 256,
+      "file_path": "/assets/essentials/prefabs/buildings/pewter_museum.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 7,
+          "dy": 7
+        },
+        {
+          "dx": 8,
+          "dy": 7
+        }
+      ]
+    },
+    {
+      "id": "poke_arena_rock_plateau",
+      "name": "Meseta de Arena de Combate",
+      "category": "buildings",
+      "width": 192,
+      "height": 192,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_arena_rock_plateau.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_battle_arena",
+      "name": "battle arena",
+      "category": "buildings",
+      "width": 448,
+      "height": 288,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_battle_arena.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_battle_dome",
+      "name": "battle dome",
+      "category": "buildings",
+      "width": 448,
+      "height": 288,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_battle_dome.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_battle_palace",
+      "name": "battle palace",
+      "category": "buildings",
+      "width": 352,
+      "height": 224,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_battle_palace.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_battle_pyramid",
+      "name": "battle pyramid",
+      "category": "buildings",
+      "width": 448,
+      "height": 352,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_battle_pyramid.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bike_shop",
+      "name": "Tienda de Bicis Miracle Cycle",
+      "category": "buildings",
+      "width": 128,
+      "height": 192,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_bike_shop.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 6
+        }
+      ]
+    },
+    {
+      "id": "poke_bridge_golden_wood",
+      "name": "Puente Monumental de Madera",
+      "category": "buildings",
+      "width": 128,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_bridge_golden_wood.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_condo_block",
+      "name": "Bloque de Apartamentos Celadon",
+      "category": "buildings",
+      "width": 224,
+      "height": 256,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_condo_block.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 3,
+          "dy": 7
+        }
+      ]
+    },
+    {
+      "id": "poke_corp_tower",
+      "name": "Torre Corporativa Silph Co.",
+      "category": "buildings",
+      "width": 288,
+      "height": 224,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_corp_tower.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 4,
+          "dy": 6
+        }
+      ]
+    },
+    {
+      "id": "poke_daycare",
+      "name": "Guardería Pokémon",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_daycare.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_dept_store",
+      "name": "Centro Comercial de Celadon",
+      "category": "buildings",
+      "width": 288,
+      "height": 320,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_dept_store.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 4,
+          "dy": 9
+        },
+        {
+          "dx": 5,
+          "dy": 9
+        }
+      ]
+    },
+    {
+      "id": "poke_dock_pier_water",
+      "name": "Muelle Portuario sobre Agua",
+      "category": "buildings",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_dock_pier_water.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_dock_pier_wood_small",
+      "name": "Embarcadero de Madera (3x3)",
+      "category": "buildings",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_dock_pier_wood_small.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_dock_pier_wood_smooth",
+      "name": "Plataforma de Muelle Suave",
+      "category": "buildings",
+      "width": 96,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_dock_pier_wood_smooth.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_dojo",
+      "name": "Dojo de Artes Marciales",
+      "category": "buildings",
+      "width": 192,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_dojo.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 3,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "poke_fan_club",
+      "name": "Club de Fans Pokémon",
+      "category": "buildings",
+      "width": 160,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_fan_club.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "poke_game_corner",
+      "name": "Casino Rocket Game Corner",
+      "category": "buildings",
+      "width": 224,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_game_corner.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        },
+        {
+          "dx": 7,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "poke_league_checkpoint_gate",
+      "name": "Arco de Control de la Liga",
+      "category": "buildings",
+      "width": 192,
+      "height": 224,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_league_checkpoint_gate.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_league_grand_staircase",
+      "name": "Gran Escalinata de la Liga",
+      "category": "buildings",
+      "width": 160,
+      "height": 192,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_league_grand_staircase.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_market_produce_stall",
+      "name": "Puesto de Mercado de Frutas y Flores",
+      "category": "buildings",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_market_produce_stall.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_market_yellow_awning",
+      "name": "Puesto de Feria con Toldo Amarillo",
+      "category": "buildings",
+      "width": 96,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_market_yellow_awning.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_museum",
+      "name": "Museo de la Ciencia de Plateada",
+      "category": "buildings",
+      "width": 512,
+      "height": 256,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_museum.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 7,
+          "dy": 7
+        },
+        {
+          "dx": 8,
+          "dy": 7
+        }
+      ]
+    },
+    {
+      "id": "poke_pokemon_tower",
+      "name": "Torre Pokémon de Pueblo Lavanda",
+      "category": "buildings",
+      "width": 224,
+      "height": 480,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_pokemon_tower.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 3,
+          "dy": 14
+        }
+      ]
+    },
+    {
+      "id": "poke_silph_radio_tower",
+      "name": "Torre de Radio y Faro Silph",
+      "category": "buildings",
+      "width": 64,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/buildings/poke_silph_radio_tower.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "pokecenter",
+      "name": "Centro Pokémon",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/buildings/pokecenter.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 2,
+          "dy": 4
+        }
+      ]
+    },
+    {
+      "id": "pokemart",
+      "name": "Tienda Pokémon (Poké Mart)",
+      "category": "buildings",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/buildings/pokemart.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 1,
+          "dy": 3
+        }
+      ]
+    },
+    {
+      "id": "pokemon_league",
+      "name": "Palacio de la Liga Pokémon",
+      "category": "buildings",
+      "width": 352,
+      "height": 256,
+      "file_path": "/assets/essentials/prefabs/buildings/pokemon_league.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 4,
+          "dy": 5
+        }
+      ]
+    },
+    {
+      "id": "power_plant",
+      "name": "Central de Energía Abandonada",
+      "category": "buildings",
+      "width": 320,
+      "height": 224,
+      "file_path": "/assets/essentials/prefabs/buildings/power_plant.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "silph_tower",
+      "name": "Torre Corporativa Silph Co.",
+      "category": "buildings",
+      "width": 288,
+      "height": 224,
+      "file_path": "/assets/essentials/prefabs/buildings/silph_tower.png",
+      "source": "pokemon_essentials",
+      "doorOffsets": [
+        {
+          "dx": 4,
+          "dy": 6
+        }
+      ]
+    },
+    {
+      "id": "poke_fern_wild_bush",
+      "name": "Helecho Silvestre",
+      "category": "vegetation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_fern_wild_bush.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_hedge_wall_block",
+      "name": "Muro de Setos Podados",
+      "category": "vegetation",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_hedge_wall_block.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_log_fallen_trio",
+      "name": "Troncos Caídos en Trío",
+      "category": "vegetation",
+      "width": 96,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_log_fallen_trio.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_tree_cuttable",
+      "name": "Árbol Cortable",
+      "category": "vegetation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_cuttable.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_tree_oak_clean",
+      "name": "Roble Canónico Verde",
+      "category": "vegetation",
+      "width": 96,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_oak_clean.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_tree_oak_yellow",
+      "name": "Roble Otoñal Dorado",
+      "category": "vegetation",
+      "width": 96,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_oak_yellow.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_tree_pine_small",
+      "name": "Pino Pequeño",
+      "category": "vegetation",
+      "width": 64,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_pine_small.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_tree_poke",
+      "name": "Árbol Canónico de Kanto",
+      "category": "vegetation",
+      "width": 96,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_poke.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_tree_sapling",
+      "name": "Retoño de Árbol Joven",
+      "category": "vegetation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_sapling.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_viridian_forest_trunk_lip",
+      "name": "viridian forest trunk lip",
+      "category": "vegetation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/vegetation/poke_viridian_forest_trunk_lip.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "tree_cuttable",
+      "name": "Árbol Cortable",
+      "category": "vegetation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/vegetation/tree_cuttable.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "tree_oak_clean",
+      "name": "Roble Canónico Verde",
+      "category": "vegetation",
+      "width": 96,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/vegetation/tree_oak_clean.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "tree_oak_yellow",
+      "name": "Roble Otoñal Dorado",
+      "category": "vegetation",
+      "width": 96,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/vegetation/tree_oak_yellow.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "tree_pine_small",
+      "name": "Pino Pequeño",
+      "category": "vegetation",
+      "width": 64,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/tree_pine_small.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "tree_poke",
+      "name": "Árbol Canónico de Kanto",
+      "category": "vegetation",
+      "width": 96,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/vegetation/tree_poke.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "tree_viridian_forest",
+      "name": "Conífera Bosque Verde",
+      "category": "vegetation",
+      "width": 64,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/tree_viridian_forest.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_canopy_dense_block",
+      "name": "viridian forest canopy dense block",
+      "category": "vegetation",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_dense_block.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_canopy_e_right",
+      "name": "viridian forest canopy e right",
+      "category": "vegetation",
+      "width": 32,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_e_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_canopy_mid",
+      "name": "viridian forest canopy mid",
+      "category": "vegetation",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_mid.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_canopy_overhang_l",
+      "name": "viridian forest canopy overhang l",
+      "category": "vegetation",
+      "width": 32,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_overhang_l.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_canopy_overhang_r",
+      "name": "viridian forest canopy overhang r",
+      "category": "vegetation",
+      "width": 32,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_overhang_r.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_canopy_shadow_lip",
+      "name": "viridian forest canopy shadow lip",
+      "category": "vegetation",
+      "width": 96,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_shadow_lip.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_canopy_top",
+      "name": "viridian forest canopy top",
+      "category": "vegetation",
+      "width": 96,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_canopy_w_left",
+      "name": "viridian forest canopy w left",
+      "category": "vegetation",
+      "width": 32,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_w_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_edge_outer_se",
+      "name": "viridian forest edge outer se",
+      "category": "vegetation",
+      "width": 64,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_edge_outer_se.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_edge_outer_sw",
+      "name": "viridian forest edge outer sw",
+      "category": "vegetation",
+      "width": 64,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_edge_outer_sw.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_tree_tall_pinnacle",
+      "name": "viridian forest tree tall pinnacle",
+      "category": "vegetation",
+      "width": 32,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_tree_tall_pinnacle.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_trunk_base",
+      "name": "viridian forest trunk base",
+      "category": "vegetation",
+      "width": 96,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_trunk_base.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_trunk_roots_left",
+      "name": "viridian forest trunk roots left",
+      "category": "vegetation",
+      "width": 64,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_trunk_roots_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "viridian_forest_trunk_roots_right",
+      "name": "viridian forest trunk roots right",
+      "category": "vegetation",
+      "width": 64,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_trunk_roots_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_canyon_stairs_brown_complex",
+      "name": "Escalinata Monumental de Cañón Marrón",
+      "category": "elevation",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_canyon_stairs_brown_complex.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_canyon_stairs_gray_complex",
+      "name": "Escalinata Monumental de Cañón Gris",
+      "category": "elevation",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_canyon_stairs_gray_complex.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cave_tunnel_entrance_complex",
+      "name": "Entrada Monumental a Caverna",
+      "category": "elevation",
+      "width": 192,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cave_tunnel_entrance_complex.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cave_wall_ladder_right",
+      "name": "Pared de Risco con Escalera de Mano",
+      "category": "elevation",
+      "width": 64,
+      "height": 160,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cave_wall_ladder_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_bottom",
+      "name": "cliff brown bottom",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_bottom.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_corner_bl",
+      "name": "cliff brown corner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_corner_br",
+      "name": "cliff brown corner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_corner_tl",
+      "name": "cliff brown corner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_corner_tr",
+      "name": "cliff brown corner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_face",
+      "name": "cliff brown face",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_face.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_grass_top",
+      "name": "cliff brown grass top",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_grass_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_inner_bl",
+      "name": "cliff brown inner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_inner_br",
+      "name": "cliff brown inner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_inner_tl",
+      "name": "cliff brown inner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_inner_tr",
+      "name": "cliff brown inner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_left",
+      "name": "cliff brown left",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_peak",
+      "name": "cliff brown peak",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_peak.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_plateau",
+      "name": "cliff brown plateau",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_plateau.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_plateau_rock",
+      "name": "cliff brown plateau rock",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_plateau_rock.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_right",
+      "name": "cliff brown right",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_corner_bl",
+      "name": "cliff brown rock corner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_corner_bl_lower",
+      "name": "cliff brown rock corner bl lower",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_bl_lower.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_corner_br",
+      "name": "cliff brown rock corner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_corner_br_lower",
+      "name": "cliff brown rock corner br lower",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_br_lower.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_corner_tl",
+      "name": "cliff brown rock corner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_corner_tr",
+      "name": "cliff brown rock corner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_face",
+      "name": "cliff brown rock face",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_face.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_face_bottom",
+      "name": "cliff brown rock face bottom",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_face_bottom.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_inner_bl",
+      "name": "cliff brown rock inner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_inner_br",
+      "name": "cliff brown rock inner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_inner_tl",
+      "name": "cliff brown rock inner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_inner_tr",
+      "name": "cliff brown rock inner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_left",
+      "name": "cliff brown rock left",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_plateau",
+      "name": "cliff brown rock plateau",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_plateau.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_right",
+      "name": "cliff brown rock right",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_stairs_bottom",
+      "name": "cliff brown rock stairs bottom",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_stairs_bottom.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_stairs_top",
+      "name": "cliff brown rock stairs top",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_stairs_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_rock_top",
+      "name": "cliff brown rock top",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_sand_corner_bl",
+      "name": "cliff brown sand corner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_sand_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_sand_corner_br",
+      "name": "cliff brown sand corner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_sand_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_stairs_l",
+      "name": "cliff brown stairs l",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_stairs_l.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_stairs_r",
+      "name": "cliff brown stairs r",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_stairs_r.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_brown_top",
+      "name": "cliff brown top",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_canyon_brown_extra_walls",
+      "name": "cliff canyon brown extra walls",
+      "category": "elevation",
+      "width": 128,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_canyon_brown_extra_walls.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_canyon_gray_extra_walls",
+      "name": "cliff canyon gray extra walls",
+      "category": "elevation",
+      "width": 128,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_canyon_gray_extra_walls.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_cone_brown",
+      "name": "cliff cone brown",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_cone_brown.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_cone_gray",
+      "name": "cliff cone gray",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_cone_gray.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_corner_bl",
+      "name": "cliff corner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_corner_br",
+      "name": "cliff corner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_corner_tl",
+      "name": "cliff corner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_corner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_corner_tr",
+      "name": "cliff corner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_corner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_edge_left",
+      "name": "cliff edge left",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_edge_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_edge_right",
+      "name": "cliff edge right",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_edge_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_face_vertical",
+      "name": "cliff face vertical",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_face_vertical.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_bottom",
+      "name": "cliff gray bottom",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_bottom.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_corner_bl",
+      "name": "cliff gray corner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_corner_br",
+      "name": "cliff gray corner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_corner_tl",
+      "name": "cliff gray corner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_corner_tr",
+      "name": "cliff gray corner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_face",
+      "name": "cliff gray face",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_face.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_grass_top",
+      "name": "cliff gray grass top",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_grass_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_inner_bl",
+      "name": "cliff gray inner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_inner_br",
+      "name": "cliff gray inner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_inner_tl",
+      "name": "cliff gray inner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_inner_tr",
+      "name": "cliff gray inner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_left",
+      "name": "cliff gray left",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_peak",
+      "name": "cliff gray peak",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_peak.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_plateau",
+      "name": "cliff gray plateau",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_plateau.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_plateau_rock",
+      "name": "cliff gray plateau rock",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_plateau_rock.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_right",
+      "name": "cliff gray right",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_corner_bl",
+      "name": "cliff gray rock corner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_corner_bl_lower",
+      "name": "cliff gray rock corner bl lower",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_bl_lower.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_corner_br",
+      "name": "cliff gray rock corner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_corner_br_lower",
+      "name": "cliff gray rock corner br lower",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_br_lower.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_corner_tl",
+      "name": "cliff gray rock corner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_corner_tr",
+      "name": "cliff gray rock corner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_face",
+      "name": "cliff gray rock face",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_face.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_face_bottom",
+      "name": "cliff gray rock face bottom",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_face_bottom.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_inner_bl",
+      "name": "cliff gray rock inner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_inner_br",
+      "name": "cliff gray rock inner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_inner_tl",
+      "name": "cliff gray rock inner tl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_inner_tr",
+      "name": "cliff gray rock inner tr",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_left",
+      "name": "cliff gray rock left",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_plateau",
+      "name": "cliff gray rock plateau",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_plateau.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_right",
+      "name": "cliff gray rock right",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_stairs_bottom",
+      "name": "cliff gray rock stairs bottom",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_stairs_bottom.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_stairs_top",
+      "name": "cliff gray rock stairs top",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_stairs_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_rock_top",
+      "name": "cliff gray rock top",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_sand_corner_bl",
+      "name": "cliff gray sand corner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_sand_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_sand_corner_br",
+      "name": "cliff gray sand corner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_sand_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_stairs_l",
+      "name": "cliff gray stairs l",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_stairs_l.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_stairs_r",
+      "name": "cliff gray stairs r",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_stairs_r.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_gray_top",
+      "name": "cliff gray top",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_top.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_mossy_forest_plateau",
+      "name": "Meseta Selvática con Musgo",
+      "category": "elevation",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_mossy_forest_plateau.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_mossy_stairs_complex",
+      "name": "Escalera Antigua con Musgo",
+      "category": "elevation",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_mossy_stairs_complex.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_plateau_rock",
+      "name": "cliff plateau rock",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_plateau_rock.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_plateau_rock_gray",
+      "name": "cliff plateau rock gray",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_plateau_rock_gray.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_rim_north",
+      "name": "cliff rim north",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_rim_north.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_sand_corner_bl",
+      "name": "cliff sand corner bl",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_sand_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cliff_sand_corner_br",
+      "name": "cliff sand corner br",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_sand_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_desert_canyon_sand_caves",
+      "name": "Cueva de Cañón de Arenisca",
+      "category": "elevation",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_desert_canyon_sand_caves.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_desert_cave_sinkhole",
+      "name": "Cueva / Sumidero de Desierto",
+      "category": "elevation",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_desert_cave_sinkhole.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_desert_crater_hole_impact",
+      "name": "Cráter de Impacto en Roca",
+      "category": "elevation",
+      "width": 64,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_desert_crater_hole_impact.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_desert_rocky_stairs_ridge",
+      "name": "Cresta Escalonada de Desierto",
+      "category": "elevation",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_desert_rocky_stairs_ridge.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_grass_elevated_brown",
+      "name": "grass elevated brown",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_grass_elevated_brown.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_grass_elevated_gray",
+      "name": "grass elevated gray",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_grass_elevated_gray.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_mountain_dirt",
+      "name": "mountain dirt",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_mountain_dirt.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_mountain_dirt_brown",
+      "name": "mountain dirt brown",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_mountain_dirt_brown.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_mountain_dirt_gray",
+      "name": "mountain dirt gray",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_mountain_dirt_gray.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_mountain_dirt_moss",
+      "name": "Terreno de Tierra con Musgo",
+      "category": "elevation",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_mountain_dirt_moss.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_stairs_mtmoon",
+      "name": "Escaleras Talladas de Mt. Moon",
+      "category": "elevation",
+      "width": 64,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_stairs_mtmoon.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_tanoby_ruins_red_crater_plateau",
+      "name": "Meseta de Cráter de Ruinas Tanoby",
+      "category": "elevation",
+      "width": 128,
+      "height": 128,
+      "file_path": "/assets/essentials/prefabs/elevation/poke_tanoby_ruins_red_crater_plateau.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "fence_picket",
+      "name": "Valla Blanca de Estacas",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/fence_picket.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "flowers_red",
+      "name": "Cantero de Flores Rojas",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/flowers_red.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "mailbox",
+      "name": "mailbox",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/mailbox.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bench",
+      "name": "Banco de Madera",
+      "category": "props",
+      "width": 64,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bench.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bench_concrete_white",
+      "name": "Banco de Cemento Blanco",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bench_concrete_white.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bench_park_concrete",
+      "name": "Banco de Parque Cívico",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_bench_park_concrete.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bench_v_left",
+      "name": "bench v left",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_bench_v_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bench_v_right",
+      "name": "bench v right",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_bench_v_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_billboard_gym_mart",
+      "name": "Gran Cartelera Comercial",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_billboard_gym_mart.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_boulder_large",
+      "name": "boulder large",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_boulder_large.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_center",
+      "name": "bridge railings center",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_center.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_corner_inner_ne",
+      "name": "bridge railings corner inner ne",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_ne.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_corner_inner_nw",
+      "name": "bridge railings corner inner nw",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_nw.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_corner_inner_se",
+      "name": "bridge railings corner inner se",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_se.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_corner_inner_sw",
+      "name": "bridge railings corner inner sw",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_sw.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_corner_outer_ne",
+      "name": "bridge railings corner outer ne",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_ne.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_corner_outer_nw",
+      "name": "bridge railings corner outer nw",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_nw.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_corner_outer_se",
+      "name": "bridge railings corner outer se",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_se.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_corner_outer_sw",
+      "name": "bridge railings corner outer sw",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_sw.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_edge_e",
+      "name": "bridge railings edge e",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_edge_e.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_edge_n",
+      "name": "bridge railings edge n",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_edge_n.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_edge_s",
+      "name": "bridge railings edge s",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_edge_s.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bridge_railings_edge_w",
+      "name": "bridge railings edge w",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_edge_w.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bulletin_board_wood",
+      "name": "Tablón Comunal de Madera",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bulletin_board_wood.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_bush_round",
+      "name": "bush round",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_bush_round.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cave_entrance_mtmoon",
+      "name": "cave entrance mtmoon",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_cave_entrance_mtmoon.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_counter_register_blue",
+      "name": "counter register blue",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_counter_register_blue.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_counter_register_red",
+      "name": "counter register red",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_counter_register_red.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_crate_stack_wood",
+      "name": "Pila de Cajas de Madera",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_crate_stack_wood.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_crate_vegetables_box",
+      "name": "Cajón de Verduras Frescas",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_crate_vegetables_box.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_crate_wood_lidded",
+      "name": "Caja de Madera con Tapa",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_crate_wood_lidded.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_crate_wood_single",
+      "name": "Caja de Madera",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_crate_wood_single.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cycling_arch_blue",
+      "name": "Arco de Entrada al Camino de Bicis",
+      "category": "props",
+      "width": 64,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_cycling_arch_blue.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_cycling_road_overhead_signs",
+      "name": "Señal Aérea de Autopista de Bicis",
+      "category": "props",
+      "width": 96,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_cycling_road_overhead_signs.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_picket",
+      "name": "Valla Blanca de Estacas",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_picket.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_corner_bl",
+      "name": "fence white corner bl",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_corner_bl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_corner_br",
+      "name": "fence white corner br",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_corner_br.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_corner_tl",
+      "name": "fence white corner tl",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_corner_tl.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_corner_tr",
+      "name": "fence white corner tr",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_corner_tr.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_gate_post_l",
+      "name": "fence white gate post l",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_gate_post_l.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_gate_post_r",
+      "name": "fence white gate post r",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_gate_post_r.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_h_bottom",
+      "name": "fence white h bottom",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_h_bottom.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_h_mid",
+      "name": "fence white h mid",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_h_mid.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_v_left",
+      "name": "fence white v left",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_v_left.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_white_v_right",
+      "name": "fence white v right",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_v_right.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_wood_h",
+      "name": "Valla Horizontal de Madera",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_wood_h.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_wood_posts_l",
+      "name": "Poste de Valla de Madera (Izquierda)",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_wood_posts_l.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_wood_posts_m",
+      "name": "Poste de Valla de Madera (Centro)",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_wood_posts_m.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fence_wood_posts_r",
+      "name": "Poste de Valla de Madera (Derecha)",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_fence_wood_posts_r.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_flower_pot_circular",
+      "name": "Macetón Floral Circular",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_flower_pot_circular.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_flowers_red",
+      "name": "Cantero de Flores Rojas",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_flowers_red.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fountain",
+      "name": "Fuente Cívica Monumental",
+      "category": "props",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/props/poke_fountain.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fountain_anim_1",
+      "name": "fountain anim 1",
+      "category": "props",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_1.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fountain_anim_2",
+      "name": "fountain anim 2",
+      "category": "props",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_2.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fountain_anim_3",
+      "name": "fountain anim 3",
+      "category": "props",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_3.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fountain_anim_4",
+      "name": "fountain anim 4",
+      "category": "props",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_4.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_fountain_anim_5",
+      "name": "fountain anim 5",
+      "category": "props",
+      "width": 96,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_5.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_gym_sign",
+      "name": "gym sign",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_gym_sign.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_lamp_festival_post_l",
+      "name": "Poste de Farol Festivo (Izquierda)",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_lamp_festival_post_l.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_lamp_festival_post_r",
+      "name": "Poste de Farol Festivo (Derecha)",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_lamp_festival_post_r.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_ledge_jump",
+      "name": "Desnivel de Salto de Ruta",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_ledge_jump.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_mailbox",
+      "name": "Buzón Residencial Rojo",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_mailbox.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_mailbox_post_white",
+      "name": "Buzón Suburbano Blanco",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_mailbox_post_white.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_pedestal_concrete_round",
+      "name": "Pedestal Redondo de Concreto",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_pedestal_concrete_round.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_pot_clay_urn",
+      "name": "Tinaja Rústica de Barro",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_pot_clay_urn.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_rock_boulder_brown_large",
+      "name": "Roca Grande de Montaña",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_rock_boulder_brown_large.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_rock_boulder_mossy_1",
+      "name": "Roca con Musgo (Tipo A)",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_rock_boulder_mossy_1.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_rock_boulder_mossy_2",
+      "name": "Roca con Musgo (Tipo B)",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_rock_boulder_mossy_2.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_rock_small",
+      "name": "Guijarro Pequeño",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_rock_small.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_rock_stone_gray_medium",
+      "name": "Piedra Gris Mediana",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_rock_stone_gray_medium.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_sign_blue_metal",
+      "name": "Cartel Metálico Azul",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_sign_blue_metal.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_sign_bulletin_small",
+      "name": "Tablero de Avisos Pequeño",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_sign_bulletin_small.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_sign_danger_tnt",
+      "name": "Cartel de Peligro / Advertencia",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_sign_danger_tnt.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_signpost",
+      "name": "Poste de Señalización",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_signpost.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_signpost_wood",
+      "name": "Poste Rústico de Madera",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_signpost_wood.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_signpost_wood_small",
+      "name": "Cartel Rústico de Flecha",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_signpost_wood_small.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_stairs_mtmoon",
+      "name": "Escaleras Talladas de Mt. Moon",
+      "category": "props",
+      "width": 64,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_stairs_mtmoon.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_statue_gym",
+      "name": "Estatua Ceremonial de Gimnasio (B)",
+      "category": "props",
+      "width": 32,
+      "height": 64,
+      "file_path": "/assets/essentials/prefabs/props/poke_statue_gym.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_street_lamp",
+      "name": "Farola Urbana de Avenida",
+      "category": "props",
+      "width": 32,
+      "height": 96,
+      "file_path": "/assets/essentials/prefabs/props/poke_street_lamp.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "poke_trainer_tips_sign",
+      "name": "Pizarra de Pistas para Entrenadores",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/poke_trainer_tips_sign.png",
+      "source": "pokemon_essentials"
+    },
+    {
+      "id": "signpost",
+      "name": "signpost",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file_path": "/assets/essentials/prefabs/props/signpost.png",
+      "source": "pokemon_essentials"
+    }
+  ]
+}

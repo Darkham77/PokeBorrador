@@ -21,6 +21,8 @@
     "tests/**/*.tsx",
     "vite.config.ts",
     "ui-demo/**/*.ts",
-    "ui-demo/**/*.vue"
+    "ui-demo/**/*.vue",
+    "test_aventura/**/*.ts",
+    "test_aventura/**/*.vue"
   ]
 }

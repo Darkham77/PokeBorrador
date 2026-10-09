@@ -262,7 +262,7 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
   }
 
   // If it's already a full URL or local test path, return it directly
-  if (typeof rawId === 'string' && (rawId.startsWith('http') || rawId.startsWith('data:') || rawId.startsWith('/test aventura/'))) {
+  if (typeof rawId === 'string' && (rawId.startsWith('http') || rawId.startsWith('data:') || rawId.startsWith('/test_aventura/') || rawId.startsWith('/test aventura/'))) {
     return rawId;
   }
 

@@ -1,0 +1,234 @@
+{
+  "version": "2.0.0",
+  "generatedAt": "2026-09-13T07:22:20.771Z",
+  "totalPrefabs": 21,
+  "categories": {
+    "buildings": 12,
+    "vegetation": 4,
+    "elevation": 0,
+    "infrastructure": 0,
+    "props": 5
+  },
+  "prefabs": [
+    {
+      "id": "house_red",
+      "name": "Casa Roja",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file": "house_red.png",
+      "file_path": "/assets/prefabs/buildings/house_red.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "house_blue",
+      "name": "Casa Azul",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file": "house_blue.png",
+      "file_path": "/assets/prefabs/buildings/house_blue.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "house_green",
+      "name": "Casa Verde",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file": "house_green.png",
+      "file_path": "/assets/prefabs/buildings/house_green.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "house_pewter_slate",
+      "name": "Casa Pizarra Pewter",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file": "house_pewter_slate.png",
+      "file_path": "/assets/prefabs/buildings/house_pewter_slate.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "lab_oak",
+      "name": "Lab de Oak",
+      "category": "buildings",
+      "width": 224,
+      "height": 192,
+      "file": "lab_oak.png",
+      "file_path": "/assets/prefabs/buildings/lab_oak.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "pokecenter",
+      "name": "Centro Pokémon",
+      "category": "buildings",
+      "width": 160,
+      "height": 160,
+      "file": "pokecenter.png",
+      "file_path": "/assets/prefabs/buildings/pokecenter.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "pokemart",
+      "name": "Poké Mart",
+      "category": "buildings",
+      "width": 128,
+      "height": 128,
+      "file": "pokemart.png",
+      "file_path": "/assets/prefabs/buildings/pokemart.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "gym",
+      "name": "Gimnasio Brock",
+      "category": "buildings",
+      "width": 192,
+      "height": 160,
+      "file": "gym.png",
+      "file_path": "/assets/prefabs/buildings/gym.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "pewter_museum",
+      "name": "Museo de Pewter",
+      "category": "buildings",
+      "width": 512,
+      "height": 256,
+      "file": "pewter_museum.png",
+      "file_path": "/assets/prefabs/buildings/pewter_museum.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "mansion_school",
+      "name": "Escuela Pokémon",
+      "category": "buildings",
+      "width": 224,
+      "height": 256,
+      "file": "mansion_school.png",
+      "file_path": "/assets/prefabs/buildings/mansion_school.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "gatehouse_route",
+      "name": "Aduana Ruta 2",
+      "category": "buildings",
+      "width": 192,
+      "height": 224,
+      "file": "gatehouse_route.png",
+      "file_path": "/assets/prefabs/buildings/gatehouse_route.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "gatehouse_route_horizontal",
+      "name": "Aduana Horizontal de Ruta",
+      "category": "buildings",
+      "width": 256,
+      "height": 160,
+      "file": "gatehouse_route_horizontal.png",
+      "file_path": "/assets/prefabs/buildings/gatehouse_route_horizontal.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "pokemon_league",
+      "name": "Palacio de la Liga Pokémon",
+      "category": "buildings",
+      "width": 512,
+      "height": 224,
+      "file": "pokemon_league.png",
+      "file_path": "/assets/prefabs/buildings/pokemon_league.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "tree_poke",
+      "name": "Árbol Canónico",
+      "category": "vegetation",
+      "width": 64,
+      "height": 96,
+      "file": "tree_poke.png",
+      "file_path": "/assets/prefabs/vegetation/tree_poke.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "tree_viridian_forest",
+      "name": "Conífera Bosque Verde",
+      "category": "vegetation",
+      "width": 64,
+      "height": 96,
+      "file": "tree_viridian_forest.png",
+      "file_path": "/assets/prefabs/vegetation/tree_viridian_forest.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "tree_cuttable",
+      "name": "Árbol Cortable",
+      "category": "vegetation",
+      "width": 32,
+      "height": 32,
+      "file": "tree_cuttable.png",
+      "file_path": "/assets/prefabs/vegetation/tree_cuttable.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "tree_pine_small",
+      "name": "Pino Pequeño",
+      "category": "vegetation",
+      "width": 64,
+      "height": 96,
+      "file": "tree_pine_small.png",
+      "file_path": "/assets/prefabs/vegetation/tree_pine_small.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "flowers_red",
+      "name": "Flores Rojas",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file": "flowers_red.png",
+      "file_path": "/assets/prefabs/props/flowers_red.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "fence_picket",
+      "name": "Valla Blanca",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file": "fence_picket.png",
+      "file_path": "/assets/prefabs/props/fence_picket.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "signpost",
+      "name": "Cartel",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file": "signpost.png",
+      "file_path": "/assets/prefabs/props/signpost.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "mailbox",
+      "name": "Buzón",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file": "mailbox.png",
+      "file_path": "/assets/prefabs/props/mailbox.png",
+      "source": "pokegba"
+    },
+    {
+      "id": "poke_ledge_jump",
+      "name": "Desnivel de Salto",
+      "category": "props",
+      "width": 32,
+      "height": 32,
+      "file": "poke_ledge_jump.png",
+      "file_path": "/assets/prefabs/props/poke_ledge_jump.png",
+      "source": "pokegba"
+    }
+  ]
+}

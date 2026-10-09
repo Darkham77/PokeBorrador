@@ -1,5 +1,5 @@
 import { ref, computed, watch, type Ref } from 'vue'
-import { findShortestPath, requireAdventureNodeId, type AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import { findShortestPath, requireAdventureNodeId, type AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { SHOP_ITEMS, requireItemId, type ItemId } from '@/data/inventory/items'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'

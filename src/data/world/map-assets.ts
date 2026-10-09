@@ -30,17 +30,17 @@ export const MAP_ROUTE_MAPPING = {
   victory_road: 'callevictoria',
   cerulean_cave: 'cuevaceleste',
   
-  // Kanto Cities (test aventura)
-  pallet_town: '/test aventura/imagenes/Pallet_Town_FRLG.png',
-  viridian_city: '/test aventura/imagenes/Viridian_City_FRLG.png',
-  pewter_city: '/test aventura/imagenes/Pewter_City_FRLG.png',
-  cerulean_city: '/test aventura/imagenes/Cerulean_City_FRLG.png',
-  vermilion_city: '/test aventura/imagenes/Vermilion_City_FRLG.png',
-  lavender_town: '/test aventura/imagenes/Lavender_Town_FRLG.png',
-  celadon_city: '/test aventura/imagenes/Celadon_City_FRLG.png',
-  saffron_city: '/test aventura/imagenes/Saffron_City_FRLG.png',
-  fuchsia_city: '/test aventura/imagenes/Fuchsia_City_FRLG.png',
-  cinnabar_island: '/test aventura/imagenes/Cinnabar_Island_FRLG.png',
+  // Kanto Cities (test_aventura)
+  pallet_town: '/test_aventura/imagenes/Pallet_Town_FRLG.png',
+  viridian_city: '/test_aventura/imagenes/Viridian_City_FRLG.png',
+  pewter_city: '/test_aventura/imagenes/Pewter_City_FRLG.png',
+  cerulean_city: '/test_aventura/imagenes/Cerulean_City_FRLG.png',
+  vermilion_city: '/test_aventura/imagenes/Vermilion_City_FRLG.png',
+  lavender_town: '/test_aventura/imagenes/Lavender_Town_FRLG.png',
+  celadon_city: '/test_aventura/imagenes/Celadon_City_FRLG.png',
+  saffron_city: '/test_aventura/imagenes/Saffron_City_FRLG.png',
+  fuchsia_city: '/test_aventura/imagenes/Fuchsia_City_FRLG.png',
+  cinnabar_island: '/test_aventura/imagenes/Cinnabar_Island_FRLG.png',
   stadium: 'gimnasio',
   gym: 'gimnasio'
 } as const;
