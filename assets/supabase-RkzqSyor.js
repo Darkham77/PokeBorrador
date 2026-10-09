@@ -1,0 +1,1 @@
+export{t as default,t as supabase}from"./supabase-Cdw7v5zM.js";

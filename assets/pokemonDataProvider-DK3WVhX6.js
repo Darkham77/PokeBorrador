@@ -1,1 +1,0 @@
-export{t as pokemonDataProvider}from"./pokemonDataProvider-BJvSY_-W.js";
