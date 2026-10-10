@@ -119,40 +119,40 @@ function selectActiveLayer(layer: StudioLayer): void {
 .studio-layers-panel {
   display: flex;
   flex-direction: column;
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 6px;
+  gap: $spacing-md-alt;
   padding: 10px;
-  gap: 10px;
-  font-family: monospace, sans-serif;
+  border: 1px solid var(--slate-800);
+  border-radius: $radius-md;
+  background: var(--slate-900);
+  font-family: $font-family-mono;
   user-select: none;
 }
 
 .panel-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  border-bottom: 1px solid #1e293b;
+  gap: $spacing-sm-alt;
+  border-bottom: 1px solid var(--slate-800);
   padding-bottom: 6px;
 
   .header-icon {
-    font-size: 13px;
+    font-size: var(--font-13);
   }
 
   .panel-title {
-    font-size: 11px;
-    font-weight: bold;
-    color: #38bdf8;
     margin: 0;
+    color: var(--sky);
+    font-size: var(--font-11);
+    font-weight: bold;
     letter-spacing: 0.5px;
   }
 }
 
 .section-label {
   display: block;
-  font-size: 10px;
+  color: var(--slate-500);
+  font-size: var(--font-10);
   font-weight: 600;
-  color: #64748b;
   margin-bottom: 6px;
   text-transform: uppercase;
 }
@@ -160,38 +160,38 @@ function selectActiveLayer(layer: StudioLayer): void {
 .layers-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 
   .layer-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 5px 8px;
-    background: #1e293b;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: $radius-sm;
+    background: var(--slate-800);
     cursor: pointer;
 
     &:hover {
-      background: #334155;
+      background: var(--slate-700);
     }
 
     &.active {
-      border-color: #38bdf8;
-      background: Rgba(56, 189, 248, 0.15);
+      background: Rgb(56 189 248 / 15%);
+      border-color: var(--sky);
 
       .layer-name {
-        color: #f8fafc;
+        color: var(--slate-50);
         font-weight: bold;
       }
     }
 
     .vis-btn {
-      background: transparent;
-      border: none;
-      font-size: 12px;
-      cursor: pointer;
       padding: 0;
+      border: none;
+      background: transparent;
+      font-size: var(--font-12);
+      cursor: pointer;
 
       &.hidden {
         opacity: 0.35;
@@ -199,12 +199,12 @@ function selectActiveLayer(layer: StudioLayer): void {
     }
 
     .layer-icon {
-      font-size: 12px;
+      font-size: var(--font-12);
     }
 
     .layer-name {
-      font-size: 11px;
-      color: #94a3b8;
+      color: var(--slate-400);
+      font-size: var(--font-11);
       flex: 1;
       white-space: nowrap;
       overflow: hidden;
@@ -212,41 +212,41 @@ function selectActiveLayer(layer: StudioLayer): void {
     }
 
     .active-indicator {
-      font-size: 11px;
+      font-size: var(--font-11);
     }
   }
 }
 
 .panel-divider {
   height: 1px;
-  background: #1e293b;
+  background: var(--slate-800);
 }
 
 .overlays-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   .overlay-item {
     .checkbox-label {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: #cbd5e1;
+      gap: $spacing-sm;
+      color: var(--slate-300);
+      font-size: var(--font-11);
       cursor: pointer;
 
       input[type="checkbox"] {
-        accent-color: #38bdf8;
+        accent-color: var(--sky);
         cursor: pointer;
       }
 
       .overlay-icon {
-        font-size: 12px;
+        font-size: var(--font-12);
       }
 
       .overlay-name {
-        font-size: 11px;
+        font-size: var(--font-11);
       }
     }
   }

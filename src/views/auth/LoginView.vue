@@ -131,8 +131,9 @@ onMounted(() => {
   }
 
   if (logoRef.value) {
+    const INTRO_LOGO_OFFSET_Y = 100 as const;
     gsap.from(logoRef.value, {
-      y: -100,
+      y: -INTRO_LOGO_OFFSET_Y,
       opacity: 0,
       duration: 1.5,
       ease: 'back.out(1.2)',
@@ -216,13 +217,15 @@ watch(error, (newVal) => {
       if (card) {
         gsap.killTweensOf(card)
         const BAN_SHAKE_STEP_SEC = 0.05;
+        const BAN_SHAKE_LARGE_PX = 4;
+        const BAN_SHAKE_SMALL_PX = 2;
         const tl = gsap.timeline()
-        tl.to(card, { x: -4, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: 4, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: -4, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: 4, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: -2, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: 2, duration: BAN_SHAKE_STEP_SEC })
+        tl.to(card, { x: -BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: -BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: -BAN_SHAKE_SMALL_PX, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: BAN_SHAKE_SMALL_PX, duration: BAN_SHAKE_STEP_SEC })
           .to(card, { x: 0, duration: BAN_SHAKE_STEP_SEC })
       }
     })

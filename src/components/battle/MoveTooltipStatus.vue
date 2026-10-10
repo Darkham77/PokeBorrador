@@ -142,7 +142,7 @@ defineProps<{
 .status-effect-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .calc-section-title {
@@ -156,15 +156,15 @@ defineProps<{
 .status-desc-box {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
   padding: 4px 6px;
-  border: 1px dotted rgb(255 255 255 / 8%);
-  border-radius: 4px;
-  background: rgb(0 0 0 / 15%);
+  border: 1px dotted Rgb(255 255 255 / 8%);
+  border-radius: $radius-sm;
+  background: Rgb(0 0 0 / 15%);
   margin-top: 4px;
 
   .stat-lbl {
-    color: rgb(255 255 255 / 50%);
+    color: Rgb(255 255 255 / 50%);
     font-size: $tooltip-stat-label-size;
     font-weight: bold;
     letter-spacing: 0.3px;
@@ -172,7 +172,7 @@ defineProps<{
   }
 
   .status-desc-text {
-    color: rgb(255 255 255 / 80%);
+    color: Rgb(255 255 255 / 80%);
     font-size: $tooltip-breakdown-item-size;
     line-height: 1.3;
     overflow-wrap: break-word;

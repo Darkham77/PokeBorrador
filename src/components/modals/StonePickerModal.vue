@@ -181,7 +181,7 @@ const getPokemonName = (id: string) => {
 
 .stone-help {
   color: Rgb(255 255 255 / 50%);
-  font-size: 13px;
+  font-size: var(--font-13);
   text-align: center;
   margin-bottom: 24px;
   
@@ -194,16 +194,16 @@ const getPokemonName = (id: string) => {
 .options-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .stone-option-vicio {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 3%);
 
   &:not(.disabled):hover {
@@ -228,7 +228,7 @@ const getPokemonName = (id: string) => {
   align-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(0 0 0 / 20%);
   
   .stone-sprite {
@@ -238,20 +238,20 @@ const getPokemonName = (id: string) => {
     height: 36px;
   }
   
-  .fallback-icon { font-size: 24px; }
+  .fallback-icon { font-size: var(--font-24); }
 }
 
 .stone-details {
   flex: 1;
   .stone-name {
-    color: white;
-    font-size: 14px;
+    color: var(--white);
+    font-size: var(--font-14);
     font-weight: 700;
     
   }
   .evo-target {
     color: Rgb(255 255 255 / 30%);
-    font-size: 11px;
+    font-size: var(--font-11);
     margin-top: 2px;
   }
 }
@@ -262,15 +262,15 @@ const getPokemonName = (id: string) => {
 
   padding: 10px 14px;
   border: 1px solid Rgb(251 191 36 / 30%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(251 191 36 / 15%);
   color: var(--yellow);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
 
   &:hover:not(:disabled) {
     background: var(--yellow);
-    color: black;
+    color: var(--black);
     transform: Scale(1.05);
   }
 

@@ -82,7 +82,7 @@ body.is-battle-active {
   flex-shrink: 0;
   aspect-ratio: 16 / 9; // Ratio base recomendado
   overflow: hidden;
-  box-shadow: 0 10px 30px Rgb(0 0 0 / 50%);
+  box-shadow: $shadow-xl;
 
   @media (width >= 1360px) {
     height: 100%;
@@ -136,8 +136,8 @@ body.is-battle-active {
       left: 10px;
       padding: 4px 8px;
       background: Rgb(0 0 0 / 60%);
-      color: white;
-      font-size: 12px;
+      color: var(--white);
+      font-size: var(--font-12);
       transform: Scale(calc(1 / var(--camera-scale, 1)));
       content: attr(data-label);
       text-shadow: none;
@@ -156,8 +156,8 @@ body.is-battle-active {
       position: absolute;
       top: 5px;
       left: 5px;
-      color: white;
-      font-size: 8px;
+      color: var(--white);
+      font-size: var(--font-8);
       transform: Scale(calc(1 / var(--camera-scale, 1)));
       transform-origin: left top;
     }
@@ -185,13 +185,13 @@ body.is-battle-active {
       left: 40px;
       z-index: var(--z-low);
       padding: 10px 20px;
-      border: 4px solid white;
+      border: 4px solid var(--white);
       background: red;
-      color: white;
-      font-size: 24px;
+      color: var(--white);
+      font-size: var(--font-24);
       transform: Scale(calc(1 / var(--camera-scale, 1)));
       content: 'VIRTUAL WORLD BOUNDARY (3000x3000px)';
-      box-shadow: 0 0 30px black;
+      box-shadow: var(--shadow-glow-amber-lg);
       transform-origin: left top;
     }
   }
@@ -250,7 +250,6 @@ body.is-battle-active {
   &.bush-back-2 { --bx: calc(var(--obj-scale, 1) * 10px); --by: calc(var(--obj-scale, 1) * -12px); --bs: 1.1; }
 }
 
-
 .battle-combatants {
   position: absolute;
   z-index: var(--z-base);
@@ -270,11 +269,11 @@ body.is-battle-active {
   padding: 14px;
   border: 1px solid Rgb(255 255 255 / 8%);
   background: Rgb(0 0 0 / 45%);
-  font-size: 11px;
+  font-size: var(--font-11);
   margin-bottom: 0;
   flex: 1; 
   overflow-y: auto;
-  box-shadow: inset 0 2px 10px Rgb(0 0 0 / 50%);
+  box-shadow: var(--shadow-inset-md);
 
   .log-entry {
     line-height: 1.4;
@@ -302,5 +301,3 @@ body.is-battle-active {
   &.enemy-sprite { justify-content: flex-end; align-items: flex-start; }
   &.player-sprite { justify-content: flex-start; align-items: flex-end; }
 }
-
-

@@ -18,7 +18,7 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveCanonicalBridges,
   type TerrainCell
-} from '../../../src/logic/map/canonicalBridgeEngine.ts';
+} from '../../logic/map/canonicalBridgeEngine.ts';
 
 describe.skip('Bridge Turn Continuity & Zero-Diced Invariant', () => {
   it('guarantees L-turns render unbroken horizontal spans and clean vertical entrances', () => {

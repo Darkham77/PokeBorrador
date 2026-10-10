@@ -152,20 +152,20 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 10px 20px;
   border: none;
   border: 1px solid Rgb(255 255 255 / 20%);
-  border-radius: 24px;
+  border-radius: $radius-4xl;
   background: Linear-Gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-  color: white;
-  font-size: 8px;
+  color: var(--white);
+  font-size: var(--font-8);
   cursor: pointer;
-  box-shadow: 0 8px 25px Rgb(124 58 237 / 40%);
+  box-shadow: var(--shadow-card);
 
   &:hover {
     transform: Translatey(-2px) Scale(1.05);
-    box-shadow: 0 12px 30px Rgb(124 58 237 / 50%);
+    box-shadow: var(--shadow-card);
   }
 }
 
@@ -179,7 +179,7 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 .debug-status-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 12px 20px;
   background: Rgb(0 0 0 / 20%);
   border-bottom: 1px solid Rgb(255 255 255 / 5%);
@@ -192,8 +192,8 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
   width: fit-content;
   margin: 0;
   padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 8px;
+  border-radius: $radius-md;
+  font-size: var(--font-8);
   font-weight: 800;
   text-transform: uppercase;
 
@@ -224,7 +224,7 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 
 .debug-nav {
   display: flex;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 4px;
   background: Rgb(255 255 255 / 2%);
   border-bottom: 1px solid Rgb(255 255 255 / 5%);
@@ -235,10 +235,10 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 
     padding: 14px 4px;
     border: none;
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: transparent;
     color: $muted;
-    font-size: 8px;
+    font-size: var(--font-8);
     flex: 1;
     cursor: pointer;
     
@@ -247,7 +247,7 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
     &.active {
       background: Rgb(124 58 237 / 15%);
       color: $purple;
-      box-shadow: inset 0 0 10px Rgb(124 58 237 / 10%), 0 2px 0 Rgb(0 0 0 / 20%);
+      box-shadow: var(--shadow-inset-md);
     }
   }
 }
@@ -266,7 +266,7 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    border-radius: 10px;
+    border-radius: $radius-lg-alt;
     background: Rgb(255 255 255 / 5%);
     &:hover { background: Rgb(255 255 255 / 10%); }
   }
@@ -278,7 +278,7 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 
   padding: 60px 20px;
   color: $muted;
-  font-size: 8px;
+  font-size: var(--font-8);
   line-height: 1.6;
   text-align: center;
 }

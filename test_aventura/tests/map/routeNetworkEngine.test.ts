@@ -17,17 +17,17 @@ import {
   generateContinentMap,
   removeOrphanTiles,
   type ContinentMapResult
-} from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
+} from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import {
   buildRouteChain,
   generateRouteNetwork
-} from '../../../src/logic/map/routeNetworkEngine.ts';
+} from '../../logic/map/routeNetworkEngine.ts';
 import {
   resolvePathGrid,
   CANONICAL_DIRT_PATH_BRUSH
-} from '../../../src/logic/map/pathAutotileEngine.ts';
-import type { WaterTerrainKind } from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/pathAutotileEngine.ts';
+import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('routeNetworkEngine & POI systems', () => {
   describe('removeOrphanTiles', () => {

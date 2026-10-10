@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/logic/services/assetService'
 import IndividualPokemonEditor from './IndividualPokemonEditor.vue'
@@ -47,6 +48,8 @@ const {
   validateTeamLegality,
   availableSpriteList
 } = useDebugTrainers()
+
+const canAddMorePokemon = computed(() => enemyTeam.value.length < MAX_POKEMON_TEAM_SIZE)
 
 async function startCombat() {
   const validation = validateTeamLegality()
@@ -123,9 +126,10 @@ onMounted(() => {
     <!-- Section 3: Trainer Team Grid -->
     <div class="debug-card">
       <div class="section-header-row flex-between">
-        <label>EQUIPO DEL ENTRENADOR ({{ enemyTeam.length }}/6)</label>
-        <button 
-          v-if="enemyTeam.length < 6" 
+        <label>EQUIPO DEL ENTRENADOR ({{ enemyTeam.length }}/{{ MAX_POKEMON_TEAM_SIZE }})</label>
+        <button
+          v-if="canAddMorePokemon" 
+          id="debug-trainers-tab-btn-a-adir-pok-mon" 
           class="btn-vicio-primary sm"
           @click.stop="addPokemonToTeam"
         >
@@ -134,8 +138,9 @@ onMounted(() => {
       </div>
 
       <div class="team-grid-layout">
-        <div 
+        <div
           v-for="(p, index) in enemyTeam" 
+          id="debug-trainers-tab-div-1" 
           :key="index"
           class="team-poke-card"
           :class="{ active: selectedPokeIndex === index }"
@@ -148,7 +153,8 @@ onMounted(() => {
               class="poke-sprite"
               @error="(e) => handleSpriteError(e, p.id, p.isShiny)"
             >
-            <button 
+            <button
+              id="debug-trainers-tab-btn-2" 
               class="btn-delete-poke" 
               @click.stop="removePokemonFromTeam(index)"
             >

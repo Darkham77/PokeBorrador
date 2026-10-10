@@ -96,7 +96,7 @@ const exitButtonConfig = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   width: 100%;
   padding: 20px;
 }
@@ -108,7 +108,7 @@ const exitButtonConfig = computed(() => {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   max-width: 300px;
   text-align: left;
   pointer-events: all;
@@ -124,7 +124,7 @@ const exitButtonConfig = computed(() => {
     justify-content: center;
     align-items: center;
     width: 32px;
-    font-size: 28px; 
+    font-size: var(--font-28); 
     line-height: 1;
     will-change: transform, filter, opacity;
     filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 30%));

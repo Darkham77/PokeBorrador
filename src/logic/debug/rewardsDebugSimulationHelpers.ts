@@ -28,6 +28,10 @@ const SIMULATED_RANK_POSITION = 12 as const;
 const SIMULATED_RANK_BATTLE_COINS = 75 as const;
 const ARCHIVED_TOURNAMENT_PRIZE_MONEY = 10000 as const;
 const SIMULATED_MISSION_PROJECTED_REWARD = 5000 as const;
+const SIMULATED_MISSION_STARTED_HOURS_AGO = 7 as const;
+const SIMULATED_MISSION_ENDED_HOURS_AGO = 1 as const;
+const SECONDS_IN_AN_HOUR = 3600 as const;
+const MS_IN_A_SECOND = 1000 as const;
 
 async function persistAwardsToDb(
   db: DBRouter,
@@ -131,8 +135,8 @@ export function injectSimulatedClassMission(state: GameState): void {
     ...state.classData,
     activeMission: {
       id: 'mission_6h',
-      startedAt: nowMs - (7 * 3600 * 1000),
-      endsAt: nowMs - (1 * 3600 * 1000),
+      startedAt: nowMs - (SIMULATED_MISSION_STARTED_HOURS_AGO * SECONDS_IN_AN_HOUR * MS_IN_A_SECOND),
+      endsAt: nowMs - (SIMULATED_MISSION_ENDED_HOURS_AGO * SECONDS_IN_AN_HOUR * MS_IN_A_SECOND),
       projectedReward: SIMULATED_MISSION_PROJECTED_REWARD
     }
   };

@@ -12,30 +12,29 @@ body .selection-container {
 .filters-bar {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
   width: 100%;
   padding: 0 20px;
   margin-bottom: 0;
   box-sizing: border-box;
 
   &.is-compact {
-    gap: 3px;
+    gap: $spacing-xs-alt;
     padding: 0 10px;
   }
 
   @media (width <= 768px) {
-    gap: 3px;
+    gap: $spacing-xs-alt;
     padding: 0 10px;
   }
 }
 
 // Unused .ps-search-box removed to resolve redundancy
 
-
 .ps-sort-btns {
   display: flex;
   flex-wrap: nowrap;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   width: 100%;
 
   .ps-sort-wrapper {
@@ -50,10 +49,10 @@ body .selection-container {
     width: 100%;
     padding: 6px 1px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(255 255 255 / 3%);
     color: var(--gray);
-    font-size: 7px;
+    font-size: var(--font-7);
     cursor: pointer;
     white-space: nowrap;
 
@@ -81,19 +80,19 @@ body .selection-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     width: 100%;
     min-height: 36px;
     padding: 4px 8px;
     border: 1px solid Rgb(255 255 255 / 6%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 20%);
     box-sizing: border-box;
     overflow: visible;
 
     &.is-compact {
       flex-wrap: nowrap;
-      gap: 4px;
+      gap: $spacing-xs;
       min-height: 34px;
       padding: 5px 8px;
       overflow: visible;
@@ -101,7 +100,7 @@ body .selection-container {
 
     @media (width <= 768px) {
       flex-wrap: nowrap;
-      gap: 4px;
+      gap: $spacing-xs;
       min-height: 34px;
       padding: 5px 8px;
       overflow: visible;
@@ -114,9 +113,9 @@ body .selection-container {
     align-items: center;
     padding: 5px 8px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(255 255 255 / 3%);
-    font-size: 8.5px;
+    font-size: var(--font-9);
     cursor: pointer;
     flex-shrink: 0;
     
@@ -128,12 +127,12 @@ body .selection-container {
 
     &.is-compact {
       padding: 5px 6px;
-      font-size: 9px;
+      font-size: var(--font-9);
     }
 
     @media (width <= 768px) {
       padding: 5px 6px;
-      font-size: 9px;
+      font-size: var(--font-9);
     }
 
     &.disabled {
@@ -155,7 +154,7 @@ body .selection-container {
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 0;
     padding: 3px 0;
     flex: 1 1 auto;
@@ -167,7 +166,7 @@ body .selection-container {
 
     &.is-compact {
       flex-wrap: wrap;
-      gap: 3px;
+      gap: $spacing-xs-alt;
       padding: 2px 0;
       overflow-x: visible;
 
@@ -185,7 +184,7 @@ body .selection-container {
         padding: 0 4px;
 
         .emoji {
-          font-size: 10px;
+          font-size: var(--font-10);
         }
 
         .ps-tag-label {
@@ -203,11 +202,11 @@ body .selection-container {
     button {
       display: inline-flex;
       align-items: center;
-      gap: 2px;
+      gap: $spacing-2xs;
       height: 22px;
       padding: 0 5px;
       border: 1px solid Rgb(255 255 255 / 8%);
-      border-radius: 6px;
+      border-radius: $radius-md;
       background: Rgb(255 255 255 / 2%);
       opacity: 0.55;
       flex-shrink: 0;
@@ -230,7 +229,7 @@ body .selection-container {
         display: inline-flex;
         justify-content: center;
         align-items: center; 
-        font-size: 8px;
+        font-size: var(--font-8);
         line-height: 1;
       }
       
@@ -240,7 +239,7 @@ body .selection-container {
         display: inline-flex;
         align-items: center;
         color: var(--gray);
-        font-size: 6px !important;
+        font-size: var(--font-6) !important;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -254,71 +253,71 @@ body .selection-container {
         border-width: 1px;
         
         .ps-tag-label {
-          color: white;
+          color: var(--white);
         }
 
         &.ps-tag-fav {
           background: Rgb(255 217 61 / 5%);
-          color: #FFD93D;
-          border-color: #FFD93D;
-          box-shadow: 0 0 6px Rgb(255 217 61 / 25%);
-          .ps-tag-label { color: #FFD93D; }
+          color: var(--tag-fav);
+          border-color: var(--tag-fav);
+          box-shadow: var(--shadow-glow-yellow-sm);
+          .ps-tag-label { color: var(--tag-fav); }
         }
         &.ps-tag-breed {
           background: Rgb(255 77 77 / 5%);
-          color: #FF4D4D;
-          border-color: #FF4D4D;
-          box-shadow: 0 0 6px Rgb(255 77 77 / 25%);
-          .ps-tag-label { color: #FF4D4D; }
+          color: var(--tag-breed);
+          border-color: var(--tag-breed);
+          box-shadow: var(--shadow-glow-yellow-sm);
+          .ps-tag-label { color: var(--tag-breed); }
         }
         &.ps-tag-competitive {
           background: Rgb(52 199 89 / 5%);
-          color: #34C759;
-          border-color: #34C759;
-          box-shadow: 0 0 6px Rgb(52 199 89 / 25%);
-          .ps-tag-label { color: #34C759; }
+          color: var(--tag-competitive);
+          border-color: var(--tag-competitive);
+          box-shadow: var(--shadow-glow-yellow-sm);
+          .ps-tag-label { color: var(--tag-competitive); }
         }
         &.ps-tag-trade {
           background: Rgb(175 82 222 / 5%);
-          color: #AF52DE;
-          border-color: #AF52DE;
-          box-shadow: 0 0 6px Rgb(175 82 222 / 25%);
-          .ps-tag-label { color: #AF52DE; }
+          color: var(--tag-trade);
+          border-color: var(--tag-trade);
+          box-shadow: var(--shadow-glow-yellow-sm);
+          .ps-tag-label { color: var(--tag-trade); }
         }
         &.ps-tag-iv31 {
           background: Rgb(0 229 255 / 5%);
-          color: #00E5FF;
-          border-color: #00E5FF;
-          box-shadow: 0 0 6px Rgb(0 229 255 / 25%);
-          .ps-tag-label { color: #00E5FF; }
+          color: var(--tag-iv31);
+          border-color: var(--tag-iv31);
+          box-shadow: var(--shadow-glow-yellow-sm);
+          .ps-tag-label { color: var(--tag-iv31); }
         }
         &.ps-tag-shiny {
           background: Rgb(255 179 0 / 5%);
-          color: #FFB300;
-          border-color: #FFB300;
-          box-shadow: 0 0 6px Rgb(255 179 0 / 25%);
-          .ps-tag-label { color: #FFB300; }
+          color: var(--tag-shiny);
+          border-color: var(--tag-shiny);
+          box-shadow: var(--shadow-glow-yellow-sm);
+          .ps-tag-label { color: var(--tag-shiny); }
         }
         &.ps-tag-compatible {
           background: Rgb(255 45 85 / 8%);
-          color: #FF2D55;
-          border-color: #FF2D55;
-          box-shadow: 0 0 8px Rgb(255 45 85 / 35%);
-          .ps-tag-label { color: #FF2D55; }
+          color: var(--tag-compatible);
+          border-color: var(--tag-compatible);
+          box-shadow: var(--shadow-glow-yellow-sm);
+          .ps-tag-label { color: var(--tag-compatible); }
         }
         &.ps-tag-hatched {
           background: Rgb(255 149 0 / 5%);
-          color: #FF9500;
-          border-color: #FF9500;
-          box-shadow: 0 0 6px Rgb(255 149 0 / 25%);
-          .ps-tag-label { color: #FF9500; }
+          color: var(--tag-hatched);
+          border-color: var(--tag-hatched);
+          box-shadow: var(--shadow-glow-yellow-sm);
+          .ps-tag-label { color: var(--tag-hatched); }
         }
       }
     }
 
     @media (width <= 768px) {
       flex-wrap: wrap;
-      gap: 3px;
+      gap: $spacing-xs-alt;
       padding: 2px 0;
       overflow-x: visible;
 
@@ -336,7 +335,7 @@ body .selection-container {
         padding: 0 4px;
 
         .emoji {
-          font-size: 10px;
+          font-size: var(--font-10);
         }
 
         .ps-tag-label {
@@ -351,17 +350,17 @@ body .selection-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 5px;
+  gap: $spacing-xs-5;
   padding: 2px 0;
 
   button {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     height: 24px;
     padding: 0 6px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(255 255 255 / 3%);
     opacity: 0.6;
     cursor: pointer;
@@ -375,14 +374,14 @@ body .selection-container {
     }
 
     & .icon {
-      font-size: 9px;
+      font-size: var(--font-9);
     }
 
     & .ps-tag-label {
       @include pixelated;
 
       color: var(--gray);
-      font-size: 7px !important;
+      font-size: var(--font-7) !important;
       font-weight: normal !important;
       text-transform: uppercase;
 
@@ -397,7 +396,7 @@ body .selection-container {
       border-color: var(--yellow);
       will-change: transform, filter, opacity;
   filter: Grayscale(0);
-      box-shadow: 0 0 8px Rgb(255 214 10 / 15%);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 }
@@ -405,13 +404,13 @@ body .selection-container {
 .modal-footer {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: $spacing-md-15;
 
   .count {
     @include pixelated;
 
     color: var(--gray);
-    font-size: 8px;
+    font-size: var(--font-8);
     text-align: center;
   }
 
@@ -439,7 +438,7 @@ body .selection-container {
 
   padding: 40px;
   color: Rgb(255 255 255 / 30%);
-  font-size: 11px;
+  font-size: var(--font-11);
   text-align: center;
 }
 
@@ -452,7 +451,7 @@ body .selection-container {
     @include pixelated;
 
     color: var(--white) !important;
-    font-size: 11px !important;
+    font-size: var(--font-11) !important;
     letter-spacing: 1px !important;
     text-transform: uppercase;
     margin-bottom: 0 !important;
@@ -469,7 +468,7 @@ body .selection-container {
   .ps-search-icon {
     position: absolute;
     left: 12px;
-    font-size: 10px;
+    font-size: var(--font-10);
     opacity: 0.5;
     pointer-events: none;
   }
@@ -480,10 +479,10 @@ body .selection-container {
     width: 100%;
     padding: 8px 32px 8px 30px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 20%);
     color: var(--white);
-    font-size: 10px;
+    font-size: var(--font-10);
 
     &:focus {
       background: Rgb(255 214 10 / 5%);
@@ -506,7 +505,7 @@ body .selection-container {
     border: none;
     background: none;
     color: Rgb(255 255 255 / 30%);
-    font-size: 10px;
+    font-size: var(--font-10);
     cursor: pointer;
 
     &:hover {

@@ -7,6 +7,7 @@
 
 import type { GameState } from '@/types/system/game';
 import type { SaveDataDto } from '@/logic/validation/schemas';
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
 import { serializeActiveBattle } from './battleSerializerHelper.ts';
 import { parseMarketSoldSeenIds } from './saveSanitizerHelpers.ts';
 
@@ -64,7 +65,7 @@ function serializeWarOverview(state: GameState | SaveDataDto) {
     faction: state.faction ?? null,
     lastResolvedWeek: state.lastResolvedWeek ?? null,
     warTeam: state.warTeam ?? [],
-    warSlots: state.warSlots ?? 6,
+    warSlots: state.warSlots ?? MAX_POKEMON_TEAM_SIZE,
   };
 }
 

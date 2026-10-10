@@ -145,11 +145,11 @@ const getHpClass = (pct: number) => {
 %bar-outer-base {
   width: 100%;
   height: 8px;
-  border-radius: 4px;
-  background: rgb(0 0 0 / 40%);
+  border-radius: $radius-sm;
+  background: Rgb(0 0 0 / 40%);
   overflow: hidden;
   margin-bottom: 4px;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  box-shadow: var(--shadow-card);
 
   @media (width <= 600px) {
     height: 6px;
@@ -187,25 +187,25 @@ const getHpClass = (pct: number) => {
   background: var(--blue);
 }
 
-.hp-high { background: #10b981; }
+.hp-high { background: var(--emerald-500); }
 
-.hp-mid { background: #f59e0b; }
+.hp-mid { background: var(--amber-dark); }
 
-.hp-low { background: #ef4444; }
+.hp-low { background: var(--red-light); }
 
 .hp-values {
   @include pixelated;
 
   display: block;
   width: 100%;
-  font-size: 8px;
+  font-size: var(--font-8);
   text-align: right;
   opacity: 1;
   margin-bottom: 4px;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 
   @media (width <= 600px) {
-    font-size: 7px;
+    font-size: var(--font-7);
     margin-bottom: 2px;
   }
 }

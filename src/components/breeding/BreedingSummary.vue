@@ -170,7 +170,7 @@ const getCompatText = (label: string) => {
           </template>
           <template v-else-if="!hasVigor">
             <span class="emoji timer-icon font-large">💤</span>
-            <span style="color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgb(239 68 68 / 40%);">CANSADOS (SIN VIGOR)</span>
+            <span style="color: var(--red-light); font-weight: bold; text-shadow: 0 0 5px rgb(239 68 68 / 40%);">CANSADOS (SIN VIGOR)</span>
           </template>
           <template v-else>
             <span class="emoji timer-icon">⏳</span>
@@ -257,14 +257,14 @@ const getCompatText = (label: string) => {
 .breeding-summary {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: $spacing-2xl;
 }
 
 .compat-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
 }
 
 .compat-indicator {
@@ -274,14 +274,14 @@ const getCompatText = (label: string) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    font-size: 10px;
+    gap: $spacing-sm;
+    font-size: var(--font-10);
     font-weight: 800;
     margin-bottom: 4px;
     text-transform: uppercase;
 
     .compat-emoji {
-      font-size: 26px;
+      font-size: var(--font-26);
       line-height: 1;
     }
   }
@@ -292,24 +292,24 @@ const getCompatText = (label: string) => {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     color: $white;
-    font-size: 10px;
+    font-size: var(--font-10);
     margin-top: 8px;
 
     .timer-icon {
-      font-size: 26px;
+      font-size: var(--font-26);
       line-height: 1;
       
       &.font-large {
-        font-size: 26px;
+        font-size: var(--font-26);
       }
     }
   }
 }
 
 .heart-fx {
-  font-size: 32px;
+  font-size: var(--font-32);
   opacity: 0.1;
   will-change: transform, filter, opacity;
   filter: Grayscale(100%);
@@ -319,23 +319,23 @@ const getCompatText = (label: string) => {
   width: 100%;
   padding: 12px;
   border: 1px solid Rgb(255 51 102 / 25%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(30 41 59 / 85%);
-  box-shadow: 0 10px 30px Rgb(0 0 0 / 30%);
+  box-shadow: var(--shadow-xl);
   box-sizing: border-box;
   
   .forecast-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid Rgb(255 255 255 / 5%);
     
-    .icon { font-size: 16px; }
+    .icon { font-size: var(--font-16); }
     h4 {
       color: $white;
-      font-size: 11px;
+      font-size: var(--font-11);
       font-weight: 800;
       line-height: 1.5;
       text-transform: uppercase;
@@ -346,7 +346,7 @@ const getCompatText = (label: string) => {
 
 .forecast-grid {
   display: grid;
-  gap: 8px;
+  gap: $spacing-sm;
   grid-template-columns: 1fr 1fr;
   margin-bottom: 12px;
 }
@@ -356,18 +356,18 @@ const getCompatText = (label: string) => {
   flex-direction: column !important;
   justify-content: flex-start !important;
   align-items: stretch !important;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: 100% !important;
   padding: 8px !important;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(0 0 0 / 20%);
   box-sizing: border-box;
   cursor: help;
   
   .label {
     color: $muted;
-    font-size: 8px;
+    font-size: var(--font-8);
     font-weight: 600;
     line-height: 1.4;
     text-align: left;
@@ -375,7 +375,7 @@ const getCompatText = (label: string) => {
   
   .value {
     color: $white;
-    font-size: 10px;
+    font-size: var(--font-10);
     font-weight: 700;
     line-height: 1.4;
     text-align: left;
@@ -384,7 +384,7 @@ const getCompatText = (label: string) => {
   &.active {
     background: Rgb(255 51 102 / 4%);
     border-color: Rgb(255 51 102 / 35%);
-    .value { color: #ff668f; }
+    .value { color: var(--rose); }
   }
   
   &.positive {
@@ -399,7 +399,7 @@ const getCompatText = (label: string) => {
   border-top: 1px dashed Rgb(51 65 85 / 100%);
   p {
     color: Rgb(148 163 184 / 100%);
-    font-size: 9px;
+    font-size: var(--font-9);
     line-height: 1.6;
   }
 }

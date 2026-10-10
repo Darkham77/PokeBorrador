@@ -37,9 +37,11 @@ const normalizedList = computed<NormalizedReward[]>(() => {
 })
 
 // GSAP Micro-interactions
+const REWARD_PILL_HOVER_Y_PX = -2 as const;
+
 function handlePillEnter(e: MouseEvent) {
   gsap.to(e.currentTarget, {
-    y: -2,
+    y: REWARD_PILL_HOVER_Y_PX,
     scale: 1.03,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderColor: 'rgba(250, 204, 21, 0.4)',
@@ -120,19 +122,19 @@ function handlePillLeave(e: MouseEvent) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .reward-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 3px 8px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(255 255 255 / 3%);
   color: Rgb(241 245 249 / 90%);
-  font-size: 9px;
+  font-size: var(--font-9);
   font-weight: 600;
   cursor: help;
   user-select: none;
@@ -148,7 +150,7 @@ function handlePillLeave(e: MouseEvent) {
   }
 
   .reward-icon {
-    font-size: 11px;
+    font-size: var(--font-11);
     font-weight: 700;
     line-height: 1;
   }
@@ -162,38 +164,38 @@ function handlePillLeave(e: MouseEvent) {
 
     padding: 1px 4px;
     border: 1px solid Rgb(250 204 21 / 25%);
-    border-radius: 3px;
+    border-radius: $radius-xs-alt;
     background: Rgb(250 204 21 / 12%);
     color: var(--yellow);
-    font-size: 7px;
+    font-size: var(--font-7);
     margin-left: 2px;
   }
 
   // Color Variants
   &.money {
     background: Rgb(74 222 128 / 4%);
-    color: #4ade80;
+    color: var(--green-light);
     border-color: Rgb(74 222 128 / 20%);
 
     .reward-icon {
-      color: #4ade80;
-      font-size: 10px;
+      color: var(--green-light);
+      font-size: var(--font-10);
     }
   }
 
   &.bc {
     background: Rgb(56 189 248 / 4%);
-    color: #38bdf8;
+    color: var(--sky);
     border-color: Rgb(56 189 248 / 20%);
 
     .reward-icon {
-      font-size: 10px;
+      font-size: var(--font-10);
     }
   }
 
   &.pokemon {
     background: Rgb(244 114 182 / 4%);
-    color: #f472b6;
+    color: var(--rose);
     border-color: Rgb(244 114 182 / 20%);
   }
 
@@ -204,11 +206,11 @@ function handlePillLeave(e: MouseEvent) {
 
 // Sizes
 .reward-pills-group.size-md {
-  gap: 8px;
+  gap: $spacing-sm;
 
   .reward-pill {
     padding: 4px 10px;
-    font-size: 10px;
+    font-size: var(--font-10);
 
     .reward-sprite {
       width: 22px;
@@ -216,7 +218,7 @@ function handlePillLeave(e: MouseEvent) {
     }
 
     .reward-qty {
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 }

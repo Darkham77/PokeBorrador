@@ -12,6 +12,17 @@ export interface HoverValues {
   boxShadow?: string | null;
 }
 
+const HOVER_GLOW_ALPHA = {
+  SUBTLE: 0.05,
+  VERY_LIGHT: 0.1,
+  LIGHT: 0.15,
+  MEDIUM_LIGHT: 0.2,
+  ACCENT: 0.25,
+  DEEP: 0.3,
+  INTENSE: 0.4,
+  MAX: 0.45,
+} as const;
+
 function getNavHoverEnter(el: HTMLElement): HoverValues | null {
   if (el.classList.contains('accordion-toggle') || el.classList.contains('no-scale-hover')) {
     return { scale: 1, y: 0, duration: GSAP_FAST_DURATION_SEC, ease: 'power1.out' }
@@ -29,7 +40,7 @@ function getNavHoverEnter(el: HTMLElement): HoverValues | null {
       duration: HOVER_STRATEGIES.SUBMENU_DURATION_SEC,
       ease: 'power1.out',
       borderColor: resolvedColor,
-      boxShadow: `0 0 0 2px ${resolvedColor}, 0 0 15px ${parseToRgba(resolvedColor, 0.3, el)}`
+      boxShadow: `0 0 0 2px ${resolvedColor}, 0 0 15px ${parseToRgba(resolvedColor, HOVER_GLOW_ALPHA.DEEP, el)}`
     }
   }
 
@@ -40,14 +51,14 @@ function getNavHoverEnter(el: HTMLElement): HoverValues | null {
       y: HOVER_STRATEGIES.HUD_NAV_Y_OFFSET,
       duration: HOVER_STRATEGIES.HUD_NAV_DURATION_SEC,
       borderColor: yellowResolved,
-      boxShadow: `0 0 0 2px ${yellowResolved}, 0 0 15px ${parseToRgba(yellowResolved, 0.4, el)}`
+      boxShadow: `0 0 0 2px ${yellowResolved}, 0 0 15px ${parseToRgba(yellowResolved, HOVER_GLOW_ALPHA.INTENSE, el)}`
     }
   }
 
   if (el.classList.contains('hud-sq-btn')) {
     const yellowResolved = resolveCssColor('var(--yellow)', el)
-    const glow20 = parseToRgba(yellowResolved, 0.2, el)
-    const glow30 = parseToRgba(yellowResolved, 0.3, el)
+    const glow20 = parseToRgba(yellowResolved, HOVER_GLOW_ALPHA.MEDIUM_LIGHT, el)
+    const glow30 = parseToRgba(yellowResolved, HOVER_GLOW_ALPHA.DEEP, el)
     return {
       scale: HOVER_STRATEGIES.HUD_SQ_SCALE,
       y: HOVER_STRATEGIES.HUD_SQ_Y_OFFSET,
@@ -266,14 +277,14 @@ function getSpecialCardLeaveBorder(el: HTMLElement): { targetBorderColor: string
       const blueResolved = resolveCssColor('var(--blue)', el)
       return {
         targetBorderColor: blueResolved,
-        targetBoxShadow: `inset 0 0 0 4px ${blueResolved}, 0 0 20px ${parseToRgba(blueResolved, 0.4, el)}`
+        targetBoxShadow: `inset 0 0 0 4px ${blueResolved}, 0 0 20px ${parseToRgba(blueResolved, HOVER_GLOW_ALPHA.INTENSE, el)}`
       }
     }
     const color = el.style.getPropertyValue('--tier-color') || 'rgba(148, 163, 184, 0.45)'
     const resolvedColor = resolveCssColor(color, el)
     return {
       targetBorderColor: resolvedColor,
-      targetBoxShadow: `0 0 10px ${parseToRgba(resolvedColor, 0.15, el)}, inset 0 0 6px ${parseToRgba(resolvedColor, 0.05, el)}`
+      targetBoxShadow: `0 0 10px ${parseToRgba(resolvedColor, HOVER_GLOW_ALPHA.LIGHT, el)}, inset 0 0 6px ${parseToRgba(resolvedColor, HOVER_GLOW_ALPHA.SUBTLE, el)}`
     }
   }
   if (el.classList.contains('quick-item-card')) {
@@ -310,14 +321,14 @@ function getDisplayCardLeaveBorder(el: HTMLElement): { targetBorderColor: string
   if (el.classList.contains('is-active')) {
     return {
       targetBorderColor: resolvedTierColor,
-      targetBoxShadow: `0 0 20px ${parseToRgba(resolvedTierColor, 0.4, el)}, inset 0 0 10px ${parseToRgba(resolvedTierColor, 0.2, el)}`
+      targetBoxShadow: `0 0 20px ${parseToRgba(resolvedTierColor, HOVER_GLOW_ALPHA.INTENSE, el)}, inset 0 0 10px ${parseToRgba(resolvedTierColor, HOVER_GLOW_ALPHA.MEDIUM_LIGHT, el)}`
     }
   }
   if (el.classList.contains('selected')) {
     const blueResolved = resolveCssColor('var(--blue)', el)
     return {
       targetBorderColor: blueResolved,
-      targetBoxShadow: `inset 0 0 0 4px ${blueResolved}, 0 0 20px ${parseToRgba(blueResolved, 0.4, el)}`
+      targetBoxShadow: `inset 0 0 0 4px ${blueResolved}, 0 0 20px ${parseToRgba(blueResolved, HOVER_GLOW_ALPHA.INTENSE, el)}`
     }
   }
   return {
@@ -332,7 +343,7 @@ function getMiscLeaveBorder(el: HTMLElement): { targetBorderColor: string | null
       const yellowResolved = resolveCssColor('var(--yellow)', el)
       return {
         targetBorderColor: yellowResolved,
-        targetBoxShadow: `0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px ${parseToRgba(yellowResolved, 0.25, el)}`
+        targetBoxShadow: `0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px ${parseToRgba(yellowResolved, HOVER_GLOW_ALPHA.ACCENT, el)}`
       }
     }
     return {
@@ -344,7 +355,7 @@ function getMiscLeaveBorder(el: HTMLElement): { targetBorderColor: string | null
     const yellowResolved = resolveCssColor('var(--yellow)', el)
     return {
       targetBorderColor: yellowResolved,
-      targetBoxShadow: `0 0 0 2px ${yellowResolved}, 0 0 30px ${parseToRgba(yellowResolved, 0.45, el)}, inset 0 0 12px ${parseToRgba(yellowResolved, 0.1, el)}`
+      targetBoxShadow: `0 0 0 2px ${yellowResolved}, 0 0 30px ${parseToRgba(yellowResolved, HOVER_GLOW_ALPHA.MAX, el)}, inset 0 0 12px ${parseToRgba(yellowResolved, HOVER_GLOW_ALPHA.VERY_LIGHT, el)}`
     }
   }
   if (el.classList.contains('hud-nav-btn')) {
@@ -379,7 +390,7 @@ function getMiscLeaveBorder(el: HTMLElement): { targetBorderColor: string | null
       const yellowResolved = resolveCssColor('var(--yellow)', el)
       return {
         targetBorderColor: yellowResolved,
-        targetBoxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${parseToRgba(yellowResolved, 0.2, el)}, 0 0 20px ${parseToRgba(yellowResolved, 0.3, el)}`
+        targetBoxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${parseToRgba(yellowResolved, HOVER_GLOW_ALPHA.MEDIUM_LIGHT, el)}, 0 0 20px ${parseToRgba(yellowResolved, HOVER_GLOW_ALPHA.DEEP, el)}`
       }
     }
     return { targetBorderColor: 'rgba(255, 255, 255, 0.1)', targetBoxShadow: 'none' }

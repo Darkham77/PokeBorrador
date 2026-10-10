@@ -1,7 +1,6 @@
 @use "@/styles/core/_mixins" as *;
 @use "@/styles/core/variables" as *;
 
-
 .heal-modal-inner {
   padding: 8px 0;
   text-align: center;
@@ -11,7 +10,7 @@
   @include pixelated;
 
   color: Rgb(255 255 255 / 40%);
-  font-size: 8px;
+  font-size: var(--font-8);
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -21,7 +20,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 10px 10px 20px;
 }
 
@@ -33,7 +32,7 @@
   width: 90px;
   height: 90px;
   border: 2px solid Rgb(255 255 255 / 8%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(255 255 255 / 3%);
   overflow: visible; // Critical for PVSpriteFX particles
   
@@ -55,7 +54,7 @@
   &.healing {
     background: Rgb(34 197 94 / 5%);
     border-color: Rgb(34 197 94 / 30%);
-    box-shadow: 0 0 20px Rgb(34 197 94 / 20%);
+    box-shadow: var(--shadow-glow-amber-lg);
 
     .type-aura {
       opacity: 0.6;
@@ -68,7 +67,7 @@
 
   &.is-shiny {
     border-color: Rgb(255 214 10 / 40%);
-    box-shadow: 0 0 20px Rgb(255 214 10 / 10%);
+    box-shadow: var(--shadow-glow-yellow-lg);
   }
 
   &.is-premium-tier {
@@ -100,7 +99,7 @@
   top: 4px;
   right: 0;
   z-index: var(--z-low);
-  font-size: 14px;
+  font-size: var(--font-14);
   filter: Drop-Shadow(0 0 5px Rgb(239 68 68 / 50%));
 }
 
@@ -111,7 +110,7 @@
 .progress-bar {
   height: 6px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 3px;
+  border-radius: $radius-xs-alt;
   background: Rgb(255 255 255 / 5%);
   overflow: hidden;
   margin-bottom: 12px;
@@ -120,14 +119,14 @@
 .progress-fill {
   height: 100%;
   background: Linear-Gradient(90deg, Rgb(34 197 94 / 100%), Rgb(74 222 128 / 100%));
-  box-shadow: 0 0 15px Rgb(34 197 94 / 50%);
+  box-shadow: var(--shadow-glow-amber);
 }
 
 .healing-text {
   @include pixelated;
 
   color: Rgb(34 197 94 / 100%);
-  font-size: 7px;
+  font-size: var(--font-7);
   letter-spacing: 1px;
 }
 
@@ -136,14 +135,14 @@
 
   padding: 16px;
   border: 1px solid Rgb(239 68 68 / 20%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(239 68 68 / 5%);
   
   .cost-label {
     @include pixelated;
 
     color: Rgb(239 68 68 / 100%);
-    font-size: 7px;
+    font-size: var(--font-7);
     margin-bottom: 12px;
     letter-spacing: 1px;
   }
@@ -152,7 +151,7 @@
     @include pixelated;
 
     color: var(--white);
-    font-size: 20px;
+    font-size: var(--font-20);
     text-shadow: 0 0 15px Rgb(255 255 255 / 20%);
   }
   
@@ -161,7 +160,7 @@
 
     display: block;
     color: Rgb(239 68 68 / 60%);
-    font-size: 7px;
+    font-size: var(--font-7);
     margin-top: 10px;
     text-transform: uppercase;
   }
@@ -170,7 +169,7 @@
 .heal-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .btn-heal-primary {
@@ -184,10 +183,10 @@
 
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 3%);
   color: Rgb(255 255 255 / 40%);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
   
   &:hover:not(:disabled) {

@@ -73,85 +73,85 @@ const hatchEgg = (egg: PokemonEgg) => {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   margin-bottom: 24px;
 
   h3 {
     @include pixelated;
 
     color: var(--daycare-pink, #f36);
-    font-size: 10px;
+    font-size: var(--font-10);
     margin-bottom: 6px;
   }
   p {
     max-width: 500px;
     color: var(--gray, #94a3b8);
-    font-size: 12px;
+    font-size: var(--font-12);
     line-height: 1.4;
   }
 
   .actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
   }
 }
 
 .count-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 6px 12px;
-  border: 1px solid rgb(255 51 102 / 30%);
-  border-radius: 99px;
-  background: rgb(255 51 102 / 8%);
-  color: #f36;
-  font-size: 12px;
+  border: 1px solid Rgb(255 51 102 / 30%);
+  border-radius: $radius-full;
+  background: Rgb(255 51 102 / 8%);
+  color: var(--pokecenter-pink);
+  font-size: var(--font-12);
   font-weight: 800;
 
   .npc-badge {
     @include pixelated;
 
     padding: 2px 6px;
-    border: 1px solid rgb(56 189 248 / 40%);
-    border-radius: 99px;
-    background: rgb(56 189 248 / 15%);
-    color: #38bdf8;
-    font-size: 9px;
+    border: 1px solid Rgb(56 189 248 / 40%);
+    border-radius: $radius-full;
+    background: Rgb(56 189 248 / 15%);
+    color: var(--sky);
+    font-size: var(--font-9);
     font-weight: 700;
   }
 
   &.empty {
-    background: rgb(148 163 184 / 10%);
+    background: Rgb(148 163 184 / 10%);
     color: var(--gray, #94a3b8);
-    border-color: rgb(148 163 184 / 20%);
+    border-color: Rgb(148 163 184 / 20%);
   }
 }
 
 .empty-state {
   padding: 40px 20px;
-  border: 1px dashed rgb(255 255 255 / 5%);
-  border-radius: 16px;
-  background: rgb(0 0 0 / 15%);
-  color: rgb(148 163 184 / 80%);
+  border: 1px dashed Rgb(255 255 255 / 5%);
+  border-radius: $radius-2xl;
+  background: Rgb(0 0 0 / 15%);
+  color: Rgb(148 163 184 / 80%);
   text-align: center;
 
   .icon {
-    font-size: 40px;
+    font-size: var(--font-40);
     opacity: 0.3;
     margin-bottom: 12px;
   }
   p {
     @include pixelated;
 
-    font-size: 13px;
+    font-size: var(--font-13);
   }
 }
 
 .egg-grid {
   display: grid;
   justify-content: center;
-  gap: 16px;
+  gap: $spacing-lg;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
 
   @media (width <= 600px) {

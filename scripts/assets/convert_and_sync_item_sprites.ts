@@ -39,8 +39,9 @@ async function main() {
     const webpPath = path.join(PUBLIC_ITEMS_DIR, `${baseName}.webp`);
 
     const inputBuf = await fs.readFile(rawPath);
+    const WEBP_CONVERSION_QUALITY = 90 as const;
     await sharp(inputBuf)
-      .webp({ quality: 90, lossless: true })
+      .webp({ quality: WEBP_CONVERSION_QUALITY, lossless: true })
       .toFile(webpPath);
     convertedCount++;
   }

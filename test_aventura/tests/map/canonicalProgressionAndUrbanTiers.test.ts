@@ -15,11 +15,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { generateProceduralPOICatalog } from '../../../src/logic/map/regionalPoiCatalog.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateSettlementLayout } from '../../../src/logic/map/cityLayoutEngine.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe.skip('Canonical Progression and Urban Tiers', () => {
   it('catalog provides structured progression from L_0 to L_9 with explicit tiers', () => {

@@ -82,7 +82,7 @@ async function watchReplay(match: PersonalPvPMatchSummary) {
 .arena-match-history-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   width: 100%;
 }
 
@@ -92,34 +92,34 @@ async function watchReplay(match: PersonalPvPMatchSummary) {
   justify-content: center;
   align-items: center;
   padding: 40px 20px;
-  border: 1px dashed rgb(255 255 255 / 10%);
-  border-radius: 16px;
-  background: rgb(15 23 42 / 40%);
+  border: 1px dashed Rgb(255 255 255 / 10%);
+  border-radius: $radius-2xl;
+  background: Rgb(15 23 42 / 40%);
   text-align: center;
 
   .empty-icon {
-    font-size: 32px;
+    font-size: var(--font-32);
     margin-bottom: 8px;
   }
 
   .empty-title {
     margin: 0 0 6px;
     color: var(--yellow);
-    font-family: 'Pokemon FireRed LeafGreen', monospace;
-    font-size: 13px;
+    font-family: $font-family-pokemon;
+    font-size: var(--font-13);
   }
 
   .empty-desc {
     max-width: 320px;
     margin: 0;
     color: var(--gray, #94a3b8);
-    font-size: 11px;
+    font-size: var(--font-11);
   }
 }
 
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 </style>

@@ -1,4 +1,5 @@
 // src/styles/components/_move-tooltip-shared.scss
+@use "@/styles/core/tools" as *;
 
 // ==============================================================================
 // COMBAT MOVE TOOLTIP TOKENS (Single Source of Truth for Typography & Sizing)
@@ -35,76 +36,76 @@ $tooltip-smogon-desc-size: 7px;
 @mixin modifiers-section-mixin {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
   padding: 4px 6px;
-  border: 1px dotted rgb(255 255 255 / 10%);
-  border-radius: 6px;
-  background: rgb(0 0 0 / 15%);
+  border: 1px dotted Rgb(255 255 255 / 10%);
+  border-radius: $radius-md;
+  background: Rgb(0 0 0 / 15%);
 
   .breakdown-list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
     padding-left: 2px;
   }
 
   .breakdown-item {
-    color: rgb(255 255 255 / 60%);
+    color: Rgb(255 255 255 / 60%);
     font-size: $tooltip-breakdown-item-size;
 
-    .boosted { color: #10B981; font-weight: bold; }
-    .penalized { color: #EF4444; font-weight: bold; }
+    .boosted { color: var(--emerald-500); font-weight: bold; }
+    .penalized { color: var(--red-light); font-weight: bold; }
   }
 }
 
 @mixin formula-breakdown-box-mixin {
   padding: 5px 6px;
-  border: 1px dashed rgb(255 255 255 / 8%);
-  border-radius: 6px;
-  background: rgb(0 0 0 / 20%);
+  border: 1px dashed Rgb(255 255 255 / 8%);
+  border-radius: $radius-md;
+  background: Rgb(0 0 0 / 20%);
 
   .formula-text {
-    color: #aeaebe;
+    color: var(--slate-300);
     font-size: $tooltip-formula-text-size;
     line-height: 1.3;
     
     .boosted {
-      color: #10B981;
+      color: var(--emerald-500);
       font-weight: bold;
-      text-shadow: 0 0 2px rgb(16 185 129 / 40%);
+      text-shadow: 0 0 2px Rgb(16 185 129 / 40%);
     }
     
     .penalized {
-      color: #EF4444;
+      color: var(--red-light);
       font-weight: bold;
-      text-shadow: 0 0 2px rgb(239 68 68 / 40%);
+      text-shadow: 0 0 2px Rgb(239 68 68 / 40%);
     }
     
     .total-result {
       color: var(--yellow);
       font-size: $tooltip-formula-result-size;
-      text-shadow: 0 0 3px rgb(255 214 10 / 30%);
+      text-shadow: 0 0 3px Rgb(255 214 10 / 30%);
     }
   }
 }
 
 @mixin combat-stats-grid-mixin {
   display: grid;
-  gap: 4px;
+  gap: $spacing-xs;
   grid-template-columns: 1fr 1fr;
 
   .stat-box {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
     min-width: 0;
     padding: 4px 6px;
-    border: 1px solid rgb(255 255 255 / 6%);
-    border-radius: 6px;
-    background: rgb(255 255 255 / 3%);
+    border: 1px solid Rgb(255 255 255 / 6%);
+    border-radius: $radius-md;
+    background: Rgb(255 255 255 / 3%);
 
     .stat-lbl {
-      color: rgb(255 255 255 / 50%);
+      color: Rgb(255 255 255 / 50%);
       font-size: $tooltip-stat-label-size;
       font-weight: bold;
       letter-spacing: 0.3px;
@@ -114,26 +115,26 @@ $tooltip-smogon-desc-size: 7px;
     .stat-val {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
-      color: white;
+      gap: $spacing-xs-alt;
+      color: var(--white);
       font-size: $tooltip-stat-val-size;
       font-weight: bold;
       white-space: nowrap;
 
       &.boosted {
-        color: #10B981;
-        text-shadow: 0 0 2px rgb(16 185 129 / 40%);
+        color: var(--emerald-500);
+        text-shadow: 0 0 2px Rgb(16 185 129 / 40%);
       }
 
       &.penalized {
-        color: #EF4444;
-        text-shadow: 0 0 2px rgb(239 68 68 / 40%);
+        color: var(--red-light);
+        text-shadow: 0 0 2px Rgb(239 68 68 / 40%);
       }
 
       .infinity-val {
         display: inline-block !important;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
-        font-size: 14px !important;
+        font-family: $font-family-sans !important;
+        font-size: var(--font-14) !important;
         font-weight: 900 !important;
         line-height: 1 !important;
         vertical-align: middle;
@@ -143,8 +144,8 @@ $tooltip-smogon-desc-size: 7px;
 
       .dash-val {
         display: inline-block !important;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
-        font-size: 12px !important;
+        font-family: $font-family-sans !important;
+        font-size: var(--font-12) !important;
         font-weight: 900 !important;
         line-height: 1 !important;
         vertical-align: middle;
@@ -162,32 +163,32 @@ $tooltip-smogon-desc-size: 7px;
   margin-left: 2px;
   
   &.up {
-    color: #10B981;
-    text-shadow: 0 0 2px rgb(16 185 129 / 40%);
+    color: var(--emerald-500);
+    text-shadow: 0 0 2px Rgb(16 185 129 / 40%);
   }
   
   &.down {
-    color: #EF4444;
-    text-shadow: 0 0 2px rgb(239 68 68 / 40%);
+    color: var(--red-light);
+    text-shadow: 0 0 2px Rgb(239 68 68 / 40%);
   }
 }
 
 @mixin damage-section-mixin {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  border-top: 1px dotted rgb(255 255 255 / 15%);
+  gap: $spacing-2xs;
+  border-top: 1px dotted Rgb(255 255 255 / 15%);
   padding-top: 6px;
 
   .damage-grid {
     display: grid;
     align-items: center;
-    gap: 4px 8px;
+    gap: $spacing-xs $spacing-sm;
     grid-template-columns: 50px 1fr;
   }
 
   .dmg-label {
-    color: rgb(255 255 255 / 60%);
+    color: Rgb(255 255 255 / 60%);
     font-size: $tooltip-dmg-label-size;
     font-weight: bold;
   }
@@ -199,13 +200,13 @@ $tooltip-smogon-desc-size: 7px;
     text-align: right;
 
     .hp-range {
-      color: white;
+      color: var(--white);
       font-size: $tooltip-hp-range-size;
       font-weight: bold;
     }
 
     .pct-range {
-      color: rgb(255 255 255 / 50%);
+      color: Rgb(255 255 255 / 50%);
       font-size: $tooltip-pct-range-size;
       line-height: 1.2;
       margin-top: 1px;
@@ -214,8 +215,8 @@ $tooltip-smogon-desc-size: 7px;
 
     &.crit {
       .hp-range {
-        color: #FBBF24;
-        text-shadow: 0 0 3px rgb(251 191 36 / 30%);
+        color: var(--amber);
+        text-shadow: 0 0 3px Rgb(251 191 36 / 30%);
       }
     }
   }
@@ -224,44 +225,44 @@ $tooltip-smogon-desc-size: 7px;
 @mixin extra-effect-section-mixin {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   padding: 5px 6px;
-  border-radius: 6px;
+  border-radius: $radius-md;
 
   &.recovery-section {
-    border: 1px solid rgb(16 185 129 / 18%);
-    background: rgb(16 185 129 / 6%);
+    border: 1px solid Rgb(16 185 129 / 18%);
+    background: Rgb(16 185 129 / 6%);
   }
 
   &.recoil-section {
-    border: 1px solid rgb(239 68 68 / 18%);
-    background: rgb(239 68 68 / 6%);
+    border: 1px solid Rgb(239 68 68 / 18%);
+    background: Rgb(239 68 68 / 6%);
   }
 
   &.field-section {
-    border: 1px solid rgb(99 102 241 / 18%);
-    background: rgb(99 102 241 / 6%);
+    border: 1px solid Rgb(99 102 241 / 18%);
+    background: Rgb(99 102 241 / 6%);
   }
 
   &.speed-section {
-    border: 1px solid rgb(245 158 11 / 18%);
-    background: rgb(245 158 11 / 6%);
+    border: 1px solid Rgb(245 158 11 / 18%);
+    background: Rgb(245 158 11 / 6%);
   }
 
   &.mechanics-section {
-    border: 1px dashed rgb(16 185 129 / 18%);
-    background: rgb(16 185 129 / 4%);
+    border: 1px dashed Rgb(16 185 129 / 18%);
+    background: Rgb(16 185 129 / 4%);
   }
 
   &.tactical-section {
-    border: 1px solid rgb(239 68 68 / 18%);
-    background: rgb(239 68 68 / 4%);
+    border: 1px solid Rgb(239 68 68 / 18%);
+    background: Rgb(239 68 68 / 4%);
   }
 
   .extra-effect-row {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
   }
 
   .extra-effect-icon {
@@ -274,24 +275,24 @@ $tooltip-smogon-desc-size: 7px;
     font-weight: bold;
     line-height: 1.3;
 
-    &.boosted  { color: #10B981; text-shadow: 0 0 3px rgb(16 185 129 / 30%); }
-    &.penalized { color: #EF4444; text-shadow: 0 0 3px rgb(239 68 68 / 30%); }
+    &.boosted  { color: var(--emerald-500); text-shadow: 0 0 3px Rgb(16 185 129 / 30%); }
+    &.penalized { color: var(--red-light); text-shadow: 0 0 3px Rgb(239 68 68 / 30%); }
   }
 
   .field-condition-row {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
   }
 
   .field-condition-dot {
-    color: #818CF8;
+    color: var(--blue-400);
     font-size: $tooltip-field-dot-size;
     flex-shrink: 0;
   }
 
   .field-condition-text {
-    color: rgb(199 210 254 / 85%);
+    color: Rgb(199 210 254 / 85%);
     font-size: $tooltip-field-text-size;
     line-height: 1.3;
   }

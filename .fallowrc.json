@@ -7,8 +7,6 @@
     "scripts/e2e/battle/**",
     "supabase/**",
     ".agents/**",
-    "test_aventura/**",
-    "public/test-aventura-animations.css",
     "external/**",
     "packages/**",
     "dist/**",
@@ -17,7 +15,9 @@
     "src/logic/render/render.worker.ts",
     "src/logic/db/migrations_data.ts",
     "src/**/*.scss",
-    "src/**/*.css"
+    "src/**/*.css",
+    "test_aventura/**/*.scss",
+    "test_aventura/**/*.css"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",
@@ -27,7 +27,10 @@
     "database/**/*.{ts,js}",
     "vitest.config.ts",
     ".auditor/audit.config.ts",
-    "ui-demo/src/main.ts"
+    "ui-demo/src/main.ts",
+    "test_aventura/main.ts",
+    "test_aventura/**/*.worker.ts",
+    "test_aventura/tests/**/*.{ts,js}"
   ],
   "duplicates": {
     "minOccurrences": 2,
@@ -52,16 +55,16 @@
   },
   "boundaries": {
     "zones": [
-      { "name": "types", "patterns": ["src/types/**"] },
-      { "name": "data", "patterns": ["src/data/**"] },
+      { "name": "types", "patterns": ["src/types/**", "test_aventura/types/**"] },
+      { "name": "data", "patterns": ["src/data/**", "test_aventura/data/**"] },
       { "name": "modals", "patterns": ["src/logic/modals/**"] },
       { "name": "minigameHelpers", "patterns": ["src/components/modals/fishingGameHelper.ts"] },
-      { "name": "logic", "patterns": ["src/logic/**"] },
-      { "name": "stores", "patterns": ["src/stores/**"] },
-      { "name": "composables", "patterns": ["src/composables/**"] },
+      { "name": "logic", "patterns": ["src/logic/**", "test_aventura/logic/**"] },
+      { "name": "stores", "patterns": ["src/stores/**", "test_aventura/stores/**"] },
+      { "name": "composables", "patterns": ["src/composables/**", "test_aventura/composables/**"] },
       { "name": "loaders", "patterns": ["src/loaders/**"] },
-      { "name": "components", "patterns": ["src/components/**"] },
-      { "name": "views", "patterns": ["src/views/**"] }
+      { "name": "components", "patterns": ["src/components/**", "test_aventura/components/**"] },
+      { "name": "views", "patterns": ["src/views/**", "test_aventura/views/**"] }
     ],
     "rules": [
       { "from": "types", "allow": ["types", "data", "logic"], "allowTypeOnly": ["stores", "composables"] },
@@ -1516,6 +1519,50 @@
       "file": "src/logic/utils/spriteOutliner.worker.ts",
       "exports": [
         "SPRITE_OUTLINER_ACTIONS"
+      ]
+    },
+    {
+      "file": "test_aventura/types/map/autotileStudioTypes.ts",
+      "exports": [
+        "AUTOTILE_ENGINE_IDS",
+        "BITMASK_ROLE_CATEGORIES",
+        "CONTINENT_TRANSITION_CATEGORIES",
+        "MOUNTAIN_PATCH_SUBTYPES",
+        "NEIGHBOR_DIRECTIONS"
+      ]
+    },
+    {
+      "file": "test_aventura/types/map/continentTypes.ts",
+      "exports": [
+        "CONTINENT_BIOMES",
+        "CONTINENT_AMENITIES",
+        "CONTINENT_RENDER_MODES",
+        "CANONICAL_PRESET_IDS",
+        "CONTINENT_GENERATION_MODES"
+      ]
+    },
+    {
+      "file": "test_aventura/types/map/poiTypes.ts",
+      "exports": [
+        "POI_TYPES",
+        "POI_TERRAIN_PREFERENCES",
+        "ROUTE_TYPES",
+        "TRAVEL_TERRAIN_MODES",
+        "URBAN_BUILDING_TYPES",
+        "URBAN_PROP_TYPES",
+        "URBAN_ELEMENT_TYPES",
+        "COMPACT_CARDINAL_DIRECTIONS",
+        "URBAN_ROAD_MATERIALS"
+      ]
+    },
+    {
+      "file": "test_aventura/types/map/pokemonGraphTypes.ts",
+      "exports": [
+        "GRAPH_NODE_ROLES",
+        "PRIMARY_GRAPH_ROLES",
+        "GRAPH_EDGE_KINDS",
+        "BARRIER_TYPES",
+        "TERRAIN_INFLUENCES"
       ]
     }
   ],

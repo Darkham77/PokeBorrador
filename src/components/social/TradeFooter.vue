@@ -29,7 +29,8 @@ const handleGiftChange = (e: Event) => {
 <template>
   <div class="trade-footer-controls">
     <div class="message-section">
-      <textarea 
+      <textarea
+        id="trade-footer-textarea-escribe-un-mensaje-para-tu-ofe" 
         :value="message" 
         placeholder="Escribe un mensaje para tu oferta..." 
         class="trade-message-input"
@@ -40,6 +41,7 @@ const handleGiftChange = (e: Event) => {
     <div class="action-section">
       <label class="gift-toggle">
         <input
+          id="trade-footer-input-giftchange"
           :checked="isGift"
           type="checkbox"
           @change="handleGiftChange"
@@ -48,6 +50,7 @@ const handleGiftChange = (e: Event) => {
       </label>
 
       <button
+        id="trade-footer-btn-procesando-enviar-oferta"
         class="send-offer-btn"
         :disabled="isSending"
         @click.stop="$emit('send')"
@@ -65,7 +68,7 @@ const handleGiftChange = (e: Event) => {
 .trade-footer-controls {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   width: 100%;
 }
 
@@ -74,10 +77,10 @@ const handleGiftChange = (e: Event) => {
   height: 60px;
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 14px;
+  border-radius: $radius-xl-alt;
   background: Rgb(0 0 0 / 30%);
   color: $white;
-  font-size: 12px;
+  font-size: var(--font-12);
   resize: none;
   outline: none;
   &:focus { border-color: var(--purple); }
@@ -87,7 +90,7 @@ const handleGiftChange = (e: Event) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: $spacing-xl;
 
   @media (width <= 480px) {
     flex-direction: column;
@@ -98,10 +101,10 @@ const handleGiftChange = (e: Event) => {
 .gift-toggle { 
   display: flex; 
   align-items: center; 
-  gap: 12px; 
+  gap: $spacing-md; 
   cursor: pointer;
   input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--purple); }
-  .toggle-label { @include pixelated; color: $white; font-size: 10px; }
+  .toggle-label { @include pixelated; color: $white; font-size: var(--font-10); }
 }
 
 .send-offer-btn {
@@ -109,18 +112,18 @@ const handleGiftChange = (e: Event) => {
 
   padding: 16px 32px;
   border: none;
-  border-radius: 14px;
+  border-radius: $radius-xl-alt;
   background: Linear-Gradient(135deg, var(--purple), Rgb(142 36 170 / 100%));
   color: $white;
-  font-size: 9px;
+  font-size: var(--font-9);
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 15px Rgb(168 85 247 / 30%);
+  box-shadow: var(--shadow-md);
   
 
   &:hover:not(:disabled) {
     transform: Translatey(-2px);
-    box-shadow: 0 6px 20px Rgb(168 85 247 / 50%);
+    box-shadow: var(--shadow-card);
     will-change: transform, filter, opacity;
   filter: Brightness(1.1);
   }

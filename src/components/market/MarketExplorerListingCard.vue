@@ -133,15 +133,15 @@ function onImageError(e: Event) {
     display: flex;
     justify-content: space-between;
     padding: 10px 15px;
-    background: rgb(0 0 0 / 20%);
+    background: Rgb(0 0 0 / 20%);
     color: $muted;
-    font-size: 8px;
-    border-bottom: 1px solid rgb(255 255 255 / 5%);
+    font-size: var(--font-8);
+    border-bottom: 1px solid Rgb(255 255 255 / 5%);
 
     .s-name {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: $spacing-xs;
       color: var(--blue);
       line-height: 1.35;
 
@@ -149,7 +149,7 @@ function onImageError(e: Event) {
         display: inline-flex;
         justify-content: center;
         align-items: center;
-        font-size: 9px;
+        font-size: var(--font-9);
         line-height: 1;
       }
     }
@@ -181,7 +181,7 @@ function onImageError(e: Event) {
   .explorer-item-card {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: $spacing-md-15;
     padding: 15px;
 
     .item-visual {
@@ -190,8 +190,8 @@ function onImageError(e: Event) {
       align-items: center;
       width: 48px;
       height: 48px;
-      border-radius: 12px;
-      background: rgb(0 0 0 / 20%);
+      border-radius: $radius-xl;
+      background: Rgb(0 0 0 / 20%);
       flex-shrink: 0;
       .i-sprite { width: 36px; height: 36px; object-fit: contain; }
     }
@@ -203,7 +203,7 @@ function onImageError(e: Event) {
 
         display: block;
         color: var(--white);
-        font-size: 9px;
+        font-size: var(--font-9);
         font-weight: bold;
         line-height: 1.5;
         margin-bottom: 4px;
@@ -213,13 +213,13 @@ function onImageError(e: Event) {
       .i-meta {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: $spacing-sm;
 
         .i-qty {
           @include pixelated;
 
           color: $gray;
-          font-size: 8px;
+          font-size: var(--font-8);
         }
       }
     }
@@ -234,10 +234,10 @@ function onImageError(e: Event) {
     z-index: calc(var(--z-base) + 2);
     padding: 2px 6px;
     border: 1px solid var(--tier-color, #94a3b8);
-    border-radius: 4px;
-    background: rgb(0 0 0 / 40%);
+    border-radius: $radius-sm;
+    background: Rgb(0 0 0 / 40%);
     color: var(--tier-color, #94a3b8);
-    font-size: 7px;
+    font-size: var(--font-7);
     font-weight: bold;
     letter-spacing: 0.5px;
   }
@@ -247,27 +247,27 @@ function onImageError(e: Event) {
     justify-content: space-between;
     align-items: center;
     padding: 12px 15px;
-    background: rgb(0 0 0 / 30%);
-    border-top: 1px solid rgb(255 255 255 / 5%);
+    background: Rgb(0 0 0 / 30%);
+    border-top: 1px solid Rgb(255 255 255 / 5%);
     margin-top: auto;
 
     .price-info {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
 
       .price-label {
         @include pixelated;
 
         color: $gray;
-        font-size: 7px;
+        font-size: var(--font-7);
       }
 
       .price-val {
         @include pixelated;
 
         color: var(--yellow);
-        font-size: 11px;
+        font-size: var(--font-11);
         font-weight: bold;
       }
     }

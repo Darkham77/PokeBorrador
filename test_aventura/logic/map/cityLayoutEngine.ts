@@ -43,10 +43,13 @@ export interface SettlementTerrainContext {
 }
 
 const CANONICAL_SETTLEMENT_LAYOUT_SEED = 1337;
+const LEAGUE_AVENUE_START_ROW = 7 as const;
 const LEAGUE_UPPER_LAMP_ROW = 9;
 const LEAGUE_UPPER_FLOWER_ROW = 10;
 const LEAGUE_APPROACH_LAMP_ROW = 15;
 const LEAGUE_APPROACH_FLOWER_ROW = 16;
+const GATE_HORIZONTAL_FLOWER_OFFSET_X = 6 as const;
+const DUNGEON_FOREST_MIN_GATES_DIMENSION = 16 as const;
 
 /**
  * Generates the interior architectural layout for a single regional settlement node.
@@ -193,7 +196,7 @@ export function generateSettlementLayout(
     // 2. Central 2-Cell Wide Ceremonial Avenue & Paved Concourse:
     // Centered at midX - 1 and midX, running down the plateau to the south edge
     const midX = Math.floor(W / 2);
-    for (let y = 7; y < H; y++) {
+    for (let y = LEAGUE_AVENUE_START_ROW; y < H; y++) {
       for (const x of [midX - 1, midX]) {
         internalStreets.push({ x: bx + x, y: by + y });
       }
@@ -318,7 +321,7 @@ export function generateSettlementLayout(
     // Official route signpost and flowers outside gate entrance
     if (isHorizontal) {
       addProp('signpost', gx + 2, gy + gateMeta.height, getAssetFilename('poke_signpost'));
-      addProp('flower', gx + 6, gy + gateMeta.height, getAssetFilename('poke_flowers_red'));
+      addProp('flower', gx + GATE_HORIZONTAL_FLOWER_OFFSET_X, gy + gateMeta.height, getAssetFilename('poke_flowers_red'));
     } else {
       addProp('signpost', gx - 1 >= bx ? gx - 1 : gx + gateMeta.width, gy + gateMeta.height, getAssetFilename('poke_signpost'));
       addProp('flower', gx, gy + gateMeta.height, getAssetFilename('poke_flowers_red'));
@@ -328,7 +331,7 @@ export function generateSettlementLayout(
     // DUNGEON FOREST (Viridian Forest Labyrinth):
     // South and North Checkpoint Gates, 2-cell winding trail
     // ------------------------------------------------------------------------
-    if (W >= 16 && H >= 16) {
+    if (W >= DUNGEON_FOREST_MIN_GATES_DIMENSION && H >= DUNGEON_FOREST_MIN_GATES_DIMENSION) {
       const gateMeta = getBuildingPrefabMeta('poke_league_checkpoint_gate');
       const midX = Math.floor(W / 2);
 

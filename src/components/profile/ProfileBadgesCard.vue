@@ -55,39 +55,38 @@ defineProps<{
 .profile-section-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(30 41 59 / 40%);
 
   .section-label {
     @include pixelated;
 
     color: Rgb(255 255 255 / 40%);
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 0.5px;
   }
 }
 
 .badges-shelf {
   display: grid;
-  gap: 16px;
+  gap: $spacing-lg;
   grid-template-columns: repeat(4, 1fr);
   padding: 16px;
   border: 2px solid #3d2412;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Linear-Gradient(180deg, Rgb(82 53 31 / 80%) 0%, Rgb(56 36 21 / 90%) 100%);
-  box-shadow: 
-    inset 0 4px 8px Rgb(0 0 0 / 60%),
-    0 4px 10px Rgb(0 0 0 / 40%);
+  box-shadow: var(--shadow-card);
+
 }
 
 .badge-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   text-align: center;
 }
 
@@ -109,7 +108,7 @@ defineProps<{
   @include pixelated;
 
   color: Rgb(255 255 255 / 50%);
-  font-size: 6px;
+  font-size: var(--font-6);
   text-transform: uppercase;
 }
 </style>

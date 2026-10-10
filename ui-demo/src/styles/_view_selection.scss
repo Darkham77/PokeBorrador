@@ -16,7 +16,7 @@
   padding: 16px 20px 20px 20px;
   font-family: var(--font-pixel);
   box-sizing: border-box;
-  --frame-border: #ffd60a; // Borde dorado/amarillo canónico 1:1
+  --frame-border: var(--yellow); // Borde dorado/amarillo canónico 1:1
   box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9), inset 0 0 20px Rgba(0, 0, 0, 0.5);
 }
 
@@ -28,15 +28,15 @@
   margin-bottom: 12px;
 
   .selection-main-title {
-    font-size: 12px;
+    font-size: var(--font-12);
     font-weight: 900;
-    color: #ffd60a;
+    color: var(--yellow);
     display: flex;
     align-items: center;
     gap: 8px;
     letter-spacing: 1px;
     line-height: 1;
-    .emoji { color: #ffd60a; font-size: 14px; }
+    .emoji { color: var(--yellow); font-size: var(--font-14); }
   }
 
   .modal-close-btn {
@@ -73,8 +73,8 @@
 
     &:hover .close-icon-wrapper {
       background: Rgba(239, 68, 68, 0.2);
-      border-color: #ef4444;
-      &::before { background-color: #ef4444; }
+      border-color: var(--red-light);
+      &::before { background-color: var(--red-light); }
     }
   }
 }
@@ -96,7 +96,7 @@
     .ps-search-icon {
       position: absolute;
       left: 12px;
-      font-size: 10px;
+      font-size: var(--font-10);
       opacity: 0.5;
       pointer-events: none;
     }
@@ -106,23 +106,23 @@
       background: Rgba(0, 0, 0, 0.25);
       border: 1px solid Rgba(255, 255, 255, 0.08);
       padding: 7px 32px 7px 30px;
-      color: #ffffff;
+      color: var(--white);
       font-family: var(--font-pixel);
-      font-size: 8.5px;
+      font-size: var(--font-9);
       box-sizing: border-box;
       &::placeholder { color: Rgba(255, 255, 255, 0.25); }
-      &:focus { border-color: #ffd60a; background: Rgba(255, 214, 10, 0.05); }
+      &:focus { border-color: var(--yellow); background: Rgba(255, 214, 10, 0.05); }
     }
 
     .ps-clear-search {
       position: absolute;
       right: 10px;
       color: Rgba(255, 255, 255, 0.4);
-      font-size: 12px;
+      font-size: var(--font-12);
       cursor: pointer;
       background: none;
       border: none;
-      &:hover { color: #ffffff; }
+      &:hover { color: var(--white); }
     }
   }
 
@@ -142,18 +142,18 @@
       gap: 3px;
       background: Rgba(255, 255, 255, 0.03);
       --frame-border: Rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
+      color: var(--slate-400);
       font-family: var(--font-pixel);
-      font-size: 7px;
+      font-size: var(--font-7);
       cursor: pointer;
       padding: 0 2px;
       white-space: nowrap;
       box-sizing: border-box;
 
-      .emoji { font-size: 8px; flex-shrink: 0; }
-      .label { font-size: 7px; white-space: nowrap; }
-      &:hover:not(.active) { background: Rgba(255, 255, 255, 0.07); color: #ffffff; }
-      &.active { background: Rgba(255, 215, 0, 0.12); --frame-border: #ffd60a; color: #ffd60a; font-weight: bold; }
+      .emoji { font-size: var(--font-8); flex-shrink: 0; }
+      .label { font-size: var(--font-7); white-space: nowrap; }
+      &:hover:not(.active) { background: Rgba(255, 255, 255, 0.07); color: var(--white); }
+      &.active { background: Rgba(255, 215, 0, 0.12); --frame-border: var(--yellow); color: var(--yellow); font-weight: bold; }
     }
   }
 
@@ -174,14 +174,14 @@
         background: Rgba(255, 255, 255, 0.03);
         --frame-border: Rgba(255, 255, 255, 0.08);
         padding: 3px 6px;
-        color: #94a3b8;
+        color: var(--slate-400);
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 9px;
+        font-size: var(--font-9);
         cursor: pointer;
         flex-shrink: 0;
-        &:hover { background: Rgba(255, 255, 255, 0.08); color: #ffffff; }
+        &:hover { background: Rgba(255, 255, 255, 0.08); color: var(--white); }
       }
 
       .ps-tags-list-horizontal {
@@ -198,24 +198,24 @@
           align-items: center;
           gap: 3px;
           font-family: var(--font-pixel);
-          font-size: 6.5px;
+          font-size: var(--font-7);
           padding: 3px 6px;
           background: Rgba(255, 255, 255, 0.03);
           --frame-border: Rgba(255, 255, 255, 0.08);
-          color: #94a3b8;
+          color: var(--slate-400);
           cursor: pointer;
           white-space: nowrap;
           flex-shrink: 0;
           opacity: 0.7;
 
-          .tag-icon { font-size: 7.5px; }
+          .tag-icon { font-size: var(--font-8); }
 
-          &:hover { opacity: 1; background: Rgba(255, 255, 255, 0.08); color: #ffffff; }
+          &:hover { opacity: 1; background: Rgba(255, 255, 255, 0.08); color: var(--white); }
           &.active {
             opacity: 1;
             background: Rgba(56, 189, 248, 0.15);
-            --frame-border: #38bdf8;
-            color: #ffffff;
+            --frame-border: var(--sky);
+            color: var(--white);
           }
         }
       }
@@ -234,7 +234,7 @@
   margin-top: 8px;
 
   &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background: #ffd60a; border-radius: 3px; }
+  &::-webkit-scrollbar-thumb { background: var(--yellow); border-radius: 3px; }
   &::-webkit-scrollbar-track { background: Rgba(0, 0, 0, 0.3); }
 }
 
@@ -275,7 +275,7 @@
       border: 1.5px solid var(--tier-color);
       color: var(--tier-color);
       font-family: var(--font-pixel);
-      font-size: 10px;
+      font-size: var(--font-10);
       font-weight: 800;
       display: flex;
       align-items: center;
@@ -321,9 +321,9 @@
         gap: 6px;
 
         .name {
-          font-size: 10px;
+          font-size: var(--font-10);
           font-weight: 800;
-          color: #ffffff;
+          color: var(--white);
           letter-spacing: 0.5px;
           line-height: 1;
         }
@@ -335,32 +335,32 @@
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          font-size: 9px;
+          font-size: var(--font-9);
           font-weight: bold;
           line-height: 1;
-          &.male { background: #2563eb; color: #ffffff; }
-          &.female { background: #ec4899; color: #ffffff; }
+          &.male { background: #2563eb; color: var(--white); }
+          &.female { background: var(--rose); color: var(--white); }
         }
 
         .mini-badges {
           display: inline-flex;
           align-items: center;
           gap: 3px;
-          background: #000000;
+          background: var(--black);
           border: 1px solid Rgba(255, 255, 255, 0.15);
           border-radius: 6px;
           padding: 1px 4px;
 
           .mini-badge-item {
-            font-size: 8px;
+            font-size: var(--font-8);
             line-height: 1;
             font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
 
             &.is-text {
               font-family: var(--font-pixel) !important;
-              font-size: 7px;
+              font-size: var(--font-7);
               font-weight: 900;
-              color: #ffd60a;
+              color: var(--yellow);
             }
           }
         }
@@ -371,7 +371,7 @@
         align-items: center;
         gap: 8px;
 
-        .source-symbol { font-size: 13px; line-height: 1; }
+        .source-symbol { font-size: var(--font-13); line-height: 1; }
 
         .m-badge-tier {
           height: 22px;
@@ -382,7 +382,7 @@
           --frame-border: var(--tier-color, #ffffff);
           border: 1.5px solid var(--tier-color, #ffffff);
           border-radius: 4px;
-          font-size: 12px;
+          font-size: var(--font-12);
           font-weight: 900;
           display: inline-flex;
           align-items: center;
@@ -407,9 +407,9 @@
         padding: 2px 7px;
         height: 15px;
         font-family: var(--font-pixel);
-        font-size: 7.5px;
+        font-size: var(--font-8);
         font-weight: 900;
-        color: #ffffff;
+        color: var(--white);
         text-transform: uppercase;
         letter-spacing: 0.3px;
         border-radius: 4px;
@@ -419,25 +419,25 @@
         text-shadow: 1px 1px 0 #000;
         white-space: nowrap;
 
-        &.type-dragon { background-color: #7038f8; }
-        &.type-flying { background-color: #a890f0; }
-        &.type-poison { background-color: #a040a0; }
-        &.type-water { background-color: #6890f0; }
-        &.type-fire { background-color: #f08030; }
-        &.type-normal { background-color: #a8a878; }
-        &.type-electric { background-color: #f8d030; }
-        &.type-ghost { background-color: #705898; }
-        &.type-psychic { background-color: #f85888; }
-        &.type-grass { background-color: #78c850; }
-        &.type-ground { background-color: #e0c068; }
-        &.type-rock { background-color: #b8a038; }
-        &.type-ice { background-color: #98d8d8; }
-        &.type-fighting { background-color: #c03028; }
+        &.type-dragon { background-color: var(--type-dragon); }
+        &.type-flying { background-color: var(--type-flying); }
+        &.type-poison { background-color: var(--type-poison); }
+        &.type-water { background-color: var(--type-water); }
+        &.type-fire { background-color: var(--type-fire); }
+        &.type-normal { background-color: var(--type-normal); }
+        &.type-electric { background-color: var(--type-electric); }
+        &.type-ghost { background-color: var(--type-ghost); }
+        &.type-psychic { background-color: var(--type-psychic); }
+        &.type-grass { background-color: var(--type-grass); }
+        &.type-ground { background-color: var(--type-ground); }
+        &.type-rock { background-color: var(--type-rock); }
+        &.type-ice { background-color: var(--type-ice); }
+        &.type-fighting { background-color: var(--type-fighting); }
       }
 
-      .m-badge-level { font-size: 8.5px; font-weight: bold; color: #c084fc; }
-      .m-badge-iv { font-size: 8.5px; font-weight: bold; color: #4ade80; }
-      .m-badge-tot { font-size: 8.5px; font-weight: bold; color: #ffd60a; }
+      .m-badge-level { font-size: var(--font-9); font-weight: bold; color: var(--purple-400); }
+      .m-badge-iv { font-size: var(--font-9); font-weight: bold; color: var(--green-light); }
+      .m-badge-tot { font-size: var(--font-9); font-weight: bold; color: var(--yellow); }
     }
 
     // HP BAR (CANÓNICO COMBATE)
@@ -448,7 +448,7 @@
       width: 100%;
       margin-top: 2px;
 
-      .hp-label { font-size: 8.5px; font-weight: 800; color: #ffd60a; flex-shrink: 0; }
+      .hp-label { font-size: var(--font-9); font-weight: 800; color: var(--yellow); flex-shrink: 0; }
 
       .hp-bar-container {
         flex: 1;
@@ -466,7 +466,7 @@
         }
       }
 
-      .hp-text { font-size: 8.5px; color: #ffffff; font-weight: bold; white-space: nowrap; }
+      .hp-text { font-size: var(--font-9); color: var(--white); font-weight: bold; white-space: nowrap; }
     }
 
     // AVISO DE LÍMITE DE TEMPORADA (CANÓNICO TEMPORADA)
@@ -474,18 +474,18 @@
       margin-top: 3px;
       padding: 3px 8px;
       background: Rgba(185, 28, 28, 0.25);
-      --frame-border: #ef4444;
+      --frame-border: var(--red-light);
       border: 1px solid Rgba(239, 68, 68, 0.4);
       border-radius: 4px;
-      color: #fca5a5;
-      font-size: 7.5px;
+      color: var(--red-300);
+      font-size: var(--font-8);
       display: flex;
       align-items: center;
       gap: 5px;
       line-height: 1.2;
 
-      .emoji { font-size: 8.5px; }
-      .violation-label { font-size: 7.5px; }
+      .emoji { font-size: var(--font-9); }
+      .violation-label { font-size: var(--font-8); }
     }
   }
 }

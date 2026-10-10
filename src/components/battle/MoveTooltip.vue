@@ -82,8 +82,8 @@ const {
   min-width: 220px;
   max-width: 260px;
   padding: 2px;
-  color: rgb(255 255 255 / 95%);
-  font-size: 9px;
+  color: Rgb(255 255 255 / 95%);
+  font-size: var(--font-9);
   line-height: 1.5;
 }
 
@@ -94,10 +94,10 @@ const {
 .move-details-calc {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px dashed rgb(255 255 255 / 20%);
+  border-top: 1px dashed Rgb(255 255 255 / 20%);
 }
 
 .calc-section-title {

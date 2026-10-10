@@ -4,9 +4,10 @@ import { useContinentStudioStore } from '../../stores/continentStudio';
 import {
   DynamicCatalogLoader,
   UniversalAutotiler,
-  SemanticPrefabRenderer,
-  ChunkManager,
-  KantoRegionalWorldGenerator,
+  SemanticPrefabRenderer
+} from '../../logic/map/kantoTileEngine';
+import { ChunkManager } from '../../logic/map/kantoChunkManager';
+import {
   CELL_BIOME,
   OCCUPANCY_FLAGS,
   KANTO_WORLD_WIDTH,
@@ -15,10 +16,23 @@ import {
   KANTO_GRID_W,
   KANTO_GRID_H,
   type CellBiomeType
-} from '../../logic/map/kantoRegionalGenerator';
+} from '../../types/map/kantoGridModel';
+import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator';
 import { bakeUrbanMaquette } from '../../logic/map/continentalWorldGenerator';
 import { defaultPrefabsRegistry } from '../../logic/map/prefabsRegistry';
+import { findValidBuildingPlacementSpot } from '../../logic/map/buildingPlacementSolver';
+import {
+  VIEWPORT_ZOOM_IN_STEP,
+  VIEWPORT_ZOOM_OUT_STEP,
+  MIN_PLAZA_CLEARANCE_RADIUS_PX,
+  DEFAULT_PREFAB_FALLBACK_WIDTH,
+  DEFAULT_PREFAB_FALLBACK_HEIGHT
+} from '../../config/studioConstants.ts';
 import type { PlacedCustomSprite, SpriteCategory } from '../../types/map/continentTypes';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+
+const MIN_GEOGRAPHIC_VIEWPORT_ZOOM = 0.15;
+const MOUNTAIN_INFILL_NEIGHBOR_THRESHOLD = 6 as const;
 
 interface WorldPoint {
   readonly x: number;
@@ -27,12 +41,10 @@ interface WorldPoint {
 
 const store = useContinentStudioStore();
 
+const zoomPercentText = computed(() => `${Math.round(store.zoom * PERCENT_BASE_MULTIPLIER)}% Zoom`);
+
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const viewportRef = ref<HTMLDivElement | null>(null);
-
-const WORLD_W = KANTO_WORLD_WIDTH;
-const WORLD_H = KANTO_WORLD_HEIGHT;
-const TILE_SZ = KANTO_TILE_SIZE;
 
 // Interaction & Navigation State
 const isPanning = ref(false);
@@ -68,8 +80,8 @@ function screenToWorld(clientX: number, clientY: number) {
   const x = (clientX - rect.left - store.panX) / store.zoom;
   const y = (clientY - rect.top - store.panY) / store.zoom;
   return {
-    x: Math.max(0, Math.min(WORLD_W, x)),
-    y: Math.max(0, Math.min(WORLD_H, y))
+    x: Math.max(0, Math.min(KANTO_WORLD_WIDTH, x)),
+    y: Math.max(0, Math.min(KANTO_WORLD_HEIGHT, y))
   };
 }
 
@@ -81,8 +93,8 @@ function handleWheel(e: WheelEvent) {
   const cursorY = e.clientY - rect.top;
 
   const currentZoom = store.zoom;
-  const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-  const nextZoom = Math.max(0.15, Math.min(3.0, currentZoom * zoomFactor));
+  const zoomFactor = e.deltaY < 0 ? VIEWPORT_ZOOM_IN_STEP : VIEWPORT_ZOOM_OUT_STEP;
+  const nextZoom = Math.max(MIN_GEOGRAPHIC_VIEWPORT_ZOOM, Math.min(3.0, currentZoom * zoomFactor));
 
   const newPanX = cursorX - (cursorX - store.panX) * (nextZoom / currentZoom);
   const newPanY = cursorY - (cursorY - store.panY) * (nextZoom / currentZoom);
@@ -96,8 +108,8 @@ function drawBakedChunks(): void {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  ctx.clearRect(0, 0, WORLD_W, WORLD_H);
-  chunkManager.renderTo(ctx, 0, 0, WORLD_W, WORLD_H);
+  ctx.clearRect(0, 0, KANTO_WORLD_WIDTH, KANTO_WORLD_HEIGHT);
+  chunkManager.renderTo(ctx, 0, 0, KANTO_WORLD_WIDTH, KANTO_WORLD_HEIGHT);
 }
 
 function inferUrbanScale(id: string, name: string): 'metropolis' | 'city' | 'town' | 'village' {
@@ -122,8 +134,8 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
     const cy = Math.round(node.y);
 
     // Clear auto-generated structures near this city center for procedural maps
-    gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > 260);
-    gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > 260);
+    gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > MIN_PLAZA_CLEARANCE_RADIUS_PX);
+    gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > MIN_PLAZA_CLEARANCE_RADIUS_PX);
 
     const urbanScale = node.scale ?? inferUrbanScale(id, node.name);
     const maquette = bakeUrbanMaquette({
@@ -137,10 +149,10 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
 
     // Pave central plaza if defined with clean dirt paths
     if (maquette.plazaRect) {
-      const pxStart = Math.floor(maquette.plazaRect.x / TILE_SZ);
-      const pyStart = Math.floor(maquette.plazaRect.y / TILE_SZ);
-      const pw = Math.ceil(maquette.plazaRect.w / TILE_SZ);
-      const ph = Math.ceil(maquette.plazaRect.h / TILE_SZ);
+      const pxStart = Math.floor(maquette.plazaRect.x / KANTO_TILE_SIZE);
+      const pyStart = Math.floor(maquette.plazaRect.y / KANTO_TILE_SIZE);
+      const pw = Math.ceil(maquette.plazaRect.w / KANTO_TILE_SIZE);
+      const ph = Math.ceil(maquette.plazaRect.h / KANTO_TILE_SIZE);
       for (let y = pyStart; y < pyStart + ph; y++) {
         for (let x = pxStart; x < pxStart + pw; x++) {
           if (x >= 0 && x < KANTO_GRID_W && y >= 0 && y < KANTO_GRID_H) {
@@ -156,62 +168,15 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
 
     // Place buildings snapped to 32px
     for (const b of maquette.buildings) {
-      let snapX = Math.round(b.x / TILE_SZ) * TILE_SZ;
-      let snapY = Math.round(b.y / TILE_SZ) * TILE_SZ;
-      let bx = Math.floor(snapX / TILE_SZ);
-      let by = Math.floor(snapY / TILE_SZ);
-      const bw = Math.ceil(b.w / TILE_SZ);
-      const bh = Math.ceil(b.h / TILE_SZ);
+      const snapX = Math.round(b.x / KANTO_TILE_SIZE) * KANTO_TILE_SIZE;
+      const snapY = Math.round(b.y / KANTO_TILE_SIZE) * KANTO_TILE_SIZE;
+      const placement = findValidBuildingPlacementSpot(gen, snapX, snapY, b.w, b.h);
+      if (!placement.found) continue;
 
-      const isSpotValid = (tx: number, ty: number) => {
-        if (tx < 1 || tx + bw >= KANTO_GRID_W - 1 || ty < 1 || ty + bh >= KANTO_GRID_H - 1) return false;
-        for (let y = ty - 1; y <= ty + bh; y++) {
-          for (let x = tx - 1; x <= tx + bw; x++) {
-            const row = g[y];
-            const eRow = gen.elevation[y];
-            if (!row || !eRow) return false;
-            const cell = row[x];
-            const elev = eRow[x];
-            if (cell === undefined || cell === CELL_BIOME.WATER || cell === CELL_BIOME.MOUNTAIN_DIRT) return false;
-            if (elev === undefined || elev >= 2) return false;
-            if (gen.occupancy.has(x, y, OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.DOOR_ACCESS)) return false;
-          }
-        }
-        for (const eb of gen.buildings) {
-          const ebx = Math.floor(eb.x / TILE_SZ);
-          const eby = Math.floor(eb.y / TILE_SZ);
-          const ebw = Math.ceil((eb.w ?? 128) / TILE_SZ);
-          const ebh = Math.ceil((eb.h ?? 128) / TILE_SZ);
-          if (tx < ebx + ebw + 1 && tx + bw + 1 > ebx && ty < eby + ebh + 1 && ty + bh + 1 > eby) {
-            return false;
-          }
-        }
-        return true;
-      };
-
-      let found = false;
-      if (isSpotValid(bx, by)) {
-        found = true;
-      } else {
-        for (let r = 1; r <= 12 && !found; r++) {
-          for (let dy = -r; dy <= r; dy++) {
-            for (let dx = -r; dx <= r; dx++) {
-              if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-              if (isSpotValid(bx + dx, by + dy)) {
-                bx += dx;
-                by += dy;
-                snapX = bx * TILE_SZ;
-                snapY = by * TILE_SZ;
-                found = true;
-                break;
-              }
-            }
-            if (found) break;
-          }
-        }
-      }
-
-      if (!found) continue;
+      const bx = placement.tx;
+      const by = placement.ty;
+      const bw = Math.ceil(b.w / KANTO_TILE_SIZE);
+      const bh = Math.ceil(b.h / KANTO_TILE_SIZE);
 
       // Clear trees from footprint (keeping natural grass base)
       for (let y = by; y < by + bh; y++) {
@@ -245,9 +210,9 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
     }
 
     for (const p of maquette.props) {
-      const snapPx = Math.round(p.x / TILE_SZ) * TILE_SZ;
-      const snapPy = Math.round(p.y / TILE_SZ) * TILE_SZ;
-      gen.props.push({ style: p.style, x: snapPx, y: snapPy, w: 32, h: 32 });
+      const snapPx = Math.round(p.x / KANTO_TILE_SIZE) * KANTO_TILE_SIZE;
+      const snapPy = Math.round(p.y / KANTO_TILE_SIZE) * KANTO_TILE_SIZE;
+      gen.props.push({ style: p.style, x: snapPx, y: snapPy, w: KANTO_TILE_SIZE, h: KANTO_TILE_SIZE });
     }
   }
 }
@@ -346,7 +311,7 @@ async function bakeWorld(): Promise<void> {
                 if (gen.grid[y + dy]?.[x + dx] === CELL_BIOME.MOUNTAIN_DIRT) mtNeighbors++;
               }
             }
-            if (mtNeighbors >= 6) {
+            if (mtNeighbors >= MOUNTAIN_INFILL_NEIGHBOR_THRESHOLD) {
               gen.grid[y]![x] = CELL_BIOME.MOUNTAIN_DIRT;
             }
           }
@@ -413,13 +378,14 @@ async function bakeWorld(): Promise<void> {
       // Multi-tier promotion for interior mountain cells (solid cohesive upper rock plateaus)
       // Candidates must have a margin of at least 2 tiles from non-mountain cells to prevent
       // Tier 2 cliffs from directly abutting lower grass borders.
+      const MOUNTAIN_TIER2_SETBACK_RADIUS = 2 as const;
       const tier2Candidates = new Set<number>();
       for (let y = 2; y < H - 2; y++) {
         for (let x = 2; x < W - 2; x++) {
           if (gen.grid[y]?.[x] === CELL_BIOME.MOUNTAIN_DIRT) {
             let hasMargin = true;
-            for (let dy = -2; dy <= 2; dy++) {
-              for (let dx = -2; dx <= 2; dx++) {
+            for (let dy = -MOUNTAIN_TIER2_SETBACK_RADIUS; dy <= MOUNTAIN_TIER2_SETBACK_RADIUS; dy++) {
+              for (let dx = -MOUNTAIN_TIER2_SETBACK_RADIUS; dx <= MOUNTAIN_TIER2_SETBACK_RADIUS; dx++) {
                 if (gen.grid[y + dy]?.[x + dx] !== CELL_BIOME.MOUNTAIN_DIRT) {
                   hasMargin = false;
                   break;
@@ -526,12 +492,12 @@ function paintBrushAt(gx: number, gy: number): void {
 
 function stampStructureAt(worldPos: WorldPoint): void {
   const prefab = defaultPrefabsRegistry.getPrefabById(store.selectedPrefabId);
-  const w = prefab?.width ?? 80;
-  const h = prefab?.height ?? 60;
+  const w = prefab?.width ?? DEFAULT_PREFAB_FALLBACK_WIDTH;
+  const h = prefab?.height ?? DEFAULT_PREFAB_FALLBACK_HEIGHT;
   const cat: SpriteCategory = prefab?.category === 'vegetation' ? 'tree' : prefab?.category === 'props' ? 'prop' : 'building';
 
   const newStruct: PlacedCustomSprite = {
-    id: `struct_${Date.now()}`,
+    id: `struct_${Temporal.Now.instant().epochMilliseconds}`,
     spriteId: store.selectedPrefabId,
     x: Math.round(worldPos.x - w / 2),
     y: Math.round(worldPos.y - h / 2),
@@ -559,8 +525,8 @@ function handlePointerDown(e: PointerEvent): void {
   // 2. Terrain Brush Mode
   if (e.button === 0 && store.activeTool === 'terrain') {
     isPaintingTerrain.value = true;
-    const gx = Math.floor(worldPos.x / TILE_SZ);
-    const gy = Math.floor(worldPos.y / TILE_SZ);
+    const gx = Math.floor(worldPos.x / KANTO_TILE_SIZE);
+    const gy = Math.floor(worldPos.y / KANTO_TILE_SIZE);
     lastPaintedTile.value = { gx, gy };
     paintBrushAt(gx, gy);
     (e.currentTarget as HTMLElement)?.setPointerCapture(e.pointerId);
@@ -601,8 +567,8 @@ function handlePointerMove(e: PointerEvent): void {
   }
 
   if (isPaintingTerrain.value && store.activeTool === 'terrain') {
-    const gx = Math.floor(worldPos.x / TILE_SZ);
-    const gy = Math.floor(worldPos.y / TILE_SZ);
+    const gx = Math.floor(worldPos.x / KANTO_TILE_SIZE);
+    const gy = Math.floor(worldPos.y / KANTO_TILE_SIZE);
     if (!lastPaintedTile.value || lastPaintedTile.value.gx !== gx || lastPaintedTile.value.gy !== gy) {
       lastPaintedTile.value = { gx, gy };
       paintBrushAt(gx, gy);
@@ -633,7 +599,7 @@ function handlePointerUp(e: PointerEvent): void {
   try {
     (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
   } catch {
-    // ignore
+    // catch-ok: Pointer capture release fails gracefully if pointer was lost
   }
 }
 
@@ -691,8 +657,8 @@ defineExpose({
     >
       <canvas
         ref="canvasRef"
-        :width="WORLD_W"
-        :height="WORLD_H"
+        :width="KANTO_WORLD_WIDTH"
+        :height="KANTO_WORLD_HEIGHT"
         class="continental-canvas"
       />
 
@@ -714,7 +680,7 @@ defineExpose({
       <span class="badge"><span class="icon">🗺️</span> Vista Geográfica (Overworld GBA)</span>
       <span class="badge">{{ Object.keys(store.activeProject.nodes).length }} Ciudades</span>
       <span class="badge">Herramienta: {{ store.activeTool }}</span>
-      <span class="badge">{{ Math.round(store.zoom * 100) }}% Zoom</span>
+      <span class="badge">{{ zoomPercentText }}</span>
       <button
         id="btn-viewport-rebake"
         class="badge btn-rebake"
@@ -732,8 +698,8 @@ defineExpose({
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden;
   background: #090d16;
+  overflow: hidden;
   user-select: none;
   cursor: grab;
 
@@ -755,26 +721,26 @@ defineExpose({
 
 .continental-canvas {
   display: block;
+  border: 1px solid Rgb(255 255 255 / 10%);
   image-rendering: pixelated;
-  box-shadow: 0 8px 32px Rgba(0, 0, 0, 0.6);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-card);
 }
 
 .stamp-ghost-preview {
   position: absolute;
-  pointer-events: none;
-  transform: Translate(-50%, -50%);
   z-index: var(--z-map-spawns);
+  transform: Translate(-50%, -50%);
+  pointer-events: none;
 
   .ghost-badge {
-    background: Rgba(56, 189, 248, 0.85);
-    color: #0f172a;
-    font-weight: 700;
-    font-size: 12px;
     padding: 4px 10px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
-    border: 1px solid Rgba(255, 255, 255, 0.4);
+    border: 1px solid Rgb(255 255 255 / 40%);
+    border-radius: $radius-md;
+    background: Rgb(56 189 248 / 85%);
+    color: var(--slate-900);
+    font-size: var(--font-12);
+    font-weight: 700;
+    box-shadow: $shadow-card;
   }
 }
 
@@ -782,32 +748,31 @@ defineExpose({
   position: absolute;
   bottom: 16px;
   left: 16px;
-  display: flex;
-  gap: 8px;
   z-index: var(--z-modal-step);
+  display: flex;
+  gap: $spacing-sm;
   pointer-events: none;
 
   .badge {
-    background: Rgba(15, 23, 42, 0.85);
-    border: 1px solid Rgba(255, 255, 255, 0.12);
-    color: #f8fafc;
-    font-size: 11px;
-    font-weight: 600;
     padding: 4px 10px;
-    border-radius: 6px;
+    border: 1px solid Rgb(255 255 255 / 12%);
+    border-radius: $radius-md;
+    background: Rgb(15 23 42 / 85%);
+    color: var(--slate-50);
+    font-size: var(--font-11);
+    font-weight: 600;
     backdrop-filter: Blur(6px);
   }
 
   .btn-rebake {
+    background: var(--sky-dark);
+    color: var(--white);
     pointer-events: auto;
     cursor: pointer;
-    background: #0284c7;
-    color: #ffffff;
-    border-color: #38bdf8;
-    transition: background 0.15s ease;
+    border-color: var(--sky);
 
     &:hover {
-      background: #0369a1;
+      background: var(--sky-dark);
     }
   }
 }

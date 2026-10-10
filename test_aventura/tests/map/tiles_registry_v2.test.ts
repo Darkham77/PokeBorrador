@@ -16,7 +16,7 @@ import {
   getTileById,
   loadTilesRegistry,
   type TilesRegistryJson
-} from '../../../src/logic/map/tilesRegistry.ts';
+} from '../../logic/map/tilesRegistry.ts';
 
 describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
   let registryData: TilesRegistryJson;

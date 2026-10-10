@@ -121,6 +121,7 @@ const handleImageError = () => {
 
     <div class="item-actions">
       <button
+        id="reputation-shop-item-card-btn-reputation-item-repcost-canjea"
         class="btn-vicio-primary btn-vicio-sm w-full"
         :disabled="reputation < item.repCost"
         @click.stop="buy"

@@ -56,7 +56,7 @@ function parsePokemonDbRow(match: RegExpExecArray): { baseId: string; fullId: st
   const fullId = toID(cleanString(fullName));
 
   const evs: EvYield = {};
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < STAT_COLUMNS_POKEMONDB.length; i++) {
     const cellVal = match[3 + i]?.trim() || '';
     const val = cellVal ? parseInt(cellVal, 10) : 0;
     if (val > 0) {

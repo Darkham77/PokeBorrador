@@ -299,41 +299,41 @@ const requestSummary = computed(() => {
 .trade-summary-bar {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: $spacing-md-15;
   padding: 16px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 16px;
-  background: rgb(0 0 0 / 30%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-2xl;
+  background: Rgb(0 0 0 / 30%);
   margin-bottom: 24px;
 
   .summary-box { 
     display: flex; 
     flex-direction: column; 
-    gap: 4px; 
+    gap: $spacing-xs; 
     flex: 1; 
 
     .label { 
       @include pixelated;
 
       color: var(--gray); 
-      font-size: 8px;
+      font-size: var(--font-8);
     }
     .value {
       @include pixelated; 
 
       color: $white; 
-      font-size: 8px; 
+      font-size: var(--font-8); 
       font-weight: 700;
       line-height: 1.5;
     }
   }
 
-  .summary-icon { font-size: 24px; }
+  .summary-icon { font-size: var(--font-24); }
 }
 
 .trade-grid {
   display: grid;
-  gap: 24px;
+  gap: $spacing-2xl;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 
   @media (width <= 768px) {

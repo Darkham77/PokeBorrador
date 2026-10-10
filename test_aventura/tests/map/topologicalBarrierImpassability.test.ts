@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildCanonicalRegionMap } from '../../../src/logic/map/continent/canonicalRegionPresets.ts';
+import { buildCanonicalRegionMap } from '../../logic/map/continent/canonicalRegionPresets.ts';
 
 describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
   it('guarantees that blocking intermediate Node B makes Node C strictly unreachable from Node A', () => {

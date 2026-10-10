@@ -52,4 +52,23 @@ describe('autotileMatrixGenerator', () => {
       }
     });
   }
+
+  it('evaluates boundary edge cases for 3x3 grids', () => {
+    // Isolated center tile (no neighbors)
+    const isolatedGrid = [
+      [false, false, false],
+      [false, true, false],
+      [false, false, false]
+    ];
+    expect(grid3x3ToBitmask(isolatedGrid)).toBe(0);
+
+    // Completely surrounded center tile (all 8 neighbors present)
+    const fullGrid = [
+      [true, true, true],
+      [true, true, true],
+      [true, true, true]
+    ];
+    expect(grid3x3ToBitmask(fullGrid)).toBe(255);
+  });
 });
+

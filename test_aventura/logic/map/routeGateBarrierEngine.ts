@@ -10,6 +10,7 @@
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 import type { TreePlacement, WildernessPropPlacement } from './wildernessVegetationEngine.ts';
+import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
 
 export interface RouteGateBarrierParams {
   readonly continent: ContinentMapResult;
@@ -26,6 +27,41 @@ export interface SealRouteGateOptions {
   readonly props: WildernessPropPlacement[];
   readonly pathGrid: readonly (readonly boolean[])[];
   readonly blockedMask?: boolean[][];
+}
+
+interface SacredAvenueBounds {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+}
+
+const YELLOW_OAK_MIN_DISTANCE = 8 as const;
+const MAX_BFS_SEAL_ITERATIONS = 50 as const;
+
+function clearSacredTransitConflicts(
+  props: WildernessPropPlacement[],
+  trees: TreePlacement[],
+  bounds: SacredAvenueBounds
+): void {
+  for (let i = props.length - 1; i >= 0; i--) {
+    const p = props[i]!;
+    if (p.x >= bounds.minX && p.x <= bounds.maxX && p.y >= bounds.minY && p.y <= bounds.maxY) {
+      props.splice(i, 1);
+    }
+  }
+  for (let i = trees.length - 1; i >= 0; i--) {
+    const tr = trees[i]!;
+    const footLeft = tr.x + Math.floor((tr.width - 1) / 2);
+    const footRight = footLeft + 1;
+    const footTop = tr.y + tr.height - 2;
+    const footBottom = tr.y + tr.height - 1;
+    const overlapsX = footRight >= bounds.minX && footLeft <= bounds.maxX;
+    const overlapsY = footBottom >= bounds.minY && footTop <= bounds.maxY;
+    if (overlapsX && overlapsY) {
+      trees.splice(i, 1);
+    }
+  }
 }
 
 function tryAddBarrierTree(
@@ -82,7 +118,7 @@ function tryAddBarrierTree(
     const minW = Math.max(treeWidth, other.width);
     if (dy < 2 && dx < minW) return;
     if (dx < minW && dy < Math.max(treeHeight, other.height)) return;
-    if (other.prefabFile === 'poke_tree_oak_yellow.png' && Math.hypot(treeX - other.x, treeY - other.y) < 8) {
+    if (other.prefabFile === 'poke_tree_oak_yellow.png' && Math.hypot(treeX - other.x, treeY - other.y) < YELLOW_OAK_MIN_DISTANCE) {
       return;
     }
   }
@@ -127,21 +163,8 @@ function tryAddBarrierProp(
   const terr = continent.terrainMatrix[y]?.[x];
   if (terr === 'water' || terr === 'water_deep') return false;
 
-  // Strict 2.5D clearance: fences must never be placed on or adjacent to stairs
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      const ny = y + dy;
-      const nx = x + dx;
-      if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
-      const mCell = continent.resolvedMountain.cellDetails[ny]?.[nx];
-      if (mCell && mCell.role.includes('stairs')) {
-        return false;
-      }
-      if (continent.placedStairs.some((s) => s.x === nx && s.y === ny)) {
-        return false;
-      }
-    }
-  }
+  if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H)) return false;
+  if (continent.placedStairs.some((s) => Math.abs(s.x - x) <= 1 && Math.abs(s.y - y) <= 1)) return false;
 
   // Spacing check: all props must maintain >= 2.0 distance from other props,
   // except contiguous segments of the same fence run (same row for fence_h, same col for fence_v)
@@ -162,7 +185,7 @@ function tryAddBarrierProp(
 /**
  * Checks whether a cell contains an impassable obstacle (cliff, water, tree foot, fence, building).
  */
-export function isCellImpassable(
+function isCellImpassable(
   x: number,
   y: number,
   continent: ContinentMapResult,
@@ -345,25 +368,12 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
     const sacredMinX = Math.max(0, bx - 10);
     const sacredMaxX = Math.min(W - 1, bx + bw + 10);
 
-    // Remove conflicting props and trees inside sacred transit avenue
-    for (let i = props.length - 1; i >= 0; i--) {
-      const p = props[i]!;
-      if (p.x >= sacredMinX && p.x <= sacredMaxX && p.y >= sacredMinY && p.y <= sacredMaxY) {
-        props.splice(i, 1);
-      }
-    }
-    for (let i = trees.length - 1; i >= 0; i--) {
-      const tr = trees[i]!;
-      const footLeft = tr.x + Math.floor((tr.width - 1) / 2);
-      const footRight = footLeft + 1;
-      const footTop = tr.y + tr.height - 2;
-      const footBottom = tr.y + tr.height - 1;
-      const overlapsX = footRight >= sacredMinX && footLeft <= sacredMaxX;
-      const overlapsY = footBottom >= sacredMinY && footTop <= sacredMaxY;
-      if (overlapsX && overlapsY) {
-        trees.splice(i, 1);
-      }
-    }
+    clearSacredTransitConflicts(props, trees, {
+      minX: sacredMinX,
+      maxX: sacredMaxX,
+      minY: sacredMinY,
+      maxY: sacredMaxY
+    });
 
     // Lateral barriers run North and South from building center
     const barrierX = bx + Math.floor(bw / 2);
@@ -431,7 +441,7 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
     const DX = [0, 0, 1, -1] as const;
     const DY = [1, -1, 0, 0] as const;
 
-    for (let iteration = 0; iteration < 50; iteration++) {
+    for (let iteration = 0; iteration < MAX_BFS_SEAL_ITERATIONS; iteration++) {
       const queue: { x: number; y: number }[] = [];
       const cameFrom = new Map<string, { x: number; y: number } | null>();
 
@@ -496,25 +506,12 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
     const sacredMinY = Math.max(0, by - 10);
     const sacredMaxY = Math.min(H - 1, by + bh + 10);
 
-    // Remove conflicting props and trees inside sacred transit avenue
-    for (let i = props.length - 1; i >= 0; i--) {
-      const p = props[i]!;
-      if (p.x >= sacredMinX && p.x <= sacredMaxX && p.y >= sacredMinY && p.y <= sacredMaxY) {
-        props.splice(i, 1);
-      }
-    }
-    for (let i = trees.length - 1; i >= 0; i--) {
-      const tr = trees[i]!;
-      const footLeft = tr.x + Math.floor((tr.width - 1) / 2);
-      const footRight = footLeft + 1;
-      const footTop = tr.y + tr.height - 2;
-      const footBottom = tr.y + tr.height - 1;
-      const overlapsX = footRight >= sacredMinX && footLeft <= sacredMaxX;
-      const overlapsY = footBottom >= sacredMinY && footTop <= sacredMaxY;
-      if (overlapsX && overlapsY) {
-        trees.splice(i, 1);
-      }
-    }
+    clearSacredTransitConflicts(props, trees, {
+      minX: sacredMinX,
+      maxX: sacredMaxX,
+      minY: sacredMinY,
+      maxY: sacredMaxY
+    });
 
     const barrierY = by + 3;
     const fenceRunLen = 5;
@@ -581,7 +578,7 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
     const DX = [0, 0, 1, -1] as const;
     const DY = [1, -1, 0, 0] as const;
 
-    for (let iteration = 0; iteration < 50; iteration++) {
+    for (let iteration = 0; iteration < MAX_BFS_SEAL_ITERATIONS; iteration++) {
       const queue: { x: number; y: number }[] = [];
       const cameFrom = new Map<string, { x: number; y: number } | null>();
 

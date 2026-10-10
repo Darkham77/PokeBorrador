@@ -21,7 +21,7 @@ import { describe, it, expect } from 'vitest';
 import {
   generatePokemonTopology,
   validateGraphInvariants
-} from '../../../src/logic/map/pokemonGraphTopology.ts';
+} from '../../logic/map/pokemonGraphTopology.ts';
 
 describe('Pokemon Topology Graph Generator (Phase 1)', () => {
   it('generates a deterministic topology for seed 42', () => {

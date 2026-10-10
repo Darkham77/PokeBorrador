@@ -8,8 +8,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PrefabsRegistryService } from '../../logic/map/prefabsRegistry';
-import type { PrefabsManifest } from '../../logic/map/prefabsRegistry';
+import { PrefabsRegistryService } from '../../logic/map/prefabsRegistry.ts';
+import type { PrefabsManifest } from '../../logic/map/prefabsRegistry.ts';
 
 describe('PrefabsRegistryService', () => {
   let service: PrefabsRegistryService;

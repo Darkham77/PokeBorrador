@@ -16,7 +16,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import {
   CANONICAL_BUILDINGS
-} from '../../../src/logic/map/canonicalAssetsRegistry.ts';
+} from '../../logic/map/canonicalAssetsRegistry.ts';
 
 const ROOT_DIR = process.cwd();
 

@@ -73,14 +73,14 @@ const prizeType = computed(() => String(props.prize.type || ''))
 .reward-prize-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 8px 12px;
-  border: 1px solid rgb(148 163 184 / 20%);
-  border-radius: 8px;
-  background: rgb(15 23 42 / 60%);
+  border: 1px solid Rgb(148 163 184 / 20%);
+  border-radius: $radius-lg;
+  background: Rgb(15 23 42 / 60%);
 
   .prize-icon {
-    font-size: 1.3rem;
+    font-size: var(--font-20);
   }
 
   .prize-info {
@@ -88,15 +88,15 @@ const prizeType = computed(() => String(props.prize.type || ''))
     flex-direction: column;
 
     .prize-title {
-      color: #f8fafc;
-      font-size: 0.8rem;
+      color: var(--slate-50);
+      font-size: var(--font-13);
       font-weight: 700;
       text-transform: uppercase;
     }
 
     .prize-sub {
-      color: #94a3b8;
-      font-size: 0.7rem;
+      color: var(--slate-400);
+      font-size: var(--font-11);
     }
   }
 }

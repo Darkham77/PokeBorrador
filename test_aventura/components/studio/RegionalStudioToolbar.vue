@@ -121,6 +121,7 @@ function handleJsonImport(e: Event): void {
       <span class="region-title"><span class="emoji-inline">🗺️</span> {{ store.projectName || `Región #${store.seed}` }}</span>
       <span class="region-size">{{ store.mapDimension }}×{{ store.mapDimension }}</span>
       <select
+        id="select-regional-profile"
         class="project-select"
         :value="store.activeProjectId"
         @change="handleProfileChange"
@@ -140,6 +141,7 @@ function handleJsonImport(e: Event): void {
         </option>
       </select>
       <button
+        id="btn-regional-new"
         type="button"
         class="tool-btn"
         title="Nuevo Proyecto en Blanco"
@@ -148,6 +150,7 @@ function handleJsonImport(e: Event): void {
         <span class="emoji-inline">➕</span> Nuevo
       </button>
       <button
+        id="btn-regional-save"
         type="button"
         class="tool-btn primary"
         title="Guardar Proyecto en este Perfil"
@@ -160,6 +163,7 @@ function handleJsonImport(e: Event): void {
     <!-- Group 2: History (Deshacer / Rehacer) -->
     <div class="toolbar-group">
       <button
+        id="btn-regional-undo"
         type="button"
         class="tool-btn"
         :disabled="!store.canUndo"
@@ -169,6 +173,7 @@ function handleJsonImport(e: Event): void {
         <span class="emoji-inline">↶</span> Deshacer
       </button>
       <button
+        id="btn-regional-redo"
         type="button"
         class="tool-btn"
         :disabled="!store.canRedo"
@@ -201,6 +206,7 @@ function handleJsonImport(e: Event): void {
       </select>
       <button
         v-if="store.selectedPOIId"
+        id="btn-deselect-city"
         type="button"
         class="tool-btn active-city-btn"
         title="Deseleccionar ciudad"
@@ -213,6 +219,7 @@ function handleJsonImport(e: Event): void {
     <!-- Group 3: File I/O (SVG & JSON) -->
     <div class="toolbar-group">
       <button
+        id="btn-regional-import-svg"
         type="button"
         class="tool-btn"
         title="Importar Rutas y POIs desde archivo SVG"
@@ -221,6 +228,7 @@ function handleJsonImport(e: Event): void {
         <span class="emoji-inline">📥</span> SVG
       </button>
       <button
+        id="btn-regional-export-svg"
         type="button"
         class="tool-btn"
         title="Exportar Rutas vectoriales como SVG editable"
@@ -229,6 +237,7 @@ function handleJsonImport(e: Event): void {
         <span class="emoji-inline">📤</span> SVG
       </button>
       <button
+        id="btn-regional-import-json"
         type="button"
         class="tool-btn"
         title="Importar Proyecto completo desde JSON"
@@ -237,6 +246,7 @@ function handleJsonImport(e: Event): void {
         <span class="emoji-inline">📥</span> JSON
       </button>
       <button
+        id="btn-regional-export-json"
         type="button"
         class="tool-btn"
         title="Exportar Proyecto completo a archivo JSON"
@@ -255,6 +265,7 @@ function handleJsonImport(e: Event): void {
         <span class="emoji-inline">⏳</span> Renderizando...
       </span>
       <button
+        id="btn-regional-nav-assets"
         type="button"
         class="tool-btn"
         title="Inspeccionar Spritesheets y Assets Canónicos"
@@ -263,6 +274,7 @@ function handleJsonImport(e: Event): void {
         <span class="emoji-inline">🎨</span> Assets
       </button>
       <button
+        id="btn-regional-center-view"
         type="button"
         class="tool-btn"
         title="Centrar y resetear vista"
@@ -271,6 +283,7 @@ function handleJsonImport(e: Event): void {
         <span class="emoji-inline">⛶</span> Centrar
       </button>
       <button
+        id="btn-regional-export-png"
         type="button"
         class="tool-btn success"
         title="Descargar imagen PNG completa"
@@ -282,6 +295,7 @@ function handleJsonImport(e: Event): void {
 
     <!-- Hidden File Inputs -->
     <input
+      id="regional-studio-toolbar-input-svgimport"
       ref="svgInputRef"
       type="file"
       accept=".svg"
@@ -289,6 +303,7 @@ function handleJsonImport(e: Event): void {
       @change="handleSvgImport"
     >
     <input
+      id="regional-studio-toolbar-input-jsonimport"
       ref="jsonInputRef"
       type="file"
       accept=".json"
@@ -303,131 +318,130 @@ function handleJsonImport(e: Event): void {
   position: absolute;
   top: 14px;
   left: 18px;
-  background: Rgba(15, 23, 42, 0.9);
-  backdrop-filter: Blur(8px);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 6px 14px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
   z-index: calc(var(--z-map-floor) + 5);
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-md-lg;
+  padding: 6px 14px;
+  border: 1px solid Rgb(255 255 255 / 12%);
+  border-radius: $radius-lg;
+  background: Rgb(15 23 42 / 90%);
+  backdrop-filter: Blur(8px);
+  box-shadow: $shadow-md;
 
   .toolbar-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     &:not(:last-child) {
       padding-right: 12px;
-      border-right: 1px solid Rgba(255, 255, 255, 0.1);
+      border-right: 1px solid Rgb(255 255 255 / 10%);
     }
   }
 
   .region-title {
-    font-weight: 700;
-    color: #38bdf8;
-    font-size: 0.88rem;
     max-width: 160px;
+    color: var(--sky);
+    font-size: var(--font-14);
+    font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .region-size {
-    font-size: 0.72rem;
-    color: #94a3b8;
-    background: Rgba(255, 255, 255, 0.08);
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
+    background: Rgb(255 255 255 / 8%);
+    color: var(--slate-400);
     font-family: monospace;
+    font-size: var(--font-11);
   }
 
   .project-select {
-    background: #1e293b;
-    border: 1px solid Rgba(255, 255, 255, 0.15);
-    color: #f8fafc;
-    border-radius: 6px;
     padding: 3px 8px;
-    font-size: 0.75rem;
+    border: 1px solid Rgb(255 255 255 / 15%);
+    border-radius: $radius-md;
+    background: var(--slate-800);
+    color: var(--slate-50);
+    font-size: var(--font-12);
     outline: none;
     cursor: pointer;
 
     &:focus {
-      border-color: #38bdf8;
+      border-color: var(--sky);
     }
   }
 
   .city-selector-group {
-    background: Rgba(56, 189, 248, 0.08);
-    border: 1px solid Rgba(56, 189, 248, 0.25);
-    border-radius: 6px;
     padding: 2px 8px;
+    border: 1px solid Rgb(56 189 248 / 25%);
+    border-radius: $radius-md;
+    background: Rgb(56 189 248 / 8%);
   }
 
   .city-selector-label {
-    font-size: 0.75rem;
+    color: var(--sky);
+    font-size: var(--font-12);
     font-weight: 700;
-    color: #38bdf8;
   }
 
   .city-select {
-    background: #0f172a;
-    border: 1px solid Rgba(56, 189, 248, 0.4);
-    color: #f8fafc;
-    border-radius: 6px;
     padding: 3px 8px;
-    font-size: 0.75rem;
+    border: 1px solid Rgb(56 189 248 / 40%);
+    border-radius: $radius-md;
+    background: var(--slate-900);
+    color: var(--slate-50);
+    font-size: var(--font-12);
     font-weight: 600;
     outline: none;
     cursor: pointer;
 
     &:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 6px Rgba(56, 189, 248, 0.4);
+      border-color: var(--sky);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 
   .active-city-btn {
     padding: 2px 6px;
-    font-size: 0.7rem;
-    background: Rgba(239, 68, 68, 0.2);
-    border-color: Rgba(239, 68, 68, 0.4);
-    color: #fca5a5;
+    background: Rgb(239 68 68 / 20%);
+    color: var(--red-300);
+    font-size: var(--font-11);
+    border-color: Rgb(239 68 68 / 40%);
 
     &:hover {
-      background: Rgba(239, 68, 68, 0.4);
+      background: Rgb(239 68 68 / 40%);
     }
   }
 
   .rendering-indicator {
-    font-size: 0.72rem;
-    color: #38bdf8;
-    background: Rgba(56, 189, 248, 0.15);
-    border: 1px solid Rgba(56, 189, 248, 0.3);
     padding: 2px 8px;
-    border-radius: 4px;
+    border: 1px solid Rgb(56 189 248 / 30%);
+    border-radius: $radius-sm;
+    background: Rgb(56 189 248 / 15%);
+    color: var(--sky);
+    font-size: var(--font-11);
     font-weight: 600;
   }
 
   .tool-btn {
-    background: Rgba(255, 255, 255, 0.08);
-    border: 1px solid Rgba(255, 255, 255, 0.15);
-    color: #f8fafc;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
+    padding: 4px 10px;
+    border: 1px solid Rgb(255 255 255 / 15%);
+    border-radius: $radius-md;
+    background: Rgb(255 255 255 / 8%);
+    color: var(--slate-50);
+    font-size: var(--font-12);
+    font-weight: 600;
+    cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: Rgba(255, 255, 255, 0.18);
+      background: Rgb(255 255 255 / 18%);
     }
 
     &:disabled {
@@ -436,20 +450,20 @@ function handleJsonImport(e: Event): void {
     }
 
     &.primary {
-      background: #0284c7;
-      border-color: #38bdf8;
+      background: var(--sky-dark);
+      border-color: var(--sky);
 
       &:hover:not(:disabled) {
-        background: #0369a1;
+        background: var(--sky-dark);
       }
     }
 
     &.success {
       background: #059669;
-      border-color: #34d399;
+      border-color: var(--emerald-400);
 
       &:hover:not(:disabled) {
-        background: #047857;
+        background: var(--emerald-500);
       }
     }
   }

@@ -76,26 +76,26 @@ const emit = defineEmits<{
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 8px 12px;
+  gap: $spacing-sm $spacing-md;
   padding: 6px 10px;
-  border: 1px solid rgb(255 215 0 / 25%);
-  border-radius: 6px;
-  background: rgb(255 255 255 / 4%);
+  border: 1px solid Rgb(255 215 0 / 25%);
+  border-radius: $radius-md;
+  background: Rgb(255 255 255 / 4%);
   margin-top: 4px;
 
   .user-award-left {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     min-width: 0;
 
     .user-award-label {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: $spacing-xs;
       color: var(--yellow);
-      font-size: 8px;
+      font-size: var(--font-8);
       letter-spacing: 0.5px;
       white-space: nowrap;
     }
@@ -103,14 +103,14 @@ const emit = defineEmits<{
     .award-pills-wrap {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
     }
   }
 
   .user-award-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     margin-left: auto;
   }
 }
@@ -118,13 +118,13 @@ const emit = defineEmits<{
 .claimed-badge.mini {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 3px 6px;
-  border: 1px solid rgb(16 185 129 / 40%);
-  border-radius: 4px;
-  background: rgb(16 185 129 / 15%);
-  color: #34d399;
-  font-size: 8px;
+  border: 1px solid Rgb(16 185 129 / 40%);
+  border-radius: $radius-sm;
+  background: Rgb(16 185 129 / 15%);
+  color: var(--emerald-400);
+  font-size: var(--font-8);
   font-weight: bold;
 }
 </style>

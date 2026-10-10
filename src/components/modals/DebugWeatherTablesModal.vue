@@ -183,8 +183,9 @@ function toggleRoute(routeId: MapRouteId) {
     <div class="debug-weather-container">
       <!-- Region Tabs -->
       <div class="region-tabs">
-        <button 
+        <button
           v-for="region in REGIONS" 
+          id="debug-weather-tables-modal-btn-region-name-touppercase" 
           :key="region.id"
           class="tab-btn"
           :class="{ active: activeRegion === region.id, empty: !hasWeatherTables(region.id) }"
@@ -228,8 +229,8 @@ function toggleRoute(routeId: MapRouteId) {
     height: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    background: rgb(255 255 255 / 10%);
+    border-radius: $radius-lg-alt;
+    background: Rgb(255 255 255 / 10%);
   }
 }
 
@@ -238,10 +239,10 @@ function toggleRoute(routeId: MapRouteId) {
     width: 4px;
   }
   &::-webkit-scrollbar-track {
-    background: rgb(0 0 0 / 10%);
+    background: Rgb(0 0 0 / 10%);
   }
   &::-webkit-scrollbar-thumb {
-    border-radius: 10px;
+    border-radius: $radius-lg-alt;
     background: var(--purple);
   }
 }

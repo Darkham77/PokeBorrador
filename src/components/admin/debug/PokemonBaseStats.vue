@@ -26,7 +26,7 @@ defineProps<Props>()
 <style lang="scss" scoped>
 .base-stats-grid {
   display: grid;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   grid-template-columns: repeat(3, 1fr);
 
   .stat-item {
@@ -34,20 +34,20 @@ defineProps<Props>()
     flex-direction: column;
     align-items: center;
     padding: 6px;
-    border: 1px solid rgb(255 255 255 / 5%);
-    border-radius: 8px;
-    background: rgb(255 255 255 / 5%);
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: $radius-lg;
+    background: Rgb(255 255 255 / 5%);
 
     label {
-      color: rgb(255 255 255 / 40%);
-      font-size: 8px;
+      color: Rgb(255 255 255 / 40%);
+      font-size: var(--font-8);
       text-transform: uppercase;
       margin-bottom: 4px;
     }
 
     .stat-value {
       color: var(--yellow);
-      font-size: 11px;
+      font-size: var(--font-11);
       font-weight: bold;
     }
   }

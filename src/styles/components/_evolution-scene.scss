@@ -70,7 +70,7 @@
 
 .status-text {
   color: var(--white);
-  font-size: 12px;
+  font-size: var(--font-12);
   line-height: 1.6;
   text-shadow: 0 2px 4px Rgb(0 0 0 / 50%);
 }
@@ -78,7 +78,7 @@
 .result-text {
   p {
     color: var(--white);
-    font-size: 13px;
+    font-size: var(--font-13);
     line-height: 1.8;
     margin-bottom: 24px;
   }
@@ -91,17 +91,17 @@
 .btn-confirm {
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: var(--blue, Rgb(59 130 246 / 100%));
   color: var(--white);
   font-family: inherit;
-  font-size: 10px;
+  font-size: var(--font-10);
   cursor: pointer;
-  box-shadow: 0 4px 0 Rgb(37 99 235 / 100%);
+  box-shadow: var(--shadow-retro-blue);
   
   &:active {
     transform: Translatey(2px);
-    box-shadow: 0 2px 0 Rgb(37 99 235 / 100%);
+    box-shadow: var(--shadow-retro-blue-active);
   }
 }
 
@@ -175,23 +175,23 @@
 
   padding: 12px 24px;
   border: 1px solid Rgb(239 68 68 / 40%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(239 68 68 / 15%);
-  color: #f87171;
+  color: var(--rose);
   font-family: inherit;
-  font-size: 9px;
+  font-size: var(--font-9);
   cursor: pointer;
-  box-shadow: 0 4px 0 Rgb(220 38 38 / 30%);
+  box-shadow: var(--shadow-card);
 
   &:hover {
-    background: #ef4444;
-    color: white;
+    background: var(--red-light);
+    color: var(--white);
     transform: Scale(1.05);
-    border-color: #ef4444;
+    border-color: var(--red-light);
   }
 
   &:active {
     transform: Translatey(2px);
-    box-shadow: 0 2px 0 Rgb(220 38 38 / 30%);
+    box-shadow: var(--shadow-card);
   }
 }

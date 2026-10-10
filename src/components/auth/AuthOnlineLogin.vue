@@ -66,7 +66,8 @@ const handleServerSelect = (e: Event) => {
           {{ serverStatusDetail || (serverStatus === 'checking' ? '...' : serverStatus === 'online' ? 'EN LÍNEA' : 'OFFLINE') }}
         </div>
       </div>
-      <select 
+      <select
+        id="auth-online-login-select-serverselect" 
         :value="selectedServerId" 
         class="auth-input server-select"
         @change="handleServerSelect"
@@ -86,6 +87,7 @@ const handleServerSelect = (e: Event) => {
     </div>
 
     <input
+      id="auth-online-login-input-email"
       :value="emailValue"
       class="auth-input"
       type="email"
@@ -98,6 +100,7 @@ const handleServerSelect = (e: Event) => {
       @mouseleave="handleInputLeave"
     >
     <input
+      id="auth-online-login-input-contrase-a"
       :value="passwordValue"
       class="auth-input"
       type="password"
@@ -111,6 +114,7 @@ const handleServerSelect = (e: Event) => {
       @mouseleave="handleInputLeave"
     >
     <button
+      id="auth-online-login-btn-1"
       class="auth-btn"
       :disabled="loading || serverStatus !== 'online'"
       @click.stop="emit('login')"

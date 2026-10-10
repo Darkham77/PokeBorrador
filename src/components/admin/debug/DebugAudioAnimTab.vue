@@ -167,18 +167,21 @@ const isEffectActive = (type: string, category: string) => {
           </span>
           <div class="stat-actions">
             <button
+              id="debug-audio-anim-tab-btn-1"
               class="mini-tool-btn minus"
               @click.stop="modifyStat(s.id, -1)"
             >
               -1
             </button>
             <button
+              id="debug-audio-anim-tab-btn-1-2"
               class="mini-tool-btn plus"
               @click.stop="modifyStat(s.id, 1)"
             >
               +1
             </button>
             <button
+              id="debug-audio-anim-tab-btn-1-3"
               class="mini-tool-btn reset"
               @click.stop="setStatStage(activeSide, s.id, 0)"
             >
@@ -197,6 +200,7 @@ const isEffectActive = (type: string, category: string) => {
       <div class="button-grid-small">
         <button
           v-for="se in DEBUG_SECONDARY_EFFECTS"
+          id="debug-audio-anim-tab-btn-se-icon-se-label"
           :key="se.id"
           class="debug-btn secondary-btn"
           :class="{ active: isEffectActive(se.id, 'secondary') }"
@@ -216,6 +220,7 @@ const isEffectActive = (type: string, category: string) => {
       <div class="button-grid-small">
         <button
           v-for="f in DEBUG_FIELD_EFFECTS"
+          id="debug-audio-anim-tab-btn-f-icon-f-label"
           :key="f.id"
           class="debug-btn field-btn"
           :class="{ active: isEffectActive(f.id, 'field') }"
@@ -227,7 +232,6 @@ const isEffectActive = (type: string, category: string) => {
       </div>
     </div>
 
-
     <!-- SOUNDS SECTION -->
     <div class="debug-section">
       <h3 class="section-title">
@@ -236,6 +240,7 @@ const isEffectActive = (type: string, category: string) => {
       <div class="button-grid-small">
         <button
           v-for="s in DEBUG_SOUNDS"
+          id="debug-audio-anim-tab-btn-s-icon-s-label"
           :key="s.id"
           class="debug-btn sound-btn"
           @click.stop="playSound(s.id)"
@@ -279,6 +284,7 @@ const isEffectActive = (type: string, category: string) => {
       <div class="button-grid-3">
         <button
           v-for="fx in DEBUG_ATTACK_FX"
+          id="debug-audio-anim-tab-btn-fx-icon-fx-label"
           :key="fx.id"
           class="debug-btn fx-btn"
           @click.stop="triggerAttack(fx.cat)"
@@ -321,7 +327,7 @@ const isEffectActive = (type: string, category: string) => {
 .debug-audio-tab {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: $spacing-2xl;
 }
 
 .section-label {
@@ -329,15 +335,15 @@ const isEffectActive = (type: string, category: string) => {
 
   display: block;
   color: Rgb(255 255 255 / 40%);
-  font-size: 7px;
+  font-size: var(--font-7);
   margin-bottom: 8px;
 }
 
 .side-toggle {
   display: flex;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 4px;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 20%);
 
   button {
@@ -345,18 +351,18 @@ const isEffectActive = (type: string, category: string) => {
 
     padding: 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: transparent;
     color: Rgb(255 255 255 / 40%);
-    font-size: 8px;
+    font-size: var(--font-8);
     flex: 1;
     cursor: pointer;
     
 
     &.active {
       background: var(--purple);
-      color: white;
-      box-shadow: 0 4px 15px Rgb(124 58 237 / 30%);
+      color: var(--white);
+      box-shadow: var(--shadow-md);
     }
   }
 }
@@ -366,7 +372,7 @@ const isEffectActive = (type: string, category: string) => {
     @include pixelated;
 
     color: var(--yellow);
-    font-size: 8px;
+    font-size: var(--font-8);
     opacity: 0.8;
     margin-bottom: 12px;
     letter-spacing: 1px;
@@ -375,13 +381,13 @@ const isEffectActive = (type: string, category: string) => {
 
 .button-grid-small {
   display: grid;
-  gap: 8px;
+  gap: $spacing-sm;
   grid-template-columns: repeat(3, 1fr);
 }
 
 .button-grid-3 {
   display: grid;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: repeat(3, 1fr);
 }
 
@@ -391,13 +397,13 @@ const isEffectActive = (type: string, category: string) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 12px 8px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 3%);
-  color: white;
-  font-size: 7px;
+  color: var(--white);
+  font-size: var(--font-7);
   cursor: pointer;
   
 
@@ -409,21 +415,21 @@ const isEffectActive = (type: string, category: string) => {
 
   &.active {
     background: var(--purple);
-    border-color: white;
-    box-shadow: 0 4px 12px Rgb(124 58 237 / 40%);
+    border-color: var(--white);
+    box-shadow: var(--shadow-card);
     
     .icon {
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px white); }
   }
 
-  .icon { font-size: 16px; }
+  .icon { font-size: var(--font-16); }
 }
 
 .stats-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .stat-row {
@@ -431,7 +437,7 @@ const isEffectActive = (type: string, category: string) => {
   justify-content: space-between;
   align-items: center;
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 3%);
   
   .stat-label {
@@ -439,16 +445,16 @@ const isEffectActive = (type: string, category: string) => {
 
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     color: Rgb(255 255 255 / 70%);
-    font-size: 8px;
-    .icon { font-size: 12px; }
+    font-size: var(--font-8);
+    .icon { font-size: var(--font-12); }
   }
 }
 
 .stat-actions {
   display: flex;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .mini-tool-btn {
@@ -460,20 +466,20 @@ const isEffectActive = (type: string, category: string) => {
   width: 28px;
   height: 22px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: Rgb(255 255 255 / 5%);
-  color: white;
-  font-size: 8px;
+  color: var(--white);
+  font-size: var(--font-8);
   cursor: pointer;
   
   
   &:hover {
     background: var(--purple);
-    border-color: white;
+    border-color: var(--white);
   }
   
-  &.minus { color: #f55; }
-  &.plus { color: #50fa7b; }
-  &.reset { color: Rgb(255 255 255 / 30%); font-size: 10px; }
+  &.minus { color: var(--red-light); }
+  &.plus { color: var(--green-light); }
+  &.reset { color: Rgb(255 255 255 / 30%); font-size: var(--font-10); }
 }
 </style>

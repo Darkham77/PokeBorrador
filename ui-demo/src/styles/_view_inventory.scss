@@ -16,7 +16,7 @@
   padding: 16px 20px 20px;
   font-family: var(--font-pixel);
   box-sizing: border-box;
-  --frame-border: #ef4444; // Borde rojo/coral canónico de la mochila 1:1
+  --frame-border: var(--red-light); // Borde rojo/coral canónico de la mochila 1:1
   box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9), inset 0 0 20px Rgba(0, 0, 0, 0.5);
 }
 
@@ -33,7 +33,7 @@
     gap: 10px;
 
     .inv-backpack-icon {
-      font-size: 26px;
+      font-size: var(--font-26);
       line-height: 1;
     }
 
@@ -43,16 +43,16 @@
       gap: 2px;
 
       .inv-main-heading {
-        font-size: 13px;
+        font-size: var(--font-13);
         font-weight: 900;
-        color: #ffd60a;
+        color: var(--yellow);
         letter-spacing: 1px;
         line-height: 1;
       }
 
       .inv-sub-heading {
-        font-size: 7.5px;
-        color: #94a3b8;
+        font-size: var(--font-8);
+        color: var(--slate-400);
         letter-spacing: 0.5px;
         line-height: 1;
       }
@@ -71,21 +71,21 @@
       gap: 2px;
 
       .meta-label {
-        font-size: 6.5px;
-        color: #94a3b8;
+        font-size: var(--font-7);
+        color: var(--slate-400);
         letter-spacing: 0.5px;
         line-height: 1;
       }
 
       .meta-val {
-        font-size: 13px;
+        font-size: var(--font-13);
         font-weight: 900;
         line-height: 1;
         letter-spacing: 0.5px;
 
-        &.totals { color: #ffffff; }
+        &.totals { color: var(--white); }
         &.credits {
-          color: #22c55e;
+          color: var(--emerald);
           text-shadow: 0 0 10px Rgba(34, 197, 94, 0.4);
         }
       }
@@ -97,13 +97,13 @@
       border-radius: 50%;
       background: Rgba(255, 255, 255, 0.05);
       border: 1px solid Rgba(255, 255, 255, 0.15);
-      color: #94a3b8;
-      font-size: 12px;
+      color: var(--slate-400);
+      font-size: var(--font-12);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      &:hover { color: #ffffff; background: Rgba(255, 255, 255, 0.12); }
+      &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.12); }
     }
   }
 }
@@ -124,18 +124,18 @@
       height: 28px;
       padding: 0 14px;
       font-family: var(--font-pixel);
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: bold;
       cursor: pointer;
       border-radius: 8px;
       background: Rgba(255, 255, 255, 0.03);
       --frame-border: Rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
+      color: var(--slate-400);
 
       &.active {
         background: Rgba(239, 68, 68, 0.2);
-        --frame-border: #ef4444;
-        color: #ffffff;
+        --frame-border: var(--red-light);
+        color: var(--white);
         box-shadow: 0 0 8px Rgba(239, 68, 68, 0.4);
       }
     }
@@ -157,14 +157,14 @@
       height: 28px;
       width: 180px;
 
-      .search-icon { font-size: 9px; margin-right: 6px; opacity: 0.6; }
+      .search-icon { font-size: var(--font-9); margin-right: 6px; opacity: 0.6; }
       .search-input {
         width: 100%;
         background: none;
         border: none;
-        color: #ffffff;
+        color: var(--white);
         font-family: var(--font-pixel);
-        font-size: 7.5px;
+        font-size: var(--font-8);
         &::placeholder { color: Rgba(255, 255, 255, 0.3); }
       }
     }
@@ -173,10 +173,10 @@
       height: 28px;
       padding: 0 8px;
       background: Rgba(255, 214, 10, 0.1);
-      --frame-border: #ffd60a;
-      color: #ffd60a;
+      --frame-border: var(--yellow);
+      color: var(--yellow);
       font-family: var(--font-pixel);
-      font-size: 7.5px;
+      font-size: var(--font-8);
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
@@ -186,10 +186,10 @@
       height: 28px;
       padding: 0 12px;
       background: Rgba(168, 85, 247, 0.2);
-      --frame-border: #a855f7;
-      color: #ffffff;
+      --frame-border: var(--purple-400);
+      color: var(--white);
       font-family: var(--font-pixel);
-      font-size: 7.5px;
+      font-size: var(--font-8);
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
@@ -203,10 +203,10 @@
       height: 28px;
       padding: 0 12px;
       background: Rgba(239, 68, 68, 0.25);
-      --frame-border: #ef4444;
-      color: #ffffff;
+      --frame-border: var(--red-light);
+      color: var(--white);
       font-family: var(--font-pixel);
-      font-size: 7.5px;
+      font-size: var(--font-8);
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
@@ -244,28 +244,28 @@
       background: Rgba(255, 255, 255, 0.02);
       --frame-border: Rgba(255, 255, 255, 0.05);
       border-radius: 4px;
-      color: #94a3b8;
+      color: var(--slate-400);
       font-family: var(--font-pixel);
-      font-size: 7px;
+      font-size: var(--font-7);
       font-weight: bold;
       cursor: pointer;
       text-align: left;
       user-select: none;
 
       .cat-icon {
-        font-size: 8.5px;
+        font-size: var(--font-9);
         font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
       }
 
       &:hover:not(.active) {
         background: Rgba(255, 255, 255, 0.06);
-        color: #ffffff;
+        color: var(--white);
       }
 
       &.active {
         background: Rgba(239, 68, 68, 0.18);
-        --frame-border: #ef4444;
-        color: #ffffff;
+        --frame-border: var(--red-light);
+        color: var(--white);
         box-shadow: inset 2px 0 0 #ef4444;
       }
     }
@@ -306,23 +306,23 @@
   }
 
   &.is-selected {
-    --frame-border: #ffd60a;
+    --frame-border: var(--yellow);
     box-shadow: 0 0 10px Rgba(255, 214, 10, 0.35);
     background: Rgba(35, 45, 75, 0.95);
   }
 
   &.is-purple-border {
-    --frame-border: #a855f7;
+    --frame-border: var(--purple-400);
     box-shadow: 0 0 8px Rgba(168, 85, 247, 0.3);
   }
 
   &.is-blue-border {
-    --frame-border: #3b82f6;
+    --frame-border: var(--blue-500);
     box-shadow: 0 0 8px Rgba(59, 130, 246, 0.3);
   }
 
   &.is-gold-border {
-    --frame-border: #ffd60a;
+    --frame-border: var(--yellow);
     box-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
   }
 
@@ -346,13 +346,13 @@
       position: absolute;
       bottom: -3px;
       right: -8px;
-      background: #000000;
-      border: 1px solid #eab308;
+      background: var(--black);
+      border: 1px solid var(--amber-dark);
       border-radius: 3px;
       padding: 0 3px;
-      font-size: 6.5px;
+      font-size: var(--font-7);
       font-weight: 900;
-      color: #ffd60a;
+      color: var(--yellow);
       line-height: 11px;
       letter-spacing: -0.3px;
       font-family: var(--font-pixel);
@@ -360,9 +360,9 @@
   }
 
   .inv-card-name {
-    font-size: 6.5px;
+    font-size: var(--font-7);
     font-weight: bold;
-    color: #ffffff;
+    color: var(--white);
     text-align: center;
     line-height: 1.15;
     max-width: 100%;

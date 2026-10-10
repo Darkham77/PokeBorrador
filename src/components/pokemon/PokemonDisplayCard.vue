@@ -132,6 +132,7 @@ function handleCardClick() {
 
 <template>
   <div
+    id="pokemon-display-card-div-cardref"
     ref="cardRef"
     :data-pokemon-uid="pokemon.uid"
     :class="[cardClasses, { 'disable-click': disableCardClick }]"
@@ -272,18 +273,18 @@ function handleCardClick() {
   align-items: center;
   width: 64px;
   height: 64px;
-  border: 2px dashed #ef4444;
-  border-radius: 8px;
+  border: 2px dashed var(--red-light);
+  border-radius: $radius-lg;
   background: Rgb(239 68 68 / 20%);
 
   .danger-icon {
-    font-size: 1.8rem;
+    font-size: var(--font-28);
     line-height: 1;
   }
 
   .danger-label {
-    color: #ff6b6b;
-    font-size: 0.65rem;
+    color: var(--rose);
+    font-size: var(--font-10);
     font-weight: 900;
     letter-spacing: 0.5px;
     margin-top: 2px;
@@ -292,7 +293,7 @@ function handleCardClick() {
 
 .pokemon-display-card.is-rule-violated {
   border-color: Rgb(239 68 68 / 85%) !important;
-  box-shadow: 0 0 12px Rgb(239 68 68 / 40%) !important;
+  box-shadow: var(--shadow-glow-amber);
 
   .sprite-section,
   .pokemon-info,
@@ -310,22 +311,22 @@ function handleCardClick() {
   z-index: var(--z-modal-step);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 3px 6px;
   border: 1px solid Rgb(254 202 202 / 80%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(185 28 28 / 95%);
-  box-shadow: 0 4px 12px Rgb(0 0 0 / 60%);
+  box-shadow: $shadow-card-dark;
   pointer-events: none;
 
   .emoji {
-    font-size: 11px;
+    font-size: var(--font-11);
     flex-shrink: 0;
   }
 
   .violation-reason-text {
-    color: #fff;
-    font-size: 8px;
+    color: var(--white);
+    font-size: var(--font-8);
     line-height: 1.45;
     padding-bottom: 2px;
     letter-spacing: 0.2px;

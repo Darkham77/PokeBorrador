@@ -43,6 +43,7 @@ const ATMOSPHERE_OPACITY_PRESETS = {
   HEATWAVE_MIN: 0.65,
   HEATWAVE_MAX: 0.80,
   SUN_SECONDARY_FACTOR: 0.85,
+  INTENSE_SUN_SECONDARY_FACTOR: 0.9,
   HEATWAVE_SECONDARY_FACTOR: 0.95,
 } as const;
 
@@ -205,7 +206,7 @@ function calculateAtmosphereOpacity(w: string, pulse: number, isLowPower: boolea
   }
   if (w === 'intense_sun') {
     const op = ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN + (ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN) * pulse;
-    return { op1: op, op2: op * 0.9 };
+    return { op1: op, op2: op * ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_SECONDARY_FACTOR };
   }
   if (w === 'heatwave') {
     const op = ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN + (ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MAX - ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN) * pulse;

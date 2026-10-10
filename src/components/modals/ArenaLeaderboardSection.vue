@@ -274,7 +274,7 @@ watch(activeSort, () => {
 .arena-leaderboard-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   margin-top: 24px;
 }
 
@@ -288,22 +288,22 @@ watch(activeSort, () => {
   .header-title-wrap {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
 
     .section-title {
       @include pixelated;
 
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
       margin: 0;
       color: var(--yellow, #fbbf24);
-      font-size: 13px;
+      font-size: var(--font-13);
       font-weight: 900;
       letter-spacing: 0.5px;
 
       .emoji {
-        font-size: 14px;
+        font-size: var(--font-14);
         line-height: 1;
       }
     }
@@ -311,8 +311,8 @@ watch(activeSort, () => {
     .sub-title {
       @include pixelated;
 
-      color: #94a3b8;
-      font-size: 8px;
+      color: var(--slate-400);
+      font-size: var(--font-8);
       letter-spacing: 0.5px;
     }
   }
@@ -320,10 +320,10 @@ watch(activeSort, () => {
 
 .sorting-controls {
   display: flex;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 3px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 35%);
 
   .modal-tab-btn.sort-tab {
@@ -331,10 +331,10 @@ watch(activeSort, () => {
 
     padding: 6px 0;
     border: none;
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: transparent;
-    color: #94a3b8;
-    font-size: 8px;
+    color: var(--slate-400);
+    font-size: var(--font-8);
     text-align: center;
     flex: 1;
     cursor: pointer;
@@ -342,9 +342,9 @@ watch(activeSort, () => {
 
     &.active {
       background: var(--yellow, #fbbf24);
-      color: #000;
+      color: var(--black);
       font-weight: bold;
-      box-shadow: 0 0 10px Rgb(251 191 36 / 30%);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 }
@@ -361,10 +361,10 @@ watch(activeSort, () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 40px 0;
-  color: #94a3b8;
-  font-size: 9px;
+  color: var(--slate-400);
+  font-size: var(--font-9);
 }
 
 .retro-spinner {
@@ -378,16 +378,16 @@ watch(activeSort, () => {
 .leaderboard-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .rank-card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 2%);
   cursor: pointer;
   will-change: transform, background-color, border-color;
@@ -409,12 +409,12 @@ watch(activeSort, () => {
 .rank-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   flex-shrink: 0;
 
   .crown {
     min-width: 18px;
-    font-size: 14px;
+    font-size: var(--font-14);
     text-align: center;
   }
 
@@ -422,8 +422,8 @@ watch(activeSort, () => {
     @include pixelated;
 
     min-width: 18px;
-    color: #94a3b8;
-    font-size: 9px;
+    color: var(--slate-400);
+    font-size: var(--font-9);
     font-weight: bold;
     text-align: center;
   }
@@ -449,13 +449,13 @@ watch(activeSort, () => {
     bottom: -2px;
     width: 8px;
     height: 8px;
-    border: 1.5px solid #0f172a;
+    border: 1.5px solid var(--slate-900);
     border-radius: 50%;
-    background: #64748b;
+    background: var(--slate-500);
 
     &.online {
-      background: #22c55e;
-      box-shadow: 0 0 6px #22c55e;
+      background: var(--emerald);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 }
@@ -463,7 +463,7 @@ watch(activeSort, () => {
 .player-details {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   min-width: 0;
   flex: 1;
 
@@ -471,11 +471,11 @@ watch(activeSort, () => {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
 
     .player-name-text {
       color: var(--white);
-      font-size: 11px;
+      font-size: var(--font-11);
       font-weight: bold;
     }
 
@@ -483,9 +483,9 @@ watch(activeSort, () => {
       @include pixelated;
 
       padding: 1px 4px;
-      border-radius: 4px;
-      color: white;
-      font-size: 6px;
+      border-radius: $radius-sm;
+      color: var(--white);
+      font-size: var(--font-6);
       line-height: 1.25;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -495,9 +495,9 @@ watch(activeSort, () => {
   .player-stats-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: #94a3b8;
-    font-size: 8px;
+    gap: $spacing-sm-alt;
+    color: var(--slate-400);
+    font-size: var(--font-8);
 
     .player-class-info {
       text-transform: capitalize;
@@ -518,10 +518,10 @@ watch(activeSort, () => {
 
     padding: 3px 6px;
     border: 1px solid Rgb(251 191 36 / 15%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(251 191 36 / 8%);
     color: var(--yellow);
-    font-size: 8px;
+    font-size: var(--font-8);
     line-height: 1.25;
   }
 }

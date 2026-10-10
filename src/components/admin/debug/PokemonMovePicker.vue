@@ -28,7 +28,6 @@ const allMovesList = Object.keys(MOVE_TRANSLATIONS_ES).map(rawId => {
   }
 })
 
-
 const filteredMoves = computed<PokemonMoveId[]>(() => {
   const s = moveSearch.value.toLowerCase().trim()
   if (!s) return props.speciesMoves
@@ -84,6 +83,7 @@ function removeMove(slotIndex: number) {
           description="Selecciona hasta 4 ataques al azar legales según su nivel y learnset (nivel, MT, huevo, tutor)."
         >
           <button
+            id="pokemon-move-picker-btn-1"
             class="btn-magic-fill btn-random-fill"
             @click.stop="$emit('randomFill')"
           >
@@ -101,6 +101,7 @@ function removeMove(slotIndex: number) {
       >
         <div
           v-if="modelValue[i-1]"
+          id="pokemon-move-picker-div-2"
           class="move-pill"
           @click.stop="activeMoveSlot = i"
         >
@@ -115,6 +116,7 @@ function removeMove(slotIndex: number) {
         </div>
         <div
           v-else
+          id="pokemon-move-picker-div-3"
           class="move-pill empty"
           @click.stop="activeMoveSlot = i"
         >
@@ -153,6 +155,7 @@ function removeMove(slotIndex: number) {
             </div>
           </div>
           <button
+            id="pokemon-move-picker-btn-cerrar"
             class="close-picker"
             @click.stop="activeMoveSlot = null"
           >
@@ -168,18 +171,18 @@ function removeMove(slotIndex: number) {
 .moves-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 
   .section-header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     
-    label { color: Rgb(255 255 255 / 40%); font-size: 10px; }
+    label { color: Rgb(255 255 255 / 40%); font-size: var(--font-10); }
     
     .header-actions {
       display: flex;
-      gap: 6px;
+      gap: $spacing-sm-alt;
     }
 
     .btn-magic-fill {
@@ -189,14 +192,14 @@ function removeMove(slotIndex: number) {
       width: 24px;
       height: 24px;
       border: 1px solid Rgb(124 58 237 / 20%);
-      border-radius: 6px;
+      border-radius: $radius-md;
       background: Rgb(124 58 237 / 10%);
       color: var(--vicio-primary);
       cursor: pointer;
       
       &:hover {
         background: var(--vicio-primary);
-        color: white;
+        color: var(--white);
         transform: Scale(1.1);
       }
       
@@ -214,7 +217,7 @@ function removeMove(slotIndex: number) {
   .move-slots {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .move-slot {
       position: relative;
@@ -228,14 +231,14 @@ function removeMove(slotIndex: number) {
     align-items: center;
     padding: 8px 10px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(255 255 255 / 5%);
     cursor: pointer;
     
 
     &:hover { background: Rgb(255 255 255 / 10%); }
     
-    .mv-name { color: white; font-size: 11px; font-weight: bold; }
+    .mv-name { color: var(--white); font-size: var(--font-11); font-weight: bold; }
     
     .remove-move {
       display: flex;
@@ -244,22 +247,22 @@ function removeMove(slotIndex: number) {
       width: 18px;
       height: 18px;
       border: none;
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(239 68 68 / 10%);
       color: Rgb(239 68 68 / 100%);
-      font-size: 14px;
+      font-size: var(--font-14);
       cursor: pointer;
       
-      &:hover { background: Rgb(239 68 68 / 100%); color: white; }
+      &:hover { background: Rgb(239 68 68 / 100%); color: var(--white); }
     }
 
     &.empty {
       justify-content: center;
       color: Rgb(255 255 255 / 30%);
-      font-size: 8px;
+      font-size: var(--font-8);
       border-style: dashed;
       
-      &:hover { color: white; border-color: var(--vicio-primary); }
+      &:hover { color: var(--white); border-color: var(--vicio-primary); }
     }
   }
 
@@ -274,22 +277,22 @@ function removeMove(slotIndex: number) {
     max-height: 300px;
     padding: 12px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 16px;
+    border-radius: $radius-2xl;
     background: Rgb(10 12 16 / 98%);
     margin-bottom: 12px;
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
-    box-shadow: 0 20px 50px Rgb(0 0 0 / 100%);
+    box-shadow: var(--shadow-2xl);
 
     .move-search-input {
       width: 100%;
       padding: 10px;
       border: 1px solid Rgb(255 255 255 / 10%);
-      border-radius: 8px;
+      border-radius: $radius-lg;
       background: Rgb(255 255 255 / 5%);
-      color: white;
-      font-size: 11px;
+      color: var(--white);
+      font-size: var(--font-11);
       margin-bottom: 12px;
       outline: none;
       
@@ -299,7 +302,7 @@ function removeMove(slotIndex: number) {
     .move-list {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: $spacing-xs;
       min-height: 0;
       max-height: 200px;
       overflow-y: auto;
@@ -308,14 +311,14 @@ function removeMove(slotIndex: number) {
       .move-group-label {
         padding: 4px 8px;
         color: Rgb(255 255 255 / 30%);
-        font-size: 9px;
+        font-size: var(--font-9);
         letter-spacing: 1px;
       }
 
       .move-item {
         padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 11px;
+        border-radius: $radius-md;
+        font-size: var(--font-11);
         cursor: pointer;
         
         
@@ -327,13 +330,13 @@ function removeMove(slotIndex: number) {
       width: 100%;
       padding: 8px;
       border: 1px solid Rgb(255 255 255 / 10%);
-      border-radius: 8px;
+      border-radius: $radius-lg;
       background: Rgb(255 255 255 / 5%);
       color: Rgb(255 255 255 / 50%);
-      font-size: 9px;
+      font-size: var(--font-9);
       cursor: pointer;
       
-      &:hover { background: Rgb(255 255 255 / 10%); color: white; }
+      &:hover { background: Rgb(255 255 255 / 10%); color: var(--white); }
     }
   }
 }

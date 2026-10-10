@@ -13,8 +13,21 @@
  */
 
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
+import { COPY_FEEDBACK_DELAY_SEC, CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 import type { CanonicalAssetEntry } from '../../logic/map/canonicalAssetsRegistry.ts';
 import type { SheetGridLayout, SelectionRect } from '../../composables/studio/useAssetAtlas.ts';
+
+const LABEL_TAG_HEIGHT = 14;
+const LABEL_MAX_WIDTH = 80;
+const LABEL_MAX_CHARS = 12;
+const LABEL_TOP_MIN_OFFSET = 10;
+const ZOOM_IN_FACTOR = 1.25;
+const ZOOM_OUT_FACTOR = 0.8;
+const MAX_CANVAS_ZOOM = 10;
+const MIN_CANVAS_ZOOM = 0.5;
+const ENTRY_STROKE_WIDTH = 1.5 as const;
 
 const props = defineProps<{
   sheetUrl: string;
@@ -35,7 +48,8 @@ const viewportRef = ref<HTMLDivElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 
 // Pan & Zoom state
-const zoom = ref<number>(2.5);
+const DEFAULT_MASTERSHEET_ZOOM = 2.5 as const;
+const zoom = ref<number>(DEFAULT_MASTERSHEET_ZOOM);
 const panX = ref<number>(60);
 const panY = ref<number>(60);
 const isPanning = ref<boolean>(false);
@@ -133,7 +147,7 @@ function redrawCanvas(): void {
     const isCurrent = props.selectedAssetId === entry.id;
     ctx.fillStyle = isCurrent ? 'rgba(56, 189, 248, 0.35)' : 'rgba(34, 197, 94, 0.22)';
     ctx.strokeStyle = isCurrent ? 'rgb(14, 165, 233)' : 'rgb(34, 197, 94)';
-    ctx.lineWidth = isCurrent ? 2 : 1.5;
+    ctx.lineWidth = isCurrent ? 2 : ENTRY_STROKE_WIDTH;
 
     const r = entry.sourceRect;
     ctx.fillRect(r.x, r.y, r.w, r.h);
@@ -141,10 +155,10 @@ function redrawCanvas(): void {
 
     // Label tag
     ctx.fillStyle = isCurrent ? '#0284c7' : '#15803d';
-    ctx.fillRect(r.x, Math.max(0, r.y - 14), Math.min(r.w, 80), 14);
+    ctx.fillRect(r.x, Math.max(0, r.y - LABEL_TAG_HEIGHT), Math.min(r.w, LABEL_MAX_WIDTH), LABEL_TAG_HEIGHT);
     ctx.fillStyle = '#ffffff';
     ctx.font = '9px monospace';
-    ctx.fillText(entry.id.slice(0, 12), r.x + 2, Math.max(10, r.y - 3));
+    ctx.fillText(entry.id.slice(0, LABEL_MAX_CHARS), r.x + 2, Math.max(LABEL_TOP_MIN_OFFSET, r.y - 3));
   }
 
   // 4. Draw Active Selection Box (User Drag or Current Selection)
@@ -284,8 +298,8 @@ function handleWheel(e: WheelEvent): void {
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
 
-  const zoomFactor = e.deltaY < 0 ? 1.25 : 0.8;
-  const newZoom = Math.min(10, Math.max(0.5, zoom.value * zoomFactor));
+  const zoomFactor = e.deltaY < 0 ? ZOOM_IN_FACTOR : ZOOM_OUT_FACTOR;
+  const newZoom = Math.min(MAX_CANVAS_ZOOM, Math.max(MIN_CANVAS_ZOOM, zoom.value * zoomFactor));
 
   // Zoom toward cursor
   panX.value = mouseX - (mouseX - panX.value) * (newZoom / zoom.value);
@@ -293,8 +307,18 @@ function handleWheel(e: WheelEvent): void {
   zoom.value = newZoom;
 }
 
+function handleZoomIn(): void {
+  zoom.value = Math.min(MAX_CANVAS_ZOOM, zoom.value * ZOOM_IN_FACTOR);
+}
+
+function handleZoomOut(): void {
+  zoom.value = Math.max(MIN_CANVAS_ZOOM, zoom.value * ZOOM_OUT_FACTOR);
+}
+
+const zoomPercentText = computed(() => `${Math.round(zoom.value * PERCENT_BASE_MULTIPLIER)}%`);
+
 function resetZoom(): void {
-  zoom.value = 2.5;
+  zoom.value = DEFAULT_MASTERSHEET_ZOOM;
   panX.value = 60;
   panY.value = 60;
 }
@@ -344,14 +368,16 @@ const tileHeight = computed(() => {
   return Math.max(1, Math.round((props.selectedRect.h + props.sheetGrid.spacingY) / strideY));
 });
 
+const runtimeDimensionsText = computed(() => `${tileWidth.value * CANVAS_TILE_SIZE} × ${tileHeight.value * CANVAS_TILE_SIZE}px`);
+
 // JSON synthesis
 const formattedSnippet = computed(() => {
   if (!props.selectedRect) return '';
   const sel = props.selectedRect;
   const tileW = tileWidth.value;
   const tileH = tileHeight.value;
-  const pixelW = tileW * 32;
-  const pixelH = tileH * 32;
+  const pixelW = tileW * CANVAS_TILE_SIZE;
+  const pixelH = tileH * CANVAS_TILE_SIZE;
   const id = newAssetId.value.trim() || 'custom_asset_id';
   const cat = newAssetCategory.value;
   const name = newAssetName.value.trim() || 'Canonical GBA Asset';
@@ -375,17 +401,29 @@ const formattedSnippet = computed(() => {
   return JSON.stringify(obj, null, 2);
 });
 
+const TOAST_ENTER_DURATION_SEC = 0.2;
+const TOAST_LEAVE_DURATION_SEC = 0.15;
+const TOAST_ENTER_OFFSET_Y = 8;
+
 async function copySnippet(): Promise<void> {
   if (!formattedSnippet.value) return;
   try {
     await navigator.clipboard.writeText(formattedSnippet.value);
     copyFeedback.value = '✅ JSON copiado al portapapeles!';
-    setTimeout(() => {
+    gsap.delayedCall(COPY_FEEDBACK_DELAY_SEC, () => {
       copyFeedback.value = null;
-    }, 2500);
+    });
   } catch (_e) {
     copyFeedback.value = '⚠️ No se pudo copiar automáticamente';
   }
+}
+
+function onToastEnter(el: Element, done: () => void): void {
+  gsap.fromTo(el, { opacity: 0, y: TOAST_ENTER_OFFSET_Y }, { opacity: 1, y: 0, duration: TOAST_ENTER_DURATION_SEC, ease: 'power2.out', onComplete: done });
+}
+
+function onToastLeave(el: Element, done: () => void): void {
+  gsap.to(el, { opacity: 0, y: TOAST_ENTER_OFFSET_Y, duration: TOAST_LEAVE_DURATION_SEC, ease: 'power2.in', onComplete: done });
 }
 
 onMounted(() => {
@@ -422,24 +460,27 @@ onUnmounted(() => {
 
       <!-- Quick Canvas Overlay Controls -->
       <div class="canvas-floating-controls">
-        <span class="zoom-badge">{{ Math.round(zoom * 100) }}%</span>
+        <span class="zoom-badge">{{ zoomPercentText }}</span>
         <button
+          id="master-sheet-canvas-btn-zoomin"
           type="button"
           class="floating-btn"
           title="Acercar (+)"
-          @click="zoom = Math.min(10, zoom * 1.3)"
+          @click="handleZoomIn"
         >
           +
         </button>
         <button
+          id="master-sheet-canvas-btn-zoomout"
           type="button"
           class="floating-btn"
           title="Alejar (-)"
-          @click="zoom = Math.max(0.5, zoom * 0.77)"
+          @click="handleZoomOut"
         >
           -
         </button>
         <button
+          id="master-sheet-canvas-btn-resetzoom"
           type="button"
           class="floating-btn"
           title="Centrar vista"
@@ -468,19 +509,21 @@ onUnmounted(() => {
         </div>
         <div class="hud-cell">
           <span class="hud-label">Escala Juego (2x)</span>
-          <span class="hud-val highlight">{{ tileWidth * 32 }} × {{ tileHeight * 32 }}px</span>
+          <span class="hud-val highlight">{{ runtimeDimensionsText }}</span>
           <span class="hud-sub">Runtime Metatiles</span>
         </div>
       </div>
 
       <div class="hud-input-group">
         <input
+          id="master-sheet-canvas-input-newassetid"
           v-model="newAssetId"
           type="text"
           placeholder="ID canónico (ej. poke_road_slate)"
           class="hud-input"
         >
         <select
+          id="master-sheet-canvas-select-newassetcategory"
           v-model="newAssetCategory"
           class="hud-select"
         >
@@ -501,12 +544,14 @@ onUnmounted(() => {
           </option>
         </select>
         <input
+          id="master-sheet-canvas-input-newassetname"
           v-model="newAssetName"
           type="text"
           placeholder="Nombre descriptivo"
           class="hud-input wide"
         >
         <button
+          id="master-sheet-canvas-btn-copiar-json"
           type="button"
           class="hud-copy-btn"
           @click="copySnippet"
@@ -515,34 +560,40 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <div
-        v-if="copyFeedback"
-        class="hud-feedback-toast"
+      <Transition
+        :css="false"
+        @enter="onToastEnter"
+        @leave="onToastLeave"
       >
-        {{ copyFeedback }}
-      </div>
+        <div
+          v-if="copyFeedback"
+          class="hud-feedback-toast"
+        >
+          {{ copyFeedback }}
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .master-canvas-pane {
+  position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
+  height: 100%;
   background: #090d16;
-  position: relative;
   overflow: hidden;
 }
 
 .canvas-viewport {
-  flex: 1;
   position: relative;
+  background-color: var(--slate-900);
+  flex: 1;
   overflow: hidden;
   cursor: crosshair;
   user-select: none;
-  background-color: #0d1117;
   background-image: 
     linear-gradient(45deg, #131924 25%, transparent 25%),
     linear-gradient(-45deg, #131924 25%, transparent 25%),
@@ -563,155 +614,153 @@ onUnmounted(() => {
   display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  box-shadow: 0 12px 40px Rgba(0, 0, 0, 0.7);
+  box-shadow: var(--shadow-card);
 }
 
 .canvas-floating-controls {
   position: absolute;
   top: 16px;
   right: 16px;
+  z-index: var(--z-modal-step);
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: Rgba(15, 23, 42, 0.88);
-  backdrop-filter: Blur(8px);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  gap: $spacing-sm-alt;
   padding: 4px 8px;
-  z-index: var(--z-modal-step);
+  border: 1px solid Rgb(255 255 255 / 12%);
+  border-radius: $radius-lg;
+  background: Rgb(15 23 42 / 88%);
+  backdrop-filter: Blur(8px);
 }
 
 .zoom-badge {
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
   padding: 0 6px;
+  color: var(--slate-400);
   font-family: monospace;
+  font-size: var(--font-11);
+  font-weight: 700;
 }
 
 .floating-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 28px;
   height: 28px;
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #f8fafc;
-  border-radius: 6px;
-  font-size: 14px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-50);
+  font-size: var(--font-14);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease;
 
   &:hover {
-    background: #334155;
-    border-color: #475569;
+    background: var(--slate-700);
+    border-color: var(--slate-600);
   }
 }
 
 .selection-hud-bar {
-  background: #0f172a;
-  border-top: 1px solid Rgba(255, 255, 255, 0.12);
-  padding: 10px 16px;
+  z-index: calc(var(--z-map-floor) + 10);
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  z-index: calc(var(--z-map-floor) + 10);
+  align-items: center;
+  gap: $spacing-md;
+  padding: 10px 16px;
+  background: var(--slate-900);
+  border-top: 1px solid Rgb(255 255 255 / 12%);
 }
 
 .hud-coords-group {
   display: flex;
-  gap: 16px;
+  gap: $spacing-lg;
 }
 
 .hud-cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
 }
 
 .hud-label {
-  font-size: 9px;
-  text-transform: uppercase;
-  color: #64748b;
+  color: var(--slate-500);
+  font-size: var(--font-9);
   font-weight: 700;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .hud-val {
-  font-size: 13px;
-  font-weight: 700;
-  color: #e2e8f0;
+  color: var(--slate-200);
   font-family: monospace;
+  font-size: var(--font-13);
+  font-weight: 700;
 
   &.highlight {
-    color: #38bdf8;
+    color: var(--sky);
   }
 }
 
 .hud-sub {
-  font-size: 10px;
-  color: #94a3b8;
+  color: var(--slate-400);
   font-family: monospace;
+  font-size: var(--font-10);
 }
 
 .hud-input-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .hud-input {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 12px;
-  color: #f8fafc;
   width: 170px;
+  padding: 6px 10px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-50);
+  font-size: var(--font-12);
+
+  &:focus {
+    outline: none;
+    border-color: var(--sky);
+  }
 
   &.wide {
     width: 200px;
   }
-
-  &:focus {
-    outline: none;
-    border-color: #38bdf8;
-  }
 }
 
 .hud-select {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 6px;
   padding: 6px 8px;
-  font-size: 12px;
-  color: #f8fafc;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-50);
+  font-size: var(--font-12);
 
   &:focus {
     outline: none;
-    border-color: #38bdf8;
+    border-color: var(--sky);
   }
 }
 
 .hud-copy-btn {
-  background: #0284c7;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: background 0.15s ease;
+  gap: $spacing-sm-alt;
+  padding: 6px 14px;
+  border: none;
+  border-radius: $radius-md;
+  background: var(--sky-dark);
+  color: var(--white);
+  font-size: var(--font-12);
+  font-weight: 700;
+  cursor: pointer;
 
   &:hover {
-    background: #0369a1;
+    background: var(--sky-dark);
   }
 }
 
@@ -719,19 +768,13 @@ onUnmounted(() => {
   position: absolute;
   bottom: 68px;
   left: 50%;
-  transform: Translatex(-50%);
-  background: #10b981;
-  color: #ffffff;
   padding: 6px 16px;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: $radius-md;
+  background: var(--emerald-500);
+  color: var(--white);
+  font-size: var(--font-12);
   font-weight: 700;
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: Translate(-50%, 8px); }
-  to { opacity: 1; transform: Translate(-50%, 0); }
+  transform: Translatex(-50%);
+  box-shadow: $shadow-card;
 }
 </style>

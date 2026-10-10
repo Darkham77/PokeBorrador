@@ -23,6 +23,7 @@ const GUARDIAN_FX_DURATION_SEC = 2;
 const FLINCHED_FX_REPEATS = 10;
 const GUARDIAN_DELAY_MULTIPLIER = -2;
 const GSAP_PARALYZE_X_OFFSET_PX = 3;
+const ENDURING_FX_BOB_Y_PX = -3 as const;
 
 interface VolatileFXProps {
   isCursed?: boolean;
@@ -67,7 +68,7 @@ export function applyVolatileFXTweens(
     activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.3)', duration: FOCUS_ENERGY_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }));
   }
   if (props.isEnduring || props.isSeeded) {
-    activeTweens.push(gsap.to(target, { y: -3, duration: ENDURING_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }));
+    activeTweens.push(gsap.to(target, { y: ENDURING_FX_BOB_Y_PX, duration: ENDURING_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }));
   }
 }
 

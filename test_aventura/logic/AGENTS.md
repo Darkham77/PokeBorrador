@@ -27,3 +27,4 @@ Game Prototyping / Adventure Suite.
 
 - [adventure/AGENTS.md](./adventure/AGENTS.md): Graph routing and Dijkstra pathfinding engines.
 - [map/AGENTS.md](./map/AGENTS.md): Procedural map generators, autotiling matrices, and settlement placement engines.
+- [utils/AGENTS.md](./utils/AGENTS.md): Shared coordinate transformations and math helpers.

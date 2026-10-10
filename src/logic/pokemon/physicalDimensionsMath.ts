@@ -33,6 +33,9 @@ const MULBERRY_NORMALIZATION_DIVISOR = 4294967296;
 /** Default variation factor (+/- 15% from base). */
 export const DEFAULT_SPECIES_RANGE_VARIATION_FACTOR = 0.15;
 
+/** Minimum positive physical dimension fallback floor. */
+const MINIMUM_PHYSICAL_DIMENSION_FLOOR = 0.1;
+
 /** Number of uniform random rolls summed for the Irwin-Hall distribution (n = 4). */
 const IRWIN_HALL_SAMPLE_COUNT = 4;
 
@@ -172,7 +175,7 @@ export function generateGaussianPhysicalDimensionPure(
     return 0;
   }
   if (typeof baseValueOrRange === 'number' && baseValueOrRange <= 0) {
-    return 0.1;
+    return MINIMUM_PHYSICAL_DIMENSION_FLOOR;
   }
 
   let min: number;

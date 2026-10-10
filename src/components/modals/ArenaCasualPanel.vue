@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useUIStore } from '@/stores/ui';
 import { formatRoomCode, isValidRoomCode } from '@/logic/pvp/pvpRoomCodeHelper';
+import { ARENA_JOIN_CODE_LENGTH } from '@/logic/constants/gameplay';
 import type { PvpMatchFormat, PvpLevelRule, PvpRoomCode } from '@/types/battle/pvp';
 
 const livePvP = useLivePvPStore();
@@ -15,6 +16,9 @@ const selectedLevelRule = ref<PvpLevelRule>('flat50');
 const joinCodeInput = ref('');
 const isCreating = ref(false);
 const isJoining = ref(false);
+
+const isJoinCodeValid = computed(() => joinCodeInput.value.length === ARENA_JOIN_CODE_LENGTH);
+const canJoinRoom = computed(() => isJoinCodeValid.value && !isJoining.value);
 
 async function handleCreateRoom() {
   if (isCreating.value) return;
@@ -85,6 +89,7 @@ async function copyRoomCode() {
           <span class="config-label">Formato de Combate:</span>
           <div class="pill-group">
             <button
+              id="arena-casual-panel-btn-selectedformat"
               v-gsap-hover="'button'"
               class="rule-pill-btn"
               :class="{ active: selectedFormat === '3v3' }"
@@ -94,6 +99,7 @@ async function copyRoomCode() {
               <span>3 vs 3 (Singles)</span>
             </button>
             <button
+              id="arena-casual-panel-btn-selectedformat-2"
               v-gsap-hover="'button'"
               class="rule-pill-btn"
               :class="{ active: selectedFormat === '6v6' }"
@@ -109,6 +115,7 @@ async function copyRoomCode() {
           <span class="config-label">Ajuste de Nivel:</span>
           <div class="pill-group">
             <button
+              id="arena-casual-panel-btn-selectedlevelrule"
               v-gsap-hover="'button'"
               class="rule-pill-btn"
               :class="{ active: selectedLevelRule === 'flat50' }"
@@ -118,6 +125,7 @@ async function copyRoomCode() {
               <span>Nivel 50 Igualado</span>
             </button>
             <button
+              id="arena-casual-panel-btn-selectedlevelrule-2"
               v-gsap-hover="'button'"
               class="rule-pill-btn"
               :class="{ active: selectedLevelRule === 'real' }"
@@ -162,6 +170,7 @@ async function copyRoomCode() {
           <div class="code-display-wrap">
             <span class="code-number text-outline">{{ livePvP.activeRoomCode }}</span>
             <button
+              id="arena-casual-panel-btn-copiar"
               v-gsap-hover="'button'"
               class="copy-btn"
               @click="copyRoomCode"
@@ -177,6 +186,7 @@ async function copyRoomCode() {
         </div>
 
         <button
+          id="arena-casual-panel-btn-cancelar-sala"
           v-gsap-hover="'button'"
           class="cancel-room-btn"
           @click="handleCancelRoom"
@@ -203,6 +213,7 @@ async function copyRoomCode() {
             </p>
           </div>
           <button
+            id="arena-casual-panel-btn-createroom"
             v-gsap-hover="'button'"
             class="action-btn create-btn"
             :disabled="isCreating"
@@ -227,6 +238,7 @@ async function copyRoomCode() {
           </div>
           <div class="join-input-wrap">
             <input
+              id="arena-casual-panel-input-joincodeinput"
               v-model="joinCodeInput"
               type="text"
               maxlength="4"
@@ -236,9 +248,10 @@ async function copyRoomCode() {
               @keyup.enter="handleJoinRoom"
             >
             <button
+              id="arena-casual-panel-btn-isjoining-unirse"
               v-gsap-hover="'button'"
               class="action-btn join-btn"
-              :disabled="joinCodeInput.length !== 4 || isJoining"
+              :disabled="!canJoinRoom"
               @click="handleJoinRoom"
             >
               {{ isJoining ? '...' : 'UNIRSE' }}
@@ -259,34 +272,34 @@ $gray: #94a3b8;
 .arena-casual-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 4px 0;
 
   .rules-config-card,
   .room-code-card {
     padding: 16px;
     border: 1px solid Rgb(255 255 255 / 7%);
-    border-radius: 14px;
+    border-radius: $radius-xl-alt;
     background: Rgb(255 255 255 / 2%);
-    box-shadow: inset 0 0 12px Rgb(255 255 255 / 2%);
+    box-shadow: $shadow-inset-subtle;
   }
 
   .card-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     margin-bottom: 14px;
 
     .header-icon {
       display: inline-flex;
       align-items: center;
-      font-size: 16px;
+      font-size: var(--font-16);
     }
 
     .header-text {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
     }
 
     .panel-subtitle {
@@ -294,7 +307,7 @@ $gray: #94a3b8;
 
       margin: 0;
       color: var(--white, #fff);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: 800;
       letter-spacing: 0.5px;
     }
@@ -302,7 +315,7 @@ $gray: #94a3b8;
     .panel-desc {
       margin: 0;
       color: $gray;
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1.4;
     }
   }
@@ -310,58 +323,58 @@ $gray: #94a3b8;
   .config-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: $spacing-md;
   }
 
   .config-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
 
     @media (width <= 600px) {
       flex-direction: column;
       align-items: flex-start;
-      gap: 8px;
+      gap: $spacing-sm;
     }
 
     .config-label {
       @include pixelated;
 
       color: $gray;
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: 600;
     }
 
     .pill-group {
       display: flex;
-      gap: 8px;
+      gap: $spacing-sm;
 
       .rule-pill-btn {
         @include pixelated;
 
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
         padding: 6px 12px;
         border: 1px solid Rgb(255 255 255 / 10%);
-        border-radius: 8px;
+        border-radius: $radius-lg;
         background: Rgb(0 0 0 / 35%);
         color: $gray;
-        font-size: 8px;
+        font-size: var(--font-8);
         cursor: pointer;
 
         .pill-icon {
           display: inline-flex;
           align-items: center;
-          font-size: 10px;
+          font-size: var(--font-10);
         }
 
         &.active {
           background: Rgb(59 130 246 / 18%);
           color: var(--white, #fff);
           border-color: var(--blue-light, #29b6f6);
-          box-shadow: 0 0 10px Rgb(41 182 246 / 25%), inset 0 0 6px Rgb(41 182 246 / 15%);
+          box-shadow: var(--shadow-glow-amber);
         }
       }
     }
@@ -371,12 +384,12 @@ $gray: #94a3b8;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: $spacing-md-lg;
     padding: 18px;
     border: 1px solid var(--blue-light, #29b6f6);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Radial-Gradient(circle at 50% 30%, Rgb(2 136 209 / 15%) 0%, Rgb(0 0 0 / 40%) 100%);
-    box-shadow: 0 0 20px Rgb(41 182 246 / 15%), inset 0 0 15px Rgb(41 182 246 / 8%);
+    box-shadow: var(--shadow-glow-amber-lg);
 
     .room-active-header {
       .active-badge {
@@ -384,20 +397,20 @@ $gray: #94a3b8;
 
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
         padding: 3px 10px;
         border: 1px solid Rgb(34 197 94 / 40%);
-        border-radius: 12px;
+        border-radius: $radius-xl;
         background: Rgb(34 197 94 / 15%);
-        color: #4ade80;
-        font-size: 7.5px;
+        color: var(--green-light);
+        font-size: var(--font-8);
 
         .pulse-dot {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #4ade80;
-          box-shadow: 0 0 6px #4ade80;
+          background: var(--green-light);
+          box-shadow: var(--shadow-glow-yellow-sm);
         }
       }
     }
@@ -406,26 +419,26 @@ $gray: #94a3b8;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
 
       .code-label {
         @include pixelated;
 
         color: $gray;
-        font-size: 7.5px;
+        font-size: var(--font-8);
         letter-spacing: 0.5px;
       }
 
       .code-display-wrap {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: $spacing-md;
 
         .code-number {
           @include pixelated;
 
           color: var(--yellow, #ffd700);
-          font-size: 24px;
+          font-size: var(--font-24);
           font-weight: 900;
           letter-spacing: 4px;
           filter: Drop-Shadow(0 0 10px Rgb(255 215 0 / 40%));
@@ -434,9 +447,9 @@ $gray: #94a3b8;
         .copy-btn {
           @include btn-vicio('secondary', 'sm');
 
-          gap: 4px;
+          gap: $spacing-xs;
           padding: 4px 10px;
-          font-size: 7.5px;
+          font-size: var(--font-8);
         }
       }
     }
@@ -446,12 +459,12 @@ $gray: #94a3b8;
 
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       color: $gray;
-      font-size: 8px;
+      font-size: var(--font-8);
 
       .spinner-emoji {
-        font-size: 12px;
+        font-size: var(--font-12);
       }
     }
 
@@ -459,13 +472,13 @@ $gray: #94a3b8;
       @include btn-vicio('danger', 'sm');
 
       padding: 6px 16px;
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 
   .room-actions-grid {
     display: grid;
-    gap: 12px;
+    gap: $spacing-md;
     grid-template-columns: 1fr 1fr;
 
     @media (width <= 600px) {
@@ -476,28 +489,28 @@ $gray: #94a3b8;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 14px;
+      gap: $spacing-md-lg;
       padding: 14px;
       border: 1px solid Rgb(255 255 255 / 8%);
-      border-radius: 10px;
+      border-radius: $radius-lg-alt;
       background: Rgb(0 0 0 / 30%);
-      box-shadow: inset 0 0 10px Rgb(0 0 0 / 30%);
+      box-shadow: $shadow-inset-md;
 
       .box-top {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: $spacing-sm-alt;
       }
 
       .box-icon-title {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: $spacing-sm;
 
         .box-icon {
           display: inline-flex;
           align-items: center;
-          font-size: 14px;
+          font-size: var(--font-14);
         }
 
         h4 {
@@ -505,7 +518,7 @@ $gray: #94a3b8;
 
           margin: 0;
           color: var(--white, #fff);
-          font-size: 8.5px;
+          font-size: var(--font-9);
           letter-spacing: 0.5px;
         }
       }
@@ -513,7 +526,7 @@ $gray: #94a3b8;
       .box-desc {
         margin: 0;
         color: $gray;
-        font-size: 8px;
+        font-size: var(--font-8);
         line-height: 1.4;
       }
 
@@ -521,22 +534,22 @@ $gray: #94a3b8;
         &.create-btn {
           @include btn-vicio('primary', 'md', true);
 
-          gap: 6px;
-          font-size: 8px;
+          gap: $spacing-sm-alt;
+          font-size: var(--font-8);
         }
 
         &.join-btn {
           @include btn-vicio('success', 'md');
 
           padding: 6px 16px;
-          font-size: 8px;
+          font-size: var(--font-8);
         }
       }
 
       .join-input-wrap {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: $spacing-sm;
 
         .code-input {
           @include pixelated;
@@ -545,21 +558,21 @@ $gray: #94a3b8;
           height: 32px;
           padding: 0 8px;
           border: 1px solid Rgb(255 255 255 / 18%);
-          border-radius: 8px;
+          border-radius: $radius-lg;
           background: Rgb(0 0 0 / 60%);
           color: var(--yellow, #ffd700);
-          font-size: 11px;
+          font-size: var(--font-11);
           font-weight: 800;
           text-align: center;
           flex: 1;
           letter-spacing: 2px;
           text-transform: uppercase;
-          box-shadow: inset 0 2px 4px Rgb(0 0 0 / 50%);
+          box-shadow: $shadow-inset-sm;
 
           &:focus {
             outline: none;
             border-color: var(--yellow, #ffd700);
-            box-shadow: 0 0 10px Rgb(255 215 0 / 25%), inset 0 2px 4px Rgb(0 0 0 / 50%);
+            box-shadow: var(--shadow-glow-yellow);
           }
         }
       }

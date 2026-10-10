@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine';
+import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
 
 /**
  * 9-slice path resolution logic helper matching the corrected proceduralMapGenerator implementation.

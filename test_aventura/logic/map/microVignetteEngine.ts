@@ -18,6 +18,7 @@
 
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { DECORATION_DEFAULT_SEED } from '../../config/studioConstants.ts';
 
 export type MicroVignetteKind =
   | 'berry_orchard'
@@ -47,9 +48,10 @@ export interface GenerateMicroVignettesOptions {
   readonly maxVignettes?: number;
 }
 
-const DEFAULT_SEED = 1337;
 const DEFAULT_MAX_VIGNETTES = 10;
-const CLEARANCE_MARGIN_POI = 2;
+const VIGNETTE_POI_CLEARANCE_MARGIN = 2;
+const CLEARING_SEARCH_MARGIN_TOP_LEFT = 6 as const;
+const CLEARING_SEARCH_MARGIN_BOTTOM_RIGHT = 8 as const;
 
 const VIGNETTE_KINDS: readonly MicroVignetteKind[] = [
   'berry_orchard',
@@ -99,7 +101,7 @@ export function generateMicroVignettes(
   const W = continent.width;
   const H = continent.height;
 
-  let rngSeed = (options.seed ?? DEFAULT_SEED) | 0;
+  let rngSeed = (options.seed ?? DECORATION_DEFAULT_SEED) | 0;
   const nextRng = (): number => {
     rngSeed = (rngSeed * 1664525 + 1013904223) | 0;
     return (rngSeed >>> 0) / 4294967296;
@@ -109,10 +111,10 @@ export function generateMicroVignettes(
 
   // Mark POI building footprints as strictly occupied
   for (const poi of pois) {
-    const minX = Math.max(0, poi.gridX - CLEARANCE_MARGIN_POI);
-    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + CLEARANCE_MARGIN_POI);
-    const minY = Math.max(0, poi.gridY - CLEARANCE_MARGIN_POI);
-    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + CLEARANCE_MARGIN_POI);
+    const minX = Math.max(0, poi.gridX - VIGNETTE_POI_CLEARANCE_MARGIN);
+    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + VIGNETTE_POI_CLEARANCE_MARGIN);
+    const minY = Math.max(0, poi.gridY - VIGNETTE_POI_CLEARANCE_MARGIN);
+    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + VIGNETTE_POI_CLEARANCE_MARGIN);
 
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
@@ -189,8 +191,8 @@ export function generateMicroVignettes(
   };
 
   const candidateClearings: { x: number; y: number }[] = [];
-  for (let y = 6; y < H - 8; y += 2) {
-    for (let x = 6; x < W - 8; x += 2) {
+  for (let y = CLEARING_SEARCH_MARGIN_TOP_LEFT; y < H - CLEARING_SEARCH_MARGIN_BOTTOM_RIGHT; y += 2) {
+    for (let x = CLEARING_SEARCH_MARGIN_TOP_LEFT; x < W - CLEARING_SEARCH_MARGIN_BOTTOM_RIGHT; x += 2) {
       if (isAreaFree(x, y, 5, 4)) {
         candidateClearings.push({ x, y });
       }

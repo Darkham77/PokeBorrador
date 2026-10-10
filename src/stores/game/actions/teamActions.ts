@@ -2,6 +2,7 @@ import { useUIStore } from '@/stores/ui'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type PvpTeamTab } from '@/types/battle/pvp'
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
 
 import { ensurePvpTeamsFilled } from '@/logic/pvp/pvpTeamHelper.ts'
 
@@ -142,7 +143,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     const existingUids = new Set(allPokes.map(p => p.uid))
     state.warTeam = (state.warTeam || []).filter(uid => existingUids.has(uid))
 
-    const targetCount = Math.min(state.warSlots || 6, allPokes.length)
+    const targetCount = Math.min(state.warSlots || MAX_POKEMON_TEAM_SIZE, allPokes.length)
     if (state.warTeam.length < targetCount) {
       for (const p of allPokes) {
         if (state.warTeam.length >= targetCount) break
@@ -152,13 +153,13 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
       }
     }
     
-    if (state.warTeam.length > (state.warSlots || 6)) {
-      state.warTeam = state.warTeam.slice(0, state.warSlots || 6)
+    if (state.warTeam.length > (state.warSlots || MAX_POKEMON_TEAM_SIZE)) {
+      state.warTeam = state.warTeam.slice(0, state.warSlots || MAX_POKEMON_TEAM_SIZE)
     }
   }
 
   function swapWarSlot(slotIndex: number, newPokemonUid: string) {
-    const maxSlots = state.warSlots || 6
+    const maxSlots = state.warSlots || MAX_POKEMON_TEAM_SIZE
     if (slotIndex < 0 || slotIndex >= maxSlots) return
     
     const allPokes = [...state.team, ...(state.box || [])]

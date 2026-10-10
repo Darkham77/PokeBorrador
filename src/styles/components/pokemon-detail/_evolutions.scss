@@ -5,7 +5,7 @@ body .evolve-pane {
       & .evo-chain {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: $spacing-2xl;
     
       & .evo-step {
       @include will-animate(transform, box-shadow);
@@ -13,13 +13,13 @@ body .evolve-pane {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 16px;
+      gap: $spacing-lg;
       width: fit-content;
       max-width: 100%;
       margin: 0 auto;
       padding: 16px 20px;
       border: 1px solid Rgb(255 255 255 / 5%);
-      border-radius: 20px;
+      border-radius: $radius-3xl;
       background: Rgb(255 255 255 / 3%);
       
       
@@ -27,7 +27,7 @@ body .evolve-pane {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
+        gap: $spacing-sm;
         min-width: 80px;
         text-align: center;
       }
@@ -48,7 +48,7 @@ body .evolve-pane {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
+        gap: $spacing-xs;
         min-width: 60px;
         
     & .method { 
@@ -56,13 +56,13 @@ body .evolve-pane {
           @include pixelated; 
 
           color: var(--yellow); 
-          font-size: 8px; 
+          font-size: var(--font-8); 
           font-weight: 900; 
           text-transform: uppercase;
         }
           & .arrow { 
           color: Rgb(255 255 255 / 10%); 
-          font-size: 24px; 
+          font-size: var(--font-24); 
           line-height: 1;
         }
       }
@@ -85,13 +85,13 @@ body .evolve-pane {
           @include pixelated;
 
           color: Rgb(255 255 255 / 10%);
-          font-size: 24px;
+          font-size: var(--font-24);
         }
       }
       
       & .evo-target-name { 
         color: $white; 
-        font-size: 8px; 
+        font-size: var(--font-8); 
         font-weight: 900;
         opacity: 0.9; 
         text-transform: uppercase; 
@@ -104,7 +104,7 @@ body .evolve-pane {
   .no-evo {
     padding: 40px;
     color: Rgb(255 255 255 / 30%);
-    font-size: 14px;
+    font-size: var(--font-14);
     text-align: center;
     font-style: italic;
   }
@@ -114,15 +114,15 @@ body .evolve-pane {
 @media (width <= 480px) {
   .evolve-pane {
       & .evo-chain {
-      gap: 12px;
+      gap: $spacing-md;
       
       & .evo-step {
-        gap: 8px;
+        gap: $spacing-sm;
         padding: 12px 10px;
-        border-radius: 16px;
+        border-radius: $radius-2xl;
         
         .evo-from, .evo-to {
-          gap: 4px;
+          gap: $spacing-xs;
           min-width: 60px;
         }
         
@@ -133,13 +133,13 @@ body .evolve-pane {
 
       & .evo-arrow {
           min-width: 40px;
-          & .arrow { font-size: 16px; }
-    & .method { font-size: 7px; }
+          & .arrow { font-size: var(--font-16); }
+    & .method { font-size: var(--font-7); }
         }
 
       & .evo-target-name {
           max-width: 60px;
-          font-size: 7px;
+          font-size: var(--font-7);
           line-height: 1.45;
           padding-bottom: 2px;
           white-space: nowrap;

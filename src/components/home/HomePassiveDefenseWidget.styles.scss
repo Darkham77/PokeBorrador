@@ -11,15 +11,15 @@
   &:not(.in-modal) {
     padding: 16px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(18 22 34 / 85%);
-    box-shadow: 0 4px 16px Rgb(0 0 0 / 40%);
+    box-shadow: $shadow-md;
   }
 
   &.in-modal {
     padding: 16px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 16px;
+    border-radius: $radius-2xl;
     background: Rgb(0 0 0 / 20%);
   }
 }
@@ -28,7 +28,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgb(255 255 255 / 6%);
@@ -36,19 +36,19 @@
   .title-wrap {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     min-width: 0;
     flex: 1;
 
     .card-icon {
-      font-size: 20px;
+      font-size: var(--font-20);
       flex-shrink: 0;
     }
 
     .title-text-group {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
       min-width: 0;
     }
 
@@ -57,14 +57,14 @@
 
       margin: 0;
       color: var(--yellow, #facc15);
-      font-size: 11px;
+      font-size: var(--font-11);
       letter-spacing: 1px;
     }
 
     .card-subtitle {
       margin: 0;
       color: var(--gray, #94a3b8);
-      font-size: 9px;
+      font-size: var(--font-9);
       line-height: 1.2;
     }
   }
@@ -86,19 +86,19 @@
 
   padding: 5px 12px;
   border: 1px solid Rgb(255 255 255 / 15%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(255 255 255 / 5%);
   color: var(--text-muted, #94a3b8);
-  font-size: 8px;
+  font-size: var(--font-8);
   font-weight: 800;
   cursor: pointer;
   letter-spacing: 0.5px;
 
   &.active {
     background: Rgb(34 197 94 / 15%);
-    color: #22c55e;
-    border-color: #22c55e;
-    box-shadow: 0 0 10px Rgb(34 197 94 / 20%);
+    color: var(--emerald);
+    border-color: var(--emerald);
+    box-shadow: var(--shadow-glow-amber);
   }
 }
 
@@ -106,8 +106,8 @@
   @include pixelated;
 
   padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 9px;
+  border-radius: $radius-lg;
+  font-size: var(--font-9);
   font-weight: 700;
   text-align: center;
   margin-bottom: 12px;
@@ -115,13 +115,13 @@
   &.active {
     border: 1px solid Rgb(34 197 94 / 25%);
     background: Rgb(34 197 94 / 10%);
-    color: #4ade80;
+    color: var(--green-light);
   }
 
   &.inactive {
     border: 1px solid Rgb(234 179 8 / 25%);
     background: Rgb(234 179 8 / 10%);
-    color: #facc15;
+    color: var(--amber-400);
   }
 }
 
@@ -141,14 +141,14 @@
 
       margin: 0;
       color: var(--gray, #94a3b8);
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: 700;
     }
   }
 
   .defense-grid {
     display: grid;
-    gap: 0.4rem;
+    gap: $spacing-sm-alt;
     grid-template-columns: repeat(var(--defense-cols, 3), 1fr);
     justify-items: center;
 
@@ -168,7 +168,7 @@
       :deep(.defense-card-override) {
         opacity: 0.7;
         filter: Grayscale(0.85);
-        border-color: #ef4444 !important;
+        border-color: var(--red-light) !important;
       }
     }
 
@@ -181,11 +181,11 @@
       left: 4px;
       z-index: calc(var(--z-base) + 5);
       padding: 2px 4px;
-      border: 1px solid #f87171;
-      border-radius: 4px;
+      border: 1px solid var(--rose);
+      border-radius: $radius-sm;
       background: Rgb(239 68 68 / 90%);
-      color: #fff;
-      font-size: 7px;
+      color: var(--white);
+      font-size: var(--font-7);
       font-weight: 800;
       text-align: center;
       white-space: nowrap;
@@ -197,7 +197,7 @@
   .empty-team-msg {
     padding: 12px 0;
     color: var(--gray, #94a3b8);
-    font-size: 9px;
+    font-size: var(--font-9);
     text-align: center;
     font-style: italic;
   }
@@ -210,7 +210,7 @@
     margin: 0 auto !important;
     padding: 6px !important;
     border: 1px solid var(--tier-color);
-    border-radius: 14px !important;
+    border-radius: $radius-xl-alt !important;
     background: Rgb(15 23 42 / 75%) !important;
     cursor: pointer !important;
 
@@ -258,24 +258,22 @@
 
     margin: 0 0 0.5rem;
     color: var(--gray, #94a3b8);
-    font-size: 8px;
+    font-size: var(--font-8);
     font-weight: 700;
   }
 
   .history-list {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: $spacing-sm-alt;
     max-height: 220px;
     overflow-y: auto;
   }
 
-
-
   .empty-history {
     padding: 0.75rem 0;
     color: var(--gray, #94a3b8);
-    font-size: 9px;
+    font-size: var(--font-9);
     text-align: center;
     font-style: italic;
   }

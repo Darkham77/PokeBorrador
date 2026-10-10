@@ -13,9 +13,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generatePokemonTopology } from '../../../src/logic/map/pokemonGraphTopology.ts';
-import { embedPokemonTopology } from '../../../src/logic/map/orthogonalGraphEmbedding.ts';
-import { sculptContinentFromGraph } from '../../../src/logic/map/continentGenerator.ts';
+import { generatePokemonTopology } from '../../logic/map/pokemonGraphTopology.ts';
+import { embedPokemonTopology } from '../../logic/map/orthogonalGraphEmbedding.ts';
+import { sculptContinentFromGraph } from '../../logic/map/continentSculptingEngine.ts';
 
 describe('Continental Sculpting Engine (Phase 3)', () => {
   it('sculpts a continent wrapping the embedded topology graph for seed 42', () => {

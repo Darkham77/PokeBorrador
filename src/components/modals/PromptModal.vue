@@ -102,32 +102,32 @@ const handleCancel = () => {
   p {
     margin: 0 0 16px;
     color: Rgb(255 255 255 / 70%);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
+    font-family: $font-family-ui;
+    font-size: var(--font-14);
   }
   
   .prompt-input {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(0 0 0 / 30%);
     color: var(--white);
-    font-family: Inter, sans-serif;
-    font-size: 16px;
+    font-family: $font-family-ui;
+    font-size: var(--font-16);
     outline: none;
     
     
     &:focus {
       border-color: var(--yellow);
-      box-shadow: 0 0 12px Rgb(255 214 10 / 20%);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 }
 
 .prompt-footer {
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
   
   button {
     @include pixelated;
@@ -135,8 +135,8 @@ const handleCancel = () => {
 
     padding: 14px;
     border: none;
-    border-radius: 12px;
-    font-size: 9px;
+    border-radius: $radius-xl;
+    font-size: var(--font-9);
     font-weight: 700;
     flex: 1;
     cursor: pointer;
@@ -158,7 +158,7 @@ const handleCancel = () => {
   .btn-confirm {
     background: var(--yellow);
     color: Rgb(0 0 0 / 100%);
-    box-shadow: 0 4px 15px Rgb(255 214 10 / 30%);
+    box-shadow: var(--shadow-md);
     &:hover {
       background: $yellow;
     }

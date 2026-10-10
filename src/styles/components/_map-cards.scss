@@ -5,7 +5,7 @@
 /* ===== MAP GRID LIST (TRUE GRID RESTORATION) ===== */
 .map-list {
   display: grid;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: repeat(3, 1fr);
   margin-top: 10px;
   margin-bottom: 40px;
@@ -16,7 +16,7 @@
   }
 
   @media (width <= 768px) {
-    gap: 15px;
+    gap: $spacing-md-15;
     grid-template-columns: 1fr;
   }
 }

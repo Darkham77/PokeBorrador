@@ -9,9 +9,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 
 describe.skip('Procedural Continent Archetypes, Gateways & Mainland Seaport Invariants', () => {
   const continent = generateContinentMap({

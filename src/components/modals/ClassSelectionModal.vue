@@ -89,7 +89,7 @@ const handleSelect = async (id: PlayerClassId) => {
 
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: $spacing-3xl;
   max-height: 85dvh;
   padding: 20px;
   overflow-y: auto;
@@ -103,15 +103,15 @@ const handleSelect = async (id: PlayerClassId) => {
 
     max-width: 800px;
     margin: 0 auto;
-    color: rgb(255 255 255 / 50%);
-    font-size: 12px;
+    color: Rgb(255 255 255 / 50%);
+    font-size: var(--font-12);
     line-height: 1.6;
   }
 }
 
 .classes-grid {
   display: grid;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: repeat(4, 1fr);
   perspective: 1000px;
 }
@@ -128,7 +128,7 @@ const handleSelect = async (id: PlayerClassId) => {
   .class-selection-container {
     @include smooth-scroll;
 
-    gap: 20px;
+    gap: $spacing-xl;
     height: 100%;
     min-height: 0;
     padding: 16px;

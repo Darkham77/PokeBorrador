@@ -20,6 +20,14 @@ const DUST_L2_SEED_X_MULT = 2400;
 const DUST_L2_SEED_Y_MULT = 4800;
 const DUST_L2_MOD = 128;
 
+const WEATHER_MULT_STRONG_WINDS_L2 = 0.9 as const;
+const WEATHER_MULT_DUST_STORM_L1 = 1.2 as const;
+const WEATHER_MULT_DEFAULT_SANDSTORM_L1 = 0.8 as const;
+const WEATHER_MULT_DEFAULT_SANDSTORM_L2 = 0.7 as const;
+const SPEED_FACTOR_BASE_L2 = 0.7 as const;
+const SPEED_FACTOR_ANIM_L1 = 0.4 as const;
+const SPEED_FACTOR_ANIM_L2 = 0.3 as const;
+
 export interface SandstormKinematics {
   s1X: number;
   s1Y: number;
@@ -38,12 +46,12 @@ export function computeSandstormKinematics(animSeed: number): SandstormKinematic
 
 function resolveSandstormWeatherMultiplier(w: WeatherId, layer: 1 | 2): number {
   if (w === 'strong_winds') {
-    return layer === 1 ? 1.0 : 0.9;
+    return layer === 1 ? 1.0 : WEATHER_MULT_STRONG_WINDS_L2;
   }
   if (w === 'dust_storm') {
-    return layer === 1 ? 1.2 : 1.0;
+    return layer === 1 ? WEATHER_MULT_DUST_STORM_L1 : 1.0;
   }
-  return layer === 1 ? 0.8 : 0.7;
+  return layer === 1 ? WEATHER_MULT_DEFAULT_SANDSTORM_L1 : WEATHER_MULT_DEFAULT_SANDSTORM_L2;
 }
 
 export function computeSandstormSpeed(
@@ -52,7 +60,7 @@ export function computeSandstormSpeed(
   speedVar: number,
   layer: 1 | 2
 ): number {
-  const baseFactor = layer === 1 ? (1.0 + animSeed * 0.4) : (0.7 + animSeed * 0.3);
+  const baseFactor = layer === 1 ? (1.0 + animSeed * SPEED_FACTOR_ANIM_L1) : (SPEED_FACTOR_BASE_L2 + animSeed * SPEED_FACTOR_ANIM_L2);
   const weatherMult = resolveSandstormWeatherMultiplier(w, layer);
   const safeSpeedVar = speedVar > 0 ? speedVar : 1.0;
   return (baseFactor * weatherMult) / safeSpeedVar;

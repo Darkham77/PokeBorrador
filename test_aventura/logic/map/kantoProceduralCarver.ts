@@ -14,15 +14,36 @@ import {
   OCCUPANCY_FLAGS,
   OccupancyGrid,
   type KantoNodeCoordinate,
-  type KantoRegionalWorldGenerator
-} from './kantoRegionalGenerator.ts';
-import { defaultPrefabsRegistry } from './prefabsRegistry.ts';
+  type IKantoCarverWorldContext
+} from '../../types/map/kantoGridModel.ts';
 import { SimplexNoise } from './noise/simplexNoise.ts';
+import { findValidBuildingPlacementSpot } from './buildingPlacementSolver.ts';
+import {
+  CONTINENT_DEFAULT_SEED
+} from '../../config/studioConstants.ts';
+import {
+  MOUNTAIN_BLOCK_RADIUS_TILES,
+  DOOR_PATH_EXTENSION_STEPS,
+  CA_SMOOTH_ISOLATED_LIMIT,
+  CA_SMOOTH_FILL_LIMIT,
+  ARCHETYPE_COUNT,
+  DEFAULT_BRIDGE_TILE_SPAN,
+  CLEARING_HALF_DIMENSIONS,
+  MT_MOON_FOOT_RECT,
+  COASTLINE_MARGIN_CONFIG,
+  NORTHERN_BARRIER_CONFIG,
+  NORTH_WEST_RIDGE_CONFIG,
+  VOLCANIC_PENINSULA_CONFIG,
+  URBAN_ROAD_LAYOUTS,
+  BUILDING_LAYOUTS,
+  TOWN_PROPS_LAYOUTS,
+  RELIEF_PROPS_CONFIG
+} from '../../config/kantoCarverConfig.ts';
 
 /**
  * Fills the regional map matrix with 100% impenetrable nature (FOREST_WALL, elevation 1) by default.
  */
-export function fillImpenetrableWorld(gen: KantoRegionalWorldGenerator): void {
+export function fillImpenetrableWorld(gen: IKantoCarverWorldContext): void {
   const W = KANTO_GRID_W;
   const H = KANTO_GRID_H;
   gen.grid = Array.from({ length: H }, () => new Uint8Array(W).fill(CELL_BIOME.FOREST_WALL));
@@ -35,7 +56,7 @@ export function fillImpenetrableWorld(gen: KantoRegionalWorldGenerator): void {
  * Rural villages get natural grass ground; metropolises get expanded clearings for boulevards.
  */
 export function carveSettlementClearings(
-  gen: KantoRegionalWorldGenerator,
+  gen: IKantoCarverWorldContext,
   nodes: Record<string, KantoNodeCoordinate>
 ): void {
   const g = gen.grid;
@@ -47,8 +68,8 @@ export function carveSettlementClearings(
     if (id === 'mtmoon') {
       const { tx, ty } = gen.nodeToTile(n.x, n.y);
       // Explanada despejada for Pokémon Center, Route 3/4 path, and Mt. Moon foot
-      for (let dy = -3; dy <= 6; dy++) {
-        for (let dx = -10; dx <= 8; dx++) {
+      for (let dy = MT_MOON_FOOT_RECT.minDy; dy <= MT_MOON_FOOT_RECT.maxDy; dy++) {
+        for (let dx = MT_MOON_FOOT_RECT.minDx; dx <= MT_MOON_FOOT_RECT.maxDx; dx++) {
           const gx = tx + dx;
           const gy = ty + dy;
           if (gx >= 0 && gx < W && gy >= 0 && gy < H) {
@@ -72,8 +93,8 @@ export function carveSettlementClearings(
     const isMetropolis = id === 'saffron' || id === 'celadon';
     const isBastion = id === 'pewter' || id === 'cerulean' || id === 'viridian' || id === 'fuchsia';
     const isPort = id === 'vermilion';
-    const halfW = isMetropolis ? 18 : isBastion ? 15 : isPort ? 13 : 12;
-    const halfH = isMetropolis ? 15 : isBastion ? 13 : isPort ? 11 : 10;
+    const archetypeKey = isMetropolis ? 'metropolis' : isBastion ? 'bastion' : isPort ? 'port' : 'village';
+    const { halfW, halfH } = CLEARING_HALF_DIMENSIONS[archetypeKey];
 
     for (let dy = -halfH; dy <= halfH; dy++) {
       for (let dx = -halfW; dx <= halfW; dx++) {
@@ -103,7 +124,7 @@ export function carveSettlementClearings(
 /**
  * Carves natural oceanic perimeters with sinusoidal shoreline wobble around map edges.
  */
-export function carveProceduralCoastlines(gen: KantoRegionalWorldGenerator): void {
+export function carveProceduralCoastlines(gen: IKantoCarverWorldContext): void {
   const g = gen.grid;
   const elev = gen.elevation;
   const W = KANTO_GRID_W;
@@ -123,22 +144,22 @@ export function carveProceduralCoastlines(gen: KantoRegionalWorldGenerator): voi
 
   // Outer ocean margins (approx 4-6 tiles with sinusoidal wobble)
   for (let y = 0; y < H; y++) {
-    const leftMargin = Math.max(1, Math.round(4 + Math.sin(y * 0.18 + gen.seed) * 2));
+    const leftMargin = Math.max(1, Math.round(COASTLINE_MARGIN_CONFIG.left.base + Math.sin(y * COASTLINE_MARGIN_CONFIG.left.freq + gen.seed) * COASTLINE_MARGIN_CONFIG.left.amp));
     for (let x = 0; x < leftMargin; x++) {
       setWater(x, y);
     }
-    const rightMargin = Math.min(W - 1, Math.round(W - 5 + Math.cos(y * 0.22 + gen.seed * 2) * 2));
+    const rightMargin = Math.min(W - 1, Math.round(W - COASTLINE_MARGIN_CONFIG.right.offset + Math.cos(y * COASTLINE_MARGIN_CONFIG.right.freq + gen.seed * COASTLINE_MARGIN_CONFIG.right.seedMult) * COASTLINE_MARGIN_CONFIG.right.amp));
     for (let x = rightMargin; x < W; x++) {
       setWater(x, y);
     }
   }
 
   for (let x = 0; x < W; x++) {
-    const topMargin = Math.max(1, Math.round(4 + Math.cos(x * 0.2 + gen.seed * 3) * 2));
+    const topMargin = Math.max(1, Math.round(COASTLINE_MARGIN_CONFIG.top.base + Math.cos(x * COASTLINE_MARGIN_CONFIG.top.freq + gen.seed * COASTLINE_MARGIN_CONFIG.top.seedMult) * COASTLINE_MARGIN_CONFIG.top.amp));
     for (let y = 0; y < topMargin; y++) {
       setWater(x, y);
     }
-    const bottomMargin = Math.min(H - 1, Math.round(H - 6 + Math.sin(x * 0.25 + gen.seed) * 2.5));
+    const bottomMargin = Math.min(H - 1, Math.round(H - COASTLINE_MARGIN_CONFIG.bottom.offset + Math.sin(x * COASTLINE_MARGIN_CONFIG.bottom.freq + gen.seed) * COASTLINE_MARGIN_CONFIG.bottom.amp));
     for (let y = bottomMargin; y < H; y++) {
       setWater(x, y);
     }
@@ -169,14 +190,14 @@ export function carveProceduralCoastlines(gen: KantoRegionalWorldGenerator): voi
  * Governed by SimplexNoise thresholding and Cellular Automata contour smoothing (Zero rectangular loops).
  */
 export function carveProceduralMountainChains(
-  gen: KantoRegionalWorldGenerator,
+  gen: IKantoCarverWorldContext,
   nodes: Record<string, KantoNodeCoordinate>
 ): void {
   const g = gen.grid;
   const elev = gen.elevation;
   const W = KANTO_GRID_W;
   const H = KANTO_GRID_H;
-  const simplex = new SimplexNoise(gen.seed ?? 42);
+  const simplex = new SimplexNoise(gen.seed ?? CONTINENT_DEFAULT_SEED);
 
   const nodeTiles = Object.values(nodes).map((n) => gen.nodeToTile(n.x, n.y));
 
@@ -184,62 +205,62 @@ export function carveProceduralMountainChains(
     if (gen.occupancy.has(gx, gy, OCCUPANCY_FLAGS.ROAD | OCCUPANCY_FLAGS.ROAD_BUFFER | OCCUPANCY_FLAGS.BUILDING)) {
       return true;
     }
-    return nodeTiles.some((nt) => Math.hypot(nt.tx - gx, nt.ty - gy) < 11);
+    return nodeTiles.some((nt) => Math.hypot(nt.tx - gx, nt.ty - gy) < MOUNTAIN_BLOCK_RADIUS_TILES);
   };
 
   const candidateMt = Array.from({ length: H }, () => new Uint8Array(W));
   const candidateElev = Array.from({ length: H }, () => new Uint8Array(W));
 
   // 1. Northern Barrier Range (organic undulating spine along top border, gy ~ 2..10)
-  for (let gy = 1; gy <= 10; gy++) {
-    for (let gx = 3; gx < W - 3; gx++) {
-      const isPass = gx >= Math.floor(W * 0.44) && gx <= Math.floor(W * 0.52);
+  for (let gy = NORTHERN_BARRIER_CONFIG.minGy; gy <= NORTHERN_BARRIER_CONFIG.maxGy; gy++) {
+    for (let gx = NORTHERN_BARRIER_CONFIG.marginX; gx < W - NORTHERN_BARRIER_CONFIG.marginX; gx++) {
+      const isPass = gx >= Math.floor(W * NORTHERN_BARRIER_CONFIG.minPassFactor) && gx <= Math.floor(W * NORTHERN_BARRIER_CONFIG.maxPassFactor);
       if (isPass) continue;
       if (isBlocked(gx, gy)) continue;
 
-      const spineY = 4.5 + Math.sin(gx * 0.18) * 1.5;
+      const spineY = NORTHERN_BARRIER_CONFIG.baseSpineY + Math.sin(gx * NORTHERN_BARRIER_CONFIG.sinFreq) * NORTHERN_BARRIER_CONFIG.sinAmp;
       const dist = Math.abs(gy - spineY);
-      const noise = simplex.noise2D(gx * 0.12, gy * 0.15) * 1.6;
+      const noise = simplex.noise2D(gx * NORTHERN_BARRIER_CONFIG.noiseFreqX, gy * NORTHERN_BARRIER_CONFIG.noiseFreqY) * NORTHERN_BARRIER_CONFIG.noiseAmp;
 
-      if (dist + noise < 3.2) {
+      if (dist + noise < NORTHERN_BARRIER_CONFIG.distCutoff) {
         candidateMt[gy]![gx] = 1;
-        candidateElev[gy]![gx] = (dist + noise < 1.7) ? 3 : 2;
+        candidateElev[gy]![gx] = (dist + noise < NORTHERN_BARRIER_CONFIG.tier3Cutoff) ? 3 : 2;
       }
     }
   }
 
   // 2. North-West Victory Ridge (organic vertical ridge along western boundary, gx ~ 2..9, gy ~ 5..22)
-  for (let gy = 5; gy <= 22; gy++) {
-    for (let gx = 1; gx <= 9; gx++) {
+  for (let gy = NORTH_WEST_RIDGE_CONFIG.minGy; gy <= NORTH_WEST_RIDGE_CONFIG.maxGy; gy++) {
+    for (let gx = NORTH_WEST_RIDGE_CONFIG.minGx; gx <= NORTH_WEST_RIDGE_CONFIG.maxGx; gx++) {
       if (isBlocked(gx, gy)) continue;
 
-      const spineX = 4.5 + Math.sin(gy * 0.22) * 1.6;
+      const spineX = NORTH_WEST_RIDGE_CONFIG.baseSpineX + Math.sin(gy * NORTH_WEST_RIDGE_CONFIG.sinFreq) * NORTH_WEST_RIDGE_CONFIG.sinAmp;
       const dist = Math.abs(gx - spineX);
-      const noise = simplex.noise2D(gx * 0.15, gy * 0.12) * 1.5;
+      const noise = simplex.noise2D(gx * NORTH_WEST_RIDGE_CONFIG.noiseFreqX, gy * NORTH_WEST_RIDGE_CONFIG.noiseFreqY) * NORTH_WEST_RIDGE_CONFIG.noiseAmp;
 
-      if (dist + noise < 3.0) {
+      if (dist + noise < NORTH_WEST_RIDGE_CONFIG.distCutoff) {
         candidateMt[gy]![gx] = 1;
-        candidateElev[gy]![gx] = (dist + noise < 1.6) ? 3 : 2;
+        candidateElev[gy]![gx] = (dist + noise < NORTH_WEST_RIDGE_CONFIG.tier3Cutoff) ? 3 : 2;
       }
     }
   }
 
   // 3. South-East Coastal Volcanic Peninsula (organic radial formation)
-  const vcx = Math.floor(W * 0.82);
-  const vcy = Math.floor(H * 0.78);
-  for (let dy = -7; dy <= 7; dy++) {
-    for (let dx = -7; dx <= 7; dx++) {
+  const vcx = Math.floor(W * VOLCANIC_PENINSULA_CONFIG.centerFactorX);
+  const vcy = Math.floor(H * VOLCANIC_PENINSULA_CONFIG.centerFactorY);
+  for (let dy = -VOLCANIC_PENINSULA_CONFIG.radiusTiles; dy <= VOLCANIC_PENINSULA_CONFIG.radiusTiles; dy++) {
+    for (let dx = -VOLCANIC_PENINSULA_CONFIG.radiusTiles; dx <= VOLCANIC_PENINSULA_CONFIG.radiusTiles; dx++) {
       const gx = vcx + dx;
       const gy = vcy + dy;
       if (gx >= 0 && gx < W && gy >= 0 && gy < H) {
         if (isBlocked(gx, gy)) continue;
 
         const dist = Math.hypot(dx, dy);
-        const noise = simplex.noise2D(gx * 0.18, gy * 0.18) * 1.8;
+        const noise = simplex.noise2D(gx * VOLCANIC_PENINSULA_CONFIG.noiseFreq, gy * VOLCANIC_PENINSULA_CONFIG.noiseFreq) * VOLCANIC_PENINSULA_CONFIG.noiseAmp;
 
-        if (dist + noise <= 5.8) {
+        if (dist + noise <= VOLCANIC_PENINSULA_CONFIG.distCutoff) {
           candidateMt[gy]![gx] = 1;
-          candidateElev[gy]![gx] = (dist + noise <= 3.2) ? 3 : 2;
+          candidateElev[gy]![gx] = (dist + noise <= VOLCANIC_PENINSULA_CONFIG.tier3Cutoff) ? 3 : 2;
         }
       }
     }
@@ -265,10 +286,10 @@ export function carveProceduralMountainChains(
     for (let x = 1; x < W - 1; x++) {
       if (isBlocked(x, y)) continue;
       const n = countNeighbors(candidateMt, x, y);
-      if (candidateMt[y]![x] === 1 && n <= 2) {
+      if (candidateMt[y]![x] === 1 && n <= CA_SMOOTH_ISOLATED_LIMIT) {
         candidateMt[y]![x] = 0;
         candidateElev[y]![x] = 0;
-      } else if (candidateMt[y]![x] === 0 && n >= 6) {
+      } else if (candidateMt[y]![x] === 0 && n >= CA_SMOOTH_FILL_LIMIT) {
         candidateMt[y]![x] = 1;
         candidateElev[y]![x] = 2;
       }
@@ -296,7 +317,7 @@ export function carveProceduralMountainChains(
  * Uses 100% natural grass base with dirt paths for door access (Zero gray cement slabs).
  */
 export function placeProceduralTownArchitectures(
-  gen: KantoRegionalWorldGenerator,
+  gen: IKantoCarverWorldContext,
   nodes: Record<string, KantoNodeCoordinate>
 ): void {
   const T = KANTO_TILE_SIZE;
@@ -306,75 +327,20 @@ export function placeProceduralTownArchitectures(
   const snap = (v: number) => Math.round(v / T) * T;
 
   const addBuilding = (style: string, x: number, y: number, w: number, h: number) => {
-    let sx = snap(x);
-    let sy = snap(y);
-    let bx = Math.floor(sx / T);
-    let by = Math.floor(sy / T);
-    const bw = Math.ceil(w / T);
-    const bh = Math.ceil(h / T);
-
-    const isSpotValid = (tx: number, ty: number) => {
-      // Must stay within grid bounds with 1-tile margin
-      if (tx < 1 || tx + bw >= KANTO_GRID_W - 1 || ty < 1 || ty + bh >= KANTO_GRID_H - 1) return false;
-
-      // 1-tile margin check against water, mountain elevation, cliffs, and reserved spaces
-      for (let cy = ty - 1; cy <= ty + bh; cy++) {
-        for (let cx = tx - 1; cx <= tx + bw; cx++) {
-          const row = gen.grid[cy];
-          const eRow = gen.elevation[cy];
-          if (!row || !eRow) return false;
-          const cell = row[cx];
-          const elev = eRow[cx];
-          if (cell === undefined || cell === CELL_BIOME.WATER || cell === CELL_BIOME.MOUNTAIN_DIRT) return false;
-          if (elev === undefined || elev >= 2) return false;
-          if (gen.occupancy.has(cx, cy, OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.DOOR_ACCESS)) {
-            return false;
-          }
-        }
-      }
-
-      // Strict bounding-box overlap check with existing buildings (1-tile separation buffer)
-      for (const eb of gen.buildings) {
-        const ebx = Math.floor(eb.x / T);
-        const eby = Math.floor(eb.y / T);
-        const ebw = Math.ceil((eb.w ?? 128) / T);
-        const ebh = Math.ceil((eb.h ?? 128) / T);
-        if (tx < ebx + ebw + 1 && tx + bw + 1 > ebx && ty < eby + ebh + 1 && ty + bh + 1 > eby) {
-          return false;
-        }
-      }
-      return true;
-    };
-
-    let found = false;
-    if (isSpotValid(bx, by)) {
-      found = true;
-    } else {
-      // Spiral search up to radius 12
-      for (let r = 1; r <= 12 && !found; r++) {
-        for (let dy = -r; dy <= r; dy++) {
-          for (let dx = -r; dx <= r; dx++) {
-            if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-            if (isSpotValid(bx + dx, by + dy)) {
-              bx += dx;
-              by += dy;
-              sx = bx * T;
-              sy = by * T;
-              found = true;
-              break;
-            }
-          }
-          if (found) break;
-        }
-      }
-    }
-
-    if (!found) {
+    const sx = snap(x);
+    const sy = snap(y);
+    const placement = findValidBuildingPlacementSpot(gen, sx, sy, w, h);
+    if (!placement.found) {
       // Never forcefully place if spot is invalid or encroaching on cliffs
       return;
     }
 
-    gen.buildings.push({ style, x: sx, y: sy, w, h });
+    const bx = placement.tx;
+    const by = placement.ty;
+    const bw = Math.ceil(w / T);
+    const bh = Math.ceil(h / T);
+
+    gen.buildings.push({ style, x: placement.x, y: placement.y, w, h });
     gen.occupancy.reserveRect(bx, by, bw, bh, OCCUPANCY_FLAGS.BUILDING);
 
     // Clear nature/trees under building footprint
@@ -390,7 +356,7 @@ export function placeProceduralTownArchitectures(
     // Pave a clean 1-tile wide dirt path in front of the door connecting downward
     const doorX = bx + Math.floor(bw / 2);
     const doorY = by + bh;
-    for (let step = 0; step <= 2; step++) {
+    for (let step = 0; step <= DOOR_PATH_EXTENSION_STEPS; step++) {
       const cy = doorY + step;
       if (cy >= 0 && cy < KANTO_GRID_H && doorX >= 0 && doorX < KANTO_GRID_W) {
         const row = gen.grid[cy];
@@ -427,115 +393,99 @@ export function placeProceduralTownArchitectures(
     const nodeSeed = ((Math.abs(gen.hash(gx, gy, idx)) ^ gen.seed) >>> 0);
 
     // Archetype: 0 = Metropolis, 1 = Gym Bastion, 2 = Port Town, 3 = Rural Village
-    const archetype = idx === 0 ? 0 : (nodeSeed % 4);
+    const archetype = idx === 0 ? 0 : (nodeSeed % ARCHETYPE_COUNT);
 
     if (archetype === 0) {
       // -------------------------------------------------------------
       // 1. METROPOLIS (Skyscraper, Center, Mart, 2 Houses, Dirt Avenues)
       // -------------------------------------------------------------
-      // Central North-South boulevard and East-West connecting avenue
-      paveRoadLine(gx - 1, gy - 7, gx, gy + 12);
-      paveRoadLine(gx - 9, gy + 3, gx + 8, gy + 4);
+      const roads = URBAN_ROAD_LAYOUTS.metropolis;
+      paveRoadLine(gx + roads.nsRoad.minDx, gy + roads.nsRoad.minDy, gx + roads.nsRoad.maxDx, gy + roads.nsRoad.maxDy);
+      paveRoadLine(gx + roads.ewRoad.minDx, gy + roads.ewRoad.minDy, gx + roads.ewRoad.maxDx, gy + roads.ewRoad.maxDy);
 
-      // Central Skyscraper / Silph Tower (288x320)
-      addBuilding('silph_tower', px - 144, py - 200, 288, 320);
+      const b = BUILDING_LAYOUTS.metropolis;
+      addBuilding(b.silphTower.style, px + b.silphTower.dx, py + b.silphTower.dy, b.silphTower.w, b.silphTower.h);
+      addBuilding(b.pokecenter.style, px + b.pokecenter.dx, py + b.pokecenter.dy, b.pokecenter.w, b.pokecenter.h);
+      addBuilding(b.pokemart.style, px + b.pokemart.dx, py + b.pokemart.dy, b.pokemart.w, b.pokemart.h);
+      addBuilding(b.houseBlue.style, px + b.houseBlue.dx, py + b.houseBlue.dy, b.houseBlue.w, b.houseBlue.h);
+      addBuilding(b.houseRed.style, px + b.houseRed.dx, py + b.houseRed.dy, b.houseRed.w, b.houseRed.h);
 
-      // Pokecenter on West Avenue (160x160)
-      addBuilding('pokecenter', px - 280, py + 140, 160, 160);
-
-      // Pokemart on East Avenue (128x128)
-      addBuilding('pokemart', px + 120, py + 140, 128, 128);
-
-      // 2 Residential Houses (160x160)
-      addBuilding('house_blue', px - 280, py + 340, 160, 160);
-      addBuilding('house_red', px + 120, py + 340, 160, 160);
-
-      // Streetlamps and flowerbeds along avenues
-      gen.props.push({ style: 'poke_street_lamp', x: snap(px - 48), y: snap(py + 110) });
-      gen.props.push({ style: 'poke_street_lamp', x: snap(px + 48), y: snap(py + 110) });
-      gen.props.push({ style: 'poke_flowers_red', x: snap(px - 16), y: snap(py + 110) });
-      gen.props.push({ style: 'poke_flowers_red', x: snap(px + 16), y: snap(py + 110) });
+      const p = TOWN_PROPS_LAYOUTS.metropolis;
+      gen.props.push({ style: 'poke_street_lamp', x: snap(px + p.lampLeft.dx), y: snap(py + p.lampLeft.dy) });
+      gen.props.push({ style: 'poke_street_lamp', x: snap(px + p.lampRight.dx), y: snap(py + p.lampRight.dy) });
+      gen.props.push({ style: 'poke_flowers_red', x: snap(px + p.flowerLeft.dx), y: snap(py + p.flowerLeft.dy) });
+      gen.props.push({ style: 'poke_flowers_red', x: snap(px + p.flowerRight.dx), y: snap(py + p.flowerRight.dy) });
 
     } else if (archetype === 1) {
       // -------------------------------------------------------------
       // 2. GYM BASTION (Prominent Gym, Center, Mart, 2 Houses)
       // -------------------------------------------------------------
-      // Central connecting dirt avenue
-      paveRoadLine(gx - 1, gy - 6, gx, gy + 8);
-      paveRoadLine(gx - 7, gy, gx + 6, gy + 1);
+      const roads = URBAN_ROAD_LAYOUTS.bastion;
+      paveRoadLine(gx + roads.nsRoad.minDx, gy + roads.nsRoad.minDy, gx + roads.nsRoad.maxDx, gy + roads.nsRoad.maxDy);
+      paveRoadLine(gx + roads.ewRoad.minDx, gy + roads.ewRoad.minDy, gx + roads.ewRoad.maxDx, gy + roads.ewRoad.maxDy);
 
-      // Grand Gym at North (192x160)
+      const b = BUILDING_LAYOUTS.bastion;
       const gymStyle = (nodeSeed % 2 === 0) ? 'gym_gold' : 'gym';
-      addBuilding(gymStyle, px - 96, py - 180, 192, 160);
+      addBuilding(gymStyle, px + b.gym.dx, py + b.gym.dy, b.gym.w, b.gym.h);
+      addBuilding(b.pokecenter.style, px + b.pokecenter.dx, py + b.pokecenter.dy, b.pokecenter.w, b.pokecenter.h);
+      addBuilding(b.pokemart.style, px + b.pokemart.dx, py + b.pokemart.dy, b.pokemart.w, b.pokemart.h);
 
-      // Pokecenter on Southwest (160x160)
-      addBuilding('pokecenter', px - 260, py + 20, 160, 160);
-
-      // Pokemart on Southeast (128x128)
-      addBuilding('pokemart', px + 100, py + 20, 128, 128);
-
-      // 2 Houses (160x160)
       const h1 = housePrefabs[(nodeSeed + 1) % housePrefabs.length]?.id ?? 'house_blue';
       const h2 = housePrefabs[(nodeSeed + 2) % housePrefabs.length]?.id ?? 'house_red';
-      addBuilding(h1, px - 260, py + 210, 160, 160);
-      addBuilding(h2, px + 100, py + 210, 160, 160);
+      addBuilding(h1, px + b.house1.dx, py + b.house1.dy, b.house1.w, b.house1.h);
+      addBuilding(h2, px + b.house2.dx, py + b.house2.dy, b.house2.w, b.house2.h);
 
-      gen.props.push({ style: 'poke_street_lamp', x: snap(px - 16), y: snap(py - 16) });
-      gen.props.push({ style: 'poke_street_lamp', x: snap(px + 16), y: snap(py + 32) });
-      gen.props.push({ style: 'poke_fence_picket', x: snap(px - 110), y: snap(py + 64) });
-      gen.props.push({ style: 'poke_mailbox', x: snap(px - 96), y: snap(py + 64) });
+      const p = TOWN_PROPS_LAYOUTS.bastion;
+      gen.props.push({ style: 'poke_street_lamp', x: snap(px + p.lampLeft.dx), y: snap(py + p.lampLeft.dy) });
+      gen.props.push({ style: 'poke_street_lamp', x: snap(px + p.lampRight.dx), y: snap(py + p.lampRight.dy) });
+      gen.props.push({ style: 'poke_fence_picket', x: snap(px + p.fence.dx), y: snap(py + p.fence.dy) });
+      gen.props.push({ style: 'poke_mailbox', x: snap(px + p.mailbox.dx), y: snap(py + p.mailbox.dy) });
 
     } else if (archetype === 2) {
       // -------------------------------------------------------------
       // 3. PORT TOWN (Boardwalk Planks, Seaside Cottages, Mart, Center)
       // -------------------------------------------------------------
-      paveRoadLine(gx - 1, gy - 3, gx, gy + 5);
-      paveRoadLine(gx - 7, gy - 1, gx + 5, gy);
+      const roads = URBAN_ROAD_LAYOUTS.port;
+      paveRoadLine(gx + roads.nsRoad.minDx, gy + roads.nsRoad.minDy, gx + roads.nsRoad.maxDx, gy + roads.nsRoad.maxDy);
+      paveRoadLine(gx + roads.ewRoad.minDx, gy + roads.ewRoad.minDy, gx + roads.ewRoad.maxDx, gy + roads.ewRoad.maxDy);
 
-      // Pokecenter (160x160)
-      addBuilding('pokecenter', px - 240, py - 60, 160, 160);
+      const b = BUILDING_LAYOUTS.port;
+      addBuilding(b.pokecenter.style, px + b.pokecenter.dx, py + b.pokecenter.dy, b.pokecenter.w, b.pokecenter.h);
+      addBuilding(b.pokemart.style, px + b.pokemart.dx, py + b.pokemart.dy, b.pokemart.w, b.pokemart.h);
+      addBuilding(b.houseTeal.style, px + b.houseTeal.dx, py + b.houseTeal.dy, b.houseTeal.w, b.houseTeal.h);
+      addBuilding(b.houseOrange.style, px + b.houseOrange.dx, py + b.houseOrange.dy, b.houseOrange.w, b.houseOrange.h);
 
-      // Pokemart (128x128)
-      addBuilding('pokemart', px + 90, py - 60, 128, 128);
-
-      // Seaside Cottages (160x160)
-      addBuilding('house_teal_bungalow', px - 240, py + 130, 160, 160);
-      addBuilding('house_orange', px + 90, py + 130, 160, 160);
-
-      // Pier Boardwalks toward south/water
-      for (let step = 0; step < 3; step++) {
+      for (let step = 0; step < b.boardwalk.steps; step++) {
         gen.bridges.push({
           style: 'poke_boardwalk_planks',
-          x: snap(px - 16),
-          y: snap(py + 140 + step * 32),
-          w: 32,
-          h: 32
+          x: snap(px + b.boardwalk.dx),
+          y: snap(py + b.boardwalk.dy + step * b.boardwalk.stepY),
+          w: b.boardwalk.w,
+          h: b.boardwalk.h
         });
       }
-      gen.props.push({ style: 'poke_street_lamp', x: snap(px - 32), y: snap(py + 140) });
+      const p = TOWN_PROPS_LAYOUTS.port;
+      gen.props.push({ style: 'poke_street_lamp', x: snap(px + p.lamp.dx), y: snap(py + p.lamp.dy) });
 
     } else {
       // -------------------------------------------------------------
       // 4. RURAL VILLAGE (Organic Grass, Rustic Houses, Lab, Fences)
       // -------------------------------------------------------------
-      paveRoadLine(gx - 1, gy - 5, gx, gy + 4);
-      paveRoadLine(gx - 7, gy + 1, gx + 5, gy + 2);
+      const roads = URBAN_ROAD_LAYOUTS.village;
+      paveRoadLine(gx + roads.nsRoad.minDx, gy + roads.nsRoad.minDy, gx + roads.nsRoad.maxDx, gy + roads.nsRoad.maxDy);
+      paveRoadLine(gx + roads.ewRoad.minDx, gy + roads.ewRoad.minDy, gx + roads.ewRoad.maxDx, gy + roads.ewRoad.maxDy);
 
-      // Oak's Lab or Village Academy (224x192)
+      const b = BUILDING_LAYOUTS.village;
       const labStyle = (nodeSeed % 2 === 0) ? 'lab_oak' : 'mansion_school';
-      addBuilding(labStyle, px - 112, py - 180, 224, 192);
+      addBuilding(labStyle, px + b.lab.dx, py + b.lab.dy, b.lab.w, b.lab.h);
+      addBuilding(b.pokecenter.style, px + b.pokecenter.dx, py + b.pokecenter.dy, b.pokecenter.w, b.pokecenter.h);
+      addBuilding(b.houseRed.style, px + b.houseRed.dx, py + b.houseRed.dy, b.houseRed.w, b.houseRed.h);
 
-      // Pokecenter or Village Clinic (160x160)
-      addBuilding('pokecenter', px - 240, py + 40, 160, 160);
-
-      // Rustic house with garden (160x160)
-      addBuilding('house_red', px + 80, py + 40, 160, 160);
-
-      // Rustic picket fences, mailboxes, and flowerbeds
-      gen.props.push({ style: 'poke_fence_picket', x: snap(px + 40), y: snap(py + 210) });
-      gen.props.push({ style: 'poke_mailbox', x: snap(px + 70), y: snap(py + 210) });
-      gen.props.push({ style: 'poke_flowers_red', x: snap(px - 60), y: snap(py + 210) });
-      gen.props.push({ style: 'poke_flowers_red', x: snap(px + 120), y: snap(py + 210) });
+      const p = TOWN_PROPS_LAYOUTS.village;
+      gen.props.push({ style: 'poke_fence_picket', x: snap(px + p.fence.dx), y: snap(py + p.fence.dy) });
+      gen.props.push({ style: 'poke_mailbox', x: snap(px + p.mailbox.dx), y: snap(py + p.mailbox.dy) });
+      gen.props.push({ style: 'poke_flowers_red', x: snap(px + p.flowerLeft.dx), y: snap(py + p.flowerLeft.dy) });
+      gen.props.push({ style: 'poke_flowers_red', x: snap(px + p.flowerRight.dx), y: snap(py + p.flowerRight.dy) });
     }
   });
 }
@@ -544,7 +494,7 @@ export function placeProceduralTownArchitectures(
  * Places authentic GBA macro-cliffs, canyon walls, mountain stairs, and cave entrances.
  */
 export function placeProceduralReliefAndProps(
-  gen: KantoRegionalWorldGenerator,
+  gen: IKantoCarverWorldContext,
   nodes: Record<string, KantoNodeCoordinate>
 ): void {
   const T = KANTO_TILE_SIZE;
@@ -552,48 +502,52 @@ export function placeProceduralReliefAndProps(
   const H = KANTO_GRID_H;
 
   // 1. Northern Mountain Barrier: arched Icefall cave mouth at the mountain pass
-  const passGx = Math.floor(W * 0.48);
-  const passGy = 7;
+  const icefall = RELIEF_PROPS_CONFIG.icefallCave;
+  const passGx = Math.floor(W * icefall.passFactorX);
+  const passGy = icefall.passGy;
   gen.props.push({
     style: 'poke_cave_icefall_mouth',
-    x: passGx * T - 16,
-    y: passGy * T - 20,
-    w: 96,
-    h: 96
+    x: passGx * T + icefall.dx,
+    y: passGy * T + icefall.dy,
+    w: icefall.size,
+    h: icefall.size
   });
 
   // 2. North-West Victory Ridge: carved rock stairs aligned to grid
+  const victoryStairs = RELIEF_PROPS_CONFIG.victoryStairs;
   gen.props.push({
     style: 'poke_cliff_canyon_stairs',
-    x: 7 * T,
-    y: 11 * T,
-    w: 64,
-    h: 64
+    x: victoryStairs.gx * T,
+    y: victoryStairs.gy * T,
+    w: victoryStairs.size,
+    h: victoryStairs.size
   });
 
   // 3. South-East Volcanic Peninsula: Ancient Shrine pyramid and mountain cone
-  const vcx = Math.floor(W * 0.82);
-  const vcy = Math.floor(H * 0.78);
+  const vp = RELIEF_PROPS_CONFIG.volcanicPeninsula;
+  const vcx = Math.floor(W * vp.centerFactorX);
+  const vcy = Math.floor(H * vp.centerFactorY);
   gen.props.push({
     style: 'poke_mountain_ancient_shrine',
-    x: vcx * T - 80,
-    y: vcy * T - 80,
-    w: 192,
-    h: 192
+    x: vcx * T + vp.shrineDx,
+    y: vcy * T + vp.shrineDy,
+    w: vp.shrineSize,
+    h: vp.shrineSize
   });
   gen.props.push({
     style: 'poke_cliff_cone_gray',
-    x: vcx * T + 48,
-    y: vcy * T - 90,
-    w: 32,
-    h: 48
+    x: vcx * T + vp.coneDx,
+    y: vcy * T + vp.coneDy,
+    w: vp.coneW,
+    h: vp.coneH
   });
 
   // 4. Street lamps for each node
+  const lamps = RELIEF_PROPS_CONFIG.nodeLamps;
   Object.values(nodes).forEach((n) => {
     const { px, py } = gen.nodeToPx(n.x, n.y);
-    gen.props.push({ style: 'poke_street_lamp', x: Math.round((px - 45) / T) * T, y: Math.round((py + 35) / T) * T });
-    gen.props.push({ style: 'poke_street_lamp', x: Math.round((px + 45) / T) * T, y: Math.round((py + 35) / T) * T });
+    gen.props.push({ style: 'poke_street_lamp', x: Math.round((px - lamps.offsetDx) / T) * T, y: Math.round((py + lamps.offsetDy) / T) * T });
+    gen.props.push({ style: 'poke_street_lamp', x: Math.round((px + lamps.offsetDx) / T) * T, y: Math.round((py + lamps.offsetDy) / T) * T });
   });
 }
 
@@ -601,7 +555,7 @@ export function placeProceduralReliefAndProps(
  * Universal bridge placement: ensures every bridge cell or road-water intersection
  * receives an authentic wooden bridge prefab.
  */
-export function placeAllBridges(gen: KantoRegionalWorldGenerator): void {
+export function placeAllBridges(gen: IKantoCarverWorldContext): void {
   const g = gen.grid;
   const T = KANTO_TILE_SIZE;
 
@@ -623,8 +577,8 @@ export function placeAllBridges(gen: KantoRegionalWorldGenerator): void {
             style: 'poke_boardwalk_planks',
             x: gx * T,
             y: gy * T,
-            w: 32,
-            h: 32
+            w: DEFAULT_BRIDGE_TILE_SPAN,
+            h: DEFAULT_BRIDGE_TILE_SPAN
           });
           existingCoords.add(key);
         }

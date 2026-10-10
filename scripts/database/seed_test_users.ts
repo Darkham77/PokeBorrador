@@ -17,6 +17,10 @@ const TEST_USER_LEVEL = 50;
 const TEST_INVENTORY_DEFAULT_QTY = 50;
 const ASH_INITIAL_ELO = 1200;
 const ENTRENADOR_INITIAL_ELO = 1100;
+const TEST_POKEMON_BASE_CATCH_RATE = 45;
+const TEST_MOVE_DEFAULT_PP = 35;
+const TEST_POKEMON_INITIAL_FRIENDSHIP = 150;
+const MAX_STAT_IV = 31 as const;
 
 // Helper to create a structured Pokemon object
 function createMockPokemon(id: string, name: string, type: string, type2: string | null, level: number, isShiny: boolean = false, heldItem: string | null = null): Record<string, unknown> {
@@ -30,13 +34,13 @@ function createMockPokemon(id: string, name: string, type: string, type2: string
   const spdBase = 80;
   const speBase = 80;
 
-  const maxHp = Math.floor(((hpBase + 31) * 2 * level) / 100) + level + 10;
+  const maxHp = Math.floor(((hpBase + MAX_STAT_IV) * 2 * level) / 100) + level + 10;
   const stats = {
-    atk: Math.floor(((atkBase + 31) * 2 * level) / 100) + 5,
-    def: Math.floor(((defBase + 31) * 2 * level) / 100) + 5,
-    spa: Math.floor(((spaBase + 31) * 2 * level) / 100) + 5,
-    spd: Math.floor(((spdBase + 31) * 2 * level) / 100) + 5,
-    spe: Math.floor(((speBase + 31) * 2 * level) / 100) + 5,
+    atk: Math.floor(((atkBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
+    def: Math.floor(((defBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
+    spa: Math.floor(((spaBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
+    spd: Math.floor(((spdBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
+    spe: Math.floor(((speBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
   };
 
   return {
@@ -47,22 +51,22 @@ function createMockPokemon(id: string, name: string, type: string, type2: string
     type2,
     emoji: id,
     isFloating: false,
-    catchRate: 45,
+    catchRate: TEST_POKEMON_BASE_CATCH_RATE,
     level,
     exp: 0,
     expNeeded: 1000,
-    ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+    ivs: { hp: MAX_STAT_IV, atk: MAX_STAT_IV, def: MAX_STAT_IV, spa: MAX_STAT_IV, spd: MAX_STAT_IV, spe: MAX_STAT_IV },
     nature: 'hardy',
     ability: 'pressure',
     gender: 'M',
     isShiny,
     moves: [
-      { id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 },
-      { id: 'scratch', name: 'Arañazo', pp: 35, maxPP: 35 }
+      { id: 'tackle', name: 'Placaje', pp: TEST_MOVE_DEFAULT_PP, maxPP: TEST_MOVE_DEFAULT_PP },
+      { id: 'scratch', name: 'Arañazo', pp: TEST_MOVE_DEFAULT_PP, maxPP: TEST_MOVE_DEFAULT_PP }
     ],
     status: null,
     sleepTurns: 0,
-    friendship: 150,
+    friendship: TEST_POKEMON_INITIAL_FRIENDSHIP,
     vigor: 5,
     heldItem,
     nickname: null,

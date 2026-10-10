@@ -21,6 +21,7 @@ import { toID } from '@/logic/utils/strings.ts';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { requireItemId } from '@/data/inventory/items';
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { CHOICE_ITEM_STAT_MULTIPLIER } from '@/logic/constants/gameplay';
 
 const GEN = Generations.get(ACTIVE_GENERATION as GenerationNum);
 
@@ -268,7 +269,7 @@ function getEffectiveSpeed(
   // 5. Choice Scarf
   const itemId = p.item ? toID(p.item) : '';
   if (itemId === 'choicescarf') {
-    spd = Math.floor(spd * 1.5);
+    spd = Math.floor(spd * CHOICE_ITEM_STAT_MULTIPLIER);
   }
   
   return spd;

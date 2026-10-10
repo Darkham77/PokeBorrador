@@ -33,8 +33,9 @@ const onOverlayLeave = (el: Element, done: () => void) => {
     @enter="onOverlayEnter"
     @leave="onOverlayLeave"
   >
-    <div 
+    <div
       v-if="show" 
+      id="base-modal-overlay-div-1" 
       class="modal-overlay" 
       :class="overlayClasses"
       @click.stop="emit('click')" 

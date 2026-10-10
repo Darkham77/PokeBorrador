@@ -135,8 +135,6 @@ const selectBall = (ballId: ItemId) => {
   closeMenu()
 }
 
-
-
 const containerRef = ref<HTMLElement | null>(null)
 
 onClickOutside(containerRef, () => {
@@ -243,11 +241,11 @@ defineExpose({
   width: 64px;
   height: 64px;
   padding: 0;
-  border: 3px solid #0a0a0a !important;
+  border: 3px solid var(--dark) !important;
   border-radius: 50% !important;
-  background: white !important;
+  background: var(--white) !important;
   transform: Translatez(0);
-  box-shadow: 0 6px 15px Rgb(0 0 0 / 40%), inset 0 -3px 0 Rgb(0 0 0 / 10%) !important;
+  box-shadow: var(--shadow-card-elevated);
   cursor: pointer;
   overflow: hidden; 
   transform-origin: center center;
@@ -257,7 +255,7 @@ defineExpose({
 
   &:hover:not(:disabled) {
     filter: Brightness(1.1);
-    box-shadow: 0 10px 20px Rgb(0 0 0 / 50%), inset 0 -3px 0 Rgb(0 0 0 / 10%) !important;
+    box-shadow: var(--shadow-card-elevated);
   }
 
   &:disabled {
@@ -268,7 +266,7 @@ defineExpose({
 
   &.is-active {
     transform: Scale(0.9);
-    border-color: #ff453a !important;
+    border-color: var(--red) !important;
   }
 
   &::before {
@@ -278,9 +276,9 @@ defineExpose({
     z-index: var(--z-map-floor);
     width: 100%;
     height: 50%;
-    background: #ef5350;
+    background: var(--red-light);
     content: '';
-    border-bottom: 3px solid #0a0a0a;
+    border-bottom: 3px solid var(--dark);
   }
 
   &::after {
@@ -290,12 +288,12 @@ defineExpose({
     z-index: calc(var(--z-map-floor) + 1);
     width: 18px;
     height: 18px;
-    border: 3px solid #0a0a0a;
+    border: 3px solid var(--dark);
     border-radius: 50%;
-    background: white;
+    background: var(--white);
     transform: Translate(-50%, -50%);
     content: '';
-    box-shadow: 0 0 0 3px white, 0 0 10px Rgb(0 0 0 / 20%);
+    box-shadow: var(--shadow-xl);
   }
 
   .sr-only { display: none; }
@@ -310,7 +308,7 @@ defineExpose({
   z-index: var(--z-max);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   width: 260px;
   min-height: 0; // Force proper flexbox child shrinking
   max-height: calc(75dvh / var(--app-zoom, 1));
@@ -326,7 +324,7 @@ defineExpose({
     content: '';
     inset: 0;
     pointer-events: none;
-    box-shadow: inset 0 0 15px Rgb(255 255 255 / 5%);
+    box-shadow: var(--shadow-card);
   }
 }
 
@@ -338,8 +336,8 @@ defineExpose({
   .header-label {
     @include m.pixelated;
 
-    color: #86868b;
-    font-size: 7px;
+    color: var(--slate-400);
+    font-size: var(--font-7);
     font-weight: 900;
     letter-spacing: 2px;
   }
@@ -348,7 +346,7 @@ defineExpose({
 .menu-items-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 2px;
   flex: 1;
   overflow: hidden auto;
@@ -362,12 +360,12 @@ defineExpose({
     width: 6px;
   }
   &::-webkit-scrollbar-track {
-    border-radius: 3px;
+    border-radius: $radius-xs-alt;
     background: Rgb(0 0 0 / 20%);
   }
   &::-webkit-scrollbar-thumb {
     border: 1px solid Rgb(0 0 0 / 20%);
-    border-radius: 3px;
+    border-radius: $radius-xs-alt;
     background: Rgb(255 255 255 / 40%);
     &:hover {
       background: Rgb(255 255 255 / 55%);
@@ -385,13 +383,13 @@ defineExpose({
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   width: 100%;
   padding: 6px 12px;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 1%);
-  color: white;
+  color: var(--white);
   text-align: left;
   cursor: pointer;
   overflow: hidden;
@@ -407,7 +405,7 @@ defineExpose({
     }
 
     .ball-qty, .ball-action-arrow {
-      color: white;
+      color: var(--white);
       opacity: 1;
     }
   }
@@ -419,7 +417,7 @@ defineExpose({
     align-items: center;
     width: 44px;
     height: 44px;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(255 255 255 / 3%);
     flex-shrink: 0;
 
@@ -444,8 +442,8 @@ defineExpose({
 
       display: inline-flex;
       align-items: center;
-      color: white;
-      font-size: 8px;
+      color: var(--white);
+      font-size: var(--font-8);
       font-weight: 900;
       line-height: 1.4;
       text-transform: uppercase;
@@ -461,8 +459,8 @@ defineExpose({
 
     display: flex;
     align-items: center;
-    color: #ffd60a;
-    font-size: 7px;
+    color: var(--yellow);
+    font-size: var(--font-7);
     font-weight: 700;
     margin-right: 4px;
     flex-shrink: 0;
@@ -471,8 +469,8 @@ defineExpose({
   .ball-action-arrow {
     display: flex;
     align-items: center;
-    color: #ffd60a;
-    font-size: 8px;
+    color: var(--yellow);
+    font-size: var(--font-8);
     opacity: 0.3;
     flex-shrink: 0;
   }

@@ -5,6 +5,8 @@ import { useSocialDataLoader } from '@/loaders/socialDataLoader'
 import { gsap } from 'gsap'
 import { VIEW_TAB_FADE_OUT_DURATION_SEC, VIEW_TAB_FADE_IN_DURATION_SEC } from '@/logic/constants/animations.ts'
 
+const VIEW_TAB_TRANSITION_Y_OFFSET_PX = 8;
+
 // Components
 import SocialFriendsTab from '@/components/social/SocialFriendsTab.vue'
 import SocialSearchTab from '@/components/social/SocialSearchTab.vue'
@@ -28,7 +30,7 @@ function selectTab(tab: string) {
   
   gsap.to(contentRef.value, {
     opacity: 0,
-    y: 8,
+    y: VIEW_TAB_TRANSITION_Y_OFFSET_PX,
     duration: VIEW_TAB_FADE_OUT_DURATION_SEC,
     ease: 'power2.inOut',
     onComplete: () => {
@@ -50,14 +52,16 @@ function selectTab(tab: string) {
   <div class="social-view">
     <!-- Tabs Nav -->
     <div class="tabs-nav">
-      <button 
+      <button
+        id="social-view-btn-amigos" 
         class="tab-link" 
         :class="{ active: activeTab === 'friends' }"
         @click.stop="selectTab('friends')"
       >
         <span class="tab-label">AMIGOS</span>
       </button>
-      <button 
+      <button
+        id="social-view-btn-hall" 
         class="tab-link rankings" 
         :class="{ active: activeTab === 'rankings' }"
         @click.stop="selectTab('rankings')"
@@ -65,14 +69,16 @@ function selectTab(tab: string) {
         <span class="glow-box" />
         <span class="tab-label">HALL</span>
       </button>
-      <button 
+      <button
+        id="social-view-btn-buscar" 
         class="tab-link" 
         :class="{ active: activeTab === 'search' }"
         @click.stop="selectTab('search')"
       >
         <span class="tab-label">BUSCAR</span>
       </button>
-      <button 
+      <button
+        id="social-view-btn-1" 
         class="tab-link" 
         :class="{ active: activeTab === 'requests' }"
         @click.stop="selectTab('requests')"
@@ -119,8 +125,8 @@ function selectTab(tab: string) {
   top: 0;
   z-index: var(--z-base);
   display: flex;
-  background: rgb(0 0 0 / 95%);
-  border-bottom: 2px solid rgb(255 255 255 / 10%);
+  background: Rgb(0 0 0 / 95%);
+  border-bottom: 2px solid Rgb(255 255 255 / 10%);
 }
 
 .tab-link {
@@ -134,7 +140,7 @@ function selectTab(tab: string) {
   border: none;
   background: none;
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   flex: 1;
   cursor: pointer;
 
@@ -153,7 +159,7 @@ function selectTab(tab: string) {
       height: 2px;
       background: var(--white);
       content: '';
-      box-shadow: 0 0 10px var(--white);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 
@@ -166,14 +172,14 @@ function selectTab(tab: string) {
     &.active {
       &::after {
         background: var(--yellow);
-        box-shadow: 0 0 10px var(--yellow);
+        box-shadow: var(--shadow-glow-yellow);
       }
     }
 
     .glow-box {
       position: absolute;
-      border-radius: 8px;
-      background: rgb(255 184 0 / 5%);
+      border-radius: $radius-lg;
+      background: Rgb(255 184 0 / 5%);
       opacity: 0;
       inset: 5px;
       
@@ -193,8 +199,8 @@ function selectTab(tab: string) {
     background: var(--red);
     color: var(--white);
     font-family: sans-serif;
-    font-size: 8px;
-    box-shadow: 0 2px 4px rgb(0 0 0 / 40%);
+    font-size: var(--font-8);
+    box-shadow: var(--shadow-sm);
   }
 }
 
@@ -202,6 +208,6 @@ function selectTab(tab: string) {
   @include gpu-layer;
 
   padding: 15px var(--ui-h-padding);
-  background: rgb(0 0 0 / 10%);
+  background: Rgb(0 0 0 / 10%);
 }
 </style>

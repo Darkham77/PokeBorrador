@@ -91,7 +91,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 3px solid #0ff;
+    border: 3px solid var(--cyan);
     border-radius: 50%;
     background: Rgb(0 255 255 / 15%);
     transform: Translate(-50%, -50%);
@@ -103,12 +103,12 @@
       left: 50%;
       z-index: var(--z-modal-step);
       padding: 2px 5px;
-      border: 1px solid #0ff;
-      border-radius: 3px;
+      border: 1px solid var(--cyan);
+      border-radius: $radius-xs-alt;
       background: Rgb(0 0 0 / 90%);
-      color: #0ff;
-      font-family: monospace, sans-serif;
-      font-size: 10px;
+      color: var(--cyan);
+      font-family: $font-family-mono;
+      font-size: var(--font-10);
       font-weight: bold;
       line-height: 1.2;
       transform: Translatex(-50%) Scale(calc(1 / var(--camera-scale, 1)));
@@ -148,7 +148,7 @@
     padding: 1px 3px;
     background: Rgb(0 0 0 / 60%);
     color: Rgb(255 180 0 / 100%);
-    font-size: 9px;
+    font-size: var(--font-9);
     transform: Scale(calc(1 / var(--camera-scale, 1)));
     transform-origin: bottom right;
   }
@@ -255,7 +255,7 @@
   z-index: calc(var(--z-map-ui) + 5);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 0;
   border: none;
   background: transparent;
@@ -269,7 +269,7 @@
   }
 
   .crit-icon {
-    font-size: 22px;
+    font-size: var(--font-22);
     line-height: 1;
     filter: Drop-Shadow(1.5px 1.5px 0 #000) Drop-Shadow(-1.5px -1.5px 0 #000);
   }
@@ -277,8 +277,8 @@
   .crit-text {
     @include text-outline(#000, 2px);
 
-    color: #fff;
-    font-size: 24px;
+    color: var(--white);
+    font-size: var(--font-24);
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -339,7 +339,7 @@
 .ground-fx {
   position: absolute;
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   
   &.spikes {
     .spike-item {
@@ -351,7 +351,7 @@
   }
 
   &.stealthrock {
-    gap: 12px;
+    gap: $spacing-md;
     transform: Translatey(-8px);
 
     .rock-item {
@@ -363,7 +363,7 @@
   }
 
   &.toxicspikes {
-    gap: 10px;
+    gap: $spacing-md-alt;
     transform: Translatey(8px);
 
     .toxic-spike-item {
@@ -400,9 +400,9 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--slate-200);
   opacity: 0.8;
-  box-shadow: 0 0 6px Rgb(156 163 175 / 60%);
+  box-shadow: var(--shadow-glow-yellow-sm);
   pointer-events: none;
   will-change: transform, opacity;
 }

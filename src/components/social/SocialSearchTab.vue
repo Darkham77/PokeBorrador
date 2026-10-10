@@ -179,6 +179,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
     >
       <TrainerCard
         v-for="player in socialStore.searchResults"
+        id="social-search-tab-trainercard-1"
         :key="player.id"
         :profile="player"
         :avatar-size="SEARCH_CARD_AVATAR_SIZE_PX"
@@ -201,10 +202,10 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 
 .search-filters {
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 10px 14px;
   border: 1px solid Rgb(199 125 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 20%);
   margin-bottom: 0;
 }
@@ -212,7 +213,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
   flex: 1;
 }
 
@@ -220,7 +221,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   @include pixelated;
 
   color: Rgb(255 255 255 / 40%);
-  font-size: 7px;
+  font-size: var(--font-7);
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -228,10 +229,10 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 .filter-select {
   padding: 8px 12px;
   border: 1px solid Rgb(199 125 255 / 15%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 30%);
   color: var(--white);
-  font-size: 11px;
+  font-size: var(--font-11);
   outline: none;
   cursor: pointer;
   appearance: none;
@@ -242,12 +243,12 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 
   &:focus, &:hover {
     border-color: var(--purple-light);
-    box-shadow: 0 0 10px Rgb(157 78 221 / 10%);
+    box-shadow: var(--shadow-glow-amber);
   }
 
   option {
     background: #161a2e;
-    color: white;
+    color: var(--white);
   }
 }
 
@@ -259,15 +260,15 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid Rgb(199 125 255 / 20%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(0 0 0 / 30%);
     color: var(--white);
-    font-size: 14px;
+    font-size: var(--font-14);
     outline: none;
 
     &:focus { 
       border-color: var(--purple-light); 
-      box-shadow: 0 0 15px Rgb(157 78 221 / 15%); 
+      box-shadow: var(--shadow-glow-amber);
     }
   }
   
@@ -287,7 +288,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 .search-results {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .clickable-avatar {
@@ -311,8 +312,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 .no-results {
   padding: 40px 20px;
   color: Rgb(148 163 184 / 70%);
-  font-size: 14px;
+  font-size: var(--font-14);
   text-align: center;
 }
 </style>
-

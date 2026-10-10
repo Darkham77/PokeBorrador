@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine';
-import { CELL_BIOME, KantoRegionalWorldGenerator, type KantoNodeCoordinate } from '../../logic/map/kantoRegionalGenerator';
-import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine';
-import { placeProceduralTownArchitectures } from '../../logic/map/kantoProceduralCarver';
+import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
+import { CELL_BIOME, type KantoNodeCoordinate } from '../../types/map/kantoGridModel.ts';
+import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
+import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
+import { placeProceduralTownArchitectures } from '../../logic/map/kantoProceduralCarver.ts';
 
 describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
   describe('Water Autotile Quadrants', () => {

@@ -7,8 +7,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { executeRegionalGenerationJob } from '../../../src/logic/map/continentGenerator.worker.ts';
-import { resolveMountainAutotileCell } from '../../../src/logic/map/mountainAutotileEngine.ts';
+import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
+import { resolveMountainAutotileCell } from '../../logic/map/mountainAutotileEngine.ts';
 
 describe('mountainDiagonalStepAndCaveIntegrity', () => {
   it('resolves vertical walls as authentic straight edges', () => {

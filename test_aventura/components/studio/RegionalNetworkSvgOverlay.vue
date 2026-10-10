@@ -13,7 +13,12 @@
 
 import { ref, computed } from 'vue';
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
+import { CANVAS_TILE_SIZE, STUDIO_TILE_SIZE } from '../../config/studioConstants.ts';
 import type { POINode, RouteEdge } from '../../types/map/poiTypes.ts';
+import { screenToSvgCoords as transformScreenToSvg } from '../../logic/utils/svgCoordinateUtils.ts';
+
+const SCHEMATIC_CURVE_BOW_FACTOR = 0.08;
+const DEFAULT_CONTINENT_GRID_DIMENSION = 128;
 
 const store = useRegionalContinentStudioStore();
 const svgRef = ref<SVGSVGElement | null>(null);
@@ -34,8 +39,8 @@ function getNodeCenter(node: POINode): { x: number; y: number } {
     return override;
   }
   return {
-    x: node.gridX * 32 + node.footprint.width * 16,
-    y: node.gridY * 32 + node.footprint.height * 16
+    x: node.gridX * CANVAS_TILE_SIZE + node.footprint.width * STUDIO_TILE_SIZE,
+    y: node.gridY * CANVAS_TILE_SIZE + node.footprint.height * STUDIO_TILE_SIZE
   };
 }
 
@@ -43,24 +48,7 @@ function getNodeCenter(node: POINode): { x: number; y: number } {
  * Transforms screen client coordinates into SVG viewBox pixel coordinates.
  */
 function screenToSvgCoords(e: PointerEvent): { x: number; y: number } {
-  if (!svgRef.value) return { x: 0, y: 0 };
-  const svg = svgRef.value;
-  const pt = svg.createSVGPoint();
-  pt.x = e.clientX;
-  pt.y = e.clientY;
-  const ctm = svg.getScreenCTM();
-  if (ctm) {
-    const inverted = pt.matrixTransform(ctm.inverse());
-    return {
-      x: Math.max(0, Math.min(store.widthPx, inverted.x)),
-      y: Math.max(0, Math.min(store.heightPx, inverted.y))
-    };
-  }
-  const rect = svg.getBoundingClientRect();
-  return {
-    x: Math.max(0, Math.min(store.widthPx, ((e.clientX - rect.left) / rect.width) * store.widthPx)),
-    y: Math.max(0, Math.min(store.heightPx, ((e.clientY - rect.top) / rect.height) * store.heightPx))
-  };
+  return transformScreenToSvg(e, svgRef.value, { width: store.widthPx, height: store.heightPx });
 }
 
 /**
@@ -80,19 +68,31 @@ function getRoutePathD(edge: RouteEdge): string {
     const midY = (centerA.y + centerB.y) / 2;
     const dx = centerB.x - centerA.x;
     const dy = centerB.y - centerA.y;
-    const ctrlX = midX - dy * 0.08;
-    const ctrlY = midY + dx * 0.08;
+    const ctrlX = midX - dy * SCHEMATIC_CURVE_BOW_FACTOR;
+    const ctrlY = midY + dx * SCHEMATIC_CURVE_BOW_FACTOR;
     return `M ${centerA.x.toFixed(1)} ${centerA.y.toFixed(1)} Q ${ctrlX.toFixed(1)} ${ctrlY.toFixed(1)} ${centerB.x.toFixed(1)} ${centerB.y.toFixed(1)}`;
   }
 
   // Hybrid mode: Path follows A* waypoints in pixel coordinates
   const pts: string[] = [`M ${centerA.x.toFixed(1)} ${centerA.y.toFixed(1)}`]; // no-domain: Estructura o identificador procedural de aventura
   for (const wp of edge.waypoints) {
-    pts.push(`L ${(wp.x * 32 + 16).toFixed(1)} ${(wp.y * 32 + 16).toFixed(1)}`);
+    pts.push(`L ${(wp.x * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE).toFixed(1)} ${(wp.y * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE).toFixed(1)}`);
   }
   pts.push(`L ${centerB.x.toFixed(1)} ${centerB.y.toFixed(1)}`);
   return pts.join(' ');
 }
+
+const POI_BADGE_RADII = {
+  METROPOLIS: 26,
+  CITY: 20,
+  TOWN: 16,
+  CAVE_ENTRANCE: 15,
+  PORT_DOCK: 15,
+  ROUTE_GATE: 13,
+  DUNGEON_FOREST: 17,
+  WATER_LANDMARK: 16,
+  DEFAULT: 14
+} as const;
 
 /**
  * Returns distinct badge styling for each heterogeneous POI type.
@@ -100,23 +100,23 @@ function getRoutePathD(edge: RouteEdge): string {
 function getPoiBadgeTheme(type: string): { color: string; radius: number; label: string } {
   switch (type) {
     case 'metropolis':
-      return { color: '#f59e0b', radius: 26, label: '★' };
+      return { color: '#f59e0b', radius: POI_BADGE_RADII.METROPOLIS, label: '★' };
     case 'city':
-      return { color: '#ef4444', radius: 20, label: '◆' };
+      return { color: '#ef4444', radius: POI_BADGE_RADII.CITY, label: '◆' };
     case 'town':
-      return { color: '#3b82f6', radius: 16, label: '●' };
+      return { color: '#3b82f6', radius: POI_BADGE_RADII.TOWN, label: '●' };
     case 'cave_entrance':
-      return { color: '#8b5cf6', radius: 15, label: '▲' };
+      return { color: '#8b5cf6', radius: POI_BADGE_RADII.CAVE_ENTRANCE, label: '▲' };
     case 'port_dock':
-      return { color: '#06b6d4', radius: 15, label: '⚓' };
+      return { color: '#06b6d4', radius: POI_BADGE_RADII.PORT_DOCK, label: '⚓' };
     case 'route_gate':
-      return { color: '#64748b', radius: 13, label: '▮' };
+      return { color: '#64748b', radius: POI_BADGE_RADII.ROUTE_GATE, label: '▮' };
     case 'dungeon_forest':
-      return { color: '#10b981', radius: 17, label: '♣' };
+      return { color: '#10b981', radius: POI_BADGE_RADII.DUNGEON_FOREST, label: '♣' };
     case 'water_landmark':
-      return { color: '#6366f1', radius: 16, label: '✦' };
+      return { color: '#6366f1', radius: POI_BADGE_RADII.WATER_LANDMARK, label: '✦' };
     default:
-      return { color: '#94a3b8', radius: 14, label: '•' };
+      return { color: '#94a3b8', radius: POI_BADGE_RADII.DEFAULT, label: '•' };
   }
 }
 
@@ -156,7 +156,7 @@ function handlePointerUp(poi: POINode, e: PointerEvent): void {
   try {
     (e.target as Element).releasePointerCapture(e.pointerId);
   } catch {
-    // Ignored if pointer was lost
+    // catch-ok: Pointer capture release fails gracefully if pointer was already lost
   }
 
   isDragging.value = false;
@@ -168,15 +168,15 @@ function handlePointerUp(poi: POINode, e: PointerEvent): void {
   const newGridX = Math.max(
     2,
     Math.min(
-      (store.continentMap?.width ?? 128) - poi.footprint.width - 2,
-      Math.round((targetX - poi.footprint.width * 16) / 32)
+      (store.continentMap?.width ?? DEFAULT_CONTINENT_GRID_DIMENSION) - poi.footprint.width - 2,
+      Math.round((targetX - poi.footprint.width * STUDIO_TILE_SIZE) / CANVAS_TILE_SIZE)
     )
   );
   const newGridY = Math.max(
     2,
     Math.min(
-      (store.continentMap?.height ?? 128) - poi.footprint.height - 2,
-      Math.round((targetY - poi.footprint.height * 16) / 32)
+      (store.continentMap?.height ?? DEFAULT_CONTINENT_GRID_DIMENSION) - poi.footprint.height - 2,
+      Math.round((targetY - poi.footprint.height * STUDIO_TILE_SIZE) / CANVAS_TILE_SIZE)
     )
   );
 
@@ -250,6 +250,7 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
     >
       <g
         v-for="edge in store.routes"
+        id="regional-network-svg-overlay-g-store-selectroute"
         :key="edge.id"
         class="route-edge-item"
         :class="{
@@ -304,6 +305,7 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
       >
         <!-- Outer Glowing Ring -->
         <circle
+          v-gsap-loop="{ effect: 'pulse', active: store.selectedPOIId === poi.id || store.hoveredPOIId === poi.id || activeDragNodeId === poi.id }"
           class="poi-pulse-ring"
           r="32"
           :fill="getPoiBadgeTheme(poi.type).color"
@@ -377,11 +379,21 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
 
 .route-edge-item {
   pointer-events: none;
-  transition: opacity 0.2s ease;
+
+  &:hover,
+  &.is-active,
+  &.is-incident {
+    .route-halo {
+      stroke: Rgb(255 255 255 / 40%);
+      stroke-width: 16;
+    }
+    .route-stroke {
+      stroke-width: 9;
+    }
+  }
 
   .route-stroke {
     stroke-width: 6;
-    transition: stroke-width 0.2s ease, stroke 0.2s ease;
 
     &.road {
       stroke: #f1c40f;
@@ -397,63 +409,49 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
       stroke: #2ecc71;
     }
   }
-
-  &:hover,
-  &.is-active,
-  &.is-incident {
-    .route-halo {
-      stroke: Rgba(255, 255, 255, 0.4);
-      stroke-width: 16;
-    }
-    .route-stroke {
-      stroke-width: 9;
-    }
-  }
 }
 
 .poi-node-item {
   pointer-events: auto;
   cursor: grab;
 
-  &:active,
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:hover {
+    .poi-pulse-ring {
+      opacity: 1;
+    }
+  }
+
+  &.is-selected {
+    .poi-pulse-ring {
+      opacity: 1;
+    }
+  }
+
   &.is-dragged {
     cursor: grabbing;
+
+    .poi-pulse-ring {
+      opacity: 1;
+    }
   }
 
   .poi-pulse-ring {
     opacity: 0;
-    transition: opacity 0.2s ease, r 0.2s ease;
-  }
-
-  &:hover,
-  &.is-selected,
-  &.is-dragged {
-    .poi-pulse-ring {
-      opacity: 1;
-      animation: pulse-ring 1.8s infinite ease-out;
-    }
   }
 
   .poi-label-group,
   .poi-label-bg,
   .poi-label-text {
-    font-size: 11px;
-    font-weight: 700;
     font-family: inherit;
+    font-size: var(--font-11);
+    font-weight: 700;
     letter-spacing: 0.5px;
-    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px 2px Rgb(0 0 0 / 80%);
     pointer-events: none !important;
-  }
-}
-
-@keyframes pulse-ring {
-  0% {
-    r: 22px;
-    opacity: 0.6;
-  }
-  100% {
-    r: 42px;
-    opacity: 0;
   }
 }
 </style>

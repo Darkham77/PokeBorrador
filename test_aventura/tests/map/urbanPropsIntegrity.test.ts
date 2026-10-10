@@ -15,12 +15,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { describe, it, expect } from 'vitest';
-import { generateSettlementLayout } from '../../../src/logic/map/cityLayoutEngine.ts';
-import { generateWildernessLayer } from '../../../src/logic/map/wildernessVegetationEngine.ts';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 const ROOT_DIR = process.cwd();
 

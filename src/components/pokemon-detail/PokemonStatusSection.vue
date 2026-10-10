@@ -7,7 +7,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { MAXIMUM_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay'
+import { MAXIMUM_FRIENDSHIP_VALUE, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay'
 
 interface Props {
   pokemon: Pokemon
@@ -44,6 +44,16 @@ const getHpClass = (pct: number) => {
 }
 
 const getLevelPct = (level: number) => Math.min(100, Math.max(0, (level / MAX_POKEMON_LEVEL) * 100))
+
+const expFillWidthPercent = computed(() => {
+  const currentPoke = p.value
+  if (!currentPoke) return '0%'
+  if (currentPoke.level >= MAX_POKEMON_LEVEL) return '100%'
+  const needed = currentPoke.expNeeded || 1
+  const current = currentPoke.exp || 0
+  const pct = Math.min(PERCENT_BASE_MULTIPLIER, Math.max(0, (current / needed) * PERCENT_BASE_MULTIPLIER))
+  return `${pct}%`
+})
 
 const getAbilityDesc = (ability: string) => {
   if (!ability) return 'Habilidad especial de este Pokémon.'
@@ -191,7 +201,7 @@ const abilityStyle = computed(() => ({
         <div class="progress-outer exp">
           <div 
             class="progress-inner exp-fill" 
-            :style="{ width: (p.level >= MAX_POKEMON_LEVEL ? 100 : (p.exp / p.expNeeded * 100)) + '%' }"
+            :style="{ width: expFillWidthPercent }"
           />
         </div>
       </div>
@@ -260,7 +270,7 @@ const abilityStyle = computed(() => ({
   justify-content: space-between;
   align-items: center;
   color: var(--white);
-  font-size: 10px;
+  font-size: var(--font-10);
   opacity: 0.9;
   margin-bottom: 6px;
 }
@@ -268,23 +278,23 @@ const abilityStyle = computed(() => ({
 .friendship-val {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .progress-outer {
   height: 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(0 0 0 / 40%);
   overflow: hidden;
-  box-shadow: inset 0 2px 4px Rgb(0 0 0 / 30%);
+  box-shadow: var(--shadow-inset-sm);
 }
 
 .progress-inner {
   @include will-animate(width); 
 
   height: 100%; 
-  box-shadow: 0 0 10px currentColor;
+  box-shadow: var(--shadow-glow-amber);
 }
 
 .hp-high { background: Linear-Gradient(90deg, Rgb(16 185 129 / 100%), Rgb(52 211 153 / 100%)); color: Rgb(16 185 129 / 100%); }
@@ -304,37 +314,37 @@ const abilityStyle = computed(() => ({
   @include will-animate(width);
 
   background: Linear-Gradient(90deg, #0ea5e9, #38bdf8, #60a5fa);
-  color: #38bdf8;
+  color: var(--sky);
 }
 
 .friendship-distrust {
   background: Linear-Gradient(90deg, #475569, #64748b);
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .friendship-sprout {
   background: Linear-Gradient(90deg, #16a34a, #4ade80);
-  color: #22c55e;
+  color: var(--emerald);
 }
 
 .friendship-comrade {
   background: Linear-Gradient(90deg, #2563eb, #60a5fa);
-  color: #3b82f6;
+  color: var(--blue-500);
 }
 
 .friendship-radiant {
   background: Linear-Gradient(90deg, #c026d3, #f472b6);
-  color: #e879f9;
+  color: var(--purple-400);
 }
 
 .friendship-best-friends {
   background: Linear-Gradient(90deg, #d97706, #fbbf24, #fef08a);
-  color: #fbbf24;
+  color: var(--amber);
 }
 
 .info-grid {
   display: grid;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: repeat(3, 1fr);
   margin-bottom: 24px;
 }
@@ -347,7 +357,7 @@ const abilityStyle = computed(() => ({
   min-height: 70px; // Ensure consistent height
   padding: 16px 8px; // Slightly less horizontal padding to allow more space
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 3%);
   text-align: center;
   cursor: help;
@@ -364,7 +374,7 @@ const abilityStyle = computed(() => ({
 
   display: block;
   color: var(--gray);
-  font-size: 8px; // Slightly smaller to prevent overlap
+  font-size: var(--font-8); // Slightly smaller to prevent overlap
   opacity: 0.8;
   text-transform: uppercase;
   margin-bottom: 8px; // Good separation
@@ -376,7 +386,7 @@ const abilityStyle = computed(() => ({
 
   display: block;
   color: var(--white);
-  font-size: 10px; // Standardized size for all values
+  font-size: var(--font-10); // Standardized size for all values
   
   &.interactive-val {
     display: inline-block; // To keep the dotted border tight
@@ -394,7 +404,7 @@ const abilityStyle = computed(() => ({
   display: inline-flex !important;
   justify-content: center !important;
   align-items: center !important;
-  gap: 4px; 
+  gap: $spacing-xs; 
   color: var(--yellow) !important; 
   text-shadow: 0 0 10px Rgb(255 214 10 / 30%) !important;
 }
@@ -405,36 +415,36 @@ const abilityStyle = computed(() => ({
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: fit-content;
   margin: 0 auto 16px;
   padding: 4px 10px;
   border: 1px solid Rgb(16 185 129 / 30%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(16 185 129 / 12%);
-  color: #34d399;
-  font-size: 10px;
+  color: var(--emerald-400);
+  font-size: var(--font-10);
   font-weight: bold;
   text-shadow: 0 0 5px Rgb(52 211 153 / 30%);
-  box-shadow: 0 0 10px Rgb(52 211 153 / 10%);
+  box-shadow: var(--shadow-glow-emerald);
 }
 
 .mt-12 { margin-top: 12px; }
 
-.max-text { color: var(--yellow); font-size: 8px; }
+.max-text { color: var(--yellow); font-size: var(--font-8); }
 
-.level-text { color: #38bdf8; font-size: 8px; }
+.level-text { color: var(--sky); font-size: var(--font-8); }
 
-.exp-text { color: var(--purple-light); font-size: 8px; }
+.exp-text { color: var(--purple-light); font-size: var(--font-8); }
 
 @media (width <= 480px) {
   .glass-inset { margin-bottom: 24px; }
-  .bar-header { font-size: 8px; margin-bottom: 8px; }
+  .bar-header { font-size: var(--font-8); margin-bottom: 8px; }
   .progress-outer { height: 10px; }
   
-  .info-grid { gap: 8px; }
+  .info-grid { gap: $spacing-sm; }
   .info-card { padding: 12px 8px; }
-  .info-card .label { font-size: 8px; margin-bottom: 8px; }
-  .info-card .val { font-size: 10px; }
+  .info-card .label { font-size: var(--font-8); margin-bottom: 8px; }
+  .info-card .val { font-size: var(--font-10); }
 }
 </style>

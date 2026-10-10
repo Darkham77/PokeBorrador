@@ -9,10 +9,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { resolvePoiLandmarksAndBuildings } from '../../../src/logic/map/canvasLandmarkRenderer.ts';
-import { buildCanonicalRegionMap } from '../../../src/logic/map/continent/canonicalRegionPresets.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { resolvePoiLandmarksAndBuildings } from '../../logic/map/canvasLandmarkRenderer.ts';
+import { buildCanonicalRegionMap } from '../../logic/map/continent/canonicalRegionPresets.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('Bridge Shore Landing and Universal Cave Snapping Engine', () => {
   it('guarantees bridges over water maintain at least 2-tile uniform width with 0 single-tile bottlenecks', () => {

@@ -253,9 +253,10 @@ onMounted(() => {
 
   gsapCtx = gsap.context(() => {
     if (sectionRef.value) {
+      const SECTION_ENTRANCE_OFFSET_Y_PX = 15 as const;
       gsap.fromTo(
         sectionRef.value,
-        { opacity: 0, y: 15 },
+        { opacity: 0, y: SECTION_ENTRANCE_OFFSET_Y_PX },
         { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
       )
     }
@@ -309,6 +310,7 @@ onUnmounted(() => {
       @pointerleave="handlePointerEnd"
     >
       <div
+        id="home-events-section-div-eventsrowref"
         ref="eventsRowRef"
         class="events-single-row"
         :style="{
@@ -350,6 +352,7 @@ onUnmounted(() => {
       >
         <PVTooltip title="Página anterior">
           <button
+            id="home-events-section-btn-p-gina-anterior"
             v-gsap-hover
             class="carousel-nav-btn"
             :disabled="currentPage === 0"
@@ -363,6 +366,7 @@ onUnmounted(() => {
         <div class="carousel-dots-group">
           <button
             v-for="page in totalPages"
+            id="home-events-section-btn-ir-a-p-gina-page-de-totalpages"
             :key="page"
             v-gsap-hover="{ scale: 1.15, y: 0 }"
             class="carousel-dot"
@@ -378,6 +382,7 @@ onUnmounted(() => {
 
         <PVTooltip title="Página siguiente">
           <button
+            id="home-events-section-btn-p-gina-siguiente"
             v-gsap-hover
             class="carousel-nav-btn"
             :disabled="currentPage === totalPages - 1"

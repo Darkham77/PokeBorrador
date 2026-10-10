@@ -119,7 +119,7 @@ const totalCalculatedPower = computed(() => {
 .move-tooltip-modifiers-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .calc-section-title {

@@ -1,15 +1,13 @@
-// TypeScript Contracts for Editable Multi-Region Adventure World Studio
-
-import type { CellBiomeType } from '../../logic/map/kantoRegionalGenerator';
-import type { PlacedStructure } from '../../logic/map/kantoTileEngine';
-import type { GeneratedMap } from '../../logic/map/proceduralMapGenerator';
-import type { TileMetadata } from '../../logic/map/tilesRegistry';
-import type { StructureTemplate } from '../../config/mapStructures';
+import type { CellBiomeType } from './kantoGridModel.ts';
+import type { PlacedStructure } from './kantoTileEngineTypes.ts';
+import type { GeneratedMap } from '../../logic/map/proceduralMapGenerator.ts';
+import type { TileMetadata } from '../../logic/map/tilesRegistry.ts';
+import type { StructureTemplate } from '../../config/mapStructures.ts';
+import type { UrbanScale } from './continentTypes.ts';
 
 export type RegionArchetype = 'kanto' | 'johto' | 'blank' | 'agnostic';
 export type StudioMode = 'graph' | 'terrain' | 'structures' | 'tile';
 export type BrushSize = 1 | 2 | 4 | 8;
-export type UrbanScale = 'hamlet' | 'village' | 'town' | 'city' | 'metropolis';
 export type PlazaType = 'none' | 'fountain' | 'park';
 
 export interface CityGenerationConfig {

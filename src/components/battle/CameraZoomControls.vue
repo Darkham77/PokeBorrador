@@ -54,6 +54,7 @@ const copyReplay = async () => {
 <template>
   <div class="camera-zoom-controls">
     <button
+      id="camera-zoom-controls-btn-acercar-c-mara"
       class="zoom-btn"
       :disabled="battleStore.debugZoom >= MAX_ZOOM_LEVEL"
       title="Acercar cámara"
@@ -62,6 +63,7 @@ const copyReplay = async () => {
       +
     </button>
     <button
+      id="camera-zoom-controls-btn-alejar-c-mara"
       class="zoom-btn"
       :disabled="battleStore.debugZoom <= props.minZoom"
       title="Alejar cámara"
@@ -70,6 +72,7 @@ const copyReplay = async () => {
       -
     </button>
     <button
+      id="camera-zoom-controls-btn-copiar-replay-de-combate"
       class="zoom-btn"
       title="Copiar Replay de Combate"
       @click.stop="copyReplay"
@@ -90,7 +93,7 @@ const copyReplay = async () => {
   left: 12px;
   z-index: calc(var(--z-base) + 40);
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   pointer-events: auto;
 }
 
@@ -103,11 +106,11 @@ const copyReplay = async () => {
   width: 28px !important;
   height: 28px !important;
   padding: 0 !important;
-  border-radius: 4px;
-  font-size: 10px !important;
+  border-radius: $radius-sm;
+  font-size: var(--font-10) !important;
 
   .emoji {
-    font-size: 12px;
+    font-size: var(--font-12);
     line-height: 1;
   }
 }

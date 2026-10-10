@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { LeaderboardEntry } from '@/stores/social/social'
@@ -8,6 +9,11 @@ const props = defineProps<{
   index: number
   currentPlayerUid: string
 }>()
+
+const PODIUM_MEDALS = ['🥇', '🥈', '🥉'] as const
+const podiumMedal = computed(() => PODIUM_MEDALS[props.index] || null)
+const displayRankNumber = computed(() => Number(props.index) + 1)
+const rankCardClass = computed(() => `rank-${displayRankNumber.value}`)
 
 const emit = defineEmits<{
   (e: 'challenge', player: LeaderboardEntry): void
@@ -59,25 +65,17 @@ const isFactionValid = (faction: string | undefined | null) => {
 <template>
   <div
     class="rank-card"
-    :class="[`rank-${Number(props.index) + 1}`, { 'is-me': props.player.id === props.currentPlayerUid }]"
+    :class="[rankCardClass, { 'is-me': props.player.id === props.currentPlayerUid }]"
   >
     <div class="rank-number">
       <span
-        v-if="props.index === 0"
+        v-if="podiumMedal"
         class="medal-icon emoji"
-      >🥇</span>
-      <span
-        v-else-if="props.index === 1"
-        class="medal-icon emoji"
-      >🥈</span>
-      <span
-        v-else-if="props.index === 2"
-        class="medal-icon emoji"
-      >🥉</span>
+      >{{ podiumMedal }}</span>
       <span
         v-else
         class="rank-digits"
-      >{{ Number(props.index) + 1 }}</span>
+      >{{ displayRankNumber }}</span>
     </div>
 
     <div class="rank-avatar">

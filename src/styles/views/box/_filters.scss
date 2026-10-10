@@ -6,13 +6,13 @@
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 10px 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 5%);
   color: var(--gray);
-  font-size: 7px;
+  font-size: var(--font-7);
   cursor: pointer;
   white-space: nowrap;
 
@@ -22,10 +22,10 @@
     color: $black;
     font-weight: bold;
     border-color: var(--yellow);
-    box-shadow: 0 0 15px Rgb(255 214 10 / 20%);
+    box-shadow: var(--shadow-glow-amber);
   }
 
-  .box-icon-ref { font-size: 10px; }
+  .box-icon-ref { font-size: var(--font-10); }
 }
 
 .filter-section {
@@ -36,7 +36,7 @@
 .button-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: $spacing-md-alt;
 
   &.types-grid {
     @include smooth-scroll;
@@ -54,7 +54,7 @@
 
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
 
   @include responsive(mobile) {
     flex-wrap: wrap;
@@ -66,10 +66,10 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 4px 8px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 3%);
 
   .mini-sort-btn {
@@ -77,10 +77,10 @@
 
     padding: 6px 8px;
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: transparent;
     color: var(--gray);
-    font-size: 7px;
+    font-size: var(--font-7);
     cursor: pointer;
     white-space: nowrap;
 
@@ -102,10 +102,10 @@
   width: 28px;
   height: 28px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 3%);
   color: var(--yellow);
-  font-size: 10px;
+  font-size: var(--font-10);
   cursor: pointer;
 
   &:hover { background: Rgb(255 255 255 / 8%); border-color: Rgb(255 255 255 / 20%); }
@@ -114,21 +114,21 @@
 .tags-group-mini {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   width: 100%;
   min-width: 0;
 
   .tags-scroll-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     padding: 4px 0;
   }
 
   .box-title-group {
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 0 4px;
     margin-bottom: 24px;
   }
@@ -139,13 +139,13 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: $spacing-xs-5;
     padding: 5px 8px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(255 255 255 / 3%);
     color: var(--gray);
-    font-size: 6px;
+    font-size: var(--font-6);
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
@@ -156,7 +156,7 @@
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1;
       opacity: 0.8;
       transform: Translatey(-1px);
@@ -181,7 +181,7 @@
   display: inline-flex;
   align-items: center;
   color: var(--gray);
-  font-size: 6px;
+  font-size: var(--font-6);
   opacity: 0.5;
   white-space: nowrap;
 }
@@ -192,13 +192,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 10px 18px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 4%);
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
 
   &:hover { 
@@ -212,7 +212,7 @@
     background: Rgb(199 125 255 / 15%);
     color: var(--white);
     border-color: var(--purple);
-    box-shadow: 0 0 15px Rgb(199 125 255 / 10%);
+    box-shadow: var(--shadow-glow-amber);
   }
 
   &.filter-toggle-btn {
@@ -229,7 +229,7 @@
 
     &.mini {
       padding: 6px 12px;
-      font-size: 7px;
+      font-size: var(--font-7);
     }
   }
 }
@@ -242,10 +242,10 @@
   align-items: center;
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 3%);
   color: var(--gray);
-  font-size: 7px;
+  font-size: var(--font-7);
   cursor: pointer;
   white-space: nowrap;
 
@@ -259,10 +259,9 @@
     background: var(--pill-bg, var(--purple-low));
     color: var(--white);
     border-color: var(--pill-color, var(--purple));
-    box-shadow: 0 0 10px var(--pill-bg, Rgb(199 125 255 / 10%));
+    box-shadow: var(--shadow-glow-amber);
   }
 }
-
 
 .filters-expanded-premium {
   @include shell-premium(Rgba(15, 23, 42, 0.98));
@@ -270,18 +269,18 @@
   z-index: var(--z-low);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 20px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   margin-top: 12px;
-  box-shadow: 0 15px 40px Rgb(0 0 0 / 50%);
+  box-shadow: var(--shadow-2xl);
 }
 
 .filters-grid-columns {
 
   display: grid;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: repeat(3, 1fr);
 
   @include responsive(mobile) {
@@ -296,7 +295,7 @@
 .filter-column {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   min-width: 0; 
 }
 
@@ -304,7 +303,7 @@
   height: 100%;
   padding: 16px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 20%);
   
   &.full-width { width: 100%; }
@@ -316,9 +315,9 @@
 
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     color: var(--gray);
-    font-size: 7px;
+    font-size: var(--font-7);
     opacity: 0.6;
     margin-bottom: 12px;
     letter-spacing: 1px;
@@ -335,7 +334,7 @@
 .tiers-compact-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .tier-pill {
@@ -343,26 +342,26 @@
     background: var(--tier-bg) !important;
     color: var(--tier-color) !important;
     border-color: var(--tier-color) !important;
-    box-shadow: 0 0 10px var(--tier-bg);
+    box-shadow: var(--shadow-glow-amber);
   }
 }
 
 .types-compact-grid {
   display: grid;
-  gap: 4px;
+  gap: $spacing-xs;
   grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
 }
 
 .iv-mini-grid {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .slider-row-mini, .iv-slider-row-mini {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 4px 0;
 
   .label, .stat-name {
@@ -370,14 +369,14 @@
 
     width: 65px;
     color: var(--gray);
-    font-size: 6px;
+    font-size: var(--font-6);
     opacity: 0.8;
     white-space: nowrap;
   }
 
   input[type="range"] {
     height: 3px;
-    border-radius: 2px;
+    border-radius: $radius-xs;
     background: Rgb(255 255 255 / 10%);
     flex: 1;
     appearance: none;
@@ -390,7 +389,7 @@
       background: var(--stat-color, var(--yellow));
       appearance: none;
       cursor: pointer;
-      box-shadow: 0 0 8px var(--stat-color, Rgb(255 184 0 / 40%));
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 
@@ -399,7 +398,7 @@
 
     width: 25px;
     color: var(--yellow);
-    font-size: 7px;
+    font-size: var(--font-7);
     text-align: right;
   }
 }
@@ -410,10 +409,10 @@
   width: 100%;
   padding: 8px;
   border: 1px dashed Rgb(255 255 255 / 10%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 3%);
   color: var(--gray);
-  font-size: 6px;
+  font-size: var(--font-6);
   margin-top: 12px;
   cursor: pointer;
 
@@ -439,10 +438,10 @@
 
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     color: var(--yellow);
-    font-size: 7px;
-    .box-icon-results { font-size: 10px; }
+    font-size: var(--font-7);
+    .box-icon-results { font-size: var(--font-10); }
   }
 }
 
@@ -451,5 +450,5 @@
 
   width: fit-content;
   padding: 6px 16px;
-  font-size: 6px;
+  font-size: var(--font-6);
 }

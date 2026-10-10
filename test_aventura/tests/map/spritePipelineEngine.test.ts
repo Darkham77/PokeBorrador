@@ -13,7 +13,7 @@ import {
   classifySprite,
   processSpriteSheet,
   type RawImageBuffer
-} from '../../logic/map/continent/spritePipelineEngine';
+} from '../../logic/map/continent/spritePipelineEngine.ts';
 
 describe('spritePipelineEngine', () => {
   /**

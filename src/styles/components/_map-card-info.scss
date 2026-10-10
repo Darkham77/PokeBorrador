@@ -18,7 +18,7 @@
 
   width: 100%;
   color: var(--yellow);
-  font-size: 11px;
+  font-size: var(--font-11);
   line-height: 1.2;
   text-shadow: 
     -1px -1px 0 #000,  
@@ -35,8 +35,8 @@
 
   width: 100%;
   margin: 0 auto;
-  color: rgb(204 204 204 / 100%);
-  font-size: 8px;
+  color: Rgb(204 204 204 / 100%);
+  font-size: var(--font-8);
   line-height: 1.2;
   text-align: center;
   text-shadow: 
@@ -53,7 +53,7 @@
   right: 8px; // Aligned with grid right edge (right: 8px)
 }
 
-.tag-locked { color: rgb(255 110 110 / 100%); border-color: rgb(255 110 110 / 30%); }
+.tag-locked { color: Rgb(255 110 110 / 100%); border-color: Rgb(255 110 110 / 30%); }
 
 .map-left-pills-container {
   position: absolute;
@@ -62,7 +62,7 @@
   z-index: var(--z-map-ui) !important;
   display: flex;
   flex-direction: column-reverse;
-  gap: 3px; // Reduced gap so the stack stays away from the guardian
+  gap: $spacing-xs-alt; // Reduced gap so the stack stays away from the guardian
 }
 
 .fishing-pill-standalone,

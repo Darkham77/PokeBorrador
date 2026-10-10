@@ -15,12 +15,16 @@ import {
 
 const currentPokemon = ref<DetailPokemon>({ ...MOCK_DETAIL_PIKACHU })
 
+const POKEDEX_PIKACHU = 25 as const;
+const POKEDEX_CHARIZARD = 6 as const;
+const POKEDEX_GENGAR = 94 as const;
+
 function openDetailFor(p: PokemonSummaryItem) {
-  if (p.id === 25) {
+  if (p.id === POKEDEX_PIKACHU) {
     currentPokemon.value = { ...MOCK_DETAIL_PIKACHU }
-  } else if (p.id === 6) {
+  } else if (p.id === POKEDEX_CHARIZARD) {
     currentPokemon.value = { ...MOCK_DETAIL_CHARIZARD }
-  } else if (p.id === 94) {
+  } else if (p.id === POKEDEX_GENGAR) {
     currentPokemon.value = { ...MOCK_DETAIL_GENGAR }
   }
   isFloatingModalOpen.value = true
@@ -43,7 +47,7 @@ defineExpose({
       class="pv-frame-panel pv-panel-surface"
       style="padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;"
     >
-      <div style="font-size: 8px; color: var(--color-text-gold); font-weight: bold;">
+      <div style="font-size: var(--font-8); color: var(--color-text-gold); font-weight: bold;">
         FICHA TÉCNICA PIXELADA GBA (1:1 CON MEDIA_1788978462035.PNG):
       </div>
       <button
@@ -77,7 +81,7 @@ defineExpose({
             <span
               class="emoji"
               :class="currentPokemon.gender === 'm' ? 'gender-male' : 'gender-female'"
-              style="font-size: 9px;"
+              style="font-size: var(--font-9);"
             >
               {{ currentPokemon.gender === 'm' ? '♂' : '♀' }}
             </span>
@@ -232,7 +236,7 @@ defineExpose({
             </div>
             <div class="pv-frame-control detail-info-cell">
               <span class="cell-label">VIGOR</span>
-              <span class="cell-value"><span style="color: #ffd60a;">⚡</span> {{ currentPokemon.vigor }}</span>
+              <span class="cell-value"><span style="color: var(--yellow);">⚡</span> {{ currentPokemon.vigor }}</span>
             </div>
           </div>
 
@@ -258,7 +262,7 @@ defineExpose({
                 <span class="bar-title">NIVEL</span>
                 <span
                   class="bar-value"
-                  style="color: #38bdf8;"
+                  style="color: var(--sky);"
                 >Nv. {{ currentPokemon.level }} / {{ currentPokemon.maxLevel }}</span>
               </div>
               <div class="bar-track">
@@ -275,7 +279,7 @@ defineExpose({
                 <span class="bar-title">EXPERIENCIA</span>
                 <span
                   class="bar-value"
-                  style="color: #c084fc;"
+                  style="color: var(--purple-400);"
                 >{{ currentPokemon.exp }} / {{ currentPokemon.expNext }}</span>
               </div>
               <div class="bar-track">
@@ -292,7 +296,7 @@ defineExpose({
                 <span class="bar-title">AMISTAD ({{ currentPokemon.friendshipTitle }})</span>
                 <span
                   class="bar-value"
-                  style="color: #ffd60a;"
+                  style="color: var(--yellow);"
                 >🎀 {{ currentPokemon.friendship }} / {{ currentPokemon.maxFriendship }}</span>
               </div>
               <div class="bar-track">
@@ -314,7 +318,7 @@ defineExpose({
           <!-- Historial de Competencias -->
           <div
             class="pv-frame-control"
-            style="padding: 6px 12px; font-size: 7.5px; color: var(--color-text-gold); font-weight: bold; display: flex; align-items: center; gap: 4px; border-bottom: 1px dashed var(--color-control-border);"
+            style="padding: 6px 12px; font-size: var(--font-8); color: var(--color-text-gold); font-weight: bold; display: flex; align-items: center; gap: 4px; border-bottom: 1px dashed var(--color-control-border);"
           >
             <span>🏆</span> <span>HISTORIAL DE COMPETENCIAS</span>
           </div>
@@ -440,7 +444,7 @@ defineExpose({
               :alt="currentPokemon.name"
               style="width: 72px; height: 72px; image-rendering: pixelated;"
             >
-            <p style="font-size: 8px; color: var(--color-text-main); margin-top: 8px;">
+            <p style="font-size: var(--font-8); color: var(--color-text-main); margin-top: 8px;">
               {{ currentPokemon.lore }}
             </p>
             <button

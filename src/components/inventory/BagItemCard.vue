@@ -43,7 +43,8 @@ const onItemMouseLeave = (event: MouseEvent) => {
 </script>
 
 <template>
-  <div 
+  <div
+    id="bag-item-card-div-1" 
     :class="['item-card', { selected: isSelected }]"
     @mouseenter="onItemMouseEnter"
     @mouseleave="onItemMouseLeave"
@@ -51,6 +52,7 @@ const onItemMouseLeave = (event: MouseEvent) => {
   >
     <div class="item-icon-container">
       <div
+        id="bag-item-card-div-2"
         class="bag-item-qty"
         @click.stop="emit('qtyClick')"
       >
@@ -75,6 +77,7 @@ const onItemMouseLeave = (event: MouseEvent) => {
       class="item-footer"
     >
       <button
+        id="bag-item-card-btn-usar"
         class="use-btn"
         @click.stop="emit('use', item.id)"
       >
@@ -88,23 +91,36 @@ const onItemMouseLeave = (event: MouseEvent) => {
       class="sell-qty-selector"
     >
       <div class="qty-controls">
-        <button @click.stop="emit('updateQty', sellQty - 1)">
+        <button
+          id="bag-item-card-btn-3"
+          @click.stop="emit('updateQty', sellQty - 1)"
+        >
           -
         </button>
-        <input 
+        <input
+          id="bag-item-card-input-4" 
           type="number" 
           min="1" 
           :max="Number(item.qty)"
           :value="sellQty" 
           @input="(e: Event) => emit('updateQty', (e.target as HTMLInputElement).value)"
         >
-        <button @click="emit('updateQty', 1)">
+        <button
+          id="bag-item-card-btn-min"
+          @click="emit('updateQty', 1)"
+        >
           MIN
         </button>
-        <button @click="emit('updateQty', Number(item.qty))">
+        <button
+          id="bag-item-card-btn-max"
+          @click="emit('updateQty', Number(item.qty))"
+        >
           MAX
         </button>
-        <button @click.stop="emit('updateQty', sellQty + 1)">
+        <button
+          id="bag-item-card-btn-5"
+          @click.stop="emit('updateQty', sellQty + 1)"
+        >
           +
         </button>
       </div>
@@ -120,20 +136,20 @@ const onItemMouseLeave = (event: MouseEvent) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 16px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 16px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-2xl;
+  background: Rgb(255 255 255 / 3%);
   cursor: default;
 }
 
 .item-card:hover {
-  background: rgb(255 255 255 / 6%);
+  background: Rgb(255 255 255 / 6%);
 }
 
 .item-card.selected {
-  background: rgb(16 185 129 / 5%);
+  background: Rgb(16 185 129 / 5%);
   border-color: var(--green-bright);
 }
 
@@ -157,17 +173,17 @@ const onItemMouseLeave = (event: MouseEvent) => {
   bottom: -4px;
   z-index: calc(v-bind('Z_LAYERS.MAP_FLOOR') + 1);
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: var(--purple);
   color: var(--white);
-  font-size: 9px;
+  font-size: var(--font-9);
   font-weight: bold;
   cursor: pointer;
 }
 
 .item-name {
   color: var(--white);
-  font-size: 12px;
+  font-size: var(--font-12);
   font-weight: bold;
   text-align: center;
 }
@@ -175,10 +191,10 @@ const onItemMouseLeave = (event: MouseEvent) => {
 .use-btn {
   padding: 6px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: var(--purple);
   color: var(--white);
-  font-size: 10px;
+  font-size: var(--font-10);
   font-weight: bold;
   cursor: pointer;
 }
@@ -186,14 +202,14 @@ const onItemMouseLeave = (event: MouseEvent) => {
 .sell-qty-selector {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .sell-qty-selector input {
   width: 40px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 4px;
-  background: rgb(0 0 0 / 30%);
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-sm;
+  background: Rgb(0 0 0 / 30%);
   color: var(--white);
   text-align: center;
 }
@@ -202,8 +218,8 @@ const onItemMouseLeave = (event: MouseEvent) => {
   width: 24px;
   height: 24px;
   border: none;
-  border-radius: 4px;
-  background: rgb(255 255 255 / 10%);
+  border-radius: $radius-sm;
+  background: Rgb(255 255 255 / 10%);
   color: var(--white);
   cursor: pointer;
 }

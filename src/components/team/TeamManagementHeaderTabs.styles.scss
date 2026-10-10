@@ -2,7 +2,7 @@
 
 .team-header-tabs {
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
   min-width: 0;
   padding: 4px 0;
   margin-left: 0;
@@ -11,7 +11,7 @@
   -webkit-overflow-scrolling: touch;
 
   @media (width <= 600px) {
-    gap: 8px;
+    gap: $spacing-sm;
     padding-right: 40px;
   }
 }
@@ -22,31 +22,31 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 8px 14px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 10px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(255 255 255 / 3%);
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
   letter-spacing: 1px;
 
-  .icon { font-size: 14px; }
+  .icon { font-size: var(--font-14); }
 
   .tab-count {
     padding: 2px 4px;
-    border-radius: 4px;
-    background: rgb(0 0 0 / 20%);
-    font-size: 7px;
+    border-radius: $radius-sm;
+    background: Rgb(0 0 0 / 20%);
+    font-size: var(--font-7);
     opacity: 0.6;
     margin-left: 4px;
   }
 
   &.active {
-    background: rgb(255 255 255 / 8%);
+    background: Rgb(255 255 255 / 8%);
     color: var(--blue);
     border-color: var(--blue);
   }

@@ -6,8 +6,8 @@
 
 import type { POINode, RouteEdge } from '../../../types/map/poiTypes.ts';
 
-export const STORAGE_PROJECT_PREFIX = 'pokevicio_continent_project_';
-export const STORAGE_PROFILES_KEY = 'pokevicio_continent_profiles_v3';
+const STORAGE_PROJECT_PREFIX = 'pokevicio_continent_project_';
+const STORAGE_PROFILES_KEY = 'pokevicio_continent_profiles_v3';
 
 export interface SavedProfileMeta {
   readonly id: string;
@@ -36,6 +36,7 @@ export function loadProfileListFromStorage(): SavedProfileMeta[] {
     const raw = window.localStorage.getItem(STORAGE_PROFILES_KEY);
     return raw ? (JSON.parse(raw) as SavedProfileMeta[]) : [];
   } catch {
+    // catch-ok: Fallback to empty array when storage is blocked or corrupted
     return [];
   }
 }
@@ -65,19 +66,8 @@ export function loadProjectFromStorage(id: string): ContinentProjectExportPayloa
     const raw = window.localStorage.getItem(STORAGE_PROJECT_PREFIX + id);
     return raw ? (JSON.parse(raw) as ContinentProjectExportPayload) : null;
   } catch {
+    // catch-ok: Fallback to null when project data in storage is malformed
     return null;
-  }
-}
-
-export function deleteProjectFromStorage(id: string): SavedProfileMeta[] {
-  if (typeof window === 'undefined' || !window.localStorage) return [];
-  try {
-    window.localStorage.removeItem(STORAGE_PROJECT_PREFIX + id);
-    const nextList = loadProfileListFromStorage().filter((p) => p.id !== id);
-    window.localStorage.setItem(STORAGE_PROFILES_KEY, JSON.stringify(nextList));
-    return nextList;
-  } catch {
-    return [];
   }
 }
 
@@ -91,6 +81,7 @@ export function parseProjectJson(jsonStr: string): ContinentProjectExportPayload
     if (!payload || !payload.pois || !payload.routes) return null;
     return payload;
   } catch {
+    // catch-ok: Fallback to null when external json payload is invalid
     return null;
   }
 }

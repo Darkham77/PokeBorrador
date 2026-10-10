@@ -59,6 +59,7 @@ const handleSelect = () => {
       :style="{ '--cls-color': currentClass?.color || '#3b82f6' }"
     >
       <ClassDashboard
+        id="class-missions-modal-classdashboard-1"
         :current-class="currentClass"
         :trainer-level="trainerLevel"
         :class-level="classLevel"
@@ -88,7 +89,7 @@ const handleSelect = () => {
 
     // Premium scrollbar fallback for standard browser engines
     scrollbar-width: thin !important;
-    scrollbar-color: rgb(255 255 255 / 30%) rgb(0 0 0 / 10%) !important;
+    scrollbar-color: Rgb(255 255 255 / 30%) Rgb(0 0 0 / 10%) !important;
   }
 }
 </style>

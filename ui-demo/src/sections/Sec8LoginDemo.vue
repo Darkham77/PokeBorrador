@@ -14,11 +14,12 @@ const selectedServer = ref('Poké Vicio Oficial (Global)')
 const email = ref('')
 const password = ref('')
 const logoRef = ref<HTMLElement | null>(null)
+const LOGO_BOB_Y_OFFSET = -6 as const;
 
 onMounted(() => {
   if (logoRef.value) {
     gsap.to(logoRef.value, {
-      y: -6,
+      y: LOGO_BOB_Y_OFFSET,
       duration: 1.5,
       repeat: -1,
       yoyo: true,
@@ -124,7 +125,7 @@ function switchServer(mode: ServerMode) {
                 <span>Inalcanzable</span>
                 <span
                   class="emoji"
-                  style="font-size: 11px;"
+                  style="font-size: var(--font-11);"
                 >📡</span>
               </span>
             </div>
@@ -336,7 +337,7 @@ function switchServer(mode: ServerMode) {
 }
 
 .server-label {
-  font-size: 7px;
+  font-size: var(--font-7);
   text-align: center;
   color: var(--color-text-muted);
   text-transform: uppercase;
@@ -347,7 +348,7 @@ function switchServer(mode: ServerMode) {
 }
 
 .showcase-title {
-  font-size: 11px;
+  font-size: var(--font-11);
   color: var(--color-text-gold);
   margin-bottom: 12px;
   display: inline-flex;

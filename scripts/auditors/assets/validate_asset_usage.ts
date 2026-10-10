@@ -55,11 +55,23 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
 
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_asset_usage',
       configKey: 'assets.assetUsage',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Asset Usage & Anti-Bypass Auditor',
       description: 'Rutas de assets cableadas o bypass de getAssetUrl',
       icon: '🖼️',

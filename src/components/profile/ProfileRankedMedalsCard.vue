@@ -54,27 +54,27 @@ const pvpStore = usePvPStore()
 .empty-ranked-medals {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 12px;
-  border: 1px dashed rgb(148 163 184 / 20%);
-  border-radius: 8px;
-  background: rgb(15 23 42 / 40%);
+  border: 1px dashed Rgb(148 163 184 / 20%);
+  border-radius: $radius-lg;
+  background: Rgb(15 23 42 / 40%);
 
   .empty-icon {
-    font-size: 1.4rem;
+    font-size: var(--font-22);
     opacity: 0.6;
   }
 
   .empty-text {
-    color: #94a3b8;
-    font-size: 0.8rem;
+    color: var(--slate-400);
+    font-size: var(--font-13);
     font-style: italic;
   }
 }
 
 .ranked-medals-shelf {
   display: grid;
-  gap: 8px;
+  gap: $spacing-sm;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   margin-top: 6px;
 }

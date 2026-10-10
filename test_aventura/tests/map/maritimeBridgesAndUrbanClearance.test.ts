@@ -10,15 +10,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateOrganicCityLayout } from '../../../src/logic/map/organicCityEngine.ts';
-import { MASSIF_TIER_2_MIN_CELLS } from '../../../src/logic/map/continentMountainEngine.ts';
+import { generateOrganicCityLayout } from '../../logic/map/organicCityEngine.ts';
+import { MASSIF_TIER_2_MIN_CELLS } from '../../logic/map/continentMountainEngine.ts';
 import {
   generateRouteNetwork,
   MAX_CANONICAL_BRIDGE_SPAN
-} from '../../../src/logic/map/routeNetworkEngine.ts';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
-import type { WaterTerrainKind } from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/routeNetworkEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('maritimeBridgesAndUrbanClearance (Tier 1 Architecture Verification)', () => {
   describe('Pillar 1: Bridge Span Limits & 90-Degree Turn Prohibition', () => {

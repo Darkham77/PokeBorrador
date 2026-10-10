@@ -15,6 +15,7 @@ import { ref, computed } from 'vue';
 import type { ContinentMapResult } from '../logic/map/continentGenerator.ts';
 import type { POINode, RouteEdge, UrbanElementType } from '../types/map/poiTypes.ts';
 import type { WildernessLayerResult } from '../logic/map/wildernessVegetationEngine.ts';
+import type { ContinentRenderMode } from '../types/map/continentTypes.ts';
 import {
   executeRegionalGenerationJob,
   executeRerouteJob,
@@ -22,11 +23,30 @@ import {
   type WorkerInboundMessage,
   type WorkerOutboundResponse
 } from '../logic/map/continentGenerator.worker.ts';
-
-export type RegionalDisplayMode = 'tiles_only' | 'hybrid' | 'pokégear';
+import {
+  CANVAS_TILE_SIZE,
+  CONTINENT_DEFAULT_SEED,
+  DEFAULT_LAKE_COUNT
+} from '../config/studioConstants.ts';
+import { DEFAULT_POI_TARGET_COUNT } from '../config/poiPlacementConfig.ts';
+import {
+  loadProfileListFromStorage,
+  saveProjectToStorage,
+  loadProjectFromStorage,
+  serializeProjectJson,
+  parseProjectJson,
+  type ContinentProjectExportPayload
+} from '../logic/map/continent/regionalPersistenceHelper.ts';
+import {
+  buildCanonicalRegionMap,
+  type CanonicalPresetId
+} from '../data/map/canonicalRegionPresets.ts';
 
 const DEFAULT_DEBOUNCE_DELAY_MS = 250;
 const MAX_SEED_RANDOM_VALUE = 999999;
+const DEFAULT_MAP_DIMENSION = 400;
+const DEFAULT_OCEAN_WATER_PERCENTAGE = 0.35;
+const DEFAULT_MOUNTAIN_PERCENTAGE = 0.22;
 
 export interface DragVisualPosition {
   readonly x: number;
@@ -37,16 +57,16 @@ export type ContinentMapDimension = 64 | 128 | 256 | 400;
 
 export const useRegionalContinentStudioStore = defineStore('regionalContinentStudio', () => {
   // 1. Generation Parameters (Sliders & Toggles)
-  const seed = ref<number>(42);
-  const mapDimension = ref<ContinentMapDimension>(400);
-  const oceanWaterPercentage = ref<number>(0.35);
-  const mountainPercentage = ref<number>(0.22);
-  const lakeCount = ref<number>(3);
-  const poiTargetCount = ref<number>(18);
+  const seed = ref<number>(CONTINENT_DEFAULT_SEED);
+  const mapDimension = ref<ContinentMapDimension>(DEFAULT_MAP_DIMENSION);
+  const oceanWaterPercentage = ref<number>(DEFAULT_OCEAN_WATER_PERCENTAGE);
+  const mountainPercentage = ref<number>(DEFAULT_MOUNTAIN_PERCENTAGE);
+  const lakeCount = ref<number>(DEFAULT_LAKE_COUNT);
+  const poiTargetCount = ref<number>(DEFAULT_POI_TARGET_COUNT);
   const allowBridges = ref<boolean>(true);
 
   // 2. Interactive & View State
-  const displayMode = ref<RegionalDisplayMode>('hybrid');
+  const displayMode = ref<ContinentRenderMode>('hybrid');
   const isGenerating = ref<boolean>(false);
   const selectedPOIId = ref<string | null>(null);
   const hoveredPOIId = ref<string | null>(null);
@@ -60,7 +80,7 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
   const selectedUrbanElement = ref<{ readonly type: UrbanElementType; readonly id: string } | null>(null);
   const projectName = ref<string>('Kanto Regional Map');
   const activeProjectId = ref<string | null>(null);
-  const savedProfiles = ref<readonly { readonly id: string; readonly name: string }[]>([]);
+  const savedProfiles = ref<readonly { readonly id: string; readonly name: string }[]>(loadProfileListFromStorage());
   const canUndo = ref<boolean>(false);
   const canRedo = ref<boolean>(false);
 
@@ -79,8 +99,8 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
   let workerInstance: Worker | null = null;
 
   // Pixel Dimensions (viewBox = "0 0 widthPx heightPx")
-  const widthPx = computed(() => (continentMap.value?.width ?? mapDimension.value) * 32);
-  const heightPx = computed(() => (continentMap.value?.height ?? mapDimension.value) * 32);
+  const widthPx = computed(() => (continentMap.value?.width ?? mapDimension.value) * CANVAS_TILE_SIZE);
+  const heightPx = computed(() => (continentMap.value?.height ?? mapDimension.value) * CANVAS_TILE_SIZE);
 
   // Selected POI node object
   const selectedPOI = computed<POINode | null>(() => {
@@ -263,7 +283,7 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     }
   }
 
-  function setDisplayMode(mode: RegionalDisplayMode): void {
+  function setDisplayMode(mode: ContinentRenderMode): void {
     displayMode.value = mode;
   }
 
@@ -308,21 +328,100 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
   function createBlankProject(name: string): void {
     projectName.value = name;
   }
-  function saveCurrentProject(): void {}
-  function loadProject(id: string): void {
-    activeProjectId.value = id;
+
+  function saveCurrentProject(): void {
+    const payload: ContinentProjectExportPayload = {
+      id: activeProjectId.value || `proj_${Temporal.Now.instant().epochMilliseconds}`,
+      name: projectName.value,
+      updatedAt: Temporal.Now.instant().epochMilliseconds,
+      seed: seed.value,
+      mapDimension: mapDimension.value,
+      oceanWaterPercentage: oceanWaterPercentage.value,
+      mountainPercentage: mountainPercentage.value,
+      lakeCount: lakeCount.value,
+      poiTargetCount: poiTargetCount.value,
+      allowBridges: allowBridges.value,
+      pois: pois.value,
+      routes: routes.value
+    };
+    activeProjectId.value = payload.id;
+    savedProfiles.value = saveProjectToStorage(payload);
   }
+
+  function loadProject(id: string): void {
+    const project = loadProjectFromStorage(id);
+    if (!project) return;
+    activeProjectId.value = project.id;
+    projectName.value = project.name;
+    seed.value = project.seed;
+    mapDimension.value = project.mapDimension as ContinentMapDimension;
+    oceanWaterPercentage.value = project.oceanWaterPercentage;
+    mountainPercentage.value = project.mountainPercentage;
+    lakeCount.value = project.lakeCount;
+    poiTargetCount.value = project.poiTargetCount;
+    allowBridges.value = project.allowBridges;
+    pois.value = [...project.pois];
+    routes.value = [...project.routes];
+    executeGenerationNow();
+  }
+
   function exportSvg(): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${widthPx.value}" height="${heightPx.value}"></svg>`;
   }
+
   function importSvg(_content: string): boolean {
     return true;
   }
+
   function exportProjectJson(): string {
-    return JSON.stringify({ name: projectName.value, seed: seed.value });
+    const payload: ContinentProjectExportPayload = {
+      id: activeProjectId.value || `proj_${Temporal.Now.instant().epochMilliseconds}`,
+      name: projectName.value,
+      updatedAt: Temporal.Now.instant().epochMilliseconds,
+      seed: seed.value,
+      mapDimension: mapDimension.value,
+      oceanWaterPercentage: oceanWaterPercentage.value,
+      mountainPercentage: mountainPercentage.value,
+      lakeCount: lakeCount.value,
+      poiTargetCount: poiTargetCount.value,
+      allowBridges: allowBridges.value,
+      pois: pois.value,
+      routes: routes.value
+    };
+    return serializeProjectJson(payload);
   }
-  function importProjectJson(_content: string): boolean {
+
+  function importProjectJson(content: string): boolean {
+    const parsed = parseProjectJson(content);
+    if (!parsed) return false;
+    projectName.value = parsed.name;
+    seed.value = parsed.seed;
+    mapDimension.value = parsed.mapDimension as ContinentMapDimension;
+    oceanWaterPercentage.value = parsed.oceanWaterPercentage;
+    mountainPercentage.value = parsed.mountainPercentage;
+    lakeCount.value = parsed.lakeCount;
+    poiTargetCount.value = parsed.poiTargetCount;
+    allowBridges.value = parsed.allowBridges;
+    pois.value = [...parsed.pois];
+    routes.value = [...parsed.routes];
+    executeGenerationNow();
     return true;
+  }
+
+  function loadCanonicalPreset(presetId: CanonicalPresetId = 'kanto'): void {
+    isGenerating.value = true;
+    try {
+      const result = buildCanonicalRegionMap(presetId, seed.value);
+      continentMap.value = result.continent;
+      pois.value = [...result.pois];
+      routes.value = [...result.routeNetwork.edges];
+      pathGrid.value = result.routeNetwork.pathGrid;
+      bridgeGrid.value = result.routeNetwork.bridgeGrid;
+      wilderness.value = result.wilderness;
+      rawPreviewBuffer.value = result.rawBuffer ?? null;
+    } finally {
+      isGenerating.value = false;
+    }
   }
 
   return {
@@ -384,6 +483,7 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     exportSvg,
     importSvg,
     exportProjectJson,
-    importProjectJson
+    importProjectJson,
+    loadCanonicalPreset
   };
 });

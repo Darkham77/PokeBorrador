@@ -57,6 +57,19 @@ const {
   updateHudHeight
 } = useMainLayout(hudRef, hudBottomRef, innerHudRef)
 
+const MIN_HUD_TOP_PADDING_PX = 90
+const HUD_TOP_PADDING_EXTRA_PX = 15
+const HUD_BOTTOM_PADDING_EXTRA_PX = 20
+
+const contentAreaStyle = computed(() => {
+  const topPadding = Math.max(MIN_HUD_TOP_PADDING_PX, hudHeight.value + HUD_TOP_PADDING_EXTRA_PX)
+  const bottomPadding = hudBottomHeight.value > 0 ? hudBottomHeight.value + HUD_BOTTOM_PADDING_EXTRA_PX : 0
+  return {
+    '--hud-top-padding': `${topPadding}px`,
+    '--hud-bottom-padding': `${bottomPadding}px`
+  }
+})
+
 // Managed Body Classes
 useBodyClass('is-battle-active', () => battleStore.isBattleActive)
 
@@ -153,10 +166,7 @@ watch(() => gs.value.starterChosen, (val) => {
       <div
         id="zoomable-content"
         class="zoom-target content-area"
-        :style="{ 
-          '--hud-top-padding': Math.max(90, hudHeight + 15) + 'px',
-          '--hud-bottom-padding': (hudBottomHeight > 0 ? (hudBottomHeight + 20) : 0) + 'px'
-        }"
+        :style="contentAreaStyle"
       >
         <MainGameTabsContent :active-tab="activeTab" />
       </div>

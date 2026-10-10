@@ -62,7 +62,7 @@ export function resolveTileUrl(filename: string): string {
 /**
  * Loads and caches a canonical image. Fails loudly with console error if missing.
  */
-export function loadTileImage(filename: string): Promise<HTMLImageElement | null> {
+function loadTileImage(filename: string): Promise<HTMLImageElement | null> {
   const cached = imageCache.get(filename);
   if (cached) return Promise.resolve(cached);
 

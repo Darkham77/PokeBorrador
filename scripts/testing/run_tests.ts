@@ -70,14 +70,17 @@ async function setupTestEnvironment(dockerInfo: DockerInspectionResult): Promise
   return { postgresReady, cleanupContainer };
 }
 
+const EXIT_CODE_SIGINT = 130 as const;
+const EXIT_CODE_SIGTERM = 143 as const;
+
 function registerCleanupSignals(cleanupContainer: () => void): void {
   process.on('SIGINT', () => {
     cleanupContainer();
-    process.exit(130);
+    process.exit(EXIT_CODE_SIGINT);
   });
   process.on('SIGTERM', () => {
     cleanupContainer();
-    process.exit(143);
+    process.exit(EXIT_CODE_SIGTERM);
   });
   process.on('exit', () => {
     cleanupContainer();

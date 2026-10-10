@@ -68,6 +68,7 @@ const onMouseLeave = () => {
     class="pokeball-route-tooltip"
   >
     <div
+      id="map-card-spawns-trigger-div-1"
       class="pokeball-route-trigger"
       @click.stop.prevent="emit('click')"
       @mouseenter="onMouseEnter"

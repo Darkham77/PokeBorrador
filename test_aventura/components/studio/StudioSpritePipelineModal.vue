@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import StudioModalShell from './StudioModalShell.vue';
 import { useContinentStudioStore } from '../../stores/continentStudio';
 import {
   processSpriteSheet,
   type RawImageBuffer
 } from '../../logic/map/continent/spritePipelineEngine';
-import type { SlicedSpriteMetadata, SpriteCategory } from '../../types/map/continentTypes';
+import { SPRITE_CATEGORIES, type SlicedSpriteMetadata, type SpriteCategory } from '../../types/map/continentTypes';
 import { defaultPrefabsRegistry, type PrefabCategory } from '../../logic/map/prefabsRegistry';
+
+const DEFAULT_SPRITE_SLICE_TOLERANCE = 25;
 
 const store = useContinentStudioStore();
 
@@ -14,17 +17,6 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 const isProcessing = ref(false);
 const slicedSprites = ref<SlicedSpriteMetadata[]>([]);
 const activeTab = ref<'all' | 'buildings' | 'props' | 'terrain'>('all');
-
-const ALL_CATEGORIES: readonly SpriteCategory[] = [
-  'building',
-  'prop',
-  'tree',
-  'decor',
-  'water_edge',
-  'mountain',
-  'snow',
-  'path'
-];
 
 function handleFileChange(e: Event): void {
   const target = e.target as HTMLInputElement;
@@ -74,7 +66,7 @@ function processImageFile(file: File): void {
       };
 
       const baseName = file.name.replace(/\.png$/i, '');
-      const results = processSpriteSheet(rawBuf, { sourceName: baseName, tolerance: 25 });
+      const results = processSpriteSheet(rawBuf, { sourceName: baseName, tolerance: DEFAULT_SPRITE_SLICE_TOLERANCE });
       slicedSprites.value = results;
       isProcessing.value = false;
     };
@@ -122,246 +114,176 @@ function handleApproveAndIncorporate(): void {
 </script>
 
 <template>
-  <div
+  <StudioModalShell
     v-if="store.showSpriteModal"
     id="modal-sprite-pipeline"
-    class="modal-backdrop"
-    @click.self="store.showSpriteModal = false"
+    title="Pipeline Inteligente de Spritesheets"
+    icon="📚"
+    max-width="800px"
+    @close="store.showSpriteModal = false"
   >
-    <div class="modal-card">
-      <header class="modal-header">
-        <div class="flex items-center gap-2">
-          <span class="icon text-xl">📚</span>
-          <h3 class="modal-title">
-            Pipeline Inteligente de Spritesheets
-          </h3>
-        </div>
-        <button
-          id="btn-close-sprite-modal"
-          class="btn-close"
-          @click="store.showSpriteModal = false"
-        >
-          <span class="emoji-inline">✕</span>
-        </button>
-      </header>
+    <!-- Drop Zone for Spritesheets -->
+    <div
+      id="studio-sprite-pipeline-modal-div-fileinputref-click"
+      v-gsap-hover="{ scale: 1.01 }"
+      class="drop-zone"
+      @dragover.prevent
+      @drop="handleDrop"
+      @click="fileInputRef?.click()"
+    >
+      <input
+        id="studio-sprite-pipeline-modal-input-filechange"
+        ref="fileInputRef"
+        type="file"
+        accept=".png"
+        class="hidden-input"
+        @change="handleFileChange"
+      >
+      <span class="drop-icon">📥</span>
+      <p class="drop-text">
+        Arrastra carpetas o imágenes PNG aquí, o haz clic para seleccionar
+      </p>
+      <span class="drop-hint">Elimina fondos transparentes/chroma, separa componentes conexos y clasifica automáticamente</span>
+    </div>
 
-      <div class="modal-body">
-        <!-- Drop Zone for Spritesheets -->
-        <div
-          class="drop-zone"
-          @dragover.prevent
-          @drop="handleDrop"
-          @click="fileInputRef?.click()"
-        >
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept=".png"
-            class="hidden-input"
-            @change="handleFileChange"
+    <!-- Processing Indicator -->
+    <div
+      v-if="isProcessing"
+      class="processing-banner"
+    >
+      <span><span class="icon">⏳</span> Analizando componentes conexos y removiendo fondo...</span>
+    </div>
+
+    <!-- Results Catalog with Tab Navigation -->
+    <div
+      v-if="slicedSprites.length > 0"
+      class="results-container"
+    >
+      <div class="results-header">
+        <h4>Sprites Recortados ({{ slicedSprites.length }})</h4>
+        <div class="filter-tabs">
+          <button
+            id="studio-sprite-pipeline-modal-btn-todos"
+            class="tab-btn"
+            :class="{ active: activeTab === 'all' }"
+            @click="activeTab = 'all'"
           >
-          <span class="drop-icon">📥</span>
-          <p class="drop-text">
-            Arrastra carpetas o imágenes PNG aquí, o haz clic para seleccionar
-          </p>
-          <span class="drop-hint">Elimina fondos transparentes/chroma, separa componentes conexos y clasifica automáticamente</span>
-        </div>
-
-        <!-- Processing Indicator -->
-        <div
-          v-if="isProcessing"
-          class="processing-banner"
-        >
-          <span><span class="icon">⏳</span> Analizando componentes conexos y removiendo fondo...</span>
-        </div>
-
-        <!-- Results Catalog with Tab Navigation -->
-        <div
-          v-if="slicedSprites.length > 0"
-          class="results-container"
-        >
-          <div class="results-header">
-            <h4>Sprites Recortados ({{ slicedSprites.length }})</h4>
-            <div class="filter-tabs">
-              <button
-                class="tab-btn"
-                :class="{ active: activeTab === 'all' }"
-                @click="activeTab = 'all'"
-              >
-                <span class="icon">📦</span> Todos
-              </button>
-              <button
-                class="tab-btn"
-                :class="{ active: activeTab === 'buildings' }"
-                @click="activeTab = 'buildings'"
-              >
-                <span class="icon">🏛️</span> Edificios
-              </button>
-              <button
-                class="tab-btn"
-                :class="{ active: activeTab === 'props' }"
-                @click="activeTab = 'props'"
-              >
-                <span class="icon">🌲</span> Decoraciones
-              </button>
-              <button
-                class="tab-btn"
-                :class="{ active: activeTab === 'terrain' }"
-                @click="activeTab = 'terrain'"
-              >
-                <span class="icon">🌿</span> Terrenos
-              </button>
-            </div>
-          </div>
-
-          <div class="sprites-grid">
-            <div
-              v-for="sprite in filteredSprites"
-              :key="sprite.id"
-              class="sprite-card"
-            >
-              <div class="sprite-preview-box">
-                <img
-                  :src="sprite.dataUrl"
-                  :alt="sprite.name"
-                  class="preview-img"
-                >
-              </div>
-              <div class="sprite-info">
-                <select
-                  v-model="sprite.category"
-                  class="cat-select"
-                  title="Reclasificar categoría"
-                >
-                  <option
-                    v-for="c in ALL_CATEGORIES"
-                    :key="c"
-                    :value="c"
-                  >
-                    {{ c }}
-                  </option>
-                </select>
-                <span class="sprite-dims">{{ sprite.width }}×{{ sprite.height }} px</span>
-              </div>
-            </div>
-          </div>
+            <span class="icon">📦</span> Todos
+          </button>
+          <button
+            id="studio-sprite-pipeline-modal-btn-edificios"
+            class="tab-btn"
+            :class="{ active: activeTab === 'buildings' }"
+            @click="activeTab = 'buildings'"
+          >
+            <span class="icon">🏛️</span> Edificios
+          </button>
+          <button
+            id="studio-sprite-pipeline-modal-btn-decoraciones"
+            class="tab-btn"
+            :class="{ active: activeTab === 'props' }"
+            @click="activeTab = 'props'"
+          >
+            <span class="icon">🌲</span> Decoraciones
+          </button>
+          <button
+            id="studio-sprite-pipeline-modal-btn-terrenos"
+            class="tab-btn"
+            :class="{ active: activeTab === 'terrain' }"
+            @click="activeTab = 'terrain'"
+          >
+            <span class="icon">🌿</span> Terrenos
+          </button>
         </div>
       </div>
 
-      <footer class="modal-footer">
-        <button
-          type="button"
-          class="btn-secondary"
-          @click="store.showSpriteModal = false"
+      <div class="sprites-grid">
+        <div
+          v-for="sprite in filteredSprites"
+          :key="sprite.id"
+          class="sprite-card"
         >
-          Cancelar
-        </button>
-
-        <button
-          id="btn-approve-sprites"
-          type="button"
-          class="btn-primary"
-          :disabled="slicedSprites.length === 0"
-          @click="handleApproveAndIncorporate"
-        >
-          <span class="btn-emoji">✨</span> Aprobar e Incorporar al Generador
-        </button>
-      </footer>
+          <div class="sprite-preview-box">
+            <img
+              :src="sprite.dataUrl"
+              :alt="sprite.name"
+              class="preview-img"
+            >
+          </div>
+          <div class="sprite-info">
+            <select
+              id="studio-sprite-pipeline-modal-select-category"
+              v-model="sprite.category"
+              class="cat-select"
+              title="Reclasificar categoría"
+            >
+              <option
+                v-for="c in SPRITE_CATEGORIES"
+                :key="c"
+                :value="c"
+              >
+                {{ c }}
+              </option>
+            </select>
+            <span class="sprite-dims">{{ sprite.width }}×{{ sprite.height }} px</span>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+    <template #footer>
+      <button
+        id="studio-sprite-pipeline-modal-btn-cancelar"
+        type="button"
+        class="btn-secondary"
+        @click="store.showSpriteModal = false"
+      >
+        Cancelar
+      </button>
+
+      <button
+        id="btn-approve-sprites"
+        type="button"
+        class="btn-primary"
+        :disabled="slicedSprites.length === 0"
+        @click="handleApproveAndIncorporate"
+      >
+        <span class="btn-emoji">✨</span> Aprobar e Incorporar al Generador
+      </button>
+    </template>
+  </StudioModalShell>
 </template>
 
 <style scoped lang="scss">
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.8);
-  backdrop-filter: Blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-hud);
-}
-
-.modal-card {
-  width: 90%;
-  max-width: 800px;
-  max-height: dvh;
-  background: #0f172a;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 16px 36px Rgba(0, 0, 0, 0.6);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
-  background: #1e293b;
-}
-
-.modal-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f8fafc;
-  margin: 0;
-}
-
-.btn-close {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  font-size: 18px;
-  cursor: pointer;
-
-  &:hover {
-    color: #ffffff;
-  }
-}
-
-.modal-body {
-  padding: 20px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 
 .drop-zone {
-  border: 2px dashed Rgba(56, 189, 248, 0.4);
-  background: Rgba(56, 189, 248, 0.04);
-  border-radius: 10px;
   padding: 24px;
+  border: 2px dashed Rgb(56 189 248 / 40%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(56 189 248 / 4%);
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
 
   &:hover {
-    background: Rgba(56, 189, 248, 0.08);
-    border-color: #38bdf8;
+    background: Rgb(56 189 248 / 8%);
+    border-color: var(--sky);
   }
 
   .drop-icon {
-    font-size: 32px;
     display: block;
+    font-size: var(--font-32);
     margin-bottom: 8px;
   }
 
   .drop-text {
-    color: #f1f5f9;
+    margin: 0 0 4px;
+    color: var(--slate-100);
+    font-size: var(--font-14);
     font-weight: 600;
-    font-size: 14px;
-    margin: 0 0 4px 0;
   }
 
   .drop-hint {
-    color: #94a3b8;
-    font-size: 11px;
+    color: var(--slate-400);
+    font-size: var(--font-11);
   }
 }
 
@@ -370,19 +292,19 @@ function handleApproveAndIncorporate(): void {
 }
 
 .processing-banner {
-  background: #1e293b;
-  border: 1px solid #3b82f6;
   padding: 10px 16px;
-  border-radius: 6px;
-  color: #93c5fd;
-  font-size: 12px;
+  border: 1px solid var(--blue-500);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--blue-300);
+  font-size: var(--font-12);
   text-align: center;
 }
 
 .results-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .results-header {
@@ -391,61 +313,61 @@ function handleApproveAndIncorporate(): void {
   align-items: center;
 
   h4 {
-    color: #f8fafc;
-    font-size: 13px;
     margin: 0;
+    color: var(--slate-50);
+    font-size: var(--font-13);
   }
 }
 
 .filter-tabs {
   display: flex;
-  gap: 4px;
-  background: #090d16;
+  gap: $spacing-xs;
   padding: 3px;
-  border-radius: 6px;
+  border-radius: $radius-md;
+  background: #090d16;
 
   .tab-btn {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    font-size: 11px;
-    font-weight: 600;
     padding: 4px 10px;
-    border-radius: 4px;
+    border: none;
+    border-radius: $radius-sm;
+    background: transparent;
+    color: var(--slate-400);
+    font-size: var(--font-11);
+    font-weight: 600;
     cursor: pointer;
 
     &.active {
-      background: #3b82f6;
-      color: #ffffff;
+      background: var(--blue-500);
+      color: var(--white);
     }
   }
 }
 
 .sprites-grid {
   display: grid;
+  gap: $spacing-md;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 12px;
   max-height: 320px;
   overflow-y: auto;
   padding-right: 4px;
 }
 
 .sprite-card {
-  background: #1e293b;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg;
+  background: var(--slate-800);
+  overflow: hidden;
 }
 
 .sprite-preview-box {
-  background: repeating-conic-gradient(#1a202c 0% 25%, #2d3748 0% 50%) 50% / 16px 16px;
-  height: 90px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  height: 90px;
   padding: 6px;
+  background: repeating-conic-gradient(#1a202c 0% 25%, #2d3748 0% 50%) 50% / 16px 16px;
 
   .preview-img {
     max-width: 100%;
@@ -456,24 +378,24 @@ function handleApproveAndIncorporate(): void {
 }
 
 .sprite-info {
-  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
+  padding: 8px;
 
   .cat-select {
-    background: #0f172a;
-    color: #f8fafc;
-    border: 1px solid Rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    font-size: 10px;
     padding: 2px 4px;
+    border: 1px solid Rgb(255 255 255 / 15%);
+    border-radius: $radius-sm;
+    background: var(--slate-900);
+    color: var(--slate-50);
+    font-size: var(--font-10);
     cursor: pointer;
   }
 
   .sprite-dims {
-    color: #94a3b8;
-    font-size: 9px;
+    color: var(--slate-400);
+    font-size: var(--font-9);
     text-align: right;
   }
 }
@@ -481,36 +403,36 @@ function handleApproveAndIncorporate(): void {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 14px 20px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.1);
-  background: #1e293b;
+  background: var(--slate-800);
+  border-top: 1px solid Rgb(255 255 255 / 10%);
 
   .btn-secondary {
-    background: #334155;
-    color: #f1f5f9;
-    border: none;
     padding: 8px 14px;
-    border-radius: 6px;
-    font-size: 12px;
+    border: none;
+    border-radius: $radius-md;
+    background: var(--slate-700);
+    color: var(--slate-100);
+    font-size: var(--font-12);
     font-weight: 600;
     cursor: pointer;
 
     &:hover {
-      background: #475569;
+      background: var(--slate-600);
     }
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #ffffff;
-    border: none;
     padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 12px;
+    border: none;
+    border-radius: $radius-md;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: var(--white);
+    font-size: var(--font-12);
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 2px 8px Rgba(16, 185, 129, 0.4);
+    box-shadow: var(--shadow-subtle);
 
     &:hover:not(:disabled) {
       filter: Brightness(1.1);

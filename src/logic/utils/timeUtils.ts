@@ -1,7 +1,7 @@
 import { logger } from './logger.ts';
 import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
 import { DURATION_24_HOURS_MS, ONE_HOUR_MS } from '@/logic/constants/items.ts';
-import { DAYS_PER_WEEK } from '@/logic/constants/gameplay.ts';
+import { DAYS_PER_WEEK, DUSK_PHASE_END_HOUR } from '@/logic/constants/gameplay.ts';
 export type { DayPhase };
 
 export const GAME_TIMEZONE = (
@@ -18,6 +18,8 @@ export const GAME_TIMEZONE = (
 
 let _serverTimeOffsetNanoseconds = BigInt(0);
 let _timeSynced = false;
+
+export const MIN_TIMESTAMP_DIGIT_LENGTH = 8 as const;
 
 export function setServerTimeOffsetNanoseconds(offset: bigint): void {
   _serverTimeOffsetNanoseconds = offset;
@@ -74,7 +76,7 @@ export function getDayCycle(now: Temporal.Instant | number = getServerInstant())
   
   if (phase < 2) return 'morning';
   if (phase < 4) return 'day';
-  if (phase < 6) return 'dusk';
+  if (phase < DUSK_PHASE_END_HOUR) return 'dusk';
   return 'night';
 }
 
@@ -313,7 +315,7 @@ export function parseInstantSafe(val: unknown): Temporal.Instant | null {
     if (typeof val === 'string') {
       const trimmed = val.trim()
       const num = Number(trimmed)
-      if (!isNaN(num) && trimmed.length > 8) {
+      if (!isNaN(num) && trimmed.length > MIN_TIMESTAMP_DIGIT_LENGTH) {
         return Temporal.Instant.fromEpochMilliseconds(num)
       }
       let isoStr = trimmed

@@ -80,6 +80,7 @@ const getListingTitle = (listing: MarketListing): string => {
       <!-- Unclaimed Sales Alert Banner -->
       <div
         v-if="unclaimedGtsCount > 0"
+        id="home-economy-widget-div-1"
         v-gsap-hover="{ scale: 1.01, y: -1 }"
         class="gts-sales-alert"
         @click.stop="openGTS"
@@ -90,6 +91,7 @@ const getListingTitle = (listing: MarketListing): string => {
           <span class="alert-sub">Tienes {{ unclaimedGtsCount }} {{ unclaimedGtsCount === 1 ? 'transacción pendiente' : 'transacciones pendientes' }} de cobro o retiro.</span>
         </div>
         <button
+          id="home-economy-widget-btn-ver-en-gts"
           v-gsap-hover
           class="alert-claim-btn"
         >
@@ -104,6 +106,7 @@ const getListingTitle = (listing: MarketListing): string => {
       >
         <div
           v-for="item in recentListings"
+          id="home-economy-widget-div-2"
           :key="item.id"
           v-gsap-hover="{ scale: 1.01, x: 2 }"
           class="recent-listing-row"
@@ -131,6 +134,7 @@ const getListingTitle = (listing: MarketListing): string => {
 
       <div
         v-else
+        id="home-economy-widget-div-3"
         class="empty-gts-box"
         @click.stop="openGTS"
       >
@@ -156,7 +160,7 @@ const getListingTitle = (listing: MarketListing): string => {
   @include home-card-title-wrap;
 
   .title-text-group {
-    gap: 3px;
+    gap: $spacing-xs-alt;
   }
 
   .card-title {
@@ -164,14 +168,14 @@ const getListingTitle = (listing: MarketListing): string => {
 
     margin: 0;
     color: var(--yellow, #facc15);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .gts-sub {
     color: Rgb(255 255 255 / 50%);
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1.35;
   }
 }
@@ -186,35 +190,35 @@ const getListingTitle = (listing: MarketListing): string => {
 .gts-body-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
 }
 
 .gts-sales-alert {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 8px 12px;
   border: 1px solid Rgb(250 204 21 / 35%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(250 204 21 / 10%);
   cursor: pointer;
 
   &:hover {
     background: Rgb(250 204 21 / 18%);
     border-color: var(--yellow, #facc15);
-    box-shadow: 0 0 12px Rgb(250 204 21 / 25%);
+    box-shadow: var(--shadow-glow-amber);
   }
 
   .alert-icon {
-    font-size: 18px;
+    font-size: var(--font-18);
     flex-shrink: 0;
   }
 
   .alert-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
     min-width: 0;
     flex: 1;
 
@@ -222,12 +226,12 @@ const getListingTitle = (listing: MarketListing): string => {
       @include pixelated;
 
       color: var(--yellow, #facc15);
-      font-size: 9px;
+      font-size: var(--font-9);
     }
 
     .alert-sub {
-      color: #e2e8f0;
-      font-size: 9px;
+      color: var(--slate-200);
+      font-size: var(--font-9);
       line-height: 1.45;
       padding-bottom: 2px;
       white-space: nowrap;
@@ -241,10 +245,10 @@ const getListingTitle = (listing: MarketListing): string => {
 
     padding: 4px 10px;
     border: none;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: var(--yellow, #facc15);
-    color: #000;
-    font-size: 7px;
+    color: var(--black);
+    font-size: var(--font-7);
     font-weight: bold;
     cursor: pointer;
     flex-shrink: 0;
@@ -254,17 +258,17 @@ const getListingTitle = (listing: MarketListing): string => {
 .recent-listings-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: 100%;
 }
 
 .recent-listing-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 2%);
   cursor: pointer;
   box-sizing: border-box;
@@ -282,7 +286,7 @@ const getListingTitle = (listing: MarketListing): string => {
     align-items: center;
     width: 36px;
     height: 36px;
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(0 0 0 / 35%);
     flex-shrink: 0;
     overflow: visible;
@@ -301,7 +305,7 @@ const getListingTitle = (listing: MarketListing): string => {
   .item-details {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
     min-width: 0;
     flex: 1;
 
@@ -309,7 +313,7 @@ const getListingTitle = (listing: MarketListing): string => {
       @include pixelated;
 
       color: var(--white, #fff);
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1.45;
       padding-bottom: 2px;
       white-space: nowrap;
@@ -321,7 +325,7 @@ const getListingTitle = (listing: MarketListing): string => {
       @include pixelated;
 
       color: var(--gray, #94a3b8);
-      font-size: 7px;
+      font-size: var(--font-7);
       line-height: 1.4;
       padding-bottom: 1px;
       white-space: nowrap;
@@ -337,7 +341,7 @@ const getListingTitle = (listing: MarketListing): string => {
       @include pixelated;
 
       color: var(--yellow, #facc15);
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: bold;
     }
   }
@@ -346,20 +350,20 @@ const getListingTitle = (listing: MarketListing): string => {
 .empty-gts-box {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 10px;
   border: 1px dashed Rgb(255 255 255 / 6%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(0 0 0 / 20%);
   cursor: pointer;
 
   .empty-gts-icon {
-    font-size: 16px;
+    font-size: var(--font-16);
   }
 
   .empty-gts-text {
     color: var(--gray, #94a3b8);
-    font-size: 9px;
+    font-size: var(--font-9);
   }
 }
 </style>

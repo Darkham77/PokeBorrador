@@ -110,7 +110,7 @@ const formatNum = (num: number) => formatCurrency(num)
 .event-stats-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 
   .main-event-grid {
     margin-bottom: 0;
@@ -118,17 +118,17 @@ const formatNum = (num: number) => formatCurrency(num)
 
   .podium-medals-grid {
     display: grid;
-    gap: 8px;
+    gap: $spacing-sm;
     grid-template-columns: repeat(3, 1fr);
   }
 
   .event-stat-icon {
-    font-size: 16px;
+    font-size: var(--font-16);
     filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
   }
 
   .medal-icon {
-    font-size: 14px;
+    font-size: var(--font-14);
     filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 40%));
   }
 
@@ -137,7 +137,7 @@ const formatNum = (num: number) => formatCurrency(num)
     border-color: Rgb(168 85 247 / 25%);
 
     .stat-val {
-      color: #c084fc;
+      color: var(--purple-400);
       text-shadow: 0 0 10px Rgb(192 132 252 / 40%);
     }
   }
@@ -147,13 +147,13 @@ const formatNum = (num: number) => formatCurrency(num)
     border-color: Rgb(250 204 21 / 30%);
 
     .stat-val {
-      color: #facc15;
+      color: var(--amber-400);
       text-shadow: 0 0 10px Rgb(250 204 21 / 40%);
     }
   }
 
   .medal-item {
-    gap: 6px;
+    gap: $spacing-sm-alt;
     padding: 12px 6px;
 
     &.gold {
@@ -161,7 +161,7 @@ const formatNum = (num: number) => formatCurrency(num)
       border-color: Rgb(234 179 8 / 35%);
 
       .gold-text {
-        color: #fde047;
+        color: var(--amber-300);
         text-shadow: 0 0 8px Rgb(253 224 71 / 50%);
       }
     }
@@ -171,7 +171,7 @@ const formatNum = (num: number) => formatCurrency(num)
       border-color: Rgb(148 163 184 / 35%);
 
       .silver-text {
-        color: #e2e8f0;
+        color: var(--slate-200);
         text-shadow: 0 0 8px Rgb(226 232 240 / 50%);
       }
     }
@@ -181,18 +181,18 @@ const formatNum = (num: number) => formatCurrency(num)
       border-color: Rgb(249 115 22 / 35%);
 
       .bronze-text {
-        color: #fdba74;
+        color: var(--orange-400);
         text-shadow: 0 0 8px Rgb(253 186 116 / 50%);
       }
     }
 
     .stat-val {
-      gap: 4px;
-      font-size: 13px;
+      gap: $spacing-xs;
+      font-size: var(--font-13);
     }
 
     .stat-lbl {
-      font-size: 6.5px;
+      font-size: var(--font-7);
     }
   }
 }

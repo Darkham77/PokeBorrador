@@ -17,7 +17,7 @@
   transform: Translatez(0);
   border-top: 1px solid Rgb(255 255 255 / 10%);
   box-sizing: border-box;
-  box-shadow: 0 -10px 40px Rgb(0 0 0 / 80%);
+  box-shadow: var(--shadow-card);
 
   @media (width <= 1360px) {
     display: flex;
@@ -28,13 +28,13 @@
   @include flex-center;
 
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
   height: 65px;
   margin: 0;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: none;
-  color: white;
+  color: var(--white);
   opacity: 0.5;
   flex: 1;
   cursor: pointer;
@@ -45,29 +45,29 @@
 
     & .nav-icon {
     display: block;
-    font-size: 20px;
+    font-size: var(--font-20);
     
     
     @media (width <= 400px) {
-      font-size: 18px;
+      font-size: var(--font-18);
     }
   }
 
     & .nav-label {
-    color: white;
+    color: var(--white);
     font-family: $font-pixel;
-    font-size: 7px;
+    font-size: var(--font-7);
     text-transform: uppercase;
     letter-spacing: 0;
     white-space: nowrap;
     
     @media (width <= 450px) {
-      font-size: 6px;
+      font-size: var(--font-6);
       transform: Scale3d(0.9, 0.9, 1);
     }
     
     @media (width <= 380px) {
-      font-size: 5.5px;
+      font-size: var(--font-6);
       transform: Scale3d(0.85, 0.85, 1);
     }
 
@@ -80,7 +80,7 @@
     border: 1px solid Rgb(255 214 10 / 30%) !important;
     background: Rgb(255 214 10 / 5%);
     opacity: 1;
-    box-shadow: 0 0 15px Rgb(255 214 10 / 10%);
+    box-shadow: var(--shadow-glow-amber);
     
     & .nav-icon {
         transform: Scale3d(1.1, 1.1, 1);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCanonicalRegionMap } from '../../../src/logic/map/continent/canonicalRegionPresets.ts';
+import { buildCanonicalRegionMap } from '../../logic/map/continent/canonicalRegionPresets.ts';
 
 describe('Canonical Kanto Dungeons and Landmarks Architecture', () => {
   it('splits Mt. Moon into western and eastern ground-level entrances at elevation 0 with no road across summit', () => {

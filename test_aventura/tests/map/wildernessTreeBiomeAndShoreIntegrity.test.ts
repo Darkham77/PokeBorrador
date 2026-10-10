@@ -15,11 +15,11 @@ import { describe, it, expect } from 'vitest';
 import path from 'node:path';
 import fs from 'node:fs';
 import sharp from 'sharp';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { generateWildernessLayer } from '../../../src/logic/map/wildernessVegetationEngine.ts';
-import { CANONICAL_LAKE_SHORE_BRUSH } from '../../../src/logic/map/waterAutotileEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
+import { CANONICAL_LAKE_SHORE_BRUSH } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('wildernessTreeBiomeAndShoreIntegrity', () => {
   const continent = generateContinentMap({

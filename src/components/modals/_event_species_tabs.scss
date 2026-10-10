@@ -3,15 +3,15 @@
 .species-tabs-panel {
   display: flex;
   flex-direction: column;
-  border: 1.5px solid rgb(250 204 21 / 25%);
-  border-radius: 10px;
-  background: rgb(0 0 0 / 35%);
+  border: 1.5px solid Rgb(250 204 21 / 25%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(0 0 0 / 35%);
 
   .species-tabs-panel-header {
     padding: 8px 8px 6px;
-    border-radius: 9px 9px 0 0;
-    background: rgb(0 0 0 / 40%);
-    border-bottom: 1.5px solid rgb(250 204 21 / 30%);
+    border-radius: $radius-9 $radius-9 0 0;
+    background: Rgb(0 0 0 / 40%);
+    border-bottom: 1.5px solid Rgb(250 204 21 / 30%);
 
     .species-panel-intro {
       display: flex;
@@ -22,37 +22,37 @@
 
       .species-panel-title {
         color: var(--yellow);
-        font-size: 7.5px;
+        font-size: var(--font-8);
         font-weight: bold;
         letter-spacing: 0.5px;
       }
 
       .species-panel-hint {
-        color: rgb(255 255 255 / 50%);
-        font-size: 6px;
+        color: Rgb(255 255 255 / 50%);
+        font-size: var(--font-6);
       }
     }
 
     .species-tabs-strip {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
       padding: 2px 2px 6px;
       overflow: auto hidden;
       scrollbar-width: thin;
-      scrollbar-color: rgb(250 204 21 / 40%) rgb(0 0 0 / 20%);
+      scrollbar-color: Rgb(250 204 21 / 40%) Rgb(0 0 0 / 20%);
 
       &::-webkit-scrollbar {
         display: block;
         height: 4px;
       }
       &::-webkit-scrollbar-track {
-        border-radius: 2px;
-        background: rgb(0 0 0 / 20%);
+        border-radius: $radius-xs;
+        background: Rgb(0 0 0 / 20%);
       }
       &::-webkit-scrollbar-thumb {
-        border-radius: 2px;
-        background: rgb(250 204 21 / 40%);
+        border-radius: $radius-xs;
+        background: Rgb(250 204 21 / 40%);
 
         &:hover {
           background: var(--yellow);
@@ -62,24 +62,24 @@
       .species-tab-btn {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: $spacing-xs-5;
         padding: 4px 8px;
-        border: 1px solid rgb(255 255 255 / 15%);
-        border-radius: 6px;
-        background: rgb(255 255 255 / 5%);
+        border: 1px solid Rgb(255 255 255 / 15%);
+        border-radius: $radius-md;
+        background: Rgb(255 255 255 / 5%);
         cursor: pointer;
         white-space: nowrap;
         flex-shrink: 0;
 
         &:hover {
-          background: rgb(255 255 255 / 10%);
-          border-color: rgb(250 204 21 / 50%);
+          background: Rgb(255 255 255 / 10%);
+          border-color: Rgb(250 204 21 / 50%);
         }
 
         &.active {
-          background: rgb(250 204 21 / 15%);
-          border-color: rgb(250 204 21 / 85%);
-          box-shadow: 0 0 8px rgb(250 204 21 / 25%);
+          background: Rgb(250 204 21 / 15%);
+          border-color: Rgb(250 204 21 / 85%);
+          box-shadow: var(--shadow-glow-yellow-sm);
 
           .species-tab-name {
             color: var(--yellow);
@@ -94,16 +94,16 @@
         }
 
         .species-tab-name {
-          color: rgb(255 255 255 / 80%);
-          font-size: 7.5px;
+          color: Rgb(255 255 255 / 80%);
+          font-size: var(--font-8);
         }
 
         .species-tab-check {
           padding: 0 3px;
-          border-radius: 3px;
-          background: rgb(74 222 128 / 20%);
-          color: #4ade80;
-          font-size: 6px;
+          border-radius: $radius-xs-alt;
+          background: Rgb(74 222 128 / 20%);
+          color: var(--green-light);
+          font-size: var(--font-6);
           font-weight: bold;
         }
       }
@@ -113,15 +113,15 @@
   .species-tab-panel-body {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     padding: 8px;
-    border-radius: 0 0 9px 9px;
-    background: rgb(18 26 41 / 95%);
+    border-radius: 0 0 $radius-9 $radius-9;
+    background: Rgb(18 26 41 / 95%);
 
     .species-slots-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: $spacing-sm-alt;
     }
   }
 }

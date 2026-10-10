@@ -69,9 +69,9 @@ const handleClaim = async (awardId: string) => {
   display: flex;
   flex-direction: column;
   padding: 16px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 12px;
-  background: rgb(0 0 0 / 25%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-xl;
+  background: Rgb(0 0 0 / 25%);
   margin-top: 24px;
 }
 
@@ -80,15 +80,15 @@ const handleClaim = async (awardId: string) => {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 6px 12px;
+  gap: $spacing-sm-alt $spacing-md;
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  border-bottom: 1px solid Rgb(255 255 255 / 6%);
 
   .section-title-wrap {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     min-width: 0;
   }
 
@@ -96,7 +96,7 @@ const handleClaim = async (awardId: string) => {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 16px;
+    font-size: var(--font-16);
     line-height: 1;
     flex-shrink: 0;
   }
@@ -106,14 +106,14 @@ const handleClaim = async (awardId: string) => {
 
     margin: 0;
     color: var(--yellow);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .section-subtitle {
     color: var(--gray);
-    font-size: 9px;
+    font-size: var(--font-9);
     white-space: nowrap;
   }
 }
@@ -127,13 +127,13 @@ const handleClaim = async (awardId: string) => {
 .past-events-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .empty-history {
   padding: 24px;
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   text-align: center;
   font-style: italic;
 }
@@ -146,7 +146,7 @@ const handleClaim = async (awardId: string) => {
   .section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .section-subtitle {
       padding-left: 24px;

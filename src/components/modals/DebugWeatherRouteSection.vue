@@ -16,6 +16,7 @@ const emit = defineEmits<{
 <template>
   <div class="route-section">
     <h2
+      id="debug-weather-route-section-h2-1"
       class="route-title"
       @click.stop="emit('toggle', route.routeId)"
     >

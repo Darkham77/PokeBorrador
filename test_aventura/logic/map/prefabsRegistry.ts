@@ -7,7 +7,7 @@
  * buildings, trees, nature vegetation, and props for the Stamp Engine.
  */
 
-import type { PrefabCategory } from '../../types/map/adventureWorldTypes';
+import type { PrefabCategory } from '../../types/map/adventureWorldTypes.ts';
 export type { PrefabCategory };
 
 export interface PrefabItem {

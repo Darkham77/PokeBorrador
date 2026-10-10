@@ -308,7 +308,7 @@ async function startClassMission(missionId: MissionId) {
 
 .class-missions-container {
   margin-top: 24px;
-  border-top: 1px solid rgb(255 255 255 / 5%);
+  border-top: 1px solid Rgb(255 255 255 / 5%);
   padding-top: 24px;
   margin-bottom: 24px;
 
@@ -323,7 +323,7 @@ async function startClassMission(missionId: MissionId) {
 
       margin: 0;
       color: var(--class-color);
-      font-size: 10px;
+      font-size: var(--font-10);
       font-weight: 800;
     }
 
@@ -331,11 +331,11 @@ async function startClassMission(missionId: MissionId) {
       @include pixelated;
 
       padding: 3px 8px;
-      border: 1px solid #000;
-      border-radius: 4px;
+      border: 1px solid var(--black);
+      border-radius: $radius-sm;
       background: var(--class-color);
-      color: white;
-      font-size: 9px;
+      color: var(--white);
+      font-size: var(--font-9);
       font-weight: 800;
       text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
     }
@@ -344,7 +344,7 @@ async function startClassMission(missionId: MissionId) {
 
 .missions-grid {
   display: grid;
-  gap: 16px;
+  gap: $spacing-lg;
   grid-template-columns: 1fr;
   
   @media (width >= 600px) {

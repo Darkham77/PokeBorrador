@@ -64,6 +64,7 @@ defineEmits<{
   <header class="editor-header">
     <div class="header-left">
       <button
+        id="dev-shadow-header-toolbar-btn-volver-al-juego"
         type="button"
         class="action-button btn-back"
         @click="$emit('return')"
@@ -87,6 +88,7 @@ defineEmits<{
         <div class="zoom-buttons">
           <button
             v-for="col in COLUMN_OPTIONS"
+            id="dev-shadow-header-toolbar-btn-col"
             :key="col"
             type="button"
             class="zoom-btn"
@@ -106,6 +108,7 @@ defineEmits<{
         >
           <span class="shadow-slider-label">Sombra Ancho: {{ shadowWidthPercent }}</span>
           <input
+            id="dev-shadow-header-toolbar-input-1"
             :value="globalShadowConfig.widthRatio"
             type="range"
             class="shadow-range-slider"
@@ -115,6 +118,7 @@ defineEmits<{
             @input="$emit('update:widthRatio', Number(($event.target as HTMLInputElement).value))"
           >
           <button
+            id="dev-shadow-header-toolbar-btn-emit"
             type="button"
             class="shadow-reset-btn"
             title="Restablecer ancho al 100%"
@@ -130,6 +134,7 @@ defineEmits<{
         >
           <span class="shadow-slider-label">Sombra Alto: {{ shadowHeightPercent }}</span>
           <input
+            id="dev-shadow-header-toolbar-input-2"
             :value="globalShadowConfig.heightRatio"
             type="range"
             class="shadow-range-slider"
@@ -139,6 +144,7 @@ defineEmits<{
             @input="$emit('update:heightRatio', Number(($event.target as HTMLInputElement).value))"
           >
           <button
+            id="dev-shadow-header-toolbar-btn-emit-2"
             type="button"
             class="shadow-reset-btn"
             title="Restablecer alto al 28%"
@@ -154,6 +160,7 @@ defineEmits<{
         >
           <span class="shadow-slider-label">Pixelado: {{ globalShadowConfig.pixelation }}px</span>
           <input
+            id="dev-shadow-header-toolbar-input-3"
             :value="globalShadowConfig.pixelation"
             type="range"
             class="shadow-range-slider"
@@ -163,6 +170,7 @@ defineEmits<{
             @input="$emit('update:pixelation', Number(($event.target as HTMLInputElement).value))"
           >
           <button
+            id="dev-shadow-header-toolbar-btn-emit-3"
             type="button"
             class="shadow-reset-btn"
             title="Restablecer pixelado a 14px"
@@ -177,6 +185,7 @@ defineEmits<{
       <div class="sprite-zoom-slider-box">
         <span class="zoom-slider-label">Zoom: {{ spriteZoomPercent }}</span>
         <input
+          id="dev-shadow-header-toolbar-input-ajustar-zoom-de-sprites-y-somb"
           :value="spriteZoom"
           type="range"
           class="zoom-range-slider"
@@ -187,6 +196,7 @@ defineEmits<{
           @input="$emit('update:spriteZoom', Number(($event.target as HTMLInputElement).value))"
         >
         <button
+          id="dev-shadow-header-toolbar-btn-emit-4"
           type="button"
           class="zoom-reset-btn"
           title="Restablecer zoom a 200%"
@@ -206,6 +216,7 @@ defineEmits<{
 
       <!-- Recompile BD Button -->
       <button
+        id="dev-shadow-header-toolbar-btn-emit-5"
         type="button"
         class="action-button btn-rebuild"
         :disabled="isSaving || isRebuilding"
@@ -218,6 +229,7 @@ defineEmits<{
 
       <!-- JSON Download Button -->
       <button
+        id="dev-shadow-header-toolbar-btn-descargar-json"
         type="button"
         class="action-button btn-download"
         title="Descargar spriteShadowOverrides.json localmente"
@@ -228,6 +240,7 @@ defineEmits<{
 
       <!-- Save Button -->
       <button
+        id="dev-shadow-header-toolbar-btn-emit-6"
         type="button"
         class="action-button btn-save"
         :class="{ 'has-unsaved': saveButtonState === 'unsaved' }"

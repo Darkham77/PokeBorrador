@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSettlementLayout } from '../../../src/logic/map/cityLayoutEngine.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateSettlementLayout, generateAllSettlementLayouts } from '../../logic/map/cityLayoutEngine.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('cityLayoutEngine', () => {
   it('generates a 30x24 Metropolis with orthogonal avenues and 8 macro-buildings across 4 districts', () => {
@@ -457,5 +457,35 @@ describe('cityLayoutEngine', () => {
     const sFlankRight = fences.some((f) => f.x >= southGate.x + southGate.width && Math.abs(f.y - southGate.y) <= 4);
     expect(sFlankLeft).toBe(true);
     expect(sFlankRight).toBe(true);
+  });
+
+  it('generates urban layout results for all settlements in batch via generateAllSettlementLayouts', () => {
+    const nodes: POINode[] = [
+      {
+        id: 'node_town',
+        name: 'Town Node',
+        type: 'town',
+        footprint: { width: 14, height: 14 },
+        terrainPreference: 'flat_grass',
+        gridX: 10,
+        gridY: 10,
+        elevation: 0
+      },
+      {
+        id: 'node_dungeon',
+        name: 'Wilderness Cave',
+        type: 'dungeon_cave',
+        footprint: { width: 8, height: 8 },
+        terrainPreference: 'rocky',
+        gridX: 20,
+        gridY: 20,
+        elevation: 1
+      }
+    ];
+
+    const layouts = generateAllSettlementLayouts(nodes);
+    expect(layouts.size).toBe(1);
+    expect(layouts.has('node_town')).toBe(true);
+    expect(layouts.has('node_dungeon')).toBe(false);
   });
 });

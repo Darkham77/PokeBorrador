@@ -72,7 +72,8 @@ function onItemImgError(e: Event): void {
 </script>
 
 <template>
-  <div 
+  <div
+    id="market-item-card-div-1" 
     class="selectable-item-card"
     :class="[ { selected: isSelected }, tierClass ]"
     :style="{ '--tier-color': tierColor }"
@@ -165,7 +166,7 @@ function onItemImgError(e: Event): void {
   position: relative;
   padding: 0;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 3%);
   content-visibility: auto;
   contain-intrinsic-size: 0 68px;
@@ -175,7 +176,7 @@ function onItemImgError(e: Event): void {
   .item-tooltip-trigger {
     display: flex !important;
     align-items: center;
-    gap: 15px;
+    gap: $spacing-md-15;
     width: 100%;
     padding: 12px 16px;
     box-sizing: border-box;
@@ -233,11 +234,11 @@ function onItemImgError(e: Event): void {
   &.selected {
     background: Rgb(56 189 248 / 10%);
     border-color: Rgb(56 189 248 / 50%) !important;
-    box-shadow: 0 0 15px Rgb(56 189 248 / 15%);
+    box-shadow: var(--shadow-glow-amber);
     
     .selection-indicator .check-circle {
       background: Rgb(56 189 248 / 100%);
-      color: white;
+      color: var(--white);
       border-color: Rgb(56 189 248 / 100%);
     }
   }
@@ -273,7 +274,7 @@ function onItemImgError(e: Event): void {
   .item-details {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 0;
     flex: 1;
 
@@ -282,7 +283,7 @@ function onItemImgError(e: Event): void {
 
       padding: 2px 0;
       color: var(--white);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: bold;
       line-height: 1.5;
       white-space: nowrap;
@@ -293,18 +294,18 @@ function onItemImgError(e: Event): void {
     .i-meta {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: $spacing-xs;
 
       .meta-row-top {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: $spacing-md-alt;
 
         .i-qty {
           @include pixelated;
 
           color: $muted;
-          font-size: 8px;
+          font-size: var(--font-8);
         }
       }
     }
@@ -314,23 +315,23 @@ function onItemImgError(e: Event): void {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     margin-top: 2px;
   }
 
   .price-pill {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: $spacing-xs-alt;
     padding: 1.5px 6px;
     border: 1px solid transparent;
-    border-radius: 99px;
+    border-radius: $radius-full;
     white-space: nowrap;
 
     .pill-label {
       @include pixelated;
 
-      font-size: 6.5px;
+      font-size: var(--font-7);
       font-weight: bold;
       opacity: 0.85;
     }
@@ -338,43 +339,43 @@ function onItemImgError(e: Event): void {
     .pill-amount {
       @include pixelated;
 
-      font-size: 7px;
+      font-size: var(--font-7);
       font-weight: 900;
     }
 
     &.shop-pill {
       background: Linear-Gradient(135deg, #15803d, #166534);
-      border-color: #22c55e;
-      .pill-label { color: #86efac; }
-      .pill-amount { color: #dcfce7; }
+      border-color: var(--emerald);
+      .pill-label { color: var(--green-light); }
+      .pill-amount { color: var(--green-light); }
     }
 
     &.min-pill {
       background: Linear-Gradient(135deg, #0369a1, #075985);
-      border-color: #0ea5e9;
-      .pill-label { color: #7dd3fc; }
-      .pill-amount { color: #e0f2fe; }
+      border-color: var(--sky);
+      .pill-label { color: var(--sky); }
+      .pill-amount { color: var(--blue-300); }
     }
 
     &.avg-pill {
       background: Linear-Gradient(135deg, #6d28d9, #5b21b6);
-      border-color: #8b5cf6;
-      .pill-label { color: #c4b5fd; }
-      .pill-amount { color: #f5f3ff; }
+      border-color: var(--purple-400);
+      .pill-label { color: var(--purple-400); }
+      .pill-amount { color: var(--slate-50); }
     }
 
     &.max-pill {
       background: Linear-Gradient(135deg, #c2410c, #9a3412);
-      border-color: #f97316;
-      .pill-label { color: #fdba74; }
-      .pill-amount { color: #ffedd5; }
+      border-color: var(--orange-500);
+      .pill-label { color: var(--orange-400); }
+      .pill-amount { color: var(--amber-300); }
     }
 
     &.no-gts-pill {
       background: Rgb(255 255 255 / 5%);
       border-color: Rgb(255 255 255 / 10%);
-      .pill-label { color: #94a3b8; }
-      .pill-amount { color: #cbd5e1; }
+      .pill-label { color: var(--slate-400); }
+      .pill-amount { color: var(--slate-300); }
     }
   }
 
@@ -388,7 +389,7 @@ function onItemImgError(e: Event): void {
       height: 18px;
       border: 2px solid Rgb(255 255 255 / 10%);
       border-radius: 50%;
-      font-size: 10px;
+      font-size: var(--font-10);
 
       .checkmark-svg {
         display: block;
@@ -400,4 +401,3 @@ function onItemImgError(e: Event): void {
   }
 }
 </style>
-

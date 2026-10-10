@@ -82,6 +82,7 @@ function handleClick() {
 
 <template>
   <div
+    id="route-spawns-pokemon-row-div-click"
     class="report-row"
     :class="[poke.statusClass, { 'is-unseen': !poke.isSeen }]"
     :style="{ cursor: poke.isSeen ? 'pointer' : 'default' }"

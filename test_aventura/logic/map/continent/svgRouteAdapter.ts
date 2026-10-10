@@ -12,11 +12,11 @@ import type {
   ContinentGenConfig,
   SvgImportResult,
   UrbanScale
-} from '../../../types/map/continentTypes';
+} from '../../../types/map/continentTypes.ts';
 import {
   generateContinent,
   type GeneratedContinentResult
-} from './continentalEngine.ts';
+} from './parametricContinentGenerator.ts';
 import type {
   EmbeddedTopologyGraph,
   EnrichedCorridorProperties
@@ -29,6 +29,21 @@ export interface ExportSvgOptions {
   readonly nodes: Record<string, ContinentNode>;
   readonly connections: readonly ContinentConnection[];
 }
+
+const DEFAULT_SVG_VIEWPORT_DIMENSION = 2000 as const;
+const TOPOLOGY_CORRIDOR_SCALE_DIVISOR = 12 as const;
+const TOPOLOGY_NODE_RADIUS = {
+  SECONDARY: 14,
+  STARTER: 16,
+  LEAGUE: 22,
+  GYM_CITY: 18,
+} as const;
+const TOPOLOGY_LABEL_FONT_SIZE = 12 as const;
+const GATEHOUSE_ICON_Y_OFFSET = 12 as const;
+const TUNNEL_LABEL_OFFSET_Y = 6 as const;
+const GATEHOUSE_ICON_OFFSET_X = 8 as const;
+const PORT_BADGE_ICON_OFFSET_Y = 8 as const;
+const NODE_LABEL_OFFSET_Y = 6 as const;
 
 /**
  * Serializes nodes and connections into standard, semantic SVG vector XML.
@@ -78,8 +93,8 @@ ${citiesMarkup}  </g>
  */
 export function importRoutesFromSvg(svgContent: string): SvgImportResult {
   // 1. Extract Dimensions from viewBox or width/height
-  let width = 2000;
-  let height = 2000;
+  let width = DEFAULT_SVG_VIEWPORT_DIMENSION;
+  let height = DEFAULT_SVG_VIEWPORT_DIMENSION;
 
   const viewBoxMatch = svgContent.match(/viewBox=["']\s*([-\d.]+)\s+([-\d.]+)\s+([\d.]+)\s+([\d.]+)\s*["']/i);
   if (viewBoxMatch?.[3] && viewBoxMatch[4]) {
@@ -368,7 +383,7 @@ export function exportPokemonTopologyToSvg(
       const x2 = toNode.centerX * tileScale;
       const y2 = toNode.centerY * tileScale;
       corridorsMarkup += `    <line id="${corr.id}" class="wormhole-tunnel" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c084fc" stroke-width="4" stroke-dasharray="6,8" opacity="0.85" />\n`;
-      corridorsMarkup += `    <text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 6}" text-anchor="middle" font-size="11" font-family="sans-serif" font-weight="bold" fill="#d8b4fe">[Cueva/Túnel Subterráneo]</text>\n`;
+      corridorsMarkup += `    <text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - TUNNEL_LABEL_OFFSET_Y}" text-anchor="middle" font-size="11" font-family="sans-serif" font-weight="bold" fill="#d8b4fe">[Cueva/Túnel Subterráneo]</text>\n`;
       continue;
     }
 
@@ -377,7 +392,7 @@ export function exportPokemonTopologyToSvg(
     const isSurf = corr.kind === 'surf_route';
     const isCycle = corr.kind === 'cycle';
     const strokeColor = isSurf ? '#38bdf8' : isCycle ? '#f59e0b' : '#fbbf24';
-    const strokeWidth = prop ? Math.max(4, prop.width * (tileScale / 12)) : 6;
+    const strokeWidth = prop ? Math.max(4, prop.width * (tileScale / TOPOLOGY_CORRIDOR_SCALE_DIVISOR)) : 6;
     const dashArray = isSurf ? 'stroke-dasharray="8,6"' : isCycle ? 'stroke-dasharray="10,5"' : '';
 
     corridorsMarkup += `    <polyline id="${corr.id}" class="corridor ${corr.kind}" points="${pts}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" fill="none" ${dashArray} />\n`;
@@ -388,7 +403,7 @@ export function exportPokemonTopologyToSvg(
         const gx = g.x * tileScale - 8;
         const gy = g.y * tileScale - 8;
         corridorsMarkup += `    <rect class="gatehouse-checkpoint" x="${gx}" y="${gy}" width="16" height="16" fill="#f97316" stroke="#ffffff" stroke-width="2" rx="3" />\n`;
-        corridorsMarkup += `    <text x="${gx + 8}" y="${gy + 12}" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#ffffff">🏛️</text>\n`;
+        corridorsMarkup += `    <text x="${gx + GATEHOUSE_ICON_OFFSET_X}" y="${gy + GATEHOUSE_ICON_Y_OFFSET}" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#ffffff">🏛️</text>\n`;
       }
     }
 
@@ -421,20 +436,20 @@ export function exportPokemonTopologyToSvg(
     const cy = node.centerY * tileScale;
 
     let fill = '#94a3b8'; // secondary default
-    let r = 14;
+    let r: number = TOPOLOGY_NODE_RADIUS.SECONDARY;
     let label: string = node.role;
 
     if (node.role === 'starter') {
       fill = '#22c55e';
-      r = 16;
+      r = TOPOLOGY_NODE_RADIUS.STARTER;
       label = '🏠 Pueblo Inicial';
     } else if (node.role === 'league') {
       fill = '#a855f7';
-      r = 22;
+      r = TOPOLOGY_NODE_RADIUS.LEAGUE;
       label = '🏆 Liga Pokémon';
     } else if (node.role === 'gym_city') {
       fill = '#eab308';
-      r = 18;
+      r = TOPOLOGY_NODE_RADIUS.GYM_CITY;
       label = `🏛️ Gimnasio #${node.gymNumber ?? ''}`;
     }
 
@@ -446,9 +461,9 @@ export function exportPokemonTopologyToSvg(
     nodesMarkup += `      <circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="#ffffff" stroke-width="3" />\n`;
     if (node.hasPort) {
       nodesMarkup += `      <circle cx="${cx + r - 4}" cy="${cy - r + 4}" r="8" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" />\n`;
-      nodesMarkup += `      <text x="${cx + r - 4}" y="${cy - r + 8}" text-anchor="middle" font-size="10" fill="#ffffff">⚓</text>\n`;
+      nodesMarkup += `      <text x="${cx + r - 4}" y="${cy - r + PORT_BADGE_ICON_OFFSET_Y}" text-anchor="middle" font-size="10" fill="#ffffff">⚓</text>\n`;
     }
-    nodesMarkup += `      <text x="${cx}" y="${cy - r - 6}" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#ffffff">${label}</text>\n`;
+    nodesMarkup += `      <text x="${cx}" y="${cy - r - NODE_LABEL_OFFSET_Y}" text-anchor="middle" font-family="sans-serif" font-size="${TOPOLOGY_LABEL_FONT_SIZE}" font-weight="bold" fill="#ffffff">${label}</text>\n`;
     nodesMarkup += `    </g>\n`;
   }
 

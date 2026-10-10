@@ -20,6 +20,7 @@ const emit = defineEmits<{
     <div class="ps-search-row">
       <span class="emoji ps-search-icon">🔍</span>
       <input
+        id="market-item-filters-input-buscar-por-nombre"
         :value="itemSearchQuery"
         type="text"
         placeholder="Buscar por nombre..."
@@ -28,6 +29,7 @@ const emit = defineEmits<{
       >
       <button
         v-if="itemSearchQuery"
+        id="market-item-filters-btn-1"
         class="ps-clear-search"
         @click.stop="emit('update:itemSearchQuery', '')"
       >

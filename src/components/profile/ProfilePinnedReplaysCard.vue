@@ -133,40 +133,40 @@ function getResultIcon(replay: BattleReplayRecord) {
 .empty-pinned-replays {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 12px 14px;
-  border: 1px dashed rgb(148 163 184 / 20%);
-  border-radius: 8px;
-  background: rgb(15 23 42 / 40%);
+  border: 1px dashed Rgb(148 163 184 / 20%);
+  border-radius: $radius-lg;
+  background: Rgb(15 23 42 / 40%);
 
   .empty-icon {
-    font-size: 1.4rem;
+    font-size: var(--font-22);
     opacity: 0.6;
   }
 
   .empty-content {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: $spacing-xs-alt;
     text-align: left;
   }
 
   .empty-text {
-    color: #94a3b8;
-    font-size: 0.8rem;
+    color: var(--slate-400);
+    font-size: var(--font-13);
     font-style: italic;
   }
 
   .empty-sub {
-    color: #64748b;
-    font-size: 0.65rem;
+    color: var(--slate-500);
+    font-size: var(--font-10);
   }
 }
 
 .pinned-replays-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .pinned-replay-row {
@@ -176,59 +176,59 @@ function getResultIcon(replay: BattleReplayRecord) {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 6px;
-  background: rgb(15 23 42 / 60%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-md;
+  background: Rgb(15 23 42 / 60%);
 
   &:hover {
-    border-color: rgb(234 179 8 / 40%);
+    border-color: Rgb(234 179 8 / 40%);
   }
 
   .replay-main-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
 
     .result-badge {
       @include pixelated;
 
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: $spacing-xs;
       padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.55rem;
+      border-radius: $radius-sm;
+      font-size: var(--font-9);
       font-weight: bold;
 
       &.victoria {
-        border: 1px solid rgb(34 197 94 / 40%);
-        background: rgb(34 197 94 / 20%);
-        color: #4ade80;
+        border: 1px solid Rgb(34 197 94 / 40%);
+        background: Rgb(34 197 94 / 20%);
+        color: var(--green-light);
       }
 
       &.derrota {
-        border: 1px solid rgb(239 68 68 / 40%);
-        background: rgb(239 68 68 / 20%);
-        color: #f87171;
+        border: 1px solid Rgb(239 68 68 / 40%);
+        background: Rgb(239 68 68 / 20%);
+        color: var(--rose);
       }
     }
 
     .matchup-text {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
 
       .rival-txt {
-        color: #f1f5f9;
-        font-size: 0.65rem;
+        color: var(--slate-100);
+        font-size: var(--font-10);
         font-weight: bold;
       }
 
       .meta-txt {
         @include pixelated;
 
-        color: #94a3b8;
-        font-size: 0.55rem;
+        color: var(--slate-400);
+        font-size: var(--font-9);
       }
     }
   }
@@ -236,7 +236,7 @@ function getResultIcon(replay: BattleReplayRecord) {
   .replay-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
 
     .action-btn {
       display: inline-flex;
@@ -244,21 +244,21 @@ function getResultIcon(replay: BattleReplayRecord) {
       align-items: center;
       width: 26px;
       height: 26px;
-      border-radius: 4px;
+      border-radius: $radius-sm;
       font-family: inherit;
-      font-size: 0.65rem;
+      font-size: var(--font-10);
       cursor: pointer;
 
       &.watch {
-        border: 1px solid #60a5fa;
-        background: #3b82f6;
-        color: #fff;
+        border: 1px solid var(--blue-400);
+        background: var(--blue-500);
+        color: var(--white);
       }
 
       &.unpin {
-        border: 1px solid #64748b;
-        background: #475569;
-        color: #cbd5e1;
+        border: 1px solid var(--slate-500);
+        background: var(--slate-600);
+        color: var(--slate-300);
       }
     }
   }

@@ -77,48 +77,48 @@ const hpColor = computed(() => {
 .adv-team-pkmn-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 6px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 6px;
-  background: rgb(0 0 0 / 30%);
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-md;
+  background: Rgb(0 0 0 / 30%);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 8px;
+  font-size: var(--font-8);
 }
 
 .pkmn-name {
-  color: #ffcb05;
+  color: var(--gold);
   font-weight: bold;
 }
 
 .pkmn-level {
-  color: #aaa;
+  color: var(--slate-300);
 }
 
 .hp-section {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
 }
 
 .hp-text {
   display: flex;
   justify-content: space-between;
-  color: #ccc;
-  font-size: 6px;
+  color: var(--slate-300);
+  font-size: var(--font-6);
 }
 
 .hp-bar-track {
   width: 100%;
   height: 6px;
-  border: 1px solid rgb(0 0 0 / 50%);
-  border-radius: 3px;
-  background: rgb(255 255 255 / 10%);
+  border: 1px solid Rgb(0 0 0 / 50%);
+  border-radius: $radius-xs-alt;
+  background: Rgb(255 255 255 / 10%);
   overflow: hidden;
 }
 
@@ -129,31 +129,31 @@ const hpColor = computed(() => {
 .moves-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: $spacing-xs;
   margin-top: 2px;
 }
 
 .move-badge {
   display: flex;
   justify-content: space-between;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: 100%;
   padding: 2px 4px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 4px;
-  background: rgb(255 255 255 / 5%);
-  font-size: 6px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-sm;
+  background: Rgb(255 255 255 / 5%);
+  font-size: var(--font-6);
 }
 
 .move-name {
-  color: #dfcbb5;
+  color: var(--amber-300);
 }
 
 .move-pp {
-  color: #ffcb05;
+  color: var(--gold);
 
   &.is-empty {
-    color: #ef5350;
+    color: var(--red-light);
   }
 }
 </style>

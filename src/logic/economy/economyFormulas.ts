@@ -27,6 +27,8 @@ export const HEAL_COST_TIER_MULTIPLIERS: Record<string, number> = {
 const ROCKET_HEAL_BASE_PRICE = 20 as const;
 const ROCKET_HEAL_PRICE_PER_LEVEL = 3 as const;
 const DEFAULT_FALLBACK_MOVE_PP = 20 as const;
+const POKEMON_CENTER_COOLDOWN_EXPONENT = 1.5 as const;
+const POKEMON_CENTER_COOLDOWN_MULTIPLIER = 5.5 as const;
 
 /**
  * Calculates the individual healing cost for a single Pokemon.
@@ -72,7 +74,7 @@ export function calculateTotalHealCost(team: (Pokemon | null)[], trainerLevel: n
 export function calculatePokemonCenterCooldown(trainerLevel: number): number {
   if (trainerLevel <= 1) return 0;
   // Potencia: (nivel - 1)^1.5 * 5.5 segundos
-  return Math.floor(Math.pow(trainerLevel - 1, 1.5) * 5.5);
+  return Math.floor(Math.pow(trainerLevel - 1, POKEMON_CENTER_COOLDOWN_EXPONENT) * POKEMON_CENTER_COOLDOWN_MULTIPLIER);
 }
 
 export function calculatePokemonCenterRemainingSeconds(lastHealTimestamp: number, trainerLevel: number): number {

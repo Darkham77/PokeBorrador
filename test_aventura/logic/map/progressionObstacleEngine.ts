@@ -15,6 +15,8 @@
 
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { DECORATION_DEFAULT_SEED } from '../../config/studioConstants.ts';
+import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
 
 export interface ProgressionObstacleFlank {
   readonly x: number;
@@ -43,14 +45,16 @@ export interface GenerateObstaclesOptions {
   readonly maxStrengthBoulders?: number;
 }
 
-const DEFAULT_SEED = 1337;
 const DEFAULT_MAX_CUT_TREES = 3;
 const DEFAULT_MAX_STRENGTH_BOULDERS = 2;
 const MIN_OBSTACLE_SEPARATION = 45;
-const CLEARANCE_MARGIN_POI = 4;
+const OBSTACLE_POI_CLEARANCE_MARGIN = 4;
 
 const CUT_TREE_ASSET = 'tree_cuttable.png' as const;
 const STRENGTH_BOULDER_ASSET = 'poke_boulder_large.png' as const;
+const CANDIDATE_PATH_PROXIMITY_RADIUS = 3 as const;
+const CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS = 3 as const;
+const CANDIDATE_SEARCH_MARGIN = 6 as const;
 
 export function generateProgressionObstacles(
   options: GenerateObstaclesOptions
@@ -66,7 +70,7 @@ export function generateProgressionObstacles(
   const W = continent.width;
   const H = continent.height;
 
-  let rngSeed = (options.seed ?? DEFAULT_SEED) | 0;
+  let rngSeed = (options.seed ?? DECORATION_DEFAULT_SEED) | 0;
   const nextRng = (): number => {
     rngSeed = (rngSeed * 1664525 + 1013904223) | 0;
     return (rngSeed >>> 0) / 4294967296;
@@ -75,10 +79,10 @@ export function generateProgressionObstacles(
   // Exclude POI footprints and immediate doorsteps
   const excluded = Array.from({ length: H }, () => Array(W).fill(false));
   for (const poi of pois) {
-    const minX = Math.max(0, poi.gridX - CLEARANCE_MARGIN_POI);
-    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + CLEARANCE_MARGIN_POI);
-    const minY = Math.max(0, poi.gridY - CLEARANCE_MARGIN_POI);
-    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + CLEARANCE_MARGIN_POI);
+    const minX = Math.max(0, poi.gridX - OBSTACLE_POI_CLEARANCE_MARGIN);
+    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + OBSTACLE_POI_CLEARANCE_MARGIN);
+    const minY = Math.max(0, poi.gridY - OBSTACLE_POI_CLEARANCE_MARGIN);
+    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + OBSTACLE_POI_CLEARANCE_MARGIN);
 
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
@@ -95,16 +99,7 @@ export function generateProgressionObstacles(
     if (continent.resolvedMountain.occupiedFootCells[y]?.[x]) return false;
     if (continent.resolvedMountain.cellDetails[y]?.[x]) return false;
 
-    // Strict clearance: never on or adjacent to mountain stairs
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        const ny = y + dy;
-        const nx = x + dx;
-        if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
-        const mCell = continent.resolvedMountain.cellDetails[ny]?.[nx];
-        if (mCell?.role.includes('stairs')) return false;
-      }
-    }
+    if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H)) return false;
 
     if (continent.placedStairs) {
       for (const s of continent.placedStairs) {
@@ -128,14 +123,14 @@ export function generateProgressionObstacles(
   // Collect candidate roadside cells (cells 1-3 tiles away from pathGrid)
   const candidateCells: { x: number; y: number; nearMountain: boolean }[] = [];
 
-  for (let y = 6; y < H - 6; y++) {
-    for (let x = 6; x < W - 6; x++) {
+  for (let y = CANDIDATE_SEARCH_MARGIN; y < H - CANDIDATE_SEARCH_MARGIN; y++) {
+    for (let x = CANDIDATE_SEARCH_MARGIN; x < W - CANDIDATE_SEARCH_MARGIN; x++) {
       if (!isCellValidGround(x, y)) continue;
 
       // Check proximity to pathGrid (distance 1 to 3 cells)
       let nearPath = false;
-      for (let dy = -3; dy <= 3; dy++) {
-        for (let dx = -3; dx <= 3; dx++) {
+      for (let dy = -CANDIDATE_PATH_PROXIMITY_RADIUS; dy <= CANDIDATE_PATH_PROXIMITY_RADIUS; dy++) {
+        for (let dx = -CANDIDATE_PATH_PROXIMITY_RADIUS; dx <= CANDIDATE_PATH_PROXIMITY_RADIUS; dx++) {
           if (pathGrid[y + dy]?.[x + dx]) {
             nearPath = true;
             break;
@@ -147,8 +142,8 @@ export function generateProgressionObstacles(
       if (nearPath) {
         // Proximity to mountain cliff
         let nearMtn = false;
-        for (let dy = -3; dy <= 3; dy++) {
-          for (let dx = -3; dx <= 3; dx++) {
+        for (let dy = -CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS; dy <= CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS; dy++) {
+          for (let dx = -CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS; dx <= CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS; dx++) {
             if ((continent.heightmap[y + dy]?.[x + dx] ?? 0) > 0) {
               nearMtn = true;
               break;

@@ -437,7 +437,7 @@ const quickBagItems: QuickBagItem[] = [
 }
 
 .dock-zone-intro {
-  font-size: 7.5px;
+  font-size: var(--font-8);
   color: var(--color-text-muted);
   margin-bottom: 12px;
   letter-spacing: 0.5px;

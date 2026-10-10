@@ -21,8 +21,12 @@ import type {
 // Progression Barrier Unlock Rules
 // ---------------------------------------------------------------------------
 
+const MAX_GYM_BADGES = 8 as const;
+const LEAGUE_CHAIN_ORDER_INDEX = 9 as const;
+const STRENGTH_MAX_CHAIN_ORDER = 6 as const;
+
 /** The minimum gym badge order required to clear each barrier type. */
-export const BARRIER_UNLOCK_GYM: Readonly<Record<BarrierType, number>> = {
+const BARRIER_UNLOCK_GYM: Readonly<Record<BarrierType, number>> = {
   barrier_cut: 2, // Cut unlocked after Gym 2
   barrier_flash: 3, // Flash unlocked around Gym 3
   barrier_strength: 4, // Strength unlocked after Gym 4
@@ -40,12 +44,12 @@ export function assignProgressionOrder(graph: PokemonTopologyGraph): Map<string,
   orderMap.set(graph.mainChainOrder[0]!, 0);
 
   // 2. Assign 1..8 to Gym cities
-  for (let g = 1; g <= 8; g++) {
+  for (let g = 1; g <= MAX_GYM_BADGES; g++) {
     orderMap.set(graph.mainChainOrder[g]!, g);
   }
 
   // 3. Assign 9 to Pokémon League
-  orderMap.set(graph.mainChainOrder[9]!, 9);
+  orderMap.set(graph.mainChainOrder[LEAGUE_CHAIN_ORDER_INDEX]!, LEAGUE_CHAIN_ORDER_INDEX);
 
   // 4. Secondary stubs inherit the progression order of their parent on the main chain
   for (const node of graph.nodes) {
@@ -110,7 +114,7 @@ function distributeBarriers(
     }
 
     // 3. Strength barrier: placed on a cycle or secondary cave accessible at or after Gym 4
-    if (!strengthPlaced && minOrder >= 4 && minOrder <= 6 && (edge.kind === 'cycle' || edge.kind === 'branch_stub')) {
+    if (!strengthPlaced && minOrder >= 4 && minOrder <= STRENGTH_MAX_CHAIN_ORDER && (edge.kind === 'cycle' || edge.kind === 'branch_stub')) {
       result.push({
         ...edge,
         barrier: 'barrier_strength'
@@ -156,7 +160,7 @@ export function validateAntiSoftlock(
   }
 
   // Simulate player progression through 0 to 8 badges
-  for (let badges = 0; badges <= 8; badges++) {
+  for (let badges = 0; badges <= MAX_GYM_BADGES; badges++) {
     // Collect barriers unlocked with `badges` badges
     const unlockedBarriers = new Set<BarrierType>();
     for (const [barrier, req] of Object.entries(BARRIER_UNLOCK_GYM)) {

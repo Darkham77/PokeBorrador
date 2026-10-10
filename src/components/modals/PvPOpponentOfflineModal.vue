@@ -56,20 +56,20 @@ function handleClose() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: $spacing-md-lg;
   padding: 16px 12px;
   text-align: center;
 }
 
 .offline-icon {
-  font-size: 32px;
+  font-size: var(--font-32);
 }
 
 .offline-message {
   margin: 0;
-  color: #f87171;
+  color: var(--rose);
   font-family: var(--font-pixel);
-  font-size: 11px;
+  font-size: var(--font-11);
   line-height: 1.4;
 }
 

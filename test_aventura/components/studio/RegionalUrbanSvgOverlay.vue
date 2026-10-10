@@ -21,6 +21,8 @@ import type {
   UrbanElementType
 } from '../../types/map/poiTypes.ts';
 import { checkBuildingCollision } from '../../logic/map/settlementPlacementHelper.ts';
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { screenToSvgCoords as transformScreenToSvg } from '../../logic/utils/svgCoordinateUtils.ts';
 
 const store = useRegionalContinentStudioStore();
 const svgRef = ref<SVGSVGElement | null>(null);
@@ -44,24 +46,7 @@ const activeDrag = ref<ActiveDragElement | null>(null);
 const isCurrentlyColliding = ref<boolean>(false);
 
 function screenToSvgCoords(e: PointerEvent | MouseEvent): { x: number; y: number } {
-  if (!svgRef.value) return { x: 0, y: 0 };
-  const svg = svgRef.value;
-  const pt = svg.createSVGPoint();
-  pt.x = e.clientX;
-  pt.y = e.clientY;
-  const ctm = svg.getScreenCTM();
-  if (ctm) {
-    const inverted = pt.matrixTransform(ctm.inverse());
-    return {
-      x: Math.max(0, Math.min(store.widthPx, inverted.x)),
-      y: Math.max(0, Math.min(store.heightPx, inverted.y))
-    };
-  }
-  const rect = svg.getBoundingClientRect();
-  return {
-    x: Math.max(0, Math.min(store.widthPx, ((e.clientX - rect.left) / rect.width) * store.widthPx)),
-    y: Math.max(0, Math.min(store.heightPx, ((e.clientY - rect.top) / rect.height) * store.heightPx))
-  };
+  return transformScreenToSvg(e as PointerEvent, svgRef.value, { width: store.widthPx, height: store.heightPx });
 }
 
 function getBuildingTitle(type: UrbanBuildingType): string {
@@ -109,8 +94,8 @@ function startDragBuilding(e: PointerEvent, b: UrbanBuildingPlacement): void {
     width: b.width,
     height: b.height,
     pointerOffset: {
-      x: svgPt.x - b.x * 32,
-      y: svgPt.y - b.y * 32
+      x: svgPt.x - b.x * CANVAS_TILE_SIZE,
+      y: svgPt.y - b.y * CANVAS_TILE_SIZE
     }
   };
   isDragging.value = true;
@@ -138,8 +123,8 @@ function startDragProp(e: PointerEvent, p: UrbanPropPlacement): void {
     width: 1,
     height: 1,
     pointerOffset: {
-      x: svgPt.x - p.x * 32,
-      y: svgPt.y - p.y * 32
+      x: svgPt.x - p.x * CANVAS_TILE_SIZE,
+      y: svgPt.y - p.y * CANVAS_TILE_SIZE
     }
   };
   isDragging.value = true;
@@ -153,11 +138,11 @@ function onPointerMove(e: PointerEvent): void {
   if (!isDragging.value || !activeDrag.value || !currentPoi.value) return;
 
   const svgPt = screenToSvgCoords(e);
-  const rawTargetX = Math.round((svgPt.x - activeDrag.value.pointerOffset.x) / 32);
-  const rawTargetY = Math.round((svgPt.y - activeDrag.value.pointerOffset.y) / 32);
+  const rawTargetX = Math.round((svgPt.x - activeDrag.value.pointerOffset.x) / CANVAS_TILE_SIZE);
+  const rawTargetY = Math.round((svgPt.y - activeDrag.value.pointerOffset.y) / CANVAS_TILE_SIZE);
 
-  const maxX = Math.floor(store.widthPx / 32) - activeDrag.value.width;
-  const maxY = Math.floor(store.heightPx / 32) - activeDrag.value.height;
+  const maxX = Math.floor(store.widthPx / CANVAS_TILE_SIZE) - activeDrag.value.width;
+  const maxY = Math.floor(store.heightPx / CANVAS_TILE_SIZE) - activeDrag.value.height;
 
   const boundedX = Math.max(0, Math.min(maxX, rawTargetX));
   const boundedY = Math.max(0, Math.min(maxY, rawTargetY));
@@ -205,11 +190,109 @@ function onPointerUp(): void {
   activeDrag.value = null;
   isCurrentlyColliding.value = false;
 }
+
+const HALF_TILE_SIZE = 16;
+const PERIMETER_LABEL_OFFSET = 8;
+const DOOR_ICON_Y_OFFSET = 20;
+const BUILDING_SUBTITLE_Y_OFFSET = 28;
+const COLLISION_LABEL_Y_OFFSET = 42;
+const PROP_ICON_Y_OFFSET = 22;
+
+const poiPerimeterBounds = computed(() => {
+  if (!currentPoi.value) return null;
+  const poi = currentPoi.value;
+  return {
+    x: poi.gridX * CANVAS_TILE_SIZE,
+    y: poi.gridY * CANVAS_TILE_SIZE,
+    width: poi.footprint.width * CANVAS_TILE_SIZE,
+    height: poi.footprint.height * CANVAS_TILE_SIZE,
+    textX: poi.gridX * CANVAS_TILE_SIZE + PERIMETER_LABEL_OFFSET,
+    textY: poi.gridY * CANVAS_TILE_SIZE - PERIMETER_LABEL_OFFSET
+  };
+});
+
+function getBuildingX(b: UrbanBuildingPlacement): number {
+  const gridX = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
+  return gridX * CANVAS_TILE_SIZE + (b.pixelOffsetX ?? 0);
+}
+
+function getBuildingY(b: UrbanBuildingPlacement): number {
+  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  return gridY * CANVAS_TILE_SIZE + (b.pixelOffsetY ?? 0);
+}
+
+function getBuildingWidth(b: UrbanBuildingPlacement): number {
+  return b.width * CANVAS_TILE_SIZE;
+}
+
+function getBuildingHeight(b: UrbanBuildingPlacement): number {
+  return b.height * CANVAS_TILE_SIZE;
+}
+
+function getBuildingDoorX(b: UrbanBuildingPlacement): number {
+  const gridX = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
+  return (gridX + (b.doorX - b.x)) * CANVAS_TILE_SIZE + HALF_TILE_SIZE + (b.pixelOffsetX ?? 0);
+}
+
+function getBuildingDoorY(b: UrbanBuildingPlacement): number {
+  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  return (gridY + (b.doorY - b.y)) * CANVAS_TILE_SIZE + HALF_TILE_SIZE + (b.pixelOffsetY ?? 0);
+}
+
+function getBuildingDoorIconY(b: UrbanBuildingPlacement): number {
+  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  return (gridY + (b.doorY - b.y)) * CANVAS_TILE_SIZE + DOOR_ICON_Y_OFFSET + (b.pixelOffsetY ?? 0);
+}
+
+function getBuildingCenterX(b: UrbanBuildingPlacement): number {
+  const gridX = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
+  return (gridX + b.width / 2) * CANVAS_TILE_SIZE + (b.pixelOffsetX ?? 0);
+}
+
+function getBuildingLabelY(b: UrbanBuildingPlacement): number {
+  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  return gridY * CANVAS_TILE_SIZE + HALF_TILE_SIZE + (b.pixelOffsetY ?? 0);
+}
+
+function getBuildingCoordsCenterX(b: UrbanBuildingPlacement): number {
+  const gridX = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
+  return (gridX + b.width / 2) * CANVAS_TILE_SIZE;
+}
+
+function getBuildingCoordsY(b: UrbanBuildingPlacement): number {
+  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  return gridY * CANVAS_TILE_SIZE + BUILDING_SUBTITLE_Y_OFFSET;
+}
+
+function getBuildingCollisionLabelY(b: UrbanBuildingPlacement): number {
+  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  return gridY * CANVAS_TILE_SIZE + COLLISION_LABEL_Y_OFFSET;
+}
+
+function getPropX(p: UrbanPropPlacement): number {
+  const isTarget = isDragging.value && activeDrag.value?.id === `prop_${p.x}_${p.y}`;
+  const gridX = isTarget ? (activeDrag.value?.currentGridX ?? p.x) : p.x;
+  return gridX * CANVAS_TILE_SIZE;
+}
+
+function getPropY(p: UrbanPropPlacement): number {
+  const isTarget = isDragging.value && activeDrag.value?.id === `prop_${p.x}_${p.y}`;
+  const gridY = isTarget ? (activeDrag.value?.currentGridY ?? p.y) : p.y;
+  return gridY * CANVAS_TILE_SIZE;
+}
+
+function getPropIconX(p: UrbanPropPlacement): number {
+  return getPropX(p) + HALF_TILE_SIZE;
+}
+
+function getPropIconY(p: UrbanPropPlacement): number {
+  return getPropY(p) + PROP_ICON_Y_OFFSET;
+}
 </script>
 
 <template>
   <svg
-    v-if="currentPoi && store.displayMode !== 'pokégear'"
+    v-if="currentPoi && poiPerimeterBounds && store.displayMode !== 'pokégear'"
     ref="svgRef"
     class="regional-urban-svg-overlay"
     :viewBox="`0 0 ${store.widthPx} ${store.heightPx}`"
@@ -222,15 +305,15 @@ function onPointerUp(): void {
     <!-- 1. Settlement Footprint Perimeter -->
     <g class="settlement-perimeter-group">
       <rect
-        :x="currentPoi.gridX * 32"
-        :y="currentPoi.gridY * 32"
-        :width="currentPoi.footprint.width * 32"
-        :height="currentPoi.footprint.height * 32"
+        :x="poiPerimeterBounds.x"
+        :y="poiPerimeterBounds.y"
+        :width="poiPerimeterBounds.width"
+        :height="poiPerimeterBounds.height"
         class="perimeter-rect"
       />
       <text
-        :x="currentPoi.gridX * 32 + 8"
-        :y="currentPoi.gridY * 32 - 8"
+        :x="poiPerimeterBounds.textX"
+        :y="poiPerimeterBounds.textY"
         class="perimeter-name-badge perimeter-name-icon"
       >
         🏙️ {{ currentPoi.name }} (Límites Urbanos)
@@ -252,24 +335,24 @@ function onPointerUp(): void {
       >
         <!-- Bounding Box -->
         <rect
-          :x="(isDragging && activeDrag?.id === b.id ? activeDrag.currentGridX : b.x) * 32 + (b.pixelOffsetX ?? 0)"
-          :y="(isDragging && activeDrag?.id === b.id ? activeDrag.currentGridY : b.y) * 32 + (b.pixelOffsetY ?? 0)"
-          :width="b.width * 32"
-          :height="b.height * 32"
+          :x="getBuildingX(b)"
+          :y="getBuildingY(b)"
+          :width="getBuildingWidth(b)"
+          :height="getBuildingHeight(b)"
           rx="6"
           class="building-rect"
         />
 
         <!-- Door Indicator -->
         <circle
-          :cx="((isDragging && activeDrag?.id === b.id ? activeDrag.currentGridX : b.x) + (b.doorX - b.x)) * 32 + 16 + (b.pixelOffsetX ?? 0)"
-          :cy="((isDragging && activeDrag?.id === b.id ? activeDrag.currentGridY : b.y) + (b.doorY - b.y)) * 32 + 16 + (b.pixelOffsetY ?? 0)"
+          :cx="getBuildingDoorX(b)"
+          :cy="getBuildingDoorY(b)"
           r="6"
           class="building-door-marker"
         />
         <text
-          :x="((isDragging && activeDrag?.id === b.id ? activeDrag.currentGridX : b.x) + (b.doorX - b.x)) * 32 + 16 + (b.pixelOffsetX ?? 0)"
-          :y="((isDragging && activeDrag?.id === b.id ? activeDrag.currentGridY : b.y) + (b.doorY - b.y)) * 32 + 20 + (b.pixelOffsetY ?? 0)"
+          :x="getBuildingDoorX(b)"
+          :y="getBuildingDoorIconY(b)"
           text-anchor="middle"
           class="door-icon"
         >
@@ -278,8 +361,8 @@ function onPointerUp(): void {
 
         <!-- Building Label -->
         <text
-          :x="((isDragging && activeDrag?.id === b.id ? activeDrag.currentGridX : b.x) + b.width / 2) * 32 + (b.pixelOffsetX ?? 0)"
-          :y="(isDragging && activeDrag?.id === b.id ? activeDrag.currentGridY : b.y) * 32 + 16 + (b.pixelOffsetY ?? 0)"
+          :x="getBuildingCenterX(b)"
+          :y="getBuildingLabelY(b)"
           text-anchor="middle"
           class="building-title-label"
         >
@@ -288,8 +371,8 @@ function onPointerUp(): void {
 
         <!-- Coordinates Subtitle -->
         <text
-          :x="((isDragging && activeDrag?.id === b.id ? activeDrag.currentGridX : b.x) + b.width / 2) * 32"
-          :y="(isDragging && activeDrag?.id === b.id ? activeDrag.currentGridY : b.y) * 32 + 28"
+          :x="getBuildingCoordsCenterX(b)"
+          :y="getBuildingCoordsY(b)"
           text-anchor="middle"
           class="building-coords-label"
         >
@@ -299,8 +382,8 @@ function onPointerUp(): void {
         <!-- Dynamic Collision Warning -->
         <text
           v-if="isDragging && activeDrag?.id === b.id && isCurrentlyColliding"
-          :x="((isDragging && activeDrag?.id === b.id ? activeDrag.currentGridX : b.x) + b.width / 2) * 32"
-          :y="(isDragging && activeDrag?.id === b.id ? activeDrag.currentGridY : b.y) * 32 + 42"
+          :x="getBuildingCoordsCenterX(b)"
+          :y="getBuildingCollisionLabelY(b)"
           text-anchor="middle"
           class="building-collision-label building-collision-icon"
         >
@@ -323,16 +406,16 @@ function onPointerUp(): void {
         @pointerdown="startDragProp($event, p)"
       >
         <rect
-          :x="(isDragging && activeDrag?.id === `prop_${p.x}_${p.y}` ? (activeDrag?.currentGridX ?? p.x) : p.x) * 32"
-          :y="(isDragging && activeDrag?.id === `prop_${p.x}_${p.y}` ? (activeDrag?.currentGridY ?? p.y) : p.y) * 32"
+          :x="getPropX(p)"
+          :y="getPropY(p)"
           width="32"
           height="32"
           rx="4"
           class="prop-rect"
         />
         <text
-          :x="(isDragging && activeDrag?.id === `prop_${p.x}_${p.y}` ? (activeDrag?.currentGridX ?? p.x) : p.x) * 32 + 16"
-          :y="(isDragging && activeDrag?.id === `prop_${p.x}_${p.y}` ? (activeDrag?.currentGridY ?? p.y) : p.y) * 32 + 22"
+          :x="getPropIconX(p)"
+          :y="getPropIconY(p)"
           text-anchor="middle"
           class="prop-icon"
         >
@@ -348,8 +431,8 @@ function onPointerUp(): void {
   position: absolute;
   top: 0;
   left: 0;
-  pointer-events: none;
   z-index: var(--z-modal-step);
+  pointer-events: none;
 }
 
 .urban-interactive-element {
@@ -362,14 +445,14 @@ function onPointerUp(): void {
 }
 
 .perimeter-rect {
-  fill: Rgba(56, 189, 248, 0.04);
+  fill: Rgb(56 189 248 / 4%);
   stroke: #38bdf8;
   stroke-width: 2;
   stroke-dasharray: 6 4;
 }
 
 .perimeter-name-badge {
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 700;
   fill: #38bdf8;
   letter-spacing: 0.5px;
@@ -377,40 +460,39 @@ function onPointerUp(): void {
 
 .building-group {
   .building-rect {
-    fill: Rgba(30, 41, 59, 0.7);
+    fill: Rgb(30 41 59 / 70%);
     stroke: #0284c7;
     stroke-width: 2;
     stroke-dasharray: 4 2;
-    transition: fill 0.1s ease, stroke 0.1s ease;
   }
 
   .building-door-marker {
     fill: #f59e0b;
-    stroke: #ffffff;
+    stroke: #fff;
     stroke-width: 1.5;
   }
 
   .door-icon {
-    font-size: 10px;
+    font-size: var(--font-10);
     pointer-events: none;
   }
 
   .building-title-label {
-    font-size: 10px;
+    font-size: var(--font-10);
     font-weight: 700;
     fill: #f8fafc;
     pointer-events: none;
   }
 
   .building-coords-label {
-    font-size: 9px;
+    font-size: var(--font-9);
     font-weight: 600;
     fill: #94a3b8;
     pointer-events: none;
   }
 
   .building-collision-label {
-    font-size: 9px;
+    font-size: var(--font-9);
     font-weight: 700;
     fill: #ef4444;
     pointer-events: none;
@@ -421,7 +503,7 @@ function onPointerUp(): void {
       stroke: #fbbf24;
       stroke-width: 2.5;
       stroke-dasharray: none;
-      fill: Rgba(245, 158, 11, 0.25);
+      fill: Rgb(245 158 11 / 25%);
     }
   }
 
@@ -430,14 +512,14 @@ function onPointerUp(): void {
     .building-rect {
       stroke: #22c55e;
       stroke-width: 2.5;
-      fill: Rgba(34, 197, 94, 0.3);
+      fill: Rgb(34 197 94 / 30%);
     }
 
     &.is-colliding {
       .building-rect {
         stroke: #ef4444;
         stroke-width: 3;
-        fill: Rgba(239, 68, 68, 0.45);
+        fill: Rgb(239 68 68 / 45%);
       }
     }
   }
@@ -445,14 +527,14 @@ function onPointerUp(): void {
 
 .prop-group {
   .prop-rect {
-    fill: Rgba(255, 255, 255, 0.08);
-    stroke: Rgba(255, 255, 255, 0.3);
+    fill: Rgb(255 255 255 / 8%);
+    stroke: Rgb(255 255 255 / 30%);
     stroke-width: 1;
     stroke-dasharray: 2 2;
   }
 
   .prop-icon {
-    font-size: 14px;
+    font-size: var(--font-14);
     pointer-events: none;
   }
 
@@ -461,7 +543,7 @@ function onPointerUp(): void {
       stroke: #fbbf24;
       stroke-width: 2;
       stroke-dasharray: none;
-      fill: Rgba(245, 158, 11, 0.3);
+      fill: Rgb(245 158 11 / 30%);
     }
   }
 
@@ -469,14 +551,14 @@ function onPointerUp(): void {
     .prop-rect {
       stroke: #22c55e;
       stroke-width: 2;
-      fill: Rgba(34, 197, 94, 0.4);
+      fill: Rgb(34 197 94 / 40%);
     }
 
     &.is-colliding {
       .prop-rect {
         stroke: #ef4444;
         stroke-width: 2.5;
-        fill: Rgba(239, 68, 68, 0.5);
+        fill: Rgb(239 68 68 / 50%);
       }
     }
   }

@@ -12,13 +12,13 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { generatePokemonContinentalWorld } from '../../../src/logic/map/continent/continentalEngine.ts';
-import { computeOceanGrid } from '../../../src/logic/map/routePathfinding.ts';
+import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
+import { computeOceanGrid } from '../../logic/map/routePathfinding.ts';
 import {
   generateProgressionObstacles,
   type GenerateObstaclesOptions
-} from '../../../src/logic/map/progressionObstacleEngine.ts';
-import type { ContinentMapResult } from '../../../src/logic/map/continentGenerator.ts';
+} from '../../logic/map/progressionObstacleEngine.ts';
+import type { ContinentMapResult } from '../../logic/map/continentGenerator.ts';
 
 describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
   it('verifies that the Cut Tree asset is the authentic GBA FireRed sprite with transparent alpha', async () => {
@@ -383,7 +383,7 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
       tileScale: 32
     });
 
-    const { buildMapBlitInstructions } = require('../../../src/logic/map/canvasTileRenderer.ts');
+    const { buildMapBlitInstructions } = require('../../logic/map/canvasTileRenderer.ts');
     const { instructions } = buildMapBlitInstructions(
       result.continent,
       result.pois,

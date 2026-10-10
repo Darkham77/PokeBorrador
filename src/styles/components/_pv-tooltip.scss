@@ -41,7 +41,7 @@
   .tooltip-content {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
     box-sizing: border-box;
   }
 
@@ -50,7 +50,7 @@
 
     color: var(--yellow);
     font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen') !important;
-    font-size: 8px;
+    font-size: var(--font-8);
     line-height: 1.4;
     text-align: center;
     padding-top: 2px;
@@ -64,7 +64,7 @@
     display: block;
     color: var(--yellow);
     font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen') !important;
-    font-size: 8px;
+    font-size: var(--font-8);
     line-height: 1.4;
     text-shadow: 1px 1px 0 Rgb(0 0 0 / 50%);
     padding-bottom: 8px;
@@ -84,7 +84,7 @@
     display: block;
     color: Rgb(241 245 249 / 90%);
     font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen') !important;
-    font-size: 8px; 
+    font-size: var(--font-8); 
     line-height: 1.6;
     white-space: pre-wrap;
 
@@ -105,9 +105,9 @@
     .tooltip-line {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: $spacing-xs-5;
       color: Rgb(255 255 255 / 70%);
-      font-size: 8px;
+      font-size: var(--font-8);
       margin-bottom: 2px;
 
       &:last-child {
@@ -121,18 +121,18 @@
       }
 
       &.is-boost {
-        color: #10B981; // Green
+        color: var(--emerald-500); // Green
         text-shadow: 0 0 2px Rgb(16 185 129 / 30%);
         .bullet-icon {
-          color: #10B981;
+          color: var(--emerald-500);
         }
       }
 
       &.is-debuff {
-        color: #EF4444; // Red
+        color: var(--red-light); // Red
         text-shadow: 0 0 2px Rgb(239 68 68 / 30%);
         .bullet-icon {
-          color: #EF4444;
+          color: var(--red-light);
         }
       }
 

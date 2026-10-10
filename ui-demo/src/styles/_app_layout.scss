@@ -29,11 +29,11 @@
   gap: 6px;
 
   .emoji {
-    font-size: 14px;
+    font-size: var(--font-14);
   }
 
   .title-text {
-    font-size: 9px;
+    font-size: var(--font-9);
     font-weight: bold;
     color: var(--color-text-gold, #ffd60a);
     letter-spacing: 0.5px;
@@ -46,7 +46,7 @@
   gap: 4px;
 
   .group-label {
-    font-size: 8px;
+    font-size: var(--font-8);
     color: var(--color-text-muted, #94a3b8);
   }
 }
@@ -57,7 +57,7 @@
   border: 1px solid var(--color-control-border, #384666);
   color: var(--color-text-muted, #94a3b8);
   font-family: var(--font-pixel, monospace);
-  font-size: 7.5px;
+  font-size: var(--font-8);
   border-radius: 3px;
   cursor: pointer;
 
@@ -68,22 +68,22 @@
 
   &.active {
     background: var(--color-accent-blue, #0a84ff);
-    border-color: #60a5fa;
-    color: #ffffff;
+    border-color: var(--blue-400);
+    color: var(--white);
     font-weight: bold;
   }
 
   &.modal-trigger-btn {
     background: color-mix(in srgb, var(--color-control-bg) 70%, #ffd60a 30%);
     color: var(--color-text-gold, #ffd60a);
-    border-color: #ffd60a;
+    border-color: var(--yellow);
     display: inline-flex;
     align-items: center;
     gap: 4px;
 
     &:hover {
-      background: #ffd60a;
-      color: #000000;
+      background: var(--yellow);
+      color: var(--black);
     }
   }
 }
@@ -100,7 +100,7 @@
     border: 1px solid var(--color-divider, #334155);
     color: var(--color-text-muted, #94a3b8);
     font-family: var(--font-pixel, monospace);
-    font-size: 7px;
+    font-size: var(--font-7);
     border-radius: 3px;
     cursor: pointer;
 

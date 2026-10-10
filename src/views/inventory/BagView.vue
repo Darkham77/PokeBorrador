@@ -146,6 +146,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
       <!-- Top-Level Tabs -->
       <div class="main-tabs-row">
         <button
+          id="bag-view-btn-productos"
           class="main-tab-btn"
           :class="{ active: activeMainTab === 'productos' }"
           @click.stop="onMainTabClick('productos')"
@@ -155,6 +156,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
           Productos
         </button>
         <button
+          id="bag-view-btn-materiales"
           class="main-tab-btn"
           :class="{ active: activeMainTab === 'materiales' }"
           @click.stop="onMainTabClick('materiales')"
@@ -165,11 +167,11 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
         </button>
       </div>
 
-
       <!-- Search & Tabs -->
       <div class="controls-section">
         <div class="search-bar">
-          <input 
+          <input
+            id="bag-view-input-searchquery" 
             v-model="inventoryStore.searchQuery" 
             type="text" 
             placeholder="Buscar objeto..."
@@ -177,8 +179,9 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
           >
         </div>
         <div class="tabs-row scroll-hide">
-          <button 
+          <button
             v-for="cat in currentSubcategories" 
+            id="bag-view-btn-cat-label" 
             :key="cat.id"
             :class="['tab-btn', { active: inventoryStore.activeCategory === cat.id }]"
             @click.stop="onTabClick(cat.id)"
@@ -197,7 +200,8 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
           MODO VENTA: <span class="text-green">Ganancia +₽{{ formatCurrency(inventoryStore.getBagSellTotalGain()) }}</span>
         </div>
         <div class="sell-buttons">
-          <button 
+          <button
+            id="bag-view-btn-confirmar-venta" 
             class="btn-vicio-success btn-vicio-sm" 
             :disabled="Object.keys(inventoryStore.bagSellSelected).length === 0"
             @click.stop="inventoryStore.confirmBagSell"
@@ -205,6 +209,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
             Confirmar Venta
           </button>
           <button
+            id="bag-view-btn-cancelar"
             class="btn-vicio-neutral btn-vicio-sm"
             @click.stop="inventoryStore.toggleBagSellMode"
           >
@@ -229,6 +234,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
         >
           <BagItemCard
             v-for="item in filteredBagItems"
+            id="bag-view-bagitemcard-itemclick"
             :key="item.id"
             :item="item"
             :is-selected="!!inventoryStore.bagSellSelected[item.id]"
@@ -248,6 +254,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
         class="bag-footer"
       >
         <button
+          id="bag-view-btn-vender-objetos"
           class="btn-sell-mode"
           @mouseenter="onSellModeMouseEnter"
           @mouseleave="onSellModeMouseLeave"
@@ -274,7 +281,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 .bag-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   width: 100%;
   max-width: 800px;
   min-height: 0;
@@ -282,7 +289,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 
 .main-tabs-row {
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
   border-bottom: 2px solid Rgb(255 255 255 / 5%);
   padding-bottom: 8px;
 }
@@ -295,7 +302,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
   border: none;
   background: transparent;
   color: var(--gray);
-  font-size: 14px;
+  font-size: var(--font-14);
   cursor: pointer;
 
   &:hover {
@@ -312,10 +319,10 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
       left: 0;
       width: 100%;
       height: 3px;
-      border-radius: 2px;
+      border-radius: $radius-xs;
       background: var(--purple);
       content: '';
-      box-shadow: 0 0 8px var(--purple-light);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 }
@@ -329,7 +336,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 .title-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .title-section h1 {
@@ -337,33 +344,33 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 
   margin: 0;
   color: var(--white);
-  font-size: 16px;
+  font-size: var(--font-16);
 }
 
-.icon { font-size: 24px; }
+.icon { font-size: var(--font-24); }
 
 .money-badge {
   @include pixelated;
 
   padding: 8px 16px;
   border: 1px solid Rgb(34 197 94 / 30%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(34 197 94 / 15%);
   color: var(--green-bright);
-  font-size: 10px;
+  font-size: var(--font-10);
 }
 
 .controls-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .search-input {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 5%);
   color: var(--white);
   outline: none;
@@ -371,7 +378,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 
 .tabs-row {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   overflow-x: auto;
   padding-bottom: 4px;
 }
@@ -379,10 +386,10 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 .tab-btn {
   padding: 8px 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 5%);
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   white-space: nowrap;
   cursor: pointer;
 
@@ -396,7 +403,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
     background: var(--purple);
     color: var(--white);
     border-color: var(--purple-light);
-    box-shadow: 0 0 10px Rgb(168 85 247 / 30%);
+    box-shadow: var(--shadow-glow-amber);
   }
 }
 
@@ -406,7 +413,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 
 .items-grid {
   display: grid;
-  gap: 16px;
+  gap: $spacing-lg;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
 
@@ -416,11 +423,11 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
   align-items: center;
   padding: 16px;
   border: 1px solid Rgb(16 185 129 / 20%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(16 185 129 / 10%);
 }
 
-.sell-buttons { display: flex; gap: 8px; }
+.sell-buttons { display: flex; gap: $spacing-sm; }
 
 .btn-sell-mode {
   @include pixelated;
@@ -428,10 +435,10 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
   width: 100%;
   padding: 14px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 5%);
   color: var(--white);
-  font-size: 10px;
+  font-size: var(--font-10);
   cursor: pointer;
 }
 

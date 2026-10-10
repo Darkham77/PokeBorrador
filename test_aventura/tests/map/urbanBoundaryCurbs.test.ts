@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import path from 'node:path';
 import sharp from 'sharp';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { buildMapBlitInstructions } from '../../../src/logic/map/canvasTileRenderer.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 describe('Urban Boundary Curbs & Asset Integrity (Phase 2)', () => {
   it('guarantees poke_fence_picket.png has 100% alpha transparency (no baked-in green background)', async () => {
@@ -72,7 +72,6 @@ describe('Urban Boundary Curbs & Asset Integrity (Phase 2)', () => {
     );
 
     const curbBlits = instructions.filter((b) => b.filename.includes('curb'));
-    console.log('[All Curb Blits]:', curbBlits.map((b) => ({ file: b.filename, x: b.px / 32, y: b.py / 32 })));
     const hasPerimeterCurb = curbBlits.length > 0;
     expect(hasPerimeterCurb).toBe(true);
   });

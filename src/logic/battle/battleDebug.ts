@@ -16,7 +16,7 @@ import { isBattleCompletionReady } from './helpers/battleCompletionReadiness.ts'
 import { requiresAction } from './helpers/requestHelper.ts'
 import { projectBattleReadySwitchSlots } from './helpers/battleReadySwitchSlots.ts'
 import { BATTLE_UI_EVENTS, isBattleReadyForInputDetail, type BattleReadyForInputDetail } from '@/types/battle/battleEvents.ts'
-import { CANONICAL_TERRAINS, type CanonicalTerrain } from '@/logic/constants/gameplay'
+import { CANONICAL_TERRAINS, type CanonicalTerrain, MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay'
 
 export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
 
@@ -449,7 +449,7 @@ export function setupBattleDebug(ctx: BattleContext) {
 
   win.__VITE_DEBUG__.modifyStatStage = (side: string, stat: keyof BattleStages, delta: number) => {
     const stages = side === 'player' ? ctx.playerStages.value : ctx.enemyStages.value;
-    stages[stat] = Math.max(-6, Math.min(6, (stages[stat] || 0) + delta));
+    stages[stat] = Math.max(MIN_BATTLE_STAT_STAGE, Math.min(MAX_BATTLE_STAT_STAGE, (stages[stat] || 0) + delta));
   };
 
   win.__VITE_DEBUG__.setFieldEffect = (side: string, effect: string, val: number) => {

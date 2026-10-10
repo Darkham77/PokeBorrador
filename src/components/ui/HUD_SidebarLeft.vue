@@ -23,7 +23,7 @@
   z-index: var(--z-hud);
   display: flex;
   flex-direction: column-reverse;
-  gap: 12px;
+  gap: $spacing-md;
   transform: Translatez(0);
   pointer-events: none;
 

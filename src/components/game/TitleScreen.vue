@@ -193,6 +193,7 @@ const handleMouseLeave = (event: MouseEvent) => {
 
     <div class="title-footer">
       <button
+        id="title-screen-btn-cerrar-sesi-n"
         class="logout-btn-trigger"
         @click.stop="handleLogout"
       >
@@ -211,7 +212,7 @@ const handleMouseLeave = (event: MouseEvent) => {
 
 .title-description {
   color: var(--gray);
-  font-size: 14px;
+  font-size: var(--font-14);
   text-align: center;
   margin-bottom: 30px;
 }
@@ -233,7 +234,7 @@ const handleMouseLeave = (event: MouseEvent) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: $spacing-md-15;
   margin-top: 40px;
 }
 
@@ -242,12 +243,12 @@ const handleMouseLeave = (event: MouseEvent) => {
 
   min-width: 220px;
   padding: 14px 28px;
-  font-size: 9px;
+  font-size: var(--font-9);
 }
 
 .logout-hint {
   color: var(--gray);
-  font-size: 10px;
+  font-size: var(--font-10);
   text-align: center;
   opacity: 0.8;
   font-style: italic;
@@ -255,7 +256,7 @@ const handleMouseLeave = (event: MouseEvent) => {
 
 @media (height <= 850px), (width <= 600px) {
   .title-description {
-    font-size: 12px;
+    font-size: var(--font-12);
     margin-bottom: 15px;
   }
   
@@ -275,7 +276,7 @@ const handleMouseLeave = (event: MouseEvent) => {
   }
   
   .title-footer {
-    gap: 8px;
+    gap: $spacing-sm;
     margin-top: 15px;
   }
   

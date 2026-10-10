@@ -1,6 +1,8 @@
+@use "@/styles/core/tools" as *;
+
 .team-balls-row {
   display: flex;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 2px 0;
   margin-top: 4px;
   margin-bottom: 4px;
@@ -11,12 +13,12 @@
     height: 10px;
     border: 1px solid Rgb(0 0 0 / 60%);
     border-radius: 50%;
-    background: #fff;
+    background: var(--white);
     box-sizing: border-box;
     overflow: hidden;
     
     &.active {
-      box-shadow: 0 0 5px Rgb(255 62 62 / 60%);
+      box-shadow: var(--shadow-glow-yellow-sm);
 
       &::before {
         position: absolute;
@@ -30,7 +32,7 @@
     }
     
     &.fainted {
-      background: #555;
+      background: var(--slate-600);
       &::after {
         position: absolute;
         top: 50%;

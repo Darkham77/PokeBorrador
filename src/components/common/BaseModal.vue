@@ -270,6 +270,7 @@ const modalRootStyle = computed(() => ({
     >
       <!-- Background Overlay -->
       <BaseModalOverlay
+        id="base-modal-basemodaloverlay-overlayclick"
         :show="show"
         :overlay-classes="overlayClasses"
         @click="handleOverlayClick"

@@ -50,42 +50,42 @@ const statusText = computed(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
   padding: 12px 16px;
-  background: rgb(10 14 24 / 90%);
-  border-top: 1px solid rgb(239 68 68 / 40%);
-  box-shadow: 0 -4px 16px rgb(0 0 0 / 40%);
+  background: Rgb(10 14 24 / 90%);
+  border-top: 1px solid Rgb(239 68 68 / 40%);
+  box-shadow: var(--shadow-card);
 }
 
 .spectator-badge-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .live-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 3px 10px;
-  border: 1px solid rgb(239 68 68 / 70%);
-  border-radius: 4px;
-  background: rgb(239 68 68 / 20%);
+  border: 1px solid Rgb(239 68 68 / 70%);
+  border-radius: $radius-sm;
+  background: Rgb(239 68 68 / 20%);
 }
 
 .pulse-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
+  background-color: var(--red-light);
+  box-shadow: var(--shadow-glow-yellow-sm);
 }
 
 .live-text {
-  color: #ef4444;
+  color: var(--red-light);
   font-family: var(--font-pixel, monospace);
-  font-size: 0.75rem;
+  font-size: var(--font-12);
   font-weight: bold;
   letter-spacing: 0.05em;
 }
@@ -93,17 +93,17 @@ const statusText = computed(() => {
 .viewer-count {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: #94a3b8;
+  gap: $spacing-xs;
+  color: var(--slate-400);
   font-family: var(--font-pixel, monospace);
-  font-size: 0.8rem;
+  font-size: var(--font-13);
 }
 
 .spectator-status-banner {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #e2e8f0;
-  font-size: 0.85rem;
+  gap: $spacing-sm;
+  color: var(--slate-200);
+  font-size: var(--font-14);
 }
 </style>

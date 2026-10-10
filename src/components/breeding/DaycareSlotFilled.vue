@@ -219,6 +219,7 @@ const heldItemSprite = computed(() => {
     </div>
 
     <div
+      id="daycare-slot-filled-div-itemstatusref"
       ref="itemStatusRef"
       class="item-status"
       @click.stop="handleItemClick"
@@ -253,6 +254,7 @@ const heldItemSprite = computed(() => {
     </div>
 
     <button
+      id="daycare-slot-filled-btn-retirar"
       class="withdraw-btn-retro"
       @click.stop="emit('withdraw')"
     >

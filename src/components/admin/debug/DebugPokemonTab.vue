@@ -64,6 +64,7 @@ async function repairAllIllegal() {
       <div class="button-row wrap">
         <PVTooltip title="Atrapar todos">
           <button
+            id="debug-pokemon-tab-btn-atrapar"
             class="btn-vicio-neutral btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === 'caught' }"
             @click.stop="setDebugPokedex('caught')"
@@ -73,6 +74,7 @@ async function repairAllIllegal() {
         </PVTooltip>
         <PVTooltip title="Simular que no has visto nada (Misterio)">
           <button
+            id="debug-pokemon-tab-btn-nunca-visto"
             class="btn-vicio-neutral btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === 'none' }"
             @click.stop="setDebugPokedex('none')"
@@ -82,6 +84,7 @@ async function repairAllIllegal() {
         </PVTooltip>
         <PVTooltip title="Ver todos los vistos (silueta si no capturado)">
           <button
+            id="debug-pokemon-tab-btn-vistos"
             class="btn-vicio-neutral btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === 'seen' }"
             @click.stop="setDebugPokedex('seen')"
@@ -91,6 +94,7 @@ async function repairAllIllegal() {
         </PVTooltip>
         <PVTooltip title="Restaurar progreso real">
           <button
+            id="debug-pokemon-tab-btn-real"
             class="btn-vicio-primary btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === null }"
             @click.stop="setDebugPokedex('real')"
@@ -105,6 +109,7 @@ async function repairAllIllegal() {
         <div class="button-row wrap">
           <PVTooltip title="Detecta y repara la legalidad de todos los Pokémon de la cuenta (equipo, caja y guardería)">
             <button
+              id="debug-pokemon-tab-btn-reparar-ilegales"
               class="btn-vicio-primary btn-vicio-sm"
               @click.stop="repairAllIllegal"
             >
@@ -113,6 +118,7 @@ async function repairAllIllegal() {
           </PVTooltip>
           <PVTooltip title="Sincroniza la pokedex con lo que tienes en el equipo/caja">
             <button
+              id="debug-pokemon-tab-btn-recalcular-pokedex"
               class="btn-vicio-secondary btn-vicio-sm"
               @click.stop="syncPokedexFromCollection"
             >
@@ -121,6 +127,7 @@ async function repairAllIllegal() {
           </PVTooltip>
           <PVTooltip title="Borra todo el progreso de la pokedex">
             <button
+              id="debug-pokemon-tab-btn-reset-pokedex"
               class="btn-vicio-danger btn-vicio-sm"
               @click.stop="resetPokedexDB"
             >
@@ -129,6 +136,7 @@ async function repairAllIllegal() {
           </PVTooltip>
           <PVTooltip title="Alternar rellenado automático de equipo PVP">
             <button
+              id="debug-pokemon-tab-btn-ui-pvpautofilldisabled-habilit"
               class="btn-vicio-secondary btn-vicio-sm"
               :class="{ active: !ui.pvpAutoFillDisabled }"
               @click.stop="ui.pvpAutoFillDisabled = !ui.pvpAutoFillDisabled"
@@ -138,6 +146,7 @@ async function repairAllIllegal() {
           </PVTooltip>
           <PVTooltip title="Limpia todos los slots del equipo PVP">
             <button
+              id="debug-pokemon-tab-btn-limpiar-equipo-pvp"
               class="btn-vicio-danger btn-vicio-sm"
               @click.stop="clearPvpTeam"
             >
@@ -147,6 +156,7 @@ async function repairAllIllegal() {
 
           <PVTooltip title="Alternar rellenado automático de equipo de Guerra">
             <button
+              id="debug-pokemon-tab-btn-ui-warautofilldisabled-habilit"
               class="btn-vicio-secondary btn-vicio-sm"
               :class="{ active: !ui.warAutoFillDisabled }"
               @click.stop="ui.warAutoFillDisabled = !ui.warAutoFillDisabled"
@@ -156,6 +166,7 @@ async function repairAllIllegal() {
           </PVTooltip>
           <PVTooltip title="Limpia todos los slots del equipo de Guerra">
             <button
+              id="debug-pokemon-tab-btn-limpiar-equipo-guerra"
               class="btn-vicio-danger btn-vicio-sm"
               @click.stop="clearWarTeam"
             >
@@ -170,6 +181,7 @@ async function repairAllIllegal() {
         <div class="button-row">
           <PVTooltip title="Fuerza la pantalla de elección de inicial para pruebas visuales">
             <button
+              id="debug-pokemon-tab-btn-atrapar-inicial"
               class="btn-vicio-secondary btn-vicio-sm"
               @click.stop="forceStarterScreen"
             >
@@ -178,6 +190,7 @@ async function repairAllIllegal() {
           </PVTooltip>
           <PVTooltip title="Caminar todos los huevos en la mochila hasta que estén listos para abrir">
             <button
+              id="debug-pokemon-tab-btn-caminar-huevos"
               class="btn-vicio-secondary btn-vicio-sm"
               @click.stop="walkEggs"
             >
@@ -201,7 +214,7 @@ async function repairAllIllegal() {
 .debug-tab-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
 }
 
 .debug-section-title {
@@ -209,15 +222,15 @@ async function repairAllIllegal() {
   @include pixelated;
 
   color: var(--yellow);
-  font-size: 8px;
+  font-size: var(--font-8);
   margin-bottom: 10px;
 }
 
 .debug-card {
   padding: 16px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 12px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 3%);
   
   &.full-width { width: 100%; }
   &.empty {
@@ -226,7 +239,7 @@ async function repairAllIllegal() {
 
     padding: 40px 20px;
     color: $muted;
-    font-size: 8px;
+    font-size: var(--font-8);
     text-align: center;
   }
 
@@ -236,7 +249,7 @@ async function repairAllIllegal() {
 
     display: block;
     color: $muted;
-    font-size: 8px;
+    font-size: var(--font-8);
     margin-bottom: 12px;
   }
 }
@@ -245,7 +258,7 @@ async function repairAllIllegal() {
   text-align: right;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px dashed rgb(124 58 237 / 30%);
+  border-top: 1px dashed Rgb(124 58 237 / 30%);
 
   &.no-border { border-top: none; }
 }
@@ -260,7 +273,7 @@ async function repairAllIllegal() {
 // Global button overrides if specific spacing is needed
 .button-row {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   
   &.wrap { flex-wrap: wrap; }
   

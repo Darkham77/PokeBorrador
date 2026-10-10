@@ -9,31 +9,31 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   margin-bottom: 24px;
   
   h3 {
     @include pixelated;
 
     color: var(--daycare-pink, #f36);
-    font-size: 10px;
+    font-size: var(--font-10);
     margin-bottom: 6px;
   }
   p {
     max-width: 500px;
     color: var(--gray, #94a3b8);
-    font-size: 12px;
+    font-size: var(--font-12);
     line-height: 1.4;
   }
 }
 
 .cloning-body {
   display: grid;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: 250px 1fr;
 
   @media (width <= 820px) {
-    gap: 16px;
+    gap: $spacing-lg;
     grid-template-columns: 1fr;
   }
 }
@@ -42,7 +42,7 @@
   display: block;
   color: var(--gray);
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
   letter-spacing: 0.5px;
   margin-bottom: 12px;
   text-transform: uppercase;
@@ -51,23 +51,23 @@
 .fossil-cards {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
 }
 
 .fossil-card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 10px 12px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 2%);
   cursor: pointer;
 
   &.active {
     background: Rgb(202 138 4 / 8%);
     border-color: Rgb(202 138 4 / 50%);
-    box-shadow: 0 0 12px Rgb(202 138 4 / 15%);
+    box-shadow: var(--shadow-glow-amber);
   }
 }
 
@@ -79,7 +79,7 @@
   width: 44px;
   height: 44px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 25%);
   flex-shrink: 0;
 
@@ -97,14 +97,14 @@
     bottom: -4px;
     padding: 2px 5px;
     border: 1px solid Rgb(0 0 0 / 50%);
-    border-radius: 4px;
-    background: #ca8a04;
-    color: #fff;
+    border-radius: $radius-sm;
+    background: var(--amber-dark);
+    color: var(--white);
     font-family: var(--font-pixel);
-    font-size: 7px;
+    font-size: var(--font-7);
 
     &.empty {
-      background: #475569;
+      background: var(--slate-600);
     }
   }
 }
@@ -112,19 +112,19 @@
 .fossil-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
   white-space: nowrap;
 
   .fossil-title {
-    color: #fff;
-    font-size: 12px;
+    color: var(--white);
+    font-size: var(--font-12);
     font-weight: 700;
     white-space: nowrap;
   }
 
   .fossil-result {
     color: var(--gray);
-    font-size: 10px;
+    font-size: var(--font-10);
     white-space: nowrap;
   }
 }
@@ -132,20 +132,20 @@
 .cloning-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 20px;
   border: 1px solid Rgb(255 255 255 / 4%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 15%);
 }
 
 .cloning-target-preview {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 14px;
   border: 1px solid Rgb(255 255 255 / 4%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 2%);
 
   .egg-preview-box {
@@ -160,14 +160,14 @@
 
   .preview-text {
     h4 {
-      color: #fff;
-      font-size: 13px;
+      color: var(--white);
+      font-size: var(--font-13);
       font-weight: 700;
       margin-bottom: 4px;
     }
     p {
       color: var(--gray);
-      font-size: 11px;
+      font-size: var(--font-11);
     }
   }
 }
@@ -175,14 +175,14 @@
 /* Interactive Matrix Table */
 .matrix-table-container {
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 20%);
   overflow: hidden;
 }
 
 .matrix-table {
   width: 100%;
-  font-size: 11px;
+  font-size: var(--font-11);
   border-collapse: collapse;
   table-layout: fixed;
 
@@ -191,7 +191,7 @@
     background: Rgb(255 255 255 / 3%);
     color: var(--gray);
     font-family: var(--font-pixel);
-    font-size: 8px;
+    font-size: var(--font-8);
     border-bottom: 1px solid Rgb(255 255 255 / 6%);
     text-transform: uppercase;
     white-space: nowrap;
@@ -205,7 +205,7 @@
 
   td {
     padding: 12px 14px;
-    color: #fff;
+    color: var(--white);
     border-bottom: 1px solid Rgb(255 255 255 / 3%);
     white-space: nowrap;
     vertical-align: middle;
@@ -223,20 +223,20 @@
 
   &.active {
     background: Rgb(202 138 4 / 12%) !important;
-    box-shadow: inset 3px 0 0 #ca8a04;
+    box-shadow: var(--shadow-card);
 
     td {
-      color: #fff;
+      color: var(--white);
       font-weight: 700;
     }
 
     .mult-label {
       background: Rgb(191 90 242 / 25%);
-      color: #bf5af2;
+      color: var(--purple);
     }
 
     .cost-cell {
-      color: #ffd60a;
+      color: var(--yellow);
     }
   }
 
@@ -251,21 +251,21 @@
 }
 
 .shiny-cell {
-  color: #bf5af2;
+  color: var(--purple);
 
   .mult-label {
     display: inline-block;
     padding: 2px 4px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: Rgb(255 255 255 / 5%);
     color: var(--gray);
-    font-size: 8px;
+    font-size: var(--font-8);
     margin-left: 6px;
   }
 }
 
 .cost-cell {
-  color: #ca8a04;
+  color: var(--amber-dark);
 }
 
 /* Status summary & verification details */
@@ -274,29 +274,29 @@
   justify-content: space-between;
   padding: 12px 16px;
   border: 1px dashed Rgb(255 255 255 / 8%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 20%);
 
   .status-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .lbl {
       color: var(--gray);
       font-family: var(--font-pixel);
-      font-size: 10px;
-      font-size: 7px;
+      font-size: var(--font-10);
+      font-size: var(--font-7);
       text-transform: uppercase;
     }
 
     .val {
-      color: #fff;
-      font-size: 14px;
+      color: var(--white);
+      font-size: var(--font-14);
       font-weight: 700;
 
       &.error-text {
-        color: #ff453a;
+        color: var(--red);
         text-shadow: 0 0 6px Rgb(255 69 58 / 20%);
       }
     }
@@ -319,15 +319,15 @@
   z-index: var(--z-map-spawns);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 8px 12px;
   border: 1px solid Rgb(220 38 38 / 50%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(220 38 38 / 95%);
-  color: #fff;
-  font-size: 8px; // Scale for Press Start 2P/pixel fonts
+  color: var(--white);
+  font-size: var(--font-8); // Scale for Press Start 2P/pixel fonts
   transform: Translatex(-50%);
-  box-shadow: 0 4px 12px Rgb(220 38 38 / 40%);
+  box-shadow: var(--shadow-card);
   white-space: nowrap;
   pointer-events: none;
 

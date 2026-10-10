@@ -72,6 +72,7 @@ const getAssetUrlLocal = getAssetUrl
 
       <div class="faction-options">
         <button
+          id="faction-choice-modal-btn-1"
           class="faction-btn union-btn"
           :disabled="isProcessing"
           @click.stop="chooseFaction('union')"
@@ -91,6 +92,7 @@ const getAssetUrlLocal = getAssetUrl
         </button>
 
         <button
+          id="faction-choice-modal-btn-2"
           class="faction-btn poder-btn"
           :disabled="isProcessing"
           @click.stop="chooseFaction('poder')"
@@ -126,7 +128,7 @@ const getAssetUrlLocal = getAssetUrl
   
   .intro-text {
     color: $white;
-    font-size: 14px;
+    font-size: var(--font-14);
     line-height: 1.4;
     margin-bottom: 8px;
   }
@@ -135,7 +137,7 @@ const getAssetUrlLocal = getAssetUrl
     @include pixelated;
 
     color: $white;
-    font-size: 9px;
+    font-size: var(--font-9);
     
     .coin { color: var(--yellow, $coin-gold); }
   }
@@ -144,17 +146,17 @@ const getAssetUrlLocal = getAssetUrl
 .faction-options {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
 }
 
 .faction-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   width: 100%;
   padding: 24px;
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 40%);
   text-align: center;
   cursor: pointer;
@@ -167,14 +169,14 @@ const getAssetUrlLocal = getAssetUrl
   }
 
   &.union-btn {
-    border: 2px solid #3b82f6;
-    box-shadow: inset 0 0 20px Rgb(59 130 246 / 10%);
+    border: 2px solid var(--blue-500);
+    box-shadow: var(--shadow-2xl);
     &:hover:not(:disabled) { background: Rgb(59 130 246 / 10%); transform: Scale(1.02); }
   }
 
   &.poder-btn {
-    border: 2px solid #ef4444;
-    box-shadow: inset 0 0 20px Rgb(239 68 68 / 10%);
+    border: 2px solid var(--red-light);
+    box-shadow: var(--shadow-2xl);
     &:hover:not(:disabled) { background: Rgb(239 68 68 / 10%); transform: Scale(1.02); }
   }
 }
@@ -197,24 +199,23 @@ const getAssetUrlLocal = getAssetUrl
 .faction-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .faction-name {
   @include pixelated;
 
-  font-size: 16px;
+  font-size: var(--font-16);
   letter-spacing: 1px;
 }
 
 .faction-motto {
   color: $white;
-  font-size: 12px;
+  font-size: var(--font-12);
   opacity: 0.8;
 }
 
-.union-text { color: #60a5fa; }
+.union-text { color: var(--blue-400); }
 
-.poder-text { color: #f87171; }
+.poder-text { color: var(--rose); }
 </style>
-

@@ -22,6 +22,7 @@ const togglePerf = () => getDebug().togglePerf()
       <div class="button-row">
         <PVTooltip title="Muestra los límites de cada celda de la grilla NxN en las rutas del mapa.">
           <button
+            id="debug-map-tab-btn-mostrar-bordes-rosa"
             class="small-btn"
             :class="{ active: ui.isDebugGridMode }"
             @click.stop="toggleGrid"
@@ -37,6 +38,7 @@ const togglePerf = () => getDebug().togglePerf()
       <div class="button-row">
         <PVTooltip title="Fuerza el modo rápido que suspende el renderizado pesado del mapa.">
           <button
+            id="debug-map-tab-btn-modo-r-pido-mapa"
             class="small-btn"
             :class="{ active: ui.isDebugFastMode }"
             @click.stop="togglePerf"

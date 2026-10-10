@@ -14,7 +14,7 @@ Testing / QA Engineers.
 
 ### Reference Manuals
 
-- [tests/node/AGENTS.md](../AGENTS.md): Node test execution and deterministic scoping rules.
+- [test_aventura/AGENTS.md](../../AGENTS.md): Test Aventura governance and scoping rules.
 
 ## Work Guidance
 
@@ -28,7 +28,7 @@ Testing / QA Engineers.
 
 ## Verification
 
-- `npm run test:node -- tests/node/map/` must pass 100% with exit code 0.
+- `npm run test:node -- test_aventura/tests/map/` must pass 100% with exit code 0.
 
 ## Child DOX Index
 

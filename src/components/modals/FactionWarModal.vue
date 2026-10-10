@@ -165,10 +165,10 @@ function onDashboardEnter(el: Element, done: () => void): void {
 .faction-war-title-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 
   .title-icon {
-    font-size: 24px;
+    font-size: var(--font-24);
     filter: Drop-Shadow(0 0 8px Rgb(250 204 21 / 40%));
   }
 
@@ -181,14 +181,14 @@ function onDashboardEnter(el: Element, done: () => void): void {
     @include pixelated;
 
     color: var(--yellow);
-    font-size: 14px;
+    font-size: var(--font-14);
     line-height: 1.2;
     text-shadow: 0 2px 0 var(--black);
   }
 
   .sub-title {
     color: var(--gray);
-    font-size: 10px;
+    font-size: var(--font-10);
     margin-top: 2px;
   }
 }
@@ -214,10 +214,10 @@ function onDashboardEnter(el: Element, done: () => void): void {
   width: 100%;
   max-width: 480px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 40%);
   overflow: hidden;
-  box-shadow: 0 10px 30px Rgb(0 0 0 / 50%);
+  box-shadow: $shadow-xl;
 
   .card-glow {
     position: absolute;
@@ -240,7 +240,7 @@ function onDashboardEnter(el: Element, done: () => void): void {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 16px;
+    gap: $spacing-lg;
     margin-bottom: 24px;
 
     .faction-logo {
@@ -262,7 +262,7 @@ function onDashboardEnter(el: Element, done: () => void): void {
       @include pixelated;
 
       color: var(--gray);
-      font-size: 14px;
+      font-size: var(--font-14);
       text-shadow: 0 0 8px Rgb(255 255 255 / 20%);
     }
   }
@@ -272,13 +272,13 @@ function onDashboardEnter(el: Element, done: () => void): void {
 
     margin: 0 0 16px;
     color: var(--white);
-    font-size: 16px;
+    font-size: var(--font-16);
     letter-spacing: 1px;
   }
 
   .description {
     color: var(--white);
-    font-size: 12px;
+    font-size: var(--font-12);
     line-height: 1.5;
     margin-bottom: 12px;
 
@@ -289,7 +289,7 @@ function onDashboardEnter(el: Element, done: () => void): void {
 
   .benefit {
     color: var(--gray);
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1.4;
     margin-bottom: 32px;
   }

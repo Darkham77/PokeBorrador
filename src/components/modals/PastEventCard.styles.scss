@@ -3,7 +3,7 @@
 .past-event-card {
   padding: 12px 14px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 3%);
 
   &.user-won {
@@ -17,19 +17,19 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 8px 12px;
+  gap: $spacing-sm $spacing-md;
   margin-bottom: 10px;
 }
 
 .event-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   min-width: 0;
   flex: 1 1 auto;
 
   .event-icon {
-    font-size: 20px;
+    font-size: var(--font-20);
     flex-shrink: 0;
   }
 
@@ -43,7 +43,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     min-width: 0;
   }
 
@@ -52,7 +52,7 @@
 
     margin: 0;
     color: var(--white);
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1.35;
     overflow-wrap: break-word;
   }
@@ -68,16 +68,16 @@
     margin: 0;
     padding: 0;
     border: 1px solid Rgb(255 255 255 / 20%);
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: Rgb(255 255 255 / 8%);
     cursor: pointer;
-    box-shadow: 0 1px 3px Rgb(0 0 0 / 30%);
+    box-shadow: var(--shadow-sm);
     flex-shrink: 0;
 
     &:hover:not(:disabled) {
       background: Rgb(255 255 255 / 18%);
       border-color: Rgb(250 204 21 / 60%);
-      box-shadow: 0 0 8px Rgb(250 204 21 / 30%);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
 
     &:disabled,
@@ -96,7 +96,7 @@
 
   .event-date {
     color: var(--gray);
-    font-size: 9px;
+    font-size: var(--font-9);
     line-height: 1.35;
     margin-top: 2px;
   }
@@ -105,7 +105,7 @@
 .award-action-slot {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .retro-btn {
@@ -115,25 +115,25 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 6px 12px;
   border: 1px solid transparent;
-  border-radius: 6px;
-  font-size: 8px;
+  border-radius: $radius-md;
+  font-size: var(--font-8);
   cursor: pointer;
 
   &.mini {
     padding: 4px 8px;
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 0.5px;
   }
 
   &.claim-all-btn {
     background: Linear-Gradient(135deg, Rgb(16 185 129 / 30%) 0%, Rgb(5 150 105 / 40%) 100%);
-    color: #ecfdf5;
+    color: var(--emerald-500);
     font-weight: bold;
     border-color: Rgb(52 211 153 / 60%);
-    box-shadow: 0 0 8px Rgb(16 185 129 / 30%);
+    box-shadow: var(--shadow-glow-yellow-sm);
   }
 }
 
@@ -142,14 +142,14 @@
 
   padding: 4px 8px;
   border: 1px solid Rgb(34 197 94 / 40%);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: Rgb(34 197 94 / 15%);
   color: var(--green-bright);
-  font-size: 8px;
+  font-size: var(--font-8);
 
   &.mini {
     padding: 3px 6px;
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }
 
@@ -158,15 +158,15 @@
 
   padding: 4px 8px;
   border: 1px solid Rgb(255 215 0 / 40%);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: Rgb(255 215 0 / 15%);
   color: var(--yellow);
-  font-size: 8px;
+  font-size: var(--font-8);
 }
 
 .podium-box {
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 30%);
 }
 
@@ -174,7 +174,7 @@
   @include pixelated;
 
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   line-height: 1.35;
   margin-bottom: 6px;
   letter-spacing: 0.5px;
@@ -183,20 +183,20 @@
 .no-winners {
   padding: 4px 0;
   color: var(--gray);
-  font-size: 9px;
+  font-size: var(--font-9);
   font-style: italic;
 }
 
 .categories-podium-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
 }
 
 .category-podium-block {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   &.other-awards-block {
     margin-top: 4px;
@@ -207,16 +207,16 @@
   .category-block-header {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     color: var(--yellow);
-    font-size: 7px;
+    font-size: var(--font-7);
     line-height: 1.35;
     letter-spacing: 0.5px;
     border-bottom: 1px dashed Rgb(255 255 255 / 8%);
     padding-bottom: 3px;
 
     .cat-icon {
-      font-size: 10px;
+      font-size: var(--font-10);
     }
   }
 
@@ -225,10 +225,10 @@
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    gap: 8px 12px;
+    gap: $spacing-sm $spacing-md;
     padding: 6px 10px;
     border: 1px solid Rgb(255 215 0 / 25%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(255 255 255 / 4%);
     margin-top: 4px;
 
@@ -236,15 +236,15 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       min-width: 0;
 
       .user-award-label {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: $spacing-xs;
         color: var(--yellow);
-        font-size: 8px;
+        font-size: var(--font-8);
         letter-spacing: 0.5px;
         white-space: nowrap;
       }
@@ -252,14 +252,14 @@
       .award-pills-wrap {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
       }
     }
 
     .user-award-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
       margin-left: auto;
     }
   }
@@ -268,7 +268,7 @@
 .winners-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: 100%;
 }
 

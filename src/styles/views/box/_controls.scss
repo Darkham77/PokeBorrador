@@ -11,23 +11,23 @@
 
   display: flex;
   flex-wrap: wrap; 
-  gap: 16px 24px;
+  gap: $spacing-lg $spacing-2xl;
   padding: 12px 20px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px Rgb(0 0 0 / 30%);
+  border-radius: $radius-3xl;
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
 
   .search-row-integrated {
     display: flex;
     align-items: center;
-    gap: 16px; 
+    gap: $spacing-lg; 
     min-width: 0;
     flex: 1 1 650px;
 
     @media (width <= 768px) {
       flex-wrap: wrap;
-      gap: 12px;
+      gap: $spacing-md;
       flex: 1 1 100%;
       
       .box-search-wrapper {
@@ -43,7 +43,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px; 
+    gap: $spacing-lg; 
     min-width: 300px;
     flex: 1 1 500px;
     
@@ -65,7 +65,7 @@
   .box-search-icon {
     position: absolute;
     left: 16px;
-    font-size: 14px;
+    font-size: var(--font-14);
     opacity: 0.6;
     pointer-events: none;
   }
@@ -77,10 +77,10 @@
     height: 40px;
     padding: 0 44px;
     border: 1px solid Rgb(255 255 255 / 10%); 
-    border-radius: 12px; 
+    border-radius: $radius-xl; 
     background: Rgb(0 0 0 / 30%);
     color: var(--white);
-    font-size: 8px;
+    font-size: var(--font-8);
     line-height: 40px;
     outline: none;
 
@@ -88,7 +88,7 @@
       background: Rgb(255 255 255 / 5%);
       outline: none;
       border-color: var(--yellow);
-      box-shadow: 0 0 15px Rgb(234 179 8 / 10%);
+      box-shadow: var(--shadow-glow-amber);
     }
 
     &::placeholder {
@@ -105,7 +105,7 @@
     border: none;
     background: none;
     color: Rgb(255 255 255 / 50%);
-    font-size: 16px;
+    font-size: var(--font-16);
     line-height: 1;
     cursor: pointer;
 
@@ -117,10 +117,10 @@
 
 .box-tabs {
   display: flex;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 6px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 30%);
   overflow-x: auto;
   
@@ -131,10 +131,10 @@
 
     padding: 10px 20px;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: none;
     color: var(--gray);
-    font-size: 8px;
+    font-size: var(--font-8);
     cursor: pointer;
     white-space: nowrap;
 
@@ -153,14 +153,14 @@
     width: fit-content;
     height: 32px;
     padding: 0 12px;
-    border-radius: 8px;
-    font-size: 7px;
+    border-radius: $radius-lg;
+    font-size: var(--font-7);
     margin-left: 12px; 
     flex: 0 0 auto;
 
     &:hover {
       transform: Translatey(-2px) Scale(1.02);
-      box-shadow: 0 4px 15px Rgb(255 184 0 / 20%);
+      box-shadow: var(--shadow-md);
     }
 
     .btn-price {
@@ -170,7 +170,7 @@
 
     .currency-symbol {
       font-family: sans-serif;
-      font-size: 11px;
+      font-size: var(--font-11);
       vertical-align: baseline;
       margin-left: 2px;
     }

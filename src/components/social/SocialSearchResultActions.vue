@@ -55,7 +55,7 @@ const emit = defineEmits<{
 .search-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .status-badge {
@@ -64,26 +64,26 @@ const emit = defineEmits<{
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 8px 12px;
-  border-radius: 8px;
-  font-family: var(--font-pixel), "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
-  font-size: 8px;
+  border-radius: $radius-lg;
+  font-family: var(--font-pixel), $font-family-emoji;
+  font-size: var(--font-8);
   line-height: 1.5;
   text-align: center;
   
   &.pending {
-    border: 1px solid rgb(250 204 21 / 25%);
-    background: #475569;
-    color: #facc15;
-    box-shadow: 0 3px 0 #334155;
+    border: 1px solid Rgb(250 204 21 / 25%);
+    background: var(--slate-600);
+    color: var(--amber-400);
+    box-shadow: var(--shadow-card);
   }
   
   &.friend {
-    border: 1px solid rgb(74 222 128 / 25%);
-    background: #1e293b;
-    color: #4ade80;
-    box-shadow: 0 3px 0 #0f172a;
+    border: 1px solid Rgb(74 222 128 / 25%);
+    background: var(--slate-800);
+    color: var(--green-light);
+    box-shadow: var(--shadow-card);
   }
 }
 </style>

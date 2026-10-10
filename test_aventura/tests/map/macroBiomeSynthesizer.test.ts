@@ -9,8 +9,8 @@ import {
   synthesizeMacroBiomes,
   MACRO_BIOMES,
   type MacroBiome
-} from '../../../src/logic/map/macroBiomeSynthesizer.ts';
-import type { WaterTerrainKind } from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/macroBiomeSynthesizer.ts';
+import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('macroBiomeSynthesizer', () => {
   const W = 64;

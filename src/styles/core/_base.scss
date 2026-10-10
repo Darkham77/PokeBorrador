@@ -23,7 +23,99 @@
   --blue-light: #{color.scale($blue, $lightness: 25%)};
   --bg-main: #{$legacy-bg};
   --bg-card: #{$legacy-card};
-  --glow-yellow: #{$legacy-glow};
+  --white: #{$white};
+  --sky: #{$sky};
+  --sky-dark: #{$sky-dark};
+  --slate-50: #{$slate-50};
+  --slate-100: #{$slate-100};
+  --slate-200: #{$slate-200};
+  --slate-300: #{$slate-300};
+  --slate-400: #{$slate-400};
+  --slate-500: #{$slate-500};
+  --slate-600: #{$slate-600};
+  --slate-700: #{$slate-700};
+  --slate-800: #{$slate-800};
+  --slate-900: #{$slate-900};
+  --emerald: #{$emerald};
+  --emerald-400: #{$emerald-400};
+  --emerald-500: #{$emerald-500};
+  --amber: #{$amber};
+  --amber-300: #{$amber-300};
+  --amber-400: #{$amber-400};
+  --amber-dark: #{$amber-dark};
+  --yellow-light: #{$yellow-light};
+  --blue-300: #{$blue-300};
+  --blue-400: #{$blue-400};
+  --blue-500: #{$blue-500};
+  --cyan: #{$cyan};
+  --rose: #{$rose};
+  --red-light: #{$red-light};
+  --red-300: #{$red-300};
+  --red-600: #{$red-600};
+  --green-light: #{$green-light};
+  --orange-400: #{$orange-400};
+  --orange-500: #{$orange-500};
+  --purple-400: #{$purple-400};
+  --gold: #{$gold};
+
+  // Tag & Filter Colors
+  --tag-fav: #{$tag-fav};
+  --tag-breed: #{$tag-breed};
+  --tag-competitive: #{$tag-competitive};
+  --tag-trade: #{$tag-trade};
+  --tag-iv31: #{$tag-iv31};
+  --tag-shiny: #{$tag-shiny};
+  --tag-compatible: #{$tag-compatible};
+  --tag-hatched: #{$tag-hatched};
+
+  // Elemental Type Colors
+  --type-normal: #{$type-normal};
+  --type-fire: #{$type-fire};
+  --type-water: #{$type-water};
+  --type-grass: #{$type-grass};
+  --type-electric: #{$type-electric};
+  --type-ice: #{$type-ice};
+  --type-fighting: #{$type-fighting};
+  --type-poison: #{$type-poison};
+  --type-ground: #{$type-ground};
+  --type-flying: #{$type-flying};
+  --type-psychic: #{$type-psychic};
+  --type-bug: #{$type-bug};
+  --type-rock: #{$type-rock};
+  --type-ghost: #{$type-ghost};
+  --type-dragon: #{$type-dragon};
+  --type-dark: #{$type-dark};
+  --type-steel: #{$type-steel};
+  --type-fairy: #{$type-fairy};
+
+  // Font Size Tokens
+  --font-5: 5px;
+  --font-6: 6px;
+  --font-7: 7px;
+  --font-8: 8px;
+  --font-9: 9px;
+  --font-10: 10px;
+  --font-11: 11px;
+  --font-12: 12px;
+  --font-13: 13px;
+  --font-14: 14px;
+  --font-15: 15px;
+  --font-16: 16px;
+  --font-18: 18px;
+  --font-20: 20px;
+  --font-22: 22px;
+  --font-24: 24px;
+  --font-26: 26px;
+  --font-28: 28px;
+  --font-30: 30px;
+  --font-32: 32px;
+  --font-36: 36px;
+  --font-40: 40px;
+  --font-42: 42px;
+  --font-48: 48px;
+  --font-80: 80px;
+  --font-90: 90px;
+  --font-120: 120px;
 
   // Weather Atmospheric Bleed (SSoT)
   --weather-layer-bleed: #{$weather-layer-bleed};
@@ -31,15 +123,114 @@
   --weather-noise-1-url: url('/assets/fx/pattern-noise-1.webp'); // asset-url-ok: SSoT root CSS variable for weather noise pattern 1
   --weather-noise-2-url: url('/assets/fx/pattern-noise-2.webp'); // asset-url-ok: SSoT root CSS variable for weather noise pattern 2
 
+  // Design System Tokens: Spacing
+  --space-2xs: #{$spacing-2xs};
+  --space-xs-alt: #{$spacing-xs-alt};
+  --space-xs: #{$spacing-xs};
+  --space-xs-5: #{$spacing-xs-5};
+  --space-sm-alt: #{$spacing-sm-alt};
+  --space-sm: #{$spacing-sm};
+  --space-md-alt: #{$spacing-md-alt};
+  --space-md: #{$spacing-md};
+  --space-md-lg: #{$spacing-md-lg};
+  --space-md-15: #{$spacing-md-15};
+  --space-lg: #{$spacing-lg};
+  --space-lg-alt: #{$spacing-lg-alt};
+  --space-xl: #{$spacing-xl};
+  --space-2xl: #{$spacing-2xl};
+  --space-3xl: #{$spacing-3xl};
+  --space-4xl: #{$spacing-4xl};
+  --space-5xl: #{$spacing-5xl};
+
+  // Design System Tokens: Radii
+  --radius-xs: #{$radius-xs};
+  --radius-xs-alt: #{$radius-xs-alt};
+  --radius-sm: #{$radius-sm};
+  --radius-md-alt: #{$radius-md-alt};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-lg-alt: #{$radius-lg-alt};
+  --radius-xl: #{$radius-xl};
+  --radius-xl-alt: #{$radius-xl-alt};
+  --radius-2xl: #{$radius-2xl};
+  --radius-2xl-alt: #{$radius-2xl-alt};
+  --radius-3xl: #{$radius-3xl};
+  --radius-4xl: #{$radius-4xl};
+  --radius-full: #{$radius-full};
+
+  // Design System Tokens: Font Weights
+  --font-normal: #{$font-weight-normal};
+  --font-medium: #{$font-weight-medium};
+  --font-semibold: #{$font-weight-semibold};
+  --font-bold: #{$font-weight-bold};
+  --font-extrabold: #{$font-weight-extrabold};
+  --font-black: #{$font-weight-black};
+
+  // Design System Tokens: Shadows
+  --shadow-subtle: #{$shadow-subtle};
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-xl: #{$shadow-xl};
+  --shadow-2xl: #{$shadow-2xl};
+  --shadow-modal: #{$shadow-modal};
+  --shadow-card: #{$shadow-card};
+  --shadow-card-subtle: #{$shadow-card-subtle};
+  --shadow-card-dark: #{$shadow-card-dark};
+  --shadow-card-elevated: #{$shadow-card-elevated};
+  --shadow-inset-sm: #{$shadow-inset-sm};
+  --shadow-inset-md: #{$shadow-inset-md};
+  --shadow-inset-subtle: #{$shadow-inset-subtle};
+  --shadow-retro-yellow: #{$shadow-retro-yellow};
+  --shadow-retro-yellow-hover: #{$shadow-retro-yellow-hover};
+  --shadow-retro-yellow-active: #{$shadow-retro-yellow-active};
+  --shadow-retro-btn: #{$shadow-retro-btn};
+  --shadow-retro-btn-hover: #{$shadow-retro-btn-hover};
+  --shadow-retro-dark: #{$shadow-retro-dark};
+  --shadow-retro-dark-hover: #{$shadow-retro-dark-hover};
+  --shadow-retro-dark-active: #{$shadow-retro-dark-active};
+  --shadow-retro-blue: #{$shadow-retro-blue};
+  --shadow-retro-blue-hover: #{$shadow-retro-blue-hover};
+  --shadow-retro-blue-active: #{$shadow-retro-blue-active};
+  --shadow-retro-btn-active: #{$shadow-retro-btn-active};
+  --shadow-glow-yellow-lg: #{$shadow-glow-yellow-lg};
+  --shadow-glow-blue-sm: #{$shadow-glow-blue-sm};
+  --shadow-glow-blue-lg: #{$shadow-glow-blue-lg};
+  --shadow-glow-red-lg: #{$shadow-glow-red-lg};
+  --shadow-glow-rose: #{$shadow-glow-rose};
+  --shadow-glow-emerald: #{$shadow-glow-emerald};
+  --shadow-glow-purple: #{$shadow-glow-purple};
+  --shadow-glow-purple-lg: #{$shadow-glow-purple-lg};
+  --shadow-glow-white: #{$shadow-glow-white};
+  --shadow-glow-white-lg: #{$shadow-glow-white-lg};
+  --shadow-glow-cyan: #{$shadow-glow-cyan};
+  --shadow-glow-yellow: #{$shadow-glow-yellow};
+  --shadow-glow-yellow-sm: #{$shadow-glow-yellow-sm};
+  --shadow-glow-green: #{$shadow-glow-green};
+  --shadow-glow-amber: #{$shadow-glow-amber};
+  --shadow-glow-amber-lg: #{$shadow-glow-amber-lg};
+  --shadow-glow-blue: #{$shadow-glow-blue};
+  --shadow-glow-red: #{$shadow-glow-red};
+
+  // Design System Tokens: Font Families
+  --font-family-pokemon: #{$font-family-pokemon};
+  --font-family-pixel: #{$font-family-pixel};
+  --font-family-ui: #{$font-family-ui};
+  --font-family-sans: #{$font-family-sans};
+  --font-family-mono: #{$font-family-mono};
+  --font-family-emoji: #{$font-family-emoji};
+  --font-family-pixel-emoji: #{$font-family-pixel-emoji};
+
   // Premium Shell System (Replaces Premium Shell)
   --shell-bg: Rgb(15 18 32 / 100%);
   --shell-border: Rgb(255 255 255 / 15%);
   --shell-edge: Rgb(255 255 255 / 8%);
   
   // Typography Source of Truth (CSS)
-  --font-pixel: 'Pokemon FireRed LeafGreen', monospace;
-  --font-pixel-proportional: 'Pokemon FireRed LeafGreen', monospace;
-  --font-ui: 'Pokemon FireRed LeafGreen', monospace;
+  --font-pixel: #{$font-family-pokemon};
+  --font-pixel-alt: #{$font-family-pixel};
+  --font-pixel-proportional: #{$font-family-pokemon};
+  --font-ui: #{$font-family-pokemon};
 
   // Z-Index Layers (Standardized SSoT: @/logic/constants/visuals.ts)
   --z-base: 0;
@@ -213,7 +404,7 @@ img.event-banner-img {
   display: inline-flex !important;
   justify-content: center !important;
   align-items: center !important;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  font-family: $font-family-emoji !important;
   line-height: 1 !important;
   vertical-align: middle !important;
 }
@@ -229,7 +420,7 @@ img.event-banner-img {
     background: Rgb(0 0 0 / 10%) !important;
   }
   &::-webkit-scrollbar-thumb {
-    border-radius: 3px !important;
+    border-radius: $radius-xs-alt !important;
     background: Rgb(255 255 255 / 30%) !important;
   }
   
@@ -261,12 +452,12 @@ img.event-banner-img {
 .season-tournament-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 12px;
   border: 1.5px solid Rgb(250 204 21 / 40%);
-  border-radius: 14px;
+  border-radius: $radius-xl-alt;
   background: Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 10%) 0%, transparent 70%), Linear-Gradient(180deg, #1e1812 0%, #12141c 100%);
-  box-shadow: 0 4px 18px Rgb(0 0 0 / 50%), 0 0 14px Rgb(250 204 21 / 8%), inset 0 1px 0 Rgb(255 235 130 / 20%);
+  box-shadow: var(--shadow-card-elevated);
   overflow: hidden;
   box-sizing: border-box;
 
@@ -274,7 +465,7 @@ img.event-banner-img {
     position: relative;
     width: 100%;
     border: 1px solid Rgb(250 204 21 / 30%);
-    border-radius: 10px;
+    border-radius: $radius-lg-alt;
     background: transparent;
     aspect-ratio: 16 / 9;
     overflow: hidden;
@@ -291,24 +482,24 @@ img.event-banner-img {
   .tournament-details {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 0 4px;
 
     .tournament-header-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
 
       .season-badge {
         @include pixelated;
 
         padding: 3px 7px;
-        border: 1px solid #000;
-        border-radius: 4px;
+        border: 1px solid var(--black);
+        border-radius: $radius-sm;
         background: var(--yellow, #facc15);
-        color: #000;
-        font-size: 7px;
+        color: var(--black);
+        font-size: var(--font-7);
         font-weight: bold;
         letter-spacing: 0.5px;
       }
@@ -318,7 +509,7 @@ img.event-banner-img {
 
         margin: 0;
         color: var(--white);
-        font-size: 12px;
+        font-size: var(--font-12);
         font-weight: 900;
         letter-spacing: 0.5px;
         text-transform: uppercase;
@@ -328,7 +519,7 @@ img.event-banner-img {
     .tournament-desc {
       margin: 0;
       color: Rgb(226 232 240 / 90%);
-      font-size: 9px;
+      font-size: var(--font-9);
       line-height: 1.4;
     }
 
@@ -336,46 +527,46 @@ img.event-banner-img {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
 
       .rule-badge {
         @include pixelated;
 
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: $spacing-xs;
         padding: 3px 8px;
         border: 1px solid Rgb(255 255 255 / 12%);
-        border-radius: 6px;
+        border-radius: $radius-md;
         background: Rgb(255 255 255 / 5%);
         color: var(--white);
-        font-size: 8px;
+        font-size: var(--font-8);
 
         &.special-rule {
           background: Rgb(250 204 21 / 8%);
-          color: #fef08a;
+          color: var(--yellow-light);
           border-color: Rgb(250 204 21 / 30%);
         }
 
         &.all-types {
-          color: #94a3b8;
+          color: var(--slate-400);
         }
       }
 
       .types-pills-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 3px;
+        gap: $spacing-xs-alt;
       }
     }
 
     .tournament-reward-preview {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: $spacing-md-alt;
       padding: 6px 12px;
       border: 1px solid Rgb(250 204 21 / 25%);
-      border-radius: 8px;
+      border-radius: $radius-lg;
       background: Rgb(250 204 21 / 6%);
 
       .reward-sprite {
@@ -389,22 +580,22 @@ img.event-banner-img {
       .reward-text-group {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: $spacing-2xs;
 
         .reward-tag {
           @include pixelated;
 
           color: var(--yellow);
-          font-size: 7px;
+          font-size: var(--font-7);
           font-weight: bold;
         }
 
         .reward-name {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
+          gap: $spacing-xs-5;
           color: var(--white);
-          font-size: 9px;
+          font-size: var(--font-9);
           font-weight: bold;
           line-height: 1.25;
           text-transform: uppercase;
@@ -413,7 +604,7 @@ img.event-banner-img {
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            font-size: 10px;
+            font-size: var(--font-10);
             line-height: 1;
           }
         }

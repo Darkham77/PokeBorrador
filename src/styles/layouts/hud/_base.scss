@@ -33,18 +33,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    gap: $spacing-md-15;
     width: 100%;
     padding: 10px 24px;
     border: 1px solid Rgb(255 255 255 / 12%);
-    border-radius: 20px;
+    border-radius: $radius-3xl;
     pointer-events: auto;
     container-type: inline-size;
     box-sizing: border-box;
-    box-shadow: 
-      0 8px 20px Rgb(0 0 0 / 50%), 
-      inset 0 1px 1px Rgb(255 255 255 / 20%),
-      inset 0 -1px 2px Rgb(0 0 0 / 40%);
+    box-shadow: var(--shadow-card-elevated);
     white-space: nowrap;
     backface-visibility: hidden; 
 
@@ -66,7 +63,7 @@
 
       display: grid;
       justify-content: center !important;
-      gap: 12px;
+      gap: $spacing-md;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: auto auto;
       width: 100%;
@@ -84,7 +81,7 @@
         display: flex; 
         flex-wrap: wrap; 
         justify-content: center !important; 
-        gap: 10px; 
+        gap: $spacing-md-alt; 
         width: 100%; 
         padding: 4px 0; 
         grid-column: 1 / -1; 
@@ -92,18 +89,18 @@
         margin-left: 0; 
         
         & .hud-pill {
-          gap: 2px;
+          gap: $spacing-2xs;
           min-width: 58px;
           height: 58px;
           padding: 6px 8px;
-          border-radius: 14px;
+          border-radius: $radius-xl-alt;
           
           i, span:first-child { 
             height: 22px; 
-            font-size: 16px; 
-            &.currency-icon-money { font-size: 20px; }
+            font-size: var(--font-16); 
+            &.currency-icon-money { font-size: var(--font-20); }
           }
-          .pill-value { font-size: 9px; }
+          .pill-value { font-size: var(--font-9); }
         }
       }
     }
@@ -113,7 +110,7 @@
 /* PC COMPACT MODES */
 @container (max-width: 1775px) {
   .hud-container .hud {
-    gap: 12px;
+    gap: $spacing-md;
     padding: 8px 16px;
   }
 }

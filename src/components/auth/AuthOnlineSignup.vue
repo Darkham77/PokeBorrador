@@ -33,6 +33,7 @@ const {
 <template>
   <div class="online-signup-form">
     <input
+      id="auth-online-signup-input-nombre-de-entrenador"
       :value="usernameValue"
       class="auth-input"
       type="text"
@@ -48,6 +49,7 @@ const {
 
     <div class="gender-selection-row">
       <button
+        id="auth-online-signup-btn-1"
         class="gender-select-btn male"
         :class="{ active: genderValue === 'h' }"
         @click.prevent.stop="emit('update:genderValue', 'h')"
@@ -59,6 +61,7 @@ const {
         /> MASCULINO
       </button>
       <button
+        id="auth-online-signup-btn-2"
         class="gender-select-btn female"
         :class="{ active: genderValue === 'm' }"
         @click.prevent.stop="emit('update:genderValue', 'm')"
@@ -72,6 +75,7 @@ const {
     </div>
 
     <input
+      id="auth-online-signup-input-email"
       :value="emailValue"
       class="auth-input"
       type="email"
@@ -84,6 +88,7 @@ const {
       @mouseleave="handleInputLeave"
     >
     <input
+      id="auth-online-signup-input-contrase-a-m-n-6-caracteres"
       :value="passwordValue"
       class="auth-input"
       type="password"
@@ -97,6 +102,7 @@ const {
       @mouseleave="handleInputLeave"
     >
     <button
+      id="auth-online-signup-btn-3"
       class="auth-btn"
       :disabled="loading"
       @click.stop="emit('signup')"

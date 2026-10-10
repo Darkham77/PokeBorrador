@@ -13,7 +13,7 @@
 
   .header-stats {
     display: flex;
-    gap: 24px;
+    gap: $spacing-2xl;
 
     .stat-node {
       @include shop-header-stat;
@@ -47,7 +47,7 @@
 .shop-search-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 10px 16px;
   background: Rgb(0 0 0 / 10%);
   border-bottom: 1px solid Rgb(255 255 255 / 5%);
@@ -65,8 +65,8 @@
       // Fix emoji vertical alignment
       display: flex;
       align-items: center;
-      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-      font-size: 13px;
+      font-family: $font-family-emoji !important;
+      font-size: var(--font-13);
       line-height: 1;
       opacity: 0.4;
       transform: Translatey(-50%);
@@ -77,16 +77,16 @@
       width: 100%;
       padding: 8px 32px 8px 34px;
       border: 1px solid Rgb(255 255 255 / 8%);
-      border-radius: 10px;
+      border-radius: $radius-lg-alt;
       background: Rgb(0 0 0 / 30%);
-      color: white;
-      font-size: 12px;
+      color: var(--white);
+      font-size: var(--font-12);
       outline: none;
       
       &:focus {
         background: Rgb(0 0 0 / 40%);
         border-color: var(--yellow);
-        box-shadow: 0 0 12px Rgb(250 204 21 / 12%);
+        box-shadow: var(--shadow-glow-amber);
       }
 
       &::placeholder {
@@ -105,12 +105,12 @@
       border: none;
       background: none;
       color: Rgb(255 255 255 / 40%);
-      font-size: 12px;
+      font-size: var(--font-12);
       transform: Translatey(-50%);
       cursor: pointer;
 
       &:hover {
-        color: white;
+        color: var(--white);
       }
     }
   }
@@ -118,13 +118,13 @@
   .toggle-fav-filter-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     padding: 8px 12px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 10px;
+    border-radius: $radius-lg-alt;
     background: Rgb(0 0 0 / 30%);
     color: Rgb(255 255 255 / 40%);
-    font-size: 12px;
+    font-size: var(--font-12);
     cursor: pointer;
     flex-shrink: 0;
 
@@ -137,7 +137,7 @@
     .fav-star {
       display: flex;
       align-items: center;
-      font-size: 13px;
+      font-size: var(--font-13);
       line-height: 1;
     }
 
@@ -145,7 +145,7 @@
       background: Rgb(250 204 21 / 12%);
       color: var(--yellow);
       border-color: Rgb(250 204 21 / 40%);
-      box-shadow: 0 0 10px Rgb(250 204 21 / 15%);
+      box-shadow: $shadow-glow-yellow;
     }
   }
 }
@@ -160,12 +160,12 @@
   .shop-premium-grid {
     position: relative;
     display: grid;
-    gap: 16px;
+    gap: $spacing-lg;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     padding-bottom: 20px;
 
     @media (width <= 768px) {
-      gap: 12px;
+      gap: $spacing-md;
       grid-template-columns: 1fr;
     }
   }
@@ -180,13 +180,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   height: 250px;
   opacity: 0.5;
   grid-column: 1 / -1;
 
   .empty-icon {
-    font-size: 36px;
+    font-size: var(--font-36);
     filter: Drop-Shadow(0 0 10px Rgb(255 255 255 / 10%));
   }
 
@@ -195,13 +195,13 @@
     h3 { 
       @include pixelated; 
 
-      color: white; 
-      font-size: 10px; 
+      color: var(--white); 
+      font-size: var(--font-10); 
       margin-bottom: 6px;
     }
     p { 
       color: Rgb(255 255 255 / 40%); 
-      font-size: 12px; 
+      font-size: var(--font-12); 
     }
   }
 }

@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useContinentStudioStore } from '../../stores/continentStudio';
+import {
+  VIEWPORT_ZOOM_IN_STEP,
+  VIEWPORT_ZOOM_OUT_STEP,
+  MIN_VIEWPORT_ZOOM,
+  MAX_VIEWPORT_ZOOM
+} from '../../config/studioConstants.ts';
+import { computeViewportWheelZoom } from '../../logic/utils/svgCoordinateUtils';
 import type { ContinentNode } from '../../types/map/continentTypes';
 
 const store = useContinentStudioStore();
@@ -46,19 +53,21 @@ function screenToWorld(clientX: number, clientY: number) {
 function handleWheel(e: WheelEvent) {
   e.preventDefault();
   if (!viewportRef.value) return;
-  const rect = viewportRef.value.getBoundingClientRect();
-  const cursorX = e.clientX - rect.left;
-  const cursorY = e.clientY - rect.top;
 
-  const currentZoom = store.zoom;
-  const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-  const nextZoom = Math.max(0.2, Math.min(3.0, currentZoom * zoomFactor));
+  const result = computeViewportWheelZoom({
+    event: e,
+    viewportElement: viewportRef.value,
+    currentZoom: store.zoom,
+    currentPanX: store.panX,
+    currentPanY: store.panY,
+    zoomInStep: VIEWPORT_ZOOM_IN_STEP,
+    zoomOutStep: VIEWPORT_ZOOM_OUT_STEP,
+    minZoom: MIN_VIEWPORT_ZOOM,
+    maxZoom: MAX_VIEWPORT_ZOOM
+  });
 
-  const newPanX = cursorX - (cursorX - store.panX) * (nextZoom / currentZoom);
-  const newPanY = cursorY - (cursorY - store.panY) * (nextZoom / currentZoom);
-
-  store.setZoom(nextZoom);
-  store.setPan(newPanX, newPanY);
+  store.setZoom(result.nextZoom);
+  store.setPan(result.newPanX, result.newPanY);
 }
 
 function handleViewportPointerDown(e: PointerEvent) {
@@ -101,7 +110,7 @@ function handleViewportPointerUp(e: PointerEvent) {
   try {
     (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
   } catch {
-    // ignore
+    // catch-ok: Pointer capture release fails gracefully if pointer was lost
   }
 }
 
@@ -170,6 +179,7 @@ function handleCanvasClick(e: MouseEvent) {
 
 <template>
   <div
+    id="studio-connections-viewport-div-canvasclick"
     ref="viewportRef"
     class="connections-viewport-container"
     @wheel="handleWheel"
@@ -346,8 +356,8 @@ function handleCanvasClick(e: MouseEvent) {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden;
   background: #060911;
+  overflow: hidden;
   user-select: none;
   cursor: grab;
 
@@ -365,8 +375,8 @@ function handleCanvasClick(e: MouseEvent) {
 
 .connections-svg-canvas {
   display: block;
-  box-shadow: 0 8px 32px Rgba(0, 0, 0, 0.7);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  box-shadow: var(--shadow-card);
 }
 
 .route-hitbox {
@@ -379,19 +389,18 @@ function handleCanvasClick(e: MouseEvent) {
 
 .city-node-group {
   cursor: pointer;
-  transition: transform 0.15s ease-out;
 
   &:hover .node-circle {
-    filter: Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.6));
+    filter: Drop-Shadow(0 0 8px Rgb(255 255 255 / 60%));
   }
 }
 
 .node-label {
   font-family: sans-serif;
-  font-size: 13px;
+  font-size: var(--font-13);
   font-weight: 700;
-  fill: #ffffff;
-  text-shadow: 0 2px 4px Rgba(0, 0, 0, 0.9);
+  fill: #fff;
+  text-shadow: 0 2px 4px Rgb(0 0 0 / 90%);
   pointer-events: none;
 }
 
@@ -399,19 +408,19 @@ function handleCanvasClick(e: MouseEvent) {
   position: absolute;
   bottom: 16px;
   left: 16px;
-  display: flex;
-  gap: 8px;
   z-index: var(--z-modal-step);
+  display: flex;
+  gap: $spacing-sm;
   pointer-events: none;
 
   .badge {
-    background: Rgba(15, 23, 42, 0.85);
-    border: 1px solid Rgba(255, 255, 255, 0.12);
-    color: #f8fafc;
-    font-size: 11px;
-    font-weight: 600;
     padding: 4px 10px;
-    border-radius: 6px;
+    border: 1px solid Rgb(255 255 255 / 12%);
+    border-radius: $radius-md;
+    background: Rgb(15 23 42 / 85%);
+    color: var(--slate-50);
+    font-size: var(--font-11);
+    font-weight: 600;
     backdrop-filter: Blur(6px);
   }
 }

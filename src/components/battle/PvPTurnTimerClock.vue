@@ -133,45 +133,38 @@ watch(isUrgent, (urgent) => {
   align-items: center;
   margin: 0 auto 6px;
   padding: 5px 14px;
-  border: 1px solid rgb(255 255 255 / 15%);
-  border-radius: 14px;
-  background: rgb(15 23 42 / 85%);
-  box-shadow: 
-    0 10px 30px rgb(0 0 0 / 50%), 
-    inset 0 0 10px rgb(255 255 255 / 5%);
-  backdrop-filter: blur(8px);
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-xl-alt;
+  background: Rgb(15 23 42 / 85%);
+  box-shadow: var(--shadow-card);
+
+  backdrop-filter: Blur(8px);
   will-change: transform;
   user-select: none;
 
   &.is-urgent {
-    border-color: rgb(239 68 68 / 70%);
-    box-shadow: 
-      0 10px 30px rgb(0 0 0 / 50%), 
-      inset 0 0 10px rgb(239 68 68 / 20%), 
-      0 0 16px rgb(239 68 68 / 40%);
+    border-color: Rgb(239 68 68 / 70%);
+    box-shadow: var(--shadow-card);
 
     .ring-progress {
       stroke: #ef4444;
     }
 
     .timer-number {
-      color: #f87171;
+      color: var(--rose);
     }
   }
 
   &.is-reconnecting {
-    border-color: rgb(245 158 11 / 70%);
-    box-shadow: 
-      0 10px 30px rgb(0 0 0 / 50%), 
-      inset 0 0 10px rgb(245 158 11 / 20%), 
-      0 0 14px rgb(245 158 11 / 40%);
+    border-color: Rgb(245 158 11 / 70%);
+    box-shadow: var(--shadow-card);
 
     .ring-progress {
       stroke: #f59e0b;
     }
 
     .timer-number {
-      color: #fbbf24;
+      color: var(--amber);
     }
   }
 }
@@ -179,7 +172,7 @@ watch(isUrgent, (urgent) => {
 .timer-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
 }
 
 .timer-svg-wrap {
@@ -193,12 +186,12 @@ watch(isUrgent, (urgent) => {
 
 .timer-ring-svg {
   display: block;
-  transform: rotate(-90deg);
+  transform: Rotate(-90deg);
 }
 
 .ring-bg {
   fill: none;
-  stroke: rgb(255 255 255 / 12%);
+  stroke: Rgb(255 255 255 / 12%);
   stroke-width: 3.5;
 }
 
@@ -213,8 +206,8 @@ watch(isUrgent, (urgent) => {
   @include pixelated;
 
   position: absolute;
-  color: #e0f2fe;
-  font-size: 11px;
+  color: var(--blue-300);
+  font-size: var(--font-11);
   font-weight: 700;
   letter-spacing: -0.5px;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
@@ -224,14 +217,14 @@ watch(isUrgent, (urgent) => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: $spacing-2xs;
 }
 
 .timer-subtext {
   @include pixelated;
 
   color: var(--gray, #94a3b8);
-  font-size: 9px;
+  font-size: var(--font-9);
   letter-spacing: 0.5px;
   text-transform: uppercase;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
@@ -240,8 +233,8 @@ watch(isUrgent, (urgent) => {
 .reconnect-label {
   @include pixelated;
 
-  color: #fbbf24;
-  font-size: 9px;
+  color: var(--amber);
+  font-size: var(--font-9);
   font-weight: 700;
   letter-spacing: 0.5px;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
@@ -252,13 +245,13 @@ watch(isUrgent, (urgent) => {
 
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   padding: 2px 6px;
-  border: 1px solid rgb(245 158 11 / 45%);
-  border-radius: 6px;
-  background: rgb(245 158 11 / 18%);
-  color: #fef08a;
-  font-size: 8px;
+  border: 1px solid Rgb(245 158 11 / 45%);
+  border-radius: $radius-md;
+  background: Rgb(245 158 11 / 18%);
+  color: var(--yellow-light);
+  font-size: var(--font-8);
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 </style>

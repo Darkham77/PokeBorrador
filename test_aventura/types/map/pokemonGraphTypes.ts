@@ -35,13 +35,6 @@ export const PRIMARY_GRAPH_ROLES = [
 ] as const satisfies readonly GraphNodeRole[];
 export type PrimaryGraphRole = (typeof PRIMARY_GRAPH_ROLES)[number];
 
-const PRIMARY_ROLE_SET: ReadonlySet<string> = new Set(PRIMARY_GRAPH_ROLES);
-
-/** Returns true if the role participates in the main route chain. */
-export function isPrimaryGraphRole(role: GraphNodeRole): role is PrimaryGraphRole {
-  return PRIMARY_ROLE_SET.has(role);
-}
-
 // ---------------------------------------------------------------------------
 // 2. Edge Classification
 // ---------------------------------------------------------------------------

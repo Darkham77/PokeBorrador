@@ -15,7 +15,8 @@ const emit = defineEmits<{
     <div class="update-message">
       Tu sesión ha expirado o la base de datos fue restaurada. Es necesario reiniciar la sesión para continuar jugando de forma segura.
     </div>
-    <button 
+    <button
+      id="login-expired-notice-btn-iniciar-sesi-n" 
       class="pv-button-retro update-btn expired-btn" 
       @click.stop="emit('dismiss')"
     >
@@ -28,19 +29,19 @@ const emit = defineEmits<{
 @use "@/styles/views/login" as *;
 
 .session-expired-panel {
-  background: rgb(255 68 68 / 10%);
-  border-color: #f44;
-  box-shadow: 0 0 15px rgb(255 68 68 / 20%);
+  background: Rgb(255 68 68 / 10%);
+  border-color: var(--red-light);
+  box-shadow: var(--shadow-glow-amber);
 }
 
 .expired-title {
-  color: #f44;
-  text-shadow: 0 0 5px rgb(255 68 68 / 40%);
+  color: var(--red-light);
+  text-shadow: 0 0 5px Rgb(255 68 68 / 40%);
 }
 
 .expired-btn {
-  background: #f44;
-  color: white;
-  box-shadow: 0 4px 0 #b30000;
+  background: var(--red-light);
+  color: var(--white);
+  box-shadow: var(--shadow-card);
 }
 </style>

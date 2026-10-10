@@ -211,6 +211,7 @@ const handleReorderMoves = (from: number, to: number) => {
       <nav class="pdex-detail-tabs premium-tabs">
         <button
           v-for="tab in tabs"
+          id="unified-pokemon-detail-modal-btn-1"
           :key="tab.id"
           class="upd-tab-btn"
           :class="{ active: activeTab === tab.id }"

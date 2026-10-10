@@ -19,9 +19,61 @@ import {
   type StructureCollisionType,
   type StructureTheme,
   registerStructureTemplate
-} from '../../config/mapStructures';
+} from '../../config/mapStructures.ts';
 
-export const TILE_SIZE = 16;
+import {
+  TILE_SIZE,
+  CHANNELS_PER_PIXEL,
+  BITS_PER_BYTE,
+  BITS_PER_SHORT,
+  MAX_CHANNEL_VALUE,
+  PNG_SIGNATURE_LENGTH,
+  CRC_TABLE_SIZE,
+  CRC_POLYNOMIAL,
+  CRC_INITIAL_MASK,
+  ADLER32_MOD,
+  ADLER32_INIT_A,
+  ADLER32_INIT_B,
+  DEFLATE_MAX_BLOCK_SIZE,
+  ZLIB_HEADER_CMF,
+  ZLIB_HEADER_FLG,
+  PNG_SIGNATURE_BYTES,
+  PNG_CHUNK_IHDR_BYTES,
+  PNG_CHUNK_IDAT_BYTES,
+  PNG_CHUNK_IEND_BYTES,
+  PNG_IHDR_LENGTH,
+  PNG_DEFAULT_BIT_DEPTH,
+  PNG_COLOR_TYPE_RGBA,
+  PNG_COMPRESSION_DEFAULT,
+  PNG_FILTER_NONE,
+  PNG_INTERLACE_NONE,
+  ALPHA_TRANSPARENT_THRESHOLD,
+  DISCARD_TRANSPARENT_RATIO,
+  MIN_VISIBLE_PIXEL_COUNT,
+  FLAT_COLOR_MAX_RANGE,
+  SOLID_CELL_MIN_VISIBLE_PIXELS,
+  TILE_HASH_SLICE_LENGTH,
+  CHROMA_TEAL_R_MIN,
+  CHROMA_TEAL_R_MAX,
+  CHROMA_TEAL_G_MIN,
+  CHROMA_TEAL_G_MAX,
+  CHROMA_TEAL_B_MIN,
+  CHROMA_TEAL_B_MAX,
+  CHROMA_MAGENTA_R_MIN,
+  CHROMA_MAGENTA_G_MAX,
+  CHROMA_MAGENTA_B_MIN,
+  CHROMA_LIME_R_MAX,
+  CHROMA_LIME_G_MIN,
+  CHROMA_LIME_B_MAX,
+  CHROMA_CYAN_R_MAX,
+  CHROMA_CYAN_G_MIN,
+  CHROMA_CYAN_B_MIN,
+  STRUCTURE_COLLISION_NONE,
+  STRUCTURE_COLLISION_SOLID,
+  STRUCTURE_COLLISION_WATER
+} from '../../config/tileProcessorConfig.ts';
+
+export { TILE_SIZE };
 
 export interface RawPixelGrid {
   readonly width: number;
@@ -61,33 +113,33 @@ export interface SlicedStructureResult {
 }
 
 // Precomputed CRC-32 table for pure PNG generation
-const CRC_TABLE = new Uint32Array(256);
-for (let n = 0; n < 256; n++) {
+const CRC_TABLE = new Uint32Array(CRC_TABLE_SIZE);
+for (let n = 0; n < CRC_TABLE_SIZE; n++) {
   let c = n;
-  for (let k = 0; k < 8; k++) {
-    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  for (let k = 0; k < BITS_PER_BYTE; k++) {
+    c = c & 1 ? CRC_POLYNOMIAL ^ (c >>> 1) : c >>> 1;
   }
   CRC_TABLE[n] = c;
 }
 
 function crc32(buf: Uint8Array, offset = 0, length = buf.length - offset): number {
-  let c = 0xffffffff;
+  let c = CRC_INITIAL_MASK;
   for (let i = offset; i < offset + length; i++) {
     const b = buf[i] ?? 0;
-    c = (CRC_TABLE[(c ^ b) & 0xff] ?? 0) ^ (c >>> 8);
+    c = (CRC_TABLE[(c ^ b) & 0xff] ?? 0) ^ (c >>> BITS_PER_BYTE);
   }
-  return (c ^ 0xffffffff) >>> 0;
+  return (c ^ CRC_INITIAL_MASK) >>> 0;
 }
 
 function adler32(buf: Uint8Array): number {
-  let a = 1;
-  let b = 0;
-  const mod = 65521;
+  let a = ADLER32_INIT_A;
+  let b = ADLER32_INIT_B;
+  const mod = ADLER32_MOD;
   for (let i = 0; i < buf.length; i++) {
     a = (a + (buf[i] ?? 0)) % mod;
     b = (b + a) % mod;
   }
-  return ((b << 16) | a) >>> 0;
+  return ((b << BITS_PER_SHORT) | a) >>> 0;
 }
 
 /**
@@ -99,12 +151,12 @@ export function encodeRgbaToPngDataUrl(
   width: number,
   height: number
 ): string {
-  const rowBytes = width * 4;
+  const rowBytes = width * CHANNELS_PER_PIXEL;
   const rawScanlines = new Uint8Array(height * (1 + rowBytes));
 
   for (let y = 0; y < height; y++) {
     const rawOffset = y * (1 + rowBytes);
-    rawScanlines[rawOffset] = 0; // Filter: None
+    rawScanlines[rawOffset] = PNG_FILTER_NONE;
     const srcOffset = y * rowBytes;
     for (let x = 0; x < rowBytes; x++) {
       rawScanlines[rawOffset + 1 + x] = rgba[srcOffset + x] ?? 0;
@@ -113,25 +165,25 @@ export function encodeRgbaToPngDataUrl(
 
   // Deflate Type 0 (Uncompressed block)
   const scanLen = rawScanlines.length;
-  const numBlocks = Math.ceil(scanLen / 65535) || 1;
+  const numBlocks = Math.ceil(scanLen / DEFLATE_MAX_BLOCK_SIZE) || 1;
   const idatData = new Uint8Array(2 + numBlocks * 5 + scanLen + 4);
 
   // Zlib header (CMF=0x78, FLG=0x01)
-  idatData[0] = 0x78;
-  idatData[1] = 0x01;
+  idatData[0] = ZLIB_HEADER_CMF;
+  idatData[1] = ZLIB_HEADER_FLG;
 
   let inPos = 0;
   let outPos = 2;
 
   while (inPos < scanLen) {
-    const blockLen = Math.min(scanLen - inPos, 65535);
+    const blockLen = Math.min(scanLen - inPos, DEFLATE_MAX_BLOCK_SIZE);
     const isFinal = inPos + blockLen >= scanLen ? 1 : 0;
     idatData[outPos++] = isFinal;
     idatData[outPos++] = blockLen & 0xff;
-    idatData[outPos++] = (blockLen >>> 8) & 0xff;
+    idatData[outPos++] = (blockLen >>> BITS_PER_BYTE) & 0xff;
     const nlen = (~blockLen) & 0xffff;
     idatData[outPos++] = nlen & 0xff;
-    idatData[outPos++] = (nlen >>> 8) & 0xff;
+    idatData[outPos++] = (nlen >>> BITS_PER_BYTE) & 0xff;
 
     idatData.set(rawScanlines.subarray(inPos, inPos + blockLen), outPos);
     inPos += blockLen;
@@ -141,67 +193,70 @@ export function encodeRgbaToPngDataUrl(
   // Adler32 checksum
   const adler = adler32(rawScanlines);
   idatData[outPos++] = (adler >>> 24) & 0xff;
-  idatData[outPos++] = (adler >>> 16) & 0xff;
-  idatData[outPos++] = (adler >>> 8) & 0xff;
+  idatData[outPos++] = (adler >>> BITS_PER_SHORT) & 0xff;
+  idatData[outPos++] = (adler >>> BITS_PER_BYTE) & 0xff;
   idatData[outPos++] = adler & 0xff;
 
   // Assembly PNG file
-  const totalLength = 8 + (8 + 13 + 4) + (8 + outPos + 4) + (8 + 0 + 4);
+  const totalLength = 8 + (8 + PNG_IHDR_LENGTH + 4) + (8 + outPos + 4) + (8 + 0 + 4);
   const png = new Uint8Array(totalLength);
   let p = 0;
 
   // Signature
-  png.set([137, 80, 78, 71, 13, 10, 26, 10], p);
-  p += 8;
+  png.set(PNG_SIGNATURE_BYTES, p);
+  p += PNG_SIGNATURE_LENGTH;
 
   // IHDR chunk (13 bytes)
-  const ihdrLen = 13;
+  const ihdrLen = PNG_IHDR_LENGTH;
   png[p++] = 0; png[p++] = 0; png[p++] = 0; png[p++] = ihdrLen;
   const ihdrStart = p;
-  png[p++] = 73; png[p++] = 72; png[p++] = 68; png[p++] = 82; // IHDR
+  png.set(PNG_CHUNK_IHDR_BYTES, p);
+  p += PNG_CHUNK_IHDR_BYTES.length;
   png[p++] = (width >>> 24) & 0xff;
-  png[p++] = (width >>> 16) & 0xff;
-  png[p++] = (width >>> 8) & 0xff;
+  png[p++] = (width >>> BITS_PER_SHORT) & 0xff;
+  png[p++] = (width >>> BITS_PER_BYTE) & 0xff;
   png[p++] = width & 0xff;
   png[p++] = (height >>> 24) & 0xff;
-  png[p++] = (height >>> 16) & 0xff;
-  png[p++] = (height >>> 8) & 0xff;
+  png[p++] = (height >>> BITS_PER_SHORT) & 0xff;
+  png[p++] = (height >>> BITS_PER_BYTE) & 0xff;
   png[p++] = height & 0xff;
-  png[p++] = 8; // Bit depth
-  png[p++] = 6; // RGBA
-  png[p++] = 0; // Compression
-  png[p++] = 0; // Filter
-  png[p++] = 0; // Interlace
+  png[p++] = PNG_DEFAULT_BIT_DEPTH;
+  png[p++] = PNG_COLOR_TYPE_RGBA;
+  png[p++] = PNG_COMPRESSION_DEFAULT;
+  png[p++] = PNG_FILTER_NONE;
+  png[p++] = PNG_INTERLACE_NONE;
   const ihdrCrc = crc32(png, ihdrStart, 17);
   png[p++] = (ihdrCrc >>> 24) & 0xff;
-  png[p++] = (ihdrCrc >>> 16) & 0xff;
-  png[p++] = (ihdrCrc >>> 8) & 0xff;
+  png[p++] = (ihdrCrc >>> BITS_PER_SHORT) & 0xff;
+  png[p++] = (ihdrCrc >>> BITS_PER_BYTE) & 0xff;
   png[p++] = ihdrCrc & 0xff;
 
   // IDAT chunk
   png[p++] = (outPos >>> 24) & 0xff;
-  png[p++] = (outPos >>> 16) & 0xff;
-  png[p++] = (outPos >>> 8) & 0xff;
+  png[p++] = (outPos >>> BITS_PER_SHORT) & 0xff;
+  png[p++] = (outPos >>> BITS_PER_BYTE) & 0xff;
   png[p++] = outPos & 0xff;
   const idatStart = p;
-  png[p++] = 73; png[p++] = 68; png[p++] = 65; png[p++] = 84; // IDAT
+  png.set(PNG_CHUNK_IDAT_BYTES, p);
+  p += PNG_CHUNK_IDAT_BYTES.length;
   png.set(idatData.subarray(0, outPos), p);
   p += outPos;
   const idatCrc = crc32(png, idatStart, 4 + outPos);
   png[p++] = (idatCrc >>> 24) & 0xff;
-  png[p++] = (idatCrc >>> 16) & 0xff;
-  png[p++] = (idatCrc >>> 8) & 0xff;
+  png[p++] = (idatCrc >>> BITS_PER_SHORT) & 0xff;
+  png[p++] = (idatCrc >>> BITS_PER_BYTE) & 0xff;
   png[p++] = idatCrc & 0xff;
 
   // IEND chunk
   png[p++] = 0; png[p++] = 0; png[p++] = 0; png[p++] = 0;
   const iendStart = p;
-  png[p++] = 73; png[p++] = 69; png[p++] = 78; png[p++] = 68; // IEND
+  png.set(PNG_CHUNK_IEND_BYTES, p);
+  p += PNG_CHUNK_IEND_BYTES.length;
   const iendCrc = crc32(png, iendStart, 4);
   png[p++] = (iendCrc >>> 24) & 0xff;
-  png[p++] = (iendCrc >>> 16) & 0xff;
-  png[p++] = (iendCrc >>> 8) & 0xff;
-  png[p++] = iendCrc & 0xff;
+  png[p++] = (iendCrc >>> BITS_PER_SHORT) & 0xff;
+  png[p++] = (iendCrc >>> BITS_PER_BYTE) & 0xff;
+  png[p] = iendCrc & 0xff;
 
   // Convert binary to base64
   let binary = '';
@@ -264,30 +319,36 @@ export function isDiscardableTile(
   let chromaCount = 0;
   let visibleCount = 0;
 
-  let minR = 255;
+  let minR = MAX_CHANNEL_VALUE;
   let maxR = 0;
-  let minG = 255;
+  let minG = MAX_CHANNEL_VALUE;
   let maxG = 0;
-  let minB = 255;
+  let minB = MAX_CHANNEL_VALUE;
   let maxB = 0;
 
   for (let i = 0; i < pixelCount; i++) {
-    const idx = i * 4;
+    const idx = i * CHANNELS_PER_PIXEL;
     const r = rgba[idx] ?? 0;
     const g = rgba[idx + 1] ?? 0;
     const b = rgba[idx + 2] ?? 0;
     const a = rgba[idx + 3] ?? 255;
 
-    if (a < 10) {
+    if (a < ALPHA_TRANSPARENT_THRESHOLD) {
       transparentCount++;
       continue;
     }
 
     // GBA Chroma-key backgrounds
-    const isTeal = r >= 95 && r <= 130 && g >= 180 && g <= 220 && b >= 140 && b <= 180;
-    const isMagenta = r >= 230 && g <= 30 && b >= 230;
-    const isLime = r <= 30 && g >= 230 && b <= 30;
-    const isCyan = r <= 30 && g >= 230 && b >= 230;
+    const isTeal =
+      r >= CHROMA_TEAL_R_MIN &&
+      r <= CHROMA_TEAL_R_MAX &&
+      g >= CHROMA_TEAL_G_MIN &&
+      g <= CHROMA_TEAL_G_MAX &&
+      b >= CHROMA_TEAL_B_MIN &&
+      b <= CHROMA_TEAL_B_MAX;
+    const isMagenta = r >= CHROMA_MAGENTA_R_MIN && g <= CHROMA_MAGENTA_G_MAX && b >= CHROMA_MAGENTA_B_MIN;
+    const isLime = r <= CHROMA_LIME_R_MAX && g >= CHROMA_LIME_G_MIN && b <= CHROMA_LIME_B_MAX;
+    const isCyan = r <= CHROMA_CYAN_R_MAX && g >= CHROMA_CYAN_G_MIN && b >= CHROMA_CYAN_B_MIN;
 
     if (isTeal || isMagenta || isLime || isCyan) {
       chromaCount++;
@@ -304,12 +365,12 @@ export function isDiscardableTile(
   }
 
   // 1. If >= 90% is transparent or chroma-key
-  if (transparentCount + chromaCount >= Math.floor(pixelCount * 0.9)) {
+  if (transparentCount + chromaCount >= Math.floor(pixelCount * DISCARD_TRANSPARENT_RATIO)) {
     return true;
   }
 
   // 2. Fragment / noise check (<15 visible pixels)
-  if (visibleCount < 15) {
+  if (visibleCount < MIN_VISIBLE_PIXEL_COUNT) {
     return true;
   }
 
@@ -317,7 +378,7 @@ export function isDiscardableTile(
   const rangeR = maxR - minR;
   const rangeG = maxG - minG;
   const rangeB = maxB - minB;
-  if (rangeR <= 2 && rangeG <= 2 && rangeB <= 2) {
+  if (rangeR <= FLAT_COLOR_MAX_RANGE && rangeG <= FLAT_COLOR_MAX_RANGE && rangeB <= FLAT_COLOR_MAX_RANGE) {
     return true;
   }
 
@@ -332,7 +393,7 @@ export async function computeTileHash(rgba: Uint8ClampedArray | Uint8Array): Pro
   const hashBuffer = await crypto.subtle.digest('SHA-256', sourceBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const fullHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return fullHex.slice(0, 10);
+  return fullHex.slice(0, TILE_HASH_SLICE_LENGTH);
 }
 
 /**
@@ -356,7 +417,7 @@ export function tilePixelsToDataUrl(
         return canvas.toDataURL('image/png');
       }
     } catch {
-      // Fallback to pure encoder
+      // catch-ok: Fallback to pure software encoder when HTML5 canvas fails or is restricted
     }
   }
   return encodeRgbaToPngDataUrl(rgba, width, height);
@@ -458,13 +519,18 @@ export async function processCompoundStructure(
 
       // Check if pixel is empty
       let visiblePixels = 0;
-      for (let p = 0; p < pixels.length; p += 4) {
-        if ((pixels[p + 3] ?? 0) >= 10) visiblePixels++;
+      for (let p = 0; p < pixels.length; p += CHANNELS_PER_PIXEL) {
+        if ((pixels[p + 3] ?? 0) >= ALPHA_TRANSPARENT_THRESHOLD) visiblePixels++;
       }
 
-      const isCellSolid = visiblePixels > 20;
+      const isCellSolid = visiblePixels > SOLID_CELL_MIN_VISIBLE_PIXELS;
       const userCol = options.collisionMask?.[r]?.[c];
-      const collisionType: StructureCollisionType = userCol !== undefined ? userCol : (isCellSolid ? 1 : 0);
+      const collisionType: StructureCollisionType =
+        userCol !== undefined
+          ? userCol
+          : isCellSolid
+            ? STRUCTURE_COLLISION_SOLID
+            : STRUCTURE_COLLISION_NONE;
 
       rowCollisions.push(collisionType);
 
@@ -484,7 +550,12 @@ export async function processCompoundStructure(
           tags: ['custom', 'structure', options.id],
           dimensions: { width: TILE_SIZE, height: TILE_SIZE },
           file_path: dataUrl,
-          collision: collisionType === 1 ? true : collisionType === 2 ? 'water' : false,
+          collision:
+            collisionType === STRUCTURE_COLLISION_SOLID
+              ? true
+              : collisionType === STRUCTURE_COLLISION_WATER
+                ? 'water'
+                : false,
           grid_x: c,
           grid_y: r
         };

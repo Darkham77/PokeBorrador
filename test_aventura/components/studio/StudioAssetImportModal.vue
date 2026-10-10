@@ -425,6 +425,7 @@ async function handleImportStructure(): Promise<void> {
                   v-for="(cell, c) in row"
                   :id="`collision-cell-${r}-${c}`"
                   :key="`cell_${r}_${c}`"
+                  v-gsap-hover="{ scale: 1.05 }"
                   class="collision-cell"
                   :title="`Fila ${r}, Col ${c} - Colisión: ${collisionGrid[r]?.[c] ?? 1}`"
                   @click="toggleCellCollision(r, c)"

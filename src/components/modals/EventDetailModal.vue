@@ -159,6 +159,7 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
             position="top"
           >
             <div
+              id="event-detail-modal-div-1"
               class="participant-pill clickable"
               role="button"
               tabindex="0"
@@ -249,7 +250,8 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
       </div>
 
       <!-- Botón Entendido -->
-      <button 
+      <button
+        id="event-detail-modal-btn-entendido" 
         class="legacy-confirm-btn"
         @click.stop="emit('close')"
       >

@@ -1,55 +1,38 @@
 // Kanto Tile & Prefab Rendering Engine - LPC Autotiling & Semantic Prefabs
 
 import {
+  DEFAULT_CATALOG_TILE_SIZE,
+  DEFAULT_CATALOG_SHEET_WIDTH,
+  DEFAULT_CATALOG_SHEET_HEIGHT,
+  RMXP_SUBTILE_SIZE,
+  RMXP_SUBTILES,
+  REGIONAL_MASSIF_BOUNDS,
+  LPC_PIECE_SLICES,
+  BOARDWALK_RENDER_CONFIG,
+  CHUNK_BAKE_CONFIG,
+  type RmxpSubtilePos
+} from '../../config/kantoTileEngineConfig.ts';
+import {
   KANTO_TILE_SIZE,
-  KANTO_CHUNK_PX,
-  KANTO_GRID_W,
-  KANTO_GRID_H,
-  KANTO_CHUNKS_X,
-  KANTO_CHUNKS_Y,
   CELL_BIOME
-} from './kantoRegionalGenerator.ts';
+} from '../../types/map/kantoGridModel.ts';
+import type {
+  CatalogPart,
+  CatalogPrefab,
+  CatalogAutotileLayout,
+  SemanticTileCatalog,
+  PlacedStructure,
+  IRegionalWorldRendererSource
+} from '../../types/map/kantoTileEngineTypes.ts';
 
-export interface CatalogPart {
-  readonly sheet: string;
-  readonly sx: number;
-  readonly sy: number;
-  readonly sw: number;
-  readonly sh: number;
-  readonly dx: number;
-  readonly dy: number;
-  readonly zIndex?: number;
-}
-
-export interface CatalogPrefab {
-  readonly id: string;
-  readonly name?: string;
-  readonly width?: number;
-  readonly height?: number;
-  readonly parts: readonly CatalogPart[];
-}
-
-export interface CatalogAutotileLayout {
-  readonly pieces: Record<string, { sx: number; sy: number }>;
-}
-
-export interface SemanticTileCatalog {
-  readonly version: string;
-  readonly tileSize: number;
-  readonly sheets: Record<string, { file: string; width: number; height: number }>;
-  readonly prefabs?: Record<string, Record<string, CatalogPrefab>>;
-  readonly autotileLayout?: {
-    standardLPC?: CatalogAutotileLayout;
-  };
-}
-
-export interface PlacedStructure {
-  readonly style: string;
-  readonly x: number;
-  readonly y: number;
-  readonly w?: number;
-  readonly h?: number;
-}
+export type {
+  CatalogPart,
+  CatalogPrefab,
+  CatalogAutotileLayout,
+  SemanticTileCatalog,
+  PlacedStructure,
+  IRegionalWorldRendererSource
+};
 
 import { type MountainPalette } from './mountainAutotileEngine.ts';
 export type { MountainPalette };
@@ -86,12 +69,12 @@ export class DynamicCatalogLoader {
     } catch {
       this.catalog = {
         version: '5.0',
-        tileSize: 32,
+        tileSize: DEFAULT_CATALOG_TILE_SIZE,
         sheets: {
-          'grass.png': { file: 'grass.png', width: 96, height: 192 },
-          'dirt.png': { file: 'dirt.png', width: 96, height: 192 },
-          'watergrass.png': { file: 'watergrass.png', width: 96, height: 192 },
-          'stone_plaza.png': { file: 'stone_plaza.png', width: 96, height: 192 }
+          'grass.png': { file: 'grass.png', width: DEFAULT_CATALOG_SHEET_WIDTH, height: DEFAULT_CATALOG_SHEET_HEIGHT },
+          'dirt.png': { file: 'dirt.png', width: DEFAULT_CATALOG_SHEET_WIDTH, height: DEFAULT_CATALOG_SHEET_HEIGHT },
+          'watergrass.png': { file: 'watergrass.png', width: DEFAULT_CATALOG_SHEET_WIDTH, height: DEFAULT_CATALOG_SHEET_HEIGHT },
+          'stone_plaza.png': { file: 'stone_plaza.png', width: DEFAULT_CATALOG_SHEET_WIDTH, height: DEFAULT_CATALOG_SHEET_HEIGHT }
         }
       };
     }
@@ -124,7 +107,7 @@ export class DynamicCatalogLoader {
         }
       }
     } catch {
-      // ignore
+      // catch-ok: Fallback when optional local storage prefabs manifest is unavailable or corrupted
     }
 
     if (this.catalog.prefabs) {
@@ -283,11 +266,6 @@ export class DynamicCatalogLoader {
   }
 }
 
-export interface RmxpSubtilePos {
-  readonly sx: number;
-  readonly sy: number;
-}
-
 export interface RmxpSubtiles {
   readonly tl: RmxpSubtilePos;
   readonly tr: RmxpSubtilePos;
@@ -324,35 +302,35 @@ export function resolveRmxpSubtiles(
 
   // Top-Left Quadrant
   let tl: RmxpSubtilePos;
-  if (!n && !w) tl = { sx: 0, sy: 32 };          // Outer TL
-  else if (!n && w) tl = { sx: 32, sy: 32 };     // Top edge
-  else if (n && !w) tl = { sx: 0, sy: 64 };      // Left edge
-  else if (!nw) tl = { sx: 32, sy: 0 };          // Inner TL
-  else tl = { sx: 32, sy: 64 };                  // Center TL
+  if (!n && !w) tl = RMXP_SUBTILES.tl.outer;
+  else if (!n && w) tl = RMXP_SUBTILES.tl.topEdge;
+  else if (n && !w) tl = RMXP_SUBTILES.tl.leftEdge;
+  else if (!nw) tl = RMXP_SUBTILES.tl.inner;
+  else tl = RMXP_SUBTILES.tl.center;
 
   // Top-Right Quadrant
   let tr: RmxpSubtilePos;
-  if (!n && !e) tr = { sx: 80, sy: 32 };         // Outer TR
-  else if (!n && e) tr = { sx: 48, sy: 32 };     // Top edge
-  else if (n && !e) tr = { sx: 80, sy: 64 };     // Right edge
-  else if (!ne) tr = { sx: 48, sy: 0 };          // Inner TR
-  else tr = { sx: 48, sy: 64 };                  // Center TR
+  if (!n && !e) tr = RMXP_SUBTILES.tr.outer;
+  else if (!n && e) tr = RMXP_SUBTILES.tr.topEdge;
+  else if (n && !e) tr = RMXP_SUBTILES.tr.rightEdge;
+  else if (!ne) tr = RMXP_SUBTILES.tr.inner;
+  else tr = RMXP_SUBTILES.tr.center;
 
   // Bottom-Left Quadrant
   let bl: RmxpSubtilePos;
-  if (!s && !w) bl = { sx: 0, sy: 112 };         // Outer BL
-  else if (!s && w) bl = { sx: 32, sy: 112 };    // Bottom edge
-  else if (s && !w) bl = { sx: 0, sy: 80 };      // Left edge
-  else if (!sw) bl = { sx: 32, sy: 16 };         // Inner BL
-  else bl = { sx: 32, sy: 80 };                  // Center BL
+  if (!s && !w) bl = RMXP_SUBTILES.bl.outer;
+  else if (!s && w) bl = RMXP_SUBTILES.bl.bottomEdge;
+  else if (s && !w) bl = RMXP_SUBTILES.bl.leftEdge;
+  else if (!sw) bl = RMXP_SUBTILES.bl.inner;
+  else bl = RMXP_SUBTILES.bl.center;
 
   // Bottom-Right Quadrant
   let br: RmxpSubtilePos;
-  if (!s && !e) br = { sx: 80, sy: 112 };        // Outer BR
-  else if (!s && e) br = { sx: 48, sy: 112 };    // Bottom edge
-  else if (s && !e) br = { sx: 80, sy: 80 };     // Right edge
-  else if (!se) br = { sx: 48, sy: 16 };         // Inner BR
-  else br = { sx: 48, sy: 80 };                  // Center BR
+  if (!s && !e) br = RMXP_SUBTILES.br.outer;
+  else if (!s && e) br = RMXP_SUBTILES.br.bottomEdge;
+  else if (s && !e) br = RMXP_SUBTILES.br.rightEdge;
+  else if (!se) br = RMXP_SUBTILES.br.inner;
+  else br = RMXP_SUBTILES.br.center;
 
   return { tl, tr, bl, br };
 }
@@ -417,14 +395,18 @@ export class UniversalAutotiler {
     // Regional canon: Mt. Moon (Pewter to Cerulean northern range) and Rock Tunnel are canonically warm brown.
     // Indigo Plateau (far NW) and volcanic Seafoam/Cinnabar are volcanic gray.
     let pal: MountainPalette;
-    if ((gx >= 35 && gx <= 95 && gy <= 45) || (minX >= 35 && minX <= 95 && minY <= 45)) {
+    const b = REGIONAL_MASSIF_BOUNDS;
+    if (
+      (gx >= b.mtMoon.minGx && gx <= b.mtMoon.maxGx && gy <= b.mtMoon.maxGy) ||
+      (minX >= b.mtMoon.minGx && minX <= b.mtMoon.maxGx && minY <= b.mtMoon.maxGy)
+    ) {
       pal = 'brown'; // Canonical Mt. Moon massif
-    } else if (minX >= 75 && minY >= 45 && minY <= 80) {
+    } else if (minX >= b.rockTunnel.minGx && minY >= b.rockTunnel.minGy && minY <= b.rockTunnel.maxGy) {
       pal = 'brown'; // Canonical Rock Tunnel massif
-    } else if (minX < 30 || minY > 100) {
+    } else if (minX < b.indigoPlateauMinGx || minY > b.seafoamMinGy) {
       pal = 'gray'; // Canonical Indigo Plateau & Seafoam / Cinnabar
     } else {
-      const hash = ((minX * 73 + minY * 37) ^ 0x5bf03635) & 0x7fffffff;
+      const hash = ((minX * b.hashPrimeX + minY * b.hashPrimeY) ^ b.hashXor) & b.hashMask;
       pal = (hash % 2 === 0) ? 'brown' : 'gray';
     }
 
@@ -547,16 +529,7 @@ export class UniversalAutotiler {
     if (layout && layout[pieceName]) {
       return layout[pieceName];
     }
-    const defs: Record<string, { sx: number; sy: number }> = {
-      TL: { sx: 0, sy: 64 }, T: { sx: 32, sy: 64 }, TR: { sx: 64, sy: 64 },
-      L: { sx: 0, sy: 96 }, C: { sx: 32, sy: 96 }, R: { sx: 64, sy: 96 },
-      BL: { sx: 0, sy: 128 }, B: { sx: 32, sy: 128 }, BR: { sx: 64, sy: 128 },
-      F0: { sx: 0, sy: 160 }, F1: { sx: 32, sy: 160 }, F2: { sx: 64, sy: 160 },
-      ITL: { sx: 64, sy: 32 }, ITR: { sx: 32, sy: 32 },
-      IBL: { sx: 64, sy: 0 }, IBR: { sx: 32, sy: 0 },
-      S0: { sx: 0, sy: 0 }
-    };
-    return defs[pieceName] ?? defs.B ?? { sx: 32, sy: 128 };
+    return LPC_PIECE_SLICES[pieceName] ?? LPC_PIECE_SLICES.B ?? LPC_PIECE_SLICES.C;
   }
 
   resolvePiece(grid: Uint8Array[], gx: number, gy: number, cellType: number): string {
@@ -617,7 +590,7 @@ export class UniversalAutotiler {
     cellType: number
   ): void {
     const s = resolveRmxpSubtiles(grid, gx, gy, cellType);
-    const sz = 16;
+    const sz = RMXP_SUBTILE_SIZE;
     ctx.drawImage(autotileImg, s.tl.sx, s.tl.sy, sz, sz, dx, dy, sz, sz);
     ctx.drawImage(autotileImg, s.tr.sx, s.tr.sy, sz, sz, dx + sz, dy, sz, sz);
     ctx.drawImage(autotileImg, s.bl.sx, s.bl.sy, sz, sz, dx, dy + sz, sz, sz);
@@ -841,7 +814,7 @@ export class SemanticPrefabRenderer {
 
   drawPrefab(ctx: CanvasRenderingContext2D, prefab: CatalogPrefab, x: number, y: number): void {
     if (!prefab?.parts) return;
-    const parts = [...prefab.parts].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+    const parts = [...prefab.parts].sort((a, b) => ((a.layerIndex ?? a.zIndex) || 0) - ((b.layerIndex ?? b.zIndex) || 0));
     for (const part of parts) {
       const img = this.loader.getImage(part.sheet);
       if (!img) continue;
@@ -882,7 +855,7 @@ export class SemanticPrefabRenderer {
   drawBridge(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
     const directImg = this.loader.getImage(type);
     if (directImg) {
-      ctx.drawImage(directImg, x, y, 32, 32);
+      ctx.drawImage(directImg, x, y, BOARDWALK_RENDER_CONFIG.bridgeSize, BOARDWALK_RENDER_CONFIG.bridgeSize);
       return;
     }
     const key = type === 'pier' ? 'harbor_pier' : type === 'arched' ? 'arched_bridge_h' : 'nugget_bridge';
@@ -893,15 +866,14 @@ export class SemanticPrefabRenderer {
     }
     const fallbackImg = this.loader.getImage('poke_boardwalk_planks.png');
     if (fallbackImg) {
-      ctx.drawImage(fallbackImg, x, y, 32, 32);
+      ctx.drawImage(fallbackImg, x, y, BOARDWALK_RENDER_CONFIG.bridgeSize, BOARDWALK_RENDER_CONFIG.bridgeSize);
     } else {
       ctx.fillStyle = '#c49a52';
-      ctx.fillRect(x, y, 32, 32);
+      ctx.fillRect(x, y, BOARDWALK_RENDER_CONFIG.bridgeSize, BOARDWALK_RENDER_CONFIG.bridgeSize);
       ctx.fillStyle = '#8f652b';
-      ctx.fillRect(x, y + 7, 32, 2);
-      ctx.fillRect(x, y + 15, 32, 2);
-      ctx.fillRect(x, y + 23, 32, 2);
-      ctx.fillRect(x, y + 31, 32, 2);
+      for (const offsetY of BOARDWALK_RENDER_CONFIG.plankOffsetsY) {
+        ctx.fillRect(x, y + offsetY, BOARDWALK_RENDER_CONFIG.plankWidth, BOARDWALK_RENDER_CONFIG.plankThickness);
+      }
     }
   }
 
@@ -931,7 +903,7 @@ export class SemanticPrefabRenderer {
         : (this.loader.getImage('poke_tree_oak_clean.png')
           || this.loader.getImage('poke_tree_poke.png')));
     if (treeImg) {
-      const yOffset = treeImg.height > 64 ? treeImg.height - 64 : 0;
+      const yOffset = treeImg.height > CHUNK_BAKE_CONFIG.treeTallThreshold ? treeImg.height - CHUNK_BAKE_CONFIG.treeTallThreshold : 0;
       ctx.drawImage(treeImg, x, y - yOffset, treeImg.width, treeImg.height);
       return;
     }
@@ -962,197 +934,4 @@ export class SemanticPrefabRenderer {
   }
 }
 
-export interface IRegionalWorldRendererSource {
-  readonly grid: Uint8Array[];
-  readonly elevation?: Uint8Array[];
-  readonly trees: PlacedStructure[];
-  readonly buildings: PlacedStructure[];
-  readonly bridges: PlacedStructure[];
-  readonly props: PlacedStructure[];
-  readonly nature: PlacedStructure[];
-}
-
-export class Chunk {
-  readonly cx: number;
-  readonly cy: number;
-  readonly wx: number;
-  readonly wy: number;
-  canvas: HTMLCanvasElement | null = null;
-  ctx: CanvasRenderingContext2D | null = null;
-  baked = false;
-
-  constructor(cx: number, cy: number) {
-    this.cx = cx;
-    this.cy = cy;
-    this.wx = cx * KANTO_CHUNK_PX;
-    this.wy = cy * KANTO_CHUNK_PX;
-  }
-
-  bake(
-    autotiler: UniversalAutotiler,
-    prefabRenderer: SemanticPrefabRenderer,
-    world: IRegionalWorldRendererSource
-  ): void {
-    if (typeof document === 'undefined') {
-      this.baked = true;
-      return;
-    }
-
-    if (!this.canvas) {
-      this.canvas = document.createElement('canvas');
-      this.canvas.width = KANTO_CHUNK_PX;
-      this.canvas.height = KANTO_CHUNK_PX;
-      this.ctx = this.canvas.getContext('2d');
-    }
-
-    const ctx = this.ctx;
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, KANTO_CHUNK_PX, KANTO_CHUNK_PX);
-
-    const cL = this.wx;
-    const cT = this.wy;
-    const cR = cL + KANTO_CHUNK_PX;
-    const cB = cT + KANTO_CHUNK_PX;
-
-    const inBounds = (x: number, y: number, w: number, h: number) => {
-      return x + w >= cL && x <= cR && y + h >= cT && y <= cB;
-    };
-
-    // Layer 1: Base Terrain Autotiles (32x32 Tiles)
-    const startTileX = this.cx * (KANTO_CHUNK_PX / KANTO_TILE_SIZE);
-    const startTileY = this.cy * (KANTO_CHUNK_PX / KANTO_TILE_SIZE);
-    const tilesPerChunk = KANTO_CHUNK_PX / KANTO_TILE_SIZE;
-
-    for (let ty = 0; ty < tilesPerChunk; ty++) {
-      const gy = startTileY + ty;
-      if (gy >= KANTO_GRID_H) break;
-      const row = world.grid[gy];
-      if (!row) continue;
-
-      for (let tx = 0; tx < tilesPerChunk; tx++) {
-        const gx = startTileX + tx;
-        if (gx >= KANTO_GRID_W) break;
-
-        const drawPx = tx * KANTO_TILE_SIZE;
-        const drawPy = ty * KANTO_TILE_SIZE;
-
-        autotiler.drawTile(ctx, world.grid, gx, gy, drawPx, drawPy, world.elevation);
-      }
-    }
-
-    // Layer 2: Nature & Cliffs
-    world.nature.forEach((n) => {
-      const w = n.w ?? 64;
-      const h = n.h ?? 64;
-      if (inBounds(n.x, n.y, w, h)) {
-        prefabRenderer.drawNature(ctx, n.style, n.x - cL, n.y - cT);
-      }
-    });
-
-    // Layer 3: Bridges
-    world.bridges.forEach((b) => {
-      const w = b.w ?? 64;
-      const h = b.h ?? 96;
-      if (inBounds(b.x, b.y, w, h)) {
-        prefabRenderer.drawBridge(ctx, b.style, b.x - cL, b.y - cT);
-      }
-    });
-
-    // Layer 4: Buildings, Trees, and Props (Y-Sorted for Realistic Depth)
-    const renderables: { kind: 'bldg' | 'tree' | 'prop'; ySort: number; obj: PlacedStructure }[] = [
-      ...world.buildings.map((b) => ({ kind: 'bldg' as const, ySort: b.y + (b.h ?? 60), obj: b })),
-      ...world.trees.map((t) => ({ kind: 'tree' as const, ySort: t.y + 48, obj: t })),
-      ...world.props.map((p) => ({ kind: 'prop' as const, ySort: p.y + (p.h ?? 32), obj: p }))
-    ].sort((a, b) => a.ySort - b.ySort);
-
-    renderables.forEach((r) => {
-      if (r.kind === 'bldg') {
-        if (inBounds(r.obj.x, r.obj.y, r.obj.w ?? 128, r.obj.h ?? 100)) {
-          prefabRenderer.drawBuilding(ctx, r.obj.style, r.obj.x - cL, r.obj.y - cT);
-        }
-      } else if (r.kind === 'tree') {
-        if (inBounds(r.obj.x, r.obj.y - 32, 64, 96)) {
-          prefabRenderer.drawTree(ctx, r.obj.style, r.obj.x - cL, r.obj.y - cT);
-        }
-      } else {
-        if (inBounds(r.obj.x, r.obj.y, r.obj.w ?? 64, r.obj.h ?? 64)) {
-          prefabRenderer.drawProp(ctx, r.obj.style, r.obj.x - cL, r.obj.y - cT);
-        }
-      }
-    });
-
-    this.baked = true;
-  }
-}
-
-export class ChunkManager {
-  readonly chunks: Chunk[] = [];
-
-  constructor() {
-    for (let cy = 0; cy < KANTO_CHUNKS_Y; cy++) {
-      for (let cx = 0; cx < KANTO_CHUNKS_X; cx++) {
-        this.chunks.push(new Chunk(cx, cy));
-      }
-    }
-  }
-
-  bakeAll(
-    autotiler: UniversalAutotiler,
-    prefabRenderer: SemanticPrefabRenderer,
-    world: IRegionalWorldRendererSource
-  ): void {
-    this.chunks.forEach((c) => c.bake(autotiler, prefabRenderer, world));
-  }
-
-  bakeArea(
-    autotiler: UniversalAutotiler,
-    prefabRenderer: SemanticPrefabRenderer,
-    world: IRegionalWorldRendererSource,
-    tileX: number,
-    tileY: number,
-    size: number
-  ): void {
-    const minWx = Math.max(0, (tileX - 1) * KANTO_TILE_SIZE);
-    const maxWx = Math.min(KANTO_GRID_W * KANTO_TILE_SIZE, (tileX + size + 1) * KANTO_TILE_SIZE);
-    const minWy = Math.max(0, (tileY - 1) * KANTO_TILE_SIZE);
-    const maxWy = Math.min(KANTO_GRID_H * KANTO_TILE_SIZE, (tileY + size + 1) * KANTO_TILE_SIZE);
-
-    const minCx = Math.floor(minWx / KANTO_CHUNK_PX);
-    const maxCx = Math.floor(maxWx / KANTO_CHUNK_PX);
-    const minCy = Math.floor(minWy / KANTO_CHUNK_PX);
-    const maxCy = Math.floor(maxWy / KANTO_CHUNK_PX);
-
-    for (let cy = minCy; cy <= maxCy; cy++) {
-      for (let cx = minCx; cx <= maxCx; cx++) {
-        const chunk = this.chunks.find((c) => c.cx === cx && c.cy === cy);
-        if (chunk) {
-          chunk.bake(autotiler, prefabRenderer, world);
-        }
-      }
-    }
-  }
-
-  renderTo(
-    ctx: CanvasRenderingContext2D,
-    viewX: number,
-    viewY: number,
-    viewW: number,
-    viewH: number
-  ): void {
-    for (const c of this.chunks) {
-      if (
-        c.wx + KANTO_CHUNK_PX < viewX ||
-        c.wx > viewX + viewW ||
-        c.wy + KANTO_CHUNK_PX < viewY ||
-        c.wy > viewY + viewH
-      ) {
-        continue;
-      }
-      if (c.canvas && c.baked) {
-        ctx.drawImage(c.canvas, c.wx, c.wy);
-      }
-    }
-  }
-}
 

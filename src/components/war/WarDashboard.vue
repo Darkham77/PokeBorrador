@@ -161,13 +161,13 @@ onMounted(async () => {
 .war-dashboard {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  color: white;
+  gap: $spacing-xl;
+  color: var(--white);
 }
 
 .phase-banner {
   padding: 16px;
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   text-align: center;
   border-width: 2px;
   border-style: solid;
@@ -187,12 +187,12 @@ onMounted(async () => {
   .phase-title {
     @include pixelated;
 
-    font-size: 11px;
+    font-size: var(--font-11);
     margin-bottom: 8px;
   }
   
   .phase-desc {
-    font-size: 10px;
+    font-size: var(--font-10);
     opacity: 0.8;
   }
 }
@@ -203,7 +203,7 @@ onMounted(async () => {
   align-items: center;
   padding: 24px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(255 255 255 / 5%);
 
   .team {
@@ -220,11 +220,11 @@ onMounted(async () => {
     .count {
       @include pixelated;
 
-      font-size: 20px;
+      font-size: var(--font-20);
     }
     
     .label {
-      font-size: 9px;
+      font-size: var(--font-9);
       opacity: 0.5;
       margin-top: 4px;
     }
@@ -237,14 +237,14 @@ onMounted(async () => {
     @include pixelated;
 
     color: var(--gray, #666);
-    font-size: 12px;
+    font-size: var(--font-12);
   }
 }
 
 .personal-card {
   padding: 20px;
   border: 1px solid Rgb(51 51 51 / 100%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: $card2;
 
   .card-header {
@@ -256,13 +256,13 @@ onMounted(async () => {
       @include pixelated;
 
       color: var(--yellow, #facc15);
-      font-size: 10px;
+      font-size: var(--font-10);
     }
     
     .pts {
       @include pixelated;
 
-      font-size: 10px;
+      font-size: var(--font-10);
     }
   }
 }
@@ -274,14 +274,14 @@ onMounted(async () => {
 
   .progress-bar {
     height: 12px;
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: $black;
     overflow: hidden;
     
     .fill {
       height: 100%;
       background: Linear-Gradient(90deg, Rgb(59 130 246 / 100%), Rgb(96 165 250 / 100%));
-      box-shadow: 0 0 10px Rgb(59 130 246 / 50%);
+      box-shadow: var(--shadow-glow-blue);
     }
   }
 
@@ -313,16 +313,16 @@ onMounted(async () => {
         @include pixelated;
 
         color: Rgb(102 102 102 / 100%);
-        font-size: 8px;
+        font-size: var(--font-8);
       }
 
       &.achieved {
         .dot {
           background: Rgb(59 130 246 / 100%);
           border-color: var(--white);
-          box-shadow: 0 0 8px Rgb(59 130 246 / 100%);
+          box-shadow: var(--shadow-glow-yellow-sm);
         }
-        .pt-label { color: white; }
+        .pt-label { color: var(--white); }
       }
     }
   }
@@ -330,17 +330,17 @@ onMounted(async () => {
 
 .reward-preview {
   padding: 10px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 30%);
   color: Rgb(136 136 136 / 100%);
-  font-size: 11px;
+  font-size: var(--font-11);
   line-height: 1.6; /* Generous spacing between wrapped lines */
   text-align: center;
   
   .highlight {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     color: var(--yellow, #facc15);
     font-weight: bold;
     vertical-align: middle;
@@ -356,19 +356,19 @@ onMounted(async () => {
 
 .stats-grid {
   display: grid;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: 1fr 1fr;
 
   .stat-item {
     padding: 16px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 16px;
+    border-radius: $radius-2xl;
     background: Rgb(255 255 255 / 5%);
     text-align: center;
 
     .label {
       color: Rgb(136 136 136 / 100%);
-      font-size: 9px;
+      font-size: var(--font-9);
       line-height: 1.4;
       margin-bottom: 8px;
     }
@@ -379,9 +379,9 @@ onMounted(async () => {
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      gap: 4px;
-      color: white;
-      font-size: 12px;
+      gap: $spacing-xs;
+      color: var(--white);
+      font-size: var(--font-12);
       vertical-align: middle;
 
       .emoji {

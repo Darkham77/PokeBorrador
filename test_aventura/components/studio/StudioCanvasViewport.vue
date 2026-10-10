@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { gsap } from 'gsap';
 import { useMapStudioStore } from '../../stores/mapStudio';
 import { defaultTilesRegistry } from '../../logic/map/tilesRegistry';
+import { TILE_SIZE } from '../../logic/map/inBrowserTileProcessor.ts';
+import { SUBTILE_INNER_SIZE, TILE_CENTER_OFFSET } from '../../config/studioConstants.ts';
 import type { CollisionType, MapCell } from '../../logic/map/proceduralMapGenerator';
 
 const store = useMapStudioStore();
@@ -15,7 +18,11 @@ const panStart = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 const isSpacePressed = ref<boolean>(false);
 const isDrawing = ref<boolean>(false);
 
-const TILE_SIZE = 16;
+const IMAGE_LOAD_TIMEOUT_SEC = 1.5;
+const DEFAULT_CONTAINER_WIDTH = 800;
+const DEFAULT_CONTAINER_HEIGHT = 600;
+const GHOST_HOVER_BRUSH_ALPHA = 0.6 as const;
+const GHOST_HOVER_LINE_WIDTH = 1.5 as const;
 
 /**
  * Preload needed tile assets into cache.
@@ -59,9 +66,11 @@ async function preloadImages(): Promise<void> {
         new Promise<void>((resolve) => {
           const img = new Image();
           let settled = false;
+          let timer: gsap.core.Tween | null = null;
           const done = () => {
             if (!settled) {
               settled = true;
+              if (timer) timer.kill();
               resolve();
             }
           };
@@ -71,7 +80,7 @@ async function preloadImages(): Promise<void> {
           };
           img.onerror = () => done();
           img.src = p;
-          setTimeout(done, 1500);
+          timer = gsap.delayedCall(IMAGE_LOAD_TIMEOUT_SEC, done);
         })
       );
     }
@@ -172,7 +181,7 @@ function renderCanvas(): void {
           ctx.font = 'bold 9px monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('▼', x * TILE_SIZE + 8, y * TILE_SIZE + 8);
+          ctx.fillText('▼', x * TILE_SIZE + TILE_CENTER_OFFSET, y * TILE_SIZE + TILE_CENTER_OFFSET);
         }
       }
     }
@@ -185,12 +194,12 @@ function renderCanvas(): void {
       ctx.fillRect(warp.x * TILE_SIZE, warp.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
       ctx.strokeStyle = '#a16207';
       ctx.lineWidth = 2;
-      ctx.strokeRect(warp.x * TILE_SIZE + 1, warp.y * TILE_SIZE + 1, 14, 14);
+      ctx.strokeRect(warp.x * TILE_SIZE + 1, warp.y * TILE_SIZE + 1, SUBTILE_INNER_SIZE, SUBTILE_INNER_SIZE);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('W', warp.x * TILE_SIZE + 8, warp.y * TILE_SIZE + 8);
+      ctx.fillText('W', warp.x * TILE_SIZE + TILE_CENTER_OFFSET, warp.y * TILE_SIZE + TILE_CENTER_OFFSET);
     }
 
     for (const spawn of map.entities.spawns) {
@@ -198,13 +207,13 @@ function renderCanvas(): void {
       ctx.fillRect(spawn.x * TILE_SIZE, spawn.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
       ctx.strokeStyle = '#0e7490';
       ctx.lineWidth = 2;
-      ctx.strokeRect(spawn.x * TILE_SIZE + 1, spawn.y * TILE_SIZE + 1, 14, 14);
+      ctx.strokeRect(spawn.x * TILE_SIZE + 1, spawn.y * TILE_SIZE + 1, SUBTILE_INNER_SIZE, SUBTILE_INNER_SIZE);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const label = spawn.id.includes('player') ? '★' : 'S';
-      ctx.fillText(label, spawn.x * TILE_SIZE + 8, spawn.y * TILE_SIZE + 8);
+      ctx.fillText(label, spawn.x * TILE_SIZE + TILE_CENTER_OFFSET, spawn.y * TILE_SIZE + TILE_CENTER_OFFSET);
     }
   }
 
@@ -233,12 +242,12 @@ function renderCanvas(): void {
         const img = entry ? imageCache.get(entry.file_path) : null;
         if (img) {
           ctx.save();
-          ctx.globalAlpha = 0.6;
+          ctx.globalAlpha = GHOST_HOVER_BRUSH_ALPHA;
           ctx.drawImage(img, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
           ctx.restore();
         }
         ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = GHOST_HOVER_LINE_WIDTH;
         ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
       } else if (store.activeTool === 'stamp' && store.selectedStructure) {
         const tpl = store.selectedStructure;
@@ -281,7 +290,7 @@ function renderCanvas(): void {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const arrow = store.playerDirection === 'up' ? '▲' : store.playerDirection === 'down' ? '▼' : store.playerDirection === 'left' ? '◀' : '▶';
-    ctx.fillText(arrow, px + 8, py + 8);
+    ctx.fillText(arrow, px + TILE_CENTER_OFFSET, py + TILE_CENTER_OFFSET);
   }
 }
 
@@ -432,12 +441,12 @@ function centerMap(): void {
   if (!map) return;
   const container = canvasRef.value?.parentElement?.parentElement;
   if (!container) return;
-  const cw = container.clientWidth || 800;
-  const ch = container.clientHeight || 600;
+  const cw = container.clientWidth || DEFAULT_CONTAINER_WIDTH;
+  const ch = container.clientHeight || DEFAULT_CONTAINER_HEIGHT;
   const mw = map.width * TILE_SIZE * store.zoom;
   const mh = map.height * TILE_SIZE * store.zoom;
-  store.panX = Math.max(20, Math.round((cw - mw) / 2));
-  store.panY = Math.max(20, Math.round((ch - mh) / 2));
+  store.panX = Math.max(MIN_CANVAS_CENTER_PADDING, Math.round((cw - mw) / 2));
+  store.panY = Math.max(MIN_CANVAS_CENTER_PADDING, Math.round((ch - mh) / 2));
 }
 
 watch(
@@ -518,13 +527,13 @@ defineExpose({
 @use "@/styles/core/tools" as *;
 
 .studio-canvas-container {
+  position: relative;
   display: flex;
-  flex: 1;
   width: 100%;
   height: 100%;
   background: #020617;
+  flex: 1;
   overflow: hidden;
-  position: relative;
   cursor: crosshair;
 
   &.space-panning {
@@ -543,8 +552,8 @@ defineExpose({
 }
 
 .viewport-canvas {
+  border: 1px solid var(--slate-700);
   image-rendering: pixelated;
-  box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.8);
-  border: 1px solid #334155;
+  box-shadow: var(--shadow-lg);
 }
 </style>

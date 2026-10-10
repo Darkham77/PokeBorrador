@@ -32,6 +32,7 @@ defineEmits<{
     <div class="button-list">
       <button
         v-for="item in items"
+        id="debug-action-list-btn-1"
         :key="item.id"
         class="debug-btn-long"
         :style="cardStyle"
@@ -68,7 +69,7 @@ defineEmits<{
     @include pixelated;
 
     color: var(--yellow);
-    font-size: 8px;
+    font-size: var(--font-8);
     opacity: 0.8;
     margin-bottom: 12px;
     letter-spacing: 1px;
@@ -78,7 +79,7 @@ defineEmits<{
 .button-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .debug-btn-long {
@@ -88,9 +89,9 @@ defineEmits<{
   width: 100%;
   padding: 14px 16px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 3%);
-  color: white;
+  color: var(--white);
   cursor: pointer;
   margin-bottom: 8px;
   
@@ -102,18 +103,18 @@ defineEmits<{
   .btn-content {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: $spacing-md-lg;
     
-    .icon { font-size: 20px; }
+    .icon { font-size: var(--font-20); }
     
     .text {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 2px;
+      gap: $spacing-2xs;
       
-      .label { @include pixelated; font-size: 8px; }
-      .desc { color: Rgb(255 255 255 / 40%); font-size: 9px; }
+      .label { @include pixelated; font-size: var(--font-8); }
+      .desc { color: Rgb(255 255 255 / 40%); font-size: var(--font-9); }
     }
   }
 }

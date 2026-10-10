@@ -3,10 +3,10 @@
 .category-slot-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 8px 10px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 30%);
 
   &.inner-species-slot {
@@ -23,24 +23,24 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     min-width: 0;
 
     .slot-header-left {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
       min-width: 0;
       overflow: hidden;
 
       .cat-icon {
-        font-size: 12px;
+        font-size: var(--font-12);
         flex-shrink: 0;
       }
 
       .cat-title {
         color: var(--yellow);
-        font-size: 8px;
+        font-size: var(--font-8);
         line-height: 1.45;
         padding-bottom: 2px;
         white-space: nowrap;
@@ -52,10 +52,10 @@
     .cat-dir-badge {
       padding: 1px 5px;
       border: 1px solid Rgb(59 130 246 / 25%);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(59 130 246 / 15%);
-      color: #93c5fd;
-      font-size: 6px;
+      color: var(--blue-300);
+      font-size: var(--font-6);
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -64,11 +64,11 @@
   .slot-enrolled-body {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     min-width: 0;
     padding: 4px 6px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(255 255 255 / 2.5%);
 
     .poke-avatar-box {
@@ -78,7 +78,7 @@
       width: 28px;
       height: 28px;
       border: 1px solid Rgb(255 255 255 / 8%);
-      border-radius: 6px;
+      border-radius: $radius-md;
       background: Rgb(255 255 255 / 4%);
       flex-shrink: 0;
 
@@ -92,7 +92,7 @@
     .poke-meta-box {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
       min-width: 0;
       flex: 1;
       overflow: hidden;
@@ -100,12 +100,12 @@
       .poke-name-row {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: $spacing-xs;
         min-width: 0;
 
         .poke-name-txt {
           color: var(--white);
-          font-size: 9px;
+          font-size: var(--font-9);
           line-height: 1.45;
           padding-bottom: 2px;
           white-space: nowrap;
@@ -114,7 +114,7 @@
         }
 
         .poke-shiny-badge {
-          font-size: 8px;
+          font-size: var(--font-8);
           flex-shrink: 0;
         }
 
@@ -124,10 +124,10 @@
           display: inline-flex;
           align-items: center;
           padding: 1px 3px;
-          border-radius: 3px;
+          border-radius: $radius-xs-alt;
           background: Rgb(255 255 255 / 8%);
           color: var(--gray);
-          font-size: 6px;
+          font-size: var(--font-6);
           white-space: nowrap;
           flex-shrink: 0;
         }
@@ -137,7 +137,7 @@
         .metric-val-txt {
           display: block;
           color: var(--green-bright);
-          font-size: 7px;
+          font-size: var(--font-7);
           line-height: 1.45;
           padding-bottom: 2px;
           text-shadow: 0 0 6px Rgb(74 222 128 / 30%);
@@ -155,7 +155,7 @@
     align-items: center;
     padding: 6px 8px;
     border: 1px dashed Rgb(255 255 255 / 12%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(0 0 0 / 20%);
     cursor: pointer;
 
@@ -167,17 +167,17 @@
     .empty-info {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
 
       .empty-plus {
         color: Rgb(255 255 255 / 40%);
-        font-size: 11px;
+        font-size: var(--font-11);
         font-weight: bold;
       }
 
       .empty-txt {
         color: Rgb(203 213 225 / 60%);
-        font-size: 6.5px;
+        font-size: var(--font-7);
       }
     }
   }
@@ -185,8 +185,8 @@
   .btn-slot-action {
     padding: 3px 6px;
     border: 1px solid transparent;
-    border-radius: 4px;
-    font-size: 6.5px;
+    border-radius: $radius-sm;
+    font-size: var(--font-7);
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
@@ -195,7 +195,7 @@
       background: var(--yellow);
       color: var(--black);
       font-weight: bold;
-      border-color: #fef08a;
+      border-color: var(--yellow-light);
 
       &:hover {
         transform: Translatey(-1px);

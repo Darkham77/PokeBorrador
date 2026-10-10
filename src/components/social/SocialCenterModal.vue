@@ -173,7 +173,7 @@ onMounted(() => {
 
   .header-stats {
     display: flex;
-    gap: 24px;
+    gap: $spacing-2xl;
 
     .stat-node {
       @include shop-header-stat(var(--purple-light));
@@ -198,7 +198,7 @@ onMounted(() => {
 
 .modal-tabs {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 8px;
   background: Rgb(0 0 0 / 30%);
   border-bottom: 1px solid Rgb(255 255 255 / 5%);
@@ -209,10 +209,10 @@ onMounted(() => {
     position: relative;
     padding: 12px 6px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(255 255 255 / 2%);
     color: Rgb(255 255 255 / 50%);
-    font-size: 8px;
+    font-size: var(--font-8);
     font-weight: bold;
     flex: 1;
     cursor: pointer;
@@ -228,29 +228,28 @@ onMounted(() => {
       background: Rgb(168 85 247 / 15%);
       color: var(--purple-light);
       border-color: Rgb(168 85 247 / 30%);
-      box-shadow: 
-        0 4px 15px Rgb(168 85 247 / 10%),
-        inset 0 0 10px Rgb(168 85 247 / 10%);
+      box-shadow: var(--shadow-card);
+
     }
 
     .badge-mini {
       padding: 2px 6px;
       border: 1px solid Rgb(168 85 247 / 20%);
-      border-radius: 6px;
+      border-radius: $radius-md;
       background: Rgb(168 85 247 / 30%);
       color: var(--purple-light);
-      font-size: 9px;
+      font-size: var(--font-9);
       margin-left: 6px;
     }
 
     @media (width <= 580px) {
       padding: 10px 4px;
-      font-size: 7px;
+      font-size: var(--font-7);
     }
 
     @media (width <= 480px) {
       padding: 8px 2px;
-      font-size: 6px;
+      font-size: var(--font-6);
     }
   }
 }
@@ -267,7 +266,7 @@ onMounted(() => {
 .social-tab-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   width: 100%;
 }
 
@@ -277,13 +276,13 @@ onMounted(() => {
   text-align: center;
   
   .icon {
-    font-size: 40px;
+    font-size: var(--font-40);
     margin-bottom: 15px;
     filter: Drop-Shadow(0 0 12px Rgb(168 85 247 / 20%));
   }
   
   p {
-    font-size: 14px;
+    font-size: var(--font-14);
     margin-bottom: 0;
   }
 }

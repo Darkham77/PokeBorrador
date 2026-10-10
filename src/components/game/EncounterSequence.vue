@@ -191,7 +191,7 @@ const handleArchaeologyStart = () => {
       <div
         ref="fishingCard"
         class="fishing-card"
-        style="border-color: #eab308; box-shadow: 0 0 30px rgb(234 179 8 / 40%);"
+        style="border-color: var(--amber-dark); box-shadow: var(--shadow-glow-amber-lg);"
       >
         <div 
           ref="fishingIcon" 
@@ -201,7 +201,7 @@ const handleArchaeologyStart = () => {
         </div>
         <div
           class="fishing-title"
-          style="color: #eab308;"
+          style="color: var(--amber-dark);"
         >
           ¡FÓSIL DETECTADO!
         </div>
@@ -244,9 +244,9 @@ const handleArchaeologyStart = () => {
   @include pixelated;
 
   position: relative;
-  color: rgb(255 59 48 / 100%);
-  font-size: 80px;
-  text-shadow: 0 0 20px rgb(255 59 48 / 60%);
+  color: Rgb(255 59 48 / 100%);
+  font-size: var(--font-80);
+  text-shadow: 0 0 20px Rgb(255 59 48 / 60%);
 }
 
 /* Fishing Styles */
@@ -258,14 +258,14 @@ const handleArchaeologyStart = () => {
   max-width: 380px;
   padding: 32px;
   border: 2px solid var(--blue);
-  border-radius: 24px;
+  border-radius: $radius-4xl;
   background: var(--card);
   text-align: center;
-  box-shadow: 0 0 30px rgb(10 132 255 / 40%);
+  box-shadow: var(--shadow-glow-amber-lg);
 }
 
 .fishing-icon {
-  font-size: 80px;
+  font-size: var(--font-80);
   margin-bottom: 20px;
 }
 
@@ -273,14 +273,14 @@ const handleArchaeologyStart = () => {
   @include pixelated;
 
   color: var(--blue);
-  font-size: 12px;
+  font-size: var(--font-12);
   margin-bottom: 16px;
 }
 
 .fishing-text {
   margin: 16px 0;
-  color: rgb(238 238 238 / 100%);
-  font-size: 14px;
+  color: Rgb(238 238 238 / 100%);
+  font-size: var(--font-14);
   line-height: 1.6;
 }
 

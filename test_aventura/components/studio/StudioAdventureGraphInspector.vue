@@ -1,14 +1,25 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
-import type { MapNode } from '../../logic/adventure/mapData';
-import { CELL_BIOME, type CellBiomeType } from '../../logic/map/kantoRegionalGenerator';
-import { STAMPING_PREFABS_CATALOG } from '../../logic/map/regionRegistry';
+import { CELL_BIOME, type CellBiomeType } from '../../types/map/kantoGridModel';
+import { STAMPING_PREFABS_CATALOG } from '../../data/map/regionRegistry.ts';
 import type { StampingPrefabDefinition, UrbanScale } from '../../types/map/adventureWorldTypes';
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 
 const store = useMapAdventureStudioStore();
 
 type CoordAxis = 'x' | 'y';
+
+const NUDGE_OFFSETS = [
+  { value: -10, label: '-10' },
+  { value: -1, label: '-1' },
+  { value: 1, label: '+1' },
+  { value: 10, label: '+10' }
+] as const;
+
+function getBrushPixelSize(brushSize: number): number {
+  return brushSize * CANVAS_TILE_SIZE;
+}
 
 // --- 1. Graph Mode Inspector State ---
 const selectedNode = computed<MapNode | null>(() => {
@@ -79,11 +90,13 @@ const canonicalLocations = computed(() => {
   return kantoLocations;
 });
 
+const WORLD_TELEPORT_COORD_SCALE = 2.5 as const;
+
 function handleTeleport(targetId: string) {
   const node = store.nodes[targetId];
   if (node) {
     store.selectedNodeId = targetId;
-    store.teleportTo(node.x * 2.5, node.y * 2.5);
+    store.teleportTo(node.x * WORLD_TELEPORT_COORD_SCALE, node.y * WORLD_TELEPORT_COORD_SCALE);
   }
 }
 
@@ -282,63 +295,25 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
           <div class="nudge-controls">
             <span class="axis-label">X:</span>
             <button
-              id="btn-nudge-x-m10"
+              v-for="offset in NUDGE_OFFSETS"
+              :id="`btn-nudge-x-${offset.value}`"
+              :key="offset.value"
               class="nudge-btn"
-              @click="handleCoordNudge('x', -10)"
+              @click="handleCoordNudge('x', offset.value)"
             >
-              -10
-            </button>
-            <button
-              id="btn-nudge-x-m1"
-              class="nudge-btn"
-              @click="handleCoordNudge('x', -1)"
-            >
-              -1
-            </button>
-            <button
-              id="btn-nudge-x-p1"
-              class="nudge-btn"
-              @click="handleCoordNudge('x', 1)"
-            >
-              +1
-            </button>
-            <button
-              id="btn-nudge-x-p10"
-              class="nudge-btn"
-              @click="handleCoordNudge('x', 10)"
-            >
-              +10
+              {{ offset.label }}
             </button>
           </div>
           <div class="nudge-controls">
             <span class="axis-label">Y:</span>
             <button
-              id="btn-nudge-y-m10"
+              v-for="offset in NUDGE_OFFSETS"
+              :id="`btn-nudge-y-${offset.value}`"
+              :key="offset.value"
               class="nudge-btn"
-              @click="handleCoordNudge('y', -10)"
+              @click="handleCoordNudge('y', offset.value)"
             >
-              -10
-            </button>
-            <button
-              id="btn-nudge-y-m1"
-              class="nudge-btn"
-              @click="handleCoordNudge('y', -1)"
-            >
-              -1
-            </button>
-            <button
-              id="btn-nudge-y-p1"
-              class="nudge-btn"
-              @click="handleCoordNudge('y', 1)"
-            >
-              +1
-            </button>
-            <button
-              id="btn-nudge-y-p10"
-              class="nudge-btn"
-              @click="handleCoordNudge('y', 10)"
-            >
-              +10
+              {{ offset.label }}
             </button>
           </div>
         </div>
@@ -392,6 +367,7 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
             >
               <span class="connected-name">{{ store.nodes[neighborId]?.name || neighborId }}</span>
               <button
+                id="studio-adventure-graph-inspector-btn-disconnect"
                 class="btn-disconnect-sm"
                 title="Desconectar ruta"
                 @click="handleDisconnect(neighborId)"
@@ -504,7 +480,7 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
                 {{ bs }}x{{ bs }}
               </span>
               <span class="brush-px">
-                {{ bs * 32 }}px
+                {{ getBrushPixelSize(bs) }}px
               </span>
             </button>
           </div>
@@ -532,6 +508,7 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
         <div class="flex items-center justify-between pb-2 border-b border-slate-700">
           <span class="text-amber-400 font-bold text-xs uppercase">Estructura #{{ store.selectedStructureIndex + 1 }}</span>
           <button
+            id="studio-adventure-graph-inspector-btn-store-selectedstructureindex"
             class="btn-close-sm"
             @click="store.selectedStructureIndex = null"
           >
@@ -552,55 +529,25 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
           <div class="nudge-controls">
             <span class="axis-label">X:</span>
             <button
+              v-for="offset in NUDGE_OFFSETS"
+              id="studio-adventure-graph-inspector-btn-offset-label"
+              :key="offset.value"
               class="nudge-btn"
-              @click="handleStructureCoordNudge('x', -10)"
+              @click="handleStructureCoordNudge('x', offset.value)"
             >
-              -10
-            </button>
-            <button
-              class="nudge-btn"
-              @click="handleStructureCoordNudge('x', -1)"
-            >
-              -1
-            </button>
-            <button
-              class="nudge-btn"
-              @click="handleStructureCoordNudge('x', 1)"
-            >
-              +1
-            </button>
-            <button
-              class="nudge-btn"
-              @click="handleStructureCoordNudge('x', 10)"
-            >
-              +10
+              {{ offset.label }}
             </button>
           </div>
           <div class="nudge-controls">
             <span class="axis-label">Y:</span>
             <button
+              v-for="offset in NUDGE_OFFSETS"
+              id="studio-adventure-graph-inspector-btn-offset-label-2"
+              :key="offset.value"
               class="nudge-btn"
-              @click="handleStructureCoordNudge('y', -10)"
+              @click="handleStructureCoordNudge('y', offset.value)"
             >
-              -10
-            </button>
-            <button
-              class="nudge-btn"
-              @click="handleStructureCoordNudge('y', -1)"
-            >
-              -1
-            </button>
-            <button
-              class="nudge-btn"
-              @click="handleStructureCoordNudge('y', 1)"
-            >
-              +1
-            </button>
-            <button
-              class="nudge-btn"
-              @click="handleStructureCoordNudge('y', 10)"
-            >
-              +10
+              {{ offset.label }}
             </button>
           </div>
         </div>
@@ -624,6 +571,7 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
         <div class="flex gap-1 mb-3">
           <button
             v-for="cat in (['all', 'buildings', 'props'] as const)"
+            :id="'btn-structure-cat-' + cat"
             :key="cat"
             class="filter-tab-btn"
             :class="{ active: structureFilter === cat }"

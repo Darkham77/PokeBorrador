@@ -23,10 +23,9 @@ import {
   type InferOutput,
 } from 'valibot';
 
-import { MAXIMUM_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay.ts';
+import { MAXIMUM_FRIENDSHIP_VALUE, MAX_STAT_IV } from '@/logic/constants/gameplay.ts';
 
 const MIN_STAT_IV = 0;
-const MAX_STAT_IV = 31;
 const MIN_STAT_EV = 0;
 const MAX_STAT_EV = 252;
 const MIN_FRIENDSHIP = 0;

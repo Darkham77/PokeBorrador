@@ -10,10 +10,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { generateWildernessLayer } from '../../../src/logic/map/wildernessVegetationEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
 
 describe('Pattern 4: Mint Highland Vegetation & Prop Integrity', () => {
   it('guarantees Mint Highland does not spawn discordant ferns or broken fence post rocks', () => {
@@ -49,4 +49,30 @@ describe('Pattern 4: Mint Highland Vegetation & Prop Integrity', () => {
     expect(roundBushes.length, 'Mint Highland should spawn poke_bush_round bushes').toBeGreaterThan(0);
     expect(mossyBoulders.length, 'Mint Highland should spawn poke_rock_boulder_mossy_1 boulders').toBeGreaterThan(0);
   });
+
+  it('guarantees wilderness props never overlap deep water or fall outside bounds', () => {
+    const cont = generateContinentMap({
+      seed: 42,
+      width: 128,
+      height: 128,
+      oceanWaterPercentage: 0.35,
+      mountainPercentage: 0.22,
+      lakeCount: 3
+    });
+    const pois = placeRegionalPOIs(cont, { targetCount: 18, seed: 42 });
+    const routes = generateRouteNetwork(cont, pois, { allowBridges: true });
+    const wilderness = generateWildernessLayer(cont, pois, routes.pathGrid);
+
+    for (const prop of wilderness.props) {
+      expect(prop.x).toBeGreaterThanOrEqual(0);
+      expect(prop.x).toBeLessThan(128);
+      expect(prop.y).toBeGreaterThanOrEqual(0);
+      expect(prop.y).toBeLessThan(128);
+
+      // Props must never spawn in open water
+      const terrain = cont.resolvedWater.cellDetails[prop.y]?.[prop.x]?.terrain;
+      expect(terrain).not.toBe('water');
+    }
+  });
 });
+

@@ -305,6 +305,7 @@ async function handleSendChallenge() {
         <div class="section-header-inline">
           <label class="section-title">EQUIPO SELECCIONADO ({{ activeTeam.filter(p => p && p.hp > 0).length }}/{{ requiredCount }})</label>
           <button
+            id="pv-pchallenge-modal-btn-gestionar-equipo"
             class="link-btn"
             @click="openTeamManagement"
           >

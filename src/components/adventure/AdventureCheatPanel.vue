@@ -87,11 +87,11 @@ const healActiveTeam = () => {
 </script>
 
 <template>
-  <div style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
+  <div style="display: flex; flex-direction: column; gap: $spacing-lg; width: 100%;">
     <!-- Mi Equipo Activo -->
     <div
       class="adv-panel adv-column adv-active-team-column"
-      style="display: flex; flex-direction: column; gap: 8px;"
+      style="display: flex; flex-direction: column; gap: $spacing-sm;"
     >
       <h3
         class="adv-pixel-text adv-column-title"
@@ -100,17 +100,19 @@ const healActiveTeam = () => {
         Mi Equipo Activo
       </h3>
 
-      <div style="display: flex; gap: 4px; width: 100%;">
-        <button 
+      <div style="display: flex; gap: $spacing-xs; width: 100%;">
+        <button
+          id="adventure-cheat-panel-btn-inyectar-equipo" 
           class="adv-hm-btn" 
-          style=" padding: 4px; font-family: var(--font-pixel); font-size: 6px;flex: 1;"
+          style=" padding: 4px; font-family: var(--font-pixel); font-size: var(--font-6);flex: 1;"
           @click="injectTestTeam"
         >
           <span class="emoji">🐣</span> Inyectar Equipo
         </button>
-        <button 
+        <button
+          id="adventure-cheat-panel-btn-curar-todo" 
           class="adv-hm-btn" 
-          style=" padding: 4px; font-family: var(--font-pixel); font-size: 6px;flex: 1;"
+          style=" padding: 4px; font-family: var(--font-pixel); font-size: var(--font-6);flex: 1;"
           @click="healActiveTeam"
         >
           <span class="emoji">🏥</span> Curar Todo
@@ -119,7 +121,7 @@ const healActiveTeam = () => {
 
       <div
         class="adv-team-scroll"
-        style=" display: flex; flex-direction: column; gap: 6px;max-height: 180px; overflow-y: auto; padding-right: 4px;"
+        style=" display: flex; flex-direction: column; gap: $spacing-sm-alt;max-height: 180px; overflow-y: auto; padding-right: 4px;"
       >
         <AdventureCheatTeamCard
           v-for="pkmn in gameStore.state.team"
@@ -129,7 +131,7 @@ const healActiveTeam = () => {
 
         <div 
           v-if="!gameStore.state.team || gameStore.state.team.length === 0"
-          style=" padding: 12px;color: #888; font-family: var(--font-pixel); font-size: 8px; text-align: center;"
+          style=" padding: 12px;color: var(--slate-400); font-family: var(--font-pixel); font-size: var(--font-8); text-align: center;"
         >
           Tu equipo está vacío. ¡Usa Inyectar Equipo!
         </div>
@@ -139,7 +141,7 @@ const healActiveTeam = () => {
     <!-- Inyector de Mochila -->
     <div
       class="adv-panel adv-column adv-cheat-inventory-column"
-      style="display: flex; flex-direction: column; gap: 8px;"
+      style="display: flex; flex-direction: column; gap: $spacing-sm;"
     >
       <h3
         class="adv-pixel-text adv-column-title"
@@ -147,33 +149,36 @@ const healActiveTeam = () => {
       >
         Inyector de Mochila
       </h3>
-      <button 
+      <button
+        id="adventure-cheat-panel-btn-limpiar-test-items" 
         class="adv-hm-btn" 
-        style="width: 100%; padding: 4px; font-family: var(--font-pixel); font-size: 8px;"
+        style="width: 100%; padding: 4px; font-family: var(--font-pixel); font-size: var(--font-8);"
         @click="clearTestItems"
       >
         <span class="emoji">🗑️</span> Limpiar Test Items
       </button>
       <div
         class="adv-cheat-item-scroll"
-        style=" display: flex; flex-direction: column; gap: 4px;max-height: 120px; overflow-y: auto; padding-right: 4px;"
+        style=" display: flex; flex-direction: column; gap: $spacing-xs;max-height: 120px; overflow-y: auto; padding-right: 4px;"
       >
         <div
           class="adv-cheat-item-row"
-          style="display: flex; justify-content: space-between; align-items: center; padding: 4px; border-radius: 4px; background: rgb(0 0 0 / 20%); font-size: 8px;"
+          style="display: flex; justify-content: space-between; align-items: center; padding: 4px; border-radius: $radius-sm; background: rgb(0 0 0 / 20%); font-size: var(--font-8);"
         >
           <span style="font-family: var(--font-pixel);"><span class="emoji">🚲</span> Bici ({{ gameStore.state.inventory?.['bicycle'] || 0 }})</span>
-          <div style="display: flex; gap: 2px;">
+          <div style="display: flex; gap: $spacing-2xs;">
             <button
+              id="adventure-cheat-panel-btn-1"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
               @click="adjustItem('bicycle', 1)"
             >
               +1
             </button>
             <button
+              id="adventure-cheat-panel-btn-1-2"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
               @click="adjustItem('bicycle', -1)"
             >
               -1
@@ -184,29 +189,32 @@ const healActiveTeam = () => {
           v-for="item in filteredShopItems" 
           :key="item.id" 
           class="adv-cheat-item-row" 
-          style="display: flex; justify-content: space-between; align-items: center; padding: 4px; border-radius: 4px; background: rgb(0 0 0 / 20%); font-size: 8px;"
+          style="display: flex; justify-content: space-between; align-items: center; padding: 4px; border-radius: $radius-sm; background: rgb(0 0 0 / 20%); font-size: var(--font-8);"
         >
           <span style=" max-width: 120px;font-family: var(--font-pixel); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
             <span class="emoji">{{ item.icon }}</span> {{ item.name }} ({{ gameStore.state.inventory?.[item.id] || 0 }})
           </span>
-          <div style="display: flex; gap: 2px; flex-shrink: 0;">
+          <div style="display: flex; gap: $spacing-2xs; flex-shrink: 0;">
             <button
+              id="adventure-cheat-panel-btn-1-3"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
               @click="adjustItem(item.id, 1)"
             >
               +1
             </button>
             <button
+              id="adventure-cheat-panel-btn-10"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
               @click="adjustItem(item.id, 10)"
             >
               +10
             </button>
             <button
+              id="adventure-cheat-panel-btn-1-4"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: 8px;"
+              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
               @click="adjustItem(item.id, -1)"
             >
               -1

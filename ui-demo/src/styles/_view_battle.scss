@@ -64,7 +64,7 @@
   }
 
   &.is-active {
-    --frame-border: #c084fc;
+    --frame-border: var(--purple-400);
     background-image:
       radial-gradient(circle at 50% 40%, Rgba(192, 132, 252, 0.25) 0%, transparent 65%),
       linear-gradient(180deg, Rgba(192, 132, 252, 0.12) 0%, Rgba(0, 0, 0, 0.35) 100%);
@@ -81,7 +81,7 @@
   position: absolute;
   top: 3px;
   left: 3px;
-  background: #000000;
+  background: var(--black);
   border: 1px solid Rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
@@ -90,9 +90,9 @@
   padding: 1px 2px;
   z-index: calc(var(--z-base, 1) + 2);
 
-  .dock-iv-tag { font-size: 6px; font-weight: bold; color: #ffd60a; line-height: 1; }
+  .dock-iv-tag { font-size: var(--font-6); font-weight: bold; color: var(--yellow); line-height: 1; }
   .dock-item-icon { width: 11px; height: 11px; image-rendering: pixelated; }
-  .dock-star-icon, .dock-shiny-icon { font-size: 6px; line-height: 1; color: #ffd60a; }
+  .dock-star-icon, .dock-shiny-icon { font-size: var(--font-6); line-height: 1; color: var(--yellow); }
 }
 
 // Columna Superior Derecha
@@ -107,7 +107,7 @@
   z-index: calc(var(--z-base, 1) + 2);
 
   .dock-tier-tag {
-    font-size: 6.5px;
+    font-size: var(--font-7);
     font-weight: bold;
     border: 1px solid currentColor;
     padding: 0 3px;
@@ -115,7 +115,7 @@
     background: Rgba(0, 0, 0, 0.5);
   }
 
-  .dock-passive-icon { font-size: 7px; line-height: 1; }
+  .dock-passive-icon { font-size: var(--font-7); line-height: 1; }
 }
 
 // Sprite
@@ -136,7 +136,7 @@
 }
 
 .dock-poke-name {
-  font-size: 7.5px;
+  font-size: var(--font-8);
   font-weight: bold;
   color: var(--color-text-main);
   line-height: 1.2;
@@ -155,7 +155,7 @@
   margin-top: 2px;
 
   .pv-type-ssm {
-    font-size: 6.5px;
+    font-size: var(--font-7);
     padding: 1px 4px;
     line-height: 1.1;
     text-shadow: 0 1px 0 #000000;
@@ -167,7 +167,7 @@
   gap: 4px;
   justify-content: center;
   align-items: center;
-  font-size: 7px;
+  font-size: var(--font-7);
   margin-top: 2px;
 
   .dock-poke-lvl { color: var(--color-text-gold); font-weight: bold; }
@@ -179,24 +179,24 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 6.5px;
+    font-size: var(--font-7);
     font-weight: bold;
-    color: #ffffff;
+    color: var(--white);
     line-height: 1;
 
-    &.gender-male { background: #38bdf8; }
-    &.gender-female { background: #f472b6; }
+    &.gender-male { background: var(--sky); }
+    &.gender-female { background: var(--rose); }
   }
 }
 
 .dock-card-hp-bar {
   width: 100%;
   height: 3px;
-  background: #0f172a;
+  background: var(--slate-900);
   overflow: hidden;
   margin-top: 2px;
 
-  .dock-card-hp-fill { height: 100%; background: #22c55e; }
+  .dock-card-hp-fill { height: 100%; background: var(--emerald); }
 }
 
 // ZONA 2: MOVIMIENTOS & ACCIONES
@@ -242,18 +242,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 7px;
+      font-size: var(--font-7);
       border: 1px solid var(--color-control-border);
       background: transparent;
       color: var(--color-text-muted);
       cursor: pointer;
       line-height: 1;
 
-      &:hover { color: #ffd60a; border-color: #ffd60a; }
+      &:hover { color: var(--yellow); border-color: var(--yellow); }
     }
 
     .dock-move-name {
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: bold;
       color: var(--color-text-main);
       white-space: nowrap;
@@ -263,19 +263,19 @@
       text-align: center;
     }
 
-    .pv-type-sm { font-size: 6.5px; padding: 1px 5px; line-height: 1.2; }
+    .pv-type-sm { font-size: var(--font-7); padding: 1px 5px; line-height: 1.2; }
   }
 
   .dock-move-stats {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 6.5px;
+    font-size: var(--font-7);
     color: var(--color-text-muted);
 
     .dock-stat-item { display: flex; align-items: center; gap: 2px; }
     .stat-val { font-weight: bold; color: var(--color-text-main); }
-    .stat-buff { color: #22c55e; }
+    .stat-buff { color: var(--emerald); }
     .pp-val { color: var(--color-text-gold); }
   }
 }
@@ -289,19 +289,19 @@
 
   .dock-btn-cambiar {
     background: #6366f1;
-    color: #ffffff;
-    --frame-border: #818cf8;
-    font-size: 8px;
+    color: var(--white);
+    --frame-border: var(--blue-400);
+    font-size: var(--font-8);
     padding: 5px 16px;
     min-height: 28px;
-    &:hover { background: #4f46e5; --frame-border: #a5b4fc; }
+    &:hover { background: var(--blue-500); --frame-border: var(--blue-400); }
   }
 
   .dock-btn-mochila {
-    background: #10b981;
-    color: #ffffff;
-    --frame-border: #34d399;
-    font-size: 8px;
+    background: var(--emerald-500);
+    color: var(--white);
+    --frame-border: var(--emerald-400);
+    font-size: var(--font-8);
     padding: 5px 16px;
     min-height: 28px;
     &:hover { background: #059669; --frame-border: #6ee7b7; }
@@ -312,7 +312,7 @@
     height: 36px;
     min-width: 36px;
     aspect-ratio: 1;
-    background: #ffffff;
+    background: var(--white);
     border: none !important;
     cursor: pointer;
     display: flex;
@@ -331,7 +331,7 @@
       left: 0;
       right: 0;
       height: 50%;
-      background: #ef4444;
+      background: var(--red-light);
     }
 
     .pokeball-center-line {
@@ -340,7 +340,7 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: #000000;
+      background: var(--black);
       transform: Translatey(-50%);
       z-index: calc(var(--z-base, 1) + 1);
     }
@@ -349,8 +349,8 @@
       position: absolute;
       width: 12px;
       height: 12px;
-      background: #ffffff;
-      border: 2px solid #000000;
+      background: var(--white);
+      border: 2px solid var(--black);
       z-index: calc(var(--z-base, 1) + 2);
     }
 
@@ -360,7 +360,7 @@
       left: 0;
       right: 0;
       height: 50%;
-      background: #ffffff;
+      background: var(--white);
     }
   }
 }
@@ -388,7 +388,7 @@
   --frame-border: var(--color-control-border);
 
   &:hover {
-    --frame-border: #ffd60a;
+    --frame-border: var(--yellow);
     background: var(--color-control-bg);
   }
 
@@ -403,8 +403,8 @@
     position: absolute;
     bottom: 1px;
     right: 2px;
-    font-size: 6.5px;
-    color: #ffd60a;
+    font-size: var(--font-7);
+    color: var(--yellow);
     font-weight: bold;
     text-shadow: 1px 1px 0 #000000;
     line-height: 1;
@@ -418,7 +418,7 @@
     background-color: #f1f6df;
 
     &.is-active {
-      --frame-border: #b45309;
+      --frame-border: var(--amber-dark);
       box-shadow: 0 0 8px Rgba(217, 119, 6, 0.35);
     }
   }
@@ -427,6 +427,6 @@
 
   .dock-quickbag-slot {
     background: #eef3db;
-    .quickbag-qty-tag { text-shadow: none; color: #b45309; }
+    .quickbag-qty-tag { text-shadow: none; color: var(--amber-dark); }
   }
 }

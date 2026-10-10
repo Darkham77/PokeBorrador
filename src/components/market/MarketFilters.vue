@@ -40,6 +40,12 @@ const setFilter = <K extends keyof MarketFilters>(key: K, value: MarketFilters[K
 const MARKET_FILTER_PRICE_MAX_LIMIT = 1000000
 const MARKET_FILTER_IV_TOTAL_MAX_LIMIT = 186
 
+const formattedPriceRange = computed(() => {
+  const minText = `₽${filters.value.priceMin.toLocaleString()}`
+  const maxText = filters.value.priceMax === MARKET_FILTER_PRICE_MAX_LIMIT ? 'Máx' : `₽${filters.value.priceMax.toLocaleString()}`
+  return `${minText} - ${maxText}`
+})
+
 const resetFilters = () => {
   gtsStore.filters = {
     mode: 'pokemon',
@@ -122,7 +128,7 @@ const resetFilters = () => {
           class="group-header"
         >
           <span class="price-title"><span>Precio</span> <span class="emoji">💰</span></span>
-          <span class="range-val">₽{{ filters.priceMin.toLocaleString() }} - ₽{{ filters.priceMax === 1000000 ? 'Máx' : filters.priceMax.toLocaleString() }}</span>
+          <span class="range-val">{{ formattedPriceRange }}</span>
         </div>
         <input
           id="market-filters-price-min-input"
@@ -147,6 +153,7 @@ const resetFilters = () => {
       <!-- Pokemon Specific -->
       <MarketPokemonFiltersGroup
         v-if="filters.mode === 'pokemon'"
+        id="market-filters-marketpokemonfiltersgroup-1"
         :current-tier="filters.tier"
         :current-type="filters.type"
         @change-tier="setFilter('tier', $event)"
@@ -191,9 +198,9 @@ const resetFilters = () => {
 .market-filters {
   margin: 20px;
   padding: 14px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 18px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-2xl-alt;
+  background: Rgb(255 255 255 / 3%);
   margin-bottom: 16px;
 }
 
@@ -207,7 +214,7 @@ const resetFilters = () => {
 .toggle-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   cursor: pointer;
 }
 
@@ -216,16 +223,16 @@ const resetFilters = () => {
 
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   color: var(--blue-light);
-  font-size: 8px;
+  font-size: var(--font-8);
   line-height: 1.35;
 
   .emoji {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 9px;
+    font-size: var(--font-9);
     line-height: 1;
   }
 }
@@ -235,29 +242,29 @@ const resetFilters = () => {
   justify-content: center;
   align-items: center;
   color: var(--gray);
-  font-size: 9px;
+  font-size: var(--font-9);
   line-height: 1;
 }
 
 .mode-switch {
   display: flex;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 3px;
-  border-radius: 10px;
-  background: rgb(0 0 0 / 30%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(0 0 0 / 30%);
 }
 
 .mode-switch button {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 5px;
+  gap: $spacing-xs-5;
   padding: 4px 10px;
   border: 1px solid transparent;
-  border-radius: 7px;
+  border-radius: $radius-7;
   background: transparent;
   color: var(--gray);
-  font-size: 9px;
+  font-size: var(--font-9);
   line-height: 1.35;
   cursor: pointer;
 
@@ -265,7 +272,7 @@ const resetFilters = () => {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1;
   }
 }
@@ -273,13 +280,13 @@ const resetFilters = () => {
 .mode-switch button.active {
   background: var(--blue);
   color: $white;
-  border-color: #000;
+  border-color: var(--black);
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .context-label {
   color: var(--gray);
-  font-size: 9px;
+  font-size: var(--font-9);
   opacity: 0.6;
 }
 
@@ -290,11 +297,11 @@ const resetFilters = () => {
 .search-input {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 8px;
-  background: rgb(0 0 0 / 40%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg;
+  background: Rgb(0 0 0 / 40%);
   color: $white;
-  font-size: 10px;
+  font-size: var(--font-10);
   outline: none;
   
 }
@@ -304,14 +311,14 @@ const resetFilters = () => {
 }
 
 .filter-body {
-  border-top: 1px solid rgb(255 255 255 / 6%);
+  border-top: 1px solid Rgb(255 255 255 / 6%);
   padding-top: 14px;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   margin-bottom: 15px;
 }
 
@@ -320,17 +327,17 @@ const resetFilters = () => {
   justify-content: space-between;
   align-items: center;
   color: var(--yellow);
-  font-size: 10px;
+  font-size: var(--font-10);
   margin-bottom: 8px;
 
   .price-title {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     line-height: 1.35;
 
     .emoji {
-      font-size: 10px;
+      font-size: var(--font-10);
       line-height: 1;
     }
   }
@@ -344,29 +351,29 @@ const resetFilters = () => {
 
 .group-label {
   color: var(--gray);
-  font-size: 10px;
+  font-size: var(--font-10);
   margin-bottom: 8px;
 }
 
 .tags-grid, .tags-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .tag-btn {
   padding: 6px 10px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 12px;
-  background: rgb(255 255 255 / 4%);
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 4%);
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
   text-transform: capitalize;
 }
 
 .tag-btn.active {
-  background: rgb(10 132 255 / 20%);
+  background: Rgb(10 132 255 / 20%);
   color: $white;
   border-color: var(--blue);
 }
@@ -375,10 +382,10 @@ const resetFilters = () => {
   width: 100%;
   padding: 10px;
   border: none;
-  border-radius: 12px;
-  background: rgb(255 255 255 / 3%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 3%);
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   margin-top: 15px;
   cursor: pointer;
 }

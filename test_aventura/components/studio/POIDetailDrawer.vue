@@ -10,11 +10,14 @@
  *   - Incident routes with connection destinations and distances.
  */
 
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
+import { gsap } from 'gsap';
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
 import type { RouteEdge } from '../../types/map/poiTypes.ts';
+import RegionalLocalMapModal from './RegionalLocalMapModal.vue';
 
 const store = useRegionalContinentStudioStore();
+const showLocalMapModal = ref(false);
 
 const currentPoi = computed(() => store.selectedPOI);
 
@@ -35,10 +38,42 @@ function getDestinationName(edge: RouteEdge): string {
 function closeDrawer(): void {
   store.selectPOI(null);
 }
+
+const DRAWER_SLIDE_DURATION_SEC = 0.25;
+const DRAWER_SLIDE_OFFSET_X = 20;
+
+function beforeDrawerEnter(el: Element): void {
+  gsap.set(el, { opacity: 0, x: DRAWER_SLIDE_OFFSET_X });
+}
+
+function onDrawerEnter(el: Element, done: () => void): void {
+  gsap.to(el, {
+    opacity: 1,
+    x: 0,
+    duration: DRAWER_SLIDE_DURATION_SEC,
+    ease: 'power3.out',
+    onComplete: done
+  });
+}
+
+function onDrawerLeave(el: Element, done: () => void): void {
+  gsap.to(el, {
+    opacity: 0,
+    x: DRAWER_SLIDE_OFFSET_X,
+    duration: DRAWER_SLIDE_DURATION_SEC,
+    ease: 'power2.in',
+    onComplete: done
+  });
+}
 </script>
 
 <template>
-  <transition name="drawer-slide">
+  <Transition
+    :css="false"
+    @before-enter="beforeDrawerEnter"
+    @enter="onDrawerEnter"
+    @leave="onDrawerLeave"
+  >
     <aside
       v-if="currentPoi"
       class="poi-detail-drawer"
@@ -56,6 +91,7 @@ function closeDrawer(): void {
           </h3>
         </div>
         <button
+          id="poidetail-drawer-btn-closedrawer"
           type="button"
           class="close-btn"
           title="Cerrar detalle"
@@ -140,6 +176,7 @@ function closeDrawer(): void {
           <ul class="routes-list">
             <li
               v-for="edge in incidentRoutes"
+              id="poidetail-drawer-li-store-selectroute"
               :key="edge.id"
               class="route-item"
               :class="{ 'is-selected': store.selectedRouteId === edge.id }"
@@ -159,9 +196,28 @@ function closeDrawer(): void {
             </li>
           </ul>
         </section>
+
+        <!-- Local Map Inspector Action -->
+        <section class="drawer-section">
+          <button
+            id="poidetail-drawer-btn-ver-croquis-local"
+            type="button"
+            class="view-local-map-btn"
+            @click="showLocalMapModal = true"
+          >
+            <span class="icon">🔍</span> Ver Croquis Local
+          </button>
+        </section>
       </div>
+
+      <RegionalLocalMapModal
+        v-if="showLocalMapModal && currentPoi"
+        :poi="currentPoi"
+        :regional-seed="store.seed"
+        @close="showLocalMapModal = false"
+      />
     </aside>
-  </transition>
+  </Transition>
 </template>
 
 <style scoped lang="scss">
@@ -170,194 +226,193 @@ function closeDrawer(): void {
   top: 16px;
   right: 16px;
   bottom: 16px;
-  width: 340px;
-  background: Rgba(15, 23, 42, 0.95);
-  backdrop-filter: Blur(14px);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px Rgba(0, 0, 0, 0.5);
+  z-index: calc(var(--z-map-ui) + 5);
   display: flex;
   flex-direction: column;
-  color: #f8fafc;
-  z-index: 25;
+  width: 340px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-xl;
+  background: Rgb(15 23 42 / 95%);
+  color: var(--slate-50);
+  backdrop-filter: Blur(14px);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
 .drawer-header {
-  padding: 16px;
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+  align-items: flex-start;
+  padding: 16px;
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
   .poi-title-block {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .poi-type-tag {
       display: inline-block;
-      align-self: flex-start;
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
       padding: 2px 8px;
-      border-radius: 4px;
+      border-radius: $radius-sm;
+      font-size: var(--font-10);
+      font-weight: 700;
+      align-self: flex-start;
+      text-transform: uppercase;
       letter-spacing: 0.05em;
 
       &.metropolis {
-        background: Rgba(245, 158, 11, 0.2);
-        color: #fbbf24;
+        background: Rgb(245 158 11 / 20%);
+        color: var(--amber);
       }
       &.city {
-        background: Rgba(239, 68, 68, 0.2);
-        color: #f87171;
+        background: Rgb(239 68 68 / 20%);
+        color: var(--rose);
       }
       &.town {
-        background: Rgba(59, 130, 246, 0.2);
-        color: #60a5fa;
+        background: Rgb(59 130 246 / 20%);
+        color: var(--blue-400);
       }
       &.cave_entrance {
-        background: Rgba(139, 92, 246, 0.2);
-        color: #a78bfa;
+        background: Rgb(139 92 246 / 20%);
+        color: var(--purple-400);
       }
       &.port_dock {
-        background: Rgba(6, 182, 212, 0.2);
-        color: #22d3ee;
+        background: Rgb(6 182 212 / 20%);
+        color: var(--cyan);
       }
       &.route_gate {
-        background: Rgba(100, 116, 139, 0.2);
-        color: #94a3b8;
+        background: Rgb(100 116 139 / 20%);
+        color: var(--slate-400);
       }
       &.dungeon_forest {
-        background: Rgba(16, 185, 129, 0.2);
-        color: #34d399;
+        background: Rgb(16 185 129 / 20%);
+        color: var(--emerald-400);
       }
       &.water_landmark {
-        background: Rgba(99, 102, 241, 0.2);
-        color: #818cf8;
+        background: Rgb(99 102 241 / 20%);
+        color: var(--blue-400);
       }
     }
 
     .poi-name {
       margin: 0;
-      font-size: 1.15rem;
+      color: var(--white);
+      font-size: var(--font-18);
       font-weight: 700;
-      color: #ffffff;
     }
   }
 
   .close-btn {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    font-size: 1.1rem;
-    cursor: pointer;
     padding: 4px;
-    border-radius: 4px;
-    transition: color 0.2s ease, background 0.2s ease;
+    border: none;
+    border-radius: $radius-sm;
+    background: transparent;
+    color: var(--slate-400);
+    font-size: var(--font-18);
+    cursor: pointer;
 
     &:hover {
-      color: #ffffff;
-      background: Rgba(255, 255, 255, 0.1);
+      background: Rgb(255 255 255 / 10%);
+      color: var(--white);
     }
   }
 }
 
 .drawer-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .drawer-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .section-title {
     margin: 0;
-    font-size: 0.75rem;
+    color: var(--slate-400);
+    font-size: var(--font-12);
     font-weight: 700;
     text-transform: uppercase;
-    color: #94a3b8;
     letter-spacing: 0.05em;
   }
 }
 
 .meta-grid {
   display: grid;
+  gap: $spacing-sm;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
 
   .meta-item {
-    background: Rgba(0, 0, 0, 0.3);
-    padding: 8px;
-    border-radius: 6px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
+    padding: 8px;
+    border-radius: $radius-md;
+    background: Rgb(0 0 0 / 30%);
 
     .lbl {
-      font-size: 0.65rem;
-      color: #94a3b8;
+      color: var(--slate-400);
+      font-size: var(--font-10);
     }
     .val {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #38bdf8;
+      color: var(--sky);
       font-family: monospace;
+      font-size: var(--font-14);
+      font-weight: 600;
     }
   }
 }
 
 .urban-summary {
   display: grid;
+  gap: $spacing-sm-alt;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
 
   .stat-bubble {
-    background: Rgba(0, 0, 0, 0.3);
-    border-radius: 6px;
-    padding: 8px 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 8px 4px;
+    border-radius: $radius-md;
+    background: Rgb(0 0 0 / 30%);
 
     .b-count {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #38bdf8;
+      color: var(--sky);
       font-family: monospace;
+      font-size: var(--font-18);
+      font-weight: 700;
     }
     .b-label {
-      font-size: 0.65rem;
-      color: #94a3b8;
+      color: var(--slate-400);
+      font-size: var(--font-10);
     }
   }
 }
 
 .buildings-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
   .building-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: Rgba(0, 0, 0, 0.2);
+    gap: $spacing-md-alt;
     padding: 6px 10px;
-    border-radius: 6px;
+    border-radius: $radius-md;
+    background: Rgb(0 0 0 / 20%);
 
     .b-icon {
-      font-size: 1.1rem;
+      font-size: var(--font-18);
     }
 
     .b-meta {
@@ -365,49 +420,48 @@ function closeDrawer(): void {
       flex-direction: column;
 
       .b-type {
-        font-size: 0.8rem;
+        color: var(--slate-100);
+        font-size: var(--font-13);
         font-weight: 600;
         text-transform: capitalize;
-        color: #f1f5f9;
       }
       .b-door {
-        font-size: 0.7rem;
-        color: #94a3b8;
+        color: var(--slate-400);
         font-family: monospace;
+        font-size: var(--font-11);
       }
     }
   }
 }
 
 .routes-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
   .route-item {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    background: Rgba(0, 0, 0, 0.2);
+    align-items: center;
     padding: 8px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease;
     border: 1px solid transparent;
+    border-radius: $radius-md;
+    background: Rgb(0 0 0 / 20%);
+    cursor: pointer;
 
     &:hover,
     &.is-selected {
-      background: Rgba(2, 132, 199, 0.15);
-      border-color: #0284c7;
+      background: Rgb(2 132 199 / 15%);
+      border-color: var(--sky-dark);
     }
 
     .route-lead {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
 
       .route-bullet {
         width: 8px;
@@ -424,12 +478,12 @@ function closeDrawer(): void {
           background: #00d2d3;
         }
         &.forest_path {
-          background: #2ecc71;
+          background: var(--emerald);
         }
       }
 
       .dest-name {
-        font-size: 0.8rem;
+        font-size: var(--font-13);
         font-weight: 600;
       }
     }
@@ -440,27 +494,15 @@ function closeDrawer(): void {
       align-items: flex-end;
 
       .route-type-badge {
-        font-size: 0.65rem;
-        color: #94a3b8;
+        color: var(--slate-400);
+        font-size: var(--font-10);
       }
       .route-dist {
-        font-size: 0.75rem;
+        color: var(--sky);
         font-family: monospace;
-        color: #38bdf8;
+        font-size: var(--font-12);
       }
     }
   }
-}
-
-// Transitions
-.drawer-slide-enter-active,
-.drawer-slide-leave-active {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
-}
-
-.drawer-slide-enter-from,
-.drawer-slide-leave-to {
-  transform: Translatex(20px);
-  opacity: 0;
 }
 </style>

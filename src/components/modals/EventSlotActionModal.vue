@@ -149,25 +149,25 @@ const handleWithdraw = () => {
 .slot-action-modal-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: $spacing-md-lg;
   padding: 16px;
 }
 
 .category-header-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: fit-content;
   padding: 6px 12px;
-  border: 1px solid rgb(250 204 21 / 30%);
-  border-radius: 8px;
-  background: rgb(250 204 21 / 10%);
+  border: 1px solid Rgb(250 204 21 / 30%);
+  border-radius: $radius-lg;
+  background: Rgb(250 204 21 / 10%);
 
   .cat-label {
     @include pixelated;
 
     color: var(--yellow, #facc15);
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 0.5px;
   }
 }
@@ -175,11 +175,11 @@ const handleWithdraw = () => {
 .enrolled-pokemon-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 12px;
-  border: 1px solid rgb(74 222 128 / 30%);
-  border-radius: 10px;
-  background: rgb(0 0 0 / 40%);
+  border: 1px solid Rgb(74 222 128 / 30%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(0 0 0 / 40%);
 
   .pokemon-sprite-box {
     position: relative;
@@ -188,9 +188,9 @@ const handleWithdraw = () => {
     align-items: center;
     width: 48px;
     height: 48px;
-    border: 1px solid rgb(255 255 255 / 10%);
-    border-radius: 8px;
-    background: rgb(255 255 255 / 5%);
+    border: 1px solid Rgb(255 255 255 / 10%);
+    border-radius: $radius-lg;
+    background: Rgb(255 255 255 / 5%);
     flex-shrink: 0;
 
     .pokemon-sprite-img {
@@ -204,25 +204,25 @@ const handleWithdraw = () => {
       position: absolute;
       top: -4px;
       right: -4px;
-      font-size: 10px;
+      font-size: var(--font-10);
     }
   }
 
   .pokemon-details {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 0;
     flex: 1;
 
     .pokemon-name-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
 
       .pokemon-name {
         color: var(--white, #fff);
-        font-size: 12px;
+        font-size: var(--font-12);
         font-weight: bold;
       }
 
@@ -230,7 +230,7 @@ const handleWithdraw = () => {
         @include pixelated;
 
         color: var(--yellow, #facc15);
-        font-size: 7px;
+        font-size: var(--font-7);
       }
     }
 
@@ -238,11 +238,11 @@ const handleWithdraw = () => {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
 
       .metric-label {
-        color: #94a3b8;
-        font-size: 8px;
+        color: var(--slate-400);
+        font-size: var(--font-8);
         font-weight: bold;
       }
 
@@ -250,7 +250,7 @@ const handleWithdraw = () => {
         @include pixelated;
 
         color: var(--green-bright, #4ade80);
-        font-size: 8px;
+        font-size: var(--font-8);
       }
     }
   }
@@ -258,15 +258,15 @@ const handleWithdraw = () => {
 
 .instruction-hint {
   margin: 0;
-  color: #cbd5e1;
-  font-size: 11px;
+  color: var(--slate-300);
+  font-size: var(--font-11);
   line-height: 1.4;
 }
 
 .action-buttons-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
 
   .btn-change {
     @include btn-vicio('primary', 'sm', true);

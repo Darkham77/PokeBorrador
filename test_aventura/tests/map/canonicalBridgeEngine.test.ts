@@ -2,14 +2,14 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveCanonicalBridges,
   resolveWaterLandmarkPlatform
-} from '../../../src/logic/map/canonicalBridgeEngine.ts';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
+} from '../../logic/map/canonicalBridgeEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import {
   generateRouteNetwork,
   computeOceanGrid
-} from '../../../src/logic/map/routeNetworkEngine.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+} from '../../logic/map/routeNetworkEngine.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('canonicalBridgeEngine', () => {
   it('resolves vertical 2-cell bridge with left and right railings', () => {

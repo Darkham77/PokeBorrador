@@ -53,9 +53,10 @@ async function main() {
       await fs.writeFile(targetRawPath, buf);
       movedRaw++;
 
+      const WEBP_CONVERSION_QUALITY = 90 as const;
       // Convert to WebP in target tier directory
       await sharp(buf)
-        .webp({ quality: 90, lossless: true })
+        .webp({ quality: WEBP_CONVERSION_QUALITY, lossless: true })
         .toFile(targetWebpPath);
       convertedWebp++;
     } else if (existsSync(sourceWebpPath) && !existsSync(targetWebpPath)) {

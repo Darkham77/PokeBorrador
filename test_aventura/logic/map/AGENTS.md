@@ -56,11 +56,16 @@ Frontend Developers / Systems Engineers.
 - [`archipelagoGenerator.ts`](./archipelagoGenerator.ts): Module implementation.
 - [`autotileMatrixGenerator.ts`](./autotileMatrixGenerator.ts): Module implementation.
 - [`biomeDistributionEngine.ts`](./biomeDistributionEngine.ts): Module implementation.
+- [`buildingPlacementSolver.ts`](./buildingPlacementSolver.ts): Module implementation.
 - [`canonicalAssetsRegistry.ts`](./canonicalAssetsRegistry.ts): Module implementation.
 - [`canonicalBridgeEngine.ts`](./canonicalBridgeEngine.ts): Module implementation.
+- [`canvasDepthEntityCollector.ts`](./canvasDepthEntityCollector.ts): Module implementation.
 - [`canvasImageLoader.ts`](./canvasImageLoader.ts): Module implementation.
 - [`canvasLandmarkRenderer.ts`](./canvasLandmarkRenderer.ts): Module implementation.
+- [`canvasTerrainPathBlitter.ts`](./canvasTerrainPathBlitter.ts): Module implementation.
 - [`canvasTileRenderer.ts`](./canvasTileRenderer.ts): Module implementation.
+- [`canvasViewportBlitter.ts`](./canvasViewportBlitter.ts): Module implementation.
+- [`cavePlacementEngine.ts`](./cavePlacementEngine.ts): Module implementation.
 - [`cityGeneSynthesizer.ts`](./cityGeneSynthesizer.ts): Module implementation.
 - [`cityLayoutEngine.ts`](./cityLayoutEngine.ts): Module implementation.
 - [`cityVignetteRegistry.ts`](./cityVignetteRegistry.ts): Module implementation.
@@ -72,24 +77,28 @@ Frontend Developers / Systems Engineers.
 - [`continentalWorldGenerator.ts`](./continentalWorldGenerator.ts): Module implementation.
 - [`corridorPropertyEngine.ts`](./corridorPropertyEngine.ts): Module implementation.
 - [`customAssetsStorage.ts`](./customAssetsStorage.ts): Module implementation.
+- [`forestPlacementEngine.ts`](./forestPlacementEngine.ts): Module implementation.
 - [`geologicalAutotilingEngine.ts`](./geologicalAutotilingEngine.ts): Module implementation.
 - [`geologicalClusterEngine.ts`](./geologicalClusterEngine.ts): Module implementation.
 - [`heightmapConstraints.ts`](./heightmapConstraints.ts): Module implementation.
 - [`inBrowserTileProcessor.ts`](./inBrowserTileProcessor.ts): Module implementation.
+- [`kantoChunkManager.ts`](./kantoChunkManager.ts): Chunk management and spatial partition lifecycle for Kanto overworld tiles.
 - [`kantoProceduralCarver.ts`](./kantoProceduralCarver.ts): Module implementation.
 - [`kantoRegionalGenerator.ts`](./kantoRegionalGenerator.ts): Module implementation.
 - [`kantoTileEngine.ts`](./kantoTileEngine.ts): Module implementation.
 - [`macroBiomeAutotileEngine.ts`](./macroBiomeAutotileEngine.ts): Module implementation.
 - [`macroBiomeSynthesizer.ts`](./macroBiomeSynthesizer.ts): Module implementation.
-- [`mapCardHelper.ts`](./mapCardHelper.ts): Module implementation.
 - [`microVignetteEngine.ts`](./microVignetteEngine.ts): Module implementation.
 - [`mountainAutotileEngine.ts`](./mountainAutotileEngine.ts): Module implementation.
+- [`mountainPlateauTrailEngine.ts`](./mountainPlateauTrailEngine.ts): Module implementation.
 - [`nodeLocalMapGenerator.ts`](./nodeLocalMapGenerator.ts): Module implementation.
 - [`organicCityEngine.ts`](./organicCityEngine.ts): Module implementation.
 - [`organicMountainGenerator.ts`](./organicMountainGenerator.ts): Module implementation.
 - [`orthogonalGraphEmbedding.ts`](./orthogonalGraphEmbedding.ts): Module implementation.
 - [`pathAutotileEngine.ts`](./pathAutotileEngine.ts): Module implementation.
 - [`poiPlacementEngine.ts`](./poiPlacementEngine.ts): Module implementation.
+- [`pokemonLeaguePlacementEngine.ts`](./pokemonLeaguePlacementEngine.ts): Module implementation.
+- [`portDockPierEngine.ts`](./portDockPierEngine.ts): Reusable port dock stone pier stamping engine for water edges.
 - [`pokemonGraphTopology.ts`](./pokemonGraphTopology.ts): Module implementation.
 - [`prefabsRegistry.ts`](./prefabsRegistry.ts): Module implementation.
 - [`proceduralCityEngine.ts`](./proceduralCityEngine.ts): Module implementation.
@@ -98,19 +107,27 @@ Frontend Developers / Systems Engineers.
 - [`progressionObstacleEngine.ts`](./progressionObstacleEngine.ts): Module implementation.
 - [`propsPlacementEngine.ts`](./propsPlacementEngine.ts): Module implementation.
 - [`realContinentPatchExtractor.ts`](./realContinentPatchExtractor.ts): Module implementation.
-- [`regionRegistry.ts`](./regionRegistry.ts): Module implementation.
 - [`regionalPoiCatalog.ts`](./regionalPoiCatalog.ts): Module implementation.
+- [`roadsidePropsEngine.ts`](./roadsidePropsEngine.ts): Module implementation.
+- [`routeBridgeTracer.ts`](./routeBridgeTracer.ts): Module implementation.
 - [`routeChainTopology.ts`](./routeChainTopology.ts): Module implementation.
 - [`routeGateBarrierEngine.ts`](./routeGateBarrierEngine.ts): Module implementation.
+- [`routeGridFinalizer.ts`](./routeGridFinalizer.ts): Module implementation.
 - [`routeLedgeEngine.ts`](./routeLedgeEngine.ts): Module implementation.
 - [`routeNetworkEngine.ts`](./routeNetworkEngine.ts): Module implementation.
 - [`routePathfinding.ts`](./routePathfinding.ts): Module implementation.
+- [`routePathPruning.ts`](./routePathPruning.ts): Module implementation.
 - [`settlementPlacementHelper.ts`](./settlementPlacementHelper.ts): Module implementation.
+- [`settlementPlainPlacementEngine.ts`](./settlementPlainPlacementEngine.ts): Module implementation.
+- [`tallGrassPlacementEngine.ts`](./tallGrassPlacementEngine.ts): Module implementation.
 - [`tilesRegistry.ts`](./tilesRegistry.ts): Module implementation.
 - [`transitableGridEngine.ts`](./transitableGridEngine.ts): Module implementation.
+- [`treeMassPlacementEngine.ts`](./treeMassPlacementEngine.ts): Module implementation.
 - [`urbanPavingEngine.ts`](./urbanPavingEngine.ts): Module implementation.
 - [`urbanZoningEngine.ts`](./urbanZoningEngine.ts): Module implementation.
 - [`waterAutotileEngine.ts`](./waterAutotileEngine.ts): Module implementation.
+- [`waterLandmarkPlacementEngine.ts`](./waterLandmarkPlacementEngine.ts): Module implementation.
+- [`wildernessOccupancyMaskEngine.ts`](./wildernessOccupancyMaskEngine.ts): Module implementation.
 - [`wildernessVegetationEngine.ts`](./wildernessVegetationEngine.ts): Module implementation.
 
 ## Work Guidance
@@ -131,7 +148,7 @@ Frontend Developers / Systems Engineers.
 - Zero Full-Sheet Fallback Mandate: Rendering engines (`kantoTileEngine.ts`) must NEVER draw multi-tile composite sheets (such as `bridges.png`) directly onto individual tile cells. All infrastructure stamps must resolve to verified 32x32 tiles (`poke_boardwalk_planks.png`).
 - Manifest Catalog Purity Mandate: `manifest.json` and `prefabsRegistry.ts` must strictly contain discrete, single-entity GBA game assets. Multi-tile tilesets, compound texture atlases, full composite sheets (like LPC 512x512 sheets), and raw terrain fragments (such as `dirt.png`) are strictly prohibited from registration in the prefabs catalog.
 - Pokémon Essentials RMXP Autotiling Mandate: All dynamic surface terrain transitions (water bodies, ponds, dirt paths, cobblestone plazas, mountain cliffs, and tall grass) MUST be governed by the standard 48-tile RMXP autotiling engine (`resolveRmxpSubtiles` in `kantoTileEngine.ts`) over 96x128 px autotile sheets in `public/assets/essentials/autotiles/`. Ad-hoc manual 9-slice lookups, flat color fallback fills (such as `#64748b` gray slabs), and non-standard LPC layouts are strictly forbidden in runtime rendering.
-- Single Source of Truth Essentials Asset Pipeline: All official 32px overworld assets (prefabs and autotiles) MUST be managed via `public/assets/essentials/manifest.json` and generated or updated via `npm run map:essentials:import`. Manual, unstructured file dumping into arbitrary folders is prohibited.
+- Single Source of Truth Essentials Asset Pipeline: All official 32px overworld assets (prefabs and autotiles) MUST be managed via `public/assets/essentials/manifest.json` and generated or updated via the map essentials import pipeline. Manual, unstructured file dumping into arbitrary folders is prohibited.
 - Mountain-City Safety Clearance Mandate: Mountain massifs and plateaus must never overlap settlement clearings or route corridors. All plateau generations (`raisePlateau`, `carveMountainChains`, `carveProceduralMountainChains`) MUST enforce a strict minimum clearance buffer of >= 4 tiles (128px) from all building footprints and road corridors (`OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.ROAD`).
 - Omnidirectional 4-Way Cliff Autotiling Mandate: Mountain plateaus must never terminate in abrupt flat borders. All plateau perimeters MUST be bounded by authentic GBA cliff faces, walls, and corners across all 4 cardinal directions (North rim, South face, East wall, West wall, and all 4 exterior/interior corners: `poke_cliff_brown_top`, `poke_cliff_brown_face`, `poke_cliff_brown_left`, `poke_cliff_brown_right`, `poke_cliff_brown_corner_*`).
 - Organic 64x64px Canopy Forest Mandate: Forest massifs must NEVER be rendered as a single-tile 32x32 repeating point matrix or wallpaper pattern. Overworld terrain ground must remain continuous natural grass autotile (`CELL_BIOME.GRASS`), while trees MUST be placed in Layer 4 as discrete 64x64px GBA tree prefabs (`tree_poke`, `tree_oak_clean`) clustered in dense perimeter boundary walls and organic clearings with tall grass patches.
@@ -153,7 +170,7 @@ Frontend Developers / Systems Engineers.
 - Mt. Moon / Route 4 Canonical Composition Contract: The approach to Mt. Moon must feature a clear open clearing to the west housing the Pokémon Center with perimeter breathing room and a southward connector path, framed to the north by the 2-tile tall canonical brown cliff wall seamlessly embedding the cave mouth archway and adjacent stone stairs rising to the upper mountain terrace.
 - Strict 2-Tile South Cliff Autotile Invariant: South-facing cliff walls must strictly span 2 vertical tiles (Row Y-1: cliff top rim `_top`; Row Y: cliff vertical face `_face`). Cave mouths and stone stairs must be flush-embedded into these exact 2-tile cliff structures, seamlessly replacing the wall tiles at their footprint. Lateral borders of route corridors must be framed by continuous dense tree walls preventing off-grid escapement.
 - Route 4 Canonical Interactive Pack Contract: Mt. Moon approach and Route 4 corridors must feature eastward one-way jumpable ledges (CollisionType = 3), tall grass encounter patches framed by paths, decorative ground boulders, and regional signposts, mirroring official GBA Route 4 geometry.
-- Pre-Cropped Tile Exclusivity Mandate: All procedural generation and map assembly logic must strictly consume verified, pre-cropped tiles and prefabs from `public/assets/tiles/` and `public/assets/prefabs/`. Dynamic or on-the-fly slicing from raw sheets during map generation tasks is strictly forbidden. If an asset is missing, fail fast and alert the user per `@/map-tile-catalog`.
+- Pre-Cropped Tile Exclusivity Mandate: All procedural generation and map assembly logic must strictly consume verified, pre-cropped tiles and prefabs from `public/assets/tiles/` and `public/assets/prefabs/`. Dynamic or on-the-fly slicing from raw sheets during map generation tasks is strictly forbidden. If an asset is missing, fail fast and alert the user per the map tile catalog contract.
 - Macro-Biome Spatial Coherence Mandate: Temperature and moisture noise fields must use low spatial frequencies (`scale <= 0.02`) to generate vast, contiguous ecological macro-regions ($\ge 16\times 16$ tiles) eliminating patchwork noise. Arid desert and volcanic plateau biomes must be bounded by mountains or water; when bordering temperate plains, a mandatory 2-cell dirt containment corridor (`poke_dirt_path.png`) must buffer the transition.
 - Geological Mountain Palette Invariant Mandate: Each discrete mountain massif identified via 8-connected Connected Component Labeling must be assigned a single, continuous geological palette (`brown`, `gray`, or `volcanic`) derived from the world seed, strictly prohibiting mixed-palette cliffs within the same mountain cluster.
 - Urban Paving & Curb Clearance Mandate: Urban vehicular streets must use canonical asphalt (`poke_road_asphalt.png`) and pedestrian zones must use cobblestone plaza tiles (`poke_stone_plaza_center.png`), strictly eliminating flat white slabs. Directional curb tiles (`poke_curb_*`) must be stamped between sidewalks and avenues, with mandatory clearance (curb omitted or dropped) at building doorways (`doorX, doorY + 1`) and crosswalks.

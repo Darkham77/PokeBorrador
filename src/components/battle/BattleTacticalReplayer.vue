@@ -111,8 +111,9 @@ function handleClose() {
 
 onMounted(() => {
   if (replayerBarRef.value) {
+    const REPLAYER_BAR_ENTRANCE_Y_PX = 40 as const;
     gsap.from(replayerBarRef.value, {
-      y: 40,
+      y: REPLAYER_BAR_ENTRANCE_Y_PX,
       opacity: 0,
       duration: 0.4,
       ease: 'back.out(1.4)'
@@ -221,78 +222,78 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   width: calc(100% - 32px);
   max-width: 1050px;
   padding: 10px 18px;
   border: 2px solid Rgb(234 179 8 / 50%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(15 23 42 / 94%);
-  color: #f8fafc;
-  font-family: 'Press Start 2P', monospace, sans-serif;
+  color: var(--slate-50);
+  font-family: $font-family-pixel;
   transform: Translatex(-50%);
   backdrop-filter: Blur(8px);
-  box-shadow: 0 8px 32px Rgb(0 0 0 / 60%), inset 0 1px 0 Rgb(255 255 255 / 10%);
+  box-shadow: var(--shadow-card-elevated);
 }
 
 .replayer-info-section {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .theater-badge {
     padding: 4px 8px;
-    border: 1px solid #eab308;
-    border-radius: 4px;
+    border: 1px solid var(--amber-dark);
+    border-radius: $radius-sm;
     background: #854d0e;
-    color: #fef08a;
-    font-size: 0.65rem;
+    color: var(--yellow-light);
+    font-size: var(--font-10);
   }
 
   .theme-badge {
     padding: 4px 8px;
-    border: 1px solid #334155;
-    border-radius: 4px;
-    background: #1e293b;
-    color: #94a3b8;
-    font-size: 0.6rem;
+    border: 1px solid var(--slate-700);
+    border-radius: $radius-sm;
+    background: var(--slate-800);
+    color: var(--slate-400);
+    font-size: var(--font-10);
   }
 
   .fog-badge {
     padding: 4px 8px;
-    border: 1px dashed #64748b;
-    border-radius: 4px;
+    border: 1px dashed var(--slate-500);
+    border-radius: $radius-sm;
     background: Rgb(71 85 105 / 60%);
-    color: #cbd5e1;
-    font-size: 0.6rem;
+    color: var(--slate-300);
+    font-size: var(--font-10);
   }
 }
 
 .replayer-controls-section {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
 
   .ctrl-btn {
     padding: 8px 14px;
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: $radius-md;
     font-family: inherit;
-    font-size: 0.68rem;
+    font-size: var(--font-11);
     font-weight: bold;
     cursor: pointer;
 
     &.primary {
       background: Linear-Gradient(180deg, #3b82f6, #1d4ed8);
-      color: #fff;
-      border-color: #60a5fa;
+      color: var(--white);
+      border-color: var(--blue-400);
     }
 
     &.action {
       background: Linear-Gradient(180deg, #10b981, #047857);
-      color: #fff;
-      border-color: #34d399;
+      color: var(--white);
+      border-color: var(--emerald-400);
 
       &:disabled {
         opacity: 0.5;
@@ -301,21 +302,21 @@ onUnmounted(() => {
     }
 
     &.secondary {
-      background: #334155;
-      color: #cbd5e1;
-      border-color: #475569;
+      background: var(--slate-700);
+      color: var(--slate-300);
+      border-color: var(--slate-600);
     }
   }
 
   .turn-counter {
     padding: 6px 12px;
-    border: 1px solid #1e293b;
-    border-radius: 6px;
+    border: 1px solid var(--slate-800);
+    border-radius: $radius-md;
     background: #020617;
 
     .turn-val {
-      color: #facc15;
-      font-size: 0.68rem;
+      color: var(--amber-400);
+      font-size: var(--font-11);
       letter-spacing: 1px;
     }
   }
@@ -324,20 +325,20 @@ onUnmounted(() => {
 .replayer-actions-section {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
 
   .copy-code-btn {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     padding: 6px 12px;
-    border: 1px solid #eab308;
-    border-radius: 6px;
-    background: #0f172a;
-    color: #fef08a;
+    border: 1px solid var(--amber-dark);
+    border-radius: $radius-md;
+    background: var(--slate-900);
+    color: var(--yellow-light);
     font-family: inherit;
-    font-size: 0.65rem;
+    font-size: var(--font-10);
     cursor: pointer;
 
     .copy-indicator {
@@ -345,22 +346,22 @@ onUnmounted(() => {
       top: -24px;
       right: 0;
       padding: 2px 6px;
-      border-radius: 4px;
-      background: #22c55e;
-      color: #fff;
-      font-size: 0.55rem;
-      box-shadow: 0 2px 8px Rgb(0 0 0 / 40%);
+      border-radius: $radius-sm;
+      background: var(--emerald);
+      color: var(--white);
+      font-size: var(--font-9);
+      box-shadow: var(--shadow-subtle);
     }
   }
 
   .exit-btn {
     padding: 6px 12px;
-    border: 1px solid #f87171;
-    border-radius: 6px;
-    background: #ef4444;
-    color: #fff;
+    border: 1px solid var(--rose);
+    border-radius: $radius-md;
+    background: var(--red-light);
+    color: var(--white);
     font-family: inherit;
-    font-size: 0.65rem;
+    font-size: var(--font-10);
     font-weight: bold;
     cursor: pointer;
   }
@@ -369,7 +370,7 @@ onUnmounted(() => {
 @media (width <= 768px) {
   .tactical-replayer-bar {
     flex-direction: column;
-    gap: 10px;
+    gap: $spacing-md-alt;
   }
 }
 </style>

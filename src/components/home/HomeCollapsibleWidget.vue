@@ -84,15 +84,15 @@ const toggle = () => {
 
 .home-collapsible-panel {
   width: 100%;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 8px;
-  background: rgb(18 22 34 / 60%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg;
+  background: Rgb(18 22 34 / 60%);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+  box-shadow: var(--shadow-subtle);
   box-sizing: border-box;
 
   &:hover {
-    border-color: rgb(255 255 255 / 16%);
+    border-color: Rgb(255 255 255 / 16%);
   }
 }
 
@@ -104,10 +104,10 @@ const toggle = () => {
   margin: 0;
   padding: 10px 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: transparent;
   color: var(--white, #fff);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 600;
   outline: none;
   cursor: pointer;
@@ -123,12 +123,12 @@ const toggle = () => {
   }
 
   &:hover {
-    background: rgb(255 255 255 / 5%);
+    background: Rgb(255 255 255 / 5%);
   }
 
   &:active {
     border: none;
-    background: rgb(255 255 255 / 8%);
+    background: Rgb(255 255 255 / 8%);
     outline: none;
     box-shadow: none;
   }
@@ -136,7 +136,7 @@ const toggle = () => {
   .accordion-title-wrap {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     line-height: 1.45;
     text-align: left;
     padding-bottom: 2px;
@@ -148,7 +148,7 @@ const toggle = () => {
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      font-size: 14px;
+      font-size: var(--font-14);
       line-height: 1;
       flex-shrink: 0;
     }
@@ -157,7 +157,7 @@ const toggle = () => {
       @include pixelated;
 
       color: var(--white, #fff);
-      font-size: 11px;
+      font-size: var(--font-11);
       letter-spacing: 0.5px;
     }
 
@@ -169,8 +169,8 @@ const toggle = () => {
       justify-content: center !important;
       align-items: center !important;
       padding: 3px 6px !important;
-      border-radius: 9999px !important;
-      font-size: 8px !important;
+      border-radius: $radius-full !important;
+      font-size: var(--font-8) !important;
       font-weight: bold !important;
       margin-left: 6px !important;
       letter-spacing: 0.5px !important;
@@ -179,7 +179,7 @@ const toggle = () => {
 
     .collapse-sub {
       color: var(--gray, #94a3b8);
-      font-size: 10px;
+      font-size: var(--font-10);
       font-weight: normal;
     }
   }
@@ -189,7 +189,7 @@ const toggle = () => {
     justify-content: center;
     align-items: center;
     color: var(--gray, #94a3b8);
-    font-size: 9px;
+    font-size: var(--font-9);
     flex-shrink: 0;
     margin-left: 8px;
   }

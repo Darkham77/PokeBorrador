@@ -16,7 +16,7 @@ body .nav {
   display: none;
   flex-wrap: nowrap;
   justify-content: space-around;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 8px 12px;
   background: Rgb(0 0 0 / 95%);
   transform: Translatez(0);
@@ -24,7 +24,7 @@ body .nav {
   margin-bottom: 0;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
   border-top: 1px solid Rgb(255 255 255 / 8%);
-  box-shadow: 0 -10px 40px Rgb(0 0 0 / 50%);
+  box-shadow: var(--shadow-card);
 
   @include responsive(hud-mobile) {
     display: flex !important;
@@ -35,13 +35,13 @@ body .nav {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   min-width: 0;
   padding: 6px 4px !important;
   border: none !important;
   background: transparent !important;
   color: $gray;
-  font-size: 7px !important;
+  font-size: var(--font-7) !important;
   flex: 1;
   overflow: hidden;
 
@@ -49,9 +49,9 @@ body .nav {
   
 
   span:first-child {
-    font-size: 20px;
+    font-size: var(--font-20);
 
-    @media (width <= 380px) { font-size: 16px; }
+    @media (width <= 380px) { font-size: var(--font-16); }
   }
 
   span:last-child {
@@ -71,7 +71,7 @@ body .nav {
   }
 
   @media (width <= 380px) {
-    font-size: 5px !important;
+    font-size: var(--font-5) !important;
   }
 }
 
@@ -87,9 +87,9 @@ body .nav {
   gap: spacing(1);
   min-width: 160px;
   padding: spacing(2);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   transform: Translatez(0);
-  box-shadow: 0 10px 30px Rgb(0 0 0 / 80%);
+  box-shadow: var(--shadow-xl);
   
   &.active,
   .hud-group.is-open &,

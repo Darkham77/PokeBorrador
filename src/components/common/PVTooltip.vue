@@ -413,8 +413,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <component 
-    :is="tag"
+  <component
+    :is="tag" 
+    id="pvtooltip-component-triggerclick"
     ref="trigger" 
     class="pv-tooltip-wrapper"
     audit-ignore="[PureVue-Ignore]" 

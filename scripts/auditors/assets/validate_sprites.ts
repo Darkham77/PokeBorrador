@@ -106,11 +106,23 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
 
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_sprites',
       configKey: 'assets.sprites',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Pokemon Sprite Auditor',
       description: 'Sprites faltantes en catálogo de assets de Pokémon',
       icon: '👾',

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTemplateRef, onMounted, onUnmounted, nextTick } from 'vue'
+import { useTemplateRef, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { gsap } from 'gsap'
 import HomePendingRewardsWidget from '@/components/home/HomePendingRewardsWidget.vue'
 import HomeEventsSection from '@/components/home/HomeEventsSection.vue'
@@ -22,10 +22,16 @@ import HomeCollapsibleWidget from '@/components/home/HomeCollapsibleWidget.vue'
 import HomeWidgetMinimizeBtn from '@/components/home/HomeWidgetMinimizeBtn.vue'
 import HomeWidgetRefreshBtn from '@/components/home/HomeWidgetRefreshBtn.vue'
 
+const ROCKET_BLACK_MARKET_MIN_LEVEL = 10
+
 const gameStore = useGameStore()
 const breedingStore = useBreedingStore()
 const loadingStore = useLoadingStore()
 const { unifiedRewards } = useUnifiedRewards()
+
+const isBlackMarketAvailable = computed(() => {
+  return gameStore.state.playerClass === 'rocket' && (gameStore.state.classLevel || 1) >= ROCKET_BLACK_MARKET_MIN_LEVEL
+})
 
 const homeContainerRef = useTemplateRef<HTMLElement>('homeContainerRef')
 let gsapCtx: gsap.Context | null = null
@@ -223,7 +229,7 @@ onUnmounted(() => {
           </HomeCollapsibleWidget>
         </div>
         <div
-          v-if="gameStore.state.playerClass === 'rocket' && (gameStore.state.classLevel || 1) >= 10"
+          v-if="isBlackMarketAvailable"
           id="widget-black-market-section"
           class="home-widget-block widget-black-market"
         >
@@ -278,13 +284,13 @@ onUnmounted(() => {
 .home-masonry-layout {
   display: grid;
   align-items: start;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: minmax(0, 1fr) 380px;
 
   @media (width <= 1100px) {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: $spacing-xl;
 
     .home-column-main,
     .home-column-sidebar {
@@ -342,7 +348,7 @@ onUnmounted(() => {
 .home-column-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   min-width: 0;
 }
 
@@ -357,7 +363,7 @@ onUnmounted(() => {
   .dual-widgets-grid {
     display: grid;
     align-items: stretch;
-    gap: 16px;
+    gap: $spacing-lg;
     grid-template-columns: repeat(2, minmax(0, 1fr));
 
     @media (width <= 1100px) {
@@ -368,10 +374,10 @@ onUnmounted(() => {
 
 .home-section-card {
   padding: 16px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 12px;
-  background: rgb(18 22 34 / 85%);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-xl;
+  background: Rgb(18 22 34 / 85%);
+  box-shadow: $shadow-md;
 }
 
 .card-header-bar {
@@ -381,17 +387,17 @@ onUnmounted(() => {
   min-width: 0;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  border-bottom: 1px solid Rgb(255 255 255 / 6%);
 
   .title-wrap {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     min-width: 0;
   }
 
   .card-icon {
-    font-size: 18px;
+    font-size: var(--font-18);
     flex-shrink: 0;
   }
 
@@ -400,7 +406,7 @@ onUnmounted(() => {
 
     margin: 0;
     color: var(--yellow, #facc15);
-    font-size: 11px;
+    font-size: var(--font-11);
     letter-spacing: 1px;
     overflow-wrap: break-word;
   }
@@ -412,11 +418,11 @@ onUnmounted(() => {
       @include pixelated;
 
       padding: 3px 8px;
-      border: 1px solid rgb(255 255 255 / 8%);
-      border-radius: 6px;
-      background: rgb(255 255 255 / 5%);
+      border: 1px solid Rgb(255 255 255 / 8%);
+      border-radius: $radius-md;
+      background: Rgb(255 255 255 / 5%);
       color: var(--gray, #94a3b8);
-      font-size: 10px;
+      font-size: var(--font-10);
       margin-right: 2px;
       white-space: nowrap;
 

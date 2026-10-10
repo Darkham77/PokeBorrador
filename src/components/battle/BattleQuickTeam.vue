@@ -7,6 +7,7 @@ import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 import { isRevivingForceSwitchRequest } from '@/logic/battle/helpers/requestHelper.ts'
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
 
 import { useLivePvPStore } from '@/stores/livePvP'
 
@@ -23,6 +24,7 @@ const team = computed<Pokemon[]>(() => {
   return rawTeam
 })
 const activePokemonUid = computed(() => battleStore.state?.player?.uid)
+const emptySlotsCount = computed(() => Math.max(0, MAX_POKEMON_TEAM_SIZE - team.value.length))
 
 const hasPendingForcedSwitch = computed(() => {
   const forceSwitch = battleStore.state?.playerRequest?.forceSwitch
@@ -107,7 +109,7 @@ const handleSwitch = (index: number) => {
 
       <!-- Slots Vacíos para mantener la estructura 2x3 -->
       <div 
-        v-for="i in Math.max(0, 6 - team.length)" 
+        v-for="i in emptySlotsCount" 
         :key="'empty-' + i" 
         class="empty-slot-card"
       />
@@ -134,7 +136,7 @@ const handleSwitch = (index: number) => {
 
 .quick-team-grid {
   display: grid;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   grid-template-columns: repeat(auto-fill, 115px);
   width: 100%;
   min-height: 100%;
@@ -152,7 +154,7 @@ const handleSwitch = (index: number) => {
   flex-direction: column !important;
   justify-content: space-between !important;
   align-items: center !important;
-  gap: 4px !important;
+  gap: $spacing-xs !important;
   width: 115px !important; // Ancho fijo compacto
   height: 184px !important; // Altura exacta para el contenedor de 192px
   min-height: 184px !important; // Evita aplastamiento de filas al hacer wrap
@@ -160,7 +162,7 @@ const handleSwitch = (index: number) => {
   margin: 0 !important;
   padding: 6px !important;
   border: 1px solid var(--tier-color); // MARCO DE GRADO OBLIGATORIO
-  border-radius: 20px !important;
+  border-radius: $radius-3xl !important;
   background: Rgb(15 23 42 / 70%) !important; // Un poco más oscuro para resaltar borde
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
@@ -195,9 +197,8 @@ const handleSwitch = (index: number) => {
     background: Rgb(var(--tier-color-rgb), 0.15) !important;
     transform: Scale(0.98);
     border-color: var(--tier-color) !important;
-    box-shadow: 
-      0 0 20px Rgb(var(--tier-color-rgb), 0.4),
-      inset 0 0 10px Rgb(var(--tier-color-rgb), 0.2) !important;
+    box-shadow: var(--shadow-card);
+
   }
 
   &.is-fainted {
@@ -219,7 +220,7 @@ const handleSwitch = (index: number) => {
   height: 184px !important;
   min-height: 184px !important;
   border: 1px dashed Rgb(255 255 255 / 5%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(255 255 255 / 1%);
   box-sizing: border-box !important;
 }

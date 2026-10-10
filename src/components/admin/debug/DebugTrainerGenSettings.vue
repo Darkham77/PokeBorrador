@@ -21,7 +21,8 @@ const emit = defineEmits<{
     <div class="gen-params-grid">
       <div class="input-group vertical">
         <span class="field-label">Cant. Pokes</span>
-        <input 
+        <input
+          id="debug-trainer-gen-settings-input-teamsize" 
           v-model.number="teamSize" 
           type="number" 
           min="1" 
@@ -31,7 +32,10 @@ const emit = defineEmits<{
 
       <div class="input-group vertical">
         <span class="field-label">¿Forzar Shiny?</span>
-        <select v-model="forceShiny">
+        <select
+          id="debug-trainer-gen-settings-select-forceshiny"
+          v-model="forceShiny"
+        >
           <option :value="false">
             No (5% azar)
           </option>
@@ -43,7 +47,10 @@ const emit = defineEmits<{
 
       <div class="input-group vertical">
         <span class="field-label">¿Forzar Guardián?</span>
-        <select v-model="guardianProb">
+        <select
+          id="debug-trainer-gen-settings-select-guardianprob"
+          v-model="guardianProb"
+        >
           <option :value="0.01">
             No (1% azar)
           </option>
@@ -65,6 +72,7 @@ const emit = defineEmits<{
       <div class="input-group vertical">
         <span class="field-label">Nivel Mínimo</span>
         <input
+          id="debug-trainer-gen-settings-input-minlevel"
           v-model.number="minLevel"
           type="number"
           min="1"
@@ -72,8 +80,9 @@ const emit = defineEmits<{
         >
       </div>
       <div style="flex: 1;">
-        <label style=" color: #a78bfa;font-size: 0.75rem;">Nivel Máx</label>
+        <label style=" color: var(--purple-400);font-size: var(--font-12);">Nivel Máx</label>
         <input
+          id="debug-trainer-gen-settings-input-maxlevel"
           v-model.number="maxLevel"
           type="number"
           min="1"

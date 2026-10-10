@@ -85,6 +85,7 @@ const openGyms = () => {
     <!-- Banner de Revanchas Diarias si hay líderes listos para revancha -->
     <div
       v-if="gymsStore.availableRematchesCount > 0"
+      id="home-gyms-progress-div-1"
       v-gsap-hover
       class="rematches-banner"
       @click.stop="openGyms"
@@ -106,7 +107,8 @@ const openGyms = () => {
         :description="getGymTooltipDesc(gym)"
       >
         <div
-          v-gsap-hover="{ scale: 1.05, y: -2 }"
+          id="home-gyms-progress-div-2"
+          v-gsap-hover="'pill'"
           class="medal-slot"
           :class="{ 
             'is-conquered': isGymDefeated(gym.id),
@@ -181,11 +183,11 @@ const openGyms = () => {
   @include home-card-title-wrap;
 
   .card-icon {
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    font-family: $font-family-emoji !important;
   }
 
   .title-text-group {
-    gap: 3px;
+    gap: $spacing-xs-alt;
   }
 
   .card-title {
@@ -193,14 +195,14 @@ const openGyms = () => {
 
     margin: 0;
     color: var(--yellow, #facc15);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .gyms-sub {
     color: Rgb(255 255 255 / 50%);
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1.35;
   }
 }
@@ -218,29 +220,29 @@ const openGyms = () => {
   align-items: center;
   padding: 8px 12px;
   border: 1px solid Rgb(249 115 22 / 40%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Linear-Gradient(135deg, Rgb(234 88 12 / 25%) 0%, Rgb(180 83 9 / 20%) 100%);
   cursor: pointer;
-  box-shadow: 0 2px 12px Rgb(234 88 12 / 20%);
+  box-shadow: var(--shadow-card);
 
   &:hover {
     background: Linear-Gradient(135deg, Rgb(234 88 12 / 35%) 0%, Rgb(180 83 9 / 30%) 100%);
     transform: Translatey(-1px);
-    border-color: #f97316;
+    border-color: var(--orange-500);
   }
 
   .rematches-banner-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .flame {
-      font-size: 14px;
+      font-size: var(--font-14);
     }
 
     .banner-title {
-      color: #fdba74;
-      font-size: 11px;
+      color: var(--orange-400);
+      font-size: var(--font-11);
       font-weight: bold;
       letter-spacing: 0.5px;
     }
@@ -249,17 +251,17 @@ const openGyms = () => {
   .banner-btn {
     padding: 3px 8px;
     border: 1px solid Rgb(249 115 22 / 40%);
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: Rgb(249 115 22 / 30%);
-    color: #fed7aa;
-    font-size: 10px;
+    color: var(--amber-300);
+    font-size: var(--font-10);
     font-weight: bold;
   }
 }
 
 .medals-row {
   display: grid;
-  gap: 8px;
+  gap: $spacing-sm;
   grid-template-columns: repeat(8, 1fr);
 
   @media (width <= 1024px) {
@@ -275,11 +277,11 @@ const openGyms = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: $spacing-xs-5;
   width: 100%;
   padding: 8px 4px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 35%);
   cursor: pointer;
   filter: Grayscale(1) Opacity(0.4);
@@ -295,7 +297,7 @@ const openGyms = () => {
     background: Rgb(249 115 22 / 8%);
     border-color: Rgb(249 115 22 / 50%);
     filter: none;
-    box-shadow: 0 0 10px Rgb(249 115 22 / 20%);
+    box-shadow: var(--shadow-glow-amber);
   }
 
   .medal-icon-wrap {
@@ -306,7 +308,7 @@ const openGyms = () => {
     width: 32px;
     height: 32px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(255 255 255 / 4%);
 
     .badge-sprite-img {
@@ -323,7 +325,7 @@ const openGyms = () => {
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      font-size: 11px;
+      font-size: var(--font-11);
       line-height: 1.25 !important;
       filter: Drop-Shadow(0 0 4px #f97316);
     }
@@ -335,8 +337,8 @@ const openGyms = () => {
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-      font-size: 9px;
+      font-family: $font-family-emoji !important;
+      font-size: var(--font-9);
       line-height: 1.25 !important;
       filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 80%));
     }
@@ -346,7 +348,7 @@ const openGyms = () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
+    gap: $spacing-xs-alt;
     width: 100%;
     text-align: center;
 
@@ -355,7 +357,7 @@ const openGyms = () => {
 
       max-width: 100%;
       color: var(--white);
-      font-size: 7px;
+      font-size: var(--font-7);
       line-height: 1.45;
       padding-bottom: 1px;
       white-space: nowrap;
@@ -367,7 +369,7 @@ const openGyms = () => {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 3px;
+      gap: $spacing-xs-alt;
       width: 100%;
     }
 
@@ -381,10 +383,10 @@ const openGyms = () => {
       height: 13px;
       padding: 0;
       border: 1px dashed Rgb(255 255 255 / 15%);
-      border-radius: 3px;
+      border-radius: $radius-xs-alt;
       background: Rgb(255 255 255 / 4%);
       color: Rgb(255 255 255 / 30%);
-      font-size: 6px;
+      font-size: var(--font-6);
       font-weight: 800;
       line-height: 1.35;
       text-align: center;
@@ -395,21 +397,21 @@ const openGyms = () => {
 
         &.is-easy {
           background: Rgb(74 222 128 / 20%);
-          color: #4ade80;
+          color: var(--green-light);
           border-color: Rgb(74 222 128 / 60%);
         }
 
         &.is-normal {
           background: Rgb(56 189 248 / 20%);
-          color: #38bdf8;
+          color: var(--sky);
           border-color: Rgb(56 189 248 / 60%);
         }
 
         &.is-hard {
           background: Rgb(250 204 21 / 20%);
-          color: #facc15;
+          color: var(--amber-400);
           border-color: Rgb(250 204 21 / 60%);
-          box-shadow: 0 0 6px Rgb(250 204 21 / 25%);
+          box-shadow: var(--shadow-glow-yellow-sm);
         }
       }
     }
@@ -418,17 +420,17 @@ const openGyms = () => {
       @include pixelated;
 
       color: Rgb(148 163 184 / 70%);
-      font-size: 6px;
+      font-size: var(--font-6);
       line-height: 1.35;
 
       &.mastered {
-        color: #facc15;
+        color: var(--amber-400);
         font-weight: bold;
         text-shadow: 0 0 4px Rgb(250 204 21 / 40%);
       }
 
       &.partial {
-        color: #38bdf8;
+        color: var(--sky);
         font-weight: bold;
       }
     }
@@ -442,26 +444,25 @@ const openGyms = () => {
 
     &:hover {
       border-color: var(--yellow);
-      box-shadow: 0 4px 16px Rgb(250 204 21 / 20%);
+      box-shadow: var(--shadow-md);
     }
 
     .medal-icon-wrap {
       background: Linear-Gradient(135deg, Rgb(255 215 0 / 20%) 0%, Rgb(255 215 0 / 5%) 100%);
       border-color: var(--yellow);
-      box-shadow: 0 0 12px Rgb(250 204 21 / 30%);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 
   &.is-mastered {
     background: Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 12%) 0%, Rgb(250 204 21 / 2%) 100%), Rgb(18 22 34 / 95%);
     border-color: Rgb(250 204 21 / 60%);
-    box-shadow: 0 0 14px Rgb(250 204 21 / 20%);
+    box-shadow: var(--shadow-glow-amber);
 
     &:hover {
-      border-color: #facc15;
-      box-shadow: 0 0 20px Rgb(250 204 21 / 35%);
+      border-color: var(--amber-400);
+      box-shadow: var(--shadow-glow-amber-lg);
     }
   }
 }
 </style>
-

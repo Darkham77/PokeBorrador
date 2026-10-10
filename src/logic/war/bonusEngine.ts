@@ -8,6 +8,7 @@ import type { FactionId } from '@/types/system/game'
 
 const DOMINANCE_MIN_IV_BOOST = 15
 const DOMINANCE_MONEY_BOOST_MULT = 1.2
+const BASE_DOMINANCE_SHINY_CHANCE = 0.001;
 
 /**
  * Applies map dominance bonuses to a generated Pokémon.
@@ -26,7 +27,7 @@ export function applyEncounterBonuses(
 
   // 1. Shiny Multiplier (Legacy 1.3x)
   if (isDominant && !pokemon.isShiny) {
-    if (Math.random() < (0.001 * (bonuses.shinyMult - 1))) {
+    if (Math.random() < (BASE_DOMINANCE_SHINY_CHANCE * (bonuses.shinyMult - 1))) {
        pokemon.isShiny = true
     }
   }

@@ -16,7 +16,7 @@ import type {
   ContinentNode,
   ContinentConnection,
   ContinentGenConfig
-} from '../../types/map/continentTypes';
+} from '../../types/map/continentTypes.ts';
 
 describe('svgRouteAdapter', () => {
   const sampleNodes: Record<string, ContinentNode> = {

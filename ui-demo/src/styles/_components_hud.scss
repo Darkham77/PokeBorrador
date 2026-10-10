@@ -11,7 +11,7 @@
   font-family: var(--font-pixel);
 
   .combatant-title {
-    font-size: 9px;
+    font-size: var(--font-9);
     color: var(--color-text-main);
     display: flex;
     align-items: center;
@@ -20,7 +20,7 @@
   }
 
   .combatant-lvl {
-    font-size: 8px;
+    font-size: var(--font-8);
     color: var(--color-text-gold);
     line-height: 1.35;
   }
@@ -35,17 +35,17 @@
 
   .hp-label {
     font-family: var(--font-pixel);
-    font-size: 7px;
+    font-size: var(--font-7);
     font-weight: bold;
-    color: #ffd60a;
+    color: var(--yellow);
     line-height: 1.35;
   }
 
   .hp-track {
     flex: 1;
     height: 6px;
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: var(--slate-800);
+    border: 1px solid var(--slate-700);
     position: relative;
     overflow: hidden;
   }
@@ -54,15 +54,15 @@
     height: 100%;
     width: 100%;
 
-    &.hp-green { background: #22c55e; }
-    &.hp-yellow { background: #eab308; width: 56%; }
-    &.hp-red { background: #ef4444; width: 20%; }
+    &.hp-green { background: var(--emerald); }
+    &.hp-yellow { background: var(--amber-dark); width: 56%; }
+    &.hp-red { background: var(--red-light); width: 20%; }
   }
 }
 
 .hp-numbers {
   font-family: var(--font-pixel);
-  font-size: 7.5px;
+  font-size: var(--font-8);
   text-align: right;
   color: var(--color-text-muted);
   margin-top: 3px;
@@ -77,22 +77,22 @@
 
   .exp-label {
     font-family: var(--font-pixel);
-    font-size: 6.5px;
-    color: #38bdf8;
+    font-size: var(--font-7);
+    color: var(--sky);
     line-height: 1.35;
   }
 
   .exp-track {
     flex: 1;
     height: 3px;
-    background: #1e293b;
+    background: var(--slate-800);
     position: relative;
   }
 
   .exp-fill {
     height: 100%;
     width: 65%;
-    background: #38bdf8;
+    background: var(--sky);
   }
 }
 
@@ -104,11 +104,11 @@
   .ball-dot {
     width: 10px;
     height: 10px;
-    background: #ef4444;
-    border: 1px solid #ffffff;
+    background: var(--red-light);
+    border: 1px solid var(--white);
 
     &.fainted {
-      background: #475569;
+      background: var(--slate-600);
       opacity: 0.5;
     }
   }
@@ -145,7 +145,7 @@
   font-family: var(--font-pixel);
 
   .trainer-name {
-    font-size: 11px;
+    font-size: var(--font-11);
     color: var(--color-text-gold);
     font-weight: bold;
     display: flex;
@@ -155,14 +155,14 @@
   }
 
   .trainer-id {
-    font-size: 8px;
+    font-size: var(--font-8);
     color: var(--color-text-muted);
     line-height: 1.35;
   }
 
   .trainer-money {
-    font-size: 9px;
-    color: #4ade80;
+    font-size: var(--font-9);
+    color: var(--green-light);
     line-height: 1.35;
   }
 }
@@ -184,7 +184,7 @@
     font-family: var(--font-pixel);
 
     .compare-tag {
-      font-size: 7.5px;
+      font-size: var(--font-8);
       padding: 3px 6px;
       width: fit-content;
       font-weight: bold;
@@ -192,13 +192,13 @@
     }
 
     &.modern {
-      background: #1e293b;
-      border: 1px solid #475569;
+      background: var(--slate-800);
+      border: 1px solid var(--slate-600);
       box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.3);
 
       .compare-tag {
-        background: #475569;
-        color: #f8fafc;
+        background: var(--slate-600);
+        color: var(--slate-50);
       }
     }
 
@@ -207,7 +207,7 @@
 
       .compare-tag {
         background: var(--color-text-gold);
-        color: #000000;
+        color: var(--black);
       }
     }
   }
@@ -219,7 +219,7 @@
   border: 1px solid var(--color-control-border);
   padding: 6px 10px;
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
   color: var(--color-text-main);
   box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.5);
   line-height: 1.35;

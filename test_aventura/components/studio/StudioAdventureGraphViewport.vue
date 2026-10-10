@@ -8,20 +8,46 @@ import {
   KANTO_GRID_W,
   KANTO_GRID_H,
   CELL_BIOME,
-  OCCUPANCY_FLAGS,
+  OCCUPANCY_FLAGS
+} from '../../types/map/kantoGridModel';
+import {
   DynamicCatalogLoader,
   UniversalAutotiler,
-  SemanticPrefabRenderer,
-  KantoRegionalWorldGenerator,
-  ChunkManager
-} from '../../logic/map/kantoRegionalGenerator';
-import { JohtoRegionalWorldGenerator } from '../../logic/map/regionRegistry';
+  SemanticPrefabRenderer
+} from '../../logic/map/kantoTileEngine';
+import { ChunkManager } from '../../logic/map/kantoChunkManager';
+import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator';
+import { JohtoRegionalWorldGenerator } from '../../data/map/regionRegistry.ts';
 import { bakeUrbanMaquette } from '../../logic/map/continentalWorldGenerator';
+import { findValidBuildingPlacementSpot } from '../../logic/map/buildingPlacementSolver';
+import { computeViewportWheelZoom } from '../../logic/utils/svgCoordinateUtils';
+import {
+  VIEWPORT_ZOOM_IN_STEP,
+  VIEWPORT_ZOOM_OUT_STEP,
+  MIN_VIEWPORT_ZOOM,
+  MAX_VIEWPORT_ZOOM,
+  DEFAULT_PREFAB_FALLBACK_WIDTH,
+  DEFAULT_PREFAB_FALLBACK_HEIGHT,
+  DEFAULT_URBAN_CLEARANCE_RADIUS_PX,
+  MIN_PLAZA_CLEARANCE_RADIUS_PX,
+  PLAZA_MARGIN_CLEARANCE_PX,
+  DEFAULT_FOREST_PERCENT,
+  MIN_FOREST_DENSITY_MULTIPLIER,
+  WORLD_COORDINATE_SCALE_FACTOR,
+  METROPOLIS_PLAZA_RADIUS_TILES,
+  CITY_PLAZA_RADIUS_TILES,
+  TREE_SPAWN_BASE_THRESHOLD,
+  PINE_TREE_THRESHOLD,
+  TREE_CLEARANCE_RADIUS_TILES,
+  HASH_PRIME_X,
+  HASH_PRIME_Y,
+  HASH_SEED_PRIME,
+  LCG_PRIME_X,
+  LCG_PRIME_Y,
+  UINT32_DIVISOR
+} from '../../config/studioConstants.ts';
 
 const store = useMapAdventureStudioStore();
-
-const WORLD_WIDTH = KANTO_WORLD_WIDTH;
-const WORLD_HEIGHT = KANTO_WORLD_HEIGHT;
 
 const viewportRef = ref<HTMLDivElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -70,25 +96,27 @@ function screenToWorld(clientX: number, clientY: number) {
   const screenY = clientY - rect.top;
   const x = (screenX - store.panX) / store.zoom;
   const y = (screenY - store.panY) / store.zoom;
-  return { x: Math.max(0, Math.min(WORLD_WIDTH, x)), y: Math.max(0, Math.min(WORLD_HEIGHT, y)) };
+  return { x: Math.max(0, Math.min(KANTO_WORLD_WIDTH, x)), y: Math.max(0, Math.min(KANTO_WORLD_HEIGHT, y)) };
 }
 
 function handleWheelZoom(e: WheelEvent) {
   e.preventDefault();
   if (!viewportRef.value) return;
-  const rect = viewportRef.value.getBoundingClientRect();
-  const cursorX = e.clientX - rect.left;
-  const cursorY = e.clientY - rect.top;
 
-  const currentZoom = store.zoom;
-  const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-  const nextZoom = Math.max(0.2, Math.min(3.0, currentZoom * zoomFactor));
+  const result = computeViewportWheelZoom({
+    event: e,
+    viewportElement: viewportRef.value,
+    currentZoom: store.zoom,
+    currentPanX: store.panX,
+    currentPanY: store.panY,
+    zoomInStep: VIEWPORT_ZOOM_IN_STEP,
+    zoomOutStep: VIEWPORT_ZOOM_OUT_STEP,
+    minZoom: MIN_VIEWPORT_ZOOM,
+    maxZoom: MAX_VIEWPORT_ZOOM
+  });
 
-  const newPanX = cursorX - (cursorX - store.panX) * (nextZoom / currentZoom);
-  const newPanY = cursorY - (cursorY - store.panY) * (nextZoom / currentZoom);
-
-  store.setZoom(nextZoom);
-  store.setPan(newPanX, newPanY);
+  store.setZoom(result.nextZoom);
+  store.setPan(result.newPanX, result.newPanY);
 }
 
 function handleViewportPointerDown(e: PointerEvent) {
@@ -156,13 +184,20 @@ function handleViewportPointerMove(e: PointerEvent) {
   }
 }
 
+function safeBakeTerrain(): void {
+  bakeTerrainTiles().catch((err: unknown) => {
+    // catch-ok: Non-blocking background tile baking preview error
+    console.warn('[StudioAdventureGraphViewport] Terrain baking preview error:', err);
+  });
+}
+
 function handleViewportPointerUp(e: PointerEvent) {
   if (isPanning.value) {
     isPanning.value = false;
     try {
       (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
     } catch {
-      // ignore
+      // catch-ok: Pointer capture release fails gracefully if pointer was lost
     }
   }
 
@@ -170,7 +205,7 @@ function handleViewportPointerUp(e: PointerEvent) {
     isDraggingNode.value = false;
     draggedNodeId.value = null;
     store.pushHistory();
-    bakeTerrainTiles().catch(() => {});
+    safeBakeTerrain();
   }
 
   if (isPaintingTerrain.value) {
@@ -180,7 +215,7 @@ function handleViewportPointerUp(e: PointerEvent) {
     try {
       (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
     } catch {
-      // ignore
+      // catch-ok: Pointer capture release fails gracefully if pointer was lost
     }
   }
 
@@ -188,11 +223,11 @@ function handleViewportPointerUp(e: PointerEvent) {
     isDraggingStructure.value = false;
     draggedStructureIndex.value = null;
     store.pushHistory();
-    bakeTerrainTiles().catch(() => {});
+    safeBakeTerrain();
     try {
       (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
     } catch {
-      // ignore
+      // catch-ok: Pointer capture release fails gracefully if pointer was lost
     }
   }
 }
@@ -206,7 +241,7 @@ function handleCanvasClick(e: MouseEvent) {
     const px = Math.round(worldPos.x - p.width / 2);
     const py = Math.round(worldPos.y - p.height / 2);
     store.stampCurrentPrefab(px, py);
-    bakeTerrainTiles().catch(() => {});
+    safeBakeTerrain();
     return;
   }
 
@@ -215,7 +250,7 @@ function handleCanvasClick(e: MouseEvent) {
     const newId = store.addNode(Math.round(worldPos.x / 2.5), Math.round(worldPos.y / 2.5));
     store.selectedNodeId = newId;
     store.activeTool = 'pointer';
-    bakeTerrainTiles().catch(() => {});
+    safeBakeTerrain();
     return;
   }
 
@@ -242,7 +277,7 @@ function handleNodePointerDown(e: PointerEvent, nodeId: string) {
 
   if (store.activeTool === 'delete') {
     store.deleteNode(nodeId);
-    bakeTerrainTiles().catch(() => {});
+    safeBakeTerrain();
     return;
   }
 
@@ -252,7 +287,7 @@ function handleNodePointerDown(e: PointerEvent, nodeId: string) {
     } else {
       if (store.connectSourceNodeId !== nodeId) {
         store.toggleConnection(store.connectSourceNodeId, nodeId);
-        bakeTerrainTiles().catch(() => {});
+        safeBakeTerrain();
       }
       store.connectSourceNodeId = null;
     }
@@ -325,8 +360,8 @@ function drawBakedChunksToCanvas(): void {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  ctx.clearRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-  chunkManager.renderTo(ctx, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+  ctx.clearRect(0, 0, KANTO_WORLD_WIDTH, KANTO_WORLD_HEIGHT);
+  chunkManager.renderTo(ctx, 0, 0, KANTO_WORLD_WIDTH, KANTO_WORLD_HEIGHT);
 }
 
 function paintBrushAt(gx: number, gy: number): void {
@@ -368,8 +403,8 @@ function paintBrushAt(gx: number, gy: number): void {
 
 function syncCustomStructuresToGen(gen: KantoRegionalWorldGenerator): void {
   for (const s of (store.customStructures ?? [])) {
-    const w = s.w ?? 80;
-    const h = s.h ?? 60;
+    const w = s.w ?? DEFAULT_PREFAB_FALLBACK_WIDTH;
+    const h = s.h ?? DEFAULT_PREFAB_FALLBACK_HEIGHT;
     gen.buildings.push({
       style: s.style,
       x: s.x,
@@ -392,12 +427,12 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
   for (const [id, node] of Object.entries(store.nodes)) {
     if (!node) continue;
     if (node.urbanScale) {
-      const cx = Math.round(node.x * 2.5);
-      const cy = Math.round(node.y * 2.5);
+      const cx = Math.round(node.x * WORLD_COORDINATE_SCALE_FACTOR);
+      const cy = Math.round(node.y * WORLD_COORDINATE_SCALE_FACTOR);
 
       // Clear default buildings within radius to apply custom urban maquette
-      gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > 250);
-      gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > 250);
+      gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX);
+      gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX);
 
       const maquette = bakeUrbanMaquette({
         id,
@@ -408,7 +443,7 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
         urbanScale: node.urbanScale
       }, store.seed);
 
-      const plazaRadius = Math.max(260, Math.round(maquette.plazaRect.w / 2) + 20);
+      const plazaRadius = Math.max(MIN_PLAZA_CLEARANCE_RADIUS_PX, Math.round(maquette.plazaRect.w / 2) + PLAZA_MARGIN_CLEARANCE_PX);
 
       // Clear default buildings within plaza radius to apply custom urban maquette
       gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > plazaRadius);
@@ -436,7 +471,7 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
       // 2. Compact central civic square for Metropolises and Cities only (not towns/villages)
       const uScale = node.urbanScale;
       if (uScale === 'metropolis' || uScale === 'city') {
-        const plazaRadiusTiles = uScale === 'metropolis' ? 2 : 1;
+        const plazaRadiusTiles = uScale === 'metropolis' ? METROPOLIS_PLAZA_RADIUS_TILES : CITY_PLAZA_RADIUS_TILES;
         const centerTx = Math.round(cx / T);
         const centerTy = Math.round(cy / T);
         for (let dy = -plazaRadiusTiles; dy <= plazaRadiusTiles; dy++) {
@@ -456,67 +491,18 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
 
       // 2. Place maquette buildings
       for (const b of maquette.buildings) {
-        let bX = b.x;
-        let bY = b.y;
-        let bx = Math.floor(bX / T);
-        let by = Math.floor(bY / T);
+        const placement = findValidBuildingPlacementSpot(gen, b.x, b.y, b.w, b.h);
+        if (!placement.found) continue;
+
+        const bx = placement.tx;
+        const by = placement.ty;
         const bw = Math.ceil(b.w / T);
         const bh = Math.ceil(b.h / T);
 
-        const isSpotValid = (tx: number, ty: number) => {
-          if (tx < 1 || tx + bw >= KANTO_GRID_W - 1 || ty < 1 || ty + bh >= KANTO_GRID_H - 1) return false;
-          for (let y = ty - 1; y <= ty + bh; y++) {
-            for (let x = tx - 1; x <= tx + bw; x++) {
-              const row = g[y];
-              const eRow = gen.elevation[y];
-              if (!row || !eRow) return false;
-              const cell = row[x];
-              const elev = eRow[x];
-              if (cell === undefined || cell === CELL_BIOME.WATER || cell === CELL_BIOME.MOUNTAIN_DIRT) return false;
-              if (elev === undefined || elev >= 2) return false;
-              if (gen.occupancy.has(x, y, OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.DOOR_ACCESS)) return false;
-            }
-          }
-          for (const eb of gen.buildings) {
-            const ebx = Math.floor(eb.x / T);
-            const eby = Math.floor(eb.y / T);
-            const ebw = Math.ceil((eb.w ?? 128) / T);
-            const ebh = Math.ceil((eb.h ?? 128) / T);
-            if (tx < ebx + ebw + 1 && tx + bw + 1 > ebx && ty < eby + ebh + 1 && ty + bh + 1 > eby) {
-              return false;
-            }
-          }
-          return true;
-        };
-
-        let found = false;
-        if (isSpotValid(bx, by)) {
-          found = true;
-        } else {
-          for (let r = 1; r <= 12 && !found; r++) {
-            for (let dy = -r; dy <= r; dy++) {
-              for (let dx = -r; dx <= r; dx++) {
-                if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-                if (isSpotValid(bx + dx, by + dy)) {
-                  bx += dx;
-                  by += dy;
-                  bX = bx * T;
-                  bY = by * T;
-                  found = true;
-                  break;
-                }
-              }
-              if (found) break;
-            }
-          }
-        }
-
-        if (!found) continue;
-
         gen.buildings.push({
           style: b.style,
-          x: bX,
-          y: bY,
+          x: placement.x,
+          y: placement.y,
           w: b.w,
           h: b.h
         });
@@ -532,8 +518,8 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
           style: p.style,
           x: p.x,
           y: p.y,
-          w: 32,
-          h: 32
+          w: KANTO_TILE_SIZE,
+          h: KANTO_TILE_SIZE
         });
       }
     }
@@ -592,16 +578,16 @@ async function bakeTerrainTiles(): Promise<void> {
     syncUrbanMaquettesToGen(gen);
 
     // Populate dense natural trees on continental TALL_GRASS forest cells
-    const mult = Math.max(0.1, (store.proceduralConfig?.forestPercent ?? 25) / 25);
+    const mult = Math.max(MIN_FOREST_DENSITY_MULTIPLIER, (store.proceduralConfig?.forestPercent ?? DEFAULT_FOREST_PERCENT) / DEFAULT_FOREST_PERCENT);
     for (let gy = 0; gy < KANTO_GRID_H; gy++) {
       const row = gen.grid[gy];
       if (!row) continue;
       for (let gx = 0; gx < KANTO_GRID_W; gx++) {
         if (row[gx] === CELL_BIOME.TALL_GRASS) {
-          const rnd = ((gx * 374761393 + gy * 668265263 + store.seed * 91) >>> 0) / 4294967296;
-          if (rnd < 0.60 * mult) {
-            const styleRnd = ((gx * 1234567 + gy * 7654321 + store.seed) >>> 0) / 4294967296;
-            const style = styleRnd > 0.4 ? 'pine' : 'oak';
+          const rnd = ((gx * HASH_PRIME_X + gy * HASH_PRIME_Y + store.seed * HASH_SEED_PRIME) >>> 0) / UINT32_DIVISOR;
+          if (rnd < TREE_SPAWN_BASE_THRESHOLD * mult) {
+            const styleRnd = ((gx * LCG_PRIME_X + gy * LCG_PRIME_Y + store.seed) >>> 0) / UINT32_DIVISOR;
+            const style = styleRnd > PINE_TREE_THRESHOLD ? 'pine' : 'oak';
             gen.trees.push({
               style,
               x: gx * KANTO_TILE_SIZE,
@@ -612,13 +598,13 @@ async function bakeTerrainTiles(): Promise<void> {
       }
     }
 
-    // Strict tree clearance: remove any tree within 2 tiles of roads, bridges, plazas, water or buildings
+    // Strict tree clearance: remove any tree within perimeter tiles of roads, bridges, plazas, water or buildings
     const T = KANTO_TILE_SIZE;
     gen.trees = gen.trees.filter((tree) => {
       const tgx = Math.floor(tree.x / T);
       const tgy = Math.floor(tree.y / T);
-      for (let dy = -2; dy <= 2; dy++) {
-        for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = -TREE_CLEARANCE_RADIUS_TILES; dy <= TREE_CLEARANCE_RADIUS_TILES; dy++) {
+        for (let dx = -TREE_CLEARANCE_RADIUS_TILES; dx <= TREE_CLEARANCE_RADIUS_TILES; dx++) {
           const nx = tgx + dx;
           const ny = tgy + dy;
           if (nx >= 0 && nx < KANTO_GRID_W && ny >= 0 && ny < KANTO_GRID_H) {
@@ -645,7 +631,7 @@ async function bakeTerrainTiles(): Promise<void> {
 }
 
 watch(() => store.tileTerrainTrigger, () => {
-  bakeTerrainTiles().catch(() => {});
+  safeBakeTerrain();
 });
 
 function onKeyDown(e: KeyboardEvent) {
@@ -666,7 +652,7 @@ onMounted(() => {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
   }
-  bakeTerrainTiles().catch(() => {});
+  safeBakeTerrain();
 });
 
 onUnmounted(() => {
@@ -713,8 +699,8 @@ defineExpose({
         v-show="store.showBackgroundMap"
         id="kanto-world-canvas"
         ref="canvasRef"
-        :width="WORLD_WIDTH"
-        :height="WORLD_HEIGHT"
+        :width="KANTO_WORLD_WIDTH"
+        :height="KANTO_WORLD_HEIGHT"
         class="kanto-tiles-canvas"
       />
 
@@ -722,9 +708,9 @@ defineExpose({
       <svg
         v-if="store.showGrid"
         class="grid-svg-layer"
-        :viewBox="`0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`"
-        :width="WORLD_WIDTH"
-        :height="WORLD_HEIGHT"
+        :viewBox="`0 0 ${KANTO_WORLD_WIDTH} ${KANTO_WORLD_HEIGHT}`"
+        :width="KANTO_WORLD_WIDTH"
+        :height="KANTO_WORLD_HEIGHT"
       >
         <defs>
           <pattern
@@ -769,9 +755,9 @@ defineExpose({
       <!-- SVG Routes & Interactive Overlay -->
       <svg
         class="routes-svg-layer"
-        :viewBox="`0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`"
-        :width="WORLD_WIDTH"
-        :height="WORLD_HEIGHT"
+        :viewBox="`0 0 ${KANTO_WORLD_WIDTH} ${KANTO_WORLD_HEIGHT}`"
+        :width="KANTO_WORLD_WIDTH"
+        :height="KANTO_WORLD_HEIGHT"
       >
         <!-- Standard Route Edges (Outer Stroke + Inner Road) -->
         <g class="route-connections">

@@ -56,10 +56,23 @@ function handleMedalClick() {
     uiStore.notify(`El torneo "${info.tournamentName}" ya ha finalizado y sus salas no están disponibles.`, 'ℹ️')
   }
 }
+
+const TOP_RANK_THRESHOLD = 10
+const PODIUM_RANK_THRESHOLD = 3
+const PODIUM_ICONS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
+
+const isTopRank = computed(() => Boolean(props.medal.rank && props.medal.rank <= TOP_RANK_THRESHOLD))
+const isPodium = computed(() => Boolean(props.medal.rank && props.medal.rank <= PODIUM_RANK_THRESHOLD))
+const podiumIcon = computed(() => (props.medal.rank ? PODIUM_ICONS[props.medal.rank] : null))
+const podiumTagClass = computed(() => ({
+  'top-1': props.medal.rank === 1,
+  'top-3': isPodium.value
+}))
 </script>
 
 <template>
   <div
+    id="profile-ranked-medal-item-div-medalclick"
     class="ranked-medal-item"
     :class="{ 'is-available': medalInfo.isAvailable }"
     :style="{ borderColor: tierDisplay.color }"
@@ -112,22 +125,14 @@ function handleMedalClick() {
     </div>
 
     <div
-      v-if="medal.rank && medal.rank <= 10"
+      v-if="isTopRank"
       class="podium-tag"
-      :class="{ 'top-1': medal.rank === 1, 'top-3': medal.rank <= 3 }"
+      :class="podiumTagClass"
     >
       <span
-        v-if="medal.rank === 1"
+        v-if="podiumIcon"
         class="emoji"
-      >🥇</span>
-      <span
-        v-else-if="medal.rank === 2"
-        class="emoji"
-      >🥈</span>
-      <span
-        v-else-if="medal.rank === 3"
-        class="emoji"
-      >🥉</span>
+      >{{ podiumIcon }}</span>
       <span v-else>Top {{ medal.rank }}</span>
     </div>
   </div>
@@ -138,10 +143,10 @@ function handleMedalClick() {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 8px 10px;
   border: 1px solid Rgb(148 163 184 / 20%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(15 23 42 / 60%);
   overflow: hidden;
   cursor: pointer;
@@ -153,12 +158,12 @@ function handleMedalClick() {
     align-items: center;
     width: 36px;
     height: 36px;
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(0 0 0 / 40%);
     flex-shrink: 0;
 
     .tier-icon {
-      font-size: 1.3rem;
+      font-size: var(--font-20);
     }
 
     .medal-sprite {
@@ -177,8 +182,8 @@ function handleMedalClick() {
     flex: 1;
 
     .season-name {
-      color: #e2e8f0;
-      font-size: 0.75rem;
+      color: var(--slate-200);
+      font-size: var(--font-12);
       font-weight: 700;
       line-height: 1.45;
       padding-bottom: 2px;
@@ -192,12 +197,12 @@ function handleMedalClick() {
     .season-meta {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
       margin-top: 1px;
 
       .season-date {
-        color: #94a3b8;
-        font-size: 0.65rem;
+        color: var(--slate-400);
+        font-size: var(--font-10);
         font-weight: 500;
         white-space: nowrap;
       }
@@ -205,10 +210,10 @@ function handleMedalClick() {
       .active-tag {
         padding: 1px 4px;
         border: 1px solid Rgb(34 197 94 / 40%);
-        border-radius: 3px;
+        border-radius: $radius-xs-alt;
         background: Rgb(34 197 94 / 20%);
-        color: #4ade80;
-        font-size: 0.58rem;
+        color: var(--green-light);
+        font-size: var(--font-9);
         font-weight: 700;
         line-height: 1.2;
         letter-spacing: 0.3px;
@@ -216,7 +221,7 @@ function handleMedalClick() {
     }
 
     .tier-name {
-      font-size: 0.7rem;
+      font-size: var(--font-11);
       font-weight: 600;
       margin-top: 2px;
     }
@@ -224,23 +229,23 @@ function handleMedalClick() {
 
   .podium-tag {
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: Rgb(148 163 184 / 20%);
-    color: #e2e8f0;
-    font-size: 0.65rem;
+    color: var(--slate-200);
+    font-size: var(--font-10);
     font-weight: 800;
 
     &.top-3 {
       border: 1px solid Rgb(234 179 8 / 40%);
       background: Rgb(234 179 8 / 25%);
-      color: #fde047;
+      color: var(--amber-300);
     }
 
     &.top-1 {
-      border: 1px solid #eab308;
+      border: 1px solid var(--amber-dark);
       background: Rgb(234 179 8 / 40%);
-      color: #fff;
-      box-shadow: 0 0 6px Rgb(234 179 8 / 50%);
+      color: var(--white);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 }

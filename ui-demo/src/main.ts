@@ -39,13 +39,20 @@ const gameStore = useGameStore(pinia)
 gameStore.state.team = DEMO_TEAM_POKEMON
 gameStore.state.box = DEMO_BOX_POKEMON
 gameStore.state.starterChosen = true
+const DEMO_INVENTORY_INITIAL_QUANTITIES = {
+  POKEBALL: 25,
+  POTION: 20,
+  SUPERPOTION: 12,
+  REVIVE: 6,
+} as const;
+
 gameStore.state.inventory = {
-  pokeball: 25,
+  pokeball: DEMO_INVENTORY_INITIAL_QUANTITIES.POKEBALL,
   ultraball: 10,
-  potion: 20,
-  superpotion: 12,
+  potion: DEMO_INVENTORY_INITIAL_QUANTITIES.POTION,
+  superpotion: DEMO_INVENTORY_INITIAL_QUANTITIES.SUPERPOTION,
   maxpotion: 5,
-  revive: 6,
+  revive: DEMO_INVENTORY_INITIAL_QUANTITIES.REVIVE,
   leftovers: 2,
   charcoal: 1
 }

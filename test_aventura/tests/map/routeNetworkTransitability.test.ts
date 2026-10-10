@@ -16,7 +16,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generatePokemonContinentalWorld } from '../../../src/logic/map/continent/continentalEngine.ts';
+import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
 
 const TEST_SEEDS = [7741, 8812, 9933, 42, 100, 777, 2305, 5589] as const;
 

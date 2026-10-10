@@ -6,7 +6,6 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import AvatarFrameCard from './AvatarFrameCard.vue'
 
-
 import {
   isCosmeticStyleLocked,
   resolveCosmeticLockNotification,
@@ -71,7 +70,8 @@ const selectAvatar = (style: LockableCosmeticStyle) => {
 
     <!-- Filtro de Formas de Marcos -->
     <div class="shape-filter-tabs">
-      <button 
+      <button
+        id="avatar-frame-selector-btn-todos" 
         type="button"
         class="filter-tab-btn" 
         :class="{ active: activeShapeFilter === 'all' }"
@@ -79,7 +79,8 @@ const selectAvatar = (style: LockableCosmeticStyle) => {
       >
         Todos
       </button>
-      <button 
+      <button
+        id="avatar-frame-selector-btn-circulares" 
         type="button"
         class="filter-tab-btn" 
         :class="{ active: activeShapeFilter === 'circular' }"
@@ -87,7 +88,8 @@ const selectAvatar = (style: LockableCosmeticStyle) => {
       >
         <span class="emoji">🔴</span> Circulares
       </button>
-      <button 
+      <button
+        id="avatar-frame-selector-btn-cuadrados" 
         type="button"
         class="filter-tab-btn" 
         :class="{ active: activeShapeFilter === 'square' }"
@@ -126,39 +128,39 @@ const selectAvatar = (style: LockableCosmeticStyle) => {
 .shape-filter-tabs {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   width: fit-content;
   padding: 4px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 12px;
-  background: rgb(0 0 0 / 20%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-xl;
+  background: Rgb(0 0 0 / 20%);
   margin-bottom: 20px;
 }
 
 .filter-tab-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 6px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: transparent;
-  color: #94a3b8;
+  color: var(--slate-400);
   font-family: inherit;
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 700;
   cursor: pointer;
 
   &:hover {
-    background: rgb(255 255 255 / 3%);
-    color: #f1f5f9;
+    background: Rgb(255 255 255 / 3%);
+    color: var(--slate-100);
   }
 
   &.active {
-    border: 1px solid rgb(59 130 246 / 30%);
-    background: rgb(59 130 246 / 20%);
-    color: #fff;
-    box-shadow: 0 0 10px rgb(59 130 246 / 10%);
+    border: 1px solid Rgb(59 130 246 / 30%);
+    background: Rgb(59 130 246 / 20%);
+    color: var(--white);
+    box-shadow: var(--shadow-glow-blue);
   }
 }
 </style>

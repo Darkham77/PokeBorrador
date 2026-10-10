@@ -12,11 +12,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { generateWildernessLayer } from '../../../src/logic/map/wildernessVegetationEngine.ts';
-import { buildMapBlitInstructions } from '../../../src/logic/map/canvasTileRenderer.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
   it('guarantees zero floating bridge ends on maps with water turns (Map 4 & Map 6)', () => {
@@ -112,7 +112,6 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
         .filter((b) => b.px >= 1100 && b.px <= 1650 && b.py >= 1300 && b.py <= 1750)
         .map((b) => b.filename)
     );
-    console.log('[Map 9 Mountain Blit Filenames]:', Array.from(mountainBlitFiles).sort());
 
     const illegalMountainProps = wilderness9.props.filter((p) => {
       const elev = continent9.heightmap[p.y]?.[p.x] ?? 0;

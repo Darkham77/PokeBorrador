@@ -76,7 +76,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
       >
         <div
           :id="`home-buff-item-${buff.id}`"
-          v-gsap-hover="{ scale: 1.02, y: -2 }"
+          v-gsap-hover="'widget'"
           class="buff-card-item"
           :class="{ 'is-event-card': buff.isEvent }"
           @click.stop="handleBuffClick(buff)"
@@ -121,6 +121,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
     <!-- Empty State -->
     <div
       v-else
+      id="home-active-buffs-widget-div-1"
       v-gsap-hover="{ scale: 1.01, y: -1 }"
       class="empty-buffs-card"
       @click.stop="openInventory"
@@ -131,6 +132,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
         <span class="empty-sub">Usa inciensos, huevos suerte o repelentes desde tu mochila.</span>
       </div>
       <button
+        id="home-active-buffs-widget-btn-activar"
         v-gsap-hover
         class="empty-action-btn"
       >
@@ -158,7 +160,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 .title-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   min-width: 0;
   flex: 1;
 
@@ -166,8 +168,8 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-    font-size: 20px;
+    font-family: $font-family-emoji;
+    font-size: var(--font-20);
     line-height: 1;
     flex-shrink: 0;
   }
@@ -175,7 +177,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
   .title-text-group {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: $spacing-xs-alt;
     min-width: 0;
   }
 
@@ -184,14 +186,14 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 
     margin: 0;
     color: var(--yellow, #facc15);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .buffs-sub {
     color: Rgb(255 255 255 / 50%);
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1.35;
   }
 }
@@ -205,7 +207,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 
 .buffs-grid {
   display: grid;
-  gap: 8px;
+  gap: $spacing-sm;
   grid-template-columns: 1fr;
   width: 100%;
 }
@@ -213,20 +215,20 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 .buff-card-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   min-width: 0;
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(15 23 42 / 95%);
-  box-shadow: 0 4px 12px Rgb(0 0 0 / 45%);
+  box-shadow: var(--shadow-card);
   cursor: pointer;
   box-sizing: border-box;
 
   &:hover {
     background: Rgb(250 204 21 / 4%);
     border-color: Rgb(250 204 21 / 40%);
-    box-shadow: 0 4px 16px Rgb(0 0 0 / 55%);
+    box-shadow: var(--shadow-md);
   }
 
   &.is-event-card {
@@ -234,8 +236,8 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
     border-color: Rgb(56 189 248 / 25%);
 
     &:hover {
-      border-color: #38bdf8;
-      box-shadow: 0 0 14px Rgb(56 189 248 / 30%);
+      border-color: var(--sky);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 }
@@ -247,7 +249,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
   width: 32px;
   height: 32px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 4%);
   flex-shrink: 0;
 
@@ -255,8 +257,8 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", sans-serif;
-    font-size: 20px;
+    font-family: $font-family-emoji;
+    font-size: var(--font-20);
     line-height: 1;
     filter: Drop-Shadow(0 2px 3px Rgb(0 0 0 / 60%));
     user-select: none;
@@ -274,7 +276,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 .buff-info-body {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   min-width: 0;
   flex: 1;
 }
@@ -283,14 +285,14 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .buff-label {
   @include pixelated;
 
   color: var(--white, #fff);
-  font-size: 8px;
+  font-size: var(--font-8);
   line-height: 1.45;
   padding-bottom: 2px;
   white-space: nowrap;
@@ -303,14 +305,14 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 
   padding: 1px 5px;
   border: 1px solid Rgb(250 204 21 / 30%);
-  border-radius: 3px;
+  border-radius: $radius-xs-alt;
   background: Rgb(250 204 21 / 15%);
   color: var(--yellow, #facc15);
-  font-size: 6px;
+  font-size: var(--font-6);
 
   &.is-event {
     background: Rgb(56 189 248 / 15%);
-    color: #38bdf8;
+    color: var(--sky);
     border-color: Rgb(56 189 248 / 30%);
   }
 }
@@ -319,7 +321,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 8px;
+  font-size: var(--font-8);
 }
 
 .buff-time-text {
@@ -327,12 +329,12 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   color: var(--yellow, #facc15);
-  font-size: 8px;
+  font-size: var(--font-8);
 
   .timer-icon {
-    font-size: 9px;
+    font-size: var(--font-9);
   }
 }
 

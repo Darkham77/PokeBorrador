@@ -12,15 +12,76 @@
 
 import { SimplexNoise } from './noise/simplexNoise.ts';
 import type { WaterTerrainKind } from './waterAutotileEngine.ts';
+import {
+  computeGridDistanceField,
+  type GridBfsQueueItem
+} from '../utils/gridBfsUtils.ts';
+import {
+  ARCHIPELAGO_NOISE_SEED_OFFSET,
+  PORT_ISLAND_MASSIVE_RX,
+  PORT_ISLAND_DEFAULT_RX,
+  PORT_ISLAND_MASSIVE_RY,
+  PORT_ISLAND_DEFAULT_RY,
+  PORT_ISLAND_MASSIVE_CLEARANCE,
+  PORT_ISLAND_DEFAULT_CLEARANCE,
+  PORT_ISLAND_SECTOR_MIN_X,
+  PORT_ISLAND_SECTOR_MAX_X,
+  PORT_ISLAND_SECTOR_MIN_Y,
+  PORT_ISLAND_SECTOR_MAX_Y,
+  CAVE_ISLAND_MASSIVE_RX,
+  CAVE_ISLAND_DEFAULT_RX,
+  CAVE_ISLAND_MASSIVE_RY,
+  CAVE_ISLAND_DEFAULT_RY,
+  CAVE_ISLAND_MASSIVE_CLEARANCE,
+  CAVE_ISLAND_DEFAULT_CLEARANCE,
+  CAVE_ISLAND_SECTOR_MIN_X,
+  CAVE_ISLAND_SECTOR_MAX_X,
+  CAVE_ISLAND_SECTOR_MIN_Y,
+  CAVE_ISLAND_SECTOR_MAX_Y,
+  LIGHTHOUSE_ISLAND_MASSIVE_RX,
+  LIGHTHOUSE_ISLAND_DEFAULT_RX,
+  LIGHTHOUSE_ISLAND_MASSIVE_RY,
+  LIGHTHOUSE_ISLAND_DEFAULT_RY,
+  LIGHTHOUSE_ISLAND_MASSIVE_CLEARANCE,
+  LIGHTHOUSE_ISLAND_DEFAULT_CLEARANCE,
+  LIGHTHOUSE_ISLAND_SECTOR_MIN_X,
+  LIGHTHOUSE_ISLAND_SECTOR_MAX_X,
+  LIGHTHOUSE_ISLAND_SECTOR_MIN_Y,
+  LIGHTHOUSE_ISLAND_SECTOR_MAX_Y,
+  SHRINE_ISLAND_MASSIVE_RX,
+  SHRINE_ISLAND_DEFAULT_RX,
+  SHRINE_ISLAND_MASSIVE_RY,
+  SHRINE_ISLAND_DEFAULT_RY,
+  SHRINE_ISLAND_MASSIVE_CLEARANCE,
+  SHRINE_ISLAND_DEFAULT_CLEARANCE,
+  SHRINE_ISLAND_SECTOR_MIN_X,
+  SHRINE_ISLAND_SECTOR_MAX_X,
+  SHRINE_ISLAND_SECTOR_MIN_Y,
+  SHRINE_ISLAND_SECTOR_MAX_Y,
+  ATOLL_ISLAND_MASSIVE_RX,
+  ATOLL_ISLAND_DEFAULT_RX,
+  ATOLL_ISLAND_MASSIVE_RY,
+  ATOLL_ISLAND_DEFAULT_RY,
+  ATOLL_ISLAND_MASSIVE_CLEARANCE,
+  ATOLL_ISLAND_DEFAULT_CLEARANCE,
+  ATOLL_ISLAND_SECTOR_MIN_X,
+  ATOLL_ISLAND_SECTOR_MAX_X,
+  ATOLL_ISLAND_SECTOR_MIN_Y,
+  ATOLL_ISLAND_SECTOR_MAX_Y,
+  ARCHIPELAGO_COARSE_NOISE_SCALE,
+  ARCHIPELAGO_FINE_NOISE_SCALE,
+  ARCHIPELAGO_FINE_NOISE_WEIGHT,
+  ISLAND_CORE_GRASS_THRESHOLD
+} from '../../config/archipelagoConfig.ts';
 
-export const ARCHIPELAGO_ISLAND_ROLES = [
+const _ARCHIPELAGO_ISLAND_ROLES = [
   'port_city',
   'lighthouse',
   'sea_cave',
   'shrine',
   'atoll'
 ] as const;
-export type ArchipelagoIslandRole = (typeof ARCHIPELAGO_ISLAND_ROLES)[number];
+export type ArchipelagoIslandRole = (typeof _ARCHIPELAGO_ISLAND_ROLES)[number];
 
 export interface ArchipelagoIslandSpec {
   readonly id: string;
@@ -47,6 +108,8 @@ export interface ArchipelagoGeneratorOptions {
 
 const MIN_ARCHIPELAGO_DIMENSION = 96 as const;
 const MIN_ISLANDS_COUNT = 3 as const;
+const ISLAND_INTER_SEPARATION_STRICT = 8 as const;
+const ISLAND_INTER_SEPARATION_RELAXED = 6 as const;
 const MAX_ISLANDS_COUNT = 5 as const;
 const DEFAULT_ISLANDS_COUNT = 4 as const;
 const MASSIVE_MAP_THRESHOLD = 200 as const;
@@ -85,7 +148,7 @@ export function generateArchipelagoIslands(
 
   // 1. Multi-source BFS to compute distance from existing land (main continent)
   const distToLand: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
-  const queue: { x: number; y: number; d: number }[] = [];
+  const queue: GridBfsQueueItem[] = [];
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       if (matrix[y]![x] !== 'water' && matrix[y]![x] !== 'water_deep') {
@@ -95,73 +158,60 @@ export function generateArchipelagoIslands(
     }
   }
 
-  let head = 0;
-  while (head < queue.length) {
-    const curr = queue[head++]!;
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = curr.x + dx!;
-      const ny = curr.y + dy!;
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-        if (distToLand[ny]![nx]! > curr.d + 1) {
-          distToLand[ny]![nx] = curr.d + 1;
-          queue.push({ x: nx, y: ny, d: curr.d + 1 });
-        }
-      }
-    }
-  }
+  computeGridDistanceField(queue, distToLand, W, H);
 
-  const noise = new SimplexNoise(seed + 6655);
+  const noise = new SimplexNoise(seed + ARCHIPELAGO_NOISE_SEED_OFFSET);
 
   const templates: readonly IslandTemplate[] = [
     {
       id: 'island_port_main',
       name: 'Isla Canela (Puerto Insular)',
       role: 'port_city',
-      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? 11 : 8),
-      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? 9 : 7),
-      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? 12 : 8,
-      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? 12 : 8,
-      sector: { minX: 0.40 * W, maxX: 0.94 * W, minY: 0.50 * H, maxY: 0.94 * H }
+      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? PORT_ISLAND_MASSIVE_RX : PORT_ISLAND_DEFAULT_RX),
+      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? PORT_ISLAND_MASSIVE_RY : PORT_ISLAND_DEFAULT_RY),
+      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? PORT_ISLAND_MASSIVE_CLEARANCE : PORT_ISLAND_DEFAULT_CLEARANCE,
+      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? PORT_ISLAND_MASSIVE_CLEARANCE : PORT_ISLAND_DEFAULT_CLEARANCE,
+      sector: { minX: PORT_ISLAND_SECTOR_MIN_X * W, maxX: PORT_ISLAND_SECTOR_MAX_X * W, minY: PORT_ISLAND_SECTOR_MIN_Y * H, maxY: PORT_ISLAND_SECTOR_MAX_Y * H }
     },
     {
       id: 'island_sea_cave',
       name: 'Islas Espuma (Cueva Marina)',
       role: 'sea_cave',
-      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? 9 : 7),
-      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? 8 : 6),
-      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? 12 : 8,
-      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? 12 : 8,
-      sector: { minX: 0.06 * W, maxX: 0.50 * W, minY: 0.50 * H, maxY: 0.94 * H }
+      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? CAVE_ISLAND_MASSIVE_RX : CAVE_ISLAND_DEFAULT_RX),
+      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? CAVE_ISLAND_MASSIVE_RY : CAVE_ISLAND_DEFAULT_RY),
+      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? CAVE_ISLAND_MASSIVE_CLEARANCE : CAVE_ISLAND_DEFAULT_CLEARANCE,
+      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? CAVE_ISLAND_MASSIVE_CLEARANCE : CAVE_ISLAND_DEFAULT_CLEARANCE,
+      sector: { minX: CAVE_ISLAND_SECTOR_MIN_X * W, maxX: CAVE_ISLAND_SECTOR_MAX_X * W, minY: CAVE_ISLAND_SECTOR_MIN_Y * H, maxY: CAVE_ISLAND_SECTOR_MAX_Y * H }
     },
     {
       id: 'island_lighthouse',
       name: 'Isla del Faro Marino',
       role: 'lighthouse',
-      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? 8 : 6),
-      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? 7 : 5),
-      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? 12 : 8,
-      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? 12 : 8,
-      sector: { minX: 0.60 * W, maxX: 0.94 * W, minY: 0.20 * H, maxY: 0.70 * H }
+      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? LIGHTHOUSE_ISLAND_MASSIVE_RX : LIGHTHOUSE_ISLAND_DEFAULT_RX),
+      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? LIGHTHOUSE_ISLAND_MASSIVE_RY : LIGHTHOUSE_ISLAND_DEFAULT_RY),
+      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? LIGHTHOUSE_ISLAND_MASSIVE_CLEARANCE : LIGHTHOUSE_ISLAND_DEFAULT_CLEARANCE,
+      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? LIGHTHOUSE_ISLAND_MASSIVE_CLEARANCE : LIGHTHOUSE_ISLAND_DEFAULT_CLEARANCE,
+      sector: { minX: LIGHTHOUSE_ISLAND_SECTOR_MIN_X * W, maxX: LIGHTHOUSE_ISLAND_SECTOR_MAX_X * W, minY: LIGHTHOUSE_ISLAND_SECTOR_MIN_Y * H, maxY: LIGHTHOUSE_ISLAND_SECTOR_MAX_Y * H }
     },
     {
       id: 'island_shrine',
       name: 'Santuario del Abismo',
       role: 'shrine',
-      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? 7 : 5),
-      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? 7 : 5),
-      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? 12 : 8,
-      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? 12 : 8,
-      sector: { minX: 0.25 * W, maxX: 0.75 * W, minY: 0.65 * H, maxY: 0.94 * H }
+      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? SHRINE_ISLAND_MASSIVE_RX : SHRINE_ISLAND_DEFAULT_RX),
+      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? SHRINE_ISLAND_MASSIVE_RY : SHRINE_ISLAND_DEFAULT_RY),
+      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? SHRINE_ISLAND_MASSIVE_CLEARANCE : SHRINE_ISLAND_DEFAULT_CLEARANCE,
+      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? SHRINE_ISLAND_MASSIVE_CLEARANCE : SHRINE_ISLAND_DEFAULT_CLEARANCE,
+      sector: { minX: SHRINE_ISLAND_SECTOR_MIN_X * W, maxX: SHRINE_ISLAND_SECTOR_MAX_X * W, minY: SHRINE_ISLAND_SECTOR_MIN_Y * H, maxY: SHRINE_ISLAND_SECTOR_MAX_Y * H }
     },
     {
       id: 'island_atoll',
       name: 'Atolón Coralino',
       role: 'atoll',
-      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? 6 : 5),
-      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? 6 : 5),
-      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? 10 : 7,
-      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? 10 : 7,
-      sector: { minX: 0.06 * W, maxX: 0.40 * W, minY: 0.25 * H, maxY: 0.65 * H }
+      rx: Math.round(W >= MASSIVE_MAP_THRESHOLD ? ATOLL_ISLAND_MASSIVE_RX : ATOLL_ISLAND_DEFAULT_RX),
+      ry: Math.round(H >= MASSIVE_MAP_THRESHOLD ? ATOLL_ISLAND_MASSIVE_RY : ATOLL_ISLAND_DEFAULT_RY),
+      minContinentDist: W >= MASSIVE_MAP_THRESHOLD ? ATOLL_ISLAND_MASSIVE_CLEARANCE : ATOLL_ISLAND_DEFAULT_CLEARANCE,
+      minBorderDist: W >= MASSIVE_MAP_THRESHOLD ? ATOLL_ISLAND_MASSIVE_CLEARANCE : ATOLL_ISLAND_DEFAULT_CLEARANCE,
+      sector: { minX: ATOLL_ISLAND_SECTOR_MIN_X * W, maxX: ATOLL_ISLAND_SECTOR_MAX_X * W, minY: ATOLL_ISLAND_SECTOR_MIN_Y * H, maxY: ATOLL_ISLAND_SECTOR_MAX_Y * H }
     }
   ];
 
@@ -194,14 +244,14 @@ export function generateArchipelagoIslands(
         let tooClose = false;
         for (const p of placedIslands) {
           const sep = Math.hypot(x - p.cx, y - p.cy);
-          if (sep < tmpl.rx + p.radiusX + 8) {
+          if (sep < tmpl.rx + p.radiusX + ISLAND_INTER_SEPARATION_STRICT) {
             tooClose = true;
             break;
           }
         }
         if (tooClose) continue;
 
-        const n = noise.noise2D(x * 0.05, y * 0.05);
+        const n = noise.noise2D(x * ARCHIPELAGO_COARSE_NOISE_SCALE, y * ARCHIPELAGO_COARSE_NOISE_SCALE);
         const score = dLand + n * 8;
         if (score > bestScore) {
           bestScore = score;
@@ -227,14 +277,14 @@ export function generateArchipelagoIslands(
           let tooClose = false;
           for (const p of placedIslands) {
             const sep = Math.hypot(x - p.cx, y - p.cy);
-            if (sep < tmpl.rx + p.radiusX + 6) {
+            if (sep < tmpl.rx + p.radiusX + ISLAND_INTER_SEPARATION_RELAXED) {
               tooClose = true;
               break;
             }
           }
           if (tooClose) continue;
 
-          const n = noise.noise2D(x * 0.05, y * 0.05);
+          const n = noise.noise2D(x * ARCHIPELAGO_COARSE_NOISE_SCALE, y * ARCHIPELAGO_COARSE_NOISE_SCALE);
           const score = dLand + n * 8;
           if (score > bestScore) {
             bestScore = score;
@@ -264,11 +314,11 @@ export function generateArchipelagoIslands(
         const dx = (x - bestX) / tmpl.rx;
         const dy = (y - bestY) / tmpl.ry;
         const baseD = Math.hypot(dx, dy);
-        const n = noise.noise2D(x * 0.22, y * 0.22) * 0.20;
+        const n = noise.noise2D(x * ARCHIPELAGO_FINE_NOISE_SCALE, y * ARCHIPELAGO_FINE_NOISE_SCALE) * ARCHIPELAGO_FINE_NOISE_WEIGHT;
         const effectiveD = baseD + n;
 
         if (effectiveD <= 1.0) {
-          const isCore = effectiveD <= 0.65;
+          const isCore = effectiveD <= ISLAND_CORE_GRASS_THRESHOLD;
           matrix[y]![x] = isCore ? 'grass' : 'sand';
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
@@ -312,3 +362,54 @@ export function generateArchipelagoIslands(
 
   return placedIslands;
 }
+
+export interface PlacedArchipelagoIslandLike {
+  readonly bounds: {
+    readonly minX: number;
+    readonly maxX: number;
+    readonly minY: number;
+    readonly maxY: number;
+  };
+}
+
+/**
+ * Enforces continuous beach buffers around archipelago island perimeters,
+ * ensuring no grass cells directly touch ocean or deep water.
+ */
+export function applyArchipelagoBeachBuffers(
+  matrix: WaterTerrainKind[][],
+  islands: readonly PlacedArchipelagoIslandLike[],
+  W: number,
+  H: number,
+  iterations = 2,
+  padding = 2
+): void {
+  for (const island of islands) {
+    for (let iter = 0; iter < iterations; iter++) {
+      const minY = Math.max(1, island.bounds.minY - padding);
+      const maxY = Math.min(H - padding, island.bounds.maxY + padding);
+      const minX = Math.max(1, island.bounds.minX - padding);
+      const maxX = Math.min(W - padding, island.bounds.maxX + padding);
+
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          if (matrix[y]![x] === 'grass') {
+            const touchesWater =
+              matrix[y - 1]![x] === 'water' ||
+              matrix[y - 1]![x] === 'water_deep' ||
+              matrix[y + 1]![x] === 'water' ||
+              matrix[y + 1]![x] === 'water_deep' ||
+              matrix[y]![x - 1] === 'water' ||
+              matrix[y]![x - 1] === 'water_deep' ||
+              matrix[y]![x + 1] === 'water' ||
+              matrix[y]![x + 1] === 'water_deep';
+            if (touchesWater) {
+              matrix[y]![x] = 'sand';
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

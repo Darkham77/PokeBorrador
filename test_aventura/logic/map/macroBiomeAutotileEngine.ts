@@ -38,8 +38,6 @@ export const CANONICAL_MINT_GRASS_BRUSH: Readonly<WaterCoastBrushSet> = {
   cornerInnerSE: 'poke_grass_mint_corner_inner_se.png'
 };
 
-export const CANONICAL_ARID_DESERT_BRUSH: Readonly<WaterCoastBrushSet> = CANONICAL_SAND_BEACH_BRUSH;
-
 export const CANONICAL_VOLCANIC_DIRT_BRUSH: Readonly<WaterCoastBrushSet> = {
   center: 'poke_mountain_dirt_center.png',
   edgeNorth: 'poke_mountain_dirt_edge_n.png',
@@ -76,12 +74,12 @@ export interface ResolvedMacroBiomeMapResult {
 /**
  * Maps a macro biome to its canonical 13-tile autotile brush set.
  */
-export function getBrushForMacroBiome(biome: MacroBiome): WaterCoastBrushSet | null { // result-ok: Estructura o identificador procedural de aventura
+function getBrushForMacroBiome(biome: MacroBiome): WaterCoastBrushSet | null { // result-ok: Estructura o identificador procedural de aventura
   switch (biome) {
     case 'mint_highland':
       return CANONICAL_MINT_GRASS_BRUSH;
     case 'arid_desert':
-      return CANONICAL_ARID_DESERT_BRUSH;
+      return CANONICAL_SAND_BEACH_BRUSH;
     case 'volcanic_plateau':
       return CANONICAL_VOLCANIC_DIRT_BRUSH;
     default:

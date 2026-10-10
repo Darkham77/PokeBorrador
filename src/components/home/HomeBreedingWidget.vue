@@ -54,12 +54,14 @@ const handleEggClick = (egg: PokemonEgg) => {
     openDaycare()
   }
 }
+
+const isThreeColumns = computed(() => props.columns === 3)
 </script>
 
 <template>
   <div
     class="home-breeding-widget"
-    :class="{ 'cols-3': props.columns === 3 }"
+    :class="{ 'cols-3': isThreeColumns }"
   >
     <!-- Header -->
     <div class="widget-header-row">
@@ -78,13 +80,13 @@ const handleEggClick = (egg: PokemonEgg) => {
     <div
       v-if="eggs.length > 0"
       class="eggs-grid"
-      :class="{ 'grid-cols-3': props.columns === 3 }"
+      :class="{ 'grid-cols-3': isThreeColumns }"
     >
       <div
         v-for="egg in eggs"
         :id="`egg-hud-card-${egg.uid}`"
         :key="egg.uid"
-        v-gsap-hover="{ scale: 1.02, y: -2 }"
+        v-gsap-hover="'widget'"
         class="egg-hud-card"
         :class="{ 'is-ready': isReady(egg) }"
         @click="handleEggClick(egg)"
@@ -134,6 +136,7 @@ const handleEggClick = (egg: PokemonEgg) => {
     <!-- Empty State -->
     <div
       v-else
+      id="home-breeding-widget-div-opendaycare"
       v-gsap-hover="{ scale: 1.01, y: -1 }"
       class="empty-breeding-card"
       @click="openDaycare"
@@ -146,6 +149,7 @@ const handleEggClick = (egg: PokemonEgg) => {
         </span>
       </div>
       <button
+        id="home-breeding-widget-btn-ir-a-guarder-a"
         v-gsap-hover
         class="empty-btn"
       >
@@ -161,13 +165,13 @@ const handleEggClick = (egg: PokemonEgg) => {
 .home-breeding-widget {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   width: 100%;
   padding: 12px 14px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(18 22 34 / 85%);
-  box-shadow: 0 4px 16px Rgb(0 0 0 / 40%);
+  box-shadow: $shadow-md;
   box-sizing: border-box;
 
   &.cols-3 {
@@ -184,13 +188,13 @@ const handleEggClick = (egg: PokemonEgg) => {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .title-icon {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 16px;
+    font-size: var(--font-16);
     line-height: 1;
   }
 
@@ -199,7 +203,7 @@ const handleEggClick = (egg: PokemonEgg) => {
 
     margin: 0;
     color: var(--yellow, #facc15);
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
@@ -211,7 +215,7 @@ const handleEggClick = (egg: PokemonEgg) => {
 
 .eggs-grid {
   display: grid;
-  gap: 8px;
+  gap: $spacing-sm;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 100%;
 
@@ -235,34 +239,34 @@ const handleEggClick = (egg: PokemonEgg) => {
 .egg-hud-card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   min-width: 0;
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(15 23 42 / 95%);
-  box-shadow: 0 4px 12px Rgb(0 0 0 / 45%);
+  box-shadow: var(--shadow-card);
   cursor: pointer;
 
   @media (width <= 480px) {
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 8px 10px;
   }
 
   &:hover {
     transform: Translatey(-2px);
     border-color: Rgb(255 255 255 / 20%);
-    box-shadow: 0 6px 16px Rgb(0 0 0 / 55%);
+    box-shadow: var(--shadow-card);
   }
 
   &.is-ready {
     background: Rgb(34 197 94 / 8%);
     border-color: Rgb(34 197 94 / 40%);
-    box-shadow: 0 0 12px Rgb(34 197 94 / 20%);
+    box-shadow: var(--shadow-glow-amber);
 
     &:hover {
       border-color: Rgb(34 197 94 / 70%);
-      box-shadow: 0 0 16px Rgb(34 197 94 / 35%);
+      box-shadow: var(--shadow-glow-amber-lg);
     }
   }
 }
@@ -274,10 +278,10 @@ const handleEggClick = (egg: PokemonEgg) => {
   align-items: center;
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 4%);
   flex-shrink: 0;
-  box-shadow: inset 0 0 6px Rgb(0 0 0 / 30%);
+  box-shadow: var(--shadow-card);
 
   @media (width <= 480px) {
     width: 28px;
@@ -300,14 +304,14 @@ const handleEggClick = (egg: PokemonEgg) => {
     position: absolute;
     top: -4px;
     right: -4px;
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }
 
 .egg-body {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   min-width: 0;
   flex: 1;
 }
@@ -316,7 +320,7 @@ const handleEggClick = (egg: PokemonEgg) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   min-width: 0;
 }
 
@@ -325,7 +329,7 @@ const handleEggClick = (egg: PokemonEgg) => {
 
   min-width: 0;
   color: var(--gray, #94a3b8);
-  font-size: 7px;
+  font-size: var(--font-7);
   line-height: 1.45;
   white-space: nowrap;
   overflow: hidden;
@@ -334,7 +338,7 @@ const handleEggClick = (egg: PokemonEgg) => {
   padding-bottom: 1px;
 
   &.status-ready {
-    color: #4ade80;
+    color: var(--green-light);
     font-weight: bold;
   }
 }
@@ -343,7 +347,7 @@ const handleEggClick = (egg: PokemonEgg) => {
   @include pixelated;
 
   color: var(--yellow, #facc15);
-  font-size: 7px;
+  font-size: var(--font-7);
   line-height: 1.35;
   flex-shrink: 0;
   padding-right: 2px;
@@ -352,14 +356,14 @@ const handleEggClick = (egg: PokemonEgg) => {
 .progress-track {
   width: 100%;
   height: 4px;
-  border-radius: 2px;
+  border-radius: $radius-xs;
   background: Rgb(255 255 255 / 8%);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: $radius-xs;
   background: Linear-Gradient(90deg, #38bdf8, #818cf8);
   overflow: hidden;
 
@@ -372,7 +376,7 @@ const handleEggClick = (egg: PokemonEgg) => {
   @include pixelated;
 
   color: var(--gray, #94a3b8);
-  font-size: 6px;
+  font-size: var(--font-6);
   line-height: 1.45;
   white-space: nowrap;
   overflow: hidden;
@@ -389,10 +393,10 @@ const handleEggClick = (egg: PokemonEgg) => {
 
     padding: 4px 8px;
     border: 1px solid Rgb(255 255 255 / 15%);
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: Rgb(255 255 255 / 6%);
     color: var(--yellow, #facc15);
-    font-size: 7px;
+    font-size: var(--font-7);
     cursor: pointer;
   }
 }

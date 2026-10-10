@@ -68,6 +68,7 @@ function handleViewTrainerProfile() {
 
 <template>
   <div
+    id="passive-defense-history-row-div-viewtrainerprofile"
     class="history-row"
     :class="report.result"
     @click="handleViewTrainerProfile"

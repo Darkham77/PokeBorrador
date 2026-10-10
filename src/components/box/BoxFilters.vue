@@ -152,6 +152,7 @@ const leave = (el: Element, done: () => void) => {
         <div class="box-search-wrapper">
           <span class="emoji box-search-icon">🔍</span>
           <input
+            id="box-filters-input-buscar"
             :value="filters.search"
             type="text"
             placeholder="Buscar..."
@@ -160,6 +161,7 @@ const leave = (el: Element, done: () => void) => {
           >
           <button
             v-if="filters.search"
+            id="box-filters-btn-1"
             class="box-search-clear"
             @click.stop="updateFilter('search', '')"
           >
@@ -172,7 +174,8 @@ const leave = (el: Element, done: () => void) => {
           description="Abre el panel avanzado de búsqueda y tipos."
           position="bottom"
         >
-          <button 
+          <button
+            id="box-filters-btn-filtros" 
             class="filter-toggle-btn-premium"
             :class="{ active: isFiltersOpen }"
             @click.stop="toggleFilters"
@@ -223,6 +226,7 @@ const leave = (el: Element, done: () => void) => {
           </h4>
           <div class="types-compact-grid">
             <button
+              id="box-filters-btn-todos"
               :class="['filter-pill', { active: filters.type === 'all' }]"
               @click.stop="updateFilter('type', 'all')"
             >
@@ -230,6 +234,7 @@ const leave = (el: Element, done: () => void) => {
             </button>
             <PokemonTypeTag
               v-for="type in POKEMON_TYPES"
+              id="box-filters-pokemontypetag-2"
               :key="type"
               tag="button"
               :type="type"
@@ -247,6 +252,7 @@ const leave = (el: Element, done: () => void) => {
           </h4>
           <div class="tiers-compact-grid">
             <button
+              id="box-filters-btn-todos-2"
               :class="['filter-pill', { active: filters.tier === 'all' }]"
               @click.stop="updateFilter('tier', 'all')"
             >
@@ -254,6 +260,7 @@ const leave = (el: Element, done: () => void) => {
             </button>
             <button
               v-for="(cfg, tier) in BOX_TIER_CONFIG"
+              id="box-filters-btn-tier"
               :key="tier"
               :class="['filter-pill tier-pill', { active: filters.tier === tier }]"
               :style="{ 
@@ -279,6 +286,7 @@ const leave = (el: Element, done: () => void) => {
                 <div class="slider-row-mini">
                   <span class="label">NV. MÍN</span>
                   <input
+                    id="box-filters-input-3"
                     :value="filters.levelMin"
                     type="range"
                     min="1"
@@ -291,6 +299,7 @@ const leave = (el: Element, done: () => void) => {
                 <div class="slider-row-mini">
                   <span class="label">NV. MÁX</span>
                   <input
+                    id="box-filters-input-4"
                     :value="filters.levelMax"
                     type="range"
                     min="1"
@@ -303,6 +312,7 @@ const leave = (el: Element, done: () => void) => {
                 <div class="slider-row-mini">
                   <span class="label">IV MÍN.</span>
                   <input
+                    id="box-filters-input-5"
                     :value="filters.ivMin"
                     type="range"
                     min="0"
@@ -315,6 +325,7 @@ const leave = (el: Element, done: () => void) => {
                 <div class="slider-row-mini">
                   <span class="label">IV MÁX.</span>
                   <input
+                    id="box-filters-input-6"
                     :value="filters.ivMax"
                     type="range"
                     min="0"
@@ -327,6 +338,7 @@ const leave = (el: Element, done: () => void) => {
                 <div class="slider-row-mini">
                   <span class="label">AMI. MÍN</span>
                   <input
+                    id="box-filters-input-7"
                     :value="filters.friendshipMin ?? 0"
                     type="range"
                     min="0"
@@ -339,6 +351,7 @@ const leave = (el: Element, done: () => void) => {
                 <div class="slider-row-mini">
                   <span class="label">AMI. MÁX</span>
                   <input
+                    id="box-filters-input-8"
                     :value="filters.friendshipMax ?? 255"
                     type="range"
                     min="0"
@@ -351,6 +364,7 @@ const leave = (el: Element, done: () => void) => {
                 <div class="slider-row-mini">
                   <span class="label">TOTAL MÍN.</span>
                   <input
+                    id="box-filters-input-9"
                     :value="filters.bstMin"
                     type="range"
                     min="0"
@@ -379,6 +393,7 @@ const leave = (el: Element, done: () => void) => {
                 >
                   <span class="stat-name">{{ stat }}</span>
                   <input
+                    id="box-filters-input-10"
                     :value="filters[('iv' + stat) as keyof BoxFilters]"
                     type="range"
                     min="0"
@@ -409,6 +424,7 @@ const leave = (el: Element, done: () => void) => {
                 >
                   <span class="stat-name">{{ stat }}</span>
                   <input
+                    id="box-filters-input-11"
                     :value="filters[('ev' + stat) as keyof BoxFilters] || 0"
                     type="range"
                     min="0"
@@ -432,6 +448,7 @@ const leave = (el: Element, done: () => void) => {
             <span class="emoji">⚡</span> {{ resultsCount }} POKÉMON ENCONTRADOS
           </div>
           <button
+            id="box-filters-btn-reiniciar-todo"
             class="btn-vicio-danger btn-vicio-sm"
             @click.stop="emit('reset')"
           >

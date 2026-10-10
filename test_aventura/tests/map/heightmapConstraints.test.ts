@@ -13,7 +13,7 @@ import {
   sanitizeHeightmapMatrix,
   fillHeightmapHoles,
   rectifyHeightmap
-} from '../../../src/logic/map/heightmapConstraints.ts';
+} from '../../logic/map/heightmapConstraints.ts';
 
 describe('heightmapConstraints', () => {
   describe('Rule 1: Footprint & Walkable Core Constraints', () => {

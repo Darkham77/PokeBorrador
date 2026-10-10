@@ -28,9 +28,9 @@
 }
 
 .logo-text-fallback {
-  font-size: 28px;
+  font-size: var(--font-28);
   font-weight: 900;
-  color: #60a5fa;
+  color: var(--blue-400);
   text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 4px 0 #1d4ed8;
   letter-spacing: 2px;
   padding: 10px 20px;
@@ -40,7 +40,7 @@
 
 .auth-sub {
   color: var(--color-text-gold);
-  font-size: 8px;
+  font-size: var(--font-8);
   text-align: center;
   margin-bottom: 20px;
   letter-spacing: 2px;
@@ -54,7 +54,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 7px;
+  font-size: var(--font-7);
   margin-bottom: 6px;
   line-height: 1.35;
   font-family: var(--font-pixel);
@@ -62,7 +62,7 @@
 }
 
 .server-status-red {
-  color: #ff453a;
+  color: var(--red);
   font-weight: bold;
   display: inline-flex;
   align-items: center;
@@ -81,7 +81,7 @@
 
 .auth-version {
   margin-top: 18px;
-  font-size: 7px;
+  font-size: var(--font-7);
   color: var(--color-text-muted);
   text-align: center;
   letter-spacing: 0.5px;

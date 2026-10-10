@@ -37,14 +37,16 @@ const emit = defineEmits<{
         class="button-row"
         style=" display: flex;width: 100%;"
       >
-        <button 
+        <button
+          id="debug-trainer-battle-launcher-btn-ruta-mapa" 
           style="flex: 1;"
           :class="{ active: combatLocationType === 'map' }"
           @click.stop="combatLocationType = 'map'"
         >
           <span class="emoji">🗺️</span> RUTA / MAPA
         </button>
-        <button 
+        <button
+          id="debug-trainer-battle-launcher-btn-gimnasio" 
           style="flex: 1;"
           :class="{ active: combatLocationType === 'gym' }"
           @click.stop="combatLocationType = 'gym'"
@@ -60,7 +62,10 @@ const emit = defineEmits<{
       style="margin-top: 10px;"
     >
       <span class="field-label">Seleccionar Ruta/Mapa</span>
-      <select v-model="selectedMapId">
+      <select
+        id="debug-trainer-battle-launcher-select-selectedmapid"
+        v-model="selectedMapId"
+      >
         <option 
           v-for="m in allMapsList" 
           :key="m.id" 
@@ -74,11 +79,14 @@ const emit = defineEmits<{
     <div
       v-else
       class="gym-fields-flex"
-      style=" display: flex; flex-direction: column; gap: 10px;margin-top: 10px;"
+      style=" display: flex; flex-direction: column; gap: $spacing-md-alt;margin-top: 10px;"
     >
       <div class="input-group vertical">
         <span class="field-label">Líder / Gimnasio</span>
-        <select v-model="selectedGymId">
+        <select
+          id="debug-trainer-battle-launcher-select-selectedgymid"
+          v-model="selectedGymId"
+        >
           <option 
             v-for="g in gymList" 
             :key="g.id" 
@@ -95,8 +103,9 @@ const emit = defineEmits<{
           class="button-row"
           style=" display: flex;width: 100%;"
         >
-          <button 
+          <button
             v-for="d in (['easy', 'normal', 'hard'] as const)" 
+            id="debug-trainer-battle-launcher-btn-d" 
             :key="d"
             class="sim-diff-btn"
             style="flex: 1;"
@@ -112,7 +121,8 @@ const emit = defineEmits<{
     <div
       style="margin-top: 16px;"
     >
-      <button 
+      <button
+        id="debug-trainer-battle-launcher-btn-iniciar-combate" 
         class="battle-start-btn-debug"
         style="width: 100%; height: 34px; font-weight: bold;"
         @click.stop="emit('startCombat')"

@@ -164,16 +164,16 @@ const confirmDiscard = (awardId: string, eventName: string) => {
 
 .awards-box {
   padding: 4px;
-  border: 1px solid rgb(34 197 94 / 25%);
-  border-radius: 12px;
-  background: rgb(34 197 94 / 6%);
+  border: 1px solid Rgb(34 197 94 / 25%);
+  border-radius: $radius-xl;
+  background: Rgb(34 197 94 / 6%);
   margin-bottom: 16px;
   box-sizing: border-box;
 
   .box-inner {
     padding: 12px;
-    border-radius: 8px;
-    background: rgb(0 0 0 / 35%);
+    border-radius: $radius-lg;
+    background: Rgb(0 0 0 / 35%);
   }
 
   h3 {
@@ -181,16 +181,16 @@ const confirmDiscard = (awardId: string, eventName: string) => {
 
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     margin: 0 0 10px;
     color: var(--green-bright, #4ade80);
-    font-size: 9px;
+    font-size: var(--font-9);
   }
 
   .awards-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
     max-height: 280px;
     overflow-y: auto;
     padding-right: 4px;
@@ -200,11 +200,11 @@ const confirmDiscard = (awardId: string, eventName: string) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
     padding: 10px 14px;
-    border: 1px solid rgb(255 255 255 / 6%);
-    border-radius: 8px;
-    background: rgb(255 255 255 / 3%);
+    border: 1px solid Rgb(255 255 255 / 6%);
+    border-radius: $radius-lg;
+    background: Rgb(255 255 255 / 3%);
     margin-bottom: 8px;
 
     &:last-child {
@@ -212,14 +212,14 @@ const confirmDiscard = (awardId: string, eventName: string) => {
     }
 
     &.is-legacy {
-      background: rgb(239 68 68 / 4%);
-      border-color: rgb(239 68 68 / 20%);
+      background: Rgb(239 68 68 / 4%);
+      border-color: Rgb(239 68 68 / 20%);
     }
 
     .award-info {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: $spacing-sm-alt;
       min-width: 0;
       flex: 1;
     }
@@ -228,18 +228,18 @@ const confirmDiscard = (awardId: string, eventName: string) => {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
     }
 
     .legacy-badge {
       @include pixelated;
 
       padding: 2px 6px;
-      border: 1px solid rgb(239 68 68 / 40%);
-      border-radius: 4px;
-      background: rgb(239 68 68 / 15%);
-      color: #fca5a5;
-      font-size: 7px;
+      border: 1px solid Rgb(239 68 68 / 40%);
+      border-radius: $radius-sm;
+      background: Rgb(239 68 68 / 15%);
+      color: var(--red-300);
+      font-size: var(--font-7);
       letter-spacing: 0.5px;
     }
 
@@ -248,19 +248,19 @@ const confirmDiscard = (awardId: string, eventName: string) => {
 
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: $spacing-xs;
       padding: 2px 6px;
-      border: 1px solid rgb(59 130 246 / 40%);
-      border-radius: 4px;
-      background: rgb(59 130 246 / 15%);
-      color: #93c5fd;
-      font-size: 7px;
+      border: 1px solid Rgb(59 130 246 / 40%);
+      border-radius: $radius-sm;
+      background: Rgb(59 130 246 / 15%);
+      color: var(--blue-300);
+      font-size: var(--font-7);
       letter-spacing: 0.5px;
     }
 
     .award-name {
       color: var(--white, #fff);
-      font-size: 11px;
+      font-size: var(--font-11);
       font-weight: bold;
     }
 
@@ -268,13 +268,13 @@ const confirmDiscard = (awardId: string, eventName: string) => {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
     }
 
     .award-actions-wrap {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       flex-shrink: 0;
     }
   }
@@ -287,11 +287,11 @@ const confirmDiscard = (awardId: string, eventName: string) => {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 6px 12px;
   border: 1px solid transparent;
-  border-radius: 6px;
-  font-size: 8px;
+  border-radius: $radius-md;
+  font-size: var(--font-8);
   cursor: pointer;
   white-space: nowrap;
 }

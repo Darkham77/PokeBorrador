@@ -15,11 +15,11 @@
 
   .item-price-wrapper {
     .currency-symbol {
-      color: #c084fc !important;
+      color: var(--purple-400) !important;
       filter: Drop-Shadow(0 0 5px Rgb(168 85 247 / 60%));
     }
     .price-val {
-      color: #c084fc !important;
+      color: var(--purple-400) !important;
       text-shadow: 0 0 10px Rgb(168 85 247 / 40%) !important;
     }
   }
@@ -28,12 +28,12 @@
     @include btn-shop-buy(#c084fc);
     &:hover:not(:disabled) {
       background: Linear-Gradient(135deg, #a855f7 0%, #7c3aed 100%) !important;
-      color: white !important;
+      color: var(--white) !important;
     }
   }
 
   .item-total-price-tag .total-val {
-    color: #c084fc !important;
+    color: var(--purple-400) !important;
   }
 }
 
@@ -43,18 +43,18 @@
 
   padding: 12px;
   border: 1px solid Rgb(239 68 68 / 20%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(20 10 10 / 80%) !important; // keep thematic dark background
   &:hover:not(.locked) { @include shop-card-hover(#ef4444); }
 
   .item-price-wrapper {
-    color: #ef4444 !important;
+    color: var(--red-light) !important;
     .currency-symbol {
-      color: #ef4444 !important;
+      color: var(--red-light) !important;
       filter: Drop-Shadow(0 0 5px Rgb(239 68 68 / 50%));
     }
     .price-val {
-      color: #ef4444 !important;
+      color: var(--red-light) !important;
     }
   }
 
@@ -62,22 +62,22 @@
     width: 100%;
     padding: 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Linear-Gradient(135deg, #ef4444 0%, #991b1b 100%);
-    color: white;
+    color: var(--white);
     font-family: var(--font-pixel);
-    font-size: 9px;
+    font-size: var(--font-9);
     cursor: pointer;
-    box-shadow: 0 4px 12px Rgb(239 68 68 / 20%);
+    box-shadow: var(--shadow-card);
     will-change: transform, box-shadow;
 
     &:hover:not(:disabled) {
-      box-shadow: 0 6px 20px Rgb(239 68 68 / 40%);
+      box-shadow: var(--shadow-card);
     }
 
     &:disabled {
-      background: #1f2937;
-      color: #4b5563;
+      background: var(--slate-800);
+      color: var(--slate-600);
       cursor: not-allowed;
       box-shadow: none;
     }
@@ -86,17 +86,17 @@
   .btn-war-locked {
     width: 100%;
     padding: 10px;
-    border: 1px dashed #374151;
-    border-radius: 8px;
-    background: #111827;
-    color: #4b5563;
+    border: 1px dashed var(--slate-700);
+    border-radius: $radius-lg;
+    background: var(--slate-900);
+    color: var(--slate-600);
     font-family: var(--font-pixel);
-    font-size: 9px;
+    font-size: var(--font-9);
     cursor: not-allowed;
   }
 
   .item-total-price-tag .total-val {
-    color: #ef4444 !important;
+    color: var(--red-light) !important;
   }
 }
 
@@ -108,18 +108,18 @@
   .item-price-wrapper.rep-price {
     display: flex;
     align-items: center;
-    gap: 4px;
-    color: #3b82f6 !important;
+    gap: $spacing-xs;
+    color: var(--blue-500) !important;
     font-weight: bold;
 
     .rep-star-icon {
-      color: #fbbf24;
+      color: var(--amber);
       filter: Drop-Shadow(0 0 5px Rgb(251 191 36 / 50%));
     }
   }
 
   .item-total-price-tag .total-val {
-    color: #3b82f6 !important;
+    color: var(--blue-500) !important;
   }
 }
 
@@ -151,14 +151,14 @@
     right: 12px;
     z-index: calc(var(--z-map-floor) + 1);
     padding: 3px 8px;
-    border-radius: 8px;
-    font-size: 7px;
+    border-radius: $radius-lg;
+    font-size: var(--font-7);
     font-weight: bold;
     
-    &.tier-common { border: 1px solid Rgb(148 163 184 / 15%); background: Rgb(148 163 184 / 8%); color: #94a3b8; }
-    &.tier-rare { border: 1px solid Rgb(59 130 246 / 15%); background: Rgb(59 130 246 / 8%); color: #60a5fa; }
-    &.tier-epic { border: 1px solid Rgb(168 85 247 / 15%); background: Rgb(168 85 247 / 8%); color: #c084fc; }
-    &.tier-legend { border: 1px solid var(--yellow-light); background: var(--yellow); color: #000; font-weight: bold; }
+    &.tier-common { border: 1px solid Rgb(148 163 184 / 15%); background: Rgb(148 163 184 / 8%); color: var(--slate-400); }
+    &.tier-rare { border: 1px solid Rgb(59 130 246 / 15%); background: Rgb(59 130 246 / 8%); color: var(--blue-400); }
+    &.tier-epic { border: 1px solid Rgb(168 85 247 / 15%); background: Rgb(168 85 247 / 8%); color: var(--purple-400); }
+    &.tier-legend { border: 1px solid var(--yellow-light); background: var(--yellow); color: var(--black); font-weight: bold; }
   }
 
   &.locked {
@@ -170,7 +170,7 @@
   .item-card-top {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: $spacing-lg;
   }
 
   .item-visual-box {
@@ -181,7 +181,7 @@
     width: 64px;
     height: 64px;
     border: 1px solid Rgb(255 255 255 / 6%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(255 255 255 / 3%);
     flex-shrink: 0;
     
@@ -200,21 +200,21 @@
       justify-content: center;
       align-items: center;
       border: 1px solid Rgb(239 68 68 / 30%);
-      border-radius: 12px;
+      border-radius: $radius-xl;
       background: Rgb(15 17 28 / 85%);
       inset: -1px;
       backdrop-filter: Blur(2px);
 
       .lock-icon {
-        font-size: 14px;
+        font-size: var(--font-14);
         margin-bottom: 2px;
       }
 
       .lock-lvl {
         @include pixelated;
 
-        color: #ef4444;
-        font-size: 6px;
+        color: var(--red-light);
+        font-size: var(--font-6);
         letter-spacing: 0.5px;
       }
     }
@@ -225,8 +225,8 @@
 
     // Allow wrapping for long names
     display: -webkit-box;
-    color: white;
-    font-size: 11px;
+    color: var(--white);
+    font-size: var(--font-11);
     line-height: 1.45;
     padding-bottom: 2px;
     margin-bottom: 4px;
@@ -239,11 +239,11 @@
   .item-price-wrapper {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
 
     .currency-symbol {
       color: var(--yellow);
-      font-size: 12px;
+      font-size: var(--font-12);
       font-weight: bold;
     }
 
@@ -251,13 +251,13 @@
       @include pixelated;
 
       color: var(--yellow);
-      font-size: 11px;
+      font-size: var(--font-11);
       letter-spacing: 0.5px;
     }
 
     .original-price {
       color: Rgb(255 255 255 / 30%);
-      font-size: 10px;
+      font-size: var(--font-10);
       text-decoration: line-through;
       margin-left: 2px;
     }
@@ -268,7 +268,7 @@
     min-height: 2.8em;
     max-height: 5.6em;
     color: Rgb(255 255 255 / 50%);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.4;
     overflow: hidden;
     -webkit-line-clamp: 4;
@@ -284,7 +284,7 @@
   .item-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-top: 10px;
 
     .item-total-price-tag {
@@ -298,7 +298,7 @@
         @include pixelated;
 
         color: Rgb(255 255 255 / 40%);
-        font-size: 6px;
+        font-size: var(--font-6);
         text-transform: uppercase;
         margin-bottom: 2px;
       }
@@ -307,7 +307,7 @@
         @include pixelated;
 
         color: var(--yellow);
-        font-size: 11px;
+        font-size: var(--font-11);
         font-weight: 800;
         letter-spacing: 0.5px;
       }
@@ -318,7 +318,7 @@
       align-items: center;
       height: 36px;
       border: 1px solid Rgb(255 255 255 / 8%);
-      border-radius: 10px;
+      border-radius: $radius-lg-alt;
       background: Rgb(0 0 0 / 25%);
       overflow: hidden;
       
@@ -331,14 +331,14 @@
         border: none;
         background: transparent;
         color: Rgb(255 255 255 / 60%);
-        font-size: 14px;
+        font-size: var(--font-14);
         font-weight: bold;
         cursor: pointer;
         outline: none;
 
         &:hover:not(:disabled) { 
           background: Rgb(255 255 255 / 5%); 
-          color: white;
+          color: var(--white);
         }
 
         &:disabled {
@@ -352,8 +352,8 @@
         height: 100%;
         border: none;
         background: transparent;
-        color: white;
-        font-size: 12px;
+        color: var(--white);
+        font-size: var(--font-12);
         font-weight: 600;
         text-align: center;
         outline: none;
@@ -366,8 +366,8 @@
       @include btn-shop-buy($yellow);
 
       height: 36px;
-      border-radius: 10px;
-      font-size: 11px;
+      border-radius: $radius-lg-alt;
+      font-size: var(--font-11);
       font-weight: bold;
       flex: 1;
       text-transform: uppercase;

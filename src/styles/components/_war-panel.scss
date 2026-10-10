@@ -10,13 +10,13 @@ $poder-color: var(--red);
 .war-dashboard-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   min-height: 80dvh;
 
   @media (width >= 1025px) {
     display: grid;
     align-items: start;
-    gap: 40px;
+    gap: $spacing-4xl;
     grid-template-columns: 480px 1fr;
   }
 }
@@ -28,7 +28,7 @@ $poder-color: var(--red);
   top: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
 }
 
 .war-score-box {
@@ -37,29 +37,29 @@ $poder-color: var(--red);
   align-items: center;
   padding: 16px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 18px;
+  border-radius: $radius-2xl-alt;
   background: Rgb(0 0 0 / 30%);
 
   .score-team {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     
     &.union .team-val { color: var(--blue); text-shadow: 0 0 10px Rgb(59 130 246 / 40%); }
     &.poder .team-val { color: var(--red); text-shadow: 0 0 10px Rgb(239 68 68 / 40%); }
   }
 
-  .team-label { @include pixelated; display: block; color: var(--gray); font-size: 7px; margin-bottom: 4px; }
-  .team-val { color: var(--white); font-size: 16px; font-weight: 900; }
+  .team-label { @include pixelated; display: block; color: var(--gray); font-size: var(--font-7); margin-bottom: 4px; }
+  .team-val { color: var(--white); font-size: var(--font-16); font-weight: 900; }
 }
 
 .war-stat-item {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: $spacing-md-15;
   padding: 14px 18px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(255 255 255 / 3%);
   
 
@@ -69,13 +69,13 @@ $poder-color: var(--red);
     border-color: Rgb(255 255 255 / 15%);
   }
 
-  .war-stat-label { display: block; color: var(--gray); font-size: 9px; margin-bottom: 2px; }
-  .war-stat-value { @include pixelated; color: var(--white); font-size: 13px; font-weight: 800; }
+  .war-stat-label { display: block; color: var(--gray); font-size: var(--font-9); margin-bottom: 2px; }
+  .war-stat-value { @include pixelated; color: var(--white); font-size: var(--font-13); font-weight: 800; }
 }
 
 .war-grid-premium {
   display: grid;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
@@ -83,18 +83,18 @@ $poder-color: var(--red);
   position: relative;
   height: 200px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 28px;
+  border-radius: $radius-28;
   overflow: hidden;
   background-size: 180%;
   background-position: center bottom;
-  box-shadow: 0 15px 35px Rgb(0 0 0 / 40%);
+  box-shadow: var(--shadow-2xl);
   
 
   &:hover {
     z-index: var(--z-base);
     transform: Translatey(-8px) Scale3d(1.02, 1.02, 1);
     border-color: Rgb(255 255 255 / 40%);
-    box-shadow: 0 25px 50px Rgb(0 0 0 / 60%);
+    box-shadow: var(--shadow-2xl);
   }
 }
 
@@ -110,11 +110,11 @@ $poder-color: var(--red);
 .war-central-bar {
   display: flex;
   height: 16px;
-  border-radius: 99px;
+  border-radius: $radius-full;
   background: Rgb(255 255 255 / 10%);
   overflow: hidden;
-  box-shadow: inset 0 2px 4px Rgb(0 0 0 / 50%);
+  box-shadow: $shadow-inset-sm;
 
-  .bar-union { height: 100%;  background: var(--blue); box-shadow: 0 0 10px var(--blue); }
-  .bar-poder { height: 100%;  background: var(--red); box-shadow: 0 0 10px var(--red); }
+  .bar-union { height: 100%;  background: var(--blue); box-shadow: $shadow-glow-blue; }
+  .bar-poder { height: 100%;  background: var(--red); box-shadow: $shadow-glow-red; }
 }

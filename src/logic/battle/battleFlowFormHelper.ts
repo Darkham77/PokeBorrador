@@ -1,5 +1,6 @@
 import { getWeatherFamily } from '../../data/system/weatherFamilies.ts';
 import { WEATHER_MECHANICAL } from '../weather/weatherRegistry.ts';
+import { MIN_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleStages, LogFn } from '@/types/battle/battle';
 import type { PokemonType } from '@/data/battle/types';
@@ -61,11 +62,11 @@ export function handleEntryAbilities(
   updateCastformForm(enemyPoke, effectiveWeather, addLog);
 
   if (playerPoke.ability === 'intimidate') {
-    playerStages.atk = Math.max(-6, enemyStages.atk - 1);
+    playerStages.atk = Math.max(MIN_BATTLE_STAT_STAGE, enemyStages.atk - 1);
     addLog(`¡La Intimidación de ${playerPoke.name} bajó el ataque de ${enemyPoke.name}!`, 'log-info', playerPoke);
   }
   if (enemyPoke.ability === 'intimidate') {
-    playerStages.atk = Math.max(-6, playerStages.atk - 1);
+    playerStages.atk = Math.max(MIN_BATTLE_STAT_STAGE, playerStages.atk - 1);
     addLog(`¡La Intimidación de ${enemyPoke.name} bajó el ataque de ${playerPoke.name}!`, 'log-info', enemyPoke);
   }
 }

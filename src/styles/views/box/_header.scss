@@ -5,14 +5,14 @@
   @include shell-premium(Rgba(15, 23, 42, 0.95));
 
   padding: 20px 30px;
-  border-radius: 24px;
+  border-radius: $radius-4xl;
   
   .box-header-content {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    gap: 32px;
+    gap: $spacing-3xl;
   }
 
   .box-title-stack {
@@ -22,7 +22,7 @@
       margin: 0 0 12px;
       background: Linear-Gradient(to bottom, var(--white), var(--gray));
       color: var(--white);
-      font-size: 24px; background-clip: text;;;;;;;;;;;;;;;;;;;
+      font-size: var(--font-24); background-clip: text;;;;;;;;;;;;;;;;;;;
       -webkit-text-fill-color: transparent;
     }
     .box-subtitle {
@@ -30,7 +30,7 @@
 
       margin: 0;
       color: var(--gray);
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: 700;
       letter-spacing: 4px;
       text-transform: uppercase;
@@ -39,7 +39,7 @@
 
   .header-actions {
     display: flex;
-    gap: 12px;
+    gap: $spacing-md;
   }
 }
 
@@ -48,7 +48,7 @@
 
   padding: 0 10px;
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   opacity: 0.6;
   text-transform: uppercase;
   letter-spacing: 2px;

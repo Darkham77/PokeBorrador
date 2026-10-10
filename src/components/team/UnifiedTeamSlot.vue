@@ -324,6 +324,7 @@ onUnmounted(() => {
 
 <template>
   <div
+    id="unified-team-slot-div-slotclick"
     ref="slotRef"
     class="team-slot"
     :class="{ 
@@ -387,12 +388,12 @@ onUnmounted(() => {
   }
 
   &.is-drag-over {
-    border-radius: 20px;
+    border-radius: $radius-3xl;
     outline: 2px solid var(--blue);
-    box-shadow: 0 0 20px rgb(10 132 255 / 50%);
+    box-shadow: var(--shadow-glow-amber-lg);
 
     @media (width <= 580px) {
-      border-radius: 12px;
+      border-radius: $radius-xl;
     }
   }
 }
@@ -402,27 +403,27 @@ onUnmounted(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  border: 2px dashed rgb(255 255 255 / 10%);
-  border-radius: 20px;
-  background: rgb(255 255 255 / 2%);
+  gap: $spacing-md;
+  border: 2px dashed Rgb(255 255 255 / 10%);
+  border-radius: $radius-3xl;
+  background: Rgb(255 255 255 / 2%);
   flex: 1;
   cursor: pointer;
   will-change: transform, border-color, background-color, box-shadow;
 
   @media (width <= 580px) {
-    gap: 6px;
+    gap: $spacing-sm-alt;
     padding: 8px;
-    border-radius: 12px;
+    border-radius: $radius-xl;
   }
 
   .plus-icon {
-    color: rgb(255 255 255 / 30%);
-    font-size: 32px;
+    color: Rgb(255 255 255 / 30%);
+    font-size: var(--font-32);
     will-change: transform, filter, color;
 
     @media (width <= 580px) {
-      font-size: 20px;
+      font-size: var(--font-20);
     }
   }
 
@@ -430,18 +431,18 @@ onUnmounted(() => {
     @include pixelated;
 
     color: var(--gray);
-    font-size: 8px;
+    font-size: var(--font-8);
     will-change: color;
 
     @media (width <= 580px) {
-      font-size: 7px;
+      font-size: var(--font-7);
     }
   }
 }
 
 .pvp-slot {
   .empty-placeholder {
-    border-color: rgb(199 125 255 / 30%);
+    border-color: Rgb(199 125 255 / 30%);
   }
 }
 

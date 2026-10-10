@@ -3,30 +3,30 @@
 .home-events-section {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: $spacing-md-lg;
 }
 
 .card-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 
   .title-wrap {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     min-width: 0;
 
     .card-icon {
-      font-size: 20px;
+      font-size: var(--font-20);
       flex-shrink: 0;
     }
 
     .title-text-group {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
       min-width: 0;
     }
 
@@ -35,14 +35,14 @@
 
       margin: 0;
       color: var(--yellow, #facc15);
-      font-size: 13px;
+      font-size: var(--font-13);
       letter-spacing: 0.5px;
       white-space: nowrap;
     }
 
     .section-desc {
       color: var(--gray, #94a3b8);
-      font-size: 10px;
+      font-size: var(--font-10);
       line-height: 1.45;
       padding-bottom: 2px;
       white-space: nowrap;
@@ -58,14 +58,14 @@
 
 .pending-awards-card {
   padding: 12px;
-  border: 1px solid rgb(234 179 8 / 30%);
-  border-radius: 8px;
-  background: rgb(234 179 8 / 10%);
+  border: 1px solid Rgb(234 179 8 / 30%);
+  border-radius: $radius-lg;
+  background: Rgb(234 179 8 / 10%);
 
   .awards-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-bottom: 8px;
 
     h3 {
@@ -73,14 +73,14 @@
 
       margin: 0;
       color: var(--yellow, #facc15);
-      font-size: 10px;
+      font-size: var(--font-10);
     }
   }
 
   .awards-body {
     .awards-hint {
       color: var(--gray, #94a3b8);
-      font-size: 11px;
+      font-size: var(--font-11);
       margin-bottom: 10px;
     }
   }
@@ -88,23 +88,23 @@
   .awards-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
   }
 
   .award-item-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 8px 10px;
-    border-radius: 6px;
-    background: rgb(0 0 0 / 30%);
+    border-radius: $radius-md;
+    background: Rgb(0 0 0 / 30%);
   }
 
   .award-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 0;
     flex: 1;
   }
@@ -112,12 +112,12 @@
   .award-name-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
   }
 
   .award-name {
-    color: #fff;
-    font-size: 11px;
+    color: var(--white);
+    font-size: var(--font-11);
     font-weight: bold;
   }
 
@@ -125,22 +125,22 @@
     @include pixelated;
 
     padding: 1px 4px;
-    border-radius: 4px;
-    background: rgb(239 68 68 / 20%);
-    color: #fca5a5;
-    font-size: 7px;
+    border-radius: $radius-sm;
+    background: Rgb(239 68 68 / 20%);
+    color: var(--red-300);
+    font-size: var(--font-7);
   }
 
   .award-actions-wrap {
     display: flex;
-    gap: 6px;
+    gap: $spacing-sm-alt;
   }
 }
 
 .active-events-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   width: 100%;
   touch-action: pan-y;
   user-select: none;
@@ -159,7 +159,7 @@
 
 .events-single-row {
   display: grid;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: repeat(var(--visible-slots, 2), minmax(0, 1fr));
   width: 100%;
   box-sizing: border-box;
@@ -170,14 +170,14 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   margin: 4px auto 0;
   padding: 4px 10px;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 20px;
-  background: rgb(0 0 0 / 45%);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
-  backdrop-filter: blur(4px);
+  border: 1px solid Rgb(255 255 255 / 12%);
+  border-radius: $radius-3xl;
+  background: Rgb(0 0 0 / 45%);
+  box-shadow: var(--shadow-subtle);
+  backdrop-filter: Blur(4px);
 
   .carousel-nav-btn {
     display: inline-flex;
@@ -186,15 +186,15 @@
     width: 22px;
     height: 22px;
     padding: 0;
-    border: 1px solid rgb(255 255 255 / 15%);
+    border: 1px solid Rgb(255 255 255 / 15%);
     border-radius: 50%;
-    background: rgb(255 255 255 / 8%);
+    background: Rgb(255 255 255 / 8%);
     color: var(--white, #fff);
-    font-size: 8px;
+    font-size: var(--font-8);
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: rgb(250 204 21 / 20%);
+      background: Rgb(250 204 21 / 20%);
       color: var(--yellow, #facc15);
       border-color: var(--yellow, #facc15);
     }
@@ -208,7 +208,7 @@
   .carousel-dots-group {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
 
     .carousel-dot {
       display: flex;
@@ -223,16 +223,16 @@
         display: block;
         width: 8px;
         height: 6px;
-        border: 1px solid rgb(255 255 255 / 15%);
-        border-radius: 3px;
-        background: rgb(255 255 255 / 25%);
+        border: 1px solid Rgb(255 255 255 / 15%);
+        border-radius: $radius-xs-alt;
+        background: Rgb(255 255 255 / 25%);
       }
 
       &.active .dot-indicator {
         width: 18px;
         background: var(--yellow, #facc15);
-        border-color: rgb(250 204 21 / 80%);
-        box-shadow: 0 0 8px rgb(250 204 21 / 60%);
+        border-color: Rgb(250 204 21 / 80%);
+        box-shadow: var(--shadow-glow-yellow-sm);
       }
     }
   }
@@ -241,8 +241,8 @@
     @include pixelated;
 
     padding: 0 4px;
-    color: #cbd5e1;
-    font-size: 8px;
+    color: var(--slate-300);
+    font-size: var(--font-8);
     white-space: nowrap;
     letter-spacing: 0.5px;
   }
@@ -250,17 +250,17 @@
 
 .no-events-card {
   padding: 24px;
-  border: 1px dashed rgb(255 255 255 / 10%);
-  border-radius: 10px;
-  background: rgb(18 22 34 / 60%);
+  border: 1px dashed Rgb(255 255 255 / 10%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(18 22 34 / 60%);
   color: var(--gray, #94a3b8);
-  font-size: 11px;
+  font-size: var(--font-11);
   text-align: center;
   grid-column: 1 / -1;
 
   .no-events-icon {
     display: block;
-    font-size: 24px;
+    font-size: var(--font-24);
     margin-bottom: 6px;
   }
 }
@@ -268,13 +268,13 @@
 .events-extra-accordions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .accordion-panel {
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 8px;
-  background: rgb(18 22 34 / 60%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg;
+  background: Rgb(18 22 34 / 60%);
   overflow: visible;
 }
 
@@ -287,18 +287,18 @@
   border: none;
   background: transparent;
   color: var(--white, #fff);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 600;
   cursor: pointer;
 
   &:hover {
-    background: rgb(255 255 255 / 4%);
+    background: Rgb(255 255 255 / 4%);
   }
 
   .accordion-title-wrap {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     line-height: 1.35;
     text-align: left;
 
@@ -316,11 +316,11 @@
     justify-content: center;
     align-items: center;
     color: var(--gray, #94a3b8);
-    font-size: 9px;
+    font-size: var(--font-9);
   }
 }
 
 .accordion-body {
   padding: 12px;
-  border-top: 1px solid rgb(255 255 255 / 6%);
+  border-top: 1px solid Rgb(255 255 255 / 6%);
 }

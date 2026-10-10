@@ -77,34 +77,34 @@ function getKoColorClass(koText: string) {
 
 .ko-chance-badge {
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: $radius-xs-alt;
   font-size: $tooltip-badge-size;
   font-weight: bold;
   text-transform: uppercase;
   
   &.ko-guaranteed {
-    border: 1px solid rgb(255 69 58 / 25%);
-    background: rgb(255 69 58 / 15%);
-    color: #ff453a;
-    text-shadow: 0 0 3px rgb(255 69 58 / 30%);
+    border: 1px solid Rgb(255 69 58 / 25%);
+    background: Rgb(255 69 58 / 15%);
+    color: var(--red);
+    text-shadow: 0 0 3px Rgb(255 69 58 / 30%);
   }
   
   &.ko-high {
-    border: 1px solid rgb(255 159 10 / 25%);
-    background: rgb(255 159 10 / 15%);
-    color: #ff9f0a;
+    border: 1px solid Rgb(255 159 10 / 25%);
+    background: Rgb(255 159 10 / 15%);
+    color: var(--amber-dark);
   }
 
   &.ko-medium {
-    border: 1px solid rgb(255 214 10 / 25%);
-    background: rgb(255 214 10 / 15%);
-    color: #ffd60a;
+    border: 1px solid Rgb(255 214 10 / 25%);
+    background: Rgb(255 214 10 / 15%);
+    color: var(--yellow);
   }
 
   &.ko-low {
-    border: 1px solid rgb(48 209 88 / 25%);
-    background: rgb(48 209 88 / 10%);
-    color: #30d158;
+    border: 1px solid Rgb(48 209 88 / 25%);
+    background: Rgb(48 209 88 / 10%);
+    color: var(--emerald);
   }
 }
 </style>

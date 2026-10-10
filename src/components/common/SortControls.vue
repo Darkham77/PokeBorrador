@@ -39,6 +39,7 @@ const setSort = (key: SortKey) => {
   >
     <!-- NAME -->
     <button
+      id="sort-controls-btn-ordenar-por-nombre"
       class="sort-btn"
       :class="{ active: modelValue === 'name' }"
       title="Ordenar por nombre"
@@ -55,6 +56,7 @@ const setSort = (key: SortKey) => {
 
     <!-- PRICE: slot allows caller to inject custom currency icon -->
     <button
+      id="sort-controls-btn-ordenar-por-precio"
       class="sort-btn"
       :class="{ active: modelValue === 'price' }"
       title="Ordenar por precio"
@@ -73,6 +75,7 @@ const setSort = (key: SortKey) => {
 
     <!-- RARITY -->
     <button
+      id="sort-controls-btn-ordenar-por-rareza"
       class="sort-btn"
       :class="{ active: modelValue === 'rarity' }"
       title="Ordenar por rareza"
@@ -109,7 +112,7 @@ const setSort = (key: SortKey) => {
 
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   flex-shrink: 0;
 }
 
@@ -117,12 +120,12 @@ const setSort = (key: SortKey) => {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 2px;
+  gap: $spacing-2xs;
   min-width: 30px;
   height: 26px;
   padding: 0 6px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 7px;
+  border-radius: $radius-7;
   background: Rgb(255 255 255 / 5%);
   color: Rgb(255 255 255 / 50%);
   font-family: inherit;
@@ -138,7 +141,7 @@ const setSort = (key: SortKey) => {
     background: color-mix(in sRGB, var(--sort-accent) 18%, transparent);
     color: var(--sort-accent);
     border-color: color-mix(in sRGB, var(--sort-accent) 55%, transparent);
-    box-shadow: 0 0 8px color-mix(in sRGB, var(--sort-accent) 20%, transparent);
+    box-shadow: var(--shadow-glow-yellow-sm);
   }
 
   .sort-label {
@@ -146,7 +149,7 @@ const setSort = (key: SortKey) => {
 
     display: flex;
     align-items: center;
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 0.02em;
   }
 
@@ -154,7 +157,7 @@ const setSort = (key: SortKey) => {
     display: flex;
     align-items: center;
     font-family: sans-serif !important;
-    font-size: 9px;
+    font-size: var(--font-9);
     line-height: 1;
     opacity: 0.9;
   }

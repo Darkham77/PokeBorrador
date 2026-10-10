@@ -22,6 +22,8 @@ Frontend Engineers / Map Systems Architects.
 - [`adventureWorldTypes.ts`](./adventureWorldTypes.ts): Module implementation.
 - [`autotileStudioTypes.ts`](./autotileStudioTypes.ts): Module implementation.
 - [`continentTypes.ts`](./continentTypes.ts): Module implementation.
+- [`kantoGridModel.ts`](./kantoGridModel.ts): Grid coordinates and spatial model contracts for Kanto regional map.
+- [`kantoTileEngineTypes.ts`](./kantoTileEngineTypes.ts): Canonical type contracts and interfaces for Kanto tile rendering, autotile layouts, and prefabs.
 - [`mapLenses.ts`](./mapLenses.ts): Module implementation.
 - [`poiTypes.ts`](./poiTypes.ts): Module implementation.
 - [`pokemonGraphTypes.ts`](./pokemonGraphTypes.ts): Module implementation.
@@ -32,7 +34,7 @@ Frontend Engineers / Map Systems Architects.
 
 ## Verification
 
-- `npm run validate:types` must pass with 0 errors.
+- `npm run auditor:type-check` must pass with 0 errors.
 
 ## Child DOX Index
 

@@ -13,6 +13,7 @@ import { getActivePinia } from 'pinia'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { CompetitionEntry } from '@/types/system/stores'
 import { isPokemonBusy, type PokemonTagId } from '@/logic/constants/tags'
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
 import { gameBus } from '@/logic/events/gameBus.ts'
 
 
@@ -67,7 +68,7 @@ export function usePokemonActions(
     registerPokedex(pokemon.id, true)
 
     let target: PokemonStorageLocation = 'team'
-    if (state.team.length < 6) {
+    if (state.team.length < MAX_POKEMON_TEAM_SIZE) {
       state.team.push(pokemon)
     } else {
       state.box = state.box || []

@@ -91,6 +91,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
 
       <div class="search-box">
         <input
+          id="input-gallery-search"
           v-model="searchQuery"
           type="search"
           placeholder="Buscar por ID, nombre o fuente..."
@@ -102,6 +103,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
       <nav class="category-pills">
         <button
           v-for="pill in categoryPills"
+          :id="'btn-gallery-cat-' + pill.id"
           :key="pill.id"
           type="button"
           class="category-pill-btn"
@@ -129,7 +131,9 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
       >
         <article
           v-for="entry in filteredEntries"
+          :id="'card-asset-' + entry.id"
           :key="entry.id"
+          v-gsap-hover
           class="asset-card"
           :class="{ selected: selectedAssetId === entry.id }"
           @click="emit('select-asset', entry)"
@@ -189,142 +193,140 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
 .asset-gallery-panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
-  background: #0f172a;
-  border-left: 1px solid Rgba(255, 255, 255, 0.12);
+  height: 100%;
+  background: var(--slate-900);
+  border-left: 1px solid Rgb(255 255 255 / 12%);
   overflow: hidden;
 }
 
 .gallery-header {
-  padding: 14px 16px;
-  background: #0b1120;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
+  padding: 14px 16px;
+  background: #0b1120;
+  border-bottom: 1px solid Rgb(255 255 255 / 8%);
 }
 
 .header-top {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
 .gallery-title {
-  font-size: 14px;
+  margin: 0;
+  color: var(--slate-50);
+  font-size: var(--font-14);
   font-weight: 800;
-  color: #f8fafc;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin: 0;
 }
 
 .gallery-count-badge {
-  font-size: 11px;
-  font-weight: 700;
-  background: #1e293b;
-  color: #38bdf8;
   padding: 2px 8px;
-  border-radius: 12px;
-  border: 1px solid #334155;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-xl;
+  background: var(--slate-800);
+  color: var(--sky);
   font-family: monospace;
+  font-size: var(--font-11);
+  font-weight: 700;
 }
 
 .gallery-search-input {
   width: 100%;
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 6px;
   padding: 8px 12px;
-  font-size: 12px;
-  color: #f8fafc;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-50);
+  font-size: var(--font-12);
 
   &:focus {
     outline: none;
-    border-color: #38bdf8;
+    border-color: var(--sky);
   }
 
   &::placeholder {
-    color: #64748b;
+    color: var(--slate-500);
   }
 }
 
 .category-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .category-pill-btn {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #94a3b8;
   padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 10px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-xl;
+  background: var(--slate-800);
+  color: var(--slate-400);
+  font-size: var(--font-10);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
 
   &:hover {
-    background: #334155;
-    color: #f8fafc;
+    background: var(--slate-700);
+    color: var(--slate-50);
   }
 
   &.active {
-    background: #0284c7;
-    border-color: #38bdf8;
-    color: #ffffff;
+    background: var(--sky-dark);
+    color: var(--white);
     font-weight: 700;
+    border-color: var(--sky);
   }
 }
 
 .cards-container {
+  padding: 12px;
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
 }
 
 .cards-grid {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
 }
 
 .asset-card {
   display: flex;
-  gap: 12px;
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 8px;
+  gap: $spacing-md;
   padding: 8px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-lg;
+  background: var(--slate-800);
   cursor: pointer;
-  transition: all 0.15s ease;
 
   &:hover {
     background: #273549;
-    border-color: #475569;
-    transform: Translatey(-1px);
+    border-color: var(--slate-600);
   }
 
   &.selected {
-    border-color: #38bdf8;
     background: #182844;
-    box-shadow: 0 0 0 1px #38bdf8;
+    border-color: var(--sky);
+    box-shadow: var(--shadow-card);
   }
 }
 
 .preview-frame {
-  width: 72px;
-  height: 72px;
-  min-width: 72px;
-  border-radius: 6px;
-  overflow: hidden;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background-color: #0d1117;
+  align-items: center;
+  width: 72px;
+  min-width: 72px;
+  height: 72px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background-color: var(--slate-900);
+  overflow: hidden;
   background-image: 
     linear-gradient(45deg, #1e293b 25%, transparent 25%),
     linear-gradient(-45deg, #1e293b 25%, transparent 25%),
@@ -332,7 +334,6 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
     linear-gradient(-45deg, transparent 75%, #1e293b 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
-  border: 1px solid #334155;
 }
 
 .preview-img {
@@ -344,56 +345,56 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
 }
 
 .card-info {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-width: 0;
+  flex: 1;
 }
 
 .card-header-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  align-items: center;
+  gap: $spacing-sm-alt;
 }
 
 .category-tag {
-  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: $radius-sm;
+  background: var(--slate-700);
+  color: var(--slate-300);
+  font-size: var(--font-9);
   font-weight: 700;
   text-transform: uppercase;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: #334155;
-  color: #cbd5e1;
 
-  &.buildings { background: #4338ca; color: #e0e7ff; }
-  &.roads { background: #374151; color: #f3f4f6; }
-  &.curbs { background: #4b5563; color: #e5e7eb; }
-  &.props { background: #065f46; color: #d1fae5; }
+  &.buildings { background: var(--slate-900); color: var(--blue-300); }
+  &.roads { background: var(--slate-700); color: var(--slate-100); }
+  &.curbs { background: var(--slate-600); color: var(--slate-200); }
+  &.props { background: var(--emerald-500); color: var(--emerald-400); }
 }
 
 .dimensions-tag {
-  font-size: 10px;
-  color: #94a3b8;
+  color: var(--slate-400);
   font-family: monospace;
+  font-size: var(--font-10);
 }
 
 .asset-id {
-  font-size: 12px;
-  font-weight: 700;
-  color: #38bdf8;
   margin: 2px 0 0;
+  color: var(--sky);
   font-family: monospace;
+  font-size: var(--font-12);
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .asset-name {
-  font-size: 11px;
-  color: #cbd5e1;
   margin: 0;
+  color: var(--slate-300);
+  font-size: var(--font-11);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -401,33 +402,33 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
 
 .card-footer-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-top: 4px;
-  font-size: 9px;
-  color: #64748b;
+  align-items: center;
+  color: var(--slate-500);
   font-family: monospace;
+  font-size: var(--font-9);
+  margin-top: 4px;
 }
 
 .sheet-source-tag {
+  max-width: 140px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
 }
 
 .empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  gap: $spacing-sm;
   padding: 40px 16px;
-  color: #64748b;
+  color: var(--slate-500);
   text-align: center;
-  gap: 8px;
 
   .empty-icon {
-    font-size: 28px;
+    font-size: var(--font-28);
   }
 }
 </style>

@@ -12,8 +12,8 @@ import {
   getTransitionRole,
   applyAutotileAt,
   BITMASK_DIRECTIONS
-} from '../../logic/map/continent/autotileEngine';
-import type { ContinentBiomeType } from '../../types/map/continentTypes';
+} from '../../logic/map/continent/autotileEngine.ts';
+import type { ContinentBiomeType } from '../../types/map/continentTypes.ts';
 
 describe('autotileEngine', () => {
   function createGrid(w: number, h: number, fill: ContinentBiomeType): ContinentBiomeType[][] {

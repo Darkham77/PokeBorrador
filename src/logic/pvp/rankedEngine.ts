@@ -48,6 +48,7 @@ const ELO_THRESHOLD_MAESTRO = 3400;
 
 export const STANDARD_COMPETITIVE_LEVEL = 50;
 export const MAX_INDIVIDUAL_VALUE = 31;
+const MAESTRO_TIER_DUNGEON_TICKETS = 6 as const;
 export const DIAMANTE_SPEED_INDIVIDUAL_VALUE = 28;
 export const DEFAULT_FEATURED_REPLAYS_LIMIT = 10;
 
@@ -92,7 +93,7 @@ export function getSeasonalPrizesForTier(tierInput: string): SeasonalTierReward 
     case 'maestro':
       return {
         battleCoins: SEASONAL_BATTLE_COINS.MAESTRO,
-        dungeonTickets: 6,
+        dungeonTickets: MAESTRO_TIER_DUNGEON_TICKETS,
         tickets: { cuevaCeleste: 3, islasEspumas: 3 },
         pokemonReward: {
           species: 'eevee',

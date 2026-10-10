@@ -404,6 +404,7 @@ const cardDynamicStyles = computed(() => ({
       <!-- 8. Spawns Report Pokéball Trigger (Bottom Right Corner) -->
       <MapCardSpawnsTrigger
         v-if="showSpawnsTrigger"
+        id="map-card-mapcardspawnstrigger-openroutespawnsmodal"
         @click="openRouteSpawnsModal"
       />
     </div>

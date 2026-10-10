@@ -61,57 +61,57 @@ const isUpcomingDateValid = computed(() => Boolean(props.isUpcoming && props.occ
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   .type-tag {
     @include pixelated;
 
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: $spacing-xs-alt;
     width: fit-content;
     padding: 2px 6px;
-    border: 1px solid rgb(59 130 246 / 30%);
-    border-radius: 4px;
-    background: rgb(59 130 246 / 10%);
-    color: #60a5fa;
-    font-size: 7px;
+    border: 1px solid Rgb(59 130 246 / 30%);
+    border-radius: $radius-sm;
+    background: Rgb(59 130 246 / 10%);
+    color: var(--blue-400);
+    font-size: var(--font-7);
     font-weight: bold;
     line-height: 1.35;
 
     .emoji {
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1;
     }
 
     &.competition {
-      background: rgb(245 158 11 / 15%);
-      color: #fbbf24;
-      border-color: rgb(245 158 11 / 30%);
+      background: Rgb(245 158 11 / 15%);
+      color: var(--amber);
+      border-color: Rgb(245 158 11 / 30%);
     }
 
     &.passive_bonus {
-      background: rgb(168 85 247 / 15%);
-      color: #c084fc;
-      border-color: rgb(168 85 247 / 30%);
+      background: Rgb(168 85 247 / 15%);
+      color: var(--purple-400);
+      border-color: Rgb(168 85 247 / 30%);
     }
 
     &.shiny {
-      background: rgb(234 179 8 / 15%);
-      color: #facc15;
-      border-color: rgb(234 179 8 / 30%);
+      background: Rgb(234 179 8 / 15%);
+      color: var(--amber-400);
+      border-color: Rgb(234 179 8 / 30%);
     }
 
     &.spawn {
-      background: rgb(34 197 94 / 15%);
-      color: #4ade80;
-      border-color: rgb(34 197 94 / 30%);
+      background: Rgb(34 197 94 / 15%);
+      color: var(--green-light);
+      border-color: Rgb(34 197 94 / 30%);
     }
 
     &.fishing {
-      border: 1px solid rgb(14 165 233 / 30%);
-      background: rgb(14 165 233 / 15%);
-      color: #38bdf8;
+      border: 1px solid Rgb(14 165 233 / 30%);
+      background: Rgb(14 165 233 / 15%);
+      color: var(--sky);
     }
   }
 
@@ -120,20 +120,20 @@ const isUpcomingDateValid = computed(() => Boolean(props.isUpcoming && props.occ
 
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: $spacing-xs-alt;
     width: fit-content;
     padding: 2px 6px;
-    border: 1px solid rgb(250 204 21 / 35%);
-    border-radius: 4px;
-    background: rgb(250 204 21 / 12%);
+    border: 1px solid Rgb(250 204 21 / 35%);
+    border-radius: $radius-sm;
+    background: Rgb(250 204 21 / 12%);
     color: var(--yellow);
-    font-size: 7px;
+    font-size: var(--font-7);
     font-weight: bold;
     line-height: 1.35;
-    text-shadow: 0 1px 2px rgb(0 0 0 / 50%);
+    text-shadow: 0 1px 2px Rgb(0 0 0 / 50%);
 
     .emoji {
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1;
     }
   }

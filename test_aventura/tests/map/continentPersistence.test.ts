@@ -14,7 +14,7 @@ import {
   createBlankProject,
   createPresetProject,
   clearAllProfilesForTesting
-} from '../../logic/map/continent/continentPersistence';
+} from '../../logic/map/continent/continentPersistence.ts';
 
 describe('continentPersistence', () => {
   beforeEach(() => {

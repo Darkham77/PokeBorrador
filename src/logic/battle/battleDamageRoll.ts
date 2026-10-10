@@ -1,4 +1,5 @@
 import type { PurePokemon, PureMove, PureBattleStages, PureDamageResult } from './battleMathTypes.ts';
+import { KALOS_GENERATION_NUM, UNOVA_GENERATION_NUM } from '@/logic/constants/gameplay';
 
 const CRIT_ROLL_DENOMINATOR_GEN6_BASE = 24 as const;
 const CRIT_ROLL_DENOMINATOR_GEN5_BASE = 16 as const;
@@ -23,10 +24,10 @@ export function calculateCritOutcome(
   if (attacker.focusEnergy) critStage += 2;
 
   let critRate: number;
-  if (gen >= 6) {
+  if (gen >= KALOS_GENERATION_NUM) {
     const rates = [1 / CRIT_ROLL_DENOMINATOR_GEN6_BASE, 1 / 8, 1 / 2, 1, 1];
     critRate = rates[Math.min(critStage, 4)] ?? (1 / CRIT_ROLL_DENOMINATOR_GEN6_BASE);
-  } else if (gen === 5) {
+  } else if (gen === UNOVA_GENERATION_NUM) {
     const rates = [1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE, 1 / 8, 1 / 4, 1 / 3, 1];
     critRate = rates[Math.min(critStage, 4)] ?? (1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE);
   } else {

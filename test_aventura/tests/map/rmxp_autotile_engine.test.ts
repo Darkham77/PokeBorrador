@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine';
+import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
 
 describe('RMXP Autotile Resolution Engine', () => {
   it('resolves an isolated single tile with 4 outer corners', () => {

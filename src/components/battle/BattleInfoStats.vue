@@ -83,18 +83,18 @@ function getSpeciesBaseStat(key: string): number {
 
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  font-size: 8px;
+  gap: $spacing-xs-alt;
+  font-size: var(--font-8);
 
   .grid-header-row {
     display: grid;
     grid-template-columns: 28px 22px 14px 18px 26px 20px 1fr;
-    color: rgb(255 255 255 / 40%);
+    color: Rgb(255 255 255 / 40%);
     font-weight: bold;
     text-align: right;
-    column-gap: 6px;
+    column-gap: $spacing-sm-alt;
     padding-bottom: 2px;
-    border-bottom: 1px solid rgb(255 255 255 / 5%);
+    border-bottom: 1px solid Rgb(255 255 255 / 5%);
 
     .grid-header:first-child {
       text-align: left;
@@ -107,19 +107,19 @@ function getSpeciesBaseStat(key: string): number {
     grid-template-columns: 28px 22px 14px 18px 26px 20px 1fr;
     padding: 1px 0;
     text-align: right;
-    column-gap: 6px;
+    column-gap: $spacing-sm-alt;
 
     .stat-name-col {
-      color: rgb(255 255 255 / 60%);
+      color: Rgb(255 255 255 / 60%);
       text-align: left;
     }
 
     .stat-bs-col {
-      color: rgb(255 255 255 / 50%);
+      color: Rgb(255 255 255 / 50%);
     }
 
     .stat-val-col {
-      color: rgb(255 255 255 / 85%);
+      color: Rgb(255 255 255 / 85%);
     }
 
     .stat-iv-col {
@@ -131,23 +131,23 @@ function getSpeciesBaseStat(key: string): number {
     }
 
     .stat-mult-col {
-      color: rgb(255 255 255 / 50%);
+      color: Rgb(255 255 255 / 50%);
     }
 
     .stat-final-col {
-      color: #FFF;
+      color: var(--white);
       font-weight: bold;
     }
 
     &.is-up {
       .stat-mult-col, .stat-final-col {
-        color: #10B981;
+        color: var(--emerald-500);
       }
     }
 
     &.is-down {
       .stat-mult-col, .stat-final-col {
-        color: #EF4444;
+        color: var(--red-light);
       }
     }
   }

@@ -12,13 +12,14 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { cloneReactive } from '@/logic/utils/cloneUtils';
 import {
   type MapNode,
   rawNodes as defaultRawNodes,
   connections as defaultConnections,
   officialMapIdMap as defaultOfficialMapIdMap
-} from '../logic/adventure/mapData';
-import { dijkstra } from '../logic/adventure/adventurePathfinding';
+} from '../logic/adventure/mapData.ts';
+import { dijkstra } from '../logic/adventure/adventurePathfinding.ts';
 import {
   type AdventureProject,
   type RegionArchetype,
@@ -28,27 +29,27 @@ import {
   type ProceduralGenerationConfig,
   type StampingPrefabDefinition,
   type ContinentalRoutesExportBundle
-} from '../types/map/adventureWorldTypes';
+} from '../types/map/adventureWorldTypes.ts';
 import {
   generateCompleteContinentalWorld,
   exportContinentalRoutesBundle,
   type ContinentalWorldGenOptions
-} from '../logic/map/continentalWorldGenerator';
+} from '../logic/map/continentalWorldGenerator.ts';
 import {
   getKantoDefaultProject,
   getJohtoDefaultProject,
   getBlankDefaultProject
-} from '../logic/map/regionRegistry';
-import { CELL_BIOME, type CellBiomeType } from '../logic/map/kantoRegionalGenerator';
-import type { PlacedStructure } from '../logic/map/kantoTileEngine';
-import type { GeneratedMap } from '../logic/map/proceduralMapGenerator';
-import { defaultTilesRegistry } from '../logic/map/tilesRegistry';
-import { getAllStructureTemplates, registerStructureTemplate } from '../config/mapStructures';
-import { saveCustomTilesToStorage, saveCustomStructuresToStorage } from '../logic/map/customAssetsStorage';
-import { generateLocalMapForNode } from '../logic/map/nodeLocalMapGenerator';
+} from '../data/map/regionRegistry.ts';
+import { CELL_BIOME, type CellBiomeType } from '../types/map/kantoGridModel.ts';
+import type { PlacedStructure } from '../types/map/kantoTileEngineTypes.ts';
+import type { GeneratedMap } from '../logic/map/proceduralMapGenerator.ts';
+import { defaultTilesRegistry } from '../logic/map/tilesRegistry.ts';
+import { getAllStructureTemplates, registerStructureTemplate } from '../config/mapStructures.ts';
+import { saveCustomTilesToStorage, saveCustomStructuresToStorage } from '../logic/map/customAssetsStorage.ts';
+import { generateLocalMapForNode } from '../logic/map/nodeLocalMapGenerator.ts';
 import { useMapStudioStore } from './mapStudio.ts';
 
-import { STUDIO_MAX_HISTORY_STEPS } from '../config/studioConstants';
+import { STUDIO_MAX_HISTORY_STEPS, CONTINENT_DEFAULT_SEED } from '../config/studioConstants.ts';
 
 export type GraphStudioTool = 'pointer' | 'add_node' | 'connect' | 'delete' | 'test_gps' | 'stamp';
 
@@ -62,6 +63,24 @@ const ADVENTURE_MAX_ZOOM = 3.0;
 const DEFAULT_VIEWPORT_WIDTH = 1000;
 const DEFAULT_VIEWPORT_HEIGHT = 700;
 const DEFAULT_STRUCTURE_WIDTH = 80;
+const DEFAULT_CONTINENTAL_CITY_COUNT = 12;
+
+const DEFAULT_STUDIO_PROCEDURAL_CONFIG = {
+  treeDensity: 0.7,
+  roadWidth: 2,
+  autoOcean: true,
+  autoBuildings: true,
+  waterPercent: 14,
+  mountainPercent: 10,
+  forestPercent: 25,
+  cityConfig: {
+    scale: 'town',
+    buildingDensity: 7,
+    includeGym: true,
+    includeLab: false,
+    plazaType: 'fountain'
+  }
+} as const;
 const DEFAULT_STRUCTURE_HEIGHT = 60;
 const INITIAL_CONTINENT_ZOOM = 0.22;
 const INITIAL_CONTINENT_PAN_X = 150;
@@ -80,9 +99,9 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   const activeEditingNodeId = ref<string | null>(null);
 
   // 3. Core Graph Data (Synched to Active Project)
-  const nodes = ref<Record<string, MapNode>>(JSON.parse(JSON.stringify(defaultRawNodes)));
-  const connections = ref<[string, string][]>(JSON.parse(JSON.stringify(defaultConnections)));
-  const officialMapMapping = ref<Record<string, string>>(JSON.parse(JSON.stringify(defaultOfficialMapIdMap)));
+  const nodes = ref<Record<string, MapNode>>(cloneReactive(defaultRawNodes));
+  const connections = ref<[string, string][]>(cloneReactive(defaultConnections));
+  const officialMapMapping = ref<Record<string, string>>(cloneReactive(defaultOfficialMapIdMap));
 
   // 4. Terrain Painting Mode State
   const brushSize = ref<BrushSize>(2);
@@ -108,23 +127,11 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   const showGrid = ref<boolean>(true);
 
   // 8. Procedural Generation Config & Seed
-  const seed = ref<number>(42);
+  const seed = ref<number>(CONTINENT_DEFAULT_SEED);
   const tilesetProfile = ref<'gba' | 'lpc'>('gba');
   const proceduralConfig = ref<ProceduralGenerationConfig>({
-    treeDensity: 0.7,
-    roadWidth: 2,
-    autoOcean: true,
-    autoBuildings: true,
-    waterPercent: 14,
-    mountainPercent: 10,
-    forestPercent: 25,
-    cityConfig: {
-      scale: 'town',
-      buildingDensity: 7,
-      includeGym: true,
-      includeLab: false,
-      plazaType: 'fountain'
-    }
+    ...DEFAULT_STUDIO_PROCEDURAL_CONFIG,
+    cityConfig: { ...DEFAULT_STUDIO_PROCEDURAL_CONFIG.cityConfig }
   });
   const isBakingTiles = ref<boolean>(false);
   const tileTerrainTrigger = ref<number>(0);
@@ -228,12 +235,12 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     const p = projects.value[projectId];
     if (!p) return;
 
-    nodes.value = JSON.parse(JSON.stringify(p.nodes));
-    connections.value = JSON.parse(JSON.stringify(p.connections));
+    nodes.value = cloneReactive(p.nodes);
+    connections.value = cloneReactive(p.connections);
     seed.value = p.seed;
     proceduralConfig.value = { ...p.config };
     customTerrain.value = p.customTerrain ? { ...p.customTerrain } : {};
-    customStructures.value = p.customBuildings ? JSON.parse(JSON.stringify(p.customBuildings)) : [];
+    customStructures.value = p.customBuildings ? cloneReactive(p.customBuildings) : [];
 
     selectedNodeId.value = null;
     selectedStructureIndex.value = null;
@@ -296,12 +303,12 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   function syncActiveProject(): void {
     const cur = projects.value[activeProjectId.value];
     if (!cur) return;
-    cur.nodes = JSON.parse(JSON.stringify(nodes.value));
-    cur.connections = JSON.parse(JSON.stringify(connections.value));
+    cur.nodes = cloneReactive(nodes.value);
+    cur.connections = cloneReactive(connections.value);
     cur.seed = seed.value;
     cur.config = { ...proceduralConfig.value };
     cur.customTerrain = { ...customTerrain.value };
-    cur.customBuildings = JSON.parse(JSON.stringify(customStructures.value));
+    cur.customBuildings = cloneReactive(customStructures.value);
     const customTiles = defaultTilesRegistry.getAllTiles().filter(t => t.subcategory === 'custom' || t.tags.includes('custom'));
     const customTemplates = getAllStructureTemplates().filter(s => !['kanto_house_small', 'pokemart', 'pokemon_center'].includes(s.id));
     if (customTiles.length > 0) cur.customTiles = customTiles;
@@ -427,7 +434,7 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   function saveLocalMapForNode(nodeId: string, map: GeneratedMap): void {
     const node = nodes.value[nodeId];
     if (!node) return;
-    node.localMap = JSON.parse(JSON.stringify(map));
+    node.localMap = cloneReactive(map);
     pushHistory();
     saveToStorage();
   }
@@ -539,8 +546,13 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   function saveToStorage(): void {
     if (typeof localStorage === 'undefined') return;
     syncActiveProject();
-    localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(projects.value));
-    localStorage.setItem(STORAGE_ACTIVE_KEY, activeProjectId.value);
+    try {
+      localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(projects.value));
+      localStorage.setItem(STORAGE_ACTIVE_KEY, activeProjectId.value);
+    } catch (err) {
+      // catch-ok: QuotaExceededError when local storage is full
+      console.warn('[MapAdventureStudio] Failed to save to localStorage:', err);
+    }
   }
 
   function loadFromStorage(): boolean {
@@ -557,7 +569,7 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
         return true;
       }
     } catch {
-      // ignore parsing error
+      // catch-ok: Fallback to defaults when projects JSON in localStorage is corrupted
     }
     return false;
   }
@@ -566,13 +578,13 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     pushHistory();
     if (activeProject.value.archetype === 'johto') {
       const defaultJohto = getJohtoDefaultProject();
-      nodes.value = JSON.parse(JSON.stringify(defaultJohto.nodes));
-      connections.value = JSON.parse(JSON.stringify(defaultJohto.connections));
+      nodes.value = cloneReactive(defaultJohto.nodes);
+      connections.value = cloneReactive(defaultJohto.connections);
       seed.value = defaultJohto.seed;
     } else {
       const defaultKanto = getKantoDefaultProject();
-      nodes.value = JSON.parse(JSON.stringify(defaultKanto.nodes));
-      connections.value = JSON.parse(JSON.stringify(defaultKanto.connections));
+      nodes.value = cloneReactive(defaultKanto.nodes);
+      connections.value = cloneReactive(defaultKanto.connections);
       seed.value = defaultKanto.seed;
     }
     customTerrain.value = {};
@@ -608,12 +620,12 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
       config: proceduralConfig.value,
       themeSource: proceduralConfig.value.themeSource ?? 'firered',
       archetype: activeProject.value.archetype,
-      cityCount: 12,
+      cityCount: DEFAULT_CONTINENTAL_CITY_COUNT,
       ...customOptions
     });
 
-    nodes.value = JSON.parse(JSON.stringify(result.nodes));
-    connections.value = JSON.parse(JSON.stringify(result.connections));
+    nodes.value = cloneReactive(result.nodes);
+    connections.value = cloneReactive(result.connections);
     customTerrain.value = { ...result.customTerrain };
     customStructures.value = [];
     selectedNodeId.value = null;

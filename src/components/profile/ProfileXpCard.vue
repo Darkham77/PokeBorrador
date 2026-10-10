@@ -223,7 +223,7 @@ watch(trainerExpPct, (newPct) => {
   .xp-details {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
   }
 
   .xp-numbers {
@@ -233,7 +233,7 @@ watch(trainerExpPct, (newPct) => {
     justify-content: space-between;
     align-items: center;
     color: var(--white);
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 0.5px;
   }
 
@@ -250,22 +250,22 @@ watch(trainerExpPct, (newPct) => {
     width: 100%;
     height: 10px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(0 0 0 / 40%);
     overflow: hidden;
   }
 
   .xp-bar-fill {
     height: 100%;
-    border-radius: 5px;
+    border-radius: $radius-md-alt;
     background-image: Linear-Gradient(90deg, Rgb(255 255 255 / 15%) 25%, transparent 25%, transparent 50%, Rgb(255 255 255 / 15%) 50%, Rgb(255 255 255 / 15%) 75%, transparent 75%, transparent);
     background-size: 20px 20px;
   }
 
   .xp-remaining-text {
     color: Rgb(255 255 255 / 60%);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: 11px;
+    font-family: $font-family-sans;
+    font-size: var(--font-11);
     line-height: 1.4;
 
     strong {
@@ -281,8 +281,8 @@ watch(trainerExpPct, (newPct) => {
 
   .unlocks-title {
     color: Rgb(255 255 255 / 70%);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: 11px;
+    font-family: $font-family-sans;
+    font-size: var(--font-11);
     font-weight: 600;
     margin-bottom: 8px;
   }
@@ -290,7 +290,7 @@ watch(trainerExpPct, (newPct) => {
   .unlocks-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -299,10 +299,10 @@ watch(trainerExpPct, (newPct) => {
   .unlock-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     color: Rgb(203 213 225 / 85%);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: 11px;
+    font-family: $font-family-sans;
+    font-size: var(--font-11);
     line-height: 1.4;
   }
 
@@ -310,16 +310,16 @@ watch(trainerExpPct, (newPct) => {
     @include pixelated;
 
     padding: 2px 4px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: Rgb(255 255 255 / 10%);
     color: var(--yellow);
-    font-size: 7px;
+    font-size: var(--font-7);
     font-weight: bold;
     flex-shrink: 0;
   }
 
   .unlock-desc {
-    font-size: 11px;
+    font-size: var(--font-11);
   }
 }
 </style>

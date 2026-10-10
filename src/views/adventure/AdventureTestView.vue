@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useAdventureSimulation } from '@/composables/adventure/useAdventureSimulation'
 import { gsapHover as vGsapHover } from '@/directives/gsapHover'
 import { gsapLoop as vGsapLoop } from '@/directives/gsapLoop'
@@ -16,6 +16,8 @@ import AdventureEventModal from '@/components/adventure/AdventureEventModal.vue'
 
 const CARD_W = 320
 const CARD_H = 220
+const CARD_HALF_W = CARD_W / 2
+const CARD_HALF_H = CARD_H / 2
 
 const {
   originMap,
@@ -84,6 +86,25 @@ const {
   isEdgeTraversable,
   hasBicycle
 } = useAdventureSimulation()
+
+const edgeEndpointsMap = computed(() => {
+  const map: Record<string, { x1: number; y1: number; x2: number; y2: number; midLeft: string; midTop: string }> = {}
+  for (const edge of graphEdges.value) {
+    const fromPos = nodePositions.value[edge.from]
+    const toPos = nodePositions.value[edge.to]
+    if (fromPos && toPos) {
+      map[`${edge.from}-${edge.to}`] = {
+        x1: fromPos.x + CARD_HALF_W,
+        y1: fromPos.y + CARD_HALF_H,
+        x2: toPos.x + CARD_HALF_W,
+        y2: toPos.y + CARD_HALF_H,
+        midLeft: `${(fromPos.x + toPos.x + CARD_W) / 2}px`,
+        midTop: `${(fromPos.y + toPos.y + CARD_H) / 2}px`
+      }
+    }
+  }
+  return map
+})
 
 const getZoomCenter = () => {
   const vp = viewportRef.value
@@ -230,6 +251,7 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
         >
           <div class="adv-zoom-controls">
             <button
+              id="adventure-test-view-btn-1"
               v-gsap-hover
               class="adv-zoom-btn"
               @click.stop="() => handleZoomIn()"
@@ -237,6 +259,7 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
               <span class="emoji">➕</span>
             </button>
             <button
+              id="adventure-test-view-btn-2"
               v-gsap-hover
               class="adv-zoom-btn"
               @click.stop="() => handleZoomOut()"
@@ -244,6 +267,7 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
               <span class="emoji">➖</span>
             </button>
             <button
+              id="adventure-test-view-btn-centrar-en-mapa-seleccionado"
               v-gsap-hover
               class="adv-zoom-btn"
               title="Centrar en mapa seleccionado"
@@ -274,11 +298,11 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
                 :key="`${edge.from}-${edge.to}`"
               >
                 <line
-                  v-if="nodePositions[edge.from] && nodePositions[edge.to]"
-                  :x1="nodePositions[edge.from]!.x + CARD_W / 2"
-                  :y1="nodePositions[edge.from]!.y + CARD_H / 2"
-                  :x2="nodePositions[edge.to]!.x + CARD_W / 2"
-                  :y2="nodePositions[edge.to]!.y + CARD_H / 2"
+                  v-if="edgeEndpointsMap[`${edge.from}-${edge.to}`]"
+                  :x1="edgeEndpointsMap[`${edge.from}-${edge.to}`]!.x1"
+                  :y1="edgeEndpointsMap[`${edge.from}-${edge.to}`]!.y1"
+                  :x2="edgeEndpointsMap[`${edge.from}-${edge.to}`]!.x2"
+                  :y2="edgeEndpointsMap[`${edge.from}-${edge.to}`]!.y2"
                   :class="['edge-line', getEdgeClass(edge)]"
                 />
               </template>
@@ -290,11 +314,11 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
               :key="'mo-icon-' + edge.from + '-' + edge.to"
             >
               <div
-                v-if="edge.mo && nodePositions[edge.from] && nodePositions[edge.to]"
+                v-if="edge.mo && edgeEndpointsMap[`${edge.from}-${edge.to}`]"
                 class="adv-mo-obstacle-overlay"
                 :style="{
-                  left: `${(nodePositions[edge.from]!.x + nodePositions[edge.to]!.x + CARD_W) / 2}px`,
-                  top: `${(nodePositions[edge.from]!.y + nodePositions[edge.to]!.y + CARD_H) / 2}px`,
+                  left: edgeEndpointsMap[`${edge.from}-${edge.to}`]!.midLeft,
+                  top: edgeEndpointsMap[`${edge.from}-${edge.to}`]!.midTop,
                   '--world-overlay-scale': worldOverlayScale,
                 }"
               >

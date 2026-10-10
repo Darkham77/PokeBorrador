@@ -12,9 +12,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('regionalLeagueAndGyms', () => {
   const W = 256;

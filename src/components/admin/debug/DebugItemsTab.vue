@@ -64,6 +64,7 @@ function onBtnDown(e: Event) {
 <template>
   <div class="items-debug">
     <button
+      id="debug-items-tab-btn-agregar-10-de-cada-uno"
       class="add-all-btn"
       @click.stop="addTenOfEach"
       @mouseenter="onBtnEnter"
@@ -75,6 +76,7 @@ function onBtnDown(e: Event) {
       <span class="emoji">⚡</span> Agregar 10 de cada uno
     </button>
     <input
+      id="debug-items-tab-input-searchquery"
       v-model="searchQuery"
       type="text"
       placeholder="Buscar item..."
@@ -109,17 +111,17 @@ function onBtnDown(e: Event) {
 .items-debug {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: $spacing-md-15;
 }
 
 .search-input {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 40%);
   color: $white;
-  font-size: 16px;
+  font-size: var(--font-16);
   
   &:focus { outline: none; border-color: var(--purple); }
 }
@@ -130,24 +132,24 @@ function onBtnDown(e: Event) {
   width: 100%;
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 20%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Linear-Gradient(135deg, #a855f7 0%, #7e22ce 100%);
-  color: white;
-  font-size: 14px;
+  color: var(--white);
+  font-size: var(--font-14);
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 4px 12px Rgb(126 34 206 / 30%);
+  box-shadow: var(--shadow-card);
 
   &:hover {
     background: Linear-Gradient(135deg, #b55fe6 0%, #8b2ad6 100%);
-    box-shadow: 0 6px 16px Rgb(126 34 206 / 50%);
+    box-shadow: var(--shadow-card);
   }
 }
 
 .items-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   min-height: 0;
   flex: 1;
   overscroll-behavior: contain;
@@ -156,10 +158,10 @@ function onBtnDown(e: Event) {
 .debug-item-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 12px;
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: $radius-xl-alt;
   background: Rgb(255 255 255 / 3%);
   cursor: pointer;
   
@@ -170,8 +172,8 @@ function onBtnDown(e: Event) {
     border-color: Rgb(255 255 255 / 10%);
   }
 
-  .name { color: $text; font-size: 16px; font-weight: 600; flex: 1; }
-  .add { @include pixelated; color: $green; font-size: 8px; }
-  .icon { font-size: 16px; }
+  .name { color: $text; font-size: var(--font-16); font-weight: 600; flex: 1; }
+  .add { @include pixelated; color: $green; font-size: var(--font-8); }
+  .icon { font-size: var(--font-16); }
 }
 </style>

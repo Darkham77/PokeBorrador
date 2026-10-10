@@ -131,7 +131,7 @@ const selectNick = (style: LockableCosmeticStyle) => {
 .cosmetics-modal-internal {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: $spacing-4xl;
   padding: 10px;
 }
 
@@ -145,7 +145,7 @@ const selectNick = (style: LockableCosmeticStyle) => {
   }
 
   .preview-nick {
-    font-size: 16px;
+    font-size: var(--font-16);
     font-weight: 800;
     text-align: center;
     white-space: nowrap;
@@ -154,6 +154,6 @@ const selectNick = (style: LockableCosmeticStyle) => {
 
 .modal-footer-internal {
   text-align: center;
-  p { color: rgb(71 85 105 / 100%); font-size: 11px; }
+  p { color: Rgb(71 85 105 / 100%); font-size: var(--font-11); }
 }
 </style>

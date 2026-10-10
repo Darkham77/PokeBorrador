@@ -384,8 +384,8 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
         @click="handleSyncAssets"
       >
         <span
+          v-gsap-loop="{ effect: 'spin', active: isSyncing }"
           class="icon"
-          :class="{ 'spin-anim': isSyncing }"
         >🔄</span>
         <span>{{ isSyncing ? 'Sincronizando...' : 'Actualizar' }}</span>
       </button>
@@ -427,71 +427,70 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
 
 <style scoped lang="scss">
 .studio-toolbar {
-  height: 52px;
-  background: #090d16;
-  border-bottom: 2px solid #1e293b;
+  z-index: calc(var(--z-map-ui) + 10);
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  gap: $spacing-sm;
+  height: 52px;
   padding: 0 12px;
-  gap: 8px;
+  background: #090d16;
+  border-bottom: 2px solid var(--slate-800);
   user-select: none;
-  z-index: 30;
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
+  box-shadow: $shadow-card;
 }
 
 .toolbar-cluster {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .brand-link {
-  color: #38bdf8;
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 13px;
   padding: 5px 8px;
-  border-radius: 6px;
-  background: Rgba(56, 189, 248, 0.08);
+  border-radius: $radius-md;
+  background: Rgb(56 189 248 / 8%);
+  color: var(--sky);
+  font-size: var(--font-13);
+  font-weight: bold;
+  text-decoration: none;
 
   &:hover {
-    background: Rgba(56, 189, 248, 0.16);
+    background: Rgb(56 189 248 / 16%);
   }
 }
 
 .divider {
   width: 1px;
   height: 22px;
-  background: Rgba(255, 255, 255, 0.12);
   margin: 0 2px;
+  background: Rgb(255 255 255 / 12%);
 }
 
 .view-toggle-group {
   display: flex;
-  background: #0f172a;
   padding: 2px;
-  border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-md;
+  background: var(--slate-900);
 
   .btn-view {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     padding: 4px 10px;
-    border-radius: 5px;
     border: none;
+    border-radius: $radius-md-alt;
     background: transparent;
-    color: #94a3b8;
-    font-size: 12px;
+    color: var(--slate-400);
+    font-size: var(--font-12);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s;
 
     &.active {
-      background: #3b82f6;
-      color: #ffffff;
-      box-shadow: 0 2px 6px Rgba(59, 130, 246, 0.4);
+      background: var(--blue-500);
+      color: var(--white);
+      box-shadow: var(--shadow-card);
     }
   }
 }
@@ -499,69 +498,68 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
 .context-tools-group {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .tool-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: #1e293b;
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
-  font-size: 11px;
-  font-weight: 600;
+  gap: $spacing-xs;
   padding: 4px 8px;
-  border-radius: 5px;
+  border: 1px solid Rgb(255 255 255 / 12%);
+  border-radius: $radius-md-alt;
+  background: var(--slate-800);
+  color: var(--slate-300);
+  font-size: var(--font-11);
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
 
   &:hover {
-    background: #334155;
-    color: #ffffff;
+    background: var(--slate-700);
+    color: var(--white);
   }
 
   &.active {
-    background: #0284c7;
-    border-color: #38bdf8;
-    color: #ffffff;
-    box-shadow: 0 0 8px Rgba(56, 189, 248, 0.4);
+    background: var(--sky-dark);
+    color: var(--white);
+    border-color: var(--sky);
+    box-shadow: $shadow-glow-cyan;
   }
 }
 
 .toolbar-subselect,
 .profile-select {
-  background: #0f172a;
-  color: #f8fafc;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
   padding: 4px 8px;
-  border-radius: 5px;
-  font-size: 11px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-md-alt;
+  background: var(--slate-900);
+  color: var(--slate-50);
+  font-size: var(--font-11);
   font-weight: 600;
   cursor: pointer;
 
   &:focus {
     outline: none;
-    border-color: #38bdf8;
+    border-color: var(--sky);
   }
 }
 
 .btn-action {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: $spacing-xs-5;
   padding: 5px 9px;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 600;
   border: none;
+  border-radius: $radius-md-alt;
+  font-size: var(--font-11);
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
 
   &.btn-generate {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #ffffff;
-    box-shadow: 0 2px 6px Rgba(16, 185, 129, 0.3);
+    color: var(--white);
+    box-shadow: var(--shadow-card);
+    will-change: filter;
 
     &:hover {
       filter: Brightness(1.1);
@@ -570,7 +568,8 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
 
   &.btn-primary {
     background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    color: #ffffff;
+    color: var(--white);
+    will-change: filter;
 
     &:hover {
       filter: Brightness(1.1);
@@ -578,40 +577,40 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   }
 
   &.btn-secondary {
-    background: #1e293b;
-    color: #cbd5e1;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgb(255 255 255 / 10%);
+    background: var(--slate-800);
+    color: var(--slate-300);
 
     &:hover {
-      background: #334155;
-      color: #ffffff;
+      background: var(--slate-700);
+      color: var(--white);
     }
   }
 
   &.btn-sprites {
-    background: #4338ca;
-    color: #ffffff;
+    background: var(--slate-900);
+    color: var(--white);
 
     &:hover {
-      background: #4f46e5;
+      background: var(--blue-500);
     }
   }
 
   &.btn-icon-text {
-    background: #1e293b;
-    color: #cbd5e1;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgb(255 255 255 / 10%);
+    background: var(--slate-800);
+    color: var(--slate-300);
 
     &:hover {
-      background: #334155;
+      background: var(--slate-700);
     }
   }
 
   &.btn-icon-only {
-    background: #1e293b;
-    color: #cbd5e1;
     padding: 4px 6px;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgb(255 255 255 / 10%);
+    background: var(--slate-800);
+    color: var(--slate-300);
 
     &:disabled {
       opacity: 0.4;
@@ -622,24 +621,10 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
 
 .undo-redo-group {
   display: flex;
-  gap: 2px;
+  gap: $spacing-2xs;
 }
 
 .hidden-file-input {
   display: none;
-}
-
-.spin-anim {
-  display: inline-block;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: Rotate(0deg);
-  }
-  to {
-    transform: Rotate(360deg);
-  }
 }
 </style>

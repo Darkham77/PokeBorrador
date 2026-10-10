@@ -132,16 +132,16 @@ const progress = computed(() => {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: 100%;
   max-width: 450px;
   margin: 0 auto;
   padding: 10px 14px;
   border: 1px solid Rgb(255 51 102 / 15%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Linear-Gradient(135deg, Rgb(30 15 26 / 75%) 0%, Rgb(15 5 12 / 92%) 100%);
   overflow: hidden;
-  box-shadow: 0 4px 15px Rgb(0 0 0 / 35%), inset 0 0 15px Rgb(255 51 102 / 5%);
+  box-shadow: var(--shadow-md);
 
   @media (width <= 520px) {
     max-width: 320px;
@@ -151,24 +151,24 @@ const progress = computed(() => {
   &.ready {
     background: Linear-Gradient(135deg, Rgb(20 35 25 / 75%) 0%, Rgb(8 18 12 / 92%) 100%);
     border-color: Rgb(34 197 94 / 35%);
-    box-shadow: 0 4px 15px Rgb(34 197 94 / 10%), inset 0 0 15px Rgb(34 197 94 / 5%);
+    box-shadow: var(--shadow-md);
 
     &:hover {
       background: Linear-Gradient(135deg, Rgb(26 46 33 / 80%) 0%, Rgb(12 26 18 / 96%) 100%);
       border-color: Rgb(34 197 94 / 65%);
-      box-shadow: 0 6px 22px Rgb(34 197 94 / 18%), inset 0 0 15px Rgb(34 197 94 / 8%);
+      box-shadow: var(--shadow-card-elevated);
     }
   }
 
   &.npc-egg-card {
     background: Linear-Gradient(135deg, Rgb(38 12 16 / 75%) 0%, Rgb(20 6 8 / 92%) 100%);
     border-color: Rgb(239 68 68 / 35%);
-    box-shadow: 0 4px 15px Rgb(239 68 68 / 12%), inset 0 0 15px Rgb(239 68 68 / 5%);
+    box-shadow: var(--shadow-md);
 
     &:hover {
       background: Linear-Gradient(135deg, Rgb(48 16 22 / 80%) 0%, Rgb(26 8 11 / 96%) 100%);
       border-color: Rgb(239 68 68 / 55%);
-      box-shadow: 0 6px 20px Rgb(239 68 68 / 20%), inset 0 0 15px Rgb(239 68 68 / 8%);
+      box-shadow: var(--shadow-card-elevated);
     }
   }
 }
@@ -177,7 +177,7 @@ const progress = computed(() => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   width: 100%;
 }
 
@@ -207,7 +207,7 @@ const progress = computed(() => {
     position: absolute;
     top: -2px;
     right: -2px;
-    font-size: 11px;
+    font-size: var(--font-11);
     filter: Drop-Shadow(0 0 4px var(--yellow));
   }
 }
@@ -215,22 +215,22 @@ const progress = computed(() => {
 .egg-details {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   min-width: 0;
   flex: 1;
 
   .name-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     min-width: 0;
   }
 
   .name {
     @include pixelated;
 
-    color: #fff;
-    font-size: 11px;
+    color: var(--white);
+    font-size: var(--font-11);
     line-height: 1.45;
     padding-bottom: 2px;
     letter-spacing: 0.5px;
@@ -244,10 +244,10 @@ const progress = computed(() => {
 
     padding: 1px 5px;
     border: 1px solid Rgb(239 68 68 / 40%);
-    border-radius: 99px;
+    border-radius: $radius-full;
     background: Rgb(239 68 68 / 15%);
-    color: #f87171;
-    font-size: 7.5px;
+    color: var(--rose);
+    font-size: var(--font-8);
     font-weight: 700;
     letter-spacing: 0.5px;
     flex-shrink: 0;
@@ -257,21 +257,21 @@ const progress = computed(() => {
 .progress-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .progress-bar-wrapper {
   position: relative;
   height: 8px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 99px;
+  border-radius: $radius-full;
   background: Rgb(0 0 0 / 45%);
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  border-radius: 99px;
+  border-radius: $radius-full;
   background: Linear-Gradient(90deg, #f36 0%, #a855f7 100%);
 }
 
@@ -285,8 +285,8 @@ const progress = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #94a3b8;
-  font-size: 8.5px;
+  color: var(--slate-400);
+  font-size: var(--font-9);
   white-space: nowrap;
 }
 
@@ -303,8 +303,8 @@ const progress = computed(() => {
 
   width: 100%;
   padding: 6px 12px;
-  font-size: 7.5px;
-  box-shadow: 0 4px 12px Rgb(34 197 94 / 20%);
+  font-size: var(--font-8);
+  box-shadow: var(--shadow-card);
 }
 
 .walking-label {
@@ -312,7 +312,7 @@ const progress = computed(() => {
 
   display: inline-block;
   color: var(--gray, #94a3b8);
-  font-size: 8px;
+  font-size: var(--font-8);
   text-align: center;
   opacity: 0.8;
   margin-top: 2px;

@@ -16,8 +16,8 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveCanonicalBridges,
   type TerrainCell
-} from '../../../src/logic/map/canonicalBridgeEngine.ts';
-import { BRIDGE_STYLES } from '../../../src/types/map/poiTypes.ts';
+} from '../../logic/map/canonicalBridgeEngine.ts';
+import { BRIDGE_STYLES } from '../../types/map/poiTypes.ts';
 
 describe.skip('Bridge Style Isolation & Homogeneity Invariants', () => {
   it('defines the canonical BRIDGE_STYLES union', () => {

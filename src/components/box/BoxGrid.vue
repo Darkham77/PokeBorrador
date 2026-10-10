@@ -51,6 +51,7 @@ const emit = defineEmits<{
   >
     <BoxPokemonCard
       v-for="item in displayList"
+      id="box-grid-boxpokemoncard-1"
       :key="item.index"
       :pokemon="item.p"
       :index="item.index"
@@ -72,11 +73,11 @@ const emit = defineEmits<{
   flex-direction: column;
   padding: 60px 40px;
   border: 2px dashed Rgb(255 255 255 / 5%);
-  border-radius: 32px;
+  border-radius: $radius-32;
   text-align: center;
   
   .empty-icon {
-    font-size: 40px;
+    font-size: var(--font-40);
     opacity: 0.3;
     margin-bottom: 20px;
     will-change: transform, filter, opacity;
@@ -87,7 +88,7 @@ const emit = defineEmits<{
     @include pixelated;
 
     color: var(--gray);
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 2px;
   }
 }

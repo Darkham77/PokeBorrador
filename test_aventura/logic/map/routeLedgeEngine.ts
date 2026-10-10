@@ -18,6 +18,7 @@
 
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { DECORATION_DEFAULT_SEED } from '../../config/studioConstants.ts';
 
 export type LedgeFacing = 'south' | 'east' | 'west';
 
@@ -43,11 +44,12 @@ export interface GenerateLedgesOptions {
   readonly maxLedgeRuns?: number;
 }
 
+const LEDGE_SEARCH_MARGIN = 6 as const;
+
 const MIN_LEDGE_RUN_LENGTH = 2;
 const MAX_LEDGE_RUN_LENGTH = 5;
 const DEFAULT_MAX_LEDGE_RUNS = 12;
-const CLEARANCE_MARGIN_POI = 4;
-const DEFAULT_SEED = 1337;
+const LEDGE_POI_CLEARANCE_MARGIN = 4;
 
 /**
  * Procedurally generates 1-way jumpable ledges on route corridors with anti-softlock guarantees.
@@ -57,7 +59,7 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
   const W = continent.width;
   const H = continent.height;
 
-  let rngSeed = (options.seed ?? DEFAULT_SEED) | 0;
+  let rngSeed = (options.seed ?? DECORATION_DEFAULT_SEED) | 0;
   const nextRng = (): number => {
     rngSeed = (rngSeed * 1664525 + 1013904223) | 0;
     return (rngSeed >>> 0) / 4294967296;
@@ -67,10 +69,10 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
   const excluded = Array.from({ length: H }, () => Array(W).fill(false));
 
   for (const poi of pois) {
-    const minX = Math.max(0, poi.gridX - CLEARANCE_MARGIN_POI);
-    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + CLEARANCE_MARGIN_POI);
-    const minY = Math.max(0, poi.gridY - CLEARANCE_MARGIN_POI);
-    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + CLEARANCE_MARGIN_POI);
+    const minX = Math.max(0, poi.gridX - LEDGE_POI_CLEARANCE_MARGIN);
+    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + LEDGE_POI_CLEARANCE_MARGIN);
+    const minY = Math.max(0, poi.gridY - LEDGE_POI_CLEARANCE_MARGIN);
+    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + LEDGE_POI_CLEARANCE_MARGIN);
 
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
@@ -107,8 +109,8 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
 
   // Scan route pathGrid cells to identify candidate route corridors
   const candidateAnchorCells: { x: number; y: number }[] = [];
-  for (let y = 6; y < H - 6; y += 2) {
-    for (let x = 6; x < W - 6; x += 2) {
+  for (let y = LEDGE_SEARCH_MARGIN; y < H - LEDGE_SEARCH_MARGIN; y += 2) {
+    for (let x = LEDGE_SEARCH_MARGIN; x < W - LEDGE_SEARCH_MARGIN; x += 2) {
       if (pathGrid[y]?.[x] && isCellValidLedgeGround(x, y)) {
         candidateAnchorCells.push({ x, y });
       }
@@ -184,8 +186,9 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
     }
 
     // Mark margin in occupiedCells to avoid contiguous parallel ledges
+    const LEDGE_PARALLEL_VERTICAL_MARGIN = 2 as const;
     for (let dx = -1; dx <= runLength; dx++) {
-      for (let dy = -2; dy <= 2; dy++) {
+      for (let dy = -LEDGE_PARALLEL_VERTICAL_MARGIN; dy <= LEDGE_PARALLEL_VERTICAL_MARGIN; dy++) {
         occupiedCells.add(`${startX + dx}_${y + dy}`);
       }
     }

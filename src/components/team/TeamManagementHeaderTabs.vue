@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TeamManagementTab } from '@/types/battle/pvp'
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 withDefaults(defineProps<{
@@ -14,7 +15,7 @@ withDefaults(defineProps<{
   pvpCount: 0,
   pvp6Count: 0,
   warCount: 0,
-  maxWarSlots: 6
+  maxWarSlots: MAX_POKEMON_TEAM_SIZE
 })
 
 const emit = defineEmits<{

@@ -16,9 +16,9 @@ fi
 # Detectar nombre del proyecto dinámicamente desde package.json
 PROJECT_NAME=$(grep -o '"name": *"[^"]*"' "$PKG_PATH" | head -n 1 | cut -d'"' -f4 || basename "$SCRIPT_DIR")
 
-# Por defecto: actualiza automáticamente a la última versión estable (Node.js Current + npm@latest)
-# --declared-versions / --locked / --pinned: restringe la instalación estrictamente a lo declarado en el commit (.nvmrc / package.json)
-UPDATE_TO_LATEST=true
+# Por defecto: instalación fija y reproducible según lo declarado en el commit (.nvmrc / package.json)
+# --update-version / -u / update / update-linux.sh: actualiza a la última versión estable (Node.js Current + npm@latest)
+UPDATE_TO_LATEST=false
 PRUNE_VERSIONS=false
 SET_DEFAULT=false
 
@@ -27,7 +27,7 @@ for arg in "$@"; do
         --declared-versions|--locked|--pinned)
             UPDATE_TO_LATEST=false
             ;;
-        --update-version|-u)
+        --update-version|-u|--latest|update)
             UPDATE_TO_LATEST=true
             ;;
         --prune-other-versions)
@@ -254,6 +254,15 @@ else
     echo "  [OK] .gitignore creado con scratch/"
 fi
 
+# Configuración de estándares locales de Git en el proyecto
+if [ -d "$SCRIPT_DIR/.git" ]; then
+    echo -e "\n  [+] Asegurando estándares locales de Git (core.filemode, core.autocrlf, core.eol)..."
+    git -C "$SCRIPT_DIR" config core.filemode false
+    git -C "$SCRIPT_DIR" config core.autocrlf input
+    git -C "$SCRIPT_DIR" config core.eol lf
+    echo "  [OK] Estándares de Git configurados localmente en el proyecto"
+fi
+
 # 9. Ejecutar Plugins Específicos del Proyecto (scripts/setup/plugins/*.sh)
 PLUGINS_DIR="$SCRIPT_DIR/scripts/setup/plugins"
 if [ -d "$PLUGINS_DIR" ]; then
@@ -271,8 +280,6 @@ if grep -q '"env:post-setup"' "$PKG_PATH"; then
     echo -e "\n🪝 Ejecutando gancho post-setup (npm run env:post-setup)..."
     npm run env:post-setup
 fi
-
-
 
 echo "======================================================"
 echo " 🎉 ¡ENTORNO Y DEPENDENCIAS PREPARADOS CON ÉXITO!"

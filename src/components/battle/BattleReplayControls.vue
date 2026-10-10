@@ -105,25 +105,25 @@ const cycleSpeed = () => {
   align-items: center;
   width: 100%;
   padding: 8px 16px;
-  background: rgb(15 23 42 / 95%);
-  border-top: 1px solid rgb(59 130 246 / 40%);
-  box-shadow: 0 -4px 12px rgb(0 0 0 / 40%);
+  background: Rgb(15 23 42 / 95%);
+  border-top: 1px solid Rgb(59 130 246 / 40%);
+  box-shadow: var(--shadow-card);
 }
 
 .replay-turn-indicator {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   font-family: var(--font-pixel, monospace);
 
   .label {
-    color: #94a3b8;
-    font-size: 0.75rem;
+    color: var(--slate-400);
+    font-size: var(--font-12);
   }
 
   .turn-numbers {
-    color: #60a5fa;
-    font-size: 0.9rem;
+    color: var(--blue-400);
+    font-size: var(--font-14);
     font-weight: bold;
   }
 }
@@ -131,7 +131,7 @@ const cycleSpeed = () => {
 .replay-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .replay-btn {
@@ -141,28 +141,28 @@ const cycleSpeed = () => {
   min-width: 36px;
   height: 32px;
   padding: 2px 8px;
-  border: 1px solid rgb(255 255 255 / 15%);
-  border-radius: 4px;
-  background: rgb(30 41 59 / 80%);
-  color: #f8fafc;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-sm;
+  background: Rgb(30 41 59 / 80%);
+  color: var(--slate-50);
   font-family: var(--font-pixel, monospace);
-  font-size: 0.85rem;
+  font-size: var(--font-14);
   cursor: pointer;
 
   &:hover {
-    background: rgb(59 130 246 / 30%);
-    border-color: #60a5fa;
+    background: Rgb(59 130 246 / 30%);
+    border-color: var(--blue-400);
   }
 
   &.play-btn {
-    background: rgb(59 130 246 / 25%);
-    font-size: 1rem;
-    border-color: rgb(59 130 246 / 60%);
+    background: Rgb(59 130 246 / 25%);
+    font-size: var(--font-16);
+    border-color: Rgb(59 130 246 / 60%);
   }
 
   &.speed-btn {
-    color: #38bdf8;
-    font-size: 0.75rem;
+    color: var(--sky);
+    font-size: var(--font-12);
     font-weight: bold;
   }
 }

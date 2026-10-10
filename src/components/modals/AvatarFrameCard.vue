@@ -36,6 +36,7 @@ const requirementLabel = computed(() => {
 
 <template>
   <div
+    id="avatar-frame-card-div-1"
     class="style-card avatar-item"
     :class="{ 
       active: isActive,

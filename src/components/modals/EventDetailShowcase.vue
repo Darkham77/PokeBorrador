@@ -82,6 +82,7 @@ function handleSpeciesClick() {
   <!-- Pokémon showcase (only when no banner image) -->
   <div
     v-else-if="involvedSpecies.length > 0"
+    id="event-detail-showcase-div-speciesclick"
     class="event-pokemon-showcase clickable"
     role="button"
     tabindex="0"

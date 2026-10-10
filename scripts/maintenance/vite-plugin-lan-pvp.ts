@@ -21,6 +21,11 @@ export const ALLOWED_LAN_TABLES = ['ranked_queue', 'battle_invites', 'profiles']
 export type AllowedLanTable = (typeof ALLOWED_LAN_TABLES)[number];
 const ALLOWED_TABLE_SET = new Set<string>(ALLOWED_LAN_TABLES); // runtime-set: Fast O(1) membership lookup set
 
+const HTTP_STATUS_OK = 200 as const;
+const HTTP_STATUS_FORBIDDEN = 403 as const;
+const HTTP_STATUS_BAD_REQUEST = 400 as const;
+const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500 as const;
+
 function isSqlSafe(sql: string): boolean {
   const normalized = sql.trim().toLowerCase();
   // Ensure query only references allowed tables
@@ -75,7 +80,7 @@ export function lanPvPPlugin(): Plugin {
               const body: LanPvpRequestBody = JSON.parse(bodyStr);
 
               if (!body.sql || !isSqlSafe(body.sql)) {
-                res.writeHead(403, { 'Content-Type': 'application/json' });
+                res.writeHead(HTTP_STATUS_FORBIDDEN, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ data: null, error: 'Forbidden query or table' }));
                 return;
               }
@@ -85,7 +90,7 @@ export function lanPvPPlugin(): Plugin {
               if (body.type === 'query') {
                 const stmt = db.prepare(body.sql);
                 const rows = stmt.all(...params);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.writeHead(HTTP_STATUS_OK, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ data: rows, error: null }));
                 return;
               }
@@ -93,7 +98,7 @@ export function lanPvPPlugin(): Plugin {
               if (body.type === 'run') {
                 const stmt = db.prepare(body.sql);
                 const result = stmt.run(...params);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.writeHead(HTTP_STATUS_OK, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({
                   data: result,
                   lastInsertRowid: Number(result.lastInsertRowid),
@@ -103,11 +108,11 @@ export function lanPvPPlugin(): Plugin {
                 return;
               }
 
-              res.writeHead(400, { 'Content-Type': 'application/json' });
+              res.writeHead(HTTP_STATUS_BAD_REQUEST, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ data: null, error: 'Invalid operation type' }));
             } catch (err: unknown) {
               const message = err instanceof Error ? err.message : String(err);
-              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.writeHead(HTTP_STATUS_INTERNAL_SERVER_ERROR, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ data: null, error: message }));
             }
           });

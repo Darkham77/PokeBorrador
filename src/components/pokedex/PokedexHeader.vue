@@ -56,22 +56,22 @@ defineProps<Props>()
   .stat-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     white-space: nowrap;
 
     &.highlight .badge-value {
       color: var(--yellow);
-      text-shadow: 0 0 8px rgb(255 215 0 / 30%);
+      text-shadow: 0 0 8px Rgb(255 215 0 / 30%);
     }
 
-    .badge-label { @include pixelated; color: var(--gray); font-size: 6px; }
+    .badge-label { @include pixelated; color: var(--gray); font-size: var(--font-6); }
     .badge-value { 
       @include pixelated; 
 
       color: var(--white); 
-      font-size: 8px;
+      font-size: var(--font-8);
       
-      small { font-size: 6px; opacity: 0.6; }
+      small { font-size: var(--font-6); opacity: 0.6; }
     }
   }
 }

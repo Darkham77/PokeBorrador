@@ -66,6 +66,7 @@ const openClassSelection = () => {
     <!-- No Class Selected State -->
     <div
       v-else
+      id="home-class-missions-widget-div-1"
       v-gsap-hover="{ scale: 1.01, y: -1 }"
       class="no-class-card"
       role="button"
@@ -80,6 +81,7 @@ const openClassSelection = () => {
         <span class="no-class-sub">Selecciona entre Entrenador, Criador, Cazabichos o Equipo Rocket para desbloquear ventajas únicas.</span>
       </div>
       <button
+        id="home-class-missions-widget-btn-elegir-clase"
         v-gsap-hover
         class="no-class-btn"
       >
@@ -104,7 +106,7 @@ const openClassSelection = () => {
   @include home-card-title-wrap;
 
   .title-text-group {
-    gap: 3px;
+    gap: $spacing-xs-alt;
   }
 
   .card-title {
@@ -112,14 +114,14 @@ const openClassSelection = () => {
 
     margin: 0;
     color: var(--class-accent, var(--yellow));
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
 
   .class-sub {
-    color: rgb(255 255 255 / 50%);
-    font-size: 10px;
+    color: Rgb(255 255 255 / 50%);
+    font-size: var(--font-10);
     line-height: 1.35;
   }
 }
@@ -134,19 +136,19 @@ const openClassSelection = () => {
 .class-xp-cards-layout {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   width: 100%;
 
   :deep(.profile-section-card) {
     padding: 12px 14px;
-    border: 1px solid rgb(255 255 255 / 6%);
-    border-radius: 10px;
-    background: rgb(15 23 42 / 60%);
+    border: 1px solid Rgb(255 255 255 / 6%);
+    border-radius: $radius-lg-alt;
+    background: Rgb(15 23 42 / 60%);
     box-sizing: border-box;
 
     &:hover {
-      background: rgb(15 23 42 / 80%);
-      border-color: rgb(255 255 255 / 12%);
+      background: Rgb(15 23 42 / 80%);
+      border-color: Rgb(255 255 255 / 12%);
     }
   }
 }
@@ -154,20 +156,20 @@ const openClassSelection = () => {
 .no-class-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 12px 14px;
-  border: 1px dashed rgb(250 204 21 / 30%);
-  border-radius: 8px;
-  background: rgb(250 204 21 / 5%);
+  border: 1px dashed Rgb(250 204 21 / 30%);
+  border-radius: $radius-lg;
+  background: Rgb(250 204 21 / 5%);
   cursor: pointer;
 
   &:hover {
-    background: rgb(250 204 21 / 10%);
+    background: Rgb(250 204 21 / 10%);
     border-color: var(--yellow, #facc15);
   }
 
   .no-class-icon {
-    font-size: 24px;
+    font-size: var(--font-24);
     flex-shrink: 0;
   }
 
@@ -181,12 +183,12 @@ const openClassSelection = () => {
       @include pixelated;
 
       color: var(--yellow, #facc15);
-      font-size: 10px;
+      font-size: var(--font-10);
     }
 
     .no-class-sub {
-      color: #cbd5e1;
-      font-size: 9px;
+      color: var(--slate-300);
+      font-size: var(--font-9);
     }
   }
 
@@ -195,10 +197,10 @@ const openClassSelection = () => {
 
     padding: 6px 12px;
     border: none;
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: var(--yellow, #facc15);
-    color: #000;
-    font-size: 8px;
+    color: var(--black);
+    font-size: var(--font-8);
     font-weight: bold;
     cursor: pointer;
     flex-shrink: 0;

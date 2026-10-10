@@ -86,19 +86,19 @@ onUnmounted(() => {
   mix-blend-mode: color-dodge;
   
   &.reflect {
-    border: 2px solid #ff8c00;
+    border: 2px solid var(--orange-500);
     background: Radial-Gradient(circle, Transparent 40%, #ff8c00 100%);
   }
   
   &.light-screen {
-    border: 2px solid #ffd700;
+    border: 2px solid var(--gold);
     background: Radial-Gradient(circle, Transparent 40%, #ffd700 100%);
   }
 }
 
 .pv-fx-aura-overlay {
   position: absolute;
-  border-radius: 40%;
+  border-radius: 50%;
   opacity: 0.4;
   inset: -5%;
   pointer-events: none;

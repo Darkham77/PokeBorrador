@@ -36,11 +36,23 @@ export const ABILITY_RULES: readonly AbilityRuleId[] = [
 export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_abilities',
       configKey: 'domain.abilities',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Pokemon Ability Validator',
       description: 'Valida base de datos canónica y paridad de habilidades',
       icon: '✨',

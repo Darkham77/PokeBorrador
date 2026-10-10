@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { isMapLens, requireMapLens, type MapLens } from '../types/map/mapLenses'
+import { isMapLens, requireMapLens, type MapLens } from '../types/map/mapLenses.ts'
 import { logger } from '@/logic/utils/logger'
 
-export const MAP_LENS_STORAGE_KEY = 'pvs_active_map_lens'
+const MAP_LENS_STORAGE_KEY = 'pvs_active_map_lens'
 
 export const useMapLensStore = defineStore('mapLens', () => {
   const activeLens = ref<MapLens>('adventure')

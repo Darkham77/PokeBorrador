@@ -16,15 +16,17 @@ import {
   type WaterTerrainKind
 } from './waterAutotileEngine.ts';
 import {
-  resolveMountainMapGrid,
-  type MountainPalette
+  resolveMountainMapGrid
 } from './mountainAutotileEngine.ts';
 import type {
   ContinentGeneratorOptions,
   ContinentMapResult,
   SettlementExclusionZone
 } from './continentGenerator.ts';
-import { generateArchipelagoIslands } from './archipelagoGenerator.ts';
+import {
+  generateArchipelagoIslands,
+  applyArchipelagoBeachBuffers
+} from './archipelagoGenerator.ts';
 import { synthesizeMacroBiomes } from './macroBiomeSynthesizer.ts';
 import { generateContinentalMountains } from './continentMountainEngine.ts';
 import {
@@ -32,16 +34,51 @@ import {
   type ProceduralRiverDrainageResult
 } from './continent/riverHydrographyEngine.ts';
 import { compileGeologicalAutotiling } from './geologicalAutotilingEngine.ts';
+import {
+  CONTINENT_DEFAULT_SEED,
+  DEFAULT_BEACH_WIDTH,
+  DEFAULT_LAKE_COUNT,
+  DEFAULT_MOUNTAIN_PALETTE
+} from '../../config/studioConstants.ts';
+import { CONTINENT_SCULPT } from '../../config/continentSculptingConfig.ts';
+
+interface BfsQueueCell {
+  readonly x: number;
+  readonly y: number;
+  readonly d: number;
+}
+
+function runBfsDistanceField(
+  queue: BfsQueueCell[],
+  dist: number[][],
+  width: number,
+  height: number,
+  maxDistance: number,
+  isBlocked?: (x: number, y: number) => boolean
+): void {
+  let head = 0;
+  while (head < queue.length) {
+    const curr = queue[head++]!;
+    if (curr.d >= maxDistance) continue;
+
+    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+      const nx = curr.x + dx!;
+      const ny = curr.y + dy!;
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        if (isBlocked && isBlocked(nx, ny)) continue;
+        if (dist[ny]![nx]! > curr.d + 1) {
+          dist[ny]![nx] = curr.d + 1;
+          queue.push({ x: nx, y: ny, d: curr.d + 1 });
+        }
+      }
+    }
+  }
+}
 
 export interface PerimeterBeachOptions {
   readonly variableBeach?: boolean;
   readonly seed?: number;
 }
-
-const DEFAULT_BEACH_WIDTH = 3;
-const DEFAULT_LAKE_COUNT = 2;
-const DEFAULT_SEED = 42;
-const DEFAULT_MOUNTAIN_PALETTE: MountainPalette = 'brown';
 
 /**
  * Distributes a natural sand beach transition buffer of width `beachWidth`
@@ -56,7 +93,7 @@ export function distributePerimeterBeach(
   const H = matrix.length;
   const W = matrix[0]?.length ?? 0;
   const isVariable = typeof seedOrOptions === 'object' ? (seedOrOptions.variableBeach ?? false) : false;
-  const seed = typeof seedOrOptions === 'number' ? seedOrOptions : (seedOrOptions?.seed ?? DEFAULT_SEED);
+  const seed = typeof seedOrOptions === 'number' ? seedOrOptions : (seedOrOptions?.seed ?? CONTINENT_DEFAULT_SEED);
   const prng = isVariable ? new SimplexNoise(seed + 99) : null;
 
   // Precompute target beach width per cell
@@ -71,7 +108,7 @@ export function distributePerimeterBeach(
 
   // Multi-source BFS from ocean water cells
   const dist: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
-  const queue: { x: number; y: number; d: number }[] = [];
+  const queue: BfsQueueCell[] = [];
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -83,22 +120,7 @@ export function distributePerimeterBeach(
   }
 
   const maxPossibleWidth = beachWidth + 2;
-  let head = 0;
-  while (head < queue.length) {
-    const curr = queue[head++]!;
-    if (curr.d >= maxPossibleWidth) continue;
-
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = curr.x + dx!;
-      const ny = curr.y + dy!;
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-        if (dist[ny]![nx]! > curr.d + 1) {
-          dist[ny]![nx] = curr.d + 1;
-          queue.push({ x: nx, y: ny, d: curr.d + 1 });
-        }
-      }
-    }
-  }
+  runBfsDistanceField(queue, dist, W, H, maxPossibleWidth);
 
   // Turn land within targetWidth of ocean water into sand.
   // Invariant: dist <= 1 is ALWAYS turned into sand (since targetWidth >= 1),
@@ -214,7 +236,7 @@ export function removeOrphanTiles(
 export function carveInlandLakes(
   matrix: WaterTerrainKind[][],
   lakeCount = DEFAULT_LAKE_COUNT,
-  seed = DEFAULT_SEED
+  seed = CONTINENT_DEFAULT_SEED
 ): void {
   const H = matrix.length;
   const W = matrix[0]?.length ?? 0;
@@ -252,8 +274,8 @@ export function carveInlandLakes(
 
   // Find candidate centroids for lakes
   const candidates: { x: number; y: number; score: number }[] = [];
-  for (let y = 8; y < H - 8; y++) {
-    for (let x = 8; x < W - 8; x++) {
+  for (let y = CONTINENT_SCULPT.LAKE_SEARCH_MARGIN; y < H - CONTINENT_SCULPT.LAKE_SEARCH_MARGIN; y++) {
+    for (let x = CONTINENT_SCULPT.LAKE_SEARCH_MARGIN; x < W - CONTINENT_SCULPT.LAKE_SEARCH_MARGIN; x++) {
       if (clearance[y]![x]! >= minClearanceReq) {
         const n = noise.noise2D(x * 0.1, y * 0.1);
         candidates.push({ x, y, score: clearance[y]![x]! + n * 2.0 });
@@ -297,7 +319,7 @@ export function carveInlandLakes(
  * Eliminates artificial inland ocean voids, preserves peripheral ocean waters, and guarantees
  * 100% of mainland settlements rest deeply on solid continental bedrock.
  */
-export function generateGraphEnvelopeLandmass(
+function generateGraphEnvelopeLandmass(
   embedded: EmbeddedTopologyGraph,
   W: number,
   H: number,
@@ -336,8 +358,8 @@ export function generateGraphEnvelopeLandmass(
     if (corridor.kind !== 'surf_route') continue;
     for (const pt of corridor.pathCells) {
       // Perturb radius with simplex noise for natural organic coastal straits
-      const n = prng.noise2D(pt.x * 0.05, pt.y * 0.05);
-      const rad = Math.max(8, Math.round(14 + n * 4.0));
+      const n = prng.noise2D(pt.x * CONTINENT_SCULPT.SURF_NOISE_SCALE, pt.y * CONTINENT_SCULPT.SURF_NOISE_SCALE);
+      const rad = Math.max(CONTINENT_SCULPT.SURF_MIN_RADIUS, Math.round(CONTINENT_SCULPT.SURF_BASE_RADIUS + n * CONTINENT_SCULPT.SURF_NOISE_AMP));
       for (let dy = -rad; dy <= rad; dy++) {
         for (let dx = -rad; dx <= rad; dx++) {
           if (dx * dx + dy * dy <= rad * rad) {
@@ -346,7 +368,7 @@ export function generateGraphEnvelopeLandmass(
             if (wx >= 0 && wx < W && wy >= 0 && wy < H) {
               // Protect terminal node footprints and their immediate disembarkation shorelines (margin = 4)
               const nearNode = embedded.nodes.some((node) => {
-                const nodeMargin = 4;
+                const nodeMargin = CONTINENT_SCULPT.SURF_NODE_MARGIN;
                 return (
                   wx >= node.gridX - nodeMargin &&
                   wx < node.gridX + node.width + nodeMargin &&
@@ -407,23 +429,7 @@ export function generateGraphEnvelopeLandmass(
 
   // Multi-source BFS outwards to compute continuous network proximity
   const maxBuffer = 55;
-  let head = 0;
-  while (head < queue.length) {
-    const curr = queue[head++]!;
-    if (curr.d >= maxBuffer) continue;
-
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = curr.x + dx!;
-      const ny = curr.y + dy!;
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-        if (surfWaterMask[ny]![nx]) continue;
-        if (dist[ny]![nx]! > curr.d + 1) {
-          dist[ny]![nx] = curr.d + 1;
-          queue.push({ x: nx, y: ny, d: curr.d + 1 });
-        }
-      }
-    }
-  }
+  runBfsDistanceField(queue, dist, W, H, maxBuffer, (nx, ny) => !!surfWaterMask[ny]![nx]);
 
   // Base continental radius buffer: 28 tiles around network (bridges 50-60 tile inter-city gaps cleanly)
   const baseBuffer = 28;
@@ -431,7 +437,13 @@ export function generateGraphEnvelopeLandmass(
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       // Guaranteed perimeter ocean margin or protected surf water corridor
-      if (x < 8 || x >= W - 8 || y < 8 || y >= H - 8 || surfWaterMask[y]![x]) {
+      if (
+        x < CONTINENT_SCULPT.OCEAN_PERIMETER_MARGIN ||
+        x >= W - CONTINENT_SCULPT.OCEAN_PERIMETER_MARGIN ||
+        y < CONTINENT_SCULPT.OCEAN_PERIMETER_MARGIN ||
+        y >= H - CONTINENT_SCULPT.OCEAN_PERIMETER_MARGIN ||
+        surfWaterMask[y]![x]
+      ) {
         matrix[y]![x] = 'water';
         continue;
       }
@@ -522,11 +534,12 @@ export function sculptContinentFromGraph(
   }
 
   // Guarantee all terrestrial (non-surf) corridor pathCells remain on solid land
+  const CORRIDOR_SOLID_LAND_RADIUS = 2 as const;
   for (const corridor of embedded.corridors) {
     if (corridor.kind === 'surf_route' || corridor.kind === 'wormhole_tunnel') continue;
     for (const cell of corridor.pathCells) {
-      for (let dy = -2; dy <= 2; dy++) {
-        for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = -CORRIDOR_SOLID_LAND_RADIUS; dy <= CORRIDOR_SOLID_LAND_RADIUS; dy++) {
+        for (let dx = -CORRIDOR_SOLID_LAND_RADIUS; dx <= CORRIDOR_SOLID_LAND_RADIUS; dx++) {
           const cy = cell.y + dy;
           const cx = cell.x + dx;
           if (cx >= 2 && cx < W - 2 && cy >= 2 && cy < H - 2) {
@@ -577,28 +590,7 @@ export function sculptContinentFromGraph(
 
   // Guarantee continuous beach buffer invariant for archipelago islands
   if (archipelagoIslands.length > 0) {
-    for (const island of archipelagoIslands) {
-      for (let iter = 0; iter < 2; iter++) {
-        for (let y = Math.max(1, island.bounds.minY - 2); y <= Math.min(H - 2, island.bounds.maxY + 2); y++) {
-          for (let x = Math.max(1, island.bounds.minX - 2); x <= Math.min(W - 2, island.bounds.maxX + 2); x++) {
-            if (sanitizedWaterMatrix[y]![x] === 'grass') {
-              const touchesWater =
-                sanitizedWaterMatrix[y - 1]![x] === 'water' ||
-                sanitizedWaterMatrix[y - 1]![x] === 'water_deep' ||
-                sanitizedWaterMatrix[y + 1]![x] === 'water' ||
-                sanitizedWaterMatrix[y + 1]![x] === 'water_deep' ||
-                sanitizedWaterMatrix[y]![x - 1] === 'water' ||
-                sanitizedWaterMatrix[y]![x - 1] === 'water_deep' ||
-                sanitizedWaterMatrix[y]![x + 1] === 'water' ||
-                sanitizedWaterMatrix[y]![x + 1] === 'water_deep';
-              if (touchesWater) {
-                sanitizedWaterMatrix[y]![x] = 'sand';
-              }
-            }
-          }
-        }
-      }
-    }
+    applyArchipelagoBeachBuffers(sanitizedWaterMatrix, archipelagoIslands, W, H);
   }
 
   // Guarantee outer perimeter remains 100% ocean water

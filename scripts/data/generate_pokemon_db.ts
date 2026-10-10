@@ -137,18 +137,19 @@ async function resolveSpeciesLearnset(speciesId: PokemonDbSpeciesId): Promise<Re
     currentSlug = await collectSpeciesLearnsetRaw(currentSlug, movesMap, compatMovesSet);
   }
 
+  const DEFAULT_MOVE_PP_FALLBACK = 35 as const;
   const learnset: [number, string, number][] = [];
   for (const [moveId, level] of movesMap.entries()) {
     const canonicalMoveId = requirePokemonMoveId(moveId);
     const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId) || Dex.moves.get(moveId);
     if (moveData?.exists) {
-      learnset.push([level, canonicalMoveId, moveData.pp || 35]);
+      learnset.push([level, canonicalMoveId, moveData.pp || DEFAULT_MOVE_PP_FALLBACK]);
     }
   }
   if (learnset.length === 0) {
     const defaultMoveId = speciesId === 'unown' ? 'hiddenpower' : 'tackle';
     const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(defaultMoveId) || Dex.moves.get(defaultMoveId);
-    learnset.push([1, requirePokemonMoveId(defaultMoveId), moveData?.exists ? moveData.pp : 35]);
+    learnset.push([1, requirePokemonMoveId(defaultMoveId), moveData?.exists ? moveData.pp : DEFAULT_MOVE_PP_FALLBACK]);
   }
   learnset.sort((a, b) => a[0] - b[0]);
   return { learnset, compatMoves: Array.from(compatMovesSet) };

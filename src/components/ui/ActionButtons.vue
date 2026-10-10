@@ -71,6 +71,6 @@ onMounted(() => {
 .action-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 </style>

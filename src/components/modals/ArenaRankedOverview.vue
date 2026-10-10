@@ -140,6 +140,7 @@ function handleEmojiLeave(e: MouseEvent) {
   <div class="arena-ranked-overview">
     <!-- 1. Top Section: Seasonal Tournament Banner & Official Rules (EventCard style) -->
     <SeasonTournamentCard
+      id="arena-ranked-overview-seasontournamentcard-tournamentcardclick"
       :current-theme="currentTheme"
       :allowed-types="allowedTypes"
       :level-cap="levelCap"
@@ -217,6 +218,7 @@ function handleEmojiLeave(e: MouseEvent) {
       <div class="actions-buttons-group">
         <button
           v-if="!livePvP.isSearching"
+          id="arena-ranked-overview-btn-1"
           class="search-btn"
           :disabled="!seasonActive"
           @click.stop="startSearch"
@@ -226,6 +228,7 @@ function handleEmojiLeave(e: MouseEvent) {
         </button>
         <button
           v-else
+          id="arena-ranked-overview-btn-cancelar-b-squeda"
           class="search-btn is-searching"
           @click.stop="startSearch"
         >
@@ -242,7 +245,7 @@ function handleEmojiLeave(e: MouseEvent) {
 .arena-ranked-overview {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   width: 100%;
 }
 
@@ -252,7 +255,7 @@ function handleEmojiLeave(e: MouseEvent) {
 
 .actions-buttons-group {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
 
   .search-btn {

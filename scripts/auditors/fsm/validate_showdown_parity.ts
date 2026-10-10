@@ -144,11 +144,23 @@ export const CANONICAL_SHOWDOWN_PROTOCOL_TOKENS = {
 export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: true,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_showdown_parity',
       configKey: 'fsm.showdownParity',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Pokemon Showdown Protocol Parity Auditor',
       description: 'Verifica paridad del protocolo Pokémon Showdown',
       icon: '⚡',

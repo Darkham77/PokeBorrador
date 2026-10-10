@@ -198,6 +198,26 @@ useBattleCombatantAnims(
 const setPokeballImgRef = (el: HTMLImageElement | null) => {
   pokeballImgRef.value = el
 }
+
+const SPRITE_SIZE_SCALE_FACTOR = 2
+const FX_RADIUS_MULTIPLIER = 1.25
+const PERCENT_COORDINATE_SCALE = 100
+
+const combatantSpriteSize = computed(() => displaySize.value * SPRITE_SIZE_SCALE_FACTOR)
+const combatantFxRadius = computed(() => fxRadius.value * FX_RADIUS_MULTIPLIER)
+const combatantSpriteStyle = computed(() => {
+  const sizePx = `${combatantSpriteSize.value}px`
+  const translateX = -(feetPoints.value.feetX * PERCENT_COORDINATE_SCALE)
+  const translateY = -(feetPoints.value.feetY * PERCENT_COORDINATE_SCALE)
+  return {
+    width: sizePx,
+    height: sizePx,
+    position: 'absolute' as const,
+    left: '50%',
+    top: localGroundY.value,
+    transform: `translate(${translateX}%, ${translateY}%)`
+  }
+})
 </script>
 
 <template>
@@ -230,7 +250,7 @@ const setPokeballImgRef = (el: HTMLImageElement | null) => {
         <CombatShadow 
           v-if="shadowKey" 
           :shadow-id="shadowKey" 
-          :sprite-size="displaySize * 2"
+          :sprite-size="combatantSpriteSize"
           :shadow-scale="feetPoints.shadowScale"
           :style="{ '--shadow-y': localGroundY, '--shadow-z-index': '1' }"
         />
@@ -271,18 +291,11 @@ const setPokeballImgRef = (el: HTMLImageElement | null) => {
             v-bind="volatilesProps"
             :vibrant="true"
             :sparkle-count="8"
-            :radius="fxRadius * 1.25"
+            :radius="combatantFxRadius"
             :sprite-scale="fxScale"
             :poke-scale="speciesSizeScale"
             :hide-status-overlay="props.hideStatusOverlay"
-            :style="{
-              width: (displaySize * 2) + 'px',
-              height: (displaySize * 2) + 'px',
-              position: 'absolute',
-              left: '50%',
-              top: localGroundY,
-              transform: `translate(calc(-${feetPoints.feetX * 100}%), calc(-${feetPoints.feetY * 100}%))`
-            }"
+            :style="combatantSpriteStyle"
             :is-battle="true"
           >
             <!-- Capa de Sprite y Guías Modularizada -->

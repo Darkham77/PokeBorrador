@@ -27,13 +27,17 @@ const localDimensions = computed(() => {
   return SCALE_DIMENSIONS[scale] ?? { width: 40, height: 30 };
 });
 
+const REGIONAL_SEED_PRIME = 31;
+const GRID_COORD_PRIME = 17;
+
 const localSeed = computed(() => {
-  return Math.abs(props.regionalSeed * 31 + props.poi.gridX * 17 + props.poi.gridY);
+  return Math.abs(props.regionalSeed * REGIONAL_SEED_PRIME + props.poi.gridX * GRID_COORD_PRIME + props.poi.gridY);
 });
 </script>
 
 <template>
   <div
+    id="regional-local-map-modal-div-1"
     class="local-editor-modal-backdrop"
     @click.self="emit('close')"
   >
@@ -45,6 +49,7 @@ const localSeed = computed(() => {
           <span class="dimension-badge">{{ localDimensions.width }} × {{ localDimensions.height }}</span>
         </div>
         <button
+          id="regional-local-map-modal-btn-cerrar"
           type="button"
           class="close-btn"
           title="Cerrar y volver al Continente"
@@ -68,81 +73,80 @@ const localSeed = computed(() => {
 <style scoped lang="scss">
 .local-editor-modal-backdrop {
   position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.82);
-  backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 24px;
+  background: Rgb(0 0 0 / 82%);
+  inset: 0;
+  backdrop-filter: Blur(8px);
 }
 
 .local-editor-modal {
+  display: flex;
+  flex-direction: column;
   width: dvw;
   max-width: 1450px;
   height: dvh;
-  background: #0f172a;
-  border: 1px solid Rgba(56, 189, 248, 0.3);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
+  border: 1px solid Rgb(56 189 248 / 30%);
+  border-radius: $radius-xl;
+  background: var(--slate-900);
   overflow: hidden;
-  box-shadow: 0 24px 60px Rgba(0, 0, 0, 0.7);
+  box-shadow: var(--shadow-2xl);
 
   .modal-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     padding: 10px 18px;
-    background: Rgba(15, 23, 42, 0.95);
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+    background: Rgb(15 23 42 / 95%);
+    border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
     .header-title {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: $spacing-md-alt;
 
       h3 {
         margin: 0;
-        font-size: 1rem;
-        color: #f8fafc;
+        color: var(--slate-50);
+        font-size: var(--font-16);
         font-weight: 700;
       }
 
       .dimension-badge {
-        font-size: 0.75rem;
-        background: Rgba(56, 189, 248, 0.15);
-        color: #38bdf8;
-        border: 1px solid Rgba(56, 189, 248, 0.3);
         padding: 2px 8px;
-        border-radius: 4px;
+        border: 1px solid Rgb(56 189 248 / 30%);
+        border-radius: $radius-sm;
+        background: Rgb(56 189 248 / 15%);
+        color: var(--sky);
         font-family: monospace;
+        font-size: var(--font-12);
       }
     }
 
     .close-btn {
-      background: Rgba(239, 68, 68, 0.15);
-      border: 1px solid Rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
       padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
+      border: 1px solid Rgb(239 68 68 / 30%);
+      border-radius: $radius-md;
+      background: Rgb(239 68 68 / 15%);
+      color: var(--red-300);
+      font-size: var(--font-13);
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
 
       &:hover {
-        background: Rgba(239, 68, 68, 0.3);
+        background: Rgb(239 68 68 / 30%);
       }
     }
   }
 
   .modal-body {
-    flex: 1;
-    overflow: auto;
     position: relative;
     background: #090d16;
+    flex: 1;
+    overflow: auto;
   }
 }
 </style>

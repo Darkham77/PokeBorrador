@@ -4,9 +4,9 @@
 .rank-card {
   padding: 10px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 2%);
-  box-shadow: inset 0 0 12px Rgb(255 255 255 / 2%);
+  box-shadow: $shadow-inset-subtle;
   container-type: inline-size;
   container-name: rank-card;
 
@@ -26,13 +26,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 6px 10px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 25%);
     color: var(--yellow, #facc15);
-    font-size: 8px;
+    font-size: var(--font-8);
     margin-top: 8px;
     margin-bottom: 2px;
   }
@@ -41,7 +41,7 @@
 .arena-stats {
   display: grid;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   grid-template-columns: repeat(3, 1fr);
   box-sizing: border-box;
 }
@@ -50,7 +50,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
 
   .tier-display {
@@ -70,7 +70,7 @@
   @media (width <= 380px) {
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .arena-stats {
       width: 100%;
@@ -83,7 +83,7 @@
 .tier-display {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   min-width: 0;
   margin-bottom: 0;
 }
@@ -116,9 +116,8 @@
   border: 2px solid var(--tier-color);
   border-radius: 50%;
   background: Radial-Gradient(circle at 35% 35%, Rgb(255 255 255 / 5%) 0%, Rgb(0 0 0 / 40%) 100%), Rgb(255 255 255 / 1%);
-  box-shadow: 
-    0 0 16px color-mix(in sRGB, var(--tier-color) 40%, transparent), 
-    inset 0 0 10px color-mix(in sRGB, var(--tier-color) 20%, transparent);
+  box-shadow: var(--shadow-card);
+
   overflow: hidden;
   box-sizing: border-box;
 
@@ -128,14 +127,14 @@
     left: 0;
     width: 100%;
     height: 50%;
-    border-radius: 36px 36px 0 0;
+    border-radius: $radius-36 $radius-36 0 0;
     background: Linear-Gradient(to bottom, Rgb(255 255 255 / 8%), transparent);
     content: '';
   }
 
   .emoji {
     display: inline-block;
-    font-size: 24px;
+    font-size: var(--font-24);
     line-height: 1;
     filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 50%)) Drop-Shadow(0 0 8px color-mix(in sRGB, var(--tier-color) 50%, transparent));
     user-select: none;
@@ -146,11 +145,11 @@
 .tier-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
 
   h2 {
     margin: 0;
-    font-size: 16px;
+    font-size: var(--font-16);
     font-weight: 900;
     letter-spacing: -0.5px;
     text-shadow: 0 0 15px Rgb(255 255 255 / 10%);
@@ -161,7 +160,7 @@
   @include pixelated;
 
   color: Rgb(226 232 240 / 95%);
-  font-size: 7.5px;
+  font-size: var(--font-8);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -172,10 +171,10 @@
   display: inline-block;
   padding: 2px 8px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(255 255 255 / 5%);
   color: var(--yellow);
-  font-size: 7.5px;
+  font-size: var(--font-8);
   align-self: flex-start;
   text-shadow: 0 0 8px Rgb(255 214 10 / 30%);
 }
@@ -185,7 +184,7 @@
   height: auto;
   padding: 6px 4px;
   border: 1px solid Rgb(255 255 255 / 2%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(0 0 0 / 15%); 
   text-align: center;
   align-self: center;
@@ -194,7 +193,7 @@
   .val { 
     display: block; 
     color: var(--white); 
-    font-size: 11px; 
+    font-size: var(--font-11); 
     font-weight: bold;
     line-height: 1.35;
     white-space: nowrap;
@@ -205,7 +204,7 @@
     @include pixelated; 
 
     color: var(--gray, #94a3b8); 
-    font-size: 6.5px; 
+    font-size: var(--font-7); 
     font-weight: bold;
     line-height: 1.2;
     margin-top: 2px;
@@ -216,7 +215,7 @@
 .passive-defense {
   padding: 16px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 20%);
 }
 
@@ -224,20 +223,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   margin-bottom: 12px;
 
   .title-group {
     h3 { 
       margin: 0; 
       color: var(--white); 
-      font-size: 11px; 
+      font-size: var(--font-11); 
       font-weight: 800;
     }
     p { 
       margin: 4px 0 0; 
       color: Rgb(148 163 184 / 50%); 
-      font-size: 9px; 
+      font-size: var(--font-9); 
     }
   }
 }
@@ -247,10 +246,10 @@
 
   padding: 8px 16px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 3%);
   color: Rgb(148 163 184 / 60%);
-  font-size: 7px;
+  font-size: var(--font-7);
   cursor: pointer;
   will-change: background-color, color, border-color;
 
@@ -258,7 +257,7 @@
     background: Rgb(34 197 94 / 15%);
     color: Rgb(74 222 128 / 100%);
     border-color: Rgb(34 197 94 / 30%);
-    box-shadow: 0 0 15px Rgb(34 197 94 / 15%);
+    box-shadow: var(--shadow-glow-amber);
   }
 }
 
@@ -266,8 +265,8 @@
   @include pixelated; 
 
   padding: 8px 12px; 
-  border-radius: 8px; 
-  font-size: 8px; 
+  border-radius: $radius-lg; 
+  font-size: var(--font-8); 
   font-weight: bold; 
   text-align: center;
 

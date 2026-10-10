@@ -198,8 +198,8 @@ const consumeItem = () => {
 }
 
 .relearner-help {
-  color: rgb(255 255 255 / 60%);
-  font-size: 13px;
+  color: Rgb(255 255 255 / 60%);
+  font-size: var(--font-13);
   line-height: 1.4;
   text-align: center;
   margin-bottom: 16px;
@@ -210,7 +210,7 @@ const consumeItem = () => {
 
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   max-height: 380px;
   padding: 6px 12px;
   overflow: hidden auto;
@@ -224,8 +224,8 @@ const consumeItem = () => {
 
 .empty-msg {
   padding: 40px 20px;
-  color: rgb(255 255 255 / 30%);
-  font-size: 11px;
+  color: Rgb(255 255 255 / 30%);
+  font-size: var(--font-11);
   text-align: center;
 }
 </style>

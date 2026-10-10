@@ -58,7 +58,7 @@ const emit = defineEmits<{
 
     margin: 0; 
     color: var(--yellow, #facc15); 
-    font-size: 10px; 
+    font-size: var(--font-10); 
     font-weight: 800; 
     overflow-wrap: break-word; 
   }
@@ -66,18 +66,18 @@ const emit = defineEmits<{
   .missions-header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     flex-shrink: 0;
 
     .refresh-count { 
       @include pixelated;
 
       padding: 3px 8px;
-      border: 1px solid rgb(255 255 255 / 8%);
-      border-radius: 6px;
-      background: rgb(255 255 255 / 5%); 
+      border: 1px solid Rgb(255 255 255 / 8%);
+      border-radius: $radius-md;
+      background: Rgb(255 255 255 / 5%); 
       color: var(--gray, #94a3b8); 
-      font-size: 10px;
+      font-size: var(--font-10);
       white-space: nowrap;
 
       .refresh-label {

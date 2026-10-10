@@ -53,7 +53,7 @@ const blockingModalIndex = computed(() => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .modal-host {
   /* The host itself is invisible, modals teleport out */
   position: absolute;

@@ -44,7 +44,6 @@ const resetAllBadges = () => {
   getDebugBridge().resetBadges()
 }
 
-
 const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
 
 // Call console commands directly (they handle securityCheck internally)
@@ -72,11 +71,15 @@ function setFaction(f: string) {
       <label>Dinero</label>
       <div class="input-group">
         <input
+          id="debug-stats-tab-input-debugmoney"
           v-model="debugMoney"
           type="number"
         >
         <PVTooltip title="Añade la cantidad de dinero especificada a tu cuenta.">
-          <button @click.stop="addMoney">
+          <button
+            id="debug-stats-tab-btn-a-adir"
+            @click.stop="addMoney"
+          >
             AÑADIR
           </button>
         </PVTooltip>
@@ -87,11 +90,15 @@ function setFaction(f: string) {
       <label>ELO (Arena)</label>
       <div class="input-group">
         <input
+          id="debug-stats-tab-input-debugelo"
           v-model="debugElo"
           type="number"
         >
         <PVTooltip title="Establece tu puntuación ELO de la Arena al valor indicado.">
-          <button @click.stop="setElo">
+          <button
+            id="debug-stats-tab-btn-fijar"
+            @click.stop="setElo"
+          >
             FIJAR
           </button>
         </PVTooltip>
@@ -102,11 +109,15 @@ function setFaction(f: string) {
       <label>Nivel Entrenador</label>
       <div class="input-group">
         <input
+          id="debug-stats-tab-input-debuglevel"
           v-model="debugLevel"
           type="number"
         >
         <PVTooltip title="Establece tu nivel de entrenador.">
-          <button @click.stop="setLevel">
+          <button
+            id="debug-stats-tab-btn-fijar-2"
+            @click.stop="setLevel"
+          >
             FIJAR
           </button>
         </PVTooltip>
@@ -117,11 +128,15 @@ function setFaction(f: string) {
       <label>Battle Coins (BC)</label>
       <div class="input-group">
         <input
+          id="debug-stats-tab-input-debugbattlecoins"
           v-model="debugBattleCoins"
           type="number"
         >
         <PVTooltip title="Establece tus Battle Coins (BC).">
-          <button @click.stop="setBattleCoins">
+          <button
+            id="debug-stats-tab-btn-fijar-3"
+            @click.stop="setBattleCoins"
+          >
             FIJAR
           </button>
         </PVTooltip>
@@ -132,18 +147,20 @@ function setFaction(f: string) {
       <label>Monedas de Guerra</label>
       <div class="input-group">
         <input
+          id="debug-stats-tab-input-debugwarcoins"
           v-model="debugWarCoins"
           type="number"
         >
         <PVTooltip title="Establece tus Monedas de Guerra.">
-          <button @click.stop="setWarCoins">
+          <button
+            id="debug-stats-tab-btn-fijar-4"
+            @click.stop="setWarCoins"
+          >
             FIJAR
           </button>
         </PVTooltip>
       </div>
     </div>
-
-
 
     <div class="debug-card badges-debug-card">
       <div class="card-header-flex">
@@ -151,8 +168,9 @@ function setFaction(f: string) {
         <div class="header-actions">
           <div class="sim-diff-selector">
             <span>DIFICULTAD:</span>
-            <button 
+            <button
               v-for="d in ['easy', 'normal', 'hard']" 
+              id="debug-stats-tab-btn-d-charat-0-touppercase" 
               :key="d"
               class="sim-diff-btn"
               :class="{ active: simDifficulty === d, [d]: true }"
@@ -162,6 +180,7 @@ function setFaction(f: string) {
             </button>
           </div>
           <button
+            id="debug-stats-tab-btn-resetear"
             class="reset-btn-debug"
             @click.stop="resetAllBadges"
           >
@@ -176,6 +195,7 @@ function setFaction(f: string) {
           :title="`Simular Victoria: ${g.badgeName} (${g.leader})`"
         >
           <div
+            id="debug-stats-tab-div-1"
             class="badge-debug-item"
             :class="{ active: isDefeated(g.id) }"
             @click.stop="simulateWin(g.id)"
@@ -197,6 +217,7 @@ function setFaction(f: string) {
       <div class="button-row">
         <PVTooltip title="Forzar que todo el mapa pertenezca al bando PODER.">
           <button
+            id="debug-stats-tab-btn-poder"
             class="faction-btn power"
             :class="{ active: currentForcedFaction === 'poder' }"
             @click.stop="forceDominance('poder')"
@@ -206,6 +227,7 @@ function setFaction(f: string) {
         </PVTooltip>
         <PVTooltip title="Forzar que todo el mapa pertenezca al bando UNIÓN.">
           <button
+            id="debug-stats-tab-btn-uni-n"
             class="faction-btn union"
             :class="{ active: currentForcedFaction === 'union' }"
             @click.stop="forceDominance('union')"
@@ -215,6 +237,7 @@ function setFaction(f: string) {
         </PVTooltip>
         <PVTooltip title="Restaurar el dominio real del mapa basado en el servidor.">
           <button
+            id="debug-stats-tab-btn-neutral"
             class="faction-btn neutral"
             :class="{ active: currentForcedFaction === 'none' }"
             @click.stop="forceDominance('none')"
@@ -230,6 +253,7 @@ function setFaction(f: string) {
       <div class="button-row">
         <PVTooltip title="Unirte al bando PODER.">
           <button
+            id="debug-stats-tab-btn-poder-2"
             class="faction-btn power"
             :class="{ active: game.state.faction === 'poder' }"
             @click.stop="setFaction('poder')"
@@ -239,6 +263,7 @@ function setFaction(f: string) {
         </PVTooltip>
         <PVTooltip title="Unirte al bando UNIÓN.">
           <button
+            id="debug-stats-tab-btn-uni-n-2"
             class="faction-btn union"
             :class="{ active: game.state.faction === 'union' }"
             @click.stop="setFaction('union')"
@@ -248,6 +273,7 @@ function setFaction(f: string) {
         </PVTooltip>
         <PVTooltip title="Abandonar bando actual y quedar libre.">
           <button
+            id="debug-stats-tab-btn-libre"
             class="faction-btn neutral"
             :class="{ active: !game.state.faction }"
             @click.stop="setFaction('none')"
@@ -282,22 +308,22 @@ function setFaction(f: string) {
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
   }
 
   .sim-diff-selector {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     padding: 2px 4px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(0 0 0 / 30%);
 
     span {
       @include pixelated;
 
-      font-size: 5px;
+      font-size: var(--font-5);
       opacity: 0.5;
       margin-right: 2px;
     }
@@ -312,18 +338,18 @@ function setFaction(f: string) {
     width: 18px;
     height: 18px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: transparent;
     color: var(--gray);
-    font-size: 6px;
+    font-size: var(--font-6);
     cursor: pointer;
 
     &.active {
       background: Rgb(255 255 255 / 5%);
       color: var(--white);
-      &.easy { color: #22c55e; border-color: Rgb(34 197 94 / 50%); }
-      &.normal { color: #ffd700; border-color: Rgb(255 215 0 / 50%); }
-      &.hard { color: #ef4444; border-color: Rgb(239 68 68 / 50%); }
+      &.easy { color: var(--emerald); border-color: Rgb(34 197 94 / 50%); }
+      &.normal { color: var(--gold); border-color: Rgb(255 215 0 / 50%); }
+      &.hard { color: var(--red-light); border-color: Rgb(239 68 68 / 50%); }
     }
   }
 
@@ -332,17 +358,17 @@ function setFaction(f: string) {
 
     padding: 4px 10px;
     border: 1px solid Rgb(239 68 68 / 30%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(239 68 68 / 15%);
-    color: #ff6b6b;
-    font-size: 6px;
+    color: var(--rose);
+    font-size: var(--font-6);
     cursor: pointer;
     
 
     &:hover {
       background: Rgb(239 68 68 / 30%);
       transform: Translatey(-1px);
-      border-color: #ff6b6b;
+      border-color: var(--rose);
     }
     
     &:active {
@@ -354,7 +380,7 @@ function setFaction(f: string) {
 .badges-debug-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
   margin-top: 8px;
 }
@@ -368,7 +394,7 @@ function setFaction(f: string) {
   max-width: 95px;
   padding: 8px 4px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 3%);
   opacity: 0.45;
   flex: 1 1 calc(12.5% - 8px);
@@ -391,10 +417,10 @@ function setFaction(f: string) {
     opacity: 1;
     filter: none;
     border-color: Rgb(255 215 0 / 45%);
-    box-shadow: 0 0 10px Rgb(255 215 0 / 15%), inset 0 0 4px Rgb(255 215 0 / 10%);
+    box-shadow: var(--shadow-glow-yellow);
 
     .badge-lbl {
-      color: #ffd700;
+      color: var(--gold);
       text-shadow: 0 0 6px Rgb(255 215 0 / 30%);
     }
   }
@@ -409,7 +435,7 @@ function setFaction(f: string) {
   .badge-lbl {
     color: Rgb(255 255 255 / 50%);
     font-family: var(--font-pixel, monospace);
-    font-size: 8px;
+    font-size: var(--font-8);
     text-align: center;
     text-transform: uppercase;
     white-space: nowrap;

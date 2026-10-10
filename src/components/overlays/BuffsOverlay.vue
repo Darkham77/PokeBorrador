@@ -181,7 +181,7 @@ const handleClassMissionClick = () => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .buff-badge {
@@ -193,18 +193,18 @@ const handleClassMissionClick = () => {
   height: 36px;
   padding: 0 10px;
   border: 1.5px solid var(--yellow, #ffd93d);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 90%);
   box-sizing: border-box;
   pointer-events: auto; /* Tooltip needs pointer */
-  box-shadow: 0 4px 6px Rgb(0 0 0 / 30%);
+  box-shadow: var(--shadow-card);
   cursor: help;
 
   &:hover {
     background: Rgb(0 0 0 / 80%);
     transform: Translatex(4px);
     border-color: var(--yellow, #ffd93d);
-    box-shadow: 0 0 0 1px var(--yellow, #ffd93d);
+    box-shadow: var(--shadow-xl);
   }
 
   &.is-event-badge {
@@ -212,8 +212,8 @@ const handleClassMissionClick = () => {
 
     &:hover {
       transform: Translatex(4px);
-      border-color: #ffe066;
-      box-shadow: 0 0 8px Rgb(255 217 61 / 50%);
+      border-color: var(--amber-300);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 
@@ -222,7 +222,7 @@ const handleClassMissionClick = () => {
 
     &:hover {
       transform: Translatex(4px);
-      box-shadow: 0 0 10px Rgb(255 255 255 / 40%);
+      box-shadow: var(--shadow-glow-white);
     }
 
     .is-done-text {
@@ -249,8 +249,8 @@ const handleClassMissionClick = () => {
   align-items: center;
   width: 24px;
   height: 24px;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", sans-serif;
-  font-size: 22px;
+  font-family: $font-family-emoji;
+  font-size: var(--font-22);
   line-height: 1;
   text-align: center;
   transform: Translatey(-2px);
@@ -278,9 +278,7 @@ const handleClassMissionClick = () => {
   @include pixelated;
 
   color: var(--yellow, #ffd93d);
-  font-size: 12px;
+  font-size: var(--font-12);
   font-weight: 700;
 }
 </style>
-
-

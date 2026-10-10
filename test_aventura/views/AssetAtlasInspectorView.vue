@@ -9,7 +9,7 @@
  *   - Panel B: AssetGalleryPanel (Registered assets gallery, filters, bidirectional focus).
  */
 
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAssetAtlas } from '../composables/studio/useAssetAtlas.ts';
 import MasterSheetCanvas from '../components/studio/MasterSheetCanvas.vue';
@@ -21,12 +21,10 @@ const atlas = useAssetAtlas();
 
 const masterCanvasRef = ref<InstanceType<typeof MasterSheetCanvas> | null>(null);
 
-function handleSelectRegisteredAsset(asset: CanonicalAssetEntry): void {
+async function handleSelectRegisteredAsset(asset: CanonicalAssetEntry): Promise<void> {
   atlas.selectRegisteredAsset(asset);
-  // Give DOM a microtick if sheet changed
-  setTimeout(() => {
-    masterCanvasRef.value?.centerOnRect(asset.sourceRect);
-  }, 50);
+  await nextTick();
+  masterCanvasRef.value?.centerOnRect(asset.sourceRect);
 }
 
 function handleSheetChange(event: Event): void {
@@ -105,6 +103,7 @@ function handleSheetChange(event: Event): void {
 
         <div class="control-item">
           <button
+            id="btn-atlas-toggle-grid"
             type="button"
             class="grid-toggle-btn"
             :class="{ active: atlas.showGrid.value }"
@@ -118,6 +117,7 @@ function handleSheetChange(event: Event): void {
       <!-- Navigation Links to other Studio tools -->
       <nav class="studio-links">
         <button
+          id="btn-atlas-link-continent"
           type="button"
           class="nav-link-btn"
           @click="router.push('/studio/continent')"
@@ -125,6 +125,7 @@ function handleSheetChange(event: Event): void {
           <span class="btn-emoji">🗺️</span> Continent Studio
         </button>
         <button
+          id="btn-atlas-link-map"
           type="button"
           class="nav-link-btn"
           @click="router.push('/studio/map')"
@@ -168,171 +169,169 @@ function handleSheetChange(event: Event): void {
 .asset-inspector-view {
   display: flex;
   flex-direction: column;
-  height: dvh;
   width: dvw;
+  height: dvh;
   background: #090d16;
-  color: #f8fafc;
+  color: var(--slate-50);
   overflow: hidden;
 }
 
 .inspector-navbar {
-  height: 52px;
-  background: #0b1120;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  gap: 16px;
   z-index: var(--z-navigation);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-lg;
+  height: 52px;
+  padding: 0 16px;
+  background: #0b1120;
+  border-bottom: 1px solid Rgb(255 255 255 / 12%);
 }
 
 .nav-brand-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
 }
 
 .brand-title {
-  font-size: 15px;
-  font-weight: 800;
   margin: 0;
+  color: var(--slate-50);
+  font-size: var(--font-15);
+  font-weight: 800;
   letter-spacing: 0.5px;
-  color: #f8fafc;
 }
 
 .version-tag {
-  font-size: 10px;
-  font-weight: 700;
-  background: #0284c7;
-  color: #ffffff;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: $radius-sm;
+  background: var(--sky-dark);
+  color: var(--white);
   font-family: monospace;
+  font-size: var(--font-10);
+  font-weight: 700;
 }
 
 .nav-controls-group {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
 }
 
 .control-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .control-label {
-  font-size: 11px;
-  color: #94a3b8;
+  color: var(--slate-400);
+  font-size: var(--font-11);
   font-weight: 600;
 }
 
 .sheet-dropdown {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #f8fafc;
-  border-radius: 6px;
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 600;
   max-width: 320px;
+  padding: 5px 10px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-50);
+  font-size: var(--font-12);
+  font-weight: 600;
 
   &:focus {
     outline: none;
-    border-color: #38bdf8;
+    border-color: var(--sky);
   }
 }
 
 .grid-dropdown {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #f8fafc;
-  border-radius: 6px;
   padding: 5px 8px;
-  font-size: 12px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-50);
+  font-size: var(--font-12);
 
   &:focus {
     outline: none;
-    border-color: #38bdf8;
+    border-color: var(--sky);
   }
 }
 
 .grid-badge {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #38bdf8;
-  border-radius: 4px;
   padding: 3px 6px;
-  font-size: 11px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-sm;
+  background: var(--slate-800);
+  color: var(--sky);
   font-family: monospace;
+  font-size: var(--font-11);
 }
 
 .grid-toggle-btn {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #94a3b8;
   padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-400);
+  font-size: var(--font-11);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
-
-  &.active {
-    background: #0369a1;
-    border-color: #38bdf8;
-    color: #ffffff;
-  }
 
   &:hover {
-    background: #334155;
+    background: var(--slate-700);
+  }
+
+  &.active {
+    background: var(--sky-dark);
+    color: var(--white);
+    border-color: var(--sky);
   }
 }
 
 .studio-links {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .nav-link-btn {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #e2e8f0;
   padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 11px;
+  border: 1px solid var(--slate-700);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-200);
+  font-size: var(--font-11);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
 
   &:hover {
-    background: #334155;
-    border-color: #475569;
-    color: #ffffff;
+    background: var(--slate-700);
+    color: var(--white);
+    border-color: var(--slate-600);
   }
 }
 
 .inspector-workspace {
-  flex: 1;
   display: flex;
-  min-height: 0;
   width: 100%;
+  min-height: 0;
+  flex: 1;
 }
 
 .panel-master-canvas {
-  flex: 1;
-  height: 100%;
   position: relative;
+  height: 100%;
+  flex: 1;
   overflow: hidden;
 }
 
 .panel-asset-gallery {
+  position: relative;
   width: 380px;
   height: 100%;
-  position: relative;
   overflow: hidden;
 }
 </style>

@@ -45,6 +45,7 @@ const emit = defineEmits<{
           @click.stop="emit('open-detail')"
         >
           <BoxPokemonCard
+            id="market-publish-form-boxpokemoncard-emit"
             :pokemon="selectedPokemon"
             :index="0"
             :hide-stats="false"

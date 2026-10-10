@@ -80,24 +80,24 @@ async function handleLogout() {
   width: 100%;
   padding: 16px;
   border: none;
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 10%);
   font-family: var(--font-pixel);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 0 Rgb(0 0 0 / 30%);
+  box-shadow: $shadow-retro-btn;
 
   &.reclaim-btn {
     border: 1px solid Rgb(255 255 255 / 20%);
     background: var(--yellow);
-    color: #111;
-    box-shadow: 0 10px 20px Rgb(255 214 10 / 20%);
+    color: var(--black);
+    box-shadow: var(--shadow-card);
 
     &:hover {
       background: $white;
       transform: Translatey(-2px);
-      box-shadow: 0 12px 24px Rgb(255 255 255 / 30%);
+      box-shadow: var(--shadow-card);
     }
   }
 
@@ -110,7 +110,7 @@ async function handleLogout() {
       background: var(--red);
       color: $white;
       transform: Translatey(-2px);
-      box-shadow: 0 8px 16px Rgb(255 59 59 / 20%);
+      box-shadow: var(--shadow-card);
     }
   }
 }

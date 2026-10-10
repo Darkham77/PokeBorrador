@@ -208,44 +208,44 @@ const handleConfirm = async () => {
 .event-auto-enroll-modal {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   width: 100%;
   max-width: 440px;
   padding: 20px;
   border: 2px solid Rgb(251 191 36 / 35%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Linear-Gradient(180deg, Rgb(15 23 42 / 98%), Rgb(8 12 21 / 99%));
-  color: #f8fafc;
-  box-shadow: 0 16px 40px Rgb(0 0 0 / 80%), inset 0 1px 0 Rgb(255 255 255 / 10%);
+  color: var(--slate-50);
+  box-shadow: var(--shadow-2xl);
   box-sizing: border-box;
 }
 
 .modal-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding-bottom: 12px;
   border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
   .header-icon {
-    font-size: 28px;
+    font-size: var(--font-28);
   }
 
   .header-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
 
     .title {
       margin: 0;
-      color: #fbbf24;
-      font-size: 11px;
+      color: var(--amber);
+      font-size: var(--font-11);
       letter-spacing: 0.5px;
     }
 
     .event-name {
-      color: #e2e8f0;
-      font-size: 13px;
+      color: var(--slate-200);
+      font-size: var(--font-13);
       font-weight: bold;
     }
   }
@@ -254,10 +254,10 @@ const handleConfirm = async () => {
 .pokemon-showcase {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: $spacing-md-lg;
   padding: 10px 14px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(30 41 59 / 60%);
 
   .sprite-wrap {
@@ -278,24 +278,24 @@ const handleConfirm = async () => {
       position: absolute;
       top: 0;
       right: 0;
-      font-size: 14px;
+      font-size: var(--font-14);
     }
   }
 
   .pokemon-meta {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .pokemon-name {
-      color: #fff;
-      font-size: 13px;
+      color: var(--white);
+      font-size: var(--font-13);
       font-weight: bold;
     }
 
     .pokemon-sub {
-      color: #94a3b8;
-      font-size: 11px;
+      color: var(--slate-400);
+      font-size: var(--font-11);
       line-height: 1.3;
     }
   }
@@ -304,24 +304,24 @@ const handleConfirm = async () => {
 .single-category-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 12px 14px;
   border: 1px solid Rgb(251 191 36 / 25%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(251 191 36 / 8%);
 
   .cat-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .cat-icon {
-      font-size: 18px;
+      font-size: var(--font-18);
     }
 
     .cat-title {
-      color: #fbbf24;
-      font-size: 11px;
+      color: var(--amber);
+      font-size: var(--font-11);
     }
   }
 
@@ -329,44 +329,44 @@ const handleConfirm = async () => {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
 
     .score-col {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
+      gap: $spacing-2xs;
 
       .col-label {
-        color: #94a3b8;
-        font-size: 10px;
+        color: var(--slate-400);
+        font-size: var(--font-10);
         text-transform: uppercase;
       }
 
       .col-value {
-        color: #cbd5e1;
-        font-size: 14px;
+        color: var(--slate-300);
+        font-size: var(--font-14);
         font-weight: bold;
 
         &.highlight {
-          color: #38bdf8;
-          font-size: 16px;
+          color: var(--sky);
+          font-size: var(--font-16);
         }
       }
 
       .delta-badge {
         padding: 1px 6px;
-        border-radius: 4px;
+        border-radius: $radius-sm;
         background: Rgb(16 185 129 / 15%);
-        color: #10b981;
-        font-size: 11px;
+        color: var(--emerald-500);
+        font-size: var(--font-11);
         font-weight: bold;
       }
     }
 
     .arrow-col {
-      color: #94a3b8;
-      font-size: 16px;
+      color: var(--slate-400);
+      font-size: var(--font-16);
     }
   }
 }
@@ -374,17 +374,17 @@ const handleConfirm = async () => {
 .multi-categories-wrap {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .selection-hint {
-    color: #94a3b8;
-    font-size: 11px;
+    color: var(--slate-400);
+    font-size: var(--font-11);
   }
 
   .categories-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     max-height: 180px;
     overflow-y: auto;
   }
@@ -392,10 +392,10 @@ const handleConfirm = async () => {
   .category-option-card {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     padding: 8px 12px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(30 41 59 / 50%);
     cursor: pointer;
 
@@ -406,12 +406,12 @@ const handleConfirm = async () => {
 
     &.active {
       background: Rgb(251 191 36 / 12%);
-      border-color: #fbbf24;
+      border-color: var(--amber);
 
       .radio-circle {
-        background: #fbbf24;
-        border-color: #fbbf24;
-        box-shadow: inset 0 0 0 2px #0f172a;
+        background: var(--amber);
+        border-color: var(--amber);
+        box-shadow: var(--shadow-card);
       }
     }
 
@@ -422,7 +422,7 @@ const handleConfirm = async () => {
       .radio-circle {
         width: 14px;
         height: 14px;
-        border: 2px solid #64748b;
+        border: 2px solid var(--slate-500);
         border-radius: 50%;
       }
     }
@@ -430,30 +430,30 @@ const handleConfirm = async () => {
     .card-info {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
       flex: 1;
 
       .card-title-row {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
 
         .cat-icon {
-          font-size: 14px;
+          font-size: var(--font-14);
         }
 
         .cat-title {
-          color: #f1f5f9;
-          font-size: 11px;
+          color: var(--slate-100);
+          font-size: var(--font-11);
         }
       }
 
       .cat-score {
-        color: #94a3b8;
-        font-size: 10px;
+        color: var(--slate-400);
+        font-size: var(--font-10);
 
         .score-num {
-          color: #38bdf8;
+          color: var(--sky);
           font-weight: bold;
         }
       }
@@ -462,10 +462,10 @@ const handleConfirm = async () => {
     .card-delta {
       .delta-pill {
         padding: 2px 6px;
-        border-radius: 4px;
+        border-radius: $radius-sm;
         background: Rgb(16 185 129 / 15%);
-        color: #10b981;
-        font-size: 10px;
+        color: var(--emerald-500);
+        font-size: var(--font-10);
         font-weight: bold;
       }
     }
@@ -474,20 +474,20 @@ const handleConfirm = async () => {
 
 .modal-actions {
   display: flex;
-  gap: 10px;
+  gap: $spacing-md-alt;
   margin-top: 4px;
 
   .enroll-confirm-btn {
     padding: 10px 14px;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Linear-Gradient(135deg, #f59e0b, #d97706);
-    color: #0f172a;
-    font-size: 9px;
+    color: var(--slate-900);
+    font-size: var(--font-9);
     font-weight: bold;
     flex: 2;
     cursor: pointer;
-    box-shadow: 0 4px 12px Rgb(245 158 11 / 40%);
+    box-shadow: var(--shadow-card);
 
     &:disabled {
       opacity: 0.6;
@@ -498,16 +498,16 @@ const handleConfirm = async () => {
   .enroll-dismiss-btn {
     padding: 10px 14px;
     border: 1px solid Rgb(255 255 255 / 12%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(255 255 255 / 8%);
-    color: #94a3b8;
-    font-size: 9px;
+    color: var(--slate-400);
+    font-size: var(--font-9);
     flex: 1;
     cursor: pointer;
 
     &:hover {
       background: Rgb(255 255 255 / 12%);
-      color: #cbd5e1;
+      color: var(--slate-300);
     }
   }
 }

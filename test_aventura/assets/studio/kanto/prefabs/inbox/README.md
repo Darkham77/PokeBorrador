@@ -13,7 +13,7 @@ Place any sprite sheet or template (PNG) downloaded from the web (e.g. The Sprit
 Run in your terminal:
 
 ```powershell
-npm run prefabs:extract
+node test_aventura/scripts/map/sync_assets_pipeline.mjs
 ```
 
 The extracted sprites will be cleanly cropped, categorized (Buildings, Vegetation, Props), and registered immediately in `public/assets/studio/kanto/prefabs/manifest.json`, appearing in the web studio catalog and available for the continental world generator.

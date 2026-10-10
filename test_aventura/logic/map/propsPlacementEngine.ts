@@ -26,7 +26,7 @@ import {
   WOOD_STUMP,
   TRIMMED_HEDGE,
   FIELD_ROCK
-} from '../../config/mapProps';
+} from '../../config/mapProps.ts';
 import { type TileCollision, type TilesRegistryService, defaultTilesRegistry } from './tilesRegistry.ts';
 import type {
   MapCell,
@@ -36,6 +36,10 @@ import type {
   CollisionType
 } from './proceduralMapGenerator.ts';
 import type { UrbanLot } from './urbanZoningEngine.ts';
+
+const MIN_FENCE_DENSITY_FACTOR = 0.25 as const;
+const WILD_OBSTACLE_CHANCE_FACTOR = 0.15 as const;
+const FLOWER_CLUSTER_SKIP_CHANCE = 0.35 as const;
 
 export interface PropsPlacementOptions {
   readonly mapWidth: number;
@@ -70,18 +74,9 @@ export interface PropsPlacementResult {
   readonly flowersCount: number;
 }
 
-/**
- * Deterministic Mulberry32 Pseudo-Random Number Generator.
- */
-function mulberry32(seed: number): () => number {
-  let state = Math.floor(seed) >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { createMulberry32 } from './noise/simplexNoise.ts';
+
+const PROPS_PRNG_SEED_OFFSET = 8080;
 
 /**
  * Checks if a prop can be safely placed at (x, y) without out-of-bounds or collision conflicts.
@@ -257,7 +252,7 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
     };
   }
 
-  const prng = mulberry32(seed + 8080);
+  const prng = createMulberry32(seed + PROPS_PRNG_SEED_OFFSET);
   const dFactor = Math.min(1.0, Math.max(0.05, density / 100));
 
   let placedPropsCount = 0;
@@ -382,7 +377,7 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
       // -------------------------------------------------------------
       // 3. Perimeter Fences & Hedges around lots
       // -------------------------------------------------------------
-      if (includeFences && dFactor >= 0.25) {
+      if (includeFences && dFactor >= MIN_FENCE_DENSITY_FACTOR) {
         const fenceProp = prng() < 0.6 ? FENCE_WHITE : TRIMMED_HEDGE;
         // Front lot border facing road (lot.y + lot.height - 1)
         const frontY = lot.y + lot.height - 1;
@@ -517,7 +512,7 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
     // 3. Field rocks and wood stumps in open wild
     for (let y = 3; y < mapHeight - 3; y += 4) {
       for (let x = 3; x < mapWidth - 3; x += 4) {
-        if (prng() < dFactor * 0.15) {
+        if (prng() < dFactor * WILD_OBSTACLE_CHANCE_FACTOR) {
           const obstacleProp = prng() < 0.5 ? FIELD_ROCK : WOOD_STUMP;
           if (
             !isReserved(x, y, 1, 1) &&
@@ -545,7 +540,7 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
     // Stamp a 2x2 or 3-flower cluster
     for (let dy = 0; dy <= 1; dy++) {
       for (let dx = 0; dx <= 1; dx++) {
-        if (prng() < 0.35) continue;
+        if (prng() < FLOWER_CLUSTER_SKIP_CHANCE) continue;
         const fx = cx + dx;
         const fy = cy + dy;
 

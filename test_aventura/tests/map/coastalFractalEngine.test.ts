@@ -10,9 +10,9 @@ import {
   sculptArchipelagoChain,
   applyNaturalBeaches,
   sampleCoastalDisplacement
-} from '../../../src/logic/map/continent/coastalFractalEngine.ts';
-import { SimplexNoise } from '../../../src/logic/map/noise/simplexNoise.ts';
-import type { WaterTerrainKind } from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/continent/coastalFractalEngine.ts';
+import { SimplexNoise } from '../../logic/map/noise/simplexNoise.ts';
+import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('coastalFractalEngine', () => {
   it('samples coastal displacement smoothly with Simplex FBM', () => {

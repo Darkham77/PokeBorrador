@@ -312,6 +312,7 @@ const handleFactionChoice = () => {
         <!-- Action Buttons -->
         <div class="profile-actions-legacy">
           <button
+            id="profile-modal-btn-cerrar-sesi-n"
             class="logout-btn-legacy"
             @click.stop="handleLogout"
           >

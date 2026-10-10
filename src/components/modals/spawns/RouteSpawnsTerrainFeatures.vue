@@ -101,7 +101,7 @@ function handleActionClick() {
           <span class="emoji">🚶</span> Caminando —
           <b :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance)">{{ activeTerrestrialChance }}%</b>
           <span
-            style="font-size: 9px; margin-left: 4px;"
+            style="font-size: var(--font-9); margin-left: 4px;"
             :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance) || 'gray-text'"
           >
             (Base: {{ baseTerrestrialChance }}%)
@@ -118,7 +118,7 @@ function handleActionClick() {
           <span class="emoji">🎣</span> {{ fishingFeature.levelText }} —
           <b :class="getProbClass(activeFishingChance, baseFishingChance)">{{ activeFishingChance }}%</b>
           <span
-            style="font-size: 9px; margin-left: 4px;"
+            style="font-size: var(--font-9); margin-left: 4px;"
             :class="getProbClass(activeFishingChance, baseFishingChance) || 'gray-text'"
           >
             (Base: {{ baseFishingChance }}%)
@@ -139,7 +139,7 @@ function handleActionClick() {
           <span class="emoji">⛏️</span> {{ archaeologyFeature.levelText }} —
           <b :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)">{{ activeArchaeologyChance }}%</b>
           <span
-            style="font-size: 9px; margin-left: 4px;"
+            style="font-size: var(--font-9); margin-left: 4px;"
             :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance) || 'gray-text'"
           >
             (Base: {{ baseArchaeologyChance }}%)

@@ -116,7 +116,8 @@ export function findFreePlacementSpot(
   }
 
   // 3. Third pass: Perimeter expansion adjacent to the settlement
-  for (let buffer = 1; buffer <= 6; buffer++) {
+  const MAX_PERIMETER_EXPANSION_BUFFER = 6 as const;
+  for (let buffer = 1; buffer <= MAX_PERIMETER_EXPANSION_BUFFER; buffer++) {
     const minX = Math.max(2, startX - buffer);
     const maxX = startX + W + buffer - width;
     const minY = Math.max(2, startY - buffer);

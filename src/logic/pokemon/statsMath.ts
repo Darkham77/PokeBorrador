@@ -18,6 +18,7 @@ import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon.
 
 const MAX_SINGLE_STAT_EV = 252 as const;
 const HP_FORMULA_FLAT_ADDEND = 10 as const;
+const METAL_POWDER_STAT_MULTIPLIER = 1.5 as const;
 
 /**
  * Calculates the EXP needed for the current level.
@@ -117,14 +118,14 @@ export function calcStatsPure(
   let def = getStat(base.def, ivs.def, defEv, level, 'def');
   
   if (isDittoMetalPowder) {
-    def = Math.floor(def * 1.5);
+    def = Math.floor(def * METAL_POWDER_STAT_MULTIPLIER);
   }
 
   const spa = getStat(base.spa ?? base.atk, ivs.spa, spaEv, level, 'spa');
   let spd = getStat(base.spd ?? base.def, ivs.spd, spdEv, level, 'spd');
   
   if (isDittoMetalPowder) {
-    spd = Math.floor(spd * 1.5);
+    spd = Math.floor(spd * METAL_POWDER_STAT_MULTIPLIER);
   }
 
   const DEFAULT_BASE_SPEED = 45;

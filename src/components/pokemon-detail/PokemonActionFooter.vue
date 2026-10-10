@@ -40,6 +40,7 @@ const hasActions = computed(() => {
     <!-- Evolution Action -->
     <button
       v-if="(context === 'team' || context === 'box') && canEvolveStone"
+      id="pokemon-action-footer-btn-evolucionar-con-piedra"
       class="action-btn evolutionary"
       @click.stop="emit('evolve')"
     >
@@ -54,7 +55,8 @@ const hasActions = computed(() => {
       <div class="price">
         ₽{{ extra.price }}
       </div>
-      <button 
+      <button
+        id="pokemon-action-footer-btn-1" 
         class="buy-btn" 
         :disabled="!canBuy"
         @click.stop="emit('buy')"
@@ -71,8 +73,8 @@ const hasActions = computed(() => {
 
 .modal-footer {
   padding: 24px 32px;
-  background: rgb(0 0 0 / 10%);
-  border-top: 1px solid rgb(255 255 255 / 8%);
+  background: Rgb(0 0 0 / 10%);
+  border-top: 1px solid Rgb(255 255 255 / 8%);
 }
 
 .evolutionary {
@@ -84,16 +86,16 @@ const hasActions = computed(() => {
 .purchase-zone {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
 
   .price {
     @include pixelated;
 
     color: var(--yellow);
-    font-size: 14px;
+    font-size: var(--font-14);
     font-weight: 900;
     text-align: center;
-    text-shadow: 0 0 10px rgb(255 214 10 / 30%);
+    text-shadow: 0 0 10px Rgb(255 214 10 / 30%);
   }
 }
 

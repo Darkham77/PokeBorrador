@@ -20,9 +20,40 @@ import {
 } from './tilesRegistry.ts';
 import type { StructureTemplate } from '../../config/mapStructures.ts';
 import { computeBiomeDistribution } from './biomeDistributionEngine.ts';
-import type { CityGenerationConfig, CanonicalThemeSource } from '../../types/map/adventureWorldTypes';
+import type { CityGenerationConfig, CanonicalThemeSource } from '../../types/map/adventureWorldTypes.ts';
 import { generateUrbanLayout } from './urbanZoningEngine.ts';
 import { placeScenicProps } from './propsPlacementEngine.ts';
+import { createMulberry32 } from './noise/simplexNoise.ts';
+import {
+  DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION,
+  DEFAULT_PROCEDURAL_SEED,
+  DEFAULT_TOWN_MIN_DIMENSION,
+  DEFAULT_WATER_PERCENT,
+  DEFAULT_MOUNTAIN_PERCENT,
+  DEFAULT_PROCEDURAL_FOREST_PERCENT,
+  DEFAULT_CITY_PROPS_DENSITY,
+  DEFAULT_ROUTE_PROPS_DENSITY,
+  STANDARD_GBA_TILE_SIZE,
+  GRASS_ACCENT_CHANCE,
+  ROUTE_BRANCH_X_RATIO,
+  ROUTE_PATH_WIDTH_DIVISOR,
+  ROUTE_START_X_BASE_RATIO,
+  ROUTE_START_X_VARIANCE_RATIO,
+  ROUTE_TURN_NORTH_RATIO,
+  ROUTE_TURN_SOUTH_RATIO,
+  ROUTE_TOWN_CENTER_EXCLUSION_RATIO,
+  MOUNTAIN_CONE_CELLS_DIVISOR,
+  MIN_INTERIOR_TREES_MAP_DIMENSION,
+  ROUTE_LEDGE_NORTH_RATIO,
+  ROUTE_LEDGE_SOUTH_RATIO,
+  ROUTE_LEDGE_WEST_RATIO,
+  ROUTE_LEDGE_EAST_RATIO,
+  ROUTE_LEDGE_ALT_CHANCE,
+  TALL_GRASS_SKIP_CHANCE,
+  ROAD_FLOWER_CHANCE,
+  SCATTER_BUSH_CHANCE,
+  SCATTER_ROCK_CHANCE
+} from '../../config/proceduralMapConfig.ts';
 
 export type CollisionType = 0 | 1 | 2 | 3; // 0: transitable, 1: colisión, 2: agua, 3: salto hacia abajo (ledge)
 
@@ -39,7 +70,7 @@ export interface MapSpawn {
   readonly id: string;
   readonly x: number;
   readonly y: number;
-  readonly direction?: 'up' | 'down' | 'left' | 'right';
+  readonly direction?: SpriteFacingDirection;
 }
 
 export interface MapEntities {
@@ -159,6 +190,82 @@ export interface ThemeBiomePalette {
  * - firered: Classic rounded leafy trees of Kanto & Safari Zone pond 9-slice
  * - emerald / ruby_sapphire: Hoenn coniferous pine trees & Hoenn palettes
  */
+const HOENN_GEN3_BASE_PALETTE = {
+  grassAccents: ['tile_vegetation_13f0a9ea38'],
+  path: {
+    center: 'tile_terrain_4756bdfd4e',
+    top: 'tile_terrain_b3840e05af',
+    bottom: 'tile_terrain_35acffed79',
+    left: 'tile_terrain_b07ce4bfe6',
+    right: 'tile_terrain_554fe90459',
+    topLeft: 'tile_terrain_aeed0bb8ac',
+    topRight: 'tile_terrain_93efbc410a',
+    bottomLeft: 'tile_terrain_b8d7bb69ce',
+    bottomRight: 'tile_terrain_3928852ac2'
+  },
+  urbanPavement: 'tile_terrain_4756bdfd4e',
+  water: {
+    center: 'tile_water_5e550af5c2',
+    top: 'tile_water_b2b02a5e0e',
+    bottom: 'tile_water_f3cf81311b',
+    left: 'tile_water_34d262e7f2',
+    right: 'tile_water_e780c4f413',
+    topLeft: 'tile_water_bbae919e5f',
+    topRight: 'tile_water_2610e35f18',
+    bottomLeft: 'tile_water_1da2cf6c52',
+    bottomRight: 'tile_water_577cd9fb73'
+  },
+  ledge: {
+    center: 'tile_terrain_120d7decae',
+    centerAlt: 'tile_terrain_1938e75eaa'
+  },
+  tree2x3: {
+    width: 2,
+    height: 3,
+    tiles: [
+      ['tile_vegetation_afed389c7f', 'tile_vegetation_3d3a41c32d'],
+      ['tile_vegetation_3e24e0f99d', 'tile_vegetation_a88df6ec45'],
+      ['tile_vegetation_6be35c9857', 'tile_vegetation_1e7ae8dbad']
+    ],
+    collision: [
+      [true, true],
+      [true, true],
+      [true, true]
+    ]
+  },
+  tree2x2: {
+    width: 2,
+    height: 2,
+    tiles: [
+      ['tile_vegetation_821ff1bb4d', 'tile_vegetation_d27ee608ad'],
+      ['tile_vegetation_31defe8241', 'tile_vegetation_32124203a1']
+    ],
+    collision: [
+      [true, true],
+      [true, true]
+    ]
+  },
+  mountainCone2x3: {
+    width: 2,
+    height: 3,
+    tiles: [
+      ['tile_vegetation_bf0a3c7024', 'tile_elevation_7eccbe22e5'],
+      ['tile_elevation_10dccf3c52', 'tile_elevation_e5a5b972eb'],
+      ['tile_elevation_e8e8f562ef', 'tile_elevation_84c75dc969']
+    ],
+    collision: [
+      [true, true],
+      [true, true],
+      [true, true]
+    ]
+  },
+  props: {
+    flowers: ['tile_vegetation_6d432cbe6d'],
+    tallGrass: 'tile_vegetation_6b1605d4cf',
+    bush: 'tile_vegetation_77ac70f502'
+  }
+} as const;
+
 export const CANONICAL_PALETTES: Record<CanonicalThemeSource, ThemeBiomePalette> = {
   firered: {
     grass: 'tile_vegetation_184ee2f2ca', // Seamless soft overworld grass
@@ -244,157 +351,12 @@ export const CANONICAL_PALETTES: Record<CanonicalThemeSource, ThemeBiomePalette>
     }
   },
   emerald: {
-    grass: 'tile_vegetation_184ee2f2ca',
-    grassAccents: ['tile_vegetation_13f0a9ea38'],
-    path: {
-      center: 'tile_terrain_4756bdfd4e',
-      top: 'tile_terrain_b3840e05af',
-      bottom: 'tile_terrain_35acffed79',
-      left: 'tile_terrain_b07ce4bfe6',
-      right: 'tile_terrain_554fe90459',
-      topLeft: 'tile_terrain_aeed0bb8ac',
-      topRight: 'tile_terrain_93efbc410a',
-      bottomLeft: 'tile_terrain_b8d7bb69ce',
-      bottomRight: 'tile_terrain_3928852ac2'
-    },
-    urbanPavement: 'tile_terrain_4756bdfd4e',
-    water: {
-      center: 'tile_water_5e550af5c2',
-      top: 'tile_water_b2b02a5e0e',
-      bottom: 'tile_water_f3cf81311b',
-      left: 'tile_water_34d262e7f2',
-      right: 'tile_water_e780c4f413',
-      topLeft: 'tile_water_bbae919e5f',
-      topRight: 'tile_water_2610e35f18',
-      bottomLeft: 'tile_water_1da2cf6c52',
-      bottomRight: 'tile_water_577cd9fb73'
-    },
-    ledge: {
-      center: 'tile_terrain_120d7decae',
-      centerAlt: 'tile_terrain_1938e75eaa'
-    },
-    // Hoenn Coniferous Pine Tree (2x3 tiles)
-    tree2x3: {
-      width: 2,
-      height: 3,
-      tiles: [
-        ['tile_vegetation_afed389c7f', 'tile_vegetation_3d3a41c32d'],
-        ['tile_vegetation_3e24e0f99d', 'tile_vegetation_a88df6ec45'],
-        ['tile_vegetation_6be35c9857', 'tile_vegetation_1e7ae8dbad']
-      ],
-      collision: [
-        [true, true],
-        [true, true],
-        [true, true]
-      ]
-    },
-    tree2x2: {
-      width: 2,
-      height: 2,
-      tiles: [
-        ['tile_vegetation_821ff1bb4d', 'tile_vegetation_d27ee608ad'],
-        ['tile_vegetation_31defe8241', 'tile_vegetation_32124203a1']
-      ],
-      collision: [
-        [true, true],
-        [true, true]
-      ]
-    },
-    mountainCone2x3: {
-      width: 2,
-      height: 3,
-      tiles: [
-        ['tile_vegetation_bf0a3c7024', 'tile_elevation_7eccbe22e5'],
-        ['tile_elevation_10dccf3c52', 'tile_elevation_e5a5b972eb'],
-        ['tile_elevation_e8e8f562ef', 'tile_elevation_84c75dc969']
-      ],
-      collision: [
-        [true, true],
-        [true, true],
-        [true, true]
-      ]
-    },
-    props: {
-      flowers: ['tile_vegetation_6d432cbe6d'],
-      tallGrass: 'tile_vegetation_6b1605d4cf',
-      bush: 'tile_vegetation_77ac70f502'
-    }
+    ...HOENN_GEN3_BASE_PALETTE,
+    grass: 'tile_vegetation_184ee2f2ca'
   },
   ruby_sapphire: {
-    grass: 'tile_vegetation_0036b62873',
-    grassAccents: ['tile_vegetation_13f0a9ea38'],
-    path: {
-      center: 'tile_terrain_4756bdfd4e',
-      top: 'tile_terrain_b3840e05af',
-      bottom: 'tile_terrain_35acffed79',
-      left: 'tile_terrain_b07ce4bfe6',
-      right: 'tile_terrain_554fe90459',
-      topLeft: 'tile_terrain_aeed0bb8ac',
-      topRight: 'tile_terrain_93efbc410a',
-      bottomLeft: 'tile_terrain_b8d7bb69ce',
-      bottomRight: 'tile_terrain_3928852ac2'
-    },
-    urbanPavement: 'tile_terrain_4756bdfd4e',
-    water: {
-      center: 'tile_water_5e550af5c2',
-      top: 'tile_water_b2b02a5e0e',
-      bottom: 'tile_water_f3cf81311b',
-      left: 'tile_water_34d262e7f2',
-      right: 'tile_water_e780c4f413',
-      topLeft: 'tile_water_bbae919e5f',
-      topRight: 'tile_water_2610e35f18',
-      bottomLeft: 'tile_water_1da2cf6c52',
-      bottomRight: 'tile_water_577cd9fb73'
-    },
-    ledge: {
-      center: 'tile_terrain_120d7decae',
-      centerAlt: 'tile_terrain_1938e75eaa'
-    },
-    tree2x3: {
-      width: 2,
-      height: 3,
-      tiles: [
-        ['tile_vegetation_afed389c7f', 'tile_vegetation_3d3a41c32d'],
-        ['tile_vegetation_3e24e0f99d', 'tile_vegetation_a88df6ec45'],
-        ['tile_vegetation_6be35c9857', 'tile_vegetation_1e7ae8dbad']
-      ],
-      collision: [
-        [true, true],
-        [true, true],
-        [true, true]
-      ]
-    },
-    tree2x2: {
-      width: 2,
-      height: 2,
-      tiles: [
-        ['tile_vegetation_821ff1bb4d', 'tile_vegetation_d27ee608ad'],
-        ['tile_vegetation_31defe8241', 'tile_vegetation_32124203a1']
-      ],
-      collision: [
-        [true, true],
-        [true, true]
-      ]
-    },
-    mountainCone2x3: {
-      width: 2,
-      height: 3,
-      tiles: [
-        ['tile_vegetation_bf0a3c7024', 'tile_elevation_7eccbe22e5'],
-        ['tile_elevation_10dccf3c52', 'tile_elevation_e5a5b972eb'],
-        ['tile_elevation_e8e8f562ef', 'tile_elevation_84c75dc969']
-      ],
-      collision: [
-        [true, true],
-        [true, true],
-        [true, true]
-      ]
-    },
-    props: {
-      flowers: ['tile_vegetation_6d432cbe6d'],
-      tallGrass: 'tile_vegetation_6b1605d4cf',
-      bush: 'tile_vegetation_77ac70f502'
-    }
+    ...HOENN_GEN3_BASE_PALETTE,
+    grass: 'tile_vegetation_0036b62873'
   }
 };
 
@@ -402,18 +364,6 @@ export function getBiomePalette(theme: CanonicalThemeSource = 'firered'): ThemeB
   return CANONICAL_PALETTES[theme] ?? CANONICAL_PALETTES.firered;
 }
 
-/**
- * Deterministic 32-bit PRNG (Mulberry32)
- */
-export function createMulberry32(seed: number): () => number {
-  let s = seed >>> 0;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 /**
  * Canonical Procedural Map Generator Engine
@@ -432,19 +382,19 @@ export class ProceduralMapGenerator {
   }
 
   public generate(options: ProceduralMapOptions): GeneratedMap {
-    const width = Math.max(16, options.width);
-    const height = Math.max(16, options.height);
-    const seed = options.seed ?? 42;
+    const width = Math.max(DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION, options.width);
+    const height = Math.max(DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION, options.height);
+    const seed = options.seed ?? DEFAULT_PROCEDURAL_SEED;
     const theme = options.theme ?? 'firered';
     const mapType: MapType =
-      options.type ?? (options.withTown === false ? 'route' : theme === 'firered' && width >= 25 && height >= 25 ? 'town' : 'town');
+      options.type ?? (options.withTown === false ? 'route' : theme === 'firered' && width >= DEFAULT_TOWN_MIN_DIMENSION && height >= DEFAULT_TOWN_MIN_DIMENSION ? 'town' : 'town');
     const withTown = mapType === 'town' && (options.withTown ?? true);
     const withWater = options.withWater ?? true;
     const withHills = options.withHills ?? true;
     const withVegetation = options.withVegetation ?? true;
-    const waterPercent = withWater ? (options.waterPercent ?? 12) : 0;
-    const mountainPercent = withHills ? (options.mountainPercent ?? 10) : 0;
-    const forestPercent = withVegetation ? (options.forestPercent ?? 20) : 0;
+    const waterPercent = withWater ? (options.waterPercent ?? DEFAULT_WATER_PERCENT) : 0;
+    const mountainPercent = withHills ? (options.mountainPercent ?? DEFAULT_MOUNTAIN_PERCENT) : 0;
+    const forestPercent = withVegetation ? (options.forestPercent ?? DEFAULT_PROCEDURAL_FOREST_PERCENT) : 0;
 
     const prng = createMulberry32(seed);
     const palette = CANONICAL_PALETTES[theme] ?? CANONICAL_PALETTES.firered;
@@ -465,7 +415,7 @@ export class ProceduralMapGenerator {
       objectLayer[y] = [];
       collisionGrid[y] = [];
       for (let x = 0; x < width; x++) {
-        const isAccent = prng() < 0.04 && palette.grassAccents.length > 0;
+        const isAccent = prng() < GRASS_ACCENT_CHANCE && palette.grassAccents.length > 0;
         const grassId = isAccent ? palette.grassAccents[0]! : palette.grass;
         baseLayer[y]![x] = this.makeCell(grassId, false);
         elevationLayer[y]![x] = null;
@@ -476,17 +426,17 @@ export class ProceduralMapGenerator {
 
     // 2. Carve Paths with Autotiling 9-Slice (Parallel borders & open endpoints)
     const midY = Math.floor(height / 2);
-    const branchX = Math.floor(width * 0.38);
+    const branchX = Math.floor(width * ROUTE_BRANCH_X_RATIO);
     const isPathCell: boolean[][] = Array.from({ length: height }, () => Array(width).fill(false));
 
     if (mapType === 'route') {
       // Classic GBA Orthogonal Route Corridors (Pure horizontal & vertical segments)
-      const pathWidth = Math.min(3, Math.max(2, Math.floor(width / 12)));
-      const startX = Math.max(pathWidth + 3, Math.min(width - pathWidth - 4, Math.floor(width * (0.42 + (prng() - 0.5) * 0.25))));
+      const pathWidth = Math.min(3, Math.max(2, Math.floor(width / ROUTE_PATH_WIDTH_DIVISOR)));
+      const startX = Math.max(pathWidth + 3, Math.min(width - pathWidth - 4, Math.floor(width * (ROUTE_START_X_BASE_RATIO + (prng() - 0.5) * ROUTE_START_X_VARIANCE_RATIO))));
       const endX = Math.max(pathWidth + 3, Math.min(width - pathWidth - 4, Math.floor(width * (0.5 + (prng() - 0.5) * 0.3))));
 
-      const turnY1 = Math.floor(height * 0.65);
-      const turnY2 = Math.floor(height * 0.35);
+      const turnY1 = Math.floor(height * ROUTE_TURN_NORTH_RATIO);
+      const turnY2 = Math.floor(height * ROUTE_TURN_SOUTH_RATIO);
       const midX = Math.max(pathWidth + 3, Math.min(width - pathWidth - 4, Math.floor((startX + endX) / 2 + (prng() - 0.5) * 6)));
 
       const stampRect = (x0: number, y0: number, x1: number, y1: number) => {
@@ -518,41 +468,7 @@ export class ProceduralMapGenerator {
     }
 
     // Resolve Path Autotiling for each cell
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        if (!isPathCell[y]![x]) continue;
-
-        const hasN = y > 0 && isPathCell[y - 1]![x];
-        const hasS = y < height - 1 && isPathCell[y + 1]![x];
-        const hasW = x > 0 && isPathCell[y]![x - 1];
-        const hasE = x < width - 1 && isPathCell[y]![x + 1];
-
-        let pathTileId = palette.path.center;
-
-        // Corners MUST be evaluated before single cardinal borders
-        if (!hasN && !hasW && (hasS || hasE)) {
-          pathTileId = palette.path.topLeft;
-        } else if (!hasN && !hasE && (hasS || hasW)) {
-          pathTileId = palette.path.topRight;
-        } else if (!hasS && !hasW && (hasN || hasE)) {
-          pathTileId = palette.path.bottomLeft;
-        } else if (!hasS && !hasE && (hasN || hasW)) {
-          pathTileId = palette.path.bottomRight;
-        } else if (!hasN && hasS) {
-          pathTileId = palette.path.top;
-        } else if (!hasS && hasN) {
-          pathTileId = palette.path.bottom;
-        } else if (!hasW && hasE) {
-          pathTileId = palette.path.left;
-        } else if (!hasE && hasW) {
-          pathTileId = palette.path.right;
-        } else {
-          pathTileId = palette.path.center;
-        }
-
-        baseLayer[y]![x] = this.makeCell(pathTileId, false);
-      }
-    }
+    this.resolvePathAutotiling(isPathCell, palette, baseLayer, width, height);
 
     // 3. Town Pass (Intelligent Urban Zoning: Streets, Lots, Civic & Residential Allocation)
     if (withTown) {
@@ -562,7 +478,7 @@ export class ProceduralMapGenerator {
         includeGym: options.cityConfig?.includeGym ?? true,
         includeLab: options.cityConfig?.includeLab ?? false,
         plazaType: options.cityConfig?.plazaType ?? 'fountain',
-        propsDensity: options.cityConfig?.propsDensity ?? options.propsDensity ?? 50,
+        propsDensity: options.cityConfig?.propsDensity ?? options.propsDensity ?? DEFAULT_CITY_PROPS_DENSITY,
         includeFences: options.cityConfig?.includeFences ?? options.includeFences ?? true
       };
 
@@ -583,45 +499,12 @@ export class ProceduralMapGenerator {
       });
 
       // Re-resolve Path Autotiling for all newly connected avenues and doorways
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          if (!isPathCell[y]![x]) continue;
-
-          const hasN = y > 0 && isPathCell[y - 1]![x];
-          const hasS = y < height - 1 && isPathCell[y + 1]![x];
-          const hasW = x > 0 && isPathCell[y]![x - 1];
-          const hasE = x < width - 1 && isPathCell[y]![x + 1];
-
-          let pathTileId = palette.path.center;
-          // Corners MUST be evaluated before single cardinal borders
-          if (!hasN && !hasW && (hasS || hasE)) {
-            pathTileId = palette.path.topLeft;
-          } else if (!hasN && !hasE && (hasS || hasW)) {
-            pathTileId = palette.path.topRight;
-          } else if (!hasS && !hasW && (hasN || hasE)) {
-            pathTileId = palette.path.bottomLeft;
-          } else if (!hasS && !hasE && (hasN || hasW)) {
-            pathTileId = palette.path.bottomRight;
-          } else if (!hasN && hasS) {
-            pathTileId = palette.path.top;
-          } else if (!hasS && hasN) {
-            pathTileId = palette.path.bottom;
-          } else if (!hasW && hasE) {
-            pathTileId = palette.path.left;
-          } else if (!hasE && hasW) {
-            pathTileId = palette.path.right;
-          } else {
-            pathTileId = palette.path.center;
-          }
-
-          baseLayer[y]![x] = this.makeCell(pathTileId, false);
-        }
-      }
+      this.resolvePathAutotiling(isPathCell, palette, baseLayer, width, height);
     }
 
     // 3.5 Compute Organic Biome Distribution via Simplex Noise FBM & Quantile Thresholding
     const centerExclusion = withTown
-      ? { x: branchX, y: midY, radius: Math.floor(Math.min(width, height) * 0.35) }
+      ? { x: branchX, y: midY, radius: Math.floor(Math.min(width, height) * ROUTE_TOWN_CENTER_EXCLUSION_RATIO) }
       : undefined;
 
     const biomeDist = computeBiomeDistribution({
@@ -645,7 +528,7 @@ export class ProceduralMapGenerator {
     }
 
     // 4. Stamp Organic 9-Slice Water Bodies governed by Biome Distribution Engine
-    if (withWater && width >= 16 && height >= 16) {
+    if (withWater && width >= DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION && height >= DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION) {
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           if (!biomeDist.waterMask[y]![x] || isPathCell[y]![x] || elevationLayer[y]![x] !== null) continue;
@@ -656,7 +539,7 @@ export class ProceduralMapGenerator {
           const hasW = x > 0 && biomeDist.waterMask[y]![x - 1] && !isPathCell[y]![x - 1] && elevationLayer[y]![x - 1] === null;
           const hasE = x < width - 1 && biomeDist.waterMask[y]![x + 1] && !isPathCell[y]![x + 1] && elevationLayer[y]![x + 1] === null;
 
-          let waterId = palette.water.center;
+          let waterId: string;
 
           if (!hasN && !hasW) waterId = palette.water.topLeft;
           else if (!hasN && !hasE) waterId = palette.water.topRight;
@@ -675,7 +558,7 @@ export class ProceduralMapGenerator {
     }
 
     // 5. Stamp Authentic GBA Elevation Cliffs or Cones governed by Biome Distribution Engine
-    if (withHills && !withTown && width >= 16 && height >= 16) {
+    if (withHills && !withTown && width >= DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION && height >= DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION) {
       if (palette.cliff) {
         const topTile = palette.cliff.top;
         const faceTile = palette.cliff.face;
@@ -723,7 +606,7 @@ export class ProceduralMapGenerator {
       } else {
         const cone = palette.mountainCone2x3;
         let placedCones = 0;
-        const maxCones = Math.min(8, Math.max(2, Math.floor((width * height * (mountainPercent / 100)) / 15)));
+        const maxCones = Math.min(8, Math.max(2, Math.floor((width * height * (mountainPercent / 100)) / MOUNTAIN_CONE_CELLS_DIVISOR)));
 
         for (let y = 1; y <= height - cone.height - 1; y += 2) {
           for (let x = 1; x <= width - cone.width - 1; x += 2) {
@@ -815,7 +698,7 @@ export class ProceduralMapGenerator {
       }
 
       // 7. Interior Standalone Trees governed by Biome Distribution Engine
-      if (width >= 20 && height >= 20 && !withTown) {
+      if (width >= MIN_INTERIOR_TREES_MAP_DIMENSION && height >= MIN_INTERIOR_TREES_MAP_DIMENSION && !withTown) {
         const standaloneTpl = palette.standaloneTree ?? treeTpl;
         let placedInteriorTrees = 0;
         for (let y = 4; y <= height - standaloneTpl.height - 4; y += 4) {
@@ -834,16 +717,16 @@ export class ProceduralMapGenerator {
 
       // 7.5. Jumpable Ledges (strictly in Route mode)
       if (mapType === 'route' && palette.ledge) {
-        const ledgeY1 = Math.floor(height * 0.35);
-        const ledgeY2 = Math.floor(height * 0.65);
+        const ledgeY1 = Math.floor(height * ROUTE_LEDGE_NORTH_RATIO);
+        const ledgeY2 = Math.floor(height * ROUTE_LEDGE_SOUTH_RATIO);
         const candidateLedgeRows = [ledgeY1, ledgeY1 + 1, ledgeY1 - 1, ledgeY2, ledgeY2 + 1, ledgeY2 - 1];
 
         let placedLedgeCount = 0;
         for (const ly of candidateLedgeRows) {
           if (ly < 4 || ly >= height - 4) continue;
           const segments = [
-            { startX: 3, endX: Math.min(width - 4, Math.floor(width * 0.42)) },
-            { startX: Math.max(4, Math.floor(width * 0.58)), endX: width - 4 }
+            { startX: 3, endX: Math.min(width - 4, Math.floor(width * ROUTE_LEDGE_WEST_RATIO)) },
+            { startX: Math.max(4, Math.floor(width * ROUTE_LEDGE_EAST_RATIO)), endX: width - 4 }
           ];
 
           for (const seg of segments) {
@@ -877,7 +760,7 @@ export class ProceduralMapGenerator {
             if (bestRun) {
               for (let x = bestRun.start; x <= bestRun.end; x++) {
                 const tileId =
-                  prng() < 0.35 && palette.ledge.centerAlt
+                  prng() < ROUTE_LEDGE_ALT_CHANCE && palette.ledge.centerAlt
                     ? palette.ledge.centerAlt
                     : palette.ledge.center;
                 baseLayer[ly]![x] = this.makeCell(tileId, 'ledge');
@@ -911,6 +794,7 @@ export class ProceduralMapGenerator {
           }
         }
 
+        const TALL_GRASS_PATH_BORDER_ANCHOR_CHANCE = 0.8 as const;
         const numPatches = Math.min(8, Math.max(5, Math.floor(width / 5)));
         for (let p = 0; p < numPatches; p++) {
           const patchW = 3 + Math.floor(prng() * 4);
@@ -918,18 +802,20 @@ export class ProceduralMapGenerator {
           let px0: number;
           let py0: number;
 
-          if (pathBorderCandidates.length > 0 && prng() < 0.8) {
+          if (pathBorderCandidates.length > 0 && prng() < TALL_GRASS_PATH_BORDER_ANCHOR_CHANCE) {
             const anchor = pathBorderCandidates[Math.floor(prng() * pathBorderCandidates.length)]!;
             px0 = Math.max(2, Math.min(width - patchW - 3, anchor.x - Math.floor(patchW / 2)));
             py0 = Math.max(2, Math.min(height - patchH - 3, anchor.y - Math.floor(patchH / 2)));
           } else {
-            px0 = 3 + Math.floor(prng() * Math.max(1, width - patchW - 6));
-            py0 = 4 + Math.floor(prng() * Math.max(1, height - patchH - 7));
+            const PATCH_RANDOM_MARGIN_X = 6 as const;
+            const PATCH_RANDOM_MARGIN_Y = 7 as const;
+            px0 = 3 + Math.floor(prng() * Math.max(1, width - patchW - PATCH_RANDOM_MARGIN_X));
+            py0 = 4 + Math.floor(prng() * Math.max(1, height - patchH - PATCH_RANDOM_MARGIN_Y));
           }
 
           for (let gy = 0; gy < patchH; gy++) {
             for (let gx = 0; gx < patchW; gx++) {
-              if (prng() < 0.05) continue;
+              if (prng() < TALL_GRASS_SKIP_CHANCE) continue;
               const px = px0 + gx;
               const py = py0 + gy;
               if (
@@ -951,14 +837,14 @@ export class ProceduralMapGenerator {
       for (let x = 4; x < width - 4; x++) {
         const yTopRoad = midY - 2;
         if (yTopRoad >= 0 && !isPathCell[yTopRoad]![x] && !elevationLayer[yTopRoad]![x] && !objectLayer[yTopRoad]![x]) {
-          if (prng() < 0.45 && palette.props.flowers.length > 0) {
+          if (prng() < ROAD_FLOWER_CHANCE && palette.props.flowers.length > 0) {
             const flowerId = palette.props.flowers[Math.floor(prng() * palette.props.flowers.length)]!;
             objectLayer[yTopRoad]![x] = this.makeCell(flowerId, false);
           }
         }
         const yBottomRoad = midY + 2;
         if (yBottomRoad < height && !isPathCell[yBottomRoad]![x] && !elevationLayer[yBottomRoad]![x] && !objectLayer[yBottomRoad]![x]) {
-          if (prng() < 0.45 && palette.props.flowers.length > 0) {
+          if (prng() < ROAD_FLOWER_CHANCE && palette.props.flowers.length > 0) {
             const flowerId = palette.props.flowers[Math.floor(prng() * palette.props.flowers.length)]!;
             objectLayer[yBottomRoad]![x] = this.makeCell(flowerId, false);
           }
@@ -970,10 +856,10 @@ export class ProceduralMapGenerator {
         for (let x = 3; x < width - 3; x++) {
           if (isPathCell[y]![x] || elevationLayer[y]![x] !== null || objectLayer[y]![x] !== null) continue;
           const roll = prng();
-          if (roll < 0.02) {
+          if (roll < SCATTER_BUSH_CHANCE) {
             objectLayer[y]![x] = this.makeCell(palette.props.bush, true);
             collisionGrid[y]![x] = true;
-          } else if (roll < 0.035 && palette.props.rock) {
+          } else if (roll < SCATTER_ROCK_CHANCE && palette.props.rock) {
             objectLayer[y]![x] = this.makeCell(palette.props.rock, true);
             collisionGrid[y]![x] = true;
           }
@@ -986,7 +872,7 @@ export class ProceduralMapGenerator {
           mapWidth: width,
           mapHeight: height,
           seed,
-          density: options.propsDensity ?? 40,
+          density: options.propsDensity ?? DEFAULT_ROUTE_PROPS_DENSITY,
           includeFences: options.includeFences ?? true,
           isUrban: false,
           baseLayer,
@@ -1113,7 +999,7 @@ export class ProceduralMapGenerator {
     return {
       width,
       height,
-      tileSize: 16,
+      tileSize: STANDARD_GBA_TILE_SIZE,
       seed,
       theme,
       type: mapType,
@@ -1289,6 +1175,49 @@ export class ProceduralMapGenerator {
       }
     }
   }
+
+  private resolvePathAutotiling(
+    isPathCell: boolean[][],
+    palette: BiomePalette,
+    baseLayer: (MapCell | null)[][],
+    width: number,
+    height: number
+  ): void {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (!isPathCell[y]![x]) continue;
+
+        const hasN = y > 0 && isPathCell[y - 1]![x];
+        const hasS = y < height - 1 && isPathCell[y + 1]![x];
+        const hasW = x > 0 && isPathCell[y]![x - 1];
+        const hasE = x < width - 1 && isPathCell[y]![x + 1];
+
+        let pathTileId: string;
+
+        if (!hasN && !hasW && (hasS || hasE)) {
+          pathTileId = palette.path.topLeft;
+        } else if (!hasN && !hasE && (hasS || hasW)) {
+          pathTileId = palette.path.topRight;
+        } else if (!hasS && !hasW && (hasN || hasE)) {
+          pathTileId = palette.path.bottomLeft;
+        } else if (!hasS && !hasE && (hasN || hasW)) {
+          pathTileId = palette.path.bottomRight;
+        } else if (!hasN && hasS) {
+          pathTileId = palette.path.top;
+        } else if (!hasS && hasN) {
+          pathTileId = palette.path.bottom;
+        } else if (!hasW && hasE) {
+          pathTileId = palette.path.left;
+        } else if (!hasE && hasW) {
+          pathTileId = palette.path.right;
+        } else {
+          pathTileId = palette.path.center;
+        }
+
+        baseLayer[y]![x] = this.makeCell(pathTileId, false);
+      }
+    }
+  }
 }
 
 /**
@@ -1405,5 +1334,3 @@ export function stampStructure(
 
   return true;
 }
-
-export { stampProp } from './propsPlacementEngine.ts';

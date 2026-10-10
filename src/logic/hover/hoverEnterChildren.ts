@@ -9,6 +9,8 @@ const BUTTON_HOVER_DURATION_SEC = 0.12
 const GLOW_GRADIENT_ALPHA = 0.35
 const SHOP_ITEM_HOVER_SCALE = 1.25
 const SHOP_ITEM_GLOW_HOVER_SCALE = 1.35
+const SHOP_ITEM_HOVER_Y_OFFSET = -4 as const
+const SHOP_ITEM_HOVER_DURATION_SEC = 0.3 as const
 
 const CLOSE_BTN_SCALE = 1.1 as const
 const CLOSE_BTN_DURATION_SEC = 0.2 as const
@@ -127,7 +129,7 @@ export function triggerChildHoverTransitions(el: HTMLElement): void {
   } else if (el.classList.contains('shop-item-card') || el.classList.contains('bc-shop-item-card') || el.classList.contains('war-shop-item-card')) {
     const img = el.querySelector('.item-visual-box img')
     if (img) {
-      gsap.to(img, { scale: SHOP_ITEM_HOVER_SCALE, y: -4, duration: 0.3, ease: 'back.out(1.7)', overwrite: 'auto' })
+      gsap.to(img, { scale: SHOP_ITEM_HOVER_SCALE, y: SHOP_ITEM_HOVER_Y_OFFSET, duration: SHOP_ITEM_HOVER_DURATION_SEC, ease: 'back.out(1.7)', overwrite: 'auto' })
     }
   }
 }

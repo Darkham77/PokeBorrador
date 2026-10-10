@@ -11,15 +11,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { resolveTileUrl } from '../../logic/map/canvasImageLoader.ts';
 import {
-  resolveTileUrl,
   buildMapBlitInstructions,
   CANVAS_TILE_SIZE
-} from '../../../src/logic/map/canvasTileRenderer.ts';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { generateWildernessLayer } from '../../../src/logic/map/wildernessVegetationEngine.ts';
+} from '../../logic/map/canvasTileRenderer.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
 
 describe('canvasTileRenderer', () => {
   describe('resolveTileUrl', () => {

@@ -61,15 +61,15 @@ const {
 .awards-box {
   padding: 4px;
   border: 1px solid Rgb(34 197 94 / 25%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(34 197 94 / 6%);
   margin-bottom: 14px;
   box-sizing: border-box;
-  box-shadow: 0 0 16px Rgb(34 197 94 / 8%);
+  box-shadow: var(--shadow-glow-amber-lg);
 
   .box-inner {
     padding: 12px 14px;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 35%);
   }
 
@@ -77,7 +77,7 @@ const {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-bottom: 10px;
   }
 
@@ -90,10 +90,10 @@ const {
 
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     margin: 0;
     color: var(--green-bright, #4ade80);
-    font-size: 10px;
+    font-size: var(--font-10);
     letter-spacing: 0.5px;
   }
 
@@ -102,21 +102,21 @@ const {
 
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     padding: 5px 12px;
-    border: 1px solid #4ade80;
-    border-radius: 6px;
+    border: 1px solid var(--green-light);
+    border-radius: $radius-md;
     background: Linear-Gradient(180deg, #22c55e 0%, #15803d 100%);
-    color: #fff;
-    font-size: 8px;
+    color: var(--white);
+    font-size: var(--font-8);
     cursor: pointer;
-    box-shadow: 0 2px 8px Rgb(34 197 94 / 30%);
+    box-shadow: var(--shadow-subtle);
   }
 
   .awards-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
     max-height: 280px;
     overflow-y: auto;
     padding-right: 4px;

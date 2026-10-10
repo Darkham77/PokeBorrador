@@ -12,10 +12,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generatePokemonTopology } from '../../../src/logic/map/pokemonGraphTopology.ts';
-import { embedPokemonTopology } from '../../../src/logic/map/orthogonalGraphEmbedding.ts';
-import { sculptContinentFromGraph } from '../../../src/logic/map/continentGenerator.ts';
-import { enrichCorridorProperties } from '../../../src/logic/map/corridorPropertyEngine.ts';
+import { generatePokemonTopology } from '../../logic/map/pokemonGraphTopology.ts';
+import { embedPokemonTopology } from '../../logic/map/orthogonalGraphEmbedding.ts';
+import { sculptContinentFromGraph } from '../../logic/map/continentSculptingEngine.ts';
+import { enrichCorridorProperties } from '../../logic/map/corridorPropertyEngine.ts';
 
 describe('Emergent Corridor Property Engine (Phase 4)', () => {
   it('enriches all corridors with valid continuous property profiles for seed 42', () => {

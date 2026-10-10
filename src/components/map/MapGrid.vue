@@ -138,10 +138,12 @@ const isRocketExtorted = (loc: MapLocation): boolean => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .map-grid {
   display: grid;
-  gap: 15px;
+  gap: $spacing-md-15;
   grid-template-columns: repeat(3, 1fr);
   padding: 5px;
 }

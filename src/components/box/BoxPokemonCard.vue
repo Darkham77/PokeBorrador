@@ -13,6 +13,7 @@ import { useUIStore } from '@/stores/ui'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay'
 import { resolveCardStatusIndicators } from '@/components/pokemon/pokemonDisplayCardHelper'
 import {
   resolveBoxCardClasses,
@@ -108,6 +109,8 @@ watch(hpRatio, (newVal) => {
   })
 }, { immediate: true })
 
+const hpFillWidthPercent = computed(() => `${animatedHpRatio.value * PERCENT_BASE_MULTIPLIER}%`)
+
 const selectedBorderRef = ref<HTMLElement | null>(null)
 const checkBoxRef = ref<HTMLElement | null>(null)
 let borderPulseTween: gsap.core.Tween | null = null
@@ -177,6 +180,7 @@ onUnmounted(() => {
 
 <template>
   <div
+    id="box-pokemon-card-div-1"
     :class="cardClasses"
     :style="{ 
       '--tier-color': tierInfo.color,
@@ -297,7 +301,7 @@ onUnmounted(() => {
         <div
           class="hp-fill"
           :style="{ 
-            width: (animatedHpRatio * 100) + '%', 
+            width: hpFillWidthPercent, 
             background: statColor 
           }"
         />
@@ -373,7 +377,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     pointer-events: auto;
 
     .tier-badge {
@@ -384,7 +388,7 @@ onUnmounted(() => {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
+      gap: $spacing-2xs;
       margin-top: 2px;
     }
   }
@@ -468,18 +472,18 @@ onUnmounted(() => {
     align-items: center;
     width: 48px;
     height: 48px;
-    border: 2px dashed #ef4444;
-    border-radius: 6px;
+    border: 2px dashed var(--red-light);
+    border-radius: $radius-md;
     background: Rgb(239 68 68 / 20%);
 
     .danger-icon {
-      font-size: 1.4rem;
+      font-size: var(--font-22);
       line-height: 1;
     }
 
     .danger-label {
-      color: #ff6b6b;
-      font-size: 0.55rem;
+      color: var(--rose);
+      font-size: var(--font-9);
       font-weight: 900;
       letter-spacing: 0.5px;
       margin-top: 1px;

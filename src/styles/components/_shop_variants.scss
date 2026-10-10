@@ -13,7 +13,7 @@
 
   .header-stats {
     display: flex;
-    gap: 24px;
+    gap: $spacing-2xl;
 
     .stat-node {
       @include shop-header-stat(#c084fc);
@@ -21,8 +21,8 @@
       &.coins .value { 
         @extend .colored; 
         .currency-icon-purple {
-          color: #c084fc;
-          font-size: 14px;
+          color: var(--purple-400);
+          font-size: var(--font-14);
           filter: Drop-Shadow(0 0 5px Rgb(168 85 247 / 50%));
           margin-right: 4px;
         }
@@ -57,12 +57,12 @@
   .bc-shop-premium-grid {
     position: relative;
     display: grid;
-    gap: 16px;
+    gap: $spacing-lg;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     padding-bottom: 20px;
 
     @media (width <= 768px) {
-      gap: 12px;
+      gap: $spacing-md;
       grid-template-columns: 1fr;
     }
   }
@@ -83,7 +83,7 @@
 
   .header-stats {
     display: flex;
-    gap: 24px;
+    gap: $spacing-2xl;
 
     .stat-node {
       @include shop-header-stat(#ef4444);
@@ -91,8 +91,8 @@
       &.coins .value { 
         @extend .colored; 
         .currency-icon-red {
-          color: #ef4444;
-          font-size: 14px;
+          color: var(--red-light);
+          font-size: var(--font-14);
           filter: Drop-Shadow(0 0 5px Rgb(239 68 68 / 50%));
           margin-right: 4px;
         }
@@ -113,7 +113,7 @@
 
   .header-stats {
     display: flex;
-    gap: 24px;
+    gap: $spacing-2xl;
 
     .stat-node {
       @include shop-header-stat(#3b82f6);
@@ -121,10 +121,10 @@
       &.reputation .value { 
         @extend .colored; 
 
-        color: #3b82f6;
+        color: var(--blue-500);
         text-shadow: 0 0 10px Rgb(59 130 246 / 50%);
         .rep-star-icon {
-          color: #fbbf24;
+          color: var(--amber);
           filter: Drop-Shadow(0 0 5px Rgb(251 191 36 / 50%));
           margin-right: 4px;
         }
@@ -147,10 +147,10 @@
 
       padding: 2px 6px;
       border: 1px solid Rgb(239 68 68 / 40%);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(239 68 68 / 15%);
-      color: #f87171;
-      font-size: 7px;
+      color: var(--rose);
+      font-size: var(--font-7);
       font-weight: bold;
       text-shadow: 0 0 5px Rgb(239 68 68 / 50%);
       letter-spacing: 0;
@@ -159,7 +159,7 @@
 
   .header-stats {
     display: flex;
-    gap: 24px;
+    gap: $spacing-2xl;
 
     @media (width <= 768px) {
       justify-content: space-between;
@@ -210,12 +210,12 @@
   .rep-shop-premium-grid {
     position: relative;
     display: grid;
-    gap: 16px;
+    gap: $spacing-lg;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     padding-bottom: 20px;
 
     @media (width <= 768px) {
-      gap: 12px;
+      gap: $spacing-md;
       grid-template-columns: 1fr;
     }
   }

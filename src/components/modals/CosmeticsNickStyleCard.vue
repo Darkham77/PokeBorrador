@@ -30,6 +30,7 @@ const requirementLabel = computed(() => {
 
 <template>
   <div
+    id="cosmetics-nick-style-card-div-1"
     class="style-card"
     :class="{ 
       active: isActive,

@@ -8,13 +8,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 2px;
+  gap: $spacing-2xs;
   width: auto;
   min-width: 65px;
   height: 65px;
   padding: 4px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 18px;
+  border-radius: $radius-2xl-alt;
   background: Rgb(255 255 255 / 5%);
   color: var(--white);
 
@@ -56,7 +56,7 @@
       border-radius: 50%;
       background: Rgb(255 59 59 / 10%);
       transform: Scale3d(0.9, 0.9, 1);
-      box-shadow: 0 0 10px Rgb(255 59 59 / 40%);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 
@@ -97,7 +97,6 @@
   @extend %hud-card-element-base;
 }
 
-
 .hud-container .hud-pill {
   @include hud-pill-base;
 
@@ -112,11 +111,11 @@
     @include flex-center;
 
     height: 24px; 
-    font-size: 18px;
+    font-size: var(--font-18);
     margin-bottom: 0;
     &.currency-icon-money { 
-      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important; 
-      font-size: 22px;
+      font-family: $font-family-emoji !important; 
+      font-size: var(--font-22);
     }
   }
 
@@ -126,7 +125,7 @@
     display: block;
     width: 100%;
     margin: 0;
-    font-size: 12px;
+    font-size: var(--font-12);
     font-weight: 400;
     line-height: 1.1;
     text-align: center;
@@ -157,12 +156,12 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 6px; // 6px de separación entre emoji y texto
+  gap: $spacing-sm-alt; // 6px de separación entre emoji y texto
   width: 50px;
   height: 50px;
   padding: 8px 6px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 5%);
   color: var(--white);
   cursor: pointer;
@@ -178,8 +177,8 @@
     align-items: center;
     margin: 0 !important;
     padding: 0 !important;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    font-size: 16px;
+    font-family: $font-family-emoji !important;
+    font-size: var(--font-16);
     line-height: 1 !important;
   }
 
@@ -189,7 +188,7 @@
     margin: 0 !important;
     padding: 0 !important;
     color: Rgb(255 255 255 / 70%);
-    font-size: 7px !important;
+    font-size: var(--font-7) !important;
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 0;
@@ -199,10 +198,8 @@
   &.active {
     color: var(--yellow) !important;
     border-color: var(--yellow) !important;
-    box-shadow: 
-      0 20px 40px Rgb(0 0 0 / 60%),
-      inset 0 30px 60px -20px color-mix(in sRGB, var(--yellow), transparent 80%),
-      0 0 20px color-mix(in sRGB, var(--yellow), transparent 70%) !important;
+    box-shadow: var(--shadow-card);
+
     span:not(:first-child, .hud-notification-badge) { color: var(--yellow) !important; }
   }
 }
@@ -221,29 +218,29 @@
   height: auto !important;
   padding: 4px 6px !important;
   border: none !important;
-  border-radius: 8px !important;
-  background: #ef4444 !important;
-  color: white !important;
-  font-size: 7px !important;
-  box-shadow: 0 2px 8px Rgb(239 68 68 / 40%) !important;
+  border-radius: $radius-lg !important;
+  background: var(--red-light) !important;
+  color: var(--white) !important;
+  font-size: var(--font-7) !important;
+  box-shadow: var(--shadow-subtle);
 
   &.green,
   &.is-active {
-    background: #22c55e !important;
-    color: white !important;
-    box-shadow: 0 2px 8px Rgb(34 197 94 / 40%) !important;
+    background: var(--emerald) !important;
+    color: var(--white) !important;
+    box-shadow: var(--shadow-subtle);
   }
 
   &.gray,
   &.is-inactive {
-    background: #475569 !important;
-    color: #e2e8f0 !important;
+    background: var(--slate-600) !important;
+    color: var(--slate-200) !important;
     box-shadow: none !important;
   }
 
   &.orange {
-    background: #f59e0b !important;
-    color: #1e293b !important;
-    box-shadow: 0 2px 8px Rgb(245 158 11 / 40%) !important;
+    background: var(--amber-dark) !important;
+    color: var(--slate-800) !important;
+    box-shadow: var(--shadow-subtle);
   }
 }

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 
-
 import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import { gsap } from 'gsap';
 import { useDocumentListener } from '@/composables/ui/useWindowListener';
@@ -94,7 +93,6 @@ function openTrainerProfile(userId?: string) {
   uiStore.open('TrainerProfile', { userId });
 }
 
-
 const onMessageEnter = (el: Element, done: () => void) => {
   gsap.fromTo(el,
     { scale: 0.9, opacity: 0 },
@@ -113,7 +111,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 <template>
   <div class="global-chat-root">
     <!-- Toggle Button -->
-    <button 
+    <button
+      id="global-chat-btn-chat" 
       ref="chatToggleRef"
       class="chat-toggle-btn" 
       :class="{ 'has-unread': !isOpen && chatStore.globalMessages.length > 0 }"
@@ -158,7 +157,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
               :key="item.raw.id" 
               class="message-row"
             >
-              <TrainerAvatar 
+              <TrainerAvatar
+                id="global-chat-traineravatar-1" 
                 :player-class="item.visuals.playerClass" 
                 :level="item.visuals.level" 
                 :avatar-style="item.visuals.avatarStyle"
@@ -170,6 +170,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
               <div class="message-content">
                 <div class="message-meta">
                   <span
+                    id="global-chat-span-2"
                     v-gsap-nick="item.visuals.nickStyle"
                     class="username clickable-username"
                     :class="item.visuals.nickStyle"
@@ -191,7 +192,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
         <footer class="chat-footer">
           <div class="input-container">
-            <input 
+            <input
+              id="global-chat-input-newmessage" 
               ref="inputField"
               v-model="newMessage"
               type="text" 
@@ -200,7 +202,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
               :maxlength="GLOBAL_CHAT_MAX_CHARS"
               @keydown.enter="handleSendMessage"
             >
-            <button 
+            <button
+              id="global-chat-btn-3" 
               class="send-btn" 
               :disabled="!canWrite || !newMessage.trim()"
               @click.stop="handleSendMessage"
@@ -238,14 +241,14 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 .chat-toggle-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 10px 16px;
   border: 1px solid Rgb(199 125 255 / 30%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(13 17 23 / 98%);
   color: $white;
   cursor: pointer;
-  box-shadow: 0 4px 15px Rgb(0 0 0 / 40%);
+  box-shadow: var(--shadow-md);
 
   &:hover {
     background: Rgb(13 17 23 / 95%);
@@ -253,22 +256,22 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     border-color: var(--purple-light);
   }
 
-  .icon { font-size: 18px; }
+  .icon { font-size: var(--font-18); }
   .label { 
     @include pixelated;
 
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 0.5px;
   }
 
   @media (width <= 600px) {
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 60px;
     padding: 8px;
 
-    .icon { font-size: 16px; }
-    .label { font-size: 6px; }
+    .icon { font-size: var(--font-16); }
+    .label { font-size: var(--font-6); }
   }
 }
 
@@ -283,7 +286,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 .messages-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   min-height: 0; // Fix flex collapse for scroll stability
   padding: 15px;
   flex: 1;
@@ -293,13 +296,13 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 .message-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .message-content {
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 0 12px 12px;
+  border-radius: 0 $radius-xl $radius-xl;
   background: Rgb(255 255 255 / 3%);
   flex: 1;
 }
@@ -326,17 +329,17 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
   .input-container {
     display: flex;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-bottom: 8px;
   }
 
   input {
     padding: 10px 12px;
     border: 1px solid Rgb(199 125 255 / 20%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 30%);
     color: $white;
-    font-size: 13px;
+    font-size: var(--font-13);
     flex: 1;
     outline: none;
 
@@ -348,7 +351,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     width: 38px;
     height: 38px;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: var(--purple);
     color: $white;
     cursor: pointer;
@@ -359,7 +362,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
   %hint-base {
     margin: 0;
-    font-size: 10px;
+    font-size: var(--font-10);
     text-align: right;
   }
 
@@ -395,4 +398,3 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   }
 }
 </style>
-

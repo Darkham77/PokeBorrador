@@ -117,12 +117,12 @@ const tmRewardText = computed(() => {
 .medal-reward-box {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 10px 14px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 35%);
-  box-shadow: inset 0 2px 8px Rgb(0 0 0 / 40%);
+  box-shadow: var(--shadow-card);
 }
 
 .reward-badge-img {
@@ -141,7 +141,7 @@ const tmRewardText = computed(() => {
 .medal-detail {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   min-width: 0;
 }
 
@@ -149,7 +149,7 @@ const tmRewardText = computed(() => {
   @include pixelated;
 
   color: var(--gray);
-  font-size: 6px;
+  font-size: var(--font-6);
   opacity: 0.6;
   letter-spacing: 0.5px;
 }
@@ -158,7 +158,7 @@ const tmRewardText = computed(() => {
   @include pixelated;
 
   color: $coin-gold;
-  font-size: 8px;
+  font-size: var(--font-8);
   line-height: 1.4;
   text-shadow: 0 0 8px Rgb(255 214 10 / 30%);
   white-space: nowrap;
@@ -169,7 +169,7 @@ const tmRewardText = computed(() => {
 .reward-grid {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   margin-top: 4px;
 }
 
@@ -178,36 +178,36 @@ const tmRewardText = computed(() => {
 
   padding: 2px 6px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: Rgb(255 255 255 / 10%);
-  color: #fff;
-  font-size: 6px;
+  color: var(--white);
+  font-size: var(--font-6);
   align-self: flex-start;
 
   &.tm-claimed {
     background: Rgb(255 255 255 / 3%);
-    color: #aaa;
+    color: var(--slate-300);
     opacity: 0.5;
   }
 
   &.tm-chance-normal {
     border: 1px dashed Rgb(76 201 240 / 30%);
     background: Rgb(76 201 240 / 5%);
-    color: #4cc9f0;
+    color: var(--cyan);
     opacity: 1;
   }
 
   &.tm-chance-hard {
     border: 1px dashed Rgb(255 215 0 / 30%);
     background: Rgb(255 215 0 / 5%);
-    color: #ffd700;
+    color: var(--gold);
     opacity: 1;
   }
 }
 
 .reward-extras {
   display: flex;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .reward-pill {
@@ -215,24 +215,24 @@ const tmRewardText = computed(() => {
 
   padding: 2px 6px;
   border: 1px solid transparent;
-  border-radius: 4px;
-  font-size: 6px;
+  border-radius: $radius-sm;
+  font-size: var(--font-6);
 
   &.exp {
     background: Rgb(76 201 240 / 10%);
-    color: #4cc9f0;
+    color: var(--cyan);
     border-color: Rgb(76 201 240 / 20%);
   }
 
   &.money {
     background: Rgb(255 215 0 / 10%);
-    color: #ffd700;
+    color: var(--gold);
     border-color: Rgb(255 215 0 / 20%);
   }
 
   &.claimed {
     background: Rgb(255 255 255 / 3%);
-    color: #888;
+    color: var(--slate-400);
     opacity: 0.55;
     border-color: Rgb(255 255 255 / 5%);
     
@@ -242,4 +242,3 @@ const tmRewardText = computed(() => {
   }
 }
 </style>
-

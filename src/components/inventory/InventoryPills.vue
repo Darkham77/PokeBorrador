@@ -95,6 +95,7 @@ onMounted(async () => {
       position="bottom"
     >
       <div
+        id="inventory-pills-div-1"
         class="hud-pill money-pill clickable-pill"
         @click.stop="modalStore.open('Shop', { initialCategory: 'todos' })"
       >
@@ -114,6 +115,7 @@ onMounted(async () => {
       position="bottom"
     >
       <div
+        id="inventory-pills-div-2"
         class="hud-pill bc-pill clickable-pill"
         @click.stop="modalStore.open('BCShop')"
       >
@@ -133,6 +135,7 @@ onMounted(async () => {
       position="bottom"
     >
       <div
+        id="inventory-pills-div-3"
         class="hud-pill war-pill clickable-pill"
         @click.stop="modalStore.open('WarShop')"
       >
@@ -151,7 +154,7 @@ onMounted(async () => {
 .hud-items {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .hud-pill {
@@ -159,7 +162,7 @@ onMounted(async () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   width: 65px;
   height: 65px;
   padding: 4px 2px;
@@ -168,7 +171,7 @@ onMounted(async () => {
   &.clickable-pill {
     cursor: pointer;
     will-change: background-color;
-    &:hover { background: rgba($white, 0.05); }
+    &:hover { background: Rgba($white, 0.05); }
   }
 
   .pill-value {
@@ -184,26 +187,26 @@ onMounted(async () => {
   }
 
   &.money-pill {
-    border-color: rgba($green, 0.3);
+    border-color: Rgba($green, 0.3);
     .pill-value, .currency-icon-money {
       color: var(--green);
-      text-shadow: 0 0 8px rgba($green, 0.4);
+      text-shadow: 0 0 8px Rgba($green, 0.4);
     }
   }
 
   &.bc-pill {
-    border-color: rgba($purple, 0.3);
+    border-color: Rgba($purple, 0.3);
     .pill-value, .currency-icon-bc {
       color: var(--purple);
-      text-shadow: 0 0 8px rgba($purple, 0.4);
+      text-shadow: 0 0 8px Rgba($purple, 0.4);
     }
   }
 
   &.war-pill {
-    border-color: rgb(239 68 68 / 30%);
+    border-color: Rgb(239 68 68 / 30%);
     .pill-value, .war-icon {
-      color: #EF4444;
-      text-shadow: 0 0 8px rgb(239 68 68 / 40%);
+      color: var(--red-light);
+      text-shadow: 0 0 8px Rgb(239 68 68 / 40%);
     }
   }
 }
@@ -213,7 +216,7 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   height: 18px;
-  font-size: 18px;
+  font-size: var(--font-18);
   line-height: 1;
 }
 
@@ -222,7 +225,7 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   height: 18px;
-  font-size: 16px;
+  font-size: var(--font-16);
   line-height: 1;
 }
 
@@ -231,8 +234,8 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   height: 18px;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-  font-size: 14px;
+  font-family: $font-family-emoji;
+  font-size: var(--font-14);
   line-height: 1;
 }
 </style>

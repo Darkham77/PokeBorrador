@@ -45,7 +45,7 @@
   display: block;
   color: $yellow;
   font-family: $font-pixel;
-  font-size: 8px;
+  font-size: var(--font-8);
   padding-bottom: 8px;
   margin-bottom: 8px;
   text-transform: uppercase;
@@ -65,9 +65,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   color: Rgb(255 255 255 / 90%);
-  font-size: 9px;
+  font-size: var(--font-9);
   line-height: 1.5;
 }
 
@@ -168,7 +168,7 @@
 
     display: block;
     color: var(--yellow);
-    font-size: 8px;
+    font-size: var(--font-8);
     margin-bottom: 8px;
     text-transform: uppercase;
     text-shadow: 1px 1px 0 Rgb(0 0 0 / 80%);
@@ -196,9 +196,9 @@
   width: 28px;
   height: 28px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 5%);
-  font-size: 14px;
+  font-size: var(--font-14);
   cursor: pointer;
   pointer-events: auto !important;
   user-select: none;
@@ -219,13 +219,13 @@
       background: Rgb(255 217 61 / 15%) !important;
       color: var(--yellow) !important;
       border-color: Rgb(255 217 61 / 30%) !important;
-      box-shadow: 0 0 10px Rgb(255 217 61 / 10%);
+      box-shadow: var(--shadow-glow-amber);
     }
     &.tag-heart {
       background: Rgb(255 69 58 / 15%) !important;
       color: $red !important;
       border-color: Rgb(255 69 58 / 30%) !important;
-      box-shadow: 0 0 10px Rgb(255 69 58 / 10%);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 }

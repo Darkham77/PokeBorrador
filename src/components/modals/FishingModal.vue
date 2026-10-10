@@ -360,11 +360,11 @@ const handleCloseModal = () => {
 .fishing-hint {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   width: 100%;
   padding: 10px 16px;
   border: 1px solid Rgb(10 132 255 / 20%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(10 132 255 / 10%);
   margin-bottom: 12px;
 
@@ -373,10 +373,10 @@ const handleCloseModal = () => {
     text-align: center;
     p {
       margin: 0;
-      color: #dfcbb5;
-      font-size: 11px;
+      color: var(--amber-300);
+      font-size: var(--font-11);
       span {
-        color: #fef08a;
+        color: var(--yellow-light);
         font-weight: bold;
       }
     }
@@ -387,7 +387,7 @@ const handleCloseModal = () => {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
   margin-bottom: 16px;
 }
@@ -397,16 +397,16 @@ const handleCloseModal = () => {
 
   padding: 6px 12px;
   border: 1px solid Rgb(10 132 255 / 30%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 5%);
   color: var(--white);
-  font-size: 9px;
+  font-size: var(--font-9);
   white-space: nowrap;
 }
 
 .rhythm-counter {
-  color: #fff;
-  font-size: 9px;
+  color: var(--white);
+  font-size: var(--font-9);
   text-align: center;
   letter-spacing: 1px;
 }
@@ -416,10 +416,10 @@ const handleCloseModal = () => {
   width: 380px;
   height: 380px;
   border: 2px solid Rgb(10 132 255 / 20%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(0 0 0 / 40%);
   overflow: hidden;
-  box-shadow: inset 0 0 20px Rgb(0 0 0 / 80%);
+  box-shadow: var(--shadow-2xl);
 }
 
 .rhythm-note {
@@ -444,9 +444,9 @@ const handleCloseModal = () => {
     border: 3px solid var(--blue, #0a84ff);
     border-radius: 50%;
     background: Rgb(10 132 255 / 20%);
-    color: #fff;
-    font-size: 16px;
-    box-shadow: 0 0 15px Rgb(10 132 255 / 40%);
+    color: var(--white);
+    font-size: var(--font-16);
+    box-shadow: var(--shadow-glow-amber);
   }
 
   .rhythm-ring {
@@ -461,8 +461,8 @@ const handleCloseModal = () => {
   &.success .rhythm-circle {
     background: Rgb(34 197 94 / 20%);
     transform: Scale(1.2);
-    border-color: #22c55e;
-    box-shadow: 0 0 30px Rgb(34 197 94 / 60%);
+    border-color: var(--emerald);
+    box-shadow: var(--shadow-glow-amber-lg);
   }
 }
 
@@ -473,13 +473,13 @@ const handleCloseModal = () => {
   z-index: var(--z-map-spawns);
   padding: 12px 24px;
   border: 1px solid Rgb(255 77 77 / 30%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 90%);
-  color: #ff4d4d;
-  font-size: 14px;
+  color: var(--tag-breed);
+  font-size: var(--font-14);
   text-align: center;
   transform: Translate(-50%, -50%);
   text-shadow: 0 0 10px Rgb(255 77 77 / 50%);
-  box-shadow: 0 4px 20px Rgb(0 0 0 / 50%);
+  box-shadow: var(--shadow-card);
 }
 </style>

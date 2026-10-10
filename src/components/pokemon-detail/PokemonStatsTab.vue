@@ -187,15 +187,15 @@ const totalPowerTooltipDescription = computed(() => {
 .ev-summary-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 4px 8px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 6px;
-  background: rgb(0 0 0 / 40%);
-  font-size: 8px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-md;
+  background: Rgb(0 0 0 / 40%);
+  font-size: var(--font-8);
 
   .ev-total-text {
-    color: rgb(255 255 255 / 80%);
+    color: Rgb(255 255 255 / 80%);
     letter-spacing: 0.5px;
 
     &.is-maxed {
@@ -212,19 +212,19 @@ const totalPowerTooltipDescription = computed(() => {
 
   .pkrs-badge {
     padding: 2px 4px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     font-weight: bold;
 
     &.infected {
-      border: 1px solid rgb(236 72 153 / 40%);
-      background: rgb(236 72 153 / 20%);
-      color: #f472b6;
+      border: 1px solid Rgb(236 72 153 / 40%);
+      background: Rgb(236 72 153 / 20%);
+      color: var(--rose);
     }
 
     &.cured {
-      border: 1px solid rgb(148 163 184 / 40%);
-      background: rgb(148 163 184 / 20%);
-      color: #94a3b8;
+      border: 1px solid Rgb(148 163 184 / 40%);
+      background: Rgb(148 163 184 / 20%);
+      color: var(--slate-400);
     }
   }
 }

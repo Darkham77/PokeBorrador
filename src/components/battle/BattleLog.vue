@@ -150,12 +150,12 @@ onMounted(() => {
     width: 6px;
   }
   &::-webkit-scrollbar-track {
-    border-radius: 3px;
+    border-radius: $radius-xs-alt;
     background: Rgb(0 0 0 / 20%);
   }
   &::-webkit-scrollbar-thumb {
     border: 1px solid Rgb(0 0 0 / 20%);
-    border-radius: 3px;
+    border-radius: $radius-xs-alt;
     background: Rgb(255 255 255 / 15%);
     
     &:hover {
@@ -166,14 +166,14 @@ onMounted(() => {
   .log-scroll-inner {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
     width: 100%;
   }
 
   @media (width <= 560px) {
     padding: 10px !important;
     .log-scroll-inner {
-      gap: 4px !important;
+      gap: $spacing-xs !important;
     }
   }
 }
@@ -183,12 +183,12 @@ onMounted(() => {
 
   display: flex;
   align-items: center;
-  gap: 8px; 
+  gap: $spacing-sm; 
   min-height: 28px !important;
-  border-radius: 4px 0 0 4px;
+  border-radius: $radius-sm 0 0 $radius-sm;
   color: Rgb(255 255 255 / 90%);
   font-family: var(--font-pixel), monospace;
-  font-size: 10px;
+  font-size: var(--font-10);
   line-height: 1.4;
   padding-left: 6px;
   padding-bottom: 4px;
@@ -240,7 +240,7 @@ onMounted(() => {
         height: 28px !important;
         max-height: none !important;
         border: 1px solid Rgb(255 255 255 / 10%);
-        border-radius: 4px;
+        border-radius: $radius-sm;
         background-color: var(--player-class-color, Rgb(0 0 0 / 20%)) !important;
         transform: Translate(-50%, -50%);
         object-fit: cover;
@@ -297,8 +297,8 @@ onMounted(() => {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
-    font-size: 16px; // Reducido para evitar desbordes
+    font-family: $font-family-emoji !important;
+    font-size: var(--font-16); // Reducido para evitar desbordes
     line-height: 1;
     transform: Translate(-50%, -50%);
     will-change: transform, filter, opacity;
@@ -312,11 +312,11 @@ onMounted(() => {
   }
 
   @media (width <= 560px) {
-    gap: 8px !important;
+    gap: $spacing-sm !important;
     min-height: 0 !important;
     margin: 0 !important;
     padding: 2px 0 !important;
-    font-size: 8px !important;
+    font-size: var(--font-8) !important;
     line-height: 1.3 !important;
     border-bottom: 1px solid Rgb(255 255 255 / 3%) !important;
 
@@ -374,7 +374,7 @@ onMounted(() => {
 :deep(.reward-entry-unified) {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: $spacing-1px;
   width: 100%;
   line-height: 1.35;
 }
@@ -383,11 +383,11 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px;
+  gap: $spacing-xs;
   color: Rgb(255 255 255 / 95%);
 
   strong {
-    color: #fff;
+    color: var(--white);
     font-weight: 700;
   }
 }
@@ -396,8 +396,8 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px;
-  font-size: 0.92em;
+  gap: $spacing-xs;
+  font-size: var(--font-14);
   opacity: 0.9;
 }
 
@@ -407,16 +407,16 @@ onMounted(() => {
 }
 
 :deep(.reward-exp) {
-  color: #38ef7d;
+  color: var(--green-light);
   font-weight: 500;
 }
 
 :deep(.reward-evs) {
-  color: #63b3ed;
+  color: var(--blue-400);
 }
 
 :deep(.reward-friendship) {
-  color: #fb7185;
+  color: var(--rose);
   font-weight: 500;
 }
 </style>

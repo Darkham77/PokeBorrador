@@ -22,6 +22,9 @@ async function fetchCryBuffer(name: string, ctx: AudioContext): Promise<AudioBuf
   return await ctx.decodeAudioData(arrayBuffer);
 }
 
+const FAINT_CRY_PLAYBACK_RATE = 0.6 as const;
+const NORMAL_CRY_PLAYBACK_RATE = 1.0 as const;
+
 export async function playPokemonCry(
   pokemonName: string,
   ctx: AudioContext,
@@ -54,9 +57,9 @@ export async function playPokemonCry(
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     if (isFaint) {
-      source.playbackRate.setValueAtTime(0.6, ctx.currentTime);
+      source.playbackRate.setValueAtTime(FAINT_CRY_PLAYBACK_RATE, ctx.currentTime);
     } else {
-      source.playbackRate.setValueAtTime(1.0, ctx.currentTime);
+      source.playbackRate.setValueAtTime(NORMAL_CRY_PLAYBACK_RATE, ctx.currentTime);
     }
     source.connect(dest);
     source.start(ctx.currentTime);

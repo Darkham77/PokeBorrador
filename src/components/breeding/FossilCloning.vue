@@ -197,6 +197,7 @@ watch(extraSacrifices, () => {
         <div class="fossil-cards">
           <div
             v-for="(fossil, idx) in renderedFossils"
+            id="fossil-cloning-div-selectfossil"
             :key="fossil.id"
             class="fossil-card"
             :class="{ active: selectedFossilIndex === idx }"
@@ -262,6 +263,7 @@ watch(extraSacrifices, () => {
             <tbody>
               <tr
                 v-for="tier in CLONING_TIERS"
+                id="fossil-cloning-tr-selectsacrifices"
                 :key="tier.N"
                 class="matrix-row"
                 :class="{ 
@@ -323,6 +325,7 @@ watch(extraSacrifices, () => {
             <span class="emoji">⚠️</span> ¡EXTRACCIÓN FALLIDA! Recursos consumidos.
           </div>
           <button
+            id="fossil-cloning-btn-clone"
             class="btn-clone"
             :disabled="!canClone"
             @click="handleClone"

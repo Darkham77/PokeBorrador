@@ -183,7 +183,8 @@ const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h
 
       <!-- Bottom Actions -->
       <div class="dashboard-actions">
-        <button 
+        <button
+          id="class-dashboard-btn-misiones-de-clase" 
           class="missions-btn-wide"
           @click.stop="openMissionsModal"
         >
@@ -192,6 +193,7 @@ const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h
 
         <div class="action-footer">
           <button
+            id="class-dashboard-btn-1"
             class="btn-secondary"
             @click.stop="emit('changeClass')"
           >
@@ -202,6 +204,7 @@ const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h
             </span>
           </button>
           <button
+            id="class-dashboard-btn-entendido"
             class="btn-primary"
             @click.stop="emit('close')"
           >

@@ -16,11 +16,11 @@
   height: 14px;
   padding: 0 6px; // Horizontal only
   border: 1px solid Rgba($color, 0.6);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: Rgba($color, 0.15);
   color: $color;
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
   font-weight: 900;
   
   // Per-size vertical centering
@@ -47,7 +47,7 @@
   @include pixelated;
 
   color: Rgb(255 255 255 / 30%);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: bold;
 }
 
@@ -75,7 +75,7 @@
 // 4. TIER BADGE (S+, S, A...)
 @mixin badge-tier($size: 16px, $giant: false) {
   $actual-size: $size;
-  $font-size: 8px;
+  $font-size: var(--font-8);
   $border-width: 1.5px;
   $br: 6px;
 
@@ -96,7 +96,7 @@
   
   // Font-specific centering (Pixel fonts usually need 1px lower line-height than height)
   line-height: $actual-size;
-  box-shadow: 0 2px 5px Rgb(0 0 0 / 30%);
+  box-shadow: var(--shadow-card);
   border-color: var(--tier-color);
   clip-path: none;
   box-sizing: border-box;
@@ -107,7 +107,7 @@
 
   @if $giant {
     $actual-size: 36px;
-    $font-size: 16px;
+    $font-size: var(--font-16);
     $border-width: 2px;
     $br: 10px;
   } @else {
@@ -131,9 +131,9 @@
   width: $size;
   height: $size;
   border: 1px solid Rgb(255 255 255 / 20%);
-  border-radius: 6px;
-  color: #fff !important;
-  font-size: 10px;
+  border-radius: $radius-md;
+  color: var(--white) !important;
+  font-size: var(--font-10);
   font-weight: 900;
   line-height: 1.25;
   box-sizing: border-box;
@@ -149,18 +149,18 @@
 
   &.male, &.gender-male, &.gender-m, &.m {
     background: Linear-Gradient(135deg, #0284c7 0%, #0ea5e9 100%);
-    box-shadow: 0 0 6px Rgb(14 165 233 / 55%);
+    box-shadow: var(--shadow-glow-blue-sm);
   }
   &.female, &.gender-female, &.gender-f, &.f {
     background: Linear-Gradient(135deg, #db2777 0%, #ec4899 100%);
-    box-shadow: 0 0 6px Rgb(236 72 153 / 55%);
+    box-shadow: var(--shadow-glow-rose);
   }
 
   &.mini {
     width: 14px;
     height: 14px;
-    border-radius: 5px;
-    font-size: 9px;
+    border-radius: $radius-md-alt;
+    font-size: var(--font-9);
   }
 }
 
@@ -181,7 +181,7 @@
   min-width: 16px;
   height: 20px;
   padding: 0;
-  font-size: 16px;
+  font-size: var(--font-16);
   margin-right: 6px;
   margin-bottom: 2px;
   overflow: visible;
@@ -207,20 +207,20 @@
     z-index: calc(var(--z-base) + 2);
     display: inline-flex;
     align-items: center;
-    gap: 1px;
+    gap: $spacing-1px;
     font-family: var(--font-pixel);
     line-height: 1;
     pointer-events: none;
     white-space: nowrap;
 
     .stage-glyph {
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1;
     }
 
     .stage-num {
-      color: #fff;
-      font-size: 9px;
+      color: var(--white);
+      font-size: var(--font-9);
       font-weight: bold;
       line-height: 1;
       text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
@@ -228,13 +228,13 @@
 
     &.up {
       .stage-glyph {
-        color: #10B981;
+        color: var(--emerald-500);
         text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
       }
     }
     &.down {
       .stage-glyph {
-        color: #EF4444;
+        color: var(--red-light);
         text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
       }
     }
@@ -244,11 +244,11 @@
       left: 9px;
 
       .stage-glyph {
-        font-size: 7px;
+        font-size: var(--font-7);
       }
 
       .stage-num {
-        font-size: 8px;
+        font-size: var(--font-8);
       }
     }
   }
@@ -260,9 +260,9 @@
     bottom: -3px;
     left: 11px;
     z-index: calc(var(--z-base) + 2);
-    color: #fff;
+    color: var(--white);
     font-family: var(--font-pixel);
-    font-size: 9px;
+    font-size: var(--font-9);
     font-weight: bold;
     line-height: 1;
     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
@@ -272,7 +272,7 @@
     @media (width <= 600px) {
       bottom: -2px;
       left: 9px;
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 
@@ -282,7 +282,7 @@
     min-width: 12px;
     height: 15px;
     padding: 0;
-    font-size: 12px;
+    font-size: var(--font-12);
     margin-right: 5px;
   }
 }
@@ -292,8 +292,8 @@
   @include pixelated;
 
   padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 8px;
+  border-radius: $radius-sm;
+  font-size: var(--font-8);
   font-weight: 900;
   
   &.team { 
@@ -330,7 +330,7 @@
     align-items: center;
     width: 100%;
     height: 100%;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-family: $font-family-emoji;
     line-height: 1;
   }
   
@@ -338,7 +338,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 16px;
+    font-size: var(--font-16);
     filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 50%));
   }
 }
@@ -347,7 +347,7 @@
   @include map-pill-base;
 
   color: Rgb(255 204 0 / 100%);
-  font-size: 18px;
+  font-size: var(--font-18);
 
   .pill-content {
     display: flex;
@@ -355,7 +355,7 @@
     align-items: center;
     width: 100%;
     height: 100%;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-family: $font-family-emoji;
     line-height: 1;
   }
 
@@ -377,8 +377,8 @@
     align-items: center;
     width: 100%;
     height: 100%;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-    font-size: 18px;
+    font-family: $font-family-emoji;
+    font-size: var(--font-18);
     line-height: 1;
     filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 50%));
   }

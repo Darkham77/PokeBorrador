@@ -222,6 +222,7 @@ onMounted(() => {
         >
           <div
             v-for="replay in recentReplays"
+            id="arena-replays-panel-div-watchreplay"
             :key="replay.id"
             class="replay-item-card"
             @click="handleWatchReplay(replay)"

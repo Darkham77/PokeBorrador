@@ -8,8 +8,8 @@
  * and guaranteed 100% transitable door-to-street connectivity.
  */
 
-import type { CityGenerationConfig, UrbanScale } from '../../types/map/adventureWorldTypes';
-import type { CardinalDirection } from '../../types/map/poiTypes';
+import type { CityGenerationConfig, UrbanScale } from '../../types/map/adventureWorldTypes.ts';
+import type { CardinalDirection } from '../../types/map/poiTypes.ts';
 import {
   KANTO_HOUSE_SMALL,
   KANTO_HOUSE_BLUE,
@@ -20,14 +20,14 @@ import {
   PLAZA_FOUNTAIN,
   PLAZA_PARK,
   type StructureTemplate
-} from '../../config/mapStructures';
+} from '../../config/mapStructures.ts';
 import type { TileCollision } from './tilesRegistry.ts';
 import type {
   ThemeBiomePalette,
   MapCell,
   MapSpawn,
   MapWarp
-} from './proceduralMapGenerator';
+} from './proceduralMapGenerator.ts';
 import { placeScenicProps, type PropsPlacementResult } from './propsPlacementEngine.ts';
 
 const PARK_BUSH_DENSITY = 0.25;
@@ -323,6 +323,22 @@ export function generateUrbanLayout(options: UrbanZoningOptions): UrbanLayoutRes
   };
 }
 
+const URBAN_AVENUE_RATIOS = {
+  TOWN_Y_NORTH: 0.38,
+  TOWN_Y_SOUTH: 0.65,
+  TOWN_EXPAND_WIDTH: 44,
+  TOWN_X_WEST: 0.28,
+  TOWN_X_EAST: 0.72,
+  CITY_Y_NORTH: 0.32,
+  CITY_Y_SOUTH: 0.68,
+  CITY_X_WEST: 0.25,
+  CITY_X_EAST: 0.75,
+  METROPOLIS_Y_NORTH: 0.26,
+  METROPOLIS_Y_SOUTH: 0.74,
+  METROPOLIS_X_WEST: 0.25,
+  METROPOLIS_X_EAST: 0.75
+} as const;
+
 /**
  * Generates street grid networks based on urban scale.
  */
@@ -348,19 +364,19 @@ export function generateStreetNetwork(
     xRoads.push(midX);
   } else if (scale === 'town') {
     // 2 horizontal avenues + central & optional lateral vertical streets
-    yRoads.push(Math.floor(height * 0.38), Math.floor(height * 0.65));
+    yRoads.push(Math.floor(height * URBAN_AVENUE_RATIOS.TOWN_Y_NORTH), Math.floor(height * URBAN_AVENUE_RATIOS.TOWN_Y_SOUTH));
     xRoads.push(midX);
-    if (width >= 44) {
-      xRoads.push(Math.floor(width * 0.28), Math.floor(width * 0.72));
+    if (width >= URBAN_AVENUE_RATIOS.TOWN_EXPAND_WIDTH) {
+      xRoads.push(Math.floor(width * URBAN_AVENUE_RATIOS.TOWN_X_WEST), Math.floor(width * URBAN_AVENUE_RATIOS.TOWN_X_EAST));
     }
   } else if (scale === 'city') {
     // 2 horizontal boulevards + 3 vertical streets
-    yRoads.push(Math.floor(height * 0.32), Math.floor(height * 0.68));
-    xRoads.push(Math.floor(width * 0.25), midX, Math.floor(width * 0.75));
+    yRoads.push(Math.floor(height * URBAN_AVENUE_RATIOS.CITY_Y_NORTH), Math.floor(height * URBAN_AVENUE_RATIOS.CITY_Y_SOUTH));
+    xRoads.push(Math.floor(width * URBAN_AVENUE_RATIOS.CITY_X_WEST), midX, Math.floor(width * URBAN_AVENUE_RATIOS.CITY_X_EAST));
   } else {
     // Metropolis: 3 horizontal + 3 vertical boulevards
-    yRoads.push(Math.floor(height * 0.26), midY, Math.floor(height * 0.74));
-    xRoads.push(Math.floor(width * 0.25), midX, Math.floor(width * 0.75));
+    yRoads.push(Math.floor(height * URBAN_AVENUE_RATIOS.METROPOLIS_Y_NORTH), midY, Math.floor(height * URBAN_AVENUE_RATIOS.METROPOLIS_Y_SOUTH));
+    xRoads.push(Math.floor(width * URBAN_AVENUE_RATIOS.METROPOLIS_X_WEST), midX, Math.floor(width * URBAN_AVENUE_RATIOS.METROPOLIS_X_EAST));
   }
 
   // Stamp horizontal avenues (width 2)

@@ -3,7 +3,7 @@
 
 .box-grid {
   display: grid;
-  gap: 6px; // Reduced from 12px
+  gap: $spacing-sm-alt; // Reduced from 12px
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   padding-bottom: 20px;
 }
@@ -15,7 +15,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   height: 195px;
   padding: 12px;
   cursor: pointer;
@@ -57,7 +57,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .tier-badge {
       position: static !important;
@@ -67,11 +67,11 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
+      gap: $spacing-2xs;
       margin-top: 2px;
 
       .status-indicator {
-        font-size: 10px;
+        font-size: var(--font-10);
         line-height: 1.2;
       }
     }
@@ -138,7 +138,7 @@
       display: block;
       max-width: 100%;
       color: var(--white);
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1.45;
       padding-bottom: 2px;
       white-space: nowrap;
@@ -159,7 +159,7 @@
       display: block;
       max-width: 100%;
       color: var(--text-muted, Rgb(255 255 255 / 60%));
-      font-size: 6px;
+      font-size: var(--font-6);
       line-height: 1.45;
       padding-bottom: 1px;
       text-transform: uppercase;
@@ -174,14 +174,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: $spacing-xs-alt;
       margin-top: 2px;
 
       .level-gender-row {
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 4px;
+        gap: $spacing-xs;
       }
     }
 
@@ -189,7 +189,7 @@
       width: 75%;
       height: 3px;
       margin: 6px auto 0;
-      border-radius: 2px;
+      border-radius: $radius-xs;
       background: Rgb(255 255 255 / 10%);
       overflow: hidden;
 
@@ -215,7 +215,7 @@
       width: 22px;
       height: 22px;
       border: 1px solid Rgb(255 255 255 / 20%);
-      border-radius: 6px;
+      border-radius: $radius-md;
       background: Rgb(0 0 0 / 40%);
       -webkit-will-change: opacity;
       will-change: opacity;
@@ -229,10 +229,10 @@
 
       &.checked {
         background: var(--red);
-        color: white;
+        color: var(--white);
         transform: Scale(1.1);
         border-color: var(--red);
-        box-shadow: 0 0 15px Rgb(239 68 68 / 50%);
+        box-shadow: var(--shadow-glow-amber);
       }
     }
   }
@@ -241,6 +241,6 @@
     background: Rgb(239 68 68 / 5%) !important;
     transform: Scale(0.98);
     border-color: var(--red) !important;
-    box-shadow: 0 0 30px Rgb(239 68 68 / 10%) !important;
+    box-shadow: var(--shadow-glow-amber-lg);
   }
 }

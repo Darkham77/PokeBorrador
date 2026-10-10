@@ -7,6 +7,7 @@
  */
 
 import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { GALAR_GENERATION_NUM } from '@/logic/constants/gameplay';
 import { ABILITY_TRANSLATIONS_ES, type AbilityId } from '@/data/battle/abilities';
 import type { Pokemon, PokemonGender } from '@/types/pokemon/pokemon';
 import type { NatureId } from '@/data/battle/natures';
@@ -105,7 +106,7 @@ export function getEffectiveLeaderAbility(
 
   // Gen 8+ strictly requires the leader to be alive (hp > 0).
   // Gen 3-7 allowed fainted leaders to apply field abilities.
-  if (generation >= 8 && leader.hp <= 0) {
+  if (generation >= GALAR_GENERATION_NUM && leader.hp <= 0) {
     return null;
   }
 
@@ -132,9 +133,9 @@ export function resolveSynchronizeNature(
   randomFn: () => number = Math.random
 ): NatureId | null {
   if (!leader || !leader.nature || leader.ability !== 'synchronize') return null;
-  if (generation >= 8 && leader.hp <= 0) return null;
+  if (generation >= GALAR_GENERATION_NUM && leader.hp <= 0) return null;
 
-  const threshold = generation >= 8 ? SYNCHRONIZE_CHANCE_GEN8_PLUS : SYNCHRONIZE_CHANCE_LEGACY;
+  const threshold = generation >= GALAR_GENERATION_NUM ? SYNCHRONIZE_CHANCE_GEN8_PLUS : SYNCHRONIZE_CHANCE_LEGACY;
   return randomFn() < threshold ? leader.nature : null;
 }
 
@@ -149,7 +150,7 @@ export function resolveCuteCharmGender(
 ): PokemonGender | null {
   if (!leader || leader.ability !== 'cutecharm' || !leader.gender) return null;
   if (leader.gender !== 'm' && leader.gender !== 'f') return null;
-  if (generation >= 8 && leader.hp <= 0) return null;
+  if (generation >= GALAR_GENERATION_NUM && leader.hp <= 0) return null;
 
   if (isSingleGenderSpeciesId(targetSpeciesId)) return null;
 
@@ -190,13 +191,13 @@ export function resolveElementalAttractionType(
     targetType = 'steel';
   } else if (leaderAbility === 'static') {
     targetType = 'electric';
-  } else if (leaderAbility === 'lightningrod' && generation >= 8) {
+  } else if (leaderAbility === 'lightningrod' && generation >= GALAR_GENERATION_NUM) {
     targetType = 'electric';
-  } else if (leaderAbility === 'flashfire' && generation >= 8) {
+  } else if (leaderAbility === 'flashfire' && generation >= GALAR_GENERATION_NUM) {
     targetType = 'fire';
-  } else if (leaderAbility === 'stormdrain' && generation >= 8) {
+  } else if (leaderAbility === 'stormdrain' && generation >= GALAR_GENERATION_NUM) {
     targetType = 'water';
-  } else if (leaderAbility === 'harvest' && generation >= 8) {
+  } else if (leaderAbility === 'harvest' && generation >= GALAR_GENERATION_NUM) {
     targetType = 'grass';
   }
 
@@ -216,7 +217,7 @@ export function shouldAvoidLowLevelWild(
   randomFn: () => number = Math.random
 ): boolean {
   if (!leader || !leader.level) return false;
-  if (generation >= 8 && leader.hp <= 0) return false;
+  if (generation >= GALAR_GENERATION_NUM && leader.hp <= 0) return false;
   if (leader.ability !== 'intimidate' && leader.ability !== 'keeneye') return false;
 
   const levelDelta = leader.level - wildLevel;

@@ -84,34 +84,34 @@ const getTypeEmoji = (type: string) => {
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   margin-bottom: 15px;
 }
 
 .group-label {
   color: var(--gray);
-  font-size: 10px;
+  font-size: var(--font-10);
   margin-bottom: 8px;
 }
 
 .tags-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .tag-btn {
   padding: 6px 10px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 12px;
-  background: rgb(255 255 255 / 4%);
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 4%);
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
   text-transform: capitalize;
 
   &.active {
-    background: rgb(10 132 255 / 20%);
+    background: Rgb(10 132 255 / 20%);
     color: $white;
     border-color: var(--blue);
   }
@@ -120,7 +120,7 @@ const getTypeEmoji = (type: string) => {
 .types-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: $spacing-xs-5;
 }
 
 .type-btn {
@@ -129,14 +129,14 @@ const getTypeEmoji = (type: string) => {
   align-items: center;
   width: 32px;
   height: 32px;
-  border: 1px solid rgb(255 255 255 / 6%);
-  border-radius: 10px;
-  background: rgb(0 0 0 / 20%);
-  font-size: 16px;
+  border: 1px solid Rgb(255 255 255 / 6%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(0 0 0 / 20%);
+  font-size: var(--font-16);
   cursor: pointer;
 
   &.active {
-    background: rgb(0 122 255 / 20%);
+    background: Rgb(0 122 255 / 20%);
     border-color: var(--blue);
   }
 }

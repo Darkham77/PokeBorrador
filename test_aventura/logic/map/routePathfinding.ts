@@ -14,10 +14,15 @@ import type {
   RouteType
 } from '../../types/map/poiTypes.ts';
 
-export const LAKE_BRIDGE_STEP_COST = 1.25;
-export const OCEAN_BRIDGE_STEP_COST = 3.5;
+const LAKE_BRIDGE_STEP_COST = 1.25;
+const OCEAN_BRIDGE_STEP_COST = 3.5;
 export const MAX_STAIR_LINK_DISTANCE = 35;
 export const MAX_CAVE_TRAIL_DISTANCE = 80;
+const PATH_DISCOUNT_COST = 0.6 as const;
+const SAND_TRAVERSAL_COST = 1.4 as const;
+const LAND_TURN_PENALTY_COST = 0.45 as const;
+const BRIDGE_LANDING_PENALTY_COST = 8.0 as const;
+const WATER_TURN_PENALTY_COST = 50.0 as const;
 
 interface PriorityQueueItem {
   readonly x: number;
@@ -154,9 +159,9 @@ export function findPathAStar(
 
       // Traversing already existing path encourages merging into trunk routes
       if (pathGrid[ny]![nx]) {
-        cost = 0.6;
+        cost = PATH_DISCOUNT_COST;
       } else if (cell.terrain === 'sand') {
-        cost = 1.4;
+        cost = SAND_TRAVERSAL_COST;
       }
 
       // Check elevation difference and stairs
@@ -182,7 +187,7 @@ export function findPathAStar(
 
       // Entering or exiting water represents building bridge landings / abutments
       if ((curCell.terrain === 'water') !== (cell.terrain === 'water')) {
-        cost += 8.0;
+        cost += BRIDGE_LANDING_PENALTY_COST;
       }
 
       // Penalize direction changes to favor straight orthogonal corridors over jagged staircase diagonals
@@ -195,9 +200,9 @@ export function findPathAStar(
         if (prevDx !== dx || prevDy !== dy) {
           // STRICT RECTILINEAR INVARIANT: Turning while on water is heavily penalized (Mandates 1 & 5)
           if (curCell.terrain === 'water' || cell.terrain === 'water') {
-            cost += 50.0;
+            cost += WATER_TURN_PENALTY_COST;
           } else {
-            cost += 0.45;
+            cost += LAND_TURN_PENALTY_COST;
           }
         }
       }

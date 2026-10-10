@@ -51,11 +51,23 @@ const GYM_REMATCHES_FILE_PATH = 'src/data/world/gymRematches.ts';
 export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_spawns_whitelist',
       configKey: 'domain.spawnsWhitelist',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'World Spawns & Encounters Whitelist Validator',
       description: 'Spawns fuera de whitelist o niveles inválidos',
       icon: '🗺️',

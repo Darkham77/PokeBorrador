@@ -1,4 +1,4 @@
-import { DEFAULT_INITIAL_ELO, INITIAL_BALLS_COUNT, INITIAL_MONEY, INITIAL_POKEBALL_COUNT } from '@/logic/constants/gameplay.ts';
+import { DEFAULT_INITIAL_ELO, INITIAL_BALLS_COUNT, INITIAL_MONEY, INITIAL_POKEBALL_COUNT, MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay.ts';
 import type { GameState } from '@/types/system/game';
 
 export function createInitialGameState(): GameState {
@@ -102,7 +102,7 @@ export function createInitialGameState(): GameState {
     lastResolvedSeasonId: '',
     dailyGymRematches: {},
     warTeam: [],
-    warSlots: 6,
+    warSlots: MAX_POKEMON_TEAM_SIZE,
     guardianCaptures: {},
     playtime: 0
   };

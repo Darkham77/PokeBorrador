@@ -33,16 +33,6 @@ export function getCanonicalUrbanRoadTile(type: POIType): string {
 }
 
 /**
- * Returns the primary sprite filename for pedestrian sidewalks, plazas, and concourses.
- */
-export function getCanonicalUrbanSidewalkTile(type: POIType): string {
-  if (type === 'town') {
-    return 'poke_dirt_path.png';
-  }
-  return getAssetFilename('poke_stone_plaza_center');
-}
-
-/**
  * Computes stone curb placements between sidewalks and vehicular avenues,
  * strictly enforcing the Curb Clearance Invariant.
  */

@@ -15,12 +15,12 @@ import {
   generateContinentMap,
   computeTransitableGrid,
   type ContinentMapResult
-} from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { buildRouteChain } from '../../../src/logic/map/routeChainTopology.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { generateProceduralPOICatalog } from '../../../src/logic/map/regionalPoiCatalog.ts';
-import { isPrimaryNode, PRIMARY_POI_TYPES } from '../../../src/types/map/poiTypes.ts';
+} from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { buildRouteChain } from '../../logic/map/routeChainTopology.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
+import { isPrimaryNode, PRIMARY_POI_TYPES } from '../../types/map/poiTypes.ts';
 
 describe('Canonical Route Topology & Nature-First Pipeline', () => {
   const continent: ContinentMapResult = generateContinentMap({
@@ -215,7 +215,7 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
       const transitableGrid = computeTransitableGrid(continent, network.pathGrid, network.bridgeGrid, pois);
       (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid = transitableGrid;
 
-      const { generateWildernessLayer } = await import('../../../src/logic/map/wildernessVegetationEngine.ts');
+      const { generateWildernessLayer } = await import('../../logic/map/wildernessVegetationEngine.ts');
       const wilderness = generateWildernessLayer(continent, pois, network.pathGrid, {
         seed: 42,
         transitableGrid

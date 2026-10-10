@@ -15,7 +15,7 @@
 .title-sub {
   color: $purple;
   font-family: $font-pixel;
-  font-size: 12px;
+  font-size: var(--font-12);
   text-align: center;
   margin-bottom: 50px;
   letter-spacing: 3px;
@@ -23,7 +23,7 @@
 
 .starter-grid {
   display: grid;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: repeat(3, 1fr);
   width: 100%;
   max-width: 700px;
@@ -31,7 +31,7 @@
   place-items: stretch center;
   
   @media (width <= 1024px) {
-    gap: 12px;
+    gap: $spacing-md;
     grid-template-columns: repeat(3, 1fr);
   }
   
@@ -56,7 +56,7 @@
   max-width: 180px;
   padding: 24px 16px;
   border: 1.5px solid Rgb(255 255 255 / 10%);
-  border-radius: 24px;
+  border-radius: $radius-4xl;
   background: Rgb(255 255 255 / 5%);
   cursor: pointer;
   overflow: visible; // Allowed overflow for sprites
@@ -76,18 +76,17 @@
   & > * { position: relative; z-index: var(--z-base); }
 }
 
-
 .starter-name {
   font-family: $font-pixel;
-  font-size: 10px;
+  font-size: var(--font-10);
   margin-bottom: 6px;
 }
 
 .starter-type {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
+  border-radius: $radius-3xl;
+  font-size: var(--font-11);
   font-weight: 700;
   margin-top: 2px;
 
@@ -108,12 +107,12 @@
   justify-content: space-between;
   margin: 2px 0;
   color: $gray;
-  font-size: 10px;
+  font-size: var(--font-10);
   
   span:last-child {
     color: $white;
     font-family: $font-pixel;
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }
 
@@ -124,13 +123,13 @@
   }
   
   .starter-grid {
-    gap: 10px;
+    gap: $spacing-md-alt;
     margin: 15px auto;
   }
 
   .starter-card {
     padding: 12px 10px;
-    border-radius: 16px;
+    border-radius: $radius-2xl;
   }
 
   .starter-stats {
@@ -140,9 +139,9 @@
 
   .stat-mini {
     margin: 1px 0;
-    font-size: 9px;
+    font-size: var(--font-9);
     span:last-child {
-      font-size: 7px;
+      font-size: var(--font-7);
     }
   }
 }
@@ -150,18 +149,18 @@
 .title-btn {
   padding: 16px 40px;
   border: none;
-  border-radius: 50px;
+  border-radius: $radius-50;
   background: Linear-Gradient(135deg, $red, $purple);
-  color: white;
+  color: var(--white);
   font-family: $font-pixel;
-  font-size: 11px;
+  font-size: var(--font-11);
   cursor: pointer;
   margin-top: 20px;
-  box-shadow: 0 4px 20px Rgba($red, 0.4);
+  box-shadow: var(--shadow-xl);
 
   &:hover {
     transform: Scale3d(1.05, 1.05, 1);
-    box-shadow: 0 6px 30px Rgba($red, 0.6);
+    box-shadow: var(--shadow-xl);
   }
 }
 
@@ -170,7 +169,7 @@
   position: relative;
   margin: 16px 0;
   color: $gray;
-  font-size: 12px;
+  font-size: var(--font-12);
   text-align: center;
   
   %divider-line {
@@ -198,11 +197,11 @@
 .server-tab {
   padding: 8px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: transparent;
   color: $gray;
   font-family: $font-pixel;
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
   letter-spacing: 1px;
 
@@ -214,6 +213,6 @@
   &.active {
     background: Linear-Gradient(135deg, $blue, $purple);
     color: $white;
-    box-shadow: 0 2px 10px Rgba($blue, 0.3);
+    box-shadow: var(--shadow-xl);
   }
 }

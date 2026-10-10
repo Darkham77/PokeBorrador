@@ -55,6 +55,7 @@ async function handleWatch() {
       <span class="code-text">{{ props.battleCode }}</span>
     </div>
     <button
+      id="chat-battle-code-badge-btn-ver-repetici-n"
       v-gsap-hover="'button'"
       class="watch-replay-btn"
       :disabled="loading"
@@ -70,39 +71,39 @@ async function handleWatch() {
 .chat-battle-code-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 4px 8px;
   border: 1px solid Rgb(234 179 8 / 60%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(15 23 42 / 90%);
-  font-family: 'Press Start 2P', monospace, sans-serif;
-  font-size: 0.62rem;
+  font-family: $font-family-pixel;
+  font-size: var(--font-10);
   margin-top: 4px;
-  box-shadow: 0 2px 6px Rgb(0 0 0 / 40%);
+  box-shadow: var(--shadow-card);
 
   .badge-code-info {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .swords-icon {
-      font-size: 0.75rem;
+      font-size: var(--font-12);
     }
 
     .code-text {
-      color: #fef08a;
+      color: var(--yellow-light);
       letter-spacing: 0.5px;
     }
   }
 
   .watch-replay-btn {
     padding: 3px 6px;
-    border: 1px solid #60a5fa;
-    border-radius: 4px;
+    border: 1px solid var(--blue-400);
+    border-radius: $radius-sm;
     background: Linear-Gradient(180deg, #3b82f6, #1d4ed8);
-    color: #fff;
+    color: var(--white);
     font-family: inherit;
-    font-size: 0.55rem;
+    font-size: var(--font-9);
     font-weight: bold;
     cursor: pointer;
 

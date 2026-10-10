@@ -15,24 +15,25 @@ import {
   type MapWarp,
   type MapSpawn,
   stampStructure
-} from '../logic/map/proceduralMapGenerator';
-import { defaultTilesRegistry } from '../logic/map/tilesRegistry';
+} from '../logic/map/proceduralMapGenerator.ts';
+import { defaultTilesRegistry } from '../logic/map/tilesRegistry.ts';
+import type { SpriteFacingDirection } from '../types/map/poiTypes.ts';
 import {
   type StructureTemplate,
   getStructureTemplate,
   STRUCTURE_TEMPLATES,
   registerStructureTemplate
-} from '../config/mapStructures';
+} from '../config/mapStructures.ts';
 import {
   loadCustomTilesFromStorage,
   loadCustomStructuresFromStorage,
   saveCustomStructuresToStorage
-} from '../logic/map/customAssetsStorage';
+} from '../logic/map/customAssetsStorage.ts';
 import {
   MAP_PROPS_REGISTRY,
   type MapPropDefinition
-} from '../config/mapProps';
-import { STUDIO_MAX_HISTORY_STEPS } from '../config/studioConstants';
+} from '../config/mapProps.ts';
+import { STUDIO_MAX_HISTORY_STEPS } from '../config/studioConstants.ts';
 
 function propToStructureTemplate(prop: MapPropDefinition): StructureTemplate {
   return {
@@ -117,12 +118,11 @@ export type HistoryAction =
   | WarpHistoryAction
   | SpawnHistoryAction;
 
-export const MAX_HISTORY_STEPS = STUDIO_MAX_HISTORY_STEPS; // alias-ok
-export const AUTOSAVE_STORAGE_KEY = 'pokevicio_map_studio_autosave';
-export const MIN_ZOOM = 0.5;
-export const MAX_ZOOM = 4.0;
-export const ZOOM_STEP = 0.25;
-export const DEFAULT_GROUND_TILE = 'tile_vegetation_184ee2f2ca';
+const AUTOSAVE_STORAGE_KEY = 'pokevicio_map_studio_autosave';
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 4.0;
+const ZOOM_STEP = 0.25;
+const DEFAULT_GROUND_TILE = 'tile_vegetation_184ee2f2ca';
 
 export const useMapStudioStore = defineStore('mapStudio', () => {
   // Map Data
@@ -162,7 +162,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
   const testDriveActive = ref<boolean>(false);
   const playerX = ref<number>(0);
   const playerY = ref<number>(0);
-  const playerDirection = ref<'up' | 'down' | 'left' | 'right'>('down');
+  const playerDirection = ref<SpriteFacingDirection>('down');
 
   // Custom User-Imported Structures & Props
   const customStructures = ref<Record<string, StructureTemplate>>({});
@@ -235,7 +235,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
   function pushHistory(batch: HistoryAction[]): void {
     if (batch.length === 0) return;
     historyStack.value.push(batch);
-    if (historyStack.value.length > MAX_HISTORY_STEPS) {
+    if (historyStack.value.length > STUDIO_MAX_HISTORY_STEPS) {
       historyStack.value.shift();
     }
     redoStack.value = [];
@@ -553,7 +553,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
   /**
    * Test Drive avatar movement and collision check.
    */
-  function movePlayer(dx: number, dy: number, dir: 'up' | 'down' | 'left' | 'right'): boolean {
+  function movePlayer(dx: number, dy: number, dir: SpriteFacingDirection): boolean {
     const map = currentMap.value;
     if (!map || !testDriveActive.value) return false;
 
@@ -593,7 +593,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     try {
       localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(currentMap.value));
     } catch {
-      // Storage full or restricted
+      // catch-ok: Storage full or private mode quota restriction
     }
   }
 
@@ -609,6 +609,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
       setMap(parsed);
       return true;
     } catch {
+      // catch-ok: Fallback when stored map JSON is corrupted
       return false;
     }
   }

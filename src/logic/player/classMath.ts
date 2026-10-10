@@ -11,7 +11,8 @@ import {
   CRIMINALITY_DENOMINATOR_FACTOR,
   BUG_SYNERGY_BONUS_PER_BUG,
   BUG_SYNERGY_MAX_COUNT,
-  TRAINER_HIGH_IV_THRESHOLD
+  TRAINER_HIGH_IV_THRESHOLD,
+  MAX_POKEMON_TEAM_SIZE
 } from '../constants/gameplay.ts';
 import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
 
@@ -175,7 +176,7 @@ export function calculatePoliceEffectiveLevel(baseMapLv: number, criminality: nu
 export function calculatePoliceTeamSize(criminality: number, randomFn: () => number = Math.random): number {
   const crim = criminality || 0;
   if (crim >= CRIMINALITY_SWAT_TEAM_THRESHOLD_PERCENT) {
-    return 6;
+    return MAX_POKEMON_TEAM_SIZE;
   }
   if (crim >= CRIMINALITY_HEAVY_TEAM_THRESHOLD_PERCENT) {
     return Math.floor(randomFn() * 2) + 4;

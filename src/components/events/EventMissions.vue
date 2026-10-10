@@ -134,7 +134,7 @@ const getMissionRewardItem = (mission: DaycareMission) => {
 
 .missions-grid {
   display: grid;
-  gap: 16px;
+  gap: $spacing-lg;
   grid-template-columns: 1fr;
   
   @media (width >= 600px) {

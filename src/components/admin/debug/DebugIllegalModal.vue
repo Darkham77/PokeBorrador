@@ -51,14 +51,16 @@ const emit = defineEmits<{
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .creator-illegal-modal-overlay {
   position: fixed;
   z-index: calc(var(--z-max) - 1);
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgb(0 0 0 / 75%);
+  background: Rgb(0 0 0 / 75%);
   inset: 0;
 }
 
@@ -66,30 +68,30 @@ const emit = defineEmits<{
   width: 90%;
   max-width: 500px;
   padding: 1.5rem;
-  border: 2px solid #f44;
-  border-radius: 8px;
+  border: 2px solid var(--red-light);
+  border-radius: $radius-lg;
   background: #1e232d;
-  color: #fff;
-  box-shadow: 0 0 20px rgb(255 68 68 / 40%);
+  color: var(--white);
+  box-shadow: var(--shadow-glow-red-lg);
 }
 
 .illegal-title {
   margin: 0 0 0.75rem;
-  color: #f55;
-  font-size: 1.1rem;
+  color: var(--red-light);
+  font-size: var(--font-18);
   font-weight: bold;
 }
 
 .illegal-desc {
-  color: #ccc;
-  font-size: 0.9rem;
+  color: var(--slate-300);
+  font-size: var(--font-14);
   margin-bottom: 1rem;
 }
 
 .illegal-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: $spacing-sm;
   max-height: 250px;
   margin: 0 0 1.25rem;
   padding: 0;
@@ -99,10 +101,10 @@ const emit = defineEmits<{
 
 .illegal-item {
   padding: 0.5rem;
-  background: rgb(255 68 68 / 10%);
-  color: #fcc;
-  font-size: 0.85rem;
-  border-left: 3px solid #f44;
+  background: Rgb(255 68 68 / 10%);
+  color: var(--red-300);
+  font-size: var(--font-14);
+  border-left: 3px solid var(--red-light);
 }
 
 .modal-footer {

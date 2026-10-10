@@ -15,13 +15,13 @@ import {
   resolveMountainAutotileCell,
   pruneRedundantStairs,
   type MountainStairLocation
-} from '../../../src/logic/map/mountainAutotileEngine.ts';
+} from '../../logic/map/mountainAutotileEngine.ts';
 import {
   clusterMountainMassifs
-} from '../../../src/logic/map/geologicalClusterEngine.ts';
+} from '../../logic/map/geologicalClusterEngine.ts';
 import {
   generatePokemonContinentalWorld
-} from '../../../src/logic/map/continent/continentalEngine.ts';
+} from '../../logic/map/continent/continentalEngine.ts';
 
 describe('islandSemanticsAndPortIntegration (Tier 1 Architecture Verification)', () => {
   describe('Pillar 1: Mountain Biome Palette Consistency & Redundant Stairs', () => {

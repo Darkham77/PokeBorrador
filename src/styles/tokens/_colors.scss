@@ -42,9 +42,9 @@ $ui-colors: (
     display: inline-flex;
     align-items: center;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: color.scale($color, $lightness: -60%, $alpha: -80%);
     color: $color;
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }

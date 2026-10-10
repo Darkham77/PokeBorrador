@@ -268,6 +268,7 @@ defineExpose({
               class="carousel-slide-wrapper"
             >
               <div
+                id="map-status-summary-div-1"
                 class="carousel-slide event-banner allow-aliasing"
                 :style="{ backgroundImage: `url('${getEventBannerUrl(ev)}')` }"
                 @click.stop="handleEventClick(ev)"
@@ -282,6 +283,7 @@ defineExpose({
           >
             <button
               v-for="(_, i) in activeEvents"
+              id="map-status-summary-btn-ir-al-evento-i-1"
               :key="i"
               type="button"
               class="carousel-dot"
@@ -308,6 +310,7 @@ defineExpose({
           class="event-tooltip-container"
         >
           <div
+            id="map-status-summary-div-2"
             class="event-banner single-event-banner allow-aliasing"
             :style="{ backgroundImage: `url('${getEventBannerUrl(ev)}')` }"
             @click.stop="handleEventClick(ev)"

@@ -13,8 +13,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSettlementLayout } from '../../../src/logic/map/cityLayoutEngine.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('coastalSettlementAndForestClearing', () => {
   it('generates Pokémon League with direct ceremonial path on natural grass, 0 pavedPlazaCells, and 0 orphan statues', () => {
@@ -159,11 +159,11 @@ describe('coastalSettlementAndForestClearing', () => {
   });
 
   it('renders urban props strictly AFTER buildings in canvasTileRenderer ensuring props never get hidden under building facades', () => {
-    const { buildMapBlitInstructions, CANVAS_TILE_SIZE } = require('../../../src/logic/map/canvasTileRenderer.ts');
-    const { generateContinentMap } = require('../../../src/logic/map/continentGenerator.ts');
-    const { placeRegionalPOIs } = require('../../../src/logic/map/poiPlacementEngine.ts');
-    const { generateRouteNetwork } = require('../../../src/logic/map/routeNetworkEngine.ts');
-    const { generateWildernessLayer } = require('../../../src/logic/map/wildernessVegetationEngine.ts');
+    const { buildMapBlitInstructions, CANVAS_TILE_SIZE } = require('../../logic/map/canvasTileRenderer.ts');
+    const { generateContinentMap } = require('../../logic/map/continentGenerator.ts');
+    const { placeRegionalPOIs } = require('../../logic/map/poiPlacementEngine.ts');
+    const { generateRouteNetwork } = require('../../logic/map/routeNetworkEngine.ts');
+    const { generateWildernessLayer } = require('../../logic/map/wildernessVegetationEngine.ts');
 
     const continent = generateContinentMap({
       width: 128,
@@ -250,11 +250,11 @@ describe('coastalSettlementAndForestClearing', () => {
   });
 
   it('strictly validates that tree_viridian_forest bounding boxes never overlap paths across all 6 footprint and canopy cells', () => {
-    const { buildMapBlitInstructions, CANVAS_TILE_SIZE } = require('../../../src/logic/map/canvasTileRenderer.ts');
-    const { generateContinentMap } = require('../../../src/logic/map/continentGenerator.ts');
-    const { placeRegionalPOIs } = require('../../../src/logic/map/poiPlacementEngine.ts');
-    const { generateRouteNetwork } = require('../../../src/logic/map/routeNetworkEngine.ts');
-    const { generateWildernessLayer } = require('../../../src/logic/map/wildernessVegetationEngine.ts');
+    const { buildMapBlitInstructions, CANVAS_TILE_SIZE } = require('../../logic/map/canvasTileRenderer.ts');
+    const { generateContinentMap } = require('../../logic/map/continentGenerator.ts');
+    const { placeRegionalPOIs } = require('../../logic/map/poiPlacementEngine.ts');
+    const { generateRouteNetwork } = require('../../logic/map/routeNetworkEngine.ts');
+    const { generateWildernessLayer } = require('../../logic/map/wildernessVegetationEngine.ts');
 
     const continent = generateContinentMap({
       width: 128,

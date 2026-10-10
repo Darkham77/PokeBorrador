@@ -48,6 +48,7 @@ const tms = computed(() => {
       <div class="search-box">
         <span class="emoji">🔍</span>
         <input
+          id="pokemon-tms-tab-input-tmsearchquery"
           v-model="tmSearchQuery"
           type="text"
           placeholder="Buscar MT..."
@@ -56,6 +57,7 @@ const tms = computed(() => {
       </div>
       <div class="sort-box">
         <button
+          id="pokemon-tms-tab-btn-id"
           class="sort-btn"
           :class="{ active: tmSortBy === 'id' }"
           @click.stop="tmSortBy = 'id'"
@@ -63,6 +65,7 @@ const tms = computed(() => {
           ID
         </button>
         <button
+          id="pokemon-tms-tab-btn-abc"
           class="sort-btn"
           :class="{ active: tmSortBy === 'name' }"
           @click.stop="tmSortBy = 'name'"
@@ -75,6 +78,7 @@ const tms = computed(() => {
     <div class="tm-grid">
       <div
         v-for="tm in tms"
+        id="pokemon-tms-tab-div-1"
         :key="tm.id"
         class="tm-item clickable-item"
         :class="{ incompatible: !tm.isCompatible }"

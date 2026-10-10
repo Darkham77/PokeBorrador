@@ -24,6 +24,17 @@ export interface POITemplate {
   readonly progressionIndex?: number;
 }
 
+const DEFAULT_METROPOLIS_DIMENSIONS = { width: 30, height: 24 } as const;
+const DEFAULT_CITY_DIMENSIONS = { width: 16, height: 14 } as const;
+const DEFAULT_TOWN_DIMENSIONS = { width: 12, height: 12 } as const;
+const PROCEDURAL_POI_DIMENSIONS = {
+  FOREST_WIDTH: 8,
+  FOREST_HEIGHT: 8,
+  WATER_LANDMARK_WIDTH: 6,
+  PORT_DOCK_WIDTH: 7,
+  PORT_DOCK_HEIGHT: 6
+} as const;
+
 export const REGIONAL_POI_CATALOG: readonly POITemplate[] = [
   // 0. Regional Pokémon League Palace (Meseta Añil)
   {
@@ -40,8 +51,8 @@ export const REGIONAL_POI_CATALOG: readonly POITemplate[] = [
     id: 'celadon_capital',
     name: 'Ciudad Celeste',
     type: 'metropolis',
-    width: 30,
-    height: 24,
+    width: DEFAULT_METROPOLIS_DIMENSIONS.width,
+    height: DEFAULT_METROPOLIS_DIMENSIONS.height,
     preference: 'flat_grass',
     hasGym: true
   },
@@ -50,8 +61,8 @@ export const REGIONAL_POI_CATALOG: readonly POITemplate[] = [
     id: 'saffron_metro',
     name: 'Azafran Central',
     type: 'city',
-    width: 16,
-    height: 14,
+    width: DEFAULT_CITY_DIMENSIONS.width,
+    height: DEFAULT_CITY_DIMENSIONS.height,
     preference: 'flat_grass',
     hasGym: true
   },
@@ -246,8 +257,8 @@ export function generateProceduralPOICatalog(
       id: `metropolis_${idCounter}`,
       name: `Metropolis Prime`,
       type: 'metropolis',
-      width: 30,
-      height: 24,
+      width: DEFAULT_METROPOLIS_DIMENSIONS.width,
+      height: DEFAULT_METROPOLIS_DIMENSIONS.height,
       preference: 'flat_grass',
       hasGym: true
     });
@@ -259,8 +270,8 @@ export function generateProceduralPOICatalog(
       id: `city_${idCounter}`,
       name: `City ${CITY_DESIGNATIONS[i] ?? i + 1}`,
       type: 'city',
-      width: 16,
-      height: 14,
+      width: DEFAULT_CITY_DIMENSIONS.width,
+      height: DEFAULT_CITY_DIMENSIONS.height,
       preference: 'flat_grass',
       hasGym: true
     });
@@ -272,8 +283,8 @@ export function generateProceduralPOICatalog(
       id: `town_${idCounter}`,
       name: `Town ${i + 1}`,
       type: 'town',
-      width: 12,
-      height: 12,
+      width: DEFAULT_TOWN_DIMENSIONS.width,
+      height: DEFAULT_TOWN_DIMENSIONS.height,
       preference: 'flat_grass',
       hasGym: false
     });
@@ -285,8 +296,8 @@ export function generateProceduralPOICatalog(
       id: `forest_${idCounter}`,
       name: `Forest Dungeon ${i + 1}`,
       type: 'dungeon_forest',
-      width: 8,
-      height: 8,
+      width: PROCEDURAL_POI_DIMENSIONS.FOREST_WIDTH,
+      height: PROCEDURAL_POI_DIMENSIONS.FOREST_HEIGHT,
       preference: 'forest_clearing'
     });
     idCounter++;
@@ -328,7 +339,7 @@ export function generateProceduralPOICatalog(
         id: `water_${idCounter}`,
         name: `Water Landmark ${waterIdx++}`,
         type: 'water_landmark',
-        width: 6,
+        width: PROCEDURAL_POI_DIMENSIONS.WATER_LANDMARK_WIDTH,
         height: 4,
         preference: 'coast_water'
       });
@@ -337,8 +348,8 @@ export function generateProceduralPOICatalog(
         id: `port_${idCounter}`,
         name: `Port Dock ${portIdx++}`,
         type: 'port_dock',
-        width: 7,
-        height: 6,
+        width: PROCEDURAL_POI_DIMENSIONS.PORT_DOCK_WIDTH,
+        height: PROCEDURAL_POI_DIMENSIONS.PORT_DOCK_HEIGHT,
         preference: 'coast_water'
       });
     }

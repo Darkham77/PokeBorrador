@@ -1,4 +1,5 @@
 // src/styles/core/_mixins.scss
+@forward "variables";
 @forward "gpu";
 @forward "mixins/shell";
 @forward "mixins/layout";

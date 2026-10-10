@@ -237,64 +237,64 @@ onMounted(() => {
 .theater-tab-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   width: 100%;
 }
 
 .search-banner-card {
   padding: 16px;
-  border: 1px solid rgb(234 179 8 / 30%);
-  border-radius: 8px;
-  background: rgb(30 41 59 / 70%);
+  border: 1px solid Rgb(234 179 8 / 30%);
+  border-radius: $radius-lg;
+  background: Rgb(30 41 59 / 70%);
 
   .search-title-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #facc15;
-    font-size: 0.8rem;
+    gap: $spacing-sm;
+    color: var(--amber-400);
+    font-size: var(--font-13);
     font-weight: bold;
     margin-bottom: 6px;
   }
 
   .search-desc {
-    color: #94a3b8;
-    font-size: 0.65rem;
+    color: var(--slate-400);
+    font-size: var(--font-10);
     line-height: 1.4;
     margin-bottom: 12px;
   }
 
   .search-input-group {
     display: flex;
-    gap: 10px;
+    gap: $spacing-md-alt;
 
     .pv-retro-input {
       padding: 8px 12px;
-      border: 1px solid #475569;
-      border-radius: 4px;
-      background: #0f172a;
-      color: #f8fafc;
+      border: 1px solid var(--slate-600);
+      border-radius: $radius-sm;
+      background: var(--slate-900);
+      color: var(--slate-50);
       font-family: inherit;
-      font-size: 0.75rem;
+      font-size: var(--font-12);
       flex: 1;
       letter-spacing: 1px;
 
       &:focus {
-        border-color: #eab308;
+        border-color: var(--amber-dark);
         outline: none;
       }
     }
 
     .pv-button-retro {
       padding: 8px 16px;
-      font-size: 0.7rem;
+      font-size: var(--font-11);
       cursor: pointer;
     }
   }
 
   .search-error-msg {
-    color: #f87171;
-    font-size: 0.65rem;
+    color: var(--rose);
+    font-size: var(--font-10);
     margin-top: 8px;
   }
 }
@@ -302,7 +302,7 @@ onMounted(() => {
 .featured-feed-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 
   .feed-header {
     display: flex;
@@ -310,8 +310,8 @@ onMounted(() => {
     align-items: center;
 
     .feed-title {
-      color: #e2e8f0;
-      font-size: 0.75rem;
+      color: var(--slate-200);
+      font-size: var(--font-12);
       font-weight: bold;
     }
 
@@ -322,36 +322,36 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 32px 16px;
-    color: #94a3b8;
-    font-size: 0.7rem;
+    color: var(--slate-400);
+    font-size: var(--font-11);
     text-align: center;
 
     .empty-icon {
-      font-size: 2rem;
+      font-size: var(--font-32);
     }
 
     .empty-sub {
-      color: #64748b;
-      font-size: 0.6rem;
+      color: var(--slate-500);
+      font-size: var(--font-10);
     }
   }
 
   .replays-grid {
     display: grid;
-    gap: 12px;
+    gap: $spacing-md;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 
   .replay-card {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: $spacing-md-alt;
     padding: 12px;
-    border: 1px solid #1e293b;
-    border-radius: 6px;
-    background: #0f172a;
+    border: 1px solid var(--slate-800);
+    border-radius: $radius-md;
+    background: var(--slate-900);
 
     .replay-card-header {
       display: flex;
@@ -359,17 +359,17 @@ onMounted(() => {
       align-items: center;
 
       .replay-code {
-        color: #facc15;
-        font-size: 0.7rem;
+        color: var(--amber-400);
+        font-size: var(--font-11);
         font-weight: bold;
       }
 
       .top10-badge {
         padding: 2px 6px;
-        border-radius: 4px;
+        border-radius: $radius-sm;
         background: #854d0e;
-        color: #fef08a;
-        font-size: 0.55rem;
+        color: var(--yellow-light);
+        font-size: var(--font-9);
       }
     }
 
@@ -377,36 +377,36 @@ onMounted(() => {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       padding: 8px;
-      border-radius: 4px;
-      background: #1e293b;
+      border-radius: $radius-sm;
+      background: var(--slate-800);
 
       .combatant {
         display: flex;
         flex-direction: column;
-        font-size: 0.65rem;
+        font-size: var(--font-10);
         flex: 1;
 
         .trainer-name {
-          color: #f1f5f9;
+          color: var(--slate-100);
           font-weight: bold;
         }
 
         .trainer-meta {
-          color: #94a3b8;
-          font-size: 0.55rem;
+          color: var(--slate-400);
+          font-size: var(--font-9);
           text-transform: uppercase;
         }
 
         &.winner .trainer-name {
-          color: #22c55e;
+          color: var(--emerald);
         }
       }
 
       .vs-divider {
-        color: #64748b;
-        font-size: 0.6rem;
+        color: var(--slate-500);
+        font-size: var(--font-10);
         font-weight: bold;
       }
     }
@@ -417,18 +417,18 @@ onMounted(() => {
       align-items: center;
 
       .turns-count {
-        color: #94a3b8;
-        font-size: 0.6rem;
+        color: var(--slate-400);
+        font-size: var(--font-10);
       }
 
       .watch-btn {
         padding: 6px 10px;
-        border: 1px solid #60a5fa;
-        border-radius: 4px;
-        background: #3b82f6;
-        color: #fff;
+        border: 1px solid var(--blue-400);
+        border-radius: $radius-sm;
+        background: var(--blue-500);
+        color: var(--white);
         font-family: inherit;
-        font-size: 0.6rem;
+        font-size: var(--font-10);
         cursor: pointer;
       }
     }

@@ -21,9 +21,11 @@ Poké Vicio Development Team.
 
 ## Key Files
 
+- [`AdventureGraphStudioView.vue`](./AdventureGraphStudioView.vue): Module implementation.
 - [`AssetAtlasInspectorView.vue`](./AssetAtlasInspectorView.vue): Module implementation.
 - [`AutotileStudioView.vue`](./AutotileStudioView.vue): Module implementation.
 - [`KantoAdventureView.vue`](./KantoAdventureView.vue): Module implementation.
+- [`LocalTileStudioView.vue`](./LocalTileStudioView.vue): Module implementation.
 - [`MapStudioView.vue`](./MapStudioView.vue): Module implementation.
 - [`RegionalContinentStudioView.vue`](./RegionalContinentStudioView.vue): Module implementation.
 

@@ -45,6 +45,7 @@ const localSortOrder = computed({
     <div class="search-input-container">
       <span class="emoji search-icon">🔍</span>
       <input
+        id="shop-search-controls-input-localsearch"
         v-model="localSearch"
         type="text"
         :placeholder="placeholder"
@@ -52,6 +53,7 @@ const localSortOrder = computed({
       >
       <button
         v-if="localSearch"
+        id="shop-search-controls-btn-1"
         class="clear-btn"
         @click.stop="localSearch = ''"
       >

@@ -136,10 +136,10 @@ const startMode = (mode: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: $spacing-xl;
   padding: 12px 20px;
-  background: rgb(255 255 255 / 5%);
-  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  background: Rgb(255 255 255 / 5%);
+  border-bottom: 1px solid Rgb(255 255 255 / 8%);
 }
 
 .search-section {
@@ -149,7 +149,7 @@ const startMode = (mode: string) => {
   .search-wrapper {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
 
     .search-input-wrap {
       @include premium-search-input;
@@ -163,33 +163,33 @@ const startMode = (mode: string) => {
 .actions-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .selection-status {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   margin-right: 12px;
 
   .count {
     @include pixelated;
 
     color: var(--yellow);
-    font-size: 12px;
+    font-size: var(--font-12);
   }
 
   .label {
     @include pixelated;
 
-    color: rgb(255 255 255 / 40%);
-    font-size: 7px;
+    color: Rgb(255 255 255 / 40%);
+    font-size: var(--font-7);
   }
 }
 
 .multi-actions {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .vicio-btn {
@@ -203,7 +203,7 @@ const startMode = (mode: string) => {
   .inventory-controls {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: $spacing-md;
   }
   
   .search-section { max-width: none; }

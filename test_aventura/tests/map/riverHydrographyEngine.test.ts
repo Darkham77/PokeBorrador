@@ -9,8 +9,8 @@ import {
   carveOrganicLake,
   carveRiverSystem,
   stampBridgesOnWaterIntersections
-} from '../../../src/logic/map/continent/riverHydrographyEngine.ts';
-import type { WaterTerrainKind } from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/continent/riverHydrographyEngine.ts';
+import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('riverHydrographyEngine', () => {
   it('carves an organic lake with irregular shores', () => {
@@ -86,7 +86,7 @@ describe('riverHydrographyEngine', () => {
 
   it('drains an interior lake to ocean with downhill gradient descent and >= 2 cell width', async () => {
     const { generateProceduralRiverDrainage } = await import(
-      '../../../src/logic/map/continent/riverHydrographyEngine.ts'
+      '../../logic/map/continent/riverHydrographyEngine.ts'
     );
     const W = 64;
     const H = 64;
@@ -139,7 +139,7 @@ describe('riverHydrographyEngine', () => {
 
   it('safely omits river drainage without error when there are no interior lakes', async () => {
     const { generateProceduralRiverDrainage } = await import(
-      '../../../src/logic/map/continent/riverHydrographyEngine.ts'
+      '../../logic/map/continent/riverHydrographyEngine.ts'
     );
     const W = 40;
     const H = 40;
@@ -161,7 +161,7 @@ describe('riverHydrographyEngine', () => {
 
   it('avoids immediate coast (< 35 tiles) and traverses toward a distant basin with organic meanders', async () => {
     const { generateProceduralRiverDrainage } = await import(
-      '../../../src/logic/map/continent/riverHydrographyEngine.ts'
+      '../../logic/map/continent/riverHydrographyEngine.ts'
     );
     const W = 120;
     const H = 120;

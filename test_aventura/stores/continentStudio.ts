@@ -22,16 +22,16 @@ import type {
   ContinentBiomeType,
   PlacedCustomSprite,
   CanonicalPresetId
-} from '../types/map/continentTypes';
+} from '../types/map/continentTypes.ts';
 import {
   generateContinent,
   type GeneratedContinentResult
-} from '../logic/map/continent/continentalEngine';
+} from '../logic/map/continent/continentalEngine.ts';
 import {
   exportRoutesToSvg,
   importRoutesFromSvg,
   regenerateGeographyFromGraph
-} from '../logic/map/continent/svgRouteAdapter';
+} from '../logic/map/continent/svgRouteAdapter.ts';
 import {
   saveProjectProfile,
   loadProjectProfile,
@@ -39,11 +39,16 @@ import {
   deleteProjectProfile,
   createBlankProject,
   createPresetProject
-} from '../logic/map/continent/continentPersistence';
+} from '../logic/map/continent/continentPersistence.ts';
 
-import { STUDIO_MAX_HISTORY_STEPS } from '../config/studioConstants';
+import {
+  STUDIO_MAX_HISTORY_STEPS,
+  MAX_RANDOM_SEED,
+  MIN_VIEWPORT_ZOOM,
+  MAX_VIEWPORT_ZOOM
+} from '../config/studioConstants.ts';
 
-const MAX_PROCEDURAL_SEED = 999999;
+const DEFAULT_VIEWPORT_ZOOM = 0.5;
 
 export type StudioActiveView = 'geographic' | 'connections';
 
@@ -116,7 +121,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
       activeProjectId.value = restored.id;
       cachedGenResult.value = null;
     } catch {
-      // ignore
+      // catch-ok: Fallback when history undo state cannot be restored
     }
   }
 
@@ -131,7 +136,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
       activeProjectId.value = restored.id;
       cachedGenResult.value = null;
     } catch {
-      // ignore
+      // catch-ok: Fallback when history redo state cannot be restored
     }
   }
 
@@ -289,7 +294,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
   function generateGeography(randomizeSeed = false): void {
     pushHistory();
     const newSeed = randomizeSeed
-      ? Math.floor(Math.random() * MAX_PROCEDURAL_SEED)
+      ? Math.floor(Math.random() * MAX_RANDOM_SEED)
       : activeProject.value.config.seed;
 
     const newConfig: ContinentGenConfig = {
@@ -347,7 +352,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
   const activeTool = ref<StudioActiveTool>('pointer');
   const selectedNodeId = ref<string | null>(null);
   const connectSourceNodeId = ref<string | null>(null);
-  const zoom = ref<number>(0.5);
+  const zoom = ref<number>(DEFAULT_VIEWPORT_ZOOM);
   const panX = ref<number>(0);
   const panY = ref<number>(0);
 
@@ -355,7 +360,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
   const showSpriteModal = ref<boolean>(false);
 
   function setZoom(z: number): void {
-    zoom.value = Math.max(0.15, Math.min(3.0, z));
+    zoom.value = Math.max(MIN_VIEWPORT_ZOOM, Math.min(MAX_VIEWPORT_ZOOM, z));
   }
 
   function setPan(x: number, y: number): void {

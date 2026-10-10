@@ -277,7 +277,7 @@ function selectSlot(index: number) {
 }
 
 .gold-subtitle {
-  font-size: 9px;
+  font-size: var(--font-9);
   color: var(--color-text-gold);
   margin-bottom: 8px;
   font-family: var(--font-pixel);
@@ -292,8 +292,8 @@ function selectSlot(index: number) {
   opacity: 0.35;
 
   .plus-icon {
-    font-size: 14px;
-    color: #475569;
+    font-size: var(--font-14);
+    color: var(--slate-600);
   }
 }
 </style>

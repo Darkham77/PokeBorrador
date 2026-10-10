@@ -21,7 +21,7 @@ import ArenaLeaderboardSection from "@/components/modals/ArenaLeaderboardSection
 .arena-ranked-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   width: 100%;
 }
 </style>

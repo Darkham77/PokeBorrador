@@ -11,10 +11,10 @@ import {
   TilesRegistryService,
   loadTilesRegistry,
   type TilesRegistryJson
-} from '../../../src/logic/map/tilesRegistry.ts';
+} from '../../logic/map/tilesRegistry.ts';
 import {
   ProceduralMapGenerator
-} from '../../../src/logic/map/proceduralMapGenerator.ts';
+} from '../../logic/map/proceduralMapGenerator.ts';
 
 describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   let registryService: TilesRegistryService;
@@ -97,7 +97,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('exposes generateProceduralMap with layers and numeric collisionMatrix (0, 1, 2)', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
     const result = generateProceduralMap(
       { width: 20, height: 20, theme: 'firered', seed: 42 },
       registryService
@@ -134,8 +134,8 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('stamps multitile structure templates atomically onto target map', async () => {
-    const { generateProceduralMap, stampStructure } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
-    const { KANTO_HOUSE_SMALL, POKEMART, POKEMON_CENTER } = await import('../../../src/config/mapStructures.ts');
+    const { generateProceduralMap, stampStructure } = await import('../../logic/map/proceduralMapGenerator.ts');
+    const { KANTO_HOUSE_SMALL, POKEMART, POKEMON_CENTER } = await import('../../config/mapStructures.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 123 },
@@ -182,8 +182,8 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('automatically executes Town Pass when withTown is enabled on a 30x30 map', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
-    const { POKEMON_CENTER, POKEMART, KANTO_HOUSE_SMALL } = await import('../../../src/config/mapStructures.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
+    const { POKEMON_CENTER, POKEMART, KANTO_HOUSE_SMALL } = await import('../../config/mapStructures.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },
@@ -212,7 +212,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('enforces Master Path Invariant: main paths are 100% clear of props and have 0 collision', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },
@@ -235,7 +235,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('enforces urban town clearance: >= 2 tiles from perimeter trees and between buildings', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },
@@ -251,7 +251,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('prohibits mountain cones from stamping inside town sector when withTown is enabled', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },
@@ -269,7 +269,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('completely excludes dirty root tile (tile_elevation_8e2e0bd2de) from all layers', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },
@@ -287,7 +287,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('uses paved urban tiles for building doorways with zero decorations on doorsteps', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },
@@ -304,7 +304,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('completely excludes wild tall grass (tile_vegetation_6b1605d4cf) when withTown is enabled', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },
@@ -320,7 +320,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('connects house doorway cleanly to main road and avoids southern dead-end paths', async () => {
-    const { generateProceduralMap } = await import('../../../src/logic/map/proceduralMapGenerator.ts');
+    const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },

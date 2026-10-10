@@ -130,9 +130,10 @@ export function clusterMountainMassifs(
           }
         }
 
-        if (volcanicCellCount > count * 0.25) {
+        const DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO = 0.25 as const;
+        if (volcanicCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
           palette = 'volcanic';
-        } else if (desertCellCount > count * 0.25) {
+        } else if (desertCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
           palette = 'brown';
         } else {
           // Western ridges -> brown (Mt. Moon), Eastern ridges -> gray (Granite Highland)
@@ -178,6 +179,7 @@ export function clusterMountainMassifs(
 /**
  * Returns the assigned geological palette for cell (x, y) from a cluster result.
  */
+// fallow-ignore-next-line unused-export
 export function getMassifPaletteAt(
   clusterResult: GeologicalClusterResult,
   x: number,

@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { cloneReactive } from '@/logic/utils/cloneUtils';
+import StudioModalShell from './StudioModalShell.vue';
 import { useContinentStudioStore } from '../../stores/continentStudio';
 import { CANONICAL_PRESETS } from '../../logic/map/continent/continentPersistence';
+import { MAX_RANDOM_SEED } from '../../config/studioConstants.ts';
 import type { CanonicalPresetId, ContinentGenConfig } from '../../types/map/continentTypes';
 
 const store = useContinentStudioStore();
 
 // Local working copy for the modal to allow clean cancel/apply semantics
-const localConfig = ref<ContinentGenConfig>(JSON.parse(JSON.stringify(store.activeProject.config)));
+const localConfig = ref<ContinentGenConfig>(cloneReactive(store.activeProject.config));
 
 watch(
   () => store.showConfigModal,
   (isOpen) => {
     if (isOpen) {
-      localConfig.value = JSON.parse(JSON.stringify(store.activeProject.config));
+      localConfig.value = cloneReactive(store.activeProject.config);
     }
   }
 );
@@ -21,7 +24,7 @@ watch(
 function handleRandomSeed(): void {
   localConfig.value = {
     ...localConfig.value,
-    seed: Math.floor(Math.random() * 999999)
+    seed: Math.floor(Math.random() * MAX_RANDOM_SEED)
   };
 }
 
@@ -49,279 +52,215 @@ function handleApplyAndRegenerate(): void {
 </script>
 
 <template>
-  <div
+  <StudioModalShell
     v-if="store.showConfigModal"
     id="modal-procedural-config"
-    class="modal-backdrop"
-    @click.self="store.showConfigModal = false"
+    title="Configuración Procedural del Continente"
+    icon="⚙️"
+    max-width="540px"
+    @close="store.showConfigModal = false"
   >
-    <div class="modal-card">
-      <header class="modal-header">
-        <div class="flex items-center gap-2">
-          <span class="icon text-xl">⚙️</span>
-          <h3 class="modal-title">
-            Configuración Procedural del Continente
-          </h3>
-        </div>
+    <!-- Presets Canónicos -->
+    <div class="control-group">
+      <label class="control-label"><span class="icon">🏛️</span> Presets de Regiones</label>
+      <div class="presets-grid">
         <button
-          id="btn-close-config-modal"
-          class="btn-close"
-          @click="store.showConfigModal = false"
+          v-for="(p, key) in CANONICAL_PRESETS"
+          id="studio-procedural-config-modal-btn-applypreset"
+          :key="key"
+          v-gsap-hover="'button'"
+          type="button"
+          class="btn-preset"
+          :class="{ active: localConfig.presetId === key }"
+          @click="handleApplyPreset(key)"
         >
-          <span class="emoji-inline">✕</span>
+          <span class="preset-name">{{ p.name }}</span>
+          <span class="preset-meta">{{ p.dimensions.width }}×{{ p.dimensions.height }}px | {{ p.cityCount }} Ciudades</span>
         </button>
-      </header>
-
-      <div class="modal-body">
-        <!-- Presets Canónicos -->
-        <div class="control-group">
-          <label class="control-label"><span class="icon">🏛️</span> Presets de Regiones</label>
-          <div class="presets-grid">
-            <button
-              v-for="(p, key) in CANONICAL_PRESETS"
-              :key="key"
-              type="button"
-              class="btn-preset"
-              :class="{ active: localConfig.presetId === key }"
-              @click="handleApplyPreset(key)"
-            >
-              <span class="preset-name">{{ p.name }}</span>
-              <span class="preset-meta">{{ p.dimensions.width }}×{{ p.dimensions.height }}px | {{ p.cityCount }} Ciudades</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Semilla Procedural -->
-        <div class="control-group">
-          <label class="control-label"><span class="icon">🎲</span> Semilla</label>
-          <div class="seed-row">
-            <input
-              v-model.number="localConfig.seed"
-              type="number"
-              class="input-field"
-            >
-            <button
-              type="button"
-              class="btn-dice"
-              title="Aleatorizar semilla"
-              @click="handleRandomSeed"
-            >
-              <span class="btn-emoji">🎲</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Dimensiones del Continente -->
-        <div class="control-group">
-          <label class="control-label"><span class="icon">📐</span> Dimensiones (Ancho × Alto px)</label>
-          <div class="flex gap-2">
-            <input
-              v-model.number="localConfig.dimensions.width"
-              type="number"
-              step="100"
-              min="1000"
-              max="8000"
-              class="input-field"
-              placeholder="Ancho px"
-            >
-            <span class="self-center">×</span>
-            <input
-              v-model.number="localConfig.dimensions.height"
-              type="number"
-              step="100"
-              min="1000"
-              max="8000"
-              class="input-field"
-              placeholder="Alto px"
-            >
-          </div>
-        </div>
-
-        <!-- Cantidad de Ciudades -->
-        <div class="control-group">
-          <div class="label-row">
-            <label class="control-label"><span class="icon">🏙️</span> Cantidad de Ciudades / Pueblos</label>
-            <span class="value-badge">{{ localConfig.cityCount }}</span>
-          </div>
-          <input
-            v-model.number="localConfig.cityCount"
-            type="range"
-            min="2"
-            max="30"
-            step="1"
-            class="slider"
-          >
-        </div>
-
-        <div class="separator-line" />
-
-        <!-- Biomas Sliders -->
-        <h4 class="biomes-title">
-          Distribución de Biomas
-        </h4>
-
-        <div class="control-group">
-          <div class="label-row">
-            <label class="control-label"><span class="icon">🌊</span> Cobertura de Océano y Lagos</label>
-            <span class="value-badge">{{ localConfig.biomes.waterPercent }}%</span>
-          </div>
-          <input
-            v-model.number="localConfig.biomes.waterPercent"
-            type="range"
-            min="0"
-            max="100"
-            class="slider"
-          >
-        </div>
-
-        <div class="control-group">
-          <div class="label-row">
-            <label class="control-label"><span class="icon">🏖️</span> Cobertura de Playas y Costas</label>
-            <span class="value-badge">{{ localConfig.biomes.beachPercent }}%</span>
-          </div>
-          <input
-            v-model.number="localConfig.biomes.beachPercent"
-            type="range"
-            min="0"
-            max="100"
-            class="slider"
-          >
-        </div>
-
-        <div class="control-group">
-          <div class="label-row">
-            <label class="control-label"><span class="icon">🌲</span> Cobertura de Bosques</label>
-            <span class="value-badge">{{ localConfig.biomes.forestPercent }}%</span>
-          </div>
-          <input
-            v-model.number="localConfig.biomes.forestPercent"
-            type="range"
-            min="0"
-            max="100"
-            class="slider"
-          >
-        </div>
-
-        <div class="control-group">
-          <div class="label-row">
-            <label class="control-label"><span class="icon">⛰️</span> Cobertura de Montañas</label>
-            <span class="value-badge">{{ localConfig.biomes.mountainPercent }}%</span>
-          </div>
-          <input
-            v-model.number="localConfig.biomes.mountainPercent"
-            type="range"
-            min="0"
-            max="100"
-            class="slider"
-          >
-        </div>
-
-        <div class="control-group">
-          <div class="label-row">
-            <label class="control-label"><span class="icon">❄️</span> Cobertura de Nieve y Glaciares</label>
-            <span class="value-badge">{{ localConfig.biomes.snowPercent }}%</span>
-          </div>
-          <input
-            v-model.number="localConfig.biomes.snowPercent"
-            type="range"
-            min="0"
-            max="100"
-            class="slider"
-          >
-        </div>
       </div>
-
-      <footer class="modal-footer">
-        <button
-          type="button"
-          class="btn-secondary"
-          @click="store.showConfigModal = false"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          class="btn-primary"
-          @click="handleApplyAndRegenerate"
-        >
-          <span class="btn-emoji">✨</span> Aplicar y Regenerar
-        </button>
-      </footer>
     </div>
-  </div>
+
+    <!-- Semilla Procedural -->
+    <div class="control-group">
+      <label class="control-label"><span class="icon">🎲</span> Semilla</label>
+      <div class="seed-row">
+        <input
+          id="studio-procedural-config-modal-input-seed"
+          v-model.number="localConfig.seed"
+          type="number"
+          class="input-field"
+        >
+        <button
+          id="studio-procedural-config-modal-btn-randomseed"
+          type="button"
+          class="btn-dice"
+          title="Aleatorizar semilla"
+          @click="handleRandomSeed"
+        >
+          <span class="btn-emoji">🎲</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Dimensiones del Continente -->
+    <div class="control-group">
+      <label class="control-label"><span class="icon">📐</span> Dimensiones (Ancho × Alto px)</label>
+      <div class="flex gap-2">
+        <input
+          id="studio-procedural-config-modal-input-width"
+          v-model.number="localConfig.dimensions.width"
+          type="number"
+          step="100"
+          min="1000"
+          max="8000"
+          class="input-field"
+          placeholder="Ancho px"
+        >
+        <span class="self-center">×</span>
+        <input
+          id="studio-procedural-config-modal-input-height"
+          v-model.number="localConfig.dimensions.height"
+          type="number"
+          step="100"
+          min="1000"
+          max="8000"
+          class="input-field"
+          placeholder="Alto px"
+        >
+      </div>
+    </div>
+
+    <!-- Cantidad de Ciudades -->
+    <div class="control-group">
+      <div class="label-row">
+        <label class="control-label"><span class="icon">🏙️</span> Cantidad de Ciudades / Pueblos</label>
+        <span class="value-badge">{{ localConfig.cityCount }}</span>
+      </div>
+      <input
+        id="studio-procedural-config-modal-input-citycount"
+        v-model.number="localConfig.cityCount"
+        type="range"
+        min="2"
+        max="30"
+        step="1"
+        class="slider"
+      >
+    </div>
+
+    <div class="separator-line" />
+
+    <!-- Biomas Sliders -->
+    <h4 class="biomes-title">
+      Distribución de Biomas
+    </h4>
+
+    <div class="control-group">
+      <div class="label-row">
+        <label class="control-label"><span class="icon">🌊</span> Cobertura de Océano y Lagos</label>
+        <span class="value-badge">{{ localConfig.biomes.waterPercent }}%</span>
+      </div>
+      <input
+        id="studio-procedural-config-modal-input-waterpercent"
+        v-model.number="localConfig.biomes.waterPercent"
+        type="range"
+        min="0"
+        max="100"
+        class="slider"
+      >
+    </div>
+
+    <div class="control-group">
+      <div class="label-row">
+        <label class="control-label"><span class="icon">🏖️</span> Cobertura de Playas y Costas</label>
+        <span class="value-badge">{{ localConfig.biomes.beachPercent }}%</span>
+      </div>
+      <input
+        id="studio-procedural-config-modal-input-beachpercent"
+        v-model.number="localConfig.biomes.beachPercent"
+        type="range"
+        min="0"
+        max="100"
+        class="slider"
+      >
+    </div>
+
+    <div class="control-group">
+      <div class="label-row">
+        <label class="control-label"><span class="icon">🌲</span> Cobertura de Bosques</label>
+        <span class="value-badge">{{ localConfig.biomes.forestPercent }}%</span>
+      </div>
+      <input
+        id="studio-procedural-config-modal-input-forestpercent"
+        v-model.number="localConfig.biomes.forestPercent"
+        type="range"
+        min="0"
+        max="100"
+        class="slider"
+      >
+    </div>
+
+    <div class="control-group">
+      <div class="label-row">
+        <label class="control-label"><span class="icon">⛰️</span> Cobertura de Montañas</label>
+        <span class="value-badge">{{ localConfig.biomes.mountainPercent }}%</span>
+      </div>
+      <input
+        id="studio-procedural-config-modal-input-mountainpercent"
+        v-model.number="localConfig.biomes.mountainPercent"
+        type="range"
+        min="0"
+        max="100"
+        class="slider"
+      >
+    </div>
+
+    <div class="control-group">
+      <div class="label-row">
+        <label class="control-label"><span class="icon">❄️</span> Cobertura de Nieve y Glaciares</label>
+        <span class="value-badge">{{ localConfig.biomes.snowPercent }}%</span>
+      </div>
+      <input
+        id="studio-procedural-config-modal-input-snowpercent"
+        v-model.number="localConfig.biomes.snowPercent"
+        type="range"
+        min="0"
+        max="100"
+        class="slider"
+      >
+    </div>
+    <template #footer>
+      <button
+        id="studio-procedural-config-modal-btn-cancelar"
+        type="button"
+        class="btn-secondary"
+        @click="store.showConfigModal = false"
+      >
+        Cancelar
+      </button>
+      <button
+        id="studio-procedural-config-modal-btn-aplicar-y-regenerar"
+        type="button"
+        class="btn-primary"
+        @click="handleApplyAndRegenerate"
+      >
+        <span class="btn-emoji">✨</span> Aplicar y Regenerar
+      </button>
+    </template>
+  </StudioModalShell>
 </template>
 
 <style scoped lang="scss">
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.75);
-  backdrop-filter: Blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-hud);
-}
-
-.modal-card {
-  width: 90%;
-  max-width: 540px;
-  max-height: dvh;
-  background: #0f172a;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 16px 36px Rgba(0, 0, 0, 0.6);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
-  background: #1e293b;
-}
-
-.modal-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f8fafc;
-  margin: 0;
-}
-
-.btn-close {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  font-size: 18px;
-  cursor: pointer;
-
-  &:hover {
-    color: #ffffff;
-  }
-}
-
-.modal-body {
-  padding: 20px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 
 .control-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .control-label {
-  font-size: 12px;
+  color: var(--slate-300);
+  font-size: var(--font-12);
   font-weight: 600;
-  color: #cbd5e1;
 }
 
 .label-row {
@@ -331,134 +270,133 @@ function handleApplyAndRegenerate(): void {
 }
 
 .value-badge {
-  background: #334155;
-  color: #38bdf8;
-  font-size: 11px;
-  font-weight: 700;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: $radius-sm;
+  background: var(--slate-700);
+  color: var(--sky);
+  font-size: var(--font-11);
+  font-weight: 700;
 }
 
 .presets-grid {
   display: grid;
+  gap: $spacing-sm;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
 }
 
 .btn-preset {
   display: flex;
   flex-direction: column;
   padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: #1e293b;
-  color: #f8fafc;
-  cursor: pointer;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-50);
   text-align: left;
-  transition: all 0.15s;
+  cursor: pointer;
 
   &:hover {
-    background: #334155;
+    background: var(--slate-700);
   }
 
   &.active {
-    border-color: #38bdf8;
-    background: Rgba(56, 189, 248, 0.15);
+    background: Rgb(56 189 248 / 15%);
+    border-color: var(--sky);
   }
 
   .preset-name {
-    font-size: 12px;
+    font-size: var(--font-12);
     font-weight: 600;
   }
 
   .preset-meta {
-    font-size: 10px;
-    color: #94a3b8;
+    color: var(--slate-400);
+    font-size: var(--font-10);
   }
 }
 
 .seed-row {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .input-field {
-  flex: 1;
-  background: #1e293b;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
   padding: 8px 12px;
-  border-radius: 6px;
-  color: #f8fafc;
-  font-size: 13px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--slate-50);
+  font-size: var(--font-13);
+  flex: 1;
   outline: none;
 
   &:focus {
-    border-color: #38bdf8;
+    border-color: var(--sky);
   }
 }
 
 .btn-dice {
-  background: #334155;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
   padding: 0 14px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-md;
+  background: var(--slate-700);
+  font-size: var(--font-16);
   cursor: pointer;
-  font-size: 16px;
 
   &:hover {
-    background: #475569;
+    background: var(--slate-600);
   }
 }
 
 .slider {
   width: 100%;
-  accent-color: #38bdf8;
+  accent-color: var(--sky);
   cursor: pointer;
 }
 
 .separator-line {
   height: 1px;
-  background: Rgba(255, 255, 255, 0.1);
   margin: 4px 0;
+  background: Rgb(255 255 255 / 10%);
 }
 
 .biomes-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #38bdf8;
   margin: 0;
+  color: var(--sky);
+  font-size: var(--font-13);
+  font-weight: 700;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 14px 20px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.1);
-  background: #1e293b;
+  background: var(--slate-800);
+  border-top: 1px solid Rgb(255 255 255 / 10%);
 
   .btn-secondary {
-    background: transparent;
-    border: 1px solid Rgba(255, 255, 255, 0.2);
-    color: #cbd5e1;
     padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 12px;
+    border: 1px solid Rgb(255 255 255 / 20%);
+    border-radius: $radius-md;
+    background: transparent;
+    color: var(--slate-300);
+    font-size: var(--font-12);
     font-weight: 600;
     cursor: pointer;
 
     &:hover {
-      background: Rgba(255, 255, 255, 0.05);
+      background: Rgb(255 255 255 / 5%);
     }
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    border: none;
-    color: #ffffff;
     padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 12px;
+    border: none;
+    border-radius: $radius-md;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: var(--white);
+    font-size: var(--font-12);
     font-weight: 700;
     cursor: pointer;
 

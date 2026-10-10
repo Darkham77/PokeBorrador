@@ -151,8 +151,8 @@ const close = () => {
 }
 
 .target-info {
-  color: rgb(255 255 255 / 60%);
-  font-size: 13px;
+  color: Rgb(255 255 255 / 60%);
+  font-size: var(--font-13);
   line-height: 1.4;
   text-align: center;
   margin-bottom: 16px;
@@ -161,7 +161,7 @@ const close = () => {
 .move-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 6px 12px;
 }
 
@@ -183,15 +183,15 @@ const close = () => {
   left: 50%;
   z-index: calc(var(--z-map-floor) + 1);
   padding: 6px 14px;
-  border: 1px solid rgb(255 214 10 / 40%);
-  border-radius: 8px;
-  background: rgb(0 0 0 / 85%);
+  border: 1px solid Rgb(255 214 10 / 40%);
+  border-radius: $radius-lg;
+  background: Rgb(0 0 0 / 85%);
   color: var(--yellow);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: bold;
-  transform: translate(-50%, -50%);
+  transform: Translate(-50%, -50%);
   pointer-events: none;
-  box-shadow: 0 4px 10px rgb(0 0 0 / 50%);
+  box-shadow: var(--shadow-card);
   letter-spacing: 0.5px;
 }
 </style>

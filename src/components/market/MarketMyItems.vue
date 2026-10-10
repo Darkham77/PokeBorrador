@@ -175,6 +175,7 @@ function handleCancel(listingId: string | number) {
         </div>
         <button
           v-if="unclaimedCount > 1"
+          id="market-my-items-btn-isclaimingall-cobrando-reclama"
           class="btn-vicio-success btn-vicio-sm"
           :disabled="isClaimingAll"
           @click.stop="handleClaimAll"

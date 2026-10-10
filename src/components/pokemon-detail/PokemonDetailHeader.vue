@@ -28,12 +28,13 @@ const emit = defineEmits<{
       <span class="p-id">#{{ species.nationalId.padStart(NATIONAL_ID_PADDING_LENGTH, '0') }}</span>
       <div
         class="name-with-edit"
-        style="display: flex; align-items: center; gap: 8px;"
+        style="display: flex; align-items: center; gap: $spacing-sm;"
       >
-        <button 
+        <button
           v-if="isInstance" 
+          id="pokemon-detail-header-btn-1" 
           class="edit-nick-btn" 
-          style=" padding: 0;font-size: 10px; opacity: 0.5; cursor: pointer; flex-shrink: 0;"
+          style=" padding: 0;font-size: var(--font-10); opacity: 0.5; cursor: pointer; flex-shrink: 0;"
           @click.stop="emit('editNickname')"
         >
           <span class="emoji">✏️</span>

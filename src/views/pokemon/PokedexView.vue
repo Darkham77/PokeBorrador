@@ -57,8 +57,9 @@ const openDetail = (p: PokedexItem) => {
     />
 
     <div class="pokedex-grid">
-      <PokedexPokemonCard 
+      <PokedexPokemonCard
         v-for="p in pokemonList" 
+        id="pokedex-view-pokedexpokemoncard-1" 
         :key="p.id" 
         :p="p"
         data-ignore="[PureVue-Ignore]"

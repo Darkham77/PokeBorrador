@@ -36,6 +36,7 @@ Frontend Engineers / Tooling Developers.
 - [`StudioGeographicViewport.vue`](./StudioGeographicViewport.vue): Module implementation.
 - [`StudioInspector.vue`](./StudioInspector.vue): Module implementation.
 - [`StudioLayersPanel.vue`](./StudioLayersPanel.vue): Module implementation.
+- [`StudioModalShell.vue`](./StudioModalShell.vue): Reusable modal container layout shell for studio dialogs.
 - [`StudioProceduralConfigModal.vue`](./StudioProceduralConfigModal.vue): Module implementation.
 - [`StudioSpritePipelineModal.vue`](./StudioSpritePipelineModal.vue): Module implementation.
 - [`StudioTileCatalogDrawer.vue`](./StudioTileCatalogDrawer.vue): Module implementation.
@@ -49,7 +50,7 @@ Frontend Engineers / Tooling Developers.
 ## Verification
 
 - `npm run lint`
-- `npm run sim:e2e:continent-studio`
+- `npm run sim:e2e`
 
 ## Child DOX Index
 

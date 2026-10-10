@@ -59,12 +59,14 @@ function getFactionLabel(faction?: string | null): string {
 
 <template>
   <div
+    id="trainer-card-div-1"
     class="trainer-card"
     :class="variant"
     @click.stop="onClickProfile"
   >
     <div class="trainer-main">
       <TrainerAvatar
+        id="trainer-card-traineravatar-2"
         :profile="profile"
         :size="avatarSize"
         class="clickable-avatar"
@@ -120,16 +122,16 @@ function getFactionLabel(faction?: string | null): string {
 .trainer-name-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .faction-tag-badge {
   @include pixelated;
 
   padding: 1px 4px;
-  border-radius: 4px;
-  color: white;
-  font-size: 6px;
+  border-radius: $radius-sm;
+  color: var(--white);
+  font-size: var(--font-6);
   line-height: 1.25;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -141,7 +143,7 @@ function getFactionLabel(faction?: string | null): string {
   align-items: center;
   width: 100%;
   padding: 12px;
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   border-width: 1px;
   border-style: solid;
   box-sizing: border-box;
@@ -172,24 +174,24 @@ function getFactionLabel(faction?: string | null): string {
 .trainer-main {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .trainer-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 
   .name {
     color: var(--white);
-    font-size: 14px;
+    font-size: var(--font-14);
     font-weight: 700;
     line-height: 1.2;
   }
 
   .meta {
     color: Rgb(255 255 255 / 50%);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.2;
   }
 }
@@ -197,7 +199,7 @@ function getFactionLabel(faction?: string | null): string {
 .trainer-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .clickable-avatar {

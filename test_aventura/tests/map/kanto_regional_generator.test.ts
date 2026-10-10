@@ -1,14 +1,16 @@
 import { describe, it, expect } from 'vitest';
+import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
 import {
-  KantoRegionalWorldGenerator,
   OccupancyGrid,
   OCCUPANCY_FLAGS,
   CELL_BIOME,
-  UniversalAutotiler,
-  DynamicCatalogLoader,
   KANTO_GRID_W,
   KANTO_GRID_H
-} from '../../logic/map/kantoRegionalGenerator';
+} from '../../types/map/kantoGridModel.ts';
+import {
+  UniversalAutotiler,
+  DynamicCatalogLoader
+} from '../../logic/map/kantoTileEngine.ts';
 
 describe('KantoRegionalWorldGenerator & OccupancyGrid', () => {
   it('initializes OccupancyGrid with correct dimensions and bitmasks', () => {

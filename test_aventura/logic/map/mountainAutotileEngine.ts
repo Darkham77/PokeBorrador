@@ -11,15 +11,15 @@
  *   4. O(1) canonical tile dictionary mapping for Brown and Gray palettes.
  */
 
-export const MOUNTAIN_PALETTES = ['brown', 'gray', 'volcanic'] as const;
-export type MountainPalette = (typeof MOUNTAIN_PALETTES)[number];
+const _MOUNTAIN_PALETTES = ['brown', 'gray', 'volcanic'] as const;
+export type MountainPalette = (typeof _MOUNTAIN_PALETTES)[number];
 
-export const MOUNTAIN_STYLES = ['rock', 'grassy_ledge'] as const;
-export type MountainStyle = (typeof MOUNTAIN_STYLES)[number];
+const _MOUNTAIN_STYLES = ['rock', 'grassy_ledge'] as const;
+export type MountainStyle = (typeof _MOUNTAIN_STYLES)[number];
 
 export type ElevationMatrix = readonly (readonly number[])[];
 
-export const BITMASK_8_DIRECTIONS = {
+const BITMASK_8_DIRECTIONS = {
   NW: 1,
   N: 2,
   NE: 4,
@@ -136,7 +136,7 @@ export const CANONICAL_MOUNTAIN_BRUSH_GRAY: Readonly<MountainBrushSet> = {
   stairs_R: 'poke_cliff_gray_stairs_r.png'
 };
 
-export const CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK: Readonly<MountainBrushSet> = {
+const CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK: Readonly<MountainBrushSet> = {
   floor: 'poke_cliff_gray_plateau_rock.png',
   peakCone: 'poke_cliff_cone_gray.png',
   cornerOuterNW: 'poke_cliff_gray_corner_tl.png',
@@ -158,7 +158,7 @@ export const CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK: Readonly<MountainBrushSet> = {
   stairs_R: 'poke_cliff_gray_rock_stairs_r.png'
 };
 
-export const CANONICAL_MOUNTAIN_BRUSH_VOLCANIC: Readonly<MountainBrushSet> = {
+const CANONICAL_MOUNTAIN_BRUSH_VOLCANIC: Readonly<MountainBrushSet> = {
   floor: 'poke_cliff_brown_plateau_rock.png',
   peakCone: 'poke_cliff_cone_brown.png',
   cornerOuterNW: 'poke_cliff_brown_corner_tl.png',
@@ -224,7 +224,7 @@ export interface MountainAutotileGridOptions {
 /**
  * Computes the 8-bit neighbor bitmask for same-or-higher elevation relative to (gx, gy).
  */
-export function compute8NeighborElevationMask(
+function compute8NeighborElevationMask(
   matrix: ElevationMatrix,
   gx: number,
   gy: number,
@@ -717,6 +717,7 @@ export function normalizeHeightmapDiagonals(matrix: number[][]): number[][] {
  * Reactively recalculates the mountain autotiling bitmask and cell details
  * within a local radius around (centerX, centerY) after terrain or height modifications.
  */
+// fallow-ignore-next-line unused-export
 export function recalculateNeighborhoodBitmask(
   result: ResolvedMountainMapResult,
   matrix: ElevationMatrix,
@@ -784,8 +785,8 @@ export function recalculateNeighborhoodBitmask(
 export function pruneRedundantStairs(
   stairs: readonly MountainStairLocation[],
   pathGrid?: readonly (readonly boolean[])[]
-): MountainStairLocation[] {
-  if (stairs.length <= 1) return [...stairs];
+): readonly MountainStairLocation[] {
+  if (stairs.length <= 1) return stairs;
 
   const isConnected = (st: MountainStairLocation): boolean => {
     if (!pathGrid) return false;
@@ -836,14 +837,6 @@ export function pruneRedundantStairs(
 
   return surviving;
 }
-
-export {
-  validateHeightmapConstraints,
-  sanitizeHeightmapMatrix,
-  type HeightmapConstraintViolation,
-  type HeightmapConstraintViolationType,
-  type HeightmapConstraintOptions
-} from './heightmapConstraints.ts';
 
 
 

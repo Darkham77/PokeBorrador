@@ -4,7 +4,7 @@
 .event-detail-modal {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 4px 4px 12px;
   color: var(--white);
   text-align: center;
@@ -16,7 +16,7 @@
   justify-content: center;
   align-items: center;
   margin: -4px -4px 0;
-  border-radius: 18px 18px 0 0;
+  border-radius: $radius-2xl-alt $radius-2xl-alt 0 0;
   background: transparent;
   overflow: hidden;
   aspect-ratio: 16 / 9;
@@ -56,7 +56,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   margin: 4px 0 0;
 
   .event-pokemon-sprite {
@@ -80,7 +80,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: $spacing-xs-5;
 
     .dot {
       width: 6px;
@@ -103,7 +103,7 @@
 
 .event-main-icon {
   margin: 4px 0 0;
-  font-size: 40px;
+  font-size: var(--font-40);
   line-height: 1;
   filter: Drop-Shadow(0 4px 12px Rgb(250 204 21 / 30%));
 }
@@ -111,14 +111,14 @@
 .event-header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   .event-title {
     @include pixelated;
 
     margin: 0;
     color: var(--yellow);
-    font-size: 16px;
+    font-size: var(--font-16);
     font-weight: bold;
     text-shadow: 0 0 10px Rgb(250 204 21 / 30%);
   }
@@ -126,20 +126,20 @@
   .event-rotation-badge {
     padding: 3px 10px;
     border: 1px solid Rgb(250 204 21 / 40%);
-    border-radius: 9999px;
+    border-radius: $radius-full;
     background: Rgb(250 204 21 / 12%);
     color: var(--yellow);
-    font-size: 10px;
+    font-size: var(--font-10);
     font-weight: bold;
     align-self: center;
     letter-spacing: 0.3px;
-    box-shadow: 0 2px 6px Rgb(0 0 0 / 30%);
+    box-shadow: var(--shadow-card);
   }
 
   .event-desc {
     margin: 0;
     color: Rgb(241 245 249 / 85%);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.4;
   }
 }
@@ -149,20 +149,20 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
+    gap: $spacing-md;
     padding: 12px;
     border: 1px solid Rgb(255 255 255 / 6%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(255 255 255 / 3%);
   }
 
   .participant-pill {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     padding: 6px 12px;
     border: 1px solid Rgb(96 165 250 / 25%);
-    border-radius: 10px;
+    border-radius: $radius-lg-alt;
     background: Rgb(15 23 42 / 75%);
     cursor: pointer;
 
@@ -170,7 +170,7 @@
       background: Rgb(15 23 42 / 95%);
       transform: Translatey(-2px);
       border-color: Rgb(250 204 21 / 70%);
-      box-shadow: 0 4px 12px Rgb(0 0 0 / 40%), 0 0 8px Rgb(250 204 21 / 25%);
+      box-shadow: var(--shadow-card);
     }
 
     .participant-sprite {
@@ -182,8 +182,8 @@
     .participant-name {
       @include pixelated;
 
-      color: #f1f5f9;
-      font-size: 11px;
+      color: var(--slate-100);
+      font-size: var(--font-11);
       font-weight: bold;
       letter-spacing: 0.8px;
       text-transform: uppercase;
@@ -194,14 +194,14 @@
 .event-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   text-align: left;
 
   .section-tag {
     @include pixelated;
 
     color: Rgb(148 163 184 / 90%);
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 0.5px;
     margin-left: 2px;
   }
@@ -210,7 +210,7 @@
 .bonus-grid {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .bonus-item {
@@ -219,14 +219,14 @@
   align-items: center;
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 3%);
-  font-size: 11px;
+  font-size: var(--font-11);
 
   .bonus-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .bonus-label {
       color: Rgb(241 245 249 / 90%);
@@ -236,7 +236,7 @@
   .bonus-value {
     @include pixelated;
 
-    font-size: 8px;
+    font-size: var(--font-8);
     font-weight: bold;
   }
 }
@@ -244,16 +244,16 @@
 .prizes-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .info-box {
   padding: 10px 16px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 4%);
   color: Rgb(203 213 225 / 100%);
-  font-size: 13px;
+  font-size: var(--font-13);
   text-align: center;
 
   .metric-main {
@@ -262,7 +262,7 @@
 
   .tiebreaker-note {
     color: var(--yellow);
-    font-size: 11px;
+    font-size: var(--font-11);
     opacity: 0.9;
     margin-top: 4px;
   }
@@ -277,56 +277,56 @@
 .sub-comp-rule-note {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 6px 10px;
   border: 1px dashed Rgb(234 179 8 / 30%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(234 179 8 / 8%);
   color: Rgb(253 224 71 / 95%);
-  font-size: 10px;
+  font-size: var(--font-10);
   line-height: 1.3;
   margin-bottom: 4px;
 
   .note-icon {
-    font-size: 12px;
+    font-size: var(--font-12);
   }
 }
 
 .sub-competitions-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .sub-competition-detail-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 12px 14px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 35%);
   text-align: left;
 
   .sub-comp-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .sub-comp-icon {
-      font-size: 16px;
+      font-size: var(--font-16);
     }
 
     .sub-comp-name {
       color: var(--yellow);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: bold;
     }
   }
 
   .sub-comp-criterio {
-    color: #93c5fd;
-    font-size: 8px;
+    color: var(--blue-300);
+    font-size: var(--font-8);
     opacity: 0.9;
     padding-left: 24px;
   }
@@ -334,7 +334,7 @@
   .sub-prizes-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-top: 4px;
     padding-left: 0;
     border-top: 1px dashed Rgb(255 255 255 / 8%);
@@ -345,10 +345,10 @@
 .sub-prize-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 8px 10px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 2%);
   box-sizing: border-box;
 
@@ -356,12 +356,12 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 44px;
     padding: 3px 6px;
     border: 1px solid transparent;
-    border-radius: 6px;
-    font-size: 8px;
+    border-radius: $radius-md;
+    font-size: var(--font-8);
     font-weight: bold;
     text-align: center;
     white-space: nowrap;
@@ -376,7 +376,7 @@
       background: Rgb(250 204 21 / 12%);
       color: Rgb(253 230 138 / 100%);
       border-color: Rgb(250 204 21 / 30%);
-      box-shadow: 0 0 8px Rgb(250 204 21 / 10%);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 

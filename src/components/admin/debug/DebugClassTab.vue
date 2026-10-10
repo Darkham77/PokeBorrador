@@ -45,6 +45,7 @@ function toggleFastRanked() {
           :title="`Cambiar tu clase a ${c}.`"
         >
           <button
+            id="debug-class-tab-btn-c"
             class="small-btn uppercase-btn"
             :class="{ active: game.state.playerClass === c }"
             @click.stop="setPlayerClass(c)"
@@ -54,6 +55,7 @@ function toggleFastRanked() {
         </PVTooltip>
         <PVTooltip title="Resetear tu clase de jugador.">
           <button
+            id="debug-class-tab-btn-resetear"
             class="small-btn"
             @click.stop="setPlayerClass('none')"
           >
@@ -68,8 +70,9 @@ function toggleFastRanked() {
       <div class="button-row">
         <PVTooltip title="Elimina todos los cooldowns de clases (Rutas preferidas, Extorsión, Escáner IVs, etc.), Centro Pokémon y perfil">
           <button
+            id="debug-class-tab-btn-eliminar-cooldowns"
             class="small-btn"
-            style="background-color: #ef4444; color: white;"
+            style="background-color: var(--red-light); color: var(--white);"
             @click.stop="clearClassCooldowns"
           >
             <span class="emoji">⚡</span> ELIMINAR COOLDOWNS
@@ -82,11 +85,15 @@ function toggleFastRanked() {
       <label>Nivel Clase</label>
       <div class="input-group">
         <input
+          id="debug-class-tab-input-debugclasslevel"
           v-model="debugClassLevel"
           type="number"
         >
         <PVTooltip title="Establece tu nivel de la clase activa.">
-          <button @click.stop="setClassLevel">
+          <button
+            id="debug-class-tab-btn-fijar"
+            @click.stop="setClassLevel"
+          >
             FIJAR
           </button>
         </PVTooltip>
@@ -97,11 +104,15 @@ function toggleFastRanked() {
       <label>Reputación</label>
       <div class="input-group">
         <input
+          id="debug-class-tab-input-debugreputation"
           v-model="debugReputation"
           type="number"
         >
         <PVTooltip title="Establece tu reputación (clase Entrenador).">
-          <button @click.stop="setReputation">
+          <button
+            id="debug-class-tab-btn-fijar-2"
+            @click.stop="setReputation"
+          >
             FIJAR
           </button>
         </PVTooltip>
@@ -113,6 +124,7 @@ function toggleFastRanked() {
       <div class="button-row">
         <PVTooltip title="Alterna la demora para entrar a Ranked entre 5s (rápido para pruebas) y 60s (normal).">
           <button
+            id="debug-class-tab-btn-1"
             class="small-btn"
             :class="{ active: isFastRanked }"
             @click.stop="toggleFastRanked"

@@ -118,44 +118,44 @@ const defaultTitle = computed(() => {
     width: 14px;
     height: 14px;
     padding: 1.5px;
-    border-radius: 5px;
+    border-radius: $radius-md-alt;
   }
 
   &.sm {
     width: 16px;
     height: 16px;
     padding: 2px;
-    border-radius: 6px;
+    border-radius: $radius-md;
   }
 
   &.md {
     width: 20px;
     height: 20px;
     padding: 2.5px;
-    border-radius: 7px;
+    border-radius: $radius-7;
   }
 
   &.lg {
     width: 24px;
     height: 24px;
     padding: 3px;
-    border-radius: 9px;
+    border-radius: $radius-9;
   }
 
   // MALE
   &.male {
     border: 1px solid Rgb(255 255 255 / 20%);
     background: Linear-Gradient(135deg, #0284c7 0%, #0ea5e9 100%);
-    color: #fff;
-    box-shadow: 0 0 6px Rgb(14 165 233 / 55%);
+    color: var(--white);
+    box-shadow: var(--shadow-glow-blue-sm);
   }
 
   // FEMALE
   &.female {
     border: 1px solid Rgb(255 255 255 / 20%);
     background: Linear-Gradient(135deg, #db2777 0%, #ec4899 100%);
-    color: #fff;
-    box-shadow: 0 0 6px Rgb(236 72 153 / 55%);
+    color: var(--white);
+    box-shadow: var(--shadow-glow-rose);
   }
 
   .gender-svg {

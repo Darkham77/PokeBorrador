@@ -10,15 +10,14 @@ import type {
   ContinentProject,
   ContinentDimensions,
   ContinentGenConfig,
-  BiomeDistributionConfig,
   CanonicalPresetId,
   ContinentNode
-} from '../../../types/map/continentTypes';
+} from '../../../types/map/continentTypes.ts';
 import { generateContinent } from './continentalEngine.ts';
 
-export const CONTINENT_SCHEMA_VERSION = 3;
-export const STORAGE_KEY_PROFILES = 'pokevicio_continent_projects_v3';
-export const LEGACY_STORAGE_KEY_PROFILES = 'pokevicio_continent_projects_v2';
+const CONTINENT_SCHEMA_VERSION = 3;
+const STORAGE_KEY_PROFILES = 'pokevicio_continent_projects_v3';
+const LEGACY_STORAGE_KEY_PROFILES = 'pokevicio_continent_projects_v2';
 
 // In-memory fallback map for Node testing environment
 const memoryStore = new Map<string, string>();
@@ -28,7 +27,7 @@ function getStorageItem(key: string): string | null {
     try {
       return window.localStorage.getItem(key);
     } catch {
-      // ignore
+      // catch-ok: Fallback to memoryStore when localStorage is unavailable or blocked in private mode
     }
   }
   return memoryStore.get(key) ?? null;
@@ -40,7 +39,7 @@ function setStorageItem(key: string, value: string): void {
       window.localStorage.setItem(key, value);
       return;
     } catch {
-      // ignore
+      // catch-ok: Fallback to memoryStore when localStorage quota is exceeded or storage is blocked
     }
   }
   memoryStore.set(key, value);
@@ -52,95 +51,33 @@ function removeStorageItem(key: string): void {
       window.localStorage.removeItem(key);
       return;
     } catch {
-      // ignore
+      // catch-ok: Fallback to memoryStore when localStorage removal is restricted
     }
   }
   memoryStore.delete(key);
 }
 
-export const CANONICAL_PRESETS: Record<
-  CanonicalPresetId,
-  {
-    readonly name: string;
-    readonly dimensions: ContinentDimensions;
-    readonly cityCount: number;
-    readonly biomes: BiomeDistributionConfig;
-    readonly seed: number;
-  }
-> = {
-  kanto: {
-    name: 'Región de Kanto (Canónica)',
-    dimensions: { width: 3600, height: 4600, tileSize: 32 },
-    cityCount: 10,
-    biomes: {
-      waterPercent: 20,
-      forestPercent: 30,
-      mountainPercent: 15,
-      snowPercent: 5,
-      beachPercent: 10
-    },
-    seed: 151
-  },
-  johto: {
-    name: 'Región de Johto (Canónica)',
-    dimensions: { width: 3600, height: 4600, tileSize: 32 },
-    cityCount: 10,
-    biomes: {
-      waterPercent: 15,
-      forestPercent: 35,
-      mountainPercent: 25,
-      snowPercent: 10,
-      beachPercent: 5
-    },
-    seed: 251
-  },
-  archipelago: {
-    name: 'Archipiélago Tropical (Islas)',
-    dimensions: { width: 3200, height: 3200, tileSize: 32 },
-    cityCount: 8,
-    biomes: {
-      waterPercent: 55,
-      forestPercent: 15,
-      mountainPercent: 5,
-      snowPercent: 0,
-      beachPercent: 25
-    },
-    seed: 384
-  },
-  glacial: {
-    name: 'Tierras Glaciares (Nieve y Cumbres)',
-    dimensions: { width: 3200, height: 3200, tileSize: 32 },
-    cityCount: 8,
-    biomes: {
-      waterPercent: 10,
-      forestPercent: 15,
-      mountainPercent: 25,
-      snowPercent: 45,
-      beachPercent: 5
-    },
-    seed: 493
-  }
-};
+import {
+  CANONICAL_PRESETS,
+  BLANK_PROJECT_MAX_RANDOM_SEED,
+  DEFAULT_BLANK_PROJECT_BIOMES
+} from '../../../config/continentPersistenceConfig.ts';
+
+export { CANONICAL_PRESETS };
 
 /**
  * Creates an empty blank continent project.
  */
 export function createBlankProject(name: string, dimensions?: ContinentDimensions): ContinentProject {
   const dims = dimensions ?? { width: 3200, height: 3200, tileSize: 32 };
-  const now = Date.now();
+  const now = Temporal.Now.instant().epochMilliseconds;
   const id = `project_${now}_${Math.floor(Math.random() * 1000)}`;
 
   const config: ContinentGenConfig = {
-    seed: Math.floor(Math.random() * 999999),
+    seed: Math.floor(Math.random() * BLANK_PROJECT_MAX_RANDOM_SEED),
     dimensions: dims,
     cityCount: 6,
-    biomes: {
-      waterPercent: 20,
-      forestPercent: 25,
-      mountainPercent: 15,
-      snowPercent: 5,
-      beachPercent: 10
-    },
+    biomes: DEFAULT_BLANK_PROJECT_BIOMES,
     roadWidth: 1
   };
 
@@ -158,7 +95,7 @@ export function createBlankProject(name: string, dimensions?: ContinentDimension
   };
 }
 
-export const CANONICAL_KANTO_NODES: Record<string, ContinentNode> = {
+const CANONICAL_KANTO_NODES: Record<string, ContinentNode> = {
   pallet: { id: 'pallet', name: 'Pueblo Paleta', x: 1250, y: 3500, scale: 'village', amenities: ['center'] },
   viridian: { id: 'viridian', name: 'Ciudad Verde', x: 1250, y: 2750, scale: 'city', amenities: ['center', 'mart'] },
   pewter: { id: 'pewter', name: 'Ciudad Plateada', x: 1250, y: 1000, scale: 'city', amenities: ['center', 'mart'] },
@@ -171,7 +108,7 @@ export const CANONICAL_KANTO_NODES: Record<string, ContinentNode> = {
   cinnabar: { id: 'cinnabar', name: 'Isla Canela', x: 875, y: 4000, scale: 'town', amenities: ['center', 'mart'] }
 };
 
-export const CANONICAL_KANTO_CONNECTIONS: readonly (readonly [string, string])[] = [
+const CANONICAL_KANTO_CONNECTIONS: readonly (readonly [string, string])[] = [
   ['pallet', 'viridian'],
   ['viridian', 'pewter'],
   ['pewter', 'cerulean'],
@@ -191,7 +128,7 @@ export const CANONICAL_KANTO_CONNECTIONS: readonly (readonly [string, string])[]
  */
 export function createPresetProject(presetId: CanonicalPresetId): ContinentProject {
   const preset = CANONICAL_PRESETS[presetId];
-  const now = Date.now();
+  const now = Temporal.Now.instant().epochMilliseconds;
   const id = `${presetId}_${now}`;
 
   const config: ContinentGenConfig = {
@@ -241,7 +178,7 @@ export function saveProjectProfile(project: ContinentProject): void {
   const allProfiles = getAllStoredProjects();
   allProfiles[project.id] = {
     ...project,
-    updatedAt: Date.now()
+    updatedAt: Temporal.Now.instant().epochMilliseconds
   };
   setStorageItem(STORAGE_KEY_PROFILES, JSON.stringify(allProfiles));
 }
@@ -316,6 +253,7 @@ function getAllStoredProjects(): Record<string, ContinentProject> {
     }
     return migrated;
   } catch {
+    // catch-ok: Fallback to empty record on corrupted profiles json
     return {};
   }
 }

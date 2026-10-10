@@ -13,6 +13,9 @@ import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon.ts';
 
 export { getArgDateString };
 
+const SUNDAY_JS_DAY = 0 as const;
+const SATURDAY_JS_DAY = 6 as const;
+
 export interface EventTimeWindow {
   start: Temporal.Instant;
   end: Temporal.Instant;
@@ -74,7 +77,7 @@ export function getWeekOfMonth(zdt: Temporal.ZonedDateTime): 1 | 2 | 3 | 4 {
  */
 export function isLastWeekendOfMonth(zdt: Temporal.ZonedDateTime): boolean {
   const jsDay = zdt.dayOfWeek % 7; // 0=Sun, 6=Sat
-  if (jsDay !== 0 && jsDay !== 6) return false;
+  if (jsDay !== SUNDAY_JS_DAY && jsDay !== SATURDAY_JS_DAY) return false;
   const nextWeek = zdt.add({ days: 7 });
   return nextWeek.month !== zdt.month;
 }
@@ -94,7 +97,7 @@ export function isLastSundayOfMonth(zdt: Temporal.ZonedDateTime): boolean {
  */
 export function isSecondWeekendOfMonth(zdt: Temporal.ZonedDateTime): boolean {
   const jsDay = zdt.dayOfWeek % 7; // 0=Sun, 6=Sat
-  if (jsDay !== 0 && jsDay !== 6) return false;
+  if (jsDay !== SUNDAY_JS_DAY && jsDay !== SATURDAY_JS_DAY) return false;
   return getWeekOfMonth(zdt) === 2;
 }
 
@@ -299,7 +302,7 @@ function getMonthlyWeekendWindow(
   endHour: number
 ): EventTimeWindow | null {
   const jsDay = zdt.dayOfWeek % 7; // 0=Sun, 6=Sat
-  if (jsDay === 6 && hour >= startHour) {
+  if (jsDay === SATURDAY_JS_DAY && hour >= startHour) {
     const startZdt = buildWindowZdt(zdt, startHour, false);
     const sundayZdt = zdt.add({ days: 1 });
     const endZdt = buildWindowZdt(sundayZdt, endHour, true);

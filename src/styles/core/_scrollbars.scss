@@ -1,7 +1,9 @@
+@use "variables" as *;
+
 /* GLOBAL RETRO-MODERN SCROLLBARS */
 :root {
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 10%) transparent;
+  scrollbar-color: Rgb(255 255 255 / 10%) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -15,12 +17,12 @@
 
 ::-webkit-scrollbar-thumb {
   border: 1px solid transparent;
-  border-radius: 10px;
-  background: rgb(255 255 255 / 10%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(255 255 255 / 10%);
   background-clip: padding-box;
 
   &:hover {
-    background: rgb(255 255 255 / 20%);
+    background: Rgb(255 255 255 / 20%);
     background-clip: padding-box;
   }
 }

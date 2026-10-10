@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { RankedPodiumWinner } from '@/types/battle/pvp'
 
-defineProps<{
+const props = defineProps<{
   podiumWinners: RankedPodiumWinner[]
   loading?: boolean
 }>()
+
+const PODIUM_PODESTAL_CAPACITY = 3
+
+const hasExtendedWinners = computed(() => props.podiumWinners.length > PODIUM_PODESTAL_CAPACITY)
+const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL_CAPACITY))
 </script>
 
 <template>
@@ -80,11 +86,11 @@ defineProps<{
 
       <!-- REST OF TOP 10 -->
       <div
-        v-if="podiumWinners.length > 3"
+        v-if="hasExtendedWinners"
         class="podium-rest-list"
       >
         <div
-          v-for="winner in podiumWinners.slice(3)"
+          v-for="winner in extendedWinners"
           :key="winner.user_id"
           class="podium-rest-item"
         >
@@ -102,36 +108,36 @@ defineProps<{
 .podium-container {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: $spacing-md-lg;
 }
 
 .podium-empty-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 30px 16px;
   border: 1px dashed Rgb(251 191 36 / 30%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(15 23 42 / 60%);
   text-align: center;
 
-  .podium-empty-icon { font-size: 32px; }
-  .podium-empty-title { margin: 0; color: #fbbf24; font-family: var(--font-pixel); font-size: 10px; }
-  .podium-empty-desc { max-width: 320px; color: #94a3b8; font-family: var(--font-ui); font-size: 9px; line-height: 1.4; }
+  .podium-empty-icon { font-size: var(--font-32); }
+  .podium-empty-title { margin: 0; color: var(--amber); font-family: var(--font-pixel); font-size: var(--font-10); }
+  .podium-empty-desc { max-width: 320px; color: var(--slate-400); font-family: var(--font-ui); font-size: var(--font-9); line-height: 1.4; }
 }
 
 .podium-display {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
 }
 
 .podium-steps-container {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 10px 0;
 }
 
@@ -139,15 +145,15 @@ defineProps<{
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   width: 90px;
 
-  .podium-crown { font-size: 18px; }
+  .podium-crown { font-size: var(--font-18); }
   .podium-player-name {
     max-width: 100%;
-    color: #f8fafc;
+    color: var(--slate-50);
     font-family: var(--font-pixel);
-    font-size: 8px;
+    font-size: var(--font-8);
     line-height: 1.45;
     text-align: center;
     padding-bottom: 2px;
@@ -155,26 +161,26 @@ defineProps<{
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .podium-elo { color: #fbbf24; font-family: var(--font-ui); font-size: 8px; font-weight: bold; }
+  .podium-elo { color: var(--amber); font-family: var(--font-ui); font-size: var(--font-8); font-weight: bold; }
 
   .pedestal {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    border-radius: 6px 6px 0 0;
-    .pedestal-num { color: Rgb(255 255 255 / 80%); font-family: var(--font-pixel); font-size: 16px; font-weight: bold; }
+    border-radius: $radius-md $radius-md 0 0;
+    .pedestal-num { color: Rgb(255 255 255 / 80%); font-family: var(--font-pixel); font-size: var(--font-16); font-weight: bold; }
   }
 
-  &.step-first .pedestal { height: 70px; border: 1px solid #fbbf24; background: Linear-Gradient(180deg, #f59e0b, #78350f); }
-  &.step-second .pedestal { height: 50px; border: 1px solid #cbd5e1; background: Linear-Gradient(180deg, #94a3b8, #334155); }
-  &.step-third .pedestal { height: 35px; border: 1px solid #b45309; background: Linear-Gradient(180deg, #d97706, #451a03); }
+  &.step-first .pedestal { height: 70px; border: 1px solid var(--amber); background: Linear-Gradient(180deg, #f59e0b, #78350f); }
+  &.step-second .pedestal { height: 50px; border: 1px solid var(--slate-300); background: Linear-Gradient(180deg, #94a3b8, #334155); }
+  &.step-third .pedestal { height: 35px; border: 1px solid var(--amber-dark); background: Linear-Gradient(180deg, #d97706, #451a03); }
 }
 
 .podium-rest-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .podium-rest-item {
@@ -183,20 +189,20 @@ defineProps<{
   align-items: center;
   padding: 6px 12px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(255 255 255 / 2%);
-  font-size: 9px;
+  font-size: var(--font-9);
 
-  .rest-rank { width: 24px; color: #64748b; font-family: var(--font-pixel); }
-  .rest-name { color: #f8fafc; font-family: var(--font-pixel); flex: 1; }
-  .rest-tier { color: #94a3b8; margin-right: 10px; }
-  .rest-elo { color: #f59e0b; font-weight: bold; }
+  .rest-rank { width: 24px; color: var(--slate-500); font-family: var(--font-pixel); }
+  .rest-name { color: var(--slate-50); font-family: var(--font-pixel); flex: 1; }
+  .rest-tier { color: var(--slate-400); margin-right: 10px; }
+  .rest-elo { color: var(--amber-dark); font-weight: bold; }
 }
 
 .loader {
   padding: 30px;
-  color: #94a3b8;
-  font-size: 10px;
+  color: var(--slate-400);
+  font-size: var(--font-10);
   text-align: center;
 
   .spinner {
@@ -205,7 +211,7 @@ defineProps<{
     margin: 0 auto 10px;
     border: 2px solid Rgb(255 255 255 / 10%);
     border-radius: 50%;
-    border-top-color: #fbbf24;
+    border-top-color: var(--amber);
   }
 }
 </style>

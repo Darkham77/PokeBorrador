@@ -42,18 +42,18 @@ const types = computed<PokemonType[]>(() => {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
 
   &.ssm {
     flex-direction: row;
     flex-wrap: nowrap !important;
-    gap: 2px;
+    gap: $spacing-2xs;
     width: auto;
     max-width: 100%;
   }
 
   &.sm {
-    gap: 2px;
+    gap: $spacing-2xs;
   }
 }
 </style>

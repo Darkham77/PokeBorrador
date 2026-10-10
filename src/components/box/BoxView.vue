@@ -239,7 +239,7 @@ const handlePokemonClick = (index: number) => {
 .mode-trigger-bar-inline {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .rocket-trigger-btn {

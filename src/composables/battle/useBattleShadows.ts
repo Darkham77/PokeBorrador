@@ -20,6 +20,8 @@ import { logger } from '@/logic/utils/logger'
 const DEFAULT_SHADOW_BODY_RADIUS_PCT = 0.4;
 const SHADOW_PERCENTAGE_SCALE_FACTOR = 250;
 const DEFAULT_STABLE_GROUND_Y_PCT = '75%';
+const DEFAULT_SHADOW_X_FALLBACK = 50 as const;
+const DEFAULT_SHADOW_Y_FALLBACK = 80 as const;
 
 function computeAnimatedKey(
   pokemonId: PokemonSpeciesId,
@@ -109,7 +111,7 @@ export function hasAnimatedShadowKey(
 }
 
 export function computeShadowCoords(pokemon: Pokemon | null | undefined, isBack = false): { x: number; y: number } {
-  if (!pokemon) return { x: 50, y: 80 }
+  if (!pokemon) return { x: DEFAULT_SHADOW_X_FALLBACK, y: DEFAULT_SHADOW_Y_FALLBACK }
   
   const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined
   if (spriteId && hasAnimatedShadowKey(spriteId, pokemon.gender)) {

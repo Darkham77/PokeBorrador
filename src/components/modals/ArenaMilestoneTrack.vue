@@ -216,6 +216,7 @@ function handlePillLeave(e: MouseEvent) {
         </div>
         <button
           v-if="isUnlocked(m.elo) && !isClaimed(m.id)"
+          id="arena-milestone-track-btn-reclamar-en-inicio"
           class="btn-vicio-claim"
           @click.stop="goToHomeRewards"
         >

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
+import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 import {
-  KantoRegionalWorldGenerator,
-  DynamicCatalogLoader,
   CELL_BIOME,
   KANTO_GRID_W,
   KANTO_GRID_H
-} from '../../logic/map/kantoRegionalGenerator';
+} from '../../types/map/kantoGridModel.ts';
 
 describe('Fill-First Regional Map Generator & Carver Pipeline', () => {
   it('defines CELL_BIOME.FOREST_WALL as 8', () => {

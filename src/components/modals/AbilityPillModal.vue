@@ -113,8 +113,9 @@ const close = () => {
       </p>
 
       <div class="ability-list">
-        <button 
+        <button
           v-for="a in availableAbilities" 
+          id="ability-pill-modal-btn-1" 
           :key="a" 
           class="ability-btn"
           :class="{ active: abilityPokemon?.ability === a }"
@@ -153,7 +154,7 @@ const close = () => {
 
 .target-info {
   color: var(--gray);
-  font-size: 13px;
+  font-size: var(--font-13);
   text-align: center;
   margin-bottom: 24px;
 }
@@ -161,7 +162,7 @@ const close = () => {
 .ability-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 4px;
 }
 
@@ -169,18 +170,18 @@ const close = () => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 14px 18px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 16px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-2xl;
+  background: Rgb(255 255 255 / 3%);
   color: var(--white);
   text-align: left;
   cursor: pointer;
   will-change: transform;
   
   &.active {
-    background: rgb(255 214 10 / 5%); 
+    background: Rgb(255 214 10 / 5%); 
     border-color: var(--yellow);
   }
 
@@ -191,27 +192,27 @@ const close = () => {
     width: 100%;
   }
 
-  .a-name { font-size: 15px; font-weight: 800; }
+  .a-name { font-size: var(--font-15); font-weight: 800; }
   .a-current { 
     @include pixelated; 
 
     color: var(--yellow); 
-    font-size: 8px;
+    font-size: var(--font-8);
   }
   .a-desc {
     color: var(--gray);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.4;
   }
 }
 
 .no-options {
   padding: 40px 20px;
-  border: 1px dashed rgb(255 255 255 / 5%);
-  border-radius: 16px;
-  background: rgb(0 0 0 / 20%);
-  color: rgb(255 255 255 / 20%);
-  font-size: 12px;
+  border: 1px dashed Rgb(255 255 255 / 5%);
+  border-radius: $radius-2xl;
+  background: Rgb(0 0 0 / 20%);
+  color: Rgb(255 255 255 / 20%);
+  font-size: var(--font-12);
   text-align: center;
 }
 </style>

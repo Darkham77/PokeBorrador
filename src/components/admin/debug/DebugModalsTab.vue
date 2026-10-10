@@ -64,14 +64,16 @@ function triggerSampleError() {
     <div class="debug-group">
       <label>CANTIDAD DE MODALS</label>
       <div class="input-row">
-        <input 
+        <input
+          id="debug-modals-tab-input-modalcount" 
           v-model.number="modalCount" 
           type="number" 
           min="1" 
           max="20"
         >
         <PVTooltip :title="`Se abrirán ${modalCount} ventanas con 1s de desfase.`">
-          <button 
+          <button
+            id="debug-modals-tab-btn-istesting-procesando-iniciar-t" 
             class="btn-vicio-primary btn-vicio-sm" 
             :disabled="isTesting"
             @click.stop="startTest"
@@ -87,6 +89,7 @@ function triggerSampleError() {
       <div class="button-row">
         <PVTooltip title="Cierra todas las ventanas modales abiertas actualmente.">
           <button
+            id="debug-modals-tab-btn-cerrar-todo"
             class="btn-vicio-danger btn-vicio-sm"
             @click.stop="modalStore.closeAll"
           >
@@ -96,6 +99,7 @@ function triggerSampleError() {
 
         <PVTooltip title="Dispara una notificación de error global para probar el sistema de logs.">
           <button
+            id="debug-modals-tab-btn-disparar-error"
             class="btn-vicio-danger btn-vicio-sm"
             @click.stop="triggerSampleError"
           >
@@ -180,25 +184,25 @@ function triggerSampleError() {
 .debug-tab {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
 }
 
 .debug-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 
   label {
     @include pixelated;
 
     color: $muted;
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }
 
 %button-group-base {
   display: flex;
-  gap: 10px;
+  gap: $spacing-md-alt;
 }
 
 .button-row {
@@ -213,18 +217,18 @@ function triggerSampleError() {
 
 .input-row {
   display: flex;
-  gap: 10px;
+  gap: $spacing-md-alt;
 
   input {
     @include pixelated;
 
     height: 40px;
     padding: 12px 15px;
-    border: 1px solid rgb(255 255 255 / 10%);
-    border-radius: 8px;
-    background: rgb(0 0 0 / 30%);
+    border: 1px solid Rgb(255 255 255 / 10%);
+    border-radius: $radius-lg;
+    background: Rgb(0 0 0 / 30%);
     color: $white;
-    font-size: 8px;
+    font-size: var(--font-8);
     flex: 1;
     outline: none;
 
@@ -237,7 +241,7 @@ function triggerSampleError() {
 .hint {
   margin: 0;
   color: $muted;
-  font-size: 8px;
+  font-size: var(--font-8);
   line-height: 1.4;
 }
 
@@ -245,11 +249,11 @@ function triggerSampleError() {
   @include pixelated;
 
   padding: 8px 10px;
-  border: 1px solid rgb(34 197 94 / 30%);
-  border-radius: 6px;
-  background: rgb(34 197 94 / 12%);
-  color: #86efac;
-  font-size: 8px;
+  border: 1px solid Rgb(34 197 94 / 30%);
+  border-radius: $radius-md;
+  background: Rgb(34 197 94 / 12%);
+  color: var(--green-light);
+  font-size: var(--font-8);
   line-height: 1.4;
 }
 </style>

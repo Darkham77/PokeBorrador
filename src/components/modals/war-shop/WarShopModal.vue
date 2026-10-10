@@ -184,7 +184,7 @@ if (typeof window !== 'undefined') {
           <template #price-icon>
             <i
               class="fa-solid fa-bolt-lightning sort-label"
-              style=" color: #ef4444;font-size: 8px; line-height: 1;"
+              style=" color: var(--red-light);font-size: var(--font-8); line-height: 1;"
             />
           </template>
         </ShopSearchControls>
@@ -232,23 +232,23 @@ if (typeof window !== 'undefined') {
 .war-shop-hint-banner {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 12px 16px;
-  border: 1px solid rgb(239 68 68 / 10%);
-  border-radius: 12px;
-  background: rgb(239 68 68 / 5%);
+  border: 1px solid Rgb(239 68 68 / 10%);
+  border-radius: $radius-xl;
+  background: Rgb(239 68 68 / 5%);
   margin-bottom: 16px;
   
   .info-icon {
     display: flex;
     align-items: center;
-    color: #ef4444;
-    font-size: 14px;
+    color: var(--red-light);
+    font-size: var(--font-14);
   }
   
   .hint-text {
-    color: #cbd5e1;
-    font-size: 11px;
+    color: var(--slate-300);
+    font-size: var(--font-11);
     font-style: italic;
   }
 }

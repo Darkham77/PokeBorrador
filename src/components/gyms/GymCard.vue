@@ -40,6 +40,7 @@ const cardRef = useTemplateRef<HTMLElement>('cardRef')
 const GYM_CARD_MOUNT_OFFSET_Y = 20;
 const GYM_CARD_HOVER_SCALE = 1.02;
 const GYM_CARD_HOVER_OFFSET_Y = -4;
+const GYM_CARD_MOUNT_MAX_RANDOM_DELAY_SEC = 0.4 as const;
 
 onMounted(() => {
   if (cardRef.value) {
@@ -47,7 +48,7 @@ onMounted(() => {
       y: GYM_CARD_MOUNT_OFFSET_Y,
       duration: 0.8,
       ease: 'back.out(1.2)',
-      delay: Math.random() * 0.4
+      delay: Math.random() * GYM_CARD_MOUNT_MAX_RANDOM_DELAY_SEC
     })
   }
 })
@@ -216,8 +217,9 @@ const handleBtnLeave = (e: MouseEvent) => {
         >
           <!-- Selector de dificultad siempre disponible para permitir rematches en otros niveles -->
           <div class="diff-selector">
-            <button 
+            <button
               v-for="d in BATTLE_DIFFICULTIES" 
+              id="gym-card-btn-1" 
               :key="d"
               class="diff-btn"
               :class="{ 

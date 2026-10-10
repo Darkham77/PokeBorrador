@@ -148,7 +148,8 @@ function randomizeActiveHeldItem() {
 
 function randomizeActiveNickname() {
   const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE'] as const
-  activePokeNickname.value = Math.random() > 0.3 ? names[Math.floor(Math.random() * names.length)] || '' : ''
+  const RANDOM_NICKNAME_CHANCE_THRESHOLD = 0.3 as const
+  activePokeNickname.value = Math.random() > RANDOM_NICKNAME_CHANCE_THRESHOLD ? names[Math.floor(Math.random() * names.length)] || '' : ''
 }
 
 function selectEditPokeSpecies(p: { id: string }) {

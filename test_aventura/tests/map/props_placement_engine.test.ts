@@ -5,16 +5,17 @@ import {
   BENCH_WOODEN,
   MAILBOX,
   FLOWERS_RED
-} from '../../config/mapProps';
+} from '../../config/mapProps.ts';
 import {
   placeScenicProps,
   canPlacePropAt,
   stampPropAt,
+  stampProp,
   type PropsPlacementOptions
-} from '../../logic/map/propsPlacementEngine';
-import type { TileCollision } from '../../logic/map/tilesRegistry';
-import type { MapCell, MapSpawn, MapWarp } from '../../logic/map/proceduralMapGenerator';
-import type { UrbanLot } from '../../logic/map/urbanZoningEngine';
+} from '../../logic/map/propsPlacementEngine.ts';
+import type { TileCollision } from '../../logic/map/tilesRegistry.ts';
+import type { MapCell, MapSpawn, MapWarp, GeneratedMap } from '../../logic/map/proceduralMapGenerator.ts';
+import type { UrbanLot } from '../../logic/map/urbanZoningEngine.ts';
 
 function createMockMapContext(width = 30, height = 30) {
   const baseLayer: (MapCell | null)[][] = Array.from({ length: height }, () =>
@@ -154,6 +155,23 @@ describe('Fase 5: Map Props Registry & Placement Engine', () => {
         ctx.makeCell
       );
       expect(res).toBe(false);
+    });
+
+    it('stampProp safely stamps prop or rejects when out-of-bounds on GeneratedMap', () => {
+      const mockMap = {
+        width: 10,
+        height: 10,
+        layers: {
+          decorations: Array.from({ length: 10 }, () => Array(10).fill(null))
+        },
+        collisionMatrix: Array.from({ length: 10 }, () => Array(10).fill(0))
+      } as unknown as GeneratedMap;
+
+      const outOfBounds = stampProp(mockMap, BENCH_WOODEN, 9, 0);
+      expect(outOfBounds).toBe(false);
+
+      const success = stampProp(mockMap, BENCH_WOODEN, 2, 2);
+      expect(success).toBe(true);
     });
   });
 

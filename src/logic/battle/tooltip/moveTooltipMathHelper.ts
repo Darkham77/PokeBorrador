@@ -15,6 +15,7 @@ import {
   LOW_HP_ABILITY_MULTIPLIER,
   STAB_STANDARD_MULTIPLIER,
   TECHNICIAN_POWER_CAP,
+  TECHNICIAN_BOOST_MULTIPLIER,
   SAND_FORCE_MULTIPLIER,
   HELD_ITEM_TYPE_BOOST_MULTIPLIER
 } from '@/logic/constants/gameplay.ts';
@@ -160,7 +161,7 @@ export function resolveAttackerAbilityMultiplier(
   isLowHp: boolean
 ): number {
   let abilMult = resolvePinchAbilityMultiplier(ability, moveType, isLowHp);
-  if (ability === 'technician' && basePower <= TECHNICIAN_POWER_CAP) abilMult *= 1.5;
+  if (ability === 'technician' && basePower <= TECHNICIAN_POWER_CAP) abilMult *= TECHNICIAN_BOOST_MULTIPLIER;
   if (ability === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM && isSandForceBoostedType(moveType)) {
     abilMult *= SAND_FORCE_MULTIPLIER;
   }

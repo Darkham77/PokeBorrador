@@ -32,6 +32,7 @@ const emit = defineEmits<{
       </button>
       <button
         v-if="props.visibleActions.item"
+        id="pokemon-display-action-footer-btn-quitar-objeto"
         class="footer-btn unequip-btn"
         :disabled="!props.hasHeldItem"
         @click.stop="emit('unequipItem', props.index)"
@@ -40,6 +41,7 @@ const emit = defineEmits<{
       </button>
       <button
         v-if="props.visibleActions.details"
+        id="pokemon-display-action-footer-btn-datos"
         class="footer-btn data-btn"
         @click.stop="emit('openDetail', props.index)"
       >
@@ -47,6 +49,7 @@ const emit = defineEmits<{
       </button>
       <button
         v-if="props.visibleActions.box"
+        id="pokemon-display-action-footer-btn-caja"
         class="footer-btn box-btn"
         @click.stop="emit('sendToBox', props.index)"
       >
@@ -54,6 +57,7 @@ const emit = defineEmits<{
       </button>
       <button
         v-if="props.visibleActions.replace"
+        id="pokemon-display-action-footer-btn-reemplazar"
         class="footer-btn replace-btn"
         @click.stop="emit('select', props.index)"
       >

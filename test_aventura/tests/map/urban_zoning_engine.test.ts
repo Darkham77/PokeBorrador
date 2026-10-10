@@ -12,18 +12,18 @@ import {
   findLotNearCoords,
   findBestLotFor,
   type UrbanZoningOptions
-} from '../../logic/map/urbanZoningEngine';
+} from '../../logic/map/urbanZoningEngine.ts';
 import {
   inferCanonicalCityConfig,
   generateLocalMapForNode,
   SCALE_DIMENSIONS
-} from '../../logic/map/nodeLocalMapGenerator';
+} from '../../logic/map/nodeLocalMapGenerator.ts';
 import {
   getBiomePalette,
   type MapCell
-} from '../../logic/map/proceduralMapGenerator';
-import type { TileCollision } from '../../logic/map/tilesRegistry';
-import type { MapNode } from '../../logic/adventure/mapData';
+} from '../../logic/map/proceduralMapGenerator.ts';
+import type { TileCollision } from '../../logic/map/tilesRegistry.ts';
+import type { MapNode } from '../../logic/adventure/mapData.ts';
 
 describe('urbanZoningEngine', () => {
   function createTestMatrix<T>(w: number, h: number, fill: T): T[][] {

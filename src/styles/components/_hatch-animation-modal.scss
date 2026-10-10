@@ -67,7 +67,7 @@
     background: Rgb(0 0 0 / 5%);
   }
   &::-webkit-scrollbar-thumb {
-    border-radius: 2px;
+    border-radius: $radius-xs;
     background: Rgb(255 255 255 / 15%);
   }
 }
@@ -151,7 +151,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 90px;
+    font-size: var(--font-90);
     line-height: 1;
     user-select: none;
     filter: Drop-Shadow(0 0 25px Rgb(255 255 255 / 35%));
@@ -177,7 +177,7 @@
   @include pixelated;
 
   color: Rgb(255 255 255 / 65%);
-  font-size: 10px;
+  font-size: var(--font-10);
   margin-top: 20px;
   text-shadow: 0 2px 4px Rgb(0 0 0 / 60%);
   white-space: nowrap;
@@ -214,7 +214,7 @@
   @include pixelated;
 
   color: $white;
-  font-size: 13px;
+  font-size: var(--font-13);
   margin-top: 16px;
   text-shadow: 0 4px 8px Rgb(0 0 0 / 60%);
 
@@ -232,7 +232,7 @@
   max-width: 95%;
   padding: 16px 20px;
   border: 1.5px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 4%);
   text-align: left;
   margin-top: 16px;
@@ -255,14 +255,14 @@
       @include pixelated;
 
       color: var(--gray);
-      font-size: 9px;
+      font-size: var(--font-9);
     }
 
     .val {
       @include pixelated;
 
       color: var(--yellow);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: bold;
 
       &.interactive-val {
@@ -278,7 +278,7 @@
 
       &.ivs-grid {
         display: grid;
-        gap: 6px 12px;
+        gap: $spacing-sm-alt $spacing-md;
         grid-template-columns: repeat(3, 1fr);
         text-align: right;
       }
@@ -292,18 +292,18 @@
 
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: var(--blue);
   color: var(--white);
   font-family: inherit;
-  font-size: 10px;
+  font-size: var(--font-10);
   cursor: pointer;
   margin-top: 20px;
-  box-shadow: 0 4px 0 Rgb(37 99 235 / 100%);
+  box-shadow: var(--shadow-retro-blue);
 
   &:active {
     transform: Translatey(2px);
-    box-shadow: 0 2px 0 Rgb(37 99 235 / 100%);
+    box-shadow: var(--shadow-retro-blue-active);
   }
 }
 
@@ -325,4 +325,3 @@
   border-radius: 50%;
   background: var(--particle-color, var(--yellow));
 }
-

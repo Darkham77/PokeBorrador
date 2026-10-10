@@ -23,23 +23,40 @@ import type {
   NeighborDirection,
   TileBlitInstruction
 } from '../../types/map/autotileStudioTypes.ts';
-import {
-  buildMapBlitInstructions,
-  CANVAS_TILE_SIZE
-} from './canvasTileRenderer.ts';
+import { buildMapBlitInstructions } from './canvasTileRenderer.ts';
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import { BASE_GRASS_TILE } from './waterAutotileEngine.ts';
 import { CANONICAL_ASSETS_BY_ID } from './canonicalAssetsRegistry.ts';
+import {
+  FALLBACK_TALL_TREE_WIDTH,
+  FALLBACK_TALL_TREE_HEIGHT,
+  FALLBACK_STANDARD_PROP_DIMENSION,
+  DEFAULT_MAX_PATCHES_PER_CATEGORY,
+  DEFAULT_MOUNTAIN_PATCH_LIMIT,
+  MOUNTAIN_STAIRS_PRIORITY,
+  MOUNTAIN_TERRACE_CLIFF_PRIORITY,
+  MOUNTAIN_DOUBLE_CLIFF_PRIORITY,
+  MOUNTAIN_SOUTH_WALL_HIGH_PRIORITY,
+  MOUNTAIN_CORNER_HIGH_PRIORITY,
+  MOUNTAIN_ELEVATED_PLATEAU_PRIORITY,
+  MOUNTAIN_SOUTH_WALL_BASE_PRIORITY,
+  MOUNTAIN_CORNER_BASE_PRIORITY,
+  MOUNTAIN_BASE_CLIFF_PRIORITY,
+  SENTINEL_MIN_ELEVATION,
+  SENTINEL_MAX_ELEVATION,
+  MIN_CANDIDATE_POINT_DISTANCE
+} from '../../config/patchExtractorConfig.ts';
 
 const FALLBACK_PREFAB_DIMS: Record<string, { readonly w: number; readonly h: number }> = {
-  tree_viridian_forest: { w: 64, h: 96 },
-  poke_tree_poke: { w: 64, h: 96 },
-  tree_poke: { w: 64, h: 96 },
-  poke_tree_cuttable: { w: 32, h: 32 },
-  poke_signpost: { w: 32, h: 32 },
-  poke_cave_boulder_rock: { w: 32, h: 32 },
-  poke_cave_rubble_stones: { w: 32, h: 32 },
-  poke_rock_boulder: { w: 32, h: 32 },
-  poke_rock_rubble: { w: 32, h: 32 }
+  tree_viridian_forest: { w: FALLBACK_TALL_TREE_WIDTH, h: FALLBACK_TALL_TREE_HEIGHT },
+  poke_tree_poke: { w: FALLBACK_TALL_TREE_WIDTH, h: FALLBACK_TALL_TREE_HEIGHT },
+  tree_poke: { w: FALLBACK_TALL_TREE_WIDTH, h: FALLBACK_TALL_TREE_HEIGHT },
+  poke_tree_cuttable: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
+  poke_signpost: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
+  poke_cave_boulder_rock: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
+  poke_cave_rubble_stones: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
+  poke_rock_boulder: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
+  poke_rock_rubble: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION }
 };
 
 export function getInstructionDimensions(filename: string): { readonly w: number; readonly h: number } {
@@ -73,8 +90,8 @@ export function extractRealContinentPatches(
   options?: PatchExtractorOptions
 ): readonly RealContinentPatch[] {
   const radius = options?.radius ?? 1;
-  const maxPerCat = options?.maxPerCategory ?? 16;
-  const mountainLimit = options?.mountainLimit ?? Math.max(maxPerCat, 48);
+  const maxPerCat = options?.maxPerCategory ?? DEFAULT_MAX_PATCHES_PER_CATEGORY;
+  const mountainLimit = options?.mountainLimit ?? Math.max(maxPerCat, DEFAULT_MOUNTAIN_PATCH_LIMIT);
 
   const W = continent.width;
   const H = continent.height;
@@ -258,7 +275,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
               desc: `Meseta interior de piso ${curH} con terrazas próximas`,
               subtype: 'multi_tier',
               mountainSubtype: 'multi_tier',
-              priority: 70,
+              priority: MOUNTAIN_ELEVATED_PLATEAU_PRIORITY,
               elev: curH
             });
           }
@@ -274,7 +291,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
           desc: 'Conexión escalonada entre pisos',
           subtype: 'stairs',
           mountainSubtype: 'stairs',
-          priority: 100,
+          priority: MOUNTAIN_STAIRS_PRIORITY,
           elev: curH
         });
       }
@@ -288,7 +305,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
             desc: `Acantilado entre pisos elevados (${curH} → ${minOrth})`,
             subtype: 'multi_tier',
             mountainSubtype: 'multi_tier',
-            priority: 95,
+            priority: MOUNTAIN_TERRACE_CLIFF_PRIORITY,
             elev: curH
           });
         } else {
@@ -299,7 +316,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
             desc: `Caída vertical directa de piso ${curH} a nivel base`,
             subtype: 'multi_tier',
             mountainSubtype: 'multi_tier',
-            priority: 85,
+            priority: MOUNTAIN_DOUBLE_CLIFF_PRIORITY,
             elev: curH
           });
         }
@@ -312,7 +329,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
             desc: `Pared sur de piso ${curH} con proyección de pie en (${x}, ${y + 1})`,
             subtype: 'south_wall',
             mountainSubtype: 'south_wall',
-            priority: 80,
+            priority: MOUNTAIN_SOUTH_WALL_HIGH_PRIORITY,
             elev: curH
           });
         }
@@ -325,7 +342,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
             desc: `Vértice de meseta en elevación ${curH}`,
             subtype: 'corners',
             mountainSubtype: 'corners',
-            priority: 75,
+            priority: MOUNTAIN_CORNER_HIGH_PRIORITY,
             elev: curH
           });
         }
@@ -338,7 +355,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
             desc: 'Pared sur frontal proyectada al suelo',
             subtype: 'south_wall',
             mountainSubtype: 'south_wall',
-            priority: 45,
+            priority: MOUNTAIN_SOUTH_WALL_BASE_PRIORITY,
             elev: 1
           });
         } else if ((nH < curH || sH < curH) && (wH < curH || eH < curH)) {
@@ -349,7 +366,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
             desc: 'Vértice o esquina de acantilado nivel 1',
             subtype: 'corners',
             mountainSubtype: 'corners',
-            priority: 40,
+            priority: MOUNTAIN_CORNER_BASE_PRIORITY,
             elev: 1
           });
         } else {
@@ -360,7 +377,7 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
             desc: 'Borde de montaña sobre terreno base',
             subtype: 'base_cliff',
             mountainSubtype: 'base_cliff',
-            priority: 30,
+            priority: MOUNTAIN_BASE_CLIFF_PRIORITY,
             elev: 1
           });
         }
@@ -421,7 +438,7 @@ function findPathCandidates(
         !pathGrid[y]?.[x - 1] ||
         !pathGrid[y]?.[x + 1];
 
-      if (hasNonPath && isFarEnough(points, x, y, 6)) {
+      if (hasNonPath && isFarEnough(points, x, y, MIN_CANDIDATE_POINT_DISTANCE)) {
         const title = `Camino Rural (X: ${x}, Y: ${y})`;
         const desc = 'Curva o borde de camino de tierra sobre el terreno';
         points.push({ x, y, title, desc });
@@ -451,7 +468,7 @@ function findMacroBiomeCandidates(continent: ContinentMapResult, radius: number,
         grid[y]?.[x - 1] === 'temperate_meadow' ||
         grid[y]?.[x + 1] === 'temperate_meadow';
 
-      if (touchesPlains && isFarEnough(points, x, y, 6)) {
+      if (touchesPlains && isFarEnough(points, x, y, MIN_CANDIDATE_POINT_DISTANCE)) {
         const title = `Borde de Bioma: ${curB} (X: ${x}, Y: ${y})`;
         const desc = `Transición orgánica de ${curB} con pradera templada`;
         points.push({ x, y, title, desc });
@@ -506,8 +523,8 @@ function buildPatch(
   const H = continent.height;
   const cells: ResolvedPatchCell[][] = [];
 
-  let minElev = 999;
-  let maxElev = -999;
+  let minElev = SENTINEL_MIN_ELEVATION;
+  let maxElev = SENTINEL_MAX_ELEVATION;
 
   for (let dy = -radius; dy <= radius; dy++) {
     const row: ResolvedPatchCell[] = [];
@@ -574,8 +591,8 @@ function buildPatch(
     radius,
     instructions: patchInstructions,
     mountainSubtype: resolvedSubtype,
-    maxElevationInPatch: maxElev !== -999 ? maxElev : undefined,
-    minElevationInPatch: minElev !== 999 ? minElev : undefined
+    maxElevationInPatch: maxElev !== SENTINEL_MAX_ELEVATION ? maxElev : undefined,
+    minElevationInPatch: minElev !== SENTINEL_MIN_ELEVATION ? minElev : undefined
   };
 }
 

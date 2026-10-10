@@ -118,8 +118,8 @@ const isLayerVisible = computed(() => {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
-  font-size: 32px !important;
+  font-family: $font-family-emoji;
+  font-size: var(--font-32) !important;
   line-height: 0;
   opacity: 0;
   -webkit-font-smoothing: none;

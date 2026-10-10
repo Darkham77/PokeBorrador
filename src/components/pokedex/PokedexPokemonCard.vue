@@ -24,7 +24,8 @@ defineEmits<{
 </script>
 
 <template>
-  <div 
+  <div
+    id="pokedex-pokemon-card-div-1" 
     class="pdx-pokemon-card"
     :class="{ 
       'is-caught': p.isCaught, 

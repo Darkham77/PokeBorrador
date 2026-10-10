@@ -105,8 +105,9 @@ const close = () => {
       </p>
 
       <div class="nature-grid scrollbar">
-        <button 
+        <button
           v-for="n in sortedNatures" 
+          id="nature-patch-modal-btn-1" 
           :key="n" 
           class="nature-btn"
           :class="{ active: naturePokemon && naturePokemon.nature ? toNatureId(naturePokemon.nature) === n : false }"
@@ -145,14 +146,14 @@ const close = () => {
 
 .target-info {
   color: var(--gray);
-  font-size: 13px;
+  font-size: var(--font-13);
   text-align: center;
   margin-bottom: 24px;
 }
 
 .nature-grid {
   display: grid;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: 1fr 1fr;
   min-height: 0;
   max-height: 400px;
@@ -161,47 +162,47 @@ const close = () => {
 
   .nature-btn {
     padding: 14px;
-    border: 1px solid rgb(255 255 255 / 8%);
-    border-radius: 14px;
-    background: rgb(255 255 255 / 3%);
+    border: 1px solid Rgb(255 255 255 / 8%);
+    border-radius: $radius-xl-alt;
+    background: Rgb(255 255 255 / 3%);
     text-align: left;
     cursor: pointer;
     will-change: transform;
     
     &.active { 
-      background: rgb(255 214 10 / 5%); 
+      background: Rgb(255 214 10 / 5%); 
       border-color: var(--yellow);
       .n-name { color: var(--yellow); }
     }
 
-    .n-name { display: block; color: var(--white); font-size: 14px; font-weight: 800; }
+    .n-name { display: block; color: var(--white); font-size: var(--font-14); font-weight: 800; }
     
     .n-effects {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
       margin-top: 6px;
     }
 
     .stat-mod {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 10px;
+      gap: $spacing-xs;
+      font-size: var(--font-10);
       font-weight: bold;
       
       .indicator-icon {
         display: inline-block;
-        font-size: 9px;
+        font-size: var(--font-9);
         line-height: 1;
       }
       
       &.mod-up {
-        color: #32d74b;
+        color: var(--green);
       }
       
       &.mod-down {
-        color: #ff453a;
+        color: var(--red);
       }
 
       &.mod-neutral {

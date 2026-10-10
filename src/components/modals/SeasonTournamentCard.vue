@@ -31,6 +31,7 @@ const getPokemonRewardSprite = (species: string, isShiny: boolean = false) => {
 
 <template>
   <section
+    id="season-tournament-card-section-clickable"
     v-gsap-hover
     class="season-tournament-card"
     :class="{ 'is-clickable': clickable }"

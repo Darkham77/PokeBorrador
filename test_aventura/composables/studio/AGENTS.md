@@ -22,7 +22,7 @@ Frontend Engineers / Tooling Developers.
 ## Verification
 
 - `npm run lint`
-- `npm run validate:types`
+- `npm run auditor:type-check`
 
 ## Child DOX Index
 

@@ -4,14 +4,14 @@
 .debug-weather-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   min-height: 0;
   max-height: 75dvh;
 }
 
 .region-tabs {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   padding-bottom: 12px;
   border-bottom: 1px solid Rgb(255 255 255 / 10%);
   overflow: auto hidden;
@@ -23,13 +23,13 @@
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 8px 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(255 255 255 / 5%);
   color: var(--muted);
-  font-size: 8px;
+  font-size: var(--font-8);
   white-space: nowrap;
 
   &:hover:not(.empty) {
@@ -49,12 +49,12 @@
     background: var(--purple-gradient);
     color: var(--white);
     border-color: var(--purple-light);
-    box-shadow: 0 4px 12px Rgb(123 63 228 / 30%);
+    box-shadow: var(--shadow-card);
 
     .region-dot {
       background: $white;
       opacity: 1;
-      box-shadow: 0 0 5px $white;
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 
@@ -68,7 +68,7 @@
 .weather-tables-scroll {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: $spacing-md-15;
   min-height: 0;
   overflow-y: auto;
   padding-right: 15px;
@@ -84,13 +84,13 @@
   opacity: 0.5;
 
   .pixel-icon {
-    font-size: 40px;
+    font-size: var(--font-40);
     margin-bottom: 15px;
   }
   p {
     @include pixelated;
 
-    font-size: 10px;
+    font-size: var(--font-10);
   }
 }
 
@@ -108,12 +108,12 @@
 
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 6px 8px;
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(255 255 255 / 2%);
   color: var(--yellow);
-  font-size: 12px;
+  font-size: var(--font-12);
   margin-bottom: 10px;
   cursor: pointer;
   user-select: none;
@@ -125,24 +125,24 @@
   .arrow {
     width: 10px;
     color: var(--muted);
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 
   .id-tag {
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: Rgb(0 0 0 / 30%);
     color: var(--muted);
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }
 
 .seasons-grid {
   display: grid;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   padding: 10px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 15%);
   margin-top: 10px;
 }
@@ -151,7 +151,7 @@
   position: relative;
   padding: 15px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(0 0 0 / 25%);
   overflow: hidden;
 
@@ -170,7 +170,7 @@
   @include pixelated;
 
   color: var(--white);
-  font-size: 10px;
+  font-size: var(--font-10);
   margin-bottom: 15px;
   letter-spacing: 1px;
 }
@@ -178,16 +178,16 @@
 .cycles-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .cycle-row {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 4%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 2%);
 
   &:hover {
@@ -201,9 +201,9 @@
 
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   color: var(--white);
-  font-size: 8px;
+  font-size: var(--font-8);
   opacity: 0.8;
   text-transform: uppercase;
   
@@ -218,7 +218,7 @@
 .probs-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .prob-tag {
@@ -226,39 +226,39 @@
 
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   min-width: 140px;
   padding: 10px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 40%);
-  font-size: 9px;
+  font-size: var(--font-9);
 
   .prob-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
   }
 
   .icon {
-    font-size: 14px;
+    font-size: var(--font-14);
   }
   .label {
-    font-size: 7px;
+    font-size: var(--font-7);
     opacity: 0.6;
     flex: 1;
     letter-spacing: 0.5px;
   }
   .chance {
     color: var(--yellow);
-    font-size: 10px;
+    font-size: var(--font-10);
     font-weight: bold;
   }
 
   .weather-spawns {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     padding-top: 6px;
     border-top: 1px dashed Rgb(255 255 255 / 10%);
   }
@@ -266,18 +266,18 @@
   .spawn-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .group-label {
       color: var(--muted);
-      font-size: 6px;
+      font-size: var(--font-6);
       text-transform: uppercase;
     }
 
     .spawn-icons {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: $spacing-xs;
     }
 
     .mini-sprite {
@@ -296,7 +296,7 @@
 
   &.clear { border-left: 3px solid $yellow; }
   &.sun { border-left: 3px solid #fc0; }
-  &.intense_sun { border-left: 3px solid #fa0; }
+  &.intense_sun { border-left: 3px solid var(--amber); }
   &.heatwave { border-left: 3px solid $red; }
   
   &.rain { border-left: 3px solid $blue; }
@@ -307,8 +307,8 @@
   &.sandstorm { border-left: 3px solid #f93; }
   &.dust_storm { border-left: 3px solid #c72; }
   
-  &.snow { border-left: 3px solid $white; }
-  &.cold { border-left: 3px solid #0ff; }
+  &.snow { border-left: 3px solid var(--white); }
+  &.cold { border-left: 3px solid var(--cyan); }
   &.hail { border-left: 3px solid #9ff; }
   &.blizzard { border-left: 3px solid #5ff; }
   &.coldwave { border-left: 3px solid #08f; }
@@ -322,7 +322,7 @@
   .type-modifiers {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
     padding: 6px 0;
     border-top: 1px solid Rgb(255 255 255 / 5%);
     border-bottom: 1px solid Rgb(255 255 255 / 5%);
@@ -331,17 +331,17 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 4px;
-      font-size: 6px;
+      gap: $spacing-xs;
+      font-size: var(--font-6);
 
       .mod-icon {
         width: 10px;
-        font-size: 8px;
+        font-size: var(--font-8);
         line-height: 1;
       }
       
-      &.boost .mod-icon { color: #4ade80; }
-      &.debuff .mod-icon { color: #f87171; }
+      &.boost .mod-icon { color: var(--green-light); }
+      &.debuff .mod-icon { color: var(--rose); }
       &.block .mod-icon { color: var(--red); }
     }
   }

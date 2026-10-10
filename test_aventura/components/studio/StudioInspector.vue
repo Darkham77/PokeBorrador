@@ -54,6 +54,17 @@ const collisionTypes: readonly { readonly code: CollisionType; readonly label: s
   { code: 3, label: '3: Salto al Sur (Ledge ▼)', badgeClass: 'col-3' }
 ];
 
+const COLLISION_DESCRIPTIONS: Record<CollisionType, string> = {
+  0: 'Libre (0)',
+  1: 'Sólido (1)',
+  2: 'Agua (2)',
+  3: 'Ledge (3)'
+};
+
+function getCollisionDescription(collision: number): string {
+  return COLLISION_DESCRIPTIONS[collision as CollisionType] ?? `Desconocido (${collision})`;
+}
+
 function selectCollisionType(code: CollisionType): void {
   store.selectedCollisionType = code;
 }
@@ -173,7 +184,7 @@ function selectCollisionType(code: CollisionType): void {
               class="cell-col-val"
               :class="'col-' + hoverInfo.collision"
             >
-              {{ hoverInfo.collision === 0 ? 'Libre (0)' : hoverInfo.collision === 1 ? 'Sólido (1)' : hoverInfo.collision === 2 ? 'Agua (2)' : 'Ledge (3)' }}
+              {{ getCollisionDescription(hoverInfo.collision) }}
             </span>
           </div>
           <div
@@ -244,31 +255,31 @@ function selectCollisionType(code: CollisionType): void {
 .studio-inspector {
   display: flex;
   flex-direction: column;
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 6px;
+  gap: $spacing-md-alt;
   padding: 10px;
-  gap: 10px;
-  font-family: monospace, sans-serif;
+  border: 1px solid var(--slate-800);
+  border-radius: $radius-md;
+  background: var(--slate-900);
+  font-family: $font-family-mono;
   user-select: none;
 }
 
 .panel-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  border-bottom: 1px solid #1e293b;
+  gap: $spacing-sm-alt;
+  border-bottom: 1px solid var(--slate-800);
   padding-bottom: 6px;
 
   .header-icon {
-    font-size: 13px;
+    font-size: var(--font-13);
   }
 
   .panel-title {
-    font-size: 11px;
-    font-weight: bold;
-    color: #38bdf8;
     margin: 0;
+    color: var(--sky);
+    font-size: var(--font-11);
+    font-weight: bold;
     letter-spacing: 0.5px;
   }
 }
@@ -276,90 +287,90 @@ function selectCollisionType(code: CollisionType): void {
 .inspector-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   .section-title {
-    font-size: 10px;
+    color: var(--slate-500);
+    font-size: var(--font-10);
     font-weight: bold;
-    color: #64748b;
     text-transform: uppercase;
   }
 
   .field-label {
-    font-size: 10px;
-    color: #94a3b8;
-    margin-bottom: 4px;
     display: block;
+    color: var(--slate-400);
+    font-size: var(--font-10);
+    margin-bottom: 4px;
   }
 }
 
 .panel-divider {
   height: 1px;
-  background: #1e293b;
+  background: var(--slate-800);
 }
 
 .tool-options {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   .retro-select {
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #f1f5f9;
-    font-size: 11px;
     padding: 4px 6px;
-    border-radius: 4px;
+    border: 1px solid var(--slate-700);
+    border-radius: $radius-sm;
+    background: var(--slate-800);
+    color: var(--slate-100);
+    font-size: var(--font-11);
     cursor: pointer;
   }
 
   .structure-details {
     display: flex;
     flex-direction: column;
-    font-size: 10px;
-    color: #94a3b8;
-    background: #090d16;
     padding: 4px 6px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
+    background: #090d16;
+    color: var(--slate-400);
+    font-size: var(--font-10);
   }
 }
 
 .col-buttons {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 
   .col-btn {
-    text-align: left;
     padding: 4px 8px;
-    font-size: 10px;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
     border: 1px solid transparent;
+    border-radius: $radius-sm;
+    font-size: var(--font-10);
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
 
     &.col-0 {
-      background: Rgba(34, 197, 94, 0.15);
-      color: #4ade80;
-      &.active { border-color: #22c55e; background: Rgba(34, 197, 94, 0.35); }
+      background: Rgb(34 197 94 / 15%);
+      color: var(--green-light);
+      &.active { background: Rgb(34 197 94 / 35%); border-color: var(--emerald); }
     }
 
     &.col-1 {
-      background: Rgba(239, 68, 68, 0.15);
-      color: #f87171;
-      &.active { border-color: #ef4444; background: Rgba(239, 68, 68, 0.35); }
+      background: Rgb(239 68 68 / 15%);
+      color: var(--rose);
+      &.active { background: Rgb(239 68 68 / 35%); border-color: var(--red-light); }
     }
 
     &.col-2 {
-      background: Rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      &.active { border-color: #3b82f6; background: Rgba(59, 130, 246, 0.35); }
+      background: Rgb(59 130 246 / 15%);
+      color: var(--blue-400);
+      &.active { background: Rgb(59 130 246 / 35%); border-color: var(--blue-500); }
     }
 
     &.col-3 {
-      background: Rgba(234, 179, 8, 0.15);
-      color: #fde047;
-      &.active { border-color: #eab308; background: Rgba(234, 179, 8, 0.35); }
+      background: Rgb(234 179 8 / 15%);
+      color: var(--amber-300);
+      &.active { background: Rgb(234 179 8 / 35%); border-color: var(--amber-dark); }
     }
   }
 }
@@ -367,18 +378,18 @@ function selectCollisionType(code: CollisionType): void {
 .tile-preview-box {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: #090d16;
-  border: 1px solid #1e293b;
+  gap: $spacing-sm;
   padding: 6px;
-  border-radius: 4px;
+  border: 1px solid var(--slate-800);
+  border-radius: $radius-sm;
+  background: #090d16;
 
   .tile-img {
     width: 32px;
     height: 32px;
+    border: 1px solid var(--sky);
+    border-radius: $radius-xs;
     image-rendering: pixelated;
-    border: 1px solid #38bdf8;
-    border-radius: 2px;
   }
 
   .tile-details {
@@ -387,17 +398,17 @@ function selectCollisionType(code: CollisionType): void {
     overflow: hidden;
 
     .tile-id {
-      font-size: 10px;
+      color: var(--sky);
+      font-size: var(--font-10);
       font-weight: bold;
-      color: #38bdf8;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .tile-cat {
-      font-size: 9px;
-      color: #64748b;
+      color: var(--slate-500);
+      font-size: var(--font-9);
     }
   }
 }
@@ -405,73 +416,73 @@ function selectCollisionType(code: CollisionType): void {
 .coords-card {
   display: flex;
   flex-direction: column;
-  background: #090d16;
-  border: 1px solid #1e293b;
-  border-radius: 4px;
+  gap: $spacing-sm-alt;
   padding: 6px;
-  gap: 6px;
+  border: 1px solid var(--slate-800);
+  border-radius: $radius-sm;
+  background: #090d16;
 
   .coord-header {
     display: flex;
-    gap: 6px;
+    gap: $spacing-sm-alt;
 
     .coord-badge {
-      background: #1e293b;
-      color: #38bdf8;
-      font-size: 10px;
-      font-weight: bold;
       padding: 2px 6px;
-      border-radius: 3px;
+      border-radius: $radius-xs-alt;
+      background: var(--slate-800);
+      color: var(--sky);
+      font-size: var(--font-10);
+      font-weight: bold;
     }
   }
 
   .cell-data-list {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    font-size: 10px;
+    gap: $spacing-xs-alt;
+    font-size: var(--font-10);
 
     .cell-row {
       display: flex;
       justify-content: space-between;
 
-      .cell-label { color: #64748b; }
-      .cell-val { color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+      .cell-label { color: var(--slate-500); }
+      .cell-val { max-width: 140px; color: var(--slate-100); overflow: hidden; text-overflow: ellipsis; }
 
       .cell-col-val {
         font-weight: bold;
-        &.col-0 { color: #4ade80; }
-        &.col-1 { color: #f87171; }
-        &.col-2 { color: #60a5fa; }
-        &.col-3 { color: #fde047; }
+        &.col-0 { color: var(--green-light); }
+        &.col-1 { color: var(--rose); }
+        &.col-2 { color: var(--blue-400); }
+        &.col-3 { color: var(--amber-300); }
       }
 
-      &.text-warp .cell-val { color: #facc15; font-weight: bold; }
-      &.text-spawn .cell-val { color: #22d3ee; font-weight: bold; }
+      &.text-warp .cell-val { color: var(--amber-400); font-weight: bold; }
+      &.text-spawn .cell-val { color: var(--cyan); font-weight: bold; }
     }
   }
 }
 
 .empty-coords {
-  font-size: 10px;
-  color: #475569;
-  font-style: italic;
   padding: 8px;
+  color: var(--slate-600);
+  font-size: var(--font-10);
   text-align: center;
+  font-style: italic;
 }
 
 .map-stats {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 10px;
+  gap: $spacing-xs;
+  font-size: var(--font-10);
 
   .stat-row {
     display: flex;
     justify-content: space-between;
-    color: #94a3b8;
+    color: var(--slate-400);
 
-    b { color: #f1f5f9; }
+    b { color: var(--slate-100); }
   }
 }
 </style>

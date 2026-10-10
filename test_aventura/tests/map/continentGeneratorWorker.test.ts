@@ -15,7 +15,7 @@ import {
   executeRerouteJob,
   buildZeroCopyPreviewBuffer,
   type RegionalGenerationOptions
-} from '../../../src/logic/map/continentGenerator.worker.ts';
+} from '../../logic/map/continentGenerator.worker.ts';
 
 describe('continentGenerator.worker pipeline', () => {
   const baseOptions: RegionalGenerationOptions = {

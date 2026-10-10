@@ -6,7 +6,7 @@
  * (such as water shorelines and path borders) when terrain is modified.
  */
 
-import type { ContinentBiomeType } from '../../../types/map/continentTypes';
+import type { ContinentBiomeType } from '../../../types/map/continentTypes.ts';
 
 export const BITMASK_DIRECTIONS = {
   NW: 1,
@@ -18,6 +18,8 @@ export const BITMASK_DIRECTIONS = {
   S: 64,
   SE: 128
 } as const;
+
+const BITMASK_FULL_CENTER = 255 as const;
 
 export type TransitionRole =
   | 'center'
@@ -87,7 +89,7 @@ export function computeAutotileBitmask(
  * Resolves a canonical transition role based on the 8-bit neighbor bitmask.
  */
 export function getTransitionRole(bitmask: number): TransitionRole {
-  if (bitmask === 255) return 'center';
+  if (bitmask === BITMASK_FULL_CENTER) return 'center';
   if (bitmask === 0) return 'isolated';
 
   const hasN = (bitmask & BITMASK_DIRECTIONS.N) !== 0;

@@ -8,7 +8,7 @@ Frontend Developers / Systems Engineers.
 
 ## Local Contracts
 
-- Vitest tests under `tests/node/adventure/` must be 100% self-contained and deterministic.
+- Vitest tests under `test_aventura/tests/adventure/` must be 100% self-contained and deterministic.
 - Mathematical focal-point invariant tests must verify camera bounds and transform stability across touch, buttons (+/-), and desktop mouse wheel zooming.
 
 ## Work Guidance

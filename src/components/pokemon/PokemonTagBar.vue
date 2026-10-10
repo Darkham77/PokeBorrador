@@ -125,6 +125,7 @@ function toggleCompatible() {
         class="tag-tooltip-wrapper"
       >
         <button
+          id="pokemon-tag-bar-btn-1"
           v-gsap-hover
           type="button"
           :class="[
@@ -153,6 +154,7 @@ function toggleCompatible() {
         class="tag-tooltip-wrapper"
       >
         <button
+          id="pokemon-tag-bar-btn-2"
           v-gsap-hover
           type="button"
           :class="[
@@ -180,7 +182,7 @@ function toggleCompatible() {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: 100%;
   min-width: 0;
   overflow: visible;
@@ -189,7 +191,7 @@ function toggleCompatible() {
     @include pixelated;
 
     color: var(--gray);
-    font-size: 7px;
+    font-size: var(--font-7);
     opacity: 0.6;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -202,7 +204,7 @@ function toggleCompatible() {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 0;
     overflow: visible;
   }
@@ -219,29 +221,29 @@ function toggleCompatible() {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     padding: 5px 8px;
-    border: 1px solid rgb(255 255 255 / 8%);
-    border-radius: 8px;
-    background: rgb(255 255 255 / 3%);
+    border: 1px solid Rgb(255 255 255 / 8%);
+    border-radius: $radius-lg;
+    background: Rgb(255 255 255 / 3%);
     color: var(--gray);
-    font-size: 6.5px;
+    font-size: var(--font-7);
     cursor: pointer;
     white-space: nowrap;
     user-select: none;
     flex-shrink: 0;
 
     &:hover {
-      background: rgb(255 255 255 / 8%);
+      background: Rgb(255 255 255 / 8%);
       color: var(--white);
-      border-color: rgb(255 255 255 / 20%);
+      border-color: Rgb(255 255 255 / 20%);
     }
 
     .tag-icon {
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      font-size: 8.5px;
+      font-size: var(--font-9);
       line-height: 1.25;
       opacity: 0.85;
       flex-shrink: 0;
@@ -257,7 +259,7 @@ function toggleCompatible() {
       background: var(--purple-low);
       color: var(--white);
       border-color: var(--purple);
-      box-shadow: 0 0 10px rgb(199 125 255 / 20%);
+      box-shadow: var(--shadow-glow-amber);
 
       .tag-icon {
         opacity: 1;
@@ -265,19 +267,19 @@ function toggleCompatible() {
     }
 
     &.tag-compatible.active {
-      background: rgb(244 63 94 / 20%);
-      color: #f43f5e;
-      border-color: #f43f5e;
-      box-shadow: 0 0 10px rgb(244 63 94 / 25%);
+      background: Rgb(244 63 94 / 20%);
+      color: var(--rose);
+      border-color: var(--rose);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 
   @mixin tag-bar-compact {
-    gap: 4px;
+    gap: $spacing-xs;
 
     .tag-items {
       flex-wrap: nowrap;
-      gap: 3px;
+      gap: $spacing-xs-alt;
       overflow: visible;
     }
 
@@ -290,7 +292,7 @@ function toggleCompatible() {
       padding: 5px 6px;
 
       .tag-icon {
-        font-size: 9px;
+        font-size: var(--font-9);
       }
     }
   }

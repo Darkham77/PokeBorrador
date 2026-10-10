@@ -13,10 +13,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSettlementLayout } from '../../../src/logic/map/cityLayoutEngine.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('urbanGatewaysIntegrity (Error 3)', () => {
   it('guarantees no building in a 10x10 town overlaps any perimeter gateway', () => {

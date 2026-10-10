@@ -1,7 +1,7 @@
 import type { MapNode, DijkstraPath } from './mapData.ts'
 
 export function getAdjacentNodes(nodeId: string, connections: string[][]): string[] {
-  const adj: string[] = []
+  const adj: string[] = [] // domain-ok: Dynamic graph path node identifiers
   connections.forEach(([a, b]) => {
     if (a === nodeId) adj.push(b)
     if (b === nodeId) adj.push(a)
@@ -62,7 +62,7 @@ export function dijkstra(
   
   if (prev[targetId] === null && startId !== targetId) return null
   
-  const path: string[] = []
+  const path: string[] = [] // domain-ok: Dynamic graph path node identifiers
   let curr: string | null = targetId
   while (curr !== null) {
     path.unshift(curr)

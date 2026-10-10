@@ -4,7 +4,7 @@
 .friends-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .friend-card {
@@ -13,7 +13,7 @@
   align-items: center;
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 3%);
 
   &:hover {
@@ -25,31 +25,31 @@
 .friend-main {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .friend-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 
   .name {
     color: Rgb(241 245 249 / 100%);
-    font-size: 14px;
+    font-size: var(--font-14);
     font-weight: 700;
     line-height: 1.2;
   }
   
   .meta {
     color: Rgb(255 255 255 / 50%);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.2;
   }
 }
 
 .friend-actions {
   display: flex;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   .action-btn {
     position: relative;
@@ -59,11 +59,11 @@
     width: 32px;
     height: 32px;
     border: none;
-    border-radius: 10px;
+    border-radius: $radius-lg-alt;
     background: Rgb(255 255 255 / 5%);
     color: var(--white);
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    font-size: 14px;
+    font-family: $font-family-emoji !important;
+    font-size: var(--font-14);
     line-height: 1 !important;
     cursor: pointer;
 
@@ -83,7 +83,7 @@
       @include btn-vicio-danger;
 
       width: 32px; height: 32px; // Keep same size
-      font-size: 14px;
+      font-size: var(--font-14);
     }
   }
 }
@@ -92,8 +92,8 @@
   padding: 40px 20px;
   color: Rgb(148 163 184 / 100%);
   text-align: center;
-  .icon { font-size: 40px; opacity: 0.5; margin-bottom: 15px; }
-  p { font-size: 14px; margin-bottom: 20px; }
+  .icon { font-size: var(--font-40); opacity: 0.5; margin-bottom: 15px; }
+  p { font-size: var(--font-14); margin-bottom: 20px; }
 }
 
 .clickable-avatar {

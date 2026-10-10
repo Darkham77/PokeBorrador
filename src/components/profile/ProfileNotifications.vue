@@ -50,6 +50,7 @@ function getTimestamp(n: NotificationItem): number {
         NOTIFICACIONES
       </div>
       <button
+        id="profile-notifications-btn-ver-ultimas-10-filteredhistory"
         class="history-btn-legacy"
         @click.stop="isHistoryOpen = !isHistoryOpen"
       >
@@ -101,8 +102,8 @@ function getTimestamp(n: NotificationItem): number {
 .info-label {
   @include pixelated;
 
-  color: rgb(255 255 255 / 40%);
-  font-size: 8px;
+  color: Rgb(255 255 255 / 40%);
+  font-size: var(--font-8);
   letter-spacing: 1px;
 }
 
@@ -117,41 +118,41 @@ function getTimestamp(n: NotificationItem): number {
   @include pixelated;
 
   padding: 6px 12px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 8px;
-  background: rgb(255 255 255 / 5%);
-  color: rgb(250 204 21 / 100%);
-  font-size: 6px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-lg;
+  background: Rgb(255 255 255 / 5%);
+  color: Rgb(250 204 21 / 100%);
+  font-size: var(--font-6);
   cursor: pointer;
-  &:hover { background: rgb(255 255 255 / 8%); }
+  &:hover { background: Rgb(255 255 255 / 8%); }
 }
 
 .history-container-legacy {
   min-height: 0;
   max-height: 240px;
   padding: 4px;
-  border-radius: 12px;
-  background: rgb(0 0 0 / 20%);
+  border-radius: $radius-xl;
+  background: Rgb(0 0 0 / 20%);
   overflow-y: auto;
 }
 
 .notification-entry-legacy {
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 12px;
-  border-bottom: 1px solid rgb(255 255 255 / 3%);
+  border-bottom: 1px solid Rgb(255 255 255 / 3%);
   &:last-child { border-bottom: none; }
   
-  .notif-icon { font-size: 16px; }
+  .notif-icon { font-size: var(--font-16); }
   .notif-body { flex: 1; }
-  .notif-text { color: rgb(203 213 225 / 100%); font-size: 12px; line-height: 1.4; }
-  .notif-time { color: rgb(71 85 105 / 100%); font-size: 9px; margin-top: 4px; }
+  .notif-text { color: Rgb(203 213 225 / 100%); font-size: var(--font-12); line-height: 1.4; }
+  .notif-time { color: Rgb(71 85 105 / 100%); font-size: var(--font-9); margin-top: 4px; }
 }
 
 .empty-notif-legacy {
   padding: 20px;
-  color: rgb(71 85 105 / 100%);
-  font-size: 11px;
+  color: Rgb(71 85 105 / 100%);
+  font-size: var(--font-11);
   text-align: center;
 }
 

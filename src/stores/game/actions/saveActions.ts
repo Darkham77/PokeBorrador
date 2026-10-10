@@ -18,6 +18,7 @@ import { saveCoordinator } from '@/logic/auth/saveCoordinator'
 import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
 
 const LOAD_RETRY_DELAY_SEC = 1.5;
+const MAX_SESSION_LOAD_RETRIES = 9 as const;
 
 interface LoadSaveResult {
   data: GameState | null
@@ -64,7 +65,7 @@ function handleSessionRetry(
   authStore: { logout?: () => Promise<void> }
 ) {
   const retryCount = parseInt(safeSessionStorage.getItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT) || '0', 10)
-  if (retryCount >= 9) {
+  if (retryCount >= MAX_SESSION_LOAD_RETRIES) {
     safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, '0')
     loadingStore.setProgress('game_data', 'Error de conexión persistente', 'Redireccionando al inicio de sesión...')
     if (authStore.logout) {

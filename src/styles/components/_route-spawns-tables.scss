@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(0 0 0 / 20%);
   overflow: auto hidden;
   overscroll-behavior-x: contain !important;
@@ -17,13 +17,13 @@
   }
 
   &::-webkit-scrollbar-track {
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(0 0 0 / 20%);
   }
 
   &::-webkit-scrollbar-thumb {
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: var(--modal-accent, var(--yellow-dark, #8b6d11));
 
     &:hover {
@@ -44,7 +44,7 @@
   background: Rgb(255 255 255 / 3%);
   color: var(--yellow);
   font-family: var(--font-pixel);
-  font-size: 9px;
+  font-size: var(--font-9);
   border-bottom: 1px solid Rgb(255 255 255 / 8%);
   text-transform: uppercase;
 }
@@ -134,7 +134,7 @@
   width: 48px;
   height: 48px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(255 255 255 / 3%);
   flex-shrink: 0;
   margin-right: 12px;
@@ -161,20 +161,20 @@
     height: 100%;
     color: var(--gray);
     font-family: var(--font-pixel);
-    font-size: 16px;
+    font-size: var(--font-16);
   }
 }
 
 .poke-name-wrap {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
 }
 
 .poke-name {
-  color: #fff;
+  color: var(--white);
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: var(--font-10);
   line-height: 1.4;
   letter-spacing: 0.5px;
 }
@@ -182,16 +182,16 @@
 .unseen-tag {
   width: fit-content;
   padding: 1px 4px;
-  border-radius: 2px;
+  border-radius: $radius-xs;
   background: Rgb(255 69 58 / 10%);
-  color: #ff453a;
+  color: var(--red);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: var(--font-7);
 }
 
 .hidden-info-placeholder {
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-style: italic;
 }
 
@@ -199,9 +199,9 @@
 .status-tag {
   padding: 4px 8px;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
   text-transform: uppercase;
 
   &.common {
@@ -212,69 +212,69 @@
 
   &.visitor {
     background: Rgb(191 90 242 / 15%);
-    color: #bf5af2;
+    color: var(--purple);
     border-color: Rgb(191 90 242 / 30%);
-    box-shadow: 0 0 8px Rgb(191 90 242 / 20%);
+    box-shadow: var(--shadow-glow-yellow-sm);
   }
 
   &.exclusive {
     background: Rgb(255 214 10 / 15%);
-    color: #ffd60a;
+    color: var(--yellow);
     border-color: Rgb(255 214 10 / 30%);
-    box-shadow: 0 0 8px Rgb(255 214 10 / 20%);
+    box-shadow: var(--shadow-glow-yellow-sm);
   }
 
   &.buffed {
     background: Rgb(50 215 75 / 15%);
-    color: #32d74b;
+    color: var(--green);
     border-color: Rgb(50 215 75 / 30%);
   }
 
   &.debuffed {
     background: Rgb(255 69 58 / 15%);
-    color: #ff453a;
+    color: var(--red);
     border-color: Rgb(255 69 58 / 30%);
   }
 
   &.blocked {
     background: Rgb(0 0 0 / 50%);
-    color: #86868b;
+    color: var(--slate-400);
     border-color: Rgb(255 255 255 / 10%);
   }
 
   &.event-boosted {
     background: Rgb(244 114 182 / 20%);
-    color: #f472b6;
+    color: var(--rose);
     font-weight: bold;
     border-color: Rgb(244 114 182 / 40%);
-    box-shadow: 0 0 8px Rgb(244 114 182 / 25%);
+    box-shadow: var(--shadow-glow-yellow-sm);
   }
 }
 
 // Multipliers
 .mult-value {
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: $radius-xs-alt;
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
 
   &.visitor-text, &.exclusive-text {
     background: Rgb(255 255 255 / 10%);
-    color: #fff;
+    color: var(--white);
   }
 
   &.buffed-text {
-    color: #32d74b;
+    color: var(--green);
     font-weight: bold;
   }
 
   &.debuffed-text {
-    color: #ff453a;
+    color: var(--red);
   }
 
   &.block-text {
     color: var(--gray);
-    font-size: 7px;
+    font-size: var(--font-7);
     text-transform: uppercase;
   }
 
@@ -287,7 +287,7 @@
 .prob-bar-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
   width: 100%;
   padding-right: 8px;
 }
@@ -298,22 +298,22 @@
   align-items: center;
 
   .active-prob {
-    color: #fff;
+    color: var(--white);
     font-family: var(--font-pixel);
-    font-size: 8px; // Reducido para que entre sin saltar de línea
+    font-size: var(--font-8); // Reducido para que entre sin saltar de línea
     white-space: nowrap; // Evita que se divida en 2 renglones
 
     .diff-text {
       display: inline-block;
-      font-size: 7px;
+      font-size: var(--font-7);
       white-space: nowrap;
       margin-left: 2px;
 
       &.boosted {
-        color: #30d158;
+        color: var(--emerald);
       }
       &.debuffed {
-        color: #ff453a;
+        color: var(--red);
       }
     }
   }
@@ -323,7 +323,7 @@
   display: flex;
   height: 6px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 3px;
+  border-radius: $radius-xs-alt;
   background: Rgb(255 255 255 / 5%);
   overflow: hidden;
 
@@ -331,23 +331,23 @@
     height: 100%;
     
     &.base-fill {
-      border-radius: 3px 0 0 3px;
+      border-radius: $radius-xs-alt 0 0 $radius-xs-alt;
       background: #3a86ff; // Azul base para probabilidad estándar no alterada
     }
 
     &.base-fill-reduced {
-      border-radius: 3px 0 0 3px;
+      border-radius: $radius-xs-alt 0 0 $radius-xs-alt;
       background: #3a86ff; // Azul base reducido por penalización
     }
 
     &.extra-fill {
-      border-radius: 0 3px 3px 0;
-      background: #30d158; // Verde para la probabilidad extra ganada por clima
-      box-shadow: 0 0 4px Rgb(48 209 88 / 50%);
+      border-radius: 0 $radius-xs-alt $radius-xs-alt 0;
+      background: var(--emerald); // Verde para la probabilidad extra ganada por clima
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
 
     &.lost-fill {
-      border-radius: 0 3px 3px 0;
+      border-radius: 0 $radius-xs-alt $radius-xs-alt 0;
       background: Rgb(255 69 58 / 45%); // Rojo translúcido indicando probabilidad perdida
       border-left: 1px dashed Rgb(255 69 58 / 60%);
     }
@@ -356,14 +356,14 @@
 
 // Stats Column
 .stat-total-value {
-  color: #fff;
+  color: var(--white);
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: var(--font-10);
 }
 
 // Encounter probability color utilities
 .bonus-text {
-  color: #30d158; // Verde — probabilidad aumentada (buff, clima, evento)
+  color: var(--emerald); // Verde — probabilidad aumentada (buff, clima, evento)
   font-weight: bold;
 }
 
@@ -375,10 +375,10 @@
 .section-title-pixel {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  color: #fff;
+  gap: $spacing-sm-alt;
+  color: var(--white);
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: var(--font-10);
   line-height: 1.35;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
@@ -388,7 +388,7 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: var(--font-14);
     line-height: 1;
   }
 
@@ -402,20 +402,20 @@
 .section-prob-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   color: var(--gray);
   font-family: var(--font-pixel);
-  font-size: 9px;
+  font-size: var(--font-9);
   opacity: 0.85;
   margin-left: 8px;
 
   &.bonus-text {
-    color: #30d158;
+    color: var(--emerald);
     opacity: 1;
   }
 
   &.penalty-text {
-    color: #ff453a;
+    color: var(--red);
     opacity: 1;
   }
 }

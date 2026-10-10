@@ -17,7 +17,9 @@ function handleCancel() {
     v-if="store.showConfirmRegenerateModal"
     id="modal-confirm-regenerate"
     class="modal-backdrop"
+    tabindex="-1"
     @click.self="handleCancel"
+    @keydown.esc="handleCancel"
   >
     <div class="modal-card">
       <header class="modal-header">
@@ -63,94 +65,94 @@ function handleCancel() {
 <style scoped lang="scss">
 .modal-backdrop {
   position: fixed;
-  inset: 0;
-  background: Rgba(11, 15, 25, 0.85);
-  backdrop-filter: Blur(4px);
+  z-index: var(--z-modal);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 110;
+  align-items: center;
+  background: Rgb(11 15 25 / 85%);
+  inset: 0;
+  backdrop-filter: Blur(4px);
 }
 
 .modal-card {
   width: 100%;
   max-width: 480px;
-  background: #0f172a;
-  border: 1px solid #dc2626;
-  border-radius: 12px;
-  box-shadow: 0 20px 25px -5px Rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--red-600);
+  border-radius: $radius-xl;
+  background: var(--slate-900);
+  box-shadow: var(--shadow-2xl);
   overflow: hidden;
 }
 
 .modal-header {
   padding: 16px 20px;
-  background: #1e293b;
-  border-bottom: 1px solid #334155;
+  background: var(--slate-800);
+  border-bottom: 1px solid var(--slate-700);
 }
 
 .modal-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f8fafc;
   margin: 0;
+  color: var(--slate-50);
+  font-size: var(--font-15);
+  font-weight: 700;
 }
 
 .modal-body {
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
+  padding: 20px;
 }
 
 .modal-text {
-  font-size: 13px;
-  color: #e2e8f0;
-  line-height: 1.5;
   margin: 0;
+  color: var(--slate-200);
+  font-size: var(--font-13);
+  line-height: 1.5;
 }
 
 .modal-subtext {
-  font-size: 12px;
-  color: #94a3b8;
-  line-height: 1.5;
   margin: 0;
+  color: var(--slate-400);
+  font-size: var(--font-12);
+  line-height: 1.5;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 16px 20px;
-  background: #1e293b;
-  border-top: 1px solid #334155;
+  background: var(--slate-800);
+  border-top: 1px solid var(--slate-700);
 }
 
 .btn-secondary {
   padding: 8px 16px;
-  background: #334155;
-  border: 1px solid #475569;
-  border-radius: 6px;
-  color: #e2e8f0;
-  font-size: 12px;
+  border: 1px solid var(--slate-600);
+  border-radius: $radius-md;
+  background: var(--slate-700);
+  color: var(--slate-200);
+  font-size: var(--font-12);
   font-weight: 600;
   cursor: pointer;
   &:hover {
-    background: #475569;
+    background: var(--slate-600);
   }
 }
 
 .btn-danger {
   padding: 8px 18px;
-  background: #dc2626;
   border: none;
-  border-radius: 6px;
-  color: #ffffff;
-  font-size: 12px;
+  border-radius: $radius-md;
+  background: var(--red-600);
+  color: var(--white);
+  font-size: var(--font-12);
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 6px -1px Rgba(220, 38, 38, 0.4);
+  box-shadow: var(--shadow-card);
   &:hover {
-    background: #ef4444;
+    background: var(--red-light);
   }
 }
 </style>

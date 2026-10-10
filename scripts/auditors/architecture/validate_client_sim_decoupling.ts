@@ -235,11 +235,23 @@ export function checkDistAssetsForSimChunks(distDir: string): { chunkName: strin
 export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDecouplingRuleId> {
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: true,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_client_sim_decoupling',
       configKey: 'architecture.clientSimDecoupling',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Client Showdown Decoupling Auditor',
       description: 'Verifica desacoplamiento total de Showdown en cliente',
       icon: '🔌',

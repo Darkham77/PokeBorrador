@@ -138,20 +138,20 @@ onMounted(() => {
 .home-faction-war {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 14px 16px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(18 22 34 / 85%);
   box-sizing: border-box;
-  box-shadow: 0 4px 16px Rgb(0 0 0 / 40%);
+  box-shadow: $shadow-md;
 }
 
 .card-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 8px;
+  gap: $spacing-sm;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgb(255 255 255 / 6%);
 }
@@ -159,12 +159,12 @@ onMounted(() => {
 .title-wrap {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: $spacing-sm;
   min-width: 0;
   flex: 1;
 
   .card-icon {
-    font-size: 16px;
+    font-size: var(--font-16);
     flex-shrink: 0;
     margin-top: 1px;
   }
@@ -172,7 +172,7 @@ onMounted(() => {
   .title-text-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 0;
   }
 
@@ -181,7 +181,7 @@ onMounted(() => {
 
     margin: 0;
     color: var(--yellow, #facc15);
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1.35;
     letter-spacing: 0.5px;
   }
@@ -190,20 +190,20 @@ onMounted(() => {
     @include pixelated;
 
     padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 7px;
+    border-radius: $radius-sm;
+    font-size: var(--font-7);
     align-self: flex-start;
 
     &.is-dispute {
       border: 1px solid Rgb(239 68 68 / 40%);
       background: Rgb(239 68 68 / 15%);
-      color: #f87171;
+      color: var(--rose);
     }
 
     &.is-dominance {
       border: 1px solid Rgb(34 197 94 / 40%);
       background: Rgb(34 197 94 / 15%);
-      color: #4ade80;
+      color: var(--green-light);
     }
   }
 }
@@ -218,23 +218,23 @@ onMounted(() => {
 .war-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .dominance-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 255 255 / 2%);
 }
 
 .team-score {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   flex-shrink: 0;
 
   .faction-logo {
@@ -248,7 +248,7 @@ onMounted(() => {
   .score-data {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
 
     &.right {
       align-items: flex-end;
@@ -257,29 +257,29 @@ onMounted(() => {
     .team-name {
       @include pixelated;
 
-      font-size: 8px;
+      font-size: var(--font-8);
       letter-spacing: 0.5px;
     }
 
     .team-count {
       color: Rgb(255 255 255 / 60%);
-      font-size: 10px;
+      font-size: var(--font-10);
     }
   }
 
   &.union-side .team-name {
-    color: #60a5fa;
+    color: var(--blue-400);
   }
 
   &.poder-side .team-name {
-    color: #f87171;
+    color: var(--rose);
   }
 }
 
 .progress-bar-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
   min-width: 0;
   flex: 1;
 }
@@ -288,25 +288,25 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 9px;
+  font-size: var(--font-9);
 
   .percent-label.union {
     @include pixelated;
 
-    color: #60a5fa;
+    color: var(--blue-400);
   }
 
   .percent-label.poder {
     @include pixelated;
 
-    color: #f87171;
+    color: var(--rose);
   }
 
   .vs-text {
     @include pixelated;
 
     color: Rgb(255 255 255 / 30%);
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }
 
@@ -314,7 +314,7 @@ onMounted(() => {
   display: flex;
   height: 8px;
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: Rgb(0 0 0 / 40%);
   overflow: hidden;
 
@@ -333,7 +333,7 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .summary-chip {
@@ -343,7 +343,7 @@ onMounted(() => {
   min-width: 140px;
   padding: 6px 10px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(255 255 255 / 3%);
   flex: 1;
 
@@ -351,7 +351,7 @@ onMounted(() => {
     @include pixelated;
 
     color: Rgb(255 255 255 / 50%);
-    font-size: 7px;
+    font-size: var(--font-7);
   }
 
   .chip-value {
@@ -359,20 +359,20 @@ onMounted(() => {
 
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     color: var(--white, #fff);
-    font-size: 8px;
+    font-size: var(--font-8);
 
     &.union {
-      color: #60a5fa;
+      color: var(--blue-400);
     }
 
     &.poder {
-      color: #f87171;
+      color: var(--rose);
     }
 
     &.pts {
-      color: #38bdf8;
+      color: var(--sky);
     }
 
     &.coins {

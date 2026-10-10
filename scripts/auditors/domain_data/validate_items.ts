@@ -236,11 +236,23 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
   }
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_items',
       configKey: 'domain.items',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Item Integrity Validator',
       description: 'Ítems faltantes, sin categoría o con efectos inválidos',
       icon: '🧪',

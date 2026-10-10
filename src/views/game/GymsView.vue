@@ -49,11 +49,15 @@ const handleBadgeLeave = (e: MouseEvent) => {
 <template>
   <div class="pv-gyms-view">
     <div class="pv-region-selector">
-      <button class="region-tab active">
+      <button
+        id="gyms-view-btn-kanto"
+        class="region-tab active"
+      >
         <span class="region-indicator" />
         KANTO
       </button>
       <button
+        id="gyms-view-btn-johto-pr-ximamente"
         class="region-tab locked"
         disabled
       >
@@ -61,6 +65,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
         JOHTO (PRÓXIMAMENTE)
       </button>
       <button
+        id="gyms-view-btn-hoenn-pr-ximamente"
         class="region-tab locked"
         disabled
       >
@@ -89,7 +94,8 @@ const handleBadgeLeave = (e: MouseEvent) => {
             :key="gym.id"
             :title="gym.badgeName"
           >
-            <button 
+            <button
+              id="gyms-view-btn-1" 
               class="badge-item"
               :class="{ active: gymsStore.isGymDefeated(gym.id) }"
               @mouseenter="handleBadgeEnter"
@@ -130,7 +136,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
 
 .pv-region-selector {
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 20px 30px;
   border-bottom: 1px solid Rgb(255 255 255 / 5%);
   margin-bottom: 20px;
@@ -138,14 +144,14 @@ const handleBadgeLeave = (e: MouseEvent) => {
   .region-tab {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 8px 16px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(255 255 255 / 3%);
     color: var(--text-muted);
-    font-family: 'Pokemon FireRed LeafGreen', monospace;
-    font-size: 14px;
+    font-family: $font-family-pokemon;
+    font-size: var(--font-14);
     cursor: pointer;
 
     &:hover:not(:disabled) {
@@ -158,14 +164,14 @@ const handleBadgeLeave = (e: MouseEvent) => {
       border: 1px solid Rgb(230 57 70 / 50%);
       background: Linear-Gradient(135deg, Rgb(230 57 70 / 20%) 0%, Rgb(241 250 238 / 3%) 100%);
       color: var(--text-light);
-      box-shadow: 0 0 12px Rgb(230 57 70 / 20%);
+      box-shadow: var(--shadow-glow-amber);
 
       .region-indicator {
         width: 6px;
         height: 6px;
         border-radius: 50%;
         background: #e63946;
-        box-shadow: 0 0 8px #e63946;
+        box-shadow: var(--shadow-glow-yellow-sm);
       }
     }
 
@@ -176,7 +182,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
       border-style: dashed;
 
       .lock-icon {
-        font-size: 12px;
+        font-size: var(--font-12);
       }
     }
   }
@@ -188,9 +194,9 @@ const handleBadgeLeave = (e: MouseEvent) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 30px;
+  gap: $spacing-30;
   padding: 30px;
-  border-radius: 24px;
+  border-radius: $radius-4xl;
   margin-bottom: 40px;
   
   @media (width <= 1024px) {
@@ -205,14 +211,14 @@ const handleBadgeLeave = (e: MouseEvent) => {
 
   margin: 0 0 12px;
   color: var(--yellow);
-  font-size: 16px;
+  font-size: var(--font-16);
   text-shadow: 0 2px 0 var(--black);
 }
 
 .view-desc {
   max-width: 600px;
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   line-height: 1.6;
 
   @media (width <= 1024px) {
@@ -225,7 +231,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
   min-width: 320px;
   padding: 20px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(0 0 0 / 30%);
 
   @media (width <= 480px) {
@@ -238,7 +244,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
   @include pixelated;
 
   color: var(--yellow);
-  font-size: 9px;
+  font-size: var(--font-9);
   text-align: center;
   margin-bottom: 24px;
   letter-spacing: 1px;
@@ -248,7 +254,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .badge-item {
@@ -258,7 +264,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
   width: 40px;
   height: 40px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 5%);
   flex: none;
   cursor: default;
@@ -278,16 +284,15 @@ const handleBadgeLeave = (e: MouseEvent) => {
     transform: Scale(1.1) Translatey(-2px);
     filter: none;
     border-color: var(--yellow);
-    box-shadow: 
-      0 0 20px Rgb(255 215 0 / 20%),
-      inset 0 0 10px Rgb(255 215 0 / 10%);
+    box-shadow: var(--shadow-card);
+
   }
 }
 
 .pv-gyms-grid {
   display: grid;
   justify-content: center;
-  gap: 40px;
+  gap: $spacing-4xl;
   grid-template-columns: repeat(auto-fill, 340px);
   padding: 0 30px 80px;
 }

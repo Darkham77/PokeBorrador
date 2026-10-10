@@ -5,14 +5,18 @@ import RegionalContinentStudioView from './views/RegionalContinentStudioView.vue
 import MapStudioView from './views/MapStudioView.vue'
 import AutotileStudioView from './views/AutotileStudioView.vue'
 import AssetAtlasInspectorView from './views/AssetAtlasInspectorView.vue'
+import AdventureGraphStudioView from './views/AdventureGraphStudioView.vue'
+import LocalTileStudioView from './views/LocalTileStudioView.vue'
 
-type ActiveTool = 'kanto' | 'continent' | 'map-studio' | 'autotile' | 'atlas'
+type ActiveTool = 'kanto' | 'continent' | 'map-studio' | 'graph-studio' | 'cell-studio' | 'autotile' | 'atlas'
 const currentTool = ref<ActiveTool>('kanto')
 
 const tabs = [
   { id: 'kanto', label: '🗺️ Croquis Kanto' },
   { id: 'continent', label: '🌍 Continent Studio' },
-  { id: 'map-studio', label: '📐 Map Studio' },
+  { id: 'map-studio', label: '📐 Continental Studio' },
+  { id: 'graph-studio', label: '🕸️ Graph Studio' },
+  { id: 'cell-studio', label: '🧱 Tile Editor' },
   { id: 'autotile', label: '🧩 Autotile Studio' },
   { id: 'atlas', label: '🖼️ Atlas Inspector' }
 ] as const
@@ -28,6 +32,7 @@ const tabs = [
       <div class="flex items-center gap-1.5">
         <button
           v-for="tab in tabs"
+          :id="`tab-${tab.id}`"
           :key="tab.id"
           :class="[
             currentTool === tab.id
@@ -48,6 +53,8 @@ const tabs = [
         <KantoAdventureView v-if="currentTool === 'kanto'" />
         <RegionalContinentStudioView v-else-if="currentTool === 'continent'" />
         <MapStudioView v-else-if="currentTool === 'map-studio'" />
+        <AdventureGraphStudioView v-else-if="currentTool === 'graph-studio'" />
+        <LocalTileStudioView v-else-if="currentTool === 'cell-studio'" />
         <AutotileStudioView v-else-if="currentTool === 'autotile'" />
         <AssetAtlasInspectorView v-else-if="currentTool === 'atlas'" />
       </KeepAlive>
@@ -55,7 +62,7 @@ const tabs = [
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .adventure-suite-container {
   user-select: none;
 }

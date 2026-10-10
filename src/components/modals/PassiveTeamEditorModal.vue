@@ -75,8 +75,8 @@ if (typeof window !== 'undefined') {
 }
 
 .editor-help-text {
-  color: rgb(255 255 255 / 50%);
-  font-size: 11px;
+  color: Rgb(255 255 255 / 50%);
+  font-size: var(--font-11);
   line-height: 1.5;
   margin-bottom: 24px;
 }
@@ -90,7 +90,7 @@ if (typeof window !== 'undefined') {
 
   padding: 40px;
   color: var(--gray);
-  font-size: 10px;
+  font-size: var(--font-10);
   text-align: center;
 }
 
@@ -98,11 +98,11 @@ if (typeof window !== 'undefined') {
 :deep(.passive-poke-slot) {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 12px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 12px;
-  background: rgb(0 0 0 / 30%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-xl;
+  background: Rgb(0 0 0 / 30%);
   margin-bottom: 8px;
 
   &.empty {

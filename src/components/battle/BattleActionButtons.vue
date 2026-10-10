@@ -112,7 +112,7 @@ const isInputReady = computed(() => {
     .text {
       @include pixelated;
 
-      font-size: 8px;
+      font-size: var(--font-8);
     }
 
     &.switch-btn {

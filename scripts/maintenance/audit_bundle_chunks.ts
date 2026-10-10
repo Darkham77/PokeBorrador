@@ -20,6 +20,9 @@ interface VisualizerData {
 const STATS_FILE = path.resolve(process.cwd(), 'scratch/bundle_stats.html');
 const DIST_DIR = path.resolve(process.cwd(), 'dist/assets');
 const TABLE_SEPARATOR_WIDTH = 80;
+const GZIP_SIZE_COLUMN_WIDTH = 9;
+const CHUNK_SIZE_COLUMN_WIDTH = 8;
+const HEAVY_CHUNK_THRESHOLD_KB = 500;
 
 interface ChunkBudget {
   name: string;
@@ -92,8 +95,8 @@ function analyzeBundleStats(): boolean {
     const rKB = (m.rendered / 1024).toFixed(1) + ' KB';
     const gKB = (m.gzip / 1024).toFixed(1) + ' KB';
     const dupe = m.heavyChunkCount > 1 ? ` \x1b[33m[x${m.heavyChunkCount} chunks]\x1b[0m` : '';
-    console.log(` ${(idx + 1).toString().padStart(2)}. ${rKB.padStart(10)} (gzip: ${gKB.padStart(9)}) | ${m.id}${dupe}`);
-    if (m.heavyChunkCount > 1 && m.rendered > 500 * 1024) {
+    console.log(` ${(idx + 1).toString().padStart(2)}. ${rKB.padStart(10)} (gzip: ${gKB.padStart(GZIP_SIZE_COLUMN_WIDTH)}) | ${m.id}${dupe}`);
+    if (m.heavyChunkCount > 1 && m.rendered > HEAVY_CHUNK_THRESHOLD_KB * 1024) {
       console.error(`\x1b[31m  ⚠️ High-severity duplicate module in multiple chunks: ${m.id}\x1b[0m`);
       hasErrors = true;
     }
@@ -109,7 +112,7 @@ function evaluateSingleChunk(f: string): boolean {
 
   let status = '\x1b[32m[ OK ]\x1b[0m';
   let note = '';
-  let shouldDisplay = stat.size > 500 * 1024;
+  let shouldDisplay = stat.size > HEAVY_CHUNK_THRESHOLD_KB * 1024;
   let hasError = false;
 
   for (const budget of BUDGETS) {
@@ -126,7 +129,7 @@ function evaluateSingleChunk(f: string): boolean {
   }
 
   if (shouldDisplay || f.includes('auth') || f.includes('sqlite') || f.includes('migration') || f.includes('game-data') || f.includes('pkmn')) {
-    console.log(`  ${status} ${sizeKB.padStart(8)} KB │ ${f}${note}`);
+    console.log(`  ${status} ${sizeKB.padStart(CHUNK_SIZE_COLUMN_WIDTH)} KB │ ${f}${note}`);
   }
 
   if (f.startsWith('vendor-pkmn-sim-') || f.startsWith('vendor-randoms-')) {

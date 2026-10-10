@@ -15,7 +15,7 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveWaterCoastGrid,
   type WaterTerrainMatrix
-} from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/waterAutotileEngine.ts';
 
 describe('Inland Lake 2.5D Projected Shadows & Abyssal Depth (Option 4)', () => {
   // Construct a 12x12 grid with a large inland freshwater lake (x: 2..9, y: 2..9) surrounded by grass

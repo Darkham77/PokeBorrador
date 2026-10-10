@@ -88,11 +88,11 @@ onUnmounted(() => {
   @include pixelated;
 
   padding: 8px 12px;
-  border: 2px solid rgb(255 255 255 / 10%);
-  border-radius: 6px;
-  background: rgb(255 255 255 / 5%);
+  border: 2px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-md;
+  background: Rgb(255 255 255 / 5%);
   color: var(--white);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
 
   &:disabled {
@@ -112,20 +112,20 @@ onUnmounted(() => {
       @include pixelated;
 
       display: block;
-      color: #94a3b8;
-      font-size: 7px;
+      color: var(--slate-400);
+      font-size: var(--font-7);
       margin-bottom: 3px;
     }
     .value {
       @include pixelated;
 
-      color: #f87171;
-      font-size: 8px;
-      text-shadow: 0 0 6px rgb(248 113 113 / 40%);
+      color: var(--rose);
+      font-size: var(--font-8);
+      text-shadow: 0 0 6px Rgb(248 113 113 / 40%);
 
       &.upcoming-value {
-        color: #93c5fd;
-        text-shadow: 0 0 6px rgb(147 197 253 / 40%);
+        color: var(--blue-300);
+        text-shadow: 0 0 6px Rgb(147 197 253 / 40%);
       }
     }
   }
@@ -133,7 +133,7 @@ onUnmounted(() => {
   .comp-footer-actions {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
   }
   
   .upcoming-badge {
@@ -141,14 +141,14 @@ onUnmounted(() => {
 
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     padding: 6px 12px;
-    border: 1px solid #60a5fa;
-    border-radius: 6px;
-    background: rgb(59 130 246 / 15%);
-    color: #60a5fa;
-    font-size: 8px;
-    text-shadow: 0 0 8px rgb(59 130 246 / 40%);
+    border: 1px solid var(--blue-400);
+    border-radius: $radius-md;
+    background: Rgb(59 130 246 / 15%);
+    color: var(--blue-400);
+    font-size: var(--font-8);
+    text-shadow: 0 0 8px Rgb(59 130 246 / 40%);
   }
 
   .active-badge {
@@ -156,16 +156,16 @@ onUnmounted(() => {
 
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     padding: 6px 12px;
-    border: 1.5px solid #4ade80;
-    border-radius: 6px;
-    background: rgb(34 197 94 / 18%);
-    color: #4ade80;
-    font-size: 8px;
+    border: 1.5px solid var(--green-light);
+    border-radius: $radius-md;
+    background: Rgb(34 197 94 / 18%);
+    color: var(--green-light);
+    font-size: var(--font-8);
     font-weight: bold;
-    text-shadow: 0 0 8px rgb(74 222 128 / 60%);
-    box-shadow: 0 0 10px rgb(74 222 128 / 25%);
+    text-shadow: 0 0 8px Rgb(74 222 128 / 60%);
+    box-shadow: $shadow-glow-green;
   }
 }
 </style>

@@ -241,7 +241,7 @@ const activeOverridesSummary = computed(() => {
 .spawn-debug-controls {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
 }
 
 .card-header {
@@ -251,35 +251,35 @@ const activeOverridesSummary = computed(() => {
   margin-bottom: 8px;
 
   label { margin-bottom: 0; }
-  .info-badge { font-size: 8px; opacity: 0.7; cursor: help; }
+  .info-badge { font-size: var(--font-8); opacity: 0.7; cursor: help; }
 }
 
 .rates-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .reset-all-btn {
   border: 1px dashed var(--green);
-  background: rgb(34 197 94 / 10%);
+  background: Rgb(34 197 94 / 10%);
   color: var(--green);
   margin-top: 4px;
 
   &:hover {
-    background: rgb(34 197 94 / 20%);
-    color: white;
+    background: Rgb(34 197 94 / 20%);
+    color: var(--white);
     border-style: solid;
   }
 }
 
 .active-summary {
   color: var(--green) !important;
-  font-size: 7px !important;
+  font-size: var(--font-7) !important;
 }
 
 .clean-summary {
-  color: rgb(148 163 184 / 80%) !important;
-  font-size: 7px !important;
+  color: Rgb(148 163 184 / 80%) !important;
+  font-size: var(--font-7) !important;
 }
 </style>

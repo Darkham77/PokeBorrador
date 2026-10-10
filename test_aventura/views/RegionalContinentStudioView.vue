@@ -11,14 +11,17 @@
  */
 
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { useRegionalContinentStudioStore } from '../stores/continentStudioStore.ts';
-import { renderRegionalContinentTilemap } from '../logic/map/canvasTileRenderer.ts';
+import { renderRegionalContinentTilemap } from '../logic/map/canvasViewportBlitter.ts';
 import ContinentStudioControls from '../components/studio/ContinentStudioControls.vue';
+import RegionalStudioToolbar from '../components/studio/RegionalStudioToolbar.vue';
 import RegionalNetworkSvgOverlay from '../components/studio/RegionalNetworkSvgOverlay.vue';
+import RegionalUrbanSvgOverlay from '../components/studio/RegionalUrbanSvgOverlay.vue';
 import POIDetailDrawer from '../components/studio/POIDetailDrawer.vue';
+import { VIEWPORT_ZOOM_IN_STEP, VIEWPORT_ZOOM_OUT_STEP } from '../config/studioConstants.ts';
 
-const router = useRouter();
+const MIN_CONTINENT_STUDIO_ZOOM = 0.15;
+
 const store = useRegionalContinentStudioStore();
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -79,8 +82,8 @@ onMounted(() => {
 // Viewport Mouse Wheel Zooming
 function handleWheel(e: WheelEvent): void {
   e.preventDefault();
-  const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-  const nextZoom = Math.max(0.15, Math.min(4.0, zoom.value * zoomFactor));
+  const zoomFactor = e.deltaY < 0 ? VIEWPORT_ZOOM_IN_STEP : VIEWPORT_ZOOM_OUT_STEP;
+  const nextZoom = Math.max(MIN_CONTINENT_STUDIO_ZOOM, Math.min(4.0, zoom.value * zoomFactor));
 
   if (!viewportContainerRef.value) return;
   const rect = viewportContainerRef.value.getBoundingClientRect();
@@ -166,52 +169,11 @@ function exportPng(): void {
       @pointerdown="handlePointerDown"
     >
       <!-- Floating Top Bar -->
-      <nav class="viewport-toolbar">
-        <div class="region-meta">
-          <span class="region-title">Región #{{ store.seed }}</span>
-          <span class="region-size">{{ store.mapDimension }} × {{ store.mapDimension }} tiles</span>
-          <span
-            v-if="isRenderingTiles || store.isGenerating"
-            class="rendering-indicator"
-          >
-            <span class="icon">⏳</span> Renderizando GBA 32×32...
-          </span>
-        </div>
-        <div class="tool-actions">
-          <button
-            type="button"
-            class="tool-btn"
-            title="Auditoría Visual de Autotiling 3x3"
-            @click="router.push('/studio/autotile')"
-          >
-            <span class="btn-emoji">🧩</span> Autotile Studio
-          </button>
-          <button
-            type="button"
-            class="tool-btn"
-            title="Inspeccionar Spritesheets y Assets Canónicos"
-            @click="router.push('/studio/assets')"
-          >
-            <span class="btn-emoji">🎨</span> Asset Inspector
-          </button>
-          <button
-            type="button"
-            class="tool-btn"
-            title="Centrar y resetear vista"
-            @click="resetView"
-          >
-            <span class="btn-emoji">⛶</span> Centrar
-          </button>
-          <button
-            type="button"
-            class="tool-btn primary"
-            title="Descargar PNG"
-            @click="exportPng"
-          >
-            <span class="btn-emoji">💾</span> Exportar PNG
-          </button>
-        </div>
-      </nav>
+      <RegionalStudioToolbar
+        :is-rendering-tiles="isRenderingTiles"
+        @reset-view="resetView"
+        @export-png="exportPng"
+      />
 
       <!-- Transformed World Canvas + SVG Group -->
       <div
@@ -240,6 +202,9 @@ function exportPng(): void {
             height: `${store.heightPx}px`
           }"
         />
+
+        <!-- Layer 3: Interactive SVG Urban Architecture & Prop Placement Overlay -->
+        <RegionalUrbanSvgOverlay />
       </div>
     </main>
 
@@ -250,105 +215,28 @@ function exportPng(): void {
 
 <style scoped lang="scss">
 .regional-studio-container {
+  position: relative;
   display: flex;
   width: 100dvw;
   height: 100dvh;
-  overflow: hidden;
   background: #090d16;
-  color: #f8fafc;
-  position: relative;
+  color: var(--slate-50);
+  overflow: hidden;
   user-select: none;
 }
 
 .studio-viewport-container {
-  flex: 1;
-  height: 100%;
   position: relative;
-  overflow: hidden;
+  height: 100%;
   background: radial-gradient(circle at center, #0f172a 0%, #060911 100%);
+  flex: 1;
+  overflow: hidden;
   cursor: grab;
   user-select: none;
   touch-action: none;
 
   &:active {
     cursor: grabbing;
-  }
-}
-
-.viewport-toolbar {
-  position: absolute;
-  top: 16px;
-  left: 20px;
-  background: Rgba(15, 23, 42, 0.85);
-  backdrop-filter: Blur(8px);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 6px 14px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  z-index: calc(var(--z-map-floor) + 5);
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.3);
-
-  .region-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    .region-title {
-      font-weight: 700;
-      color: #38bdf8;
-      font-size: 0.9rem;
-    }
-
-    .region-size {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      background: Rgba(255, 255, 255, 0.08);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-    }
-
-    .rendering-indicator {
-      font-size: 0.72rem;
-      color: #38bdf8;
-      background: Rgba(56, 189, 248, 0.15);
-      border: 1px solid Rgba(56, 189, 248, 0.3);
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-  }
-
-  .tool-actions {
-    display: flex;
-    gap: 8px;
-
-    .tool-btn {
-      background: Rgba(255, 255, 255, 0.08);
-      border: 1px solid Rgba(255, 255, 255, 0.15);
-      color: #f8fafc;
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: Rgba(255, 255, 255, 0.18);
-      }
-
-      &.primary {
-        background: #0284c7;
-        border-color: #38bdf8;
-
-        &:hover {
-          background: #0369a1;
-        }
-      }
-    }
   }
 }
 

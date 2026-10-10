@@ -30,7 +30,7 @@
 .lightning-flash-overlay {
   position: absolute;
   z-index: calc(5 * 1); // Por debajo del rayo (que tiene 10)
-  background: white;
+  background: var(--white);
   opacity: 0;
   inset: 0;
   will-change: opacity;

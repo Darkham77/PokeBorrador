@@ -74,6 +74,7 @@ const handleItemImageError = (e: Event) => {
     <div class="pill-container">
       <PVTooltip
         v-for="badge in badges"
+        id="unified-badge-pill-pvtooltip-badgeclick"
         :key="badge.id"
         :description="badge.desc"
         :title="badge.label"
@@ -132,10 +133,10 @@ const handleItemImageError = (e: Event) => {
     flex-wrap: nowrap;
     justify-content: center !important;
     align-items: center !important;
-    gap: 4px;
+    gap: $spacing-xs;
     border: 1px solid Rgb(255 255 255 / 10%);
     background: $black !important;
-    box-shadow: 0 4px 15px Rgb(0 0 0 / 50%);
+    box-shadow: var(--shadow-md);
 
     :deep(.pv-tooltip-wrapper) {
       display: flex !important;
@@ -150,13 +151,13 @@ const handleItemImageError = (e: Event) => {
   }
 
   &.sm {
-    .pill-container { gap: 4px; padding: 4px; border-radius: 8px; }
+    .pill-container { gap: $spacing-xs; padding: 4px; border-radius: $radius-lg; }
     .badge-icon { 
       width: 14px !important; 
       height: 14px !important;
       padding: 0 !important; 
-      font-size: 10px;
-      &.is-text { font-size: 6px; }
+      font-size: var(--font-10);
+      &.is-text { font-size: var(--font-6); }
 
       .badge-item-img {
         transform: Scale(1.0); // Slightly larger than other sm icons
@@ -187,10 +188,10 @@ const handleItemImageError = (e: Event) => {
   }
 
   &.md {
-    .pill-container { gap: 6px; padding: 6px; border-radius: 12px; }
+    .pill-container { gap: $spacing-sm-alt; padding: 6px; border-radius: $radius-xl; }
     .badge-icon { width: 18px; height: 18px; 
-      font-size: 14px; 
-      &.is-text { font-size: 8px; }
+      font-size: var(--font-14); 
+      &.is-text { font-size: var(--font-8); }
     }
     &.vertical {
       .pill-container { flex-direction: column; }
@@ -198,10 +199,10 @@ const handleItemImageError = (e: Event) => {
   }
 
   &.lg {
-    .pill-container { gap: 8px; padding: 8px; border-radius: 20px; }
+    .pill-container { gap: $spacing-sm; padding: 8px; border-radius: $radius-3xl; }
     .badge-icon { width: 22px; height: 22px; 
-      font-size: 18px; 
-      &.is-text { font-size: 10px; }
+      font-size: var(--font-18); 
+      &.is-text { font-size: var(--font-10); }
     }
     &.vertical {
       .pill-container { flex-direction: column; }
@@ -209,10 +210,10 @@ const handleItemImageError = (e: Event) => {
   }
 
   &.xl {
-    .pill-container { gap: 10px; padding: 10px; border-radius: 24px; }
+    .pill-container { gap: $spacing-md-alt; padding: 10px; border-radius: $radius-4xl; }
     .badge-icon { width: 28px; height: 28px; 
-      font-size: 22px; 
-      &.is-text { font-size: 12px; }
+      font-size: var(--font-22); 
+      &.is-text { font-size: var(--font-12); }
     }
     &.vertical {
       .pill-container { flex-direction: column; }
@@ -232,22 +233,22 @@ const handleItemImageError = (e: Event) => {
     text-align: center;
 
     &:not(.is-iv31) {
-      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+      font-family: $font-family-emoji !important;
     }
 
     // NORMALIZACIÓN VISUAL ESTÁNDAR (MD, LG, XL)
-    &.is-shiny { font-size: 0.85em; } 
-    &.is-iv31 { @include pixelated; font-family: var(--font-pixel) !important; font-size: 0.75em; font-weight: 900; letter-spacing: -0.5px; }
+    &.is-shiny { font-size: var(--font-14); } 
+    &.is-iv31 { @include pixelated; font-family: var(--font-pixel) !important; font-size: var(--font-12); font-weight: 900; letter-spacing: -0.5px; }
     &.is-fav { 
-      font-size: 0.68em; 
+      font-size: var(--font-11); 
       transform: Translatey(-0.5px); 
     }
-    &.is-breed { font-size: 1.76em; } 
-    &.is-competitive { font-size: 1.54em; } 
-    &.is-box { font-size: 1.54em; } 
-    &.is-trade { font-size: 1.43em; } 
+    &.is-breed { font-size: var(--font-28); } 
+    &.is-competitive { font-size: var(--font-24); } 
+    &.is-box { font-size: var(--font-24); } 
+    &.is-trade { font-size: var(--font-22); } 
     &.is-item { 
-      font-size: 1.1em; 
+      font-size: var(--font-18); 
     }
 
     .badge-item-img {
@@ -263,7 +264,7 @@ const handleItemImageError = (e: Event) => {
 
     .fallback-icon {
       display: block;
-      font-size: 0.9em;
+      font-size: var(--font-14);
     }
 
     &.is-inactive {

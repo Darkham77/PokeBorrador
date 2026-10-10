@@ -108,7 +108,7 @@ const requestItems = computed(() =>
 
 .trade-assets-grid {
   display: grid;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: 1fr 1fr;
 
   @media (width <= 500px) { grid-template-columns: 1fr; }
@@ -117,11 +117,11 @@ const requestItems = computed(() =>
 .asset-column {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   .column-title {
-    color: rgb(255 255 255 / 40%);
-    font-size: 11px;
+    color: Rgb(255 255 255 / 40%);
+    font-size: var(--font-11);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -131,65 +131,65 @@ const requestItems = computed(() =>
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     min-height: 50px;
     padding: 8px;
-    border: 1px solid rgb(255 255 255 / 3%);
-    border-radius: 10px;
-    background: rgb(0 0 0 / 20%);
+    border: 1px solid Rgb(255 255 255 / 3%);
+    border-radius: $radius-lg-alt;
+    background: Rgb(0 0 0 / 20%);
   }
 }
 
 .asset-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 6px 8px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 8px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-lg;
+  background: Rgb(255 255 255 / 3%);
 
-  .icon { font-size: 11px; }
+  .icon { font-size: var(--font-11); }
 
   .badge-name, .badge-val {
     color: var(--white);
-    font-size: 12px;
+    font-size: var(--font-12);
     font-weight: 600;
   }
 
   .badge-level, .badge-qty {
-    color: rgb(255 255 255 / 50%);
-    font-size: 11px;
+    color: Rgb(255 255 255 / 50%);
+    font-size: var(--font-11);
     margin-left: auto;
   }
 
   &.pokemon {
-    background: rgb(168 85 247 / 6%);
-    border-color: rgb(168 85 247 / 12%);
+    background: Rgb(168 85 247 / 6%);
+    border-color: Rgb(168 85 247 / 12%);
   }
   &.money {
-    background: rgb(234 179 8 / 6%);
-    border-color: rgb(234 179 8 / 12%);
-    .icon { color: #facc15; }
-    .badge-val { color: #facc15; font-weight: bold; }
+    background: Rgb(234 179 8 / 6%);
+    border-color: Rgb(234 179 8 / 12%);
+    .icon { color: var(--amber-400); }
+    .badge-val { color: var(--amber-400); font-weight: bold; }
   }
   &.item {
-    background: rgb(59 130 246 / 6%);
-    border-color: rgb(59 130 246 / 12%);
+    background: Rgb(59 130 246 / 6%);
+    border-color: Rgb(59 130 246 / 12%);
   }
 
   &.requested {
-    &.pokemon { background: rgb(239 68 68 / 5%); border-color: rgb(239 68 68 / 10%); }
-    &.money   { background: rgb(239 68 68 / 5%); border-color: rgb(239 68 68 / 10%); .icon, .badge-val { color: #fca5a5; } }
-    &.item    { background: rgb(239 68 68 / 5%); border-color: rgb(239 68 68 / 10%); }
+    &.pokemon { background: Rgb(239 68 68 / 5%); border-color: Rgb(239 68 68 / 10%); }
+    &.money   { background: Rgb(239 68 68 / 5%); border-color: Rgb(239 68 68 / 10%); .icon, .badge-val { color: var(--red-300); } }
+    &.item    { background: Rgb(239 68 68 / 5%); border-color: Rgb(239 68 68 / 10%); }
   }
 }
 
 .no-assets {
-  color: rgb(255 255 255 / 30%);
-  font-size: 11px;
+  color: Rgb(255 255 255 / 30%);
+  font-size: var(--font-11);
   text-align: center;
 
-  &.gift { color: #4ade80; font-weight: bold; }
+  &.gift { color: var(--green-light); font-weight: bold; }
 }
 </style>

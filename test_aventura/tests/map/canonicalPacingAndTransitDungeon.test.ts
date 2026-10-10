@@ -8,12 +8,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { generateWildernessLayer } from '../../../src/logic/map/wildernessVegetationEngine.ts';
-import { computeTransitableGrid } from '../../../src/logic/map/transitableGridEngine.ts';
-import { generateProceduralPOICatalog } from '../../../src/logic/map/regionalPoiCatalog.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
+import { computeTransitableGrid } from '../../logic/map/transitableGridEngine.ts';
+import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
 
 describe.skip('Canonical Level Design Adjustments', () => {
   it('enforces port consolidation: strictly <= 2 maritime docks/landmarks with zero parallel dock clustering', () => {

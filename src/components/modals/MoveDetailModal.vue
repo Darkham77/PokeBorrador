@@ -123,30 +123,29 @@ const description = computed(() => {
 .move-detail-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: $spacing-2xl;
   padding: 10px 0;
 }
 
 .type-cat-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
 }
-
 
 .cat-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 8px 16px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 3%);
 
-  .icon { font-size: 14px; }
+  .icon { font-size: var(--font-14); }
   .text {
-    color: #888;
-    font-size: 9px;
+    color: var(--slate-400);
+    font-size: var(--font-9);
     font-weight: bold;
     letter-spacing: 0.5px;
   }
@@ -154,14 +153,14 @@ const description = computed(() => {
 
 .stats-grid {
   display: grid;
-  gap: 16px;
+  gap: $spacing-lg;
   grid-template-columns: 1fr 1fr;
 }
 
 .stat-item {
   padding: 20px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 18px;
+  border-radius: $radius-2xl-alt;
   background: Rgb(255 255 255 / 2%);
   text-align: center;
   
@@ -174,20 +173,20 @@ const description = computed(() => {
 
   .label {
     display: block;
-    color: #666;
-    font-size: 8px;
+    color: var(--slate-500);
+    font-size: var(--font-8);
     margin-bottom: 10px;
     letter-spacing: 1px;
   }
 
   .val {
     color: $white;
-    font-family: Outfit, sans-serif;
-    font-size: 26px;
+    font-family: $font-family-ui;
+    font-size: var(--font-26);
     font-weight: 900;
     
     small {
-      font-size: 14px;
+      font-size: var(--font-14);
       opacity: 0.5;
       margin-left: 2px;
     }
@@ -201,7 +200,7 @@ const description = computed(() => {
   align-items: center;
   padding: 18px 24px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 18px;
+  border-radius: $radius-2xl-alt;
   background: Rgb(from var(--move-accent, #fff) r g b / 10%);
   overflow: hidden;
 
@@ -216,15 +215,15 @@ const description = computed(() => {
   }
 
   .label { 
-    color: #aaa; 
-    font-size: 9px; 
+    color: var(--slate-300); 
+    font-size: var(--font-9); 
     font-weight: bold;
     letter-spacing: 1px;
   }
   
   .val { 
     color: var(--move-accent); 
-    font-size: 20px; 
+    font-size: var(--font-20); 
     font-weight: 900;
     text-shadow: 0 0 10px Rgb(from var(--move-accent, #fff) r g b / 10%);
   }
@@ -235,7 +234,7 @@ const description = computed(() => {
 
   padding: 24px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(0 0 0 / 20%);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
@@ -244,7 +243,7 @@ const description = computed(() => {
 
 .desc-title {
   color: var(--move-accent);
-  font-size: 8px;
+  font-size: var(--font-8);
   opacity: 0.9;
   margin-bottom: 14px;
   letter-spacing: 1.5px;
@@ -252,8 +251,8 @@ const description = computed(() => {
 
 .desc-text {
   margin: 0;
-  color: #eee;
-  font-size: 13px;
+  color: var(--slate-100);
+  font-size: var(--font-13);
   font-weight: 400;
   line-height: 1.6;
   text-wrap: balance;
@@ -263,10 +262,10 @@ const description = computed(() => {
   width: 100%;
   padding: 18px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 3%);
-  color: #aaa;
-  font-size: 10px;
+  color: var(--slate-300);
+  font-size: var(--font-10);
   cursor: pointer;
   
 
@@ -275,7 +274,7 @@ const description = computed(() => {
     color: $white;
     transform: Translatey(-3px);
     border-color: transparent;
-    box-shadow: 0 10px 20px Rgb(0 0 0 / 40%), 0 0 15px Rgb(from var(--move-accent, #fff) r g b / 10%);
+    box-shadow: var(--shadow-xl);
   }
 }
 
@@ -288,16 +287,16 @@ const description = computed(() => {
     left: 50%;
     width: 60px;
     height: 3px;
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 $radius-sm $radius-sm;
     background: var(--move-accent);
     transform: Translatex(-50%);
     content: '';
-    box-shadow: 0 0 15px var(--move-accent);
+    box-shadow: var(--shadow-glow-amber);
   }
 }
 
 // Glass inset helper
 .glass-inset {
-  box-shadow: inset 0 2px 10px Rgb(0 0 0 / 20%);
+  box-shadow: var(--shadow-inset-md);
 }
 </style>

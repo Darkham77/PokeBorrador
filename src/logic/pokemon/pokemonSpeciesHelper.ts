@@ -12,6 +12,17 @@ import {
   STONE_EVOLUTIONS,
   TRADE_EVOLUTIONS
 } from '@/data/pokemon/evolutionData.ts';
+import {
+  KANTO_GENERATION_NUM,
+  JOHTO_GENERATION_NUM,
+  HOENN_GENERATION_NUM,
+  SINNOH_GENERATION_NUM,
+  UNOVA_GENERATION_NUM,
+  KALOS_GENERATION_NUM,
+  ALOLA_GENERATION_NUM,
+  GALAR_GENERATION_NUM,
+  PALDEA_GENERATION_NUM
+} from '@/logic/constants/gameplay.ts';
 
 const GEN1_MAX = 151;
 const GEN2_MAX = 251;
@@ -25,17 +36,17 @@ const GEN8_MAX = 905;
 /**
  * Derives the canonical Pokémon Generation (1-9) from national dex number.
  */
-function getPokemonGenerationFromDexNumber(dexNum: number): number {
-  if (dexNum <= 0) return 1;
-  if (dexNum <= GEN1_MAX) return 1;
-  if (dexNum <= GEN2_MAX) return 2;
-  if (dexNum <= GEN3_MAX) return 3;
-  if (dexNum <= GEN4_MAX) return 4;
-  if (dexNum <= GEN5_MAX) return 5;
-  if (dexNum <= GEN6_MAX) return 6;
-  if (dexNum <= GEN7_MAX) return 7;
-  if (dexNum <= GEN8_MAX) return 8;
-  return 9;
+export function getPokemonGenerationFromDexNumber(dexNum: number): number {
+  if (dexNum <= 0) return KANTO_GENERATION_NUM;
+  if (dexNum <= GEN1_MAX) return KANTO_GENERATION_NUM;
+  if (dexNum <= GEN2_MAX) return JOHTO_GENERATION_NUM;
+  if (dexNum <= GEN3_MAX) return HOENN_GENERATION_NUM;
+  if (dexNum <= GEN4_MAX) return SINNOH_GENERATION_NUM;
+  if (dexNum <= GEN5_MAX) return UNOVA_GENERATION_NUM;
+  if (dexNum <= GEN6_MAX) return KALOS_GENERATION_NUM;
+  if (dexNum <= GEN7_MAX) return ALOLA_GENERATION_NUM;
+  if (dexNum <= GEN8_MAX) return GALAR_GENERATION_NUM;
+  return PALDEA_GENERATION_NUM;
 }
 
 /**

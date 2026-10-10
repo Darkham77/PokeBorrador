@@ -16,7 +16,7 @@ export interface BridgeBlit {
   readonly file: string;
   readonly x: number;
   readonly y: number;
-  readonly zIndex?: number;
+  readonly layerIndex?: number;
   readonly style?: BridgeStyle;
 }
 
@@ -117,11 +117,11 @@ export function resolveCanonicalBridges(
           }
         }
 
-        blits.push({ file: pierFile, x: c, y: r, zIndex: 3 });
+        blits.push({ file: pierFile, x: c, y: r, layerIndex: 3 });
         continue;
       }
 
-      let tileFile = 'poke_bridge_v_mid.png';
+      let tileFile: string;
 
       // 0. Single-sided fishing balconies (attached to bridge on exactly 1 side, 3 sides exposed to water)
       if (exposedWaterN && exposedWaterS && exposedWaterE && hasW) {
@@ -194,7 +194,7 @@ export function resolveCanonicalBridges(
         file: tileFile,
         x: c,
         y: r,
-        zIndex: 3
+        layerIndex: 3
       });
     }
   }
@@ -248,7 +248,7 @@ export function resolveWaterLandmarkPlatform(
         file: plankFile,
         x: cx,
         y: cy,
-        zIndex: 2
+        layerIndex: 2
       });
     }
   }

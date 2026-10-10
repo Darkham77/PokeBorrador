@@ -88,6 +88,7 @@ async function onClaim() {
     <div class="trade-card-header">
       <div class="participant-info">
         <TrainerAvatar
+          id="trade-card-traineravatar-1"
           :player-class="cosmetics.playerClass"
           :level="cosmetics.level"
           :avatar-style="cosmetics.avatar_style || undefined"
@@ -210,10 +211,10 @@ async function onClaim() {
 .trade-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 14px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 2%);
   
 
@@ -224,12 +225,12 @@ async function onClaim() {
 
   &.accepted {
     background: Rgb(34 197 94 / 3%);
-    border-left: 4px solid #22c55e;
+    border-left: 4px solid var(--emerald);
     border-color: Rgb(34 197 94 / 10%);
   }
 
   &.incoming { border-left: 4px solid var(--purple-light); }
-  &.outgoing  { border-left: 4px solid #64748b; }
+  &.outgoing  { border-left: 4px solid var(--slate-500); }
 }
 
 /* ── Header ── */
@@ -242,27 +243,27 @@ async function onClaim() {
 .participant-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
 }
 
 .trainer-texts {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: $spacing-xs-alt;
 
   .username {
     color: var(--white);
-    font-size: 14px;
+    font-size: var(--font-14);
     font-weight: 700;
     line-height: 1.2;
   }
 
   .meta {
     color: Rgb(255 255 255 / 40%);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.2;
 
-    &.text-success { color: #4ade80; font-weight: bold; }
+    &.text-success { color: var(--green-light); font-weight: bold; }
   }
 }
 
@@ -271,32 +272,32 @@ async function onClaim() {
 
   padding: 4px 8px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 6px;
-  background: #1e293b;
-  color: #facc15;
-  font-size: 8px;
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  color: var(--amber-400);
+  font-size: var(--font-8);
 }
 
 /* ── Message bubble ── */
 .trade-message-bubble {
   display: flex;
   align-items: flex-start;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 8px 12px;
   border: 1px solid Rgb(168 85 247 / 8%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(168 85 247 / 4%);
 
   .bubble-quote {
     color: var(--purple-light);
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 16px;
+    font-family: $font-family-mono;
+    font-size: var(--font-16);
     font-weight: bold;
     line-height: 1;
   }
   .msg-text {
     color: Rgb(255 255 255 / 85%);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.3;
     font-style: italic;
   }
@@ -306,10 +307,10 @@ async function onClaim() {
 .trade-warning-banner {
   padding: 8px 10px;
   border: 1px dashed Rgb(239 68 68 / 25%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(239 68 68 / 6%);
-  color: #f87171;
-  font-size: 11px;
+  color: var(--rose);
+  font-size: var(--font-11);
   line-height: 1.4;
 }
 
@@ -317,19 +318,19 @@ async function onClaim() {
 .success-notice {
   padding: 10px 12px;
   border: 1px solid Rgb(34 197 94 / 10%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(34 197 94 / 5%);
-  color: #e2e8f0;
-  font-size: 11px;
+  color: var(--slate-200);
+  font-size: var(--font-11);
   line-height: 1.4;
 
-  strong { color: #4ade80; }
+  strong { color: var(--green-light); }
 }
 
 /* ── Actions ── */
 .trade-card-actions {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
 
   button { font-weight: bold; flex: 1; }
 

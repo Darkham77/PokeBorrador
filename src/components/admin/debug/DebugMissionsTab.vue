@@ -48,7 +48,8 @@ const clear = () => {
 
       <div class="button-row">
         <PVTooltip title="Fuerza la regeneración de nuevas misiones de guardería.">
-          <button 
+          <button
+            id="debug-missions-tab-btn-regenerar-ahora" 
             class="small-btn primary"
             @click.stop="regenerate"
           >
@@ -56,7 +57,8 @@ const clear = () => {
           </button>
         </PVTooltip>
         <PVTooltip title="Borra todas las misiones activas de la base de datos local.">
-          <button 
+          <button
+            id="debug-missions-tab-btn-limpiar-todo" 
             class="small-btn danger"
             @click.stop="clear"
           >
@@ -79,7 +81,7 @@ const clear = () => {
 .mission-status {
   margin: 10px 0;
   color: $muted;
-  font-size: 8px;
+  font-size: var(--font-8);
   span { color: var(--yellow); font-weight: bold; }
 }
 
@@ -87,10 +89,10 @@ const clear = () => {
   min-height: 0;
   max-height: 200px;
   padding: 10px;
-  border-radius: 8px;
-  background: rgb(0 0 0 / 30%);
+  border-radius: $radius-lg;
+  background: Rgb(0 0 0 / 30%);
   color: $green;
-  font-size: 8px;
+  font-size: var(--font-8);
   overflow-y: auto;
   white-space: pre-wrap;
 }

@@ -5,12 +5,12 @@
 
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   line-height: 1.6;
 
   .debug-section-title {
     color: var(--yellow);
-    font-size: 14px;
+    font-size: var(--font-14);
     line-height: 1.4;
     text-shadow: 0 0 10px Rgb(255 214 10 / 30%);
     margin-bottom: 12px;
@@ -31,21 +31,21 @@
     button {
       @include btn-vicio-secondary('sm', true);
 
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 
   .creator-grid {
     display: grid;
     align-items: start;
-    gap: 16px;
+    gap: $spacing-lg;
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
 
   .creator-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: $spacing-md;
     
     .section-header-row {
       display: flex;
@@ -57,7 +57,7 @@
 
       h4 {
         color: Rgb(255 255 255 / 50%);
-        font-size: 11px;
+        font-size: var(--font-11);
         margin-bottom: 0 !important;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -67,7 +67,7 @@
 
       .header-actions {
         display: flex;
-        gap: 6px;
+        gap: $spacing-sm-alt;
       }
     }
   }
@@ -94,20 +94,20 @@
     height: 24px !important;
     padding: 0 !important;
     border: 1.5px solid #7c3aed !important; // default magic wand purple border
-    border-radius: 6px !important;
+    border-radius: $radius-md !important;
     background: #1e1c1a !important;
-    color: #fff !important;
-    font-size: 11px !important;
+    color: var(--white) !important;
+    font-size: var(--font-11) !important;
     transform: none;
     aspect-ratio: 1 / 1 !important;
-    box-shadow: 0 2px 0 #4c1d95 !important;
+    box-shadow: var(--shadow-card);
     cursor: pointer !important;
     outline: none !important;
     box-sizing: border-box !important;
 
     &:hover {
       background: #252220 !important;
-      border-color: #a78bfa !important;
+      border-color: var(--purple-400) !important;
     }
 
     &:active {
@@ -117,12 +117,12 @@
 
     // Brown/Dice variant
     &.btn-random-fill {
-      border-color: #8e622e !important;
-      box-shadow: 0 2px 0 #5c3e1c !important;
+      border-color: var(--amber-dark) !important;
+      box-shadow: var(--shadow-card);
 
       &:hover {
         background: #252220 !important;
-        border-color: #c09158 !important;
+        border-color: var(--amber) !important;
       }
 
       &:active {
@@ -136,9 +136,9 @@
       min-width: 28px !important;
       max-width: 28px !important;
       height: 28px !important;
-      border-radius: 8px !important;
-      font-size: 13px !important;
-      box-shadow: 0 3px 0 #4c1d95 !important;
+      border-radius: $radius-lg !important;
+      font-size: var(--font-13) !important;
+      box-shadow: var(--shadow-card);
 
       &:active {
         transform: Translatey(3px);
@@ -146,7 +146,7 @@
       }
 
       &.btn-random-fill {
-        box-shadow: 0 3px 0 #5c3e1c !important;
+        box-shadow: var(--shadow-card);
       }
     }
   }
@@ -154,21 +154,21 @@
   .debug-input-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
 
     label {
       color: Rgb(255 255 255 / 70%);
-      font-size: 10px;
+      font-size: var(--font-10);
       text-transform: uppercase;
     }
 
     %form-field-base {
       padding: 8px 12px;
       border: 1px solid Rgb(255 255 255 / 15%);
-      border-radius: 8px;
+      border-radius: $radius-lg;
       background: Rgb(0 0 0 / 40%);
-      color: white;
-      font-size: 11px;
+      color: var(--white);
+      font-size: var(--font-11);
       outline: none;
       
       &:focus {
@@ -194,7 +194,7 @@
 
       option {
         background: #12131a;
-        color: white;
+        color: var(--white);
       }
     }
   }
@@ -211,15 +211,15 @@
       z-index: var(--z-modal);
       width: 100%;
       max-height: 200px;
-      border-radius: 12px;
+      border-radius: $radius-xl;
       overflow-y: auto;
       
       .option-item {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: $spacing-md;
         padding: 12px 16px;
-        font-size: 11px;
+        font-size: var(--font-11);
         cursor: pointer;
 
         &:hover { background: Rgb(255 255 255 / 5%); }
@@ -233,14 +233,14 @@
   .creator-footer {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: $spacing-lg;
     margin-top: 12px;
     padding-top: 20px;
     border-top: 1px solid Rgb(255 255 255 / 10%);
 
     .action-buttons {
       display: grid;
-      gap: 8px;
+      gap: $spacing-sm;
       grid-template-columns: 1fr 1fr;
 
       button {
@@ -256,9 +256,9 @@
     .anim-toggle {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: $spacing-md-alt;
       color: Rgb(255 255 255 / 50%);
-      font-size: 10px;
+      font-size: var(--font-10);
       cursor: pointer;
       
 
@@ -266,7 +266,7 @@
         position: relative;
         width: 32px;
         height: 16px;
-        border-radius: 8px;
+        border-radius: $radius-lg;
         background: Rgb(255 255 255 / 10%);
         
 
@@ -277,7 +277,7 @@
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          background: white;
+          background: var(--white);
           content: '';
           
         }

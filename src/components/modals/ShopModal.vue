@@ -161,7 +161,7 @@ const close = () => {
 .modal-main-tabs {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   margin-bottom: 16px;
 }
 
@@ -169,24 +169,24 @@ const close = () => {
   @include pixelated;
 
   padding: 6px 14px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 8px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg;
+  background: Rgb(255 255 255 / 3%);
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   cursor: pointer;
 
   &:hover {
-    background: rgb(255 255 255 / 6%);
+    background: Rgb(255 255 255 / 6%);
     color: var(--white);
   }
 
   &.active {
     background: var(--yellow);
-    color: #000;
+    color: var(--black);
     font-weight: bold;
     border-color: var(--yellow-light);
-    box-shadow: 0 0 8px rgb(234 179 8 / 40%);
+    box-shadow: var(--shadow-glow-yellow-sm);
     text-shadow: none;
   }
 }

@@ -97,6 +97,7 @@ onUnmounted(() => {
           </div>
         </div>
         <button
+          id="pwamanager-btn-aceptar-y-continuar"
           class="pv-button-retro"
           @click.stop="handlePermissions"
         >
@@ -112,41 +113,41 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: $spacing-xl;
   padding: 10px;
   text-align: center;
 }
 
 .pwa-description {
   margin: 0;
-  color: white;
-  font-size: 14px;
+  color: var(--white);
+  font-size: var(--font-14);
   line-height: 1.5;
 }
 
 .permissions-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   width: 100%;
   padding: 15px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 30%);
 }
 
 .permission-item {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: $spacing-md-15;
   
   .p-icon {
-    font-size: 20px;
+    font-size: var(--font-20);
   }
   
   .p-text {
     color: Rgb(255 255 255 / 80%);
-    font-size: 12px;
+    font-size: var(--font-12);
   }
 }
 
@@ -156,21 +157,21 @@ onUnmounted(() => {
   width: 100%;
   padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: var(--yellow);
-  color: black;
-  font-size: 12px;
+  color: var(--black);
+  font-size: var(--font-12);
   cursor: pointer;
-  box-shadow: 0 4px 0 #b39200;
+  box-shadow: $shadow-retro-yellow;
   
   &:hover {
     transform: Translatey(-2px);
-    box-shadow: 0 6px 0 #b39200;
+    box-shadow: $shadow-retro-yellow-hover;
   }
   
   &:active {
     transform: Translatey(2px);
-    box-shadow: 0 0 0 #b39200;
+    box-shadow: $shadow-retro-yellow-active;
   }
 }
 </style>

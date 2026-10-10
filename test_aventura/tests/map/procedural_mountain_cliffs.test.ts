@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateContinent } from '../../logic/map/continent/continentalEngine';
-import { CELL_BIOME } from '../../logic/map/kantoRegionalGenerator';
+import { generateContinent } from '../../logic/map/continent/continentalEngine.ts';
+import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
 
 describe('Procedural Mountain Cliffs & Autotiling Integrity', () => {
 

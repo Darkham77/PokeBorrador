@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { autoDetectGridLayout } from '../../scripts/map/universal_tileset_extractor';
-import { CANONICAL_TILE_MANIFEST } from '../../scripts/map/canonical_tileset_manifest';
-import { UniversalAutotiler, DynamicCatalogLoader } from '../../logic/map/kantoTileEngine';
-import { CELL_BIOME } from '../../logic/map/kantoRegionalGenerator';
+import { autoDetectGridLayout } from '../../scripts/map/universal_tileset_extractor.ts';
+import { CANONICAL_TILE_MANIFEST } from '../../scripts/map/canonical_tileset_manifest.ts';
+import { UniversalAutotiler, DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
+import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
 
 describe('Universal Tileset Extractor & Canonical Metatiles Integrity', () => {
   const rootDir = process.cwd();

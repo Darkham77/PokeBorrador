@@ -1,6 +1,6 @@
 // src/styles/core/mixins/_layout.scss
 @use "sass:map";
-@use "../variables" as vars;
+@use "../variables" as *;
 
 @mixin premium-gradient {
   background: Linear-Gradient(180deg, Rgb(255 255 255 / 3%) 0%, Rgb(0 0 0 / 15%) 100%);
@@ -13,8 +13,8 @@
 }
 
 @mixin responsive($breakpoint) {
-  @if map.has-key(vars.$breakpoints, $breakpoint) {
-    @media (max-width: map.get(vars.$breakpoints, $breakpoint)) {
+  @if map.has-key($breakpoints, $breakpoint) {
+    @media (max-width: map.get($breakpoints, $breakpoint)) {
       @content;
     }
   } @else {
@@ -68,16 +68,16 @@
   z-index: var(--z-tooltip);
   padding: 10px 14px;
   border: 2px solid var(--yellow) !important;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(10 12 20 / 100%) !important;
-  color: white;
+  color: var(--white);
   
   // High-fidelity pixel isolation
-  font-family: 'Pokemon FireRed LeafGreen', monospace !important;
-  font-size: 8px !important; // Original size
+  font-family: $font-family-pokemon !important;
+  font-size: var(--font-8) !important; // Original size
   font-weight: normal !important;
   line-height: 1.4 !important;
-  box-shadow: 0 10px 30px Rgb(0 0 0 / 80%), inset 0 1px 1px Rgb(255 255 255 / 5%);
+  box-shadow: var(--shadow-xl);
   letter-spacing: 0 !important;
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
@@ -109,19 +109,13 @@
   #{"image-rendering"}: auto !important;
 }
 
-
-
 @mixin hover-neon-yellow($border-width: 1px) {
   
   
   &:hover {
     z-index: var(--z-map-spawns);
     border-color: var(--yellow) !important;
-    box-shadow: 
-      0 0 0 #{$border-width} var(--yellow),
-      0 0 20px Rgb(255 214 10 / 40%),
-      0 0 40px Rgb(255 214 10 / 20%),
-      inset 0 0 10px Rgb(255 214 10 / 10%) !important;
+    box-shadow: var(--shadow-glow-yellow-lg) !important;
   }
 }
 
@@ -149,7 +143,7 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-family: $font-family-emoji;
   font-size: $font-size;
   line-height: 1;
   user-select: none;

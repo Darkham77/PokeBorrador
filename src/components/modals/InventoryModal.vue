@@ -163,11 +163,12 @@ watch(() => props.battleMode
       
 const GSAP_CATEGORY_FADE_OUT_DURATION_SEC = 0.12
 const GSAP_CATEGORY_FADE_IN_DURATION_SEC = 0.18
+const GSAP_CATEGORY_OFFSET_Y_PX = 8
 
       // Fade out the entire grid container
       await gsap.to(gridEl, {
         opacity: 0,
-        y: 8,
+        y: GSAP_CATEGORY_OFFSET_Y_PX,
         duration: GSAP_CATEGORY_FADE_OUT_DURATION_SEC,
         ease: 'power2.out'
       })

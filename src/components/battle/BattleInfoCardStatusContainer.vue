@@ -84,14 +84,14 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
   position: relative;
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   width: 100%;
   min-height: 20px;
   margin-top: 4px;
   clear: both;
 
   @media (width <= 600px) {
-    gap: 2px;
+    gap: $spacing-2xs;
     min-height: 16px;
     margin-top: 3px;
   }
@@ -100,18 +100,18 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
 .status-pro-tooltip {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 }
 
 .admin-only-disclaimer {
   @include pixelated;
 
   padding: 4px;
-  border: 1px dashed rgb(255 214 10 / 40%);
-  border-radius: 4px;
-  background: rgb(255 214 10 / 15%);
-  color: #ffd60a;
-  font-size: 7px;
+  border: 1px dashed Rgb(255 214 10 / 40%);
+  border-radius: $radius-sm;
+  background: Rgb(255 214 10 / 15%);
+  color: var(--yellow);
+  font-size: var(--font-7);
   text-align: center;
   margin-bottom: 4px;
   letter-spacing: 0.5px;
@@ -121,6 +121,6 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
 .tooltip-divider {
   height: 1px;
   margin: 4px 0;
-  background: rgb(255 255 255 / 10%);
+  background: Rgb(255 255 255 / 10%);
 }
 </style>

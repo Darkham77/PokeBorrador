@@ -142,13 +142,13 @@ onMounted(() => {
 
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: $spacing-2xl;
   max-height: 80dvh;
   padding: 24px;
   overflow: hidden auto;
 
   @media (width <= 950px) {
-    gap: 16px;
+    gap: $spacing-lg;
     max-height: calc(100dvh - 64px);
     padding: 16px;
   }
@@ -157,22 +157,22 @@ onMounted(() => {
 .daycare-header-hint {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 12px 16px;
-  border: 1px solid rgb(255 51 102 / 20%);
-  border-radius: 12px;
-  background: rgb(255 51 102 / 6%);
-  box-shadow: 0 0 10px rgb(255 51 102 / 2%);
+  border: 1px solid Rgb(255 51 102 / 20%);
+  border-radius: $radius-xl;
+  background: Rgb(255 51 102 / 6%);
+  box-shadow: var(--shadow-glow-amber);
   
   .hint-icon {
-    font-size: 18px;
+    font-size: var(--font-18);
   }
   p {
     @include pixelated;
 
     margin: 0;
-    color: rgb(255 255 255 / 75%);
-    font-size: 10px;
+    color: Rgb(255 255 255 / 75%);
+    font-size: var(--font-10);
     line-height: 1.4;
   }
 }
@@ -180,13 +180,13 @@ onMounted(() => {
 .breeding-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
 }
 
 .slots-container {
   display: grid;
   align-items: stretch;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: 1fr 290px 1fr;
   grid-template-areas: "slot-a compat slot-b";
 
@@ -224,17 +224,17 @@ onMounted(() => {
   // Make Slot components flex-1
   & > :deep(.daycare-slot-legacy) {
     min-height: unset;
-    border: 2px solid rgb(255 51 102 / 12%);
-    background: rgb(20 10 15 / 55%);
+    border: 2px solid Rgb(255 51 102 / 12%);
+    background: Rgb(20 10 15 / 55%);
     flex: 1;
-    box-shadow: inset 0 0 15px rgb(255 51 102 / 2%);
+    box-shadow: var(--shadow-card);
     
     &.empty {
-      background: rgb(0 0 0 / 25%);
-      border-color: rgb(255 51 102 / 20%);
+      background: Rgb(0 0 0 / 25%);
+      border-color: Rgb(255 51 102 / 20%);
       &:hover {
         border-color: var(--daycare-pink);
-        box-shadow: 0 0 12px rgb(255 51 102 / 15%);
+        box-shadow: var(--shadow-glow-amber);
         .plus-icon {
           color: var(--daycare-pink);
         }
@@ -251,10 +251,10 @@ onMounted(() => {
   align-items: center;
   width: 290px;
   padding: 12px;
-  border: 1px solid rgb(255 51 102 / 10%);
-  border-radius: 16px;
-  background: rgb(255 51 102 / 2%);
-  box-shadow: inset 0 0 20px rgb(255 51 102 / 3%);
+  border: 1px solid Rgb(255 51 102 / 10%);
+  border-radius: $radius-2xl;
+  background: Rgb(255 51 102 / 2%);
+  box-shadow: var(--shadow-2xl);
   
   @media (width <= 950px) {
     width: 100%;
@@ -263,7 +263,7 @@ onMounted(() => {
 
 .divider-line {
   width: 100%;
-  border-top: 1px solid rgb(255 51 102 / 35%);
+  border-top: 1px solid Rgb(255 51 102 / 35%);
 }
 
 .warehouse-section {

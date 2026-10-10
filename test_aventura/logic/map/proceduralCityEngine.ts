@@ -17,13 +17,10 @@ import type {
 import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
 import type { BuildingPrefabMeta } from './canonicalAssetsRegistry.ts';
 import {
-  generateOrganicCityLayout,
-  connectDoorsToStreets,
-  RESIDENTIAL_ROOF_PALETTES
+  generateOrganicCityLayout
 } from './organicCityEngine.ts';
 
 export type { BuildingPrefabMeta, SettlementCurbPlacement };
-export { connectDoorsToStreets, RESIDENTIAL_ROOF_PALETTES };
 
 /**
  * 7 Coherent GBA Urban Archetypes for Medium Cities with distinct landmarks and styling
@@ -39,7 +36,7 @@ export interface UrbanArchetype {
   readonly specialPropPrefab: string;
 }
 
-export const URBAN_ARCHETYPES: readonly UrbanArchetype[] = [
+const _URBAN_ARCHETYPES: readonly UrbanArchetype[] = [
   {
     id: 'bike_commerce',
     name: 'Ciclismo y Comercio',

@@ -218,6 +218,7 @@ const factionAssetUrl = computed(() => {
         <span class="emoji error-icon">⚠️</span>
         <span class="error-message">{{ error }}</span>
         <button
+          id="trainer-profile-modal-btn-reintentar"
           class="retry-btn"
           @click="fetchData"
         >
@@ -250,6 +251,7 @@ const factionAssetUrl = computed(() => {
             >{{ trainerName }}</span>
             <a
               v-if="isOwnProfile"
+              id="trainer-profile-modal-a-cambiar-nombre"
               href="#"
               class="change-link"
               title="Cambiar Nombre"

@@ -13,10 +13,10 @@
 .ranking-title-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 
   .title-icon {
-    font-size: 22px;
+    font-size: var(--font-22);
     filter: Drop-Shadow(0 0 6px Rgb(251 191 36 / 40%));
   }
 
@@ -29,14 +29,14 @@
     @include pixelated;
 
     color: var(--yellow);
-    font-size: 13px;
+    font-size: var(--font-13);
     line-height: 1.2;
     text-shadow: 0 2px 0 var(--black);
   }
 
   .sub-title {
-    color: #94a3b8;
-    font-size: 9px;
+    color: var(--slate-400);
+    font-size: var(--font-9);
     margin-top: 1px;
   }
 }
@@ -45,7 +45,7 @@
 .ranking-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   height: 100%;
   padding: 16px 20px 30px;
   overflow-y: auto;
@@ -55,11 +55,11 @@
 // Sorting Controls
 .sorting-controls {
   display: grid;
-  gap: 4px;
+  gap: $spacing-xs;
   grid-template-columns: repeat(3, 1fr);
   padding: 3px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(0 0 0 / 35%);
 }
 
@@ -75,10 +75,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
     padding: 40px;
-    color: #94a3b8;
-    font-size: 11px;
+    color: var(--slate-400);
+    font-size: var(--font-11);
     text-align: center;
   }
 
@@ -93,7 +93,7 @@
 .leaderboard-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 

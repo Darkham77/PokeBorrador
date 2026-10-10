@@ -89,6 +89,7 @@ const handleClearSearch = () => {
     <!-- Category Tabs -->
     <div class="category-tabs">
       <button
+        id="dev-shadow-filter-bar-btn-pok-mon"
         type="button"
         class="tab-btn"
         :class="{ 'is-active': selectedCategory === 'pokemon' }"
@@ -97,6 +98,7 @@ const handleClearSearch = () => {
         Pokémon
       </button>
       <button
+        id="dev-shadow-filter-bar-btn-npcs"
         type="button"
         class="tab-btn"
         :class="{ 'is-active': selectedCategory === 'npc' }"
@@ -105,6 +107,7 @@ const handleClearSearch = () => {
         NPCs
       </button>
       <button
+        id="dev-shadow-filter-bar-btn-jugadores-clases"
         type="button"
         class="tab-btn"
         :class="{ 'is-active': selectedCategory === 'trainer' }"
@@ -113,6 +116,7 @@ const handleClearSearch = () => {
         Jugadores / Clases
       </button>
       <button
+        id="dev-shadow-filter-bar-btn-todos"
         type="button"
         class="tab-btn"
         :class="{ 'is-active': selectedCategory === 'all' }"
@@ -131,6 +135,7 @@ const handleClearSearch = () => {
       >
         <label class="filter-label">Gen:</label>
         <select
+          id="dev-shadow-filter-bar-select-genchange"
           :value="selectedGen"
           class="filter-select"
           @change="handleGenChange"
@@ -152,6 +157,7 @@ const handleClearSearch = () => {
       >
         <label class="filter-label">Género:</label>
         <select
+          id="dev-shadow-filter-bar-select-genderchange"
           :value="selectedGender"
           class="filter-select"
           @change="handleGenderChange"
@@ -172,6 +178,7 @@ const handleClearSearch = () => {
         class="checkbox-label"
       >
         <input
+          id="dev-shadow-filter-bar-input-shinychange"
           :checked="isShiny"
           type="checkbox"
           class="filter-checkbox"
@@ -184,6 +191,7 @@ const handleClearSearch = () => {
       <div class="gen-filter-group">
         <label class="filter-label">Vista:</label>
         <select
+          id="dev-shadow-filter-bar-select-viewchange"
           :value="selectedView"
           class="filter-select"
           @change="handleViewChange"
@@ -201,6 +209,7 @@ const handleClearSearch = () => {
       <!-- Only Modified Switch -->
       <label class="checkbox-label">
         <input
+          id="dev-shadow-filter-bar-input-onlymodifiedchange"
           :checked="onlyModified"
           type="checkbox"
           class="filter-checkbox"
@@ -212,6 +221,7 @@ const handleClearSearch = () => {
       <!-- Search Input -->
       <div class="search-box">
         <input
+          id="dev-shadow-filter-bar-input-buscar-por-nombre-o-archivo"
           :value="searchQuery"
           type="text"
           class="search-input"
@@ -220,6 +230,7 @@ const handleClearSearch = () => {
         >
         <button
           v-if="searchQuery"
+          id="dev-shadow-filter-bar-btn-clearsearch"
           type="button"
           class="search-clear-btn"
           @click="handleClearSearch"

@@ -74,7 +74,7 @@ function onLeave(el: Element, done: () => void) {
   z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   max-width: 300px;
   pointer-events: none;
 
@@ -89,28 +89,28 @@ function onLeave(el: Element, done: () => void) {
 
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 10px 14px;
-  border: 1px solid rgb(255 255 255 / 15%);
-  border-radius: 14px;
-  background: rgb(10 12 18 / 98%);
-  color: white;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-xl-alt;
+  background: Rgb(10 12 18 / 98%);
+  color: var(--white);
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: var(--font-10);
   font-weight: 600;
   pointer-events: all;
   -webkit-will-change: opacity;
   will-change: opacity;
-  border-left: 3px solid var(--yellow, rgb(241 196 15 / 100%));
-  box-shadow: 0 8px 30px rgb(0 0 0 / 60%);
+  border-left: 3px solid var(--yellow, Rgb(241 196 15 / 100%));
+  box-shadow: var(--shadow-card);
   letter-spacing: 0;
   
   .toast-icon {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    font-size: 18px;
+    font-family: $font-family-emoji !important;
+    font-size: var(--font-18);
     flex-shrink: 0;
   }
 

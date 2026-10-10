@@ -130,23 +130,29 @@ interface WeatherLinePrefix {
   restOfSentence: string;
 }
 
+const PREFIX_POTENCIA = 'potencia';
+const PREFIX_DEBILITA = 'debilita';
+const PREFIX_PENALIZA = 'penaliza';
+const PREFIX_BLOQUEA = 'bloquea';
+const PREFIX_EFECTO = 'efecto:';
+
 function detectWeatherLinePrefix(sentence: string): WeatherLinePrefix {
   const lowerSentence = sentence.toLowerCase(); // text-ok: UI text display localization string
 
-  if (lowerSentence.startsWith('potencia')) {
-    return { typeClass: 'boost', icon: '▲ ', label: 'POTENCIA:', restOfSentence: sentence.substring(8).trim() };
+  if (lowerSentence.startsWith(PREFIX_POTENCIA)) {
+    return { typeClass: 'boost', icon: '▲ ', label: 'POTENCIA:', restOfSentence: sentence.substring(PREFIX_POTENCIA.length).trim() };
   }
-  if (lowerSentence.startsWith('debilita')) {
-    return { typeClass: 'debuff', icon: '▼ ', label: 'DEBILITA:', restOfSentence: sentence.substring(8).trim() };
+  if (lowerSentence.startsWith(PREFIX_DEBILITA)) {
+    return { typeClass: 'debuff', icon: '▼ ', label: 'DEBILITA:', restOfSentence: sentence.substring(PREFIX_DEBILITA.length).trim() };
   }
-  if (lowerSentence.startsWith('penaliza')) {
-    return { typeClass: 'debuff', icon: '▼ ', label: 'PENALIZA:', restOfSentence: sentence.substring(8).trim() };
+  if (lowerSentence.startsWith(PREFIX_PENALIZA)) {
+    return { typeClass: 'debuff', icon: '▼ ', label: 'PENALIZA:', restOfSentence: sentence.substring(PREFIX_PENALIZA.length).trim() };
   }
-  if (lowerSentence.startsWith('bloquea')) {
-    return { typeClass: 'block', icon: 'block', label: 'BLOQUEA:', restOfSentence: sentence.substring(7).trim() };
+  if (lowerSentence.startsWith(PREFIX_BLOQUEA)) {
+    return { typeClass: 'block', icon: 'block', label: 'BLOQUEA:', restOfSentence: sentence.substring(PREFIX_BLOQUEA.length).trim() };
   }
-  if (lowerSentence.startsWith('efecto:')) {
-    return { typeClass: 'effect', icon: '⚡ ', label: 'EFECTO:', restOfSentence: sentence.substring(7).trim() };
+  if (lowerSentence.startsWith(PREFIX_EFECTO)) {
+    return { typeClass: 'effect', icon: '⚡ ', label: 'EFECTO:', restOfSentence: sentence.substring(PREFIX_EFECTO.length).trim() };
   }
 
   return { typeClass: '', icon: '', label: '', restOfSentence: sentence };

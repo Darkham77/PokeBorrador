@@ -1,5 +1,6 @@
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { modifyStatStage } from '@/logic/pokemon/statsMath.ts';
+import { MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
 import { SHOWDOWN_BOOST_STAT_KEYS, type ShowdownBoostStatKey } from '@/types/pokemon/pokemon.ts';
 
 /** 
@@ -41,11 +42,11 @@ function applyBoostOrSet(ctx: SBCtx, isSet: boolean): boolean {
     const stages = targetSide === 'player' ? store.playerStages.value : store.enemyStages.value;
     if (stages) {
       if (isSet) {
-        stages[stat] = Math.max(-6, Math.min(6, amount));
+        stages[stat] = Math.max(MIN_BATTLE_STAT_STAGE, Math.min(MAX_BATTLE_STAT_STAGE, amount));
       } else {
         modifyStatStage(stages, stat, amount);
       }
-      const msg = amount === 6
+      const msg = amount === MAX_BATTLE_STAT_STAGE
         ? `¡El ${stat.toUpperCase()} de ${target.name} se maximizó!` // text-ok: Combat stat maximized log message
         : `¡El ${stat.toUpperCase()} de ${target.name} aumentó!`; // text-ok: UI text display localization string
       store.addLog(msg, 'log-info', target);
@@ -63,7 +64,7 @@ function applyUnboost(ctx: SBCtx): boolean {
     const targetSide = getSide(parts[2] || '');
     const stages = targetSide === 'player' ? store.playerStages.value : store.enemyStages.value;
     if (stages) {
-      stages[stat] = Math.max(-6, (stages[stat] || 0) - amount);
+      stages[stat] = Math.max(MIN_BATTLE_STAT_STAGE, (stages[stat] || 0) - amount);
       store.addLog(`¡El ${stat.toUpperCase()} de ${target.name} disminuyó!`, 'log-info', target); // text-ok: UI text display localization string
     }
   }

@@ -20,7 +20,7 @@ defineProps<{
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   min-width: 32px;
   flex-shrink: 0;
 
@@ -28,7 +28,7 @@ defineProps<{
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: var(--font-14);
     line-height: 1;
   }
 
@@ -36,7 +36,7 @@ defineProps<{
     @include pixelated;
 
     color: var(--gray-light);
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }
 </style>

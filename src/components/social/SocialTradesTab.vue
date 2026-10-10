@@ -183,7 +183,7 @@ watch(
 .trades-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 /* ── Empty state ── */
@@ -193,11 +193,11 @@ watch(
   text-align: center;
 
   .icon {
-    font-size: 40px;
+    font-size: var(--font-40);
     margin-bottom: 15px;
     filter: Drop-Shadow(0 0 8px Rgb(168 85 247 / 15%));
   }
 
-  p { font-size: 14px; margin-bottom: 0; }
+  p { font-size: var(--font-14); margin-bottom: 0; }
 }
 </style>

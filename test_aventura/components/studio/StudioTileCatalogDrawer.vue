@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
+import { CELL_BIOME, type CellBiomeType } from '../../types/map/kantoGridModel';
 import { defaultPrefabsRegistry, type PrefabItem } from '../../logic/map/prefabsRegistry';
-import { CELL_BIOME, type CellBiomeType } from '../../logic/map/kantoRegionalGenerator';
 
 const adventureStore = useMapAdventureStudioStore();
 
@@ -104,6 +104,7 @@ onMounted(async () => {
       <div class="tabs-group">
         <button
           id="btn-tab-prefabs"
+          v-gsap-hover="'button'"
           class="tab-btn"
           :class="{ active: activeTab === 'prefabs' }"
           @click="activeTab = 'prefabs'"
@@ -112,6 +113,7 @@ onMounted(async () => {
         </button>
         <button
           id="btn-tab-terrain"
+          v-gsap-hover="'button'"
           class="tab-btn"
           :class="{ active: activeTab === 'terrain' }"
           @click="activeTab = 'terrain'"
@@ -181,6 +183,7 @@ onMounted(async () => {
             v-for="p in filteredPrefabs"
             :id="'prefab-card-' + p.id"
             :key="p.id"
+            v-gsap-hover="'card'"
             class="prefab-card"
             :class="{ selected: adventureStore.stampingPrefab?.id === p.id && adventureStore.activeTool === 'stamp' }"
             :title="p.name + ' (' + p.width + 'x' + p.height + ' px)'"
@@ -244,6 +247,7 @@ onMounted(async () => {
           v-for="b in BASE_BIOMES"
           :id="'biome-card-' + b.id"
           :key="b.id"
+          v-gsap-hover="'card'"
           class="biome-card"
           :class="{ selected: adventureStore.selectedBiome === b.id && adventureStore.activeMode === 'terrain' }"
           @click="selectBiome(b.id)"
@@ -266,54 +270,53 @@ onMounted(async () => {
 .studio-prefabs-drawer {
   display: flex;
   flex-direction: column;
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 6px;
   height: 100%;
   max-height: 100%;
-  overflow: hidden;
+  border: 1px solid var(--slate-800);
+  border-radius: $radius-md;
+  background: var(--slate-900);
   font-family: inherit;
+  overflow: hidden;
   user-select: none;
 }
 
 .drawer-header {
   padding: 8px;
-  border-bottom: 1px solid #1e293b;
   background: #090d16;
+  border-bottom: 1px solid var(--slate-800);
 
   .tabs-group {
     display: flex;
-    background: #090d16;
-    border: 1px solid #1e293b;
-    border-radius: 4px;
+    gap: $spacing-2xs;
     padding: 2px;
-    gap: 2px;
+    border: 1px solid var(--slate-800);
+    border-radius: $radius-sm;
+    background: #090d16;
 
     .tab-btn {
-      flex: 1;
-      padding: 6px 8px;
-      font-size: 11px;
-      font-weight: bold;
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 3px;
-      color: #94a3b8;
-      cursor: pointer;
       display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 4px;
-      transition: all 0.15s ease;
+      align-items: center;
+      gap: $spacing-xs;
+      padding: 6px 8px;
+      border: 1px solid transparent;
+      border-radius: $radius-xs-alt;
+      background: transparent;
+      color: var(--slate-400);
+      font-size: var(--font-11);
+      font-weight: bold;
+      flex: 1;
+      cursor: pointer;
 
       &:hover:not(.active) {
-        color: #f1f5f9;
-        background: #1e293b;
+        background: var(--slate-800);
+        color: var(--slate-100);
       }
 
       &.active {
-        background: #1e293b;
-        color: #38bdf8;
-        border-color: #38bdf8;
+        background: var(--slate-800);
+        color: var(--sky);
+        border-color: var(--sky);
       }
     }
   }
@@ -322,124 +325,123 @@ onMounted(async () => {
 .drawer-tab-content {
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-height: 0;
+  flex: 1;
   overflow: hidden;
 }
 
 .prefabs-filters {
-  padding: 8px;
-  border-bottom: 1px solid #1e293b;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
+  padding: 8px;
+  border-bottom: 1px solid var(--slate-800);
 
   .search-row {
     display: flex;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .retro-search-input {
-      flex: 1;
-      background: #090d16;
-      border: 1px solid #1e293b;
-      color: #f1f5f9;
-      font-size: 11px;
       padding: 5px 8px;
-      border-radius: 4px;
+      border: 1px solid var(--slate-800);
+      border-radius: $radius-sm;
+      background: #090d16;
+      color: var(--slate-100);
+      font-size: var(--font-11);
+      flex: 1;
 
       &:focus {
         outline: none;
-        border-color: #38bdf8;
+        border-color: var(--sky);
       }
     }
 
     .btn-sync-icon {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #f1f5f9;
-      border-radius: 4px;
       padding: 4px 8px;
+      border: 1px solid var(--slate-700);
+      border-radius: $radius-sm;
+      background: var(--slate-800);
+      color: var(--slate-100);
       cursor: pointer;
 
       &:hover:not(:disabled) {
-        border-color: #38bdf8;
+        border-color: var(--sky);
       }
     }
   }
 
   .category-chips {
     display: flex;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .cat-chip {
-      flex: 1;
-      padding: 4px 6px;
-      font-size: 10px;
-      background: #090d16;
-      border: 1px solid #1e293b;
-      border-radius: 4px;
-      color: #94a3b8;
-      cursor: pointer;
       display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 3px;
+      align-items: center;
+      gap: $spacing-xs-alt;
+      padding: 4px 6px;
+      border: 1px solid var(--slate-800);
+      border-radius: $radius-sm;
+      background: #090d16;
+      color: var(--slate-400);
+      font-size: var(--font-10);
+      flex: 1;
+      cursor: pointer;
 
       &:hover:not(.active) {
-        color: #f1f5f9;
-        background: #1e293b;
+        background: var(--slate-800);
+        color: var(--slate-100);
       }
 
       &.active {
-        background: #0284c7;
-        color: #ffffff;
-        border-color: #38bdf8;
+        background: var(--sky-dark);
+        color: var(--white);
+        border-color: var(--sky);
       }
     }
   }
 }
 
 .prefabs-scroll-area {
-  flex: 1;
   min-height: 0;
-  overflow-y: auto;
   padding: 8px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .prefabs-grid {
   display: grid;
+  gap: $spacing-sm;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
 
   .prefab-card {
     display: flex;
     flex-direction: column;
-    background: #090d16;
-    border: 1px solid #1e293b;
-    border-radius: 6px;
     padding: 6px;
+    border: 1px solid var(--slate-800);
+    border-radius: $radius-md;
+    background: #090d16;
     cursor: pointer;
-    transition: all 0.15s ease;
 
     &:hover {
-      border-color: #475569;
-      background: #111827;
+      background: var(--slate-900);
+      border-color: var(--slate-600);
     }
 
     &.selected {
-      border-color: #38bdf8;
       background: #0c2340;
-      box-shadow: 0 0 8px Rgba(56, 189, 248, 0.4);
+      border-color: var(--sky);
+      box-shadow: $shadow-glow-cyan;
     }
 
     .thumb-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 100%;
       height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: Rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
+      border-radius: $radius-sm;
+      background: Rgb(0 0 0 / 30%);
       overflow: hidden;
       margin-bottom: 4px;
 
@@ -457,34 +459,34 @@ onMounted(async () => {
       margin-bottom: 6px;
 
       .prefab-name {
-        font-size: 10px;
+        color: var(--slate-200);
+        font-size: var(--font-10);
         font-weight: bold;
-        color: #e2e8f0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
       .prefab-dim {
-        font-size: 9px;
-        color: #94a3b8;
+        color: var(--slate-400);
         font-family: monospace;
+        font-size: var(--font-9);
       }
     }
 
     .btn-stamp-action {
-      font-size: 10px;
       padding: 3px;
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #38bdf8;
-      border-radius: 3px;
-      cursor: pointer;
+      border: 1px solid var(--slate-700);
+      border-radius: $radius-xs-alt;
+      background: var(--slate-800);
+      color: var(--sky);
+      font-size: var(--font-10);
       font-weight: bold;
+      cursor: pointer;
 
       &:hover {
-        background: #0284c7;
-        color: #ffffff;
+        background: var(--sky-dark);
+        color: var(--white);
       }
     }
   }
@@ -493,85 +495,85 @@ onMounted(async () => {
 .empty-prefabs-hint {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  text-align: center;
+  align-items: center;
   padding: 24px 12px;
-  color: #64748b;
+  color: var(--slate-500);
+  text-align: center;
 
   .icon {
-    font-size: 32px;
+    font-size: var(--font-32);
     margin-bottom: 8px;
   }
 
   p {
-    font-size: 12px;
     margin: 0 0 6px;
-    color: #94a3b8;
+    color: var(--slate-400);
+    font-size: var(--font-12);
   }
 
   small {
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1.4;
 
     code {
-      background: #1e293b;
       padding: 2px 4px;
-      border-radius: 3px;
-      color: #38bdf8;
+      border-radius: $radius-xs-alt;
+      background: var(--slate-800);
+      color: var(--sky);
     }
   }
 }
 
 .terrain-tab-content {
+  gap: $spacing-md;
   padding: 12px;
-  gap: 12px;
   overflow-y: auto;
 
   .section-title {
-    font-size: 12px;
+    color: var(--slate-100);
+    font-size: var(--font-12);
     font-weight: bold;
-    color: #f1f5f9;
   }
 
   .section-hint {
-    font-size: 10px;
-    color: #94a3b8;
     margin: 0;
+    color: var(--slate-400);
+    font-size: var(--font-10);
     line-height: 1.3;
   }
 
   .brush-size-group {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    background: #090d16;
-    border: 1px solid #1e293b;
-    border-radius: 4px;
+    align-items: center;
     padding: 6px 8px;
+    border: 1px solid var(--slate-800);
+    border-radius: $radius-sm;
+    background: #090d16;
 
     .sub-title {
-      font-size: 10px;
-      color: #cbd5e1;
+      color: var(--slate-300);
+      font-size: var(--font-10);
     }
 
     .brush-buttons {
       display: flex;
-      gap: 4px;
+      gap: $spacing-xs;
 
       .brush-btn {
         padding: 3px 6px;
-        font-size: 10px;
-        background: #1e293b;
-        border: 1px solid #334155;
-        color: #cbd5e1;
-        border-radius: 3px;
+        border: 1px solid var(--slate-700);
+        border-radius: $radius-xs-alt;
+        background: var(--slate-800);
+        color: var(--slate-300);
+        font-size: var(--font-10);
         cursor: pointer;
 
         &.active {
-          background: #0284c7;
-          border-color: #38bdf8;
-          color: #ffffff;
+          background: var(--sky-dark);
+          color: var(--white);
+          border-color: var(--sky);
         }
       }
     }
@@ -580,18 +582,22 @@ onMounted(async () => {
   .biomes-grid {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: $spacing-sm-alt;
 
     .biome-card {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       padding: 8px;
+      border: 1px solid var(--slate-800);
+      border-radius: $radius-sm;
       background: #090d16;
-      border: 1px solid #1e293b;
-      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--slate-900);
+        border-color: var(--slate-600);
+      }
 
       .color-dot {
         width: 10px;
@@ -601,24 +607,19 @@ onMounted(async () => {
       }
 
       .icon {
-        font-size: 14px;
+        font-size: var(--font-14);
       }
 
       .biome-label {
-        font-size: 11px;
+        color: var(--slate-200);
+        font-size: var(--font-11);
         font-weight: bold;
-        color: #e2e8f0;
-      }
-
-      &:hover {
-        background: #111827;
-        border-color: #475569;
       }
 
       &.selected {
         background: #0c2340;
-        border-color: #38bdf8;
-        box-shadow: 0 0 8px Rgba(56, 189, 248, 0.4);
+        border-color: var(--sky);
+        box-shadow: $shadow-glow-cyan;
       }
     }
   }

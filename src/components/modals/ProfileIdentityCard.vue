@@ -48,7 +48,8 @@ const emit = defineEmits<{
 
 <template>
   <div class="profile-identity-card">
-    <div 
+    <div
+      id="profile-identity-card-div-1" 
       class="avatar-wrap"
       @click.stop="emit('edit-profile')"
       @mouseenter="e => emit('avatar-enter', e)"
@@ -81,6 +82,7 @@ const emit = defineEmits<{
           />
         </div>
         <button
+          id="profile-identity-card-btn-cambiar"
           class="row-action-btn"
           @click.prevent.stop="emit('open-rename')"
         >
@@ -105,6 +107,7 @@ const emit = defineEmits<{
           </span>
         </div>
         <button
+          id="profile-identity-card-btn-cambiar-2"
           class="row-action-btn"
           @click.prevent.stop="emit('open-class-modal')"
         >
@@ -124,6 +127,7 @@ const emit = defineEmits<{
           </span>
         </div>
         <button
+          id="profile-identity-card-btn-displayfaction-sin-facci-n-cam"
           class="row-action-btn"
           @click.prevent.stop="emit('faction-choice')"
         >
@@ -134,12 +138,14 @@ const emit = defineEmits<{
       <!-- Acciones de Gestión -->
       <div class="identity-actions-row">
         <button
+          id="profile-identity-card-btn-cosm-ticos"
           class="cosmetics-btn"
           @click.stop="emit('edit-profile')"
         >
           <i class="fas fa-tshirt" /> COSMÉTICOS
         </button>
         <button
+          id="profile-identity-card-btn-gesti-n-de-clase"
           class="class-mgmt-btn"
           @click.stop="emit('open-class-modal')"
         >
@@ -171,7 +177,7 @@ const emit = defineEmits<{
 .identity-details-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
 
   .detail-row {
@@ -179,15 +185,15 @@ const emit = defineEmits<{
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    border: 1px solid rgb(255 255 255 / 5%);
-    border-radius: 8px;
-    background: rgb(255 255 255 / 3%);
+    border: 1px solid Rgb(255 255 255 / 5%);
+    border-radius: $radius-lg;
+    background: Rgb(255 255 255 / 3%);
 
     .label {
       @include pixelated;
 
-      color: rgb(255 255 255 / 40%);
-      font-size: 8px;
+      color: Rgb(255 255 255 / 40%);
+      font-size: var(--font-8);
     }
 
     .value-wrap {
@@ -198,7 +204,7 @@ const emit = defineEmits<{
       &.name-value-wrap {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
       }
     }
 
@@ -208,17 +214,17 @@ const emit = defineEmits<{
       @include pixelated;
 
       color: var(--white);
-      font-size: 10px;
+      font-size: var(--font-10);
 
       &.class-val {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
         color: var(--yellow);
       }
 
       &.faction-val {
-        &.none { color: #888; }
+        &.none { color: var(--slate-400); }
       }
     }
 
@@ -226,15 +232,15 @@ const emit = defineEmits<{
       @include pixelated;
 
       padding: 4px 8px;
-      border: 1px solid rgb(255 255 255 / 10%);
-      border-radius: 4px;
-      background: rgb(255 255 255 / 5%);
+      border: 1px solid Rgb(255 255 255 / 10%);
+      border-radius: $radius-sm;
+      background: Rgb(255 255 255 / 5%);
       color: var(--yellow);
-      font-size: 8px;
+      font-size: var(--font-8);
       cursor: pointer;
 
       &:hover {
-        background: rgb(255 255 255 / 10%);
+        background: Rgb(255 255 255 / 10%);
         border-color: var(--yellow);
       }
     }
@@ -246,7 +252,7 @@ const emit = defineEmits<{
 
   .identity-actions-row {
     display: flex;
-    gap: 8px;
+    gap: $spacing-sm;
     width: 100%;
     margin-top: 8px;
 
@@ -256,8 +262,8 @@ const emit = defineEmits<{
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 4px;
-      font-size: 8px;
+      gap: $spacing-xs;
+      font-size: var(--font-8);
       flex: 1;
     }
 
@@ -267,8 +273,8 @@ const emit = defineEmits<{
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 4px;
-      font-size: 8px;
+      gap: $spacing-xs;
+      font-size: var(--font-8);
       flex: 1;
     }
   }

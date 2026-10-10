@@ -10,6 +10,8 @@ const DEFAULT_HOVER_BUTTON_SCALE = 1.03;
 const DEFAULT_HOVER_BUTTON_Y_OFFSET_PX = -1;
 const DEFAULT_HOVER_PILL_SCALE = 1.05;
 const DEFAULT_HOVER_PILL_Y_OFFSET_PX = -1.5;
+const DEFAULT_HOVER_WIDGET_SCALE = 1.02;
+const DEFAULT_HOVER_DEFAULT_Y_OFFSET_PX = -2;
 
 // Map to track active tweens/timelines for cleanup
 const activeTweens = new Map<HTMLElement, gsap.core.Tween>();
@@ -155,7 +157,7 @@ const DEFAULT_HOVER_TWEEN_DURATION_SEC = 0.15;
 function getOptions(value: string | GsapHoverOptions | undefined): GsapHoverOptions {
   const defaults: GsapHoverOptions = {
     scale: DEFAULT_HOVER_PILL_SCALE,
-    y: -2,
+    y: DEFAULT_HOVER_DEFAULT_Y_OFFSET_PX,
     duration: DEFAULT_HOVER_TWEEN_DURATION_SEC,
     ease: 'power1.out',
     pressEffect: true,
@@ -167,6 +169,8 @@ function getOptions(value: string | GsapHoverOptions | undefined): GsapHoverOpti
     switch (value) {
       case 'card':
         return { ...defaults, scale: DEFAULT_HOVER_CARD_SCALE, y: DEFAULT_HOVER_CARD_Y_OFFSET_PX };
+      case 'widget':
+        return { ...defaults, scale: DEFAULT_HOVER_WIDGET_SCALE, y: DEFAULT_HOVER_DEFAULT_Y_OFFSET_PX };
       case 'button':
         return { ...defaults, scale: DEFAULT_HOVER_BUTTON_SCALE, y: DEFAULT_HOVER_BUTTON_Y_OFFSET_PX };
       case 'pill':

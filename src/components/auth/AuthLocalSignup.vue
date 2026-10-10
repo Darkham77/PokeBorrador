@@ -29,6 +29,7 @@ const {
 <template>
   <div class="local-signup-form">
     <input
+      id="auth-local-signup-input-nombre-de-entrenador"
       :value="usernameValue"
       class="auth-input"
       type="text"
@@ -44,6 +45,7 @@ const {
 
     <div class="gender-selection-row">
       <button
+        id="auth-local-signup-btn-1"
         class="gender-select-btn male"
         :class="{ active: genderValue === 'h' }"
         @click.prevent.stop="emit('update:genderValue', 'h')"
@@ -55,6 +57,7 @@ const {
         /> MASCULINO
       </button>
       <button
+        id="auth-local-signup-btn-2"
         class="gender-select-btn female"
         :class="{ active: genderValue === 'm' }"
         @click.prevent.stop="emit('update:genderValue', 'm')"
@@ -68,6 +71,7 @@ const {
     </div>
 
     <button
+      id="auth-local-signup-btn-3"
       class="auth-btn"
       :disabled="loading"
       @click.stop="emit('localSignup')"

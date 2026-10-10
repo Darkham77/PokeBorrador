@@ -47,19 +47,25 @@ const BALL_BEHAVIORS: Partial<Record<ItemId, { guaranteed?: boolean, mult?: numb
     }
 }
 
+const POKEDEX_CRITICAL_HIGH_FACTOR = 1.5 as const;
+const POKEDEX_CRITICAL_MAX_FACTOR = 2.5 as const;
+const MIN_CLASS_MULTIPLIER_FLOOR = 0.1 as const;
+const CRITICAL_CAPTURE_DIVISOR = 6 as const;
+const MINOR_STATUS_CATCH_MULTIPLIER = 1.5 as const;
+
 export function getPokedexCriticalFactor(pokedexCount: number): number {
   if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.VERY_LOW) return 0;
   if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.LOW) return 0.5;
   if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.MEDIUM) return 1.0;
-  if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.HIGH) return 1.5;
+  if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.HIGH) return POKEDEX_CRITICAL_HIGH_FACTOR;
   if (pokedexCount < POKEDEX_CRITICAL_THRESHOLDS.VERY_HIGH) return 2.0;
-  return 2.5;
+  return POKEDEX_CRITICAL_MAX_FACTOR;
 }
 
 export function calculateCriticalCaptureThreshold(a: number, pokedexCount: number): number {
   const p = getPokedexCriticalFactor(pokedexCount)
   if (p <= 0) return 0
-  return Math.floor((Math.min(CATCH_MATH_255_MAX, a) * p) / 6)
+  return Math.floor((Math.min(CATCH_MATH_255_MAX, a) * p) / CRITICAL_CAPTURE_DIVISOR)
 }
 
 import {
@@ -86,7 +92,7 @@ function calculateClassMultiplier(ctx: PureCatchOptions): {
     }
   } else if (ctx.playerClass === 'entrenador' && (ctx.ivTotal ?? 0) > TRAINER_HIGH_IV_THRESHOLD) {
     trainerIvPenaltyApplied = true;
-    classMultiplier = Math.max(0.1, classMultiplier - TRAINER_IV_PENALTY_RATE);
+    classMultiplier = Math.max(MIN_CLASS_MULTIPLIER_FLOOR, classMultiplier - TRAINER_IV_PENALTY_RATE);
   }
 
   return { classMultiplier, bugSynergyBonus, trainerIvPenaltyApplied };
@@ -101,7 +107,7 @@ function resolveBallMultiplier(rawBallType: ItemId, pokemon: PurePokemon, ctx: P
 
 function resolveStatusMultiplier(status?: string | null): number {
   if (status === 'slp' || status === 'frz') return 2.0;
-  return status ? 1.5 : 1.0;
+  return status ? MINOR_STATUS_CATCH_MULTIPLIER : 1.0;
 }
 
 function rollShakes(b: number): number {

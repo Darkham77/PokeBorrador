@@ -61,6 +61,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           <span class="emoji">⌛</span>
           <span class="title">TIME &amp; WEATHER CONTROL</span>
           <button
+            id="battle-debug-tools-btn-1"
             class="close-mini"
             @click.stop="isTimeOpen = false"
           >
@@ -124,6 +125,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
       <PVTooltip title="Time, Season & Weather">
         <button
+          id="battle-debug-tools-btn-tiempo"
           class="time-trigger"
           :class="{ active: isTimeOpen }"
           @click.stop="isTimeOpen = !isTimeOpen; isOpen = false; isEffectsOpen = false; isSpawnOpen = false"
@@ -170,7 +172,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 .debug-triggers-row {
   display: flex;
   justify-content: flex-start;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
   pointer-events: all;
 }
@@ -181,14 +183,14 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   height: 24px;
   padding: 0 14px;
-  border-radius: 6px;
-  background: rgb(20 20 30 / 95%);
-  font-size: 7px;
+  border-radius: $radius-md;
+  background: Rgb(20 20 30 / 95%);
+  font-size: var(--font-7);
   text-shadow: 1px 1px 0 $black;
-  box-shadow: 0 4px 15px rgb(0 0 0 / 60%);
+  box-shadow: var(--shadow-md);
 }
 
 .debug-trigger {
@@ -204,7 +206,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
   border: 2px solid var(--purple);
   color: var(--purple);
-  &:hover, &.active { background: var(--purple); color: white; }
+  &:hover, &.active { background: var(--purple); color: var(--white); }
 }
 
 .effects-menu {
@@ -216,11 +218,11 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   max-width: 90dvw;
   max-height: 500px;
   border: 2px solid var(--purple);
-  border-radius: 8px;
-  background: rgb(15 15 25 / 99%);
+  border-radius: $radius-lg;
+  background: Rgb(15 15 25 / 99%);
   overflow: hidden auto;
   pointer-events: all;
-  box-shadow: 0 15px 50px rgb(0 0 0 / 90%);
+  box-shadow: $shadow-2xl;
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
   margin-bottom: 12px;
@@ -228,13 +230,13 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   .effects-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     padding: 10px 16px;
-    background: rgb(124 58 237 / 15%);
-    border-bottom: 1px solid rgb(255 255 255 / 10%);
+    background: Rgb(124 58 237 / 15%);
+    border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; color: var(--purple); font-size: 8px; flex: 1; }
-    .close-mini { border: none; background: none; color: white; opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
+    .title { @include pixelated; color: var(--purple); font-size: var(--font-8); flex: 1; }
+    .close-mini { border: none; background: none; color: var(--white); opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
   }
 
   .effects-scroll-area {
@@ -256,23 +258,23 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   max-width: 90dvw;
   max-height: 500px;
   border: 2px solid var(--blue);
-  border-radius: 8px;
-  background: rgb(15 15 25 / 99%);
+  border-radius: $radius-lg;
+  background: Rgb(15 15 25 / 99%);
   overflow: hidden auto;
   pointer-events: all;
-  box-shadow: 0 15px 50px rgb(0 0 0 / 90%);
+  box-shadow: $shadow-2xl;
   margin-bottom: 12px;
 
   .time-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     padding: 10px 16px;
-    background: rgb(59 130 246 / 15%);
-    border-bottom: 1px solid rgb(255 255 255 / 10%);
+    background: Rgb(59 130 246 / 15%);
+    border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; color: var(--blue); font-size: 8px; flex: 1; }
-    .close-mini { border: none; background: none; color: white; opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
+    .title { @include pixelated; color: var(--blue); font-size: var(--font-8); flex: 1; }
+    .close-mini { border: none; background: none; color: var(--white); opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
   }
 
   .time-scroll-area {
@@ -290,7 +292,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
   border: 2px solid var(--blue);
   color: var(--blue);
-  &:hover, &.active { background: var(--blue); color: white; text-shadow: none; }
+  &:hover, &.active { background: var(--blue); color: var(--white); text-shadow: none; }
 }
 
 .spawn-menu {
@@ -302,23 +304,23 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   max-width: 90dvw;
   max-height: 500px;
   border: 2px solid var(--green);
-  border-radius: 8px;
-  background: rgb(15 15 25 / 99%);
+  border-radius: $radius-lg;
+  background: Rgb(15 15 25 / 99%);
   overflow: hidden auto;
   pointer-events: all;
-  box-shadow: 0 15px 50px rgb(0 0 0 / 90%);
+  box-shadow: $shadow-2xl;
   margin-bottom: 12px;
 
   .spawn-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     padding: 10px 16px;
-    background: rgb(34 197 94 / 15%);
-    border-bottom: 1px solid rgb(255 255 255 / 10%);
+    background: Rgb(34 197 94 / 15%);
+    border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; color: var(--green); font-size: 8px; flex: 1; }
-    .close-mini { border: none; background: none; color: white; opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
+    .title { @include pixelated; color: var(--green); font-size: var(--font-8); flex: 1; }
+    .close-mini { border: none; background: none; color: var(--white); opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
   }
 
   .spawn-scroll-area {

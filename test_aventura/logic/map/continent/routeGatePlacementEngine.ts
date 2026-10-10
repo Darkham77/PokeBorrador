@@ -16,7 +16,12 @@ import type { CardinalDirection, POINode, SettlementLayoutResult } from '../../.
 import type { ContinentMapResult } from '../continentGenerator.ts';
 import type { SettlementTerrainContext } from '../cityLayoutEngine.ts';
 import { generateSettlementLayout } from '../cityLayoutEngine.ts';
-import type { EmbeddedCorridor, EmbeddedCorridorWaypoint } from '../../../types/map/pokemonGraphTypes.ts';
+import {
+  GRAPH_EDGE_KINDS,
+  type EmbeddedCorridor,
+  type EmbeddedCorridorWaypoint,
+  type GraphEdgeKind
+} from '../../../types/map/pokemonGraphTypes.ts';
 
 export interface SplicedEmbeddedCorridor extends EmbeddedCorridor {
   readonly customStartGw?: EmbeddedCorridorWaypoint;
@@ -56,8 +61,12 @@ const GATE_PRNG_SHIFT = 16;
 const GATE_PRNG_MODULO = 65536;
 const GATE_SEED_MULTIPLIER = 31;
 
-const PRIMARY_CORRIDOR_KINDS: ReadonlySet<string> = new Set(['main_chain', 'cycle']);
-const FALLBACK_CORRIDOR_KINDS: ReadonlySet<string> = new Set(['main_chain', 'cycle', 'branch_stub']);
+const PRIMARY_CORRIDOR_KINDS = ['main_chain', 'cycle'] as const satisfies readonly GraphEdgeKind[];
+const PRIMARY_CORRIDOR_KINDS_SET: ReadonlySet<GraphEdgeKind> = new Set(PRIMARY_CORRIDOR_KINDS);
+
+const FALLBACK_CORRIDOR_KINDS_SET: ReadonlySet<GraphEdgeKind> = new Set(
+  GRAPH_EDGE_KINDS.filter((kind) => kind === 'main_chain' || kind === 'cycle' || kind === 'branch_stub')
+);
 const PRIMARY_GATE_MIN_SEPARATION = 10;
 const FALLBACK_GATE_CORRIDOR_LENGTH = 16;
 const FALLBACK_GATE_SEARCH_START_RATIO = 0.15;
@@ -85,7 +94,7 @@ export function placeProceduralRouteGates(
   const targetGateCount = MIN_ROUTE_GATES + Math.floor(nextGateRng() * RANDOM_ROUTE_GATES_RANGE); // 2, 3, 4, or 5
 
   const tryPlaceOnCorridors = (
-    allowedKinds: ReadonlySet<string>,
+    allowedKinds: ReadonlySet<GraphEdgeKind>,
     minLen: number,
     startRatio: number,
     endRatio: number,
@@ -270,7 +279,7 @@ export function placeProceduralRouteGates(
 
   // Pass 1: standard placement along primary arterial corridors
   tryPlaceOnCorridors(
-    PRIMARY_CORRIDOR_KINDS,
+    PRIMARY_CORRIDOR_KINDS_SET,
     MIN_GATE_CORRIDOR_LENGTH,
     GATE_SEARCH_START_RATIO,
     GATE_SEARCH_END_RATIO,
@@ -281,7 +290,7 @@ export function placeProceduralRouteGates(
   // Pass 2: fallback placement with relaxed length and proximity if under minimum count
   if (placedGates.length < MIN_ROUTE_GATES) {
     tryPlaceOnCorridors(
-      FALLBACK_CORRIDOR_KINDS,
+      FALLBACK_CORRIDOR_KINDS_SET,
       FALLBACK_GATE_CORRIDOR_LENGTH,
       FALLBACK_GATE_SEARCH_START_RATIO,
       FALLBACK_GATE_SEARCH_END_RATIO,

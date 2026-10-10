@@ -58,7 +58,7 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
       <div class="poke-name-wrap">
         <span
           class="poke-name"
-          style="font-size: 11px; line-height: 1.4;"
+          style="font-size: var(--font-11); line-height: 1.4;"
         >
           {{ reward.name }}
         </span>
@@ -75,7 +75,7 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
         <span
           class="status-tag"
           :class="reward.statusClass"
-          style=" padding: 2px 4px;font-size: 9px;"
+          style=" padding: 2px 4px;font-size: var(--font-9);"
         >
           {{ reward.type }}
         </span>
@@ -85,7 +85,7 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
     <!-- Details/Description -->
     <div
       class="col-multiplier row-cell flex-align"
-      style="font-size: 9px; line-height: 1.2; opacity: 0.8; white-space: normal;"
+      style="font-size: var(--font-9); line-height: 1.2; opacity: 0.8; white-space: normal;"
     >
       {{ reward.description || 'Fósil desenterrable en la zona' }}
     </div>
@@ -106,7 +106,7 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
               v-if="hasDelta"
               class="delta-text"
               :class="isPositiveDelta ? 'positive' : 'negative'"
-              style="font-size: 8px; margin-left: 4px;"
+              style="font-size: var(--font-8); margin-left: 4px;"
             >
               {{ deltaText }}
             </span>

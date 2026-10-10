@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import path from 'node:path';
 import fs from 'node:fs';
 import sharp from 'sharp';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 
 describe('Benches & Decoration Assets Transparency (Phase 3)', () => {
   it('guarantees poke_flowers_red.png has 100% alpha transparency (no baked-in green background)', async () => {

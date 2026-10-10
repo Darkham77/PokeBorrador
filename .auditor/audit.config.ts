@@ -3,28 +3,25 @@ import { defineAuditConfig } from '@francogp/auditor';
 export default defineAuditConfig({
   name: 'Poké Vicio',
   paths: {
-    srcRoots: ['src'],
-    testRoots: ['tests'],
+    srcRoots: ['src', 'test_aventura'],
+    testRoots: ['tests', 'test_aventura/tests'],
     e2eRoots: ['scripts/e2e'],
     integrationRoots: ['tests/integration'],
     migrationsDir: 'database/migrations',
     scriptsRoots: ['scripts'],
-    codeRoots: ['src', 'scripts', 'database', 'ui-demo'],
-    cliRoots: ['test_aventura/scripts'],
-    dataRoots: ['src/data'],
-    constantsRoots: ['src/logic/constants'],
-    componentsRoots: ['src/components'],
-    viewsRoots: ['src/views'],
-    storesRoots: ['src/stores'],
-    composablesRoots: ['src/composables'],
-    typesRoots: ['src/types'],
-    stylesRoots: ['src/styles'],
-    logicRoots: ['src/logic'],
+    codeRoots: ['src', 'scripts', 'database', 'ui-demo', 'test_aventura'],
+    cliRoots: ['scripts'],
+    dataRoots: ['src/data', 'test_aventura/data'],
+    componentsRoots: ['src/components', 'test_aventura/components'],
+    viewsRoots: ['src/views', 'test_aventura/views'],
+    storesRoots: ['src/stores', 'test_aventura/stores'],
+    composablesRoots: ['src/composables', 'test_aventura/composables'],
+    typesRoots: ['src/types', 'test_aventura/types'],
+    stylesRoots: ['src/styles', 'test_aventura/styles'],
+    logicRoots: ['src/logic', 'test_aventura/logic'],
     demoRoots: ['ui-demo'],
     exemptFiles: [],
-    testFilePatterns: ['.spec.', '.test.', '.simulation.'],
     includeTestsInCodeAudit: false,
-    testFragmentationWhitelist: ['src/logic/battle/battleEngine.ts'],
     ignoreGlobs: [
       'node_modules/**',
       'dist/**',
@@ -33,7 +30,6 @@ export default defineAuditConfig({
       'external/**',
       'showdown/**',
       'backup_legacy_code/**',
-      'test_aventura/**',
       'supabase/docker/**'
     ],
     ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'supabase/docker'],
@@ -46,9 +42,11 @@ export default defineAuditConfig({
     ],
     acknowledgedDegradations: [
       { glob: 'scripts/**', policy: 'scripts', reason: 'Maintenance and simulation scripts running in CLI Node environment' },
+      { glob: 'scripts/**', policy: 'cli', reason: 'Maintenance and tooling CLI scripts running in Node environment' },
       { glob: 'src/data/**', policy: 'data', reason: 'Domain data catalogs and tabular game mini-databases' },
       { glob: 'ui-demo/**', policy: 'demo', reason: 'Interactive UI demo sandbox and test harness components' },
-      { glob: 'ui-demo/src/data/**', policy: 'data', reason: 'UI demo mock catalogs' }
+      { glob: 'ui-demo/src/data/**', policy: 'data', reason: 'UI demo mock catalogs' },
+      { glob: 'test_aventura/data/**', policy: 'data', reason: 'Adventure map data presets and catalogs' }
     ]
   },
   testCoverage: {
@@ -58,7 +56,14 @@ export default defineAuditConfig({
   documentation: {
     allowedNpxBinaries: ['kill-port'],
     language: 'en',
-    languageExemptions: ['docs/**', './docs/**', 'docs']
+    languageExemptions: [
+      'docs/**',
+      './docs/**',
+      'docs',
+      'test_aventura/docs/**',
+      './test_aventura/docs/**',
+      'test_aventura/docs'
+    ]
   },
   secretLeaks: {
     enabled: true,
@@ -171,17 +176,7 @@ export default defineAuditConfig({
     caseNormalizationExemptTokens: ['rpg', 'pvp', 'pve', 'fsm', 'dex', 'hp', 'atk', 'def', 'spa', 'spd', 'spe', 'iv', 'ev']
   },
   constants: {
-    exemptGlobs: [
-      'scripts/database/**',
-      'scripts/maintenance/**',
-      'scripts/data/**',
-      'scripts/assets/**',
-      'scripts/testing/**',
-      'scripts/tools/**',
-      'scripts/e2e/**',
-      'scripts/auditors/**'
-    ],
-    exemptMagicNumbers: [1000, 3600, 24, 60]
+    enabled: true
   },
   styles: {
     zLayersEnabled: true,
@@ -189,10 +184,12 @@ export default defineAuditConfig({
     zLayersScssFile: 'src/styles/core/_base.scss',
     zLayersTsFile: 'src/logic/constants/visuals.ts',
     globalUtilityClasses: ['pv-button-retro'],
+    enforceScss: true,
+    exemptCssFiles: [],
     duplicates: {
-      checkSimilar: false,
-      checkColors: false,
-      checkLongLines: false,
+      checkSimilar: true,
+      checkColors: true,
+      checkLongLines: true,
       minDeclarations: 2
     }
   },
@@ -211,7 +208,7 @@ export default defineAuditConfig({
     ]
   },
   templates: {
-    requireInputIds: false
+    requireInputIds: true
   },
   packageHygiene: {
     enabled: true,
@@ -311,5 +308,14 @@ export default defineAuditConfig({
 ,
   auditorHygiene: {
     enabled: true
+  }
+,
+  scriptExtensions: {
+    enabled: true,
+    enforceTypeScript: true,
+    allowMjs: false,
+    allowCjs: false,
+    allowJsScripts: false,
+    exemptFiles: []
   }
 });

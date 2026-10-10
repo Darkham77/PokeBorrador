@@ -113,7 +113,7 @@ const onClaim = async () => {
   align-items: center;
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 3%);
   
 
@@ -127,7 +127,7 @@ const onClaim = async () => {
 .claim-main {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .asset-preview-wrapper {
@@ -137,7 +137,7 @@ const onClaim = async () => {
   align-items: center;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(0 0 0 / 20%);
   overflow: visible;
 }
@@ -160,27 +160,27 @@ const onClaim = async () => {
 .claim-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 
   .name {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     color: Rgb(241 245 249 / 100%);
-    font-size: 14px;
+    font-size: var(--font-14);
     font-weight: 700;
     line-height: 1.2;
 
     .lvl-label, .qty-label {
       color: Rgb(255 255 255 / 50%);
-      font-size: 11px;
+      font-size: var(--font-11);
       font-weight: normal;
     }
   }
 
   .meta {
     color: Rgb(255 255 255 / 50%);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.2;
   }
 }

@@ -11,7 +11,7 @@
   z-index: var(--z-base);
   display: flex;
   flex-direction: column;
-  gap: 16px; // Reduced from 32px (half of --ui-v-gap)
+  gap: $spacing-lg; // Reduced from 32px (half of --ui-v-gap)
   min-height: 0;
   padding: 0 0 250px;
   background: transparent;

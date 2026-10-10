@@ -1,30 +1,32 @@
+@use "@/styles/core/tools" as *;
+
 /* --- COMPARTIDO PARA COSMÉTICOS Y MARCOS --- */
 .style-section {
   .section-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
     margin-bottom: 8px;
-    h3 { color: var(--white); font-size: 18px; font-weight: 700; }
+    h3 { color: var(--white); font-size: var(--font-18); font-weight: 700; }
     .badge {
       padding: 2px 8px;
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(255 255 255 / 5%);
       color: Rgb(148 163 184 / 100%);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: 800;
     }
   }
   .section-desc {
     color: var(--gray);
-    font-size: 13px;
+    font-size: var(--font-13);
     margin-bottom: 24px;
   }
 }
 
 .styles-grid {
   display: grid;
-  gap: 16px;
+  gap: $spacing-lg;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 }
 
@@ -33,10 +35,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 20px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 3%);
   cursor: pointer;
   will-change: transform, filter;
@@ -50,7 +52,7 @@
   &.active {
     background: Rgb(59 130 246 / 8%);
     border-color: Rgb(59 130 246 / 100%);
-    box-shadow: 0 0 20px Rgb(59 130 246 / 15%);
+    box-shadow: var(--shadow-glow-blue-lg);
   }
 
   &.locked {
@@ -71,77 +73,77 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     text-align: center;
     
     .style-name {
       display: block;
       color: Rgb(148 163 184 / 100%);
-      font-size: 11px;
+      font-size: var(--font-11);
       font-weight: 600;
     }
     
     .status-tag {
       display: block;
       color: Rgb(59 130 246 / 100%);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: 800;
     }
 
     .lock-tag {
       display: inline-block;
       padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 8px;
+      border-radius: $radius-sm;
+      font-size: var(--font-8);
       font-weight: 800;
       letter-spacing: 0.5px;
 
       &.locked {
         border: 1px solid Rgb(239 68 68 / 25%);
         background: Rgb(239 68 68 / 10%);
-        color: #ef4444;
+        color: var(--red-light);
       }
 
       &.unlocked {
         border: 1px solid Rgb(34 197 94 / 30%);
         background: Rgb(34 197 94 / 15%);
-        color: #4ade80;
+        color: var(--green-light);
       }
 
       &.cazabichos {
         border: 1px solid Rgb(34 197 94 / 30%) !important;
         background: Rgb(34 197 94 / 10%) !important;
-        color: #22c55e !important;
+        color: var(--emerald) !important;
       }
 
       &.criador {
         border: 1px solid Rgb(168 85 247 / 30%) !important;
         background: Rgb(168 85 247 / 10%) !important;
-        color: #a855f7 !important;
+        color: var(--purple-400) !important;
       }
 
       &.rocket {
         border: 1px solid Rgb(239 68 68 / 30%) !important;
         background: Rgb(239 68 68 / 10%) !important;
-        color: #ef4444 !important;
+        color: var(--red-light) !important;
       }
 
       &.entrenador {
         border: 1px solid Rgb(59 130 246 / 30%) !important;
         background: Rgb(59 130 246 / 10%) !important;
-        color: #3b82f6 !important;
+        color: var(--blue-500) !important;
       }
 
       &.union {
         border: 1px solid Rgb(0 210 255 / 30%) !important;
         background: Rgb(0 210 255 / 15%) !important;
-        color: #00d2ff !important;
+        color: var(--cyan) !important;
       }
 
       &.poder {
         border: 1px solid Rgb(255 51 0 / 30%) !important;
         background: Rgb(255 51 0 / 15%) !important;
-        color: #f30 !important;
+        color: var(--red-light) !important;
       }
     }
   }

@@ -31,6 +31,7 @@ const TRAVEL_INCENSE_ITEM_IDS = [
 export type TravelIncenseItemId = (typeof TRAVEL_INCENSE_ITEM_IDS)[number]
 
 const SPAWN_PERCENTAGE_DIFF_THRESHOLD_PCT = 0.05
+const LUCKY_EGG_EXP_MULTIPLIER = 1.5 as const;
 
 const TRAVEL_BUFF_ITEM_IDS = [
   'repel',
@@ -119,7 +120,7 @@ export function calculateActiveTravelModifiers(items: ReadonlySet<TravelBuffItem
   else if (itemSet.has('superrepel')) encounterRateMod = SUPER_REPEL_ENCOUNTER_RATE_MODIFIER
   else if (itemSet.has('maxrepel')) encounterRateMod = MAX_REPEL_ENCOUNTER_RATE_MODIFIER
 
-  if (itemSet.has('luckyegg')) expMultiplier = 1.5
+  if (itemSet.has('luckyegg')) expMultiplier = LUCKY_EGG_EXP_MULTIPLIER
   if (itemSet.has('amuletcoin')) moneyMultiplier = 2.0
   if (itemSet.has('ticketshiny')) shinyChanceMod = 2.0
 

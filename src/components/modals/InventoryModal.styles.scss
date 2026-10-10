@@ -5,7 +5,7 @@
   height: 520px !important;
 
   .inventory-main {
-    border-radius: 0 0 24px 24px;
+    border-radius: 0 0 $radius-4xl $radius-4xl;
     padding-top: 10px;
   }
 
@@ -27,7 +27,7 @@
 .modal-main-tabs {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   margin-bottom: 16px;
 }
 
@@ -35,15 +35,15 @@
   @include pixelated;
 
   padding: 6px 14px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 8px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg;
+  background: Rgb(255 255 255 / 3%);
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   cursor: pointer;
 
   &:hover {
-    background: rgb(255 255 255 / 6%);
+    background: Rgb(255 255 255 / 6%);
     color: var(--white);
   }
 
@@ -51,7 +51,7 @@
     background: var(--red);
     color: var(--white);
     border-color: var(--red-light);
-    box-shadow: 0 0 8px rgb(239 68 68 / 40%);
+    box-shadow: var(--shadow-glow-yellow-sm);
     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   }
 }

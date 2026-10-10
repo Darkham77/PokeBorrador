@@ -3,27 +3,25 @@
 .hud-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   
   &.pos-bottom {
     // PREMIUM SHELL ENHANCED
     @include shell-premium(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
 
     justify-content: center;
-    gap: 15px;
+    gap: $spacing-md-15;
     width: max-content;
     max-width: calc(100% - 16px);
     height: 70px;
     margin: 0 auto;
     padding: 10px 24px;
-    border-radius: 20px 20px 0 0;
+    border-radius: $radius-3xl $radius-3xl 0 0;
     box-sizing: border-box;
     
     // MULTI-LAYER REFLECTIONS & CONTRAST
-    box-shadow: 
-      0 10px 40px Rgb(0 0 0 / 60%),
-      0 -10px 50px Rgb(0 0 0 / 70%),
-      inset 0 1px 0 Rgb(255 255 255 / 10%); // Reflection on the top edge
+    box-shadow: var(--shadow-card);
+
     
     // Reflection parent is handled by position: fixed in parent/mobile class
 
@@ -31,9 +29,9 @@
     overflow: visible !important;
 
     @media (width <= 480px) {
-      gap: 6px;
+      gap: $spacing-sm-alt;
       padding: 10px 12px;
-      border-radius: 16px 16px 0 0;
+      border-radius: $radius-2xl $radius-2xl 0 0;
     }
   }
 }
@@ -44,13 +42,13 @@
   flex-direction: column; // Unificado a columna (icono arriba, texto abajo)
   justify-content: center;
   align-items: center;
-  gap: 6px; // Separación estandarizada
+  gap: $spacing-sm-alt; // Separación estandarizada
   width: 50px;
   min-width: 50px;
   height: 50px;
   padding: 8px 6px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 5%);
   color: $white;
   cursor: pointer;
@@ -67,14 +65,14 @@
     align-items: center;
 
     // Override pixel font so size-adjust:128% does NOT inflate the emoji line-box
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    font-size: 16px;
+    font-family: $font-family-emoji !important;
+    font-size: var(--font-16);
   }
   .nav-item-label {
     @include pixelated;
 
     color: Rgb(255 255 255 / 75%);
-    font-size: 7px !important;
+    font-size: var(--font-7) !important;
     font-weight: 400;
     white-space: nowrap;
     text-transform: uppercase;
@@ -84,10 +82,8 @@
     z-index: var(--z-base);
     background: Rgb(255 204 0 / 15%);
     border-color: var(--yellow);
-    box-shadow: 
-      0 0 0 2px var(--yellow),
-      0 0 30px Rgb(255 214 10 / 45%),
-      inset 0 0 12px Rgb(255 214 10 / 10%);
+    box-shadow: var(--shadow-card);
+
     .nav-item-label { 
       color: var(--yellow); 
       opacity: 1; 
@@ -107,14 +103,14 @@
   display: flex;
   flex-direction: column;
   align-items: stretch !important;
-  gap: 6px !important;
+  gap: $spacing-sm-alt !important;
   width: max-content !important;
   min-width: 0 !important;
   padding: 6px !important;
   border: 1px solid Rgb(255 255 255 / 15%);
-  border-radius: 14px;
+  border-radius: $radius-xl-alt;
   background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
-  box-shadow: 0 20px 50px Rgb(0 0 0 / 70%);
+  box-shadow: var(--shadow-2xl);
   overflow: visible !important;
 
   &::before {
@@ -149,13 +145,13 @@
   flex-direction: row !important;
   justify-content: flex-start !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: $spacing-md-alt !important;
   width: 100% !important;
   min-width: unset !important;
   height: auto !important;
   padding: 7px 11px !important;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 5%);
   white-space: nowrap;
 
@@ -163,19 +159,15 @@
     z-index: var(--z-base); 
     background: Rgb(255 255 255 / 10%) !important; 
     border-color: var(--yellow) !important;
-    box-shadow: 
-      0 20px 40px Rgb(0 0 0 / 60%),
-      inset 0 30px 60px -20px color-mix(in sRGB, var(--yellow), transparent 80%),
-      0 0 20px color-mix(in sRGB, var(--yellow), transparent 70%) !important;
+    box-shadow: var(--shadow-card);
+
   }
   
   &.active {
     background: Rgb(255 204 0 / 12%);
     border-color: var(--yellow) !important;
-    box-shadow: 
-      0 20px 40px Rgb(0 0 0 / 60%),
-      inset 0 30px 60px -20px color-mix(in sRGB, var(--yellow), transparent 80%),
-      0 0 20px color-mix(in sRGB, var(--yellow), transparent 70%) !important;
+    box-shadow: var(--shadow-card);
+
   }
 
   .icon {
@@ -186,8 +178,8 @@
     padding: 0 !important;
 
     // Override pixel font so size-adjust:128% does NOT inflate the emoji line-box
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    font-size: 14px;
+    font-family: $font-family-emoji !important;
+    font-size: var(--font-14);
     line-height: 1 !important;
   }
   .nav-item-label {
@@ -196,7 +188,7 @@
     margin: 0 !important;
     padding: 0 !important; 
     color: $white; 
-    font-size: 8px;
+    font-size: var(--font-8);
     white-space: nowrap;
   }
   
@@ -204,10 +196,8 @@
 
   &.war-shop-nav-btn:hover {
     border-color: var(--red) !important;
-    box-shadow: 
-      0 20px 40px Rgb(0 0 0 / 60%),
-      inset 0 30px 60px -20px color-mix(in sRGB, var(--red), transparent 80%),
-      0 0 20px color-mix(in sRGB, var(--red), transparent 70%) !important;
+    box-shadow: var(--shadow-card);
+
     .nav-item-label { color: var(--red); }
   }
 
@@ -229,11 +219,11 @@
   top: -4px;
   right: -4px;
   padding: 4px 6px;
-  border-radius: 8px;
-  background: #ef4444;
-  color: white;
-  font-size: 7px;
-  box-shadow: 0 2px 8px Rgb(239 68 68 / 40%);
+  border-radius: $radius-lg;
+  background: var(--red-light);
+  color: var(--white);
+  font-size: var(--font-7);
+  box-shadow: var(--shadow-subtle);
 }
 
 .relative-box { position: relative; }
@@ -245,7 +235,7 @@
     .nav-item-label { 
       @include pixelated; 
 
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 }

@@ -172,21 +172,21 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   flex-wrap: wrap;
   justify-content: center;
   align-items: stretch;
-  gap: 16px;
+  gap: $spacing-lg;
   margin-bottom: 12px;
 }
 
 .legacy-divider {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: $spacing-xl;
   margin: 16px 0;
 }
 
 .legacy-divider::before,
 .legacy-divider::after {
   height: 4px;
-  background: rgb(255 255 255 / 10%);
+  background: Rgb(255 255 255 / 10%);
   content: '';
   flex: 1;
 }
@@ -195,7 +195,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   @include pixelated;
 
   color: var(--gray, #94a3b8);
-  font-size: 10px;
+  font-size: var(--font-10);
   letter-spacing: 2px;
 }
 </style>

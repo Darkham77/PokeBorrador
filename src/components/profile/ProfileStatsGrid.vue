@@ -95,7 +95,7 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
 
 .profile-stat-grid-legacy {
   display: grid;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: repeat(2, 1fr);
 }
 
@@ -104,10 +104,10 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
 
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 16px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 18px;
+  border-radius: $radius-2xl-alt;
   background: Rgb(15 23 42 / 95%);
   text-align: center;
   cursor: default;
@@ -149,7 +149,7 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
       border-color: Rgb(74 222 128 / 20%);
       
       .legacy-stat-val {
-        color: #4ade80;
+        color: var(--green-light);
         text-shadow: 0 0 10px Rgb(74 222 128 / 50%);
       }
     }
@@ -162,16 +162,16 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   color: $white;
-  font-size: 14px;
+  font-size: var(--font-14);
 }
 
 .legacy-stat-lbl {
   @include pixelated;
 
   color: Rgb(255 255 255 / 30%);
-  font-size: 6px;
+  font-size: var(--font-6);
   text-transform: uppercase;
   letter-spacing: 1px;
 }

@@ -52,7 +52,7 @@ const emit = defineEmits<{
     border: 1px dashed var(--blue);
     background: Rgb(0 150 255 / 10%);
     color: var(--blue);
-    font-size: 10px;
+    font-size: var(--font-10);
     margin-top: 10px;
   }
 }
@@ -61,25 +61,25 @@ const emit = defineEmits<{
   width: 100%;
   padding: 16px;
   border: 1px solid Rgb(255 255 255 / 20%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 10%);
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: var(--font-10);
   font-weight: bold;
-  box-shadow: 0 4px 0 Rgb(0 0 0 / 30%);
+  box-shadow: $shadow-retro-btn;
   cursor: pointer;
   
   
   &.reclaim-btn {
     background: var(--green);
-    color: #111;
+    color: var(--black);
     font-weight: 900;
     border-color: $white;
     &:hover {
       background: $white;
       color: var(--green);
       transform: Translatey(-2px);
-      box-shadow: 0 6px 0 Rgb(0 0 0 / 20%);
+      box-shadow: $shadow-retro-btn-hover;
     }
   }
 }
@@ -89,7 +89,7 @@ const emit = defineEmits<{
   background: none;
   color: $white;
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
   opacity: 0.5;
   cursor: pointer;
   text-decoration: underline;
@@ -97,7 +97,7 @@ const emit = defineEmits<{
   
   
   &:hover {
-    color: #f33;
+    color: var(--red-light);
     opacity: 1;
   }
 }

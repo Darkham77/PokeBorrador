@@ -80,6 +80,7 @@ const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getI
     >
       <div
         v-if="pokemon"
+        id="trade-side-panel-div-1"
         class="poke-card-wrap"
         @click.stop="emit('open-selector')"
       >
@@ -94,6 +95,7 @@ const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getI
       </div>
       <button
         v-else
+        id="trade-side-panel-btn-pokemonbtntext"
         class="btn-open-selector"
         @click.stop="emit('open-selector')"
       >
@@ -113,6 +115,7 @@ const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getI
         class="item-card-wrapper"
       >
         <InventoryItemCard
+          id="trade-side-panel-inventoryitemcard-2"
           :item="item"
           :is-selected="Boolean(selectedItems[item.id])"
           @click.stop="emit('toggle-item', item.id)"
@@ -120,10 +123,12 @@ const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getI
         <!-- Quantity control overlay when selected -->
         <div
           v-if="selectedItems[item.id]"
+          id="trade-side-panel-div-3"
           class="qty-control-overlay"
           @click.stop
         >
           <button
+            id="trade-side-panel-btn-decrement"
             class="qty-btn dec"
             :disabled="isItemDecDisabled(item.id)"
             @click="handleDecrement(item.id)"
@@ -132,6 +137,7 @@ const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getI
           </button>
           <span class="qty-val">{{ getItemQty(item.id) }}</span>
           <button
+            id="trade-side-panel-btn-increment"
             class="qty-btn inc"
             :disabled="isItemIncDisabled(item.id, item.qty)"
             @click="handleIncrement(item.id)"
@@ -139,6 +145,7 @@ const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getI
             +
           </button>
           <button
+            id="trade-side-panel-btn-emit"
             class="qty-btn remove"
             @click="emit('toggle-item', item.id)"
           >
@@ -166,6 +173,7 @@ const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getI
       <div class="money-input-wrapper">
         <span class="currency-symbol">₱</span>
         <input
+          id="trade-side-panel-input-4"
           :value="money"
           type="number"
           min="0"

@@ -58,6 +58,7 @@ const emit = defineEmits<{
         description="Aplica el aura blanca de poder especial."
       >
         <button
+          id="pokemon-preview-btn-1"
           class="flag-btn guardian"
           :class="{ active: isGuardian }"
           @click.stop="emit('toggleGuardian')"
@@ -70,6 +71,7 @@ const emit = defineEmits<{
         description="Cambia entre macho y hembra."
       >
         <button
+          id="pokemon-preview-btn-2"
           class="flag-btn gender"
           :class="[gender === 'm' ? 'male' : 'female']"
           @click.stop="emit('toggleGender')"
@@ -90,10 +92,10 @@ const emit = defineEmits<{
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 20px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 40%);
   overflow: hidden;
 
@@ -107,7 +109,7 @@ const emit = defineEmits<{
 
   .preview-flags {
     display: flex;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .flag-btn {
       display: flex;
@@ -116,7 +118,7 @@ const emit = defineEmits<{
       width: 32px;
       height: 32px;
       border: 1px solid Rgb(255 255 255 / 10%);
-      border-radius: 8px;
+      border-radius: $radius-lg;
       background: Rgb(255 255 255 / 5%);
       cursor: pointer;
       

@@ -83,20 +83,20 @@ onUnmounted(() => {
   z-index: calc(var(--z-overlay) - 1);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 6px 14px;
-  border: 2px solid #fca5a5;
-  border-radius: 20px;
+  border: 2px solid var(--red-300);
+  border-radius: $radius-3xl;
   background: Rgb(239 68 68 / 92%);
-  color: #fff;
-  font-size: 11px;
+  color: var(--white);
+  font-size: var(--font-11);
   transform: Translatex(-50%);
-  box-shadow: 0 4px 12px Rgb(0 0 0 / 40%);
+  box-shadow: $shadow-card;
   letter-spacing: 0.5px;
   pointer-events: none;
 }
 
 .banner-icon {
-  font-size: 14px;
+  font-size: var(--font-14);
 }
 </style>

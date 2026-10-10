@@ -5,13 +5,13 @@ import {
   getBlankDefaultProject,
   STAMPING_PREFABS_CATALOG,
   JohtoRegionalWorldGenerator
-} from '../../logic/map/regionRegistry';
+} from '../../data/map/regionRegistry.ts';
 import {
   CELL_BIOME,
   OCCUPANCY_FLAGS,
   OccupancyGrid
-} from '../../logic/map/kantoRegionalGenerator';
-import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine';
+} from '../../types/map/kantoGridModel.ts';
+import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 
 describe('Multi-Region World Projects & Regional Registry', () => {
   it('instantiates Kanto and Johto canonical projects with valid contracts', () => {

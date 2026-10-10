@@ -14,9 +14,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateOrganicCityLayout } from '../../../src/logic/map/organicCityEngine.ts';
-import { synthesizeCityGenes } from '../../../src/logic/map/cityGeneSynthesizer.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateOrganicCityLayout } from '../../logic/map/organicCityEngine.ts';
+import { synthesizeCityGenes } from '../../logic/map/cityGeneSynthesizer.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('organicCityEngine (100-Seed Fuzzer Suite)', () => {
   it('strictly validates 100% Doorstep Clearance across 100 random seeds in Metropolis, City, and Town', () => {

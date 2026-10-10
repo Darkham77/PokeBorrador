@@ -12,15 +12,15 @@ import {
   TilesRegistryService,
   loadTilesRegistry,
   type TilesRegistryJson
-} from '../../../src/logic/map/tilesRegistry.ts';
+} from '../../logic/map/tilesRegistry.ts';
 import {
   generateProceduralMap
-} from '../../../src/logic/map/proceduralMapGenerator.ts';
+} from '../../logic/map/proceduralMapGenerator.ts';
 import {
   POKEMON_CENTER,
   POKEMART,
   KANTO_HOUSE_SMALL
-} from '../../../src/config/mapStructures.ts';
+} from '../../config/mapStructures.ts';
 
 describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
   let registryService: TilesRegistryService;

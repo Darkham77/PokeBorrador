@@ -19,6 +19,10 @@
 
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import {
+  computeGridDistanceField,
+  type GridBfsQueueItem
+} from '../utils/gridBfsUtils.ts';
 
 export function computeTransitableGrid(
   continentMap: ContinentMapResult,
@@ -34,7 +38,7 @@ export function computeTransitableGrid(
   const effectiveRadius = corridorRadius ?? 2;
 
   const dist: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
-  const queue: { x: number; y: number; d: number }[] = [];
+  const queue: GridBfsQueueItem[] = [];
 
   // 1. Seed BFS from active route paths and bridges
   for (let y = 0; y < H; y++) {
@@ -48,24 +52,22 @@ export function computeTransitableGrid(
   }
 
   // 2. Expand outward up to effectiveRadius cells (excluding water bodies)
-  let head = 0;
-  while (head < queue.length) {
-    const curr = queue[head++]!;
-    if (curr.d >= effectiveRadius) continue;
+  computeGridDistanceField(
+    queue,
+    dist,
+    W,
+    H,
+    effectiveRadius,
+    (nx, ny) => {
+      const terrain = continentMap.terrainMatrix[ny]![nx];
+      return terrain === 'water' || terrain === 'water_deep';
+    }
+  );
 
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = curr.x + dx!;
-      const ny = curr.y + dy!;
-
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-        const terrain = continentMap.terrainMatrix[ny]![nx];
-        if (terrain === 'water' || terrain === 'water_deep') continue;
-
-        if (dist[ny]![nx]! > curr.d + 1) {
-          dist[ny]![nx] = curr.d + 1;
-          queue.push({ x: nx, y: ny, d: curr.d + 1 });
-          transitableGrid[ny]![nx] = true;
-        }
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (dist[y]![x]! <= effectiveRadius) {
+        transitableGrid[y]![x] = true;
       }
     }
   }

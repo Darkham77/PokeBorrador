@@ -15,10 +15,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { resolvePoiLandmarksAndBuildings, resolvePortFerryAsset } from '../../../src/logic/map/canvasLandmarkRenderer.ts';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import type { POINode, CardinalDirection } from '../../../src/types/map/poiTypes.ts';
+import { resolvePoiLandmarksAndBuildings, resolvePortFerryAsset } from '../../logic/map/canvasLandmarkRenderer.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import type { POINode, CardinalDirection } from '../../types/map/poiTypes.ts';
 
 describe('portDockTerminalRotation', () => {
   const directions: readonly CardinalDirection[] = ['south', 'north', 'west', 'east'] as const;

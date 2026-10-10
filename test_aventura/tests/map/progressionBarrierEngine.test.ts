@@ -12,12 +12,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generatePokemonTopology } from '../../../src/logic/map/pokemonGraphTopology.ts';
+import { generatePokemonTopology } from '../../logic/map/pokemonGraphTopology.ts';
 import {
   assignProgressionOrder,
   applyProgressionBarriers,
   validateAntiSoftlock
-} from '../../../src/logic/map/progressionBarrierEngine.ts';
+} from '../../logic/map/progressionBarrierEngine.ts';
 
 describe('Progression Barrier & Anti-Softlock Engine (Phase 5)', () => {
   it('assigns progression order monotonically along main chain', () => {

@@ -5,7 +5,7 @@ import { formatCurrency } from '@/logic/utils/formatters'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
 import type { Item } from '@/types/inventory/items'
 import type { ItemId } from '@/data/inventory/items'
-import { BLACK_MARKET_DEFAULT_DISCOUNT, BATTLE_COIN_TO_MONEY_RATE } from '@/logic/constants/gameplay'
+import { BLACK_MARKET_DEFAULT_DISCOUNT, BATTLE_COIN_TO_MONEY_RATE, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay'
 
 interface Props {
   item: Item
@@ -33,6 +33,7 @@ const prices = computed(() => {
 const canAfford = computed(() => props.userMoney >= prices.value.discounted)
 const tierColor = computed(() => getItemTierColor(props.item.tier))
 const tierLabel = computed(() => getItemTierLabel(props.item.tier))
+const discountPercentageText = computed(() => `-${Math.round((props.discount ?? 0) * PERCENT_BASE_MULTIPLIER)}%`)
 
 function handleImageError(e: Event) {
   if (e.target) {
@@ -43,7 +44,7 @@ function handleImageError(e: Event) {
 
 <template>
   <div
-    v-gsap-hover="{ scale: 1.02, y: -2 }"
+    v-gsap-hover="'widget'"
     class="bm-card"
     :class="{ 'is-sold': isPurchased }"
     :style="{ '--tier-color': tierColor }"
@@ -85,13 +86,14 @@ function handleImageError(e: Event) {
         <span class="bm-original-price">
           ₽ {{ formatCurrency(prices.original) }}
         </span>
-        <span class="bm-discount-tag">-{{ Math.round(discount * 100) }}%</span>
+        <span class="bm-discount-tag">{{ discountPercentageText }}</span>
         <span class="bm-final-price">
           ₽ {{ formatCurrency(prices.discounted) }}
         </span>
       </div>
 
       <button
+        id="black-market-card-btn-emit"
         v-gsap-hover="'button'"
         class="bm-buy-btn"
         :disabled="isPurchased || !canAfford"

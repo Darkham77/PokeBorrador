@@ -7,7 +7,6 @@ import BaseModal from '@/components/common/BaseModal.vue';
 import DirectChatMessageRow from './DirectChatMessageRow.vue';
 import { gsap } from 'gsap';
 
-
 interface Props {
   friendId: string;
 }
@@ -132,7 +131,8 @@ onMounted(() => {
 
       <footer class="chat-footer">
         <div class="input-container">
-          <input 
+          <input
+            id="direct-chat-window-input-newmessage" 
             ref="inputField"
             v-model="newMessage"
             type="text" 
@@ -140,7 +140,8 @@ onMounted(() => {
             :maxlength="250"
             @keydown.enter="handleSendMessage"
           >
-          <button 
+          <button
+            id="direct-chat-window-btn-1" 
             class="send-btn" 
             :disabled="!newMessage.trim()"
             @click.stop="handleSendMessage"
@@ -171,7 +172,7 @@ onMounted(() => {
 .messages-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   min-height: 0;
   padding: 15px;
   flex: 1;
@@ -180,7 +181,7 @@ onMounted(() => {
 
 .chat-start-hint {
   color: Rgb(255 255 255 / 50%);
-  font-size: 9px;
+  font-size: var(--font-9);
   text-align: center;
   margin-bottom: 5px;
   font-style: italic;
@@ -189,20 +190,20 @@ onMounted(() => {
 .empty-state {
   padding: 40px 20px;
   color: Rgb(148 163 184 / 100%);
-  font-size: 12px;
+  font-size: var(--font-12);
   text-align: center;
 }
 
 .message-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .message-content {
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 0 12px 12px;
+  border-radius: 0 $radius-xl $radius-xl;
   background: Rgb(255 255 255 / 3%);
   flex: 1;
 
@@ -227,17 +228,17 @@ onMounted(() => {
 
   .input-container {
     display: flex;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-bottom: 8px;
   }
 
   input {
     padding: 10px 12px;
     border: 1px solid Rgb(199 125 255 / 20%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 30%);
     color: var(--white);
-    font-size: 13px;
+    font-size: var(--font-13);
     flex: 1;
     outline: none;
 
@@ -248,7 +249,7 @@ onMounted(() => {
     width: 38px;
     height: 38px;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: var(--purple);
     color: var(--white);
     cursor: pointer;
@@ -260,7 +261,7 @@ onMounted(() => {
   .hint {
     margin: 0;
     color: Rgb(255 255 255 / 50%);
-    font-size: 10px;
+    font-size: var(--font-10);
     text-align: right;
   }
 }

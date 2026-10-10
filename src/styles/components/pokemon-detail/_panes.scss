@@ -6,7 +6,7 @@
 .pdex-summary-pane {
       & .info-grid {
     display: grid;
-    gap: 16px;
+    gap: $spacing-lg;
     grid-template-columns: repeat(3, 1fr);
     margin-bottom: 24px;
     
@@ -19,11 +19,11 @@
       min-height: 70px;
       padding: 16px 8px;
       border: 1px solid Rgb(255 255 255 / 5%);
-      border-radius: 16px;
+      border-radius: $radius-2xl;
       background: Linear-Gradient(145deg, Rgb(255 255 255 / 5%) 0%, Rgb(255 255 255 / 2%) 100%); 
       text-align: center;
       overflow: hidden;
-      box-shadow: inset 0 1px 1px Rgb(255 255 255 / 3%);
+      box-shadow: var(--shadow-card);
       
 
       &::after {
@@ -33,7 +33,7 @@
         background: var(--type-color);
         opacity: 0.3;
         content: '';
-        box-shadow: 0 0 10px Rgb(from var(--type-color, #fff) r g b / 20%);
+        box-shadow: var(--shadow-glow-amber);
       }
       
       & .ps-card-label, & .upd-info-label {
@@ -41,7 +41,7 @@
 
         display: block; 
         color: Rgb(255 255 255 / 40%); 
-        font-size: 7px; 
+        font-size: var(--font-7); 
         font-weight: 800; 
         margin-bottom: 8px; 
         text-transform: uppercase;
@@ -52,7 +52,7 @@
         @include pixelated; 
 
         color: var(--white); 
-        font-size: 11px; 
+        font-size: var(--font-11); 
         font-weight: 700;
         line-height: 1.6; 
         letter-spacing: 0.5px;
@@ -63,7 +63,7 @@
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
       }
 
       & .physical-tier-badge {
@@ -74,8 +74,8 @@
         align-items: center;
         padding: 2px 5px;
         border: 1px solid transparent;
-        border-radius: 4px;
-        font-size: 10px;
+        border-radius: $radius-sm;
+        font-size: var(--font-10);
         font-weight: 800;
         text-align: center;
         text-transform: uppercase;
@@ -85,21 +85,21 @@
 
         &.tier-xxs {
           background: Linear-Gradient(135deg, Rgb(0 242 254 / 25%) 0%, Rgb(79 172 254 / 40%) 100%);
-          color: #00f2fe;
-          border-color: #00f2fe;
-          box-shadow: 0 0 8px Rgb(0 242 254 / 40%);
+          color: var(--cyan);
+          border-color: var(--cyan);
+          box-shadow: var(--shadow-glow-yellow-sm);
         }
 
         &.tier-xs {
           background: Rgb(243 156 18 / 20%);
-          color: #f39c12;
-          border-color: #f39c12;
+          color: var(--amber);
+          border-color: var(--amber);
         }
 
         &.tier-s {
           background: Rgb(46 204 113 / 20%);
-          color: #2ecc71;
-          border-color: #2ecc71;
+          color: var(--emerald);
+          border-color: var(--emerald);
         }
 
         &.tier-m {
@@ -110,21 +110,21 @@
 
         &.tier-l {
           background: Rgb(52 152 219 / 20%);
-          color: #3498db;
-          border-color: #3498db;
+          color: var(--blue-400);
+          border-color: var(--blue-400);
         }
 
         &.tier-xl {
           background: Rgb(155 89 182 / 20%);
-          color: #9b59b6;
-          border-color: #9b59b6;
+          color: var(--purple-400);
+          border-color: var(--purple-400);
         }
 
         &.tier-xxl {
           background: Linear-Gradient(135deg, Rgb(255 215 0 / 30%) 0%, Rgb(255 140 0 / 40%) 100%);
-          color: #ffd700;
-          border-color: #ffd700;
-          box-shadow: 0 0 10px Rgb(255 215 0 / 50%);
+          color: var(--gold);
+          border-color: var(--gold);
+          box-shadow: var(--shadow-glow-yellow);
         }
       }
     }
@@ -135,14 +135,14 @@
 
       position: relative;
       padding: 24px;
-      border-radius: 12px;
+      border-radius: $radius-xl;
       background: Linear-Gradient(90deg, Rgb(from var(--type-color, #fff) r g b / 5%) 0%, Rgb(255 255 255 / 1%) 100%); 
       color: Rgb(255 255 255 / 60%); 
-      font-size: 14px; 
+      font-size: var(--font-14); 
       line-height: 1.8; 
       font-style: italic;
       border-left: 3px solid var(--type-color, var(--yellow));
-      box-shadow: inset 10px 0 30px Rgb(from var(--type-color, #fff) r g b / 3%);
+      box-shadow: var(--shadow-2xl);
 
       &::before {
         position: absolute;
@@ -150,7 +150,7 @@
         left: 15px;
         color: var(--type-color);
         font-family: serif;
-        font-size: 40px;
+        font-size: var(--font-40);
         opacity: 0.1;
         content: '"';
       }
@@ -161,26 +161,26 @@
      & .poke-identity {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: $spacing-lg;
     pointer-events: auto;
     margin-bottom: 30px;
     
     & .p-id {
       padding: 6px 12px;
-      border-radius: 6px;
+      border-radius: $radius-md;
       background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgb(from var(--type-color, #fff) r g b / 80%) 100%);
       color: var(--black);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-      font-size: 11px;
+      font-family: $font-family-sans !important;
+      font-size: var(--font-11);
       font-weight: 900;
-      box-shadow: 0 4px 15px Rgb(from var(--type-color, #fff) r g b / 30%);
+      box-shadow: var(--shadow-md);
     }
     
     & .p-name {
       @include pixelated;
 
       color: var(--white);
-      font-size: 20px;
+      font-size: var(--font-20);
       text-transform: uppercase;
       letter-spacing: 1px;
       text-shadow: 0 0 20px Rgb(255 255 255 / 20%);
@@ -190,7 +190,7 @@
     & .pdex-stat-row {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: $spacing-xl;
       margin-bottom: 20px;
       
       .pdex-stat-label {
@@ -198,7 +198,7 @@
 
         width: 50px; 
         color: Rgb(255 255 255 / 30%); 
-        font-size: 7px; 
+        font-size: var(--font-7); 
         font-weight: 900; 
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -209,7 +209,7 @@
 
         width: 35px; 
         color: var(--white); 
-        font-size: 10px; 
+        font-size: var(--font-10); 
         font-weight: 700; 
         text-align: right;
       }
@@ -217,19 +217,19 @@
       .stat-bar-bg { 
         position: relative; 
         height: 8px; 
-        border-radius: 4px; 
+        border-radius: $radius-sm; 
         background: Rgb(255 255 255 / 3%); 
         flex: 1; 
         overflow: hidden;
-        box-shadow: inset 0 1px 2px Rgb(0 0 0 / 30%);
+        box-shadow: var(--shadow-card);
       }
 
       .stat-bar-fill {
         position: relative; 
         height: 100%; 
-        border-radius: 4px; 
+        border-radius: $radius-sm; 
         background: Linear-Gradient(90deg, var(--type-color) 0%, Rgb(from var(--type-color, #fff) r g b / 70%) 100%);
-        box-shadow: 0 0 15px Rgb(from var(--type-color, #fff) r g b / 30%);
+        box-shadow: var(--shadow-glow-amber);
 
         &::after {
           position: absolute;
@@ -248,7 +248,7 @@
     align-items: center;
     padding: 20px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Linear-Gradient(to right, Rgb(255 255 255 / 3%) 0%, Rgb(255 255 255 / 0%) 100%);
     margin-top: 32px;
     
@@ -256,7 +256,7 @@
       @include pixelated;
 
       color: Rgb(255 255 255 / 30%);
-      font-size: 7px;
+      font-size: var(--font-7);
       letter-spacing: 2px;
       text-transform: uppercase;
     }
@@ -265,7 +265,7 @@
       @include pixelated;
 
       color: var(--yellow);
-      font-size: 14px;
+      font-size: var(--font-14);
       font-weight: 700;
       text-shadow: 0 0 15px Rgb(255 214 10 / 30%);
     }
@@ -281,37 +281,37 @@
     th {
       padding: 0 16px 8px;
       color: Rgb(255 255 255 / 30%);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: 800;
       text-align: left;
       letter-spacing: 1px;
 
       @media (width <= 480px) {
         padding: 0 8px 4px;
-        font-size: 8px;
+        font-size: var(--font-8);
       }
     }
     
     td {
       padding: 12px 16px;
       background: Rgb(255 255 255 / 3%);
-      font-size: 13px;
+      font-size: var(--font-13);
       font-weight: 700;
 
       @media (width <= 480px) {
         padding: 8px 6px;
-        font-size: 10px;
+        font-size: var(--font-10);
       }
       
-      &:first-child { border-radius: 12px 0 0 12px; }
-      &:last-child { border-radius: 0 12px 12px 0; }
+      &:first-child { border-radius: $radius-xl 0 0 $radius-xl; }
+      &:last-child { border-radius: 0 $radius-xl $radius-xl 0; }
     }
     
     .ps-move-lv { 
       @include pixelated; 
 
       color: var(--yellow); 
-      font-size: 8px;
+      font-size: var(--font-8);
     }
     
     .ps-move-name {
@@ -326,7 +326,7 @@
       @include pixelated;
 
       color: Rgb(255 255 255 / 50%);
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 }
@@ -335,28 +335,28 @@
 @media (width <= 480px) {
   body .pdex-summary-pane {
       & .info-grid {
-      gap: 8px;
+      gap: $spacing-sm;
       margin-bottom: 20px;
         & .info-item {
         min-height: 60px;
         padding: 10px 4px;
-        border-radius: 12px;
-        & .ps-info-value { font-size: 12px; }
+        border-radius: $radius-xl;
+        & .ps-info-value { font-size: var(--font-12); }
       }
     }
       & .description {
       padding: 14px;
-      font-size: 12px;
+      font-size: var(--font-12);
       line-height: 1.5;
     }
   }
   
   body .pdex-stats-pane {
       & .pdex-stat-row {
-      gap: 10px;
+      gap: $spacing-md-alt;
       margin-bottom: 12px;
-        & .pdex-stat-value { width: 30px; font-size: 12px; }
+        & .pdex-stat-value { width: 30px; font-size: var(--font-12); }
     }
-    .stat-total .ps-info-value { font-size: 18px; }
+    .stat-total .ps-info-value { font-size: var(--font-18); }
   }
 }

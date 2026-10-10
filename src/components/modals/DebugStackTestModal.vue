@@ -62,6 +62,7 @@ const emit = defineEmits<{
         {{ number }}
       </h1>
       <button
+        id="debug-stack-test-modal-btn-cerrar"
         class="pixel-btn"
         @click.stop="emit('close')"
       >
@@ -80,10 +81,10 @@ const emit = defineEmits<{
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 30px;
+  gap: $spacing-30;
   width: 100%;
   padding: 0; // Removed to let BaseModal padding show
-  background: rgb(255 255 255 / 5%); // Added background to visualize space
+  background: Rgb(255 255 255 / 5%); // Added background to visualize space
 }
 
 .big-number {
@@ -92,8 +93,8 @@ const emit = defineEmits<{
 
   margin: 0;
   color: var(--white);
-  font-size: 80px;
-  text-shadow: 4px 4px 0 rgb(0 0 0 / 50%);
+  font-size: var(--font-80);
+  text-shadow: 4px 4px 0 Rgb(0 0 0 / 50%);
 }
 
 .pixel-btn {

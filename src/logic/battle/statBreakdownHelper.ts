@@ -5,6 +5,7 @@ import type { AbilityId } from '@/data/battle/abilities'
 import type { PurePokemon, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts'
 import type { DayPhase } from '@/logic/utils/timeUtils'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
+import { KALOS_GENERATION_NUM } from '@/logic/constants/gameplay'
 import { getMechanicalWeather, type WeatherId, type WeatherMechanical } from '../weather/weatherRegistry.ts'
 
 const DEFAULT_FALLBACK_STAT = 10
@@ -246,7 +247,7 @@ function resolveSpaItemModifier(itemId: ItemId, pokemon: PurePokemon, sources: S
     sources.push({ name: 'Diente Marino', mult: DEEP_SEA_TOOTH_SPA_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
     return DEEP_SEA_TOOTH_SPA_MULTIPLIER
   }
-  if (itemId === 'souldew' && (pokemon.id === 'latios' || pokemon.id === 'latias') && ACTIVE_GENERATION <= 6) {
+  if (itemId === 'souldew' && (pokemon.id === 'latios' || pokemon.id === 'latias') && ACTIVE_GENERATION <= KALOS_GENERATION_NUM) {
     sources.push({ name: 'Rocío Bondad', mult: SOUL_DEW_SPECIAL_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
     return SOUL_DEW_SPECIAL_MULTIPLIER
   }
@@ -262,7 +263,7 @@ function resolveSpdItemModifier(itemId: ItemId, pokemon: PurePokemon, sources: S
     sources.push({ name: 'Escama Marino', mult: DEEP_SEA_SCALE_SPD_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
     return DEEP_SEA_SCALE_SPD_MULTIPLIER
   }
-  if (itemId === 'souldew' && (pokemon.id === 'latios' || pokemon.id === 'latias') && ACTIVE_GENERATION <= 6) {
+  if (itemId === 'souldew' && (pokemon.id === 'latios' || pokemon.id === 'latias') && ACTIVE_GENERATION <= KALOS_GENERATION_NUM) {
     sources.push({ name: 'Rocío Bondad', mult: SOUL_DEW_SPECIAL_MULTIPLIER, type: 'item' }) // spanish-ok: UI Spanish text localization label
     return SOUL_DEW_SPECIAL_MULTIPLIER
   }

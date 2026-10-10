@@ -23,7 +23,8 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div 
+  <div
+    id="box-pokemon-menu-summary-div-1" 
     class="pokemon-summary-card" 
     :style="{ '--tier-color': tierInfo?.color }"
     @click.stop="emit('detail')"

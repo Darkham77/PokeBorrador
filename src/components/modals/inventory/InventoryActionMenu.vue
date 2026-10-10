@@ -104,14 +104,14 @@ const handleSelect = (actionType: ItemMenuAction) => {
 
   width: 100%;
   color: var(--yellow);
-  font-size: 10px;
+  font-size: var(--font-10);
   text-align: center;
 }
 
 .action-menu-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 16px 0;
 
   .menu-btn {
@@ -122,7 +122,7 @@ const handleSelect = (actionType: ItemMenuAction) => {
     &.vicio-warning { @include btn-vicio('primary', 'md', true); }
     &.vicio-danger  { @include btn-vicio('danger', 'md', true); }
     
-    .icon { font-size: 16px; }
+    .icon { font-size: var(--font-16); }
   }
 }
 </style>

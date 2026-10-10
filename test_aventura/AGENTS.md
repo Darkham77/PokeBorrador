@@ -35,8 +35,8 @@ Game Mechanics / World Exploration Prototyping.
 - [composables/AGENTS.md](./composables/AGENTS.md): Composable helpers for texture atlas management.
 - [config/AGENTS.md](./config/AGENTS.md): Map prop definitions, structural templates, and studio constants.
 - [data/AGENTS.md](./data/AGENTS.md): Static datasets, manifests, and Johto map graph bundles.
+- [docs/AGENTS.md](./docs/AGENTS.md): Design documentation and exploration architecture specs.
 - [logic/AGENTS.md](./logic/AGENTS.md): Mathematical, procedural, and pathfinding logic engines.
-- [scripts/AGENTS.md](./scripts/AGENTS.md): CLI utilities for map rendering and asset extraction.
 - [stores/AGENTS.md](./stores/AGENTS.md): Pinia state stores for map generation and camera viewports.
 - [styles/AGENTS.md](./styles/AGENTS.md): Scoped CSS animation keyframes and styles.
 - [tests/AGENTS.md](./tests/AGENTS.md): Algorithmic unit tests for autotiling and generation mechanics.

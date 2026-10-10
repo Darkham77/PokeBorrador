@@ -17,6 +17,9 @@ import {
   type POINode
 } from '../../types/map/poiTypes.ts';
 
+const TWO_OPT_IMPROVEMENT_EPSILON = 0.01 as const;
+const MIN_CHAIN_LENGTH_FOR_SECONDARY_LOOPS = 6 as const;
+
 /**
  * Builds a canonical linear route chain (Hamiltonian path) across primary POIs using TSP heuristic.
  * Only cities, towns, metropolis, and pokemon_league nodes participate in the main chain.
@@ -78,10 +81,9 @@ function nodeDistance(a: POINode, b: POINode): number {
 function solveTSPChain(
   nodes: readonly POINode[],
   primaryIndices: readonly number[]
-): number[] {
+): readonly number[] {
   const N = primaryIndices.length;
-  if (N <= 1) return [...primaryIndices];
-  if (N === 2) return [...primaryIndices];
+  if (N <= 2) return primaryIndices;
 
   // Start from the southernmost node (highest gridY = bottom of map)
   let startIdx = 0;
@@ -140,7 +142,7 @@ function solveTSPChain(
         const currentDist = nodeDistance(a, b) + (d ? nodeDistance(c, d) : 0);
         const newDist = nodeDistance(a, c) + (d ? nodeDistance(b, d) : 0);
 
-        if (newDist < currentDist - 0.01) {
+        if (newDist < currentDist - TWO_OPT_IMPROVEMENT_EPSILON) {
           // Reverse the sub-sequence [i+1 ... j]
           let left = i + 1;
           let right = j;
@@ -202,7 +204,7 @@ function addSecondaryLoops(
   maxConnectionDistance?: number
 ): { fromIndex: number; toIndex: number; distance: number }[] {
   const loops: { fromIndex: number; toIndex: number; distance: number }[] = [];
-  if (chainOrder.length < 6) return loops;
+  if (chainOrder.length < MIN_CHAIN_LENGTH_FOR_SECONDARY_LOOPS) return loops;
 
   const maxLoops = Math.min(2, Math.max(1, Math.floor(chainOrder.length / 6)));
 

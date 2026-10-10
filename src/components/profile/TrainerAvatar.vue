@@ -268,7 +268,7 @@ defineExpose({
   align-items: center;
   width: 100%;
   height: 100%;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  font-family: $font-family-emoji !important;
   line-height: 1 !important;
   text-align: center;
 }

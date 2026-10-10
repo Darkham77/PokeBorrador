@@ -9,6 +9,7 @@
 
 import { ref, computed, watch, onMounted } from 'vue';
 import { preloadTileImages, getImageCache } from '../../logic/map/canvasImageLoader.ts';
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import type {
   RealContinentPatch,
   ResolvedPatchCell
@@ -26,7 +27,7 @@ const emit = defineEmits<{
 
 const gridSizePx = computed(() => {
   const side = props.patch.radius * 2 + 1;
-  return side * 32;
+  return side * CANVAS_TILE_SIZE;
 });
 
 const categoryIcon = computed(() => {
@@ -43,6 +44,9 @@ const categoryIcon = computed(() => {
       return '🧩';
   }
 });
+
+const HIGH_TIER_ELEVATION_THRESHOLD = 2;
+const isHighTierElevation = computed(() => (props.patch.maxElevationInPatch ?? 0) >= HIGH_TIER_ELEVATION_THRESHOLD);
 
 function getCellId(cell: ResolvedPatchCell): string {
   return `s${props.patch.seed}_x${cell.x ?? props.patch.centerX}_y${cell.y ?? props.patch.centerY}`;
@@ -106,8 +110,8 @@ async function drawPatch(): Promise<void> {
   ctx.fillStyle = '#0a1428';
   ctx.fillRect(0, 0, gridSizePx.value, gridSizePx.value);
 
-  const minPx = (props.patch.centerX - props.patch.radius) * 32;
-  const minPy = (props.patch.centerY - props.patch.radius) * 32;
+  const minPx = (props.patch.centerX - props.patch.radius) * CANVAS_TILE_SIZE;
+  const minPy = (props.patch.centerY - props.patch.radius) * CANVAS_TILE_SIZE;
   const cache = getImageCache();
 
   for (const inst of instructions) {
@@ -133,6 +137,7 @@ watch(
 
 <template>
   <div
+    v-gsap-hover
     class="real-patch-card"
     :class="{ 'has-errors': flaggedCountInPatch > 0 }"
     :data-patch-id="patch.id"
@@ -148,11 +153,11 @@ watch(
       <div
         v-if="patch.category === 'mountain_cliff'"
         class="elev-badge"
-        :class="{ 'high-tier': (patch.maxElevationInPatch ?? 0) >= 2 }"
+        :class="{ 'high-tier': isHighTierElevation }"
         :title="patch.description"
       >
         <span v-if="patch.mountainSubtype === 'stairs'"><span class="emoji-inline">🪜</span> Escalera</span>
-        <span v-else-if="(patch.maxElevationInPatch ?? 0) >= 2"><span class="emoji-inline">🏔️</span> Piso {{ patch.maxElevationInPatch }}</span>
+        <span v-else-if="isHighTierElevation"><span class="emoji-inline">🏔️</span> Piso {{ patch.maxElevationInPatch }}</span>
         <span v-else><span class="emoji-inline">⛰️</span> Piso 1</span>
       </div>
       <div
@@ -197,6 +202,7 @@ watch(
         >
           <div
             v-for="(cell, cIdx) in row"
+            id="autotile-patch-card-div-cellclick"
             :key="`cell-${rIdx}-${cIdx}`"
             class="grid-cell"
             :class="{
@@ -230,6 +236,7 @@ watch(
       </span>
       <button
         v-if="flaggedCountInPatch > 0"
+        id="autotile-patch-card-btn-nota"
         type="button"
         class="note-btn has-note"
         title="Abrir reporte y notas"
@@ -241,97 +248,96 @@ watch(
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .real-patch-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 10px;
-  background: Rgba(15, 23, 42, 0.95);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  border: 1px solid Rgb(255 255 255 / 12%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(15 23 42 / 95%);
   user-select: none;
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.3);
+  box-shadow: $shadow-card-subtle;
 }
 
 .real-patch-card:hover {
-  border-color: Rgba(56, 189, 248, 0.5);
-  box-shadow: 0 8px 20px Rgba(0, 0, 0, 0.5);
+  border-color: Rgb(56 189 248 / 50%);
+  box-shadow: var(--shadow-card);
 }
 
 .real-patch-card.has-errors {
-  border-color: #ef4444;
-  background: Rgba(45, 18, 24, 0.95);
-  box-shadow: 0 0 16px Rgba(239, 68, 68, 0.4);
+  background: Rgb(45 18 24 / 95%);
+  border-color: var(--red-light);
+  box-shadow: var(--shadow-glow-amber-lg);
 }
 
 .card-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
 }
 
 .coord-badge {
-  font-family: monospace;
-  font-size: 11px;
-  font-weight: 700;
   padding: 2px 6px;
-  background: Rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  color: #38bdf8;
+  border-radius: $radius-sm;
+  background: Rgb(255 255 255 / 8%);
+  color: var(--sky);
+  font-family: monospace;
+  font-size: var(--font-11);
+  font-weight: 700;
 }
 
 .patch-status-badge {
-  font-size: 10px;
-  font-weight: 600;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: Rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
+  border-radius: $radius-sm;
+  background: Rgb(255 255 255 / 8%);
+  color: var(--slate-400);
+  font-size: var(--font-10);
+  font-weight: 600;
 }
 
 .patch-status-badge.error-active {
-  background: #ef4444;
-  color: #fff;
+  background: var(--red-light);
+  color: var(--white);
 }
 
 .elev-badge {
-  font-size: 10px;
-  font-weight: 700;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: Rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid Rgba(245, 158, 11, 0.3);
+  border: 1px solid Rgb(245 158 11 / 30%);
+  border-radius: $radius-sm;
+  background: Rgb(245 158 11 / 15%);
+  color: var(--amber);
+  font-size: var(--font-10);
+  font-weight: 700;
 }
 
 .elev-badge.high-tier {
-  background: Rgba(168, 85, 247, 0.2);
-  color: #c084fc;
-  border-color: Rgba(168, 85, 247, 0.4);
+  background: Rgb(168 85 247 / 20%);
+  color: var(--purple-400);
+  border-color: Rgb(168 85 247 / 40%);
 }
 
 .patch-title {
-  font-size: 11px;
+  width: 100%;
+  max-width: 100%;
+  color: var(--slate-100);
+  font-size: var(--font-11);
   font-weight: 600;
-  color: #f1f5f9;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 100%;
-  width: 100%;
 }
 
 .grid-viewport {
   position: relative;
-  border: 2px solid Rgba(0, 0, 0, 0.8);
-  border-radius: 4px;
+  border: 2px solid Rgb(0 0 0 / 80%);
+  border-radius: $radius-sm;
+  background: var(--black);
   overflow: hidden;
-  background: #000;
 }
 
 .patch-canvas {
@@ -349,11 +355,11 @@ watch(
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  z-index: calc(var(--z-base) + 1);
   display: flex;
   flex-direction: column;
-  z-index: calc(var(--z-base) + 1);
+  width: 100%;
+  height: 100%;
 }
 
 .grid-row {
@@ -372,20 +378,20 @@ watch(
 }
 
 .grid-cell:hover {
+  z-index: calc(var(--z-base) + 2);
   outline: 2px solid #38bdf8;
   outline-offset: -2px;
-  z-index: calc(var(--z-base) + 2);
 }
 
 .grid-cell.is-flagged-tile {
+  z-index: calc(var(--z-base) + 3);
   outline: 2px solid #ef4444 !important;
   outline-offset: -2px;
-  box-shadow: inset 0 0 8px Rgba(239, 68, 68, 0.8);
-  z-index: calc(var(--z-base) + 3);
+  box-shadow: var(--shadow-card);
 }
 
 .center-cell {
-  border: 1px dashed Rgba(255, 255, 255, 0.4);
+  border: 1px dashed Rgb(255 255 255 / 40%);
 }
 
 .center-focus-ring {
@@ -394,9 +400,9 @@ watch(
   left: 50%;
   width: 6px;
   height: 6px;
-  transform: Translate(-50%, -50%);
-  border: 1px solid Rgba(255, 255, 255, 0.7);
+  border: 1px solid Rgb(255 255 255 / 70%);
   border-radius: 50%;
+  transform: Translate(-50%, -50%);
   pointer-events: none;
 }
 
@@ -404,7 +410,7 @@ watch(
   position: absolute;
   top: 1px;
   right: 1px;
-  font-size: 10px;
+  font-size: var(--font-10);
   line-height: 1;
   text-shadow: 0 0 2px #000;
   pointer-events: none;
@@ -412,34 +418,34 @@ watch(
 
 .card-footer {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  gap: $spacing-xs;
   width: 100%;
-  gap: 4px;
 }
 
 .patch-hint {
-  font-size: 10px;
-  color: #64748b;
+  max-width: 120px;
+  color: var(--slate-500);
+  font-size: var(--font-10);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 120px;
 }
 
 .note-btn {
-  font-size: 10px;
   padding: 2px 6px;
-  background: Rgba(245, 158, 11, 0.2);
-  border: 1px solid #f59e0b;
-  color: #fcd34d;
-  border-radius: 4px;
+  border: 1px solid var(--amber-dark);
+  border-radius: $radius-sm;
+  background: Rgb(245 158 11 / 20%);
+  color: var(--amber-300);
+  font-size: var(--font-10);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .note-btn:hover {
-  background: Rgba(245, 158, 11, 0.35);
-  color: #fff;
+  background: Rgb(245 158 11 / 35%);
+  color: var(--white);
 }
 </style>

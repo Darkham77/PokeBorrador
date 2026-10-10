@@ -32,11 +32,14 @@ watch(rememberMe, (checked) => {
   }
 })
 
+const TOGGLE_THUMB_ON_LEFT_PX = 27 as const;
+const STEPPER_MAX_VALUE = 99 as const;
+
 watch(musicEnabled, (enabled) => {
   logToInspector(`Toggle "Música": ${enabled ? 'ON' : 'OFF'}`)
   if (!toggleThumbRef.value) return
   if (enabled) {
-    gsap.to(toggleThumbRef.value, { left: 27, duration: 0.18, ease: 'power2.out' })
+    gsap.to(toggleThumbRef.value, { left: TOGGLE_THUMB_ON_LEFT_PX, duration: 0.18, ease: 'power2.out' })
   } else {
     gsap.to(toggleThumbRef.value, { left: 3, duration: 0.18, ease: 'power2.out' })
   }
@@ -60,7 +63,7 @@ function onInputChange(name: string, val: string | number) {
 }
 
 function step(delta: number) {
-  stepperCount.value = Math.max(1, Math.min(99, stepperCount.value + delta))
+  stepperCount.value = Math.max(1, Math.min(STEPPER_MAX_VALUE, stepperCount.value + delta))
   onInputChange('stepperCount', stepperCount.value)
 }
 </script>
@@ -338,12 +341,12 @@ function step(delta: number) {
 }
 
 .toggle-status-text {
-  font-size: 8.5px;
+  font-size: var(--font-9);
   font-weight: bold;
   color: var(--color-text-muted);
 
   &.active {
-    color: #4ade80;
+    color: var(--green-light);
   }
 }
 </style>

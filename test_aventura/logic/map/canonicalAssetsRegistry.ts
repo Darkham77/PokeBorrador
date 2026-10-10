@@ -8,9 +8,9 @@
  * typed dictionary lookups, eliminating naked filenames and hardcoded paths.
  */
 
-import manifestJson from '../../data/map/canonical_assets_manifest.json' with { type: 'json' };
+import { CANONICAL_ASSETS_MANIFEST as manifestJson } from '../../data/map/canonicalAssetsManifest.ts';
 
-export const CANONICAL_ASSET_CATEGORIES = [
+const _CANONICAL_ASSET_CATEGORIES = [
   'buildings',
   'props',
   'roads',
@@ -20,7 +20,7 @@ export const CANONICAL_ASSET_CATEGORIES = [
   'terrain',
   'vegetation'
 ] as const;
-export type CanonicalAssetCategory = (typeof CANONICAL_ASSET_CATEGORIES)[number];
+export type CanonicalAssetCategory = (typeof _CANONICAL_ASSET_CATEGORIES)[number];
 
 export interface CanonicalSourceRect {
   readonly x: number;
@@ -78,7 +78,7 @@ export const CANONICAL_ASSETS_BY_ID: Record<string, CanonicalAssetEntry> = Objec
   }, {})
 );
 
-export const CANONICAL_BUILDINGS: Record<string, CanonicalAssetEntry> = Object.freeze(
+const CANONICAL_BUILDINGS: Record<string, CanonicalAssetEntry> = Object.freeze(
   RAW_MANIFEST.filter((e) => e.category === 'buildings').reduce<Record<string, CanonicalAssetEntry>>(
     (acc, entry) => {
       acc[entry.id] = entry;
@@ -87,67 +87,6 @@ export const CANONICAL_BUILDINGS: Record<string, CanonicalAssetEntry> = Object.f
     {}
   )
 );
-
-export const CANONICAL_PROPS: Record<string, CanonicalAssetEntry> = Object.freeze(
-  RAW_MANIFEST.filter((e) => e.category === 'props').reduce<Record<string, CanonicalAssetEntry>>(
-    (acc, entry) => {
-      acc[entry.id] = entry;
-      return acc;
-    },
-    {}
-  )
-);
-
-export const CANONICAL_ROADS: Record<string, CanonicalAssetEntry> = Object.freeze(
-  RAW_MANIFEST.filter((e) => e.category === 'roads').reduce<Record<string, CanonicalAssetEntry>>(
-    (acc, entry) => {
-      acc[entry.id] = entry;
-      return acc;
-    },
-    {}
-  )
-);
-
-export const CANONICAL_CURBS: Record<string, CanonicalAssetEntry> = Object.freeze(
-  RAW_MANIFEST.filter((e) => e.category === 'curbs').reduce<Record<string, CanonicalAssetEntry>>(
-    (acc, entry) => {
-      acc[entry.id] = entry;
-      return acc;
-    },
-    {}
-  )
-);
-
-export const CANONICAL_TERRAIN: Record<string, CanonicalAssetEntry> = Object.freeze(
-  RAW_MANIFEST.filter((e) => e.category === 'terrain').reduce<Record<string, CanonicalAssetEntry>>(
-    (acc, entry) => {
-      acc[entry.id] = entry;
-      return acc;
-    },
-    {}
-  )
-);
-
-export const CANONICAL_ELEVATION: Record<string, CanonicalAssetEntry> = Object.freeze(
-  RAW_MANIFEST.filter((e) => e.category === 'elevation').reduce<Record<string, CanonicalAssetEntry>>(
-    (acc, entry) => {
-      acc[entry.id] = entry;
-      return acc;
-    },
-    {}
-  )
-);
-
-/**
- * Returns a canonical asset entry by ID, throwing a descriptive error if missing.
- */
-export function getCanonicalAsset(id: string): CanonicalAssetEntry {
-  const asset = CANONICAL_ASSETS_BY_ID[id];
-  if (!asset) {
-    throw new Error(`[canonicalAssetsRegistry] Unknown canonical asset id: "${id}". Check canonical_assets_manifest.json.`);
-  }
-  return asset;
-}
 
 /**
  * Returns building prefab metadata suitable for cityLayoutEngine.

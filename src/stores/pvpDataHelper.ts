@@ -1,7 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { SeasonRules, PvPStats, PersonalPvPMatchSummary } from '@/types/battle/pvp'
 import type { DBRouter } from '@/logic/db/dbRouter'
-import { DEFAULT_INITIAL_ELO, DEFAULT_PVP_LEVEL_CAP } from '@/logic/constants/gameplay.ts'
+import { DEFAULT_INITIAL_ELO, DEFAULT_PVP_LEVEL_CAP, MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay.ts'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter'
@@ -61,7 +61,7 @@ export async function fetchActiveSeasonRules(
     return {
       name: currentTheme.name,
       levelCap: DEFAULT_PVP_LEVEL_CAP,
-      maxPokemon: 6,
+      maxPokemon: MAX_POKEMON_TEAM_SIZE,
       allowedTypes: currentTheme.allowedTypes ? [...currentTheme.allowedTypes] : [],
       bannedPokemonIds: currentTheme.bannedPokemonIds ? [...currentTheme.bannedPokemonIds] : []
     }

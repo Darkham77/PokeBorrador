@@ -116,7 +116,7 @@ function handleBuy(listing: MarketListing) {
 
   display: grid;
   align-items: start;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   grid-auto-rows: min-content;
 }
@@ -131,16 +131,16 @@ function handleBuy(listing: MarketListing) {
   text-align: center;
   flex: 1;
   
-  .empty-icon { font-size: 48px; opacity: 0.2; margin-bottom: 16px; }
-  p { font-size: 13px; }
+  .empty-icon { font-size: var(--font-48); opacity: 0.2; margin-bottom: 16px; }
+  p { font-size: var(--font-13); }
 }
 
 .loader {
   width: 32px;
   height: 32px;
-  border: 3px solid rgb(56 189 248 / 20%);
+  border: 3px solid Rgb(56 189 248 / 20%);
   border-radius: 50%;
-  border-top-color: rgb(56 189 248 / 100%);
+  border-top-color: Rgb(56 189 248 / 100%);
   margin-bottom: 16px;
 }
 
@@ -150,11 +150,11 @@ function handleBuy(listing: MarketListing) {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 15px;
+  gap: $spacing-md-15;
   padding: 10px 0;
-  font-size: 10px;
+  font-size: var(--font-10);
   margin-top: 15px;
-  border-top: 1px solid rgb(255 255 255 / 5%);
+  border-top: 1px solid Rgb(255 255 255 / 5%);
 
   .page-info {
     color: var(--yellow);

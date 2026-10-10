@@ -13,9 +13,9 @@ import {
   generateProceduralMap,
   type GeneratedMap,
   type MapType
-} from './proceduralMapGenerator';
-import type { MapNode } from '../adventure/mapData';
-import type { CityGenerationConfig, UrbanScale, CanonicalThemeSource } from '../../types/map/adventureWorldTypes';
+} from './proceduralMapGenerator.ts';
+import type { MapNode } from '../adventure/mapData.ts';
+import type { CityGenerationConfig, UrbanScale, CanonicalThemeSource } from '../../types/map/adventureWorldTypes.ts';
 
 export interface NodeLocalMapOptions {
   readonly width?: number;
@@ -35,8 +35,11 @@ export const SCALE_DIMENSIONS: Record<UrbanScale, { width: number; height: numbe
   metropolis: { width: 70, height: 50 }
 };
 
-const DEFAULT_MAP_WIDTH = 40;
-const DEFAULT_MAP_HEIGHT = 30;
+const DEFAULT_LOCAL_MAP_WIDTH = 40;
+const DEFAULT_LOCAL_MAP_HEIGHT = 30;
+const DENSITY_METROPOLIS = 9 as const;
+const DENSITY_CITY = 8 as const;
+const DENSITY_TOWN = 7 as const;
 
 /**
  * Infers canonical city scale and features from node ID or geographical name.
@@ -70,7 +73,7 @@ export function inferCanonicalCityConfig(node: MapNode & { id?: string; cityConf
   if (id === 'saffron' || /azafr[aá]n|saffron/i.test(name)) {
     return {
       scale: 'metropolis',
-      buildingDensity: 9,
+      buildingDensity: DENSITY_METROPOLIS,
       includeGym: true,
       includeLab: false,
       plazaType: 'fountain'
@@ -80,7 +83,7 @@ export function inferCanonicalCityConfig(node: MapNode & { id?: string; cityConf
   if (id === 'celadon' || id === 'fuchsia' || id === 'goldenrod' || /azulona|fucsia|trigal|celadon|fuchsia/i.test(name)) {
     return {
       scale: 'city',
-      buildingDensity: 8,
+      buildingDensity: DENSITY_CITY,
       includeGym: true,
       includeLab: false,
       plazaType: 'park'
@@ -89,7 +92,7 @@ export function inferCanonicalCityConfig(node: MapNode & { id?: string; cityConf
 
   return {
     scale: 'town',
-    buildingDensity: 7,
+    buildingDensity: DENSITY_TOWN,
     includeGym: true,
     includeLab: false,
     plazaType: 'fountain'
@@ -107,7 +110,7 @@ export function generateLocalMapForNode(
   const isCity = node.type === 'city' || node.type === 'league';
   const cityConfig = options?.cityConfig ?? (isCity ? inferCanonicalCityConfig(node) : undefined);
 
-  const defaultDims = cityConfig ? SCALE_DIMENSIONS[cityConfig.scale] : { width: DEFAULT_MAP_WIDTH, height: DEFAULT_MAP_HEIGHT };
+  const defaultDims = cityConfig ? SCALE_DIMENSIONS[cityConfig.scale] : { width: DEFAULT_LOCAL_MAP_WIDTH, height: DEFAULT_LOCAL_MAP_HEIGHT };
   const width = options?.width ?? defaultDims.width;
   const height = options?.height ?? defaultDims.height;
   const theme: CanonicalThemeSource = options?.theme ?? 'firered';

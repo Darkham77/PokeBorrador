@@ -12,9 +12,11 @@
  *   - Zero-any, zero-unknown, zero runtime fallbacks.
  */
 
-import type {
-  UrbanBuildingPlacement,
-  UrbanPropPlacement
+import {
+  PRIMARY_POI_TYPES,
+  type PrimaryPOIType,
+  type UrbanBuildingPlacement,
+  type UrbanPropPlacement
 } from '../../types/map/poiTypes.ts';
 import { getAssetFilename, getBuildingPrefabMeta } from './canonicalAssetsRegistry.ts';
 
@@ -22,7 +24,7 @@ import { getAssetFilename, getBuildingPrefabMeta } from './canonicalAssetsRegist
 // 1. Domain Types
 // ---------------------------------------------------------------------------
 
-export const CITY_VIGNETTE_TYPES = [
+const _CITY_VIGNETTE_TYPES = [
   'fisherman_wharf',
   'berry_orchard',
   'cliff_lookout',
@@ -34,10 +36,12 @@ export const CITY_VIGNETTE_TYPES = [
   'cargo_depot',
   'botanical_garden'
 ] as const;
-export type CityVignetteType = (typeof CITY_VIGNETTE_TYPES)[number];
+export type CityVignetteType = (typeof _CITY_VIGNETTE_TYPES)[number];
 
-export const VIGNETTE_SETTLEMENT_SCALES = ['town', 'city', 'metropolis'] as const;
-export type VignetteSettlementScale = (typeof VIGNETTE_SETTLEMENT_SCALES)[number];
+const _VIGNETTE_SETTLEMENT_SCALES = PRIMARY_POI_TYPES.filter(
+  (scale): scale is Exclude<PrimaryPOIType, 'pokemon_league'> => scale !== 'pokemon_league'
+);
+export type VignetteSettlementScale = (typeof _VIGNETTE_SETTLEMENT_SCALES)[number];
 
 export interface VignettePrerequisites {
   readonly minScale: VignetteSettlementScale;
@@ -64,12 +68,19 @@ export interface VignetteBlueprint {
 // 2. Blueprint Implementations
 // ---------------------------------------------------------------------------
 
+const LCG_CONSTANTS = {
+  DEFAULT_SEED: 1337,
+  MULTIPLIER: 1664525,
+  INCREMENT: 1013904223,
+  DIVISOR: 4294967296
+} as const;
+
 /** Deterministic pseudo-random helper */
 function createLcg(seed: number): () => number {
-  let s = (seed >>> 0) || 1337;
+  let s = (seed >>> 0) || LCG_CONSTANTS.DEFAULT_SEED;
   return () => {
-    s = (s * 1664525 + 1013904223) | 0;
-    return (s >>> 0) / 4294967296;
+    s = (s * LCG_CONSTANTS.MULTIPLIER + LCG_CONSTANTS.INCREMENT) | 0;
+    return (s >>> 0) / LCG_CONSTANTS.DIVISOR;
   };
 }
 

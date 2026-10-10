@@ -128,6 +128,7 @@ const transitionHooks = useGsapTransition({
 
           <div class="error-footer">
             <button
+              id="error-overlay-btn-1"
               class="btn-vicio-secondary btn-vicio-sm"
               @click.stop="copyError"
             >
@@ -138,12 +139,14 @@ const transitionHooks = useGsapTransition({
               {{ copied ? '¡COPIADO!' : 'COPIAR ERROR' }}
             </button>
             <button
+              id="error-overlay-btn-reiniciar-juego"
               class="btn-vicio-primary btn-vicio-sm"
               @click.stop="reloadGame"
             >
               <i class="fas fa-sync" /> REINICIAR JUEGO
             </button>
             <button
+              id="error-overlay-btn-cerrar"
               class="btn-vicio-neutral btn-vicio-sm"
               @click.stop="closeError"
             >
@@ -184,9 +187,9 @@ const transitionHooks = useGsapTransition({
   max-width: 600px;
   max-height: 90dvh;
   border: 3px solid var(--red);
-  border-radius: 24px;
+  border-radius: $radius-4xl;
   background: Rgb(26 26 46 / 100%);
-  box-shadow: 0 0 50px Rgb(255 59 59 / 30%);
+  box-shadow: var(--shadow-glow-amber-lg);
   overflow: hidden; /* Scrollbars stay inside the border */
 }
 
@@ -194,22 +197,22 @@ const transitionHooks = useGsapTransition({
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 15px;
+  gap: $spacing-md-15;
   min-height: 80px;
   padding: 24px 20px;
   background: Linear-Gradient(135deg, var(--red), #c0392b);
-  color: white;
+  color: var(--white);
   box-sizing: border-box;
 }
 
 .error-icon {
-  font-size: 32px;
+  font-size: var(--font-32);
 }
 
 .error-title {
   @include pixelated;
 
-  font-size: 14px;
+  font-size: var(--font-14);
   letter-spacing: 1px;
 }
 
@@ -224,7 +227,7 @@ const transitionHooks = useGsapTransition({
 
 .error-intro {
   color: Rgb(170 170 170 / 100%);
-  font-size: 14px;
+  font-size: var(--font-14);
   line-height: 1.5;
   margin-bottom: 25px;
 }
@@ -233,7 +236,7 @@ const transitionHooks = useGsapTransition({
   @include pixelated;
 
   color: var(--yellow);
-  font-size: 9px;
+  font-size: var(--font-9);
   margin-bottom: 10px;
 }
 
@@ -251,11 +254,11 @@ const transitionHooks = useGsapTransition({
     height: 60px;
     padding: 8px;
     border: 1px solid Rgb(255 255 255 / 20%);
-    border-radius: 4px;
+    border-radius: $radius-sm;
     background: Rgb(0 0 0 / 30%);
-    color: white;
+    color: var(--white);
     font-family: inherit;
-    font-size: 0.9em;
+    font-size: var(--font-14);
     resize: vertical;
     box-sizing: border-box;
 
@@ -267,35 +270,34 @@ const transitionHooks = useGsapTransition({
 
   .sub-text {
     color: Rgb(170 170 170 / 100%);
-    font-size: 0.8em;
+    font-size: var(--font-13);
     margin-top: 4px;
   }
 }
 
 .error-stack {
   padding: 15px;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 30%);
   color: Rgb(187 187 187 / 100%);
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
+  font-family: $font-family-mono;
+  font-size: var(--font-12);
   overflow-x: auto;
   margin-bottom: 25px;
   white-space: pre-wrap;
   word-break: break-all;
 }
 
-
 .error-game-context {
   padding: 15px;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 5%);
   margin-bottom: 24px;
 }
 
 .error-context-item {
   color: Rgb(204 204 204 / 100%);
-  font-size: 13px;
+  font-size: var(--font-13);
   margin-bottom: 6px;
 
   strong {
@@ -307,7 +309,7 @@ const transitionHooks = useGsapTransition({
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 20px;
   background: Rgb(0 0 0 / 20%);
 }

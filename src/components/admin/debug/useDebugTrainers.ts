@@ -19,6 +19,7 @@ import type { MapRouteId } from '@/data/world/map-assets'
 import type { ItemId } from '@/data/inventory/items'
 import type { BattleOptions } from '@/types/system/stores'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
 import { generateDebugTeamList } from './debugTrainerTeamHelper.ts'
 
 const POLICE_PRESET_AVG_LEVEL_BASE = 30
@@ -230,7 +231,7 @@ export function useDebugTrainers() {
   }
 
   function addPokemonToTeam() {
-    if (enemyTeam.value.length >= 6) return
+    if (enemyTeam.value.length >= MAX_POKEMON_TEAM_SIZE) return
     const p = pokemonDebugService.generate({ id: 'rattata', level: DEFAULT_ADD_POKEMON_LEVEL })
     if (p) {
       enemyTeam.value.push(p)

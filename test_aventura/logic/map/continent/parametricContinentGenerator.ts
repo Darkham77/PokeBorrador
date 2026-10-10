@@ -10,7 +10,7 @@
  * 5. Road carving across terrain.
  */
 
-import { SimplexNoise, fbm2D } from '../noise/simplexNoise.ts';
+import { SimplexNoise, fbm2D, createMulberry32 } from '../noise/simplexNoise.ts';
 import type {
   ContinentGenConfig,
   ContinentDimensions,
@@ -19,7 +19,8 @@ import type {
   ContinentConnection,
   UrbanScale,
   ContinentAmenity
-} from '../../../types/map/continentTypes';
+} from '../../../types/map/continentTypes.ts';
+import { URBAN_SCALES } from '../../../types/map/continentTypes.ts';
 
 export interface GeneratedContinentResult {
   readonly dimensions: ContinentDimensions;
@@ -30,6 +31,8 @@ export interface GeneratedContinentResult {
   readonly connections: readonly ContinentConnection[];
   readonly roads: ReadonlySet<string>;
 }
+
+const MAX_REGIONAL_GYMS = 8 as const;
 
 // Canonical Pokémon settlement names pool
 const SETTLEMENT_NAMES = [
@@ -59,18 +62,7 @@ const SETTLEMENT_NAMES = [
   'Ciudad Cumbre'
 ] as const;
 
-/**
- * Deterministic Mulberry32 PRNG
- */
-function createMulberry32(seed: number): () => number {
-  let s = (seed >>> 0) || 1;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+const FOREST_PERCENT_MOISTURE_SCALE = 0.75 as const;
 
 /**
  * Disjoint Set (Union-Find) for Kruskal's algorithm
@@ -177,7 +169,7 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
         const isColdPlain = biomes.snowPercent > 0 && northFactor > 0.8 && elev > 0.45;
         if (isColdPlain) {
           biomeGrid[y]![x] = 'snow';
-        } else if (moist > 1.0 - (biomes.forestPercent / 100) * 0.75) {
+        } else if (moist > 1.0 - (biomes.forestPercent / 100) * FOREST_PERCENT_MOISTURE_SCALE) {
           biomeGrid[y]![x] = 'forest';
         } else {
           biomeGrid[y]![x] = 'grass';
@@ -246,7 +238,7 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
   }
 
   // Assign scales & amenities
-  const urbanScales: UrbanScale[] = ['metropolis', 'city', 'town', 'village', 'hamlet'];
+  const urbanScales: readonly UrbanScale[] = [...URBAN_SCALES].reverse();
 
   for (let i = 0; i < placedCoords.length; i++) {
     const coord = placedCoords[i]!;
@@ -259,7 +251,7 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
     if (scale === 'metropolis' || scale === 'city' || scale === 'town') {
       amenities.push('mart');
     }
-    if (i < 8 && (scale === 'metropolis' || scale === 'city')) {
+    if (i < MAX_REGIONAL_GYMS && (scale === 'metropolis' || scale === 'city')) {
       amenities.push('gym');
     }
     if (i === 0) {

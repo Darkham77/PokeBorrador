@@ -44,7 +44,8 @@ function clearFilters() {
   >
     <div class="ps-search-row">
       <span class="emoji ps-search-icon">🔍</span>
-      <input 
+      <input
+        id="pokemon-selection-filters-input-searchquery" 
         v-model="searchQuery" 
         type="text" 
         placeholder="Buscar por nombre o ID..."
@@ -52,6 +53,7 @@ function clearFilters() {
       >
       <button
         v-if="searchQuery"
+        id="pokemon-selection-filters-btn-1"
         class="ps-clear-search"
         @click.stop="searchQuery = ''"
       >

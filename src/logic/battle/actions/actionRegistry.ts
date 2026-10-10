@@ -2,6 +2,7 @@ import { SHOWDOWN_BOOST_STAT_KEYS } from '@/types/pokemon/pokemon';
 import type { Pokemon, Move, MoveEffectBoosts, ShowdownBoostStatKey, ShowdownHitEffect, ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
 import type { BattleStages, LogFn } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
+import { MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { HEALING_ACTIONS } from './healingActions.ts';
 import { FIELD_ACTIONS } from './fieldActions.ts';
@@ -32,7 +33,7 @@ function applyBoosts(
     const amount = boosts[rawStat];
     if (!amount) continue;
     const stat = toStageKey(rawStat);
-    targetStages[stat] = Math.max(-6, Math.min(6, (targetStages[stat] || 0) + amount));
+    targetStages[stat] = Math.max(MIN_BATTLE_STAT_STAGE, Math.min(MAX_BATTLE_STAT_STAGE, (targetStages[stat] || 0) + amount));
     addLogFn(`¡Las estadísticas de ${target.name} cambiaron!`, 'log-info', target);
   }
 }

@@ -16,8 +16,8 @@ import {
   CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK,
   CANONICAL_MOUNTAIN_BRUSH_GRAY,
   type ElevationMatrix
-} from '../../../src/logic/map/mountainAutotileEngine.ts';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
+} from '../../logic/map/mountainAutotileEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 
 
 describe('mountainAutotileEngine', () => {

@@ -107,18 +107,23 @@ function toggleSeason(s: string | null) {
       <label>Simular Fecha/Hora</label>
       <div class="input-group vertical">
         <input
+          id="time-debug-controls-input-debugdate"
           v-model="debugDate"
           type="datetime-local"
           step="1"
         >
         <div class="button-row">
           <PVTooltip title="Aplica la fecha y hora seleccionada al motor del juego.">
-            <button @click.stop="updateMockTime">
+            <button
+              id="time-debug-controls-btn-aplicar"
+              @click.stop="updateMockTime"
+            >
               APLICAR
             </button>
           </PVTooltip>
           <PVTooltip title="Restaura la hora real del sistema.">
             <button
+              id="time-debug-controls-btn-reset"
               class="secondary"
               @click.stop="resetTime"
             >
@@ -133,22 +138,32 @@ function toggleSeason(s: string | null) {
       <label>Atajos Rápidos</label>
       <div class="button-row">
         <PVTooltip title="Añadir 1 hora al tiempo actual.">
-          <button @click.stop="addHours(1)">
+          <button
+            id="time-debug-controls-btn-1h"
+            @click.stop="addHours(1)"
+          >
             +1h
           </button>
         </PVTooltip>
         <PVTooltip title="Añadir 6 horas al tiempo actual.">
-          <button @click.stop="addHours(6)">
+          <button
+            id="time-debug-controls-btn-6h"
+            @click.stop="addHours(6)"
+          >
             +6h
           </button>
         </PVTooltip>
         <PVTooltip title="Añadir 24 horas al tiempo actual.">
-          <button @click.stop="addHours(24)">
+          <button
+            id="time-debug-controls-btn-24h"
+            @click.stop="addHours(24)"
+          >
             +24h
           </button>
         </PVTooltip>
         <PVTooltip title="Añadir 1 semana (cambia la estación).">
           <button
+            id="time-debug-controls-btn-1-sem"
             class="primary"
             @click.stop="addWeeks(1)"
           >
@@ -201,6 +216,7 @@ function toggleSeason(s: string | null) {
       <div class="button-row">
         <PVTooltip title="Forzar amanecer.">
           <button
+            id="time-debug-controls-btn-am"
             :class="{ active: mapStore.forcedCycle === 'morning' }"
             @click.stop="toggleCycle('morning')"
           >
@@ -209,6 +225,7 @@ function toggleSeason(s: string | null) {
         </PVTooltip>
         <PVTooltip title="Forzar día.">
           <button
+            id="time-debug-controls-btn-d-a"
             :class="{ active: mapStore.forcedCycle === 'day' }"
             @click.stop="toggleCycle('day')"
           >
@@ -217,6 +234,7 @@ function toggleSeason(s: string | null) {
         </PVTooltip>
         <PVTooltip title="Forzar atardecer.">
           <button
+            id="time-debug-controls-btn-at"
             :class="{ active: mapStore.forcedCycle === 'dusk' }"
             @click.stop="toggleCycle('dusk')"
           >
@@ -225,6 +243,7 @@ function toggleSeason(s: string | null) {
         </PVTooltip>
         <PVTooltip title="Forzar noche.">
           <button
+            id="time-debug-controls-btn-nc"
             :class="{ active: mapStore.forcedCycle === 'night' }"
             @click.stop="toggleCycle('night')"
           >
@@ -238,7 +257,8 @@ function toggleSeason(s: string | null) {
       <div class="header-with-action">
         <label>Clima Global (Pruebas)</label>
         <PVTooltip title="Ver todas las tablas de probabilidad de clima por ruta/estación/ciclo.">
-          <button 
+          <button
+            id="time-debug-controls-btn-ver-tablas" 
             class="btn-vicio-neutral btn-vicio-sm"
             @click.stop="modalStore.open('DebugWeatherTables')"
           >
@@ -276,7 +296,7 @@ function toggleSeason(s: string | null) {
 .weather-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .header-with-action {
@@ -291,12 +311,12 @@ function toggleSeason(s: string | null) {
 .btn-vicio-neutral.btn-vicio-sm {
   height: auto;
   padding: 4px 10px;
-  font-size: 8px;
+  font-size: var(--font-8);
 }
 
 .time-debug-controls {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
 }
 </style>

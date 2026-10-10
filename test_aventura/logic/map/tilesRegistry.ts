@@ -337,11 +337,3 @@ export function getTileById(id: string): TileMetadata | undefined { // result-ok
 export function loadTilesRegistry(data: TilesRegistryJson): void {
   defaultTilesRegistry.loadRegistry(data);
 }
-
-export function registerDynamicTile(tile: TileMetadata): void {
-  defaultTilesRegistry.registerTile(tile);
-}
-
-export function registerDynamicTiles(tiles: readonly TileMetadata[]): void {
-  defaultTilesRegistry.registerTiles(tiles);
-}

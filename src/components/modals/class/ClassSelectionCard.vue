@@ -202,6 +202,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
     </div>
 
     <button
+      id="class-selection-card-btn-1"
       :class="['btn-vicio-' + getButtonVariant(cls.id), 'btn-vicio-full']"
       :disabled="isCurrent"
       @click.stop="$emit('select', cls.id)"
@@ -235,7 +236,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
   height: 100%;
   padding: 24px 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(30 41 59 / 40%);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
@@ -251,7 +252,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
       top: 12px;
       right: 12px;
       color: Rgb(34 197 94 / 100%);
-      font-size: 8px;
+      font-size: var(--font-8);
       content: 'ACTUAL';
     }
   }
@@ -276,7 +277,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
     border: 3px solid var(--cls-color);
     border-radius: 50%;
     background: Rgb(0 0 0 / 50%);
-    box-shadow: 0 0 20px var(--cls-color)66;
+    box-shadow: var(--shadow-glow-amber-lg);
     overflow: hidden;
   }
   .trainer-pixel-art {
@@ -292,7 +293,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
   @include pixelated;
 
   color: var(--cls-color);
-  font-size: 14px;
+  font-size: var(--font-14);
   line-height: 1.3;
   text-align: center;
   margin-bottom: 16px;
@@ -305,7 +306,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
   align-items: center;
   min-height: 72px;
   color: Rgb(255 255 255 / 60%);
-  font-size: 12px;
+  font-size: var(--font-12);
   line-height: 1.5;
   text-align: center;
   margin-bottom: 24px;
@@ -314,7 +315,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 .stats-comparison {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   width: 100%;
   margin-bottom: 20px;
   flex: 1;
@@ -326,8 +327,8 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 9px;
+      gap: $spacing-sm;
+      font-size: var(--font-9);
       margin-bottom: 12px;
     }
 
@@ -337,14 +338,14 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
     ul {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: $spacing-sm;
       padding: 0;
       list-style: none;
       li {
         position: relative;
         padding: 0;
         color: Rgb(255 255 255 / 85%);
-        font-size: 11px;
+        font-size: var(--font-11);
         line-height: 1.4;
 
         :deep(.pv-tooltip-wrapper) {
@@ -356,7 +357,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
         .bullet-item-flex {
           display: flex;
           align-items: flex-start;
-          gap: 6px;
+          gap: $spacing-sm-alt;
           width: 100%;
           line-height: 1.4;
 
@@ -366,7 +367,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
             align-items: center;
             width: 16px;
             height: 16px;
-            font-size: 13px;
+            font-size: var(--font-13);
             line-height: 1.4;
             flex-shrink: 0;
           }
@@ -385,7 +386,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
   width: 100%;
 
   .btn-price {
-    font-size: 8px;
+    font-size: var(--font-8);
     opacity: 0.8;
   }
 }

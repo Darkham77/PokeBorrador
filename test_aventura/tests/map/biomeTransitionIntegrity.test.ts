@@ -14,12 +14,12 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveMacroBiomeAutotile,
   CANONICAL_MINT_GRASS_BRUSH,
-  CANONICAL_ARID_DESERT_BRUSH,
   CANONICAL_VOLCANIC_DIRT_BRUSH,
   type ResolvedMacroBiomeMapResult
-} from '../../../src/logic/map/macroBiomeAutotileEngine.ts';
-import type { MacroBiome } from '../../../src/logic/map/macroBiomeSynthesizer.ts';
-import type { WaterTerrainKind } from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/macroBiomeAutotileEngine.ts';
+import { CANONICAL_SAND_BEACH_BRUSH } from '../../logic/map/waterAutotileEngine.ts';
+import type { MacroBiome } from '../../logic/map/macroBiomeSynthesizer.ts';
+import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('macroBiomeAutotileEngine (Tier 1 RED-to-GREEN)', () => {
   describe('Mint Highland 8-neighbor Autotiling', () => {
@@ -133,9 +133,9 @@ describe('macroBiomeAutotileEngine (Tier 1 RED-to-GREEN)', () => {
       const result = resolveMacroBiomeAutotile(biomeGrid, terrainMatrix);
 
       expect(result.cellDetails[1]?.[2]?.role).toBe('edge_north');
-      expect(result.cellDetails[1]?.[2]?.primaryTile).toBe(CANONICAL_ARID_DESERT_BRUSH.edgeNorth);
+      expect(result.cellDetails[1]?.[2]?.primaryTile).toBe(CANONICAL_SAND_BEACH_BRUSH.edgeNorth);
       expect(result.cellDetails[2]?.[2]?.role).toBe('center');
-      expect(result.cellDetails[2]?.[2]?.primaryTile).toBe(CANONICAL_ARID_DESERT_BRUSH.center);
+      expect(result.cellDetails[2]?.[2]?.primaryTile).toBe(CANONICAL_SAND_BEACH_BRUSH.center);
     });
   });
 

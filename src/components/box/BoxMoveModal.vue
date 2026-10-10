@@ -77,6 +77,7 @@ const handleMove = (targetBoxIndex: number) => {
       <div class="boxes-grid">
         <button
           v-for="box in boxesOccupation"
+          id="box-move-modal-btn-1"
           :key="box.index"
           :class="[
             'box-select-btn',
@@ -118,6 +119,7 @@ const handleMove = (targetBoxIndex: number) => {
 
       <div class="modal-footer">
         <button
+          id="box-move-modal-btn-cancelar"
           class="btn-cancel"
           @click.stop="modalStore.close('BoxMove')"
         >
@@ -138,7 +140,7 @@ const handleMove = (targetBoxIndex: number) => {
     @include pixelated;
 
     color: var(--white);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.5;
     text-align: center;
     margin-bottom: 25px;
@@ -153,7 +155,7 @@ const handleMove = (targetBoxIndex: number) => {
 
 .boxes-grid {
   display: grid;
-  gap: 15px;
+  gap: $spacing-md-15;
   grid-template-columns: repeat(2, 1fr);
   margin-bottom: 30px;
 }
@@ -165,14 +167,14 @@ const handleMove = (targetBoxIndex: number) => {
   display: flex;
   flex-direction: column; 
   padding: 1px;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   cursor: pointer;
   overflow: hidden;
 
   &:hover:not(:disabled) {
     transform: Translatey(-4px);
     border-color: var(--yellow) !important;
-    box-shadow: 0 10px 25px Rgb(0 0 0 / 30%), 0 0 15px Rgb(251 191 36 / 20%);
+    box-shadow: var(--shadow-xl);
     
     .border-glow { opacity: 1; }
     .box-number { color: var(--yellow); }
@@ -191,7 +193,7 @@ const handleMove = (targetBoxIndex: number) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     width: 100%;
     padding: 20px 10px;
     background: transparent;
@@ -219,25 +221,25 @@ const handleMove = (targetBoxIndex: number) => {
     @include pixelated;
 
     color: var(--white);
-    font-size: 10px;
+    font-size: var(--font-10);
     
   }
 
   .box-stats {
     display: flex;
     align-items: baseline;
-    gap: 3px;
+    gap: $spacing-xs-alt;
     
     .count {
       @include pixelated;
 
       color: var(--white);
-      font-size: 14px;
+      font-size: var(--font-14);
       font-weight: 900;
     }
     .max {
       color: var(--gray);
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 
@@ -248,12 +250,12 @@ const handleMove = (targetBoxIndex: number) => {
       @include pixelated;
 
       padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 6px;
+      border-radius: $radius-sm;
+      font-size: var(--font-6);
       text-transform: uppercase;
 
-      &.current { background: var(--blue); color: white; }
-      &.full { background: var(--red); color: white; }
+      &.current { background: var(--blue); color: var(--white); }
+      &.full { background: var(--red); color: var(--white); }
       &.available { background: Rgb(255 255 255 / 5%); color: var(--gray); }
     }
   }
@@ -266,7 +268,7 @@ const handleMove = (targetBoxIndex: number) => {
     @include btn-vicio('neutral', 'lg', true);
     @include pixelated;
 
-    font-size: 10px;
+    font-size: var(--font-10);
   }
 }
 </style>

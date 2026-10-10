@@ -6,35 +6,35 @@ $gray: #94a3b8;
 .arena-replays-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 4px 0;
 
   .replay-sub-nav {
     display: flex;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 4px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(0 0 0 / 25%);
 
     .sub-tab-btn {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
       padding: 8px 12px;
       border: 1px solid transparent;
-      border-radius: 8px;
+      border-radius: $radius-lg;
       background: transparent;
       color: $gray;
-      font-family: 'Pokemon FireRed LeafGreen', monospace;
-      font-size: 10px;
+      font-family: $font-family-pokemon;
+      font-size: var(--font-10);
       flex: 1;
       cursor: pointer;
 
       &.active {
         background: Rgb(59 130 246 / 20%);
-        color: #fff;
+        color: var(--white);
         border-color: Rgb(59 130 246 / 50%);
       }
     }
@@ -43,9 +43,9 @@ $gray: #94a3b8;
   %arena-card-base {
     padding: 16px;
     border: 1px solid Rgb(255 255 255 / 7%);
-    border-radius: 14px;
+    border-radius: $radius-xl-alt;
     background: Rgb(255 255 255 / 2%);
-    box-shadow: inset 0 0 12px Rgb(255 255 255 / 2%);
+    box-shadow: $shadow-inset-subtle;
   }
 
   .replay-search-card,
@@ -56,19 +56,19 @@ $gray: #94a3b8;
   .card-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     margin-bottom: 14px;
 
     .header-icon {
       display: inline-flex;
       align-items: center;
-      font-size: 16px;
+      font-size: var(--font-16);
     }
 
     .header-text {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
     }
 
     .panel-subtitle {
@@ -76,19 +76,19 @@ $gray: #94a3b8;
 
       margin: 0;
       color: var(--white, #fff);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: 800;
       letter-spacing: 0.5px;
 
       &.live-subtitle {
-        color: #f87171;
+        color: var(--rose);
       }
     }
 
     .panel-desc {
       margin: 0;
       color: $gray;
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1.4;
     }
   }
@@ -96,7 +96,7 @@ $gray: #94a3b8;
   .search-bar {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
 
     @media (width <= 600px) {
       flex-direction: column;
@@ -114,7 +114,7 @@ $gray: #94a3b8;
         left: 10px;
         display: inline-flex;
         align-items: center;
-        font-size: 11px;
+        font-size: var(--font-11);
         pointer-events: none;
       }
 
@@ -125,19 +125,19 @@ $gray: #94a3b8;
         height: 36px;
         padding: 0 12px 0 32px;
         border: 1px solid Rgb(255 255 255 / 18%);
-        border-radius: 8px;
+        border-radius: $radius-lg;
         background: Rgb(0 0 0 / 50%);
         color: var(--yellow, #ffd700);
-        font-size: 10px;
+        font-size: var(--font-10);
         font-weight: 700;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        box-shadow: inset 0 2px 4px Rgb(0 0 0 / 50%);
+        box-shadow: $shadow-inset-sm;
 
         &:focus {
           outline: none;
           border-color: var(--blue-light, #29b6f6);
-          box-shadow: 0 0 10px Rgb(41 182 246 / 25%), inset 0 2px 4px Rgb(0 0 0 / 50%);
+          box-shadow: var(--shadow-glow-amber);
         }
       }
     }
@@ -145,10 +145,10 @@ $gray: #94a3b8;
     .search-btn {
       @include btn-vicio('primary', 'md');
 
-      gap: 6px;
+      gap: $spacing-sm-alt;
       height: 36px;
       padding: 0 18px;
-      font-size: 8px;
+      font-size: var(--font-8);
       white-space: nowrap;
 
       &:disabled {
@@ -166,7 +166,7 @@ $gray: #94a3b8;
 
     .live-grid {
       display: grid;
-      gap: 10px;
+      gap: $spacing-md-alt;
       grid-template-columns: repeat(2, 1fr);
 
       @media (width <= 600px) {
@@ -180,7 +180,7 @@ $gray: #94a3b8;
       align-items: center;
       padding: 10px 12px;
       border: 1px solid Rgb(255 255 255 / 8%);
-      border-radius: 8px;
+      border-radius: $radius-lg;
       background: Rgb(0 0 0 / 35%);
 
       .trainers-row {
@@ -188,13 +188,13 @@ $gray: #94a3b8;
 
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
         color: var(--white, #fff);
-        font-size: 8.5px;
+        font-size: var(--font-9);
 
         .vs-tag {
           color: $gray;
-          font-size: 7.5px;
+          font-size: var(--font-8);
         }
       }
 
@@ -202,22 +202,22 @@ $gray: #94a3b8;
         @include pixelated;
 
         color: $gray;
-        font-size: 7.5px;
+        font-size: var(--font-8);
       }
 
       .spectate-btn {
         @include btn-vicio('danger', 'sm');
 
-        gap: 4px;
+        gap: $spacing-xs;
         padding: 4px 10px;
-        font-size: 7.5px;
+        font-size: var(--font-8);
       }
     }
   }
 
   .replays-grid {
     display: grid;
-    gap: 10px;
+    gap: $spacing-md-alt;
     grid-template-columns: repeat(2, 1fr);
 
     @media (width <= 600px) {
@@ -227,18 +227,18 @@ $gray: #94a3b8;
     .replay-item-card {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: $spacing-sm;
       padding: 12px;
       border: 1px solid Rgb(255 255 255 / 8%);
-      border-radius: 10px;
+      border-radius: $radius-lg-alt;
       background: Rgb(0 0 0 / 35%);
       cursor: pointer;
-      box-shadow: inset 0 0 8px Rgb(0 0 0 / 20%);
+      box-shadow: var(--shadow-card);
 
       &:hover {
         background: Rgb(255 255 255 / 4%);
         border-color: var(--yellow, #ffd700);
-        box-shadow: 0 0 12px Rgb(255 215 0 / 15%);
+        box-shadow: var(--shadow-glow-amber);
       }
 
       .replay-top {
@@ -250,7 +250,7 @@ $gray: #94a3b8;
           @include pixelated;
 
           color: var(--yellow, #ffd700);
-          font-size: 8px;
+          font-size: var(--font-8);
           font-weight: 700;
           letter-spacing: 0.5px;
         }
@@ -259,15 +259,15 @@ $gray: #94a3b8;
           @include pixelated;
 
           color: $gray;
-          font-size: 7.5px;
+          font-size: var(--font-8);
         }
       }
 
       .replay-combatants {
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 8.5px;
+        gap: $spacing-sm-alt;
+        font-size: var(--font-9);
         font-weight: 700;
 
         .trainer {
@@ -286,16 +286,16 @@ $gray: #94a3b8;
           @include pixelated;
 
           color: $gray;
-          font-size: 7.5px;
+          font-size: var(--font-8);
         }
       }
 
       .watch-replay-btn {
         @include btn-vicio('secondary', 'sm', true);
 
-        gap: 6px;
+        gap: $spacing-sm-alt;
         padding: 5px 10px;
-        font-size: 7.5px;
+        font-size: var(--font-8);
         margin-top: 2px;
       }
     }
@@ -306,10 +306,10 @@ $gray: #94a3b8;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 32px 16px;
     border: 1px dashed Rgb(255 255 255 / 12%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(0 0 0 / 20%);
     text-align: center;
 
@@ -325,7 +325,7 @@ $gray: #94a3b8;
       margin-bottom: 4px;
 
       .empty-icon {
-        font-size: 22px;
+        font-size: var(--font-22);
         filter: Drop-Shadow(0 0 10px Rgb(59 130 246 / 30%));
       }
     }
@@ -335,7 +335,7 @@ $gray: #94a3b8;
 
       margin: 0;
       color: var(--white, #fff);
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: 800;
       letter-spacing: 0.5px;
     }
@@ -344,7 +344,7 @@ $gray: #94a3b8;
       max-width: 360px;
       margin: 0;
       color: $gray;
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1.5;
     }
   }

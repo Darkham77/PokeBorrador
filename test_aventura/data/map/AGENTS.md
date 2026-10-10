@@ -15,11 +15,14 @@ Poké Vicio Development Team.
 ewbark,
 oute29, goldenrod).
 - **O(1) Data Structures**: Graph lookup tables must be exposed as typed key-value maps (Record<string, AdventureProjectNode>) to support constant time indexing.
-- **Dual Prefabs Manifest Parity Mandate**: Whenever a canonical building prefab or structure is re-extracted, cropped, or resized to match authentic GBA geometry, both `src/data/map/canonical_assets_manifest.json` and `public/assets/essentials/manifest.json` MUST be updated synchronously with matching pixel dimensions (`width`, `height`), tile bounds (`w`, `h`), and centered door offsets (`dx`, `dy`).
+- **Dual Prefabs Manifest Parity Mandate**: Whenever a canonical building prefab or structure is re-extracted, cropped, or resized to match authentic GBA geometry, both [`./canonical_assets_manifest.json`](./canonical_assets_manifest.json) and `public/assets/essentials/manifest.json` MUST be updated synchronously with matching pixel dimensions (`width`, `height`), tile bounds (`w`, `h`), and centered door offsets (`dx`, `dy`).
 
 ## Key Files
 
-- johtoAdventureMapData.ts: Canonical node topology and route connections for the Johto regional map.
+- [`canonicalAssetsManifest.ts`](./canonicalAssetsManifest.ts): Manifest and metadata definitions for authentic GBA tiles and building prefabs.
+- [`canonicalRegionPresets.ts`](./canonicalRegionPresets.ts): Authentic regional geography presets and blueprints for Kanto and Johto overworlds.
+- [`johtoAdventureMapData.ts`](./johtoAdventureMapData.ts): Canonical node topology and route connections for the Johto regional map.
+- [`regionRegistry.ts`](./regionRegistry.ts): Stamping prefabs catalog and regional adventure project dispatchers.
 
 ## Work Guidance
 

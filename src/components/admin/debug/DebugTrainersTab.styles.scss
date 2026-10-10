@@ -3,7 +3,7 @@
 .trainer-debug-tab {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   height: 100%;
 }
 
@@ -28,14 +28,14 @@
 }
 
 .danger-text {
-  color: #ef4444;
+  color: var(--red-light);
 }
 
 .field-label {
   display: inline-block;
   color: Rgb(255 255 255 / 50%);
   font-family: var(--font-pixel, monospace);
-  font-size: 8px;
+  font-size: var(--font-8);
   text-transform: uppercase;
   margin-bottom: 2px;
 }
@@ -43,7 +43,7 @@
 .crime-pct {
   @include pixelated;
 
-  font-size: 10px;
+  font-size: var(--font-10);
   font-weight: bold;
 }
 
@@ -53,13 +53,13 @@
   
   .slider-crime {
     width: 100%;
-    accent-color: #ef4444;
+    accent-color: var(--red-light);
   }
 }
 
 .crime-info-fallback {
   color: $muted;
-  font-size: 8px;
+  font-size: var(--font-8);
   margin-top: 6px;
 }
 
@@ -70,7 +70,7 @@
   width: 64px;
   height: 64px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 40%);
   flex-shrink: 0;
   
@@ -85,25 +85,25 @@
 
 .gen-params-grid {
   display: grid;
-  gap: 10px;
+  gap: $spacing-md-alt;
   grid-template-columns: 1fr 1fr;
   margin-top: 8px;
 }
 
 .cop-preset-btn {
   background: Rgb(59 139 255 / 15%);
-  color: #5ea2ff;
+  color: var(--blue-400);
   border-color: Rgb(59 139 255 / 30%);
 
   &:hover {
     background: #3b8bff;
-    color: white;
+    color: var(--white);
   }
 }
 
 .team-grid-layout {
   display: flex !important;
-  gap: 8px !important;
+  gap: $spacing-sm !important;
   width: 100% !important;
   overflow-x: auto !important;
   margin-top: 8px !important;
@@ -114,11 +114,11 @@
     height: 4px !important;
   }
   &::-webkit-scrollbar-track {
-    border-radius: 4px !important;
+    border-radius: $radius-sm !important;
     background: Rgb(0 0 0 / 20%) !important;
   }
   &::-webkit-scrollbar-thumb {
-    border-radius: 4px !important;
+    border-radius: $radius-sm !important;
     background: Rgb(255 255 255 / 10%) !important;
     &:hover {
       background: Rgb(255 255 255 / 20%) !important;
@@ -133,7 +133,7 @@
   align-items: center;
   padding: 6px;
   border: 1px solid Rgb(255 255 255 / 6%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 2%);
   flex: 0 0 74px !important;
   cursor: pointer;
@@ -175,13 +175,13 @@
     border: none;
     border-radius: 50%;
     background: Rgb(239 68 68 / 10%);
-    color: #ef4444;
-    font-size: 12px;
+    color: var(--red-light);
+    font-size: var(--font-12);
     cursor: pointer;
 
     &:hover {
-      background: #ef4444;
-      color: white;
+      background: var(--red-light);
+      color: var(--white);
     }
   }
 
@@ -194,15 +194,15 @@
     
     .name {
       width: 100%;
-      color: white;
-      font-size: 9px;
+      color: var(--white);
+      font-size: var(--font-9);
       font-weight: bold;
       text-align: center;
     }
     
     .level {
       color: $muted;
-      font-size: 7px;
+      font-size: var(--font-7);
       margin-top: 2px;
     }
   }
@@ -218,16 +218,16 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 4px;
+  gap: $spacing-xs;
   
   %trainer-input-base {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 40%);
-    color: white;
-    font-size: 11px;
+    color: var(--white);
+    font-size: var(--font-11);
     outline: none;
     box-sizing: border-box;
     
@@ -253,7 +253,7 @@
     
     option {
       background: #12131a;
-      color: white;
+      color: var(--white);
     }
   }
 }
@@ -261,7 +261,7 @@
 .gym-fields-flex {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .sim-diff-btn {
@@ -269,19 +269,19 @@
 
   padding: 6px 12px;
   border: 1px solid Rgb(255 255 255 / 15%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(0 0 0 / 40%);
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   text-transform: uppercase;
   cursor: pointer;
 
   &.active {
     background: Rgb(255 255 255 / 5%);
     color: var(--white);
-    &.easy { color: #22c55e; border-color: Rgb(34 197 94 / 50%); }
-    &.normal { color: #ffd700; border-color: Rgb(255 215 0 / 50%); }
-    &.hard { color: #ef4444; border-color: Rgb(239 68 68 / 50%); }
+    &.easy { color: var(--emerald); border-color: Rgb(34 197 94 / 50%); }
+    &.normal { color: var(--gold); border-color: Rgb(255 215 0 / 50%); }
+    &.hard { color: var(--red-light); border-color: Rgb(239 68 68 / 50%); }
   }
 }
 
@@ -290,11 +290,11 @@
 
   border: 1px solid Rgb(255 255 255 / 20%);
   background: Linear-Gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  color: white;
-  box-shadow: 0 8px 25px Rgb(239 68 68 / 40%);
+  color: var(--white);
+  box-shadow: var(--shadow-card);
 
   &:hover {
-    box-shadow: 0 12px 30px Rgb(239 68 68 / 60%);
+    box-shadow: var(--shadow-card);
   }
 }
 
@@ -304,7 +304,7 @@
   width: auto !important;
   height: 24px !important;
   padding: 0 10px !important;
-  font-size: 8px !important;
+  font-size: var(--font-8) !important;
 }
 
 .btn-vicio-primary {
@@ -313,7 +313,7 @@
   width: auto !important;
   height: 24px !important;
   padding: 0 10px !important;
-  font-size: 8px !important;
+  font-size: var(--font-8) !important;
 }
 
 .btn-vicio-success {
@@ -322,5 +322,5 @@
   width: auto !important;
   height: 30px !important;
   padding: 0 16px !important;
-  font-size: 9px !important;
+  font-size: var(--font-9) !important;
 }

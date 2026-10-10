@@ -123,6 +123,7 @@ const handleImageError = (e: Event) => {
       <!-- Buy Button -->
       <button
         v-if="isUnlocked"
+        id="bcshop-item-card-btn-hasenoughbc-comprar-sin-bc"
         class="btn-vicio-primary btn-vicio-sm"
         :disabled="!hasEnoughBC"
         @click.stop="buy"
@@ -131,6 +132,7 @@ const handleImageError = (e: Event) => {
       </button>
       <button
         v-else
+        id="bcshop-item-card-btn-bloqueado"
         class="btn-vicio-neutral btn-vicio-sm"
         disabled
       >

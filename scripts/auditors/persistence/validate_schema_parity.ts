@@ -93,11 +93,23 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
 
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_schema_parity',
       configKey: 'persistence.schemaParity',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'SQL Schema Multi-Engine Parity Auditor',
       description: 'Verifica paridad de esquemas entre PostgreSQL y SQLite',
       icon: '🗄️',

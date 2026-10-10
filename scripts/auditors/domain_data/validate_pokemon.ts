@@ -36,11 +36,23 @@ export const POKEMON_DB_RULES: readonly PokemonDbRuleId[] = [
 export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_pokemon',
       configKey: 'domain.pokemon',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Pokemon DB Integrity Validator',
       description: 'Especies no válidas, stats erróneos o learnsets rotos',
       icon: '🐾',

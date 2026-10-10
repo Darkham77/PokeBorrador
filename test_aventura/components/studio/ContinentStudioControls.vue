@@ -6,16 +6,24 @@
  *
  * Enforces:
  *   - 250ms debounce on sliders via Pinia store.
- *   - 3-Way display mode toggle: 'tiles_only' | 'hybrid' | 'pokégear'.
+ *   - 3-Way display mode toggle via RegionalDisplayMode.
  *   - Dimension presets (64x64, 128x128, 256x256).
  */
 
+import { computed } from 'vue';
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
+import { SLIDER_DEBOUNCE_DELAY_MS } from '../../config/studioConstants.ts';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 
 const store = useRegionalContinentStudioStore();
 
+const MAP_DIMENSIONS = [64, 128, 256, 400] as const;
+
+const oceanWaterPercentText = computed(() => `${Math.round(store.oceanWaterPercentage * PERCENT_BASE_MULTIPLIER)}%`);
+const mountainPercentText = computed(() => `${Math.round(store.mountainPercentage * PERCENT_BASE_MULTIPLIER)}%`);
+
 function handleSliderChange(): void {
-  store.triggerRegenerationDebounced(250);
+  store.triggerRegenerationDebounced(SLIDER_DEBOUNCE_DELAY_MS);
 }
 </script>
 
@@ -31,7 +39,10 @@ function handleSliderChange(): void {
         class="status-indicator"
         :class="{ 'is-loading': store.isGenerating }"
       >
-        <span class="dot" />
+        <span
+          v-gsap-loop="{ effect: 'pulse', active: store.isGenerating }"
+          class="dot"
+        />
         <span class="text">{{ store.isGenerating ? 'Generando...' : 'Listo' }}</span>
       </div>
     </header>
@@ -41,6 +52,7 @@ function handleSliderChange(): void {
       <label class="section-label">Modo de Visualización</label>
       <div class="mode-toggle-group">
         <button
+          id="btn-display-tiles"
           type="button"
           class="mode-btn"
           :class="{ active: store.displayMode === 'tiles_only' }"
@@ -49,6 +61,7 @@ function handleSliderChange(): void {
           Tiles GBA
         </button>
         <button
+          id="btn-display-hybrid"
           type="button"
           class="mode-btn"
           :class="{ active: store.displayMode === 'hybrid' }"
@@ -57,6 +70,7 @@ function handleSliderChange(): void {
           Híbrido
         </button>
         <button
+          id="btn-display-pokegear"
           type="button"
           class="mode-btn"
           :class="{ active: store.displayMode === 'pokégear' }"
@@ -95,36 +109,39 @@ function handleSliderChange(): void {
         <label>Escala de Mapa</label>
         <div class="dimension-preset-group">
           <button
+            v-for="dim in MAP_DIMENSIONS"
+            :id="'btn-dim-' + dim"
+            :key="dim"
             type="button"
             class="dim-btn"
-            :class="{ active: store.mapDimension === 64 }"
-            @click="store.mapDimension = 64; handleSliderChange()"
+            :class="{ active: store.mapDimension === dim }"
+            @click="store.mapDimension = dim; handleSliderChange()"
           >
-            64²
+            {{ dim }}²
+          </button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <label>Presets Canónicos</label>
+        <div class="dimension-preset-group">
+          <button
+            id="btn-preset-kanto"
+            type="button"
+            class="dim-btn"
+            title="Cargar mapa canónico de Kanto"
+            @click="store.loadCanonicalPreset('kanto')"
+          >
+            Kanto
           </button>
           <button
+            id="btn-preset-johto"
             type="button"
             class="dim-btn"
-            :class="{ active: store.mapDimension === 128 }"
-            @click="store.mapDimension = 128; handleSliderChange()"
+            title="Cargar mapa canónico de Johto"
+            @click="store.loadCanonicalPreset('johto')"
           >
-            128²
-          </button>
-          <button
-            type="button"
-            class="dim-btn"
-            :class="{ active: store.mapDimension === 256 }"
-            @click="store.mapDimension = 256; handleSliderChange()"
-          >
-            256²
-          </button>
-          <button
-            type="button"
-            class="dim-btn"
-            :class="{ active: store.mapDimension === 400 }"
-            @click="store.mapDimension = 400; handleSliderChange()"
-          >
-            400²
+            Johto
           </button>
         </div>
       </div>
@@ -137,9 +154,10 @@ function handleSliderChange(): void {
       <div class="slider-field">
         <div class="slider-info">
           <span>Océano Perimetral</span>
-          <span class="value">{{ Math.round(store.oceanWaterPercentage * 100) }}%</span>
+          <span class="value">{{ oceanWaterPercentText }}</span>
         </div>
         <input
+          id="slider-ocean-water"
           v-model.number="store.oceanWaterPercentage"
           type="range"
           min="0.20"
@@ -153,9 +171,10 @@ function handleSliderChange(): void {
       <div class="slider-field">
         <div class="slider-info">
           <span>Cordilleras de Montaña</span>
-          <span class="value">{{ Math.round(store.mountainPercentage * 100) }}%</span>
+          <span class="value">{{ mountainPercentText }}</span>
         </div>
         <input
+          id="slider-mountain-percent"
           v-model.number="store.mountainPercentage"
           type="range"
           min="0.10"
@@ -172,6 +191,7 @@ function handleSliderChange(): void {
           <span class="value">{{ store.lakeCount }}</span>
         </div>
         <input
+          id="slider-lake-count"
           v-model.number="store.lakeCount"
           type="range"
           min="0"
@@ -193,6 +213,7 @@ function handleSliderChange(): void {
           <span class="value">{{ store.poiTargetCount }} nodos</span>
         </div>
         <input
+          id="slider-poi-count"
           v-model.number="store.poiTargetCount"
           type="range"
           min="10"
@@ -206,6 +227,7 @@ function handleSliderChange(): void {
       <div class="checkbox-field">
         <label class="checkbox-label">
           <input
+            id="check-allow-bridges"
             v-model="store.allowBridges"
             type="checkbox"
             @change="handleSliderChange"
@@ -235,68 +257,67 @@ function handleSliderChange(): void {
 
 <style scoped lang="scss">
 .continent-studio-controls {
-  width: 320px;
-  background: Rgba(15, 23, 42, 0.94);
-  backdrop-filter: Blur(12px);
-  border-right: 1px solid Rgba(255, 255, 255, 0.1);
-  padding: 16px;
+  z-index: calc(var(--z-map-floor) + 10);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  color: #f8fafc;
+  gap: $spacing-lg;
+  width: 320px;
+  padding: 16px;
+  background: Rgb(15 23 42 / 94%);
+  color: var(--slate-50);
   font-family: inherit;
+  backdrop-filter: Blur(12px);
+  border-right: 1px solid Rgb(255 255 255 / 10%);
   overflow-y: auto;
-  z-index: calc(var(--z-map-floor) + 10);
 }
 
 .controls-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
+  align-items: center;
+  border-bottom: 1px solid Rgb(255 255 255 / 8%);
   padding-bottom: 12px;
 
   .header-title {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .icon {
-      font-size: 1.25rem;
+      font-size: var(--font-20);
     }
 
     h2 {
-      font-size: 1rem;
-      font-weight: 700;
       margin: 0;
-      color: #38bdf8;
+      color: var(--sky);
+      font-size: var(--font-16);
+      font-weight: 700;
     }
   }
 
   .status-indicator {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
+    gap: $spacing-sm-alt;
     padding: 3px 8px;
-    border-radius: 9999px;
-    background: Rgba(16, 185, 129, 0.15);
-    color: #34d399;
+    border-radius: $radius-full;
+    background: Rgb(16 185 129 / 15%);
+    color: var(--emerald-400);
+    font-size: var(--font-12);
 
     .dot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #34d399;
+      background: var(--emerald-400);
     }
 
     &.is-loading {
-      background: Rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
+      background: Rgb(245 158 11 / 15%);
+      color: var(--amber);
 
       .dot {
-        background: #fbbf24;
-        animation: pulse 1s infinite alternate;
+        background: var(--amber);
       }
     }
   }
@@ -305,44 +326,43 @@ function handleSliderChange(): void {
 .control-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
 
   .section-label {
-    font-size: 0.75rem;
+    color: var(--slate-400);
+    font-size: var(--font-12);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #94a3b8;
   }
 }
 
 .mode-toggle-group {
   display: grid;
+  gap: $spacing-xs;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  background: Rgba(0, 0, 0, 0.3);
   padding: 3px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
+  background: Rgb(0 0 0 / 30%);
 
   .mode-btn {
-    border: none;
-    background: transparent;
-    color: #94a3b8;
     padding: 6px 4px;
-    font-size: 0.75rem;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: var(--slate-400);
+    font-size: var(--font-12);
     font-weight: 600;
-    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
 
     &:hover {
-      color: #ffffff;
+      color: var(--white);
     }
 
     &.active {
-      background: #0284c7;
-      color: #ffffff;
-      box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.3);
+      background: var(--sky-dark);
+      color: var(--white);
+      box-shadow: var(--shadow-sm);
     }
   }
 }
@@ -350,71 +370,69 @@ function handleSliderChange(): void {
 .field-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   label {
-    font-size: 0.8rem;
-    color: #cbd5e1;
+    color: var(--slate-300);
+    font-size: var(--font-13);
   }
 
   .seed-input-wrapper {
     display: flex;
-    gap: 6px;
+    gap: $spacing-sm-alt;
 
     .seed-input {
-      flex: 1;
-      background: Rgba(0, 0, 0, 0.4);
-      border: 1px solid Rgba(255, 255, 255, 0.15);
-      border-radius: 6px;
-      color: #ffffff;
       padding: 6px 10px;
-      font-size: 0.85rem;
+      border: 1px solid Rgb(255 255 255 / 15%);
+      border-radius: $radius-md;
+      background: Rgb(0 0 0 / 40%);
+      color: var(--white);
       font-family: monospace;
+      font-size: var(--font-14);
+      flex: 1;
 
       &:focus {
         outline: none;
-        border-color: #38bdf8;
+        border-color: var(--sky);
       }
     }
 
     .dice-btn {
-      background: Rgba(255, 255, 255, 0.08);
-      border: 1px solid Rgba(255, 255, 255, 0.15);
-      border-radius: 6px;
       padding: 0 10px;
+      border: 1px solid Rgb(255 255 255 / 15%);
+      border-radius: $radius-md;
+      background: Rgb(255 255 255 / 8%);
+      font-size: var(--font-16);
       cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.2s ease;
 
       &:hover {
-        background: Rgba(255, 255, 255, 0.18);
+        background: Rgb(255 255 255 / 18%);
       }
     }
   }
 
   .dimension-preset-group {
     display: grid;
+    gap: $spacing-xs;
     grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
 
     .dim-btn {
-      background: Rgba(0, 0, 0, 0.3);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      color: #94a3b8;
       padding: 5px 0;
-      font-size: 0.8rem;
+      border: 1px solid Rgb(255 255 255 / 10%);
+      border-radius: $radius-md;
+      background: Rgb(0 0 0 / 30%);
+      color: var(--slate-400);
+      font-size: var(--font-13);
       cursor: pointer;
-      transition: all 0.2s ease;
 
       &:hover {
-        color: #ffffff;
+        color: var(--white);
       }
 
       &.active {
-        background: #0284c7;
-        border-color: #38bdf8;
-        color: #ffffff;
+        background: var(--sky-dark);
+        color: var(--white);
+        border-color: var(--sky);
       }
     }
   }
@@ -423,24 +441,24 @@ function handleSliderChange(): void {
 .slider-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
 
   .slider-info {
     display: flex;
     justify-content: space-between;
-    font-size: 0.8rem;
-    color: #cbd5e1;
+    color: var(--slate-300);
+    font-size: var(--font-13);
 
     .value {
-      font-weight: 700;
-      color: #38bdf8;
+      color: var(--sky);
       font-family: monospace;
+      font-weight: 700;
     }
   }
 
   .range-slider {
     width: 100%;
-    accent-color: #0284c7;
+    accent-color: var(--sky-dark);
     cursor: pointer;
   }
 }
@@ -449,56 +467,47 @@ function handleSliderChange(): void {
   .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: #cbd5e1;
+    gap: $spacing-sm;
+    color: var(--slate-300);
+    font-size: var(--font-13);
     cursor: pointer;
 
     input[type='checkbox'] {
-      accent-color: #0284c7;
+      accent-color: var(--sky-dark);
       cursor: pointer;
     }
   }
 }
 
 .controls-footer {
-  margin-top: auto;
   display: grid;
+  gap: $spacing-sm-alt;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.08);
+  margin-top: auto;
+  border-top: 1px solid Rgb(255 255 255 / 8%);
   padding-top: 12px;
 
   .stat-pill {
-    background: Rgba(0, 0, 0, 0.3);
-    border-radius: 6px;
-    padding: 6px 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: $spacing-2xs;
+    padding: 6px 4px;
+    border-radius: $radius-md;
+    background: Rgb(0 0 0 / 30%);
 
     .lbl {
-      font-size: 0.65rem;
-      color: #94a3b8;
+      color: var(--slate-400);
+      font-size: var(--font-10);
       text-transform: uppercase;
     }
 
     .val {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #38bdf8;
+      color: var(--sky);
       font-family: monospace;
+      font-size: var(--font-14);
+      font-weight: 700;
     }
-  }
-}
-
-@keyframes pulse {
-  from {
-    opacity: 0.4;
-  }
-  to {
-    opacity: 1;
   }
 }
 </style>

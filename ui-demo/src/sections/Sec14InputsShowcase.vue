@@ -189,7 +189,7 @@ function syncAllData() {
                   <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="optTerms"
-                      style="font-size: 8px; color: #ffd60a;"
+                      style="font-size: var(--font-8); color: var(--yellow);"
                     >✓</span>
                   </span>
                   <span>Acepto los términos</span>
@@ -203,7 +203,7 @@ function syncAllData() {
                   <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="optNewsletter"
-                      style="font-size: 8px; color: #ffd60a;"
+                      style="font-size: var(--font-8); color: var(--yellow);"
                     >✓</span>
                   </span>
                   <span>Boletín de eventos</span>
@@ -229,7 +229,7 @@ function syncAllData() {
                   <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="planTier === 'free'"
-                      style="font-size: 7px; color: #38bdf8;"
+                      style="font-size: var(--font-7); color: var(--sky);"
                     >●</span>
                   </span>
                   <span>Pase Gratuito</span>
@@ -245,7 +245,7 @@ function syncAllData() {
                   <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="planTier === 'pro'"
-                      style="font-size: 7px; color: #38bdf8;"
+                      style="font-size: var(--font-7); color: var(--sky);"
                     >●</span>
                   </span>
                   <span>Pase Maestro (Pro)</span>
@@ -335,12 +335,12 @@ function syncAllData() {
               >
               <div
                 class="pv-frame-control"
-                style="padding: 6px 8px; background: rgba(234, 179, 8, 0.1); --frame-border: #eab308;"
+                style="padding: 6px 8px; background: rgba(234, 179, 8, 0.1); --frame-border: var(--amber-dark);"
               >
-                <div style="font-size: 7px; color: #ffd60a; font-weight: bold;">
+                <div style="font-size: var(--font-7); color: var(--yellow); font-weight: bold;">
                   Invisible en el DOM renderizado
                 </div>
-                <div style="font-size: 6.5px; color: #94a3b8; margin-top: 2px;">
+                <div style="font-size: var(--font-7); color: var(--slate-400); margin-top: 2px;">
                   CSRF: "{{ hiddenToken }}"
                 </div>
               </div>
@@ -367,28 +367,28 @@ function syncAllData() {
 
           <!-- BOTONES NATIVOS OFICIALES 20, 21, 22 -->
           <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
-            <span style="font-size: 7.5px; font-weight: bold; color: var(--color-text-gold, #ffd60a);">
+            <span style="font-size: var(--font-8); font-weight: bold; color: var(--color-text-gold, #ffd60a);">
               BOTONES NATIVOS OFICIALES:
             </span>
             <input
               type="submit"
               value="20. type='submit'"
               class="pv-curve-xs pv-btn pv-btn-primary"
-              style="font-size: 7.5px; padding: 6px 12px; cursor: pointer;"
+              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer;"
               @click.prevent="onSubmitForm"
             >
             <input
               type="reset"
               value="21. type='reset'"
               class="pv-curve-xs pv-btn pv-btn-danger"
-              style="font-size: 7.5px; padding: 6px 12px; cursor: pointer;"
+              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer;"
               @click.prevent="onResetForm"
             >
             <input
               type="button"
               value="22. type='button'"
               class="pv-curve-xs pv-btn pv-btn-secondary"
-              style="font-size: 7.5px; padding: 6px 12px; cursor: pointer;"
+              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer;"
               @click="logToInspector('type=\'button\' presionado')"
             >
           </div>
@@ -467,7 +467,7 @@ function syncAllData() {
               </div>
               <div
                 class="pv-progress-bar pv-frame-control"
-                style="--frame-border: #a855f7;"
+                style="--frame-border: var(--purple-400);"
               >
                 <div
                   class="progress-fill"

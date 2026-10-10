@@ -16,6 +16,7 @@ const emit = defineEmits<{
 <template>
   <div class="trades-sub-nav">
     <button
+      id="social-trades-sub-nav-btn-1"
       v-gsap-hover
       :class="{ active: subTab === 'received' }"
       @click.stop="emit('switch-sub-tab', 'received')"
@@ -27,6 +28,7 @@ const emit = defineEmits<{
       >{{ receivedCount }}</span>
     </button>
     <button
+      id="social-trades-sub-nav-btn-2"
       v-gsap-hover
       :class="{ active: subTab === 'sent' }"
       @click.stop="emit('switch-sub-tab', 'sent')"
@@ -38,6 +40,7 @@ const emit = defineEmits<{
       >{{ sentCount }}</span>
     </button>
     <button
+      id="social-trades-sub-nav-btn-3"
       v-gsap-hover
       :class="{ active: subTab === 'claims' }"
       @click.stop="emit('switch-sub-tab', 'claims')"
@@ -56,11 +59,11 @@ const emit = defineEmits<{
 
 .trades-sub-nav {
   display: flex;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 4px;
-  border: 1px solid rgb(199 125 255 / 10%);
-  border-radius: 12px;
-  background: rgb(0 0 0 / 25%);
+  border: 1px solid Rgb(199 125 255 / 10%);
+  border-radius: $radius-xl;
+  background: Rgb(0 0 0 / 25%);
   margin-bottom: 18px;
 
   button {
@@ -70,26 +73,26 @@ const emit = defineEmits<{
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 8px 12px;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: transparent;
-    color: rgb(255 255 255 / 50%);
-    font-size: 8px;
+    color: Rgb(255 255 255 / 50%);
+    font-size: var(--font-8);
     font-weight: bold;
     flex: 1;
     cursor: pointer;
 
     &:hover:not(.active) {
-      background: rgb(255 255 255 / 3%);
-      color: rgb(255 255 255 / 80%);
+      background: Rgb(255 255 255 / 3%);
+      color: Rgb(255 255 255 / 80%);
     }
 
     &.active {
-      background: rgb(168 85 247 / 12%);
+      background: Rgb(168 85 247 / 12%);
       color: var(--purple-light);
-      border-color: rgb(168 85 247 / 25%);
+      border-color: Rgb(168 85 247 / 25%);
     }
   }
 }

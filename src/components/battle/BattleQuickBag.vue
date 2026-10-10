@@ -196,7 +196,7 @@ const getTierColor = (t?: string) => {
 .quick-bag-grid {
   position: relative;
   display: grid;
-  gap: 8px;
+  gap: $spacing-sm;
   grid-template-columns: repeat(auto-fill, 76px); // Rellena con más columnas de 76px si el espacio lo permite
   width: 100%;
   min-height: 100%;
@@ -214,7 +214,7 @@ const getTierColor = (t?: string) => {
   align-items: center; 
   padding: 0;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(30 41 59 / 80%);
   cursor: pointer;
   aspect-ratio: 1;
@@ -291,10 +291,10 @@ const getTierColor = (t?: string) => {
   width: max-content; 
   padding: 1px 6px;
   border: 1px solid var(--yellow);
-  border-radius: 4px; 
+  border-radius: $radius-sm; 
   background: Rgb(0 0 0 / 85%);
-  color: white;
-  font-size: 8px;
+  color: var(--white);
+  font-size: var(--font-8);
   transform: Translatex(-50%);
   text-shadow: 1px 1px 0 black;
   white-space: nowrap;
@@ -310,7 +310,7 @@ const getTierColor = (t?: string) => {
   inset: 0;
   pointer-events: none;
   
-  .empty-icon { font-size: 24px; margin-bottom: 4px; }
-  .empty-text { @include pixelated; font-size: 8px; }
+  .empty-icon { font-size: var(--font-24); margin-bottom: 4px; }
+  .empty-text { @include pixelated; font-size: var(--font-8); }
 }
 </style>

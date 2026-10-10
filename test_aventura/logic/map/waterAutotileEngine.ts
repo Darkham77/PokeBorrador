@@ -108,8 +108,8 @@ export const CANONICAL_SAND_BEACH_BRUSH: Readonly<WaterCoastBrushSet> = {
 };
 
 export const BASE_GRASS_TILE = 'poke_grass_plain.png';
-export const MIN_ABYSSAL_LAKE_DISTANCE = 2.4;
-export const ABYSSAL_SEARCH_RADIUS = 3;
+const MIN_ABYSSAL_LAKE_DISTANCE = 2.4;
+const ABYSSAL_SEARCH_RADIUS = 3;
 
 export interface ResolvedWaterCell {
   readonly x: number;

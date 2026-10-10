@@ -29,11 +29,15 @@ const FOSSIL_CLONING_EXTRA_FOSSIL_COST = 1000;
 const BASE_SHINY_CHANCE_DENOMINATOR = 4096;
 const RARITY_DIFFICULTY_CEILING = 101 as const;
 const FOSSIL_CLONING_SHINY_STEP = 0.25 as const;
+const FISHING_SPEED_DECAY_FACTOR = 7.5 as const;
+const FISHING_SPEED_TUNING_MULTIPLIER = 1.1 as const;
+const FISHING_HIT_WINDOW_DECAY_DIVISOR = 1.3 as const;
+const FISHING_NOTES_DIFFICULTY_DIVISOR = 7 as const;
 
 export function calculateFishingTotalNotes(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
   const diffFactor = RARITY_DIFFICULTY_CEILING - safeRarity;
-  return Math.min(MAX_FISHING_NOTES, 5 + Math.floor(diffFactor / 7));
+  return Math.min(MAX_FISHING_NOTES, 5 + Math.floor(diffFactor / FISHING_NOTES_DIFFICULTY_DIVISOR));
 }
 
 /**
@@ -46,7 +50,7 @@ export function calculateFishingTotalNotes(rarity: number): number {
 export function calculateFishingSpeedBase(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
   const diffFactor = RARITY_DIFFICULTY_CEILING - safeRarity;
-  return Math.round(Math.max(MIN_FISHING_COLLAPSE_SPEED_MS, MAX_FISHING_COLLAPSE_SPEED_MS - (diffFactor * 7.5)) * 1.1);
+  return Math.round(Math.max(MIN_FISHING_COLLAPSE_SPEED_MS, MAX_FISHING_COLLAPSE_SPEED_MS - (diffFactor * FISHING_SPEED_DECAY_FACTOR)) * FISHING_SPEED_TUNING_MULTIPLIER);
 }
 
 /**
@@ -59,7 +63,7 @@ export function calculateFishingSpeedBase(rarity: number): number {
 export function calculateFishingHitWindow(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
   const diffFactor = RARITY_DIFFICULTY_CEILING - safeRarity;
-  return Math.max(100, MAX_FISHING_HIT_WINDOW_MS - (diffFactor / 1.3));
+  return Math.max(100, MAX_FISHING_HIT_WINDOW_MS - (diffFactor / FISHING_HIT_WINDOW_DECAY_DIVISOR));
 }
 
 /**

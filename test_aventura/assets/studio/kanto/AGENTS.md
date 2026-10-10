@@ -12,7 +12,6 @@ Game Prototyping / Adventure Suite.
 
 ## Key Files
 
-- [`tile_catalog.js`](./tile_catalog.js): Precompiled JavaScript tile catalog dictionary.
 - [`tile_catalog.json`](./tile_catalog.json): Structured JSON dataset of tile coordinates and IDs.
 
 ## Work Guidance

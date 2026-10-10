@@ -120,6 +120,7 @@ function openTeamManagement() {
 
       <div class="header-actions">
         <button
+          id="home-passive-defense-widget-btn-pvp-passiveteamactive-activado"
           :class="{ active: pvp.passiveTeamActive }"
           class="toggle-btn text-outline"
           @click.stop="pvp.togglePassiveTeam"
@@ -156,6 +157,7 @@ function openTeamManagement() {
           EQUIPO DEFENSOR ACTUAL
         </h4>
         <button
+          id="home-passive-defense-widget-btn-cambiar-equipo"
           v-gsap-hover
           class="card-action-btn text-outline"
           @click.stop="openTeamManagement"
@@ -175,6 +177,7 @@ function openTeamManagement() {
           :class="{ 'ineligible-card': teamEligibility.get(mon.uid || mon.id)?.eligible === false }"
         >
           <BoxPokemonCard
+            id="home-passive-defense-widget-boxpokemoncard-1"
             :pokemon="mon"
             :index="idx"
             :hide-stats="true"

@@ -30,8 +30,9 @@ const handleSortClick = (key: string) => {
 <template>
   <div class="pokedex-controls glass-morphism">
     <nav class="gen-tabs">
-      <button 
-        v-for="gen in [1, 2]"
+      <button
+        v-for="gen in [1, 2]" 
+        id="pokedex-controls-btn-gen-gen"
         :key="gen"
         class="tab-btn" 
         :class="{ active: currentGen === gen }"
@@ -44,7 +45,8 @@ const handleSortClick = (key: string) => {
     <div class="controls-right">
       <div class="sort-group">
         <span class="sort-label">ORDEN:</span>
-        <button 
+        <button
+          id="pokedex-controls-btn-1" 
           class="pdex-sort-btn" 
           :class="{ active: sortBy === 'number' }"
           @click.stop="handleSortClick('number')"
@@ -57,7 +59,8 @@ const handleSortClick = (key: string) => {
             {{ sortOrder === 'asc' ? '↑' : '↓' }}
           </span>
         </button>
-        <button 
+        <button
+          id="pokedex-controls-btn-2" 
           class="pdex-sort-btn" 
           :class="{ active: sortBy === 'name' }"
           @click.stop="handleSortClick('name')"
@@ -74,15 +77,17 @@ const handleSortClick = (key: string) => {
 
       <div class="search-wrapper">
         <span class="emoji pdex-search-icon">🔍</span>
-        <input 
+        <input
+          id="pokedex-controls-input-buscar" 
           :value="searchQuery" 
           type="text" 
           placeholder="Buscar..."
           class="pdex-search-input"
           @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
         >
-        <button 
-          v-if="searchQuery"
+        <button
+          v-if="searchQuery" 
+          id="pokedex-controls-btn-3"
           class="clear-btn"
           @click.stop="$emit('update:searchQuery', '')"
         >
@@ -103,26 +108,26 @@ const handleSortClick = (key: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px;
+  gap: $spacing-2xl;
   padding: 12px 24px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   margin-bottom: 0;
 
   @include responsive(950px) {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: $spacing-md;
     padding: 16px;
   }
 }
 
 .gen-tabs {
   display: flex;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 4px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(0 0 0 / 30%);
 
   .tab-btn {
@@ -130,10 +135,10 @@ const handleSortClick = (key: string) => {
 
     padding: 8px 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: none;
     color: var(--gray);
-    font-size: 8px;
+    font-size: var(--font-8);
     cursor: pointer;
     will-change: transform, background-color, color;
 
@@ -151,30 +156,30 @@ const handleSortClick = (key: string) => {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 20px;
+  gap: $spacing-xl;
   flex: 1;
 
   @include responsive(950px) {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: $spacing-md;
   }
 }
 
 .sort-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 4px 8px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(0 0 0 / 20%);
 
   .sort-label {
     @include pixelated;
 
     color: var(--gray);
-    font-size: 6px;
+    font-size: var(--font-6);
     opacity: 0.6;
     margin-right: 4px;
   }
@@ -183,15 +188,15 @@ const handleSortClick = (key: string) => {
     @include flex-center;
     @include pixelated;
 
-    gap: 3px;
+    gap: $spacing-xs-alt;
     min-width: 28px;
     height: 28px;
     padding: 0 6px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(255 255 255 / 3%);
     color: var(--gray);
-    font-size: 8px;
+    font-size: var(--font-8);
     cursor: pointer;
     will-change: transform, background-color, border-color, color;
 
@@ -219,7 +224,7 @@ const handleSortClick = (key: string) => {
     position: absolute;
     top: 50%;
     left: 12px;
-    font-size: 12px;
+    font-size: var(--font-12);
     opacity: 0.4;
     transform: Translatey(-50%);
     pointer-events: none;
@@ -233,10 +238,10 @@ const handleSortClick = (key: string) => {
     height: 40px;
     padding: 0 12px 0 36px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 10px;
+    border-radius: $radius-lg-alt;
     background: Rgb(0 0 0 / 30%);
     color: var(--white);
-    font-size: 8px;
+    font-size: var(--font-8);
     outline: none;
     will-change: background-color, border-color;
 
@@ -258,11 +263,11 @@ const handleSortClick = (key: string) => {
     border: none;
     background: none;
     color: Rgb(255 255 255 / 50%);
-    font-size: 16px;
+    font-size: var(--font-16);
     line-height: 1;
     cursor: pointer;
 
-    &:hover { color: white; }
+    &:hover { color: var(--white); }
   }
 }
 </style>

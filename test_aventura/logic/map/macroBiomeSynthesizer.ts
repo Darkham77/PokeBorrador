@@ -52,24 +52,39 @@ const DEFAULT_TEMP_SCALE = 0.018;
 const DEFAULT_MOIST_SCALE = 0.018;
 const MIN_CLUSTER_SIZE = 16;
 
+const BIOME_THRESHOLDS = {
+  DESERT_TEMP_MIN: 0.62,
+  DESERT_MOIST_MAX: 0.35,
+  VOLCANIC_TEMP_MIN: 0.74,
+  VOLCANIC_MOIST_MIN: 0.35,
+  VOLCANIC_MOIST_MAX: 0.55,
+  FOREST_MOIST_MIN: 0.62,
+  HIGHLAND_TEMP_MAX: 0.38,
+  CONTAINMENT_BUFFER_RADIUS: 2
+} as const;
+
 /**
  * Classifies raw temperature and moisture values into a macro biome.
  */
 function classifyMacroBiome(temperature: number, moisture: number): MacroBiome {
   // Arid Desert: Hot and very dry
-  if (temperature > 0.62 && moisture < 0.35) {
+  if (temperature > BIOME_THRESHOLDS.DESERT_TEMP_MIN && moisture < BIOME_THRESHOLDS.DESERT_MOIST_MAX) {
     return 'arid_desert';
   }
   // Volcanic Plateau: Very hot, dry-to-moderate
-  if (temperature > 0.74 && moisture >= 0.35 && moisture < 0.55) {
+  if (
+    temperature > BIOME_THRESHOLDS.VOLCANIC_TEMP_MIN &&
+    moisture >= BIOME_THRESHOLDS.VOLCANIC_MOIST_MIN &&
+    moisture < BIOME_THRESHOLDS.VOLCANIC_MOIST_MAX
+  ) {
     return 'volcanic_plateau';
   }
   // Viridian Forest: High moisture
-  if (moisture > 0.62) {
+  if (moisture > BIOME_THRESHOLDS.FOREST_MOIST_MIN) {
     return 'viridian_forest';
   }
   // Mint Highland: Cool temperature
-  if (temperature < 0.38) {
+  if (temperature < BIOME_THRESHOLDS.HIGHLAND_TEMP_MAX) {
     return 'mint_highland';
   }
   // Default: Temperate Meadow Plains
@@ -169,8 +184,9 @@ function computeContainmentBuffer(
 
       // Check Chebyshev distance <= 2 for flat plains contact without barriers
       let touchesPlain = false;
-      for (let dy = -2; dy <= 2; dy++) {
-        for (let dx = -2; dx <= 2; dx++) {
+      const radius = BIOME_THRESHOLDS.CONTAINMENT_BUFFER_RADIUS;
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
           if (dx === 0 && dy === 0) continue;
           const nx = x + dx;
           const ny = y + dy;

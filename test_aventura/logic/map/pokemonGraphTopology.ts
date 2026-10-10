@@ -39,13 +39,21 @@ const WORMHOLE_MIN_HOP_DISTANCE = 4;
 // Deterministic PRNG (Mulberry32)
 // ---------------------------------------------------------------------------
 
+const MULBERRY_CONSTANTS = {
+  INITIAL_SHIFT: 15,
+  SECONDARY_SHIFT: 7,
+  OUTPUT_SHIFT: 14,
+  MIX_FACTOR: 61,
+  DIVISOR: 4294967296,
+} as const;
+
 function createPRNG(seed: number): () => number {
   let s = (seed >>> 0) || 1;
   return () => {
     s = (s + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    let t = Math.imul(s ^ (s >>> MULBERRY_CONSTANTS.INITIAL_SHIFT), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> MULBERRY_CONSTANTS.SECONDARY_SHIFT), MULBERRY_CONSTANTS.MIX_FACTOR | t)) ^ t;
+    return ((t ^ (t >>> MULBERRY_CONSTANTS.OUTPUT_SHIFT)) >>> 0) / MULBERRY_CONSTANTS.DIVISOR;
   };
 }
 

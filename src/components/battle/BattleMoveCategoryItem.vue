@@ -51,27 +51,27 @@ defineProps<{
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: $spacing-2xs;
   
   .mv-pp-label { 
     color: var(--yellow); 
-    font-size: 6px; 
+    font-size: var(--font-6); 
     opacity: 0.7; 
 
-    @media (width <= 560px) { min-width: 25px; font-size: 5px; opacity: 0.6; }
+    @media (width <= 560px) { min-width: 25px; font-size: var(--font-5); opacity: 0.6; }
   }
   .mv-pp-val { 
     color: $white; 
-    font-size: 7px; 
+    font-size: var(--font-7); 
     font-weight: 900; 
 
-    @media (width <= 560px) { font-size: 6px; }
+    @media (width <= 560px) { font-size: var(--font-6); }
   }
 
   @media (width <= 560px) {
     flex-direction: row;
     align-items: flex-start;
-    gap: 4px;
+    gap: $spacing-xs;
     margin-top: 4px;
   }
 }

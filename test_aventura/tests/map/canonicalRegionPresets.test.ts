@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildCanonicalRegionMap } from '../../../src/logic/map/continent/canonicalRegionPresets.ts';
+import { buildCanonicalRegionMap } from '../../logic/map/continent/canonicalRegionPresets.ts';
 
 describe('canonicalRegionPresets', () => {
   it('generates authentic Kanto region with 15 canonical POIs and official routes', () => {

@@ -28,8 +28,7 @@ import {
   type ResolvedMacroBiomeMapResult
 } from './macroBiomeAutotileEngine.ts';
 import type { ProceduralRiverDrainageResult } from './continent/riverHydrographyEngine.ts';
-
-const DEFAULT_MOUNTAIN_PALETTE: MountainPalette = 'brown';
+import { DEFAULT_MOUNTAIN_PALETTE } from '../../config/studioConstants.ts';
 
 export interface ContinentCellDetails {
   readonly x: number;

@@ -49,6 +49,7 @@ function handleImageError(e: Event) {
 
 <template>
   <div
+    id="home-black-market-widget-div-openblackmarketmodal"
     class="home-black-market-widget home-section-card"
     @click="openBlackMarketModal"
   >
@@ -66,6 +67,7 @@ function handleImageError(e: Event) {
         </div>
       </div>
       <div
+        id="home-black-market-widget-div-1"
         class="header-actions"
         @click.stop
       >
@@ -89,7 +91,7 @@ function handleImageError(e: Event) {
           position="top"
         >
           <div
-            v-gsap-hover="{ scale: 1.03, y: -2 }"
+            v-gsap-hover="'widget'"
             class="bm-mini-card"
             :class="{ 'is-sold': isPurchased(item.id) }"
             :style="{ '--tier-color': getItemTierColor(item.tier) }"
@@ -142,6 +144,7 @@ function handleImageError(e: Event) {
 
     <!-- Action Link -->
     <button
+      id="home-black-market-widget-btn-abrir-mercado-negro"
       v-gsap-hover
       class="bm-mini-open-btn"
       @click.stop="openBlackMarketModal"
@@ -158,13 +161,13 @@ function handleImageError(e: Event) {
 .home-black-market-widget {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   width: 100%;
   padding: 12px 14px;
   border: 1px solid Rgb(239 68 68 / 30%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(18 22 34 / 85%);
-  box-shadow: 0 4px 16px Rgb(0 0 0 / 40%), inset 0 0 12px Rgb(239 68 68 / 5%);
+  box-shadow: var(--shadow-md);
   box-sizing: border-box;
   cursor: pointer;
 
@@ -181,10 +184,10 @@ function handleImageError(e: Event) {
   .header-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .widget-icon {
-      font-size: 18px;
+      font-size: var(--font-18);
     }
 
     .title-wrap {
@@ -195,15 +198,15 @@ function handleImageError(e: Event) {
         @include pixelated;
 
         margin: 0;
-        color: #ef4444;
-        font-size: 11px;
+        color: var(--red-light);
+        font-size: var(--font-11);
         line-height: 1.35;
         letter-spacing: 0.5px;
       }
 
       .widget-sub {
         color: var(--gray, #94a3b8);
-        font-size: 8.5px;
+        font-size: var(--font-9);
         font-weight: 500;
         line-height: 1.35;
       }
@@ -218,7 +221,7 @@ function handleImageError(e: Event) {
 
 .bm-mini-grid {
   display: grid;
-  gap: 8px;
+  gap: $spacing-sm;
   grid-template-columns: repeat(3, 1fr);
 }
 
@@ -242,7 +245,7 @@ function handleImageError(e: Event) {
   width: 100%;
   padding: 8px 6px;
   border: 1px solid Rgb(239 68 68 / 20%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(25 15 20 / 70%);
   text-align: center;
   box-sizing: border-box;
@@ -279,10 +282,10 @@ function handleImageError(e: Event) {
 
   position: absolute;
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: $radius-xs-alt;
   background: Rgb(220 38 38 / 95%);
-  color: white;
-  font-size: 7px;
+  color: var(--white);
+  font-size: var(--font-7);
   line-height: 1.3;
   transform: Rotate(-10deg);
   letter-spacing: 0.5px;
@@ -294,8 +297,8 @@ function handleImageError(e: Event) {
   display: -webkit-box;
   max-width: 100%;
   min-height: 24px;
-  color: white;
-  font-size: 8px;
+  color: var(--white);
+  font-size: var(--font-8);
   line-height: 1.45;
   text-align: center;
   padding-bottom: 2px;
@@ -316,28 +319,28 @@ function handleImageError(e: Event) {
 .bm-mini-price {
   @include pixelated;
 
-  color: #4ade80;
-  font-size: 9px;
+  color: var(--green-light);
+  font-size: var(--font-9);
   line-height: 1.35;
 }
 
 .bm-mini-status-sold {
   @include pixelated;
 
-  color: #94a3b8;
-  font-size: 8px;
+  color: var(--slate-400);
+  font-size: var(--font-8);
   line-height: 1.35;
 }
 
 .bm-mini-empty {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 12px;
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(0 0 0 / 20%);
   color: var(--gray, #94a3b8);
-  font-size: 9.5px;
+  font-size: var(--font-10);
 }
 
 .bm-mini-open-btn {
@@ -345,11 +348,11 @@ function handleImageError(e: Event) {
 
   width: 100%;
   padding: 6px 10px;
-  border: 1px solid #f87171;
-  border-radius: 6px;
+  border: 1px solid var(--rose);
+  border-radius: $radius-md;
   background: Linear-Gradient(180deg, #ef4444 0%, #b91c1c 100%);
-  color: white;
-  font-size: 9px;
+  color: var(--white);
+  font-size: var(--font-9);
   line-height: 1.35;
   cursor: pointer;
   letter-spacing: 0.5px;

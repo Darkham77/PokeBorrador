@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../logic/map/continentGenerator';
-import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine';
-import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine';
-import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes)', () => {
   const continent = generateContinentMap({

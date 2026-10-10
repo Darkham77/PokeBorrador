@@ -38,7 +38,7 @@ function handleReset() {
               id="btn-clear-inspector"
               type="button"
               class="pv-curve-xs pv-btn pv-btn-secondary"
-              style="font-size: 7px; padding: 4px 8px;"
+              style="font-size: var(--font-7); padding: 4px 8px;"
               @click="handleClear"
             >
               <span>LIMPIAR CONSOLA</span>
@@ -47,7 +47,7 @@ function handleReset() {
               id="btn-reset-inspector"
               type="button"
               class="pv-curve-xs pv-btn pv-btn-danger"
-              style="font-size: 7px; padding: 4px 8px;"
+              style="font-size: var(--font-7); padding: 4px 8px;"
               @click="handleReset"
             >
               <span>RESET DATOS</span>
@@ -73,7 +73,7 @@ function handleReset() {
               </div>
               <div
                 v-if="logs.length === 0"
-                style="color: #64748b;"
+                style="color: var(--slate-500);"
               >
                 // Consola vacía. Interactúa con los controles para ver eventos...
               </div>

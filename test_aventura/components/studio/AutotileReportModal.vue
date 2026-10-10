@@ -8,6 +8,8 @@
  */
 
 import { ref, computed } from 'vue';
+import { gsap } from 'gsap';
+import { COPY_FEEDBACK_DELAY_SEC } from '../../config/studioConstants.ts';
 import type { AutotileErrorReport } from '../../types/map/autotileStudioTypes.ts';
 
 const props = defineProps<{
@@ -54,9 +56,9 @@ async function copyToClipboard(): Promise<void> {
   try {
     await navigator.clipboard.writeText(fullText);
     copied.value = true;
-    setTimeout(() => {
+    gsap.delayedCall(COPY_FEEDBACK_DELAY_SEC, () => {
       copied.value = false;
-    }, 2500);
+    });
   } catch (err) {
     console.error('Failed to copy to clipboard', err);
   }
@@ -66,6 +68,7 @@ async function copyToClipboard(): Promise<void> {
 <template>
   <div
     v-if="isOpen"
+    id="autotile-report-modal-div-1"
     class="modal-overlay"
     @click.self="emit('close')"
   >
@@ -80,6 +83,7 @@ async function copyToClipboard(): Promise<void> {
           <span class="report-badge">{{ reports.length }} casos</span>
         </div>
         <button
+          id="btn-close-report"
           type="button"
           class="close-btn"
           @click="emit('close')"
@@ -91,6 +95,7 @@ async function copyToClipboard(): Promise<void> {
       <!-- Tab Switcher -->
       <div class="tab-bar">
         <button
+          id="autotile-report-modal-btn-vista-previa-y-notas"
           type="button"
           class="tab-btn"
           :class="{ active: activeTab === 'summary' }"
@@ -99,6 +104,7 @@ async function copyToClipboard(): Promise<void> {
           Vista Previa y Notas
         </button>
         <button
+          id="autotile-report-modal-btn-json-estructurado"
           type="button"
           class="tab-btn"
           :class="{ active: activeTab === 'json' }"
@@ -138,6 +144,7 @@ async function copyToClipboard(): Promise<void> {
               <span class="badge patch-badge">Parche: ({{ rep.patchCenterX }}, {{ rep.patchCenterY }})</span>
               <span class="category-text">{{ rep.category }}</span>
               <button
+                id="autotile-report-modal-btn-emit"
                 type="button"
                 class="remove-btn"
                 title="Quitar de la lista"
@@ -218,319 +225,317 @@ async function copyToClipboard(): Promise<void> {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.75);
-  backdrop-filter: Blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: calc(var(--z-overlay) - 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 12px;
+  background: Rgb(0 0 0 / 75%);
+  inset: 0;
+  backdrop-filter: Blur(4px);
   touch-action: auto;
 }
 
 .modal-card {
-  background: #0f172a;
-  border: 1px solid Rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 680px;
   height: 90dvh;
-  max-height: 90dvh;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.6);
-  color: #f8fafc;
+  max-height: 90dvh;
+  border: 1px solid Rgb(255 255 255 / 20%);
+  border-radius: $radius-xl;
+  background: var(--slate-900);
+  color: var(--slate-50);
+  box-shadow: $shadow-modal;
   overflow: hidden;
 }
 
 .modal-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   padding: 14px 18px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
   flex-shrink: 0;
 }
 
 .modal-title-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
 }
 
 .modal-icon {
-  font-size: 20px;
+  font-size: var(--font-20);
 }
 
 .modal-title {
-  font-size: 16px;
-  font-weight: 700;
   margin: 0;
+  font-size: var(--font-16);
+  font-weight: 700;
 }
 
 .report-badge {
-  background: #ef4444;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: $radius-xl;
+  background: var(--red-light);
+  color: var(--white);
+  font-size: var(--font-11);
+  font-weight: 700;
 }
 
 .close-btn {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  font-size: 18px;
-  cursor: pointer;
   padding: 4px;
+  border: none;
+  background: none;
+  color: var(--slate-400);
+  font-size: var(--font-18);
+  cursor: pointer;
 }
 
 .close-btn:hover {
-  color: #fff;
+  color: var(--white);
 }
 
 .tab-bar {
   display: flex;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(0, 0, 0, 0.2);
+  background: Rgb(0 0 0 / 20%);
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
   flex-shrink: 0;
 }
 
 .tab-btn {
   padding: 10px 18px;
-  background: none;
   border: none;
-  border-bottom: 2px solid transparent;
-  color: #94a3b8;
-  font-size: 13px;
-  cursor: pointer;
+  background: none;
+  color: var(--slate-400);
+  font-size: var(--font-13);
   font-weight: 600;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
 }
 
 .tab-btn.active {
-  color: #38bdf8;
-  border-bottom-color: #38bdf8;
+  color: var(--sky);
+  border-bottom-color: var(--sky);
 }
 
 .modal-body {
+  min-height: 0;
   padding: 14px 16px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   overscroll-behavior-y: contain;
   flex: 1 1 0;
-  min-height: 0;
 }
 
 .empty-state {
-  text-align: center;
   padding: 40px 10px;
-  color: #94a3b8;
-  font-size: 14px;
+  color: var(--slate-400);
+  font-size: var(--font-14);
+  text-align: center;
 }
 
 .empty-sub {
-  font-size: 12px;
-  color: #64748b;
+  color: var(--slate-500);
+  font-size: var(--font-12);
   margin-top: 6px;
 }
 
 .report-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .report-item {
-  background: Rgba(255, 255, 255, 0.04);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
+  padding: 12px;
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg;
+  background: Rgb(255 255 255 / 4%);
 }
 
 .item-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .badge {
-  font-family: monospace;
-  font-size: 11px;
-  font-weight: 700;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: $radius-sm;
+  font-family: monospace;
+  font-size: var(--font-11);
+  font-weight: 700;
 }
 
 .seed-badge {
-  background: Rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
-  border: 1px solid Rgba(56, 189, 248, 0.3);
+  border: 1px solid Rgb(56 189 248 / 30%);
+  background: Rgb(56 189 248 / 15%);
+  color: var(--sky);
 }
 
 .coord-badge {
-  background: Rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
+  background: Rgb(255 255 255 / 10%);
+  color: var(--slate-300);
 }
 
 .patch-badge {
-  background: Rgba(255, 255, 255, 0.06);
-  color: #94a3b8;
+  background: Rgb(255 255 255 / 6%);
+  color: var(--slate-400);
 }
 
 .category-text {
+  color: var(--amber-400);
   font-family: monospace;
-  font-size: 11px;
-  color: #facc15;
+  font-size: var(--font-11);
   flex: 1;
 }
 
 .remove-btn {
-  background: none;
   border: none;
-  color: #64748b;
+  background: none;
+  color: var(--slate-500);
+  font-size: var(--font-14);
   cursor: pointer;
-  font-size: 14px;
 }
 
 .remove-btn:hover {
-  color: #ef4444;
+  color: var(--red-light);
 }
 
 .item-details {
-  font-size: 12px;
-  color: #94a3b8;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
+  color: var(--slate-400);
+  font-size: var(--font-12);
 }
 
 .item-details code {
-  font-family: monospace;
-  color: #a5f3fc;
-  background: Rgba(0, 0, 0, 0.3);
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: $radius-xs-alt;
+  background: Rgb(0 0 0 / 30%);
+  color: var(--cyan);
+  font-family: monospace;
 }
 
 .layers-preview {
-  font-size: 11px;
-  color: #64748b;
+  color: var(--slate-500);
+  font-size: var(--font-11);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .neighborhood-box {
-  margin-top: 6px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $spacing-xs;
+  margin-top: 6px;
 }
 
 .neighborhood-title {
-  font-size: 11px;
-  color: #94a3b8;
+  color: var(--slate-400);
+  font-size: var(--font-11);
   font-weight: 600;
 }
 
 .neighborhood-grid {
   display: grid;
+  gap: $spacing-xs-alt;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
   max-width: 220px;
-  background: Rgba(0, 0, 0, 0.4);
   padding: 4px;
-  border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-md;
+  background: Rgb(0 0 0 / 40%);
 }
 
 .n-cell {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 2px 4px;
-  background: Rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  font-size: 9px;
+  border-radius: $radius-sm;
+  background: Rgb(255 255 255 / 5%);
   font-family: monospace;
+  font-size: var(--font-9);
 }
 
 .n-cell.center-cell {
-  background: Rgba(239, 68, 68, 0.25);
-  border: 1px solid #ef4444;
-  color: #fca5a5;
+  border: 1px solid var(--red-light);
+  background: Rgb(239 68 68 / 25%);
+  color: var(--red-300);
   font-weight: 700;
 }
 
 .n-dir {
-  font-size: 8px;
-  color: #64748b;
+  color: var(--slate-500);
+  font-size: var(--font-8);
 }
 
 .n-terrain {
+  color: var(--slate-300);
   font-weight: 600;
-  color: #cbd5e1;
 }
 
 .note-field {
   width: 100%;
-  background: Rgba(0, 0, 0, 0.4);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
   padding: 6px 10px;
-  color: #fff;
-  font-size: 12px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-sm;
+  background: Rgb(0 0 0 / 40%);
+  color: var(--white);
+  font-size: var(--font-12);
   outline: none;
   box-sizing: border-box;
 }
 
 .note-field:focus {
-  border-color: #38bdf8;
+  border-color: var(--sky);
 }
 
 .json-code {
-  background: #020617;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 14px;
-  font-family: monospace;
-  font-size: 11px;
-  color: #38bdf8;
-  overflow-x: auto;
   max-height: 400px;
   margin: 0;
+  padding: 14px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-md;
+  background: #020617;
+  color: var(--sky);
+  font-family: monospace;
+  font-size: var(--font-11);
+  overflow-x: auto;
 }
 
 .modal-footer {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   padding: 14px 20px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(0, 0, 0, 0.2);
+  background: Rgb(0 0 0 / 20%);
+  border-top: 1px solid Rgb(255 255 255 / 10%);
   flex-shrink: 0;
 }
 
 .btn {
   padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
+  border: none;
+  border-radius: $radius-md;
+  font-size: var(--font-13);
   font-weight: 600;
   cursor: pointer;
-  border: none;
-  transition: opacity 0.15s ease;
 }
 
 .btn:disabled {
@@ -539,20 +544,20 @@ async function copyToClipboard(): Promise<void> {
 }
 
 .btn-secondary {
-  background: Rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
+  background: Rgb(255 255 255 / 10%);
+  color: var(--slate-300);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: Rgba(255, 255, 255, 0.15);
+  background: Rgb(255 255 255 / 15%);
 }
 
 .btn-primary {
-  background: #0284c7;
-  color: #fff;
+  background: var(--sky-dark);
+  color: var(--white);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #0369a1;
+  background: var(--sky-dark);
 }
 </style>

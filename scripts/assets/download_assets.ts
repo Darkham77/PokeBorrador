@@ -161,8 +161,10 @@ async function tryFetchAssetBuffer(url: string): Promise<Buffer | null> {
     }
     const arrayBuf = await res.arrayBuffer();
     const buf = Buffer.from(arrayBuf);
+    const BULBAPEDIA_HTML_ERROR_PAGE_BYTE_SIZE = 36570 as const;
+    const MIN_IMAGE_BUFFER_BYTES = 50 as const;
     // Check for valid PNG or image signature (> 50 bytes and not error page)
-    if (buf.length > 50 && buf.length !== 36570) {
+    if (buf.length > MIN_IMAGE_BUFFER_BYTES && buf.length !== BULBAPEDIA_HTML_ERROR_PAGE_BYTE_SIZE) {
       return buf;
     }
   } catch { // catch-ok: try next source

@@ -19,12 +19,23 @@ import {
   KANTO_SPACING_MULTIPLIER,
   CELL_BIOME,
   type CellBiomeType
-} from './kantoRegionalGenerator.ts';
+} from '../../types/map/kantoGridModel.ts';
 import { defaultPrefabsRegistry } from './prefabsRegistry.ts';
 import {
   CANONICAL_PALETTES,
   type ThemeBiomePalette
 } from './proceduralMapGenerator.ts';
+import {
+  MULBERRY32_CONFIG,
+  CONTINENTAL_SEED_OFFSETS,
+  CONTINENTAL_ISLAND_TEMPLATES,
+  CONTINENTAL_NOISE_CONFIG,
+  CONTINENTAL_URBAN_SCATTER_CONFIG,
+  CONTINENTAL_ROAD_NETWORK_CONFIG,
+  CONTINENTAL_MAQUETTE_LAYOUTS,
+  CONTINENTAL_MAQUETTE_CONFIG,
+  CONTINENTAL_PIPELINE_DEFAULTS
+} from '../../config/continentalWorldConfig.ts';
 import type {
   AdventureProjectNode,
   AdventureProject,
@@ -33,7 +44,7 @@ import type {
   ProceduralGenerationConfig,
   CanonicalThemeSource,
   ContinentalRoutesExportBundle
-} from '../../types/map/adventureWorldTypes';
+} from '../../types/map/adventureWorldTypes.ts';
 
 export interface ContinentalWorldGenOptions {
   readonly width?: number;
@@ -101,11 +112,12 @@ export function validateAntiFrankensteinPalette(theme: CanonicalThemeSource): bo
  */
 function mulberry32(seed: number): () => number {
   let state = Math.floor(seed) >>> 0;
+  const cfg = MULBERRY32_CONFIG;
   return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    state = (state + cfg.stateIncrement) >>> 0;
+    let t = Math.imul(state ^ (state >>> cfg.shift15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> cfg.shift7), cfg.mult61 | t)) ^ t;
+    return ((t ^ (t >>> cfg.shift14)) >>> 0) / cfg.divisor;
   };
 }
 
@@ -164,65 +176,68 @@ export function generateProceduralContinentalTerrain(
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
   const gridH = Math.ceil(height / KANTO_TILE_SIZE);
 
-  const prng = mulberry32(seed + 3131);
-  const moistNoise = new SimplexNoise(seed + 4040);
-  const ridgeNoise = new SimplexNoise(seed + 8080);
-  const coastalNoise = new SimplexNoise(seed + 1212);
+  const seeds = CONTINENTAL_SEED_OFFSETS;
+  const nCfg = CONTINENTAL_NOISE_CONFIG;
 
-  const waterPercent = config?.waterPercent ?? 22;
-  const mountainPercent = config?.mountainPercent ?? 14;
-  const forestPercent = config?.forestPercent ?? 25;
+  const prng = mulberry32(seed + seeds.prng);
+  const moistNoise = new SimplexNoise(seed + seeds.moist);
+  const ridgeNoise = new SimplexNoise(seed + seeds.ridge);
+  const coastalNoise = new SimplexNoise(seed + seeds.coastal);
 
-  const waterThreshold = 0.28 + ((waterPercent - 22) / 100) * 0.25;
+  const waterPercent = config?.waterPercent ?? CONTINENTAL_PIPELINE_DEFAULTS.waterPercent;
+  const mountainPercent = config?.mountainPercent ?? CONTINENTAL_PIPELINE_DEFAULTS.mountainPercent;
+  const forestPercent = config?.forestPercent ?? CONTINENTAL_PIPELINE_DEFAULTS.forestPercent;
+
+  const waterThreshold = nCfg.waterBaseThreshold + ((waterPercent - nCfg.waterThresholdOffsetPercent) / nCfg.percentDivisor) * nCfg.waterThresholdScaleFactor;
 
   // Satellite island configurations (deterministic offsets based on seed PRNG)
-  const islands = [
-    { x: 0.65 + (prng() - 0.5) * 0.2, y: -0.60 + (prng() - 0.5) * 0.2, r: 0.16 + prng() * 0.06 },
-    { x: -0.65 + (prng() - 0.5) * 0.2, y: 0.55 + (prng() - 0.5) * 0.2, r: 0.15 + prng() * 0.05 },
-    { x: 0.60 + (prng() - 0.5) * 0.2, y: 0.62 + (prng() - 0.5) * 0.2, r: 0.15 + prng() * 0.05 }
-  ];
+  const islands = CONTINENTAL_ISLAND_TEMPLATES.map(tpl => ({
+    x: tpl.baseX + (prng() - tpl.centerOffset) * tpl.coordJitter,
+    y: tpl.baseY + (prng() - tpl.centerOffset) * tpl.coordJitter,
+    r: tpl.baseR + prng() * tpl.rVariance
+  }));
 
   for (let gy = 0; gy < gridH; gy++) {
     for (let gx = 0; gx < gridW; gx++) {
       // Normalized coordinates (-1 to +1 from center)
-      const nx = (gx / gridW - 0.5) * 2;
-      const ny = (gy / gridH - 0.5) * 2;
+      const nx = (gx / gridW - nCfg.normCenterOffset) * nCfg.normScale;
+      const ny = (gy / gridH - nCfg.normCenterOffset) * nCfg.normScale;
 
       // 1. Domain Warping on Coordinates (twists and stretches the landmass into peninsulas and capes)
       const [wx1, wy1] = rotateGA(gx, gy);
-      const [wx2, wy2] = rotateGA(gx + 123, gy + 456);
-      const warpX = fbm2D(coastalNoise, wx1, wy1, { octaves: 3, scale: 0.03, persistence: 0.55 });
-      const warpY = fbm2D(coastalNoise, wx2, wy2, { octaves: 3, scale: 0.03, persistence: 0.55 });
+      const [wx2, wy2] = rotateGA(gx + nCfg.warpOffset.x, gy + nCfg.warpOffset.y);
+      const warpX = fbm2D(coastalNoise, wx1, wy1, nCfg.warpFbm);
+      const warpY = fbm2D(coastalNoise, wx2, wy2, nCfg.warpFbm);
 
-      const wnx = nx + warpX * 0.42;
-      const wny = ny + warpY * 0.42;
+      const wnx = nx + warpX * nCfg.warpMultiplier;
+      const wny = ny + warpY * nCfg.warpMultiplier;
 
       // Base landmass: box-like falloff with domain warping creates organic coastlines (NOT an oval/ellipse)
-      const boxDist = Math.max(Math.abs(wnx) * 0.95, Math.abs(wny) * 0.9);
-      const distFalloff = Math.max(0, 1.0 - boxDist);
+      const boxDist = Math.max(Math.abs(wnx) * nCfg.boxFalloffWeightX, Math.abs(wny) * nCfg.boxFalloffWeightY);
+      const distFalloff = Math.max(0, nCfg.distFalloffMax - boxDist);
 
       // Coastal roughness FBM for natural bays, coves, and ragged shores
-      const [cx, cy] = rotateGA(gx + 80, gy + 80);
-      const coastNoise = fbm2D(coastalNoise, cx, cy, { octaves: 4, scale: 0.05, persistence: 0.5 });
+      const [cx, cy] = rotateGA(gx + nCfg.coastOffset, gy + nCfg.coastOffset);
+      const coastNoise = fbm2D(coastalNoise, cx, cy, nCfg.coastFbm);
 
       // Deep bay carving: negative noise values carve natural gulfs and sea inlets deep into the continent
-      const [bx, by] = rotateGA(gx + 300, gy + 300);
-      const bayCarve = fbm2D(coastalNoise, bx, by, { octaves: 2, scale: 0.025, persistence: 0.5 });
-      const bayPenalty = bayCarve < -0.20 ? (bayCarve + 0.20) * 1.5 : 0;
+      const [bx, by] = rotateGA(gx + nCfg.bayOffset, gy + nCfg.bayOffset);
+      const bayCarve = fbm2D(coastalNoise, bx, by, nCfg.bayFbm);
+      const bayPenalty = bayCarve < nCfg.bayPenaltyThreshold ? (bayCarve + nCfg.bayPenaltyOffset) * nCfg.bayPenaltyMultiplier : 0;
 
-      let landVal = distFalloff + coastNoise * 0.35 + bayPenalty;
+      let landVal = distFalloff + coastNoise * nCfg.coastWeight + bayPenalty;
 
       // Satellite islands in ocean corners
       for (const isl of islands) {
         const idist = Math.hypot(nx - isl.x, ny - isl.y);
         if (idist < isl.r) {
-          const inf = (1.0 - idist / isl.r) * 0.75;
+          const inf = (nCfg.distFalloffMax - idist / isl.r) * nCfg.islandInfluenceFactor;
           landVal = Math.max(landVal, inf);
         }
       }
 
       // Guarantee ocean perimeter at map borders (2-tile margin)
-      const isOuterEdge = (gx <= 1 || gx >= gridW - 2 || gy <= 1 || gy >= gridH - 2);
+      const isOuterEdge = (gx <= nCfg.outerEdgeMarginMin || gx >= gridW - nCfg.outerEdgeMarginMaxOffset || gy <= nCfg.outerEdgeMarginMin || gy >= gridH - nCfg.outerEdgeMarginMaxOffset);
 
       if (isOuterEdge || landVal < waterThreshold) {
         customTerrain[`${gx}_${gy}`] = CELL_BIOME.WATER;
@@ -231,16 +246,16 @@ export function generateProceduralContinentalTerrain(
 
       // Mountain ridges along natural fault lines
       const [rx, ry] = rotateGA(gx, gy);
-      const rv = fbm2D(ridgeNoise, rx, ry, { octaves: 4, scale: 0.038, persistence: 0.55 });
-      const ridge = 1.0 - Math.abs(rv);
+      const rv = fbm2D(ridgeNoise, rx, ry, nCfg.ridgeFbm);
+      const ridge = nCfg.distFalloffMax - Math.abs(rv);
 
-      const mountainThreshold = 0.86 - (mountainPercent / 100) * 0.15;
-      const isMountain = ridge > mountainThreshold && landVal > (waterThreshold + 0.10);
+      const mountainThreshold = nCfg.mountainBaseThreshold - (mountainPercent / nCfg.percentDivisor) * nCfg.mountainFactor;
+      const isMountain = ridge > mountainThreshold && landVal > (waterThreshold + nCfg.mountainWaterClearance);
 
       // Moisture FBM for dense contiguous forests
-      const [mx, my] = rotateGA(gx + 200, gy + 200);
-      const moist = fbm2D(moistNoise, mx, my, { octaves: 3, scale: 0.045, persistence: 0.55 });
-      const forestThreshold = 0.10 - ((forestPercent - 25) / 100) * 0.25;
+      const [mx, my] = rotateGA(gx + nCfg.moistOffset, gy + nCfg.moistOffset);
+      const moist = fbm2D(moistNoise, mx, my, nCfg.moistFbm);
+      const forestThreshold = nCfg.forestBaseThreshold - ((forestPercent - nCfg.forestPercentOffset) / nCfg.percentDivisor) * nCfg.forestFactor;
 
       let biome: CellBiomeType;
 
@@ -267,18 +282,18 @@ export function scatterUrbanNodes(
   height: number,
   seed: number,
   terrain: Record<string, CellBiomeType>,
-  targetCount = 12
+  targetCount = CONTINENTAL_URBAN_SCATTER_CONFIG.defaultTargetCount
 ): Record<string, AdventureProjectNode> {
-  const prng = mulberry32(seed + 9090);
+  const prng = mulberry32(seed + CONTINENTAL_SEED_OFFSETS.urbanScatter);
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
   const gridH = Math.ceil(height / KANTO_TILE_SIZE);
 
-  const minDistancePx = 380;
+  const uCfg = CONTINENTAL_URBAN_SCATTER_CONFIG;
   const nodes: Record<string, AdventureProjectNode> = {};
   const placedPositions: { x: number; y: number }[] = [];
 
   // Urban scales hierarchy distribution
-  const scalePool: UrbanScale[] = [
+  const scalePool: readonly UrbanScale[] = [ // domain-ok: Weighted frequency distribution pool of urban scales
     'metropolis',
     'city',
     'city',
@@ -294,17 +309,16 @@ export function scatterUrbanNodes(
   ];
 
   let attempts = 0;
-  const maxAttempts = 1500;
 
-  while (placedPositions.length < targetCount && attempts < maxAttempts) {
+  while (placedPositions.length < targetCount && attempts < uCfg.maxAttempts) {
     attempts++;
     // Margin of 10% from edges
-    const gx = Math.floor(gridW * 0.10 + prng() * (gridW * 0.80));
-    const gy = Math.floor(gridH * 0.10 + prng() * (gridH * 0.80));
+    const gx = Math.floor(gridW * uCfg.edgeMarginRatio + prng() * (gridW * uCfg.innerSpreadRatio));
+    const gy = Math.floor(gridH * uCfg.edgeMarginRatio + prng() * (gridH * uCfg.innerSpreadRatio));
 
     // Ensure candidate tile and its immediate neighborhood are on walkable plains/forests
     // Uses 2-tile clearance initially, relaxes to 1-tile clearance after 400 attempts
-    const clrDist = attempts > 400 ? 1 : 2;
+    const clrDist = attempts > uCfg.relaxationAttemptThreshold ? uCfg.clearanceDistRelaxed : uCfg.clearanceDistInitial;
     let hasClearance = true;
     for (let dy = -clrDist; dy <= clrDist; dy++) {
       for (let dx = -clrDist; dx <= clrDist; dx++) {
@@ -326,7 +340,7 @@ export function scatterUrbanNodes(
     for (const p of placedPositions) {
       const dx = px - p.x;
       const dy = py - p.y;
-      if (Math.sqrt(dx * dx + dy * dy) < minDistancePx) {
+      if (Math.sqrt(dx * dx + dy * dy) < uCfg.minDistancePx) {
         tooClose = true;
         break;
       }
@@ -349,10 +363,10 @@ export function scatterUrbanNodes(
       urbanScale: scale,
       hasCenter: scale !== 'hamlet',
       farm: {
-        t: Math.floor(prng() * 60) + 20,
-        w: Math.floor(prng() * 60) + 10,
-        m: scale === 'metropolis' ? 80 : 20,
-        f: Math.floor(prng() * 50)
+        t: Math.floor(prng() * uCfg.farm.tMultiplier) + uCfg.farm.tBase,
+        w: Math.floor(prng() * uCfg.farm.wMultiplier) + uCfg.farm.wBase,
+        m: scale === 'metropolis' ? uCfg.farm.mMetropolis : uCfg.farm.mDefault,
+        f: Math.floor(prng() * uCfg.farm.fMultiplier)
       }
     };
   }
@@ -428,13 +442,13 @@ export function generateRoadNetwork(
 
   // 3. Add short alternative chords (up to N/2 extra edges) to form cycles without orphan chains
   const connections: [string, string][] = mstEdges.map(e => [e.u, e.v]);
-  const extraEdgesCount = Math.max(1, Math.floor(n / 2.5));
+  const extraEdgesCount = Math.max(1, Math.floor(n / CONTINENTAL_ROAD_NETWORK_CONFIG.cycleChordDivisor));
 
   let added = 0;
   for (const re of remainingEdges) {
     if (added >= extraEdgesCount) break;
     // Only connect if distance is reasonably short (< 950 px)
-    if (re.weight < 950) {
+    if (re.weight < CONTINENTAL_ROAD_NETWORK_CONFIG.maxChordWeightPx) {
       connections.push([re.u, re.v]);
       added++;
     }
@@ -482,9 +496,10 @@ export function rasterizeRoadsOnTerrain(
   connections: readonly (readonly [string, string])[],
   gridW: number,
   gridH: number,
-  roadWidth = 2
+  roadWidth = CONTINENTAL_ROAD_NETWORK_CONFIG.defaultRoadWidth
 ): void {
-  const roadNoise = new SimplexNoise(42 + gridW);
+  const rCfg = CONTINENTAL_ROAD_NETWORK_CONFIG;
+  const roadNoise = new SimplexNoise(CONTINENTAL_SEED_OFFSETS.roadNoise + gridW);
 
   // Precompute node grid positions for proximity checks
   const nodeGridPositions: { x: number; y: number }[] = [];
@@ -535,10 +550,10 @@ export function rasterizeRoadsOnTerrain(
     const y2 = Math.round((b.y * KANTO_SPACING_MULTIPLIER) / KANTO_TILE_SIZE);
 
     const segLen = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-    if (segLen < 1) continue;
+    if (segLen < rCfg.minSegmentLength) continue;
 
     // Short segments: use exact Bresenham to guarantee cell-by-cell coverage
-    if (segLen < 8) {
+    if (segLen < rCfg.shortSegmentThreshold) {
       let cx = x1;
       let cy = y1;
       const adx = Math.abs(x2 - x1);
@@ -564,7 +579,7 @@ export function rasterizeRoadsOnTerrain(
     const perpY = dirX;
 
     // Generate noise-displaced waypoints along the segment
-    const waypointCount = Math.max(8, Math.ceil(segLen / 4));
+    const waypointCount = Math.max(rCfg.minWaypoints, Math.ceil(segLen / rCfg.waypointDivisor));
     const waypoints: { x: number; y: number }[] = [];
 
     for (let i = 0; i <= waypointCount; i++) {
@@ -576,9 +591,8 @@ export function rasterizeRoadsOnTerrain(
       // Noise displacement perpendicular to path direction
       // Stronger in the middle, zero at endpoints (to hit cities exactly)
       const edgeFade = Math.sin(t * Math.PI); // 0 at edges, 1 in middle
-      const noiseScale = 0.15;
-      const noiseVal = roadNoise.noise2D(wx * noiseScale + x1, wy * noiseScale + y1);
-      const displacement = noiseVal * 3.5 * edgeFade; // up to 3.5 tiles sideways
+      const noiseVal = roadNoise.noise2D(wx * rCfg.noiseScale + x1, wy * rCfg.noiseScale + y1);
+      const displacement = noiseVal * rCfg.displacementMultiplier * edgeFade; // up to 3.5 tiles sideways
 
       wx += perpX * displacement;
       wy += perpY * displacement;
@@ -588,7 +602,7 @@ export function rasterizeRoadsOnTerrain(
       const wgy = Math.round(wy);
       if (terrain[`${wgx}_${wgy}`] === CELL_BIOME.MOUNTAIN_DIRT) {
         // Try shifting perpendicular in both directions
-        for (let shift = 1; shift <= 4; shift++) {
+        for (let shift = 1; shift <= rCfg.maxMountainPerpShifts; shift++) {
           const testA = terrain[`${Math.round(wx + perpX * shift)}_${Math.round(wy + perpY * shift)}`];
           if (testA !== CELL_BIOME.MOUNTAIN_DIRT && testA !== undefined) {
             wx += perpX * shift;
@@ -608,7 +622,7 @@ export function rasterizeRoadsOnTerrain(
     }
 
     // Rasterize smoothly interpolated path through waypoints
-    const stepsPerSegment = 6;
+    const stepsPerSegment = rCfg.catmullRomStepsPerSegment;
     for (let i = 0; i < waypoints.length - 1; i++) {
       const p0 = waypoints[Math.max(0, i - 1)]!;
       const p1 = waypoints[i]!;
@@ -634,7 +648,7 @@ export function rasterizeRoadsOnTerrain(
         ));
 
         // Variable road width: wider near cities
-        const nearCity = isNearCity(cx, cy, 5);
+        const nearCity = isNearCity(cx, cy, rCfg.nearCityRadiusTiles);
         const halfW = nearCity ? Math.floor((roadWidth + 1) / 2) : Math.floor(roadWidth / 2);
 
         paintRoadBrush(cx, cy, halfW);
@@ -674,16 +688,17 @@ export interface BakedUrbanMaquette {
 
 export function bakeUrbanMaquette(
   node: AdventureProjectNode,
-  _seed = 42
+  _seed = CONTINENTAL_PIPELINE_DEFAULTS.defaultSeed
 ): BakedUrbanMaquette {
   const scale = node.urbanScale ?? 'town';
   const cx = node.x;
   const cy = node.y;
 
+  const mCfg = CONTINENTAL_MAQUETTE_CONFIG;
   // Compact scale-dependent central civic square (NOT a massive helipad)
-  let plazaSizePx = 64; // 2x2 tiles default
-  if (scale === 'metropolis') plazaSizePx = 128; // 4x4 tiles
-  else if (scale === 'city') plazaSizePx = 96; // 3x3 tiles
+  let plazaSizePx = mCfg.plazaSize.default;
+  if (scale === 'metropolis') plazaSizePx = mCfg.plazaSize.metropolis;
+  else if (scale === 'city') plazaSizePx = mCfg.plazaSize.city;
 
   const halfPlaza = Math.round(plazaSizePx / 2);
   const plazaRect = {
@@ -693,10 +708,9 @@ export function bakeUrbanMaquette(
     h: plazaSizePx
   };
 
-  const buildings: Array<{ style: string; x: number; y: number; w: number; h: number; door?: { x: number; y: number } }> = [];
-  const props: Array<{ style: string; x: number; y: number }> = [];
+  const layout = CONTINENTAL_MAQUETTE_LAYOUTS[scale] ?? CONTINENTAL_MAQUETTE_LAYOUTS.town!;
 
-  const h = ((Math.abs(Math.round(cx * 31 + cy * 57 + _seed * 101))) >>> 0);
+  const h = ((Math.abs(Math.round(cx * mCfg.hashMultipliers.x + cy * mCfg.hashMultipliers.y + _seed * mCfg.hashMultipliers.seed))) >>> 0);
   const allB = defaultPrefabsRegistry.getByCategory('buildings');
   const housePrefabs = allB.filter((b) => b.id.includes('house') || b.id.includes('cottage'));
   const getHouse = (offset: number, fallback: string) => {
@@ -704,72 +718,23 @@ export function bakeUrbanMaquette(
     return housePrefabs[(h + offset) % housePrefabs.length]!.id;
   };
 
-  if (scale === 'metropolis') {
-    buildings.push(
-      { style: 'silph_tower', x: cx - 144, y: cy - 260, w: 288, h: 320, door: { x: 4, y: 9 } },
-      { style: 'gym_gold', x: cx - 240, y: cy + 80, w: 192, h: 160, door: { x: 3, y: 4 } },
-      { style: 'pokecenter', x: cx + 80, y: cy + 80, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: 'pokemart', x: cx + 80, y: cy - 100, w: 128, h: 128, door: { x: 2, y: 3 } },
-      { style: getHouse(1, 'house_blue'), x: cx - 240, y: cy - 100, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: getHouse(2, 'house_red'), x: cx - 80, y: cy + 260, w: 160, h: 160, door: { x: 2, y: 4 } }
-    );
-    props.push(
-      { style: 'poke_street_lamp', x: cx - 60, y: cy - 20 },
-      { style: 'poke_street_lamp', x: cx + 35, y: cy - 20 },
-      { style: 'poke_bench', x: cx - 30, y: cy + 45 },
-      { style: 'poke_bench', x: cx + 15, y: cy + 45 },
-      { style: 'poke_flowers_red', x: cx - 50, y: cy + 15 },
-      { style: 'poke_flowers_red', x: cx + 35, y: cy + 15 }
-    );
-  } else if (scale === 'city') {
-    buildings.push(
-      { style: 'gym', x: cx - 180, y: cy - 90, w: 192, h: 160, door: { x: 3, y: 4 } },
-      { style: 'pokecenter', x: cx + 30, y: cy - 90, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: 'pokemart', x: cx + 50, y: cy + 90, w: 128, h: 128, door: { x: 2, y: 3 } },
-      { style: getHouse(0, 'house_green'), x: cx - 170, y: cy + 90, w: 160, h: 160, door: { x: 2, y: 4 } }
-    );
-    props.push(
-      { style: 'poke_street_lamp', x: cx - 10, y: cy - 20 },
-      { style: 'poke_street_lamp', x: cx - 10, y: cy + 30 },
-      { style: 'poke_mailbox', x: cx - 95, y: cy + 45 },
-      { style: 'poke_flowers_red', x: cx + 5, y: cy - 20 }
-    );
-  } else if (scale === 'town') {
-    buildings.push(
-      { style: 'pokecenter', x: cx - 170, y: cy - 80, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: 'pokemart', x: cx + 40, y: cy - 80, w: 128, h: 128, door: { x: 2, y: 3 } },
-      { style: 'house_blue', x: cx - 170, y: cy + 100, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: getHouse(3, 'house_orange'), x: cx + 40, y: cy + 100, w: 160, h: 160, door: { x: 2, y: 4 } }
-    );
-    props.push(
-      { style: 'poke_street_lamp', x: cx - 5, y: cy - 20 },
-      { style: 'poke_flowers_red', x: cx - 85, y: cy - 10 },
-      { style: 'poke_flowers_red', x: cx + 85, y: cy - 10 }
-    );
-  } else if (scale === 'village') {
-    buildings.push(
-      { style: 'pokecenter', x: cx - 170, y: cy - 80, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: 'house_red', x: cx + 30, y: cy - 80, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: getHouse(4, 'cottage'), x: cx - 70, y: cy + 100, w: 160, h: 160, door: { x: 2, y: 4 } }
-    );
-    props.push(
-      { style: 'poke_fence_picket', x: cx + 5, y: cy - 30 },
-      { style: 'poke_mailbox', x: cx - 85, y: cy - 30 },
-      { style: 'poke_flowers_red', x: cx - 10, y: cy + 10 }
-    );
-  } else {
-    // Hamlet / Starter settlement
-    buildings.push(
-      { style: 'house_red', x: cx - 170, y: cy - 100, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: 'house_blue', x: cx + 30, y: cy - 100, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: 'lab_oak', x: cx - 112, y: cy + 80, w: 224, h: 192, door: { x: 3, y: 5 } }
-    );
-    props.push(
-      { style: 'poke_mailbox', x: cx - 85, y: cy - 45 },
-      { style: 'poke_mailbox', x: cx + 10, y: cy - 45 },
-      { style: 'poke_flowers_red', x: cx - 35, y: cy + 10 }
-    );
-  }
+  const buildings = layout.buildings.map((b) => {
+    const style = b.houseSlot ? getHouse(b.houseSlot.offset, b.houseSlot.fallback) : b.style;
+    return {
+      style,
+      x: cx + b.dx,
+      y: cy + b.dy,
+      w: b.w,
+      h: b.h,
+      door: b.door
+    };
+  });
+
+  const props = layout.props.map((p) => ({
+    style: p.style,
+    x: cx + p.dx,
+    y: cy + p.dy
+  }));
 
   return { plazaRect, buildings, props };
 }
@@ -779,7 +744,7 @@ export function bakeUrbanMaquette(
  * Paves PLAZA_STONE strictly under building footprints, 1-tile entrance sidewalks,
  * and compact central civic squares for metropolises/cities (no giant empty helipads).
  */
-export function stampUrbanPlazasOnTerrain(
+function stampUrbanPlazasOnTerrain(
   terrain: Record<string, CellBiomeType>,
   nodes: Record<string, AdventureProjectNode>,
   gridW: number,
@@ -801,7 +766,7 @@ export function stampUrbanPlazasOnTerrain(
 
       const doorX = bx + Math.floor(bw / 2);
       const doorY = by + bh;
-      for (let step = 0; step <= 2; step++) {
+      for (let step = 0; step <= CONTINENTAL_MAQUETTE_CONFIG.sidewalkMaxSteps; step++) {
         const cy = doorY + step;
         if (doorX >= 0 && doorX < gridW && cy >= 0 && cy < gridH) {
           const key = `${doorX}_${cy}`;
@@ -844,18 +809,22 @@ export function generateCompleteContinentalWorld(
   const seed = options.seed;
   const archetype = options.archetype ?? 'agnostic';
   const themeSource: CanonicalThemeSource = options.themeSource ?? options.config?.themeSource ?? 'firered';
+  if (!validateAntiFrankensteinPalette(themeSource)) {
+    throw new Error(`Invalid canonical theme source: ${themeSource}`);
+  }
+  const pipe = CONTINENTAL_PIPELINE_DEFAULTS;
   const config: ProceduralGenerationConfig = {
-    treeDensity: 0.7,
-    roadWidth: 2,
+    treeDensity: pipe.treeDensity,
+    roadWidth: pipe.roadWidth,
     autoOcean: true,
     autoBuildings: true,
-    waterPercent: 22,
-    mountainPercent: 12,
-    forestPercent: 25,
+    waterPercent: pipe.waterPercent,
+    mountainPercent: pipe.mountainPercent,
+    forestPercent: pipe.forestPercent,
     ...options.config,
     themeSource
   };
-  const cityCount = options.cityCount ?? 12;
+  const cityCount = options.cityCount ?? pipe.cityCount;
   const themePalette = CANONICAL_PALETTES[themeSource] ?? CANONICAL_PALETTES.firered;
 
   // 1. Continental Biomes
@@ -871,7 +840,7 @@ export function generateCompleteContinentalWorld(
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
   const gridH = Math.ceil(height / KANTO_TILE_SIZE);
   stampUrbanPlazasOnTerrain(customTerrain, nodes, gridW, gridH);
-  rasterizeRoadsOnTerrain(customTerrain, nodes, connections, gridW, gridH, config.roadWidth ?? 2);
+  rasterizeRoadsOnTerrain(customTerrain, nodes, connections, gridW, gridH, config.roadWidth ?? pipe.roadWidth);
 
   // 5. SVG Vector Path String
   const svgPathData = generateSvgRoadPathData(nodes, connections);
@@ -910,6 +879,6 @@ export function exportContinentalRoutesBundle(
     nodes: project.nodes,
     connections: project.connections,
     svgPathData,
-    exportedAt: new Date().toISOString()
+    exportedAt: Temporal.Now.instant().toString()
   };
 }

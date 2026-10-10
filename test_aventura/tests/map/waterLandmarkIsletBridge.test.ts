@@ -10,11 +10,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { buildMapBlitInstructions, CANVAS_TILE_SIZE } from '../../../src/logic/map/canvasTileRenderer.ts';
-import { executeRegionalGenerationJob } from '../../../src/logic/map/continentGenerator.worker.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
 
 describe('waterLandmarkIsletBridge', () => {
   const continent = generateContinentMap({
@@ -165,7 +166,7 @@ describe('waterLandmarkIsletBridge', () => {
   });
 
   it('guarantees a 3x3 grass block surrounded by sand has rounded corners in all 4 corners', () => {
-    const { resolveWaterCoastGrid } = require('../../../src/logic/map/waterAutotileEngine.ts');
+    const { resolveWaterCoastGrid } = require('../../logic/map/waterAutotileEngine.ts');
     const matrix = [
       ['sand', 'sand', 'sand', 'sand', 'sand'],
       ['sand', 'grass', 'grass', 'grass', 'sand'],

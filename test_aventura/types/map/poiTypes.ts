@@ -46,7 +46,7 @@ export type RouteType = (typeof ROUTE_TYPES)[number];
 export const BRIDGE_STYLES = ['silence_wood', 'golden_wood', 'stone_pier'] as const;
 export type BridgeStyle = (typeof BRIDGE_STYLES)[number];
 
-export { URBAN_SCALES, type UrbanScale } from './continentTypes.ts';
+export type { UrbanScale } from './continentTypes.ts';
 
 /** Primary chain node types that participate in the TSP Hamiltonian path. */
 export const PRIMARY_POI_TYPES = [
@@ -64,8 +64,14 @@ export function isPrimaryNode(node: Pick<POINode, 'type'>): boolean {
   return PRIMARY_POI_TYPE_SET.has(node.type);
 }
 
-export const CARDINAL_DIRECTIONS = ['north', 'south', 'east', 'west'] as const;
-export type CardinalDirection = (typeof CARDINAL_DIRECTIONS)[number];
+export const GEO_CARDINAL_DIRECTIONS = ['north', 'south', 'east', 'west'] as const;
+export type CardinalDirection = (typeof GEO_CARDINAL_DIRECTIONS)[number];
+
+export const SPRITE_FACING_DIRECTIONS = ['up', 'down', 'left', 'right'] as const;
+export type SpriteFacingDirection = (typeof SPRITE_FACING_DIRECTIONS)[number];
+
+export const TRAVEL_TERRAIN_MODES = ['land', 'water'] as const;
+export type TravelTerrainMode = (typeof TRAVEL_TERRAIN_MODES)[number];
 
 export interface POIFootprint {
   readonly width: number;
@@ -141,10 +147,13 @@ export interface UrbanPropPlacement {
   readonly prefabFile: string; // domain-ok: filename of prop prefab sprite
 }
 
+export const COMPACT_CARDINAL_DIRECTIONS = ['n', 's', 'w', 'e'] as const;
+export type CompactCardinalDirection = (typeof COMPACT_CARDINAL_DIRECTIONS)[number];
+
 export interface SettlementCurbPlacement {
   readonly x: number;
   readonly y: number;
-  readonly direction: 'n' | 's' | 'w' | 'e';
+  readonly direction: CompactCardinalDirection;
   readonly curbTile: string; // domain-ok: filename of curb prefab sprite
 }
 
@@ -177,7 +186,7 @@ export interface POINode {
   readonly hasGym?: boolean;
   readonly hasPort?: boolean;
   readonly urbanScale?: UrbanScale;
-  readonly roadMaterial?: 'dirt' | 'paved';
+  readonly roadMaterial?: UrbanRoadMaterial;
   readonly tier?: number;
   readonly progressionIndex?: number;
   readonly transitPairId?: string; // domain-ok: Identificador o estructura procedural de aventura

@@ -109,7 +109,7 @@ const formatDate = (timestamp: number) => {
 .pokemon-trophies-tab {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 4px 0;
 
   .trophies-empty-state {
@@ -119,19 +119,19 @@ const formatDate = (timestamp: number) => {
     align-items: center;
     padding: 36px 16px;
     border: 1px dashed Rgb(255 255 255 / 15%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 25%);
     text-align: center;
 
     .empty-icon {
-      font-size: 32px;
+      font-size: var(--font-32);
       opacity: 0.6;
       margin-bottom: 8px;
     }
 
     .empty-title {
       color: var(--yellow);
-      font-size: 10px;
+      font-size: var(--font-10);
       margin-bottom: 6px;
     }
 
@@ -139,7 +139,7 @@ const formatDate = (timestamp: number) => {
       max-width: 320px;
       margin: 0;
       color: var(--gray);
-      font-size: 11px;
+      font-size: var(--font-11);
       line-height: 1.4;
     }
   }
@@ -147,27 +147,27 @@ const formatDate = (timestamp: number) => {
   .trophies-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
   }
 
   .trophy-card {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
     padding: 10px 14px;
     border: 1px solid Rgb(255 255 255 / 10%);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Rgb(0 0 0 / 35%);
 
     &.rank-gold {
       background: Linear-Gradient(135deg, Rgb(250 204 21 / 8%), Rgb(0 0 0 / 40%));
       border-color: Rgb(250 204 21 / 40%);
-      box-shadow: 0 0 10px Rgb(250 204 21 / 5%);
+      box-shadow: var(--shadow-glow-yellow);
 
       .trophy-rank-badge {
         border: 1px solid Rgb(250 204 21 / 30%);
         background: Rgb(250 204 21 / 15%);
-        color: #fde047;
+        color: var(--amber-300);
       }
     }
 
@@ -178,7 +178,7 @@ const formatDate = (timestamp: number) => {
       .trophy-rank-badge {
         border: 1px solid Rgb(226 232 240 / 30%);
         background: Rgb(226 232 240 / 15%);
-        color: #f1f5f9;
+        color: var(--slate-100);
       }
     }
 
@@ -189,7 +189,7 @@ const formatDate = (timestamp: number) => {
       .trophy-rank-badge {
         border: 1px solid Rgb(217 119 6 / 30%);
         background: Rgb(217 119 6 / 15%);
-        color: #fcd34d;
+        color: var(--amber-300);
       }
     }
 
@@ -199,16 +199,16 @@ const formatDate = (timestamp: number) => {
       align-items: center;
       width: 42px;
       height: 42px;
-      border-radius: 8px;
+      border-radius: $radius-lg;
       background: Rgb(255 255 255 / 4%);
-      font-size: 28px;
+      font-size: var(--font-28);
       flex-shrink: 0;
     }
 
     .trophy-info-box {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: $spacing-xs-alt;
       flex: 1;
 
       .trophy-header-row {
@@ -219,20 +219,20 @@ const formatDate = (timestamp: number) => {
 
       .trophy-rank-badge {
         padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 7px;
+        border-radius: $radius-sm;
+        font-size: var(--font-7);
         font-weight: bold;
       }
 
       .trophy-date {
         color: var(--gray);
-        font-size: 7px;
+        font-size: var(--font-7);
       }
 
       .trophy-event-title {
         margin: 2px 0 0;
         color: var(--white);
-        font-size: 12px;
+        font-size: var(--font-12);
         font-weight: bold;
       }
 
@@ -240,22 +240,22 @@ const formatDate = (timestamp: number) => {
       .trophy-score-row {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: $spacing-sm-alt;
 
         .category-lbl,
         .score-lbl {
           color: var(--gray);
-          font-size: 6px;
+          font-size: var(--font-6);
         }
 
         .category-val {
-          color: #93c5fd;
-          font-size: 7px;
+          color: var(--blue-300);
+          font-size: var(--font-7);
         }
 
         .score-val {
           color: var(--green-bright);
-          font-size: 7px;
+          font-size: var(--font-7);
         }
       }
     }

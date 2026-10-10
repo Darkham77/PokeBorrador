@@ -17,10 +17,10 @@ import {
   generateCompleteContinentalWorld,
   exportContinentalRoutesBundle,
   getCanonicalTileForBiome,
-  validateAntiFrankensteinPalette
-} from '../../logic/map/continentalWorldGenerator';
-import { CELL_BIOME } from '../../logic/map/kantoRegionalGenerator';
-import type { AdventureProject, UrbanScale, CanonicalThemeSource } from '../../types/map/adventureWorldTypes';
+  validateAntiFrankensteinPalette,
+} from '../../logic/map/continentalWorldGenerator.ts';
+import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
+import type { AdventureProject, UrbanScale, CanonicalThemeSource } from '../../types/map/adventureWorldTypes.ts';
 
 describe('Continental World Generator (Overworld Studio)', () => {
   const TEST_WIDTH = 1600;

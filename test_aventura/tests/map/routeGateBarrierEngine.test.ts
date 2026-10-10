@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generatePokemonContinentalWorld } from '../../../src/logic/map/continent/continentalEngine.ts';
-import { verifyRouteGateAntiBypass } from '../../../src/logic/map/routeGateBarrierEngine.ts';
+import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
+import { verifyRouteGateAntiBypass } from '../../logic/map/routeGateBarrierEngine.ts';
 
 describe('routeGateBarrierEngine', () => {
   it('guarantees 2 to 5 route gatehouses are placed randomly across diverse seeds', () => {

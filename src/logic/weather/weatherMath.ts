@@ -23,9 +23,9 @@ export type { DayPhase };
  * Deterministically maps an epoch-millisecond timestamp to a day phase.
  * Cycle is 8 hours: 0-1=morning, 2-3=day, 4-5=dusk, 6-7=night.
  */
-import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
+import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
+import { DAY_CYCLE_TOTAL_HOURS, DUSK_PHASE_END_HOUR } from '@/logic/constants/gameplay.ts';
 
-const DAY_CYCLE_TOTAL_HOURS = 8;
 export const PROBABILITY_PERCENT_SCALE = 100;
 const WEATHER_SESSION_SEED_RANGE = 1000;
 const FALLBACK_WEATHER_SESSION_SEED = 42 as const;
@@ -41,7 +41,7 @@ export function getDayCyclePure(now: Temporal.Instant | number): DayPhase {
 
   if (phase < 2) return 'morning';
   if (phase < 4) return 'day';
-  if (phase < 6) return 'dusk';
+  if (phase < DUSK_PHASE_END_HOUR) return 'dusk';
   return 'night';
 }
 

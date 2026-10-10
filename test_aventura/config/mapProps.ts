@@ -344,17 +344,3 @@ export const MAP_PROPS_REGISTRY: Record<string, MapPropDefinition> = {
   [TRIMMED_HEDGE.id]: TRIMMED_HEDGE,
   [FIELD_ROCK.id]: FIELD_ROCK
 };
-
-export const ALL_MAP_PROPS: readonly MapPropDefinition[] = Object.values(MAP_PROPS_REGISTRY);
-
-export const URBAN_PROPS: readonly MapPropDefinition[] = ALL_MAP_PROPS.filter(
-  p => p.category === 'furniture' || p.category === 'civic' || p.category === 'boundary'
-);
-
-export const NATURE_PROPS: readonly MapPropDefinition[] = ALL_MAP_PROPS.filter(
-  p => p.category === 'nature'
-);
-
-export function getPropDefinition(id: string): MapPropDefinition | undefined { // domain-ok: Identificador o estructura procedural de aventura
-  return MAP_PROPS_REGISTRY[id];
-}

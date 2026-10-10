@@ -10,8 +10,8 @@ import { describe, it, expect } from 'vitest';
 import {
   generateContinent,
   type GeneratedContinentResult
-} from '../../logic/map/continent/continentalEngine';
-import type { ContinentGenConfig } from '../../types/map/continentTypes';
+} from '../../logic/map/continent/continentalEngine.ts';
+import type { ContinentGenConfig } from '../../types/map/continentTypes.ts';
 
 describe('continentalEngine', () => {
   const baseConfig: ContinentGenConfig = {

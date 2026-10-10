@@ -1,4 +1,5 @@
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
 import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
@@ -23,7 +24,7 @@ export function restoreFossil(pokemonId: PokemonSpeciesId, state: GameState): { 
   
   // 3. Determine where to send it
   let sentTo: PokemonStorageLocation = 'team';
-  if (state.team.length < 6) {
+  if (state.team.length < MAX_POKEMON_TEAM_SIZE) {
     state.team.push(pokemon);
   } else {
     state.box = state.box || [];

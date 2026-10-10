@@ -279,15 +279,14 @@ watch(() => props.icon, (newIcon) => {
   width: 100%;
   max-width: 420px;
   padding: 40px;
-  border-radius: 24px;
+  border-radius: $radius-4xl;
   background: Rgb(15 18 32 / 95%);
   text-align: center;
   box-sizing: border-box;
 
   &.default {
     border: 2px solid Rgb(59 130 246 / 40%);
-    box-shadow: 0 0 50px Rgb(59 130 246 / 15%),
-                inset 0 0 20px Rgb(59 130 246 / 5%);
+    box-shadow: var(--shadow-glow-amber-lg);
 
     .loading-title { color: var(--yellow); }
     .spinner { border-top-color: var(--yellow); }
@@ -297,8 +296,7 @@ watch(() => props.icon, (newIcon) => {
 
   &.error {
     border: 2px solid Rgb(239 68 68 / 40%);
-    box-shadow: 0 0 50px Rgb(239 68 68 / 20%),
-                inset 0 0 20px Rgb(239 68 68 / 10%);
+    box-shadow: var(--shadow-glow-amber-lg);
 
     .loading-title { color: Rgb(239 68 68 / 100%); }
     .spinner { border-top-color: Rgb(239 68 68 / 100%); }
@@ -308,8 +306,7 @@ watch(() => props.icon, (newIcon) => {
 
   &.warning {
     border: 2px solid Rgb(245 158 11 / 40%);
-    box-shadow: 0 0 50px Rgb(245 158 11 / 15%),
-                inset 0 0 20px Rgb(245 158 11 / 5%);
+    box-shadow: var(--shadow-glow-amber-lg);
 
     .loading-title { color: Rgb(245 158 11); }
     .spinner { border-top-color: Rgb(245 158 11); }
@@ -319,8 +316,7 @@ watch(() => props.icon, (newIcon) => {
 
   &.purple {
     border: 2px solid Rgb(168 85 247 / 40%);
-    box-shadow: 0 0 50px Rgb(168 85 247 / 15%),
-                inset 0 0 20px Rgb(168 85 247 / 5%);
+    box-shadow: var(--shadow-glow-amber-lg);
 
     .loading-title { color: Rgb(168 85 247); }
     .spinner { border-top-color: Rgb(168 85 247); }
@@ -333,7 +329,7 @@ watch(() => props.icon, (newIcon) => {
   margin-bottom: 24px;
   .wifi-icon {
     display: inline-block;
-    font-size: 48px;
+    font-size: var(--font-48);
     will-change: transform, filter, opacity;
   }
 }
@@ -341,7 +337,7 @@ watch(() => props.icon, (newIcon) => {
 .loading-title {
   @include pixelated;
 
-  font-size: 15px;
+  font-size: var(--font-15);
   margin-top: 0;
   margin-bottom: 20px;
   letter-spacing: 1px;
@@ -351,7 +347,7 @@ watch(() => props.icon, (newIcon) => {
   @include pixelated;
 
   color: Rgb(255 255 255 / 70%);
-  font-size: 13px;
+  font-size: var(--font-13);
   line-height: 1.6;
   margin-top: 0;
   margin-bottom: 32px;
@@ -361,7 +357,7 @@ watch(() => props.icon, (newIcon) => {
   @include pixelated;
 
   color: Rgb(255 255 255 / 90%);
-  font-size: 13px;
+  font-size: var(--font-13);
   margin-bottom: 24px;
 }
 
@@ -369,7 +365,7 @@ watch(() => props.icon, (newIcon) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   margin-bottom: 12px;
 }
 
@@ -384,14 +380,14 @@ watch(() => props.icon, (newIcon) => {
 .status-text {
   @include pixelated;
 
-  font-size: 10px;
+  font-size: var(--font-10);
   text-transform: uppercase;
 }
 
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   width: 100%;
   margin-top: 24px;
   margin-bottom: 12px;
@@ -401,7 +397,7 @@ watch(() => props.icon, (newIcon) => {
   @include pixelated;
 
   color: Rgb(255 255 255 / 20%);
-  font-size: 8px;
+  font-size: var(--font-8);
   margin-top: 20px;
   margin-bottom: 0;
 }

@@ -44,7 +44,7 @@ import {
  * [ W: 8,    C: 0,   E: 16   ]
  * [ SW: 32,  S: 64,  SE: 128 ]
  */
-export const BIT_OFFSETS = {
+const BIT_OFFSETS = {
   NW: 1,
   N: 2,
   NE: 4,

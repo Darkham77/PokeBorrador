@@ -31,7 +31,8 @@ function onTrainerImgError(e: Event): void {
   <div class="debug-card">
     <div class="section-header-row flex-between">
       <label>DATOS DEL ENTRENADOR</label>
-      <button 
+      <button
+        id="debug-trainer-meta-card-btn-aleatorio" 
         class="btn-vicio-secondary sm"
         @click.stop="emit('randomizeTrainer')"
       >
@@ -39,7 +40,7 @@ function onTrainerImgError(e: Event): void {
       </button>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+    <div style="display: flex; align-items: center; gap: $spacing-md; margin-top: 8px;">
       <div class="trainer-sprite-preview">
         <img 
           :src="getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite)" 
@@ -48,7 +49,7 @@ function onTrainerImgError(e: Event): void {
           @error="onTrainerImgError"
         >
       </div>
-      <div style=" display: flex; flex-direction: column; gap: 8px;flex: 1;">
+      <div style=" display: flex; flex-direction: column; gap: $spacing-sm;flex: 1;">
         <div class="input-group vertical">
           <div
             class="label-row"
@@ -59,6 +60,7 @@ function onTrainerImgError(e: Event): void {
               style="margin-bottom: 0;"
             >Nombre del Entrenador</span>
             <button
+              id="debug-trainer-meta-card-btn-1"
               class="btn-magic-fill btn-random-fill"
               @click.stop="emit('randomizeName')"
             >
@@ -83,13 +85,17 @@ function onTrainerImgError(e: Event): void {
               style="margin-bottom: 0;"
             >Sprite del Entrenador</span>
             <button
+              id="debug-trainer-meta-card-btn-2"
               class="btn-magic-fill btn-random-fill"
               @click.stop="emit('randomizeSprite')"
             >
               <span class="emoji">🎲</span>
             </button>
           </div>
-          <select v-model="trainerSprite">
+          <select
+            id="debug-trainer-meta-card-select-trainersprite"
+            v-model="trainerSprite"
+          >
             <option 
               v-for="s in availableSpriteList" 
               :key="s.id" 
@@ -114,7 +120,8 @@ function onTrainerImgError(e: Event): void {
         v-if="isRocketClass"
         class="crime-sim-slider-row"
       >
-        <input 
+        <input
+          id="debug-trainer-meta-card-input-criminality" 
           v-model.number="criminality" 
           type="range" 
           min="0" 
@@ -134,9 +141,10 @@ function onTrainerImgError(e: Event): void {
       class="button-row"
       style="margin-top: 12px;"
     >
-      <button 
+      <button
+        id="debug-trainer-meta-card-btn-cargar-oficial-de-polic-a" 
         class="btn-vicio-secondary sm"
-        style="background: rgb(59 139 255 / 15%); color: #5ea2ff; border-color: rgb(59 139 255 / 30%);"
+        style="background: rgb(59 139 255 / 15%); color: var(--blue-400); border-color: rgb(59 139 255 / 30%);"
         @click.stop="emit('loadPolice')"
       >
         <span class="emoji">🚨</span> CARGAR OFICIAL DE POLICÍA

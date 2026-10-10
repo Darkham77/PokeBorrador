@@ -14,13 +14,13 @@
   background: none !important;
 
   /* audit-disable gpu-gaps */
-  color: #fff !important;
+  color: var(--white) !important;
   font-weight: 700 !important;
   animation: none !important;
   text-shadow: none !important;
   font-style: normal !important;
   filter: none;
-  -webkit-text-fill-color: initial !important;
+  -webkit-text-fill-color: var(--white) !important;
 }
 
 .nt-gold, .nick-style-gold {
@@ -80,31 +80,31 @@
 }
 
 .nt-class-cazabichos, .username.cazabichos, .name.cazabichos {
-  color: #22c55e !important;
+  color: var(--emerald) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(34 197 94 / 50%), 0 0 12px Rgb(21 128 61 / 30%) !important;
 }
 
 .nt-class-criador, .username.criador, .name.criador {
-  color: #a855f7 !important;
+  color: var(--purple-400) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(168 85 247 / 50%), 0 0 12px Rgb(126 34 206 / 30%) !important;
 }
 
 .nt-class-rocket, .username.rocket, .name.rocket {
-  color: #ef4444 !important;
+  color: var(--red-light) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 8px #ef4444, 0 0 15px #991b1b !important;
 }
 
 .nt-class-entrenador, .username.entrenador, .name.entrenador {
-  color: #3b82f6 !important;
+  color: var(--blue-500) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(59 130 246 / 50%), 0 0 12px Rgb(29 78 216 / 30%) !important;
 }
 
 .nt-faction-union {
-  color: #fbbf24 !important;
+  color: var(--amber) !important;
   font-weight: 700 !important;
   text-shadow: 
     0 0 4px #2563eb, 
@@ -113,7 +113,7 @@
 }
 
 .nt-faction-poder {
-  color: #f97316 !important;
+  color: var(--orange-500) !important;
   font-weight: 700 !important;
   text-shadow: 
     0 0 4px #ef4444, 
@@ -169,7 +169,7 @@
       position: absolute;
       z-index: calc(var(--z-base) - 1);
       border-radius: calc(#{$border-radius} - #{$offset}) !important;
-      background: #1e293b; /* Match standard avatar background color perfectly! */
+      background: var(--slate-800); /* Match standard avatar background color perfectly! */
       content: '';
       inset: $actual-inset-after;
 
@@ -335,88 +335,84 @@
   @include make-avatar-frame(#ef4444, null, (#ca8a04, #ef4444, #6d28d9, #ef4444, #ca8a04), 1s, 8px, -7px, -4px, false, null, admin-av-pulse 1.5s ease-in-out infinite);
 }
 
-
-
 /* --- ELEMENTAL DAMAGE TYPE NICK STYLES --- */
 .nt-type-normal {
-  color: #9ca3b8 !important;
+  color: var(--slate-400) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 5px Rgb(156 163 175 / 40%) !important;
 }
 
 .nt-type-grass {
-  color: #22c55e !important;
+  color: var(--emerald) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(34 197 94 / 50%), 0 0 12px Rgb(21 128 61 / 30%) !important;
 }
 
 .nt-type-ice {
-  color: #38bdf8 !important;
+  color: var(--sky) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(56 189 248 / 60%), 0 0 15px Rgb(255 255 255 / 50%) !important;
 }
 
 .nt-type-fighting {
-  color: #ea580c !important;
+  color: var(--orange-500) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(234 88 12 / 60%), 0 0 12px Rgb(127 29 29 / 40%) !important;
 }
 
 .nt-type-poison {
-  color: #a855f7 !important;
+  color: var(--purple-400) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(168 85 247 / 60%), 0 0 12px Rgb(76 29 149 / 50%) !important;
 }
 
 .nt-type-ground {
-  color: #ca8a04 !important;
+  color: var(--amber-dark) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(202 138 4 / 50%), 0 0 12px Rgb(69 26 3 / 40%) !important;
 }
 
 .nt-type-flying {
-  color: #67e8f9 !important;
+  color: var(--cyan) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 8px Rgb(103 232 249 / 60%) !important;
 }
 
 .nt-type-psychic {
-  color: #ec4899 !important;
+  color: var(--rose) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 8px Rgb(236 72 153 / 70%), 0 0 15px Rgb(107 33 168 / 40%) !important;
 }
 
 .nt-type-bug {
-  color: #84cc16 !important;
+  color: var(--green-light) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(132 204 22 / 50%) !important;
 }
 
 .nt-type-rock {
-  color: #b45309 !important;
+  color: var(--amber-dark) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 5px Rgb(180 83 9 / 60%) !important;
 }
 
 .nt-type-dragon {
-  color: #4f46e5 !important;
+  color: var(--blue-500) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 8px Rgb(79 70 229 / 60%), 0 0 15px Rgb(49 46 129 / 50%) !important;
 }
 
 .nt-type-steel {
-  color: #64748b !important;
+  color: var(--slate-500) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(100 116 139 / 50%), 0 0 12px Rgb(255 255 255 / 30%) !important;
 }
 
 .nt-type-fairy {
-  color: #f472b6 !important;
+  color: var(--rose) !important;
   font-weight: 700 !important;
   text-shadow: 0 0 6px Rgb(244 114 182 / 60%), 0 0 15px Rgb(253 244 255 / 40%) !important;
 }
-
-
 
 /* --- DYNAMIC ELEMENTAL DAMAGE TYPES AVATAR FRAMES --- */
 $element-types: (
@@ -454,8 +450,6 @@ $element-types: (
   }
 }
 
-
-
 /* ─────────────────────────────────────────────────────────────────────────────
    STATUS DOTS (ONLINE / OFFLINE INDICATORS)
    ───────────────────────────────────────────────────────────────────────────── */
@@ -468,12 +462,11 @@ $element-types: (
   height: 16px;
   border: 2px solid #101822;
   border-radius: 50%;
-  background: #ef4444; // Default offline red
-  box-shadow: 0 0 4px Rgb(239 68 68 / 40%);
+  background: var(--red-light); // Default offline red
+  box-shadow: var(--shadow-glow-yellow-sm);
 
   &.online {
-    background: #22c55e;
-    box-shadow: 0 0 10px #22c55e;
+    background: var(--emerald);
+    box-shadow: var(--shadow-glow-amber);
   }
 }
-

@@ -8,7 +8,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useContinentStudioStore } from '../../stores/continentStudio';
+import { useContinentStudioStore } from '../../stores/continentStudio.ts';
 
 describe('continentStudioStore', () => {
   beforeEach(() => {

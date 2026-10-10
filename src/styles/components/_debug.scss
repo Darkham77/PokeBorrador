@@ -5,7 +5,7 @@
 .debug-grid {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
 }
 
 .debug-card {
@@ -16,8 +16,8 @@
     @include pixelated;
 
     display: block;
-    color: rgb(148 163 184 / 100%);
-    font-size: 7px;
+    color: Rgb(148 163 184 / 100%);
+    font-size: var(--font-7);
     margin-bottom: 12px;
     text-transform: uppercase;
   }
@@ -26,7 +26,7 @@
 .input-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 
   &.vertical {
     flex-direction: column;
@@ -36,18 +36,18 @@
   input {
     height: 32px;
     padding: 8px 12px;
-    border: 1px solid rgb(255 255 255 / 10%);
-    border-radius: 10px;
-    background: rgb(0 0 0 / 40%);
+    border: 1px solid Rgb(255 255 255 / 10%);
+    border-radius: $radius-lg-alt;
+    background: Rgb(0 0 0 / 40%);
     color: var(--white);
-    font-size: 12px;
+    font-size: var(--font-12);
     flex: 1;
     
 
     &:focus {
       outline: none;
-      border-color: rgb(124 58 237 / 100%);
-      box-shadow: 0 0 15px rgb(124 58 237 / 20%);
+      border-color: Rgb(124 58 237 / 100%);
+      box-shadow: var(--shadow-glow-purple);
     }
   }
 
@@ -65,7 +65,7 @@
 .button-row {
   display: flex;
   flex-wrap: wrap; 
-  gap: 8px;
+  gap: $spacing-sm;
   
   &.wrap {
     button {
@@ -110,16 +110,16 @@
 
   width: 100%;
   padding: 14px;
-  border: 1px dashed rgb(124 58 237 / 30%);
-  border-radius: 16px;
-  background: rgb(124 58 237 / 5%);
-  color: rgb(192 132 252 / 100%);
-  font-size: 7px;
+  border: 1px dashed Rgb(124 58 237 / 30%);
+  border-radius: $radius-2xl;
+  background: Rgb(124 58 237 / 5%);
+  color: Rgb(192 132 252 / 100%);
+  font-size: var(--font-7);
   cursor: pointer;
   margin-top: 10px;
   
 
-  &:hover { background: rgb(124 58 237 / 10%); color: var(--white); border-style: solid; }
+  &:hover { background: Rgb(124 58 237 / 10%); color: var(--white); border-style: solid; }
 }
 
 .debug-info-box {
@@ -127,12 +127,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 16px;
-  background: rgb(0 0 0 / 30%);
-  color: rgb(148 163 184 / 100%);
-  font-size: 11px;
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-2xl;
+  background: Rgb(0 0 0 / 30%);
+  color: Rgb(148 163 184 / 100%);
+  font-size: var(--font-11);
   margin-top: 10px;
 
-  strong { @include pixelated; @include pixelated; color: rgb(251 191 36 / 100%); font-size: 8px; }
+  strong { @include pixelated; @include pixelated; color: Rgb(251 191 36 / 100%); font-size: var(--font-8); }
 }

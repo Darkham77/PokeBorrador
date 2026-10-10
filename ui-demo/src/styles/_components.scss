@@ -19,7 +19,7 @@
   --frame-border: var(--color-control-border);
   color: var(--color-text-muted);
   font-family: var(--font-pixel);
-  font-size: 8.5px;
+  font-size: var(--font-9);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -36,7 +36,7 @@
 
   &.active {
     background: var(--color-accent-purple);
-    color: #ffffff;
+    color: var(--white);
     --frame-border: Rgba(255, 255, 255, 0.4);
     font-weight: bold;
     box-shadow: inset 0 2px 0 Rgba(255, 255, 255, 0.35);
@@ -57,7 +57,7 @@
   --frame-border: var(--color-pill-border);
   color: var(--color-pill-text);
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
   line-height: 1.35;
   user-select: none;
@@ -95,7 +95,7 @@
   --frame-border: var(--color-control-border);
   color: var(--color-text-muted);
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,7 +111,7 @@
 
   &.active {
     background: Linear-Gradient(90deg, var(--color-accent-blue) 0%, var(--color-accent-purple) 100%);
-    color: #ffffff;
+    color: var(--white);
     --frame-border: Rgba(255, 255, 255, 0.4);
     font-weight: bold;
     box-shadow: inset 0 2px 0 Rgba(255, 255, 255, 0.35);
@@ -145,7 +145,7 @@
   border: none;
   color: var(--color-text-main);
   font-family: var(--font-pixel);
-  font-size: 8.5px;
+  font-size: var(--font-9);
   outline: none;
   line-height: normal;
   display: flex;
@@ -170,7 +170,7 @@
       background-color: var(--color-control-bg);
       color: var(--color-text-main);
       font-family: var(--font-pixel);
-      font-size: 8.5px;
+      font-size: var(--font-9);
       padding: 10px 12px;
       line-height: 1.6;
 
@@ -178,7 +178,7 @@
       &:hover,
       &:focus {
         background-color: var(--color-control-focus) !important;
-        color: #ffffff !important;
+        color: var(--white) !important;
       }
     }
   }
@@ -191,7 +191,7 @@
   cursor: pointer;
   user-select: none;
   font-family: var(--font-pixel);
-  font-size: 8.5px;
+  font-size: var(--font-9);
   line-height: 1.35;
   color: var(--color-text-main);
   margin-bottom: 8px;
@@ -201,8 +201,8 @@
   }
 
   input:checked + .pv-pixel-checkbox {
-    background: #16a34a;
-    --frame-border: #22c55e;
+    background: var(--emerald);
+    --frame-border: var(--emerald);
 
     .pv-checkbox-mark {
       opacity: 1;
@@ -236,7 +236,7 @@
   cursor: pointer;
   user-select: none;
   font-family: var(--font-pixel);
-  font-size: 8.5px;
+  font-size: var(--font-9);
   line-height: 1.35;
   color: var(--color-text-main);
   margin-bottom: 8px;
@@ -246,13 +246,13 @@
   }
 
   input:checked + .pv-toggle-track {
-    background: #16a34a;
-    --frame-border: #22c55e;
+    background: var(--emerald);
+    --frame-border: var(--emerald);
 
     .pv-toggle-thumb {
       left: 27px;
-      background: #ffffff;
-      --frame-border: #15803d;
+      background: var(--white);
+      --frame-border: var(--emerald-500);
     }
   }
 }
@@ -268,7 +268,7 @@
 .pv-toggle-thumb {
   width: 16px;
   height: 16px;
-  background: #334155;
+  background: var(--slate-700);
   --frame-border: var(--color-control-border);
   position: absolute;
   top: 3px;
@@ -289,7 +289,7 @@
   color: var(--color-stepper-btn-text);
   border: none;
   font-family: var(--font-pixel);
-  font-size: 11px;
+  font-size: var(--font-11);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -301,7 +301,7 @@
   min-width: 36px;
   text-align: center;
   font-family: var(--font-pixel);
-  font-size: 9px;
+  font-size: var(--font-9);
   color: var(--color-text-main);
   line-height: 1.35;
 }
@@ -328,14 +328,14 @@
     box-shadow: inset -2px -2px 0 Rgba(0, 0, 0, 0.3);
   }
 
-  &.pv-btn-xs { height: 22px; padding: 0 8px; font-size: 7.5px; }
-  &.pv-btn-sm { height: 28px; padding: 0 12px; font-size: 8px; }
-  &.pv-btn-md { height: 34px; padding: 0 16px; font-size: 8.5px; }
-  &.pv-btn-lg { height: 42px; padding: 0 22px; font-size: 10px; }
+  &.pv-btn-xs { height: 22px; padding: 0 8px; font-size: var(--font-8); }
+  &.pv-btn-sm { height: 28px; padding: 0 12px; font-size: var(--font-8); }
+  &.pv-btn-md { height: 34px; padding: 0 16px; font-size: var(--font-9); }
+  &.pv-btn-lg { height: 42px; padding: 0 22px; font-size: var(--font-10); }
 
   &.pv-btn-primary {
     background: #209cee !important;
-    color: #ffffff !important;
+    color: var(--white) !important;
     --frame-border: #006bb3;
     --btn-shade: #006bb3;
     &:hover:not(:disabled) {
@@ -359,7 +359,7 @@
 
   &.pv-btn-success {
     background: #92cc41 !important;
-    color: #ffffff !important;
+    color: var(--white) !important;
     --frame-border: #4aa52e;
     --btn-shade: #4aa52e;
     &:hover:not(:disabled) {
@@ -370,7 +370,7 @@
 
   &.pv-btn-danger {
     background: #e76e55 !important;
-    color: #ffffff !important;
+    color: var(--white) !important;
     --frame-border: #8c2022;
     --btn-shade: #8c2022;
     &:hover:not(:disabled) {
@@ -393,7 +393,7 @@
 
   &.pv-btn-info {
     background: #0891b2 !important;
-    color: #ffffff !important;
+    color: var(--white) !important;
     --frame-border: #0e7490;
     --btn-shade: #0e7490;
     &:hover:not(:disabled) {
@@ -404,13 +404,13 @@
 
   &.pv-btn-ghost {
     background: Rgba(255, 255, 255, 0.08) !important;
-    color: #94a3b8 !important;
+    color: var(--slate-400) !important;
     --frame-border: Rgba(255, 255, 255, 0.2);
     --btn-shade: Rgba(0, 0, 0, 0.35);
     text-shadow: none;
     &:hover:not(:disabled) {
       background: Rgba(255, 255, 255, 0.16) !important;
-      color: #ffffff !important;
+      color: var(--white) !important;
     }
   }
 
@@ -457,7 +457,7 @@
     position: absolute;
     bottom: 2px;
     right: 4px;
-    font-size: 7.5px;
+    font-size: var(--font-8);
     font-family: var(--font-pixel);
     font-weight: bold;
     color: var(--color-text-gold);
@@ -483,8 +483,8 @@
   .move-info { display: flex; flex-direction: column; gap: 4px; }
   .move-name {
     font-family: var(--font-pixel);
-    font-size: 8.5px;
-    color: #ffffff;
+    font-size: var(--font-9);
+    color: var(--white);
     text-shadow: 1px 1px 0 #000000;
     line-height: 1.35;
   }

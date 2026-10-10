@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/logic/map/noise/simplexNoise.ts
  *
  * LIGHTWEIGHT 2D SIMPLEX NOISE & FBM GENERATOR (SSoT)
@@ -7,9 +7,25 @@
  * for organic heightmap and moisture distribution.
  */
 
+import { CONTINENT_DEFAULT_SEED, UINT32_DIVISOR } from '../../../config/studioConstants.ts';
+
 // Skewing and unskewing factors for 2 dimensions
 const F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
 const G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
+
+const MULBERRY_MAGIC_OFFSET = 0x6d2b79f5;
+const MULBERRY_SHIFT_A = 15;
+const MULBERRY_SHIFT_B = 7;
+const MULBERRY_PRIME_B = 61;
+const MULBERRY_SHIFT_C = 14;
+
+const PERM_TABLE_SIZE = 256;
+const PERM_TABLE_MASK = 255;
+const DOUBLE_PERM_SIZE = 512;
+const GRADIENT_COUNT = 12;
+
+const SIMPLEX_2D_SCALE = 70.14805770653952;
+const DEFAULT_FBM_SCALE = 0.05;
 
 // Standard 2D gradients (12 vectors to avoid directional artifacts)
 const GRAD2: readonly (readonly [number, number])[] = [
@@ -30,13 +46,13 @@ const GRAD2: readonly (readonly [number, number])[] = [
 /**
  * Deterministic Mulberry32 32-bit PRNG
  */
-function createMulberry32(seed: number): () => number {
+export function createMulberry32(seed: number): () => number {
   let s = (seed >>> 0) || 1;
   return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    s = (s + MULBERRY_MAGIC_OFFSET) >>> 0;
+    let t = Math.imul(s ^ (s >>> MULBERRY_SHIFT_A), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> MULBERRY_SHIFT_B), MULBERRY_PRIME_B | t)) ^ t;
+    return ((t ^ (t >>> MULBERRY_SHIFT_C)) >>> 0) / UINT32_DIVISOR;
   };
 }
 
@@ -54,15 +70,15 @@ export class SimplexNoise {
   private readonly perm: Uint8Array;
   private readonly permMod12: Uint8Array;
 
-  constructor(seed = 42) {
+  constructor(seed = CONTINENT_DEFAULT_SEED) {
     const prng = createMulberry32(seed);
-    const p = new Uint8Array(256);
-    for (let i = 0; i < 256; i++) {
+    const p = new Uint8Array(PERM_TABLE_SIZE);
+    for (let i = 0; i < PERM_TABLE_SIZE; i++) {
       p[i] = i;
     }
 
     // Fisher-Yates shuffle
-    for (let i = 255; i > 0; i--) {
+    for (let i = PERM_TABLE_MASK; i > 0; i--) {
       const j = Math.floor(prng() * (i + 1));
       const temp = p[i]!;
       p[i] = p[j]!;
@@ -70,12 +86,12 @@ export class SimplexNoise {
     }
 
     // Double permutation table to avoid modulo wrapping
-    this.perm = new Uint8Array(512);
-    this.permMod12 = new Uint8Array(512);
-    for (let i = 0; i < 512; i++) {
-      const val = p[i & 255]!;
+    this.perm = new Uint8Array(DOUBLE_PERM_SIZE);
+    this.permMod12 = new Uint8Array(DOUBLE_PERM_SIZE);
+    for (let i = 0; i < DOUBLE_PERM_SIZE; i++) {
+      const val = p[i & PERM_TABLE_MASK]!;
       this.perm[i] = val;
-      this.permMod12[i] = val % 12;
+      this.permMod12[i] = val % GRADIENT_COUNT;
     }
   }
 
@@ -97,15 +113,8 @@ export class SimplexNoise {
     const y0 = yin - (j - t);
 
     // Determine which simplex triangle of the square cell we're in
-    let i1 = 0;
-    let j1 = 0;
-    if (x0 > y0) {
-      i1 = 1;
-      j1 = 0; // lower triangle: (0,0)->(1,0)->(1,1)
-    } else {
-      i1 = 0;
-      j1 = 1; // upper triangle: (0,0)->(0,1)->(1,1)
-    }
+    const i1 = x0 > y0 ? 1 : 0;
+    const j1 = x0 > y0 ? 0 : 1;
 
     // Offsets for second and third corners
     const x1 = x0 - i1 + G2;
@@ -114,8 +123,8 @@ export class SimplexNoise {
     const y2 = y0 - 1.0 + 2.0 * G2;
 
     // Work out the hashed gradient indices of the three simplex corners
-    const ii = i & 255;
-    const jj = j & 255;
+    const ii = i & PERM_TABLE_MASK;
+    const jj = j & PERM_TABLE_MASK;
     const gi0 = this.permMod12[ii + this.perm[jj]!]!;
     const gi1 = this.permMod12[ii + i1 + this.perm[jj + j1]!]!;
     const gi2 = this.permMod12[ii + 1 + this.perm[jj + 1]!]!;
@@ -145,7 +154,7 @@ export class SimplexNoise {
     }
 
     // Scale to return [-1.0, 1.0]
-    const raw = 70.14805770653952 * (n0 + n1 + n2);
+    const raw = SIMPLEX_2D_SCALE * (n0 + n1 + n2);
     return Math.max(-1.0, Math.min(1.0, raw));
   }
 }
@@ -164,7 +173,7 @@ export function fbm2D(
   const octaves = Math.max(1, options?.octaves ?? 4);
   const lacunarity = options?.lacunarity ?? 2.0;
   const persistence = options?.persistence ?? 0.5;
-  const scale = options?.scale ?? 0.05;
+  const scale = options?.scale ?? DEFAULT_FBM_SCALE;
 
   let total = 0;
   let frequency = scale;

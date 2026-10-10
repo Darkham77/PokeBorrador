@@ -351,7 +351,7 @@ const handleReclaim = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   width: 100%;
   margin-top: 15px;
 }
@@ -361,7 +361,7 @@ const handleReclaim = async () => {
   width: 100%;
   height: 16px;
   border: 2px solid var(--yellow);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: Rgb(0 0 0 / 50%);
   overflow: hidden;
 }
@@ -369,15 +369,15 @@ const handleReclaim = async () => {
 .pwa-progress-bar {
   height: 100%;
   background: Linear-Gradient(90deg, var(--yellow) 0%, #ffc107 100%);
-  box-shadow: 0 0 8px var(--yellow);
+  box-shadow: var(--shadow-glow-yellow);
 }
 
 .pwa-progress-text {
   @include pixelated;
 
-  color: #fff;
+  color: var(--white);
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: var(--font-8);
   text-shadow: 1px 1px 0 #000;
 }
 
@@ -387,22 +387,22 @@ const handleReclaim = async () => {
   width: 100%;
   padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: var(--yellow);
-  color: black;
-  font-size: 12px;
+  color: var(--black);
+  font-size: var(--font-12);
   cursor: pointer;
-  box-shadow: 0 4px 0 #b39200;
+  box-shadow: $shadow-retro-yellow;
   margin-top: 15px;
   
   &:hover {
     transform: Translatey(-2px);
-    box-shadow: 0 6px 0 #b39200;
+    box-shadow: $shadow-retro-yellow-hover;
   }
   
   &:active {
     transform: Translatey(2px);
-    box-shadow: 0 0 0 #b39200;
+    box-shadow: $shadow-retro-yellow-active;
   }
 }
 

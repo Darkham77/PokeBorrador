@@ -36,6 +36,7 @@ const allMaps = computed(() => {
     const data = warStore.mapDominance[mapId] || { union: 0, poder: 0, winner: null }
     const total = (Number(data.union ?? 0)) + (Number(data.poder ?? 0))
     const unionPct = total > 0 ? ((data.union ?? 0) / total) * 100 : NEUTRAL_DOMINANCE_PERCENT
+    const poderPct = Math.max(0, 100 - unionPct)
     const rawWinner = data.winner || ((data.union ?? 0) > (data.poder ?? 0) ? 'union' : (data.poder ?? 0) > (data.union ?? 0) ? 'poder' : null)
     const winner: FactionId | null = isFactionId(rawWinner) ? rawWinner : null
     
@@ -45,6 +46,7 @@ const allMaps = computed(() => {
       union: data.union ?? 0,
       poder: data.poder ?? 0,
       unionPct,
+      poderPct,
       winner
     }
   })
@@ -66,6 +68,7 @@ const filteredMaps = computed(() => {
     <div class="region-tabs">
       <button
         v-for="region in regions"
+        id="map-control-list-btn-currentregion"
         :key="region.id"
         class="region-tab-btn"
         :class="{ active: currentRegion === region.id, disabled: !region.active }"
@@ -113,7 +116,7 @@ const filteredMaps = computed(() => {
               </div>
               <div
                 class="bar-fill poder"
-                :style="{ width: (100 - map.unionPct) + '%' }"
+                :style="{ width: map.poderPct + '%' }"
               >
                 <span v-if="map.poder > 0">{{ map.poder }}</span>
               </div>
@@ -135,8 +138,8 @@ const filteredMaps = computed(() => {
 .wc-section-title {
   @include pixelated;
 
-  color: rgb(85 85 85 / 100%);
-  font-size: 10px;
+  color: Rgb(85 85 85 / 100%);
+  font-size: var(--font-10);
   text-align: center;
   margin-bottom: 16px;
 }
@@ -144,9 +147,9 @@ const filteredMaps = computed(() => {
 /* REGION TABS */
 .region-tabs {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   margin-bottom: 16px;
-  border-bottom: 1px solid rgb(255 255 255 / 5%);
+  border-bottom: 1px solid Rgb(255 255 255 / 5%);
   padding-bottom: 8px;
 }
 
@@ -157,21 +160,21 @@ const filteredMaps = computed(() => {
   flex-direction: column;
   align-items: center;
   padding: 6px 12px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 6px;
-  background: rgb(255 255 255 / 2%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-md;
+  background: Rgb(255 255 255 / 2%);
   color: var(--gray);
-  font-size: 9px;
+  font-size: var(--font-9);
   cursor: pointer;
   
 
   &:hover:not(.disabled) {
-    background: rgb(255 255 255 / 8%);
+    background: Rgb(255 255 255 / 8%);
     color: var(--white);
   }
 
   &.active {
-    background: rgb(255 255 255 / 10%);
+    background: Rgb(255 255 255 / 10%);
     color: var(--yellow);
     border-color: var(--yellow);
   }
@@ -183,7 +186,7 @@ const filteredMaps = computed(() => {
 
   .coming-soon {
     color: var(--gray);
-    font-size: 6px;
+    font-size: var(--font-6);
     opacity: 0.7;
     margin-top: 2px;
   }
@@ -192,38 +195,38 @@ const filteredMaps = computed(() => {
 .grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .map-row {
   padding: 10px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 12px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 3%);
   
 
   &:hover {
-    background: rgb(255 255 255 / 6%);
+    background: Rgb(255 255 255 / 6%);
   }
 
-  &.union { border-left: 4px solid rgb(59 130 246 / 100%); }
-  &.poder { border-left: 4px solid rgb(239 68 68 / 100%); }
+  &.union { border-left: 4px solid Rgb(59 130 246 / 100%); }
+  &.poder { border-left: 4px solid Rgb(239 68 68 / 100%); }
 }
 
 .map-row-content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .map-thumbnail {
   width: 88px;
   height: 88px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 8px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-lg;
   background-size: cover;
   background-position: center;
-  box-shadow: inset 0 0 6px rgb(0 0 0 / 60%);
+  box-shadow: var(--shadow-card);
   flex-shrink: 0;
   image-rendering: pixelated;
 }
@@ -231,7 +234,7 @@ const filteredMaps = computed(() => {
 .map-details {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   flex: 1;
 }
 
@@ -241,8 +244,8 @@ const filteredMaps = computed(() => {
   align-items: center;
 
   .map-name {
-    color: rgb(204 204 204 / 100%);
-    font-size: 11px;
+    color: Rgb(204 204 204 / 100%);
+    font-size: var(--font-11);
     font-weight: 600;
   }
 
@@ -250,18 +253,18 @@ const filteredMaps = computed(() => {
     @include pixelated;
 
     padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 8px;
+    border-radius: $radius-sm;
+    font-size: var(--font-8);
     
-    .union & { background: rgb(59 130 246 / 100%); color: var(--white); }
-    .poder & { background: rgb(239 68 68 / 100%); color: var(--white); }
+    .union & { background: Rgb(59 130 246 / 100%); color: var(--white); }
+    .poder & { background: Rgb(239 68 68 / 100%); color: var(--white); }
   }
 }
 
 .dominance-bar {
   display: flex;
   height: 8px;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   background: $black;
   overflow: hidden;
   
@@ -270,13 +273,13 @@ const filteredMaps = computed(() => {
     justify-content: center;
     align-items: center;
     height: 100%;
-    color: white;
-    font-size: 7px;
+    color: var(--white);
+    font-size: var(--font-7);
     font-weight: bold;
     
 
-    &.union { background: rgb(59 130 246 / 100%); box-shadow: inset 0 0 10px rgb(0 0 0 / 30%); }
-    &.poder { background: rgb(239 68 68 / 100%); box-shadow: inset 0 0 10px rgb(0 0 0 / 30%); }
+    &.union { background: Rgb(59 130 246 / 100%); box-shadow: $shadow-inset-md; }
+    &.poder { background: Rgb(239 68 68 / 100%); box-shadow: $shadow-inset-md; }
   }
 }
 </style>

@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { generateSettlementLayout } from '../../../src/logic/map/cityLayoutEngine.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import type { POINode } from '../../../src/types/map/poiTypes.ts';
+import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 const ROOT_DIR = process.cwd();
 
@@ -49,7 +49,6 @@ describe('building_and_props_cut_detector', () => {
       }
     }
 
-    console.log('Metropolis Touching Buildings:', touchingBuildings);
     expect(collisions).toEqual([]);
     expect(touchingBuildings).toEqual([]);
   });
@@ -235,7 +234,6 @@ describe('building_and_props_cut_detector', () => {
       }
     }
 
-    console.log('All Asset Dimension & Roof Crop Violations:', cutRoofs);
     expect(cutRoofs).toEqual([]);
   });
 });

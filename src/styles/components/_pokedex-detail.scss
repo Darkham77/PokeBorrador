@@ -9,12 +9,12 @@
 
 .header-type-icon {
   padding: 4px 10px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   color: $black;
-  font-family: Outfit, sans-serif;
-  font-size: 11px;
+  font-family: $font-family-ui;
+  font-size: var(--font-11);
   font-weight: 800;
-  box-shadow: 0 4px 15px rgb(0 0 0 / 30%);
+  box-shadow: var(--shadow-md);
   text-shadow: none;
 }
 

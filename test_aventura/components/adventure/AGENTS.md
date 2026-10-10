@@ -15,6 +15,7 @@ Game Prototyping / Adventure Suite.
 
 - [`AdventureDebugModal.vue`](./AdventureDebugModal.vue): Developer debugging and teleportation modal.
 - [`AdventureInventoryModal.vue`](./AdventureInventoryModal.vue): Adventure inventory and item inspection modal.
+- [`AdventureModal.vue`](./AdventureModal.vue): Main adventure exploration interface container and orchestration modal.
 
 ## Work Guidance
 

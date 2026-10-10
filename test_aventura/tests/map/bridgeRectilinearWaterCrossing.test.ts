@@ -14,11 +14,11 @@
 import { describe, it, expect } from 'vitest';
 import path from 'node:path';
 import sharp from 'sharp';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
-import { resolveCanonicalBridges } from '../../../src/logic/map/canonicalBridgeEngine.ts';
-import manifestJson from '../../../src/data/map/canonical_assets_manifest.json' with { type: 'json' };
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { resolveCanonicalBridges } from '../../logic/map/canonicalBridgeEngine.ts';
+import manifestJson from '../../data/map/canonical_assets_manifest.json' with { type: 'json' };
 
 const ROOT_DIR = process.cwd();
 

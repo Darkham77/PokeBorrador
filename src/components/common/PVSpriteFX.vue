@@ -353,14 +353,14 @@ const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as co
   border: 1px dashed; border-radius: 50%; transform: Translate(-50%, -50%); pointer-events: none;
   .label {
     position: absolute; bottom: -18px;
-    padding: 2px 5px; border-radius: 3px; background: Rgb(0 0 0 / 90%); color: white;
-    font-family: monospace, sans-serif; font-size: 10px; font-weight: bold; line-height: 1.2;
+    padding: 2px 5px; border-radius: $radius-xs-alt; background: Rgb(0 0 0 / 90%); color: var(--white);
+    font-family: $font-family-mono; font-size: var(--font-10); font-weight: bold; line-height: 1.2;
     transform: Scale(calc(1 / var(--camera-scale, 1))); white-space: nowrap;
     transform-origin: center top;
   }
-  &.debug-fx-radius { border: 2px solid #f90; background: Rgb(255 153 0 / 20%);
-    border-color: #f90;
-    .label { border: 1px solid #f90; background: Rgb(40 20 0 / 90%); color: #fb3; }
+  &.debug-fx-radius { border: 2px solid var(--orange-500); background: Rgb(255 153 0 / 20%);
+    border-color: var(--orange-500);
+    .label { border: 1px solid var(--orange-500); background: Rgb(40 20 0 / 90%); color: var(--amber); }
   }
 }
 </style>

@@ -149,33 +149,33 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
   left: 50%;
   z-index: var(--z-navigation);
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 8px 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 20px;
+  border-radius: $radius-3xl;
   background: Rgb(0 0 0 / 85%);
   transform: Translatex(-50%);
   transform: Translatex(-50%) Translatez(0);
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
-  box-shadow: 0 10px 30px Rgb(0 0 0 / 50%);
+  box-shadow: $shadow-xl;
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 8px 16px;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: bold;
   text-decoration: none;
 }
 
 .nav-item span:first-child {
-  font-size: 18px;
+  font-size: var(--font-18);
 }
 
 .nav-item:hover {

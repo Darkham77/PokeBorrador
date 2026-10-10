@@ -17,6 +17,20 @@ import {
   STRUCTURE_TEMPLATES,
   getStructureTemplate
 } from '../../config/mapStructures';
+import {
+  STUDIO_TILE_SIZE,
+  TILE_CENTER_OFFSET,
+  CONTINENT_DEFAULT_SEED,
+  SUBTILE_INNER_SIZE,
+  MAX_RANDOM_SEED
+} from '../../config/studioConstants.ts';
+
+const DEFAULT_VIEWER_MAP_WIDTH = 30;
+const DEFAULT_VIEWER_MAP_HEIGHT = 30;
+const DEFAULT_STAMP_GRID_X = 12;
+const DEFAULT_STAMP_GRID_Y = 10;
+const MIN_MAP_DIMENSION = 16;
+const MAX_MAP_DIMENSION = 60;
 
 const props = withDefaults(
   defineProps<{
@@ -27,9 +41,9 @@ const props = withDefaults(
   }>(),
   {
     initialTheme: 'firered',
-    initialSeed: 42,
-    initialWidth: 30,
-    initialHeight: 30
+    initialSeed: CONTINENT_DEFAULT_SEED,
+    initialWidth: DEFAULT_VIEWER_MAP_WIDTH,
+    initialHeight: DEFAULT_VIEWER_MAP_HEIGHT
   }
 );
 
@@ -45,8 +59,8 @@ const withTown = ref<boolean>(true);
 
 // Structure Stamper State
 const selectedStructureId = ref<string>('pokemon_center');
-const stampGridX = ref<number>(12);
-const stampGridY = ref<number>(10);
+const stampGridX = ref<number>(DEFAULT_STAMP_GRID_X);
+const stampGridY = ref<number>(DEFAULT_STAMP_GRID_Y);
 const structureMessage = ref<string>('');
 
 // Metrics & Telemetry
@@ -151,9 +165,11 @@ function renderCanvas(): void {
   if (!ctx) return;
 
   const t0 = performance.now();
+  const T = STUDIO_TILE_SIZE;
+  const innerSize = SUBTILE_INNER_SIZE;
 
-  const canvasWidth = map.width * 16;
-  const canvasHeight = map.height * 16;
+  const canvasWidth = map.width * T;
+  const canvasHeight = map.height * T;
   if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
@@ -168,7 +184,7 @@ function renderCanvas(): void {
       const cell = map.layers.ground[y]?.[x];
       if (cell) {
         const img = imageCache.get(cell.filePath);
-        if (img) ctx.drawImage(img, x * 16, y * 16, 16, 16);
+        if (img) ctx.drawImage(img, x * T, y * T, T, T);
       }
     }
   }
@@ -179,7 +195,7 @@ function renderCanvas(): void {
       const cell = map.layers.elevation[y]?.[x];
       if (cell) {
         const img = imageCache.get(cell.filePath);
-        if (img) ctx.drawImage(img, x * 16, y * 16, 16, 16);
+        if (img) ctx.drawImage(img, x * T, y * T, T, T);
       }
     }
   }
@@ -190,7 +206,7 @@ function renderCanvas(): void {
       const cell = map.layers.decorations[y]?.[x];
       if (cell) {
         const img = imageCache.get(cell.filePath);
-        if (img) ctx.drawImage(img, x * 16, y * 16, 16, 16);
+        if (img) ctx.drawImage(img, x * T, y * T, T, T);
       }
     }
   }
@@ -209,17 +225,17 @@ function renderCanvas(): void {
         } else {
           ctx.fillStyle = 'rgba(34, 197, 94, 0.35)'; // Green = walkable
         }
-        ctx.fillRect(x * 16, y * 16, 16, 16);
+        ctx.fillRect(x * T, y * T, T, T);
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
         ctx.lineWidth = 1;
-        ctx.strokeRect(x * 16, y * 16, 16, 16);
+        ctx.strokeRect(x * T, y * T, T, T);
 
         if (col === 3) {
           ctx.fillStyle = '#fef08a';
           ctx.font = 'bold 9px monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('▼', x * 16 + 8, y * 16 + 8);
+          ctx.fillText('▼', x * T + TILE_CENTER_OFFSET, y * T + TILE_CENTER_OFFSET);
         }
       }
     }
@@ -230,30 +246,30 @@ function renderCanvas(): void {
     // Render Warps (Yellow badge)
     for (const warp of map.entities.warps) {
       ctx.fillStyle = 'rgba(234, 179, 8, 0.75)';
-      ctx.fillRect(warp.x * 16, warp.y * 16, 16, 16);
+      ctx.fillRect(warp.x * T, warp.y * T, T, T);
       ctx.strokeStyle = '#a16207';
       ctx.lineWidth = 2;
-      ctx.strokeRect(warp.x * 16 + 1, warp.y * 16 + 1, 14, 14);
+      ctx.strokeRect(warp.x * T + 1, warp.y * T + 1, innerSize, innerSize);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('W', warp.x * 16 + 8, warp.y * 16 + 8);
+      ctx.fillText('W', warp.x * T + TILE_CENTER_OFFSET, warp.y * T + TILE_CENTER_OFFSET);
     }
 
     // Render Spawns (Cyan badge)
     for (const spawn of map.entities.spawns) {
       ctx.fillStyle = 'rgba(6, 182, 212, 0.75)';
-      ctx.fillRect(spawn.x * 16, spawn.y * 16, 16, 16);
+      ctx.fillRect(spawn.x * T, spawn.y * T, T, T);
       ctx.strokeStyle = '#0e7490';
       ctx.lineWidth = 2;
-      ctx.strokeRect(spawn.x * 16 + 1, spawn.y * 16 + 1, 14, 14);
+      ctx.strokeRect(spawn.x * T + 1, spawn.y * T + 1, innerSize, innerSize);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const label = spawn.id.includes('player') ? '★' : 'S';
-      ctx.fillText(label, spawn.x * 16 + 8, spawn.y * 16 + 8);
+      ctx.fillText(label, spawn.x * T + TILE_CENTER_OFFSET, spawn.y * T + TILE_CENTER_OFFSET);
     }
   }
 
@@ -285,9 +301,9 @@ async function generateAndRender(): Promise<void> {
 
     const t0 = performance.now();
     const map = generateProceduralMap({
-      width: Math.max(16, Math.min(60, Number(mapWidth.value) || 30)),
-      height: Math.max(16, Math.min(60, Number(mapHeight.value) || 30)),
-      seed: Number(seed.value) || 42,
+      width: Math.max(MIN_MAP_DIMENSION, Math.min(MAX_MAP_DIMENSION, Number(mapWidth.value) || DEFAULT_VIEWER_MAP_WIDTH)),
+      height: Math.max(MIN_MAP_DIMENSION, Math.min(MAX_MAP_DIMENSION, Number(mapHeight.value) || DEFAULT_VIEWER_MAP_HEIGHT)),
+      seed: Number(seed.value) || CONTINENT_DEFAULT_SEED,
       theme: theme.value,
       type: mapType.value,
       withTown: mapType.value === 'town' && withTown.value
@@ -338,7 +354,7 @@ async function handleStampStructure(): Promise<void> {
  * Randomizes seed and triggers instant regeneration.
  */
 function randomizeSeed(): void {
-  seed.value = Math.floor(Math.random() * 999999);
+  seed.value = Math.floor(Math.random() * MAX_RANDOM_SEED);
   generateAndRender();
 }
 
@@ -614,47 +630,47 @@ onMounted(() => {
 .procedural-viewer-card {
   display: flex;
   flex-direction: column;
-  background: #0f172a;
-  border: 2px solid #334155;
-  border-radius: 8px;
+  gap: $spacing-md-alt;
   padding: 12px;
-  color: #f8fafc;
-  font-family: monospace, sans-serif;
-  gap: 10px;
+  border: 2px solid var(--slate-700);
+  border-radius: $radius-lg;
+  background: var(--slate-900);
+  color: var(--slate-50);
+  font-family: $font-family-mono;
 }
 
 .viewer-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid var(--slate-800);
   padding-bottom: 8px;
 
   .title-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .viewer-title {
-      font-size: 14px;
-      font-weight: bold;
-      color: #38bdf8;
       margin: 0;
+      color: var(--sky);
+      font-size: var(--font-14);
+      font-weight: bold;
       letter-spacing: 0.5px;
     }
   }
 
   .badge-status {
-    font-size: 10px;
     padding: 3px 8px;
-    border-radius: 4px;
-    background: #475569;
-    color: #cbd5e1;
+    border-radius: $radius-sm;
+    background: var(--slate-600);
+    color: var(--slate-300);
+    font-size: var(--font-10);
     font-weight: 600;
 
     &.ready {
-      background: #15803d;
-      color: #bbf7d0;
+      background: var(--emerald-500);
+      color: var(--green-light);
     }
   }
 }
@@ -663,77 +679,88 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  background: #1e293b;
+  gap: $spacing-md;
   padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  font-size: var(--font-12);
 
   .control-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
   }
 
   .input-with-button {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
   }
 
   .dim-inputs {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
   }
 }
 
-.retro-select,
-.retro-input,
-.retro-input-sm {
-  background: #090d16;
-  border: 1px solid #475569;
-  color: #f1f5f9;
-  border-radius: 4px;
+.retro-select {
   padding: 4px 6px;
+  border: 1px solid var(--slate-600);
+  border-radius: $radius-sm;
+  background: #090d16;
+  color: var(--slate-100);
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--font-12);
 }
 
 .retro-input {
   width: 90px;
+  padding: 4px 6px;
+  border: 1px solid var(--slate-600);
+  border-radius: $radius-sm;
+  background: #090d16;
+  color: var(--slate-100);
+  font-family: inherit;
+  font-size: var(--font-12);
 }
 
 .retro-input-sm {
   width: 44px;
+  padding: 4px 6px;
+  border: 1px solid var(--slate-600);
+  border-radius: $radius-sm;
+  background: #090d16;
+  color: var(--slate-100);
+  font-family: inherit;
+  font-size: var(--font-12);
   text-align: center;
 }
 
 .small-btn,
 .btn-rnd {
-  background: #334155;
-  border: 1px solid #64748b;
-  color: #f8fafc;
-  cursor: pointer;
   padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  transition: background 0.15s ease;
+  border: 1px solid var(--slate-500);
+  border-radius: $radius-sm;
+  background: var(--slate-700);
+  color: var(--slate-50);
+  font-size: var(--font-12);
+  cursor: pointer;
 
   &:hover {
-    background: #475569;
+    background: var(--slate-600);
   }
 }
 
 .generate-btn {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border: 1px solid #60a5fa;
-  color: #ffffff;
-  font-weight: bold;
   padding: 5px 12px;
-  border-radius: 4px;
+  border: 1px solid var(--blue-400);
+  border-radius: $radius-sm;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: var(--white);
+  font-size: var(--font-12);
+  font-weight: bold;
   cursor: pointer;
-  font-size: 12px;
 
   &:hover:not(:disabled) {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -748,18 +775,18 @@ onMounted(() => {
 .collision-toggle {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   cursor: pointer;
   user-select: none;
   margin-left: auto;
 
   input[type="checkbox"] {
-    accent-color: #22c55e;
+    accent-color: var(--emerald);
   }
 
   .toggle-label {
-    color: #94a3b8;
-    font-size: 11px;
+    color: var(--slate-400);
+    font-size: var(--font-11);
   }
 }
 
@@ -767,48 +794,48 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  background: #1e293b;
+  gap: $spacing-md-alt;
   padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 11px;
+  border-radius: $radius-md;
+  background: var(--slate-800);
+  font-size: var(--font-11);
 
   .stamping-title {
+    color: var(--slate-200);
     font-weight: 600;
-    color: #e2e8f0;
   }
 
   .stamping-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
   }
 
   .coords-group {
     display: flex;
     align-items: center;
-    gap: 4px;
-    color: #94a3b8;
+    gap: $spacing-xs;
+    color: var(--slate-400);
   }
 
   .stamp-btn {
-    background: #d97706;
-    border: 1px solid #f59e0b;
-    color: #ffffff;
     padding: 3px 10px;
-    border-radius: 4px;
+    border: 1px solid var(--amber-dark);
+    border-radius: $radius-sm;
+    background: #d97706;
+    color: var(--white);
+    font-size: var(--font-11);
     font-weight: bold;
     cursor: pointer;
-    font-size: 11px;
 
     &:hover:not(:disabled) {
-      background: #b45309;
+      background: var(--amber-dark);
     }
   }
 
   .stamp-feedback {
-    color: #a7f3d0;
-    font-size: 11px;
+    color: var(--green-light);
+    font-size: var(--font-11);
   }
 }
 
@@ -816,20 +843,20 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 6px;
-  padding: 12px;
-  overflow: auto;
   min-height: 380px;
+  padding: 12px;
+  border: 1px solid var(--slate-800);
+  border-radius: $radius-md;
+  background: #020617;
+  overflow: auto;
 
   .map-canvas {
-    image-rendering: pixelated;
     max-width: 100%;
     max-height: 520px;
-    border: 2px solid #3b82f6;
-    border-radius: 4px;
-    box-shadow: 0 4px 14px Rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--blue-500);
+    border-radius: $radius-sm;
+    image-rendering: pixelated;
+    box-shadow: var(--shadow-card);
   }
 }
 
@@ -837,31 +864,31 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
-  background: #090d16;
-  border: 1px solid #1e293b;
+  gap: $spacing-md-lg;
   padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 11px;
+  border: 1px solid var(--slate-800);
+  border-radius: $radius-md;
+  background: #090d16;
+  font-size: var(--font-11);
 
   .diag-col {
     display: flex;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .diag-label {
-      color: #64748b;
+      color: var(--slate-500);
     }
 
     .diag-value {
+      color: var(--slate-100);
       font-weight: bold;
-      color: #f1f5f9;
 
       &.text-green {
-        color: #4ade80;
+        color: var(--green-light);
       }
 
       &.text-cyan {
-        color: #38bdf8;
+        color: var(--sky);
       }
     }
   }
@@ -869,49 +896,49 @@ onMounted(() => {
   .legend-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-left: auto;
 
     .legend-badge {
       padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 10px;
+      border-radius: $radius-xs-alt;
+      font-size: var(--font-10);
       font-weight: bold;
 
       &.leg-walkable {
-        background: Rgba(34, 197, 94, 0.2);
-        color: #4ade80;
-        border: 1px solid #22c55e;
+        border: 1px solid var(--emerald);
+        background: Rgb(34 197 94 / 20%);
+        color: var(--green-light);
       }
 
       &.leg-solid {
-        background: Rgba(239, 68, 68, 0.2);
-        color: #f87171;
-        border: 1px solid #ef4444;
+        border: 1px solid var(--red-light);
+        background: Rgb(239 68 68 / 20%);
+        color: var(--rose);
       }
 
       &.leg-water {
-        background: Rgba(59, 130, 246, 0.2);
-        color: #60a5fa;
-        border: 1px solid #3b82f6;
+        border: 1px solid var(--blue-500);
+        background: Rgb(59 130 246 / 20%);
+        color: var(--blue-400);
       }
 
       &.leg-ledge {
-        background: Rgba(234, 179, 8, 0.2);
-        color: #fde047;
-        border: 1px solid #eab308;
+        border: 1px solid var(--amber-dark);
+        background: Rgb(234 179 8 / 20%);
+        color: var(--amber-300);
       }
 
       &.leg-warp {
-        background: Rgba(234, 179, 8, 0.25);
-        color: #facc15;
-        border: 1px solid #ca8a04;
+        border: 1px solid var(--amber-dark);
+        background: Rgb(234 179 8 / 25%);
+        color: var(--amber-400);
       }
 
       &.leg-spawn {
-        background: Rgba(6, 182, 212, 0.25);
-        color: #22d3ee;
         border: 1px solid #0891b2;
+        background: Rgb(6 182 212 / 25%);
+        color: var(--cyan);
       }
     }
   }

@@ -18,15 +18,15 @@
     align-self: flex-start;
     padding: 3px 8px;
     background: var(--color-accent-blue);
-    color: #ffffff;
-    font-size: 7.5px;
+    color: var(--white);
+    font-size: var(--font-8);
     font-weight: bold;
     line-height: 1.35;
     --frame-border: Rgba(0, 0, 0, 0.4);
   }
 
   .dialog-text {
-    font-size: 9px;
+    font-size: var(--font-9);
     color: var(--color-text-main);
     line-height: 1.45;
   }
@@ -35,7 +35,7 @@
     position: absolute;
     bottom: 8px;
     right: 14px;
-    font-size: 8px;
+    font-size: var(--font-8);
     color: var(--color-text-gold);
   }
 }
@@ -55,7 +55,7 @@
   }
 
   .pv-window-title {
-    font-size: 9.5px;
+    font-size: var(--font-10);
     color: var(--color-text-gold);
     display: flex;
     align-items: center;
@@ -66,24 +66,24 @@
   .pv-window-close {
     width: 20px;
     height: 20px;
-    background: #dc2626;
+    background: var(--red-600);
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    --frame-border: #b91c1c;
+    --frame-border: var(--red-600);
 
     &:hover {
-      background: #ef4444;
-      --frame-border: #f87171;
+      background: var(--red-light);
+      --frame-border: var(--rose);
     }
   }
 
   .pv-data-row {
     display: flex;
     justify-content: space-between;
-    font-size: 8px;
+    font-size: var(--font-8);
     padding: 4px 8px;
     border-left: 3px solid;
     background: var(--color-surface-sunken);

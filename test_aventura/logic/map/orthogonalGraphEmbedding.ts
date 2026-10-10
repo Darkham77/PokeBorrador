@@ -22,29 +22,47 @@ import type {
   EmbeddedTopologyGraph
 } from '../../types/map/pokemonGraphTypes.ts';
 
+import { createMulberry32 } from './noise/simplexNoise.ts';
+import {
+  LARGE_MAP_THRESHOLD_TILES,
+  LARGE_MAP_MARGIN_RATIO,
+  STANDARD_MAP_MARGIN_RATIO,
+  CLUSTER_SINE_AMPLITUDE,
+  LARGE_GRID_X_THRESHOLD,
+  LEAGUE_LARGE_WIDTH,
+  LEAGUE_NORMAL_WIDTH,
+  LEAGUE_LARGE_HEIGHT,
+  LEAGUE_NORMAL_HEIGHT,
+  CITY_LARGE_WIDTH,
+  CITY_NORMAL_WIDTH,
+  CITY_LARGE_HEIGHT,
+  CITY_NORMAL_HEIGHT,
+  STARTER_LARGE_WIDTH,
+  STARTER_NORMAL_WIDTH,
+  STARTER_LARGE_HEIGHT,
+  STARTER_NORMAL_HEIGHT,
+  DEFAULT_LARGE_NODE_DIMENSION,
+  HASH_PRIME_FACTOR,
+  JOG_PRNG_FACTOR_X,
+  JOG_PRNG_OFFSET,
+  CORRIDOR_JOG_MIN_LENGTH,
+  CORRIDOR_JOG_DIST,
+  CORRIDOR_SPLIT_PRIMARY_RATIO,
+  CORRIDOR_SPLIT_SECONDARY_RATIO,
+  CORNER_NODE_COLLISION_PENALTY
+} from '../../config/graphEmbeddingConfig.ts';
+
 // ---------------------------------------------------------------------------
 // Configuration Constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_MAP_WIDTH = 400;
-const DEFAULT_MAP_HEIGHT = 400;
+const DEFAULT_EMBEDDING_MAP_WIDTH = 400;
+const DEFAULT_EMBEDDING_MAP_HEIGHT = 400;
 const DEFAULT_MARGIN = 16;
 const DEFAULT_NODE_SIZE = 8; // 8x8 default urban footprint
 const MAX_JITTER_TILES = 3;
 
-// ---------------------------------------------------------------------------
-// Deterministic Mulberry32 PRNG
-// ---------------------------------------------------------------------------
-
-function createPRNG(seed: number): () => number {
-  let s = (seed >>> 0) || 1;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+const createPRNG = createMulberry32;
 
 // ---------------------------------------------------------------------------
 // Grid Coordinate Interfaces
@@ -74,13 +92,13 @@ export function computeBandGrid(
     else rows++;
   }
 
-  const isLarge = Math.min(width, height) >= 256;
+  const isLarge = Math.min(width, height) >= LARGE_MAP_THRESHOLD_TILES;
   if (isLarge) {
     cols = Math.max(5, cols);
     rows = Math.max(5, rows);
   }
 
-  const margin = Math.max(DEFAULT_MARGIN, Math.round(Math.min(width, height) * (isLarge ? 0.15 : 0.08)));
+  const margin = Math.max(DEFAULT_MARGIN, Math.round(Math.min(width, height) * (isLarge ? LARGE_MAP_MARGIN_RATIO : STANDARD_MAP_MARGIN_RATIO)));
   const usableWidth = width - 2 * margin;
   const usableHeight = height - 2 * margin;
 
@@ -93,7 +111,7 @@ export function computeBandGrid(
     // peripheral adventure routes (Cycling Road, Victory Road, Surf channels).
     const getClusteredFraction = (i: number, n: number): number => {
       const t = i / (n - 1);
-      return Math.max(0, Math.min(1, t + 0.08 * Math.sin(2 * Math.PI * t)));
+      return Math.max(0, Math.min(1, t + CLUSTER_SINE_AMPLITUDE * Math.sin(2 * Math.PI * t)));
     };
     for (let c = 0; c < cols; c++) {
       colX.push(Math.round(margin + getClusteredFraction(c, cols) * usableWidth));
@@ -128,7 +146,7 @@ function cellKey(col: number, row: number): string {
   return `${col},${row}`;
 }
 
-export function assignNodesToBands(
+function assignNodesToBands(
   graph: PokemonTopologyGraph,
   bandGrid: BandGridConfig,
   prng: () => number
@@ -266,20 +284,20 @@ function embedNodes(
     let width = DEFAULT_NODE_SIZE;
     let height = DEFAULT_NODE_SIZE;
 
-    const isLarge = (bandGrid.colX[bandGrid.cols - 1] ?? 0) >= 200;
+    const isLarge = (bandGrid.colX[bandGrid.cols - 1] ?? 0) >= LARGE_GRID_X_THRESHOLD;
 
     if (node.role === 'league') {
-      width = isLarge ? 28 : 22;
-      height = isLarge ? 24 : 20;
+      width = isLarge ? LEAGUE_LARGE_WIDTH : LEAGUE_NORMAL_WIDTH;
+      height = isLarge ? LEAGUE_LARGE_HEIGHT : LEAGUE_NORMAL_HEIGHT;
     } else if (node.role === 'gym_city' || node.role === 'port_city') {
-      width = isLarge ? 22 : 16;
-      height = isLarge ? 18 : 14;
+      width = isLarge ? CITY_LARGE_WIDTH : CITY_NORMAL_WIDTH;
+      height = isLarge ? CITY_LARGE_HEIGHT : CITY_NORMAL_HEIGHT;
     } else if (node.role === 'starter') {
-      width = isLarge ? 16 : 12;
-      height = isLarge ? 14 : 12;
+      width = isLarge ? STARTER_LARGE_WIDTH : STARTER_NORMAL_WIDTH;
+      height = isLarge ? STARTER_LARGE_HEIGHT : STARTER_NORMAL_HEIGHT;
     } else if (isLarge) {
-      width = 10;
-      height = 10;
+      width = DEFAULT_LARGE_NODE_DIMENSION;
+      height = DEFAULT_LARGE_NODE_DIMENSION;
     }
 
     const gridX = Math.round(centerX - width / 2);
@@ -308,7 +326,7 @@ function embedNodes(
 function hashId(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) {
-    h = (h * 31 + id.charCodeAt(i)) | 0;
+    h = (h * HASH_PRIME_FACTOR + id.charCodeAt(i)) | 0;
   }
   return Math.abs(h);
 }
@@ -329,13 +347,13 @@ function rasterizeOrthogonalSegment(
     const step = y1 <= y2 ? 1 : -1;
 
     // Introduce an organic GBA step-jog for long stretches (>= 36 tiles)
-    if (len >= 36 && jogSeed !== undefined) {
-      const prngVal = Math.sin(jogSeed * 12.9898 + 78.233);
+    if (len >= CORRIDOR_JOG_MIN_LENGTH && jogSeed !== undefined) {
+      const prngVal = Math.sin(jogSeed * JOG_PRNG_FACTOR_X + JOG_PRNG_OFFSET);
       const preferredDir = prngVal > 0 ? 1 : -1;
-      const jogDist = 4 * preferredDir;
+      const jogDist = CORRIDOR_JOG_DIST * preferredDir;
 
-      const ySplit1 = Math.round(y1 + step * Math.floor(len * 0.35));
-      const ySplit2 = Math.round(y1 + step * Math.floor(len * 0.65));
+      const ySplit1 = Math.round(y1 + step * Math.floor(len * CORRIDOR_SPLIT_PRIMARY_RATIO));
+      const ySplit2 = Math.round(y1 + step * Math.floor(len * CORRIDOR_SPLIT_SECONDARY_RATIO));
       const targetX = x1 + jogDist;
 
       const collides = forbiddenBoxes?.some(
@@ -378,13 +396,13 @@ function rasterizeOrthogonalSegment(
     const step = x1 <= x2 ? 1 : -1;
 
     // Introduce an organic GBA step-jog for long stretches (>= 36 tiles)
-    if (len >= 36 && jogSeed !== undefined) {
-      const prngVal = Math.sin(jogSeed * 12.9898 + 78.233);
+    if (len >= CORRIDOR_JOG_MIN_LENGTH && jogSeed !== undefined) {
+      const prngVal = Math.sin(jogSeed * JOG_PRNG_FACTOR_X + JOG_PRNG_OFFSET);
       const preferredDir = prngVal > 0 ? 1 : -1;
-      const jogDist = 4 * preferredDir;
+      const jogDist = CORRIDOR_JOG_DIST * preferredDir;
 
-      const xSplit1 = Math.round(x1 + step * Math.floor(len * 0.35));
-      const xSplit2 = Math.round(x1 + step * Math.floor(len * 0.65));
+      const xSplit1 = Math.round(x1 + step * Math.floor(len * CORRIDOR_SPLIT_PRIMARY_RATIO));
+      const xSplit2 = Math.round(x1 + step * Math.floor(len * CORRIDOR_SPLIT_SECONDARY_RATIO));
       const targetY = y1 + jogDist;
 
       const collides = forbiddenBoxes?.some(
@@ -518,7 +536,7 @@ function traceCorridor(
         corner.y >= n.gridY &&
         corner.y < n.gridY + n.height
       ) {
-        count += 10;
+        count += CORNER_NODE_COLLISION_PENALTY;
       }
     }
     return count;
@@ -567,8 +585,8 @@ export function embedPokemonTopology(
   graph: PokemonTopologyGraph,
   options?: OrthogonalEmbeddingOptions
 ): EmbeddedTopologyGraph {
-  const width = options?.width ?? DEFAULT_MAP_WIDTH;
-  const height = options?.height ?? DEFAULT_MAP_HEIGHT;
+  const width = options?.width ?? DEFAULT_EMBEDDING_MAP_WIDTH;
+  const height = options?.height ?? DEFAULT_EMBEDDING_MAP_HEIGHT;
   const seed = options?.seed ?? graph.seed;
   const prng = createPRNG(seed);
 

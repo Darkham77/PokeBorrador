@@ -12,7 +12,8 @@ Game Prototyping / Adventure Suite.
 
 ## Key Files
 
-- [`animations.css`](./animations.css): Encapsulated CSS keyframe animations for prototype elements.
+- [`animations.scss`](./animations.scss): Encapsulated SCSS keyframe animations for prototype elements.
+- [`modals.scss`](./modals.scss): Encapsulated modal styles for prototype interface dialogs.
 
 ## Work Guidance
 

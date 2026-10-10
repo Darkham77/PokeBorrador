@@ -62,6 +62,7 @@ const selectTab = (tabId: string) => {
         <nav class="library-nav custom-scrollbar-vicio">
           <div
             v-for="cat in libraryCategories"
+            id="library-modal-div-1"
             :key="cat.id"
             class="library-nav-item"
             :class="{ active: selectedTab === cat.id }"
@@ -155,12 +156,12 @@ const selectTab = (tabId: string) => {
 
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
     padding: 12px 16px; // Ajustado
     border: 1px solid transparent;
-    border-radius: 10px;
+    border-radius: $radius-lg-alt;
     color: var(--gray, #94a3b8);
-    font-size: 12px;
+    font-size: var(--font-12);
     font-weight: 400;
     line-height: 1.2;
     margin-bottom: 6px;
@@ -180,7 +181,7 @@ const selectTab = (tabId: string) => {
       background: Rgb(250 204 21 / 10%);
       color: var(--yellow);
       border-color: Rgb(250 204 21 / 30%);
-      box-shadow: 0 4px 15px Rgb(0 0 0 / 20%);
+      box-shadow: var(--shadow-md);
     }
 
     @media (width <= 900px) {
@@ -206,13 +207,13 @@ const selectTab = (tabId: string) => {
 
   width: 100%;
   padding: 24px 32px;
-  color: #ddd;
-  font-size: 8px;
+  color: var(--slate-200);
+  font-size: var(--font-8);
   line-height: 1.8;
 
   :deep(h1) {
     color: var(--yellow);
-    font-size: 12px;
+    font-size: var(--font-12);
     margin-bottom: 24px;
     text-shadow: 3px 3px 0 Rgb(0 0 0 / 80%);
   }
@@ -220,7 +221,7 @@ const selectTab = (tabId: string) => {
   :deep(h3) {
     margin: 32px 0 16px;
     color: var(--purple, $purple);
-    font-size: 10px;
+    font-size: var(--font-10);
     font-weight: 800;
     text-shadow: 2px 2px 0 Rgb(0 0 0 / 50%);
   }
@@ -248,7 +249,7 @@ const selectTab = (tabId: string) => {
     width: 100%;
     margin: 24px 0;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(255 255 255 / 2%);
     border-collapse: separate;
     border-spacing: 0;
@@ -265,7 +266,7 @@ const selectTab = (tabId: string) => {
 
       background: Rgb(255 255 255 / 5%);
       color: var(--yellow);
-      font-size: 10px;
+      font-size: var(--font-10);
       text-transform: uppercase;
     }
     
@@ -276,20 +277,16 @@ const selectTab = (tabId: string) => {
     td {
       @extend %cell-base;
 
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 
   :deep(.class-info-box) {
     padding: 24px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(255 255 255 / 3%);
     margin-bottom: 24px;
   }
 }
 </style>
-
-
-
-

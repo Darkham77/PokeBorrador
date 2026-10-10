@@ -96,7 +96,7 @@ export default tseslint.config(
     'external/**',
     'supabase/**',
     'tests/**',
-    'test_aventura/**',
+    'test_aventura/tests/**',
     'vitest.config.ts',
   ]),
 );

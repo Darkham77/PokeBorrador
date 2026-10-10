@@ -6,7 +6,6 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 
-
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import BCShopItemCard from './bc-shop/BCShopItemCard.vue'
 
@@ -207,7 +206,7 @@ const close = () => {
 .modal-main-tabs {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   margin-bottom: 16px;
 }
 
@@ -215,15 +214,15 @@ const close = () => {
   @include pixelated;
 
   padding: 6px 14px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 8px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-lg;
+  background: Rgb(255 255 255 / 3%);
   color: var(--gray);
-  font-size: 11px;
+  font-size: var(--font-11);
   cursor: pointer;
 
   &:hover {
-    background: rgb(255 255 255 / 6%);
+    background: Rgb(255 255 255 / 6%);
     color: var(--white);
   }
 
@@ -231,7 +230,7 @@ const close = () => {
     background: var(--purple);
     color: var(--white);
     border-color: var(--purple-light);
-    box-shadow: 0 0 8px rgb(168 85 247 / 40%);
+    box-shadow: var(--shadow-glow-yellow-sm);
     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   }
 }

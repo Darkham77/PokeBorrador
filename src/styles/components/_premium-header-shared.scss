@@ -4,14 +4,14 @@
 .header-left {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
 
   .header-main-title {
     @include pixelated;
 
     margin: 0;
     color: var(--white);
-    font-size: 10px;
+    font-size: var(--font-10);
     letter-spacing: 2px;
   }
 
@@ -20,7 +20,7 @@
 
     margin: 0;
     color: var(--gray);
-    font-size: 7px;
+    font-size: var(--font-7);
     opacity: 0.6;
   }
 }
@@ -28,28 +28,28 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
 }
 
 .integrated-badge {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   padding: 6px 16px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 12px;
-  background: rgb(0 0 0 / 30%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-xl;
+  background: Rgb(0 0 0 / 30%);
 
   .badge-divider {
     width: 1px;
     height: 14px;
-    background: rgb(255 255 255 / 10%);
+    background: Rgb(255 255 255 / 10%);
   }
 }
 
 @include responsive(hud-mobile) {
   .header-left {
-    .header-main-title { font-size: 8px; }
-    .header-sub-title { font-size: 6px; }
+    .header-main-title { font-size: var(--font-8); }
+    .header-sub-title { font-size: var(--font-6); }
   }
 }

@@ -51,11 +51,11 @@ const eventAction = computed<EventTypeAction>(() => {
   >
     <div
       v-if="activeEvent"
-      style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-pixel); font-size: 8px; text-align: center;"
+      style="display: flex; flex-direction: column; gap: $spacing-md; font-family: var(--font-pixel); font-size: var(--font-8); text-align: center;"
     >
       <p
         class="adv-event-desc"
-        style=" margin: 0; color: #c5c6c7;line-height: 1.7;"
+        style=" margin: 0; color: var(--slate-300);line-height: 1.7;"
       >
         {{ activeEvent.desc }}
       </p>
@@ -74,7 +74,7 @@ const eventAction = computed<EventTypeAction>(() => {
         v-if="activeEvent.type === 'combat_won'"
         id="adv-event-resume-btn"
         class="btn-vicio-primary"
-        style="width: 100%; padding: 10px; font-size: 8px;"
+        style="width: 100%; padding: 10px; font-size: var(--font-8);"
         @click="emit('resume')"
       >
         <span class="emoji">🚶</span> Continuar Viaje
@@ -84,7 +84,7 @@ const eventAction = computed<EventTypeAction>(() => {
           v-if="!activeEvent.moRequired || activeHMs.has(activeEvent.moRequired)"
           id="adv-event-resolve-btn"
           class="btn-vicio-primary"
-          style="width: 100%; padding: 10px; font-size: 8px;"
+          style="width: 100%; padding: 10px; font-size: var(--font-8);"
           @click="emit('resolve')"
         >
           <span class="emoji">{{ eventAction.emoji }}</span>
@@ -94,7 +94,7 @@ const eventAction = computed<EventTypeAction>(() => {
           v-else
           id="adv-event-bypass-btn"
           class="btn-vicio-secondary"
-          style="width: 100%; padding: 10px; font-size: 8px;"
+          style="width: 100%; padding: 10px; font-size: var(--font-8);"
           @click="emit('resolve')"
         >
           <span class="emoji">🚶</span> Rodear Obstáculo

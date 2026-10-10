@@ -57,7 +57,7 @@ const emit = defineEmits<{
 
 .admin-note {
   color: var(--yellow);
-  font-size: 10px;
+  font-size: var(--font-10);
   line-height: 1.4;
   opacity: 0.8;
   margin-top: 10px;
@@ -67,13 +67,13 @@ const emit = defineEmits<{
   width: 100%;
   padding: 16px;
   border: 1px solid Rgb(239 68 68 / 40%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(239 68 68 / 10%);
   color: $white;
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: var(--font-10);
   font-weight: bold;
-  box-shadow: 0 4px 0 Rgb(0 0 0 / 30%);
+  box-shadow: $shadow-retro-btn;
   cursor: pointer;
   
 
@@ -81,7 +81,7 @@ const emit = defineEmits<{
     background: $white;
     color: Rgb(239 68 68 / 100%);
     transform: Translatey(-2px);
-    box-shadow: 0 6px 0 Rgb(0 0 0 / 20%);
+    box-shadow: $shadow-retro-btn-hover;
     border-color: $white;
   }
 }
@@ -95,7 +95,7 @@ const emit = defineEmits<{
     background: Rgb(255 255 255 / 15%);
     color: $white;
     border-color: Rgb(255 255 255 / 50%);
-    box-shadow: 0 6px 0 Rgb(0 0 0 / 20%);
+    box-shadow: $shadow-retro-btn-hover;
   }
 }
 </style>

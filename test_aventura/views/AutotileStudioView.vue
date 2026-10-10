@@ -27,11 +27,21 @@ import { preloadTileImages } from '../logic/map/canvasImageLoader.ts';
 import AutotilePatchCard from '../components/studio/AutotilePatchCard.vue';
 import AutotileReportModal from '../components/studio/AutotileReportModal.vue';
 
+const DEFAULT_PATCH_INSPECTION_LIMIT = 48;
+const RANDOM_SEED_RANGE = 900000;
+const RANDOM_SEED_MIN = 1000;
+
+const PATCH_RADIUS_OPTIONS = [
+  { radius: 1, label: '3×3' },
+  { radius: 2, label: '5×5 (Contexto)' },
+  { radius: 3, label: '7×7 (Gran Macizo)' }
+] as const;
+
 const router = useRouter();
 const store = useRegionalContinentStudioStore();
 
 const patchRadius = ref<1 | 2 | 3>(1); // 1 = 3x3, 2 = 5x5, 3 = 7x7 (default: 3x3)
-const patchLimit = ref<number>(48); // default: 48 (expanded mountain inspection)
+const patchLimit = ref<number>(DEFAULT_PATCH_INSPECTION_LIMIT); // default: 48 (expanded mountain inspection)
 const selectedCategory = ref<RealPatchCategory>('all');
 const selectedMountainSubtype = ref<MountainPatchSubtype>('all');
 const showOnlyFlagged = ref<boolean>(false);
@@ -152,7 +162,7 @@ const mountainSubtypeOptions: readonly { readonly id: MountainPatchSubtype; read
 
 const reportList = computed<readonly AutotileErrorReport[]>(() => {
   return Array.from(errorReports.value.values()).sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    (a, b) => Temporal.Instant.from(b.timestamp).epochMilliseconds - Temporal.Instant.from(a.timestamp).epochMilliseconds
   );
 });
 
@@ -188,7 +198,7 @@ function handleToggleCellFlag(payload: {
       currentTile: payload.cell.filename,
       layerStack: payload.cell.layerStack,
       neighborhood,
-      timestamp: new Date().toISOString()
+      timestamp: Temporal.Now.instant().toString()
     };
     nextMap.set(key, newReport);
   }
@@ -211,7 +221,7 @@ function handleEditCellNote(payload: {
     const rep = errorReports.value.get(key);
     if (rep) {
       const nextMap = new Map(errorReports.value);
-      nextMap.set(key, { ...rep, timestamp: new Date().toISOString() });
+      nextMap.set(key, { ...rep, timestamp: Temporal.Now.instant().toString() });
       errorReports.value = nextMap;
     }
   }
@@ -237,7 +247,7 @@ function handleClearAll(): void {
 }
 
 function randomizeSeed(): void {
-  store.seed = Math.floor(Math.random() * 900000) + 1000;
+  store.seed = Math.floor(Math.random() * RANDOM_SEED_RANGE) + RANDOM_SEED_MIN;
   store.executeGenerationNow();
 }
 
@@ -256,6 +266,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
     <header class="studio-topbar">
       <div class="brand-section">
         <button
+          id="btn-autotile-back"
           type="button"
           class="back-btn"
           title="Volver a Continent Studio"
@@ -272,6 +283,8 @@ const categoryLabels: Record<RealPatchCategory, string> = {
       <div class="seed-controls">
         <span class="seed-badge">Semilla: #{{ store.seed }}</span>
         <button
+          id="btn-autotile-randomize-seed"
+          v-gsap-hover="'button'"
           type="button"
           class="action-btn"
           title="Generar nueva región con semilla aleatoria"
@@ -285,28 +298,15 @@ const categoryLabels: Record<RealPatchCategory, string> = {
       <!-- Patch Radius Selector (3x3 vs 5x5 vs 7x7) -->
       <div class="radius-toggle-group">
         <button
+          v-for="opt in PATCH_RADIUS_OPTIONS"
+          :id="`btn-radius-${opt.radius}`"
+          :key="opt.radius"
           type="button"
           class="radius-btn"
-          :class="{ active: patchRadius === 1 }"
-          @click="patchRadius = 1"
+          :class="{ active: patchRadius === opt.radius }"
+          @click="patchRadius = opt.radius"
         >
-          3×3
-        </button>
-        <button
-          type="button"
-          class="radius-btn"
-          :class="{ active: patchRadius === 2 }"
-          @click="patchRadius = 2"
-        >
-          5×5 (Contexto)
-        </button>
-        <button
-          type="button"
-          class="radius-btn"
-          :class="{ active: patchRadius === 3 }"
-          @click="patchRadius = 3"
-        >
-          7×7 (Gran Macizo)
+          {{ opt.label }}
         </button>
       </div>
 
@@ -315,6 +315,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
         <span class="limit-label">Mostrar:</span>
         <button
           v-for="lim in [16, 32, 48, 64, 96, 128]"
+          :id="`btn-limit-${lim}`"
           :key="lim"
           type="button"
           class="limit-btn"
@@ -327,6 +328,8 @@ const categoryLabels: Record<RealPatchCategory, string> = {
 
       <!-- Report Button -->
       <button
+        id="btn-autotile-report"
+        v-gsap-hover="'button'"
         type="button"
         class="report-cta-btn"
         :class="{ 'has-errors': flaggedCount > 0 }"
@@ -342,7 +345,9 @@ const categoryLabels: Record<RealPatchCategory, string> = {
       <div class="category-filters">
         <button
           v-for="cat in REAL_PATCH_CATEGORIES"
+          :id="`btn-category-${cat}`"
           :key="cat"
+          v-gsap-hover="'pill'"
           type="button"
           class="filter-chip"
           :class="{ active: selectedCategory === cat }"
@@ -355,6 +360,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
       <div class="toolbar-toggles">
         <label class="toggle-label">
           <input
+            id="checkbox-only-flagged"
             v-model="showOnlyFlagged"
             type="checkbox"
             class="toggle-checkbox"
@@ -375,7 +381,9 @@ const categoryLabels: Record<RealPatchCategory, string> = {
       <div class="mountain-subfilter-chips">
         <button
           v-for="sub in mountainSubtypeOptions"
+          :id="`btn-mountain-sub-${sub.id}`"
           :key="sub.id"
+          v-gsap-hover="'pill'"
           type="button"
           class="subfilter-chip"
           :class="{ active: selectedMountainSubtype === sub.id }"
@@ -431,318 +439,313 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .autotile-studio-view {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-height: 100dvh;
   min-height: 0;
+  max-height: 100dvh;
   background: #090d16;
-  color: #f1f5f9;
-  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--slate-100);
+  font-family: $font-family-sans;
   overflow: hidden;
   touch-action: auto;
 }
 
 .studio-topbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background: #0f172a;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
-  gap: 16px;
   flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-lg;
+  padding: 10px 20px;
+  background: var(--slate-900);
+  border-bottom: 1px solid Rgb(255 255 255 / 10%);
   flex-shrink: 0;
 }
 
 .brand-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .back-btn {
-  background: Rgba(255, 255, 255, 0.08);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  color: #94a3b8;
-  border-radius: 6px;
   padding: 6px 12px;
-  font-size: 12px;
-  cursor: pointer;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-md;
+  background: Rgb(255 255 255 / 8%);
+  color: var(--slate-400);
+  font-size: var(--font-12);
   font-weight: 500;
+  cursor: pointer;
 }
 
 .back-btn:hover {
-  background: Rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: Rgb(255 255 255 / 15%);
+  color: var(--white);
 }
 
 .page-title {
-  font-size: 15px;
-  font-weight: 700;
   margin: 0;
-  color: #38bdf8;
+  color: var(--sky);
+  font-size: var(--font-15);
+  font-weight: 700;
 }
 
 .seed-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .seed-badge {
-  font-family: monospace;
-  font-size: 12px;
-  font-weight: 700;
   padding: 4px 8px;
-  background: Rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
-  border: 1px solid Rgba(56, 189, 248, 0.3);
-  border-radius: 6px;
+  border: 1px solid Rgb(56 189 248 / 30%);
+  border-radius: $radius-md;
+  background: Rgb(56 189 248 / 15%);
+  color: var(--sky);
+  font-family: monospace;
+  font-size: var(--font-12);
+  font-weight: 700;
 }
 
 .action-btn {
-  background: Rgba(255, 255, 255, 0.1);
-  border: 1px solid Rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border-radius: 6px;
   padding: 6px 12px;
-  font-size: 12px;
-  cursor: pointer;
+  border: 1px solid Rgb(255 255 255 / 20%);
+  border-radius: $radius-md;
+  background: Rgb(255 255 255 / 10%);
+  color: var(--white);
+  font-size: var(--font-12);
   font-weight: 600;
-  transition: background 0.15s ease;
+  cursor: pointer;
 }
 
 .action-btn:hover:not(:disabled) {
-  background: Rgba(255, 255, 255, 0.2);
+  background: Rgb(255 255 255 / 20%);
 }
 
 .radius-toggle-group {
   display: flex;
-  background: Rgba(0, 0, 0, 0.4);
-  border-radius: 6px;
   padding: 2px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-md;
+  background: Rgb(0 0 0 / 40%);
 }
 
 .radius-btn {
   padding: 4px 10px;
-  background: none;
   border: none;
-  border-radius: 4px;
-  color: #94a3b8;
-  font-size: 11px;
+  border-radius: $radius-sm;
+  background: none;
+  color: var(--slate-400);
+  font-size: var(--font-11);
   font-weight: 600;
   cursor: pointer;
 }
 
 .radius-btn.active {
-  background: #0284c7;
-  color: #fff;
+  background: var(--sky-dark);
+  color: var(--white);
 }
 
 .limit-toggle-group {
   display: flex;
   align-items: center;
-  background: Rgba(0, 0, 0, 0.4);
-  border-radius: 6px;
+  gap: $spacing-xs-alt;
   padding: 2px 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  gap: 3px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-md;
+  background: Rgb(0 0 0 / 40%);
 }
 
 .limit-label {
-  font-size: 11px;
-  color: #94a3b8;
+  color: var(--slate-400);
+  font-size: var(--font-11);
   font-weight: 600;
   margin-right: 2px;
 }
 
 .limit-btn {
   padding: 3px 6px;
-  background: none;
   border: none;
-  border-radius: 4px;
-  color: #94a3b8;
-  font-size: 11px;
+  border-radius: $radius-sm;
+  background: none;
+  color: var(--slate-400);
+  font-size: var(--font-11);
   font-weight: 600;
   cursor: pointer;
 }
 
 .limit-btn:hover {
-  color: #fff;
+  color: var(--white);
 }
 
 .limit-btn.active {
-  background: #0284c7;
-  color: #fff;
+  background: var(--sky-dark);
+  color: var(--white);
 }
 
 
 .report-cta-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 8px 16px;
-  background: Rgba(255, 255, 255, 0.08);
-  border: 1px solid Rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 13px;
+  border: 1px solid Rgb(255 255 255 / 20%);
+  border-radius: $radius-md;
+  background: Rgb(255 255 255 / 8%);
+  color: var(--white);
+  font-size: var(--font-13);
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease;
 }
 
 .report-cta-btn:hover {
-  background: Rgba(255, 255, 255, 0.15);
+  background: Rgb(255 255 255 / 15%);
 }
 
 .report-cta-btn.has-errors {
-  background: #dc2626;
-  border-color: #ef4444;
+  background: var(--red-600);
+  border-color: var(--red-light);
 }
 
 .count-badge {
-  background: Rgba(0, 0, 0, 0.4);
   padding: 1px 6px;
-  border-radius: 10px;
-  font-size: 11px;
+  border-radius: $radius-lg-alt;
+  background: Rgb(0 0 0 / 40%);
+  font-size: var(--font-11);
 }
 
 .studio-toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 20px;
-  background: Rgba(15, 23, 42, 0.6);
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
-  gap: 16px;
   flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-lg;
+  padding: 8px 20px;
+  background: Rgb(15 23 42 / 60%);
+  border-bottom: 1px solid Rgb(255 255 255 / 6%);
   flex-shrink: 0;
 }
 
 .category-filters {
   display: flex;
-  align-items: center;
-  gap: 6px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-sm-alt;
 }
 
 .filter-chip {
   padding: 5px 12px;
-  border-radius: 12px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
-  font-size: 12px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 5%);
+  color: var(--slate-400);
+  font-size: var(--font-12);
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
 .filter-chip:hover {
-  background: Rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: Rgb(255 255 255 / 12%);
+  color: var(--white);
 }
 
 .filter-chip.active {
-  background: Rgba(56, 189, 248, 0.2);
-  border-color: #38bdf8;
-  color: #38bdf8;
+  background: Rgb(56 189 248 / 20%);
+  color: var(--sky);
   font-weight: 600;
+  border-color: var(--sky);
 }
 
 .toggle-label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #cbd5e1;
+  gap: $spacing-sm-alt;
+  color: var(--slate-300);
+  font-size: var(--font-12);
   cursor: pointer;
   user-select: none;
 }
 
 .mountain-subfilter-toolbar {
   display: flex;
-  align-items: center;
-  padding: 8px 20px;
-  background: Rgba(30, 41, 59, 0.85);
-  border-bottom: 1px solid Rgba(245, 158, 11, 0.25);
-  gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-md;
+  padding: 8px 20px;
+  background: Rgb(30 41 59 / 85%);
+  border-bottom: 1px solid Rgb(245 158 11 / 25%);
   flex-shrink: 0;
 }
 
 .mountain-subfilter-label {
-  font-size: 11px;
+  color: var(--amber);
+  font-size: var(--font-11);
   font-weight: 700;
-  color: #fbbf24;
 }
 
 .mountain-subfilter-chips {
   display: flex;
-  align-items: center;
-  gap: 6px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-sm-alt;
 }
 
 .subfilter-chip {
   padding: 3px 10px;
-  border-radius: 10px;
-  background: Rgba(255, 255, 255, 0.06);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  color: #cbd5e1;
-  font-size: 11px;
+  border: 1px solid Rgb(255 255 255 / 15%);
+  border-radius: $radius-lg-alt;
+  background: Rgb(255 255 255 / 6%);
+  color: var(--slate-300);
+  font-size: var(--font-11);
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
 .subfilter-chip:hover {
-  background: Rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: Rgb(255 255 255 / 15%);
+  color: var(--white);
 }
 
 .subfilter-chip.active {
-  background: Rgba(245, 158, 11, 0.25);
-  border-color: #fbbf24;
-  color: #fbbf24;
+  background: Rgb(245 158 11 / 25%);
+  color: var(--amber);
   font-weight: 700;
+  border-color: var(--amber);
 }
 
 
 .patches-container {
-  flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding: 16px 12px;
+  flex: 1 1 0;
+  overflow: hidden auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   overscroll-behavior-y: contain;
-  padding: 16px 12px;
 }
 
 .patches-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
   justify-content: center;
+  gap: $spacing-lg;
   width: 100%;
   box-sizing: border-box;
 }
 
 .loading-state,
 .no-results {
-  text-align: center;
   padding: 60px 20px;
-  color: #94a3b8;
-  font-size: 14px;
+  color: var(--slate-400);
+  font-size: var(--font-14);
+  text-align: center;
 }
 
 .loading-spinner {
-  font-size: 24px;
   display: block;
+  font-size: var(--font-24);
   margin-bottom: 10px;
 }
 </style>

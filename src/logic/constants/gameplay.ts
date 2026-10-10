@@ -12,8 +12,14 @@ export const MINIMUM_POKEMON_LEVEL = 1;
 export const MAXIMUM_POKEMON_LEVEL = 100;
 
 /** Generation number constants for generation-dependent battle mechanics and weather rules. */
+export const KANTO_GENERATION_NUM = 1;
+export const JOHTO_GENERATION_NUM = 2;
+export const HOENN_GENERATION_NUM = 3;
 export const SINNOH_GENERATION_NUM = 4;
+export const UNOVA_GENERATION_NUM = 5;
 export const KALOS_GENERATION_NUM = 6;
+export const ALOLA_GENERATION_NUM = 7;
+export const GALAR_GENERATION_NUM = 8;
 export const PALDEA_GENERATION_NUM = 9;
 
 /** Probability chance of a normal NPC trainer rewarding a baby egg upon victory (2%). */
@@ -131,11 +137,17 @@ export const LOW_HP_ABILITY_MULTIPLIER = 1.5;
 /** Technician ability maximum power threshold cap (60 BP). */
 export const TECHNICIAN_POWER_CAP = 60;
 
+/** Technician ability damage multiplier for moves at or under power cap (1.5x). */
+export const TECHNICIAN_BOOST_MULTIPLIER = 1.5;
+
 /** Sand Force ability power multiplier (1.3x). */
 export const SAND_FORCE_MULTIPLIER = 1.3;
 
 /** Held item type-boosting item damage multiplier (1.2x e.g. Charcoal, Mystic Water). */
 export const HELD_ITEM_TYPE_BOOST_MULTIPLIER = 1.2;
+
+/** Choice item stat boost multiplier (Choice Band, Choice Specs, Choice Scarf: 1.5x). */
+export const CHOICE_ITEM_STAT_MULTIPLIER = 1.5;
 
 /** Default base critical hit rate (6.25% or 1/16). */
 export const DEFAULT_CRIT_RATE = 0.0625;
@@ -232,8 +244,17 @@ export const BATTLE_STAGE_ACC_MULTIPLIERS: readonly number[] = [
 /** Maximum stat stage offset (+6 / -6). */
 export const BATTLE_MAX_STAGE_OFFSET = 6;
 
+/** Minimum battle stat stage (-6). */
+export const MIN_BATTLE_STAT_STAGE = -6;
+
+/** Maximum battle stat stage (+6). */
+export const MAX_BATTLE_STAT_STAGE = 6;
+
 /** Total stat stage count (13 stages from -6 to +6). */
 export const BATTLE_TOTAL_STAGES_COUNT = 13;
+
+/** Maximum possible IV (Individual Value) for a single stat in standard Pokémon mechanics. */
+export const MAX_STAT_IV = 31;
 
 
 // --- Box store constants ---
@@ -490,6 +511,30 @@ export const RANDOM_STRING_SUBSTRING_END = 11;
 
 /** Bug Catcher (Cazabichos) streak shiny boost multiplier step (+75% per streak). */
 export const CAZABICHOS_STREAK_SHINY_STEP = 0.75;
+
+/** Sentinel accuracy value used by Pokémon Showdown for moves that cannot miss (e.g. Aerial Ace). */
+export const ACCURACY_INFINITE_SENTINEL = 1000;
+
+/** Length of random room join codes in Casual Arena (4 characters). */
+export const ARENA_JOIN_CODE_LENGTH = 4;
+
+/** Maximum number of PC storage boxes a trainer can expand to (10 boxes). */
+export const MAX_POKEMON_BOX_PAGES_LIMIT = 10;
+
+/** Maximum holding quantity for standard bag items in inventory (999). */
+export const MAX_BAG_ITEM_QUANTITY = 999;
+
+/** Standard shop sellback price multiplier (50% of buying price). */
+export const SHOP_SELLBACK_PRICE_RATIO = 0.5;
+
+/** Standard multiplier factor for converting decimal fractions to integer percentages (100). */
+export const PERCENT_BASE_MULTIPLIER = 100;
+
+/** Total hours duration for the continuous in-game 4-phase day/night cycle (8 hours). */
+export const DAY_CYCLE_TOTAL_HOURS = 8;
+
+/** Upper bound hour limit for the dusk phase within the 8-hour day cycle (hour 6). */
+export const DUSK_PHASE_END_HOUR = 6;
 
 
 

@@ -1,3 +1,4 @@
+@use "../variables" as *;
 @use "../mixins/shell" as *;
 @use "../mixins/layout" as *;
 @use "../gpu" as *;
@@ -50,7 +51,7 @@
   border-radius: $radius; 
   background: Linear-Gradient(135deg, Rgb(30 41 59 / 80%), Rgb(15 23 42 / 95%)) !important;
   overflow: hidden; // Prevent corner bleeding
-  box-shadow: 0 4px 15px Rgb(0 0 0 / 40%), 0 0 10px Rgb(255 255 255 / 2%);
+  box-shadow: var(--shadow-md);
 
   &:hover:not(.locked) {
     &::before { opacity: 1; }
@@ -70,9 +71,8 @@
     background: Rgb(10 132 255 / 15%) !important;
     outline: none;
     border-color: transparent !important;
-    box-shadow: 
-      inset 0 0 0 4px var(--blue),
-      0 0 25px Rgb(10 132 255 / 40%) !important;
+    box-shadow: var(--shadow-card);
+
   }
 }
 
@@ -103,14 +103,14 @@
   align-items: center;
   padding: 5px 12px; // Unified even padding
   border: 1px solid Rgb(0 0 0 / 25%);
-  border-radius: 60px;
-  color: white;
+  border-radius: $radius-60;
+  color: var(--white);
   font-family: var(--font-pixel);
   font-size: $size;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 10px Rgb(0 0 0 / 30%), inset 0 1px 0 Rgb(255 255 255 / 25%);
+  box-shadow: var(--shadow-card);
   background-image: Linear-Gradient(135deg, Rgb(255 255 255 / 22%) 0%, Rgb(255 255 255 / 0%) 50%, Rgb(0 0 0 / 30%) 100%);
   background-clip: padding-box;
   white-space: nowrap;
@@ -124,14 +124,14 @@
   align-items: center;
   padding: 2px 6px;
   border: 1px solid Rgb(0 0 0 / 20%); 
-  border-radius: 10px;
-  color: white;
+  border-radius: $radius-lg-alt;
+  color: var(--white);
   font-family: var(--font-pixel);
   font-size: $size;
   text-transform: uppercase;
   background-image: Linear-Gradient(135deg, Rgb(255 255 255 / 18%) 0%, Rgb(255 255 255 / 0%) 50%, Rgb(0 0 0 / 25%) 100%);
   background-clip: padding-box;
-  box-shadow: 0 1px 3px Rgb(0 0 0 / 20%);
+  box-shadow: var(--shadow-sm);
   white-space: nowrap;
 }
 
@@ -140,7 +140,7 @@
 
   // Restore elegant global standard - NO dirt, NO thick borders
   border-color: var(--tier-color, #ffd60a) !important;
-  box-shadow: 0 0 15px color-mix(in srgb, var(--tier-color, #ffd60a), transparent 80%) !important;
+  box-shadow: var(--shadow-glow-amber);
 
   &:hover {
     &::after {
@@ -161,6 +161,6 @@
     inset: 0;
     pointer-events: none;
     box-sizing: border-box;
-    box-shadow: Inset 0 0 10px color-mix(in srgb, var(--tier-color, #ffd60a), transparent 70%);
+    box-shadow: var(--shadow-xl);
   }
 }

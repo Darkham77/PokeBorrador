@@ -81,7 +81,7 @@ defineProps<{
 .move-tooltip-tactical-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2xs;
 }
 
 .calc-section-title {

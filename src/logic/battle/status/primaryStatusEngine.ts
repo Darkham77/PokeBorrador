@@ -3,6 +3,7 @@ import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleSide } from '@/types/battle/battle';
 
 const BAD_POISON_DENOMINATOR = 16;
+const REGULAR_POISON_DENOMINATOR = 8;
 
 export function getStatusIcon(status: PokemonStatus): string {
   if (!status) return '';
@@ -40,7 +41,7 @@ export async function processPrimaryStatusDamage(
     }
     case 'psn':
     case 'tox': {
-      let dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
+      let dmg = Math.max(1, Math.floor(pokemon.maxHp / REGULAR_POISON_DENOMINATOR));
       if (pokemon.status === 'tox' && pokemon.badPoison) {
         dmg = Math.max(1, Math.floor((pokemon.maxHp * pokemon.badPoison) / BAD_POISON_DENOMINATOR));
         pokemon.badPoison++;

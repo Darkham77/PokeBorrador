@@ -34,16 +34,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   color: $white;
   font-family: $font-pixel;
-  font-size: 8px;
+  font-size: var(--font-8);
   margin-bottom: spacing(2);
 }
 
 .team-pokemon-level {
   color: $yellow;
-  font-size: 11px;
+  font-size: var(--font-11);
   font-weight: 700;
   margin-bottom: spacing(2);
 }
@@ -61,9 +61,9 @@
 .team-tier-badge {
   padding: 3px 6px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   font-family: $font-pixel;
-  font-size: 6px;
+  font-size: var(--font-6);
   flex-shrink: 0;
 
   &.tier-s-plus { background: Rgb(255 215 0 / 18%); color: $coin-gold; border-color: Rgb(255 215 0 / 30%); }
@@ -79,8 +79,8 @@
 
   display: inline-flex;
   padding: 2px;
-  border-radius: 4px;
-  font-size: 10px;
+  border-radius: $radius-sm;
+  font-size: var(--font-10);
   line-height: 1;
   vertical-align: middle;
   
@@ -90,7 +90,7 @@
 
 .shiny-badge-mini {
   display: inline-flex;
-  font-size: 10px;
+  font-size: var(--font-10);
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 2px Rgb(255 215 0 / 40%));
 }

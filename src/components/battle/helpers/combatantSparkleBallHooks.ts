@@ -82,6 +82,12 @@ export function onBallLeave(el: Element, side: BattleSide, done: () => void) {
   gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
 }
 
+const CRITICAL_BANNER_ANIM = {
+  Y_STAGE_1: -25,
+  Y_STAGE_2: -45,
+  Y_STAGE_3: -65,
+} as const;
+
 export function onCriticalBannerEnter(el: Element, done: () => void) {
   const htmlEl = el as HTMLElement
   const tl = gsap.timeline({ onComplete: done })
@@ -89,17 +95,17 @@ export function onCriticalBannerEnter(el: Element, done: () => void) {
   tl.fromTo(
     htmlEl,
     { opacity: 0, scale: 0.3, y: 10 },
-    { opacity: 1, scale: 1.1, y: -25, duration: 0.35, ease: 'back.out(2.2)' }
+    { opacity: 1, scale: 1.1, y: CRITICAL_BANNER_ANIM.Y_STAGE_1, duration: 0.35, ease: 'back.out(2.2)' }
   )
   .to(htmlEl, {
-    y: -45,
+    y: CRITICAL_BANNER_ANIM.Y_STAGE_2,
     scale: 1.0,
     duration: 0.5,
     ease: 'power1.out'
   })
   .to(htmlEl, {
     opacity: 0,
-    y: -65,
+    y: CRITICAL_BANNER_ANIM.Y_STAGE_3,
     scale: 0.9,
     duration: 0.35,
     ease: 'power2.in'

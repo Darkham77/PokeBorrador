@@ -16,7 +16,6 @@ import {
   resolveMountainMapGrid,
   normalizeHeightmapDiagonals,
   type ResolvedMountainMapResult,
-  type MountainPalette,
   type MountainStairLocation
 } from './mountainAutotileEngine.ts';
 import { findStairCandidates } from './organicMountainGenerator.ts';
@@ -26,18 +25,189 @@ import {
   type GeologicalClusterResult
 } from './geologicalClusterEngine.ts';
 import type { ContinentGeneratorOptions } from './continentGenerator.ts';
+import {
+  CONTINENT_DEFAULT_SEED,
+  DEFAULT_MOUNTAIN_PALETTE
+} from '../../config/studioConstants.ts';
+import {
+  LEAGUE_PLATEAU_HEIGHT_OFFSET
+} from '../../config/poiPlacementConfig.ts';
+import {
+  MOUNTAIN_NOISE_PRIMARY_SEED_OFFSET,
+  MOUNTAIN_NOISE_SECONDARY_SEED_OFFSET,
+  VALLEY_NOISE_SEED_OFFSET,
+  MAX_MOUNTAIN_SCALE,
+  MIN_MOUNTAIN_SCALE,
+  RIDGE_AMPLITUDE_MULTIPLIER,
+  RIDGE_PRIMARY_WEIGHT,
+  RIDGE_SECONDARY_WEIGHT,
+  VALLEY_CENTER_SCALE_RATIO,
+  VALLEY_SUPP_RADIUS_LARGE,
+  VALLEY_SUPP_RADIUS_SMALL,
+  VALLEY_SECONDARY_SUPPRESSION_FACTOR,
+  MIN_MOUNTAIN_PERCENT_CLAMP,
+  TIER_2_MOUNTAIN_COUNT_RATIO,
+  TIER_2_MIN_DELTA,
+  TIER_2_FALLBACK_DELTA,
+  LEAGUE_MASSIF_HEIGHT,
+  LEAGUE_PLATEAU_MIN_HEIGHT,
+  LAKE_RIM_THRESHOLD_RATIO,
+  MAX_MOUNTAIN_CLEARANCE_DISTANCE
+} from '../../config/continentMountainConfig.ts';
 
-export const CORDILLERA_TIER_4_MIN_CELLS = 240 as const;
-export const MASSIF_TIER_3_MIN_CELLS = 130 as const;
-export const MASSIF_TIER_2_MIN_CELLS = 25 as const;
-export const DEFAULT_MOUNTAIN_RATIO = 0.20 as const;
-export const DEFAULT_MOUNTAIN_PALETTE: MountainPalette = 'brown' as const;
-export const DEFAULT_SEED = 42 as const;
+const CORDILLERA_TIER_4_MIN_CELLS = 240 as const;
+const MASSIF_TIER_3_MIN_CELLS = 130 as const;
+const MASSIF_TIER_2_MIN_CELLS = 25 as const;
+const CAVE_MASSIF_LATERAL_RADIUS = 6 as const;
+const MASSIF_TIER_2_RADIUS = 6 as const;
+const DEFAULT_MOUNTAIN_RATIO = 0.20 as const;
+
+export function isCellAdjacentToMountainStairs(
+  x: number,
+  y: number,
+  cellDetails: readonly (readonly ({ readonly role: string } | null | undefined)[])[],
+  width: number,
+  height: number
+): boolean {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const ny = y + dy;
+      const nx = x + dx;
+      if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
+        const mCell = cellDetails[ny]?.[nx];
+        if (mCell?.role.includes('stairs')) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+interface RectangularZoneBounds {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+}
+
+interface ZoneRectangleArea {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly margin?: number;
+}
+
+function computeClampedZoneBounds(
+  zone: ZoneRectangleArea,
+  width: number,
+  height: number,
+  customHeight?: number
+): RectangularZoneBounds {
+  const m = zone.margin ?? 0;
+  const h = customHeight ?? zone.height;
+  return {
+    minX: Math.max(0, zone.x - m),
+    maxX: Math.min(width - 1, zone.x + zone.width + m),
+    minY: Math.max(0, zone.y - m),
+    maxY: Math.min(height - 1, zone.y + h)
+  };
+}
+
+function applyPlateauGrassElevation(
+  heightmap: number[][],
+  terrainMatrix: readonly (readonly string[])[],
+  bounds: RectangularZoneBounds,
+  targetElevation: number
+): void {
+  for (let y = bounds.minY; y < bounds.maxY; y++) {
+    for (let x = bounds.minX; x <= bounds.maxX; x++) {
+      if (terrainMatrix[y]?.[x] === 'grass') {
+        heightmap[y]![x] = targetElevation;
+      }
+    }
+  }
+}
+
+interface MassifRingElevationParams {
+  readonly px: number;
+  readonly py: number;
+  readonly radius: number;
+  readonly width: number;
+  readonly height: number;
+  readonly minClearance: number;
+  readonly targetElevation: number;
+}
+
+function expandMassifTierRing(
+  heightmap: number[][],
+  mtnClearance: readonly (readonly number[])[],
+  params: MassifRingElevationParams
+): void {
+  const { px, py, radius, width, height, minClearance, targetElevation } = params;
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      const ny = py + dy;
+      const nx = px + dx;
+      if (
+        ny >= 0 &&
+        ny < height &&
+        nx >= 0 &&
+        nx < width &&
+        heightmap[ny]![nx]! >= 1 &&
+        mtnClearance[ny]![nx]! >= minClearance
+      ) {
+        heightmap[ny]![nx] = Math.max(heightmap[ny]![nx]!, targetElevation);
+      }
+    }
+  }
+}
+
+function applySolidSummitElevation(
+  heightmap: number[][],
+  px: number,
+  py: number,
+  radius: number,
+  width: number,
+  height: number,
+  elevation: number
+): void {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      const ny = py + dy;
+      const nx = px + dx;
+      if (ny >= 0 && ny < height && nx >= 0 && nx < width && heightmap[ny]![nx]! >= 1) {
+        heightmap[ny]![nx] = Math.max(heightmap[ny]![nx]!, elevation);
+      }
+    }
+  }
+}
+
+function findBestMassifPeak(
+  massif: readonly { readonly x: number; readonly y: number }[],
+  mtnClearance: readonly (readonly number[])[],
+  mountainScores: readonly (readonly number[])[],
+  minClearance: number
+): { readonly x: number; readonly y: number } | null {
+  let bestPeak: { readonly x: number; readonly y: number } | null = null;
+  let bestScore = -1;
+  for (const c of massif) {
+    if (mtnClearance[c.y]![c.x]! >= minClearance) {
+      const s = mtnClearance[c.y]![c.x]! * 100 + mountainScores[c.y]![c.x]!;
+      if (s > bestScore) {
+        bestScore = s;
+        bestPeak = c;
+      }
+    }
+  }
+  return bestPeak;
+}
 
 /**
  * Prunes isolated pits, tiny depressions, and orphan U/L wall fragments inside mountain plateaus.
  */
-export function pruneOrphanCliffWalls(
+function pruneOrphanCliffWalls(
   heightmap: number[][],
   isWaterCell?: (x: number, y: number) => boolean
 ): number[][] {
@@ -111,7 +281,7 @@ export function generateContinentalMountains(
 } {
   const H = terrainMatrix.length;
   const W = terrainMatrix[0]?.length ?? 0;
-  const seed = options.seed ?? DEFAULT_SEED;
+  const seed = options.seed ?? CONTINENT_DEFAULT_SEED;
   const palette = options.mountainPalette ?? DEFAULT_MOUNTAIN_PALETTE;
   const withStairs = options.withStairs ?? true;
   const maxStairs = options.maxStairsPerTier ?? 2;
@@ -190,9 +360,9 @@ export function generateContinentalMountains(
 
   // Generate raw heightmap using Modulated 2D Ridge Noise
   const mtnRatio = options.mountainPercentage ?? DEFAULT_MOUNTAIN_RATIO;
-  const mountainNoise1 = new SimplexNoise(seed + 777);
-  const mountainNoise2 = new SimplexNoise(seed + 888);
-  const valleyNoise = new SimplexNoise(seed + 999);
+  const mountainNoise1 = new SimplexNoise(seed + MOUNTAIN_NOISE_PRIMARY_SEED_OFFSET);
+  const mountainNoise2 = new SimplexNoise(seed + MOUNTAIN_NOISE_SECONDARY_SEED_OFFSET);
+  const valleyNoise = new SimplexNoise(seed + VALLEY_NOISE_SEED_OFFSET);
 
   const rawHeightmap: number[][] = Array.from({ length: H }, () => Array(W).fill(0));
   const mountainScores: number[][] = Array.from({ length: H }, () => Array(W).fill(0));
@@ -205,24 +375,24 @@ export function generateContinentalMountains(
       if (!validZone[y]![x]) continue;
 
       // 1. Ridge Noise: peaks along zero-crossings to form continuous sinuous chains with broad plateaus
-      const scale = Math.min(0.035, Math.max(0.022, 2.2 / Math.min(W, H)));
+      const scale = Math.min(MAX_MOUNTAIN_SCALE, Math.max(MIN_MOUNTAIN_SCALE, 2.2 / Math.min(W, H)));
       const n1 = mountainNoise1.noise2D(x * scale, y * scale);
       const rawRidge1 = 1.0 - Math.abs(n1);
-      const ridge1 = Math.min(1.0, Math.pow(Math.max(0.0, rawRidge1), 0.7) * 1.25);
+      const ridge1 = Math.min(1.0, Math.pow(Math.max(0.0, rawRidge1), 0.7) * RIDGE_AMPLITUDE_MULTIPLIER);
 
       const n2 = mountainNoise2.noise2D(x * scale * 2.0, y * scale * 2.0);
       const rawRidge2 = 1.0 - Math.abs(n2);
-      const ridge2 = Math.min(1.0, Math.pow(Math.max(0.0, rawRidge2), 0.7) * 1.25);
-      const combinedRidge = ridge1 * 0.85 + ridge2 * 0.15;
+      const ridge2 = Math.min(1.0, Math.pow(Math.max(0.0, rawRidge2), 0.7) * RIDGE_AMPLITUDE_MULTIPLIER);
+      const combinedRidge = ridge1 * RIDGE_PRIMARY_WEIGHT + ridge2 * RIDGE_SECONDARY_WEIGHT;
 
       // 2. Central Habitable Valley Modulation:
       // Suppresses mountains in the core interior to leave wide central plains for cities & routes
-      const distFromCenter = Math.hypot((x - cx) / (W * 0.45), (y - cy) / (H * 0.45));
+      const distFromCenter = Math.hypot((x - cx) / (W * VALLEY_CENTER_SCALE_RATIO), (y - cy) / (H * VALLEY_CENTER_SCALE_RATIO));
       const vn = (valleyNoise.noise2D(x * scale * 0.6, y * scale * 0.6) + 1.0) / 2.0;
 
-      const suppRadius = Math.min(W, H) >= 100 ? 0.35 : 0.20;
+      const suppRadius = Math.min(W, H) >= 100 ? VALLEY_SUPP_RADIUS_LARGE : VALLEY_SUPP_RADIUS_SMALL;
       const centerSuppression = distFromCenter < suppRadius ? (suppRadius - distFromCenter) / suppRadius : 0.0;
-      const valleySuppression = centerSuppression * 0.60 + (vn > 0.60 ? (vn - 0.60) * 0.50 : 0.0);
+      const valleySuppression = centerSuppression * 0.60 + (vn > 0.60 ? (vn - 0.60) * VALLEY_SECONDARY_SUPPRESSION_FACTOR : 0.0);
 
       const mountainScore = Math.max(0.0, combinedRidge - valleySuppression);
       mountainScores[y]![x] = mountainScore;
@@ -232,10 +402,10 @@ export function generateContinentalMountains(
 
   // Quantile thresholds: guarantee mountains occupy strictly ~22% of valid landmass, leaving spacious valleys for settlements
   validScores.sort((a, b) => b - a);
-  const targetMountainCount = Math.floor(validScores.length * Math.min(0.24, Math.max(0.12, mtnRatio)));
+  const targetMountainCount = Math.floor(validScores.length * Math.min(0.24, Math.max(MIN_MOUNTAIN_PERCENT_CLAMP, mtnRatio)));
   const t1Threshold = validScores[targetMountainCount] ?? 0.60;
-  const targetTier2Count = Math.floor(targetMountainCount * 0.35);
-  const t2Threshold = Math.max(t1Threshold + 0.08, validScores[targetTier2Count] ?? (t1Threshold + 0.15));
+  const targetTier2Count = Math.floor(targetMountainCount * TIER_2_MOUNTAIN_COUNT_RATIO);
+  const t2Threshold = Math.max(t1Threshold + TIER_2_MIN_DELTA, validScores[targetTier2Count] ?? (t1Threshold + TIER_2_FALLBACK_DELTA));
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -258,15 +428,16 @@ export function generateContinentalMountains(
 
   if (Math.min(W, H) >= MASSIVE_MAP_DIMENSION) {
     const pW = 24;
-    const pH = 18;
+    const pH = LEAGUE_MASSIF_HEIGHT;
+    const LEAGUE_MASSIF_MARGIN = 2 as const;
     let leagueBestX = -1;
     let leagueBestY = -1;
 
     for (let y = Math.round(NORTH_MASSIF_MIN_Y_RATIO * H); y <= Math.round(NORTH_MASSIF_MAX_Y_RATIO * H); y += 2) {
       for (let x = Math.round(NORTH_MASSIF_MIN_X_RATIO * W); x <= Math.round(NORTH_MASSIF_MAX_X_RATIO * W); x += 2) {
         let ok = true;
-        for (let dy = -2; dy < pH + 2; dy++) {
-          for (let dx = -2; dx < pW + 2; dx++) {
+        for (let dy = -LEAGUE_MASSIF_MARGIN; dy < pH + LEAGUE_MASSIF_MARGIN; dy++) {
+          for (let dx = -LEAGUE_MASSIF_MARGIN; dx < pW + LEAGUE_MASSIF_MARGIN; dx++) {
             const nx = x + dx;
             const ny = y + dy;
             if (nx < 0 || nx >= W || ny < 0 || ny >= H || !validZone[ny]![nx]) {
@@ -299,9 +470,10 @@ export function generateContinentalMountains(
 
   // Guaranteed cave mountain massifs (guarantees south cliff wall for cave entrances)
   if (options.caveLocations) {
+    const CAVE_NORTH_EXTENT = -8 as const;
     for (const cave of options.caveLocations) {
-      for (let dy = -8; dy <= -1; dy++) {
-        for (let dx = -6; dx <= 6; dx++) {
+      for (let dy = CAVE_NORTH_EXTENT; dy <= -1; dy++) {
+        for (let dx = -CAVE_MASSIF_LATERAL_RADIUS; dx <= CAVE_MASSIF_LATERAL_RADIUS; dx++) {
           const cy = cave.y + dy;
           const cx = cave.x + dx;
           if (cx >= 0 && cx < W && cy >= 0 && cy < H && validZone[cy]![cx]) {
@@ -315,19 +487,9 @@ export function generateContinentalMountains(
   // Guaranteed League Plateau at elevation 1 (Palace upper tier)
   if (options.leaguePlateauZone) {
     const lz = options.leaguePlateauZone;
-    const m = lz.margin ?? 4;
-    const minX = Math.max(0, lz.x - m);
-    const maxX = Math.min(W - 1, lz.x + lz.width + m);
-    const minY = Math.max(0, lz.y - m);
-    const plateauH = Math.max(10, lz.height - 12);
-    const maxY = Math.min(H - 1, lz.y + plateauH);
-    for (let y = minY; y < maxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        if (terrainMatrix[y]?.[x] === 'grass') {
-          rawHeightmap[y]![x] = 1;
-        }
-      }
-    }
+    const plateauH = Math.max(LEAGUE_PLATEAU_MIN_HEIGHT, lz.height - LEAGUE_PLATEAU_HEIGHT_OFFSET);
+    const bounds = computeClampedZoneBounds(lz, W, H, plateauH);
+    applyPlateauGrassElevation(rawHeightmap, terrainMatrix, bounds, 1);
   }
 
   // Orographic Lake Basin Relief: For inland mountain lakes embedded in massifs,
@@ -357,9 +519,10 @@ export function generateContinentalMountains(
         }
 
         // Check if this lake is situated in an elevated/mountain massif sector
+        const LAKE_SCAN_RADIUS = 3 as const;
         for (const pt of lakeCells) {
-          for (let dy = -3; dy <= 3; dy++) {
-            for (let dx = -3; dx <= 3; dx++) {
+          for (let dy = -LAKE_SCAN_RADIUS; dy <= LAKE_SCAN_RADIUS; dy++) {
+            for (let dx = -LAKE_SCAN_RADIUS; dx <= LAKE_SCAN_RADIUS; dx++) {
               const nx = pt.x + dx;
               const ny = pt.y + dy;
               if (nx >= 0 && nx < W && ny >= 0 && ny < H && validZone[ny]![nx]) {
@@ -373,10 +536,11 @@ export function generateContinentalMountains(
         // If mountain lake: ensure orographic rim relief surrounding the basin
         // strictly for cells with high mountain noise (>= t1Threshold * 0.85) in the lake's immediate perimeter (radius <= 2)
         if (maxNearScore >= t1Threshold) {
-          const rimThreshold = t1Threshold * 0.85;
+          const rimThreshold = t1Threshold * LAKE_RIM_THRESHOLD_RATIO;
+          const LAKE_RIM_RELIEF_RADIUS = 2 as const;
           for (const pt of lakeCells) {
-            for (let dy = -2; dy <= 2; dy++) {
-              for (let dx = -2; dx <= 2; dx++) {
+            for (let dy = -LAKE_RIM_RELIEF_RADIUS; dy <= LAKE_RIM_RELIEF_RADIUS; dy++) {
+              for (let dx = -LAKE_RIM_RELIEF_RADIUS; dx <= LAKE_RIM_RELIEF_RADIUS; dx++) {
                 const nx = pt.x + dx;
                 const ny = pt.y + dy;
                 if (nx >= 0 && nx < W && ny >= 0 && ny < H && validZone[ny]![nx]) {
@@ -447,7 +611,7 @@ export function generateContinentalMountains(
       if (rawHeightmap[y]![x] === 0) continue;
       let d = 0;
       let ok = true;
-      while (ok && d < 15) {
+      while (ok && d < MAX_MOUNTAIN_CLEARANCE_DISTANCE) {
         d++;
         for (let dy = -d; dy <= d; dy++) {
           for (let dx = -d; dx <= d; dx++) {
@@ -470,7 +634,7 @@ export function generateContinentalMountains(
     const c0 = massif[0]!;
     const seedOffset = Math.abs(Math.sin((c0.x * 37 + c0.y * 19 + seed) * 0.1)) * 30;
 
-    let maxMassifTier = 1;
+    let maxMassifTier: number;
     if (count >= CORDILLERA_TIER_4_MIN_CELLS - seedOffset) maxMassifTier = Math.min(maxAllowedGlobal, 4);
     else if (count >= MASSIF_TIER_3_MIN_CELLS - seedOffset) maxMassifTier = Math.min(maxAllowedGlobal, 3);
     else if (count >= MASSIF_TIER_2_MIN_CELLS) maxMassifTier = Math.min(maxAllowedGlobal, 2);
@@ -495,52 +659,30 @@ export function generateContinentalMountains(
 
     // Cordilleras (Tier 4)
     if (maxMassifTier >= 4) {
-      let bestPeak: { x: number; y: number } | null = null;
-      let bestScore = -1;
-
-      for (const c of massif) {
-        if (mtnClearance[c.y]![c.x]! >= 3) {
-          const s = mtnClearance[c.y]![c.x]! * 100 + mountainScores[c.y]![c.x]!;
-          if (s > bestScore) {
-            bestScore = s;
-            bestPeak = c;
-          }
-        }
-      }
+      const bestPeak = findBestMassifPeak(massif, mtnClearance, mountainScores, 3);
 
       if (bestPeak) {
         const px = bestPeak.x;
         const py = bestPeak.y;
-        // Expand Tier 2 buffer ring around peak
-        for (let dy = -6; dy <= 6; dy++) {
-          for (let dx = -6; dx <= 6; dx++) {
-            const ny = py + dy;
-            const nx = px + dx;
-            if (ny >= 0 && ny < H && nx >= 0 && nx < W && rawHeightmap[ny]![nx]! >= 1 && mtnClearance[ny]![nx]! >= 1) {
-              rawHeightmap[ny]![nx] = Math.max(rawHeightmap[ny]![nx]!, 2);
-            }
-          }
-        }
-        // Expand Tier 3 buffer ring around peak
-        for (let dy = -2; dy <= 2; dy++) {
-          for (let dx = -2; dx <= 2; dx++) {
-            const ny = py + dy;
-            const nx = px + dx;
-            if (ny >= 0 && ny < H && nx >= 0 && nx < W && rawHeightmap[ny]![nx]! >= 1 && mtnClearance[ny]![nx]! >= 2) {
-              rawHeightmap[ny]![nx] = Math.max(rawHeightmap[ny]![nx]!, 3);
-            }
-          }
-        }
-        // Solid 3x3 Tier 4 apex summit
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            const ny = py + dy;
-            const nx = px + dx;
-            if (ny >= 0 && ny < H && nx >= 0 && nx < W && rawHeightmap[ny]![nx]! >= 1) {
-              rawHeightmap[ny]![nx] = 4;
-            }
-          }
-        }
+        expandMassifTierRing(rawHeightmap, mtnClearance, {
+          px,
+          py,
+          radius: MASSIF_TIER_2_RADIUS,
+          width: W,
+          height: H,
+          minClearance: 1,
+          targetElevation: 2
+        });
+        expandMassifTierRing(rawHeightmap, mtnClearance, {
+          px,
+          py,
+          radius: 2,
+          width: W,
+          height: H,
+          minClearance: 2,
+          targetElevation: 3
+        });
+        applySolidSummitElevation(rawHeightmap, px, py, 1, W, H, 4);
       } else {
         maxMassifTier = 3;
       }
@@ -548,41 +690,21 @@ export function generateContinentalMountains(
 
     // Large massifs (Tier 3)
     if (maxMassifTier === 3) {
-      let bestPeak: { x: number; y: number } | null = null;
-      let bestScore = -1;
-      for (const c of massif) {
-        if (mtnClearance[c.y]![c.x]! >= 2) {
-          const s = mtnClearance[c.y]![c.x]! * 100 + mountainScores[c.y]![c.x]!;
-          if (s > bestScore) {
-            bestScore = s;
-            bestPeak = c;
-          }
-        }
-      }
+      const bestPeak = findBestMassifPeak(massif, mtnClearance, mountainScores, 2);
 
       if (bestPeak) {
         const px = bestPeak.x;
         const py = bestPeak.y;
-        // Expand Tier 2 buffer ring
-        for (let dy = -5; dy <= 5; dy++) {
-          for (let dx = -5; dx <= 5; dx++) {
-            const ny = py + dy;
-            const nx = px + dx;
-            if (ny >= 0 && ny < H && nx >= 0 && nx < W && rawHeightmap[ny]![nx]! >= 1 && mtnClearance[ny]![nx]! >= 1) {
-              rawHeightmap[ny]![nx] = Math.max(rawHeightmap[ny]![nx]!, 2);
-            }
-          }
-        }
-        // Solid 3x3 Tier 3 ridge crest
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            const ny = py + dy;
-            const nx = px + dx;
-            if (ny >= 0 && ny < H && nx >= 0 && nx < W && rawHeightmap[ny]![nx]! >= 1) {
-              rawHeightmap[ny]![nx] = Math.max(rawHeightmap[ny]![nx]!, 3);
-            }
-          }
-        }
+        expandMassifTierRing(rawHeightmap, mtnClearance, {
+          px,
+          py,
+          radius: 5,
+          width: W,
+          height: H,
+          minClearance: 1,
+          targetElevation: 2
+        });
+        applySolidSummitElevation(rawHeightmap, px, py, 1, W, H, 3);
       }
     }
 
@@ -597,18 +719,9 @@ export function generateContinentalMountains(
       }
 
       if (!hasTier2) {
-        let bestPeak: { x: number; y: number } | null = null;
-        let bestScore = -1;
-        for (const c of massif) {
-          if (mtnClearance[c.y]![c.x]! >= 1) {
-            const s = mtnClearance[c.y]![c.x]! * 100 + mountainScores[c.y]![c.x]!;
-            if (s > bestScore) {
-              bestScore = s;
-              bestPeak = c;
-            }
-          }
-        }
+        let bestPeak = findBestMassifPeak(massif, mtnClearance, mountainScores, 1);
         if (!bestPeak) {
+          let bestScore = -1;
           for (const c of massif) {
             const s = mountainScores[c.y]![c.x]!;
             if (s > bestScore) {
@@ -621,24 +734,16 @@ export function generateContinentalMountains(
         if (bestPeak) {
           const px = bestPeak.x;
           const py = bestPeak.y;
-          for (let dy = -2; dy <= 2; dy++) {
-            for (let dx = -2; dx <= 2; dx++) {
-              const ny = py + dy;
-              const nx = px + dx;
-              if (ny >= 0 && ny < H && nx >= 0 && nx < W && rawHeightmap[ny]![nx]! >= 1 && mtnClearance[ny]![nx]! >= 1) {
-                rawHeightmap[ny]![nx] = Math.max(rawHeightmap[ny]![nx]!, 2);
-              }
-            }
-          }
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              const ny = py + dy;
-              const nx = px + dx;
-              if (ny >= 0 && ny < H && nx >= 0 && nx < W && rawHeightmap[ny]![nx]! >= 1) {
-                rawHeightmap[ny]![nx] = Math.max(rawHeightmap[ny]![nx]!, 2);
-              }
-            }
-          }
+          expandMassifTierRing(rawHeightmap, mtnClearance, {
+            px,
+            py,
+            radius: 2,
+            width: W,
+            height: H,
+            minClearance: 1,
+            targetElevation: 2
+          });
+          applySolidSummitElevation(rawHeightmap, px, py, 1, W, H, 2);
         }
       }
     }
@@ -697,22 +802,14 @@ export function generateContinentalMountains(
   if (options.leaguePlateauZone) {
     const lz = options.leaguePlateauZone;
     const m = lz.margin ?? 4;
-    const minX = Math.max(0, lz.x - m);
-    const maxX = Math.min(W - 1, lz.x + lz.width + m);
-    const minY = Math.max(0, lz.y - m);
-    const plateauH = Math.max(10, lz.height - 12);
-    const maxY = Math.min(H - 1, lz.y + plateauH);
-    for (let y = minY; y < maxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        if (terrainMatrix[y]?.[x] === 'grass') {
-          sanitizedHeightmap[y]![x] = 1;
-        }
-      }
-    }
+    const plateauH = Math.max(LEAGUE_PLATEAU_MIN_HEIGHT, lz.height - LEAGUE_PLATEAU_HEIGHT_OFFSET);
+    const bounds = computeClampedZoneBounds(lz, W, H, plateauH);
+    applyPlateauGrassElevation(sanitizedHeightmap, terrainMatrix, bounds, 1);
+
     // Lower plaza, checkpoint gate, and southern concourse remain flat at elevation 0
     const lowerMaxY = Math.min(H - 1, lz.y + lz.height + m);
-    for (let y = maxY; y <= lowerMaxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
+    for (let y = bounds.maxY; y <= lowerMaxY; y++) {
+      for (let x = bounds.minX; x <= bounds.maxX; x++) {
         sanitizedHeightmap[y]![x] = 0;
       }
     }
@@ -765,7 +862,7 @@ export function generateContinentalMountains(
         // If within the League plateau south cliff face, prune random stairs
         if (options.leaguePlateauZone && z === 1) {
           const lz = options.leaguePlateauZone;
-          const plateauH = Math.max(10, lz.height - 12);
+          const plateauH = Math.max(LEAGUE_PLATEAU_MIN_HEIGHT, lz.height - LEAGUE_PLATEAU_HEIGHT_OFFSET);
           const wallY = lz.y + plateauH - 1;
           if (Math.abs(s.y - wallY) <= 1 && s.x >= lz.x - 4 && s.x <= lz.x + lz.width + 4) {
             continue; // Will stamp single monumental stair below
@@ -779,7 +876,7 @@ export function generateContinentalMountains(
   // Stamp single monumental central staircase for Pokémon League if zone present
   if (options.leaguePlateauZone) {
     const lz = options.leaguePlateauZone;
-    const plateauH = Math.max(10, lz.height - 12);
+    const plateauH = Math.max(LEAGUE_PLATEAU_MIN_HEIGHT, lz.height - LEAGUE_PLATEAU_HEIGHT_OFFSET);
     const wallY = lz.y + plateauH - 1;
     const midAvenueX = lz.x + Math.floor(lz.width / 2);
     const stairX = midAvenueX - 1;

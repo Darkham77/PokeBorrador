@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildCanonicalRegionMap } from '../../../src/logic/map/continent/canonicalRegionPresets.ts';
+import { buildCanonicalRegionMap } from '../../logic/map/continent/canonicalRegionPresets.ts';
 
 describe('Victory Road, Plateau Settlement & Urban Tall Grass Integrity', () => {
   it('guarantees Victory Road has a lower entrance (elevation 0) and upper exit (elevation 1) linked to Indigo Plateau', () => {

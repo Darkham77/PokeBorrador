@@ -145,15 +145,15 @@ function onMouseLeave() {
 
   // Sizes
   &.size-sm {
-    font-size: 13px;
+    font-size: var(--font-13);
   }
 
   &.size-md {
-    font-size: 16px;
+    font-size: var(--font-16);
   }
 
   &.size-lg {
-    font-size: 22px;
+    font-size: var(--font-22);
   }
 
   // Tiers

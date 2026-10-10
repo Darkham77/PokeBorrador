@@ -9,7 +9,8 @@
 
 import { ref, computed } from 'vue';
 import type { CanonicalAssetEntry } from '../../logic/map/canonicalAssetsRegistry.ts';
-import manifestJson from '../../data/map/canonical_assets_manifest.json' with { type: 'json' };
+import { CANONICAL_ASSETS_MANIFEST as manifestJson } from '../../data/map/canonicalAssetsManifest.ts';
+import { STUDIO_TILE_SIZE, CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 
 export interface SheetGridLayout {
   readonly tileSize: number;
@@ -36,7 +37,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'nature_terrain',
     description: 'Montañas 2.5D, océanos, playas, bosques, flores y escaleras canónicas.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 1,
       marginY: 1,
       spacingX: 1,
@@ -50,7 +51,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'urban_city',
     description: 'Gran almacén, fuente monumental, adoquines claros y condominios.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 0,
       marginY: 0,
       spacingX: 0,
@@ -64,7 +65,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'urban_city',
     description: 'Museo de la ciencia, empedrado canónico de espiga y casas de pizarra.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 8,
       marginY: 24,
       spacingX: 0,
@@ -78,7 +79,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'metropolis',
     description: 'Rascacielos Silph Co., plaza cívica, dojo y baldosas de granito.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 0,
       marginY: 0,
       spacingX: 0,
@@ -92,7 +93,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'buildings',
     description: 'Gimnasios Pokémon, Centros Pokémon, Tiendas Mart, y casas GBA.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 0,
       marginY: 0,
       spacingX: 0,
@@ -106,7 +107,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'town',
     description: 'Laboratorio del Prof. Oak, casas rurales y cercas de madera.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 8,
       marginY: 24,
       spacingX: 0,
@@ -120,7 +121,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'urban_city',
     description: 'Zona Safari, hábitats de agua y cercas perimetrales.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 8,
       marginY: 24,
       spacingX: 0,
@@ -134,7 +135,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'port',
     description: 'Muelles portuarios, pasarelas de madera y club de fans.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 0,
       marginY: 0,
       spacingX: 0,
@@ -148,7 +149,7 @@ export const MASTER_SHEETS: readonly MasterSheetMeta[] = [
     category: 'dungeon',
     description: 'Árboles de bosque denso, casetas de paso y senderos.',
     grid: {
-      tileSize: 16,
+      tileSize: STUDIO_TILE_SIZE,
       marginX: 0,
       marginY: 0,
       spacingX: 0,
@@ -173,7 +174,7 @@ export function useAssetAtlas() {
   });
 
   const currentGrid = ref<SheetGridLayout>({
-    tileSize: 16,
+    tileSize: STUDIO_TILE_SIZE,
     marginX: 8,
     marginY: 24,
     spacingX: 0,
@@ -184,8 +185,8 @@ export function useAssetAtlas() {
   const selectedRect = ref<SelectionRect | null>({
     x: 248,
     y: 296,
-    w: 16,
-    h: 16
+    w: STUDIO_TILE_SIZE,
+    h: STUDIO_TILE_SIZE
   });
 
   const selectedAssetId = ref<string | null>('poke_road_asphalt');
@@ -245,8 +246,8 @@ export function useAssetAtlas() {
     const strideY = g.tileSize + g.spacingY;
     const tileW = Math.max(1, Math.round((rect.w + g.spacingX) / strideX));
     const tileH = Math.max(1, Math.round((rect.h + g.spacingY) / strideY));
-    const pixelW = tileW * 32;
-    const pixelH = tileH * 32;
+    const pixelW = tileW * CANVAS_TILE_SIZE;
+    const pixelH = tileH * CANVAS_TILE_SIZE;
 
     const collisionRow = Array(tileW).fill(category === 'roads' || category === 'curbs' ? 0 : 1);
     const collisionMask = Array(tileH).fill(collisionRow);

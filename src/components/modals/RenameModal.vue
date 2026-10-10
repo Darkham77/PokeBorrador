@@ -164,7 +164,8 @@ const submitRename = async () => {
 
       <div class="input-section">
         <div class="input-row">
-          <input 
+          <input
+            id="rename-modal-input-newusername" 
             v-model="newUsername"
             type="text" 
             class="vicio-input"
@@ -176,6 +177,7 @@ const submitRename = async () => {
 
         <div class="gender-selection-row">
           <button
+            id="rename-modal-btn-1"
             class="gender-select-btn male"
             :class="{ active: selectedGender === 'h' }"
             @click.prevent.stop="setGender('h', $event)"
@@ -187,6 +189,7 @@ const submitRename = async () => {
             /> MASCULINO
           </button>
           <button
+            id="rename-modal-btn-2"
             class="gender-select-btn female"
             :class="{ active: selectedGender === 'm' }"
             @click.prevent.stop="setGender('m', $event)"
@@ -208,14 +211,16 @@ const submitRename = async () => {
       </div>
 
       <div class="action-buttons">
-        <button 
+        <button
+          id="rename-modal-btn-cancelar" 
           class="btn-vicio-secondary cancel-btn"
           :disabled="isRenaming"
           @click="emit('close')"
         >
           CANCELAR
         </button>
-        <button 
+        <button
+          id="rename-modal-btn-isrenaming-guardando-confirmar" 
           class="btn-vicio-primary apply-btn"
           :disabled="isRenaming || !newUsername.trim() || (nameChanged && !canRename)"
           @click="submitRename"
@@ -234,44 +239,44 @@ const submitRename = async () => {
 .rename-modal-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   padding: 16px;
 }
 
 .info-box {
   padding: 12px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 8px;
-  background: rgb(0 0 0 / 20%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-lg;
+  background: Rgb(0 0 0 / 20%);
 }
 
 .desc-text {
   @include pixelated;
 
-  color: rgb(255 255 255 / 70%);
-  font-size: 11px;
+  color: Rgb(255 255 255 / 70%);
+  font-size: var(--font-11);
   line-height: 1.4;
 }
 
 .input-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .input-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
     width: 100%;
 
     .vicio-input {
       padding: 10px 14px;
       border: 2px solid var(--blue);
-      border-radius: 6px;
-      background: rgb(0 0 0 / 40%);
+      border-radius: $radius-md;
+      background: Rgb(0 0 0 / 40%);
       color: var(--white);
       font-family: var(--font-pixel);
-      font-size: 14px;
+      font-size: var(--font-14);
       text-align: center;
       flex: 1;
       outline: none;
@@ -299,11 +304,11 @@ const submitRename = async () => {
   @include pixelated;
 
   padding: 8px;
-  border: 1px solid rgb(239 68 68 / 20%);
-  border-radius: 4px;
-  background: rgb(239 68 68 / 10%);
+  border: 1px solid Rgb(239 68 68 / 20%);
+  border-radius: $radius-sm;
+  background: Rgb(239 68 68 / 10%);
   color: var(--red);
-  font-size: 10px;
+  font-size: var(--font-10);
   text-align: center;
 
   .days-highlight {
@@ -314,13 +319,13 @@ const submitRename = async () => {
 
 .action-buttons {
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
 
   button {
     @include pixelated;
 
     padding: 12px;
-    font-size: 10px;
+    font-size: var(--font-10);
     flex: 1;
   }
 }

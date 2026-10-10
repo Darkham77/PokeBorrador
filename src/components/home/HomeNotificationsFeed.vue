@@ -42,9 +42,10 @@ function animateList() {
   gsapCtx = gsap.context(() => {
     const items = feedRef.value?.querySelectorAll('.notif-row')
     if (items && items.length > 0) {
+      const NOTIF_ROW_ENTRANCE_OFFSET_X_PX = -8 as const;
       gsap.fromTo(
         items,
-        { opacity: 0, x: -8 },
+        { opacity: 0, x: NOTIF_ROW_ENTRANCE_OFFSET_X_PX },
         { opacity: 1, x: 0, duration: 0.25, stagger: 0.03, ease: 'power2.out' }
       )
     }
@@ -121,22 +122,22 @@ onUnmounted(() => {
 .home-notifications-feed {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 14px 16px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 12px;
-  background: rgb(18 22 34 / 85%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-xl;
+  background: Rgb(18 22 34 / 85%);
   box-sizing: border-box;
-  box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
+  box-shadow: $shadow-md;
 }
 
 .feed-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  border-bottom: 1px solid Rgb(255 255 255 / 6%);
 }
 
 .header-actions {
@@ -149,7 +150,7 @@ onUnmounted(() => {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   min-width: 0;
   flex: 1;
 
@@ -158,7 +159,7 @@ onUnmounted(() => {
 
     margin: 0;
     color: var(--yellow, #facc15);
-    font-size: 10px;
+    font-size: var(--font-10);
     letter-spacing: 1px;
   }
 }
@@ -166,7 +167,7 @@ onUnmounted(() => {
 .notifications-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   max-height: 580px;
   overflow: hidden auto;
   padding-right: 4px;
@@ -176,13 +177,13 @@ onUnmounted(() => {
   }
 
   &::-webkit-scrollbar-track {
-    border-radius: 3px;
-    background: rgb(0 0 0 / 20%);
+    border-radius: $radius-xs-alt;
+    background: Rgb(0 0 0 / 20%);
   }
 
   &::-webkit-scrollbar-thumb {
-    border-radius: 3px;
-    background: rgb(255 255 255 / 15%);
+    border-radius: $radius-xs-alt;
+    background: Rgb(255 255 255 / 15%);
 
     &:hover {
       background: var(--yellow, #facc15);
@@ -193,22 +194,22 @@ onUnmounted(() => {
 .notif-row {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: $spacing-md-alt;
   width: 100%;
   padding: 6px 10px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 8px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-lg;
+  background: Rgb(255 255 255 / 3%);
   box-sizing: border-box;
 
   &:hover {
-    background: rgb(255 255 255 / 6%);
-    border-color: rgb(255 255 255 / 12%);
+    background: Rgb(255 255 255 / 6%);
+    border-color: Rgb(255 255 255 / 12%);
   }
 }
 
 .notif-icon {
-  font-size: 16px;
+  font-size: var(--font-16);
   line-height: 1.2;
   flex-shrink: 0;
 }
@@ -216,14 +217,14 @@ onUnmounted(() => {
 .notif-content {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   min-width: 0;
   flex: 1;
 }
 
 .notif-text {
-  color: #e2e8f0;
-  font-size: 11px;
+  color: var(--slate-200);
+  font-size: var(--font-11);
   line-height: 1.4;
   overflow-wrap: break-word;
 
@@ -235,7 +236,7 @@ onUnmounted(() => {
 
 .notif-time {
   color: var(--gray, #94a3b8);
-  font-size: 9px;
+  font-size: var(--font-9);
 }
 
 .empty-feed {
@@ -243,16 +244,16 @@ onUnmounted(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 30px 16px;
   color: var(--gray, #94a3b8);
 
   .empty-icon {
-    font-size: 24px;
+    font-size: var(--font-24);
   }
 
   .empty-text {
-    font-size: 10px;
+    font-size: var(--font-10);
     text-align: center;
   }
 }

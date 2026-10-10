@@ -107,6 +107,7 @@ defineEmits<{
       </div>
       <p>Aún no tenés amigos agregados.</p>
       <button
+        id="social-friends-tab-btn-buscar-entrenadores"
         class="btn-vicio-secondary"
         @click.stop="$emit('search-tab')"
       >
@@ -121,6 +122,7 @@ defineEmits<{
     >
       <TrainerCard
         v-for="friend in filteredFriends"
+        id="social-friends-tab-trainercard-1"
         :key="friend.id"
         :profile="friend"
         :avatar-size="44"

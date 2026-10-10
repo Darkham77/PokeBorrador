@@ -37,14 +37,14 @@ import HomeWidgetMinimizeBtn from "./HomeWidgetMinimizeBtn.vue";
 .home-ranked-widget {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $spacing-md-alt;
   width: 100%;
   height: 100%;
   padding: 12px 14px;
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 12px;
-  background: rgb(18 22 34 / 85%);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
+  border: 1px solid Rgb(255 255 255 / 8%);
+  border-radius: $radius-xl;
+  background: Rgb(18 22 34 / 85%);
+  box-shadow: $shadow-md;
   box-sizing: border-box;
 }
 
@@ -52,26 +52,26 @@ import HomeWidgetMinimizeBtn from "./HomeWidgetMinimizeBtn.vue";
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  border-bottom: 1px solid Rgb(255 255 255 / 6%);
 
   .title-wrap {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     min-width: 0;
     flex: 1;
 
     .card-icon {
-      font-size: 20px;
+      font-size: var(--font-20);
       flex-shrink: 0;
     }
 
     .title-text-group {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: $spacing-2xs;
       min-width: 0;
     }
 
@@ -80,14 +80,14 @@ import HomeWidgetMinimizeBtn from "./HomeWidgetMinimizeBtn.vue";
 
       margin: 0;
       color: var(--yellow, #facc15);
-      font-size: 11px;
+      font-size: var(--font-11);
       letter-spacing: 1px;
     }
 
     .card-subtitle {
       margin: 0;
       color: var(--gray, #94a3b8);
-      font-size: 9px;
+      font-size: var(--font-9);
       line-height: 1.35;
     }
   }

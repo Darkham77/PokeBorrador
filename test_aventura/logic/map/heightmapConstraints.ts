@@ -73,6 +73,71 @@ interface ConnectedRegion {
   readonly height: number;
 }
 
+interface PlateauCoreResult {
+  readonly coreGrid: boolean[][];
+  readonly coreCount: number;
+}
+
+function computePlateauCoreGrid(
+  cells: readonly { readonly x: number; readonly y: number }[],
+  matrix: ElevationMatrix,
+  elevation: number,
+  W: number,
+  H: number
+): PlateauCoreResult {
+  const coreGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
+  let coreCount = 0;
+
+  for (const cell of cells) {
+    let isCore = true;
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const nx = cell.x + dx;
+        const ny = cell.y + dy;
+        if (nx < 0 || nx >= W || ny < 0 || ny >= H || matrix[ny]![nx]! < elevation) {
+          isCore = false;
+          break;
+        }
+      }
+      if (!isCore) break;
+    }
+    if (isCore) {
+      coreCount++;
+      coreGrid[cell.y]![cell.x] = true;
+    }
+  }
+
+  return { coreGrid, coreCount };
+}
+
+function hasContiguousCoreBlock(
+  coreGrid: readonly (readonly boolean[])[],
+  minX: number,
+  maxX: number,
+  minY: number,
+  maxY: number,
+  req: number
+): boolean {
+  if (req === 0) return true;
+  for (let y = minY; y <= maxY - req + 1; y++) {
+    for (let x = minX; x <= maxX - req + 1; x++) {
+      let blockMatches = true;
+      for (let by = 0; by < req; by++) {
+        for (let bx = 0; bx < req; bx++) {
+          if (!coreGrid[y + by]![x + bx]!) {
+            blockMatches = false;
+            break;
+          }
+        }
+        if (!blockMatches) break;
+      }
+      if (blockMatches) return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Identifies connected components for each distinct elevated tier (Z >= 1).
  */
@@ -197,55 +262,10 @@ export function validateHeightmapConstraints(
     }
 
     // Check walkable core: cells where all 8 neighbors have elevation >= reg.elevation
-    let walkableCoreCount = 0;
-    const coreGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
-
-    for (const cell of reg.cells) {
-      const cx = cell.x;
-      const cy = cell.y;
-      let isCore = true;
-
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          if (dx === 0 && dy === 0) continue;
-          const nx = cx + dx;
-          const ny = cy + dy;
-          if (nx < 0 || nx >= W || ny < 0 || ny >= H || (matrix[ny]![nx]! < reg.elevation)) {
-            isCore = false;
-            break;
-          }
-        }
-        if (!isCore) break;
-      }
-
-      if (isCore) {
-        walkableCoreCount++;
-        coreGrid[cy]![cx] = true;
-      }
-    }
+    const { coreGrid, coreCount: walkableCoreCount } = computePlateauCoreGrid(reg.cells, matrix, reg.elevation, W, H);
 
     // Check if core contains at least a req x req contiguous block
-    const req = minCore;
-    let hasCore = req === 0;
-    for (let y = reg.minY; y <= reg.maxY - req + 1; y++) {
-      for (let x = reg.minX; x <= reg.maxX - req + 1; x++) {
-        let blockMatches = true;
-        for (let by = 0; by < req; by++) {
-          for (let bx = 0; bx < req; bx++) {
-            if (!coreGrid[y + by]![x + bx]!) {
-              blockMatches = false;
-              break;
-            }
-          }
-          if (!blockMatches) break;
-        }
-        if (blockMatches) {
-          hasCore = true;
-          break;
-        }
-      }
-      if (hasCore) break;
-    }
+    const hasCore = hasContiguousCoreBlock(coreGrid, reg.minX, reg.maxX, reg.minY, reg.maxY, minCore);
 
     if (!hasCore) {
       violations.push({
@@ -545,45 +565,9 @@ export function sanitizeHeightmapMatrix(
       }
 
       // Check core
-      const coreGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
-      for (const cell of reg.cells) {
-        let isCore = true;
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            const nx = cell.x + dx;
-            const ny = cell.y + dy;
-            if (nx < 0 || nx >= W || ny < 0 || ny >= H || (sanitized[ny]![nx]! < reg.elevation)) {
-              isCore = false;
-              break;
-            }
-          }
-          if (!isCore) break;
-        }
-        if (isCore) coreGrid[cell.y]![cell.x] = true;
-      }
+      const { coreGrid } = computePlateauCoreGrid(reg.cells, sanitized, reg.elevation, W, H);
 
-      const req = minCore;
-      let hasCore = req === 0;
-      for (let y = reg.minY; y <= reg.maxY - req + 1; y++) {
-        for (let x = reg.minX; x <= reg.maxX - req + 1; x++) {
-          let blockMatches = true;
-          for (let by = 0; by < req; by++) {
-            for (let bx = 0; bx < req; bx++) {
-              if (!coreGrid[y + by]![x + bx]!) {
-                blockMatches = false;
-                break;
-              }
-            }
-            if (!blockMatches) break;
-          }
-          if (blockMatches) {
-            hasCore = true;
-            break;
-          }
-        }
-        if (hasCore) break;
-      }
+      const hasCore = hasContiguousCoreBlock(coreGrid, reg.minX, reg.maxX, reg.minY, reg.maxY, minCore);
 
       if (!hasCore) {
         for (const cell of reg.cells) {

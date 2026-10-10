@@ -134,6 +134,7 @@ onUnmounted(() => {
 
 <template>
   <div
+    id="daycare-slot-div-slotref"
     ref="slotRef"
     class="daycare-slot-legacy"
     :class="{ empty: !pokemon }"

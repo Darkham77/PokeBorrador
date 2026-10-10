@@ -79,7 +79,7 @@ onMounted(() => {
   .status-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     white-space: nowrap;
 
     .pulse-dot {
@@ -87,21 +87,21 @@ onMounted(() => {
       height: 6px;
       border-radius: 50%;
       background: var(--green);
-      box-shadow: 0 0 8px var(--green);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
 
-    .badge-label { @include pixelated; color: var(--gray); font-size: 6px; }
-    .badge-value { @include pixelated; color: var(--white); font-size: 7px; }
+    .badge-label { @include pixelated; color: var(--gray); font-size: var(--font-6); }
+    .badge-value { @include pixelated; color: var(--white); font-size: var(--font-7); }
   }
 
   .hint-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     
-    .hint-icon { font-size: 10px; will-change: transform, filter, opacity;
+    .hint-icon { font-size: var(--font-10); will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 4px var(--yellow)); }
-    .hint-text { @include pixelated; max-width: 250px; color: var(--gray); font-size: 6px; }
+    .hint-text { @include pixelated; max-width: 250px; color: var(--gray); font-size: var(--font-6); }
   }
 }
 </style>

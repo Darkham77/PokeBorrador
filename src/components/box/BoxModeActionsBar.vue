@@ -81,46 +81,46 @@ const formattedSellValue = computed(() => {
   align-items: center;
   margin: 0 12px 16px;
   padding: 12px 20px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 16px;
-  background: rgb(15 23 42 / 80%);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 40%);
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-2xl;
+  background: Rgb(15 23 42 / 80%);
+  box-shadow: var(--shadow-card);
 
   .selection-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
 
     .count {
       @include pixelated;
 
       color: var(--yellow);
-      font-size: 16px;
+      font-size: var(--font-16);
     }
 
     .label {
       @include pixelated;
 
-      color: rgb(255 255 255 / 60%);
-      font-size: 8px;
+      color: Rgb(255 255 255 / 60%);
+      font-size: var(--font-8);
     }
 
     .earnings {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: $spacing-xs;
       margin-left: 12px;
       padding-left: 12px;
-      border-left: 1px solid rgb(255 255 255 / 10%);
+      border-left: 1px solid Rgb(255 255 255 / 10%);
 
       .currency { color: var(--green); font-family: sans-serif; }
-      .value { @include pixelated; color: var(--white); font-size: 10px; }
+      .value { @include pixelated; color: var(--white); font-size: var(--font-10); }
     }
   }
 
   .action-buttons {
     display: flex;
-    gap: 12px;
+    gap: $spacing-md;
 
     .btn-cancel { @include btn-vicio('neutral', 'sm'); }
     .btn-confirm-rocket { @include btn-vicio('danger', 'sm'); }

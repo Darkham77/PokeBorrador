@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
+import { SHOP_SELLBACK_PRICE_RATIO } from '@/logic/constants/gameplay'
 import type { ItemTier } from '@/types/inventory/items'
 
 interface InventoryItem {
@@ -42,6 +43,7 @@ watch(() => props.item.sprite, () => {
 })
 
 const tierClass = computed(() => `tier-${props.item.tier || 'common'}`)
+const sellPrice = computed(() => Math.floor((props.item.price || 0) * SHOP_SELLBACK_PRICE_RATIO).toLocaleString())
 const tierLabel = computed(() => getItemTierLabel(props.item.tier))
 
 // Prepend tier label to tooltip description
@@ -240,7 +242,7 @@ onMounted(() => {
         class="sell-price-pill"
       >
         <span class="pill-icon">₱</span>
-        <span class="pill-amount">{{ Math.floor((item.price || 0) * 0.5).toLocaleString() }}</span>
+        <span class="pill-amount">{{ sellPrice }}</span>
       </div>
 
       <!-- SELECTION INDICATOR -->
@@ -289,7 +291,6 @@ onMounted(() => {
   cursor: pointer;
   container-type: inline-size;
 
-
   :deep(.card-tooltip-trigger) {
     display: flex !important;
     flex-direction: column;
@@ -315,7 +316,7 @@ onMounted(() => {
   // TIER VARIANTS — borders always visible, no badge needed
   &.tier-common {
     border-color: Rgb(148 163 184 / 45%);
-    box-shadow: 0 0 10px Rgb(148 163 184 / 15%), inset 0 0 6px Rgb(148 163 184 / 5%);
+    box-shadow: var(--shadow-glow-amber);
     .item-bg-glow { background: Radial-Gradient(circle, Rgb(148 163 184 / 12%) 0%, transparent 70%); }
   }
 
@@ -362,14 +363,14 @@ onMounted(() => {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 2px;
+      gap: $spacing-2xs;
       min-width: clamp(28px, 32cqw, 36px);
       height: clamp(14px, 16cqw, 18px); 
       padding: clamp(1px, 2cqw, 2px) clamp(4px, 6cqw, 8px);
       border: 1px solid var(--yellow);
-      border-radius: 6px;
+      border-radius: $radius-md;
       background: Linear-Gradient(135deg, #1e293b, #0f172a);
-      box-shadow: 0 4px 10px Rgb(0 0 0 / 40%);
+      box-shadow: var(--shadow-card);
       box-sizing: border-box;
 
       .label {
@@ -381,7 +382,7 @@ onMounted(() => {
       .value {
         @include pixelated;
 
-        color: white;
+        color: var(--white);
         font-size: clamp(8px, 6cqw, 9px);
         font-weight: 900;
       }
@@ -428,18 +429,18 @@ onMounted(() => {
     z-index: calc(var(--z-low) + 2);
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: $spacing-2xs;
     padding: clamp(2px, 2cqw, 3px) clamp(6px, 8cqw, 10px);
-    border: 1px solid #22c55e;
-    border-radius: 99px;
+    border: 1px solid var(--emerald);
+    border-radius: $radius-full;
     background: Linear-Gradient(135deg, #15803d, #166534);
     transform: Translatex(-50%);
-    box-shadow: 0 2px 10px Rgb(34 197 94 / 45%), 0 0 0 1px Rgb(34 197 94 / 15%);
+    box-shadow: var(--shadow-xl);
     white-space: nowrap;
     pointer-events: none;
 
     .pill-icon {
-      color: #86efac;
+      color: var(--green-light);
       font-family: sans-serif !important;
       font-size: clamp(7px, 7cqw, 9px);
       line-height: 1;
@@ -448,7 +449,7 @@ onMounted(() => {
     .pill-amount {
       @include pixelated;
 
-      color: #dcfce7;
+      color: var(--green-light);
       font-size: clamp(6.5px, 7cqw, 8.5px);
       font-weight: 900;
       letter-spacing: 0.03em;
@@ -468,9 +469,9 @@ onMounted(() => {
       width: clamp(12px, 15cqw, 18px);
       height: clamp(12px, 15cqw, 18px);
       border: 1px solid Rgb(255 255 255 / 20%);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(0 0 0 / 40%);
-      color: white;
+      color: var(--white);
       will-change: background-color, border-color, box-shadow;
 
       .checkmark-svg {
@@ -481,7 +482,7 @@ onMounted(() => {
       }
 
       &.checked {
-        color: #000 !important;
+        color: var(--black) !important;
       }
     }
   }

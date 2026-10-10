@@ -58,11 +58,23 @@ export const SQL_MIGRATION_RULES: readonly SqlMigrationRuleId[] = [
 export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_sql_migrations',
       configKey: 'persistence.sqlMigrations',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'SQL Migration Validator',
       description: 'Errores de sintaxis o ejecución en migraciones SQL',
       icon: '📜',

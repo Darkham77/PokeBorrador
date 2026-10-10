@@ -8,27 +8,27 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: $spacing-lg;
     padding: 8px 12px;
     border: 1px solid Rgb(255 255 255 / 5%);
-    border-radius: 12px;
+    border-radius: $radius-xl;
     background: Rgb(0 0 0 / 20%);
     margin-bottom: 20px;
 
     & .search-box {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: $spacing-md-alt;
       flex: 1;
       
-        & .icon { font-size: 14px; opacity: 0.5; }
+        & .icon { font-size: var(--font-14); opacity: 0.5; }
       
       .tm-search-input {
         border: none;
         background: none;
         color: $white;
-        font-family: Inter, sans-serif;
-        font-size: 13px;
+        font-family: $font-family-ui;
+        font-size: var(--font-13);
         flex: 1;
         outline: none;
         
@@ -38,17 +38,17 @@
 
     .sort-box {
       display: flex;
-      gap: 4px;
+      gap: $spacing-xs;
       
       & .sort-btn {
         @include pixelated;
 
         padding: 6px 8px;
         border: 1px solid Rgb(255 255 255 / 10%);
-        border-radius: 6px;
+        border-radius: $radius-md;
         background: Rgb(255 255 255 / 3%);
         color: Rgb(255 255 255 / 40%);
-        font-size: 8px;
+        font-size: var(--font-8);
         cursor: pointer;
         
         
@@ -56,7 +56,7 @@
           background: var(--yellow);
           color: $black;
           border-color: var(--yellow);
-          box-shadow: 0 0 10px Rgb(255 214 10 / 30%);
+          box-shadow: var(--shadow-glow-amber);
         }
       }
     }
@@ -64,16 +64,16 @@
 
   .tm-grid {
     display: grid;
-    gap: 12px;
+    gap: $spacing-md;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     
     .tm-item {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: $spacing-md;
       padding: 12px;
       border: 1px solid Rgb(255 255 255 / 5%);
-      border-radius: 16px;
+      border-radius: $radius-2xl;
       background: Rgb(255 255 255 / 4%);
       
       &:hover:not(.incompatible) {
@@ -97,11 +97,11 @@
         min-width: 36px; // Allow growth if needed
         height: 36px;
         padding: 0 4px; // Add horizontal padding
-        border-radius: 10px;
+        border-radius: $radius-lg-alt;
         color: $black;
-        font-size: 8px; // Slightly smaller to fit better
+        font-size: var(--font-8); // Slightly smaller to fit better
         font-weight: 900;
-        box-shadow: 0 4px 8px Rgb(0 0 0 / 30%);
+        box-shadow: var(--shadow-card);
       }
       
       .tm-info {
@@ -110,12 +110,12 @@
         align-items: flex-start; // Prevent stretching
         flex: 1;
         
-        .tm-name { color: $white; font-size: 11px; font-weight: 800; margin-bottom: 2px; }
+        .tm-name { color: $white; font-size: var(--font-11); font-weight: 800; margin-bottom: 2px; }
       }
       
       .tm-check {
         color: var(--yellow);
-        font-size: 12px;
+        font-size: var(--font-12);
         font-weight: 900;
       }
       

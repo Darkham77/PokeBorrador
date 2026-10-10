@@ -40,11 +40,23 @@ const BINARY_SEAT_BRANCH_REGEX = /\b(?:seat|sideID|side|targetSide)\s*===\s*['"]
 export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRuleId> {
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_combat_invariants',
       configKey: 'fsm.combatInvariants',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Combat Engine & Showdown Invariants Auditor',
       description: 'Invariantes rotas de Showdown o bifurcación binaria p1/p2',
       icon: '🛡️',

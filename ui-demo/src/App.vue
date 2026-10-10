@@ -106,15 +106,19 @@ function closeInventoryModal() {
 
 const sec12Ref = ref<InstanceType<typeof Sec12PokemonDetail> | null>(null)
 
+const POKEDEX_PIKACHU = 25 as const;
+const POKEDEX_CHARIZARD = 6 as const;
+const POKEDEX_GENGAR = 94 as const;
+
 function onSelectPokemon(uid: string) {
   if (uid.includes('pika')) {
-    sec12Ref.value?.openDetailFor({ id: 25, name: 'PIKACHU' })
+    sec12Ref.value?.openDetailFor({ id: POKEDEX_PIKACHU, name: 'PIKACHU' })
   } else if (uid.includes('char')) {
-    sec12Ref.value?.openDetailFor({ id: 6, name: 'CHARIZARD' })
+    sec12Ref.value?.openDetailFor({ id: POKEDEX_CHARIZARD, name: 'CHARIZARD' })
   } else if (uid.includes('gengar')) {
-    sec12Ref.value?.openDetailFor({ id: 94, name: 'GENGAR' })
+    sec12Ref.value?.openDetailFor({ id: POKEDEX_GENGAR, name: 'GENGAR' })
   } else {
-    sec12Ref.value?.openDetailFor({ id: 25, name: 'PIKACHU' })
+    sec12Ref.value?.openDetailFor({ id: POKEDEX_PIKACHU, name: 'PIKACHU' })
   }
 }
 

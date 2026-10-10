@@ -17,9 +17,9 @@ import {
   processTilesetSheet,
   processCompoundStructure,
   type RawPixelGrid
-} from '../../logic/map/inBrowserTileProcessor';
-import { TilesRegistryService } from '../../logic/map/tilesRegistry';
-import { getStructureTemplate } from '../../config/mapStructures';
+} from '../../logic/map/inBrowserTileProcessor.ts';
+import { TilesRegistryService } from '../../logic/map/tilesRegistry.ts';
+import { getStructureTemplate } from '../../config/mapStructures.ts';
 
 describe('In-Browser Tile Processor Pipeline', () => {
   let testRegistry: TilesRegistryService;

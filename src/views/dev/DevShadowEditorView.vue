@@ -193,6 +193,7 @@ onMounted(() => {
           No se encontraron entidades con los filtros actuales.
         </p>
         <button
+          id="dev-shadow-editor-view-btn-limpiar-filtros"
           type="button"
           class="action-button btn-back"
           @click="clearAllFilters"
@@ -233,6 +234,7 @@ onMounted(() => {
 
       <div class="pagination-controls">
         <button
+          id="dev-shadow-editor-view-btn-pagechange"
           type="button"
           class="page-btn"
           :disabled="!canGoPrev"
@@ -241,6 +243,7 @@ onMounted(() => {
           ««
         </button>
         <button
+          id="dev-shadow-editor-view-btn-anterior"
           type="button"
           class="page-btn"
           :disabled="!canGoPrev"
@@ -254,6 +257,7 @@ onMounted(() => {
         </span>
 
         <button
+          id="dev-shadow-editor-view-btn-siguiente"
           type="button"
           class="page-btn"
           :disabled="!canGoNext"
@@ -262,6 +266,7 @@ onMounted(() => {
           Siguiente ›
         </button>
         <button
+          id="dev-shadow-editor-view-btn-pagechange-2"
           type="button"
           class="page-btn"
           :disabled="!canGoNext"

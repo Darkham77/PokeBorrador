@@ -47,10 +47,13 @@ const isClaiming = ref(false)
 const isClaimed = ref(false)
 
 const tierCode = computed(() => (props.tier || 'bronce').toUpperCase() as RankedTierCode)
+const TOP_PODIUM_RANK_THRESHOLD = 10
+
 const tierInfo = computed(() => RANKED_TIERS[tierCode.value] || RANKED_TIERS.BRONCE)
 const softResetElo = computed(() => calculateSoftResetElo(props.finalElo))
 
 const tierColor = computed(() => tierInfo.value.color)
+const isTopPodium = computed(() => Boolean(props.rank && props.rank <= TOP_PODIUM_RANK_THRESHOLD))
 
 // Animation on modal show
 watch(
@@ -64,7 +67,8 @@ watch(
           gsap.fromTo(badge, { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' })
         }
         if (items.length > 0) {
-          gsap.fromTo(items, { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.08, ease: 'power2.out' })
+          const PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX = 15 as const;
+          gsap.fromTo(items, { y: PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.08, ease: 'power2.out' })
         }
       })
     }
@@ -146,7 +150,7 @@ function handleClose() {
             <span class="final-elo">{{ props.finalElo }} LP</span>
           </div>
           <div
-            v-if="props.rank && props.rank <= 10"
+            v-if="isTopPodium"
             class="top-podium-pill podium-tag"
           >
             PODIO #{{ props.rank }}
@@ -210,7 +214,7 @@ function handleClose() {
 .ranked-season-reward-content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: $spacing-md-lg;
   padding: 8px 4px;
 }
 
@@ -219,8 +223,8 @@ function handleClose() {
 
   .season-title {
     margin: 0;
-    color: #fde047;
-    font-size: 1.15rem;
+    color: var(--amber-300);
+    font-size: var(--font-18);
     font-weight: 800;
     text-transform: uppercase;
     text-shadow: 0 0 8px Rgb(234 179 8 / 40%);
@@ -228,23 +232,23 @@ function handleClose() {
 
   .season-subtitle {
     margin: 3px 0 10px;
-    color: #94a3b8;
-    font-size: 0.8rem;
+    color: var(--slate-400);
+    font-size: var(--font-13);
   }
 }
 
 .reward-tier-badge {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   margin: 0 auto;
   padding: 8px 18px;
   border: 2px solid;
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(15 23 42 / 80%);
 
   .tier-icon {
-    font-size: 1.8rem;
+    font-size: var(--font-28);
   }
 
   .tier-sprite-badge {
@@ -262,26 +266,26 @@ function handleClose() {
     text-align: left;
 
     .tier-name {
-      font-size: 1rem;
+      font-size: var(--font-16);
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .final-elo {
-      color: #cbd5e1;
-      font-size: 0.8rem;
+      color: var(--slate-300);
+      font-size: var(--font-13);
       font-weight: 600;
     }
   }
 
   .top-podium-pill {
     padding: 3px 8px;
-    border: 1px solid #eab308;
-    border-radius: 6px;
+    border: 1px solid var(--amber-dark);
+    border-radius: $radius-md;
     background: Rgb(234 179 8 / 30%);
-    color: #fef08a;
-    font-size: 0.7rem;
+    color: var(--yellow-light);
+    font-size: var(--font-11);
     font-weight: 800;
   }
 }
@@ -289,25 +293,25 @@ function handleClose() {
 .soft-reset-banner {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   padding: 10px 12px;
   border: 1px solid Rgb(148 163 184 / 20%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(30 41 59 / 60%);
 
   .reset-icon {
-    font-size: 1.4rem;
+    font-size: var(--font-22);
   }
 
   .reset-text {
     display: flex;
     flex-direction: column;
-    color: #94a3b8;
-    font-size: 0.75rem;
+    color: var(--slate-400);
+    font-size: var(--font-12);
 
     strong {
-      color: #38bdf8;
-      font-size: 0.8rem;
+      color: var(--sky);
+      font-size: var(--font-13);
       margin-top: 1px;
     }
   }
@@ -316,8 +320,8 @@ function handleClose() {
 .unlocked-prizes-section {
   .section-heading {
     margin: 0 0 8px;
-    color: #cbd5e1;
-    font-size: 0.8rem;
+    color: var(--slate-300);
+    font-size: var(--font-13);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -326,7 +330,7 @@ function handleClose() {
   .prizes-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     max-height: 200px;
     overflow-y: auto;
   }
@@ -339,13 +343,13 @@ function handleClose() {
     width: 100%;
     padding: 12px;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background: Linear-Gradient(135deg, #fde047 0%, #eab308 100%);
-    color: #0f172a;
-    font-size: 0.85rem;
+    color: var(--slate-900);
+    font-size: var(--font-14);
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 0 10px Rgb(234 179 8 / 40%);
+    box-shadow: $shadow-glow-amber;
 
     &:disabled {
       opacity: 0.5;

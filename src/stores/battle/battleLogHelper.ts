@@ -9,12 +9,14 @@ const MAX_BATTLE_LOG_ENTRIES = 1000;
 const BATCH_SIZE_HIGH = 3;
 const BATCH_SIZE_MED = 2;
 const BATCH_SIZE_LOW = 1;
+const BATCH_QUEUE_THRESHOLD_HIGH = 6;
+const BATCH_QUEUE_THRESHOLD_MED = 3;
 const DELAY_DRAINING_MS = 100;
 const DELAY_FINAL_MS = 350;
 
 function resolveLogBatchSize(queueLength: number): number {
-  if (queueLength > 6) return BATCH_SIZE_HIGH;
-  if (queueLength > 3) return BATCH_SIZE_MED;
+  if (queueLength > BATCH_QUEUE_THRESHOLD_HIGH) return BATCH_SIZE_HIGH;
+  if (queueLength > BATCH_QUEUE_THRESHOLD_MED) return BATCH_SIZE_MED;
   return BATCH_SIZE_LOW;
 }
 

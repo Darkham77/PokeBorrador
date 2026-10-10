@@ -464,6 +464,7 @@ const handleReset = () => {
       <div class="control-row">
         <label class="control-label">X:</label>
         <input
+          id="shadow-editor-card-input-1"
           type="range"
           class="range-slider"
           :min="MIN_COORDINATE"
@@ -473,6 +474,7 @@ const handleReset = () => {
           @input="handleNumericXChange"
         >
         <input
+          id="shadow-editor-card-input-numericxchange"
           type="number"
           class="number-input"
           :min="MIN_COORDINATE"
@@ -484,6 +486,7 @@ const handleReset = () => {
         >
         <div class="slider-btn-group">
           <button
+            id="shadow-editor-card-btn-copiedfield-x"
             type="button"
             class="slider-action-btn"
             title="Copiar valor X"
@@ -492,6 +495,7 @@ const handleReset = () => {
             <span class="emoji">{{ copiedField === 'x' ? '✅' : '📋' }}</span>
           </button>
           <button
+            id="shadow-editor-card-btn-pastevalue"
             type="button"
             class="slider-action-btn"
             title="Pegar valor en X"
@@ -506,6 +510,7 @@ const handleReset = () => {
       <div class="control-row">
         <label class="control-label">Y:</label>
         <input
+          id="shadow-editor-card-input-2"
           type="range"
           class="range-slider"
           :min="MIN_COORDINATE"
@@ -515,6 +520,7 @@ const handleReset = () => {
           @input="handleNumericYChange"
         >
         <input
+          id="shadow-editor-card-input-numericychange"
           type="number"
           class="number-input"
           :min="MIN_COORDINATE"
@@ -526,6 +532,7 @@ const handleReset = () => {
         >
         <div class="slider-btn-group">
           <button
+            id="shadow-editor-card-btn-copiedfield-y"
             type="button"
             class="slider-action-btn"
             title="Copiar valor Y"
@@ -534,6 +541,7 @@ const handleReset = () => {
             <span class="emoji">{{ copiedField === 'y' ? '✅' : '📋' }}</span>
           </button>
           <button
+            id="shadow-editor-card-btn-pastevalue-2"
             type="button"
             class="slider-action-btn"
             title="Pegar valor en Y"
@@ -551,6 +559,7 @@ const handleReset = () => {
           title="Escala de Sombra (Tamaño)"
         >Tam:</label>
         <input
+          id="shadow-editor-card-input-3"
           type="range"
           class="range-slider slider-scale"
           :min="MIN_SHADOW_SCALE"
@@ -560,6 +569,7 @@ const handleReset = () => {
           @input="handleShadowScaleChange"
         >
         <input
+          id="shadow-editor-card-input-shadowscalechange"
           type="number"
           class="number-input"
           :min="MIN_SHADOW_SCALE"
@@ -571,6 +581,7 @@ const handleReset = () => {
         >
         <div class="slider-btn-group">
           <button
+            id="shadow-editor-card-btn-copiedfield-scale"
             type="button"
             class="slider-action-btn"
             title="Copiar valor Tamaño"
@@ -579,6 +590,7 @@ const handleReset = () => {
             <span class="emoji">{{ copiedField === 'scale' ? '✅' : '📋' }}</span>
           </button>
           <button
+            id="shadow-editor-card-btn-pastevalue-3"
             type="button"
             class="slider-action-btn"
             title="Pegar valor en Tamaño"
@@ -593,6 +605,7 @@ const handleReset = () => {
       <div class="footer-row">
         <label class="flying-checkbox-label">
           <input
+            id="shadow-editor-card-input-flyingtoggle"
             type="checkbox"
             class="flying-checkbox"
             :checked="currentIsFlying"
@@ -603,6 +616,7 @@ const handleReset = () => {
 
         <div class="footer-actions">
           <button
+            id="shadow-editor-card-btn-copiedall"
             type="button"
             class="footer-icon-btn"
             title="Copiar todos los valores (X, Y, Tam, Volador)"
@@ -611,6 +625,7 @@ const handleReset = () => {
             <span class="emoji">{{ copiedAll ? '✅' : '📋' }}</span>
           </button>
           <button
+            id="shadow-editor-card-btn-pasteall"
             type="button"
             class="footer-icon-btn"
             title="Pegar todos los valores (X, Y, Tam, Volador)"
@@ -619,6 +634,7 @@ const handleReset = () => {
             <span class="emoji">📥</span>
           </button>
           <button
+            id="shadow-editor-card-btn-reset"
             type="button"
             class="reset-button"
             :disabled="!isModified"

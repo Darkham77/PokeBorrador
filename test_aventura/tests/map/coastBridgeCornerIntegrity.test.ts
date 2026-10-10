@@ -12,9 +12,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../../src/logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../../src/logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../../src/logic/map/routeNetworkEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 
 describe('coastBridgeCornerIntegrity', () => {
   const continent = generateContinentMap({
@@ -50,4 +50,15 @@ describe('coastBridgeCornerIntegrity', () => {
     expect(topFlank?.role).toBe('corner_inner_ne');
     expect(botFlank?.role).toBe('corner_inner_se');
   });
+
+  it('ensures all bridge segments correctly span over water elevation in the continent', () => {
+    expect(routeNetwork.routes.length).toBeGreaterThan(0);
+
+    // Verify bridge cell at (x: 76, y: 17) corresponds to water elevation (0)
+    const bridgeY = 17;
+    const bridgeX = 76;
+    expect(continent.elevation[bridgeY]?.[bridgeX]).toBe(0);
+    expect(continent.resolvedWater.cellDetails[bridgeY]?.[bridgeX]?.terrain).toBe('water');
+  });
 });
+

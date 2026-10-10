@@ -25,13 +25,15 @@ export function useMapCardSprites(
   const processedRareAura = ref<string>('')
   const processedAtmosAura = ref<string>('')
 
+const AURA_INTENSITY_SCALE = 1.5;
+
   onMounted(() => {
     // Pre-render global auras for spawns
     try {
-      getProcessedAura(flare2Url, 'rgba(255, 0, 0, 0.9)', 1.5).then(url => {
+      getProcessedAura(flare2Url, 'rgba(255, 0, 0, 0.9)', AURA_INTENSITY_SCALE).then(url => {
         processedRareAura.value = url
       })
-      getProcessedAura(flare1Url, 'rgba(0, 255, 255, 0.85)', 1.5).then(url => {
+      getProcessedAura(flare1Url, 'rgba(0, 255, 255, 0.85)', AURA_INTENSITY_SCALE).then(url => {
         processedAtmosAura.value = url
       })
     } catch (e) {

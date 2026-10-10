@@ -3,14 +3,14 @@
 .filters-expanded-premium {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: $spacing-xl;
   margin-top: 12px;
 }
 
 .filters-grid-columns {
   display: grid;
   align-items: stretch;
-  gap: 20px;
+  gap: $spacing-xl;
   grid-template-columns: repeat(3, 1fr);
 
   @media (width <= 1100px) {
@@ -25,14 +25,14 @@
 .filter-column {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   min-width: 0;
 }
 
 .compact-section {
   padding: 16px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 20%);
   
   &.full-width { grid-column: span 2; }
@@ -46,9 +46,9 @@
 
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
     color: var(--gray);
-    font-size: 7px;
+    font-size: var(--font-7);
     opacity: 0.6;
     margin-bottom: 16px;
     letter-spacing: 1px;
@@ -65,13 +65,13 @@
 .iv-mini-grid {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 }
 
 .slider-row-mini, .iv-slider-row-mini {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 2px 0;
 
   .label, .stat-name {
@@ -79,14 +79,14 @@
 
     width: 70px;
     color: var(--gray);
-    font-size: 7px;
+    font-size: var(--font-7);
     opacity: 0.8;
     white-space: nowrap;
   }
 
   input[type="range"] {
     height: 4px;
-    border-radius: 2px;
+    border-radius: $radius-xs;
     flex: 1;
     appearance: none;
     outline: none;
@@ -99,7 +99,7 @@
       background: var(--stat-color, var(--yellow));
       appearance: none;
       cursor: pointer;
-      box-shadow: 0 0 10px var(--stat-color);
+      box-shadow: var(--shadow-glow-amber);
     }
   }
 
@@ -107,7 +107,7 @@
     @include pixelated;
 
     min-width: 25px;
-    font-size: 8px;
+    font-size: var(--font-8);
     text-align: right;
   }
 }
@@ -126,13 +126,13 @@
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 6px 12px;
   border: 1px solid Rgb(255 214 10 / 10%);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(255 214 10 / 5%);
   color: var(--yellow);
-  font-size: 8px;
+  font-size: var(--font-8);
 }
 
 .rocket-filter-trigger {
@@ -140,7 +140,7 @@
 
   height: 28px;
   padding: 0 16px;
-  font-size: 7px;
+  font-size: var(--font-7);
   margin-left: auto;
   white-space: nowrap;
 
@@ -148,7 +148,7 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 10px;
+    font-size: var(--font-10);
     line-height: 1;
     transform: Translatey(-1px);
     margin-right: 4px;
@@ -157,7 +157,7 @@
 
 .types-compact-grid {
   display: grid;
-  gap: 4px;
+  gap: $spacing-xs;
   grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
 
   & > * {
@@ -172,4 +172,3 @@
     box-sizing: border-box !important;
   }
 }
-

@@ -89,22 +89,22 @@ const percentLabelText = computed(() => {
   width: 24px; // Aumentado para dar aire lateral
   height: fit-content;
   padding: 20px 10px;
-  border-radius: 20px;
-  background: rgb(0 0 0 / 80%); // Solidez al 80% para contraste puro
+  border-radius: $radius-3xl;
+  background: Rgb(0 0 0 / 80%); // Solidez al 80% para contraste puro
   margin-block: auto;
   pointer-events: none;
-  box-shadow: 0 0 30px rgb(0 0 0 / 90%); // Aura oscura eficiente
+  box-shadow: var(--shadow-glow-amber-lg);
 }
 
 .label {
   @include pixelated;
 
-  color: rgb(239 68 68 / 100%);
-  font-size: 8px;
-  transform: rotate(180deg);
+  color: Rgb(239 68 68 / 100%);
+  font-size: var(--font-8);
+  transform: Rotate(180deg);
   writing-mode: vertical-lr;
   margin-bottom: 8px;
-  text-shadow: 1px 1px var(--black), 0 0 5px rgb(239 68 68 / 40%);
+  text-shadow: 1px 1px var(--black), 0 0 5px Rgb(239 68 68 / 40%);
 }
 
 .bar-bg {
@@ -112,29 +112,29 @@ const percentLabelText = computed(() => {
   align-items: flex-end;
   width: 12px;
   height: 200px;
-  border: 2px solid rgb(51 51 51 / 100%);
-  border-radius: 10px;
+  border: 2px solid Rgb(51 51 51 / 100%);
+  border-radius: $radius-lg-alt;
   background: var(--black);
   overflow: hidden;
-  box-shadow: 0 0 10px rgb(0 0 0 / 50%), inset 0 0 5px rgb(0 0 0 / 80%);
+  box-shadow: var(--shadow-glow-amber);
 }
 
 .bar-fill {
   position: relative;
   width: 100%;
-  background: rgb(239 68 68 / 100%);
-  box-shadow: 0 0 15px rgb(239 68 68 / 100%);
+  background: Rgb(239 68 68 / 100%);
+  box-shadow: var(--shadow-glow-amber);
 }
 
 .percent-label {
   @include pixelated;
 
-  color: rgb(239 68 68 / 100%);
-  font-size: 10px;
+  color: Rgb(239 68 68 / 100%);
+  font-size: var(--font-10);
   font-weight: 800;
-  transform: rotate(180deg);
+  transform: Rotate(180deg);
   margin-top: 8px;
-  text-shadow: 1px 1px var(--black), 0 0 5px rgb(239 68 68 / 40%);
+  text-shadow: 1px 1px var(--black), 0 0 5px Rgb(239 68 68 / 40%);
   writing-mode: vertical-lr;
 }
 </style>

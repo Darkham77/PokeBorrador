@@ -23,6 +23,7 @@ DevOps / QA Engineers.
 
 - [`postgres_test_container.ts`](./postgres_test_container.ts): Modular Docker discovery, ephemeral container lifecycle, and SQL migration runner.
 - [`run_tests.ts`](./run_tests.ts): Test orchestrator managing Docker detection, container lifecycle, SQL migrations, and Vitest execution.
+- [`test_aventura_e2e.ts`](./test_aventura_e2e.ts): Playwright end-to-end simulation suite targeting test_aventura sandbox views and semantic IDs.
 
 ## Work Guidance
 

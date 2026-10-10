@@ -17,10 +17,10 @@ import {
   TilesRegistryService,
   loadTilesRegistry,
   type TilesRegistryJson
-} from '../../../src/logic/map/tilesRegistry.ts';
+} from '../../logic/map/tilesRegistry.ts';
 import {
   ProceduralMapGenerator
-} from '../../../src/logic/map/proceduralMapGenerator.ts';
+} from '../../logic/map/proceduralMapGenerator.ts';
 
 describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () => {
   let registryService: TilesRegistryService;
@@ -169,7 +169,7 @@ describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () 
   });
 
   it('generates micro-urbanism front yards with mailboxes, picket fences, and flowerbeds', async () => {
-    const { MAILBOX, FENCE_WHITE, FLOWERS_RED, FLOWERS_BLUE, FLOWERS_YELLOW } = await import('../../../src/config/mapProps.ts');
+    const { MAILBOX, FENCE_WHITE, FLOWERS_RED, FLOWERS_BLUE, FLOWERS_YELLOW } = await import('../../config/mapProps.ts');
     const generator = new ProceduralMapGenerator(registryService);
     const map = generator.generate({
       width: 32,
@@ -208,7 +208,7 @@ describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () 
   });
 
   it('incorporates gatehouses and modular rectangular clearings in regional world generation', async () => {
-    const { KantoRegionalWorldGenerator, DynamicCatalogLoader } = await import('../../../src/logic/map/kantoRegionalGenerator.ts');
+    const { KantoRegionalWorldGenerator, DynamicCatalogLoader } = await import('../../logic/map/kantoRegionalGenerator.ts');
     const { rawNodes, connections } = await import('../../../src/components/map/adventure/adventureMapData.ts');
 
     const loader = new DynamicCatalogLoader();

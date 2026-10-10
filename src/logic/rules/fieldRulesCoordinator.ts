@@ -326,10 +326,11 @@ export function resolveFieldBattleRewards(ctx: FieldBattleRewardContext): Resolv
     moneyMult *= 2.0;
   }
 
+  const FACTION_DOMINANCE_REWARD_MULTIPLIER = 1.2 as const;
   const isDominant = ctx.faction && ctx.dominanceData && ctx.mapId && ctx.dominanceData[ctx.mapId]?.winner === ctx.faction;
   if (isDominant) {
-    moneyMult *= 1.2;
-    expMult *= 1.2;
+    moneyMult *= FACTION_DOMINANCE_REWARD_MULTIPLIER;
+    expMult *= FACTION_DOMINANCE_REWARD_MULTIPLIER;
   }
 
   const activeEvents = ctx.activeEvents || [];

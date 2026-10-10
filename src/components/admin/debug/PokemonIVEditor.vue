@@ -42,21 +42,21 @@ const emit = defineEmits<{
 <style lang="scss" scoped>
 .iv-grid {
   display: grid;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   grid-template-columns: repeat(3, 1fr);
   padding: 8px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 12px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 3%);
 
   .iv-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
 
     label {
-      color: rgb(255 255 255 / 40%); 
-      font-size: 9px; 
+      color: Rgb(255 255 255 / 40%); 
+      font-size: var(--font-9); 
       text-align: center; 
       text-transform: uppercase;
     }
@@ -64,11 +64,11 @@ const emit = defineEmits<{
     input { 
       width: 100%;
       padding: 6px 2px;
-      border: 1px solid rgb(255 255 255 / 10%);
-      border-radius: 6px;
-      background: rgb(0 0 0 / 40%);
+      border: 1px solid Rgb(255 255 255 / 10%);
+      border-radius: $radius-md;
+      background: Rgb(0 0 0 / 40%);
       color: var(--yellow);
-      font-size: 11px;
+      font-size: var(--font-11);
       text-align: center;
       outline: none;
       appearance: textfield;

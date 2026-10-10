@@ -20,8 +20,8 @@ import {
   generateContinentalMountains,
   generateContinentMap,
   type ContinentMapResult
-} from '../../../src/logic/map/continentGenerator.ts';
-import type { WaterTerrainKind } from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/continentGenerator.ts';
+import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('continentGenerator', () => {
   describe('generateRadialLandmassMask', () => {

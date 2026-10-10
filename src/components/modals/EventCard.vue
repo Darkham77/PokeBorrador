@@ -221,6 +221,7 @@ onUnmounted(() => {
                 position="top"
               >
                 <img
+                  id="event-card-img-1"
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, sp)"
                   :alt="sp"
                   draggable="false"

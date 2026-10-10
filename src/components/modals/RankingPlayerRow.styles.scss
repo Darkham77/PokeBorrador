@@ -4,10 +4,10 @@
 .rank-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   padding: 10px 14px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 2%);
   cursor: pointer;
   will-change: transform, background-color, border-color;
@@ -31,24 +31,24 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 5px;
+  gap: $spacing-xs-5;
   width: auto;
   min-width: 32px;
   flex-shrink: 0;
 
   .crown {
-    font-size: 16px;
+    font-size: var(--font-16);
   }
 
   .generic-rank {
     @include pixelated;
 
-    color: #94a3b8;
-    font-size: 8px;
+    color: var(--slate-400);
+    font-size: var(--font-8);
 
-    &.top-1 { color: #f59e0b; }
-    &.top-2 { color: #cbd5e1; }
-    &.top-3 { color: #b45309; }
+    &.top-1 { color: var(--amber-dark); }
+    &.top-2 { color: var(--slate-300); }
+    &.top-3 { color: var(--amber-dark); }
   }
 
   .ranked-medal-mini {
@@ -69,7 +69,7 @@
 .player-details {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: $spacing-xs-alt;
   min-width: 0;
   flex: 1;
 
@@ -77,11 +77,11 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .player-name-text {
       color: var(--white);
-      font-size: 12px;
+      font-size: var(--font-12);
       font-weight: bold;
     }
 
@@ -89,9 +89,9 @@
       @include pixelated;
 
       padding: 1px 4px;
-      border-radius: 4px;
-      color: white;
-      font-size: 6px;
+      border-radius: $radius-sm;
+      color: var(--white);
+      font-size: var(--font-6);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -100,9 +100,9 @@
   .player-stats-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: #94a3b8;
-    font-size: 9px;
+    gap: $spacing-sm-alt;
+    color: var(--slate-400);
+    font-size: var(--font-9);
 
     .player-class-info {
       text-transform: capitalize;
@@ -123,9 +123,9 @@
 
     padding: 4px 8px;
     border: 1px solid Rgb(251 191 36 / 15%);
-    border-radius: 6px;
+    border-radius: $radius-md;
     background: Rgb(251 191 36 / 8%);
     color: var(--yellow);
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }

@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import '@/styles/_index.scss'
+import './styles/animations.scss'
 
 // Global Components (matching main app so components compile successfully)
 import PVTooltip from '@/components/common/PVTooltip.vue'

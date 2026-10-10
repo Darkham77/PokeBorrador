@@ -58,6 +58,7 @@ const openCenter = () => {
 <template>
   <div class="map-pokecenter-wrapper">
     <div
+      id="map-pokemon-center-banner-div-1"
       class="pokecenter-banner"
       :class="{ 'on-cooldown': cooldownSecondsLeft > 0 }"
       @click.stop="cooldownSecondsLeft > 0 ? handleCooldownClick() : openCenter()"
@@ -113,10 +114,10 @@ const openCenter = () => {
   max-width: 100%;
   height: auto;
   border: 4px solid Rgb(255 0 127 / 100%);
-  border-radius: 16px;
+  border-radius: $radius-2xl;
   aspect-ratio: 307 / 171;
   cursor: pointer;
-  box-shadow: 0 10px 40px Rgb(0 0 0 / 60%), inset 0 0 15px Rgb(0 0 0 / 50%);
+  box-shadow: var(--shadow-card-elevated);
   overflow: hidden;
   box-sizing: border-box;
   
@@ -125,7 +126,7 @@ const openCenter = () => {
 
     position: absolute;
     z-index: calc(var(--z-base) + 1);
-    border-radius: 14px;
+    border-radius: $radius-xl-alt;
     inset: -2px;
     background-size: cover;
     background-position: center center;
@@ -135,7 +136,7 @@ const openCenter = () => {
   &::after {
     position: absolute;
     z-index: calc(var(--z-base) + 2);
-    border-radius: 14px;
+    border-radius: $radius-xl-alt;
     background: Linear-Gradient(to top, var(--black, #000) 0%, Rgb(0 0 0 / 60%) 30%, transparent 55%);
     content: '';
     inset: -2px;
@@ -159,7 +160,7 @@ const openCenter = () => {
   left: 0;
   z-index: calc(var(--z-base) + 3);
   padding: 16px 20px;
-  border-radius: 0 0 16px 16px;
+  border-radius: 0 0 $radius-2xl $radius-2xl;
   background: Linear-Gradient(to top, Rgb(0 0 0 / 60%) 0%, transparent 100%);
   text-align: left;
 }
@@ -169,20 +170,20 @@ const openCenter = () => {
 
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: white;
-  font-size: 18px;
+  gap: $spacing-sm-alt;
+  color: var(--white);
+  font-size: var(--font-18);
   font-weight: 700;
   margin-bottom: 2px;
   text-shadow: 0 3px 8px Rgb(0 0 0 / 100%);
   white-space: nowrap;
 
   .title-icon {
-    font-size: 16px;
+    font-size: var(--font-16);
   }
 
   @media (width <= 480px) {
-    font-size: 15px;
+    font-size: var(--font-15);
   }
 }
 
@@ -191,7 +192,7 @@ const openCenter = () => {
 
   max-width: 90%;
   color: Rgb(255 255 255 / 85%);
-  font-size: 8px;
+  font-size: var(--font-8);
   font-weight: 400 !important;
   text-shadow: 0 2px 4px Rgb(0 0 0 / 100%);
 }
@@ -219,17 +220,17 @@ const openCenter = () => {
   z-index: calc(var(--z-base) + 4);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: $spacing-xs;
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: Rgb(16 185 129 / 100%);
   color: var(--white);
-  font-size: 8px;
-  box-shadow: 0 4px 10px Rgb(16 185 129 / 30%);
+  font-size: var(--font-8);
+  box-shadow: var(--shadow-card);
 
   &.cooldown {
     background: Rgb(75 85 99 / 100%);
-    box-shadow: 0 4px 10px Rgb(75 85 99 / 30%);
+    box-shadow: var(--shadow-card);
   }
 }
 </style>

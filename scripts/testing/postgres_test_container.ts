@@ -53,6 +53,7 @@ const POSTGRES_PING_TIMEOUT_SEC = 3;
 const POSTGRES_READY_MAX_RETRIES = 20;
 const POLL_INTERVAL_MS = 1000;
 const POSTGRES_POLL_INTERVAL_MS = 500;
+const HTTP_STATUS_OK = 200 as const;
 
 export interface DockerDiscovery {
   dockerBin: string | null;
@@ -428,13 +429,13 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
         const res = await fetch(`${POSTGREST_URL}/rest/v1/system_config`, {
           headers: { apikey: SUPABASE_TEST_ANON_KEY }
         });
-        if (res.ok || res.status === 200) {
+        if (res.ok || res.status === HTTP_STATUS_OK) {
           return true;
         }
       } catch { // catch-ok: retry if postgrest ping failed during startup poll
         // Retry
       }
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, POSTGRES_POLL_INTERVAL_MS));
     }
     return false;
   }

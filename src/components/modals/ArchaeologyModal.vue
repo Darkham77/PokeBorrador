@@ -226,7 +226,7 @@ const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50
       position: absolute;
       width: 4px;
       height: 4px;
-      background: #ca8a04;
+      background: var(--amber-dark);
       border-radius: ${DUST_PARTICLE_BORDER_RADIUS_PERCENT}%;
       pointer-events: none;
       left: ${rect.left - parent.getBoundingClientRect().left + rect.width / 2}px;
@@ -377,16 +377,16 @@ const handleCloseModal = () => {
   h3 {
     @include pixelated;
 
-    color: #eab308;
-    font-size: 14px;
+    color: var(--amber-dark);
+    font-size: var(--font-14);
     margin-bottom: 8px;
-    text-shadow: 0 0 10px rgb(234 179 8 / 40%);
+    text-shadow: 0 0 10px Rgb(234 179 8 / 40%);
   }
 
   p {
-    color: #dfcbb5;
-    font-size: 12px;
-    span { color: #fef08a; font-weight: bold; }
+    color: var(--amber-300);
+    font-size: var(--font-12);
+    span { color: var(--yellow-light); font-weight: bold; }
   }
 }
 
@@ -394,7 +394,7 @@ const handleCloseModal = () => {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
   margin-bottom: 20px;
 }
@@ -403,26 +403,26 @@ const handleCloseModal = () => {
   @include pixelated;
 
   padding: 6px 10px;
-  border: 1px solid rgb(234 179 8 / 30%);
-  border-radius: 12px;
-  background: rgb(255 255 255 / 5%);
+  border: 1px solid Rgb(234 179 8 / 30%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 5%);
   color: var(--white);
-  font-size: 8px;
+  font-size: var(--font-8);
   white-space: nowrap;
 }
 
 .archaeology-grid {
   position: relative;
   display: grid;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(5, 1fr);
   width: 300px;
   height: 300px;
   padding: 8px;
-  border: 2px solid #ca8a04;
-  border-radius: 16px;
-  background: rgb(24 15 6 / 50%);
+  border: 2px solid var(--amber-dark);
+  border-radius: $radius-2xl;
+  background: Rgb(24 15 6 / 50%);
 }
 
 .tile {
@@ -431,8 +431,8 @@ const handleCloseModal = () => {
   justify-content: center;
   align-items: center;
   border: 1px solid #451a03;
-  border-radius: 8px;
-  background: #78350f;
+  border-radius: $radius-lg;
+  background: var(--amber-dark);
   cursor: pointer;
   overflow: hidden;
 
@@ -442,21 +442,21 @@ const handleCloseModal = () => {
 
   .rock-texture {
     position: absolute;
-    border: 1px solid #78350f;
-    border-radius: 4px;
-    background: #b45309;
+    border: 1px solid var(--amber-dark);
+    border-radius: $radius-sm;
+    background: var(--amber-dark);
     inset: 4px;
   }
 
   &.is-dug {
     background: #451a03;
-    border-color: #270e03;
+    border-color: var(--dark);
     cursor: default;
   }
 
   &.is-fossil {
-    background: #fef08a;
-    box-shadow: inset 0 0 10px #eab308;
+    background: var(--yellow-light);
+    box-shadow: var(--shadow-inset-md);
     .fossil-sprite {
       @include sprite-render;
 
@@ -469,23 +469,23 @@ const handleCloseModal = () => {
   .clue-tag {
     @include pixelated;
 
-    font-size: 10px;
+    font-size: var(--font-10);
     font-weight: bold;
     
     &.hot {
-      color: #f87171;
+      color: var(--rose);
     }
     
     &.cold {
-      color: #60a5fa;
+      color: var(--blue-400);
     }
   }
 }
 
 .game-feedback {
   min-height: 20px;
-  color: #dfcbb5;
-  font-size: 11px;
+  color: var(--amber-300);
+  font-size: var(--font-11);
   text-align: center;
   margin-top: 20px;
 }

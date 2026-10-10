@@ -24,6 +24,9 @@ export type ContinentAmenity = (typeof CONTINENT_AMENITIES)[number];
 export const URBAN_SCALES = ['hamlet', 'village', 'town', 'city', 'metropolis'] as const;
 export type UrbanScale = (typeof URBAN_SCALES)[number];
 
+export const CONTINENT_RENDER_MODES = ['tiles_only', 'hybrid', 'pokégear'] as const;
+export type ContinentRenderMode = (typeof CONTINENT_RENDER_MODES)[number];
+
 export const SPRITE_CATEGORIES = [
   'tree',
   'mountain',
@@ -53,6 +56,9 @@ export interface BiomeDistributionConfig {
   readonly beachPercent: number;
 }
 
+export const CONTINENT_GENERATION_MODES = ['preset', 'procedural'] as const;
+export type ContinentGenerationMode = (typeof CONTINENT_GENERATION_MODES)[number];
+
 export interface ContinentGenConfig {
   readonly seed: number;
   readonly dimensions: ContinentDimensions;
@@ -60,7 +66,7 @@ export interface ContinentGenConfig {
   readonly biomes: BiomeDistributionConfig;
   readonly roadWidth: number;
   readonly presetId?: CanonicalPresetId;
-  readonly generationMode?: 'preset' | 'procedural';
+  readonly generationMode?: ContinentGenerationMode;
 }
 
 export interface ContinentNode {

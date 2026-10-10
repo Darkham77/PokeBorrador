@@ -1,5 +1,7 @@
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue'
+
+const props = defineProps<{
   showGuides: boolean
   naturalSize: { w: number; h: number }
   isAnimated: boolean
@@ -7,6 +9,9 @@ defineProps<{
   debugShowPokeRadius: boolean
   fxRadius: number
 }>()
+
+const DIAMETER_SCALE_FACTOR = 2
+const pokeDiameterPercent = computed(() => `${props.fxRadius * DIAMETER_SCALE_FACTOR}%`)
 </script>
 
 <template>
@@ -31,8 +36,8 @@ defineProps<{
     v-if="debugShowPokeRadius"
     class="debug-poke-radius-sprite"
     :style="{
-      width: (fxRadius * 2) + '%',
-      height: (fxRadius * 2) + '%'
+      width: pokeDiameterPercent,
+      height: pokeDiameterPercent
     }"
   >
     <span class="debug-poke-radius-label">POKE (Radius: {{ fxRadius.toFixed(1) }}%)</span>
@@ -59,7 +64,7 @@ defineProps<{
     padding: 1px 3px;
     background: Rgb(0 0 0 / 60%);
     color: Rgb(255 180 0 / 100%);
-    font-size: 9px;
+    font-size: var(--font-9);
     transform: Scale(calc(1 / var(--camera-scale, 1)));
     transform-origin: bottom right;
   }
@@ -73,7 +78,7 @@ defineProps<{
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 3px solid #0ff;
+  border: 3px solid var(--cyan);
   border-radius: 50%;
   background: Rgb(0 255 255 / 15%);
   transform: Translate(-50%, -50%);
@@ -85,12 +90,12 @@ defineProps<{
     left: 50%;
     z-index: var(--z-modal-step);
     padding: 2px 5px;
-    border: 1px solid #0ff;
-    border-radius: 3px;
+    border: 1px solid var(--cyan);
+    border-radius: $radius-xs-alt;
     background: Rgb(0 0 0 / 90%);
-    color: #0ff;
-    font-family: monospace, sans-serif;
-    font-size: 10px;
+    color: var(--cyan);
+    font-family: $font-family-mono;
+    font-size: var(--font-10);
     font-weight: bold;
     line-height: 1.2;
     transform: Translatex(-50%) Scale(calc(1 / var(--camera-scale, 1)));

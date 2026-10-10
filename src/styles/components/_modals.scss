@@ -16,8 +16,8 @@
   align-items: center;
   width: 20px;
   height: 20px;
-  border-radius: 4px;
-  font-size: 10px;
+  border-radius: $radius-sm;
+  font-size: var(--font-10);
   
   &.secondary {
     border: 1px solid Rgb(255 214 10 / 20%);
@@ -36,7 +36,7 @@
 
 .currency-icon-bc {
   color: var(--purple);
-  font-size: 0.9em;
+  font-size: var(--font-14);
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px Rgb(191 90 242 / 30%));
 }
@@ -51,10 +51,10 @@
   min-height: 0;
   max-height: 90dvh;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 24px;
+  border-radius: $radius-4xl;
   background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px Rgb(0 0 0 / 70%);
+  box-shadow: var(--shadow-2xl);
   
   @media (width <= 600px) {
     width: 95dvw;
@@ -71,8 +71,3 @@
   flex: 1;
   overflow-y: auto;
 }
-
-
-
-
-

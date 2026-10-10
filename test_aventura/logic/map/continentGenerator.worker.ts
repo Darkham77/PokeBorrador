@@ -14,10 +14,10 @@
 
 import {
   generateContinentMap,
-  computeTransitableGrid,
   type ContinentMapResult,
   type ContinentGeneratorOptions
 } from './continentGenerator.ts';
+import { computeTransitableGrid } from './transitableGridEngine.ts';
 import {
   placeRegionalPOIs,
   type POIPlacementOptions
@@ -25,16 +25,38 @@ import {
 import { generatePokemonContinentalWorld } from './continent/continentalEngine.ts';
 import {
   generateRouteNetwork,
-  rerouteIncidentEdges,
   type RouteNetworkOptions,
   type ResolvedRouteNetworkResult
 } from './routeNetworkEngine.ts';
+import { rerouteIncidentEdges } from './routePathfinding.ts';
 import {
   generateWildernessLayer,
   type WildernessOptions,
   type WildernessLayerResult
 } from './wildernessVegetationEngine.ts';
 import type { POINode, RouteEdge } from '../../types/map/poiTypes.ts';
+import {
+  RGBA_ALPHA_OPAQUE,
+  PATH_PREVIEW_RGBA,
+  WATER_PREVIEW_RGBA,
+  SAND_PREVIEW_RGBA,
+  MOUNTAIN_GRAY_HIGH_ELEV,
+  MOUNTAIN_GRAY_LOW_ELEV,
+  MOUNTAIN_VOLCANIC_HIGH_ELEV,
+  MOUNTAIN_VOLCANIC_LOW_ELEV,
+  MOUNTAIN_VOLCANIC_GREEN,
+  MOUNTAIN_VOLCANIC_BLUE,
+  MOUNTAIN_BROWN_HIGH_ELEV,
+  MOUNTAIN_BROWN_LOW_ELEV,
+  MOUNTAIN_BROWN_GREEN_RATIO,
+  MOUNTAIN_BROWN_BLUE_RATIO,
+  BIOME_BUFFER_PREVIEW_RGB,
+  BIOME_MINT_HIGHLAND_PREVIEW_RGB,
+  BIOME_ARID_DESERT_PREVIEW_RGB,
+  BIOME_VOLCANIC_PLATEAU_PREVIEW_RGB,
+  BIOME_VIRIDIAN_FOREST_PREVIEW_RGB,
+  BIOME_DEFAULT_PLAIN_PREVIEW_RGB
+} from '../../config/continentWorkerConfig.ts';
 
 export interface RegionalGenerationOptions
   extends ContinentGeneratorOptions,
@@ -117,71 +139,63 @@ export function buildZeroCopyPreviewBuffer(
 
       if (isPath) {
         // Dirt path: golden sand/brown (#d4a373)
-        buffer[idx] = 212;
-        buffer[idx + 1] = 163;
-        buffer[idx + 2] = 115;
-        buffer[idx + 3] = 255;
+        buffer[idx] = PATH_PREVIEW_RGBA[0];
+        buffer[idx + 1] = PATH_PREVIEW_RGBA[1];
+        buffer[idx + 2] = PATH_PREVIEW_RGBA[2];
+        buffer[idx + 3] = PATH_PREVIEW_RGBA[3];
       } else if (elev > 0) {
         // Mountain rock: check geological massif palette
         const pal = continent.geologicalClusters?.paletteMatrix[y]?.[x] ?? 'brown';
         if (pal === 'gray') {
-          const tone = elev === 2 ? 140 : 170;
+          const tone = elev === 2 ? MOUNTAIN_GRAY_HIGH_ELEV : MOUNTAIN_GRAY_LOW_ELEV;
           buffer[idx] = tone;
           buffer[idx + 1] = tone;
           buffer[idx + 2] = tone;
         } else if (pal === 'volcanic') {
-          buffer[idx] = elev === 2 ? 180 : 150;
-          buffer[idx + 1] = 60;
-          buffer[idx + 2] = 50;
+          buffer[idx] = elev === 2 ? MOUNTAIN_VOLCANIC_HIGH_ELEV : MOUNTAIN_VOLCANIC_LOW_ELEV;
+          buffer[idx + 1] = MOUNTAIN_VOLCANIC_GREEN;
+          buffer[idx + 2] = MOUNTAIN_VOLCANIC_BLUE;
         } else {
-          const tone = elev === 2 ? 140 : 163;
+          const tone = elev === 2 ? MOUNTAIN_BROWN_HIGH_ELEV : MOUNTAIN_BROWN_LOW_ELEV;
           buffer[idx] = tone;
-          buffer[idx + 1] = Math.floor(tone * 0.7);
-          buffer[idx + 2] = Math.floor(tone * 0.5);
+          buffer[idx + 1] = Math.floor(tone * MOUNTAIN_BROWN_GREEN_RATIO);
+          buffer[idx + 2] = Math.floor(tone * MOUNTAIN_BROWN_BLUE_RATIO);
         }
-        buffer[idx + 3] = 255;
+        buffer[idx + 3] = RGBA_ALPHA_OPAQUE;
       } else if (t === 'water' || t === 'water_deep') {
         // Ocean & Lake water: deep cyan blue (#3a86c8)
-        buffer[idx] = 58;
-        buffer[idx + 1] = 134;
-        buffer[idx + 2] = 200;
-        buffer[idx + 3] = 255;
+        buffer[idx] = WATER_PREVIEW_RGBA[0];
+        buffer[idx + 1] = WATER_PREVIEW_RGBA[1];
+        buffer[idx + 2] = WATER_PREVIEW_RGBA[2];
+        buffer[idx + 3] = WATER_PREVIEW_RGBA[3];
       } else if (t === 'sand') {
         // Coast beach: warm yellow (#e9d8a6)
-        buffer[idx] = 233;
-        buffer[idx + 1] = 216;
-        buffer[idx + 2] = 166;
-        buffer[idx + 3] = 255;
+        buffer[idx] = SAND_PREVIEW_RGBA[0];
+        buffer[idx + 1] = SAND_PREVIEW_RGBA[1];
+        buffer[idx + 2] = SAND_PREVIEW_RGBA[2];
+        buffer[idx + 3] = SAND_PREVIEW_RGBA[3];
       } else {
         // Continental plain: check macro biome and containment buffer
         const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x];
         const isBuffer = continent.macroBiomes?.transitionBufferGrid[y]?.[x];
+        let rgb: readonly [number, number, number];
         if (isBuffer) {
-          buffer[idx] = 190;
-          buffer[idx + 1] = 150;
-          buffer[idx + 2] = 100;
+          rgb = BIOME_BUFFER_PREVIEW_RGB;
         } else if (mBiome === 'mint_highland') {
-          buffer[idx] = 112;
-          buffer[idx + 1] = 200;
-          buffer[idx + 2] = 160;
+          rgb = BIOME_MINT_HIGHLAND_PREVIEW_RGB;
         } else if (mBiome === 'arid_desert') {
-          buffer[idx] = 223;
-          buffer[idx + 1] = 177;
-          buffer[idx + 2] = 91;
+          rgb = BIOME_ARID_DESERT_PREVIEW_RGB;
         } else if (mBiome === 'volcanic_plateau') {
-          buffer[idx] = 158;
-          buffer[idx + 1] = 74;
-          buffer[idx + 2] = 59;
+          rgb = BIOME_VOLCANIC_PLATEAU_PREVIEW_RGB;
         } else if (mBiome === 'viridian_forest') {
-          buffer[idx] = 56;
-          buffer[idx + 1] = 102;
-          buffer[idx + 2] = 65;
+          rgb = BIOME_VIRIDIAN_FOREST_PREVIEW_RGB;
         } else {
-          buffer[idx] = 88;
-          buffer[idx + 1] = 129;
-          buffer[idx + 2] = 87;
+          rgb = BIOME_DEFAULT_PLAIN_PREVIEW_RGB;
         }
-        buffer[idx + 3] = 255;
+        buffer[idx] = rgb[0];
+        buffer[idx + 1] = rgb[1];
+        buffer[idx + 2] = rgb[2];
+        buffer[idx + 3] = RGBA_ALPHA_OPAQUE;
       }
     }
   }

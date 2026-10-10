@@ -90,6 +90,7 @@ function handleOptionClick(opt: PokemonSortOption) {
         class="sort-tooltip-wrapper"
       >
         <button
+          id="pokemon-sort-bar-btn-1"
           v-gsap-hover
           type="button"
           class="sort-pill-btn"
@@ -120,14 +121,14 @@ function handleOptionClick(opt: PokemonSortOption) {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   width: 100%;
 
   .mini-label {
     @include pixelated;
 
     color: var(--gray);
-    font-size: 8px;
+    font-size: var(--font-8);
     letter-spacing: 0.5px;
     white-space: nowrap;
     user-select: none;
@@ -140,7 +141,7 @@ function handleOptionClick(opt: PokemonSortOption) {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     min-width: 0;
   }
 
@@ -155,83 +156,83 @@ function handleOptionClick(opt: PokemonSortOption) {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     padding: 6px 9px;
-    border: 1px solid rgb(255 255 255 / 8%);
-    border-radius: 8px;
-    background: rgb(255 255 255 / 3%);
+    border: 1px solid Rgb(255 255 255 / 8%);
+    border-radius: $radius-lg;
+    background: Rgb(255 255 255 / 3%);
     color: var(--gray);
-    font-size: 7.5px;
+    font-size: var(--font-8);
     cursor: pointer;
     white-space: nowrap;
     user-select: none;
 
     &:hover:not(.active) {
-      background: rgb(255 255 255 / 8%);
+      background: Rgb(255 255 255 / 8%);
       color: var(--white);
-      border-color: rgb(255 255 255 / 20%);
+      border-color: Rgb(255 255 255 / 20%);
     }
 
     .emoji {
-      font-size: 9px;
+      font-size: var(--font-9);
       flex-shrink: 0;
     }
 
     .label {
-      font-size: 7.5px;
+      font-size: var(--font-8);
       white-space: nowrap;
     }
 
     .arrow {
       color: var(--yellow);
-      font-size: 7px;
+      font-size: var(--font-7);
       font-weight: bold;
       margin-left: 2px;
       flex-shrink: 0;
     }
 
     &.active {
-      background: rgb(255 214 10 / 14%);
+      background: Rgb(255 214 10 / 14%);
       color: var(--yellow);
       border-color: var(--yellow);
-      box-shadow: 0 0 8px rgb(255 214 10 / 20%);
+      box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
 
   &.is-compact {
-    gap: 4px;
+    gap: $spacing-xs;
 
     .sort-items {
-      gap: 3px;
+      gap: $spacing-xs-alt;
     }
 
     .sort-pill-btn {
-      gap: 2px;
+      gap: $spacing-2xs;
       padding: 5px 6px;
 
       .emoji {
-        font-size: 10px;
+        font-size: var(--font-10);
       }
     }
   }
 
   @media (width <= 768px) {
-    gap: 4px;
+    gap: $spacing-xs;
 
     .label {
       display: none;
     }
 
     .sort-items {
-      gap: 3px;
+      gap: $spacing-xs-alt;
     }
 
     .sort-pill-btn {
-      gap: 2px;
+      gap: $spacing-2xs;
       padding: 5px 6px;
 
       .emoji {
-        font-size: 10px;
+        font-size: var(--font-10);
       }
     }
   }

@@ -22,7 +22,7 @@
     max-width: 52px;
     height: 14px;
     padding: 2px 5px;
-    border-radius: 40px; // Standardized rounding
+    border-radius: $radius-40; // Standardized rounding
     line-height: 1.15; 
     letter-spacing: -0.2px;
     white-space: nowrap;
@@ -36,7 +36,7 @@
 
     height: 14px;
     padding: 2px 7px;
-    border-radius: 40px;
+    border-radius: $radius-40;
     line-height: 1.15;
     letter-spacing: 0;
     box-sizing: border-box;
@@ -56,24 +56,24 @@
 
   // ELEMENTAL COLORS (Standardized Pokémon Palette)
   // We use background-color so the mixin's gradient overlay works perfectly.
-  &.type-normal   { background-color: #A8A878; }
-  &.type-fire     { background-color: #F08030; }
-  &.type-water    { background-color: #6890F0; }
-  &.type-grass    { background-color: #78C850; }
-  &.type-electric { background-color: #F8D030; }
-  &.type-ice      { background-color: #98D8D8; }
-  &.type-fighting { background-color: #C03028; }
-  &.type-poison   { background-color: #A040A0; }
-  &.type-ground   { background-color: #E0C068; }
-  &.type-flying   { background-color: #A890F0; }
-  &.type-psychic  { background-color: #F85888; }
-  &.type-bug      { background-color: #A8B820; }
-  &.type-rock     { background-color: #B8A038; }
-  &.type-ghost    { background-color: #705898; }
-  &.type-dragon   { background-color: #7038F8; }
-  &.type-dark     { background-color: #705848; }
-  &.type-steel    { background-color: #B8B8D0; }
-  &.type-fairy    { background-color: #EE99AC; }
+  &.type-normal   { background-color: var(--type-normal); }
+  &.type-fire     { background-color: var(--type-fire); }
+  &.type-water    { background-color: var(--type-water); }
+  &.type-grass    { background-color: var(--type-grass); }
+  &.type-electric { background-color: var(--type-electric); }
+  &.type-ice      { background-color: var(--type-ice); }
+  &.type-fighting { background-color: var(--type-fighting); }
+  &.type-poison   { background-color: var(--type-poison); }
+  &.type-ground   { background-color: var(--type-ground); }
+  &.type-flying   { background-color: var(--type-flying); }
+  &.type-psychic  { background-color: var(--type-psychic); }
+  &.type-bug      { background-color: var(--type-bug); }
+  &.type-rock     { background-color: var(--type-rock); }
+  &.type-ghost    { background-color: var(--type-ghost); }
+  &.type-dragon   { background-color: var(--type-dragon); }
+  &.type-dark     { background-color: var(--type-dark); }
+  &.type-steel    { background-color: var(--type-steel); }
+  &.type-fairy    { background-color: var(--type-fairy); }
   
   // INTERACTIVE / FILTER STATES
   &[tag="button"], &[is="button"], &.is-button {
@@ -87,9 +87,9 @@
   }
 
   &.active {
-    color: #fff;
+    color: var(--white);
     font-weight: bold;
-    box-shadow: 0 0 12px currentColor, inset 0 0 0 1px Rgb(255 255 255 / 40%);
+    box-shadow: var(--shadow-glow-amber);
     filter: Brightness(1.2);
   }
 }

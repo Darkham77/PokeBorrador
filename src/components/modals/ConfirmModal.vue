@@ -94,8 +94,8 @@ const handleCancel = () => {
   p {
     margin: 0;
     color: Rgb(255 255 255 / 80%);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
+    font-family: $font-family-ui;
+    font-size: var(--font-14);
     line-height: 1.6;
     text-align: center;
   }
@@ -107,7 +107,7 @@ const handleCancel = () => {
     @include pixelated;
 
     color: $coin-gold; // Gold/Yellow text for retro
-    font-size: 12px;
+    font-size: var(--font-12);
     text-shadow: 2px 2px 0 Rgb(0 0 0 / 50%);
   }
 
@@ -118,10 +118,10 @@ const handleCancel = () => {
       color: var(--muted);
     }
     .btn-confirm {
-      border: 2px solid $black;
+      border: 2px solid var(--black);
       background: Linear-Gradient(135deg, $coin-gold, #b8860b);
       color: $black;
-      box-shadow: 4px 4px 0 Rgb(0 0 0 / 30%);
+      box-shadow: var(--shadow-card);
       
       &:hover {
         background: Linear-Gradient(135deg, $white, $coin-gold);
@@ -134,15 +134,15 @@ const handleCancel = () => {
 
 .confirm-footer {
   display: flex;
-  gap: 12px;
+  gap: $spacing-md;
   
   button {
     @include pixelated;
 
     padding: 14px;
     border: none;
-    border-radius: 12px;
-    font-size: 10px;
+    border-radius: $radius-xl;
+    font-size: var(--font-10);
     font-weight: 700;
     flex: 1;
     cursor: pointer;
@@ -169,10 +169,10 @@ const handleCancel = () => {
 
     &.is-danger {
       background: Linear-Gradient(135deg, var(--red), #dc2626);
-      box-shadow: 0 4px 15px Rgb(220 38 38 / 40%);
+      box-shadow: var(--shadow-md);
       &:hover {
         background: Linear-Gradient(135deg, #ef4444, #b91c1c);
-        box-shadow: 0 6px 20px Rgb(220 38 38 / 50%);
+        box-shadow: var(--shadow-card);
       }
     }
   }

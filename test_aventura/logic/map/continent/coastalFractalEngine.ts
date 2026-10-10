@@ -35,6 +35,14 @@ export interface IsletSpec {
  * Perturbs a baseline distance or coordinate to produce a natural organic coastline.
  * Returns the displacement in tile units.
  */
+const DEFAULT_ISLAND_ROUGHNESS = 0.35 as const;
+const ARCHIPELAGO_RADIUS_X_BASE = 0.85 as const;
+const ARCHIPELAGO_RADIUS_X_VARIANCE = 0.3 as const;
+const ARCHIPELAGO_RADIUS_Y_BASE = 0.75 as const;
+const ARCHIPELAGO_RADIUS_Y_VARIANCE = 0.35 as const;
+const ARCHIPELAGO_ISLET_ROUGHNESS = 0.4 as const;
+const ARCHIPELAGO_SEED_STRIDE = 53 as const;
+
 export function sampleCoastalDisplacement(
   noise: SimplexNoise,
   x: number,
@@ -62,7 +70,7 @@ export function sculptOrganicIsland(
   const H = matrix.length;
   const W = matrix[0]?.length ?? 0;
   const noise = new SimplexNoise(seed);
-  const roughness = options.roughness ?? 0.35;
+  const roughness = options.roughness ?? DEFAULT_ISLAND_ROUGHNESS;
   const angle = options.angleRad ?? 0;
   const cosA = Math.cos(angle);
   const sinA = Math.sin(angle);
@@ -116,12 +124,12 @@ export function sculptArchipelagoChain(
       islet.cx,
       islet.cy,
       {
-        radiusX: islet.radius * (0.85 + (i % 2) * 0.3),
-        radiusY: islet.radius * (0.75 + ((i + 1) % 2) * 0.35),
-        roughness: 0.4,
+        radiusX: islet.radius * (ARCHIPELAGO_RADIUS_X_BASE + (i % 2) * ARCHIPELAGO_RADIUS_X_VARIANCE),
+        radiusY: islet.radius * (ARCHIPELAGO_RADIUS_Y_BASE + ((i + 1) % 2) * ARCHIPELAGO_RADIUS_Y_VARIANCE),
+        roughness: ARCHIPELAGO_ISLET_ROUGHNESS,
         angleRad: (i * Math.PI) / 4
       },
-      seed + i * 53
+      seed + i * ARCHIPELAGO_SEED_STRIDE
     );
   }
 }

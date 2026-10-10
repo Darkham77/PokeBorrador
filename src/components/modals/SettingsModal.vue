@@ -52,7 +52,8 @@ const handleZoomInput = (e: Event) => {
           Zoom de la Interfaz: <span class="zoom-value">{{ currentZoom }}%</span>
         </label>
 
-        <input 
+        <input
+          id="settings-modal-input-1" 
           type="range" 
           :value="currentZoom" 
           min="50" 
@@ -92,7 +93,8 @@ const handleZoomInput = (e: Event) => {
           >
             ACTIVADO
           </button>
-          <button 
+          <button
+            id="settings-modal-btn-desactivado" 
             type="button"
             class="btn-vicio-sm" 
             :class="uiStore.lowPowerMode === 'disabled' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
@@ -119,7 +121,8 @@ const handleZoomInput = (e: Event) => {
           Ocultar Pokémon en Mapa:
         </label>
         <div class="power-buttons">
-          <button 
+          <button
+            id="settings-modal-btn-activado" 
             type="button"
             class="btn-vicio-sm" 
             :class="uiStore.hideMapPokemon ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
@@ -127,7 +130,8 @@ const handleZoomInput = (e: Event) => {
           >
             ACTIVADO
           </button>
-          <button 
+          <button
+            id="settings-modal-btn-desactivado-2" 
             type="button"
             class="btn-vicio-sm" 
             :class="!uiStore.hideMapPokemon ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
@@ -151,7 +155,8 @@ const handleZoomInput = (e: Event) => {
           Auto-combatir:
         </label>
         <div class="power-buttons">
-          <button 
+          <button
+            id="settings-modal-btn-activado-2" 
             type="button"
             class="btn-vicio-sm" 
             :class="uiStore.autoBattle ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
@@ -159,7 +164,8 @@ const handleZoomInput = (e: Event) => {
           >
             ACTIVADO
           </button>
-          <button 
+          <button
+            id="settings-modal-btn-desactivado-3" 
             type="button"
             class="btn-vicio-sm" 
             :class="!uiStore.autoBattle ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
@@ -206,7 +212,7 @@ const handleZoomInput = (e: Event) => {
 .zoom-label {
   display: block;
   color: var(--white);
-  font-size: 14px;
+  font-size: var(--font-14);
   font-weight: 700;
   margin-bottom: 20px;
 }
@@ -229,8 +235,8 @@ const handleZoomInput = (e: Event) => {
 
   display: flex;
   justify-content: space-between;
-  color: rgb(255 255 255 / 20%);
-  font-size: 8px;
+  color: Rgb(255 255 255 / 20%);
+  font-size: var(--font-8);
   margin-top: 16px;
 }
 
@@ -241,14 +247,14 @@ const handleZoomInput = (e: Event) => {
 .setting-label {
   display: block;
   color: var(--white);
-  font-size: 14px;
+  font-size: var(--font-14);
   font-weight: 700;
   margin-bottom: 12px;
 }
 
 .power-buttons {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   width: 100%;
 
   button {
@@ -258,8 +264,8 @@ const handleZoomInput = (e: Event) => {
 
 .power-desc {
   min-height: 26px;
-  color: rgb(255 255 255 / 50%);
-  font-size: 9px;
+  color: Rgb(255 255 255 / 50%);
+  font-size: var(--font-9);
   line-height: 1.4;
   margin-top: 12px;
 }

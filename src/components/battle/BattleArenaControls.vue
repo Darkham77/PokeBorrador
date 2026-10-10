@@ -293,7 +293,7 @@ const onEnter = (el: Element, done: () => void) => {
 
 #move-panel {
   --move-card-max-width: 200px;
-  --move-panel-gap: 12px;
+  --move-panel-gap: #{$spacing-md};
   --info-zone-width: 16px; 
   --move-panel-max-width: calc(((var(--move-card-max-width) + var(--info-zone-width)) * 2) + var(--move-panel-gap));
   --shortcut-zone-width: 160px;
@@ -323,7 +323,7 @@ const onEnter = (el: Element, done: () => void) => {
   display: flex;
   justify-content: flex-start;
   align-items: stretch; // Estirar para coincidir con la altura del centro
-  gap: 5px; // Gap mínimo entre zonas
+  gap: $spacing-xs-5; // Gap mínimo entre zonas
   width: 100%;
   max-width: 100%;
   margin: 0;

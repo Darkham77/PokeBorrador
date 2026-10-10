@@ -54,11 +54,11 @@ const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
           >🧬</span>
           <span
             v-else-if="b === '🥚'"
-            style="font-size: 8px;"
+            style="font-size: var(--font-8);"
           >🥚</span>
           <span
             v-else-if="b === '🏆'"
-            style="font-size: 8px;"
+            style="font-size: var(--font-8);"
           >🏆</span>
         </template>
       </div>

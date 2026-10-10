@@ -108,7 +108,7 @@
 }
 
 .team-ball-label {
-  font-size: 7px;
+  font-size: var(--font-7);
   color: var(--color-text-muted);
   margin-top: 10px;
   font-family: var(--font-pixel);

@@ -53,23 +53,23 @@ function handleExportPng(): void {
 
 <style scoped lang="scss">
 .continental-studio-container {
+  position: relative;
+  z-index: var(--z-modal-step);
   display: flex;
   flex-direction: column;
   width: dvw;
   height: dvh;
-  overflow: hidden;
   background: #090d16;
-  color: #f8fafc;
+  color: var(--slate-50);
   font-family: inherit;
-  position: relative;
-  z-index: var(--z-modal-step);
+  overflow: hidden;
 }
 
 .studio-workspace {
-  flex: 1;
+  position: relative;
   height: calc(dvh - 52px);
   min-height: 0;
+  flex: 1;
   overflow: hidden;
-  position: relative;
 }
 </style>

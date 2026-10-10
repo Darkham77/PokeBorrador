@@ -10,8 +10,7 @@
  *   4. Zero open-ocean wooden bridges: maritime travel connects via Ferry service.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode, CardinalDirection, POIGateway } from '../../types/map/poiTypes.ts';
+import { GEO_CARDINAL_DIRECTIONS, type POINode, type CardinalDirection, type POIGateway } from '../../types/map/poiTypes.ts';
 import { resolvePortGateAsset } from './canvasLandmarkRenderer.ts';
 
 export interface PortBuildingOption {
@@ -20,14 +19,14 @@ export interface PortBuildingOption {
   readonly height: number;
 }
 
-/**
- * Authentic GBA port buildings randomly assigned to coastal harbor docks
- */
-export const PORT_DOCK_BUILDINGS: readonly PortBuildingOption[] = [
+const _PORT_DOCK_BUILDINGS: readonly PortBuildingOption[] = [
   { file: 'house_wood_brown.png', width: 4, height: 4 },
   { file: 'house_purple.png', width: 5, height: 4 },
   { file: 'house_blue.png', width: 6, height: 4 }
 ] as const;
+
+const MAX_OCEAN_DEPTH_SCAN = 14 as const;
+const MIN_OCEAN_DEPTH_REQUIRED = 6 as const;
 
 export interface HarborPlacementContext {
   readonly continentMap: ContinentMapResult;
@@ -55,10 +54,9 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
     let bestPort: { x: number; y: number; facing: CardinalDirection } | null = null;
     let bestScore = -Infinity;
 
-    const testDirs: readonly CardinalDirection[] = ['south', 'east', 'west', 'north'];
     for (let y = 3; y < H - 10; y += 1) {
       for (let x = 3; x < W - 10; x += 1) {
-        for (const dir of testDirs) {
+        for (const dir of GEO_CARDINAL_DIRECTIONS) {
           const candW = dir === 'west' || dir === 'east' ? 6 : 7;
           const candH = dir === 'west' || dir === 'east' ? 7 : 6;
           if (x + candW >= W - 3 || y + candH >= H - 3) continue;
@@ -103,7 +101,7 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
           // 2. Check open water depth in dir (require at least 6 tiles of open ocean)
           let depth = 0;
           if (dir === 'south') {
-            for (let dy = 1; dy <= 14; dy++) {
+            for (let dy = 1; dy <= MAX_OCEAN_DEPTH_SCAN; dy++) {
               const py = y + candH - 1 + dy;
               if (py >= H) break;
               let allW = true;
@@ -117,7 +115,7 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
               depth++;
             }
           } else if (dir === 'north') {
-            for (let dy = 1; dy <= 14; dy++) {
+            for (let dy = 1; dy <= MAX_OCEAN_DEPTH_SCAN; dy++) {
               const py = y - dy;
               if (py < 0) break;
               let allW = true;
@@ -131,7 +129,7 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
               depth++;
             }
           } else if (dir === 'east') {
-            for (let dx = 1; dx <= 14; dx++) {
+            for (let dx = 1; dx <= MAX_OCEAN_DEPTH_SCAN; dx++) {
               const px = x + candW - 1 + dx;
               if (px >= W) break;
               let allW = true;
@@ -145,7 +143,7 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
               depth++;
             }
           } else if (dir === 'west') {
-            for (let dx = 1; dx <= 14; dx++) {
+            for (let dx = 1; dx <= MAX_OCEAN_DEPTH_SCAN; dx++) {
               const px = x - dx;
               if (px < 0) break;
               let allW = true;
@@ -160,7 +158,7 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
             }
           }
 
-          if (depth < 6) continue;
+          if (depth < MIN_OCEAN_DEPTH_REQUIRED) continue;
 
           // 3. Check doorway clearance inland
           let gwX = x;

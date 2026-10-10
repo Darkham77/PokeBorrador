@@ -212,21 +212,21 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                 <div
                   class="pv-frame-pill"
-                  style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #3b82f6; color: #ffffff; font-weight: bold; font-size: 11px;"
+                  style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--blue-500); color: var(--white); font-weight: bold; font-size: var(--font-11);"
                 >
                   PK
                 </div>
                 <div>
-                  <div style="font-size: 8.5px; font-weight: bold; color: var(--color-text-main);">
+                  <div style="font-size: var(--font-9); font-weight: bold; color: var(--color-text-main);">
                     Ash Ketchum (Maestro Pokémon)
                   </div>
-                  <div style="font-size: 7px; color: var(--color-text-muted);">
+                  <div style="font-size: var(--font-7); color: var(--color-text-muted);">
                     Pueblo Paleta, Kanto • Sesión Activa WAI-ARIA
                   </div>
                 </div>
               </div>
-              <p style="font-size: 7px; color: var(--color-text-muted); line-height: 1.4;">
-                Este panel demuestra el vínculo entre <code style="color: #ffd60a;">aria-controls</code> y <code style="color: #ffd60a;">aria-labelledby</code>. El tab activo mantiene <code style="color: #ffd60a;">tabindex="0"</code> para recibir foco directo.
+              <p style="font-size: var(--font-7); color: var(--color-text-muted); line-height: 1.4;">
+                Este panel demuestra el vínculo entre <code style="color: var(--yellow);">aria-controls</code> y <code style="color: var(--yellow);">aria-labelledby</code>. El tab activo mantiene <code style="color: var(--yellow);">tabindex="0"</code> para recibir foco directo.
               </p>
             </div>
 
@@ -238,10 +238,10 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
               aria-labelledby="wai-tab-btn-2"
               tabindex="0"
             >
-              <div style="font-size: 8px; font-weight: bold; color: var(--color-text-gold, #ffd60a); margin-bottom: 6px;">
+              <div style="font-size: var(--font-8); font-weight: bold; color: var(--color-text-gold, #ffd60a); margin-bottom: 6px;">
                 PREFERENCIAS DEL SISTEMA
               </div>
-              <div style="display: flex; flex-direction: column; gap: 6px; font-size: 7px; color: var(--color-text-muted);">
+              <div style="display: flex; flex-direction: column; gap: 6px; font-size: var(--font-7); color: var(--color-text-muted);">
                 <div>✓ Modo alto contraste activado con contorno negro 360°</div>
                 <div>✓ Foco automático en primer elemento del modal</div>
                 <div>✓ Animaciones optimizadas con GSAP</div>
@@ -256,12 +256,12 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
               aria-labelledby="wai-tab-btn-3"
               tabindex="0"
             >
-              <div style="font-size: 8px; font-weight: bold; color: #38bdf8; margin-bottom: 6px;">
+              <div style="font-size: var(--font-8); font-weight: bold; color: var(--sky); margin-bottom: 6px;">
                 CENTRO DE NOTIFICACIONES
               </div>
               <div
                 class="pv-frame-control"
-                style="padding: 6px 10px; background: rgba(56, 189, 248, 0.1); --frame-border: #38bdf8; font-size: 7px; color: #ffffff;"
+                style="padding: 6px 10px; background: rgba(56, 189, 248, 0.1); --frame-border: var(--sky); font-size: var(--font-7); color: var(--white);"
               >
                 🔔 Tienes 3 formularios pendientes de sincronizar con el backend de batalla.
               </div>
@@ -275,12 +275,12 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
               aria-labelledby="wai-tab-btn-4"
               tabindex="0"
             >
-              <div style="font-size: 8px; font-weight: bold; color: #c084fc; margin-bottom: 6px;">
+              <div style="font-size: var(--font-8); font-weight: bold; color: var(--purple-400); margin-bottom: 6px;">
                 ESTRUCTURA W3C WAI-ARIA
               </div>
               <pre
                 class="pv-frame-control"
-                style="font-size: 6.5px; color: #c084fc; background: #04070d; padding: 6px; margin: 0; line-height: 1.3;"
+                style="font-size: var(--font-7); color: var(--purple-400); background: #04070d; padding: 6px; margin: 0; line-height: 1.3;"
               >&lt;div role="tablist" aria-label="..."&gt;
   &lt;button role="tab" aria-selected="true" aria-controls="panel-1" tabindex="0"&gt;Tab 1&lt;/button&gt;
   &lt;button role="tab" aria-selected="false" aria-controls="panel-2" tabindex="-1"&gt;Tab 2&lt;/button&gt;
@@ -303,7 +303,7 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
 }
 
 .tab-badge {
-  font-size: 7px;
+  font-size: var(--font-7);
   color: var(--color-text-gold);
 }
 </style>

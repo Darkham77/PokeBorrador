@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
+import { MAX_BAG_ITEM_QUANTITY } from '@/logic/constants/gameplay'
 import type { ItemId } from '@/data/inventory/items'
 
 interface ShopItem {
@@ -51,6 +52,7 @@ const finalPrice = computed(() => {
 const isModifiedPrice = computed(() => priceModifier.value !== 1.0)
 
 const quantity = computed(() => shopStore.getQuantity(props.item.id))
+const canIncreaseQuantity = computed(() => isUnlocked.value && quantity.value < MAX_BAG_ITEM_QUANTITY)
 
 const tierLabel = computed(() => getItemTierLabel(props.item.tier))
 
@@ -154,23 +156,26 @@ const handleImageError = (e: Event) => {
 
       <!-- Quantity controls (Disabled if locked) -->
       <div class="qty-ctrl-group">
-        <button 
+        <button
+          id="shop-item-card-btn-1" 
           class="qty-btn"
           :disabled="!isUnlocked || quantity <= 1"
           @click.stop="adjustQuantity(-1)"
         >
           -
         </button>
-        <input 
+        <input
+          id="shop-item-card-input-quantitychange" 
           type="number" 
           class="qty-input"
           :value="quantity"
           :disabled="!isUnlocked"
           @change="handleQuantityChange"
         >
-        <button 
+        <button
+          id="shop-item-card-btn-2" 
           class="qty-btn"
-          :disabled="!isUnlocked || quantity >= 999"
+          :disabled="!canIncreaseQuantity"
           @click.stop="adjustQuantity(1)"
         >
           +
@@ -180,6 +185,7 @@ const handleImageError = (e: Event) => {
       <!-- Buy Button -->
       <button
         v-if="isUnlocked"
+        id="shop-item-card-btn-comprar"
         class="btn-vicio-primary btn-vicio-sm"
         @click.stop="buy"
       >
@@ -187,6 +193,7 @@ const handleImageError = (e: Event) => {
       </button>
       <button
         v-else
+        id="shop-item-card-btn-bloqueado"
         class="btn-vicio-neutral btn-vicio-sm"
         disabled
       >

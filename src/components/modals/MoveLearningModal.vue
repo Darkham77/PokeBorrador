@@ -118,13 +118,13 @@ const handleForget = () => {
 
     margin: 0 0 12px;
     color: var(--white);
-    font-size: 14px;
+    font-size: var(--font-14);
   }
 
   p {
     margin: 0;
     color: var(--gray);
-    font-size: 13px;
+    font-size: var(--font-13);
     line-height: 1.5;
     .highlight { color: var(--yellow); font-weight: 800; }
   }
@@ -132,16 +132,16 @@ const handleForget = () => {
 
 .new-move-display {
   padding: 12px;
-  border: 1px dashed rgb(255 255 255 / 10%);
-  border-radius: 12px;
-  background: rgb(255 255 255 / 2%);
+  border: 1px dashed Rgb(255 255 255 / 10%);
+  border-radius: $radius-xl;
+  background: Rgb(255 255 255 / 2%);
   margin-bottom: 24px;
 
   .new-move-title {
     @include pixelated;
 
     color: var(--yellow);
-    font-size: 8px;
+    font-size: var(--font-8);
     text-align: center;
     margin-bottom: 8px;
     text-transform: uppercase;
@@ -157,7 +157,7 @@ const handleForget = () => {
   @include pixelated;
 
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   line-height: 1.8;
   text-align: center;
   margin-bottom: 16px;
@@ -167,7 +167,7 @@ const handleForget = () => {
 
 .moves-list {
   display: grid;
-  gap: 12px;
+  gap: $spacing-md;
   grid-template-columns: 1fr 1fr;
   margin-bottom: 24px;
 }
@@ -182,17 +182,17 @@ const handleForget = () => {
 
   width: 100%;
   padding: 16px;
-  border: 1px solid rgb(255 255 255 / 6%);
-  border-radius: 14px;
-  background: rgb(255 255 255 / 3%);
+  border: 1px solid Rgb(255 255 255 / 6%);
+  border-radius: $radius-xl-alt;
+  background: Rgb(255 255 255 / 3%);
   color: var(--gray);
-  font-size: 9px;
+  font-size: var(--font-9);
   cursor: pointer;
   
   &:hover {
-    background: rgb(239 68 68 / 10%);
-    color: rgb(248 113 113 / 100%);
-    border-color: rgb(239 68 68 / 100%);
+    background: Rgb(239 68 68 / 10%);
+    color: Rgb(248 113 113 / 100%);
+    border-color: Rgb(239 68 68 / 100%);
   }
 }
 </style>

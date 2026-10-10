@@ -84,6 +84,7 @@ watch(() => socialStore.pendingRequests.map((r) => r.id).join(','), () => {
     >
       <TrainerCard
         v-for="req in socialStore.pendingRequests"
+        id="social-requests-tab-trainercard-1"
         :key="req.id"
         :profile="getProfileForRequest(req)"
         :avatar-size="36"
@@ -121,15 +122,15 @@ watch(() => socialStore.pendingRequests.map((r) => r.id).join(','), () => {
 .requests-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .empty-state {
   padding: 40px 20px;
   color: Rgb(148 163 184 / 100%);
   text-align: center;
-  .icon { font-size: 40px; opacity: 0.5; margin-bottom: 15px; }
-  p { font-size: 14px; margin-bottom: 20px; }
+  .icon { font-size: var(--font-40); opacity: 0.5; margin-bottom: 15px; }
+  p { font-size: var(--font-14); margin-bottom: 20px; }
 }
 
 .clickable-avatar {

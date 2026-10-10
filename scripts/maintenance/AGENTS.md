@@ -49,6 +49,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
 - `parse_lint.ts`: Module implementation.
 - `sync_to_test.ts`: Module implementation.
 - [`check_environment.ts`](./check_environment.ts): Module implementation.
+- [`inject_template_ids.ts`](./inject_template_ids.ts): AST-based automated injector for unique template control IDs.
 - [`migrate_dox_sections.ts`](./migrate_dox_sections.ts): Module implementation.
 
 ## Work Guidance

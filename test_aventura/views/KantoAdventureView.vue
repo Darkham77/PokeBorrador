@@ -5,25 +5,25 @@ import MapCard from '@/components/map/MapCard.vue'
 import AdventureInventoryModal from '../components/adventure/AdventureInventoryModal.vue'
 import AdventureDebugModal from '../components/adventure/AdventureDebugModal.vue'
 
-// Import Kanto Map Data
 import { rawNodes, connections, officialMapIdMap, type MapNode, type DijkstraPath } from '../logic/adventure/mapData.ts'
 import { getAdjacentNodes, getAlternativePaths } from '../logic/adventure/adventurePathfinding.ts'
+import { SPRITE_FACING_DIRECTIONS, type SpriteFacingDirection, type TravelTerrainMode } from '../types/map/poiTypes.ts'
 
 // Import Poké Vicio Stores and Data
 import { useMapStore } from '@/stores/map'
-import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { isWeatherTableRouteId, requireWeatherSeasonId } from '@/data/world/weather-tables'
-import type { MapRouteId } from '@/data/world/map-assets'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
 import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 import type { MapLocation } from '@/types/pokemon/encounters'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 import { useModalStore } from '@/stores/modals'
 
 const mapStore = useMapStore()
-const gameStore = useGameStore()
 const uiStore = useUIStore()
 const modalStore = useModalStore()
 
@@ -34,45 +34,119 @@ uiStore.lowPowerMode = 'disabled'
 modalStore.open = () => {}
 
 // Ported constants
-const SPACING_MULTIPLIER = 2.5
-const WORLD_WIDTH = 3600
-const WORLD_HEIGHT = 4600
+const SPACING_MULTIPLIER = 2.5;
+const WORLD_WIDTH = 3600;
+const WORLD_HEIGHT = 4600;
  
-const moIcons: Record<string, string> = { 'Corte': '✂️', 'Surf': '🌊', 'Flauta': '🎵', 'Medallas': '🏅', 'Vuelo': '🦅' }
+const BASE_WALK_SPEED = 520;
+const BASE_BIKE_SPEED = 1000;
+const FLY_SPEED = 2400;
 
-const baseWalkSpeed = 520 
-const baseBikeSpeed = 1000
-const flySpeed = 2400 
+const POINTER_DRAG_DEBOUNCE_SEC = 0.05;
+const EVENT_ALERT_DELAY_SEC = 0.8;
+const DAY_NIGHT_CYCLE_INTERVAL_SEC = 60;
+
+const PARKED_SCALE_WIDTH_RATIO = 0.84;
+const PARKED_SCALE_HEIGHT_RATIO = 0.65;
+const MAX_TARGET_CARD_WIDTH_PX = 360;
+const MAP_CARD_BASE_WIDTH_PX = 250;
+const MIN_PARKED_VIEW_SCALE = 0.8;
+const MAX_PARKED_VIEW_SCALE = 1.5;
+const DEFAULT_FALLBACK_PARKED_SCALE = 1.3;
+
+const DEFAULT_MAP_SCALE = 0.75;
+const MOBILE_MAP_SCALE = 0.55;
+const TABLET_MAP_SCALE = 0.65;
+const DESKTOP_MAP_SCALE = 0.75;
+const MOBILE_VIEWPORT_BREAKPOINT_PX = 500;
+const TABLET_VIEWPORT_BREAKPOINT_PX = 800;
+
+const CARD_NORMALIZED_BASE_SCALE = 0.85;
+const MIN_CARD_VIEW_SCALE = 0.4;
+const MAX_CARD_VIEW_SCALE = 0.85;
+
+const SWARM_WATER_BOOST = 50;
+const MAX_FARM_STAT_PERCENT = 100;
+const COMPANION_FARM_MULTIPLIER = 1.5;
+
+const NODE_CARD_EXTENT_PADDING_PX = 130;
+const SCREEN_PADDING_TOP_PX = 100;
+const SCREEN_PADDING_BOTTOM_PX = 330;
+const SCREEN_PADDING_SIDE_PX = 40;
+const MIN_VIEWPORT_AVAILABLE_SPACE_PX = 200;
+const MIN_FRAMING_MAP_SCALE = 0.40;
+
+const RAD_TO_DEG = 180 / Math.PI;
+const DIR_RIGHT_MIN_ANGLE_DEG = -45;
+const DIR_RIGHT_MAX_ANGLE_DEG = 45;
+const DIR_DOWN_MAX_ANGLE_DEG = 135;
+const DIR_UP_MIN_ANGLE_DEG = -135;
+
+const MIN_TRAVEL_LEG_DURATION_SEC = 0.12;
+const FLY_STEP_DURATION_SEC = 0.10;
+const BIKE_STEP_DURATION_SEC = 0.11;
+const WALK_STEP_DURATION_SEC = 0.16;
+const ANIM_STEPS_PER_CYCLE = 4;
+
+const COMPANION_POKEDEX_IDS = {
+  pikachu: 25,
+  meowth: 52,
+  squirtle: 7
+} as const;
 
 function getOptimalParkedScale(): number {
-  if (!viewport.value) return 1.3
-  const vpW = viewport.value.clientWidth
-  const vpH = viewport.value.clientHeight
+  if (!viewport.value) return DEFAULT_FALLBACK_PARKED_SCALE;
+  const vpW = viewport.value.clientWidth;
+  const vpH = viewport.value.clientHeight;
   // Target: MapCard (250px wide) fits comfortably occupying ~84% of narrow width or ~65% of height
-  const targetCardWidth = Math.min(vpW * 0.84, vpH * 0.65, 360)
-  const scale = targetCardWidth / 250
-  return Math.min(Math.max(scale, 0.8), 1.5)
+  const targetCardWidth = Math.min(vpW * PARKED_SCALE_WIDTH_RATIO, vpH * PARKED_SCALE_HEIGHT_RATIO, MAX_TARGET_CARD_WIDTH_PX);
+  const scale = targetCardWidth / MAP_CARD_BASE_WIDTH_PX;
+  return Math.min(Math.max(scale, MIN_PARKED_VIEW_SCALE), MAX_PARKED_VIEW_SCALE);
 }
 
 function getOptimalMapScale(): number {
-  if (!viewport.value) return 0.75
-  const vpW = viewport.value.clientWidth
-  if (vpW < 500) return 0.55
-  if (vpW < 800) return 0.65
-  return 0.75
+  if (!viewport.value) return DEFAULT_MAP_SCALE;
+  const vpW = viewport.value.clientWidth;
+  if (vpW < MOBILE_VIEWPORT_BREAKPOINT_PX) return MOBILE_MAP_SCALE;
+  if (vpW < TABLET_VIEWPORT_BREAKPOINT_PX) return TABLET_MAP_SCALE;
+  return DESKTOP_MAP_SCALE;
+}
+
+// Storage Keys & Safe Accessors
+const STORAGE_INVENTORY_KEY = 'poke_vicio_adventure_inventory' as const;
+const STORAGE_DISCOVERED_KEY = 'poke_vicio_adventure_discovered' as const;
+const STORAGE_COMPANION_KEY = 'poke_vicio_adventure_companion' as const;
+const STORAGE_LOCATION_KEY = 'poke_vicio_adventure_location' as const;
+
+function safeGetStorage(key: string, fallbackJson: string): string {
+  try {
+    return localStorage.getItem(key) ?? fallbackJson;
+  } catch {
+    // catch-ok: Storage access restricted in private browsing mode
+    return fallbackJson;
+  }
+}
+
+function safeSetStorage(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch (err) {
+    // catch-ok: QuotaExceededError or private browsing storage restriction
+    console.warn(`[KantoAdventureView] Could not persist to localStorage (${key}):`, err);
+  }
 }
 
 // Reactive State
 const playerInventory = ref<Record<string, boolean>>(
-  JSON.parse(localStorage.getItem('pokeVicioInventory') || '{"Corte":false,"Surf":false,"Flauta":false,"Medallas":false,"Vuelo":false,"Bicicleta":true}')
+  JSON.parse(safeGetStorage(STORAGE_INVENTORY_KEY, '{"Corte":false,"Surf":false,"Flauta":false,"Medallas":false,"Vuelo":false,"Bicicleta":true}'))
 )
 const discoveredNodes = ref<string[]>(
-  JSON.parse(localStorage.getItem('pokeVicioDiscovered') || '["pallet","route1","viridian"]')
+  JSON.parse(safeGetStorage(STORAGE_DISCOVERED_KEY, '["pallet","route1","viridian"]'))
 )
-const activeCompanion = ref<string>(localStorage.getItem('pokeVicioCompanion') || 'none')
+const activeCompanion = ref<string>(safeGetStorage(STORAGE_COMPANION_KEY, 'none'))
 const currentSwarmRoute = ref<string | null>(null)
 
-const currentNode = ref<string>(localStorage.getItem('pokeVicioLocation') || 'pallet')
+const currentNode = ref<string>(safeGetStorage(STORAGE_LOCATION_KEY, 'pallet'))
 const isMoving = ref(false)
 const isZoomedIn = ref(true)
 const isPlanning = ref(false)
@@ -94,10 +168,10 @@ const isSurfing = computed(() => {
   return node.type === 'route_water' || currentNode.value === 'seafoam'
 })
 
-const currentScale = ref(1.3)
+const currentScale = ref(DEFAULT_FALLBACK_PARKED_SCALE)
 const cardScale = computed(() => {
-  const calculated = 0.85 / currentScale.value
-  return Math.min(Math.max(calculated, 0.4), 0.85)
+  const calculated = CARD_NORMALIZED_BASE_SCALE / currentScale.value
+  return Math.min(Math.max(calculated, MIN_CARD_VIEW_SCALE), MAX_CARD_VIEW_SCALE)
 })
 const currentPanX = ref(0)
 const currentPanY = ref(0)
@@ -110,9 +184,7 @@ const planningTarget = ref<string | null>(null)
 const worldContainer = ref<HTMLElement | null>(null)
 const viewport = ref<HTMLElement | null>(null)
 const playerToken = ref<HTMLElement | null>(null)
-const companionSprite = ref<HTMLImageElement | null>(null)
 const playerSprite = ref<HTMLElement | null>(null)
-const glowMarkerRef = ref<HTMLElement | null>(null)
 const previewLinesSvg = ref<SVGElement | null>(null)
 
 const mapNodes = computed(() => {
@@ -122,31 +194,6 @@ const mapNodes = computed(() => {
   }
   return result
 })
-
-const visibleWorldBounds = computed(() => {
-  const vpW = viewport.value ? viewport.value.clientWidth : (typeof window !== 'undefined' ? window.innerWidth : 800)
-  const vpH = viewport.value ? viewport.value.clientHeight : (typeof window !== 'undefined' ? window.innerHeight : 600)
-  const scale = currentScale.value || 0.75
-  const margin = 850 // Generous margin in world coords for ultra-smooth scrolling
-
-  const minX = (-currentPanX.value) / scale - margin
-  const maxX = (vpW - currentPanX.value) / scale + margin
-  const minY = (-currentPanY.value) / scale - margin
-  const maxY = (vpH - currentPanY.value) / scale + margin
-
-  return { minX, maxX, minY, maxY }
-})
-
-function isNodeNearViewport(node: MapNode, nodeId: string): boolean {
-  if (isPlanning.value) {
-    const plan = currentPlanPaths.value[selectedPlanIndex.value]
-    if (plan && plan.nodes.includes(nodeId)) return true
-  }
-  if (nodeId === currentNode.value || nodeId === planningTarget.value) return true
-
-  const bounds = visibleWorldBounds.value
-  return node.x >= bounds.minX && node.x <= bounds.maxX && node.y >= bounds.minY && node.y <= bounds.maxY
-}
 
 const cityDescriptions: Record<string, string> = {
   pallet: 'El comienzo de tu viaje.',
@@ -171,8 +218,8 @@ const mapLocationsById = computed(() => {
     } else {
       const rawNode = rawNodes[localId]
       if (rawNode && (rawNode.type === 'city' || rawNode.type === 'league')) {
-        map[localId] = {
-          id: officialId,
+        const cityLoc: MapLocation = {
+          id: requireMapRouteId(officialId),
           name: rawNode.name,
           icon: rawNode.type === 'league' ? '🏆' : '🏙️',
           badges: 0,
@@ -181,7 +228,8 @@ const mapLocationsById = computed(() => {
           rates: { morning: [], day: [], dusk: [], night: [] },
           lv: [1, 1],
           weather: {}
-        } as unknown as MapLocation
+        }
+        map[localId] = cityLoc
       }
     }
   }
@@ -190,21 +238,31 @@ const mapLocationsById = computed(() => {
 
 const currentCycle = computed(() => mapStore.currentCycle || 'day')
 
-import type { WeatherId } from '@/logic/weather/weatherRegistry'
-
 // Atmosphere/Weather helper
 function getWeatherForMap(nodeId: string): WeatherId {
-  const officialId = (officialMapIdMap[nodeId] || nodeId) as MapRouteId
-  if (mapStore.globalWeather) return mapStore.globalWeather
-  if (!isWeatherTableRouteId(officialId)) return 'clear'
+  const officialId = requireMapRouteId(officialMapIdMap[nodeId] || nodeId)
+  if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
+  if (!isWeatherTableRouteId(officialId)) return requireWeatherId('clear')
   const seasonId = mapStore.currentSeason?.id ? requireWeatherSeasonId(mapStore.currentSeason.id) : 'spring'
-  return getRouteWeather(officialId, seasonId, mapStore.currentEpochHour, currentCycle.value) as WeatherId
+  return requireWeatherId(getRouteWeather(officialId, seasonId, mapStore.currentEpochHour, currentCycle.value))
+}
+
+interface SpawnPoolData {
+  generic: PokemonSpeciesId[]
+  specific: PokemonSpeciesId[]
+  rates: Record<string, number>
+}
+
+const EMPTY_SPAWN_POOL: SpawnPoolData = {
+  generic: [],
+  specific: [],
+  rates: {}
 }
 
 // Spawn pool helper
-function getSpawnPoolForMap(nodeId: string) {
+function getSpawnPoolForMap(nodeId: string): SpawnPoolData {
   const loc = mapLocationsById.value[nodeId]
-  if (!loc || !loc.wild) return { generic: [] as string[], specific: [] as string[], rates: {} as Record<string, number> }
+  if (!loc || !loc.wild) return EMPTY_SPAWN_POOL
 
   const activeWeather = getWeatherForMap(nodeId)
   const { generic, specific, rates } = getMapSpawnPoolData(
@@ -217,11 +275,16 @@ function getSpawnPoolForMap(nodeId: string) {
 }
 
 // Day/Night overlay color
+const NIGHT_HOUR_THRESHOLD = 20 as const;
+const DUSK_HOUR_THRESHOLD = 18 as const;
+const DAWN_HOUR_THRESHOLD = 6 as const;
+const DRAG_THRESHOLD_PX = 8 as const;
+
 const dayNightOverlayColor = ref('transparent')
 function updateDayNightCycle() {
-  const hour = new Date().getHours()
-  if (hour >= 20 || hour < 6) dayNightOverlayColor.value = 'rgba(0, 0, 30, 0.45)'
-  else if (hour >= 18 && hour < 20) dayNightOverlayColor.value = 'rgba(255, 100, 0, 0.15)' 
+  const hour = Temporal.Now.plainTimeISO().hour
+  if (hour >= NIGHT_HOUR_THRESHOLD || hour < DAWN_HOUR_THRESHOLD) dayNightOverlayColor.value = 'rgba(0, 0, 30, 0.45)'
+  else if (hour >= DUSK_HOUR_THRESHOLD && hour < NIGHT_HOUR_THRESHOLD) dayNightOverlayColor.value = 'rgba(255, 100, 0, 0.15)' 
   else dayNightOverlayColor.value = 'transparent'
 }
 
@@ -243,13 +306,13 @@ const closeAlert = () => { alertOpen.value = false }
 
 function setCompanion(comp: string) {
   activeCompanion.value = comp
-  localStorage.setItem('pokeVicioCompanion', comp)
+  safeSetStorage(STORAGE_COMPANION_KEY, comp)
   updatePlayerVisuals()
 }
 
 function updateInventory(item: string, value: boolean) {
   playerInventory.value[item] = value
-  localStorage.setItem('pokeVicioInventory', JSON.stringify(playerInventory.value))
+  safeSetStorage(STORAGE_INVENTORY_KEY, JSON.stringify(playerInventory.value))
   if (item === 'Bicicleta' && !isMoving.value) updatePlayerVisuals()
   if (isPlanning.value) cancelPlanning()
 }
@@ -356,7 +419,7 @@ function startDrag(clientX: number, clientY: number) {
 
 function doDrag(clientX: number, clientY: number) {
   if (!isPointerDown) return
-  if (!isDragging && (Math.abs(clientX - initialClickX) > 8 || Math.abs(clientY - initialClickY) > 8)) {
+  if (!isDragging && (Math.abs(clientX - initialClickX) > DRAG_THRESHOLD_PX || Math.abs(clientY - initialClickY) > DRAG_THRESHOLD_PX)) {
     isDragging = true
   }
   if (isDragging) {
@@ -369,7 +432,7 @@ function doDrag(clientX: number, clientY: number) {
 
 function endDrag() {
   isPointerDown = false
-  setTimeout(() => { isDragging = false }, 50)
+  gsap.delayedCall(POINTER_DRAG_DEBOUNCE_SEC, () => { isDragging = false })
 }
 
 
@@ -404,7 +467,7 @@ function planTravel(targetId: string) {
   if (!discoveredNodes.value.includes(targetId)) {
     const isAdjacent = getAdjacentNodes(currentNode.value, connections).includes(targetId)
     if (!isAdjacent) {
-      showActionAlert("🗺️ <b>ZONA DESCONOCIDA</b><br><br>No puedes usar el GPS hacia zonas inexploradas. Descúbrela viajando a pie desde una ruta conectada.")
+      showActionAlert('🗺️ ZONA DESCONOCIDA\n\nNo puedes usar el GPS hacia zonas inexploradas. Descúbrela viajando a pie desde una ruta conectada.')
       return
     }
   }
@@ -450,11 +513,11 @@ function calculateRouteStats(nodesInPath: string[]) {
     sums.w = Math.max(sums.w, f.w)
     sums.m = Math.max(sums.m, f.m)
     sums.f = Math.max(sums.f, f.f)
-    if (nodesInPath[i] === currentSwarmRoute.value) sums.w = Math.min(100, sums.w + 50)
+    if (nodesInPath[i] === currentSwarmRoute.value) sums.w = Math.min(MAX_FARM_STAT_PERCENT, sums.w + SWARM_WATER_BOOST)
   }
-  if (activeCompanion.value === 'pikachu') sums.t = Math.min(100, Math.floor(sums.t * 1.5))
-  if (activeCompanion.value === 'meowth') sums.m = Math.min(100, Math.floor(sums.m * 1.5))
-  if (activeCompanion.value === 'squirtle') sums.f = Math.min(100, Math.floor(sums.f * 1.5))
+  if (activeCompanion.value === 'pikachu') sums.t = Math.min(MAX_FARM_STAT_PERCENT, Math.floor(sums.t * COMPANION_FARM_MULTIPLIER))
+  if (activeCompanion.value === 'meowth') sums.m = Math.min(MAX_FARM_STAT_PERCENT, Math.floor(sums.m * COMPANION_FARM_MULTIPLIER))
+  if (activeCompanion.value === 'squirtle') sums.f = Math.min(MAX_FARM_STAT_PERCENT, Math.floor(sums.f * COMPANION_FARM_MULTIPLIER))
   return sums
 }
 
@@ -475,8 +538,8 @@ function zoomToFitPath(nodesIds: string[]) {
     if (n.y < minY) minY = n.y; if (n.y > maxY) maxY = n.y
   })
 
-  // Add node card extent padding (130px) so card edges are fully framed
-  const cardRadius = 130
+  // Add node card extent padding so card edges are fully framed
+  const cardRadius = NODE_CARD_EXTENT_PADDING_PX
   minX -= cardRadius
   maxX += cardRadius
   minY -= cardRadius
@@ -486,14 +549,14 @@ function zoomToFitPath(nodesIds: string[]) {
   const pathHeight = maxY - minY
 
   // Exact screen padding in pixels to avoid UI collisions
-  const screenPaddingTop = 100     // Clears header (70px) + margin
-  const screenPaddingBottom = 330  // Clears bottom planning panel (~300px)
-  const screenPaddingLeft = 40
-  const screenPaddingRight = 40
+  const screenPaddingTop = SCREEN_PADDING_TOP_PX     // Clears header + margin
+  const screenPaddingBottom = SCREEN_PADDING_BOTTOM_PX  // Clears bottom planning panel
+  const screenPaddingLeft = SCREEN_PADDING_SIDE_PX
+  const screenPaddingRight = SCREEN_PADDING_SIDE_PX
 
   // Calculate available screen space
-  const availWidth = Math.max(200, viewport.value.clientWidth - (screenPaddingLeft + screenPaddingRight))
-  const availHeight = Math.max(200, viewport.value.clientHeight - (screenPaddingTop + screenPaddingBottom))
+  const availWidth = Math.max(MIN_VIEWPORT_AVAILABLE_SPACE_PX, viewport.value.clientWidth - (screenPaddingLeft + screenPaddingRight))
+  const availHeight = Math.max(MIN_VIEWPORT_AVAILABLE_SPACE_PX, viewport.value.clientHeight - (screenPaddingTop + screenPaddingBottom))
 
   // Calculate scale needed to fit the path within the available space
   const baseMapScale = getOptimalMapScale()
@@ -501,7 +564,7 @@ function zoomToFitPath(nodesIds: string[]) {
   const scaleY = pathHeight > 0 ? availHeight / pathHeight : baseMapScale
 
   let newScale = Math.min(scaleX, scaleY, baseMapScale)
-  newScale = Math.max(newScale, 0.40) // Keep clean framing without excessive zoom-out
+  newScale = Math.max(newScale, MIN_FRAMING_MAP_SCALE) // Keep clean framing without excessive zoom-out
 
   const midX = (minX + maxX) / 2
   const midY = (minY + maxY) / 2
@@ -511,7 +574,7 @@ function zoomToFitPath(nodesIds: string[]) {
   const destNode = mapNodes.value[destNodeId]
   const isDestAtTop = destNode ? Math.abs(destNode.y - minY) < Math.abs(destNode.y - maxY) : true
 
-  let y_center = midY
+  let y_center: number
 
   // If the path height exceeds the visible height at this zoom, align to the destination
   if (pathHeight * newScale > availHeight) {
@@ -570,10 +633,10 @@ async function confirmTravel() {
   if (firstNode && secondNode) {
     const initDx = secondNode.x - firstNode.x
     const initDy = secondNode.y - firstNode.y
-    const angle = Math.atan2(initDy, initDx) * (180 / Math.PI)
-    if (angle >= -45 && angle < 45) playerDirection.value = 'right'
-    else if (angle >= 45 && angle < 135) playerDirection.value = 'down'
-    else if (angle >= -135 && angle < -45) playerDirection.value = 'up'
+    const angle = Math.atan2(initDy, initDx) * RAD_TO_DEG
+    if (angle >= DIR_RIGHT_MIN_ANGLE_DEG && angle < DIR_RIGHT_MAX_ANGLE_DEG) playerDirection.value = 'right'
+    else if (angle >= DIR_RIGHT_MAX_ANGLE_DEG && angle < DIR_DOWN_MAX_ANGLE_DEG) playerDirection.value = 'down'
+    else if (angle >= DIR_UP_MIN_ANGLE_DEG && angle < DIR_RIGHT_MIN_ANGLE_DEG) playerDirection.value = 'up'
     else playerDirection.value = 'left'
   }
 
@@ -598,17 +661,17 @@ async function confirmTravel() {
 
   const finalNode = pathData.nodes[pathData.nodes.length - 1]
   currentNode.value = finalNode
-  localStorage.setItem('pokeVicioLocation', finalNode)
+  safeSetStorage(STORAGE_LOCATION_KEY, finalNode)
 
   if (mapNodes.value[finalNode]?.hasEvent) {
-    setTimeout(() => showActionAlert(`¡Oye! Tienes un evento pendiente en ${mapNodes.value[finalNode].name}.`), 800)
+    gsap.delayedCall(EVENT_ALERT_DELAY_SEC, () => showActionAlert(`¡Oye! Tienes un evento pendiente en ${mapNodes.value[finalNode].name}.`))
   }
   enterParkedMode()
 }
 
 function preloadTrainerSprites() {
-  const directions = ['down', 'up', 'left', 'right']
-  const types = ['walk', 'bike', 'surf', 'fly']
+  const directions = SPRITE_FACING_DIRECTIONS
+  const types = ['walk', 'bike', 'surf', 'fly'] as const
   for (const type of types) {
     for (const dir of directions) {
       for (let f = 0; f < 3; f++) {
@@ -650,7 +713,7 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
       }
     }
 
-    const speed = isFlying ? flySpeed : (playerInventory.value['Bicicleta'] ? baseBikeSpeed : baseWalkSpeed)
+    const speed = isFlying ? FLY_SPEED : (playerInventory.value['Bicicleta'] ? BASE_BIKE_SPEED : BASE_WALK_SPEED)
     const isBike = !!playerInventory.value['Bicicleta'] && !isSurfing.value
 
     interface RouteLeg {
@@ -665,8 +728,8 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
       duration: number
       startTime: number
       endTime: number
-      dir: 'down' | 'up' | 'left' | 'right'
-      terrain: 'land' | 'water'
+      dir: SpriteFacingDirection
+      terrain: TravelTerrainMode
       progressPct: number
     }
 
@@ -683,16 +746,16 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
       const dx = end.x - start.x
       const dy = end.y - start.y
       const dist = Math.hypot(dx, dy)
-      const duration = Math.max(0.12, dist / speed)
+      const duration = Math.max(MIN_TRAVEL_LEG_DURATION_SEC, dist / speed)
 
-      const dir: 'down' | 'up' | 'left' | 'right' = (() => {
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI)
-        if (angle >= -45 && angle < 45) return 'right'
-        if (angle >= 45 && angle < 135) return 'down'
-        if (angle >= -135 && angle < -45) return 'up'
+      const dir: SpriteFacingDirection = (() => {
+        const angle = Math.atan2(dy, dx) * RAD_TO_DEG
+        if (angle >= DIR_RIGHT_MIN_ANGLE_DEG && angle < DIR_RIGHT_MAX_ANGLE_DEG) return 'right'
+        if (angle >= DIR_RIGHT_MAX_ANGLE_DEG && angle < DIR_DOWN_MAX_ANGLE_DEG) return 'down'
+        if (angle >= DIR_UP_MIN_ANGLE_DEG && angle < DIR_RIGHT_MIN_ANGLE_DEG) return 'up'
         return 'left'
       })()
-      const terrain: 'land' | 'water' = (start.type === 'route_water' || startId === 'seafoam' || end.type === 'route_water' || endId === 'seafoam') ? 'water' : 'land'
+      const terrain: TravelTerrainMode = (start.type === 'route_water' || startId === 'seafoam' || end.type === 'route_water' || endId === 'seafoam') ? 'water' : 'land'
       const progressPct = Math.round(((i + 1) / (nodes.length - 1)) * 100)
 
       legs.push({
@@ -729,8 +792,8 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
     if (worldContainer.value) gsap.killTweensOf(worldContainer.value)
 
     const animState = { t: 0 }
-    const stepDuration = isFlying ? 0.10 : (isBike ? 0.11 : 0.16)
-    const totalSteps = Math.round(totalTime / stepDuration) * 4
+    const stepDuration = isFlying ? FLY_STEP_DURATION_SEC : (isBike ? BIKE_STEP_DURATION_SEC : WALK_STEP_DURATION_SEC)
+    const totalSteps = Math.round(totalTime / stepDuration) * ANIM_STEPS_PER_CYCLE
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -790,7 +853,7 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
             currentNode.value = activeLeg.endId
             if (!discoveredNodes.value.includes(activeLeg.endId)) {
               discoveredNodes.value.push(activeLeg.endId)
-              localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
+              safeSetStorage(STORAGE_DISCOVERED_KEY, JSON.stringify(discoveredNodes.value))
             }
           }
           travelProgressText.value = `${activeLeg.progressPct}%`
@@ -831,19 +894,19 @@ const triggerSwarm = () => {
 const exploreZone = () => showActionAlert(`La hierba alta de ${mapNodes.value[currentNode.value].name} se mueve... ¡Prepárate!`)
 
 function healPokemon() {
-  showActionAlert("Turururu-ru~<br><br>Tus Pokémon están completamente sanos y listos para seguir luchando.")
+  showActionAlert('Turururu-ru~\n\nTus Pokémon están completamente sanos y listos para seguir luchando.')
 }
 
 // Debug features
 const debugUnlockAll = () => {
   discoveredNodes.value = Object.keys(mapNodes.value)
-  localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
+  safeSetStorage(STORAGE_DISCOVERED_KEY, JSON.stringify(discoveredNodes.value))
   showActionAlert("⚙️ Cheat: Todo el mapa ha sido descubierto.")
 }
 
 function debugGiveAllMOs() {
   ['Corte', 'Surf', 'Flauta', 'Medallas', 'Vuelo', 'Bicicleta'].forEach(mo => playerInventory.value[mo] = true)
-  localStorage.setItem('pokeVicioInventory', JSON.stringify(playerInventory.value))
+  safeSetStorage(STORAGE_INVENTORY_KEY, JSON.stringify(playerInventory.value))
   updatePlayerVisuals()
   showActionAlert("⚙️ Cheat: Tienes todos los Objetos y MOs.")
 }
@@ -855,7 +918,14 @@ const debugTriggerSwarm = () => {
 
 function debugHardReset() {
   if (confirm("⚠️ ¿Estás seguro de que quieres BORRAR TODOS LOS DATOS Y REINICIAR? Esto no se puede deshacer.")) {
-    localStorage.clear()
+    try {
+      localStorage.removeItem(STORAGE_INVENTORY_KEY)
+      localStorage.removeItem(STORAGE_DISCOVERED_KEY)
+      localStorage.removeItem(STORAGE_COMPANION_KEY)
+      localStorage.removeItem(STORAGE_LOCATION_KEY)
+    } catch {
+      // catch-ok: Storage removal restricted in private browsing mode
+    }
     location.reload()
   }
 }
@@ -863,9 +933,7 @@ function debugHardReset() {
 // Map companion sprite url
 const companionSpriteUrl = computed(() => {
   if (activeCompanion.value === 'none') return ''
-  let pokeId = 25
-  if (activeCompanion.value === 'meowth') pokeId = 52
-  if (activeCompanion.value === 'squirtle') pokeId = 7
+  const pokeId = COMPANION_POKEDEX_IDS[activeCompanion.value as keyof typeof COMPANION_POKEDEX_IDS] ?? COMPANION_POKEDEX_IDS.pikachu
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`
 })
 
@@ -880,12 +948,10 @@ const adjacentButtons = computed(() => {
     const dx = adj.x - current.x
     const dy = adj.y - current.y
     
-    let direction = 'N'
-    if (Math.abs(dx) > Math.abs(dy)) {
-      direction = dx > 0 ? 'E' : 'W'
-    } else {
-      direction = dy > 0 ? 'S' : 'N'
-    }
+    const direction = Math.abs(dx) > Math.abs(dy)
+      ? (dx > 0 ? 'E' : 'W')
+      : (dy > 0 ? 'S' : 'N')
+
     
     return {
       id,
@@ -913,8 +979,12 @@ onMounted(() => {
   preloadTrainerSprites()
   triggerSwarm()
   updatePlayerVisuals()
-  updateDayNightCycle()
-  const dayNightTimer = setInterval(updateDayNightCycle, 60000)
+  let dayNightTimer: gsap.core.Tween | null = null
+  const scheduleDayNight = () => {
+    updateDayNightCycle()
+    dayNightTimer = gsap.delayedCall(DAY_NIGHT_CYCLE_INTERVAL_SEC, scheduleDayNight)
+  }
+  scheduleDayNight()
   window.addEventListener('resize', handleResize)
 
   // Position player token initially
@@ -929,14 +999,14 @@ onMounted(() => {
   })
 
   onUnmounted(() => {
-    clearInterval(dayNightTimer)
+    if (dayNightTimer) dayNightTimer.kill()
     window.removeEventListener('resize', handleResize)
   })
 })
 </script>
 
 <template>
-  <div class="flex flex-col font-sans h-[100dvh] w-screen overflow-hidden text-white">
+  <div class="kanto-adventure-view flex flex-col font-sans h-[100dvh] w-screen overflow-hidden text-white">
     <!-- Header -->
     <header class="h-[64px] md:h-[70px] bg-gradient-to-b from-red-500 to-red-600 text-white px-3 md:px-6 py-2 shadow-lg z-50 flex justify-between items-center shrink-0 border-b-[4px] md:border-b-[5px] border-red-800 relative">
       <div class="flex items-center gap-2 md:gap-3">
@@ -953,6 +1023,7 @@ onMounted(() => {
           </h1>
         </div>
         <button
+          id="btn-header-inventory"
           class="bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 px-2.5 py-1.5 md:p-2 rounded-xl border-2 border-blue-800 shadow-[0_3px_0_#1e3a8a] md:shadow-[0_4px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-0.5 flex items-center transition-all ml-1 md:ml-2"
           @click="toggleInventoryModal"
         >
@@ -960,6 +1031,7 @@ onMounted(() => {
         </button>
       </div>
       <div
+        id="btn-header-location"
         class="bg-gray-900 px-2.5 py-1 md:px-3 md:py-1.5 rounded-xl border-2 border-gray-600 shadow-inner text-right cursor-pointer hover:bg-gray-800 active:scale-95 transition-all max-w-[140px] sm:max-w-[220px]"
         @click="returnToCurrentLocation"
       >
@@ -1068,7 +1140,8 @@ onMounted(() => {
                 <!-- True Spherical Background Glow Effect (Only Zoomed-out map, stationary) -->
                 <div 
                   v-if="!isZoomedIn && !isMoving && currentNode === id"
-                  class="absolute inset-[-20px] bg-green-500 rounded-full blur-2xl opacity-90 z-[-1] pointer-events-none animate-pulse-glow"
+                  v-gsap-loop="{ effect: 'pulse', scale: 1.3, duration: 2.5, ease: 'sine.inOut' }"
+                  class="absolute inset-[-20px] bg-green-500 rounded-full blur-2xl opacity-90 z-[-1] pointer-events-none"
                 />
 
                 <MapCard 
@@ -1182,7 +1255,7 @@ onMounted(() => {
               :src="`./assets/sprites/trainers/red_walk_${playerDirection}_${walkFrame}.png`"
               class="pixel-art h-12 w-auto max-w-none"
               alt="Caminando"
-            />
+            >
           </div>
         </div>
       </div>
@@ -1196,6 +1269,7 @@ onMounted(() => {
     >
       <button
         id="btn-free-map"
+        v-gsap-hover="'button'"
         class="floating-btn"
         :title="isZoomedIn ? 'Ver Mapa Completo' : 'Volver a Ubicación'"
         @click="() => {
@@ -1210,6 +1284,7 @@ onMounted(() => {
       </button>
       <button
         id="btn-radar"
+        v-gsap-hover="'button'"
         class="floating-btn"
         title="Radar Rápido"
         @click="toggleRadarModal"
@@ -1218,6 +1293,7 @@ onMounted(() => {
       </button>
       <button
         id="btn-debug"
+        v-gsap-hover="'button'"
         class="floating-btn btn-debug-color"
         title="Menú de Testers (Debug)"
         @click="toggleDebugModal"
@@ -1236,6 +1312,7 @@ onMounted(() => {
         <button
           v-for="btn in adjacentButtons.filter(b => b.direction === 'N')"
           :key="btn.id"
+          v-gsap-hover="'button'"
           class="nav-arrow-btn"
           @click="travelToAdjacent(btn.id)"
         >
@@ -1248,6 +1325,7 @@ onMounted(() => {
         <button
           v-for="btn in adjacentButtons.filter(b => b.direction === 'S')"
           :key="btn.id"
+          v-gsap-hover="'button'"
           class="nav-arrow-btn"
           @click="travelToAdjacent(btn.id)"
         >
@@ -1260,6 +1338,7 @@ onMounted(() => {
         <button
           v-for="btn in adjacentButtons.filter(b => b.direction === 'W')"
           :key="btn.id"
+          v-gsap-hover="'button'"
           class="nav-arrow-btn"
           @click="travelToAdjacent(btn.id)"
         >
@@ -1272,6 +1351,7 @@ onMounted(() => {
         <button
           v-for="btn in adjacentButtons.filter(b => b.direction === 'E')"
           :key="btn.id"
+          v-gsap-hover="'button'"
           class="nav-arrow-btn"
           @click="travelToAdjacent(btn.id)"
         >
@@ -1347,6 +1427,7 @@ onMounted(() => {
 
         <div class="planning-actions">
           <button
+            id="btn-planning-cancel"
             class="planning-btn-cancel"
             @click="cancelPlanning"
           >
@@ -1354,12 +1435,14 @@ onMounted(() => {
           </button>
           <button
             v-if="currentPlanPaths.length > 1"
+            id="btn-planning-alt"
             class="planning-btn-alt"
             @click="nextAlternative"
           >
             🔄 Alternativa
           </button>
           <button
+            id="btn-planning-go"
             class="planning-btn-go"
             @click="confirmTravel"
           >
@@ -1372,6 +1455,7 @@ onMounted(() => {
     <!-- Active traveling floating progress -->
     <div
       v-if="isTravelingProgressActive"
+      id="travel-floating-progress"
       class="adv-floating-progress fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900/90 border border-gray-700 px-6 py-3 rounded-full flex items-center gap-4 z-[200]"
     >
       <div class="adv-progress-bar w-40 h-3 bg-gray-800 rounded-full overflow-hidden">
@@ -1386,14 +1470,15 @@ onMounted(() => {
     <!-- Custom Alert dialog -->
     <div
       v-if="alertOpen"
+      id="adv-alert-modal"
       class="adv-modal-overlay"
     >
       <div class="adv-modal-card p-6 flex flex-col">
-        <p
-          class="text-gray-800 font-bold text-lg mb-6 leading-relaxed"
-          v-html="alertMsg"
-        />
+        <p class="text-gray-800 font-bold text-lg mb-6 leading-relaxed whitespace-pre-line">
+          {{ alertMsg }}
+        </p>
         <button
+          id="btn-alert-close"
           class="self-end bg-gray-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-black active:scale-95 transition-transform"
           @click="closeAlert"
         >
@@ -1457,4 +1542,12 @@ onMounted(() => {
     />
   </div>
 </template>
+
+<style lang="scss" scoped>
+.kanto-adventure-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+</style>
 

@@ -72,13 +72,15 @@ function handleOpenDetail() {
   <div class="market-publish-wizard">
     <div class="publish-header">
       <div class="mode-selector">
-        <button 
+        <button
+          id="market-publish-btn-pok-mon" 
           :class="{ active: activeMode === 'pokemon' }"
           @click.stop="activeMode = 'pokemon'; selection = null"
         >
           POKÉMON
         </button>
-        <button 
+        <button
+          id="market-publish-btn-objetos" 
           :class="{ active: activeMode === 'item' }"
           @click.stop="activeMode = 'item'; selection = null"
         >

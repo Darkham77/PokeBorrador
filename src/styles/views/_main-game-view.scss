@@ -84,8 +84,8 @@
 
 .hint-banner {
   padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 11px;
+  border-radius: $radius-lg-alt;
+  font-size: var(--font-11);
   margin-bottom: 12px;
 }
 
@@ -116,7 +116,7 @@
   z-index: var(--z-hud);
   display: flex;
   flex-direction: row-reverse;
-  gap: 10px;
+  gap: $spacing-md-alt;
   transform: Translate3d(0, 0, 0);
   pointer-events: none;
 

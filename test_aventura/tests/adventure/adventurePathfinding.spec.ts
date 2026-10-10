@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { getAdjacentNodes, dijkstra, getAlternativePaths } from '../../logic/adventure/adventurePathfinding'
-import { rawNodes, connections } from '../../logic/adventure/mapData'
+import { getAdjacentNodes, dijkstra, getAlternativePaths } from '../../logic/adventure/adventurePathfinding.ts'
+import { rawNodes, connections } from '../../logic/adventure/mapData.ts'
 
 describe('Adventure Pathfinding Logic', () => {
   it('correctly retrieves adjacent nodes for Pallet Town', () => {
@@ -42,4 +42,34 @@ describe('Adventure Pathfinding Logic', () => {
     expect(altPaths[0]?.nodes[0]).toBe('cerulean')
     expect(altPaths[0]?.nodes[altPaths[0]?.nodes.length - 1]).toBe('lavender')
   })
+
+  it('handles trivial path when start and destination nodes are identical', () => {
+    const discovered = Object.keys(rawNodes)
+    const inventory = { Corte: false, Surf: false, Flauta: false, Medallas: false, Vuelo: false, Bicicleta: true }
+    const path = dijkstra('pallet', 'pallet', rawNodes, inventory, discovered, connections)
+
+    expect(path).not.toBeNull()
+    expect(path?.nodes).toEqual(['pallet'])
+    expect(path?.distance).toBe(0)
+  })
+
+  it('returns empty array for non-existent node in getAdjacentNodes', () => {
+    const adj = getAdjacentNodes('unknown_node_xyz', connections)
+    expect(adj).toEqual([])
+  })
+
+  it('blocks water path when Surf obstacle is missing from inventory', () => {
+    const discovered = Object.keys(rawNodes)
+    const inventoryNoSurf = { Corte: false, Surf: false, Flauta: false, Medallas: false, Vuelo: false, Bicicleta: true }
+    
+    const pathBlocked = dijkstra('pallet', 'cinnabar', rawNodes, inventoryNoSurf, discovered, connections)
+    expect(pathBlocked).toBeNull()
+
+    const inventoryWithSurf = { ...inventoryNoSurf, Surf: true }
+    const pathAllowed = dijkstra('pallet', 'cinnabar', rawNodes, inventoryWithSurf, discovered, connections)
+    expect(pathAllowed).not.toBeNull()
+    expect(pathAllowed?.nodes[0]).toBe('pallet')
+    expect(pathAllowed?.nodes[pathAllowed.nodes.length - 1]).toBe('cinnabar')
+  })
 })
+

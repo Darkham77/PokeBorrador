@@ -166,6 +166,8 @@ function buildRechargeMoveEntry(id: string, trans: { name?: string }): StaticMov
   };
 }
 
+const DEFAULT_FALLBACK_MOVE_PP = 35 as const;
+
 function buildFallbackMoveEntry(id: string, name: string): StaticMoveEntry {
   return {
     id,
@@ -174,7 +176,7 @@ function buildFallbackMoveEntry(id: string, name: string): StaticMoveEntry {
     acc: PERFECT_ACCURACY_FLAG,
     type: 'normal',
     cat: 'status',
-    pp: 35,
+    pp: DEFAULT_FALLBACK_MOVE_PP,
     priority: 0
   };
 }

@@ -40,7 +40,8 @@ const battleCode = computed(() => extractBattleCode(msg.text))
 
 <template>
   <div class="message-row">
-    <TrainerAvatar 
+    <TrainerAvatar
+      id="direct-chat-message-row-traineravatar-1" 
       :player-class="playerClass" 
       :level="trainerLevel" 
       :avatar-style="avatarStyle"
@@ -55,6 +56,7 @@ const battleCode = computed(() => extractBattleCode(msg.text))
     >
       <div class="message-meta">
         <span
+          id="direct-chat-message-row-span-2"
           v-gsap-nick="nickStyle"
           class="username clickable-username"
           :class="nickStyle"
@@ -79,13 +81,13 @@ const battleCode = computed(() => extractBattleCode(msg.text))
 .message-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: $spacing-md;
 }
 
 .message-content {
   padding: 8px 12px;
   border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 0 12px 12px;
+  border-radius: 0 $radius-xl $radius-xl;
   background: Rgb(255 255 255 / 3%);
   flex: 1;
 

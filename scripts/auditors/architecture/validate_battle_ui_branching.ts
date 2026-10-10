@@ -50,11 +50,23 @@ const FORBIDDEN_STATE_PATTERNS = [
 export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingRuleId> {
   constructor(roots: readonly string[] = ['src/components/battle']) {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_battle_ui_branching',
       configKey: 'architecture.battleUiBranching',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Battle Arena UI Config Branching Auditor',
       description: 'Valida uso de uiConfig declarativo en UI de combate',
       icon: '⚔️',

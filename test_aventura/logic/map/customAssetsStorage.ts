@@ -6,10 +6,10 @@
  */
 
 import type { TileMetadata } from './tilesRegistry.ts';
-import type { StructureTemplate } from '../../config/mapStructures';
+import type { StructureTemplate } from '../../config/mapStructures.ts';
 import { logger } from '@/logic/utils/logger';
 
-const DB_NAME = 'pokevicio_studio_assets_db';
+const CUSTOM_ASSETS_DB_NAME = 'pokevicio_studio_assets_db';
 const DB_VERSION = 1;
 const TILES_STORE = 'custom_tiles';
 const STRUCTURES_STORE = 'custom_structures';
@@ -23,7 +23,7 @@ function openDatabase(): Promise<IDBDatabase | null> {
 
   return new Promise((resolve) => {
     try {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      const req = indexedDB.open(CUSTOM_ASSETS_DB_NAME, DB_VERSION);
 
       req.onupgradeneeded = (e: IDBVersionChangeEvent) => {
         const db = (e.target as IDBOpenDBRequest).result;

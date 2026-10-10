@@ -13,16 +13,16 @@ import {
   TilesRegistryService,
   loadTilesRegistry,
   type TilesRegistryJson
-} from '../../../src/logic/map/tilesRegistry.ts';
+} from '../../logic/map/tilesRegistry.ts';
 import {
   generateProceduralMap,
   type GeneratedMap
-} from '../../../src/logic/map/proceduralMapGenerator.ts';
+} from '../../logic/map/proceduralMapGenerator.ts';
 import {
   useMapStudioStore,
-  MAX_HISTORY_STEPS,
   DEFAULT_GROUND_TILE
 } from '../../../src/stores/mapStudio.ts';
+import { STUDIO_MAX_HISTORY_STEPS } from '../../config/studioConstants.ts';
 
 describe('Map Studio Pinia Store (useMapStudioStore)', () => {
   let registryService: TilesRegistryService;
@@ -154,11 +154,11 @@ describe('Map Studio Pinia Store (useMapStudioStore)', () => {
     expect(testMap.entities.spawns.length).toBe(spawnsCountBefore);
   });
 
-  it('limits undo history stack to MAX_HISTORY_STEPS (30)', () => {
+  it('limits undo history stack to STUDIO_MAX_HISTORY_STEPS (30)', () => {
     const store = useMapStudioStore();
     store.setMap(testMap);
 
-    for (let i = 0; i < MAX_HISTORY_STEPS + 10; i++) {
+    for (let i = 0; i < STUDIO_MAX_HISTORY_STEPS + 10; i++) {
       const gx = i % 10;
       const gy = Math.floor(i / 10);
       const current = testMap.collisionMatrix[gy]![gx]!;
@@ -166,14 +166,14 @@ describe('Map Studio Pinia Store (useMapStudioStore)', () => {
       store.paintCollision(gx, gy, changedCol);
     }
 
-    // Stack should not exceed MAX_HISTORY_STEPS
+    // Stack should not exceed STUDIO_MAX_HISTORY_STEPS
     let undoCount = 0;
     while (store.canUndo) {
       store.undo();
       undoCount++;
     }
 
-    expect(undoCount).toBe(MAX_HISTORY_STEPS);
+    expect(undoCount).toBe(STUDIO_MAX_HISTORY_STEPS);
   });
 
   it('validates Test Drive avatar movement, solid collision, and ledge jump', () => {

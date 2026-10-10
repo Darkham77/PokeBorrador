@@ -158,11 +158,23 @@ export const FSM_IMPLEMENTATION_RULES: readonly FsmImplementationRuleId[] = [
 export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleId> {
   constructor() {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_fsm_implementation',
       configKey: 'fsm.implementation',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'FSM Implementation Validator',
       description: 'Fallas de implementación, idempotencia o asientos en FSM',
       icon: '🕹️',

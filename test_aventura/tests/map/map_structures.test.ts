@@ -14,7 +14,7 @@ import {
   getStructureTemplate,
   getStructureTemplatesByTheme,
   type StructureTemplate
-} from '../../../src/config/mapStructures.ts';
+} from '../../config/mapStructures.ts';
 
 describe('Map Structure Templates & Multitile Stamping System', () => {
   const templates: StructureTemplate[] = [

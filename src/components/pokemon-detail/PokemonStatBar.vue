@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { MAX_SINGLE_STAT_IV, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay'
 import type { StatBarMode } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -13,11 +15,17 @@ interface Props {
 
 const DEFAULT_MAX_BASE_STAT = 255
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   max: DEFAULT_MAX_BASE_STAT,
   color: '$white',
   iv: null,
   mode: 'full'
+})
+
+const mainFillWidthPercent = computed(() => `${Math.min((props.value / props.max) * PERCENT_BASE_MULTIPLIER, PERCENT_BASE_MULTIPLIER)}%`)
+const ivFillWidthPercent = computed(() => {
+  if (props.iv === null || props.iv === undefined) return '0%'
+  return `${(Number(props.iv) / MAX_SINGLE_STAT_IV) * PERCENT_BASE_MULTIPLIER}%`
 })
 
 const getIvColor = (val: number) => {
@@ -70,7 +78,7 @@ const getStatLabel = (key: string) => {
         <div 
           class="fill main-fill" 
           :style="{ 
-            width: Math.min((value/max*100), 100) + '%', 
+            width: mainFillWidthPercent, 
             background: mode === 'iv' ? getIvColor(value) : color,
             '--glow': (mode === 'iv' ? getIvColor(value) : color) + '66'
           }"
@@ -85,7 +93,7 @@ const getStatLabel = (key: string) => {
         <div 
           class="fill iv-fill" 
           :style="{ 
-            width: ((iv as number)/31*100) + '%', 
+            width: ivFillWidthPercent, 
             background: getIvColor(iv as number)
           }"
         />
@@ -117,14 +125,14 @@ const getStatLabel = (key: string) => {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-lg;
   width: 100%;
   margin-bottom: 16px;
 
   @media (width <= 480px) {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-bottom: 20px;
   }
 }
@@ -132,12 +140,12 @@ const getStatLabel = (key: string) => {
 .stat-info {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: $spacing-md-15;
   min-width: 130px;
 
   @media (width <= 480px) {
     justify-content: flex-start;
-    gap: 10px;
+    gap: $spacing-md-alt;
     width: 100%;
     min-width: 0;
   }
@@ -148,9 +156,9 @@ const getStatLabel = (key: string) => {
 
     width: 55px;
     color: Rgb(148 163 184 / 100%);
-    font-size: 10px;
+    font-size: var(--font-10);
 
-    @media (width <= 480px) { width: 45px; font-size: 8px; }
+    @media (width <= 480px) { width: 45px; font-size: var(--font-8); }
   }
   .stat-value {
     @include pixelated;
@@ -158,11 +166,11 @@ const getStatLabel = (key: string) => {
 
     min-width: 50px;
     color: var(--white);
-    font-size: 16px;
+    font-size: var(--font-16);
     font-weight: bold;
     text-align: right;
 
-    @media (width <= 480px) { min-width: 40px; font-size: 12px; }
+    @media (width <= 480px) { min-width: 40px; font-size: var(--font-12); }
   }
 }
 
@@ -170,7 +178,7 @@ const getStatLabel = (key: string) => {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   min-width: 0; 
   padding: 2px 0;
   flex: 1;
@@ -197,39 +205,39 @@ const getStatLabel = (key: string) => {
 
 .main-track {
   height: 18px;
-  border-radius: 9px;
+  border-radius: $radius-9;
 
   @media (width <= 480px) { height: 12px; }
 }
 
 .main-fill {
-  box-shadow: 0 0 15px var(--glow);
+  box-shadow: var(--shadow-glow-amber);
 }
 
 .iv-track {
   height: 10px;
-  border-radius: 5px;
+  border-radius: $radius-md-alt;
   margin-top: 2px;
 
   @media (width <= 480px) { height: 8px; }
 }
 
 .iv-fill {
-  box-shadow: inset 0 0 5px Rgb(255 255 255 / 20%);
+  box-shadow: var(--shadow-card);
 }
 
 .stat-meta {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   min-width: 45px;
 
   @media (width <= 480px) {
     position: absolute;
     top: 0;
     right: 0;
-    gap: 8px;
+    gap: $spacing-sm;
     min-width: 0;
   }
 
@@ -237,20 +245,20 @@ const getStatLabel = (key: string) => {
     @include pixelated;
     @include pixelated;
 
-    font-size: 12px;
+    font-size: var(--font-12);
     font-weight: bold;
     text-shadow: 0 0 5px currentColor;
 
-    @media (width <= 480px) { font-size: 10px; }
+    @media (width <= 480px) { font-size: var(--font-10); }
   }
   .iv-num {
     @include pixelated;
     @include pixelated;
 
-    font-size: 9px;
+    font-size: var(--font-9);
     opacity: 0.9;
 
-    @media (width <= 480px) { font-size: 8px; }
+    @media (width <= 480px) { font-size: var(--font-8); }
   }
 }
 

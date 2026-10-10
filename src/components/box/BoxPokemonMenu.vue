@@ -18,6 +18,7 @@ import { calculateTotalPower, getPokemonTier, calculateRocketSellPrice as calcul
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
 import { isPokemonBusy } from '@/logic/constants/tags'
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -60,6 +61,7 @@ interface EnrichedTeamMember {
 }
 
 const team = computed(() => (gameStore.state.team || []))
+const canAddToTeam = computed(() => team.value.length < MAX_POKEMON_TEAM_SIZE)
 const totalPower = computed(() => pokemon.value ? calculateTotalPower(pokemon.value) : 0)
 const tierInfo = computed(() => pokemon.value ? getPokemonTier(pokemon.value) : null)
 const fieldPassive = computed(() => pokemon.value ? getFieldPassiveBadges(pokemon.value) : null)
@@ -245,8 +247,9 @@ const handleSellRocket = () => {
 
       <!-- Action Grid -->
       <div class="box-action-grid">
-        <button 
-          v-if="team.length < 6" 
+        <button
+          v-if="canAddToTeam" 
+          id="box-pokemon-menu-btn-agregar-al-equipo" 
           class="menu-action-btn success-btn" 
           :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleMoveToTeam"
@@ -262,6 +265,7 @@ const handleSellRocket = () => {
           <div class="team-swap-grid">
             <div
               v-for="m in enrichedTeam"
+              id="box-pokemon-menu-div-1"
               :key="m.pokemon.uid"
               class="team-swap-card"
               :class="{ 
@@ -337,12 +341,14 @@ const handleSellRocket = () => {
       <!-- Footer Actions -->
       <div class="footer-actions">
         <button
+          id="box-pokemon-menu-btn-usar-objeto"
           class="menu-action-btn"
           @click.stop="handleUseItem"
         >
           <span class="emoji">🎒</span> USAR OBJETO
         </button>
         <button
+          id="box-pokemon-menu-btn-quitar-objeto"
           class="menu-action-btn danger-btn"
           :disabled="!pokemon?.heldItem"
           @click.stop="handleUnequipItem"
@@ -350,12 +356,14 @@ const handleSellRocket = () => {
           <span class="emoji">❌</span> QUITAR OBJETO
         </button>
         <button
+          id="box-pokemon-menu-btn-mover-caja"
           class="menu-action-btn"
           @click.stop="handleMoveToBox"
         >
           <span class="emoji">📦</span> MOVER CAJA
         </button>
         <button
+          id="box-pokemon-menu-btn-liberar"
           class="menu-action-btn secondary-btn full-width"
           :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleRelease"
@@ -364,6 +372,7 @@ const handleSellRocket = () => {
         </button>
         <button
           v-if="isRocketMode"
+          id="box-pokemon-menu-btn-vender-mercado-negro"
           class="menu-action-btn danger-btn full-width"
           :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleSellRocket"
@@ -381,21 +390,21 @@ const handleSellRocket = () => {
 .busy-warning-banner {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-md;
   margin: 12px 16px;
   padding: 10px 14px;
-  border: 1px solid rgb(239 68 68 / 25%);
-  border-radius: 12px;
-  background: rgb(239 68 68 / 8%);
+  border: 1px solid Rgb(239 68 68 / 25%);
+  border-radius: $radius-xl;
+  background: Rgb(239 68 68 / 8%);
   
   .warning-icon {
-    font-size: 16px;
+    font-size: var(--font-16);
   }
   
   .warning-text {
-    color: #f87171;
+    color: var(--rose);
     font-family: var(--font-pixel);
-    font-size: 7px;
+    font-size: var(--font-7);
     line-height: 1.5;
   }
 }

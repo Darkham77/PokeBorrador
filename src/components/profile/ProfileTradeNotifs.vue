@@ -89,6 +89,7 @@ const validationMap = computed(() => {
         <span class="emoji">✅</span> ¡OFERTA ACEPTADA!
       </div>
       <button
+        id="profile-trade-notifs-btn-entendido"
         class="notif-action-btn"
         @click.stop="tradeStore.claimTrade(t.id)"
       >
@@ -133,6 +134,7 @@ const validationMap = computed(() => {
 
       <div class="notif-actions">
         <button
+          id="profile-trade-notifs-btn-aceptar"
           class="notif-btn accept"
           :disabled="!validationMap[t.id]?.can"
           @click.stop="tradeStore.acceptTrade(t.id)"
@@ -140,6 +142,7 @@ const validationMap = computed(() => {
           ACEPTAR
         </button>
         <button
+          id="profile-trade-notifs-btn-rechazar"
           class="notif-btn reject"
           @click.stop="tradeStore.rejectTrade(t.id)"
         >
@@ -161,50 +164,50 @@ const validationMap = computed(() => {
   @include pixelated;
 
   color: var(--white);
-  font-size: 9px;
-  text-shadow: 1px 1px 0 rgb(0 0 0 / 100%), -1px -1px 0 rgb(0 0 0 / 100%), 1px -1px 0 rgb(0 0 0 / 100%), -1px 1px 0 rgb(0 0 0 / 100%);
+  font-size: var(--font-9);
+  text-shadow: 1px 1px 0 Rgb(0 0 0 / 100%), -1px -1px 0 Rgb(0 0 0 / 100%), 1px -1px 0 Rgb(0 0 0 / 100%), -1px 1px 0 Rgb(0 0 0 / 100%);
   margin-bottom: 12px;
 }
 
 .trade-notif-card-legacy {
   padding: 16px;
-  border-radius: 14px;
-  background: rgb(0 0 0 / 30%);
+  border-radius: $radius-xl-alt;
+  background: Rgb(0 0 0 / 30%);
   margin-bottom: 10px;
   border-left: 4px solid $muted;
   
-  &.accepted { border-left-color: rgb(34 197 94 / 100%); }
-  &.pending { border-left-color: rgb(250 204 21 / 100%); }
+  &.accepted { border-left-color: Rgb(34 197 94 / 100%); }
+  &.pending { border-left-color: Rgb(250 204 21 / 100%); }
 }
 
 .notif-header {
   @include pixelated;
 
   color: var(--white);
-  font-size: 8px;
+  font-size: var(--font-8);
   margin-bottom: 12px;
 }
 
 .offer-details {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 8px 12px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 8px;
-  background: rgb(0 0 0 / 20%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-lg;
+  background: Rgb(0 0 0 / 20%);
   margin-bottom: 12px;
 
   .detail-section {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: $spacing-2xs;
 
     .detail-label {
       @include pixelated;
 
-      color: rgb(255 255 255 / 40%);
-      font-size: 6px;
+      color: Rgb(255 255 255 / 40%);
+      font-size: var(--font-6);
       text-transform: uppercase;
     }
 
@@ -212,7 +215,7 @@ const validationMap = computed(() => {
       @include pixelated;
 
       color: var(--white);
-      font-size: 8px;
+      font-size: var(--font-8);
       overflow-wrap: break-word;
 
       &.italic {
@@ -227,18 +230,18 @@ const validationMap = computed(() => {
   @include pixelated;
 
   padding: 8px;
-  border: 1px dashed rgb(239 68 68 / 30%);
-  border-radius: 8px;
-  background: rgb(239 68 68 / 10%);
-  color: #ef4444;
-  font-size: 7px;
+  border: 1px dashed Rgb(239 68 68 / 30%);
+  border-radius: $radius-lg;
+  background: Rgb(239 68 68 / 10%);
+  color: var(--red-light);
+  font-size: var(--font-7);
   line-height: 1.4;
   margin-bottom: 12px;
 }
 
 .notif-actions {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
 }
 
 .notif-btn {
@@ -246,23 +249,23 @@ const validationMap = computed(() => {
 
   padding: 8px;
   border: none;
-  border-radius: 8px;
-  font-size: 6px;
+  border-radius: $radius-lg;
+  font-size: var(--font-6);
   flex: 1;
   cursor: pointer;
   
   &.accept { 
-    background: rgb(34 197 94 / 100%); 
+    background: Rgb(34 197 94 / 100%); 
     color: var(--white); 
     
     &:disabled {
-      border: 1px solid rgb(255 255 255 / 10%);
-      background: rgb(255 255 255 / 5%) !important;
-      color: rgb(255 255 255 / 20%);
+      border: 1px solid Rgb(255 255 255 / 10%);
+      background: Rgb(255 255 255 / 5%) !important;
+      color: Rgb(255 255 255 / 20%);
       cursor: not-allowed;
     }
   }
-  &.reject { background: rgb(239 68 68 / 100%); color: var(--white); }
+  &.reject { background: Rgb(239 68 68 / 100%); color: var(--white); }
 }
 
 .notif-action-btn {
@@ -271,10 +274,10 @@ const validationMap = computed(() => {
   width: 100%;
   padding: 10px;
   border: none;
-  border-radius: 8px;
-  background: rgb(34 197 94 / 100%);
+  border-radius: $radius-lg;
+  background: Rgb(34 197 94 / 100%);
   color: var(--white);
-  font-size: 8px;
+  font-size: var(--font-8);
   cursor: pointer;
 }
 </style>

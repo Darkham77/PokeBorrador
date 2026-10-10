@@ -19,6 +19,18 @@ import type {
 } from '../../types/map/pokemonGraphTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 
+const TERRAIN_INFLUENCE_THRESHOLDS = {
+  MOUNTAIN_RATIO: 0.15,
+  COASTAL_RATIO: 0.15,
+  FOREST_RATIO: 0.12,
+} as const;
+
+const GATEHOUSE_MIN_CORRIDOR_LENGTH = 12 as const;
+const CORRIDOR_WIDTH_DIFFICULTY_FACTOR = 4.5 as const;
+const CORRIDOR_MAX_WIDTH = 9 as const;
+const CORRIDOR_BASE_WIDTH = 8 as const;
+const SURF_ROUTE_CHANNEL_WIDTH = 8 as const;
+
 // ---------------------------------------------------------------------------
 // Terrain Sampling Helper
 // ---------------------------------------------------------------------------
@@ -67,13 +79,13 @@ function sampleSurroundingTerrain(
   const wRatio = waterCount / Math.max(1, sampleCount);
   const fRatio = forestCount / Math.max(1, sampleCount);
 
-  if (mRatio >= 0.15) {
+  if (mRatio >= TERRAIN_INFLUENCE_THRESHOLDS.MOUNTAIN_RATIO) {
     return { influence: 'mountain', nearWater };
   }
-  if (wRatio >= 0.15) {
+  if (wRatio >= TERRAIN_INFLUENCE_THRESHOLDS.COASTAL_RATIO) {
     return { influence: 'coastal', nearWater: true };
   }
-  if (fRatio >= 0.12) {
+  if (fRatio >= TERRAIN_INFLUENCE_THRESHOLDS.FOREST_RATIO) {
     return { influence: 'forest', nearWater };
   }
 
@@ -88,7 +100,7 @@ function computeGatehouseLocations(
   corridor: EmbeddedCorridor
 ): { x: number; y: number }[] {
   // Wormholes and short stubs don't need surface gatehouses
-  if (corridor.kind === 'wormhole_tunnel' || corridor.pathCells.length < 12) {
+  if (corridor.kind === 'wormhole_tunnel' || corridor.pathCells.length < GATEHOUSE_MIN_CORRIDOR_LENGTH) {
     return [];
   }
 
@@ -142,11 +154,11 @@ export function enrichCorridorProperties(
     );
 
     // 3. Emergent Width (earlier routes are wide and inviting, late routes are narrow & challenging)
-    let width = Math.max(3, Math.min(9, Math.round(8 - difficulty * 4.5)));
+    let width = Math.max(3, Math.min(CORRIDOR_MAX_WIDTH, Math.round(CORRIDOR_BASE_WIDTH - difficulty * CORRIDOR_WIDTH_DIFFICULTY_FACTOR)));
 
     // Surf routes have wide water channels
     if (corridor.kind === 'surf_route') {
-      width = 8;
+      width = SURF_ROUTE_CHANNEL_WIDTH;
     }
 
     // 4. No-Repeat Variety Constraint for consecutive main-path corridors (T4.2)

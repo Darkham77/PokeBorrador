@@ -10,7 +10,7 @@
 
   .header-stats {
     display: flex;
-    gap: 24px;
+    gap: $spacing-2xl;
 
     .stat-node {
       @include shop-header-stat(var(--blue-light));
@@ -37,26 +37,25 @@
 
 .arena-nav-tabs {
   display: flex;
-  gap: 8px;
+  gap: $spacing-sm;
   padding: 8px 12px;
   background: Rgb(0 0 0 / 40%);
   border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
   .modal-tab-btn {
-    gap: 6px;
+    gap: $spacing-sm-alt;
     height: 34px;
-    font-size: 8px;
+    font-size: var(--font-8);
     flex: 1;
     white-space: nowrap;
 
     .tab-icon {
       display: inline-flex;
       align-items: center;
-      font-size: 11px;
+      font-size: var(--font-11);
     }
   }
 }
-
 
 .offline-mask {
   position: absolute;
@@ -74,14 +73,14 @@
     max-width: 320px;
     padding: 30px;
     border: 1px solid Rgb(255 255 255 / 8%);
-    border-radius: 20px;
+    border-radius: $radius-3xl;
     background: Rgb(255 255 255 / 2%);
     text-align: center;
-    box-shadow: 0 15px 35px Rgb(0 0 0 / 50%);
+    box-shadow: var(--shadow-2xl);
 
     .icon { 
       display: block; 
-      font-size: 48px; 
+      font-size: var(--font-48); 
       margin-bottom: 20px; 
       filter: Drop-Shadow(0 0 15px Rgb(59 130 246 / 40%));
       will-change: transform, filter;
@@ -91,7 +90,7 @@
       @include pixelated; 
 
       color: var(--white); 
-      font-size: 10px; 
+      font-size: var(--font-10); 
       margin-bottom: 15px; 
       letter-spacing: 0.5px;
     }
@@ -99,7 +98,7 @@
     p {
       margin: 0; 
       color: Rgb(148 163 184 / 70%); 
-      font-size: 11px; 
+      font-size: var(--font-11); 
       line-height: 1.6;
     }
   }
@@ -108,7 +107,7 @@
 .arena-main {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-lg;
   height: 100%;
   min-height: 0;
   padding: 20px;

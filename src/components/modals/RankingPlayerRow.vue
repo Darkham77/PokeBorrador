@@ -67,13 +67,18 @@ const scoreText = computed(() => {
 const eloTier = computed(() => {
   return getEloTier(props.player.elo)
 })
+
+const PODIUM_MEDALS = ['🥇', '🥈', '🥉'] as const
+const podiumMedal = computed(() => PODIUM_MEDALS[props.index] || null)
+const displayRankNumber = computed(() => props.index + 1)
+const rankCardClass = computed(() => `rank-${props.index + 1}`)
 </script>
 
 <template>
   <div
     :id="`ranking-modal-card-${player.id}`"
     class="rank-card"
-    :class="`rank-${index + 1}`"
+    :class="rankCardClass"
     @click.stop="openTrainerProfile(player.id)"
     @mouseenter="handleCardEnter"
     @mouseleave="handleCardLeave"
@@ -81,22 +86,14 @@ const eloTier = computed(() => {
     <!-- Rank placement indicator -->
     <div class="rank-badge">
       <span
-        v-if="index === 0"
+        v-if="podiumMedal"
         class="emoji crown"
-      >🥇</span>
-      <span
-        v-else-if="index === 1"
-        class="emoji crown"
-      >🥈</span>
-      <span
-        v-else-if="index === 2"
-        class="emoji crown"
-      >🥉</span>
+      >{{ podiumMedal }}</span>
       <span
         v-else
         class="generic-rank text-outline"
       >
-        {{ index + 1 }}
+        {{ displayRankNumber }}
       </span>
       <img
         v-if="activeSort === 'elo_rating'"

@@ -71,7 +71,7 @@ onMounted(() => {
 
   .header-stats {
     display: flex;
-    gap: 24px;
+    gap: $spacing-2xl;
 
     .stat-node {
       @include shop-header-stat(var(--pokecenter-pink));

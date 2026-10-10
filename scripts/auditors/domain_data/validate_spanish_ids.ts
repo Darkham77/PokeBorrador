@@ -57,11 +57,23 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
     'database'
   ]) {
     super({
+      capabilities: {
+        fix: false,
+        fixPriority: false,
+        lint: false,
+        md: false,
+        ast: false,
+        changedSince: false,
+        heavy: false,
+        requiresBuild: false,
+        postRun: false
+      },
       id: 'validate_spanish_ids',
       configKey: 'domain.spanishIds',
       defaultConfig: {
         enabled: true
       },
+      criticalConfig: {},
       name: 'Spanish Logic Strings & Leaks Auditor',
       description: 'Garantiza IDs en inglés y traducciones en español',
       icon: '🇪🇸',

@@ -128,6 +128,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
           position="top"
         >
           <div
+            id="past-event-winner-item-div-1"
             class="winner-avatar-wrap"
             role="button"
             tabindex="0"
@@ -146,6 +147,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
           position="top"
         >
           <div
+            id="past-event-winner-item-div-2"
             class="winner-player-wrap"
             role="button"
             tabindex="0"
@@ -182,6 +184,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
             position="top"
           >
             <div
+              id="past-event-winner-item-div-3"
               class="winner-poke-interactive clickable"
               role="button"
               tabindex="0"
@@ -240,27 +243,27 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
 .winner-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   min-height: 42px;
   padding: 6px 12px;
-  border: 1px solid rgb(255 255 255 / 5%);
-  border-radius: 8px;
-  background: rgb(255 255 255 / 2%);
+  border: 1px solid Rgb(255 255 255 / 5%);
+  border-radius: $radius-lg;
+  background: Rgb(255 255 255 / 2%);
   box-sizing: border-box;
 
   &.rank-1 {
-    background: rgb(255 215 0 / 5%);
-    border-color: rgb(255 215 0 / 30%);
+    background: Rgb(255 215 0 / 5%);
+    border-color: Rgb(255 215 0 / 30%);
   }
 
   &.rank-2 {
-    background: rgb(192 192 192 / 4%);
-    border-color: rgb(192 192 192 / 30%);
+    background: Rgb(192 192 192 / 4%);
+    border-color: Rgb(192 192 192 / 30%);
   }
 
   &.rank-3 {
-    background: rgb(205 127 50 / 4%);
-    border-color: rgb(205 127 50 / 30%);
+    background: Rgb(205 127 50 / 4%);
+    border-color: Rgb(205 127 50 / 30%);
   }
 }
 
@@ -269,7 +272,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 8px;
+  gap: $spacing-xs $spacing-sm;
   min-width: 0;
   flex: 1;
 }
@@ -278,7 +281,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
 .winner-trainer-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
   flex-shrink: 0;
 }
 
@@ -298,20 +301,20 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
 
   .player-name {
     color: var(--white);
-    font-size: 10.5px;
+    font-size: var(--font-11);
     font-weight: bold;
     white-space: nowrap;
 
     &:hover:not([class*="custom-"]) {
       color: var(--yellow);
-      text-shadow: 0 0 6px rgb(250 204 21 / 30%);
+      text-shadow: 0 0 6px Rgb(250 204 21 / 30%);
     }
   }
 }
 
 .entry-divider-dot {
-  color: rgb(255 255 255 / 25%);
-  font-size: 10px;
+  color: Rgb(255 255 255 / 25%);
+  font-size: var(--font-10);
   flex-shrink: 0;
 }
 
@@ -320,9 +323,9 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 6px;
+  gap: $spacing-xs $spacing-sm-alt;
   min-width: 0;
-  font-size: 8.5px;
+  font-size: var(--font-9);
   line-height: 1.35;
 
   .winner-poke-pill {
@@ -334,20 +337,20 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   .winner-poke-interactive {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
     padding: 1px 4px 1px 2px;
-    border: 1px solid rgb(255 255 255 / 8%);
-    border-radius: 4px;
-    background: rgb(255 255 255 / 4%);
+    border: 1px solid Rgb(255 255 255 / 8%);
+    border-radius: $radius-sm;
+    background: Rgb(255 255 255 / 4%);
     cursor: pointer;
 
     &:hover {
-      background: rgb(255 215 0 / 8%);
-      border-color: rgb(255 215 0 / 35%);
+      background: Rgb(255 215 0 / 8%);
+      border-color: Rgb(255 215 0 / 35%);
 
       .entry-poke {
         color: var(--white);
-        text-shadow: 0 0 6px rgb(250 204 21 / 40%);
+        text-shadow: 0 0 6px Rgb(250 204 21 / 40%);
       }
     }
   }
@@ -366,13 +369,13 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   }
 
   .entry-metric-sep {
-    color: rgb(255 255 255 / 25%);
-    font-size: 9px;
+    color: Rgb(255 255 255 / 25%);
+    font-size: var(--font-9);
   }
 
   .score-val {
     color: var(--green-bright);
-    text-shadow: 0 0 6px rgb(74 222 128 / 25%);
+    text-shadow: 0 0 6px Rgb(74 222 128 / 25%);
     overflow-wrap: break-word;
   }
 }
@@ -380,7 +383,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
 @media (width <= 480px) {
   .winner-item {
     align-items: flex-start;
-    gap: 8px;
+    gap: $spacing-sm;
     padding: 6px 8px;
   }
 
@@ -389,18 +392,18 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
     padding-top: 4px;
 
     .medal {
-      font-size: 13px;
+      font-size: var(--font-13);
     }
 
     .pos-text {
-      font-size: 7.5px;
+      font-size: var(--font-8);
     }
   }
 
   .winner-content-wrap {
     flex-direction: column;
     align-items: flex-start;
-    gap: 3px;
+    gap: $spacing-xs-alt;
   }
 
   .entry-divider-dot {
@@ -408,7 +411,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
   }
 
   .winner-details-group {
-    font-size: 8px;
+    font-size: var(--font-8);
   }
 }
 </style>

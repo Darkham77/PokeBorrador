@@ -8,8 +8,7 @@
 
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode, CardinalDirection } from '../../types/map/poiTypes.ts';
-
-export const CANVAS_TILE_SIZE = 32;
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 
 /**
  * Resolves the orientation-specific canonical Vermilion Port Gate asset.
@@ -75,6 +74,40 @@ const PORT_CARGO_DOUBLE_WIDTH = 2 as const;
 const PORT_CARGO_STACK_WIDTH = 3 as const;
 const PORT_FERRY_LENGTH = 7 as const;
 const PORT_FERRY_BEAM = 5 as const;
+const PORT_GATE_SIDE_OFFSET = 7 as const;
+const PORT_GATE_EAST_OFFSET = 6 as const;
+const PORT_BOLLARD_OFFSET_Y = 6 as const;
+const PORT_BOLLARD_SORT_Y = 7 as const;
+
+function tryStampLighthouseBeacons(
+  buildingsToStamp: StampedBuilding[],
+  postX: number,
+  gy: number,
+  tileSize: number,
+  W: number,
+  H: number,
+  unifiedPathGrid?: readonly (readonly boolean[])[]
+): void {
+  const topPostY = gy - 2;
+  const btmPostY = gy + 5;
+
+  if (postX >= 0 && postX + 2 <= W && topPostY >= 0 && !unifiedPathGrid?.[gy + 1]?.[postX] && !unifiedPathGrid?.[gy + 1]?.[postX + 1]) {
+    buildingsToStamp.push({
+      file: 'poke_port_lighthouse_beacon.png',
+      px: postX * tileSize,
+      py: topPostY * tileSize,
+      ySort: (gy + 2) * tileSize
+    });
+  }
+  if (postX >= 0 && postX + 2 <= W && btmPostY + 4 <= H && !unifiedPathGrid?.[btmPostY]?.[postX] && !unifiedPathGrid?.[btmPostY]?.[postX + 1]) {
+    buildingsToStamp.push({
+      file: 'poke_port_lighthouse_beacon.png',
+      px: postX * tileSize,
+      py: btmPostY * tileSize,
+      ySort: (btmPostY + 4) * tileSize
+    });
+  }
+}
 
 /**
  * Resolves all architectural structures, landmarks, and contextual scenic dressings
@@ -219,10 +252,10 @@ export function resolvePoiLandmarksAndBuildings(
           });
 
           // 2. Famous Vermilion Dock Truck (3x2 tiles) parked on dry beach next to the gate
-          if (gx + 7 + PORT_TRUCK_WIDTH <= W && gy + 2 < H && isDryUnpavedLand(gx + 7, gy + 2, PORT_TRUCK_WIDTH, 2, 1)) {
+          if (gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W && gy + 2 < H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 2, PORT_TRUCK_WIDTH, 2, 1)) {
             buildingsToStamp.push({
               file: 'poke_port_dock_truck.png',
-              px: (gx + 7) * tileSize,
+              px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
               py: (gy + 2) * tileSize,
               ySort: (gy + 4) * tileSize
             });
@@ -239,10 +272,10 @@ export function resolvePoiLandmarksAndBuildings(
           }
 
           // 4. Single Cargo Crates Stack (3x2 tiles) on right esplanade
-          if (gx + 7 + PORT_CARGO_STACK_WIDTH <= W && gy >= 2 && isDryUnpavedLand(gx + 7, gy - 1, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+          if (gx + PORT_GATE_SIDE_OFFSET + PORT_CARGO_STACK_WIDTH <= W && gy >= 2 && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy - 1, PORT_CARGO_STACK_WIDTH, 2, 1)) {
             buildingsToStamp.push({
               file: 'poke_port_cargo_crates_stack.png',
-              px: (gx + 7) * tileSize,
+              px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
               py: (gy - 1) * tileSize,
               ySort: (gy + 1) * tileSize
             });
@@ -257,10 +290,10 @@ export function resolvePoiLandmarksAndBuildings(
               ySort: (gy + 5) * tileSize
             });
           }
-          if (gx + 7 + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + 7, gy + 4, 2, 1, 1)) {
+          if (gx + PORT_GATE_SIDE_OFFSET + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 4, 2, 1, 1)) {
             buildingsToStamp.push({
               file: 'poke_port_bollard_chains.png',
-              px: (gx + 7) * tileSize,
+              px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
               py: (gy + 4) * tileSize,
               ySort: (gy + 5) * tileSize
             });
@@ -288,25 +321,7 @@ export function resolvePoiLandmarksAndBuildings(
           // Top column sits above the pier: rows gy-2..gy+1 (base at gy+1, pier begins at gy+2: zero walkway overlap)
           // Bottom column sits below the pier: rows gy+5..gy+8 (pier ends at gy+4: zero walkway overlap)
           const postX = gx + poi.footprint.width - 2;
-          const topPostY = gy - 2;
-          const btmPostY = gy + 5;
-
-          if (postX >= 0 && postX + 2 <= W && topPostY >= 0 && !unifiedPathGrid?.[gy + 1]?.[postX] && !unifiedPathGrid?.[gy + 1]?.[postX + 1]) {
-            buildingsToStamp.push({
-              file: 'poke_port_lighthouse_beacon.png',
-              px: postX * tileSize,
-              py: topPostY * tileSize,
-              ySort: (gy + 2) * tileSize
-            });
-          }
-          if (postX >= 0 && postX + 2 <= W && btmPostY + 4 <= H && !unifiedPathGrid?.[btmPostY]?.[postX] && !unifiedPathGrid?.[btmPostY]?.[postX + 1]) {
-            buildingsToStamp.push({
-              file: 'poke_port_lighthouse_beacon.png',
-              px: postX * tileSize,
-              py: btmPostY * tileSize,
-              ySort: (btmPostY + 4) * tileSize
-            });
-          }
+          tryStampLighthouseBeacons(buildingsToStamp, postX, gy, tileSize, W, H, unifiedPathGrid);
 
           // 2. East-facing horizontal pier extending East (rows gy+2..gy+4)
           let endPierX = gx + poi.footprint.width;
@@ -342,7 +357,7 @@ export function resolvePoiLandmarksAndBuildings(
               file: 'poke_port_cargo_crates_stack.png',
               px: (gx - 4) * tileSize,
               py: (gy + 5) * tileSize,
-              ySort: (gy + 7) * tileSize
+              ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
             });
           }
           if (gx >= 2 && gy >= 2 && isDryUnpavedLand(gx - 2, gy - 2, 2, 1, 1)) {
@@ -353,36 +368,18 @@ export function resolvePoiLandmarksAndBuildings(
               ySort: (gy - 1) * tileSize
             });
           }
-          if (gx >= 2 && gy + 6 < H && isDryUnpavedLand(gx - 2, gy + 6, 2, 1, 1)) {
+          if (gx >= 2 && gy + PORT_BOLLARD_OFFSET_Y < H && isDryUnpavedLand(gx - 2, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)) {
             buildingsToStamp.push({
               file: 'poke_port_bollard_chains.png',
               px: (gx - 2) * tileSize,
-              py: (gy + 6) * tileSize,
-              ySort: (gy + 7) * tileSize
+              py: (gy + PORT_BOLLARD_OFFSET_Y) * tileSize,
+              ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
             });
           }
         } else if (facing === 'west') {
           // 1. Upright Lighthouse Beacon Columns framing the pier entrance on the shore (rows gy+2..gy+4 reserved for pier walkway)
           const postX = gx;
-          const topPostY = gy - 2;
-          const btmPostY = gy + 5;
-
-          if (postX >= 0 && postX + 2 <= W && topPostY >= 0 && !unifiedPathGrid?.[gy + 1]?.[postX] && !unifiedPathGrid?.[gy + 1]?.[postX + 1]) {
-            buildingsToStamp.push({
-              file: 'poke_port_lighthouse_beacon.png',
-              px: postX * tileSize,
-              py: topPostY * tileSize,
-              ySort: (gy + 2) * tileSize
-            });
-          }
-          if (postX >= 0 && postX + 2 <= W && btmPostY + 4 <= H && !unifiedPathGrid?.[btmPostY]?.[postX] && !unifiedPathGrid?.[btmPostY]?.[postX + 1]) {
-            buildingsToStamp.push({
-              file: 'poke_port_lighthouse_beacon.png',
-              px: postX * tileSize,
-              py: btmPostY * tileSize,
-              ySort: (btmPostY + 4) * tileSize
-            });
-          }
+          tryStampLighthouseBeacons(buildingsToStamp, postX, gy, tileSize, W, H, unifiedPathGrid);
 
           // 2. West-facing horizontal pier extending West (rows gy+2..gy+4)
           let endPierX = gx - 1;
@@ -419,7 +416,7 @@ export function resolvePoiLandmarksAndBuildings(
               file: 'poke_port_cargo_crates_stack.png',
               px: inlandX * tileSize,
               py: (gy + 5) * tileSize,
-              ySort: (gy + 7) * tileSize
+              ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
             });
           }
           const bollardWestX = gx + poi.footprint.width;
@@ -431,12 +428,12 @@ export function resolvePoiLandmarksAndBuildings(
               ySort: (gy - 1) * tileSize
             });
           }
-          if (bollardWestX + 2 <= W && gy + 6 < H && isDryUnpavedLand(bollardWestX, gy + 6, 2, 1, 1)) {
+          if (bollardWestX + 2 <= W && gy + PORT_BOLLARD_OFFSET_Y < H && isDryUnpavedLand(bollardWestX, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)) {
             buildingsToStamp.push({
               file: 'poke_port_bollard_chains.png',
               px: bollardWestX * tileSize,
-              py: (gy + 6) * tileSize,
-              ySort: (gy + 7) * tileSize
+              py: (gy + PORT_BOLLARD_OFFSET_Y) * tileSize,
+              ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
             });
           }
         } else if (facing === 'north') {
@@ -494,18 +491,18 @@ export function resolvePoiLandmarksAndBuildings(
               ySort: (gy + 5) * tileSize
             });
           }
-          if (gx + 6 + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + 6, gy + 4, 2, 1, 1)) {
+          if (gx + PORT_GATE_EAST_OFFSET + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + PORT_GATE_EAST_OFFSET, gy + 4, 2, 1, 1)) {
             buildingsToStamp.push({
               file: 'poke_port_bollard_chains.png',
-              px: (gx + 6) * tileSize,
+              px: (gx + PORT_GATE_EAST_OFFSET) * tileSize,
               py: (gy + 4) * tileSize,
               ySort: (gy + 5) * tileSize
             });
           }
-          if (gx + 7 + PORT_TRUCK_WIDTH <= W && gy + poi.footprint.height + 2 <= H && isDryUnpavedLand(gx + 7, gy + poi.footprint.height, PORT_TRUCK_WIDTH, 2, 1)) {
+          if (gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W && gy + poi.footprint.height + 2 <= H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + poi.footprint.height, PORT_TRUCK_WIDTH, 2, 1)) {
             buildingsToStamp.push({
               file: 'poke_port_dock_truck.png',
-              px: (gx + 7) * tileSize,
+              px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
               py: (gy + poi.footprint.height) * tileSize,
               ySort: (gy + poi.footprint.height + 2) * tileSize
             });

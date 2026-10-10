@@ -24,13 +24,13 @@ import {
 // 1. Gene Contracts
 // ---------------------------------------------------------------------------
 
-export const WATER_FEATURE_TYPES = ['none', 'pond', 'canal', 'harbor_dock'] as const;
-export type WaterFeatureType = (typeof WATER_FEATURE_TYPES)[number];
+const _WATER_FEATURE_TYPES = ['none', 'pond', 'canal', 'harbor_dock'] as const;
+export type WaterFeatureType = (typeof _WATER_FEATURE_TYPES)[number];
 
-export const ELEVATION_POLICIES = ['flatten', 'multi_tier_stairs', 'cliff_perch'] as const;
-export type ElevationPolicy = (typeof ELEVATION_POLICIES)[number];
+const _ELEVATION_POLICIES = ['flatten', 'multi_tier_stairs', 'cliff_perch'] as const;
+export type ElevationPolicy = (typeof _ELEVATION_POLICIES)[number];
 
-export const STREET_PATTERNS = [
+const _STREET_PATTERNS = [
   'linear_boulevard',
   'radial_plaza',
   'coastal_wharf',
@@ -40,7 +40,7 @@ export const STREET_PATTERNS = [
   'l_shape',
   'dispersed_cluster'
 ] as const;
-export type StreetPattern = (typeof STREET_PATTERNS)[number];
+export type StreetPattern = (typeof _STREET_PATTERNS)[number];
 
 export interface CityProceduralGenes {
   /** 0.0 = clear-cut / clean ground, 1.0 = deep woods with trees around houses */
@@ -59,15 +59,67 @@ export interface CityProceduralGenes {
   readonly selectedVignettes: readonly CityVignetteType[];
 }
 
+const PRNG_CONSTANTS = {
+  DEFAULT_SEED: 1337,
+  MULTIPLIER: 1664525,
+  INCREMENT: 1013904223,
+  DIVISOR: 4294967296
+} as const;
+
+const SEED_PRIME_MULTIPLIER = 31 as const;
+
+const VIGNETTE_AREA_LIMITS = {
+  METROPOLIS_MIN_AREA: 500,
+  METROPOLIS_TIER_1: 800,
+  METROPOLIS_TIER_2: 650,
+  CITY_MIN_AREA: 200,
+  CITY_TIER_1: 350,
+  CITY_TIER_2: 250,
+  RURAL_TIER_1: 120
+} as const;
+
+const VIGNETTE_BUDGETS = {
+  METROPOLIS_MAX: 9,
+  METROPOLIS_HIGH: 8,
+  METROPOLIS_BASE: 7,
+  CITY_MAX: 6,
+  CITY_MID: 5,
+  CITY_BASE: 4,
+  RURAL_HIGH: 3,
+  RURAL_BASE: 2
+} as const;
+
+const GENE_PROBABILITIES = {
+  CANOPY_BASE_OFFSET: 0.3,
+  CANOPY_BASE_FACTOR: 0.7,
+  CANOPY_DRY_FACTOR: 0.4,
+  WATER_HARBOR: 0.45,
+  WATER_CANAL: 0.80,
+  WATER_DRY_POND: 0.30,
+  ELEVATION_STAIRS: 0.60,
+  ELEVATION_PERCH: 0.85,
+  DENSITY_METROPOLIS: 0.8,
+  DENSITY_CITY: 0.5,
+  DENSITY_RURAL: 0.2,
+  DENSITY_VARIANCE: 0.4,
+  DENSITY_SUB: 0.2,
+  PATTERN_TOWN_L: 0.60,
+  PATTERN_CITY_LINEAR: 0.35,
+  PATTERN_CITY_RADIAL: 0.70,
+  PATTERN_METRO_RADIAL: 0.50,
+  CANOPY_HIGH_THRESHOLD: 0.4,
+  SHUFFLE_CENTRAL_OFFSET: 0.5
+} as const;
+
 // ---------------------------------------------------------------------------
 // 2. Deterministic PRNG Helper
 // ---------------------------------------------------------------------------
 
 function createPrng(seed: number): () => number {
-  let s = (seed >>> 0) || 1337;
+  let s = (seed >>> 0) || PRNG_CONSTANTS.DEFAULT_SEED;
   return () => {
-    s = (s * 1664525 + 1013904223) | 0;
-    return (s >>> 0) / 4294967296;
+    s = (s * PRNG_CONSTANTS.MULTIPLIER + PRNG_CONSTANTS.INCREMENT) | 0;
+    return (s >>> 0) / PRNG_CONSTANTS.DIVISOR;
   };
 }
 
@@ -79,26 +131,29 @@ function createPrng(seed: number): () => number {
  * Computes dynamic vignette budget based on settlement scale and footprint dimensions.
  * Large metropolises receive 6 to 9 vignettes; medium cities 4 to 6; rural towns 2 to 3.
  */
-export function computeVignetteBudget(
+function computeVignetteBudget(
   scale: VignetteSettlementScale,
   width: number,
   height: number
 ): number {
   const area = width * height;
-  if (scale === 'metropolis' || area >= 500) {
-    if (area >= 800) return 9;
-    if (area >= 650) return 8;
-    return 7;
+  if (scale === 'metropolis' || area >= VIGNETTE_AREA_LIMITS.METROPOLIS_MIN_AREA) {
+    if (area >= VIGNETTE_AREA_LIMITS.METROPOLIS_TIER_1) return VIGNETTE_BUDGETS.METROPOLIS_MAX;
+    if (area >= VIGNETTE_AREA_LIMITS.METROPOLIS_TIER_2) return VIGNETTE_BUDGETS.METROPOLIS_HIGH;
+    return VIGNETTE_BUDGETS.METROPOLIS_BASE;
   }
-  if (scale === 'city' || area >= 200) {
-    if (area >= 350) return 6;
-    if (area >= 250) return 5;
-    return 4;
+  if (scale === 'city' || area >= VIGNETTE_AREA_LIMITS.CITY_MIN_AREA) {
+    if (area >= VIGNETTE_AREA_LIMITS.CITY_TIER_1) return VIGNETTE_BUDGETS.CITY_MAX;
+    if (area >= VIGNETTE_AREA_LIMITS.CITY_TIER_2) return VIGNETTE_BUDGETS.CITY_MID;
+    return VIGNETTE_BUDGETS.CITY_BASE;
   }
   // Rural towns / hamlets
-  if (area >= 120) return 3;
-  return 2;
+  if (area >= VIGNETTE_AREA_LIMITS.RURAL_TIER_1) return VIGNETTE_BUDGETS.RURAL_HIGH;
+  return VIGNETTE_BUDGETS.RURAL_BASE;
 }
+
+const TERRAIN_SAMPLE_OFFSET = -2;
+const TERRAIN_SAMPLE_MARGIN = 2;
 
 /**
  * Analyzes local environmental context and synthesizes continuous procedural genes.
@@ -111,7 +166,7 @@ export function synthesizeCityGenes(
   // Combine rngSeed with node id for deterministic per-settlement PRNG
   let combinedSeed = rngSeed;
   for (let i = 0; i < node.id.length; i++) {
-    combinedSeed = (combinedSeed * 31 + node.id.charCodeAt(i)) | 0;
+    combinedSeed = (combinedSeed * SEED_PRIME_MULTIPLIER + node.id.charCodeAt(i)) | 0;
   }
   const prng = createPrng(combinedSeed);
 
@@ -128,8 +183,8 @@ export function synthesizeCityGenes(
   let hasVegetation = false;
 
   if (context?.terrainMatrix) {
-    for (let dy = -2; dy <= H + 2; dy++) {
-      for (let dx = -2; dx <= W + 2; dx++) {
+    for (let dy = TERRAIN_SAMPLE_OFFSET; dy <= H + TERRAIN_SAMPLE_MARGIN; dy++) {
+      for (let dx = TERRAIN_SAMPLE_OFFSET; dx <= W + TERRAIN_SAMPLE_MARGIN; dx++) {
         const gx = node.gridX + dx;
         const gy = node.gridY + dy;
         const t = context.terrainMatrix[gy]?.[gx];
@@ -164,16 +219,18 @@ export function synthesizeCityGenes(
   // 3. Roll Procedural Genes with Genuine Freedom
   // Even in forest, seed can roll clean-cut vs tree-canopy settlement
   const canopyRoll = prng();
-  const canopyIntegration = hasVegetation ? 0.3 + canopyRoll * 0.7 : canopyRoll * 0.4;
+  const canopyIntegration = hasVegetation
+    ? GENE_PROBABILITIES.CANOPY_BASE_OFFSET + canopyRoll * GENE_PROBABILITIES.CANOPY_BASE_FACTOR
+    : canopyRoll * GENE_PROBABILITIES.CANOPY_DRY_FACTOR;
 
   // Water feature: coastal/river can roll dock/canal; even dry town has 30% roll for inner pond
   let waterFeatureType: WaterFeatureType = 'none';
   const waterRoll = prng();
   if (hasWater) {
-    if (waterRoll < 0.45) waterFeatureType = 'harbor_dock';
-    else if (waterRoll < 0.80) waterFeatureType = 'canal';
+    if (waterRoll < GENE_PROBABILITIES.WATER_HARBOR) waterFeatureType = 'harbor_dock';
+    else if (waterRoll < GENE_PROBABILITIES.WATER_CANAL) waterFeatureType = 'canal';
     else waterFeatureType = 'pond';
-  } else if (waterRoll < 0.30) {
+  } else if (waterRoll < GENE_PROBABILITIES.WATER_DRY_POND) {
     waterFeatureType = 'pond';
   }
 
@@ -181,18 +238,22 @@ export function synthesizeCityGenes(
   let elevationPolicy: ElevationPolicy = 'flatten';
   const elevRoll = prng();
   if (hasElevation) {
-    if (elevRoll < 0.60) elevationPolicy = 'multi_tier_stairs';
-    else if (elevRoll < 0.85) elevationPolicy = 'cliff_perch';
+    if (elevRoll < GENE_PROBABILITIES.ELEVATION_STAIRS) elevationPolicy = 'multi_tier_stairs';
+    else if (elevRoll < GENE_PROBABILITIES.ELEVATION_PERCH) elevationPolicy = 'cliff_perch';
     else elevationPolicy = 'flatten';
   }
 
   // Urban density: towns lean rural (0.1..0.4), metropolis leans paved (0.7..1.0)
-  const baseDensity = scale === 'metropolis' ? 0.8 : scale === 'city' ? 0.5 : 0.2;
-  const urbanDensity = Math.min(1.0, Math.max(0.0, baseDensity + (prng() * 0.4 - 0.2)));
+  const baseDensity = scale === 'metropolis'
+    ? GENE_PROBABILITIES.DENSITY_METROPOLIS
+    : scale === 'city'
+      ? GENE_PROBABILITIES.DENSITY_CITY
+      : GENE_PROBABILITIES.DENSITY_RURAL;
+  const urbanDensity = Math.min(1.0, Math.max(0.0, baseDensity + (prng() * GENE_PROBABILITIES.DENSITY_VARIANCE - GENE_PROBABILITIES.DENSITY_SUB)));
 
   // Street morphology: align strictly with canonical procedural archetypes
   const patternRoll = prng();
-  let streetPattern: StreetPattern = 'linear_boulevard';
+  let streetPattern: StreetPattern;
   if (
     node.hasPort ||
     node.terrainPreference === 'coast_water' ||
@@ -201,13 +262,13 @@ export function synthesizeCityGenes(
   ) {
     streetPattern = 'coastal_wharf';
   } else if (scale === 'town') {
-    streetPattern = patternRoll < 0.60 ? 'l_enclave' : 'linear_boulevard';
+    streetPattern = patternRoll < GENE_PROBABILITIES.PATTERN_TOWN_L ? 'l_enclave' : 'linear_boulevard';
   } else if (scale === 'city') {
-    if (patternRoll < 0.35) streetPattern = 'linear_boulevard';
-    else if (patternRoll < 0.70) streetPattern = 'radial_plaza';
+    if (patternRoll < GENE_PROBABILITIES.PATTERN_CITY_LINEAR) streetPattern = 'linear_boulevard';
+    else if (patternRoll < GENE_PROBABILITIES.PATTERN_CITY_RADIAL) streetPattern = 'radial_plaza';
     else streetPattern = 'l_enclave';
   } else {
-    streetPattern = patternRoll < 0.50 ? 'radial_plaza' : 'linear_boulevard';
+    streetPattern = patternRoll < GENE_PROBABILITIES.PATTERN_METRO_RADIAL ? 'radial_plaza' : 'linear_boulevard';
   }
 
   // 4. Compute Vignette Budget and Select Diverse Vignettes
@@ -215,11 +276,11 @@ export function synthesizeCityGenes(
   const compatible = getCompatibleVignettes(scale, {
     hasWater: waterFeatureType !== 'none',
     hasElevation: elevationPolicy !== 'flatten',
-    hasVegetation: canopyIntegration > 0.4
+    hasVegetation: canopyIntegration > GENE_PROBABILITIES.CANOPY_HIGH_THRESHOLD
   });
 
   // Shuffle and pick distinct vignettes up to budget
-  const shuffled = [...compatible].sort(() => prng() - 0.5);
+  const shuffled = [...compatible].sort(() => prng() - GENE_PROBABILITIES.SHUFFLE_CENTRAL_OFFSET);
   const selectedVignettes = shuffled.slice(0, vignetteBudget).map((v) => v.id);
 
   return {

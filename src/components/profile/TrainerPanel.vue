@@ -114,7 +114,7 @@ const handlePanelClick = (event: Event) => {
   @include pixelated;
 
   color: var(--gray);
-  font-size: 8px;
+  font-size: var(--font-8);
   margin-top: 2px;
   
   span { color: var(--yellow); }
@@ -123,7 +123,7 @@ const handlePanelClick = (event: Event) => {
 .exp-bar-container {
   width: 140px;
   height: 5px;
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(255 255 255 / 10%);
   margin-top: 5px;
   overflow: hidden;
@@ -131,7 +131,7 @@ const handlePanelClick = (event: Event) => {
 
 .exp-bar-fill {
   height: 100%;
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Linear-Gradient(90deg, Rgb(199 125 255 / 100%), Rgb(155 77 202 / 100%));
   
 }
@@ -140,7 +140,7 @@ const handlePanelClick = (event: Event) => {
   @include pixelated;
 
   display: none;
-  font-size: 8px;
+  font-size: var(--font-8);
   margin-top: 4px;
 }
 
@@ -161,13 +161,11 @@ const handlePanelClick = (event: Event) => {
   border: 2px solid var(--white);
   border-radius: 50%;
   background: Rgb(239 68 68 / 100%);
-  color: white;
-  font-size: 8px;
+  color: var(--white);
+  font-size: var(--font-8);
   font-weight: bold;
-  box-shadow: 0 0 10px Rgb(239 68 68 / 50%);
+  box-shadow: var(--shadow-glow-red);
 }
-
-
 
 .trainer-content {
   display: flex;

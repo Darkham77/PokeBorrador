@@ -29,7 +29,7 @@
     border: 1px solid var(--tier-color) !important;
     background: Rgb(30 41 59 / 60%) !important;
     animation: none !important;
-    box-shadow: 0 4px 10px Rgb(0 0 0 / 40%) !important;
+    box-shadow: var(--shadow-card);
     
 
     &::before, &::after { display: none !important; }
@@ -78,7 +78,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: $spacing-xs;
 
     & .card-tier-badge {
       @include badge-tier($giant: true);
@@ -90,11 +90,11 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
+      gap: $spacing-2xs;
       margin-top: 4px;
 
       .status-indicator {
-        font-size: 14px;
+        font-size: var(--font-14);
         line-height: 1.2;
       }
     }
@@ -110,7 +110,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: 4px;
+    gap: $spacing-xs;
 
     .tags-col, .items-col {
       @include gpu-layer;
@@ -118,17 +118,17 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: $spacing-xs;
       padding: 6px 3px;
       border: 1px solid Rgb(255 255 255 / 10%);
-      border-radius: 10px;
+      border-radius: $radius-lg-alt;
       background: Rgb(0 0 0 / 70%);
-      box-shadow: 0 4px 15px Rgb(0 0 0 / 50%);
+      box-shadow: var(--shadow-md);
     }
 
     .tag-badge {
       color: var(--tag-color, Rgb(204 204 204 / 100%));
-      font-size: 7px; 
+      font-size: var(--font-7); 
       font-weight: 900;
       letter-spacing: -1px;
     }
@@ -170,7 +170,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       margin-bottom: 4px; // Reduced from 8px
 
       &.has-nickname {
@@ -181,14 +181,14 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
+        gap: $spacing-2xs;
       }
 
       .pdc-pokemon-name {
         @include pixelated;
 
-        color: white;
-        font-size: 8px;
+        color: var(--white);
+        font-size: var(--font-8);
         letter-spacing: 0.5px;
         text-shadow: 0 2px 4px Rgb(0 0 0 / 80%), 0 0 10px Rgb(0 0 0 / 50%);
         
@@ -201,7 +201,7 @@
         @include pixelated;
 
         color: Rgb(255 255 255 / 40%);
-        font-size: 7px;
+        font-size: var(--font-7);
         text-transform: uppercase;
       }
 
@@ -215,7 +215,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 8px;
+      gap: $spacing-sm;
       margin-bottom: 4px; // Reduced from 6px
     }
   }
@@ -226,7 +226,7 @@
     .hp-bar-outer {
       height: 8px;
       border: 1px solid Rgb(255 255 255 / 5%);
-      border-radius: 10px;
+      border-radius: $radius-lg-alt;
       background: Rgb(0 0 0 / 40%);
       overflow: hidden;
     }
@@ -245,7 +245,7 @@
       @include pixelated;
 
       color: Rgb(255 255 255 / 40%);
-      font-size: 8px;
+      font-size: var(--font-8);
       margin-top: 6px;
     }
   }
@@ -253,24 +253,24 @@
   .status-labels {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: $spacing-sm;
     margin-bottom: 10px;
 
     .status-tag {
       @include pixelated;
 
       padding: 4px 6px;
-      border-radius: 4px;
-      font-size: 8px;
+      border-radius: $radius-sm;
+      font-size: var(--font-8);
       
-      &.obedience { background: var(--red); color: white; }
-      &.mission { background: var(--yellow); color: black; }
+      &.obedience { background: var(--red); color: var(--white); }
+      &.mission { background: var(--yellow); color: var(--black); }
     }
   }
 
   .pdc-action-grid {
     display: grid;
-    gap: 8px;
+    gap: $spacing-sm;
     grid-template-columns: 1fr 1fr;
 
     .footer-btn {
@@ -279,16 +279,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 6px;
+      gap: $spacing-sm-alt;
       min-height: 26px;
       padding: 6px 4px;
       border: 1px solid Rgb(255 255 255 / 15%);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(255 255 255 / 6%);
-      color: white;
-      font-size: 8px;
+      color: var(--white);
+      font-size: var(--font-8);
       line-height: 1.35;
-      box-shadow: inset 1px 1px 0 Rgb(255 255 255 / 15%), inset -1px -1px 0 Rgb(0 0 0 / 40%);
+      box-shadow: var(--shadow-card-elevated);
       cursor: pointer;
 
       &:disabled {
@@ -302,7 +302,7 @@
       }
 
       .emoji {
-        font-size: 8px;
+        font-size: var(--font-8);
         line-height: 1;
       }
 
@@ -314,7 +314,7 @@
         &:hover:not(:disabled) {
           background: Rgb(34 197 94 / 22%);
           border-color: Rgb(34 197 94 / 90%);
-          box-shadow: 0 0 8px Rgb(34 197 94 / 35%), inset 1px 1px 0 Rgb(255 255 255 / 20%), inset -1px -1px 0 Rgb(0 0 0 / 40%);
+          box-shadow: var(--shadow-glow-green);
         }
       }
 
@@ -326,7 +326,7 @@
         &:hover:not(:disabled) {
           background: Rgb(239 68 68 / 22%);
           border-color: Rgb(239 68 68 / 90%);
-          box-shadow: 0 0 8px Rgb(239 68 68 / 35%), inset 1px 1px 0 Rgb(255 255 255 / 20%), inset -1px -1px 0 Rgb(0 0 0 / 40%);
+          box-shadow: var(--shadow-glow-yellow-sm);
         }
       }
 
@@ -338,7 +338,7 @@
         &:hover:not(:disabled) {
           background: Rgb(168 85 247 / 22%);
           border-color: Rgb(168 85 247 / 90%);
-          box-shadow: 0 0 8px Rgb(168 85 247 / 35%), inset 1px 1px 0 Rgb(255 255 255 / 20%), inset -1px -1px 0 Rgb(0 0 0 / 40%);
+          box-shadow: var(--shadow-glow-yellow-sm);
         }
       }
 
@@ -350,7 +350,7 @@
         &:hover:not(:disabled) {
           background: Rgb(56 189 248 / 22%);
           border-color: Rgb(56 189 248 / 90%);
-          box-shadow: 0 0 8px Rgb(56 189 248 / 35%), inset 1px 1px 0 Rgb(255 255 255 / 20%), inset -1px -1px 0 Rgb(0 0 0 / 40%);
+          box-shadow: var(--shadow-glow-cyan);
         }
       }
 
@@ -362,7 +362,7 @@
         &:hover:not(:disabled) {
           background: Rgb(199 125 255 / 22%);
           border-color: Rgb(199 125 255 / 90%);
-          box-shadow: 0 0 8px Rgb(199 125 255 / 35%), inset 1px 1px 0 Rgb(255 255 255 / 20%), inset -1px -1px 0 Rgb(0 0 0 / 40%);
+          box-shadow: var(--shadow-glow-yellow-sm);
         }
       }
 
@@ -370,32 +370,32 @@
 
       :global(.theme-wingull-light) &,
       :global(body.theme-wingull-light) & {
-        box-shadow: inset 1px 1px 0 Rgb(255 255 255 / 60%), inset -1px -1px 0 Rgb(44 62 46 / 25%);
+        box-shadow: var(--shadow-card-elevated);
 
         &.item-btn {
           background: Rgb(34 197 94 / 16%);
-          color: #15803d;
-          border-color: #16a34a;
+          color: var(--emerald-500);
+          border-color: var(--emerald);
         }
         &.unequip-btn {
           background: Rgb(239 68 68 / 16%);
-          color: #b91c1c;
-          border-color: #dc2626;
+          color: var(--red-600);
+          border-color: var(--red-600);
         }
         &.data-btn {
           background: Rgb(168 85 247 / 16%);
-          color: #7e22ce;
-          border-color: #9333ea;
+          color: var(--purple-400);
+          border-color: var(--purple-400);
         }
         &.box-btn {
           background: Rgb(56 189 248 / 16%);
-          color: #0369a1;
-          border-color: #0284c7;
+          color: var(--sky-dark);
+          border-color: var(--sky-dark);
         }
         &.replace-btn {
           background: Rgb(168 85 247 / 16%);
-          color: #6b21a8;
-          border-color: #7e22ce;
+          color: var(--purple-400);
+          border-color: var(--purple-400);
         }
       }
     }
@@ -407,54 +407,54 @@
 @media (width <= 580px) {
   .pokemon-display-card {
     padding: 6px !important;
-    border-radius: 12px !important;
+    border-radius: $radius-xl !important;
 
     :deep(.unified-badge-pill) {
       top: 6px !important;
       left: 4px !important;
 
       .pill-container {
-        gap: 4px !important;
+        gap: $spacing-xs !important;
         padding: 4px !important;
-        border-radius: 8px !important;
+        border-radius: $radius-lg !important;
       }
 
       .badge-icon {
         width: 14px !important;
         height: 14px !important;
         padding: 0 !important;
-        font-size: 9px !important;
+        font-size: var(--font-9) !important;
 
         &.is-text {
-          font-size: 6px !important;
+          font-size: var(--font-6) !important;
         }
 
         &.is-shiny {
-          font-size: 9px !important;
+          font-size: var(--font-9) !important;
           transform: none;
         }
         &.is-iv31 {
-          font-size: 7px !important;
+          font-size: var(--font-7) !important;
           letter-spacing: -0.5px !important;
         }
         &.is-fav {
-          font-size: 9px !important;
+          font-size: var(--font-9) !important;
           transform: none;
         }
         &.is-breed {
-          font-size: 9px !important;
+          font-size: var(--font-9) !important;
           transform: none;
         }
         &.is-competitive {
-          font-size: 9px !important;
+          font-size: var(--font-9) !important;
           transform: none;
         }
         &.is-box {
-          font-size: 9px !important;
+          font-size: var(--font-9) !important;
           transform: none;
         }
         &.is-trade {
-          font-size: 9px !important;
+          font-size: var(--font-9) !important;
           transform: none;
         }
 
@@ -481,7 +481,7 @@
       top: 6px !important;
       right: 6px !important;
       padding: 2px 4px !important;
-      font-size: 8px !important;
+      font-size: var(--font-8) !important;
     }
 
     & .sprite-section {
@@ -500,14 +500,14 @@
       margin-bottom: 4px !important;
 
       .name-line {
-        gap: 4px !important;
+        gap: $spacing-xs !important;
         margin-bottom: 4px !important;
 
         .pdc-pokemon-name {
-          font-size: 7px !important;
+          font-size: var(--font-7) !important;
         }
         .pdc-species-subtitle {
-          font-size: 6px !important;
+          font-size: var(--font-6) !important;
         }
       }
 
@@ -516,15 +516,15 @@
 
         :deep(.m-type-tag) {
           padding: 3px 5px !important;
-          border-radius: 40px !important;
-          font-size: 5.5px !important;
+          border-radius: $radius-40 !important;
+          font-size: var(--font-6) !important;
           letter-spacing: -0.2px !important;
         }
       }
 
       .level-line {
-        gap: 4px !important;
-        font-size: 6px !important;
+        gap: $spacing-xs !important;
+        font-size: var(--font-6) !important;
         margin-bottom: 4px !important;
       }
     }
@@ -537,32 +537,32 @@
       }
 
       .hp-stats {
-        font-size: 6px !important;
+        font-size: var(--font-6) !important;
         margin-top: 2px !important;
       }
     }
 
     .status-labels {
-      gap: 4px !important;
+      gap: $spacing-xs !important;
       margin-bottom: 6px !important;
 
       .status-tag {
         padding: 2px 4px !important;
-        font-size: 6px !important;
+        font-size: var(--font-6) !important;
       }
     }
 
     .pdc-action-grid {
-      gap: 4px !important;
+      gap: $spacing-xs !important;
 
       .footer-btn {
-        gap: 2px !important;
+        gap: $spacing-2xs !important;
         padding: 5px 2px !important;
-        border-radius: 6px !important;
-        font-size: 6px !important;
+        border-radius: $radius-md !important;
+        font-size: var(--font-6) !important;
 
         .emoji {
-          font-size: 7px !important;
+          font-size: var(--font-7) !important;
         }
       }
     }

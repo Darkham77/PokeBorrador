@@ -160,7 +160,11 @@ export const NPC_BUDGET_CONFIG = {
   SPECIAL_BASE_BONUS: 500,
   STANDARD_LEVEL_MULT: 25,
   STANDARD_BASE_BONUS: 200,
-  LEVEL_CAP_HIGH: 40
+  LEVEL_CAP_HIGH: 40,
+  DIFFICULTY_MULT_NORMAL: 1.5,
+  GYM_MAX_ITEMS_HARD: 8,
+  GYM_MAX_ITEMS_NORMAL: 6,
+  SPECIAL_MAX_ITEMS: 6
 } as const;
 
 /**
@@ -181,7 +185,7 @@ export function calculateNPCBaseBudget(maxLevel: number, isGym: boolean, isSpeci
  */
 export function calculateNPCFinalBudget(baseBudget: number, difficulty: BattleDifficulty, randomFactor: number): number {
   let difficultyMult = 1.0;
-  if (difficulty === 'normal') difficultyMult = 1.5;
+  if (difficulty === 'normal') difficultyMult = NPC_BUDGET_CONFIG.DIFFICULTY_MULT_NORMAL;
   if (difficulty === 'hard') difficultyMult = 3.0;
   return Math.floor(baseBudget * difficultyMult * randomFactor);
 }
@@ -196,10 +200,10 @@ export function calculateNPCMaxItems(
   isSpecial: boolean
 ): number {
   if (isGym) {
-    return difficulty === 'hard' ? 8 : (difficulty === 'normal' ? 6 : 4);
+    return difficulty === 'hard' ? NPC_BUDGET_CONFIG.GYM_MAX_ITEMS_HARD : (difficulty === 'normal' ? NPC_BUDGET_CONFIG.GYM_MAX_ITEMS_NORMAL : 4);
   }
   if (isSpecial) {
-    return 6;
+    return NPC_BUDGET_CONFIG.SPECIAL_MAX_ITEMS;
   }
   return maxLevel > NPC_BUDGET_CONFIG.LEVEL_CAP_HIGH ? 4 : 2;
 }

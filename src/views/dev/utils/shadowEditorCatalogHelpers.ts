@@ -12,27 +12,7 @@ export interface PrecalculatedFeetResult {
 
 export type FeetLookupFn = (fullPath: string) => PrecalculatedFeetResult;
 
-const GEN1_MAX_DEX = 151;
-const GEN2_MAX_DEX = 251;
-const GEN3_MAX_DEX = 386;
-const GEN4_MAX_DEX = 493;
-const GEN5_MAX_DEX = 649;
-const GEN6_MAX_DEX = 721;
-const GEN7_MAX_DEX = 809;
-const GEN8_MAX_DEX = 905;
-const GEN9_NUMBER = 9;
-
-function getPokemonGen(dexNumber: number): number {
-  if (dexNumber <= GEN1_MAX_DEX) return 1;
-  if (dexNumber <= GEN2_MAX_DEX) return 2;
-  if (dexNumber <= GEN3_MAX_DEX) return 3;
-  if (dexNumber <= GEN4_MAX_DEX) return 4;
-  if (dexNumber <= GEN5_MAX_DEX) return 5;
-  if (dexNumber <= GEN6_MAX_DEX) return 6;
-  if (dexNumber <= GEN7_MAX_DEX) return 7;
-  if (dexNumber <= GEN8_MAX_DEX) return 8;
-  return GEN9_NUMBER;
-}
+import { getPokemonGenerationFromDexNumber } from '@/logic/pokemon/pokemonSpeciesHelper.ts';
 
 function getCanonicalSpeciesMap(): Map<number, string> {
   const map = new Map<number, string>();
@@ -82,7 +62,7 @@ function buildPokemonEntities(
       continue;
     }
 
-    const gen = getPokemonGen(numVal);
+    const gen = getPokemonGenerationFromDexNumber(numVal);
     const paddedDex = String(numVal).padStart(3, '0');
     const baseName = `#${paddedDex} ${speciesName.toUpperCase()}`;
 

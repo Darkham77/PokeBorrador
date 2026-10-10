@@ -126,6 +126,7 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
     <!-- Trash button to discard egg (only if scanned) -->
     <button
       v-if="egg.inherited_ivs?._scanned"
+      id="egg-warehouse-card-btn-tirar-huevo"
       class="egg-trash-btn"
       title="Tirar huevo"
       @click.stop="emit('delete', egg)"

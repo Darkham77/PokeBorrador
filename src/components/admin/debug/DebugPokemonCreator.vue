@@ -75,7 +75,8 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
       <h3 class="debug-section-title">
         LABORATORIO POKÉMON (ADMIN)
       </h3>
-      <button 
+      <button
+        id="debug-pokemon-creator-btn-aleatorio" 
         class="btn-vicio-secondary sm" 
         @click.stop="handleRandomize"
       >

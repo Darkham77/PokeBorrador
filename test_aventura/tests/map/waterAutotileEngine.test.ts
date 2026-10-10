@@ -23,7 +23,7 @@ import {
   CANONICAL_SAND_OCEAN_SHORE_BRUSH,
   CANONICAL_SAND_BEACH_BRUSH,
   type WaterTerrainMatrix
-} from '../../../src/logic/map/waterAutotileEngine.ts';
+} from '../../logic/map/waterAutotileEngine.ts';
 
 describe('waterAutotileEngine', () => {
   describe('compute2DNeighborMask', () => {

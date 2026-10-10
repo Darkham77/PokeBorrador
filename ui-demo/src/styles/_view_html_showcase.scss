@@ -20,7 +20,7 @@
 
   .pv-legend {
     padding: 2px 10px;
-    font-size: 8.5px;
+    font-size: var(--font-9);
     font-weight: bold;
     color: var(--color-text-gold, #ffd60a);
     background: var(--color-panel-bg);
@@ -64,13 +64,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 7.5px;
+    font-size: var(--font-8);
     font-weight: bold;
     color: var(--color-text-main);
     user-select: none;
 
     .type-pill-tag {
-      font-size: 6.5px;
+      font-size: var(--font-7);
       font-family: var(--font-pixel);
       color: var(--color-text-muted);
       background: Rgba(255, 255, 255, 0.05);
@@ -81,7 +81,7 @@
   }
 
   .field-desc {
-    font-size: 6.5px;
+    font-size: var(--font-7);
     color: var(--color-text-muted);
     line-height: 1.2;
     margin-top: 2px;
@@ -99,16 +99,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 7.5px;
+    font-size: var(--font-8);
     color: var(--color-text-main);
 
     .range-val-badge {
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: bold;
       color: var(--color-text-gold, #ffd60a);
-      background: #000000;
+      background: var(--black);
       padding: 1px 5px;
-      border: 1px solid #eab308;
+      border: 1px solid var(--amber-dark);
       border-radius: 3px;
     }
   }
@@ -129,7 +129,7 @@
       width: 14px;
       height: 18px;
       background: var(--color-text-gold, #ffd60a);
-      border: 2px solid #000000;
+      border: 2px solid var(--black);
       box-shadow: inset 1px 1px 0 #ffffff, 0 2px 4px Rgba(0, 0, 0, 0.6);
       cursor: pointer;
     }
@@ -138,7 +138,7 @@
       width: 14px;
       height: 18px;
       background: var(--color-text-gold, #ffd60a);
-      border: 2px solid #000000;
+      border: 2px solid var(--black);
       box-shadow: inset 1px 1px 0 #ffffff, 0 2px 4px Rgba(0, 0, 0, 0.6);
       cursor: pointer;
     }
@@ -154,7 +154,7 @@
   input[type="color"] {
     width: 32px;
     height: 32px;
-    border: 2px solid #000000 !important;
+    border: 2px solid var(--black) !important;
     background: #090d16;
     cursor: pointer;
     padding: 0;
@@ -162,7 +162,7 @@
   }
 
   .color-hex-text {
-    font-size: 8px;
+    font-size: var(--font-8);
     font-weight: bold;
     letter-spacing: 0.5px;
   }
@@ -171,13 +171,13 @@
 // BOTÓN IMAGEN & CARGA DE ARCHIVO RETRO
 .pv-file-input-wrap {
   input[type="file"] {
-    font-size: 7px;
+    font-size: var(--font-7);
     color: var(--color-text-muted);
     cursor: pointer;
 
     &::file-selector-button {
       font-family: var(--font-pixel);
-      font-size: 7px;
+      font-size: var(--font-7);
       font-weight: bold;
       padding: 4px 8px;
       background: var(--color-control-bg);
@@ -189,7 +189,7 @@
 
       &:hover {
         background: var(--color-control-focus);
-        color: #ffffff;
+        color: var(--white);
       }
     }
   }
@@ -229,7 +229,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: bold;
       color: var(--color-text-main);
       list-style: none;
@@ -246,7 +246,7 @@
       }
 
       .accordion-chevron {
-        font-size: 8px;
+        font-size: var(--font-8);
         color: var(--color-text-gold, #ffd60a);
         display: inline-block;
       }
@@ -265,7 +265,7 @@
       margin-top: 8px;
       padding-top: 6px;
       border-top: 1px solid Rgba(255, 255, 255, 0.08);
-      font-size: 7px;
+      font-size: var(--font-7);
       line-height: 1.4;
       color: var(--color-text-main, #f8fafc);
     }
@@ -277,7 +277,7 @@ dialog#native-modal-dialog {
   max-width: 440px;
   width: 90%;
   background: #121829;
-  --frame-border: #ffd60a;
+  --frame-border: var(--yellow);
   padding: 16px;
   font-family: var(--font-pixel);
   color: var(--color-text-main);
@@ -294,7 +294,7 @@ dialog#native-modal-dialog {
 div#demo-native-popover {
   max-width: 320px;
   background: #121829;
-  --frame-border: #22c55e;
+  --frame-border: var(--emerald);
   padding: 14px;
   font-family: var(--font-pixel);
   color: var(--color-text-main);
@@ -343,7 +343,7 @@ div#demo-native-popover {
     margin-bottom: 12px;
 
     .drawer-title {
-      font-size: 10px;
+      font-size: var(--font-10);
       font-weight: 900;
       color: var(--color-text-gold, #ffd60a);
       display: flex;
@@ -354,7 +354,7 @@ div#demo-native-popover {
 
   .drawer-body {
     flex: 1;
-    font-size: 7.5px;
+    font-size: var(--font-8);
     color: var(--color-text-muted);
     line-height: 1.4;
     overflow-y: auto;
@@ -369,7 +369,7 @@ div#demo-native-popover {
   padding: 14px;
   font-family: var(--font-pixel);
   box-sizing: border-box;
-  --frame-border: #3b82f6;
+  --frame-border: var(--blue-500);
 
   .inspector-header {
     display: flex;
@@ -383,15 +383,15 @@ div#demo-native-popover {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 9px;
+      font-size: var(--font-9);
       font-weight: 900;
-      color: #38bdf8;
+      color: var(--sky);
 
       .pulse-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: #22c55e;
+        background: var(--emerald);
         box-shadow: 0 0 6px #22c55e;
       }
     }
@@ -417,7 +417,7 @@ div#demo-native-popover {
       gap: 4px;
 
       .column-label {
-        font-size: 7px;
+        font-size: var(--font-7);
         color: var(--color-text-muted);
         text-transform: uppercase;
       }
@@ -428,15 +428,15 @@ div#demo-native-popover {
         border: 1px solid Rgba(255, 255, 255, 0.08);
         padding: 8px;
         overflow-y: auto;
-        font-size: 7px;
+        font-size: var(--font-7);
         line-height: 1.4;
-        color: #4ade80;
+        color: var(--green-light);
         box-shadow: inset 1px 1px 4px #000000;
 
         .log-entry {
           margin-bottom: 3px;
           .log-time {
-            color: #64748b;
+            color: var(--slate-500);
             margin-right: 4px;
           }
         }
@@ -448,9 +448,9 @@ div#demo-native-popover {
         border: 1px solid Rgba(255, 255, 255, 0.08);
         padding: 8px;
         overflow-y: auto;
-        font-size: 6.5px;
+        font-size: var(--font-7);
         line-height: 1.35;
-        color: #c084fc;
+        color: var(--purple-400);
         white-space: pre-wrap;
         box-shadow: inset 1px 1px 4px #000000;
         margin: 0;

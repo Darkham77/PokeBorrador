@@ -25,17 +25,17 @@
   height: auto;
   padding: spacing(2) spacing(3.5);
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: 12px; 
+  border-radius: $radius-xl; 
   background: Rgb(26 26 32 / 100%);
   color: $white;
   font-family: $font-ui;
-  font-size: 13px;
+  font-size: var(--font-13);
   font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 6px 16px Rgb(0 0 0 / 35%), inset 0 1px 0 Rgb(255 255 255 / 12%); 
+  box-shadow: var(--shadow-card-elevated);
 
   i, span:first-child {
-    font-size: 16px;
+    font-size: var(--font-16);
     margin-bottom: 0;
   }
 
@@ -47,32 +47,32 @@
     background: Rgba($yellow, 0.15);
     color: $yellow;
     border-color: $yellow;
-    box-shadow: 0 10px 24px Rgb(0 0 0 / 45%), 0 0 18px Rgba($yellow, 0.35);
+    box-shadow: var(--shadow-xl);
     i, span:first-child { color: $yellow; }
   }
 
   /* COMPACT MODE FOR NAVIGATION */
   @container (max-width: 1775px) {
     flex-direction: column !important;
-    gap: 2px !important;
+    gap: $spacing-2xs !important;
     min-width: 55px;
     padding: 6px 4px !important;
     
-    i, span:first-child { font-size: 14px; }
-    & .nav-item-label { font-size: 10px; }
+    i, span:first-child { font-size: var(--font-14); }
+    & .nav-item-label { font-size: var(--font-10); }
   }
 }
 
 /* Container query for hud-nav gap */
 @container (max-width: 1775px) {
-  .hud-nav { gap: 6px; }
+  .hud-nav { gap: $spacing-sm-alt; }
 }
 
 /* ===== HUD ACTIONS & ITEMS ===== */
 .hud-container .hud-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   flex: 0 0 auto;
 }
 
@@ -80,7 +80,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: $spacing-md-alt;
   flex-shrink: 0;
 
   @media (width <= 1360px) {

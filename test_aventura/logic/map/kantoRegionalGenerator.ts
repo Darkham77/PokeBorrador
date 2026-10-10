@@ -1,6 +1,6 @@
 // Kanto Regional World Generator - Procedural Canvas Tile/Sprite Engine (3600 x 4600 px)
 
-import type { ProceduralGenerationConfig } from '../../types/map/adventureWorldTypes';
+import type { ProceduralGenerationConfig } from '../../types/map/adventureWorldTypes.ts';
 import {
   fillImpenetrableWorld,
   carveSettlementClearings,
@@ -11,138 +11,58 @@ import {
   placeAllBridges
 } from './kantoProceduralCarver.ts';
 import { SimplexNoise } from './noise/simplexNoise.ts';
+import { CONTINENT_DEFAULT_SEED } from '../../config/studioConstants.ts';
 import {
-  DynamicCatalogLoader,
-  UniversalAutotiler,
-  SemanticPrefabRenderer,
+  MAX_CANONICAL_COORD_THRESHOLD,
+  DEFAULT_ROAD_WIDTH,
+  DEFAULT_TREE_DENSITY,
+  SETTLEMENT_CLEARANCE_RADIUS_TILES,
+  MIN_PLATEAU_RADIUS,
+  PLATEAU_PADDING_TILES,
+  MOUNTAIN_NOISE_FREQUENCY,
+  MOUNTAIN_NOISE_AMPLITUDE,
+  MOUNTAIN_DIST_THRESHOLD,
+  HASH_MURMUR_PRIME_X,
+  HASH_MURMUR_PRIME_Y,
+  HASH_MURMUR_PRIME_Z,
+  HASH_BIT_SHIFT_A,
+  HASH_BIT_SHIFT_B,
+  INT32_MASK,
+  KANTO_FALLBACK_NODES,
+  KANTO_PLATEAU_RANGES,
+  KANTO_HYDROGRAPHY_CONFIG,
+  KANTO_ROAD_CONFIG,
+  KANTO_TALL_GRASS_CONFIG,
+  KANTO_BRIDGES_CONFIG,
+  PEWTER_PLAZA_BOUNDS,
+  ROUTE_1_INFRASTRUCTURE,
+  MT_MOON_INFRASTRUCTURE,
+  ROUTE_1_OBSTACLE_TREES,
+  VIRIDIAN_CITY_TREES,
+  CANONICAL_PROP_OFFSETS,
+  VIRIDIAN_FOREST_FRAMING,
+  BIOME_LATITUDE_TRANSITION,
+  KANTO_CANONICAL_BUILDINGS,
+  KANTO_LEDGES_OFFSETS
+} from '../../config/kantoRegionalConfig.ts';
+import { DynamicCatalogLoader } from './kantoTileEngine.ts';
+import type {
   PlacedStructure,
-  Chunk,
-  ChunkManager,
-  type CatalogPart,
-  type CatalogPrefab,
-  type CatalogAutotileLayout,
-  type SemanticTileCatalog,
-  type IRegionalWorldRendererSource
-} from './kantoTileEngine.ts';
-
-export {
-  DynamicCatalogLoader,
-  UniversalAutotiler,
-  SemanticPrefabRenderer,
-  Chunk,
-  ChunkManager
-};
-
-export type {
-  PlacedStructure,
-  CatalogPart,
-  CatalogPrefab,
-  CatalogAutotileLayout,
-  SemanticTileCatalog,
   IRegionalWorldRendererSource
-};
+} from '../../types/map/kantoTileEngineTypes.ts';
+import {
+  KANTO_TILE_SIZE,
+  KANTO_SPACING_MULTIPLIER,
+  KANTO_GRID_W,
+  KANTO_GRID_H,
+  CELL_BIOME,
+  OCCUPANCY_FLAGS,
+  OccupancyGrid,
+  type KantoNodeCoordinate,
+  type IKantoCarverWorldContext
+} from '../../types/map/kantoGridModel.ts';
 
-export const KANTO_WORLD_WIDTH = 3600;
-export const KANTO_WORLD_HEIGHT = 4600;
-export const KANTO_TILE_SIZE = 32;
-export const KANTO_CHUNK_PX = 512;
-export const KANTO_SPACING_MULTIPLIER = 2.5;
-
-export const KANTO_GRID_W = Math.ceil(KANTO_WORLD_WIDTH / KANTO_TILE_SIZE); // 113
-export const KANTO_GRID_H = Math.ceil(KANTO_WORLD_HEIGHT / KANTO_TILE_SIZE); // 144
-export const KANTO_CHUNKS_X = Math.ceil(KANTO_WORLD_WIDTH / KANTO_CHUNK_PX); // 8
-export const KANTO_CHUNKS_Y = Math.ceil(KANTO_WORLD_HEIGHT / KANTO_CHUNK_PX); // 9
-
-// Biome cell types
-export const CELL_BIOME = {
-  GRASS: 0,
-  DIRT_PATH: 1,
-  WATER: 2,
-  TALL_GRASS: 3,
-  MOUNTAIN_DIRT: 4,
-  LAVA: 5,
-  PLAZA_STONE: 6,
-  BRIDGE: 7,
-  FOREST_WALL: 8
-} as const;
-
-export type CellBiomeType = typeof CELL_BIOME[keyof typeof CELL_BIOME];
-
-// Occupancy Grid Bitmasks
-export const OCCUPANCY_FLAGS = {
-  WATER: 0x01,
-  CLIFF: 0x02,
-  ROAD: 0x04,
-  ROAD_BUFFER: 0x08,
-  BUILDING: 0x10,
-  DOOR_ACCESS: 0x20,
-  SIDEWALK: 0x40
-} as const;
-
-export class OccupancyGrid {
-  readonly width: number;
-  readonly height: number;
-  readonly cells: Uint8Array[];
-
-  constructor(width: number, height: number) {
-    this.width = width;
-    this.height = height;
-    this.cells = Array.from({ length: height }, () => new Uint8Array(width));
-  }
-
-  set(x: number, y: number, flag: number): void {
-    if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
-      const row = this.cells[y];
-      if (row) row[x] = (row[x] ?? 0) | flag;
-    }
-  }
-
-  clear(x: number, y: number, flag: number): void {
-    if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
-      const row = this.cells[y];
-      if (row) row[x] = (row[x] ?? 0) & ~flag;
-    }
-  }
-
-  has(x: number, y: number, flag: number): boolean {
-    if (x < 0 || x >= this.width || y < 0 || y >= this.height) return false;
-    const row = this.cells[y];
-    if (!row) return false;
-    return ((row[x] ?? 0) & flag) !== 0;
-  }
-
-  reserveRect(x0: number, y0: number, w: number, h: number, flag: number): void {
-    for (let y = y0; y < y0 + h; y++) {
-      for (let x = x0; x < x0 + w; x++) {
-        this.set(x, y, flag);
-      }
-    }
-  }
-
-  reserveBuffer(x0: number, y0: number, w: number, h: number, buf: number, flag: number): void {
-    for (let y = y0 - buf; y < y0 + h + buf; y++) {
-      for (let x = x0 - buf; x < x0 + w + buf; x++) {
-        this.set(x, y, flag);
-      }
-    }
-  }
-
-  clearAll(): void {
-    for (const r of this.cells) {
-      r.fill(0);
-    }
-  }
-}
-
-export interface KantoNodeCoordinate {
-  readonly id?: string;
-  readonly name: string;
-  readonly type: string;
-  readonly x: number;
-  readonly y: number;
-}
-
-export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource {
+export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource, IKantoCarverWorldContext {
   readonly loader: DynamicCatalogLoader;
   grid: Uint8Array[] = [];
   elevation: Uint8Array[] = [];
@@ -152,7 +72,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
   bridges: PlacedStructure[] = [];
   props: PlacedStructure[] = [];
   nature: PlacedStructure[] = [];
-  seed = 42;
+  seed = CONTINENT_DEFAULT_SEED;
 
   constructor(loader: DynamicCatalogLoader) {
     this.loader = loader;
@@ -176,19 +96,19 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
   }
 
   hash(x: number, y: number, seed = 0): number {
-    let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263) + seed) | 0;
-    h = Math.imul(h ^ (h >>> 13), 1274126177);
-    return (h ^ (h >>> 16)) | 0;
+    let h = (Math.imul(x, HASH_MURMUR_PRIME_X) + Math.imul(y, HASH_MURMUR_PRIME_Y) + seed) | 0;
+    h = Math.imul(h ^ (h >>> HASH_BIT_SHIFT_A), HASH_MURMUR_PRIME_Z);
+    return (h ^ (h >>> HASH_BIT_SHIFT_B)) | 0;
   }
 
   hashF(x: number, y: number, seed = 0): number {
-    return ((this.hash(x, y, seed) & 0x7fffffff) / 0x7fffffff);
+    return ((this.hash(x, y, seed) & INT32_MASK) / INT32_MASK);
   }
 
   generate(
     nodes: Record<string, KantoNodeCoordinate>,
     connections: readonly (readonly [string, string])[],
-    seed = 42,
+    seed = CONTINENT_DEFAULT_SEED,
     config?: ProceduralGenerationConfig
   ): void {
     this.seed = seed;
@@ -196,7 +116,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       0,
       ...Object.values(nodes).flatMap((n) => [n.x, n.y])
     );
-    this.spacingMultiplier = maxCoord > 2500 ? 1.0 : KANTO_SPACING_MULTIPLIER;
+    this.spacingMultiplier = maxCoord > MAX_CANONICAL_COORD_THRESHOLD ? 1.0 : KANTO_SPACING_MULTIPLIER;
     fillImpenetrableWorld(this);
     this.trees = [];
     this.buildings = [];
@@ -206,8 +126,8 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
 
     const autoOcean = config?.autoOcean ?? true;
     const autoBuildings = config?.autoBuildings ?? true;
-    const roadWidth = config?.roadWidth ?? 2;
-    const treeDensity = config?.treeDensity ?? 0.7;
+    const roadWidth = config?.roadWidth ?? DEFAULT_ROAD_WIDTH;
+    const treeDensity = config?.treeDensity ?? DEFAULT_TREE_DENSITY;
 
     const isCanonicalKanto = Boolean(nodes.pallet || nodes.viridian || nodes.pewter);
 
@@ -257,7 +177,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       .map((n) => this.nodeToTile(n.x, n.y));
 
     const isNearSettlement = (tx: number, ty: number) =>
-      settlementTiles.some((st) => Math.hypot(st.tx - tx, st.ty - ty) < 8);
+      settlementTiles.some((st) => Math.hypot(st.tx - tx, st.ty - ty) < SETTLEMENT_CLEARANCE_RADIUS_TILES);
 
     const simplex = new SimplexNoise(this.seed);
 
@@ -286,11 +206,11 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     const raisePlateau = (x0: number, x1: number, y0: number, y1: number, level = 3) => {
       const cx = (x0 + x1) / 2;
       const cy = (y0 + y1) / 2;
-      const rx = Math.max(1.5, (x1 - x0) / 2);
-      const ry = Math.max(1.5, (y1 - y0) / 2);
+      const rx = Math.max(MIN_PLATEAU_RADIUS, (x1 - x0) / 2);
+      const ry = Math.max(MIN_PLATEAU_RADIUS, (y1 - y0) / 2);
 
-      const padX = Math.ceil(rx + 2);
-      const padY = Math.ceil(ry + 2);
+      const padX = Math.ceil(rx + PLATEAU_PADDING_TILES);
+      const padY = Math.ceil(ry + PLATEAU_PADDING_TILES);
       const startX = Math.max(0, Math.floor(cx - padX));
       const endX = Math.min(KANTO_GRID_W - 1, Math.ceil(cx + padX));
       const startY = Math.max(0, Math.floor(cy - padY));
@@ -305,9 +225,9 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
           const dx = (x - cx) / rx;
           const dy = (y - cy) / ry;
           const dist = Math.hypot(dx, dy);
-          const noise = simplex.noise2D(x * 0.22, y * 0.22) * 0.28;
+          const noise = simplex.noise2D(x * MOUNTAIN_NOISE_FREQUENCY, y * MOUNTAIN_NOISE_FREQUENCY) * MOUNTAIN_NOISE_AMPLITUDE;
 
-          if (dist + noise <= 1.05) {
+          if (dist + noise <= MOUNTAIN_DIST_THRESHOLD) {
             const row = g[y];
             const eRow = elev[y];
             if (row && eRow && row[x] !== CELL_BIOME.WATER) {
@@ -320,50 +240,56 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       }
     };
 
-    const pw = nodes.pewter ? this.nodeToTile(nodes.pewter.x, nodes.pewter.y) : { tx: 39, ty: 31 };
-    const cr = nodes.cerulean ? this.nodeToTile(nodes.cerulean.x, nodes.cerulean.y) : { tx: 62, ty: 50 };
-    const bh = nodes.billshouse ? this.nodeToTile(nodes.billshouse.x, nodes.billshouse.y) : { tx: 82, ty: 23 };
-    const rt = nodes.rocktunnel ? this.nodeToTile(nodes.rocktunnel.x, nodes.rocktunnel.y) : { tx: 85, ty: 62 };
-    const ip = nodes.indigo ? this.nodeToTile(nodes.indigo.x, nodes.indigo.y) : { tx: 23, ty: 27 };
-    const vn = nodes.viridian ? this.nodeToTile(nodes.viridian.x, nodes.viridian.y) : { tx: 39, ty: 85 };
-    const sf = nodes.seafoam ? this.nodeToTile(nodes.seafoam.x, nodes.seafoam.y) : { tx: 50, ty: 125 };
+    const pw = nodes.pewter ? this.nodeToTile(nodes.pewter.x, nodes.pewter.y) : KANTO_FALLBACK_NODES.pewter;
+    const cr = nodes.cerulean ? this.nodeToTile(nodes.cerulean.x, nodes.cerulean.y) : KANTO_FALLBACK_NODES.cerulean;
+    const bh = nodes.billshouse ? this.nodeToTile(nodes.billshouse.x, nodes.billshouse.y) : KANTO_FALLBACK_NODES.billshouse;
+    const rt = nodes.rocktunnel ? this.nodeToTile(nodes.rocktunnel.x, nodes.rocktunnel.y) : KANTO_FALLBACK_NODES.rocktunnel;
+    const ip = nodes.indigo ? this.nodeToTile(nodes.indigo.x, nodes.indigo.y) : KANTO_FALLBACK_NODES.indigo;
+    const vn = nodes.viridian ? this.nodeToTile(nodes.viridian.x, nodes.viridian.y) : KANTO_FALLBACK_NODES.viridian;
+    const sf = nodes.seafoam ? this.nodeToTile(nodes.seafoam.x, nodes.seafoam.y) : KANTO_FALLBACK_NODES.seafoam;
 
     // 1. Indigo Plateau & Northern Mountain Range
-    raisePlateau(2, ip.tx + 5, 8, 26, 2);
-    raisePlateau(ip.tx - 4, ip.tx + 4, 10, 24, 3);
+    const ind = KANTO_PLATEAU_RANGES.indigoRange;
+    raisePlateau(ind.base.minX, ip.tx + ind.base.offsetTx, ind.base.minY, ind.base.maxY, ind.base.elev);
+    raisePlateau(ip.tx + ind.peak.offsetTxMin, ip.tx + ind.peak.offsetTxMax, ind.peak.minY, ind.peak.maxY, ind.peak.elev);
 
     // 2. Mt. Moon Northern Mountain Range & Stepped Plateau
-    const mm = nodes.mtmoon ? this.nodeToTile(nodes.mtmoon.x, nodes.mtmoon.y) : { tx: 62, ty: 31 };
+    const mm = nodes.mtmoon ? this.nodeToTile(nodes.mtmoon.x, nodes.mtmoon.y) : KANTO_FALLBACK_NODES.mtmoon;
+    const mmCfg = KANTO_PLATEAU_RANGES.mtMoonMassif;
     // Main northern mountain massif (Tier 2 base, Tier 3 peak)
-    raiseRectPlateau(pw.tx + 9, cr.tx + 8, 8, mm.ty - 4, 2);
-    raiseRectPlateau(pw.tx + 12, cr.tx + 5, 8, mm.ty - 9, 3);
-    raiseRectPlateau(pw.tx + 16, cr.tx + 2, 9, mm.ty - 14, 4);
+    raiseRectPlateau(pw.tx + mmCfg.tier2.offsetPwMin, cr.tx + mmCfg.tier2.offsetCrMax, mmCfg.tier2.minY, mm.ty + mmCfg.tier2.offsetMmTy, mmCfg.tier2.elev);
+    raiseRectPlateau(pw.tx + mmCfg.tier3.offsetPwMin, cr.tx + mmCfg.tier3.offsetCrMax, mmCfg.tier3.minY, mm.ty + mmCfg.tier3.offsetMmTy, mmCfg.tier3.elev);
+    raiseRectPlateau(pw.tx + mmCfg.tier4.offsetPwMin, cr.tx + mmCfg.tier4.offsetCrMax, mmCfg.tier4.minY, mm.ty + mmCfg.tier4.offsetMmTy, mmCfg.tier4.elev);
     // Western mountain bay arm framing Pokemon Center (gx: 49..52, gy: mm.ty - 4 .. mm.ty + 6)
-    raiseRectPlateau(mm.tx - 13, mm.tx - 10, mm.ty - 4, mm.ty + 6, 2);
+    raiseRectPlateau(mm.tx + mmCfg.westArm.offsetMmMin, mm.tx + mmCfg.westArm.offsetMmMax, mm.ty + mmCfg.westArm.offsetMmTyMin, mm.ty + mmCfg.westArm.offsetMmTyMax, mmCfg.westArm.elev);
     // Southern ridge of Route 4 (gx: 60..70, gy: mm.ty + 10 .. mm.ty + 13)
-    raiseRectPlateau(mm.tx - 2, cr.tx + 8, mm.ty + 10, mm.ty + 13, 2);
+    raiseRectPlateau(mm.tx + mmCfg.southRidge.offsetMmMin, cr.tx + mmCfg.southRidge.offsetCrMax, mm.ty + mmCfg.southRidge.offsetMmTyMin, mm.ty + mmCfg.southRidge.offsetMmTyMax, mmCfg.southRidge.elev);
 
     // 3. Cape Cerulean & Route 25 High Ridge (well north-east of Cerulean City)
-    raisePlateau(cr.tx + 6, bh.tx + 4, 8, 18, 2);
-    raisePlateau(cr.tx + 8, bh.tx + 2, 10, 16, 3);
+    const ccCfg = KANTO_PLATEAU_RANGES.capeCerulean;
+    raisePlateau(cr.tx + ccCfg.tier2.offsetCrMin, bh.tx + ccCfg.tier2.offsetBhMax, ccCfg.tier2.minY, ccCfg.tier2.maxY, ccCfg.tier2.elev);
+    raisePlateau(cr.tx + ccCfg.tier3.offsetCrMin, bh.tx + ccCfg.tier3.offsetBhMax, ccCfg.tier3.minY, ccCfg.tier3.maxY, ccCfg.tier3.elev);
 
     // 4. Rock Tunnel & Route 9 Canyon Walls (well clear of Cerulean City perimeter)
-    raisePlateau(cr.tx + 9, rt.tx - 2, cr.ty - 6, cr.ty - 4, 2);
-    raisePlateau(cr.tx + 9, rt.tx - 3, cr.ty + 2, cr.ty + 5, 2);
-    raisePlateau(rt.tx - 4, rt.tx + 3, rt.ty - 12, rt.ty + 6, 2);
-    raisePlateau(rt.tx - 2, rt.tx + 2, rt.ty - 8, rt.ty + 4, 3);
+    const rtCfg = KANTO_PLATEAU_RANGES.rockTunnel;
+    raisePlateau(cr.tx + rtCfg.canyonNorth.offsetCrMin, rt.tx + rtCfg.canyonNorth.offsetRtMax, cr.ty + rtCfg.canyonNorth.offsetCrTyMin, cr.ty + rtCfg.canyonNorth.offsetCrTyMax, rtCfg.canyonNorth.elev);
+    raisePlateau(cr.tx + rtCfg.canyonSouth.offsetCrMin, rt.tx + rtCfg.canyonSouth.offsetRtMax, cr.ty + rtCfg.canyonSouth.offsetCrTyMin, cr.ty + rtCfg.canyonSouth.offsetCrTyMax, rtCfg.canyonSouth.elev);
+    raisePlateau(rt.tx + rtCfg.massifBase.offsetRtMin, rt.tx + rtCfg.massifBase.offsetRtMax, rt.ty + rtCfg.massifBase.offsetRtTyMin, rt.ty + rtCfg.massifBase.offsetRtTyMax, rtCfg.massifBase.elev);
+    raisePlateau(rt.tx + rtCfg.massifPeak.offsetRtMin, rt.tx + rtCfg.massifPeak.offsetRtMax, rt.ty + rtCfg.massifPeak.offsetRtTyMin, rt.ty + rtCfg.massifPeak.offsetRtTyMax, rtCfg.massifPeak.elev);
 
     // 5. Route 22 Mountain Ridge (Far western boundary - completely clear of Viridian & Route 1)
-    raisePlateau(2, Math.max(2, vn.tx - 18), vn.ty - 10, vn.ty + 6, 2);
-    raisePlateau(2, Math.max(2, vn.tx - 21), vn.ty - 8, vn.ty + 4, 3);
+    const r22 = KANTO_PLATEAU_RANGES.route22Ridge;
+    raisePlateau(r22.tier2.minX, Math.max(r22.tier2.minX, vn.tx + r22.tier2.offsetVnMax), vn.ty + r22.tier2.offsetVnTyMin, vn.ty + r22.tier2.offsetVnTyMax, r22.tier2.elev);
+    raisePlateau(r22.tier3.minX, Math.max(r22.tier3.minX, vn.tx + r22.tier3.offsetVnMax), vn.ty + r22.tier3.offsetVnTyMin, vn.ty + r22.tier3.offsetVnTyMax, r22.tier3.elev);
 
     // 6. Seafoam Islands Twin Rock Formations
-    [-4, 4].forEach((ox) => {
-      raisePlateau(sf.tx + ox - 2, sf.tx + ox + 2, sf.ty - 2, sf.ty + 2, 2);
+    const sfCfg = KANTO_PLATEAU_RANGES.seafoamTwins;
+    sfCfg.offsets.forEach((ox) => {
+      raisePlateau(sf.tx + ox - sfCfg.halfExtent, sf.tx + ox + sfCfg.halfExtent, sf.ty - sfCfg.halfExtent, sf.ty + sfCfg.halfExtent, sfCfg.elev);
     });
 
     // 7. 2-Pass Cellular Automata smoothing to eliminate 1x1 spikes and gaps
-    for (let pass = 0; pass < 2; pass++) {
+    for (let pass = 0; pass < KANTO_PLATEAU_RANGES.smoothingPasses; pass++) {
       const toRemove: Array<{ x: number; y: number }> = [];
       for (let y = 1; y < KANTO_GRID_H - 1; y++) {
         const row = g[y];
@@ -377,7 +303,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
               if (g[y + dy]?.[x + dx] === CELL_BIOME.MOUNTAIN_DIRT) mtCount++;
             }
           }
-          if (mtCount <= 2) {
+          if (mtCount <= KANTO_PLATEAU_RANGES.minNeighborThreshold) {
             toRemove.push({ x, y });
           }
         }
@@ -400,8 +326,8 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
         const eRow = elev[y];
         if (row && eRow) {
           const elev = eRow[x];
-          if (elev !== undefined && elev >= 2) return; // Do not slice mountain cliffs
-          if (x < 70 && y < 42) return; // Protect Mt. Moon, Route 3, and Route 4 corridor from water
+          if (elev !== undefined && elev >= KANTO_HYDROGRAPHY_CONFIG.protection.maxElev) return; // Do not slice mountain cliffs
+          if (x < KANTO_HYDROGRAPHY_CONFIG.protection.mtMoonMaxX && y < KANTO_HYDROGRAPHY_CONFIG.protection.mtMoonMaxY) return; // Protect Mt. Moon, Route 3, and Route 4 corridor from water
           row[x] = CELL_BIOME.WATER;
           eRow[x] = 0;
           this.occupancy.set(x, y, OCCUPANCY_FLAGS.WATER);
@@ -409,19 +335,21 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       }
     };
 
-    const fc = nodes.fuchsia ? this.nodeToTile(nodes.fuchsia.x, nodes.fuchsia.y) : { tx: 62, ty: 117 };
-    const pt = nodes.pallet ? this.nodeToTile(nodes.pallet.x, nodes.pallet.y) : { tx: 39, ty: 109 };
-    const cb = nodes.cinnabar ? this.nodeToTile(nodes.cinnabar.x, nodes.cinnabar.y) : { tx: 27, ty: 125 };
-    const sf = nodes.seafoam ? this.nodeToTile(nodes.seafoam.x, nodes.seafoam.y) : { tx: 50, ty: 125 };
-    const cr = nodes.cerulean ? this.nodeToTile(nodes.cerulean.x, nodes.cerulean.y) : { tx: 62, ty: 50 };
-    const rt = nodes.rocktunnel ? this.nodeToTile(nodes.rocktunnel.x, nodes.rocktunnel.y) : { tx: 85, ty: 62 };
-    const vm = nodes.vermilion ? this.nodeToTile(nodes.vermilion.x, nodes.vermilion.y) : { tx: 62, ty: 97 };
+    const fc = nodes.fuchsia ? this.nodeToTile(nodes.fuchsia.x, nodes.fuchsia.y) : KANTO_FALLBACK_NODES.fuchsia;
+    const pt = nodes.pallet ? this.nodeToTile(nodes.pallet.x, nodes.pallet.y) : KANTO_FALLBACK_NODES.pallet;
+    const cb = nodes.cinnabar ? this.nodeToTile(nodes.cinnabar.x, nodes.cinnabar.y) : KANTO_FALLBACK_NODES.cinnabar;
+    const sf = nodes.seafoam ? this.nodeToTile(nodes.seafoam.x, nodes.seafoam.y) : KANTO_FALLBACK_NODES.seafoam;
+    const cr = nodes.cerulean ? this.nodeToTile(nodes.cerulean.x, nodes.cerulean.y) : KANTO_FALLBACK_NODES.cerulean;
+    const rt = nodes.rocktunnel ? this.nodeToTile(nodes.rocktunnel.x, nodes.rocktunnel.y) : KANTO_FALLBACK_NODES.rocktunnel;
+    const vm = nodes.vermilion ? this.nodeToTile(nodes.vermilion.x, nodes.vermilion.y) : KANTO_FALLBACK_NODES.vermilion;
+
+    const hy = KANTO_HYDROGRAPHY_CONFIG;
 
     // 1. South Ocean: Below Fuchsia down to world edge with natural wavy shoreline
-    const southOceanY = fc.ty + 1;
+    const southOceanY = fc.ty + hy.southOcean.offsetTy;
     for (let y = southOceanY; y < KANTO_GRID_H; y++) {
       for (let x = 0; x < KANTO_GRID_W; x++) {
-        const wave = Math.sin(x * 0.25) * 1.5;
+        const wave = Math.sin(x * hy.southOcean.waveFreq) * hy.southOcean.waveAmp;
         if (y >= southOceanY + wave) {
           setWater(x, y);
         }
@@ -429,11 +357,11 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     }
 
     // 2. Route 21 Channel: South of Pallet Town (SW corner) to Cinnabar
-    for (let y = pt.ty + 5; y < southOceanY + 4; y++) {
-      for (let x = pt.tx - 7; x <= pt.tx - 2; x++) {
-        const wobble = y > pt.ty + 8 ? Math.sin(y * 0.35) * 1.5 : 0;
-        const left = Math.round(pt.tx - 6 + wobble);
-        const right = Math.round(pt.tx - 2 + wobble);
+    for (let y = pt.ty + hy.route21Channel.startOffsetTy; y < southOceanY + hy.route21Channel.endOffsetTy; y++) {
+      for (let x = pt.tx + hy.route21Channel.minOffsetTx; x <= pt.tx + hy.route21Channel.maxOffsetTx; x++) {
+        const wobble = y > pt.ty + hy.route21Channel.wobbleThresholdTy ? Math.sin(y * hy.route21Channel.wobbleFreq) * hy.route21Channel.wobbleAmp : 0;
+        const left = Math.round(pt.tx + hy.route21Channel.channelLeftOffset + wobble);
+        const right = Math.round(pt.tx + hy.route21Channel.channelRightOffset + wobble);
         if (x >= left && x <= right) {
           setWater(x, y);
         }
@@ -441,43 +369,43 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     }
 
     // 3. Eastern Ocean: Routes 12, 13, 14, 15 with organic coastline
-    const eastOceanX = Math.max(rt.tx, 88);
-    for (let y = 45; y < southOceanY; y++) {
-      const shoreWobble = Math.sin(y * 0.28) * 2.2;
+    const eastOceanX = Math.max(rt.tx, hy.easternOcean.minFallbackX);
+    for (let y = hy.easternOcean.startY; y < southOceanY; y++) {
+      const shoreWobble = Math.sin(y * hy.easternOcean.shoreWobbleFreq) * hy.easternOcean.shoreWobbleAmp;
       for (let x = Math.round(eastOceanX + shoreWobble); x < KANTO_GRID_W; x++) {
         setWater(x, y);
       }
     }
 
     // 4. Vermilion Bay & S.S. Anne Harbor
-    for (let y = vm.ty + 2; y <= vm.ty + 8; y++) {
-      for (let x = vm.tx - 5; x <= vm.tx + 5; x++) {
-        const d = Math.hypot(x - vm.tx, y - (vm.ty + 4));
-        if (d <= 3.8) setWater(x, y);
+    for (let y = vm.ty + hy.vermilionBay.startOffsetTy; y <= vm.ty + hy.vermilionBay.endOffsetTy; y++) {
+      for (let x = vm.tx + hy.vermilionBay.minOffsetTx; x <= vm.tx + hy.vermilionBay.maxOffsetTx; x++) {
+        const d = Math.hypot(x - vm.tx, y - (vm.ty + hy.vermilionBay.centerOffsetTy));
+        if (d <= hy.vermilionBay.radius) setWater(x, y);
       }
     }
 
     // 5. Cerulean River & Nugget Bridge Canal (Route 24 & Route 9 to Power Plant)
-    for (let y = 14; y <= cr.ty; y++) {
-      for (let x = cr.tx - 2; x <= cr.tx + 2; x++) {
+    for (let y = hy.ceruleanRiver.minY; y <= cr.ty; y++) {
+      for (let x = cr.tx + hy.ceruleanRiver.offsetTxMin; x <= cr.tx + hy.ceruleanRiver.offsetTxMax; x++) {
         setWater(x, y);
       }
     }
     // Eastward river branch along Route 9 towards Rock Tunnel & Power Plant
-    for (let x = cr.tx + 2; x < KANTO_GRID_W; x++) {
-      const ry = cr.ty - 2 + Math.round(Math.sin((x - cr.tx) * 0.2) * 1.2);
-      for (let dy = -1; dy <= 1; dy++) {
+    for (let x = cr.tx + hy.ceruleanRiver.eastBranchOffsetTx; x < KANTO_GRID_W; x++) {
+      const ry = cr.ty + hy.ceruleanRiver.eastBranchCenterDy + Math.round(Math.sin((x - cr.tx) * hy.ceruleanRiver.eastBranchFreq) * hy.ceruleanRiver.eastBranchAmp);
+      for (let dy = -hy.ceruleanRiver.eastBranchHalfSpan; dy <= hy.ceruleanRiver.eastBranchHalfSpan; dy++) {
         setWater(x, ry + dy);
       }
     }
 
     // 6. Cinnabar Island (Organic sandy island with volcano crater)
-    for (let dy = -5; dy <= 5; dy++) {
-      for (let dx = -6; dx <= 6; dx++) {
+    for (let dy = -hy.cinnabarIsland.halfDy; dy <= hy.cinnabarIsland.halfDy; dy++) {
+      for (let dx = -hy.cinnabarIsland.halfDx; dx <= hy.cinnabarIsland.halfDx; dx++) {
         const tx = cb.tx + dx;
         const ty = cb.ty + dy;
         if (tx >= 0 && tx < KANTO_GRID_W && ty >= 0 && ty < KANTO_GRID_H) {
-          const isBorder = Math.abs(dx) >= 5 || Math.abs(dy) >= 4;
+          const isBorder = Math.abs(dx) >= hy.cinnabarIsland.borderMinDx || Math.abs(dy) >= hy.cinnabarIsland.borderMinDy;
           const row = g[ty];
           const eRow = elev[ty];
           if (row && eRow) {
@@ -490,17 +418,17 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     }
 
     // 7. Seafoam Islands (Twin rock formations in South Ocean)
-    [-4, 4].forEach((ox) => {
-      for (let dy = -3; dy <= 3; dy++) {
-        for (let dx = -3; dx <= 3; dx++) {
+    hy.seafoamIslands.offsets.forEach((ox) => {
+      for (let dy = -hy.seafoamIslands.halfSpan; dy <= hy.seafoamIslands.halfSpan; dy++) {
+        for (let dx = -hy.seafoamIslands.halfSpan; dx <= hy.seafoamIslands.halfSpan; dx++) {
           const dist = Math.hypot(dx, dy);
           const tx = sf.tx + ox + dx;
           const ty = sf.ty + dy;
           if (tx >= 0 && tx < KANTO_GRID_W && ty >= 0 && ty < KANTO_GRID_H) {
             const row = g[ty];
             const eRow = elev[ty];
-            if (row && eRow && dist <= 3.2) {
-              row[tx] = dist <= 2.2 ? CELL_BIOME.GRASS : CELL_BIOME.DIRT_PATH;
+            if (row && eRow && dist <= hy.seafoamIslands.islandRadius) {
+              row[tx] = dist <= hy.seafoamIslands.grassRadius ? CELL_BIOME.GRASS : CELL_BIOME.DIRT_PATH;
               eRow[tx] = 1;
               this.occupancy.clear(tx, ty, OCCUPANCY_FLAGS.WATER);
             }
@@ -510,14 +438,15 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     });
 
     // 8. Canonical Ponds (Viridian City SW, Safari Zone, Celadon South)
-    const vn = nodes.viridian ? this.nodeToTile(nodes.viridian.x, nodes.viridian.y) : { tx: 39, ty: 85 };
-    this.carveOrganicPond(g, vn.tx - 6, vn.ty + 5, 2.2);
-    this.carveOrganicPond(g, fc.tx - 6, fc.ty - 10, 3.2);
-    this.carveOrganicPond(g, vm.tx - 12, vm.ty - 6, 2.6);
+    const vn = nodes.viridian ? this.nodeToTile(nodes.viridian.x, nodes.viridian.y) : KANTO_FALLBACK_NODES.viridian;
+    this.carveOrganicPond(g, vn.tx + hy.ponds.viridian.offsetTx, vn.ty + hy.ponds.viridian.offsetTy, hy.ponds.viridian.radius);
+    this.carveOrganicPond(g, fc.tx + hy.ponds.fuchsia.offsetTx, fc.ty + hy.ponds.fuchsia.offsetTy, hy.ponds.fuchsia.radius);
+    this.carveOrganicPond(g, vm.tx + hy.ponds.vermilion.offsetTx, vm.ty + hy.ponds.vermilion.offsetTy, hy.ponds.vermilion.radius);
   }
 
   private carveOrganicPond(grid: Uint8Array[], cx: number, cy: number, radius: number): void {
-    const rInt = Math.ceil(radius + 2);
+    const cfg = KANTO_HYDROGRAPHY_CONFIG.ponds;
+    const rInt = Math.ceil(radius + cfg.radiusPadding);
     for (let dy = -rInt; dy <= rInt; dy++) {
       for (let dx = -rInt; dx <= rInt; dx++) {
         const x = cx + dx;
@@ -526,7 +455,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
         if (this.occupancy.has(x, y, OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.ROAD)) continue;
         const dist = Math.hypot(dx, dy);
         const angle = Math.atan2(dy, dx);
-        const rPerturb = radius * (1.0 + 0.2 * Math.sin(3 * angle));
+        const rPerturb = radius * (1.0 + cfg.wobbleAmplitude * Math.sin(cfg.wobbleAngleMultiplier * angle));
         if (dist <= rPerturb) {
           const row = grid[y];
           if (row) {
@@ -549,8 +478,9 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     const sfNode = nodes.saffron;
     if (sfNode) {
       const sfT = this.nodeToTile(sfNode.x, sfNode.y);
-      for (let d = -6; d <= 6; d++) {
-        for (let w = -1; w <= 1; w++) {
+      const bCfg = KANTO_ROAD_CONFIG.saffronBoulevard;
+      for (let d = -bCfg.extent; d <= bCfg.extent; d++) {
+        for (let w = -bCfg.halfWidth; w <= bCfg.halfWidth; w++) {
           const pts = [
             [sfT.tx + w, sfT.ty + d],
             [sfT.tx + d, sfT.ty + w]
@@ -561,7 +491,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
               if (row) {
                 row[gx] = CELL_BIOME.DIRT_PATH;
                 this.occupancy.set(gx, gy, OCCUPANCY_FLAGS.ROAD);
-                this.occupancy.reserveBuffer(gx, gy, 1, 1, 2, OCCUPANCY_FLAGS.ROAD_BUFFER);
+                this.occupancy.reserveBuffer(gx, gy, 1, 1, bCfg.bufferSize, OCCUPANCY_FLAGS.ROAD_BUFFER);
               }
             }
           });
@@ -592,10 +522,11 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     if (ptNode && vnNode) {
       const pt = this.nodeToTile(ptNode.x, ptNode.y);
       const vn = this.nodeToTile(vnNode.x, vnNode.y);
+      const r1 = KANTO_ROAD_CONFIG.route1Corridor;
 
-      // Carve compact 11-tile Route 1 grass corridor (pt.tx - 5 to pt.tx + 5)
-      for (let y = vn.ty + 8; y <= pt.ty - 2; y++) {
-        for (let x = pt.tx - 5; x <= pt.tx + 5; x++) {
+      // Carve compact Route 1 grass corridor
+      for (let y = vn.ty + r1.startOffsetTy; y <= pt.ty + r1.endOffsetTy; y++) {
+        for (let x = pt.tx - r1.halfWidth; x <= pt.tx + r1.halfWidth; x++) {
           if (x >= 0 && x < KANTO_GRID_W && y >= 0 && y < KANTO_GRID_H) {
             const row = g[y];
             if (row && row[x] === CELL_BIOME.FOREST_WALL) {
@@ -606,17 +537,17 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       }
 
       const midY = Math.floor((pt.ty + vn.ty) / 2);
-      this.rasterizePath(g, pt.tx, pt.ty - 2, pt.tx, midY + 4, roadWidth);
-      this.rasterizePath(g, pt.tx, midY + 4, pt.tx + 3, midY + 4, roadWidth);
-      this.rasterizePath(g, pt.tx + 3, midY + 4, pt.tx + 3, midY - 2, roadWidth);
-      this.rasterizePath(g, pt.tx + 3, midY - 2, pt.tx - 2, midY - 2, roadWidth);
-      this.rasterizePath(g, pt.tx - 2, midY - 2, pt.tx - 2, vn.ty + 8, roadWidth);
-      this.rasterizePath(g, pt.tx - 2, vn.ty + 8, vn.tx, vn.ty + 8, roadWidth);
+      this.rasterizePath(g, pt.tx, pt.ty + r1.endOffsetTy, pt.tx, midY + r1.midOffsetUpper, roadWidth);
+      this.rasterizePath(g, pt.tx, midY + r1.midOffsetUpper, pt.tx + r1.eastOffset, midY + r1.midOffsetUpper, roadWidth);
+      this.rasterizePath(g, pt.tx + r1.eastOffset, midY + r1.midOffsetUpper, pt.tx + r1.eastOffset, midY + r1.midOffsetLower, roadWidth);
+      this.rasterizePath(g, pt.tx + r1.eastOffset, midY + r1.midOffsetLower, pt.tx + r1.westOffset, midY + r1.midOffsetLower, roadWidth);
+      this.rasterizePath(g, pt.tx + r1.westOffset, midY + r1.midOffsetLower, pt.tx + r1.westOffset, vn.ty + r1.startOffsetTy, roadWidth);
+      this.rasterizePath(g, pt.tx + r1.westOffset, vn.ty + r1.startOffsetTy, vn.tx, vn.ty + r1.startOffsetTy, roadWidth);
     }
   }
 
   private rasterizePath(grid: Uint8Array[], x0: number, y0: number, x1: number, y1: number, width = 2): void {
-    const corridorRadius = Math.max(3, Math.floor(width / 2) + 2);
+    const corridorRadius = Math.max(KANTO_ROAD_CONFIG.rasterizer.minCorridorRadius, Math.floor(width / 2) + KANTO_ROAD_CONFIG.rasterizer.corridorPadding);
     const stamp = (cx: number, cy: number) => {
       for (let wy = -corridorRadius; wy <= corridorRadius; wy++) {
         for (let wx = -corridorRadius; wx <= corridorRadius; wx++) {
@@ -646,7 +577,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
               } else {
                 row[px] = CELL_BIOME.DIRT_PATH;
                 this.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
-                this.occupancy.reserveBuffer(px, py, 1, 1, 2, OCCUPANCY_FLAGS.ROAD_BUFFER);
+                this.occupancy.reserveBuffer(px, py, 1, 1, KANTO_ROAD_CONFIG.rasterizer.bufferSize, OCCUPANCY_FLAGS.ROAD_BUFFER);
               }
             }
           }
@@ -682,7 +613,6 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       drawLineV(midY, y1, x1);
     }
   }
-
   private carveTallGrassPatches(nodes: Record<string, KantoNodeCoordinate>): void {
     const g = this.grid;
     const addPatch = (x0: number, x1: number, y0: number, y1: number) => {
@@ -699,26 +629,21 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     };
 
     // 1. Canonical Route 1 tall grass patches (FireRed Route 1)
-    const pt = nodes.pallet ? this.nodeToTile(nodes.pallet.x, nodes.pallet.y) : { tx: 39, ty: 109 };
-    // South patches (above Route 1 entrance picket fence at ty - 9)
-    addPatch(pt.tx - 6, pt.tx - 2, pt.ty - 13, pt.ty - 10);
-    addPatch(pt.tx + 2, pt.tx + 6, pt.ty - 13, pt.ty - 10);
-    // Middle-right patch
-    addPatch(pt.tx + 1, pt.tx + 6, pt.ty - 19, pt.ty - 16);
-    // Upper-right patch
-    addPatch(pt.tx + 1, pt.tx + 6, pt.ty - 26, pt.ty - 23);
-    // Top-left patch
-    addPatch(pt.tx - 6, pt.tx - 2, pt.ty - 27, pt.ty - 24);
+    const pt = nodes.pallet ? this.nodeToTile(nodes.pallet.x, nodes.pallet.y) : KANTO_FALLBACK_NODES.pallet;
+    KANTO_TALL_GRASS_CONFIG.route1.forEach((p) => {
+      addPatch(pt.tx + p.minDx, pt.tx + p.maxDx, pt.ty + p.minDy, pt.ty + p.maxDy);
+    });
 
     // 2. Universal route-side wild Pokemon tall grass patches
-    for (let gy = 4; gy < KANTO_GRID_H - 4; gy += 2) {
-      for (let gx = 4; gx < KANTO_GRID_W - 4; gx += 2) {
+    const wild = KANTO_TALL_GRASS_CONFIG.wildRoutes;
+    for (let gy = wild.margin; gy < KANTO_GRID_H - wild.margin; gy += wild.step) {
+      for (let gx = wild.margin; gx < KANTO_GRID_W - wild.margin; gx += wild.step) {
         const row = g[gy];
         if (row && row[gx] === CELL_BIOME.DIRT_PATH) {
-          const grassSeed = this.hashF(gx, gy, this.seed + 707);
-          if (grassSeed > 0.30) {
-            const side = grassSeed > 0.65 ? 2 : -2;
-            addPatch(gx + side - 1, gx + side + 1, gy - 1, gy + 1);
+          const grassSeed = this.hashF(gx, gy, this.seed + wild.seedOffset);
+          if (grassSeed > wild.presenceThreshold) {
+            const side = grassSeed > wild.sideThreshold ? wild.sideOffsetPositive : wild.sideOffsetNegative;
+            addPatch(gx + side - wild.halfSpan, gx + side + wild.halfSpan, gy - wild.halfSpan, gy + wild.halfSpan);
           }
         }
       }
@@ -729,12 +654,14 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     this.bridges = [];
 
     // Nugget Bridge (Route 24 north of Cerulean)
-    const cr = nodes.cerulean ? this.nodeToPx(nodes.cerulean.x, nodes.cerulean.y) : { px: 2000, py: 1625 };
-    this.bridges.push({ style: 'nugget', x: cr.px - 32, y: cr.py - 160, w: 64, h: 120 });
+    const cr = nodes.cerulean ? this.nodeToPx(nodes.cerulean.x, nodes.cerulean.y) : KANTO_FALLBACK_NODES.cerulean;
+    const nb = KANTO_BRIDGES_CONFIG.nuggetBridge;
+    this.bridges.push({ style: 'nugget', x: cr.px + nb.dx, y: cr.py + nb.dy, w: nb.w, h: nb.h });
 
     // Harbor Pier in Vermilion
-    const vm = nodes.vermilion ? this.nodeToPx(nodes.vermilion.x, nodes.vermilion.y) : { px: 2000, py: 3125 };
-    this.bridges.push({ style: 'pier', x: vm.px - 32, y: vm.py + 70, w: 64, h: 110 });
+    const vm = nodes.vermilion ? this.nodeToPx(nodes.vermilion.x, nodes.vermilion.y) : KANTO_FALLBACK_NODES.vermilion;
+    const hp = KANTO_BRIDGES_CONFIG.harborPier;
+    this.bridges.push({ style: 'pier', x: vm.px + hp.dx, y: vm.py + hp.dy, w: hp.w, h: hp.h });
   }
 
   private placeTownArchitectures(nodes: Record<string, KantoNodeCoordinate>): void {
@@ -762,15 +689,15 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
             const cell = row[x];
             const elev = eRow[x];
             if (cell === undefined || cell === CELL_BIOME.WATER || cell === CELL_BIOME.MOUNTAIN_DIRT) return false;
-            if (elev === undefined || elev >= 2) return false;
+            if (elev === undefined || elev >= KANTO_HYDROGRAPHY_CONFIG.protection.maxElev) return false;
             if (this.occupancy.has(x, y, OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.DOOR_ACCESS)) return false;
           }
         }
         for (const eb of this.buildings) {
           const ebx = Math.floor(eb.x / T);
           const eby = Math.floor(eb.y / T);
-          const ebw = Math.ceil((eb.w ?? 128) / T);
-          const ebh = Math.ceil((eb.h ?? 128) / T);
+          const ebw = Math.ceil((eb.w ?? DEFAULT_STRUCTURE_PX_SIZE) / T);
+          const ebh = Math.ceil((eb.h ?? DEFAULT_STRUCTURE_PX_SIZE) / T);
           if (tx < ebx + ebw + 1 && tx + bw + 1 > ebx && ty < eby + ebh + 1 && ty + bh + 1 > eby) {
             return false;
           }
@@ -781,7 +708,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       if (isSpotValid(bx, by)) {
         found = true;
       } else {
-        for (let r = 1; r <= 12 && !found; r++) {
+        for (let r = 1; r <= MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS && !found; r++) {
           for (let dy = -r; dy <= r; dy++) {
             for (let dx = -r; dx <= r; dx++) {
               if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
@@ -832,7 +759,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       const doorTileY = by + bh;
       if (doorTileY < KANTO_GRID_H) {
         this.occupancy.reserveRect(doorTileX, doorTileY, 1, 2, OCCUPANCY_FLAGS.DOOR_ACCESS);
-        for (let step = 0; step <= 2; step++) {
+        for (let step = 0; step <= DOOR_PATH_EXTENSION_STEPS; step++) {
           const cy = doorTileY + step;
           const row = g[cy];
           if (cy < KANTO_GRID_H && row && row[doorTileX] !== CELL_BIOME.WATER && row[doorTileX] !== CELL_BIOME.MOUNTAIN_DIRT) {
@@ -843,52 +770,41 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       }
     };
 
-    const pw = nodes.pewter ? this.nodeToPx(nodes.pewter.x, nodes.pewter.y) : { px: 1250, py: 1000 };
-    const cr = nodes.cerulean ? this.nodeToPx(nodes.cerulean.x, nodes.cerulean.y) : { px: 2000, py: 1625 };
-    const sf = nodes.saffron ? this.nodeToPx(nodes.saffron.x, nodes.saffron.y) : { px: 2000, py: 2375 };
-    const cl = nodes.celadon ? this.nodeToPx(nodes.celadon.x, nodes.celadon.y) : { px: 1375, py: 2375 };
-    const vm = nodes.vermilion ? this.nodeToPx(nodes.vermilion.x, nodes.vermilion.y) : { px: 2000, py: 3125 };
-    const lv = nodes.lavender ? this.nodeToPx(nodes.lavender.x, nodes.lavender.y) : { px: 2750, py: 2375 };
-    const fc = nodes.fuchsia ? this.nodeToPx(nodes.fuchsia.x, nodes.fuchsia.y) : { px: 2000, py: 3750 };
-    const cb = nodes.cinnabar ? this.nodeToPx(nodes.cinnabar.x, nodes.cinnabar.y) : { px: 875, py: 4000 };
-    const ip = nodes.indigo ? this.nodeToPx(nodes.indigo.x, nodes.indigo.y) : { px: 750, py: 875 };
-    const bh = nodes.billshouse ? this.nodeToPx(nodes.billshouse.x, nodes.billshouse.y) : { px: 2625, py: 750 };
-    const pp = nodes.powerplant ? this.nodeToPx(nodes.powerplant.x, nodes.powerplant.y) : { px: 3125, py: 1625 };
+    const pw = nodes.pewter ? this.nodeToPx(nodes.pewter.x, nodes.pewter.y) : KANTO_FALLBACK_NODES.pewter;
+    const cr = nodes.cerulean ? this.nodeToPx(nodes.cerulean.x, nodes.cerulean.y) : KANTO_FALLBACK_NODES.cerulean;
+    const sf = nodes.saffron ? this.nodeToPx(nodes.saffron.x, nodes.saffron.y) : KANTO_FALLBACK_NODES.saffron;
+    const cl = nodes.celadon ? this.nodeToPx(nodes.celadon.x, nodes.celadon.y) : KANTO_FALLBACK_NODES.celadon;
+    const vm = nodes.vermilion ? this.nodeToPx(nodes.vermilion.x, nodes.vermilion.y) : KANTO_FALLBACK_NODES.vermilion;
+    const lv = nodes.lavender ? this.nodeToPx(nodes.lavender.x, nodes.lavender.y) : KANTO_FALLBACK_NODES.lavender;
+    const fc = nodes.fuchsia ? this.nodeToPx(nodes.fuchsia.x, nodes.fuchsia.y) : KANTO_FALLBACK_NODES.fuchsia;
+    const cb = nodes.cinnabar ? this.nodeToPx(nodes.cinnabar.x, nodes.cinnabar.y) : KANTO_FALLBACK_NODES.cinnabar;
+    const ip = nodes.indigo ? this.nodeToPx(nodes.indigo.x, nodes.indigo.y) : KANTO_FALLBACK_NODES.indigo;
+    const bh = nodes.billshouse ? this.nodeToPx(nodes.billshouse.x, nodes.billshouse.y) : KANTO_FALLBACK_NODES.billshouse;
+    const pp = nodes.powerplant ? this.nodeToPx(nodes.powerplant.x, nodes.powerplant.y) : KANTO_FALLBACK_NODES.powerplant;
 
     const canonicalBuildings: { style: string; x: number; y: number; w: number; h: number; door?: { x: number; y: number } }[] = [];
 
     // Pallet Town (Hamlet)
     if (nodes.pallet) {
       const ptT = this.nodeToTile(nodes.pallet.x, nodes.pallet.y);
-      canonicalBuildings.push(
-        { style: 'house_red', x: (ptT.tx - 5) * T, y: (ptT.ty - 4) * T, w: 160, h: 160, door: { x: 2, y: 4 } },
-        { style: 'house_blue', x: (ptT.tx + 2) * T, y: (ptT.ty - 4) * T, w: 160, h: 160, door: { x: 2, y: 4 } },
-        { style: 'lab_oak', x: (ptT.tx - 1) * T, y: (ptT.ty + 2) * T, w: 224, h: 192, door: { x: 3, y: 5 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.pallet) {
+        canonicalBuildings.push({ style: b.style, x: (ptT.tx + b.dxTiles) * T, y: (ptT.ty + b.dyTiles) * T, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Viridian City (Bastion)
     if (nodes.viridian) {
       const vrT = this.nodeToTile(nodes.viridian.x, nodes.viridian.y);
-      canonicalBuildings.push(
-        { style: 'gym', x: (vrT.tx + 3) * T, y: (vrT.ty - 8) * T, w: 192, h: 160, door: { x: 3, y: 5 } },
-        { style: 'house_green', x: (vrT.tx - 6) * T, y: (vrT.ty - 8) * T, w: 160, h: 160, door: { x: 1, y: 5 } },
-        { style: 'house_green', x: (vrT.tx + 3) * T, y: (vrT.ty - 2) * T, w: 160, h: 160, door: { x: 1, y: 5 } },
-        { style: 'pokecenter', x: (vrT.tx - 6) * T, y: (vrT.ty + 2) * T, w: 160, h: 160, door: { x: 2, y: 5 } },
-        { style: 'pokemart', x: (vrT.tx + 3) * T, y: (vrT.ty + 4) * T, w: 128, h: 128, door: { x: 2, y: 4 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.viridian) {
+        canonicalBuildings.push({ style: b.style, x: (vrT.tx + b.dxTiles) * T, y: (vrT.ty + b.dyTiles) * T, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Pewter City (Bastion)
     if (nodes.pewter) {
-      canonicalBuildings.push(
-        { style: 'house_pewter_slate', x: pw.px - 220, y: pw.py - 220, w: 160, h: 160, door: { x: 1, y: 4 } },
-        { style: 'mansion_school', x: pw.px - 40, y: pw.py - 200, w: 224, h: 256, door: { x: 3, y: 7 } },
-        { style: 'gym_gold', x: pw.px - 160, y: pw.py - 30, w: 192, h: 160, door: { x: 3, y: 5 } },
-        { style: 'pokecenter', x: pw.px + 50, y: pw.py - 40, w: 160, h: 160, door: { x: 2, y: 5 } },
-        { style: 'pokemart', x: pw.px - 140, y: pw.py + 80, w: 128, h: 128, door: { x: 2, y: 4 } },
-        { style: 'house_pewter_slate', x: pw.px + 60, y: pw.py + 80, w: 160, h: 160, door: { x: 1, y: 4 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.pewter) {
+        canonicalBuildings.push({ style: b.style, x: pw.px + b.dx, y: pw.py + b.dy, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Route 2 Gatehouse (Viridian Forest Border)
@@ -896,104 +812,78 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       const vrT = this.nodeToTile(nodes.viridian.x, nodes.viridian.y);
       const pwT = this.nodeToTile(nodes.pewter.x, nodes.pewter.y);
       const midY = Math.round((vrT.ty + pwT.ty) / 2);
-      canonicalBuildings.push(
-        { style: 'gatehouse_route', x: vrT.tx * T - 80, y: midY * T, w: 160, h: 160, door: { x: 2, y: 4 } }
-      );
+      const g = KANTO_CANONICAL_BUILDINGS.route2Gatehouse;
+      canonicalBuildings.push({ style: 'gatehouse_route', x: vrT.tx * T + g.dx, y: midY * T, w: g.w, h: g.h, door: g.door });
     }
 
     // Mt. Moon (Route 4 / Route 3 entrance Pokémon Center)
     if (nodes.mtmoon) {
       const mmT = this.nodeToTile(nodes.mtmoon.x, nodes.mtmoon.y);
-      canonicalBuildings.push(
-        { style: 'pokecenter', x: (mmT.tx - 7) * T, y: (mmT.ty + 1) * T, w: 160, h: 160, door: { x: 2, y: 5 } }
-      );
+      const b = KANTO_CANONICAL_BUILDINGS.mtMoonPokecenter;
+      canonicalBuildings.push({ style: 'pokecenter', x: (mmT.tx + b.dxTiles) * T, y: (mmT.ty + b.dyTiles) * T, w: b.w, h: b.h, door: b.door });
     }
 
     // Cerulean City (Bastion)
     if (nodes.cerulean) {
-      canonicalBuildings.push(
-        { style: 'gym', x: cr.px - 160, y: cr.py - 60, w: 192, h: 160, door: { x: 3, y: 5 } },
-        { style: 'pokecenter', x: cr.px + 50, y: cr.py - 60, w: 160, h: 160, door: { x: 2, y: 5 } },
-        { style: 'pokemart', x: cr.px + 50, y: cr.py + 60, w: 128, h: 128, door: { x: 2, y: 4 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.cerulean) {
+        canonicalBuildings.push({ style: b.style, x: cr.px + b.dx, y: cr.py + b.dy, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Saffron City (Metropolis)
     if (nodes.saffron) {
-      canonicalBuildings.push(
-        { style: 'silph_tower', x: sf.px - 144, y: sf.py - 160, w: 288, h: 320, door: { x: 4, y: 10 } },
-        { style: 'gym_gold', x: sf.px + 160, y: sf.py - 160, w: 192, h: 160, door: { x: 3, y: 5 } },
-        { style: 'gym', x: sf.px + 160, y: sf.py + 40, w: 192, h: 160, door: { x: 3, y: 5 } },
-        { style: 'pokecenter', x: sf.px - 320, y: sf.py - 160, w: 160, h: 160, door: { x: 2, y: 5 } },
-        { style: 'pokemart', x: sf.px - 320, y: sf.py + 40, w: 128, h: 128, door: { x: 2, y: 4 } },
-        // 4 Cardinal Gatehouses of Saffron City (North, South, East, West)
-        { style: 'gatehouse_route', x: sf.px - 80, y: sf.py - 360, w: 160, h: 160, door: { x: 2, y: 4 } },
-        { style: 'gatehouse_route', x: sf.px - 80, y: sf.py + 240, w: 160, h: 160, door: { x: 2, y: 4 } },
-        { style: 'gatehouse_route', x: sf.px + 360, y: sf.py - 60, w: 160, h: 160, door: { x: 2, y: 4 } },
-        { style: 'gatehouse_route', x: sf.px - 520, y: sf.py - 60, w: 160, h: 160, door: { x: 2, y: 4 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.saffron) {
+        canonicalBuildings.push({ style: b.style, x: sf.px + b.dx, y: sf.py + b.dy, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Celadon City (Metropolis)
     if (nodes.celadon) {
-      canonicalBuildings.push(
-        { style: 'game_corner', x: cl.px - 220, y: cl.py - 80, w: 224, h: 160, door: { x: 3, y: 5 } },
-        { style: 'pokecenter', x: cl.px + 80, y: cl.py - 80, w: 160, h: 160, door: { x: 2, y: 5 } },
-        { style: 'gym', x: cl.px - 220, y: cl.py + 100, w: 192, h: 160, door: { x: 3, y: 5 } },
-        // Route 16 West Gatehouse (Cycling Road entrance)
-        { style: 'gatehouse_route', x: cl.px - 420, y: cl.py - 60, w: 160, h: 160, door: { x: 2, y: 4 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.celadon) {
+        canonicalBuildings.push({ style: b.style, x: cl.px + b.dx, y: cl.py + b.dy, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Vermilion City (Port)
     if (nodes.vermilion) {
-      canonicalBuildings.push(
-        { style: 'gym', x: vm.px - 160, y: vm.py + 80, w: 192, h: 160, door: { x: 3, y: 5 } },
-        { style: 'pokecenter', x: vm.px + 60, y: vm.py - 80, w: 160, h: 160, door: { x: 2, y: 5 } },
-        { style: 'pokemart', x: vm.px - 150, y: vm.py - 80, w: 128, h: 128, door: { x: 2, y: 4 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.vermilion) {
+        canonicalBuildings.push({ style: b.style, x: vm.px + b.dx, y: vm.py + b.dy, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Lavender Town (Rural)
     if (nodes.lavender) {
-      canonicalBuildings.push(
-        { style: 'pokecenter', x: lv.px - 120, y: lv.py - 50, w: 160, h: 160, door: { x: 2, y: 5 } },
-        { style: 'silph_tower', x: lv.px + 40, y: lv.py - 90, w: 288, h: 320, door: { x: 4, y: 10 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.lavender) {
+        canonicalBuildings.push({ style: b.style, x: lv.px + b.dx, y: lv.py + b.dy, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Fuchsia City (Bastion)
     if (nodes.fuchsia) {
-      canonicalBuildings.push(
-        { style: 'gym', x: fc.px - 160, y: fc.py - 40, w: 192, h: 160, door: { x: 3, y: 5 } },
-        { style: 'pokecenter', x: fc.px + 50, y: fc.py - 40, w: 160, h: 160, door: { x: 2, y: 5 } },
-        { style: 'pokemart', x: fc.px + 50, y: fc.py + 60, w: 128, h: 128, door: { x: 2, y: 4 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.fuchsia) {
+        canonicalBuildings.push({ style: b.style, x: fc.px + b.dx, y: fc.py + b.dy, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Cinnabar Island (Rural)
     if (nodes.cinnabar) {
-      canonicalBuildings.push(
-        { style: 'gym', x: cb.px + 40, y: cb.py - 80, w: 192, h: 160, door: { x: 3, y: 5 } },
-        { style: 'pokecenter', x: cb.px - 110, y: cb.py + 20, w: 160, h: 160, door: { x: 2, y: 5 } }
-      );
+      for (const b of KANTO_CANONICAL_BUILDINGS.cinnabar) {
+        canonicalBuildings.push({ style: b.style, x: cb.px + b.dx, y: cb.py + b.dy, w: b.w, h: b.h, door: b.door });
+      }
     }
 
     // Landmarks & League
     if (nodes.powerplant) {
-      canonicalBuildings.push(
-        { style: 'power_plant', x: pp.px - 100, y: pp.py - 60, w: 320, h: 208, door: { x: 5, y: 6 } }
-      );
+      const b = KANTO_CANONICAL_BUILDINGS.powerplant;
+      canonicalBuildings.push({ style: 'power_plant', x: pp.px + b.dx, y: pp.py + b.dy, w: b.w, h: b.h, door: b.door });
     }
     if (nodes.billshouse) {
-      canonicalBuildings.push(
-        { style: 'house_teal_bungalow', x: bh.px - 50, y: bh.py - 50, w: 160, h: 160, door: { x: 1, y: 5 } }
-      );
+      const b = KANTO_CANONICAL_BUILDINGS.billshouse;
+      canonicalBuildings.push({ style: 'house_teal_bungalow', x: bh.px + b.dx, y: bh.py + b.dy, w: b.w, h: b.h, door: b.door });
     }
     if (nodes.indigo) {
-      canonicalBuildings.push(
-        { style: 'pokemon_league', x: ip.px - 160, y: ip.py - 80, w: 512, h: 208, door: { x: 8, y: 6 } }
-      );
+      const b = KANTO_CANONICAL_BUILDINGS.league;
+      canonicalBuildings.push({ style: 'pokemon_league', x: ip.px + b.dx, y: ip.py + b.dy, w: b.w, h: b.h, door: b.door });
     }
 
     canonicalBuildings.forEach((b) => placeSmartBuilding(b));
@@ -1001,8 +891,9 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     // Pewter City Civic Stone Plaza (authentically paves the open courtyard between Museum, Gym, Center & School)
     if (nodes.pewter) {
       const pwT = this.nodeToTile(nodes.pewter.x, nodes.pewter.y);
-      for (let dy = -7; dy <= 4; dy++) {
-        for (let dx = -7; dx <= 5; dx++) {
+      const plaza = PEWTER_PLAZA_BOUNDS;
+      for (let dy = plaza.minDy; dy <= plaza.maxDy; dy++) {
+        for (let dx = plaza.minDx; dx <= plaza.maxDx; dx++) {
           const gx = pwT.tx + dx;
           const gy = pwT.ty + dy;
           if (gx >= 0 && gx < KANTO_GRID_W && gy >= 0 && gy < KANTO_GRID_H) {
@@ -1022,103 +913,99 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
 
   private placeRouteInfrastructure(nodes?: Record<string, KantoNodeCoordinate>): void {
     const T = KANTO_TILE_SIZE;
-    const ptTile = nodes?.pallet ? this.nodeToTile(nodes.pallet.x, nodes.pallet.y) : { tx: 39, ty: 109 };
+    const ptTile = nodes?.pallet ? this.nodeToTile(nodes.pallet.x, nodes.pallet.y) : KANTO_FALLBACK_NODES.pallet;
+    const r1Inf = ROUTE_1_INFRASTRUCTURE;
 
     // 1. Route 1 South Exit Picket Fence (FireRed Route 1 border with 2-tile gap)
-    for (let x = ptTile.tx - 6; x <= ptTile.tx - 2; x++) {
-      this.props.push({ style: 'poke_fence_picket', x: x * T, y: (ptTile.ty - 9) * T });
+    for (let x = ptTile.tx + r1Inf.exitFenceLeft.minDx; x <= ptTile.tx + r1Inf.exitFenceLeft.maxDx; x++) {
+      this.props.push({ style: 'poke_fence_picket', x: x * T, y: (ptTile.ty + r1Inf.exitFenceLeft.offsetTy) * T });
     }
-    for (let x = ptTile.tx + 2; x <= ptTile.tx + 6; x++) {
-      this.props.push({ style: 'poke_fence_picket', x: x * T, y: (ptTile.ty - 9) * T });
+    for (let x = ptTile.tx + r1Inf.exitFenceRight.minDx; x <= ptTile.tx + r1Inf.exitFenceRight.maxDx; x++) {
+      this.props.push({ style: 'poke_fence_picket', x: x * T, y: (ptTile.ty + r1Inf.exitFenceRight.offsetTy) * T });
     }
 
     // 2. Pallet Town Flowerbed (Left of Oak Lab)
-    for (let x = ptTile.tx - 6; x <= ptTile.tx - 2; x++) {
-      this.props.push({ style: 'poke_fence_picket', x: x * T, y: ptTile.ty * T });
+    for (let x = ptTile.tx + r1Inf.labFence.minDx; x <= ptTile.tx + r1Inf.labFence.maxDx; x++) {
+      this.props.push({ style: 'poke_fence_picket', x: x * T, y: (ptTile.ty + r1Inf.labFence.offsetTy) * T });
     }
-    for (let dy = 1; dy <= 2; dy++) {
-      for (let x = ptTile.tx - 5; x <= ptTile.tx - 2; x++) {
+    for (let dy = r1Inf.flowerbed.minDy; dy <= r1Inf.flowerbed.maxDy; dy++) {
+      for (let x = ptTile.tx + r1Inf.flowerbed.minDx; x <= ptTile.tx + r1Inf.flowerbed.maxDx; x++) {
         this.props.push({ style: 'poke_flowers_red', x: x * T, y: (ptTile.ty + dy) * T });
       }
     }
 
     // 3. Pallet Town Fence below Oak Lab
-    for (let x = ptTile.tx + 1; x <= ptTile.tx + 6; x++) {
-      this.props.push({ style: 'poke_fence_picket', x: x * T, y: (ptTile.ty + 7) * T });
+    for (let x = ptTile.tx + r1Inf.lowerFence.minDx; x <= ptTile.tx + r1Inf.lowerFence.maxDx; x++) {
+      this.props.push({ style: 'poke_fence_picket', x: x * T, y: (ptTile.ty + r1Inf.lowerFence.offsetTy) * T });
     }
 
     // 4. Mailboxes next to houses
-    this.props.push({ style: 'poke_mailbox', x: (ptTile.tx - 7) * T, y: (ptTile.ty - 3) * T });
-    this.props.push({ style: 'poke_mailbox', x: (ptTile.tx + 1) * T, y: (ptTile.ty - 3) * T });
+    r1Inf.mailboxes.forEach((m) => {
+      this.props.push({ style: 'poke_mailbox', x: (ptTile.tx + m.dx) * T, y: (ptTile.ty + m.dy) * T });
+    });
 
     // 5. Wooden Signposts
-    this.props.push({ style: 'poke_signpost', x: (ptTile.tx - 6) * T, y: (ptTile.ty + 3) * T }); // Pallet Town board
-    this.props.push({ style: 'poke_signpost', x: (ptTile.tx - 1) * T, y: (ptTile.ty - 8) * T }); // Route 1 signpost
+    r1Inf.signposts.forEach((s) => {
+      this.props.push({ style: 'poke_signpost', x: (ptTile.tx + s.dx) * T, y: (ptTile.ty + s.dy) * T });
+    });
 
     // 6. Route 1 Flower Accents
-    this.props.push({ style: 'poke_flowers_red', x: (ptTile.tx - 5) * T, y: (ptTile.ty - 14) * T });
-    this.props.push({ style: 'poke_flowers_red', x: (ptTile.tx + 5) * T, y: (ptTile.ty - 18) * T });
+    r1Inf.flowers.forEach((f) => {
+      this.props.push({ style: 'poke_flowers_red', x: (ptTile.tx + f.dx) * T, y: (ptTile.ty + f.dy) * T });
+    });
 
     // 7. Mt. Moon Infrastructure
     if (nodes?.mtmoon) {
       const mmT = this.nodeToTile(nodes.mtmoon.x, nodes.mtmoon.y);
+      const mmInf = MT_MOON_INFRASTRUCTURE;
       // Pave authentic sand paths connecting South approach -> Pokemon Center -> Cave
-      this.rasterizePath(this.grid, mmT.tx - 7, mmT.ty + 8, mmT.tx - 7, mmT.ty + 3, 2);
-      this.rasterizePath(this.grid, mmT.tx - 7, mmT.ty + 1, mmT.tx, mmT.ty + 1, 2);
-      this.rasterizePath(this.grid, mmT.tx, mmT.ty + 1, mmT.tx, mmT.ty - 3, 2);
+      this.rasterizePath(this.grid, mmT.tx + mmInf.pathWestApproach.x0, mmT.ty + mmInf.pathWestApproach.y0, mmT.tx + mmInf.pathWestApproach.x1, mmT.ty + mmInf.pathWestApproach.y1, 2);
+      this.rasterizePath(this.grid, mmT.tx + mmInf.pathCenterApproach.x0, mmT.ty + mmInf.pathCenterApproach.y0, mmT.tx + mmInf.pathCenterApproach.x1, mmT.ty + mmInf.pathCenterApproach.y1, 2);
+      this.rasterizePath(this.grid, mmT.tx + mmInf.pathCaveApproach.x0, mmT.ty + mmInf.pathCaveApproach.y0, mmT.tx + mmInf.pathCaveApproach.x1, mmT.ty + mmInf.pathCaveApproach.y1, 2);
 
       // Cave mouth embedded flush into 2-tile cliff wall (Row 26 top rim, Row 27 face)
       this.props.push({
         style: 'poke_cave_entrance_mtmoon',
-        x: mmT.tx * T,
-        y: (mmT.ty - 5) * T,
-        w: 32,
-        h: 64
+        x: (mmT.tx + mmInf.caveEntrance.dx) * T,
+        y: (mmT.ty + mmInf.caveEntrance.dy) * T,
+        w: mmInf.caveEntrance.w,
+        h: mmInf.caveEntrance.h
       });
 
       // Canonical stone stairs connecting ground (Row 28) to upper terrace (Row 26)
       this.nature.push({
         style: 'poke_stairs_mtmoon',
-        x: (mmT.tx + 5) * T,
-        y: (mmT.ty - 4) * T,
-        w: 64,
-        h: 32
+        x: (mmT.tx + mmInf.stairs.dx) * T,
+        y: (mmT.ty + mmInf.stairs.dy) * T,
+        w: mmInf.stairs.w,
+        h: mmInf.stairs.h
       });
 
       // Canonical Signpost near the cave entrance
       this.props.push({
         style: 'poke_signpost',
-        x: (mmT.tx - 1) * T,
-        y: (mmT.ty - 2) * T,
-        w: 32,
-        h: 32
+        x: (mmT.tx + mmInf.signpost.dx) * T,
+        y: (mmT.ty + mmInf.signpost.dy) * T,
+        w: mmInf.signpost.w,
+        h: mmInf.signpost.h
       });
 
       // Decorative ground boulders (Mt. Moon valley)
-      this.props.push({ style: 'poke_rock_small', x: (mmT.tx - 9) * T, y: (mmT.ty - 1) * T, w: 32, h: 32 });
-      this.props.push({ style: 'poke_rock_small', x: (mmT.tx - 3) * T, y: (mmT.ty + 3) * T, w: 32, h: 32 });
-      this.props.push({ style: 'poke_rock_small', x: (mmT.tx + 3) * T, y: (mmT.ty - 1) * T, w: 32, h: 32 });
-      this.props.push({ style: 'poke_rock_small', x: (mmT.tx + 6) * T, y: (mmT.ty + 4) * T, w: 32, h: 32 });
+      mmInf.boulders.forEach((b) => {
+        this.props.push({ style: 'poke_rock_small', x: (mmT.tx + b.dx) * T, y: (mmT.ty + b.dy) * T, w: b.w, h: b.h });
+      });
     }
   }
 
   private placeLedges(nodes: Record<string, KantoNodeCoordinate>): void {
     const T = KANTO_TILE_SIZE;
-    const pt = nodes.pallet ? this.nodeToTile(nodes.pallet.x, nodes.pallet.y) : { tx: 39, ty: 109 };
-    const mm = nodes.mtmoon ? this.nodeToTile(nodes.mtmoon.x, nodes.mtmoon.y) : { tx: 62, ty: 31 };
+    const pt = nodes.pallet ? this.nodeToTile(nodes.pallet.x, nodes.pallet.y) : KANTO_FALLBACK_NODES.pallet;
+    const mm = nodes.mtmoon ? this.nodeToTile(nodes.mtmoon.x, nodes.mtmoon.y) : KANTO_FALLBACK_NODES.mtmoon;
 
     // Route 1 & Route 4 authentic canonical ledges (matching FireRed GBA)
     const ledgesConfig = [
-      { y: pt.ty - 11, x0: pt.tx - 6, x1: pt.tx - 3 },
-      { y: pt.ty - 11, x0: pt.tx + 2, x1: pt.tx + 6 },
-      { y: pt.ty - 16, x0: pt.tx - 6, x1: pt.tx },
-      { y: pt.ty - 22, x0: pt.tx + 1, x1: pt.tx + 6 },
-      { y: pt.ty - 27, x0: pt.tx - 6, x1: pt.tx - 2 },
-      // Route 4 eastward jumpable ledges (in the valley, east of Pokemon Center)
-      { y: mm.ty + 2, x0: mm.tx - 4, x1: mm.tx - 1 },
-      { y: mm.ty + 5, x0: mm.tx - 4, x1: mm.tx + 1 },
-      { y: mm.ty + 5, x0: mm.tx + 4, x1: mm.tx + 10 },
-      { y: mm.ty + 8, x0: mm.tx + 3, x1: mm.tx + 10 }
+      ...KANTO_LEDGES_OFFSETS.route1.map((l) => ({ y: pt.ty + l.dy, x0: pt.tx + l.dx0, x1: pt.tx + l.dx1 })),
+      ...KANTO_LEDGES_OFFSETS.route4.map((l) => ({ y: mm.ty + l.dy, x0: mm.tx + l.dx0, x1: mm.tx + l.dx1 }))
     ];
 
     const placedLedges: Array<{ x: number; y: number }> = [];
@@ -1152,7 +1039,7 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     const g = this.grid;
     const T = KANTO_TILE_SIZE;
 
-    const simplex = new SimplexNoise(this.seed + 101);
+    const simplex = new SimplexNoise(this.seed + BIOME_LATITUDE_TRANSITION.seedOffset);
 
     // 1. Continuous Dense Forest Wall: Staggered brick overlap placement (interlocking canopies)
     for (let gy = 0; gy < KANTO_GRID_H - 1; gy += 2) {
@@ -1164,8 +1051,8 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
           if (!this.occupancy.has(gx, gy, OCCUPANCY_FLAGS.ROAD | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.WATER)) {
             // Buffer around cliffs: trees must not overlap cliff perimeters (1 tile horizontal, 2 tiles vertical)
             let nearCliff = false;
-            for (let cdy = -2; cdy <= 2; cdy++) {
-              for (let cdx = -1; cdx <= 2; cdx++) {
+            for (let cdy = -BIOME_LATITUDE_TRANSITION.cliffBufferVert; cdy <= BIOME_LATITUDE_TRANSITION.cliffBufferVert; cdy++) {
+              for (let cdx = -1; cdx <= BIOME_LATITUDE_TRANSITION.cliffBufferHoriz; cdx++) {
                 const cx = gx + cdx;
                 const cy = gy + cdy;
                 if (cx >= 0 && cx < KANTO_GRID_W && cy >= 0 && cy < KANTO_GRID_H) {
@@ -1180,12 +1067,10 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
             if (nearCliff) continue;
 
             // Organic biome species assignment:
-            // Continuous latitude noise transition around gy = 36 (spread across gy = 28..44)
-            // Mountain and high elevation zones (elev >= 2) -> 100% Alpine pine
             const elevVal = this.elevation[gy]?.[gx] ?? 1;
-            const latitudeFactor = (36 - gy) / 10;
-            const noiseVal = simplex.noise2D(gx * 0.12, gy * 0.12) * 0.8;
-            const isAlpine = elevVal >= 2 || (latitudeFactor + noiseVal > 0.1);
+            const latitudeFactor = (BIOME_LATITUDE_TRANSITION.centerGy - gy) / BIOME_LATITUDE_TRANSITION.divisor;
+            const noiseVal = simplex.noise2D(gx * BIOME_LATITUDE_TRANSITION.noiseFreq, gy * BIOME_LATITUDE_TRANSITION.noiseFreq) * BIOME_LATITUDE_TRANSITION.noiseAmp;
+            const isAlpine = elevVal >= 2 || (latitudeFactor + noiseVal > BIOME_LATITUDE_TRANSITION.alpineThreshold);
             const style = isAlpine ? 'poke_tree_pine_small' : 'poke_tree_oak_clean';
             this.trees.push({ style, x: gx * T, y: gy * T });
           }
@@ -1196,21 +1081,17 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
     // 2. Canonical Route 1 obstacle trees inside the clearing
     if (nodes.pallet) {
       const pt = this.nodeToTile(nodes.pallet.x, nodes.pallet.y);
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (pt.tx - 3) * T, y: (pt.ty - 14) * T });
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (pt.tx - 3) * T, y: (pt.ty - 17) * T });
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (pt.tx + 2) * T, y: (pt.ty - 20) * T });
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (pt.tx + 3) * T, y: (pt.ty - 20) * T });
+      for (const t of ROUTE_1_OBSTACLE_TREES) {
+        this.trees.push({ style: 'poke_tree_oak_clean', x: (pt.tx + t.dx) * T, y: (pt.ty + t.dy) * T });
+      }
     }
 
     // 3. Viridian City trees & Cuttable Tree
     if (nodes.viridian) {
       const vr = this.nodeToTile(nodes.viridian.x, nodes.viridian.y);
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (vr.tx - 7) * T, y: (vr.ty - 6) * T });
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (vr.tx - 5) * T, y: (vr.ty - 6) * T });
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (vr.tx - 3) * T, y: (vr.ty - 6) * T });
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (vr.tx + 7) * T, y: (vr.ty + 2) * T });
-      this.trees.push({ style: 'poke_tree_oak_clean', x: (vr.tx + 7) * T, y: (vr.ty - 4) * T });
-      this.trees.push({ style: 'poke_tree_cuttable', x: (vr.tx - 2) * T, y: (vr.ty + 1) * T });
+      for (const t of VIRIDIAN_CITY_TREES) {
+        this.trees.push({ style: t.style, x: (vr.tx + t.dx) * T, y: (vr.ty + t.dy) * T });
+      }
     }
 
     // 4. Viridian Forest & Pewter alpine pine framing
@@ -1219,8 +1100,8 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       const vfNode = nodes.viridianforest;
       if (vfNode) {
         const vf = this.nodeToPx(vfNode.x, vfNode.y);
-        for (let dy = -120; dy <= 120; dy += 32) {
-          for (let dx = -100; dx <= 100; dx += 32) {
+        for (let dy = VIRIDIAN_FOREST_FRAMING.minDy; dy <= VIRIDIAN_FOREST_FRAMING.maxDy; dy += VIRIDIAN_FOREST_FRAMING.stepPx) {
+          for (let dx = VIRIDIAN_FOREST_FRAMING.minDx; dx <= VIRIDIAN_FOREST_FRAMING.maxDx; dx += VIRIDIAN_FOREST_FRAMING.stepPx) {
             const gx = Math.floor((vf.px + dx) / T);
             const gy = Math.floor((vf.py + dy) / T);
             if (gx >= 0 && gx < KANTO_GRID_W && gy >= 0 && gy < KANTO_GRID_H) {
@@ -1237,22 +1118,22 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
   private placePropsAndDetails(nodes: Record<string, KantoNodeCoordinate>): void {
     // Snorlax on Route 12 and Route 16
     const r12 = nodes.route12 ? this.nodeToPx(nodes.route12.x, nodes.route12.y) : null;
-    if (r12) this.props.push({ style: 'poke_snorlax', x: r12.px - 10, y: r12.py + 40 });
+    if (r12) this.props.push({ style: 'poke_snorlax', x: r12.px + CANONICAL_PROP_OFFSETS.route12Snorlax.dx, y: r12.py + CANONICAL_PROP_OFFSETS.route12Snorlax.dy });
 
     const r16 = nodes.route16 ? this.nodeToPx(nodes.route16.x, nodes.route16.y) : null;
-    if (r16) this.props.push({ style: 'poke_snorlax', x: r16.px + 30, y: r16.py - 10 });
+    if (r16) this.props.push({ style: 'poke_snorlax', x: r16.px + CANONICAL_PROP_OFFSETS.route16Snorlax.dx, y: r16.py + CANONICAL_PROP_OFFSETS.route16Snorlax.dy });
 
     // Cuttable trees
     const vm = nodes.vermilion ? this.nodeToPx(nodes.vermilion.x, nodes.vermilion.y) : null;
-    if (vm) this.props.push({ style: 'tree_cuttable', x: vm.px - 120, y: vm.py + 25 });
+    if (vm) this.props.push({ style: 'tree_cuttable', x: vm.px + CANONICAL_PROP_OFFSETS.vermilionCutTree.dx, y: vm.py + CANONICAL_PROP_OFFSETS.vermilionCutTree.dy });
 
     // Street lamps in major cities
     ['viridian', 'pewter', 'cerulean', 'celadon', 'vermilion', 'lavender', 'fuchsia'].forEach((id) => {
       const n = nodes[id];
       if (!n) return;
       const { px, py } = this.nodeToPx(n.x, n.y);
-      this.props.push({ style: 'street_lamp', x: px - 50, y: py - 10 });
-      this.props.push({ style: 'street_lamp', x: px + 50, y: py - 10 });
+      this.props.push({ style: 'street_lamp', x: px + CANONICAL_PROP_OFFSETS.streetLampLeft.dx, y: py + CANONICAL_PROP_OFFSETS.streetLampLeft.dy });
+      this.props.push({ style: 'street_lamp', x: px + CANONICAL_PROP_OFFSETS.streetLampRight.dx, y: py + CANONICAL_PROP_OFFSETS.streetLampRight.dy });
     });
 
     const dc = nodes.diglettcave ? this.nodeToPx(nodes.diglettcave.x, nodes.diglettcave.y) : null;

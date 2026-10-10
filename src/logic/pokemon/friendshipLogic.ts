@@ -14,6 +14,8 @@ import {
 } from '@/types/pokemon/friendship.ts';
 import type { StatModifierDirection } from '@/types/battle/tooltip.ts';
 
+const SOOTHE_BELL_FRIENDSHIP_MULTIPLIER = 1.5 as const;
+
 export interface FriendshipCombatPerks {
   readonly isActive: boolean;
   readonly endureThreshold: boolean;
@@ -72,12 +74,16 @@ export function resolveFriendshipSealTier(friendship: number | undefined | null)
   return resolveFriendshipSeal(friendship).id;
 }
 
+const RETURN_FRUSTRATION_POWER_DIVISOR = 2.5 as const;
+const FRIENDSHIP_PERK_STATUS_CLEANSE_CHANCE = 0.2 as const;
+const FRIENDSHIP_PERK_EXP_MULTIPLIER = 1.2 as const;
+
 /**
  * Calculates base power of Return: floor(Friendship / 2.5), max 102.
  */
 export function calculateReturnPower(friendship: number | undefined | null): number {
   const clamped = clampFriendship(friendship);
-  return Math.max(1, Math.floor(clamped / 2.5));
+  return Math.max(1, Math.floor(clamped / RETURN_FRUSTRATION_POWER_DIVISOR));
 }
 
 /**
@@ -85,7 +91,7 @@ export function calculateReturnPower(friendship: number | undefined | null): num
  */
 export function calculateFrustrationPower(friendship: number | undefined | null): number {
   const clamped = clampFriendship(friendship);
-  return Math.max(1, Math.floor((FRIENDSHIP_BOUNDS.MAX - clamped) / 2.5));
+  return Math.max(1, Math.floor((FRIENDSHIP_BOUNDS.MAX - clamped) / RETURN_FRUSTRATION_POWER_DIVISOR));
 }
 
 /**
@@ -98,9 +104,9 @@ export function getFriendshipCombatPerks(friendship: number | undefined | null):
   return {
     isActive,
     endureThreshold: isActive,
-    statusCleanseChance: isActive ? 0.2 : 0,
+    statusCleanseChance: isActive ? FRIENDSHIP_PERK_STATUS_CLEANSE_CHANCE : 0,
     criticalStageBoost: isActive ? 1 : 0,
-    expMultiplier: isActive ? 1.2 : 1.0,
+    expMultiplier: isActive ? FRIENDSHIP_PERK_EXP_MULTIPLIER : 1.0,
   };
 }
 
@@ -173,7 +179,7 @@ export function calculateFriendshipLevelUpDelta(currentFriendship: number, hasSo
   } else if (currentFriendship < FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD) {
     baseGain = 3;
   }
-  return hasSootheBell ? Math.floor(baseGain * 1.5) : baseGain;
+  return hasSootheBell ? Math.floor(baseGain * SOOTHE_BELL_FRIENDSHIP_MULTIPLIER) : baseGain;
 }
 
 export interface FriendshipTransitionLog {

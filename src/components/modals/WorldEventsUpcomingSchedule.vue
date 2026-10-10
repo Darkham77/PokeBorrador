@@ -94,6 +94,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
         <div class="day-events-list">
           <div
             v-for="occ in group.occurrences"
+            id="world-events-upcoming-schedule-div-1"
             :key="`${occ.event.id}-${occ.startInstant.epochMilliseconds}`"
             class="upcoming-event-card"
             :class="{ 'is-active': occ.isActiveNow }"
@@ -125,6 +126,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
                 class="status-starts pixelated"
               >{{ occ.startsInLabel }}</span>
               <button
+                id="world-events-upcoming-schedule-btn-reglas-y-premios"
                 class="retro-btn details-btn pixelated"
                 @click.stop="emit('openEventDetail', occ.event, occ)"
               >
@@ -154,14 +156,14 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
 
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     margin: 0;
     color: var(--yellow);
-    font-size: 11px;
+    font-size: var(--font-11);
     line-height: 1.35;
 
     .section-title-icon {
-      font-size: 12px;
+      font-size: var(--font-12);
     }
   }
 }
@@ -169,10 +171,10 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
 .no-events {
   padding: 40px;
   border: 1px dashed Rgb(255 255 255 / 10%);
-  border-radius: 12px;
+  border-radius: $radius-xl;
   background: Rgb(255 255 255 / 2%);
   color: var(--gray);
-  font-size: 12px;
+  font-size: var(--font-12);
   text-align: center;
   grid-column: 1 / -1;
   font-style: italic;
@@ -181,12 +183,12 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
 .details-btn {
   padding: 4px 8px;
   border: 1px solid Rgb(255 255 255 / 15%);
-  border-radius: 6px;
+  border-radius: $radius-md;
   background: Rgb(255 255 255 / 6%);
   color: var(--white);
-  font-size: 7px;
+  font-size: var(--font-7);
   cursor: pointer;
-  box-shadow: 0 2px 0 Rgb(0 0 0 / 40%);
+  box-shadow: var(--shadow-retro-btn-active);
 
   &:hover:not(:disabled) {
     background: Rgb(255 255 255 / 12%);
@@ -196,7 +198,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
 
   &:active:not(:disabled) {
     transform: Translatey(1px);
-    box-shadow: 0 0 0 transparent;
+    box-shadow: none;
   }
 }
 
@@ -210,39 +212,39 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .events-section-subtitle {
     color: var(--gray);
-    font-size: 9px;
+    font-size: var(--font-9);
   }
 }
 
 .upcoming-events-grid {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: $spacing-md-lg;
 }
 
 .upcoming-day-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
 
   .day-group-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $spacing-md-alt;
     padding: 0 4px;
     margin-bottom: 2px;
 
     .day-group-badge {
       padding: 3px 8px;
       border: 1px solid Rgb(255 255 255 / 15%);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(255 255 255 / 8%);
       color: Rgb(255 255 255 / 85%);
-      font-size: 8px;
+      font-size: var(--font-8);
       font-weight: bold;
       white-space: nowrap;
       text-transform: uppercase;
@@ -265,7 +267,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
   .day-events-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $spacing-xs;
   }
 }
 
@@ -274,10 +276,10 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px 16px;
+  gap: $spacing-md $spacing-lg;
   padding: 10px 14px;
   border: 1px solid Rgb(255 255 255 / 10%);
-  border-radius: 10px;
+  border-radius: $radius-lg-alt;
   background: Rgb(30 41 59 / 60%);
   cursor: pointer;
 
@@ -285,7 +287,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     background: Rgb(30 41 59 / 90%);
     transform: Translatey(-2px);
     border-color: Rgb(250 204 21 / 40%);
-    box-shadow: 0 4px 12px Rgb(0 0 0 / 30%);
+    box-shadow: $shadow-card-subtle;
   }
 
   &.is-active {
@@ -296,7 +298,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
   .upcoming-left-column {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-sm;
     min-width: 0;
     flex: 1 1 200px;
   }
@@ -304,25 +306,25 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
   .upcoming-badge-time {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: $spacing-sm;
 
     .time-tag {
       padding: 3px 6px;
       border: 1px solid Rgb(255 255 255 / 5%);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(0 0 0 / 30%);
       color: Rgb(241 245 249 / 80%);
-      font-size: 8px;
+      font-size: var(--font-8);
     }
   }
 
   .upcoming-main-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $spacing-md;
 
     .upcoming-icon {
-      font-size: 24px;
+      font-size: var(--font-24);
       line-height: 1;
       filter: Drop-Shadow(0 2px 6px Rgb(0 0 0 / 40%));
       flex-shrink: 0;
@@ -331,18 +333,18 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     .upcoming-texts {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: $spacing-xs-alt;
       min-width: 0;
 
       .upcoming-title {
         color: var(--white);
-        font-size: 11px;
+        font-size: var(--font-11);
         line-height: 1.35;
       }
 
       .upcoming-desc {
         color: var(--gray);
-        font-size: 9px;
+        font-size: var(--font-9);
         line-height: 1.45;
         padding-bottom: 2px;
         white-space: nowrap;
@@ -356,43 +358,43 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 8px;
+    gap: $spacing-sm;
     flex-shrink: 0;
 
     .status-live {
       padding: 3px 8px;
       border: 1px solid Rgb(74 222 128 / 30%);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(74 222 128 / 15%);
       color: var(--green-bright);
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1.35;
     }
 
     .status-starts {
       padding: 3px 8px;
       border: 1px solid Rgb(250 204 21 / 20%);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       background: Rgb(250 204 21 / 10%);
       color: var(--yellow);
-      font-size: 8px;
+      font-size: var(--font-8);
       line-height: 1.35;
     }
 
     .details-btn {
       padding: 4px 8px;
-      font-size: 7px;
+      font-size: var(--font-7);
     }
   }
 }
 
 @media (width <= 480px) {
   .upcoming-event-card {
-    gap: 8px 10px;
+    gap: $spacing-sm $spacing-md-alt;
     padding: 8px 10px;
 
     .upcoming-main-info {
-      gap: 8px;
+      gap: $spacing-sm;
     }
 
     .upcoming-right-column {

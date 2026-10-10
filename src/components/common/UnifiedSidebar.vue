@@ -71,6 +71,7 @@ const sidebarBorderColor = computed(() => {
   <aside class="unified-sidebar custom-scrollbar">
     <button
       v-for="cat in categories"
+      id="unified-sidebar-btn-1"
       :key="cat.id"
       class="cat-btn"
       :class="{ active: activeCategory === cat.id }"

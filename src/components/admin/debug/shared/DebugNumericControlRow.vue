@@ -152,11 +152,11 @@ const isDefaultActive = () => {
 .debug-numeric-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-sm-alt;
   padding: 8px 10px;
-  border: 1px solid rgb(255 255 255 / 6%);
-  border-radius: 6px;
-  background: rgb(255 255 255 / 2%);
+  border: 1px solid Rgb(255 255 255 / 6%);
+  border-radius: $radius-md;
+  background: Rgb(255 255 255 / 2%);
 }
 
 .row-header {
@@ -167,22 +167,22 @@ const isDefaultActive = () => {
   .label-group {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: $spacing-sm-alt;
     cursor: help;
 
     .row-icon {
-      font-size: 10px;
+      font-size: var(--font-10);
     }
 
     .row-label {
       @include pixelated;
 
       color: var(--white);
-      font-size: 8px;
+      font-size: var(--font-8);
     }
 
     .info-badge {
-      font-size: 7px;
+      font-size: var(--font-7);
       opacity: 0.6;
     }
   }
@@ -190,36 +190,36 @@ const isDefaultActive = () => {
   .default-tag {
     @include pixelated;
 
-    color: rgb(148 163 184 / 75%);
-    font-size: 7px;
+    color: Rgb(148 163 184 / 75%);
+    font-size: var(--font-7);
   }
 }
 
 .row-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-sm;
 
   .input-wrapper {
     display: flex;
     align-items: center;
     height: 26px;
     padding: 0 4px;
-    border: 1px solid rgb(255 255 255 / 15%);
-    border-radius: 4px;
-    background: rgb(0 0 0 / 40%);
+    border: 1px solid Rgb(255 255 255 / 15%);
+    border-radius: $radius-sm;
+    background: Rgb(0 0 0 / 40%);
 
     &:focus-within {
       border-color: var(--green);
-      box-shadow: 0 0 8px rgb(34 197 94 / 25%);
+      box-shadow: var(--shadow-glow-green);
     }
 
     .affix {
       @include pixelated;
 
       padding: 0 2px;
-      color: rgb(255 255 255 / 70%);
-      font-size: 8px;
+      color: Rgb(255 255 255 / 70%);
+      font-size: var(--font-8);
       user-select: none;
     }
 
@@ -231,7 +231,7 @@ const isDefaultActive = () => {
       border: none;
       background: transparent;
       color: var(--white);
-      font-size: 9px;
+      font-size: var(--font-9);
 
       &:focus {
         outline: none;
@@ -241,7 +241,7 @@ const isDefaultActive = () => {
 
   .presets-row {
     display: flex;
-    gap: 4px;
+    gap: $spacing-xs;
     flex: 1;
 
     .preset-btn {
@@ -252,17 +252,17 @@ const isDefaultActive = () => {
       min-width: 0;
       height: 26px;
       padding: 0 4px;
-      font-size: 7px;
+      font-size: var(--font-7);
       flex: 1;
 
       &.default-btn {
-        color: #93c5fd;
+        color: var(--blue-300);
         flex: 1.1;
-        border-color: rgb(59 130 246 / 40%);
+        border-color: Rgb(59 130 246 / 40%);
 
         &:hover, &.active {
-          background: rgb(59 130 246 / 30%);
-          color: white;
+          background: Rgb(59 130 246 / 30%);
+          color: var(--white);
         }
       }
     }

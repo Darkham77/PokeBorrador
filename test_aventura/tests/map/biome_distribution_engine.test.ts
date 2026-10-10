@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { SimplexNoise, fbm2DNormalized } from '../../../src/logic/map/noise/simplexNoise';
-import { computeBiomeDistribution } from '../../../src/logic/map/biomeDistributionEngine';
+import { SimplexNoise, fbm2DNormalized } from '../../logic/map/noise/simplexNoise.ts';
+import { computeBiomeDistribution } from '../../logic/map/biomeDistributionEngine.ts';
 
 describe('Simplex Noise 2D & FBM Generator', () => {
   it('generates deterministic noise in [-1.0, 1.0]', () => {

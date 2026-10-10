@@ -124,6 +124,8 @@ export function calculateFinalPower(
  */
 const NEVER_MISS_ACCURACY_THRESHOLD = 1000
 const SUN_ACCURACY_PENALIZED_THUNDER_HURRICANE = 50
+const FOG_ACCURACY_MULTIPLIER_MIST = 0.8 as const;
+const FOG_ACCURACY_MULTIPLIER_DEFAULT = 0.6 as const;
 
 function applyWeatherAccuracyModifier(
   baseAcc: number,
@@ -145,7 +147,7 @@ function applyWeatherAccuracyModifier(
   }
   if (mechWeather === WEATHER_MECHANICAL.FOG) {
     const isMist = weather === 'mist' || weather === 'mist_visual'
-    return Math.floor(baseAcc * (isMist ? 0.8 : 0.6))
+    return Math.floor(baseAcc * (isMist ? FOG_ACCURACY_MULTIPLIER_MIST : FOG_ACCURACY_MULTIPLIER_DEFAULT))
   }
   return baseAcc
 }
