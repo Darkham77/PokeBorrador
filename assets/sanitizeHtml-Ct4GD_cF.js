@@ -1,0 +1,1 @@
+var e=/<\s*(?:script|iframe|object|embed|applet|form|meta|link|style)\b[^<]*(?:(?!<\/(?:script|iframe|object|embed|applet|form|meta|link|style)>)<[^<]*)*<\/(?:script|iframe|object|embed|applet|form|meta|link|style)>|<\s*(?:script|iframe|object|embed|applet|form|meta|link|style)\b[^>]*>|on\w+\s*=\s*(?:["'][^"']*["']|[^\s>]+)/gi;function t(t){return t?t.replace(e,``):``}export{t};

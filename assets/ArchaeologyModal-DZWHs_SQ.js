@@ -1,1 +1,0 @@
-export{t as default}from"./ArchaeologyModal-KcWch9kJ.js";

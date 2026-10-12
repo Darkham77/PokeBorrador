@@ -1,0 +1,1 @@
+export{t as useWarStore}from"./war-YWIk1Icp.js";

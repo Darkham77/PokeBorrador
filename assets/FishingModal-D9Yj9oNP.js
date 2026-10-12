@@ -1,1 +1,0 @@
-export{t as default}from"./FishingModal-CpMJ6xiv.js";
