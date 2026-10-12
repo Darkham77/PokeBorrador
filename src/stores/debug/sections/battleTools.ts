@@ -438,14 +438,14 @@ function applyBattleStageEffect(stages: Record<string, number> | undefined, effe
   if (!stages) return
   const stageKey = effect === 'lightscreen' ? 'lightScreen' : effect
   if (!STAGE_EFFECT_SET.has(stageKey as (typeof STAGE_EFFECT_KEYS)[number])) return
-  // Lógica FLIP: si ya tiene el efecto (>0), lo quitamos (0). Si no, lo ponemos (val o 5).
+  // FLIP logic: if it already has the effect (>0), remove it (0). Otherwise, set it (val or 5).
   stages[stageKey] = (stages[stageKey] || 0) > 0 ? 0 : (parseInt(val, RADIX_DECIMAL) || DEFAULT_STAGE_EFFECT_DURATION)
 }
 
 function applyBattleWeatherEffect(battleState: ReturnType<typeof useBattleStore>['state'], effect: string, val: string): void {
   if (!battleState || !isWeatherId(effect) || !isDebugFieldWeatherId(effect)) return
   const current = battleState.weather?.type
-  // Lógica FLIP: si el clima actual es el mismo que tocamos, lo limpiamos.
+  // FLIP logic: if current weather matches clicked weather, clear it.
   if (current === effect && effect !== 'clear') {
     battleState.weather = { type: 'clear', visual: 'clear', turns: INFINITE_WEATHER_TURNS }
   } else {

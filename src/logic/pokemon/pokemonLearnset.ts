@@ -9,10 +9,10 @@ import { getSpeciesEggMoves } from '@/data/pokemon/eggMoves';
 const MAX_LEGAL_RANDOM_MOVE_SLOTS = 4 as const;
 
 /**
- * Verifica si un Pokémon puede aprender un determinado movimiento según la base de datos precomputada.
- * Revisa el linaje evolutivo completo de la especie (pre-evoluciones) en la BD canónica.
- * Si se especifica `level`, los movimientos aprendidos por nivel requieren `learnLevel <= level`.
- * Los movimientos compatibles (TM, Tutor, Egg, Especial, transferencias pasadas) son legales a cualquier nivel.
+ * Checks if a Pokémon can learn a specific move according to the precomputed database.
+ * Inspects full evolutionary lineage (pre-evolutions) in the canonical DB.
+ * If `level` is specified, level-up moves require `learnLevel <= level`.
+ * Compatible moves (TM, Tutor, Egg, Special, past transfers) are legal at any level.
  */
 export function canLearnMove(speciesId: PokemonSpeciesId, moveId: PokemonMoveId, level?: number): boolean {
   if (!speciesId || !moveId) return false;
@@ -73,8 +73,8 @@ function collectSpeciesStaticMoves(
 }
 
 /**
- * Obtiene la lista completa de movimientos legales para una especie dada y un nivel opcional.
- * Incluye movimientos aprendidos a través de pre-evoluciones y movimientos compatibles.
+ * Gets the complete list of legal moves for a given species and optional level.
+ * Includes moves learned through pre-evolutions and compatible moves.
  */
 export function getLegalSpeciesMoves(speciesId: PokemonSpeciesId, level?: number): PokemonMoveId[] {
   if (!speciesId) return [];
@@ -99,7 +99,7 @@ export function getLegalSpeciesMoves(speciesId: PokemonSpeciesId, level?: number
 }
 
 /**
- * Calcula la cantidad máxima de movimientos legales que puede poseer un Pokémon según su nivel.
+ * Calculates maximum number of legal moves a Pokémon can know based on its level.
  */
 export function getMaxAllowedMoves(speciesId: PokemonSpeciesId, level: number): number {
   if (!speciesId || !isPokemonDbSpeciesId(speciesId)) return 1;
@@ -108,9 +108,9 @@ export function getMaxAllowedMoves(speciesId: PokemonSpeciesId, level: number): 
 }
 
 /**
- * Selecciona hasta `maxSlots` movimientos legales aleatorios para una especie y nivel.
- * Respeta la cantidad máxima de movimientos que el Pokémon puede conocer a ese nivel
- * y rellena los slots restantes con `null`.
+ * Selects up to `maxSlots` random legal moves for a species and level.
+ * Respects maximum number of moves the Pokémon can know at that level
+ * and fills remaining slots with `null`.
  */
 export function getRandomLegalMoves(
   speciesId: PokemonSpeciesId,

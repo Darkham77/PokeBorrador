@@ -146,7 +146,7 @@ watch(() => battleStore.currentSubState, (subState) => {
   }
 }, { immediate: true });
 
-// Auto-combatir: Inicia el encuentro automáticamente si está activado
+// Auto-battle: Automatically start encounter if enabled
 watch(() => [
   battleStore.isSearching,
   battleStore.currentSubState,
@@ -187,7 +187,7 @@ watch(() => [
   }
 }, { immediate: true });
 
-// Auto-ejecución de turnos forzados y bloqueados
+// Auto-execution for forced and locked turns
 watch(() => [
   battleStore.currentSubState,
   battleStore.isProcessing,

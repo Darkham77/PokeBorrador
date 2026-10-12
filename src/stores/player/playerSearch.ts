@@ -119,6 +119,10 @@ interface SearchPayload {
   relRes: { data: FriendshipRow[] | null };
 }
 
+const SEARCH_PROFILES_COLUMNS = 'id, username, email, faction, player_class, trainer_level, avatar_style, nick_style, pvp_wins, pvp_losses, elo_rating, created_at, gender, badges'
+const SEARCH_SAVES_COLUMNS = 'user_id, save_data, updated_at'
+const SEARCH_FRIENDSHIPS_COLUMNS = 'id, requester_id, addressee_id, status'
+
 async function fetchOfflineSearchData(
   db: NonNullable<ReturnType<typeof useGameStore>['db']>,
   query: string,
@@ -126,11 +130,12 @@ async function fetchOfflineSearchData(
   filters?: { playerClass?: string; faction?: string }
 ): Promise<SearchPayload> {
   const [profRes, allSavesRes, allRelsRes] = await Promise.all([
-    db.from('profiles').select('*'),
-    db.from('game_saves').select('*'),
+    db.from('profiles').select(SEARCH_PROFILES_COLUMNS).limit(PLAYER_SEARCH_MAX_RESULTS),
+    db.from('game_saves').select(SEARCH_SAVES_COLUMNS).limit(PLAYER_SEARCH_MAX_RESULTS),
     db.from('friendships')
-      .select('*')
+      .select(SEARCH_FRIENDSHIPS_COLUMNS)
       .or(`requester_id.eq.${authUserUid},addressee_id.eq.${authUserUid}`)
+      .limit(PLAYER_SEARCH_MAX_RESULTS)
   ]) as [
     { data: ProfileRow[] | null },
     { data: GameSaveRow[] | null },
@@ -159,7 +164,7 @@ async function fetchOnlineSearchData(
 ): Promise<SearchPayload> {
   let builder = db
     .from('profiles')
-    .select('*')
+    .select(SEARCH_PROFILES_COLUMNS)
     .ilike('username', `%${query}%`)
     .neq('id', authUserUid);
 
@@ -177,10 +182,11 @@ async function fetchOnlineSearchData(
 
   const ids = profiles.map((p: ProfileRow) => p.id);
   const [savesData, relsData] = await Promise.all([
-    db.from('game_saves').select('user_id,save_data').in('user_id', ids),
+    db.from('game_saves').select('user_id,save_data').in('user_id', ids).limit(PLAYER_SEARCH_MAX_RESULTS),
     db.from('friendships')
-      .select('*')
+      .select(SEARCH_FRIENDSHIPS_COLUMNS)
       .or(`requester_id.eq.${authUserUid},addressee_id.eq.${authUserUid}`)
+      .limit(PLAYER_SEARCH_MAX_RESULTS)
   ]) as [
     { data: GameSaveRow[] | null },
     { data: FriendshipRow[] | null }

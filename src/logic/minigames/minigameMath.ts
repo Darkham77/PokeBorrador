@@ -74,7 +74,12 @@ export function calculateFishingHitWindow(rarity: number): number {
  * @param isMountain - True if the map is a mountain.
  * @returns The encounter probability (0.0, 0.05, or 0.10).
  */
-export function calculateArchaeologyEncounterRate(isCave: boolean, isMountain: boolean): number {
+export interface ArchaeologyTerrainFlags {
+  isCave: boolean
+  isMountain: boolean
+}
+
+export function calculateArchaeologyEncounterRate({ isCave, isMountain }: ArchaeologyTerrainFlags): number {
   if (isCave) return ARCHAEOLOGY_CAVE_ENCOUNTER_RATE;
   if (isMountain) return ARCHAEOLOGY_MOUNTAIN_ENCOUNTER_RATE;
   return 0.00;

@@ -197,7 +197,7 @@ export function usePokemonActions(
         getItemById(requireItemId(key));
       }
     }
-    // Migración automática: Mover Pokémon del equipo ocupados (guardería, misión, evento, defensa) a la caja PC
+    // Automatic migration: Move occupied team Pokémon (daycare, mission, event, defense) to PC box
     const teamToKeep: Pokemon[] = []
     const teamToMove: Pokemon[] = []
     
@@ -211,7 +211,7 @@ export function usePokemonActions(
     })
 
     if (teamToMove.length > 0) {
-      // Si moverlos a todos dejaría el equipo completamente vacío, preservamos el primero ocupado en el equipo
+      // If moving all leaves the team completely empty, preserve the first occupied Pokémon in team
       if (teamToKeep.length === 0 && teamToMove.length > 0) {
         const first = teamToMove.shift()
         if (first) teamToKeep.push(first)
@@ -240,7 +240,7 @@ export function usePokemonActions(
       });
     }
 
-    // Saneamiento de timers de buffs activos del jugador (Basado en el valor máximo definido por los objetos en SHOP_ITEMS)
+    // Player active buff timers sanitation (Based on maximum value defined by SHOP_ITEMS)
     BUFF_FIELDS.forEach(field => {
       const val = state[field]
       if (val !== undefined && typeof val === 'number') {

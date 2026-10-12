@@ -7,7 +7,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { ABILITY_TRANSLATIONS_ES } from '../../../src/data/battle/abilities.ts';
 import { Dex, toID } from '@pkmn/sim';
@@ -36,7 +36,7 @@ export const ABILITY_RULES: readonly AbilityRuleId[] = [
 export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(ABILITY_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -46,7 +46,7 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_abilities',
       configKey: 'domain.abilities',
       defaultConfig: {
@@ -89,86 +89,82 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
     return gameAbilities;
   }
 
-  private validateAbilityTranslation(abId: AbilityTranslationId, tag: string): void {
-    if (!hasAbilityTranslation(abId)) {
-      this.addViolation({
-        ruleId: 'ability-missing-translation',
-        severity: 'error',
-        file: 'src/data/battle/abilities.ts',
-        line: 1,
-        message: `${tag} Missing Spanish translation registered in abilities.ts.`,
-        context: abId
-      });
-      return;
-    }
-
-    const trans = ABILITY_TRANSLATIONS_ES[abId];
-    if (!trans.name?.trim()) {
-      this.addViolation({
-        ruleId: 'ability-empty-field',
-        severity: 'error',
-        file: 'src/data/battle/abilities.ts',
-        line: 1,
-        message: `${tag} Has empty Spanish name.`,
-        context: `${abId}.name`
-      });
-    }
-    if (!trans.desc?.trim()) {
-      this.addViolation({
-        ruleId: 'ability-empty-field',
-        severity: 'error',
-        file: 'src/data/battle/abilities.ts',
-        line: 1,
-        message: `${tag} Has empty description.`,
-        context: `${abId}.desc`
-      });
-    }
-    if (!trans.icon || trans.icon.trim() === '') {
-      this.addViolation({
-        ruleId: 'ability-empty-field',
-        severity: 'error',
-        file: 'src/data/battle/abilities.ts',
-        line: 1,
-        message: `${tag} Has empty icon.`,
-        context: `${abId}.icon`
-      });
-    }
-  }
-
-  private validateSingleAbility(abId: AbilityTranslationId): void {
-    const tag = `[${abId}]`;
-    const ability = Dex.abilities.get(abId);
-
-    if (!ability || !ability.exists) {
-      this.addViolation({
-        ruleId: 'ability-invalid-showdown',
-        severity: 'error',
-        file: 'src/data/battle/abilities.ts',
-        line: 1,
-        message: `${tag} Not a valid official ability in Dex.`,
-        context: abId
-      });
-      return;
-    }
-
-    this.validateAbilityTranslation(abId, tag);
-  }
-
   public override async runAudit(): Promise<void> {
     this.recordScanned('src/data/battle/abilities.ts');
     this.recordScanned('src/data/battle/abilities.json');
-    this.markRuleEvaluated('ability-invalid-showdown');
-    this.markRuleEvaluated('ability-missing-translation');
-    this.markRuleEvaluated('ability-empty-field');
 
-    this.context.logStep(1, 2, 'Extracting abilities for enabled species in POKEMON_DB...');
-    const gameAbilities = this.extractGameAbilities();
+    let gameAbilities: Set<AbilityTranslationId> = new Set();
+    let abilitiesList: AbilityTranslationId[] = [];
 
-    this.context.logStep(2, 2, `Validating ${gameAbilities.size} abilities against Dex and Spanish translations...`);
+    this.runSubAuditorSync('ability-invalid-showdown', () => {
+      gameAbilities = this.extractGameAbilities();
+      abilitiesList = Array.from(gameAbilities);
+      for (const abId of abilitiesList) {
+        const ability = Dex.abilities.get(abId);
+        if (!ability || !ability.exists) {
+          this.addViolation({
+            ruleId: 'ability-invalid-showdown',
+            severity: 'error',
+            file: 'src/data/battle/abilities.ts',
+            line: 1,
+            message: `[${abId}] Not a valid official ability in Dex.`,
+            context: abId
+          });
+        }
+      }
+    });
 
-    for (const abId of Array.from(gameAbilities)) {
-      this.validateSingleAbility(abId);
-    }
+    this.runSubAuditorSync('ability-missing-translation', () => {
+      for (const abId of abilitiesList) {
+        if (!hasAbilityTranslation(abId)) {
+          this.addViolation({
+            ruleId: 'ability-missing-translation',
+            severity: 'error',
+            file: 'src/data/battle/abilities.ts',
+            line: 1,
+            message: `[${abId}] Missing Spanish translation registered in abilities.ts.`,
+            context: abId
+          });
+        }
+      }
+    });
+
+    this.runSubAuditorSync('ability-empty-field', () => {
+      for (const abId of abilitiesList) {
+        if (!hasAbilityTranslation(abId)) continue;
+        const trans = ABILITY_TRANSLATIONS_ES[abId];
+        if (!trans.name?.trim()) {
+          this.addViolation({
+            ruleId: 'ability-empty-field',
+            severity: 'error',
+            file: 'src/data/battle/abilities.ts',
+            line: 1,
+            message: `[${abId}] Has empty Spanish name.`,
+            context: `${abId}.name`
+          });
+        }
+        if (!trans.desc?.trim()) {
+          this.addViolation({
+            ruleId: 'ability-empty-field',
+            severity: 'error',
+            file: 'src/data/battle/abilities.ts',
+            line: 1,
+            message: `[${abId}] Has empty description.`,
+            context: `${abId}.desc`
+          });
+        }
+        if (!trans.icon || trans.icon.trim() === '') {
+          this.addViolation({
+            ruleId: 'ability-empty-field',
+            severity: 'error',
+            file: 'src/data/battle/abilities.ts',
+            line: 1,
+            message: `[${abId}] Has empty icon.`,
+            context: `${abId}.icon`
+          });
+        }
+      }
+    });
 
     this.context.setMetric('Unique abilities validated', gameAbilities.size);
   }

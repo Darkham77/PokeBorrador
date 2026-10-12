@@ -51,6 +51,9 @@ function onLeave(el: Element, done: () => void) {
             :src="n.icon"
             alt=""
             class="toast-icon-img"
+          
+            width="32"
+            height="32"
           >
           <span
             v-else

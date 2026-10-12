@@ -10,7 +10,7 @@ import type { Move } from '@/types/pokemon/pokemon'
 const battleStore = useBattleStore()
 const player = computed(() => battleStore.player)
 
-/** True cuando todos los PP son 0 y el Pokémon no está en un ciclo forzado. */
+/** True when all PP are 0 and the Pokémon is not in a locked/forced cycle. */
 const isStruggleMode = computed(() => {
   const p = player.value
   if (!p || !p.moves) return false
@@ -22,7 +22,7 @@ const isStruggleMode = computed(() => {
 const STRUGGLE_BASE_POWER = 50
 const STRUGGLE_RECOIL_RATIO = 0.25
 
-/** Objeto Move de Struggle construido con datos reales de Showdown. */
+/** Struggle Move object built with real Showdown data. */
 const struggleMoveData = computed<Move>(() => {
   const raw = pokemonDataProvider.getMoveData('struggle') as { type?: string; power?: number; acc?: number; cat?: string } | null
   const cat = raw?.cat
@@ -70,7 +70,7 @@ const struggleMoveData = computed<Move>(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgb(10 10 20 / 82%);
+  background: rgb(var(--dark-rgb, 10, 10, 20), 0.82);
   inset: 0;
   backdrop-filter: blur(2px);
   pointer-events: all;

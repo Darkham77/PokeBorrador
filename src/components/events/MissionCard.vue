@@ -186,6 +186,9 @@ const handleImgError = (e: Event) => {
           :src="avatar" 
           :alt="title || 'Avatar de misión'"
           class="pixelated"
+          width="32"
+        
+          height="32"
           @error="handleImgError"
         >
         <span

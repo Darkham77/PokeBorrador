@@ -115,22 +115,22 @@
           font-weight: bold;
           text-transform: uppercase;
         }
+      }
 
-        .gender-symbol {
-          font-family: inherit;
-          font-size: var(--font-14);
-          font-weight: bold;
-          margin-left: 4px;
-          
-          &.male {
-            color: Rgb(59 139 255 / 100%);
-            text-shadow: 0 0 5px Rgb(59 139 255 / 50%);
-          }
-          
-          &.female {
-            color: Rgb(255 110 255 / 100%);
-            text-shadow: 0 0 5px Rgb(255 110 255 / 50%);
-          }
+      .gender-symbol {
+        font-family: inherit;
+        font-size: var(--font-14);
+        font-weight: bold;
+        margin-left: 4px;
+        
+        &.male {
+          color: Rgb(59 139 255 / 100%);
+          text-shadow: 0 0 5px Rgb(59 139 255 / 50%);
+        }
+        
+        &.female {
+          color: Rgb(255 110 255 / 100%);
+          text-shadow: 0 0 5px Rgb(255 110 255 / 50%);
         }
       }
 

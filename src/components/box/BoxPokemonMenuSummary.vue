@@ -38,7 +38,8 @@ const emit = defineEmits<{
           :src="pokemonSpriteUrl"
           :alt="pokemon.name || 'Pokémon'"
           class="menu-sprite"
-          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+          width="32"
+          height="32"
         >
       </PVSpriteFX>
     </div>

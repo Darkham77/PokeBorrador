@@ -367,6 +367,9 @@ async function handleImportStructure(): Promise<void> {
                 <img
                   :src="cell.dataUrl"
                   alt="Tile slice"
+                
+                  width="32"
+                  height="32"
                 >
               </div>
             </div>
@@ -434,6 +437,9 @@ async function handleImportStructure(): Promise<void> {
                     :src="cell.dataUrl"
                     alt="Tile"
                     class="cell-thumb"
+                  
+                    width="32"
+                    height="32"
                   >
                   <div
                     class="cell-badge"

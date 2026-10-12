@@ -94,6 +94,9 @@ function onItemImgError(e: Event): void {
           :src="_getAssetUrl(ASSET_TYPES.ITEM, item.id)" 
           :alt="item.name || 'Objeto'"
           class="i-sprite pixelated"
+          width="32"
+        
+          height="32"
           @error="onItemImgError"
         >
       </div>
@@ -159,7 +162,7 @@ function onItemImgError(e: Event): void {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @use "@/styles/core/_mixins" as *;
 
 .selectable-item-card {
@@ -344,28 +347,28 @@ function onItemImgError(e: Event): void {
     }
 
     &.shop-pill {
-      background: Linear-Gradient(135deg, #15803d, #166534);
+      background: Linear-Gradient(135deg, var(--emerald-500), var(--emerald-500));
       border-color: var(--emerald);
       .pill-label { color: var(--green-light); }
       .pill-amount { color: var(--green-light); }
     }
 
     &.min-pill {
-      background: Linear-Gradient(135deg, #0369a1, #075985);
+      background: Linear-Gradient(135deg, var(--sky-dark), var(--sky-dark));
       border-color: var(--sky);
       .pill-label { color: var(--sky); }
       .pill-amount { color: var(--blue-300); }
     }
 
     &.avg-pill {
-      background: Linear-Gradient(135deg, #6d28d9, #5b21b6);
+      background: Linear-Gradient(135deg, var(--purple-600), var(--purple-600));
       border-color: var(--purple-400);
       .pill-label { color: var(--purple-400); }
       .pill-amount { color: var(--slate-50); }
     }
 
     &.max-pill {
-      background: Linear-Gradient(135deg, #c2410c, #9a3412);
+      background: Linear-Gradient(135deg, var(--orange-500), var(--orange-500));
       border-color: var(--orange-500);
       .pill-label { color: var(--orange-400); }
       .pill-amount { color: var(--amber-300); }

@@ -18,7 +18,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/poke_cliff_brown_face.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/poke_cliff_brown_face.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -37,7 +37,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/poke_cliff_brown_top.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/poke_cliff_brown_top.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -56,7 +56,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/poke_cliff_brown_left.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/poke_cliff_brown_left.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -75,7 +75,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/poke_cliff_brown_right.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/poke_cliff_brown_right.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -94,7 +94,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/poke_cliff_gray_face.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/poke_cliff_gray_face.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -113,7 +113,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/poke_cliff_gray_top.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/poke_cliff_gray_top.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -132,7 +132,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/dirt.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/dirt.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -151,7 +151,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/grass.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/grass.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -170,7 +170,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/poke_dirt_path.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/poke_dirt_path.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -189,7 +189,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/poke_tall_grass.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/poke_tall_grass.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -208,7 +208,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/stone_plaza.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/stone_plaza.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -227,7 +227,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/poke_water_deep.png",
+      "file_path": "/test_aventura/assets/tiles/water/poke_water_deep.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -246,7 +246,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/poke_water_calm.png",
+      "file_path": "/test_aventura/assets/tiles/water/poke_water_calm.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -265,7 +265,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/poke_water_shore_tl.png",
+      "file_path": "/test_aventura/assets/tiles/water/poke_water_shore_tl.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -284,7 +284,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/poke_water_shore_c.png",
+      "file_path": "/test_aventura/assets/tiles/water/poke_water_shore_c.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -303,7 +303,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_tree_fr.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_tree_fr.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -322,7 +322,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_tree_em.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_tree_em.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -341,7 +341,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_grass_rs.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_grass_rs.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -360,7 +360,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_flower.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_flower.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -379,7 +379,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_bush.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_bush.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -398,7 +398,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/structures/tile_structures_wall.png",
+      "file_path": "/test_aventura/assets/tiles/structures/tile_structures_wall.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -417,7 +417,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/structures/tile_structures_door.png",
+      "file_path": "/test_aventura/assets/tiles/structures/tile_structures_door.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -436,7 +436,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/structures/tile_structures_roof.png",
+      "file_path": "/test_aventura/assets/tiles/structures/tile_structures_roof.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -456,7 +456,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_props_lamp.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_props_lamp.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -476,7 +476,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_props_sign.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_props_sign.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -496,7 +496,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_props_mailbox.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_props_mailbox.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -514,7 +514,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_4756bdfd4e.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_4756bdfd4e.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -532,7 +532,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_b3840e05af.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_b3840e05af.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -550,7 +550,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_35acffed79.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_35acffed79.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -568,7 +568,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_b07ce4bfe6.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_b07ce4bfe6.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -586,7 +586,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_554fe90459.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_554fe90459.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -604,7 +604,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_aeed0bb8ac.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_aeed0bb8ac.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -622,7 +622,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_93efbc410a.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_93efbc410a.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -640,7 +640,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_b8d7bb69ce.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_b8d7bb69ce.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -658,7 +658,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_3928852ac2.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_3928852ac2.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -676,7 +676,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_120d7decae.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_120d7decae.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -694,7 +694,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/terrain/tile_terrain_1938e75eaa.png",
+      "file_path": "/test_aventura/assets/tiles/terrain/tile_terrain_1938e75eaa.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -712,7 +712,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_5e550af5c2.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_5e550af5c2.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -730,7 +730,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_b2b02a5e0e.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_b2b02a5e0e.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -748,7 +748,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_f3cf81311b.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_f3cf81311b.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -766,7 +766,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_34d262e7f2.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_34d262e7f2.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -784,7 +784,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_e780c4f413.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_e780c4f413.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -802,7 +802,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_bbae919e5f.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_bbae919e5f.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -820,7 +820,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_2610e35f18.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_2610e35f18.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -838,7 +838,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_1da2cf6c52.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_1da2cf6c52.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -856,7 +856,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/water/tile_water_577cd9fb73.png",
+      "file_path": "/test_aventura/assets/tiles/water/tile_water_577cd9fb73.png",
       "collision": "water",
       "grid_x": 0,
       "grid_y": 0
@@ -874,7 +874,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_184ee2f2ca.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_184ee2f2ca.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -892,7 +892,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_13f0a9ea38.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_13f0a9ea38.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -910,7 +910,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_0036b62873.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_0036b62873.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -928,7 +928,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_6d432cbe6d.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_6d432cbe6d.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -946,7 +946,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_6b1605d4cf.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_6b1605d4cf.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -964,7 +964,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_77ac70f502.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_77ac70f502.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -982,7 +982,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_9cf406a0d5.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_9cf406a0d5.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1000,7 +1000,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_493a154ab0.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_493a154ab0.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1018,7 +1018,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_9668f2a496.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_9668f2a496.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1036,7 +1036,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_3978273469.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_3978273469.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1054,7 +1054,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_8e73525ab6.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_8e73525ab6.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1072,7 +1072,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_f4e0a51729.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_f4e0a51729.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1090,7 +1090,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_bf0a3c7024.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_bf0a3c7024.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1108,7 +1108,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_afed389c7f.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_afed389c7f.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1126,7 +1126,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_3d3a41c32d.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_3d3a41c32d.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1144,7 +1144,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_3e24e0f99d.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_3e24e0f99d.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1162,7 +1162,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_a88df6ec45.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_a88df6ec45.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1180,7 +1180,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_6be35c9857.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_6be35c9857.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1198,7 +1198,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_1e7ae8dbad.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_1e7ae8dbad.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1216,7 +1216,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_821ff1bb4d.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_821ff1bb4d.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1234,7 +1234,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_d27ee608ad.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_d27ee608ad.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1252,7 +1252,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_31defe8241.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_31defe8241.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1270,7 +1270,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_32124203a1.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_32124203a1.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1289,7 +1289,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/tile_elevation_7eccbe22e5.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/tile_elevation_7eccbe22e5.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1308,7 +1308,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/tile_elevation_10dccf3c52.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/tile_elevation_10dccf3c52.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1327,7 +1327,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/tile_elevation_e5a5b972eb.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/tile_elevation_e5a5b972eb.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1346,7 +1346,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/tile_elevation_e8e8f562ef.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/tile_elevation_e8e8f562ef.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1365,7 +1365,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/tile_elevation_84c75dc969.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/tile_elevation_84c75dc969.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1384,7 +1384,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/tile_elevation_8e2e0bd2de.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/tile_elevation_8e2e0bd2de.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1403,7 +1403,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/elevation/tile_elevation_9ee757e84a.png",
+      "file_path": "/test_aventura/assets/tiles/elevation/tile_elevation_9ee757e84a.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1421,7 +1421,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/structures/tile_structures_door_test.png",
+      "file_path": "/test_aventura/assets/tiles/structures/tile_structures_door_test.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1439,7 +1439,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_objects_props_sign_test.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_objects_props_sign_test.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -1458,7 +1458,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_objects_props_873cabc657.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_objects_props_873cabc657.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -1477,7 +1477,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_objects_props_c305f4c3fd.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_objects_props_c305f4c3fd.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1496,7 +1496,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_water_77167d265c.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_water_77167d265c.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1515,7 +1515,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_terrain_d2ff41d6a1.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_terrain_d2ff41d6a1.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1534,7 +1534,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_terrain_5065b9bc0d.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_terrain_5065b9bc0d.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1553,7 +1553,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_water_eacfe78863.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_water_eacfe78863.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1572,7 +1572,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_uncategorized_fc044b0dfa.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_uncategorized_fc044b0dfa.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1591,7 +1591,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_structures_3ec4411b84.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_structures_3ec4411b84.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1610,7 +1610,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_structures_49093abef3.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_structures_49093abef3.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1629,7 +1629,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_objects_props_66454cdc8a.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_objects_props_66454cdc8a.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1647,7 +1647,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/vegetation/tile_vegetation_bd659dae6f.png",
+      "file_path": "/test_aventura/assets/tiles/vegetation/tile_vegetation_bd659dae6f.png",
       "collision": false,
       "grid_x": 0,
       "grid_y": 0
@@ -1666,7 +1666,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_objects_props_7256ee1de0.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_objects_props_7256ee1de0.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0
@@ -1685,7 +1685,7 @@
         "width": 16,
         "height": 16
       },
-      "file_path": "/assets/tiles/objects_props/tile_objects_props_d9240538d8.png",
+      "file_path": "/test_aventura/assets/tiles/objects_props/tile_objects_props_d9240538d8.png",
       "collision": true,
       "grid_x": 0,
       "grid_y": 0

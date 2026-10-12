@@ -1,6 +1,6 @@
 /**
- * Módulo unificado para la gestión de semillas de RNG en el motor de combate de Pokémon Showdown.
- * Proporciona tipos fuertes y métodos deterministas para la creación, formateo e inyección de semillas.
+ * Unified RNG seed management module for the Pokémon Showdown battle engine.
+ * Provides strong types and deterministic methods for seed creation, formatting, and injection.
  */
 
 import type { NumericSeed } from '@/types/battle/battle';
@@ -9,7 +9,7 @@ export type { NumericSeed };
 export type ShowdownSeed = `${number},${string}`;
 
 /**
- * Genera una nueva semilla numérica aleatoria de 4 enteros de 16 bits.
+ * Generates a new random numeric seed of 4 16-bit integers.
  */
 export function generateRandomSeed(): NumericSeed {
   return [
@@ -21,7 +21,7 @@ export function generateRandomSeed(): NumericSeed {
 }
 
 /**
- * Formatea una semilla numérica de 4 elementos en la cadena de texto literal esperada por Pokémon Showdown (ej: "18588,21544,54523,34263").
+ * Formats a 4-element numeric seed into the literal string expected by Pokémon Showdown (e.g. "18588,21544,54523,34263").
  */
 export function formatToShowdownSeed(seed: NumericSeed): ShowdownSeed {
   if (!Array.isArray(seed) || seed.length !== 4) {
@@ -31,8 +31,8 @@ export function formatToShowdownSeed(seed: NumericSeed): ShowdownSeed {
 }
 
 /**
- * Parsea y normaliza cualquier semilla cruda (un array de números, un string separado por comas o undefined)
- * a una semilla numérica válida de 4 elementos.
+ * Parses and normalizes any raw seed (a number array, a comma-separated string, or undefined)
+ * into a valid 4-element numeric seed.
  */
 export function parseToNumericSeed(raw: unknown): NumericSeed {
   if (typeof raw === 'string') {
@@ -58,7 +58,7 @@ export function parseToNumericSeed(raw: unknown): NumericSeed {
 
 
 /**
- * Inyecta una semilla en el entorno de depuración global de forma segura.
+ * Safely injects a seed into the global debugging environment.
  */
 export function injectDebugSeed(seed: NumericSeed): void {
   if (typeof window !== 'undefined') {

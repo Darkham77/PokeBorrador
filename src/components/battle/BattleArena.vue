@@ -90,7 +90,7 @@ const computedWeather = computed<WeatherId>(() => {
     )
   }
 
-  // Estado en reposo (sin batalla activa, modal cerrado)
+  // Idle state (no active battle, closed modal)
   if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
   return requireWeatherId('clear')
 })

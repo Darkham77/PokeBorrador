@@ -182,6 +182,23 @@ function tryAddBarrierProp(
   return true;
 }
 
+function placeFlankFenceStep(
+  fenceType: 'fence_v' | 'fence_h',
+  x: number,
+  y: number,
+  prefabFile: string,
+  continent: ContinentMapResult,
+  props: WildernessPropPlacement[],
+  blockedMask: boolean[][] | undefined,
+  trees: readonly TreePlacement[],
+  gate: POINode
+): boolean {
+  if (tryAddBarrierProp(fenceType, x, y, prefabFile, continent, props, blockedMask)) {
+    return true;
+  }
+  return isCellImpassable(x, y, continent, trees, props, gate);
+}
+
 /**
  * Checks whether a cell contains an impassable obstacle (cliff, water, tree foot, fence, building).
  */
@@ -293,53 +310,53 @@ export function verifyRouteGateAntiBypass(params: RouteGateBarrierParams): boole
     }
 
     return true;
-  } else {
-    // Search window around the vertical gatehouse (North to South)
-    const lateralMargin = 25;
-    const minX = Math.max(0, bx - lateralMargin);
-    const maxX = Math.min(W - 1, bx + bw + lateralMargin);
-    const northY = Math.max(0, by - 6);
-    const southY = Math.min(H - 1, by + bh + 6);
-
-    // Multi-source BFS: can ANY walkable cell at north boundary reach south boundary?
-    const queue: { x: number; y: number }[] = [];
-    const visited = new Set<string>();
-
-    for (let x = minX; x <= maxX; x++) {
-      if (!isCellImpassable(x, northY, continent, trees, props, gate)) {
-        queue.push({ x, y: northY });
-        visited.add(`${x}_${northY}`);
-      }
-    }
-
-    const DX = [0, 0, 1, -1] as const;
-    const DY = [1, -1, 0, 0] as const;
-
-    while (queue.length > 0) {
-      const cur = queue.shift()!;
-      if (cur.y >= southY) {
-        return false;
-      }
-
-      for (let d = 0; d < 4; d++) {
-        const nx = cur.x + DX[d]!;
-        const ny = cur.y + DY[d]!;
-        if (nx < minX || nx > maxX || ny < northY || ny > southY) continue;
-
-        const key = `${nx}_${ny}`;
-        if (visited.has(key)) continue;
-
-        if (isCellImpassable(nx, ny, continent, trees, props, gate)) {
-          continue;
-        }
-
-        visited.add(key);
-        queue.push({ x: nx, y: ny });
-      }
-    }
-
-    return true;
   }
+
+  // Search window around the vertical gatehouse (North to South)
+  const lateralMargin = 25;
+  const minX = Math.max(0, bx - lateralMargin);
+  const maxX = Math.min(W - 1, bx + bw + lateralMargin);
+  const northY = Math.max(0, by - 6);
+  const southY = Math.min(H - 1, by + bh + 6);
+
+  // Multi-source BFS: can ANY walkable cell at north boundary reach south boundary?
+  const queue: { x: number; y: number }[] = [];
+  const visited = new Set<string>();
+
+  for (let x = minX; x <= maxX; x++) {
+    if (!isCellImpassable(x, northY, continent, trees, props, gate)) {
+      queue.push({ x, y: northY });
+      visited.add(`${x}_${northY}`);
+    }
+  }
+
+  const DX = [0, 0, 1, -1] as const;
+  const DY = [1, -1, 0, 0] as const;
+
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    if (cur.y >= southY) {
+      return false;
+    }
+
+    for (let d = 0; d < 4; d++) {
+      const nx = cur.x + DX[d]!;
+      const ny = cur.y + DY[d]!;
+      if (nx < minX || nx > maxX || ny < northY || ny > southY) continue;
+
+      const key = `${nx}_${ny}`;
+      if (visited.has(key)) continue;
+
+      if (isCellImpassable(nx, ny, continent, trees, props, gate)) {
+        continue;
+      }
+
+      visited.add(key);
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -389,17 +406,16 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
 
       if (fencesPlacedNorth < fenceRunLen) {
-        if (!tryAddBarrierProp('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask)) {
-          if (!isCellImpassable(barrierX, curY, continent, trees, props, gate)) break;
-        } else {
-          fencesPlacedNorth++;
+        if (!placeFlankFenceStep('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask, trees, gate)) {
+          break;
         }
+        fencesPlacedNorth++;
       } else {
         if ((by - 1 - curY) % 3 === 0) {
           tryAddBarrierTree(barrierX - 1, curY - 3, continent, trees, blockedMask);
         }
-        if (!tryAddBarrierProp('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask)) {
-          if (!isCellImpassable(barrierX, curY, continent, trees, props, gate)) break;
+        if (!placeFlankFenceStep('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask, trees, gate)) {
+          break;
         }
       }
       curY--;
@@ -415,17 +431,16 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
 
       if (fencesPlacedSouth < fenceRunLen) {
-        if (!tryAddBarrierProp('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask)) {
-          if (!isCellImpassable(barrierX, curY, continent, trees, props, gate)) break;
-        } else {
-          fencesPlacedSouth++;
+        if (!placeFlankFenceStep('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask, trees, gate)) {
+          break;
         }
+        fencesPlacedSouth++;
       } else {
         if ((curY - (by + bh)) % 3 === 0) {
           tryAddBarrierTree(barrierX - 1, curY, continent, trees, blockedMask);
         }
-        if (!tryAddBarrierProp('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask)) {
-          if (!isCellImpassable(barrierX, curY, continent, trees, props, gate)) break;
+        if (!placeFlankFenceStep('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask, trees, gate)) {
+          break;
         }
       }
       curY++;
@@ -526,17 +541,16 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
 
       if (fencesPlacedLeft < fenceRunLen) {
-        if (!tryAddBarrierProp('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask)) {
-          if (!isCellImpassable(curX, barrierY, continent, trees, props, gate)) break;
-        } else {
-          fencesPlacedLeft++;
+        if (!placeFlankFenceStep('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask, trees, gate)) {
+          break;
         }
+        fencesPlacedLeft++;
       } else {
         if ((bx - 1 - curX) % 3 === 0) {
           tryAddBarrierTree(curX - 1, barrierY - 3, continent, trees, blockedMask);
         }
-        if (!tryAddBarrierProp('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask)) {
-          if (!isCellImpassable(curX, barrierY, continent, trees, props, gate)) break;
+        if (!placeFlankFenceStep('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask, trees, gate)) {
+          break;
         }
       }
       curX--;
@@ -552,17 +566,16 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
 
       if (fencesPlacedRight < fenceRunLen) {
-        if (!tryAddBarrierProp('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask)) {
-          if (!isCellImpassable(curX, barrierY, continent, trees, props, gate)) break;
-        } else {
-          fencesPlacedRight++;
+        if (!placeFlankFenceStep('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask, trees, gate)) {
+          break;
         }
+        fencesPlacedRight++;
       } else {
         if ((curX - (bx + bw)) % 3 === 0) {
           tryAddBarrierTree(curX, barrierY - 3, continent, trees, blockedMask);
         }
-        if (!tryAddBarrierProp('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask)) {
-          if (!isCellImpassable(curX, barrierY, continent, trees, props, gate)) break;
+        if (!placeFlankFenceStep('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask, trees, gate)) {
+          break;
         }
       }
       curX++;

@@ -153,13 +153,17 @@ function applyDebugEnemyChoiceOverride(p2Choice: string, p2Skip: boolean): strin
   return p2Choice
 }
 
+interface EnemyChoiceFlags {
+  isWild: boolean
+  p2Skip: boolean
+}
+
 export async function computeP2Choice(
   store: BattleContext,
   p: Pokemon,
   e: Pokemon,
-  isWild: boolean,
-  p2Skip: boolean,
-  eMove: Move | null
+  eMove: Move | null,
+  { isWild, p2Skip }: EnemyChoiceFlags
 ): Promise<string> {
   const switchChoice = await tryComputeEnemySwitchChoice(store, p, e, isWild)
   let p2Choice = switchChoice || computeEnemyMoveChoice(store.activeBattle.value, eMove)
@@ -173,20 +177,22 @@ export async function computeP2Choice(
   return p2Choice
 }
 
+interface TurnChoiceFlags extends EnemyChoiceFlags {
+  isStruggle: boolean
+}
+
 export async function resolveTurnChoices(
   store: BattleContext,
   p: Pokemon,
   e: Pokemon,
   move: Move | null,
-  isStruggle: boolean,
-  isWild: boolean,
-  p2Skip: boolean,
   eMove: Move | null,
+  { isStruggle, isWild, p2Skip }: TurnChoiceFlags,
   moveIndex?: number
 ) {
   const active = store.activeBattle.value
   let p1Choice = computeP1Choice(active, move, isStruggle, moveIndex)
-  let p2Choice = await computeP2Choice(store, p, e, isWild, p2Skip, eMove)
+  let p2Choice = await computeP2Choice(store, p, e, eMove, { isWild, p2Skip })
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
     const debugObj = window.__VITE_DEBUG__ as Record<string, unknown> // open-record: Generic key-value data dictionary container

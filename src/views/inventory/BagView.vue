@@ -21,7 +21,7 @@ const activeMainTab = computed({
 const _BAG_SUBCATEGORY_FILTERS = ['todos', ...ITEM_CATEGORIES] as const
 type BagSubcategoryFilter = (typeof _BAG_SUBCATEGORY_FILTERS)[number]
 
-// Definición de subcategorías por pestaña principal
+// Definition of subcategories by main tab
 const subcategoriesByMainTab: Record<BagMainTab, { id: BagSubcategoryFilter; label: string; icon: string }[]> = {
   productos: [
     { id: 'todos', label: 'Todo', icon: '📦' },
@@ -47,7 +47,7 @@ const currentSubcategories = computed(() => {
   return subcategoriesByMainTab[activeMainTab.value]
 })
 
-// Observar cambio en pestaña principal para resetear la subcategoría
+// Watch main tab change to reset subcategory
 watch(activeMainTab, () => {
   inventoryStore.activeCategory = 'todos'
 })

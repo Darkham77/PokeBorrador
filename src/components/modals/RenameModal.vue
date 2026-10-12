@@ -80,9 +80,7 @@ const submitRename = async () => {
 
   const validationError = validateRenameRequest(
     targetName,
-    genderChanged,
-    nameChanged.value,
-    canRename.value,
+    { genderChanged, nameChanged: nameChanged.value, canRename: canRename.value },
     daysUntilRename.value
   )
   if (validationError) {

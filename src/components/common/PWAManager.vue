@@ -17,21 +17,21 @@ const { handleUpdate } = usePWA()
 const showPermissionsModal = ref(false)
 const hasAcceptedPermissions = useStorage('pwa_permissions_accepted', false)
 
-// Gestión de Permisos
+// Permission Management
 const checkPermissions = () => {
   const notificationNeeded = 'Notification' in window && Notification.permission === 'default'
   
-  // Si ya aceptó antes y no hay cambios en notificaciones, intentamos activar audio sin modal
+  // If previously accepted and notifications are unchanged, attempt enabling audio without modal
   if (hasAcceptedPermissions.value && !notificationNeeded) {
     audioStore.init()
     return
   }
   
-  // Si falta algo, mostramos el modal
+  // If anything is missing, show the modal
   showPermissionsModal.value = true
 }
 
-// Observamos que el usuario esté logueado y la carga inicial del juego haya terminado antes de solicitar permisos
+// Watch for user login and initial game loading completion before requesting permissions
 watch(
   [() => authStore.user, () => loadingStore.isGateOpen],
   ([user, isGateOpen]) => {

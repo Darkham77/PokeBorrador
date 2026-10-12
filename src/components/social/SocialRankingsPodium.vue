@@ -172,9 +172,9 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
     .pedestal-num { color: Rgb(255 255 255 / 80%); font-family: var(--font-pixel); font-size: var(--font-16); font-weight: bold; }
   }
 
-  &.step-first .pedestal { height: 70px; border: 1px solid var(--amber); background: Linear-Gradient(180deg, #f59e0b, #78350f); }
-  &.step-second .pedestal { height: 50px; border: 1px solid var(--slate-300); background: Linear-Gradient(180deg, #94a3b8, #334155); }
-  &.step-third .pedestal { height: 35px; border: 1px solid var(--amber-dark); background: Linear-Gradient(180deg, #d97706, #451a03); }
+  &.step-first .pedestal { height: 70px; border: 1px solid var(--amber); background: Linear-Gradient(180deg, var(--amber-dark), var(--amber-dark)); }
+  &.step-second .pedestal { height: 50px; border: 1px solid var(--slate-300); background: Linear-Gradient(180deg, var(--slate-400), var(--slate-700)); }
+  &.step-third .pedestal { height: 35px; border: 1px solid var(--amber-dark); background: Linear-Gradient(180deg, var(--amber-dark), var(--darker)); }
 }
 
 .podium-rest-list {

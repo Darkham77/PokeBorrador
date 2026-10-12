@@ -112,7 +112,7 @@
   padding: 6px 8px;
   border: 1px solid var(--slate-700);
   border-radius: $radius-md;
-  background: #090d16;
+  background: var(--bg-surface-darker, #090d16);
   color: var(--slate-50);
   font-size: var(--font-12);
   outline: none;
@@ -125,7 +125,7 @@
   padding: 8px;
   border: 1px solid var(--slate-800);
   border-radius: $radius-md;
-  background: #141c2e;
+  background: var(--bg-surface-dark, #141c2e);
 }
 
 .nudge-controls {
@@ -191,7 +191,7 @@
 }
 
 .btn-delete {
-  background: #991b1b;
+  background: var(--red-800, #991b1b);
   color: var(--red-300);
   &:hover { background: var(--red-600); }
 }
@@ -233,7 +233,7 @@
   padding: 10px;
   border: 1px solid var(--slate-800);
   border-radius: $radius-lg;
-  background: #141c2e;
+  background: var(--bg-surface-dark, #141c2e);
 }
 
 .stat-row {
@@ -259,7 +259,7 @@
   padding: 8px 10px;
   border: 1px solid var(--slate-700);
   border-radius: $radius-md;
-  background: #141c2e;
+  background: var(--bg-surface-dark, #141c2e);
   color: var(--slate-200);
   cursor: pointer;
 
@@ -287,7 +287,7 @@
   padding: 8px 4px;
   border: 1px solid var(--slate-700);
   border-radius: $radius-md;
-  background: #141c2e;
+  background: var(--bg-surface-dark, #141c2e);
   color: var(--slate-300);
   text-align: center;
   cursor: pointer;
@@ -317,9 +317,9 @@
 
 .autotile-info-box {
   padding: 8px 10px;
-  border: 1px solid #059669;
+  border: 1px solid var(--emerald-600, #059669);
   border-radius: $radius-md;
-  background: #0f2e24;
+  background: var(--emerald-950, #0f2e24);
   color: var(--green-light);
   font-size: var(--font-11);
   line-height: 1.4;
@@ -364,7 +364,7 @@
   padding: 8px;
   border: 1px solid var(--slate-700);
   border-radius: $radius-md;
-  background: #141c2e;
+  background: var(--bg-surface-dark, #141c2e);
   color: var(--slate-200);
   text-align: left;
   cursor: pointer;
@@ -453,14 +453,14 @@
   padding: 10px;
   border: 1px solid var(--slate-700);
   border-radius: $radius-lg;
-  background: #141c2e;
+  background: var(--bg-surface-dark, #141c2e);
 }
 
 .urban-scale-select {
   padding: 8px 10px;
   border: 1px solid var(--sky-dark);
   border-radius: $radius-md;
-  background: #090d16;
+  background: var(--bg-surface-darker, #090d16);
   color: var(--slate-50);
   font-size: var(--font-12);
   font-weight: 700;

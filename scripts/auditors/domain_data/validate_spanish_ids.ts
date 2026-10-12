@@ -8,7 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor } from '@francogp/auditor';
+import { BaseAuditor, FileScanAuditor , createRuleCapabilities} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -57,7 +57,7 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
     'database'
   ]) {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(SPANISH_ID_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -67,7 +67,7 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_spanish_ids',
       configKey: 'domain.spanishIds',
       defaultConfig: {
@@ -100,34 +100,36 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
   }
 
   protected override scanFile(relPath: string, content: string): void {
-    const lines = content.split('\n');
+    this.runSubAuditorSync('spanish-logic-id', () => {
+      const lines = content.split('\n');
 
-    for (let index = 0; index < lines.length; index++) {
-      const lineText = lines[index]!;
-      if (this.isLineIgnored(lineText, ['spanish-ok', 'text-ok'])) continue;
+      for (let index = 0; index < lines.length; index++) {
+        const lineText = lines[index]!;
+        if (this.isLineIgnored(lineText, ['spanish-ok', 'text-ok'])) continue;
 
-      for (const pattern of this.criticalPatterns) {
-        pattern.lastIndex = 0;
-        let match: RegExpExecArray | null;
-        while ((match = pattern.exec(lineText)) !== null) {
-          const word = match[1]?.trim().toLowerCase();
-          if (word && (spanishNames.has(word) || word === 'move_relearner')) {
-            if (lineText.includes('toThrow') || lineText.includes('expect(') || lineText.includes('name:') || lineText.includes('MOVE_TRANSLATIONS_ES') || lineText.includes('ABILITY_TRANSLATIONS_ES')) {
-              continue;
+        for (const pattern of this.criticalPatterns) {
+          pattern.lastIndex = 0;
+          let match: RegExpExecArray | null;
+          while ((match = pattern.exec(lineText)) !== null) {
+            const word = match[1]?.trim().toLowerCase();
+            if (word && (spanishNames.has(word) || word === 'move_relearner')) {
+              if (lineText.includes('toThrow') || lineText.includes('expect(') || lineText.includes('name:') || lineText.includes('MOVE_TRANSLATIONS_ES') || lineText.includes('ABILITY_TRANSLATIONS_ES')) {
+                continue;
+              }
+
+              this.addViolation({
+                ruleId: 'spanish-logic-id',
+                severity: 'error',
+                file: relPath,
+                line: index + 1,
+                message: `Uso de nombre en español en contexto de lógica: '${match[1]}'`,
+                context: lineText.trim()
+              });
             }
-
-            this.addViolation({
-              ruleId: 'spanish-logic-id',
-              severity: 'error',
-              file: relPath,
-              line: index + 1,
-              message: `Uso de nombre en español en contexto de lógica: '${match[1]}'`,
-              context: lineText.trim()
-            });
           }
         }
       }
-    }
+    });
   }
 }
 

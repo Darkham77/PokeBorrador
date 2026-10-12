@@ -68,7 +68,7 @@
         padding: 2px 6px;
         border: 1px solid var(--amber-dark);
         border-radius: $radius-sm;
-        background: #854d0e;
+        background: var(--amber-800, #854d0e);
         color: var(--yellow-light);
         font-family: var(--font-pixel);
         font-size: var(--font-7);
@@ -110,7 +110,7 @@
     padding: 6px 8px;
     border: 1px solid var(--emerald-400);
     border-radius: $radius-sm;
-    background: Linear-Gradient(180deg, #10b981, #047857);
+    background: linear-gradient(180deg, var(--emerald-500, #10b981), var(--emerald-700, #047857));
     color: var(--white);
     font-family: var(--font-pixel);
     font-size: var(--font-7);

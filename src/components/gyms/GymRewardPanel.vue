@@ -69,6 +69,9 @@ const tmRewardText = computed(() => {
       :alt="gym.badgeName"
       class="reward-badge-img"
       :class="{ 'claimed-badge': isGymDefeated }"
+    
+      width="32"
+      height="32"
     >
     <div class="medal-detail">
       <span class="reward-title">RECOMPENSA DE VICTORIA</span>

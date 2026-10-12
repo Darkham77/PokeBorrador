@@ -217,6 +217,53 @@ export function stampProp(
   return true;
 }
 
+interface LotDecorationContext {
+  readonly objectLayer: (MapCell | null)[][];
+  readonly elevationLayer: (MapCell | null)[][];
+  readonly collisionGrid: TileCollision[][];
+  readonly isPathCell: boolean[][];
+  readonly isReserved: (x: number, y: number, w: number, h: number) => boolean;
+  readonly mapWidth: number;
+  readonly mapHeight: number;
+  readonly makeCell: (tileId: string, collision: TileCollision) => MapCell;
+}
+
+function decorateLotFrontFences(
+  lot: UrbanLot,
+  fenceProp: MapPropDefinition,
+  ctx: LotDecorationContext
+): number {
+  let count = 0;
+  const frontY = lot.y + lot.height - 1;
+  for (let fx = lot.x; fx < lot.x + lot.width; fx++) {
+    if (fx === lot.doorX || Math.abs(fx - lot.doorX) <= 0) continue;
+    if (ctx.isReserved(fx, frontY, 1, 1)) continue;
+    if (!canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, fenceProp, fx, frontY, ctx.mapWidth, ctx.mapHeight)) continue;
+
+    stampPropAt(ctx.objectLayer, ctx.collisionGrid, fenceProp, fx, frontY, ctx.mapWidth, ctx.mapHeight, ctx.makeCell);
+    count++;
+  }
+  return count;
+}
+
+function decorateLotFrontFlowers(
+  lot: UrbanLot,
+  flowerProp: MapPropDefinition,
+  ctx: LotDecorationContext
+): number {
+  let count = 0;
+  const yardY = lot.y + lot.height - 2;
+  for (let fx = lot.x; fx < lot.x + lot.width; fx++) {
+    if (fx === lot.doorX || Math.abs(fx - lot.doorX) <= 1) continue;
+    if (ctx.isReserved(fx, yardY, 1, 1)) continue;
+    if (canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, flowerProp, fx, yardY, ctx.mapWidth, ctx.mapHeight)) {
+      stampPropAt(ctx.objectLayer, ctx.collisionGrid, flowerProp, fx, yardY, ctx.mapWidth, ctx.mapHeight, ctx.makeCell);
+      count++;
+    }
+  }
+  return count;
+}
+
 /**
  * Main procedural placement entry point.
  */
@@ -348,6 +395,17 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
       }
     }
 
+    const lotDecorationCtx: LotDecorationContext = {
+      objectLayer,
+      elevationLayer,
+      collisionGrid,
+      isPathCell,
+      isReserved,
+      mapWidth,
+      mapHeight,
+      makeCell
+    };
+
     // -------------------------------------------------------------
     // 2. Residential Mailboxes & Front Gardens
     // -------------------------------------------------------------
@@ -379,37 +437,18 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
       // -------------------------------------------------------------
       if (includeFences && dFactor >= MIN_FENCE_DENSITY_FACTOR) {
         const fenceProp = prng() < 0.6 ? FENCE_WHITE : TRIMMED_HEDGE;
-        // Front lot border facing road (lot.y + lot.height - 1)
-        const frontY = lot.y + lot.height - 1;
-        for (let fx = lot.x; fx < lot.x + lot.width; fx++) {
-          // Strict clearance: never fence the door column or doorstep!
-          if (fx === lot.doorX || Math.abs(fx - lot.doorX) <= 0) continue;
-          if (isReserved(fx, frontY, 1, 1)) continue;
-
-          if (
-            canPlacePropAt(objectLayer, elevationLayer, isPathCell, fenceProp, fx, frontY, mapWidth, mapHeight)
-          ) {
-            stampPropAt(objectLayer, collisionGrid, fenceProp, fx, frontY, mapWidth, mapHeight, makeCell);
-            placedPropsCount++;
-            fencesCount++;
-          }
-        }
+        const placed = decorateLotFrontFences(lot, fenceProp, lotDecorationCtx);
+        placedPropsCount += placed;
+        fencesCount += placed;
       }
 
       // -------------------------------------------------------------
       // 3.5. Orderly Front Yard Flowerbed (Classic GBA 1x2 or 1x3 rows)
       // -------------------------------------------------------------
       const flowerProp = prng() < 0.5 ? FLOWERS_RED : prng() < 0.5 ? FLOWERS_BLUE : FLOWERS_YELLOW;
-      const yardY = lot.y + lot.height - 2;
-      for (let fx = lot.x; fx < lot.x + lot.width; fx++) {
-        if (fx === lot.doorX || Math.abs(fx - lot.doorX) <= 1) continue;
-        if (isReserved(fx, yardY, 1, 1)) continue;
-        if (canPlacePropAt(objectLayer, elevationLayer, isPathCell, flowerProp, fx, yardY, mapWidth, mapHeight)) {
-          stampPropAt(objectLayer, collisionGrid, flowerProp, fx, yardY, mapWidth, mapHeight, makeCell);
-          placedPropsCount++;
-          flowersCount++;
-        }
-      }
+      const placedFlowers = decorateLotFrontFlowers(lot, flowerProp, lotDecorationCtx);
+      placedPropsCount += placedFlowers;
+      flowersCount += placedFlowers;
     }
 
     // -------------------------------------------------------------

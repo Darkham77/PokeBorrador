@@ -7,7 +7,7 @@ export function useRankedValidation() {
   const rankedStore = usePvPStore();
 
   /**
-   * Valida un único Pokémon contra las reglas actuales.
+   * Validates a single Pokémon against current rules.
    */
   const validatePokemon = (pokemon: Pokemon) => {
     if (!pokemon) return { ok: false, reason: 'Pokémon inválido.' };
@@ -40,7 +40,7 @@ export function useRankedValidation() {
   };
 
   /**
-   * Valida un equipo completo.
+   * Validates a full team.
    */
   const validateTeam = (team: Pokemon[]) => {
     if (!team || team.length === 0) {

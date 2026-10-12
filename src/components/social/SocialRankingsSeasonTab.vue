@@ -45,6 +45,9 @@ const emit = defineEmits<{
             :src="currentTier.sprite"
             :alt="currentTier.name"
             class="tier-sprite-large"
+          
+            width="32"
+            height="32"
           >
           <span
             v-else
@@ -141,6 +144,9 @@ const emit = defineEmits<{
               :src="tier.tier.sprite"
               :alt="tier.tier.name"
               class="tier-sprite-mini"
+            
+              width="32"
+              height="32"
             >
             <span
               v-else

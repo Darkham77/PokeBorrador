@@ -24,8 +24,7 @@ const MAX_FIT_ATTEMPTS = 20
 const DEFAULT_PILL_FONT_SIZE_PX = 14
 
 /**
- * Ajusta dinámicamente el tamaño de fuente para que quepa exactamente
- * en el ancho del contenedor sin desbordarse.
+ * Dynamically adjusts font size to fit container width without overflowing.
  */
 const fitText = async (el: HTMLElement | null, baseSize: number) => {
   if (!el) return
@@ -54,27 +53,27 @@ const fitAllPills = () => {
   void fitText(warRef.value, DEFAULT_PILL_FONT_SIZE_PX)
 }
 
-// Observador para cambios de tamaño (mobile resize / orientation)
+// Resize observer (mobile resize / orientation)
 useResizeObserver(containerRef, () => {
   fitAllPills()
 })
 
-// Observadores para disparar el ajuste cuando cambien los datos
+// Watchers to trigger refitting when data changes
 watch([money, battleCoins, warCoins], () => {
   fitAllPills()
 }, { deep: true })
 
 onMounted(async () => {
-  // Cargar estado inicial de la guardería para sincronizar el almacén de huevos
+  // Load daycare initial state to synchronize egg storage
   const { useBreedingStore } = await import('@/stores/breeding')
   useBreedingStore().loadDaycare()
 
   await nextTick()
   
-  // Ejecución inicial
+  // Initial run
   fitAllPills()
 
-  // Re-evaluar una vez que la fuente física esté totalmente lista
+  // Re-evaluate once physical font is fully loaded
   if (typeof document !== 'undefined' && document.fonts) {
     document.fonts.ready.then(() => {
       fitAllPills()

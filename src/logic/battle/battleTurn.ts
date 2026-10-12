@@ -79,7 +79,7 @@ async function executeWorkerTurn(args: TurnExecutionArgs): Promise<void> {
   const intercepted = await validateAndInterceptFaintedPlayer(store)
   if (intercepted) return
 
-  const choices = await resolveTurnChoices(store, p, e, move || null, isStruggle, isWild, p2Skip, eMove, finalMoveIndex)
+  const choices = await resolveTurnChoices(store, p, e, move || null, eMove, { isStruggle, isWild, p2Skip }, finalMoveIndex)
   const p1Choice = choices.p1Choice
   let p2Choice = choices.p2Choice
   const p1Skip = choices.p1Skip

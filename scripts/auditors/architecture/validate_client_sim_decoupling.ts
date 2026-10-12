@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, type SharedAstContext, normalizePosixPath, AuditedDocument } from '@francogp/auditor';
+import { BaseAuditor, type SharedAstContext, normalizePosixPath, AuditedDocument , createRuleCapabilities} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -235,7 +235,7 @@ export function checkDistAssetsForSimChunks(distDir: string): { chunkName: strin
 export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDecouplingRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(CLIENT_SIM_DECOUPLING_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -245,7 +245,7 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_client_sim_decoupling',
       configKey: 'architecture.clientSimDecoupling',
       defaultConfig: {
@@ -269,80 +269,103 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
   public override async runAudit(astContext?: SharedAstContext): Promise<void> {
     const cwd = process.cwd();
 
-    this.context.logStep(1, 3, 'Escaneando imports de @pkmn/sim y @pkmn/randoms en src/...');
-    const files = await this.context.collectFiles(['src'], new Set(['.ts', '.vue', '.js']));
     let filesScanned = 0;
     let totalIssuesFound = 0;
+    const sourceFilesData: { relPath: string; issues: ReturnType<typeof scanSourceForSimImports> }[] = [];
 
-    for (const file of files) {
-      const relPath = normalizePosixPath(path.relative(cwd, file));
-      if (isWorkerBoundaryFile(relPath)) {
-        continue;
+    await this.runSubAuditor('client-sim-value-import', async () => {
+      const files = await this.context.collectFiles(['src'], new Set(['.ts', '.vue', '.js']));
+      for (const file of files) {
+        const relPath = normalizePosixPath(path.relative(cwd, file));
+        if (isWorkerBoundaryFile(relPath)) {
+          continue;
+        }
+
+        filesScanned++;
+        this.recordScanned(relPath);
+
+        const content = fs.readFileSync(file, 'utf8');
+        const sf = astContext?.getSourceFile(file, content);
+        const issues = scanSourceForSimImports(content, relPath, sf);
+        sourceFilesData.push({ relPath, issues });
       }
 
-      filesScanned++;
-      this.recordScanned(relPath);
-      this.markRuleEvaluated('client-sim-value-import');
-      this.markRuleEvaluated('client-randoms-value-import');
-
-      const content = fs.readFileSync(file, 'utf8');
-      const sf = astContext?.getSourceFile(file, content);
-      const issues = scanSourceForSimImports(content, relPath, sf);
-
-      for (const issue of issues) {
-        totalIssuesFound++;
-        this.addViolation({
-          ruleId: issue.ruleId,
-          file: relPath,
-          line: issue.line,
-          message: issue.message,
-          severity: 'error',
-          context: issue.snippet
-        });
+      for (const item of sourceFilesData) {
+        for (const issue of item.issues) {
+          if (issue.ruleId === 'client-sim-value-import') {
+            totalIssuesFound++;
+            this.addViolation({
+              ruleId: 'client-sim-value-import',
+              file: item.relPath,
+              line: issue.line,
+              message: issue.message,
+              severity: 'error',
+              context: issue.snippet
+            });
+          }
+        }
       }
-    }
+    });
 
-    this.context.logStep(2, 3, 'Verificando configuración de manualChunks en vite.config.ts...');
+    this.runSubAuditorSync('client-randoms-value-import', () => {
+      for (const item of sourceFilesData) {
+        for (const issue of item.issues) {
+          if (issue.ruleId === 'client-randoms-value-import') {
+            totalIssuesFound++;
+            this.addViolation({
+              ruleId: 'client-randoms-value-import',
+              file: item.relPath,
+              line: issue.line,
+              message: issue.message,
+              severity: 'error',
+              context: issue.snippet
+            });
+          }
+        }
+      }
+    });
+
     const viteConfigPath = path.resolve(cwd, 'vite.config.ts');
-    if (fs.existsSync(viteConfigPath)) {
-      this.recordScanned('vite.config.ts');
-      this.markRuleEvaluated('client-sim-chunk-configured');
-      const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
-      const configIssues = checkViteConfigForSimChunks(viteContent);
-      for (const ci of configIssues) {
-        totalIssuesFound++;
-        this.addViolation({
-          ruleId: 'client-sim-chunk-configured',
-          file: 'vite.config.ts',
-          line: ci.line,
-          message: ci.message,
-          severity: 'error',
-          context: ci.snippet
-        });
+    this.runSubAuditorSync('client-sim-chunk-configured', () => {
+      if (fs.existsSync(viteConfigPath)) {
+        this.recordScanned('vite.config.ts');
+        const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
+        const configIssues = checkViteConfigForSimChunks(viteContent);
+        for (const ci of configIssues) {
+          totalIssuesFound++;
+          this.addViolation({
+            ruleId: 'client-sim-chunk-configured',
+            file: 'vite.config.ts',
+            line: ci.line,
+            message: ci.message,
+            severity: 'error',
+            context: ci.snippet
+          });
+        }
+      } else {
+        this.markRuleNotApplicable('client-sim-chunk-configured', 'vite.config.ts no existe en el proyecto');
       }
-    } else {
-      this.markRuleNotApplicable('client-sim-chunk-configured', 'vite.config.ts no existe en el proyecto');
-    }
+    });
 
-    this.context.logStep(3, 3, 'Comprobando existencia de chunks de Showdown en dist/assets/...');
     const distAssetsDir = path.resolve(cwd, 'dist/assets');
-    if (fs.existsSync(distAssetsDir)) {
-      this.markRuleEvaluated('client-sim-chunk-present');
-      const distChunks = checkDistAssetsForSimChunks(distAssetsDir);
-      for (const chunk of distChunks) {
-        totalIssuesFound++;
-        this.addViolation({
-          ruleId: 'client-sim-chunk-present',
-          file: `dist/assets/${chunk.chunkName}`,
-          line: 1,
-          message: `Chunk indebido detectado en dist/assets: "${chunk.chunkName}" (${chunk.sizeKB} KB). Showdown debe eliminarse del cliente.`,
-          severity: 'error',
-          context: chunk.chunkName
-        });
+    this.runSubAuditorSync('client-sim-chunk-present', () => {
+      if (fs.existsSync(distAssetsDir)) {
+        const distChunks = checkDistAssetsForSimChunks(distAssetsDir);
+        for (const chunk of distChunks) {
+          totalIssuesFound++;
+          this.addViolation({
+            ruleId: 'client-sim-chunk-present',
+            file: `dist/assets/${chunk.chunkName}`,
+            line: 1,
+            message: `Chunk indebido detectado en dist/assets: "${chunk.chunkName}" (${chunk.sizeKB} KB). Showdown debe eliminarse del cliente.`,
+            severity: 'error',
+            context: chunk.chunkName
+          });
+        }
+      } else {
+        this.markRuleNotApplicable('client-sim-chunk-present', 'El directorio dist/assets no existe antes del build');
       }
-    } else {
-      this.markRuleNotApplicable('client-sim-chunk-present', 'El directorio dist/assets no existe antes del build');
-    }
+    });
 
     this.context.setMetric('Archivos de Cliente Escaneados', filesScanned);
     this.context.setMetric('Infracciones Detectadas', totalIssuesFound);

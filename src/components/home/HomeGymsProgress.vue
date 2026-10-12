@@ -122,6 +122,9 @@ const openGyms = () => {
               :src="getAssetUrl(ASSET_TYPES.BADGE, gym.id)"
               :alt="gym.badgeName"
               class="badge-sprite-img"
+            
+              width="32"
+              height="32"
             >
             <span
               v-if="gymsStore.isRematchAvailable(gym.id)"

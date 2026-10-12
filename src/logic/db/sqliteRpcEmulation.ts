@@ -47,57 +47,32 @@ export async function emulateOfflineRpc(name: string, params: Record<string, unk
   
   const context = { userId, username };
 
-  switch (name) {
-    case 'change_username':
-      return emulateChangeUsername(sqliteDb, params, context);
+  type RpcHandler = (db: SqliteDatabase, params: unknown, ctx: { userId: string; username: string }) => Promise<unknown> | unknown;
 
-    case 'save_game_trusted':
-      return emulateSaveGameTrusted(sqliteDb, params, context);
+  const RPC_DISPATCH_TABLE: Readonly<Record<string, RpcHandler>> = {
+    change_username: (db, p, ctx) => emulateChangeUsername(db, p, ctx),
+    save_game_trusted: (db, p, ctx) => emulateSaveGameTrusted(db, p, ctx),
+    fn_report_passive_battle: (db, p) => emulateReportPassiveBattle(db, p),
+    publish_listing_v2: (db, p, ctx) => emulatePublishListing(db, p, ctx),
+    buy_listing_v2: (db, p, ctx) => emulateBuyListing(db, p, ctx),
+    cancel_listing_v2: (db, p, ctx) => emulateCancelListing(db, p, ctx),
+    claim_asset_v2: (db, p, ctx) => emulateClaimAsset(db, p, ctx),
+    send_trade_offer_v2: (db, p, ctx) => emulateSendTradeOffer(db, p, ctx),
+    accept_trade_v2: (db, p, ctx) => emulateAcceptTrade(db, p, ctx),
+    reject_trade_v2: (db, p, ctx) => emulateRejectTrade(db, p, ctx),
+    fn_award_event_automated: (db, p) => emulateAwardEventAutomated(db, p),
+    claim_award: (db, p) => emulateClaimAward(db, p),
+    fn_award_ranked_season_automated: (db, p) => emulateAwardRankedSeasonAutomated(db, p),
+    record_passive_battle_result: (db, p, ctx) => emulateRecordPassiveBattleResult(db, p, ctx),
+    fn_publish_battle_replay: (db, p, ctx) => emulatePublishBattleReplay(db, p, ctx),
+    fn_get_featured_replays: (db, p) => emulateGetFeaturedReplays(db, p)
+  };
 
-    case 'fn_report_passive_battle':
-      return emulateReportPassiveBattle(sqliteDb, params);
-
-    case 'publish_listing_v2':
-      return emulatePublishListing(sqliteDb, params, context);
-
-    case 'buy_listing_v2':
-      return emulateBuyListing(sqliteDb, params, context);
-
-    case 'cancel_listing_v2':
-      return emulateCancelListing(sqliteDb, params, context);
-
-    case 'claim_asset_v2':
-      return emulateClaimAsset(sqliteDb, params, context);
-
-    case 'send_trade_offer_v2':
-      return emulateSendTradeOffer(sqliteDb, params, context);
-
-    case 'accept_trade_v2':
-      return emulateAcceptTrade(sqliteDb, params, context);
-
-    case 'reject_trade_v2':
-      return emulateRejectTrade(sqliteDb, params, context);
-
-    case 'fn_award_event_automated':
-      return emulateAwardEventAutomated(sqliteDb, params);
-
-    case 'claim_award':
-      return emulateClaimAward(sqliteDb, params);
-
-    case 'fn_award_ranked_season_automated':
-      return emulateAwardRankedSeasonAutomated(sqliteDb, params);
-
-    case 'record_passive_battle_result':
-      return emulateRecordPassiveBattleResult(sqliteDb, params, context);
-
-    case 'fn_publish_battle_replay':
-      return emulatePublishBattleReplay(sqliteDb, params, context);
-
-    case 'fn_get_featured_replays':
-      return emulateGetFeaturedReplays(sqliteDb, params);
-
-    default:
-      // Default mock success for other RPCs in offline mode
-      return { data: { success: true }, error: null };
+  const handler = RPC_DISPATCH_TABLE[name];
+  if (handler) {
+    return handler(sqliteDb, params, context);
   }
+
+  // Default mock success for other RPCs in offline mode
+  return { data: { success: true }, error: null };
 }

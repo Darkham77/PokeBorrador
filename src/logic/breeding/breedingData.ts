@@ -1,7 +1,7 @@
 
 /**
  * breedingData.ts
- * Almacena los grupos de huevo, compatibilidades y traducciones.
+ * Stores egg groups, compatibility, and mappings.
  */
 
 export const EGG_GROUPS: Record<string, string[]> = {
@@ -154,16 +154,16 @@ export const BABY_MAP: Record<string, string> = {
 
 
 /**
- * Constantes de Probabilidad y Herencia
+ * Probability and Inheritance Constants
  */
 export const BREEDING_CONSTANTS = {
-  MASUDA_MULTIPLIER: 4, // Multiplica x4 el shiny rate si los padres son de distinto origen
-  HIDDEN_ABILITY_CHANCE: 0.6, // 60% chance de heredar habilidad del slot actual (madre/ditto)
-  NATURE_INHERIT_CHANCE: 1.0, // 100% con Piedra Eterna (migrado de Gen 4+ para QoL)
+  MASUDA_MULTIPLIER: 4, // Multiplies shiny rate x4 if parents have different origins
+  HIDDEN_ABILITY_CHANCE: 0.6, // 60% chance to inherit ability from current slot (mother/ditto)
+  NATURE_INHERIT_CHANCE: 1.0, // 100% with Everstone (migrated from Gen 4+ for QoL)
   IV_INHERIT_DEFAULT: 3,
   IV_INHERIT_DESTINY_KNOT: 5,
-  EGG_WAR_PTS_CHANCE: 0.1, // 10% de probabilidad de ganar war points al abrir huevos
-  EGG_WAR_PTS_AMOUNT: 5 // Cantidad de war points ganados por eclosión
+  EGG_WAR_PTS_CHANCE: 0.1, // 10% chance to gain war points upon hatching eggs
+  EGG_WAR_PTS_AMOUNT: 5 // Amount of war points gained per hatching
 } as const;
 
 export type BreedingConstantKey = keyof typeof BREEDING_CONSTANTS;
@@ -171,7 +171,7 @@ export type BreedingConstantKey = keyof typeof BREEDING_CONSTANTS;
 import { MILLISECONDS_PER_HOUR } from '@/logic/constants/gameplay';
 
 export const EGG_SPAWN_INTERVAL_MS: Record<number, number> = {
-  1: MILLISECONDS_PER_HOUR * 8, // Poco interés: 8h
-  2: MILLISECONDS_PER_HOUR * 4, // Compatibles: 4h
-  3: MILLISECONDS_PER_HOUR * 2, // Muy compatibles: 2h
+  1: MILLISECONDS_PER_HOUR * 8, // Low interest: 8h
+  2: MILLISECONDS_PER_HOUR * 4, // Compatible: 4h
+  3: MILLISECONDS_PER_HOUR * 2, // Very compatible: 2h
 };

@@ -8,11 +8,11 @@ import type { ID } from '@pkmn/sim';
 /**
  * Normalizes any text/string into a Showdown-compatible ID (lowercase alphanumeric string).
  * 
- * ⚠️ REGLA CRÍTICA DE MANTENIMIENTO:
- * Esta función es una réplica exacta y pura de la función `toID` de Pokémon Showdown
- * (ubicada canónicamente en `external/pokemon-showdown-code/sim/sim/dex-data.ts`).
- * En caso de que Pokémon Showdown modifique su implementación de `toID`,
- * se debe SIEMPRE COPIAR la función real de la librería para mantener paridad al 100%.
+ * ⚠️ CRITICAL MAINTENANCE RULE:
+ * This function is an exact, pure replica of Pokémon Showdown's `toID` function
+ * (located canonically in `external/pokemon-showdown-code/sim/sim/dex-data.ts`).
+ * If Pokémon Showdown updates its `toID` implementation,
+ * ALWAYS copy the real library function to maintain 100% parity.
  */
 export function toID(text: unknown): ID {
   if (text && typeof text === 'object' && 'id' in text) {

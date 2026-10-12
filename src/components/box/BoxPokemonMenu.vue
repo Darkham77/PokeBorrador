@@ -319,7 +319,8 @@ const handleSellRocket = () => {
                     :src="m.spriteUrl"
                     :alt="m.pokemon.name || 'Pokémon'"
                     class="ts-sprite"
-                    @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+                    width="32"
+                    height="32"
                   >
                 </PVSpriteFX>
               </div>

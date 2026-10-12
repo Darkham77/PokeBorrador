@@ -89,7 +89,8 @@ function handlePillLeave(e: MouseEvent) {
           :src="item.spriteUrl"
           class="reward-sprite pixel-art"
           :alt="item.label"
-          @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')"
+          width="32"
+          height="32"
         >
 
         <!-- Money or Custom Icon -->

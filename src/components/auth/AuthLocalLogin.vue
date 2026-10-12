@@ -74,6 +74,9 @@ onMounted(async () => {
         class="auth-btn-icon"
         draggable="false"
         aria-hidden="true"
+      
+        width="16"
+        height="16"
       >
       <span>JUGAR LOCAL</span>
     </button>

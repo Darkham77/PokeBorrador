@@ -60,8 +60,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   })
 
   /**
-   * Obtiene modificadores de clase para batalla o economía.
-   * Centraliza la lógica de getClassModifier() de legacy.
+   * Retrieves class modifiers for battle or economy.
+   * Centralizes legacy getClassModifier() logic.
    */
   function getModifier(type: string, context: Record<string, unknown> = {}) {
     return getClassModifier(playerClass.value || '', type, {
@@ -71,7 +71,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Sincroniza las variables CSS globales con el tema de la clase activa.
+   * Synchronizes global CSS variables with active class theme.
    */
   function syncTheme() {
     if (typeof document === 'undefined') return
@@ -93,7 +93,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   // --- Actions ---
 
   /**
-   * Selecciona o cambia la clase del jugador.
+   * Selects or changes the player's class.
    */
   async function selectClass(classId: PlayerClassId) {
     const resolvedClassId = requirePlayerClassId(classId)
@@ -109,16 +109,16 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       gameStore.state.battleCoins -= CLASS_CHANGE_COST_BATTLE_COINS
     }
 
-    // Reset de datos específicos y liberación de Pokémon en misión
+    // Specific data reset and release of Pokémon on missions
     releasePokemonFromMissions(gameStore.state.team || [], gameStore.state.box || [])
 
-    // Lógica de transición de cosméticos de clase
+    // Class cosmetic transition logic
     const currentAvatar = gameStore.state.avatar_style || ''
     const newStyle = resolveNewClassAvatarStyle(currentAvatar, resolvedClassId)
     if (newStyle !== null) {
       gameStore.state.avatar_style = newStyle
     } else if (currentAvatar && isAvatarStyleId(currentAvatar) && AVATAR_STYLES_BY_ID[currentAvatar]?.requiredClass) {
-      gameStore.state.avatar_style = null // Volver al por defecto
+      gameStore.state.avatar_style = null // Revert to default
     }
 
     gameStore.state.playerClass = resolvedClassId
@@ -142,7 +142,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Establece la facción del jugador (Unión o Poder).
+   * Sets player faction (Union or Power).
    */
   async function setFaction(factionId: FactionId) {
     const resolvedFactionId = requireFactionId(factionId)
@@ -153,7 +153,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       return { success: false }
     }
 
-    // Costo de cambio (si ya tenía uno)
+    // Switch cost (if player already had one)
     if (currentFaction) {
       if ((gameStore.state.money || 0) < FACTION_CHANGE_COST) {
         uiStore.notify(`Necesitas 🪙 ${FACTION_CHANGE_COST.toLocaleString()} para cambiar de bando.`, '❌')
@@ -170,7 +170,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Incrementa XP de clase y maneja las subidas de nivel.
+   * Increments class XP and handles level ups.
    */
   function addXP(amount: number) {
     if (!playerClass.value || amount <= 0) return
@@ -187,7 +187,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Maneja el nivel de criminalidad del Rocket.
+   * Manages Rocket criminality level.
    */
   function addCriminality(amount: number) {
     if (playerClass.value !== 'rocket' || amount <= 0) return
@@ -245,7 +245,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Inicia una misión idle con validación de tiempo del servidor y descuento de costos.
+   * Starts an idle mission with server time validation and cost deduction.
    */
   async function startMission(missionId: MissionId, extraData: Record<string, unknown> = {}) {
     if (!isMissionId(missionId)) return
@@ -254,7 +254,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     const cls = playerClass.value
     if (!cls) return
 
-    // Validar costos de despliegue
+    // Validate deployment costs
     const cost = getDeploymentCost(cls, missionId)
     const costResult = deductDeploymentCost(gameStore.state, cost)
     if (!costResult.success) {

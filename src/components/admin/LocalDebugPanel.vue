@@ -157,7 +157,7 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
   border: none;
   border: 1px solid Rgb(255 255 255 / 20%);
   border-radius: $radius-4xl;
-  background: Linear-Gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  background: Linear-Gradient(135deg, var(--purple-600) 0%, var(--blue-500) 100%);
   color: var(--white);
   font-size: var(--font-8);
   cursor: pointer;
@@ -213,7 +213,7 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
   &.adventure-btn {
     border: 1px solid Rgb(59 130 246 / 30%);
     background: Rgb(59 130 246 / 15%);
-    color: var(--blue, #60a5fa);
+    color: var(--blue, var(--blue-400));
     cursor: pointer;
     &:hover {
       background: Rgb(59 130 246 / 25%);

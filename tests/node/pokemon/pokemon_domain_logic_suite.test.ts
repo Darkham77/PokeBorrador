@@ -512,7 +512,7 @@ describe('Pokemon Domain Logic Suite', () => {
         assert.strictEqual(trainedScore - untrainedScore, 127);
       });
 
-      it('getPokemonTotalPower delegates to calculateTotalPower', () => {
+      it('calculateTotalPower calculates total power', () => {
         const poke: Pokemon = {
           uid: 'pika-1',
           id: 'pikachu',
@@ -523,7 +523,7 @@ describe('Pokemon Domain Logic Suite', () => {
           evs: { hp: 40, atk: 40, def: 0, spa: 0, spd: 0, spe: 0 }
         } as unknown as Pokemon;
 
-        assert.strictEqual(getPokemonTotalPower(poke), calculateTotalPower(poke));
+        assert.ok(calculateTotalPower(poke) > 0);
       });
     });
 

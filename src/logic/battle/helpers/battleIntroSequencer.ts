@@ -4,15 +4,20 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleState } from '@/types/battle/battle'
 import { executePokemonCallSequence } from '../orchestratorCallSequence.ts'
 
+export interface TrainerIntroOptions {
+  wasSearching: boolean;
+  trainerName?: string;
+  battleState?: BattleState | null;
+  needsCall: boolean;
+}
+
 export async function runTrainerIntroSequence(
   ctx: BattleContext,
   initialPlayer: Pokemon,
   initialEnemy: Pokemon,
-  wasSearching: boolean,
-  trainerName: string | undefined,
-  battleState: BattleState | null | undefined,
-  needsCall: boolean
+  options: TrainerIntroOptions
 ): Promise<void> {
+  const { wasSearching, trainerName, battleState, needsCall } = options
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 

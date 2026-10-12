@@ -62,7 +62,9 @@ export default defineAuditConfig({
       'docs',
       'test_aventura/docs/**',
       './test_aventura/docs/**',
-      'test_aventura/docs'
+      'test_aventura/docs',
+      'test_aventura/**',
+      './test_aventura/**'
     ]
   },
   secretLeaks: {
@@ -317,5 +319,26 @@ export default defineAuditConfig({
     allowCjs: false,
     allowJsScripts: false,
     exemptFiles: []
+  },
+  codeSimplification: {
+    enabled: true,
+    allowMatrixLoops: true
+  },
+  scssArchitecture: {
+    enabled: true,
+    maxNestingDepth: 5,
+    scopedMaxNestingDepth: 5,
+    allowPixelArtSpacing: true,
+    allowScopedColors: false
+  },
+  queryPerformance: {
+    enabled: true
+  },
+  webPerformance: {
+    enabled: true,
+    exemptSvgPaths: ['test_aventura/**']
+  },
+  securityHardening: {
+    enabled: true
   }
 });

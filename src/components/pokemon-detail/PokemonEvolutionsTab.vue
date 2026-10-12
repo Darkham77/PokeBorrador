@@ -42,7 +42,8 @@ const getEvolutionName = (evo: Evolution): string => {
             :src="getSprite(speciesId)"
             :alt="speciesName"
             class="evo-sprite"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+            width="32"
+            height="32"
           >
           <span class="evo-target-name">{{ speciesName }}</span>
         </div>
@@ -58,7 +59,8 @@ const getEvolutionName = (evo: Evolution): string => {
                 :alt="getEvolutionName(evo)"
                 class="evo-sprite"
                 :class="{ 'silhouette': !evo.isCaught }"
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                width="32"
+                height="32"
               >
             </template>
             <div

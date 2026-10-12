@@ -24,7 +24,8 @@ const masterCanvasRef = ref<InstanceType<typeof MasterSheetCanvas> | null>(null)
 async function handleSelectRegisteredAsset(asset: CanonicalAssetEntry): Promise<void> {
   atlas.selectRegisteredAsset(asset);
   await nextTick();
-  masterCanvasRef.value?.centerOnRect(asset.sourceRect);
+  const rectToCenter = atlas.selectedRect.value ?? asset.sourceRect;
+  masterCanvasRef.value?.centerOnRect(rectToCenter);
 }
 
 function handleSheetChange(event: Event): void {
@@ -169,9 +170,9 @@ function handleSheetChange(event: Event): void {
 .asset-inspector-view {
   display: flex;
   flex-direction: column;
-  width: dvw;
-  height: dvh;
-  background: #090d16;
+  width: 100%;
+  height: 100%;
+  background: var(--slate-900);
   color: var(--slate-50);
   overflow: hidden;
 }
@@ -184,7 +185,7 @@ function handleSheetChange(event: Event): void {
   gap: $spacing-lg;
   height: 52px;
   padding: 0 16px;
-  background: #0b1120;
+  background: var(--slate-900);
   border-bottom: 1px solid Rgb(255 255 255 / 12%);
 }
 

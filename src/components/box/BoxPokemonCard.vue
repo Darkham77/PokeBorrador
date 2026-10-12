@@ -244,6 +244,9 @@ onUnmounted(() => {
           class="box-card-sprite"
           :class="[auraClass]"
           alt="pokemon"
+          width="32"
+        
+          height="32"
           @error="handleSpriteError"
         >
       </PVSpriteFX>
@@ -409,7 +412,14 @@ onUnmounted(() => {
     overflow: visible;
     pointer-events: none;
 
-    :deep(.pv-fx-wrapper),
+    :deep(.pv-fx-wrapper) {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: visible;
+      pointer-events: none;
+    }
+
     :deep(.pv-fx-sprite-layer) {
       display: flex;
       justify-content: center;

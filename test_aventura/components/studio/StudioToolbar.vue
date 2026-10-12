@@ -67,18 +67,29 @@ async function handleSyncAssets(): Promise<void> {
   if (isSyncing.value) return;
   isSyncing.value = true;
   try {
-    const res = await fetch('/api/studio/sync-assets', { method: 'POST' });
-    const data = (await res.json()) as { success: boolean; totalPrefabs?: number; error?: string };
-    if (data.success) {
-      await defaultPrefabsRegistry.loadManifest('/assets/prefabs/manifest.json');
-      store.generateGeography(false);
-      alert(`¡Catálogo de assets actualizado con éxito! (${data.totalPrefabs ?? 0} prefabs registrados)`);
-    } else {
-      alert(`Error al sincronizar assets: ${data.error ?? 'Error desconocido'}`);
+    let res: Response | null = null;
+    try {
+      res = await fetch('/api/studio/sync-assets', { method: 'POST' });
+    } catch (networkErr: unknown) {
+      console.warn('[StudioToolbar] Servidor de sync no disponible, usando recarga local:', networkErr);
     }
+
+    if (res && res.ok) {
+      const data = (await res.json()) as { success: boolean; totalPrefabs?: number; error?: string };
+      if (data.success) {
+        await defaultPrefabsRegistry.loadManifest('/test_aventura/assets/prefabs/manifest.json');
+        store.generateGeography(false);
+        alert(`¡Catálogo de assets actualizado con éxito! (${data.totalPrefabs ?? 0} prefabs registrados)`);
+        return;
+      }
+    }
+    // Fallback: reload canonical prefabs manifest directly
+    await defaultPrefabsRegistry.loadManifest('/test_aventura/assets/prefabs/manifest.json');
+    store.generateGeography(false);
+    alert('¡Catálogo de assets recargado localmente con éxito!');
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    alert(`Error de red al actualizar assets: ${msg}`);
+    alert(`Aviso al actualizar assets: ${msg}`);
   } finally {
     isSyncing.value = false;
   }
@@ -434,7 +445,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   gap: $spacing-sm;
   height: 52px;
   padding: 0 12px;
-  background: #090d16;
+  background: var(--slate-900);
   border-bottom: 2px solid var(--slate-800);
   user-select: none;
   box-shadow: $shadow-card;
@@ -556,7 +567,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   cursor: pointer;
 
   &.btn-generate {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, var(--emerald-500) 0%, var(--emerald-500) 100%);
     color: var(--white);
     box-shadow: var(--shadow-card);
     will-change: filter;
@@ -567,7 +578,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   }
 
   &.btn-primary {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-500) 100%);
     color: var(--white);
     will-change: filter;
 

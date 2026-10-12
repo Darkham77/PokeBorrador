@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * PVAuraFX.vue
- * Gestiona las auras de pantalla (Reflejo/Pantalla Luz/Velo Sagrado).
- * Las chispas Shiny ahora se renderizan via PVStatusFX como efecto secundario.
+ * Manages screen auras (Reflect/Light Screen/Safeguard).
+ * Shiny sparkles are rendered via PVStatusFX as a secondary effect.
  */
 import { ref, watch, nextTick, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
@@ -87,12 +87,12 @@ onUnmounted(() => {
   
   &.reflect {
     border: 2px solid var(--orange-500);
-    background: Radial-Gradient(circle, Transparent 40%, #ff8c00 100%);
+    background: Radial-Gradient(circle, transparent 40%, var(--orange-500) 100%);
   }
   
   &.light-screen {
     border: 2px solid var(--gold);
-    background: Radial-Gradient(circle, Transparent 40%, #ffd700 100%);
+    background: Radial-Gradient(circle, transparent 40%, var(--gold) 100%);
   }
 }
 
@@ -104,7 +104,7 @@ onUnmounted(() => {
   pointer-events: none;
   
   &.safeguard {
-    background: Radial-Gradient(circle, #50fa7b 0%, Transparent 70%);
+    background: Radial-Gradient(circle, var(--green-light) 0%, transparent 70%);
     mix-blend-mode: screen;
   }
 }

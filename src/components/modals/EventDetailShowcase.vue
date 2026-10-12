@@ -75,7 +75,8 @@ function handleSpeciesClick() {
       :src="bannerUrl"
       :alt="effectiveTitle"
       class="event-banner-img allow-aliasing"
-      @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
+      width="32"
+      height="32"
     >
   </div>
 
@@ -103,6 +104,9 @@ function handleSpeciesClick() {
           :src="getAssetUrl(ASSET_TYPES.POKEMON, currentSpecies, { isShiny })"
           :alt="currentSpecies"
           class="pixelated event-pokemon-sprite"
+        
+          width="32"
+          height="32"
         >
       </PVSpriteFX>
     </PVTooltip>

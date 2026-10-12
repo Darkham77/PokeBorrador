@@ -44,6 +44,9 @@ const onImageError = (e: Event) => {
       :alt="resolvedFromAlt"
       class="pokemon-sprite from" 
       :class="{ flashing: isFlashing, 'flash-on': isFlashOn }" 
+      width="32"
+    
+      height="32"
       @error="onImageError"
     >
 
@@ -53,6 +56,9 @@ const onImageError = (e: Event) => {
       :alt="resolvedToAlt"
       class="pokemon-sprite to" 
       :class="{ 'scale-in': step === 'transformed', flashing: isFlashing, 'flash-on': isFlashOn }"
+      width="32"
+    
+      height="32"
       @error="onImageError"
     >
   </div>

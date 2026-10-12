@@ -51,7 +51,8 @@ defineEmits<{
           :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
           alt=""
           class="pixelated"
-          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+          width="32"
+          height="32"
         >
       </PVSpriteFX>
     </div>

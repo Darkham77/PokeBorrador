@@ -107,6 +107,101 @@ function findCandidatesWithBuffer(
   return candidates;
 }
 
+function isAreaFlatGrass(
+  continentMap: ContinentMapResult,
+  startX: number,
+  startY: number,
+  width: number,
+  height: number
+): boolean {
+  for (let dy = 0; dy < height; dy++) {
+    for (let dx = 0; dx < width; dx++) {
+      const cx = startX + dx;
+      const cy = startY + dy;
+      if (
+        continentMap.terrainMatrix[cy]?.[cx] !== 'grass' ||
+        (continentMap.heightmap[cy]?.[cx] ?? 0) !== 0 ||
+        continentMap.resolvedMountain.occupiedFootCells[cy]?.[cx]
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function placeArchipelagoSecondaryLandmark(
+  secIsland: NonNullable<ContinentMapResult['archipelagoIslands']>[number],
+  placedNodes: POINode[],
+  isAreaFree: (x: number, y: number, w: number, h: number, margin?: number) => boolean,
+  markAreaOccupied: (x: number, y: number, w: number, h: number) => void
+): void {
+  if (secIsland.role === 'lighthouse') {
+    const lhW = 6;
+    const lhH = 7;
+    const lx = secIsland.cx - Math.floor(lhW / 2);
+    const ly = secIsland.cy - Math.floor(lhH / 2);
+    if (!isAreaFree(lx, ly, lhW, lhH, 1)) return;
+    placedNodes.push({
+      id: 'archipelago_lighthouse',
+      name: 'Faro Marino Insular',
+      type: 'water_landmark',
+      footprint: { width: lhW, height: lhH },
+      terrainPreference: 'coast_water',
+      gridX: lx,
+      gridY: ly,
+      elevation: 0,
+      facing: 'south',
+      buildingFile: 'poke_port_lighthouse_beacon.png'
+    });
+    markAreaOccupied(lx, ly, lhW, lhH);
+    return;
+  }
+
+  if (secIsland.role === 'sea_cave') {
+    const scW = 2;
+    const scH = 2;
+    const sx = secIsland.cx - Math.floor(scW / 2);
+    const sy = secIsland.cy - Math.floor(scH / 2);
+    if (!isAreaFree(sx, sy, scW, scH, 1)) return;
+    placedNodes.push({
+      id: 'archipelago_sea_cave',
+      name: 'Cueva Marina Insular',
+      type: 'cave_entrance',
+      footprint: { width: scW, height: scH },
+      terrainPreference: 'mountain_wall',
+      gridX: sx,
+      gridY: sy,
+      elevation: 0,
+      facing: 'south',
+      buildingFile: 'poke_cave_entrance_gray.png'
+    });
+    markAreaOccupied(sx, sy, scW, scH);
+    return;
+  }
+
+  if (secIsland.role === 'shrine') {
+    const shW = 4;
+    const shH = 4;
+    const rx = secIsland.cx - Math.floor(shW / 2);
+    const ry = secIsland.cy - Math.floor(shH / 2);
+    if (!isAreaFree(rx, ry, shW, shH, 1)) return;
+    placedNodes.push({
+      id: 'archipelago_fisherman_cottage',
+      name: 'Cabaña del Pescador Insular',
+      type: 'water_landmark',
+      footprint: { width: shW, height: shH },
+      terrainPreference: 'coast_water',
+      gridX: rx,
+      gridY: ry,
+      elevation: 0,
+      facing: 'south',
+      buildingFile: 'house_vermilion_ranch.png'
+    });
+    markAreaOccupied(rx, ry, shW, shH);
+  }
+}
+
 /**
  * Places plain settlements (Metropolis, City, Town).
  */
@@ -172,67 +267,7 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
 
       // Populate secondary archipelago islands (Sea Cave, Lighthouse, Fisherman's Cottage / Shrine)
       for (const secIsland of continentMap.archipelagoIslands) {
-        if (secIsland.role === 'lighthouse') {
-          const lhW = 6;
-          const lhH = 7;
-          const lx = secIsland.cx - Math.floor(lhW / 2);
-          const ly = secIsland.cy - Math.floor(lhH / 2);
-          if (isAreaFree(lx, ly, lhW, lhH, 1)) {
-            placedNodes.push({
-              id: 'archipelago_lighthouse',
-              name: 'Faro Marino Insular',
-              type: 'water_landmark',
-              footprint: { width: lhW, height: lhH },
-              terrainPreference: 'coast_water',
-              gridX: lx,
-              gridY: ly,
-              elevation: 0,
-              facing: 'south',
-              buildingFile: 'poke_port_lighthouse_beacon.png'
-            });
-            markAreaOccupied(lx, ly, lhW, lhH);
-          }
-        } else if (secIsland.role === 'sea_cave') {
-          const scW = 2;
-          const scH = 2;
-          const sx = secIsland.cx - Math.floor(scW / 2);
-          const sy = secIsland.cy - Math.floor(scH / 2);
-          if (isAreaFree(sx, sy, scW, scH, 1)) {
-            placedNodes.push({
-              id: 'archipelago_sea_cave',
-              name: 'Cueva Marina Insular',
-              type: 'cave_entrance',
-              footprint: { width: scW, height: scH },
-              terrainPreference: 'mountain_wall',
-              gridX: sx,
-              gridY: sy,
-              elevation: 0,
-              facing: 'south',
-              buildingFile: 'poke_cave_entrance_gray.png'
-            });
-            markAreaOccupied(sx, sy, scW, scH);
-          }
-        } else if (secIsland.role === 'shrine') {
-          const shW = 4;
-          const shH = 4;
-          const rx = secIsland.cx - Math.floor(shW / 2);
-          const ry = secIsland.cy - Math.floor(shH / 2);
-          if (isAreaFree(rx, ry, shW, shH, 1)) {
-            placedNodes.push({
-              id: 'archipelago_fisherman_cottage',
-              name: 'Cabaña del Pescador Insular',
-              type: 'water_landmark',
-              footprint: { width: shW, height: shH },
-              terrainPreference: 'coast_water',
-              gridX: rx,
-              gridY: ry,
-              elevation: 0,
-              facing: 'south',
-              buildingFile: 'house_vermilion_ranch.png'
-            });
-            markAreaOccupied(rx, ry, shW, shH);
-          }
-        }
+        placeArchipelagoSecondaryLandmark(secIsland, placedNodes, isAreaFree, markAreaOccupied);
       }
 
       continue;
@@ -283,17 +318,17 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
         const portIsland = continentMap.archipelagoIslands.find(
           (isl) => isl.role === 'port_city' || isl.id === 'island_port_main'
         );
-        if (portIsland) {
-          const islandCand = plainCandidates.find(
-            (c) =>
-              c.x >= portIsland.bounds.minX - 2 &&
-              c.x + currentWidth <= portIsland.bounds.maxX + 2 &&
-              c.y >= portIsland.bounds.minY - 2 &&
-              c.y + currentHeight <= portIsland.bounds.maxY + 2
-          );
-          if (islandCand) {
-            chosen = islandCand;
-          }
+        const islandCand = portIsland
+          ? plainCandidates.find(
+              (c) =>
+                c.x >= portIsland.bounds.minX - 2 &&
+                c.x + currentWidth <= portIsland.bounds.maxX + 2 &&
+                c.y >= portIsland.bounds.minY - 2 &&
+                c.y + currentHeight <= portIsland.bounds.maxY + 2
+            )
+          : undefined;
+        if (islandCand) {
+          chosen = islandCand;
         }
       }
 
@@ -348,45 +383,30 @@ export function placeRouteGateCheckpoints(ctx: PlainSettlementsContext): void {
       if (southGw) {
         const candX = southGw.x - Math.floor(gW / 2);
         const candY = southGw.y + 6;
-        if (candY + gH < H - 4 && candX >= 4 && candX + gW < W - 4 && isAreaFree(candX, candY, gW, gH, 1)) {
-          let flatGrass = true;
-          for (let dy = 0; dy < gH; dy++) {
-            for (let dx = 0; dx < gW; dx++) {
-              if (
-                continentMap.terrainMatrix[candY + dy]?.[candX + dx] !== 'grass' ||
-                (continentMap.heightmap[candY + dy]?.[candX + dx] ?? 0) !== 0 ||
-                continentMap.resolvedMountain.occupiedFootCells[candY + dy]?.[candX + dx]
-              ) {
-                flatGrass = false;
-                break;
-              }
-            }
-            if (!flatGrass) break;
-          }
-          if (flatGrass) {
-            const midX = candX + Math.floor(gW / 2);
-            const gateways: POIGateway[] = [
-              { x: midX, y: candY, direction: 'north' },
-              { x: midX, y: candY + gH - 1, direction: 'south' }
-            ];
-            const node: POINode = {
-              id: gateTmpl.id,
-              name: gateTmpl.name,
-              type: gateTmpl.type,
-              footprint: { width: gW, height: gH },
-              terrainPreference: gateTmpl.preference,
-              gridX: candX,
-              gridY: candY,
-              elevation: 0,
-              facing: 'south',
-              gateways
-            };
-            const layout = generateSettlementLayout(node, getSettlementContext());
-            (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
-            placedNodes.push(node);
-            markAreaOccupied(candX, candY, gW, gH);
-            gatePlaced = true;
-          }
+        const inBounds = candY + gH < H - 4 && candX >= 4 && candX + gW < W - 4;
+        if (inBounds && isAreaFree(candX, candY, gW, gH, 1) && isAreaFlatGrass(continentMap, candX, candY, gW, gH)) {
+          const midX = candX + Math.floor(gW / 2);
+          const gateways: POIGateway[] = [
+            { x: midX, y: candY, direction: 'north' },
+            { x: midX, y: candY + gH - 1, direction: 'south' }
+          ];
+          const node: POINode = {
+            id: gateTmpl.id,
+            name: gateTmpl.name,
+            type: gateTmpl.type,
+            footprint: { width: gW, height: gH },
+            terrainPreference: gateTmpl.preference,
+            gridX: candX,
+            gridY: candY,
+            elevation: 0,
+            facing: 'south',
+            gateways
+          };
+          const layout = generateSettlementLayout(node, getSettlementContext());
+          (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
+          placedNodes.push(node);
+          markAreaOccupied(candX, candY, gW, gH);
+          gatePlaced = true;
         }
       }
     }
@@ -395,45 +415,34 @@ export function placeRouteGateCheckpoints(ctx: PlainSettlementsContext): void {
       for (let y = Math.floor(H * CHOKE_SEARCH_MIN_Y_RATIO); y < Math.floor(H * CHOKE_SEARCH_MAX_Y_RATIO); y += CHOKE_SEARCH_STEP) {
         for (let x = Math.floor(W * CHOKE_SEARCH_MIN_X_RATIO); x < Math.floor(W * CHOKE_SEARCH_MAX_X_RATIO); x += CHOKE_SEARCH_STEP) {
           if (!isAreaFree(x, y, gW, gH, 1)) continue;
-          let flatGrass = true;
-          for (let dy = 0; dy < gH; dy++) {
-            for (let dx = 0; dx < gW; dx++) {
-              if (
-                continentMap.terrainMatrix[y + dy]?.[x + dx] !== 'grass' ||
-                (continentMap.heightmap[y + dy]?.[x + dx] ?? 0) !== 0 ||
-                continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[x + dx]
-              ) {
-                flatGrass = false;
-                break;
-              }
-            }
-            if (!flatGrass) break;
+          if (!isAreaFlatGrass(continentMap, x, y, gW, gH)) continue;
+          if (getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) < GATE_MIN_DISTANCE_TO_SETTLEMENT) {
+            continue;
           }
-          if (flatGrass && getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) >= GATE_MIN_DISTANCE_TO_SETTLEMENT) {
-            const midX = x + Math.floor(gW / 2);
-            const gateways: POIGateway[] = [
-              { x: midX, y, direction: 'north' },
-              { x: midX, y: y + gH - 1, direction: 'south' }
-            ];
-            const node: POINode = {
-              id: gateTmpl.id,
-              name: gateTmpl.name,
-              type: gateTmpl.type,
-              footprint: { width: gW, height: gH },
-              terrainPreference: gateTmpl.preference,
-              gridX: x,
-              gridY: y,
-              elevation: 0,
-              facing: 'south',
-              gateways
-            };
-            const layout = generateSettlementLayout(node, getSettlementContext());
-            (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
-            placedNodes.push(node);
-            markAreaOccupied(x, y, gW, gH);
-            gatePlaced = true;
-            break;
-          }
+
+          const midX = x + Math.floor(gW / 2);
+          const gateways: POIGateway[] = [
+            { x: midX, y, direction: 'north' },
+            { x: midX, y: y + gH - 1, direction: 'south' }
+          ];
+          const node: POINode = {
+            id: gateTmpl.id,
+            name: gateTmpl.name,
+            type: gateTmpl.type,
+            footprint: { width: gW, height: gH },
+            terrainPreference: gateTmpl.preference,
+            gridX: x,
+            gridY: y,
+            elevation: 0,
+            facing: 'south',
+            gateways
+          };
+          const layout = generateSettlementLayout(node, getSettlementContext());
+          (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
+          placedNodes.push(node);
+          markAreaOccupied(x, y, gW, gH);
+          gatePlaced = true;
+          break;
         }
         if (gatePlaced) break;
       }

@@ -100,6 +100,9 @@ const computedRewardTooltipDescription = computed(() => {
               :src="getAssetUrl(ASSET_TYPES.ITEM, rew.id)"
               :alt="rew.label"
               class="reward-sprite-img pixelated"
+            
+              width="32"
+              height="32"
             >
           </div>
           <span
@@ -132,6 +135,9 @@ const computedRewardTooltipDescription = computed(() => {
           :src="rewardSpriteUrl"
           :alt="computedRewardTooltipTitle"
           class="reward-sprite-img pixelated"
+        
+          width="32"
+          height="32"
         >
       </div>
       <span

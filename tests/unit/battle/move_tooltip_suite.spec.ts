@@ -194,12 +194,10 @@ describe('Move Tooltip Suite', () => {
       const stat = calculateAttackerStatDisplay(
         dummyAttacker,
         null,
-        true,
-        false,
+        { isPhysical: true, isSpecial: false, isGym: false },
         { atk: 2 },
         null,
-        'day',
-        false
+        'day'
       );
 
       expect(stat).not.toBeNull();

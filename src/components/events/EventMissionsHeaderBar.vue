@@ -76,7 +76,7 @@ const emit = defineEmits<{
       border: 1px solid Rgb(255 255 255 / 8%);
       border-radius: $radius-md;
       background: Rgb(255 255 255 / 5%); 
-      color: var(--gray, #94a3b8); 
+      color: var(--gray, var(--slate-400)); 
       font-size: var(--font-10);
       white-space: nowrap;
 

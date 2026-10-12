@@ -180,14 +180,23 @@ function getPokemonBasicData(id: string, isSeen: boolean) {
   return { name, types, hp, atk, def, spa, spd, spe, totalStats }
 }
 
-export function getSpawnStatus(
-  isVisitor: boolean,
-  isExclusive: boolean,
-  isBlocked: boolean,
-  isInCurrentCycle: boolean,
-  isBuffed: boolean,
+export interface SpawnStatusFlags {
+  isVisitor: boolean
+  isExclusive: boolean
+  isBlocked: boolean
+  isInCurrentCycle: boolean
+  isBuffed: boolean
   isDebuffed: boolean
-) {
+}
+
+export function getSpawnStatus({
+  isVisitor,
+  isExclusive,
+  isBlocked,
+  isInCurrentCycle,
+  isBuffed,
+  isDebuffed
+}: SpawnStatusFlags) {
   let spawnType = 'Común'
   let statusClass = 'common'
   if (isVisitor) {

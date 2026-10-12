@@ -26,24 +26,24 @@ import type {
 /**
  * PokemonDataProvider
  * 
- * Abstracción para el acceso a la base de datos de Pokémon y datos relacionados.
- * Permite cambiar la fuente de datos (estática vs BD) sin afectar a los consumidores.
- * Garantiza la inmutabilidad retornando copias de los datos originales.
+ * Abstraction for accessing Pokémon and related database records.
+ * Enables switching data sources (static vs DB) without impacting consumers.
+ * Guarantees immutability by returning copies of original data.
  */
 
-// Estado reactivo para la base de datos (optimizado con shallowRef)
+// Reactive state for database (optimized with shallowRef)
 const _pokemonDb = shallowRef(POKEMON_DB as Record<string, PokemonBaseData>); // open-record: Generic key-value data dictionary container
 const _speciesMetadata = shallowRef(SPECIES_METADATA as Record<string, SpeciesMetadata>); // open-record: Generic key-value data dictionary container
 const _pokemonAesthetics = shallowRef(POKEMON_AESTHETICS as Record<string, PokemonAesthetics>); // open-record: Generic key-value data dictionary container
 
-/** Mapa inverso: número sprite → nombre canónico (ej: 12 → "butterfree") */
+/** Inverse map: sprite number → canonical name (e.g. 12 → "butterfree") */
 const SPRITE_ID_TO_NAME: Record<number, string> = Object.fromEntries(
   Object.entries(POKEMON_SPRITE_IDS).map(([name, num]) => [num, name])
 );
 
 
 /**
- * Realiza una copia profunda de un objeto para evitar mutaciones accidentales.
+ * Performs a deep clone of an object to avoid accidental mutations.
  */
 const deepClone = <T>(obj: T): T => {
     if (!obj) return obj;
@@ -52,14 +52,14 @@ const deepClone = <T>(obj: T): T => {
 
 export const pokemonDataProvider = {
     /**
-     * Obtiene los datos básicos de una especie.
-     * @param {string} id - ID de la especie (ej: 'bulbasaur')
+     * Gets basic data for a species.
+     * @param id - Species ID (e.g. 'bulbasaur')
      */
     getPokemonData(id: string, bypassWhitelist = false): PokemonData {
         if (!id) throw new Error("ID de especie no proporcionado");
         let normalizedId = String(id).toLowerCase();
 
-        // Si el ID es numérico, resolverlo al nombre canónico usando el mapa inverso
+        // If ID is numeric, resolve to canonical name using inverse map
         const asNum = parseInt(normalizedId, 10);
         if (!isNaN(asNum) && String(asNum) === normalizedId && SPRITE_ID_TO_NAME[asNum]) {
             normalizedId = SPRITE_ID_TO_NAME[asNum];
@@ -85,7 +85,7 @@ export const pokemonDataProvider = {
         const height = data.height ?? 0.1;
         const weight = data.weight ?? 0.1;
 
-        // Añadimos el id al objeto retornado para conveniencia
+        // Append id to returned object for convenience
         const extendedData = {
             ...data,
             id: requirePokemonSpeciesId(normalizedId),
@@ -102,7 +102,7 @@ export const pokemonDataProvider = {
     },
 
     /**
-     * Obtiene la base de datos completa de Pokémon (solo lectura).
+     * Gets complete Pokémon database (read-only).
      */
     getPokemonDb(): Record<string, PokemonBaseData> {
         const raw = _pokemonDb.value;
@@ -115,7 +115,7 @@ export const pokemonDataProvider = {
     },
 
     /**
-     * Obtiene datos de una habilidad.
+     * Gets ability data.
      */
     getAbilityData(name: string) {
         if (!name) throw new Error("Nombre/ID de habilidad no proporcionado");
@@ -123,7 +123,7 @@ export const pokemonDataProvider = {
         let translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string; icon?: string }>)[cleanId]; // open-record: Generic key-value data dictionary container
 
         if (!translated) {
-            // Intenta buscar por nombre en español en las traducciones estáticas
+            // Attempt lookup by Spanish name in static translations
             const nameLower = name.trim().toLowerCase(); // text-ok: UI text display localization string
             const spanishId = ABILITIES_BY_SPANISH_NAME[nameLower];
             if (spanishId) {
@@ -145,7 +145,7 @@ export const pokemonDataProvider = {
     },
 
     /**
-     * Obtiene la lista de habilidades posibles para una especie.
+     * Gets list of potential abilities for a species.
      */
     getSpeciesAbilities(speciesId: PokemonSpeciesId): readonly AbilityId[] {
         if (!speciesId) return [];
@@ -155,7 +155,7 @@ export const pokemonDataProvider = {
     },
 
     /**
-     * Obtiene el rendimiento de EVs (EV Yield) de una especie al ser derrotada.
+     * Gets EV yield for a species upon defeat.
      */
     getEvYield(speciesId: PokemonSpeciesId): EvYield {
         if (!speciesId) return {};
@@ -164,7 +164,7 @@ export const pokemonDataProvider = {
     },
 
     /**
-     * Obtiene datos de un movimiento por ID. Solo acepta IDs oficiales en inglés de Showdown.
+     * Gets move data by ID. Only accepts official English Showdown IDs.
      */
     getMoveData(id: string): MoveBaseData {
         if (!id) throw new Error("ID de movimiento no proporcionado");
@@ -208,21 +208,21 @@ export const pokemonDataProvider = {
     },
 
     /**
-     * Obtiene la lista de todos los gimnasios.
+     * Gets list of all gyms.
      */
     getGyms() {
         return deepClone(GYMS);
     },
 
     /**
-     * Obtiene la lista de mapas y rutas.
+     * Gets list of maps and routes.
      */
     getMaps() {
         return deepClone(FIRE_RED_MAPS);
     },
 
     /**
-     * Obtiene los modificadores de una naturaleza.
+     * Gets nature modifiers.
      */
     getNatureData(name: string): NatureBaseData | null {
         if (!name) return null;
@@ -240,22 +240,22 @@ export const pokemonDataProvider = {
     },
 
     /**
-     * Obtiene la URL del sprite.
+     * Gets sprite URL.
      */
     getSpriteUrl(id: string, isShiny: boolean = false) {
         return getSpriteUrl(id, isShiny);
     },
 
     /**
-     * Obtiene la URL del sprite de espalda.
+     * Gets back sprite URL.
      */
     getBackSpriteUrl(id: string, isShiny: boolean = false) {
         return getBackSpriteUrl(id, isShiny);
     },
 
     /**
-     * Resuelve el nombre visible de una especie a partir de su ID de base de datos,
-     * saneando códigos internos o sufijos evolutivos (como eevee_thunder).
+     * Resolves visible species name from its database ID,
+     * sanitizing internal codes or evolutionary suffixes (such as eevee_thunder).
      */
     resolveSpeciesName(id: string): string {
         if (!id) return '';
@@ -267,14 +267,14 @@ export const pokemonDataProvider = {
         if (dbData) {
             return dbData.name;
         }
-        // Fallback: capitalizar y quitar sufijos
+        // Fallback: capitalize and remove suffixes
         const base = normalizedId.split('_')[0] || normalizedId;
         return base.charAt(0).toUpperCase() + base.slice(1);
     },
 
     /**
-     * Resuelve el ID de un movimiento a partir de su nombre en español.
-     * Lanza error si no se encuentra.
+     * Resolves move ID from its Spanish name.
+     * Throws error if not found.
      */
     getMoveIdBySpanishName(spanishName: string): string {
         const nameLower = spanishName.trim().toLowerCase(); // text-ok: UI text display localization string
@@ -283,7 +283,7 @@ export const pokemonDataProvider = {
                 return id;
             }
         }
-        // También intentar coincidencia por ID normalizado
+        // Also attempt match by normalized ID
         const possibleId = toID(spanishName);
         if ((MOVE_TRANSLATIONS_ES as Record<string, unknown>)[possibleId]) { // open-record: Generic key-value data dictionary container
             return possibleId;
@@ -292,7 +292,7 @@ export const pokemonDataProvider = {
     },
 
     /**
-     * Método para actualizar la base de datos (útil para futura integración con BD real)
+     * Method to update database (useful for future real DB integration)
      */
     updatePokemonDb(newDb: Record<string, PokemonBaseData>) {
         _pokemonDb.value = newDb;

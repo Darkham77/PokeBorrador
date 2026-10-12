@@ -24,6 +24,7 @@ Poké Vicio Development Team.
 - `continentPersistence.ts`: Browser storage serialization, migration, and export logic for continental projects.
 - `spritePipelineEngine.ts`: Connected component analysis and asset processing pipeline for raw map imports.
 - `svgRouteAdapter.ts`: Adapter translating SVG route path definitions into rasterized map grids and exporting full semantic Pokémon topology SVGs via `exportPokemonTopologyToSvg`.
+- [`canonicalRegionPresets.ts`](./canonicalRegionPresets.ts): Authentic regional geography presets and procedural generation pipeline for Kanto and Johto overworlds.
 - [`coastalFractalEngine.ts`](./coastalFractalEngine.ts): Module implementation.
 - [`regionalPersistenceHelper.ts`](./regionalPersistenceHelper.ts): Module implementation.
 - [`riverHydrographyEngine.ts`](./riverHydrographyEngine.ts): Module implementation.

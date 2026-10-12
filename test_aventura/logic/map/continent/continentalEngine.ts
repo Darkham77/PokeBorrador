@@ -138,6 +138,15 @@ function stampWaterBridgesForPath(
   let wStart = -1;
   let hasSurfWater = false;
 
+  const applyBridgeRun = (start: number, end: number) => {
+    for (let k = start; k <= end; k++) {
+      const pt = pathCells[k]!;
+      if (!isPointInHarborBasin(pt, pois)) {
+        bridgeGrid[pt.y]![pt.x] = true;
+      }
+    }
+  };
+
   for (let i = 0; i <= pathCells.length; i++) {
     const isW =
       i < pathCells.length &&
@@ -146,16 +155,14 @@ function stampWaterBridgesForPath(
 
     if (isW && wStart === -1) {
       wStart = i;
-    } else if (!isW && wStart !== -1) {
+      continue;
+    }
+
+    if (!isW && wStart !== -1) {
       const wEnd = i - 1;
       const runLen = wEnd - wStart + 1;
       if (runLen <= maxBridgeRun) {
-        for (let k = wStart; k <= wEnd; k++) {
-          const pt = pathCells[k]!;
-          if (!isPointInHarborBasin(pt, pois)) {
-            bridgeGrid[pt.y]![pt.x] = true;
-          }
-        }
+        applyBridgeRun(wStart, wEnd);
       } else {
         hasSurfWater = true;
       }
@@ -179,46 +186,22 @@ function stampWaterBridgesForPath(
  * 8. Phase 8: Orthogonal Routes & Bridges Carving.
  * 9. Phase 9: Wilderness Vegetation & Framing.
  */
-export function generatePokemonContinentalWorld(
-  options?: PokemonContinentalOptions
-): PokemonContinentalWorldResult {
-  const seed = options?.seed ?? DEFAULT_PROCEDURAL_SEED;
-  const width = options?.width ?? DEFAULT_CONTINENTAL_WORLD_WIDTH;
-  const height = options?.height ?? DEFAULT_CONTINENTAL_WORLD_HEIGHT;
+interface ContinentalSettlementPoisResult {
+  readonly pois: POINode[];
+  readonly poiById: Map<string, POINode>;
+  readonly bridgeGrid: boolean[][];
+  readonly placedGates: readonly POINode[];
+  readonly activeCorridors: readonly EmbeddedCorridor[];
+}
 
-  // Phase 1: Abstract Graph
-  const graph = generatePokemonTopology({ seed });
-
-  // Phase 2: Orthogonal Spatial Embedding
-  const embedded = embedPokemonTopology(graph, { seed, width, height });
-
-  // Phase 3: Continental Sculpting
-  const continent = sculptContinentFromGraph(embedded, { ...options, seed, width, height });
-
-  // Phase 4: Emergent Corridor Properties
-  const corridorProperties = enrichCorridorProperties(embedded, continent);
-
-  // Phase 5: Progression Barriers & Anti-Softlock Validation
-  const progression = applyProgressionBarriers(graph);
-
-  // Phase 6: Semantic SVG Export
-  const svgMarkup = exportPokemonTopologyToSvg({
-    embedded,
-    properties: corridorProperties,
-    progression,
-    tileScale: options?.tileScale ?? STANDARD_GBA_TILE_SIZE
-  });
-
-  // Phase 7: Rich Procedural POI & Urban Settlement Generation
-  const settlementContext: SettlementTerrainContext = {
-    heightmap: continent.heightmap,
-    terrainMatrix: continent.terrainMatrix,
-    occupiedFootCells: continent.resolvedMountain.occupiedFootCells,
-    mountainCellRoles: continent.resolvedMountain.cellDetails.map((row) => row.map((c) => c?.role)),
-    width,
-    height
-  };
-
+function compileContinentalSettlementPois(
+  embedded: EmbeddedTopologyGraph,
+  continent: ContinentMapResult,
+  settlementContext: SettlementTerrainContext,
+  seed: number,
+  width: number,
+  height: number
+): ContinentalSettlementPoisResult {
   const CANONICAL_CAVE_NAMES = [
     'Cueva Mt. Moon',
     'Túnel Roca',
@@ -250,7 +233,6 @@ export function generatePokemonContinentalWorld(
   let landmarkIndex = 0;
 
   const pois: POINode[] = [];
-  const isOceanGrid = computeOceanGrid(continent);
 
   // Invariant: At least one urban settlement POI MUST be strictly adjacent to ocean water,
   // and EXACTLY ONE city POI has hasPort === true.
@@ -326,20 +308,20 @@ export function generatePokemonContinentalWorld(
         for (let dx = -searchRadius; dx <= searchRadius; dx++) {
           const cx = en.gridX + dx;
           const cy = en.gridY + dy;
-          if (cx >= 1 && cx < width - 1 && cy >= 1 && cy < height - 2) {
-            const mCell = continent.resolvedMountain.cellDetails[cy]?.[cx];
-            const isSouthWall = mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
-            const frontElev = continent.heightmap[cy + 1]?.[cx] ?? 0;
-            const frontTerrain = continent.terrainMatrix[cy + 1]?.[cx];
-            const frontIsGround = frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
-            if (isSouthWall && frontIsGround) {
-              const dst = Math.hypot(dx, dy);
-              if (dst < minDst) {
-                minDst = dst;
-                bestX = cx;
-                bestY = cy;
-              }
-            }
+          if (cx < 1 || cx >= width - 1 || cy < 1 || cy >= height - 2) continue;
+
+          const mCell = continent.resolvedMountain.cellDetails[cy]?.[cx];
+          const isSouthWall = mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
+          const frontElev = continent.heightmap[cy + 1]?.[cx] ?? 0;
+          const frontTerrain = continent.terrainMatrix[cy + 1]?.[cx];
+          const frontIsGround = frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
+          if (!isSouthWall || !frontIsGround) continue;
+
+          const dst = Math.hypot(dx, dy);
+          if (dst < minDst) {
+            minDst = dst;
+            bestX = cx;
+            bestY = cy;
           }
         }
       }
@@ -371,7 +353,6 @@ export function generatePokemonContinentalWorld(
       tier: en.role === 'starter' ? 0 : 1
     };
 
-
     if (type === 'metropolis' || type === 'city' || type === 'town' || type === 'pokemon_league' || type === 'route_gate') {
       let poiSeed = seed;
       for (let i = 0; i < poiNode.id.length; i++) {
@@ -395,12 +376,12 @@ export function generatePokemonContinentalWorld(
         for (let dx = -PORT_TERMINAL_LATERAL_FLANK_RADIUS; dx < gateW + PORT_TERMINAL_LATERAL_FLANK_RADIUS; dx++) {
           const gy = gateY + dy;
           const gx = gateX + dx;
-          if (gy >= 0 && gy < height && gx >= 0 && gx < width) {
-            const t = continent.terrainMatrix[gy]?.[gx];
-            if (t !== 'water' && t !== 'water_deep') {
-              (continent.terrainMatrix as WaterTerrainKind[][])[gy]![gx] = 'sand';
-              (continent.heightmap as number[][])[gy]![gx] = 0;
-            }
+          if (gy < 0 || gy >= height || gx < 0 || gx >= width) continue;
+
+          const t = continent.terrainMatrix[gy]?.[gx];
+          if (t !== 'water' && t !== 'water_deep') {
+            (continent.terrainMatrix as WaterTerrainKind[][])[gy]![gx] = 'sand';
+            (continent.heightmap as number[][])[gy]![gx] = 0;
           }
         }
       }
@@ -484,56 +465,59 @@ export function generatePokemonContinentalWorld(
         (islandNode as { urbanLayout?: SettlementLayoutResult }).urbanLayout = layout;
         pois.push(islandNode);
       } else {
-        // Minor islet (< 80 tiles): Strict prohibition of settlements, cities, marts, centers, railways, streetlamps.
-        // Deterministically assign 1 of 3 archetypes:
-        const archetypeIdx = Math.abs(island.cx * ARCHETYPE_PRIME_X + island.cy * ARCHETYPE_PRIME_Y + seed) % 3;
-        if (archetypeIdx === 0) {
-          // 1. Santuario / Mazmorra: rocky elevation h=1 with cave entrance / ancient ruin
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              const rx = island.cx + dx;
-              const ry = island.cy + dy;
-              if (rx >= 0 && rx < width && ry >= 0 && ry < height && continent.terrainMatrix[ry]?.[rx] === 'grass') {
+        const configureMinorIslet = () => {
+          const archetypeIdx = Math.abs(island.cx * ARCHETYPE_PRIME_X + island.cy * ARCHETYPE_PRIME_Y + seed) % 3;
+          if (archetypeIdx === 0) {
+            // 1. Santuario / Mazmorra: rocky elevation h=1 with cave entrance / ancient ruin
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                const rx = island.cx + dx;
+                const ry = island.cy + dy;
+                if (rx < 0 || rx >= width || ry < 0 || ry >= height || continent.terrainMatrix[ry]?.[rx] !== 'grass') continue;
                 (continent.heightmap as number[][])[ry]![rx] = 1;
               }
             }
+            pois.push({
+              id: `islet_sanctuary_${island.id}`,
+              name: island.name,
+              type: 'water_landmark',
+              footprint: { width: 2, height: 2 },
+              terrainPreference: 'mountain_wall',
+              gridX: island.cx - 1,
+              gridY: island.cy - 1,
+              elevation: 0,
+              buildingFile: 'poke_cave_entrance_gray.png'
+            });
+            return;
           }
-          pois.push({
-            id: `islet_sanctuary_${island.id}`,
-            name: island.name,
-            type: 'water_landmark',
-            footprint: { width: 2, height: 2 },
-            terrainPreference: 'mountain_wall',
-            gridX: island.cx - 1,
-            gridY: island.cy - 1,
-            elevation: 0,
-            buildingFile: 'poke_cave_entrance_gray.png'
-          });
-        } else if (archetypeIdx === 1) {
-          // 2. Atolón Desierto: perimeter beach with trees, tall grass and collectible item ball
-          pois.push({
-            id: `islet_atoll_${island.id}`,
-            name: island.name,
-            type: 'water_landmark',
-            footprint: { width: 2, height: 2 },
-            terrainPreference: 'flat_grass',
-            gridX: island.cx - 1,
-            gridY: island.cy - 1,
-            elevation: 0,
-            buildingFile: 'poke_item_ball.png'
-          });
-        } else {
+
+          if (archetypeIdx === 1) {
+            // 2. Atolón Desierto: perimeter beach with trees, tall grass and collectible item ball
+            pois.push({
+              id: `islet_atoll_${island.id}`,
+              name: island.name,
+              type: 'water_landmark',
+              footprint: { width: 2, height: 2 },
+              terrainPreference: 'flat_grass',
+              gridX: island.cx - 1,
+              gridY: island.cy - 1,
+              elevation: 0,
+              buildingFile: 'poke_signpost.png'
+            });
+            return;
+          }
+
           // 3. Isla Faro: lighthouse or fisherman cottage + 2-tile pier to deep water
           pois.push({
             id: `islet_lighthouse_${island.id}`,
             name: island.name,
             type: 'water_landmark',
-            footprint: { width: 3, height: 4 },
+            footprint: { width: 2, height: 4 },
             terrainPreference: 'flat_grass',
             gridX: island.cx - 1,
             gridY: island.cy - 2,
             elevation: 0,
-            buildingFile: 'poke_lighthouse.png'
+            buildingFile: 'poke_port_lighthouse_beacon.png'
           });
           // 2-tile wooden pier extending toward adjacent water
           for (let dy = 2; dy <= 3; dy++) {
@@ -543,7 +527,9 @@ export function generatePokemonContinentalWorld(
               bridgeGrid[py]![px] = true;
             }
           }
-        }
+        };
+
+        configureMinorIslet();
       }
     }
   }
@@ -563,42 +549,104 @@ export function generatePokemonContinentalWorld(
     height
   });
 
-  // Phase 8: Terrain-Aware Routes & Bridges Carving
+  return {
+    pois,
+    poiById,
+    bridgeGrid,
+    placedGates,
+    activeCorridors
+  };
+}
+
+function carveContinentalCorridorsAndPaths(
+  continent: ContinentMapResult,
+  settlementPois: ContinentalSettlementPoisResult,
+  seed: number,
+  width: number,
+  height: number
+): boolean[][] {
+  const { pois, poiById, bridgeGrid, placedGates, activeCorridors } = settlementPois;
+  const isOceanGrid = computeOceanGrid(continent);
   const pathGrid: boolean[][] = Array.from({ length: height }, () => Array(width).fill(false));
 
   // Project wooden harbor pier of width >= 3 extending 3-5 tiles into deep water
   for (const poi of pois) {
-    if (poi.type === 'port_dock') {
-      const pierW = 3;
-      const pierLen = 4;
-      const pierStartX = poi.gridX + (poi.footprint.width >= 7 ? Math.floor((poi.footprint.width - pierW) / 2) : 0);
-      const pierStartY = poi.gridY + poi.footprint.height;
+    if (poi.type !== 'port_dock') continue;
+    const pierW = 3;
+    const pierLen = 4;
+    const pierStartX = poi.gridX + (poi.footprint.width >= 7 ? Math.floor((poi.footprint.width - pierW) / 2) : 0);
+    const pierStartY = poi.gridY + poi.footprint.height;
 
-      for (let dy = 0; dy < pierLen; dy++) {
-        const py = pierStartY + dy;
-        if (py >= 0 && py < height) {
-          for (let dx = 0; dx < pierW; dx++) {
-            const px = pierStartX + dx;
-            if (px >= 0 && px < width) {
-              bridgeGrid[py]![px] = true;
-              (continent.terrainMatrix as WaterTerrainKind[][])[py]![px] = 'water';
-            }
-          }
-        }
+    for (let dy = 0; dy < pierLen; dy++) {
+      const py = pierStartY + dy;
+      if (py < 0 || py >= height) continue;
+      for (let dx = 0; dx < pierW; dx++) {
+        const px = pierStartX + dx;
+        if (px < 0 || px >= width) continue;
+        bridgeGrid[py]![px] = true;
+        (continent.terrainMatrix as WaterTerrainKind[][])[py]![px] = 'water';
       }
+    }
 
-      // Reserve mooring cell adjacent to the pier for ferry vessel sprite
-      const ferryX = pierStartX + pierW + 1;
-      const ferryY = pierStartY;
-      if (ferryY + 4 < height && ferryX + FERRY_VESSEL_RESERVE_WIDTH < width) {
-        for (let fdy = 0; fdy < 4; fdy++) {
-          for (let fdx = 0; fdx < FERRY_VESSEL_RESERVE_WIDTH; fdx++) {
-            (continent.terrainMatrix as WaterTerrainKind[][])[ferryY + fdy]![ferryX + fdx] = 'water';
-          }
+    // Reserve mooring cell adjacent to the pier for ferry vessel sprite
+    const ferryX = pierStartX + pierW + 1;
+    const ferryY = pierStartY;
+    if (ferryY + 4 < height && ferryX + FERRY_VESSEL_RESERVE_WIDTH < width) {
+      for (let fdy = 0; fdy < 4; fdy++) {
+        for (let fdx = 0; fdx < FERRY_VESSEL_RESERVE_WIDTH; fdx++) {
+          (continent.terrainMatrix as WaterTerrainKind[][])[ferryY + fdy]![ferryX + fdx] = 'water';
         }
       }
     }
   }
+
+  const collectCorridorExclusionZones = (fromPoi: POINode, toPoi: POINode): { x1: number; y1: number; x2: number; y2: number }[] => {
+    const zones: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    for (const p of pois) {
+      if (p.id !== fromPoi.id && p.id !== toPoi.id) {
+        if (p.type === 'route_gate') {
+          zones.push({
+            x1: p.gridX - ROUTE_GATE_EXCLUSION_PADDING_X,
+            y1: p.gridY - 4,
+            x2: p.gridX + p.footprint.width + ROUTE_GATE_EXCLUSION_PADDING_X,
+            y2: p.gridY + p.footprint.height + 4
+          });
+        } else if (p.type === 'port_dock') {
+          zones.push({
+            x1: p.gridX - PORT_DOCK_EXCLUSION_PADDING_X,
+            y1: p.gridY - 2,
+            x2: p.gridX + p.footprint.width + PORT_DOCK_EXCLUSION_PADDING_X,
+            y2: p.gridY + p.footprint.height + PORT_DOCK_EXCLUSION_PADDING_BOTTOM
+          });
+        } else {
+          zones.push({
+            x1: p.gridX + 1,
+            y1: p.gridY + 1,
+            x2: p.gridX + p.footprint.width - 2,
+            y2: p.gridY + p.footprint.height - 2
+          });
+        }
+      } else if (p.type === 'route_gate') {
+        const b = p.urbanLayout?.buildings[0];
+        if (b) {
+          zones.push({
+            x1: b.x,
+            y1: b.y,
+            x2: b.x + b.width - 1,
+            y2: b.y + b.height - 1
+          });
+        }
+      } else if (p.type === 'port_dock') {
+        zones.push({
+          x1: p.gridX - PORT_DOCK_EXCLUSION_PADDING_X,
+          y1: p.gridY - 2,
+          x2: p.gridX + p.footprint.width + PORT_DOCK_EXCLUSION_PADDING_X,
+          y2: p.gridY + p.footprint.height + PORT_DOCK_EXCLUSION_PADDING_BOTTOM
+        });
+      }
+    }
+    return zones;
+  };
 
   for (const corridor of activeCorridors) {
     if (corridor.kind === 'wormhole_tunnel' || corridor.kind === 'surf_route') continue;
@@ -611,54 +659,7 @@ export function generatePokemonContinentalWorld(
       const goalGw = (corridor as { customGoalGw?: { x: number; y: number } }).customGoalGw ?? getBestGateway(toPoi, fromPoi.gridX, fromPoi.gridY);
 
       // Exclude third-party settlements and protect route gatehouses from being bypassed or clipped
-      const otherZones: { x1: number; y1: number; x2: number; y2: number }[] = [];
-      for (const p of pois) {
-        if (p.id !== fromPoi.id && p.id !== toPoi.id) {
-          if (p.type === 'route_gate') {
-            // Third-party routes must not route through the gatehouse checkpoint zone or its flanks
-            otherZones.push({
-              x1: p.gridX - ROUTE_GATE_EXCLUSION_PADDING_X,
-              y1: p.gridY - 4,
-              x2: p.gridX + p.footprint.width + ROUTE_GATE_EXCLUSION_PADDING_X,
-              y2: p.gridY + p.footprint.height + 4
-            });
-          } else if (p.type === 'port_dock') {
-            // Exclude port terminal building, pier, and entire marine harbor basin from overland routing
-            otherZones.push({
-              x1: p.gridX - PORT_DOCK_EXCLUSION_PADDING_X,
-              y1: p.gridY - 2,
-              x2: p.gridX + p.footprint.width + PORT_DOCK_EXCLUSION_PADDING_X,
-              y2: p.gridY + p.footprint.height + PORT_DOCK_EXCLUSION_PADDING_BOTTOM
-            });
-          } else {
-            otherZones.push({
-              x1: p.gridX + 1,
-              y1: p.gridY + 1,
-              x2: p.gridX + p.footprint.width - 2,
-              y2: p.gridY + p.footprint.height - 2
-            });
-          }
-        } else if (p.type === 'route_gate') {
-          // Even for connecting corridor segments, the gatehouse building footprint itself is solid!
-          const b = p.urbanLayout?.buildings[0];
-          if (b) {
-            otherZones.push({
-              x1: b.x,
-              y1: b.y,
-              x2: b.x + b.width - 1,
-              y2: b.y + b.height - 1
-            });
-          }
-        } else if (p.type === 'port_dock') {
-          // The port dock itself is a maritime terminal, never crossed by overland paths
-          otherZones.push({
-            x1: p.gridX - PORT_DOCK_EXCLUSION_PADDING_X,
-            y1: p.gridY - 2,
-            x2: p.gridX + p.footprint.width + PORT_DOCK_EXCLUSION_PADDING_X,
-            y2: p.gridY + p.footprint.height + PORT_DOCK_EXCLUSION_PADDING_BOTTOM
-          });
-        }
-      }
+      const otherZones = collectCorridorExclusionZones(fromPoi, toPoi);
 
       const astarRes = findPathAStar(
         continent,
@@ -683,14 +684,17 @@ export function generatePokemonContinentalWorld(
           (corridor as { kind: string }).kind = 'surf_route';
         }
 
-        for (const pt of astarRes.path) {
-          if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height) {
+        const stampAstarPath = (path: readonly { x: number; y: number }[]) => {
+          for (const pt of path) {
+            if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height) continue;
             const t = continent.terrainMatrix[pt.y]?.[pt.x];
             if (t !== 'water' && t !== 'water_deep') {
               pathGrid[pt.y]![pt.x] = true;
             }
           }
-        }
+        };
+
+        stampAstarPath(astarRes.path);
         (corridor as { pathCells: typeof corridor.pathCells }).pathCells = astarRes.path;
         stamped = true;
       }
@@ -709,14 +713,12 @@ export function generatePokemonContinentalWorld(
       }
 
       for (const pt of corridor.pathCells) {
-        if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height) {
-          const cell = continent.cells[pt.y]?.[pt.x];
-          if (cell && (cell.isWalkable || cell.isStair)) {
-            const t = continent.terrainMatrix[pt.y]?.[pt.x];
-            if (t !== 'water' && t !== 'water_deep') {
-              pathGrid[pt.y]![pt.x] = true;
-            }
-          }
+        if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height) continue;
+        const cell = continent.cells[pt.y]?.[pt.x];
+        if (!cell || (!cell.isWalkable && !cell.isStair)) continue;
+        const t = continent.terrainMatrix[pt.y]?.[pt.x];
+        if (t !== 'water' && t !== 'water_deep') {
+          pathGrid[pt.y]![pt.x] = true;
         }
       }
     }
@@ -724,19 +726,17 @@ export function generatePokemonContinentalWorld(
 
   // Ensure harbor basins around port docks are 100% free of stray bridge pieces
   for (const port of pois) {
-    if (port.type === 'port_dock') {
-      const pierStartX = port.gridX + (port.footprint.width >= 7 ? Math.floor((port.footprint.width - 3) / 2) : 0);
-      const pierEndX = pierStartX + 2;
-      const pierStartY = port.gridY + port.footprint.height;
+    if (port.type !== 'port_dock') continue;
+    const pierStartX = port.gridX + (port.footprint.width >= 7 ? Math.floor((port.footprint.width - 3) / 2) : 0);
+    const pierEndX = pierStartX + 2;
+    const pierStartY = port.gridY + port.footprint.height;
 
-      for (let y = port.gridY - 2; y <= port.gridY + port.footprint.height + PORT_DOCK_EXCLUSION_PADDING_BOTTOM; y++) {
-        for (let x = port.gridX - PORT_DOCK_EXCLUSION_PADDING_X; x <= port.gridX + port.footprint.width + PORT_DOCK_EXCLUSION_PADDING_X; x++) {
-          if (y >= 0 && y < height && x >= 0 && x < width) {
-            const isPartOfPier = x >= pierStartX && x <= pierEndX && y >= pierStartY;
-            if (!isPartOfPier && bridgeGrid[y]?.[x]) {
-              bridgeGrid[y]![x] = false;
-            }
-          }
+    for (let y = port.gridY - 2; y <= port.gridY + port.footprint.height + PORT_DOCK_EXCLUSION_PADDING_BOTTOM; y++) {
+      for (let x = port.gridX - PORT_DOCK_EXCLUSION_PADDING_X; x <= port.gridX + port.footprint.width + PORT_DOCK_EXCLUSION_PADDING_X; x++) {
+        if (y < 0 || y >= height || x < 0 || x >= width) continue;
+        const isPartOfPier = x >= pierStartX && x <= pierEndX && y >= pierStartY;
+        if (!isPartOfPier && bridgeGrid[y]?.[x]) {
+          bridgeGrid[y]![x] = false;
         }
       }
     }
@@ -755,41 +755,45 @@ export function generatePokemonContinentalWorld(
 
   // Procedural cave entrances on south cliff faces intersecting or adjacent to routes
   let proceduralTunnelIndex = 1;
+  const tryPlaceProceduralCave = (cx: number, cy: number) => {
+    const mCell = continent.resolvedMountain?.cellDetails?.[cy]?.[cx];
+    const isSouthCliffWall =
+      Boolean(mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'))) &&
+      (continent.heightmap[cy]?.[cx] ?? 0) >= 1 &&
+      (continent.heightmap[cy + 1]?.[cx] ?? 0) === 0 &&
+      continent.terrainMatrix[cy + 1]?.[cx] !== 'water' &&
+      continent.terrainMatrix[cy + 1]?.[cx] !== 'water_deep';
+
+    if (!isSouthCliffWall || !pathGrid[cy + 1]?.[cx]) return;
+
+    const hasNearbyCave = pois.some(
+      (p) => p.type === 'cave_entrance' && Math.hypot(p.gridX - cx, p.gridY - cy) < MIN_DISTANCE_BETWEEN_CAVES
+    );
+    if (hasNearbyCave) return;
+
+    const hasBacking = (continent.heightmap[cy - 1]?.[cx] ?? 0) >= 1 && (continent.heightmap[cy - 2]?.[cx] ?? 0) >= 1;
+    if (!hasBacking) return;
+
+    const mtnPal = continent.geologicalClusters?.paletteMatrix?.[cy]?.[cx] ?? continent.mountainPalette ?? 'brown';
+    const caveFile = mtnPal === 'gray' ? 'poke_cave_entrance_gray.png' : 'poke_cave_entrance_brown.png';
+    pois.push({
+      id: `cave_tunnel_${cx}_${cy}`,
+      name: `Túnel de Paso ${proceduralTunnelIndex++}`,
+      type: 'cave_entrance',
+      footprint: { width: 2, height: 2 },
+      terrainPreference: 'mountain_wall',
+      gridX: cx,
+      gridY: cy,
+      elevation: 0,
+      buildingFile: caveFile
+    });
+    pathGrid[cy + 1]![cx] = true;
+    if (cx + 1 < width) pathGrid[cy + 1]![cx + 1] = true;
+  };
+
   for (let cy = 2; cy < height - 3; cy++) {
     for (let cx = 2; cx < width - 3; cx++) {
-      const mCell = continent.resolvedMountain?.cellDetails?.[cy]?.[cx];
-      const isSouthCliffWall =
-        Boolean(mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'))) &&
-        (continent.heightmap[cy]?.[cx] ?? 0) >= 1 &&
-        (continent.heightmap[cy + 1]?.[cx] ?? 0) === 0 &&
-        continent.terrainMatrix[cy + 1]?.[cx] !== 'water' &&
-        continent.terrainMatrix[cy + 1]?.[cx] !== 'water_deep';
-
-      if (isSouthCliffWall && pathGrid[cy + 1]?.[cx]) {
-        const hasNearbyCave = pois.some(
-          (p) => p.type === 'cave_entrance' && Math.hypot(p.gridX - cx, p.gridY - cy) < MIN_DISTANCE_BETWEEN_CAVES
-        );
-        if (!hasNearbyCave) {
-          const hasBacking = (continent.heightmap[cy - 1]?.[cx] ?? 0) >= 1 && (continent.heightmap[cy - 2]?.[cx] ?? 0) >= 1;
-          if (hasBacking) {
-            const mtnPal = continent.geologicalClusters?.paletteMatrix?.[cy]?.[cx] ?? continent.mountainPalette ?? 'brown';
-            const caveFile = mtnPal === 'gray' ? 'poke_cave_entrance_gray.png' : 'poke_cave_entrance_brown.png';
-            pois.push({
-              id: `cave_tunnel_${cx}_${cy}`,
-              name: `Túnel de Paso ${proceduralTunnelIndex++}`,
-              type: 'cave_entrance',
-              footprint: { width: 2, height: 2 },
-              terrainPreference: 'mountain_wall',
-              gridX: cx,
-              gridY: cy,
-              elevation: 0,
-              buildingFile: caveFile
-            });
-            pathGrid[cy + 1]![cx] = true;
-            if (cx + 1 < width) pathGrid[cy + 1]![cx + 1] = true;
-          }
-        }
-      }
+      tryPlaceProceduralCave(cx, cy);
     }
   }
 
@@ -809,41 +813,37 @@ export function generatePokemonContinentalWorld(
   (continent as { placedStairs: typeof continent.placedStairs }).placedStairs = prunedStairs;
 
   // Ensure all land bordering harbor water or port docks has a continuous sand beach transition
-  for (const port of pois) {
-    if (port.type === 'port_dock') {
-      const minX = Math.max(0, port.gridX - HARBOR_BEACH_PADDING_WEST);
-      const maxX = Math.min(width - 1, port.gridX + port.footprint.width + HARBOR_BEACH_PADDING_EAST);
-      const minY = Math.max(0, port.gridY - 6);
-      const maxY = Math.min(height - 1, port.gridY + port.footprint.height + HARBOR_BEACH_PADDING_SOUTH);
+  const isNearHarborWater = (x: number, y: number): boolean => {
+    for (let dy = -HARBOR_WATER_PROXIMITY_RADIUS; dy <= HARBOR_WATER_PROXIMITY_RADIUS; dy++) {
+      for (let dx = -HARBOR_WATER_PROXIMITY_RADIUS; dx <= HARBOR_WATER_PROXIMITY_RADIUS; dx++) {
+        const ny = y + dy;
+        const nx = x + dx;
+        const t = continent.terrainMatrix[ny]?.[nx];
+        if (t === 'water' || t === 'water_deep') {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
 
-      for (let y = minY; y <= maxY; y++) {
-        for (let x = minX; x <= maxX; x++) {
-          if (continent.terrainMatrix[y]?.[x] === 'grass') {
-            let nearWater = false;
-            for (let dy = -HARBOR_WATER_PROXIMITY_RADIUS; dy <= HARBOR_WATER_PROXIMITY_RADIUS; dy++) {
-              for (let dx = -HARBOR_WATER_PROXIMITY_RADIUS; dx <= HARBOR_WATER_PROXIMITY_RADIUS; dx++) {
-                const ny = y + dy;
-                const nx = x + dx;
-                const t = continent.terrainMatrix[ny]?.[nx];
-                if (t === 'water' || t === 'water_deep') {
-                  nearWater = true;
-                  break;
-                }
-              }
-              if (nearWater) break;
-            }
-            if (nearWater) {
-              (continent.terrainMatrix as WaterTerrainKind[][])[y]![x] = 'sand';
-            }
-          }
+  for (const port of pois) {
+    if (port.type !== 'port_dock') continue;
+    const minX = Math.max(0, port.gridX - HARBOR_BEACH_PADDING_WEST);
+    const maxX = Math.min(width - 1, port.gridX + port.footprint.width + HARBOR_BEACH_PADDING_EAST);
+    const minY = Math.max(0, port.gridY - 6);
+    const maxY = Math.min(height - 1, port.gridY + port.footprint.height + HARBOR_BEACH_PADDING_SOUTH);
+
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        if (continent.terrainMatrix[y]?.[x] === 'grass' && isNearHarborWater(x, y)) {
+          (continent.terrainMatrix as WaterTerrainKind[][])[y]![x] = 'sand';
         }
       }
     }
   }
 
   // Phase 8b: Unified Geological Autotiling (Coasts, Cliffs, Deep Water, Macro-Biomes)
-  // Re-evaluates and autotiles the entire continent after all destructive carving
-  // (harbors, docks, routes, doorsteps), eliminating raw edges and broken cliff seams.
   if (continent.macroBiomes) {
     const geoPass = compileGeologicalAutotiling(
       continent.terrainMatrix,
@@ -865,6 +865,28 @@ export function generatePokemonContinentalWorld(
     (continent as { cells: typeof continent.cells }).cells = geoPass.cells;
   }
 
+  return pathGrid;
+}
+
+interface WildernessAndFramingLayerResult {
+  readonly wilderness: WildernessLayerResult;
+  readonly ledges: readonly LedgeRun[];
+  readonly progressionObstacles: readonly ProgressionObstacle[];
+  readonly microVignettes: readonly MicroVignette[];
+}
+
+interface WildernessLayerOptions {
+  continent: ContinentMapResult;
+  pois: readonly POINode[];
+  pathGrid: boolean[][];
+  bridgeGrid: boolean[][];
+  seed: number;
+}
+
+function compileWildernessAndFramingLayer(
+  options: WildernessLayerOptions
+): WildernessAndFramingLayerResult {
+  const { continent, pois, pathGrid, bridgeGrid, seed } = options;
   // Phase 9a: Procedural 1-Way Ledges & HM Progression Obstacles (Phase 4)
   const ledges = generateRouteLedges({ continent, pathGrid, pois, seed });
   const progressionObstacles = generateProgressionObstacles({ continent, pathGrid, pois, seed });
@@ -921,21 +943,109 @@ export function generatePokemonContinentalWorld(
   });
 
   return {
-    continent,
-    graph,
-    embedded: {
-      ...embedded,
-      corridors: activeCorridors
-    },
-    corridorProperties,
-    progression,
-    svgMarkup,
-    pois,
-    pathGrid,
-    bridgeGrid,
     wilderness,
     ledges,
     progressionObstacles,
     microVignettes
+  };
+}
+
+/**
+ * Master orchestrator for the 5-Phase Pokémon Graph-First Pipeline:
+ *
+ * 1. Phase 1: Abstract Graph Generation (7 Pokémon Rules: cycles, hubs, dead-ends, 8 gyms, port).
+ * 2. Phase 2: Orthogonal Spatial Embedding (Band grid + bounded jitter, 100% orthogonal corridors).
+ * 3. Phase 3: Continental Sculpting (Rule 7: land envelope wraps graph, surf water channels).
+ * 4. Phase 4: Emergent Corridor Properties (Width scaling, terrain influence, variety, gatehouses).
+ * 5. Phase 5: Progression Barriers & Anti-Softlock Simulation (Mathematical solvability guarantee).
+ * 6. Phase 6: Semantic SVG Vector Export (Complete overlay with nodes, corridors, barriers, wormholes).
+ * 7. Phase 7: Rich Procedural POI & Urban Settlement Generation (10 GBA settlement archetypes).
+ * 8. Phase 8: Orthogonal Routes & Bridges Carving.
+ * 9. Phase 9: Wilderness Vegetation & Framing.
+ */
+export function generatePokemonContinentalWorld(
+  options?: PokemonContinentalOptions
+): PokemonContinentalWorldResult {
+  const seed = options?.seed ?? DEFAULT_PROCEDURAL_SEED;
+  const width = options?.width ?? DEFAULT_CONTINENTAL_WORLD_WIDTH;
+  const height = options?.height ?? DEFAULT_CONTINENTAL_WORLD_HEIGHT;
+
+  // Phase 1: Abstract Graph
+  const graph = generatePokemonTopology({ seed });
+
+  // Phase 2: Orthogonal Spatial Embedding
+  const embedded = embedPokemonTopology(graph, { seed, width, height });
+
+  // Phase 3: Continental Sculpting
+  const continent = sculptContinentFromGraph(embedded, { ...options, seed, width, height });
+
+  // Phase 4: Emergent Corridor Properties
+  const corridorProperties = enrichCorridorProperties(embedded, continent);
+
+  // Phase 5: Progression Barriers & Anti-Softlock Validation
+  const progression = applyProgressionBarriers(graph);
+
+  // Phase 6: Semantic SVG Export
+  const svgMarkup = exportPokemonTopologyToSvg({
+    embedded,
+    properties: corridorProperties,
+    progression,
+    tileScale: options?.tileScale ?? STANDARD_GBA_TILE_SIZE
+  });
+
+  // Phase 7: Rich Procedural POI & Urban Settlement Generation
+  const settlementContext: SettlementTerrainContext = {
+    heightmap: continent.heightmap,
+    terrainMatrix: continent.terrainMatrix,
+    occupiedFootCells: continent.resolvedMountain.occupiedFootCells,
+    mountainCellRoles: continent.resolvedMountain.cellDetails.map((row) => row.map((c) => c?.role)),
+    width,
+    height
+  };
+
+  const settlementPois = compileContinentalSettlementPois(
+    embedded,
+    continent,
+    settlementContext,
+    seed,
+    width,
+    height
+  );
+
+  // Phase 8: Terrain-Aware Routes & Bridges Carving
+  const pathGrid = carveContinentalCorridorsAndPaths(
+    continent,
+    settlementPois,
+    seed,
+    width,
+    height
+  );
+
+  // Phase 9: Wilderness Vegetation & Framing
+  const framing = compileWildernessAndFramingLayer({
+    continent,
+    pois: settlementPois.pois,
+    pathGrid,
+    bridgeGrid: settlementPois.bridgeGrid,
+    seed
+  });
+
+  return {
+    continent,
+    graph,
+    embedded: {
+      ...embedded,
+      corridors: settlementPois.activeCorridors
+    },
+    corridorProperties,
+    progression,
+    svgMarkup,
+    pois: settlementPois.pois,
+    pathGrid,
+    bridgeGrid: settlementPois.bridgeGrid,
+    wilderness: framing.wilderness,
+    ledges: framing.ledges,
+    progressionObstacles: framing.progressionObstacles,
+    microVignettes: framing.microVignettes
   };
 }

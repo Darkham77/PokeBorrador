@@ -5,7 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -88,7 +88,7 @@ export const FSM_DIAGRAM_RULES: readonly FsmDiagramRuleId[] = [
 export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(FSM_DIAGRAM_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -98,7 +98,7 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_fsm_diagrams',
       configKey: 'fsm.diagrams',
       defaultConfig: {
@@ -126,31 +126,38 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
   public override async runAudit(): Promise<void> {
     this.recordScanned('.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
     this.recordScanned('src/logic/battle/battleStateMachine.ts');
-    this.markRuleEvaluated('fsm-state-missing-in-js');
-    this.markRuleEvaluated('fsm-undocumented-js-state');
-    this.markRuleEvaluated('fsm-transition-missing-in-js');
 
-    const manualCode = await fs.readFile(DIAGRAM_MANUAL_PATH, 'utf-8');
-    const fsmCode = await fs.readFile(DIAGRAM_FSM_PATH, 'utf-8');
+    let mermaidStates = new Set<string>();
+    let mermaidTransitions: Transition[] = [];
+    let jsKeys = new Set<string>();
+    let jsTransitions: Record<string, string[]> = {};
+    let fsmCode = '';
 
-    const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
-    const { allKeys: jsKeys, jsTransitions } = parseJsFsm(fsmCode);
-
-    this.context.logStep(1, 2, `Comparando ${mermaidStates.size} estados Mermaid del manual contra constantes JS...`);
     // [CHECK 1] Nodos Mermaid -> Constantes JS
-    const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
-    for (const s of missing) {
-      this.addViolation({
-        ruleId: 'fsm-state-missing-in-js',
-        severity: 'error',
-        file: 'src/logic/battle/battleStateMachine.ts',
-        line: 1,
-        message: `Faltante en JS: ${s}`,
-        context: s
-      });
-    }
+    await this.runSubAuditor('fsm-state-missing-in-js', async () => {
+      const manualCode = await fs.readFile(DIAGRAM_MANUAL_PATH, 'utf-8');
+      fsmCode = await fs.readFile(DIAGRAM_FSM_PATH, 'utf-8');
 
-    this.context.logStep(2, 2, `Auditando ${mermaidTransitions.length} transiciones Mermaid contra validTransitions en JS...`);
+      const parsedMermaid = parseMermaid(manualCode);
+      mermaidStates = parsedMermaid.states;
+      mermaidTransitions = parsedMermaid.transitions;
+
+      const parsedJs = parseJsFsm(fsmCode);
+      jsKeys = parsedJs.allKeys;
+      jsTransitions = parsedJs.jsTransitions;
+
+      const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
+      for (const s of missing) {
+        this.addViolation({
+          ruleId: 'fsm-state-missing-in-js',
+          severity: 'error',
+          file: 'src/logic/battle/battleStateMachine.ts',
+          line: 1,
+          message: `Faltante en JS: ${s}`,
+          context: s
+        });
+      }
+    });
 
     // [CHECK 3] Constantes JS -> Nodos Mermaid (Búsqueda de Código Basura)
     const IGNORED_JS_STATES = new Set([
@@ -169,37 +176,41 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
       'POP_ACTION'
     ]);
 
-    const undocumented = Array.from(jsKeys).filter(s => !mermaidStates.has(s) && !IGNORED_JS_STATES.has(s));
-    for (const s of undocumented) {
-      this.addViolation({
-        ruleId: 'fsm-undocumented-js-state',
-        severity: 'error',
-        file: 'src/logic/battle/battleStateMachine.ts',
-        line: 1,
-        message: `Código basura / Indocumentado en JS: ${s} (No existe en los diagramas Mermaid del manual)`,
-        context: s
-      });
-    }
+    this.runSubAuditorSync('fsm-undocumented-js-state', () => {
+      const undocumented = Array.from(jsKeys).filter(s => !mermaidStates.has(s) && !IGNORED_JS_STATES.has(s));
+      for (const s of undocumented) {
+        this.addViolation({
+          ruleId: 'fsm-undocumented-js-state',
+          severity: 'error',
+          file: 'src/logic/battle/battleStateMachine.ts',
+          line: 1,
+          message: `Código basura / Indocumentado en JS: ${s} (No existe en los diagramas Mermaid del manual)`,
+          context: s
+        });
+      }
+    });
 
     // [CHECK 2] Transiciones Top-Level
     const topLevelRx = /export const BATTLE_STATES\s*=\s*\{([\s\S]*?)\}/;
     const tlm = fsmCode.match(topLevelRx);
     const topLevelJs = new Set(tlm?.[1] ? Array.from(tlm[1].matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)).map(x => x[1]!) : []);
 
-    const topTransitions = mermaidTransitions.filter(t => topLevelJs.has(t.from) && topLevelJs.has(t.to));
-    for (const mt of topTransitions) {
-      const exists = jsTransitions.some(jt => jt.from === mt.from && jt.to === mt.to);
-      if (!exists) {
-        this.addViolation({
-          ruleId: 'fsm-transition-missing-in-js',
-          severity: 'error',
-          file: 'src/logic/battle/battleStateMachine.ts',
-          line: 1,
-          message: `Transición ${mt.from} -> ${mt.to} falta en validTransitions.`,
-          context: `${mt.from} -> ${mt.to}`
-        });
+    this.runSubAuditorSync('fsm-transition-missing-in-js', () => {
+      const topTransitions = mermaidTransitions.filter(t => topLevelJs.has(t.from) && topLevelJs.has(t.to));
+      for (const mt of topTransitions) {
+        const exists = jsTransitions.some(jt => jt.from === mt.from && jt.to === mt.to);
+        if (!exists) {
+          this.addViolation({
+            ruleId: 'fsm-transition-missing-in-js',
+            severity: 'error',
+            file: 'src/logic/battle/battleStateMachine.ts',
+            line: 1,
+            message: `Transición ${mt.from} -> ${mt.to} falta en validTransitions.`,
+            context: `${mt.from} -> ${mt.to}`
+          });
+        }
       }
-    }
+    });
 
     this.context.setMetric('Mermaid states', mermaidStates.size);
     this.context.setMetric('Mermaid transitions', mermaidTransitions.length);

@@ -49,7 +49,7 @@ function resolveCustomSpreadStats(set?: PokemonSet): StatsTable | null {
 }
 
 /**
- * Aplica el monkey-patch spreadModify a Battle de Showdown para inyectar estadísticas custom.
+ * Applies the spreadModify monkey-patch to Showdown's Battle to inject custom stats.
  */
 export function patchShowdownSpreadModify(_getIsE2eMode?: () => boolean): void {
   if (Reflect.get(Battle.prototype, SPREAD_MODIFY_PATCH_MARKER) === true) return;

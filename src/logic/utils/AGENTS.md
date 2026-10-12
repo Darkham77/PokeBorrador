@@ -33,6 +33,7 @@ Frontend Developers / Systems Engineers.
 - `resilientComponent.ts`: Module implementation.
 - `resultUtils.ts`: Module implementation.
 - `routeSpawnHelpers.ts`: Module implementation.
+- `sanitizeHtml.ts`: HTML sanitization helper for safe markup rendering.
 - `spriteOutliner.ts`: Module implementation.
 - `spriteOutliner.worker.ts`: Module implementation.
 - `storage.ts`: Module implementation.

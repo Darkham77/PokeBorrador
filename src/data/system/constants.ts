@@ -47,22 +47,22 @@ export const STARTER_POKEMON_IDS_SET: ReadonlySet<string> = new Set(STARTER_POKE
 export const MAX_POKEMON_LEVEL = 100;
 export const MAX_BATTLE_TURNS = 300;
 /**
- * Duración efectiva del estado volátil Disable (Anulación) en Pokémon Showdown (Gen 5-9).
- * Fuente de verdad: `external/pokemon-showdown-code/sim/data/moves.ts` (línea 3664: `duration: 5`, decrementado a 4 en `onStart` cuando el objetivo aún no ha actuado en ese turno).
+ * Effective duration of the volatile state Disable in Pokémon Showdown (Gen 5-9).
+ * Source of truth: `external/pokemon-showdown-code/sim/data/moves.ts` (line 3664: `duration: 5`, decremented to 4 on `onStart` when the target has not yet acted in that turn).
  */
 export const SHOWDOWN_DISABLE_DURATION_TURNS = 4;
 
 /**
- * Tiempo de espera en segundos en la fase de recompensas durante modo auto-combate
- * tras finalizar la cola de logs, para permitir la lectura de los resultados antes del siguiente combate.
- * Utiliza el timeline de GSAP (gsapSleep) para escalar con timeScale(100) en simulaciones.
+ * Wait duration in seconds during rewards phase in auto-battle mode
+ * after log queue finishes, to allow reading results before the next battle.
+ * Uses GSAP timeline (gsapSleep) to scale with timeScale(100) in simulations.
  */
 export const AUTO_BATTLE_REWARDS_DELAY_SEC = 1.5;
 
 /**
- * Tiempo de espera en segundos para leer el diálogo de un NPC/Entrenador durante modo auto-combate
- * antes de iniciar automáticamente el encuentro.
- * Utiliza el timeline de GSAP (gsap.delayedCall / gsapSleep) para escalar con timeScale(100) en simulaciones.
+ * Wait duration in seconds to read NPC/Trainer dialogue during auto-battle mode
+ * before automatically starting the encounter.
+ * Uses GSAP timeline (gsap.delayedCall / gsapSleep) to scale with timeScale(100) in simulations.
  */
 export const AUTO_BATTLE_NPC_DIALOG_DELAY_SEC = 3.0;
 

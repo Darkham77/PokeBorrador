@@ -5,13 +5,13 @@ import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items'
 import type { Item } from '@/types/inventory/items';
 
 /**
- * Proveedor Central de Lógica de Objetos
- * Migrado de public/js/11_battle_ui.js
+ * Central Item Logic Provider
+ * Migrated from public/js/11_battle_ui.js
  */
 
 /**
- * Intenta usar un objeto sobre un Pokémon.
- * @returns {any|null} Resultado del uso o null si no tuvo efecto.
+ * Attempts to use an item on a Pokémon.
+ * @returns {any|null} Result of use or null if it had no effect.
  */
 export function useItemOnPokemon(itemName: ItemId | (string & {}), pokemon: Pokemon): { message: string; pokemon: Pokemon } | null {
   const itemId = requireItemId(itemName);
@@ -23,7 +23,7 @@ export function useItemOnPokemon(itemName: ItemId | (string & {}), pokemon: Poke
     try {
       itemExists = !!getItemById(itemId);
     } catch {
-      itemExists = true; // Fallback tolerante en tests
+      itemExists = true; // Tolerant fallback in tests
     }
   }
   if (!itemExists) {

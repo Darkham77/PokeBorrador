@@ -15,7 +15,7 @@
   flex-direction: column;
   width: 100%;
   max-width: 760px;
-  max-height: dvh;
+  max-height: 90dvh;
   border: 2px solid var(--slate-700);
   border-radius: $radius-xl;
   background: var(--slate-900);
@@ -65,7 +65,7 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-xl;
-  max-height: calc(dvh - 140px);
+  max-height: calc(90dvh - 140px);
   padding: 1.25rem;
   overflow-y: auto;
 }
@@ -112,7 +112,7 @@
   padding: 1.5rem 1rem;
   border: 2px dashed var(--slate-600);
   border-radius: $radius-lg;
-  background: #1a2234;
+  background: var(--bg-surface-dark, #1a2234);
   text-align: center;
   cursor: pointer;
 
@@ -383,14 +383,14 @@
     padding: 0.5rem 1.25rem;
     border: none;
     border-radius: $radius-md;
-    background: #2563eb;
+    background: var(--blue-600, #2563eb);
     color: var(--white);
     font-size: var(--font-14);
     font-weight: 600;
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: #1d4ed8;
+      background: var(--blue-700, #1d4ed8);
     }
 
     &:disabled {

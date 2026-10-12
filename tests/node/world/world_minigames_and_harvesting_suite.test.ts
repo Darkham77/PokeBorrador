@@ -312,16 +312,16 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
   describe('Archaeology and Fossil Cloning Math Formulas', () => {
     describe('calculateArchaeologyEncounterRate', () => {
       it('should return 10% for caves', () => {
-        assert.strictEqual(calculateArchaeologyEncounterRate(true, false), 0.10);
-        assert.strictEqual(calculateArchaeologyEncounterRate(true, true), 0.10);
+        assert.strictEqual(calculateArchaeologyEncounterRate({ isCave: true, isMountain: false }), 0.10);
+        assert.strictEqual(calculateArchaeologyEncounterRate({ isCave: true, isMountain: true }), 0.10);
       });
 
       it('should return 5% for mountains if not cave', () => {
-        assert.strictEqual(calculateArchaeologyEncounterRate(false, true), 0.05);
+        assert.strictEqual(calculateArchaeologyEncounterRate({ isCave: false, isMountain: true }), 0.05);
       });
 
       it('should return 0% for other biomes', () => {
-        assert.strictEqual(calculateArchaeologyEncounterRate(false, false), 0.00);
+        assert.strictEqual(calculateArchaeologyEncounterRate({ isCave: false, isMountain: false }), 0.00);
       });
     });
 

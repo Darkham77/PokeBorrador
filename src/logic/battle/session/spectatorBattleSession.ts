@@ -3,7 +3,7 @@ import type { BattleContext } from '@/types/battle/battleContext';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { PvpTurnStreamPayload } from '@/types/battle/pvp';
 import { filterShowdownLogs } from '../showdownBridge.ts';
-import { parseLogsWithSkip } from '../helpers/turnActionResolver.ts';
+import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
 import { syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts';
 
 export interface SpectatorSessionOptions {

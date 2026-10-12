@@ -94,12 +94,11 @@ function validateAndSyncMoves(p: Pokemon, bypass: boolean): void {
     const moveData = pokemonDataProvider.getMoveData(m.id);
     if (!moveData) {
       throw new Error(`[pokemonFactory] Movimiento "${m.id}" no encontrado o no existe en la base de datos para ${p.id} (UID: ${p.uid}).`);
-    } else {
-      if (!bypass && !canLearnMove(p.id, m.id, p.level)) {
-        throw new Error(`[pokemonFactory] Movimiento ilegal "${m.id}" (${moveData.name}) para especie ${p.id} al nivel ${p.level} (UID: ${p.uid}).`);
-      }
-      syncMoveDetails(m, moveData);
     }
+    if (!bypass && !canLearnMove(p.id, m.id, p.level)) {
+      throw new Error(`[pokemonFactory] Movimiento ilegal "${m.id}" (${moveData.name}) para especie ${p.id} al nivel ${p.level} (UID: ${p.uid}).`);
+    }
+    syncMoveDetails(m, moveData);
   });
 
   if (p.moves.length === 0) {

@@ -30,8 +30,9 @@ export async function fetchUserEntries(ctx: EventEnrollmentContext) {
   if (!authStore.user || !gameStore.db) return
 
   const { data: entries, error } = await gameStore.db.from('competition_entries')
-    .select('*')
+    .select('id, event_id, category_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at')
     .eq('player_id', authStore.user.id)
+    .limit(100)
 
   if (!error && entries) {
     const map: Record<string, CompetitionEntry> = {}

@@ -20,13 +20,7 @@ import {
   pruneDeadEndStubs
 } from './routePathPruning.ts';
 
-function cleanseBridgeAndSandGrids(
-  continentMap: ContinentMapResult,
-  pathGrid: boolean[][],
-  bridgeGrid: boolean[][],
-  W: number,
-  H: number
-): void {
+function cleanseBridgeAndSandGrids({ continentMap, pathGrid, bridgeGrid, W, H }: FinalizeRouteGridsContext): void {
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       if (continentMap.cells[y]?.[x]?.terrain !== 'water') {
@@ -70,13 +64,7 @@ function sanitizeAndStampStairs(
   }
 }
 
-function reResolveWaterAutotiles(
-  continentMap: ContinentMapResult,
-  bridgeGrid: boolean[][],
-  pathGrid: boolean[][],
-  W: number,
-  H: number
-): void {
+function reResolveWaterAutotiles({ continentMap, pathGrid, bridgeGrid, W, H }: FinalizeRouteGridsContext): void {
   (continentMap as { resolvedWater: ResolvedWaterMapResult }).resolvedWater = resolveWaterCoastGrid(
     continentMap.terrainMatrix,
     bridgeGrid
@@ -113,9 +101,9 @@ export interface FinalizeRouteGridsContext {
  */
 export function finalizeRouteGrids(ctx: FinalizeRouteGridsContext): void {
   const { continentMap, pathGrid, bridgeGrid, nodes, W, H } = ctx;
-  cleanseBridgeAndSandGrids(continentMap, pathGrid, bridgeGrid, W, H);
+  cleanseBridgeAndSandGrids(ctx);
   sanitizeAndStampStairs(continentMap, pathGrid, W, H);
   pruneOrphanPathFragments(pathGrid, bridgeGrid, nodes, W, H);
   pruneDeadEndStubs(pathGrid, bridgeGrid, nodes, continentMap.placedStairs ?? [], W, H);
-  reResolveWaterAutotiles(continentMap, bridgeGrid, pathGrid, W, H);
+  reResolveWaterAutotiles(ctx);
 }

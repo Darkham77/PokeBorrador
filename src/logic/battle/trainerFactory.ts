@@ -7,7 +7,7 @@ import { toID } from '@/logic/utils/strings.ts';
 import { isItemId } from '@/data/inventory/items';
 
 /**
- * Aplica un set competitivo de la librería a un Pokémon.
+ * Applies a competitive set from the library to a Pokémon.
  */
 export async function applyCompetitiveSet(
   p: Pokemon,

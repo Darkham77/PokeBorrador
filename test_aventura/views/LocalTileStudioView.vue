@@ -58,7 +58,7 @@ const showImportModal = ref(false);
   display: flex;
   width: 100%;
   height: 100%;
-  background: var(--color-background-dark, #090d16);
+  background: var(--color-background-dark, var(--slate-900));
   overflow: hidden;
 }
 

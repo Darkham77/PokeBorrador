@@ -98,8 +98,8 @@
           i, span:first-child { 
             height: 22px; 
             font-size: var(--font-16); 
-            &.currency-icon-money { font-size: var(--font-20); }
           }
+          .currency-icon-money { font-size: var(--font-20); }
           .pill-value { font-size: var(--font-9); }
         }
       }

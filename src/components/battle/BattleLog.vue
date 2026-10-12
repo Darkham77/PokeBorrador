@@ -6,6 +6,7 @@ import { useGameStore } from '@/stores/game'
 import { PLAYER_CLASSES } from '@/data/player/playerClasses'
 import EggSprite from '@/components/common/EggSprite.vue'
 import { NPC_EGG_TINT } from '@/logic/constants/gameplay'
+import { sanitizeHtml } from '@/logic/utils/sanitizeHtml'
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
@@ -16,7 +17,7 @@ const logs = computed(() => battleStore.battleLogs)
 
 const playerClassColor = computed(() => {
   const pClass = gameStore.state.playerClass || 'entrenador'
-  return (PLAYER_CLASSES as Record<string, { color: string }>)[pClass]?.color || '#3b82f6' // open-record: Contenedor JSON dinámico de clave-valor genérico
+  return (PLAYER_CLASSES as Record<string, { color: string }>)[pClass]?.color || '#3b82f6' // open-record: Generic dynamic key-value JSON container
 })
 
 const scrollToBottom = async (isInstant = false) => {
@@ -118,13 +119,17 @@ onMounted(() => {
             alt="Icono de registro"
             class="log-icon"
             loading="lazy"
+            width="24"
+          
+            height="24"
             @error="handleImgError"
           >
         </div>
         <span class="log-text">
           <!-- fallow-ignore-next-line security-sink -->
+          <!-- html-injection-ok: Sanitized battle log message -->
           <!-- eslint-disable-next-line vue/no-v-html -->
-          <span v-html="log.msg" />
+          <span v-html="sanitizeHtml(log.msg)" />
         </span>
       </div>
     </div>
@@ -402,7 +407,7 @@ onMounted(() => {
 }
 
 :deep(.reward-lvl) {
-  color: var(--yellow, #ffd700);
+  color: var(--yellow, var(--gold));
   font-weight: 600;
 }
 

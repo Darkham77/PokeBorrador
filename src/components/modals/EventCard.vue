@@ -91,7 +91,7 @@ const cardElementId = computed(() => {
 })
 
 const cardClasses = computed(() => {
-  return resolveEventCardClasses(Boolean(cardBannerKey.value), isUpcoming.value)
+  return resolveEventCardClasses({ hasBanner: Boolean(cardBannerKey.value), isUpcoming: isUpcoming.value })
 })
 
 const resolvedSubComps = computed<ResolvedSubCompetition[]>(() => {
@@ -188,7 +188,8 @@ onUnmounted(() => {
         :alt="cardDisplayName"
         class="event-banner-img allow-aliasing"
         draggable="false"
-        @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
+        width="32"
+        height="32"
       >
     </div>
 
@@ -226,6 +227,9 @@ onUnmounted(() => {
                   :alt="sp"
                   draggable="false"
                   class="card-mini-sprite pixelated clickable"
+                  width="32"
+                
+                  height="32"
                   @click.stop="openSpeciesDetail(sp)"
                 >
               </PVTooltip>

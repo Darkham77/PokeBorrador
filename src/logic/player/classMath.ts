@@ -1,7 +1,7 @@
 /**
  * classMath.ts
- * Módulo con funciones y fórmulas puras para las mecánicas de las clases de jugador
- * sin efectos colaterales de base de datos o almacenamiento de estado.
+ * Pure functions and mathematical formulas module for player class mechanics
+ * without database side effects or state storage.
  */
 
 import {
@@ -75,8 +75,8 @@ const QUADRATIC_EXPONENT = 2;
 
 /**
  * Team Rocket:
- * Calcula la probabilidad de éxito de "Robo Rápido" al inicio del combate basado en el nivel de clase.
- * Nivel 1: 15%, Nivel 2: 16%, ... max 30%.
+ * Calculates "Quick Steal" success chance at battle start based on class level.
+ * Level 1: 15%, Level 2: 16%, ... max 30%.
  */
 export function calculateQuickStealChance(classLevel: number): number {
   const level = Math.max(MINIMUM_POKEMON_LEVEL, classLevel);
@@ -86,9 +86,9 @@ export function calculateQuickStealChance(classLevel: number): number {
 }
 
 /**
- * Cazabichos:
- * Retorna el multiplicador de Catch Rate de "Sinergia Bicho" según el número de Pokémon tipo Bicho en el equipo.
- * Por cada Pokémon de tipo 'bug' o 'bicho' en el equipo activo, incrementa la tasa de captura un 5% (acumulativo lineal, max +30%).
+ * Bug Catcher:
+ * Returns "Bug Synergy" Catch Rate multiplier according to Bug-type count in active team.
+ * For each 'bug' or 'bicho' Pokémon in active team, increases catch rate by 5% (linearly stacked, max +30%).
  */
 export function calculateBugSymmetryBonus(activeTeam: { type1: string; type2?: string | null }[]): number {
   const bugCount = activeTeam.filter(p => {
@@ -100,8 +100,8 @@ export function calculateBugSymmetryBonus(activeTeam: { type1: string; type2?: s
 }
 
 /**
- * Entrenador:
- * Aplica una penalización del 10% a la tasa de captura base si el Pokémon salvaje tiene IVs excepcionales (IV Total > 120).
+ * Trainer:
+ * Applies a 10% penalty to base catch rate if the wild Pokémon has exceptional IVs (Total IV > 120).
  */
 export function calculateTrainerCatchRateModifier(baseCatchRate: number, ivTotal: number): number {
   if (ivTotal > TRAINER_HIGH_IV_THRESHOLD) {
@@ -111,15 +111,15 @@ export function calculateTrainerCatchRateModifier(baseCatchRate: number, ivTotal
 }
 
 /**
- * Entrenador:
- * Retorna true si el jugador tiene la posibilidad de doble combate de rival debido a vencer todos los gimnasios en Difícil.
+ * Trainer:
+ * Returns true if player can get double rival battles by beating all gyms on Hard difficulty.
  */
 export function hasDoubleRivalChance(
   defeatedGyms: string[],
   gymProgress: Record<string, { easy?: boolean; normal?: boolean; hard?: boolean } | undefined>
 ): boolean {
   if (!defeatedGyms || defeatedGyms.length === 0) return false;
-  // Debe haber vencido todos los gimnasios derrotados en dificultad "hard"
+  // Must have defeated all conquered gyms on "hard" difficulty
   return defeatedGyms.every(gymId => {
     const progress = gymProgress[gymId];
     return !!(progress && progress.hard);
@@ -127,7 +127,7 @@ export function hasDoubleRivalChance(
 }
 
 /**
- * Retorna la experiencia necesaria para subir al siguiente nivel de clase.
+ * Returns experience needed to level up to next class level.
  */
 export function getXPNeededForClassLevel(level: number): number {
   if (level >= MAX_PLAYER_CLASS_LEVEL) return MAX_LEVEL_XP_CAP;
@@ -135,9 +135,9 @@ export function getXPNeededForClassLevel(level: number): number {
 }
 
 /**
- * Team Rocket ENEMIGO:
- * Retorna el límite máximo de dinero/valor de recursos que puede robar un NPC basándose en su nivel medio.
- * Escalado: V_max(L) = 8 * L^2
+ * ENEMY Team Rocket:
+ * Returns maximum money/resource value cap an NPC can steal based on their average level.
+ * Scaling: V_max(L) = 8 * L^2
  */
 export function calculateMaxNpcRobberyLimit(avgLevel: number): number {
   const level = Math.max(MINIMUM_POKEMON_LEVEL, avgLevel);
@@ -145,9 +145,9 @@ export function calculateMaxNpcRobberyLimit(avgLevel: number): number {
 }
 
 /**
- * Team Rocket / Policía:
- * Calcula los niveles extra de dificultad para el Oficial de Policía basado en el exceso de criminalidad sobre 100%.
- * Fórmula: floor(max(0, criminalidad - 100) / 10). (+1 nivel cada 10% de exceso).
+ * Team Rocket / Police:
+ * Calculates bonus difficulty levels for Police Officer based on excess criminality over 100%.
+ * Formula: floor(max(0, criminality - 100) / 10). (+1 level per 10% excess).
  */
 export function calculatePoliceBonusLevel(criminality: number): number {
   const excess = Math.max(0, (criminality || 0) - MAX_CRIMINALITY_LEVEL);
@@ -155,9 +155,9 @@ export function calculatePoliceBonusLevel(criminality: number): number {
 }
 
 /**
- * Team Rocket / Policía:
- * Calcula el nivel efectivo de los Pokémon del Oficial de Policía con clampeo estricto entre 1 y MAX_POKEMON_LEVEL (100).
- * Previene excepciones de generación de Pokémon o desbordamientos ilegales en Showdown/persistencia.
+ * Team Rocket / Police:
+ * Calculates effective level of Police Officer's Pokémon, strictly clamped between 1 and MAX_POKEMON_LEVEL (100).
+ * Prevents Pokémon generation exceptions or illegal overflows in Showdown/persistence.
  */
 export function calculatePoliceEffectiveLevel(baseMapLv: number, criminality: number): number {
   const base = Math.max(MINIMUM_POKEMON_LEVEL, baseMapLv || MINIMUM_POKEMON_LEVEL);
@@ -167,11 +167,11 @@ export function calculatePoliceEffectiveLevel(baseMapLv: number, criminality: nu
 }
 
 /**
- * Team Rocket / Policía:
- * Calcula dinámicamente el tamaño del equipo del Oficial de Policía según la criminalidad:
- * - < 140%: 3 a 4 Pokémon (Patrulla local)
- * - 140% a 199%: 4 a 5 Pokémon (Fuerza de choque)
- * - >= 200%: 6 Pokémon completos (Equipo completo táctico SWAT)
+ * Team Rocket / Police:
+ * Dynamically calculates Police Officer team size based on criminality:
+ * - < 140%: 3 to 4 Pokémon (Local patrol)
+ * - 140% to 199%: 4 to 5 Pokémon (Strike force)
+ * - >= 200%: Full 6 Pokémon (Full tactical SWAT squad)
  */
 export function calculatePoliceTeamSize(criminality: number, randomFn: () => number = Math.random): number {
   const crim = criminality || 0;
@@ -185,9 +185,9 @@ export function calculatePoliceTeamSize(criminality: number, randomFn: () => num
 }
 
 /**
- * Team Rocket / Policía:
- * Calcula el monto de la fianza que debe pagar un miembro de Team Rocket al ser derrotado por la policía.
- * Fórmula: floor(classLevel^2 * 80 * (criminalidad / 100)).
+ * Team Rocket / Police:
+ * Calculates bail amount a Team Rocket member must pay when defeated by police.
+ * Formula: floor(classLevel^2 * 80 * (criminality / 100)).
  */
 export function calculatePoliceBail(classLevel: number, criminality: number): number {
   const level = Math.max(MINIMUM_POKEMON_LEVEL, classLevel || MINIMUM_POKEMON_LEVEL);
@@ -196,9 +196,9 @@ export function calculatePoliceBail(classLevel: number, criminality: number): nu
 }
 
 /**
- * Team Rocket / Policía:
- * Calcula la probabilidad de encuentro con un Oficial de Policía cuando el jugador es Team Rocket y la criminalidad >= 100%.
- * Fórmula: (criminalidad / 10) * trainerBonus.
+ * Team Rocket / Police:
+ * Calculates encounter chance with a Police Officer when player is Team Rocket and criminality >= 100%.
+ * Formula: (criminality / 10) * trainerBonus.
  */
 export function calculatePoliceEncounterChance(criminality: number, trainerBonus = 1): number {
   const crim = Math.max(0, criminality || 0);

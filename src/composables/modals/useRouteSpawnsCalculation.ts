@@ -114,9 +114,11 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     return computeActiveWeights(
       props.map as ExtendedMapLocation,
       props.weather,
-      hasFishingRod,
-      hasPickaxeOrBrush,
-      eventFishingBonus
+      {
+        hasFishingRod,
+        hasPickaxeOrBrush,
+        eventFishingBonus
+      }
     )
   })
 

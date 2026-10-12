@@ -154,7 +154,7 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
         audio: { play: vi.fn() },
       } as unknown as BattleContext;
 
-      await processRocketStealMechanics(mockCtx, false, false, 'Wild Pikachu', null);
+      await processRocketStealMechanics(mockCtx, 'Wild Pikachu', null, { isTrainer: false, isGym: false });
       expect(mockCtx.addLog).not.toHaveBeenCalled();
     });
   });

@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
@@ -93,7 +93,7 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
 
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(SCHEMA_PARITY_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -103,7 +103,7 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_schema_parity',
       configKey: 'persistence.schemaParity',
       defaultConfig: {
@@ -128,46 +128,49 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
   }
 
   public override async runAudit(): Promise<void> {
-    this.markRuleEvaluated('schema-parity-missing-table');
-    this.markRuleEvaluated('schema-parity-missing-column');
-
-    this.context.logStep(1, 3, 'Parseando esquemas y columnas de migraciones PostgreSQL...');
-    const pgTables = this.parsePostgresSchema();
-
-    this.context.logStep(2, 3, 'Ejecutando migraciones en SQLite en memoria...');
-    const sqliteTables = this.getSqliteSchema();
-
-    this.context.logStep(3, 3, 'Comparando paridad de tablas y columnas...');
+    let pgTables = new Map<string, Set<string>>();
+    let sqliteTables = new Map<string, Set<string>>();
     let columnsAudited = 0;
 
-    for (const [tableName, pgCols] of pgTables.entries()) {
-      const sqliteCols = sqliteTables.get(tableName);
-      if (!sqliteCols) {
-        this.addViolation({
-          ruleId: 'schema-parity-missing-table',
-          severity: 'error',
-          file: 'database/migrations',
-          line: 1,
-          message: `Tabla PostgreSQL '${tableName}' no existe en el esquema SQLite offline.`,
-          context: tableName
-        });
-        continue;
-      }
+    this.runSubAuditorSync('schema-parity-missing-table', () => {
+      pgTables = this.parsePostgresSchema();
+      sqliteTables = this.getSqliteSchema();
 
-      for (const col of pgCols) {
-        columnsAudited++;
-        if (!sqliteCols.has(col)) {
+      for (const [tableName] of pgTables.entries()) {
+        const sqliteCols = sqliteTables.get(tableName);
+        if (!sqliteCols) {
           this.addViolation({
-            ruleId: 'schema-parity-missing-column',
+            ruleId: 'schema-parity-missing-table',
             severity: 'error',
             file: 'database/migrations',
             line: 1,
-            message: `Columna '${col}' en tabla '${tableName}' existe en PostgreSQL pero falta en SQLite offline.`,
-            context: `${tableName}.${col}`
+            message: `Tabla PostgreSQL '${tableName}' no existe en el esquema SQLite offline.`,
+            context: tableName
           });
         }
       }
-    }
+    });
+
+    this.runSubAuditorSync('schema-parity-missing-column', () => {
+      for (const [tableName, pgCols] of pgTables.entries()) {
+        const sqliteCols = sqliteTables.get(tableName);
+        if (!sqliteCols) continue;
+
+        for (const col of pgCols) {
+          columnsAudited++;
+          if (!sqliteCols.has(col)) {
+            this.addViolation({
+              ruleId: 'schema-parity-missing-column',
+              severity: 'error',
+              file: 'database/migrations',
+              line: 1,
+              message: `Columna '${col}' en tabla '${tableName}' existe en PostgreSQL pero falta en SQLite offline.`,
+              context: `${tableName}.${col}`
+            });
+          }
+        }
+      }
+    });
 
     this.context.setMetric('PG Tables', pgTables.size);
     this.context.setMetric('SQLite Tables', sqliteTables.size);

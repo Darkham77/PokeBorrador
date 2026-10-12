@@ -192,12 +192,12 @@ export function calculateEscapeChancePure(
   const pItem = (playerPoke.heldItem || '').toLowerCase().replace(/[^a-z0-9]/g, '')
   const isGhost = playerPoke.type === 'ghost' || playerPoke.type2 === 'ghost'
 
-  // Habilidades, objetos o tipos que garantizan escapar e ignoran atrapado
+  // Abilities, items, or types that guarantee escape and ignore trapping
   if (pAb === 'runaway' || pItem === 'smokeball' || pItem === 'shedshell' || isGhost) {
     return true
   }
 
-  // Habilidades de atrapado del Pokémon salvaje
+  // Trapping abilities of the wild Pokémon
   const eAb = (wildPoke.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '')
   if (eAb === 'shadowtag' && pAb !== 'shadowtag') {
     return false
@@ -211,7 +211,7 @@ export function calculateEscapeChancePure(
     if (isSteel) return false
   }
 
-  // Cálculo de velocidad efectiva con stages y clima
+  // Effective speed calculation with stat stages and weather
   const pSpe = getEffectiveStatPure(playerPoke, 'spe', playerStages, weather)
   const eSpe = getEffectiveStatPure(wildPoke, 'spe', enemyStages, weather)
   const safeESpe = Math.max(1, eSpe)

@@ -100,7 +100,7 @@ async function handleWatch() {
     padding: 3px 6px;
     border: 1px solid var(--blue-400);
     border-radius: $radius-sm;
-    background: Linear-Gradient(180deg, #3b82f6, #1d4ed8);
+    background: Linear-Gradient(180deg, var(--blue-500), var(--blue-500));
     color: var(--white);
     font-family: inherit;
     font-size: var(--font-9);

@@ -1,6 +1,6 @@
 /**
  * hatchAuras.ts
- * Utilidades de configuración de auras y colores para la eclosión de huevos.
+ * Aura and color configuration utilities for egg hatching.
  */
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
@@ -30,8 +30,8 @@ export function getAuraStyles(
   flare1Url: string,
   flare2Url: string
 ) {
-  let c1 = 'rgba(0, 255, 255, 0.85)' // Cian brillante por defecto
-  let c2 = 'rgba(0, 190, 255, 0.75)' // Azul profundo por defecto
+  let c1 = 'rgba(0, 255, 255, 0.85)' // Default bright cyan
+  let c2 = 'rgba(0, 190, 255, 0.75)' // Default deep blue
 
   if (pokemon) {
     const primaryType = pokemon.type?.toLowerCase() || 'normal'
@@ -42,13 +42,13 @@ export function getAuraStyles(
     c1 = colors.c1
     c2 = colors.c2
 
-    // Si es shiny o guardián, sobreescribir con los colores de rareza premium
+    // If shiny or guardian, overwrite with premium rarity colors
     if (pokemon.isShiny) {
-      c1 = 'rgba(255, 215, 0, 0.95)' // Oro brillante
-      c2 = 'rgba(255, 140, 0, 0.85)' // Naranja fuego
+      c1 = 'rgba(255, 215, 0, 0.95)' // Bright gold
+      c2 = 'rgba(255, 140, 0, 0.85)' // Fire orange
     } else if (pokemon.isGuardian) {
-      c1 = 'rgba(255, 255, 255, 0.95)' // Blanco puro
-      c2 = 'rgba(173, 216, 230, 0.85)' // Plateado / Celeste suave
+      c1 = 'rgba(255, 255, 255, 0.95)' // Pure white
+      c2 = 'rgba(173, 216, 230, 0.85)' // Silver / soft sky blue
     }
   }
 

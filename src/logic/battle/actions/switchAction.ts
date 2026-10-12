@@ -27,11 +27,15 @@ export async function executeSwitch(ctx: BattleContext, targetIdentifier: number
   }
 }
 
+interface SwitchForcedOptions {
+  isForced: boolean
+  isRevivingTarget: boolean
+}
+
 function isSwitchActionReallyForced(
   ctx: BattleContext,
-  isForced: boolean,
   oldPoke: Pokemon | null | undefined,
-  isRevivingTarget: boolean
+  { isForced, isRevivingTarget }: SwitchForcedOptions
 ): boolean {
   const req = ctx.activeBattle.value?.playerRequest
   const forceSw = req?.forceSwitch
@@ -155,7 +159,7 @@ async function runSwitchSequence(ctx: BattleContext, targetIdentifier: number | 
   const oldPoke = activeBattle.value?.player
   const req = activeBattle.value?.playerRequest
   const isRevivingTarget = isRevivingForceSwitchRequest(req)
-  const reallyForced = isSwitchActionReallyForced(ctx, isForced, oldPoke, isRevivingTarget)
+  const reallyForced = isSwitchActionReallyForced(ctx, oldPoke, { isForced, isRevivingTarget })
 
   if (!reallyForced && await checkSwitchTrapBlocked(ctx)) {
     return

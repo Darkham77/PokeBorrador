@@ -121,6 +121,26 @@ function renderTileLayer(
 }
 
 /**
+ * Renders stamp preview tiles for the active stamp structure.
+ */
+function renderStampPreviewTiles(
+  ctx: CanvasRenderingContext2D,
+  tpl: NonNullable<ReturnType<typeof useMapStudioStore>['selectedStructure']>,
+  x: number,
+  y: number
+): void {
+  for (let r = 0; r < tpl.footprint.height; r++) {
+    for (let c = 0; c < tpl.footprint.width; c++) {
+      const tId = tpl.tiles[r]?.[c];
+      if (!tId) continue;
+      const e = defaultTilesRegistry.getTileById(tId);
+      const img = e ? imageCache.get(e.file_path) : null;
+      if (img) ctx.drawImage(img, (x + c) * TILE_SIZE, (y + r) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    }
+  }
+}
+
+/**
  * Main Canvas Render Pipeline
  */
 function renderCanvas(): void {
@@ -254,16 +274,7 @@ function renderCanvas(): void {
         const fits = x + tpl.footprint.width <= map.width && y + tpl.footprint.height <= map.height;
         ctx.save();
         ctx.globalAlpha = 0.5;
-        for (let r = 0; r < tpl.footprint.height; r++) {
-          for (let c = 0; c < tpl.footprint.width; c++) {
-            const tId = tpl.tiles[r]?.[c];
-            if (tId) {
-              const e = defaultTilesRegistry.getTileById(tId);
-              const img = e ? imageCache.get(e.file_path) : null;
-              if (img) ctx.drawImage(img, (x + c) * TILE_SIZE, (y + r) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-            }
-          }
-        }
+        renderStampPreviewTiles(ctx, tpl, x, y);
         ctx.restore();
         ctx.strokeStyle = fits ? '#22c55e' : '#ef4444';
         ctx.lineWidth = 2;
@@ -531,7 +542,7 @@ defineExpose({
   display: flex;
   width: 100%;
   height: 100%;
-  background: #020617;
+  background: var(--slate-900);
   flex: 1;
   overflow: hidden;
   cursor: crosshair;

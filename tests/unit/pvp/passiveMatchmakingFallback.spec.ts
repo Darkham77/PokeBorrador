@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
   selectPassiveOpponent,
-  parsePassiveTeamSnapshot,
   computePassiveEnemyChoice,
   type PassiveTeamCandidate
 } from '@/logic/pvp/passiveMatchmakingHelper';
+import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 
 describe('passiveMatchmakingHelper', () => {
   describe('selectPassiveOpponent', () => {
@@ -49,14 +49,14 @@ describe('passiveMatchmakingHelper', () => {
     });
   });
 
-  describe('parsePassiveTeamSnapshot', () => {
+  describe('deserializePokemonTeam', () => {
     it('deserializes JSON string into hydrated battle-ready Pokemon array', () => {
       const rawSnapshot = JSON.stringify([
         { id: 'pikachu', name: 'Pikachu', level: 50, maxHp: 120, hp: 10, type: 'electric' },
         { id: 'raichu', name: 'Raichu', level: 50, maxHp: 150, hp: 0, type: 'electric' }
       ]);
 
-      const team = parsePassiveTeamSnapshot(rawSnapshot);
+      const team = deserializePokemonTeam(rawSnapshot);
       expect(team).toHaveLength(2);
       // All Pokemon should enter combat fully restored to maxHp and status-free
       expect(team[0]?.hp).toBe(120);
@@ -70,14 +70,14 @@ describe('passiveMatchmakingHelper', () => {
         { id: 'eevee', name: 'Eevee', level: 25, maxHp: 80, hp: 80, type: 'normal' }
       ];
 
-      const team = parsePassiveTeamSnapshot(arraySnapshot);
+      const team = deserializePokemonTeam(arraySnapshot);
       expect(team).toHaveLength(1);
       expect(team[0]?.id).toBe('eevee');
     });
 
     it('returns empty array on invalid JSON or null input', () => {
-      expect(parsePassiveTeamSnapshot(null)).toEqual([]);
-      expect(parsePassiveTeamSnapshot('invalid json')).toEqual([]);
+      expect(deserializePokemonTeam(null)).toEqual([]);
+      expect(deserializePokemonTeam('invalid json')).toEqual([]);
     });
   });
 

@@ -92,7 +92,8 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
               :src="buff.icon"
               :alt="buff.name"
               class="buff-icon-img"
-              @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')"
+              width="32"
+              height="32"
             >
           </div>
 
@@ -291,7 +292,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 .buff-label {
   @include pixelated;
 
-  color: var(--white, #fff);
+  color: var(--white, var(--white));
   font-size: var(--font-8);
   line-height: 1.45;
   padding-bottom: 2px;

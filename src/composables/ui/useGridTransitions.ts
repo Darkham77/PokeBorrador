@@ -5,10 +5,10 @@ const ENTRY_OFFSET_Y_PX = 10;
 const ENTER_DURATION_SEC = 0.25;
 
 /**
- * Composable para orquestar transiciones fluidas de grids o listas utilizando GSAP.
- * Cumple con el estándar de animaciones deterministicas y la directiva de no usar timers.
+ * Composable to orchestrate smooth grid or list transitions using GSAP.
+ * Complies with deterministic animation standards and the zero-timer directive.
  * 
- * @param suppressAnimation Referencia reactiva o getter para omitir la animación (ej: durante cambios de pestaña)
+ * @param suppressAnimation Reactive reference or getter to skip animations (e.g. during tab switches)
  */
 export function useGridTransitions(suppressAnimation: MaybeRefOrGetter<boolean>) {
   const onBeforeEnter = (el: Element) => {

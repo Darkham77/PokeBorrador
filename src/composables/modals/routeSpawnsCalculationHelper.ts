@@ -36,12 +36,15 @@ const RAINY_WEATHERS = ['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const;
 type RainyWeather = (typeof RAINY_WEATHERS)[number];
 const SPAWN_CALC_RAINY_WEATHERS_SET: ReadonlySet<RainyWeather> = new Set<RainyWeather>(RAINY_WEATHERS); // runtime-set: Fast O(1) membership lookup set
 
-export function calculateFishingWeight(
-  hasFishing: boolean,
-  weather: WeatherId,
-  hasFishingRod: boolean,
-  eventFishingBonus: number = 1
-): { active: number; base: number } {
+export interface FishingWeightOptions {
+  hasFishing: boolean;
+  weather: WeatherId;
+  hasFishingRod: boolean;
+  eventFishingBonus?: number;
+}
+
+export function calculateFishingWeight(options: FishingWeightOptions): { active: number; base: number } {
+  const { hasFishing, weather, hasFishingRod, eventFishingBonus = 1 } = options;
   if (!hasFishing) {
     return { active: 0, base: 0 };
   }
@@ -59,12 +62,15 @@ export function calculateFishingWeight(
   return { active, base };
 }
 
-export function calculateArchaeologyWeight(
-  hasArchaeology: boolean,
-  isCave: boolean,
-  isMountain: boolean,
-  hasPickaxeOrBrush: boolean
-): { active: number; base: number } {
+export interface ArchaeologyWeightOptions {
+  hasArchaeology: boolean;
+  isCave: boolean;
+  isMountain: boolean;
+  hasPickaxeOrBrush: boolean;
+}
+
+export function calculateArchaeologyWeight(options: ArchaeologyWeightOptions): { active: number; base: number } {
+  const { hasArchaeology, isCave, isMountain, hasPickaxeOrBrush } = options;
   if (!hasArchaeology) {
     return { active: 0, base: 0 };
   }
@@ -78,28 +84,33 @@ export function calculateArchaeologyWeight(
   return { active, base };
 }
 
+export interface ActiveWeightsOptions {
+  hasFishingRod: boolean;
+  hasPickaxeOrBrush: boolean;
+  eventFishingBonus?: number;
+}
+
 export function computeActiveWeights(
   map: ExtendedMapLocation,
   weather: WeatherId,
-  hasFishingRod: boolean,
-  hasPickaxeOrBrush: boolean,
-  eventFishingBonus: number = 1
+  options: ActiveWeightsOptions
 ): RouteSpawnWeights {
+  const { hasFishingRod, hasPickaxeOrBrush, eventFishingBonus = 1 } = options;
   const groundWeight = BASE_GROUND_WEIGHT;
 
-  const { active: fishingWeight, base: baseFishingWeight } = calculateFishingWeight(
-    Boolean(map.fishing),
+  const { active: fishingWeight, base: baseFishingWeight } = calculateFishingWeight({
+    hasFishing: Boolean(map.fishing),
     weather,
     hasFishingRod,
     eventFishingBonus
-  );
+  });
 
-  const { active: archWeight, base: baseArchWeight } = calculateArchaeologyWeight(
-    Boolean(map.archaeology),
-    Boolean(map.isCave),
-    Boolean(map.isMountain),
+  const { active: archWeight, base: baseArchWeight } = calculateArchaeologyWeight({
+    hasArchaeology: Boolean(map.archaeology),
+    isCave: Boolean(map.isCave),
+    isMountain: Boolean(map.isMountain),
     hasPickaxeOrBrush
-  );
+  });
 
   return {
     ground: groundWeight,

@@ -26,6 +26,9 @@ import type { useAuthStore } from '@/stores/auth.ts'
 import type { useUIStore } from '@/stores/ui.ts'
 
 const MAX_PAST_EVENTS_COUNT = 20
+const AWARDS_COLUMNS = 'id, winner_id, prize, received_at, event_id, prize_summary, awarded_at, category_id, category_name'
+const COMPETITION_RESULTS_COLUMNS = 'id, event_id, winners, ended_at'
+const DEFAULT_AWARDS_LIMIT = 200
 
 export interface EventAwardsContext {
   gameStore: ReturnType<typeof useGameStore>
@@ -88,9 +91,10 @@ export async function checkPendingAwards(ctx: EventAwardsContext, notifyOnPendin
   if (!authStore.user || !gameStore.db) return
 
   const { data: awards, error } = await gameStore.db.from('awards')
-    .select('*')
+    .select(AWARDS_COLUMNS)
     .eq('winner_id', authStore.user.id)
     .is('received_at', null)
+    .limit(DEFAULT_AWARDS_LIMIT)
 
   if (!error) {
     const list = (awards || []) as PendingAward[]
@@ -275,7 +279,7 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
   try {
     const { data: results, error } = await gameStore.db
       .from('competition_results')
-      .select('*')
+      .select(COMPETITION_RESULTS_COLUMNS)
       .order('ended_at', { ascending: false })
       .limit(MAX_PAST_EVENTS_COUNT)
 
@@ -284,8 +288,9 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
     let userAwards: PendingAward[] = []
     if (authStore.user) {
       const { data: allAwards } = await gameStore.db.from('awards')
-        .select('*')
+        .select(AWARDS_COLUMNS)
         .eq('winner_id', authStore.user.id)
+        .limit(DEFAULT_AWARDS_LIMIT)
       userAwards = (allAwards || []) as PendingAward[]
     }
 

@@ -60,6 +60,9 @@ const emit = defineEmits<{
         :src="props.imageUrl"
         :alt="props.pokemon?.name || 'Pokémon en combate'"
         :style="{ filter: props.isSilhouette ? undefined : 'var(--atmosphere-filter)' }"
+        width="96"
+        height="96"
+      
         @load="emit('load', $event)"
         @error="emit('error', $event)"
       >

@@ -256,29 +256,27 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
       const touchesLower = minOrth < curH;
 
       if (!touchesLower) {
-        if (curH >= 2) {
-          let hasLowerNear = false;
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              if ((heights[y + dy]?.[x + dx] ?? 0) < curH) {
-                hasLowerNear = true;
-                break;
-              }
+        if (curH < 2) continue;
+        let hasLowerNear = false;
+        for (let dy = -1; dy <= 1 && !hasLowerNear; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if ((heights[y + dy]?.[x + dx] ?? 0) < curH) {
+              hasLowerNear = true;
+              break;
             }
-            if (hasLowerNear) break;
           }
-          if (hasLowerNear) {
-            multiTier.push({
-              x,
-              y,
-              title: `🏔️ Meseta Elevada Piso ${curH} (X: ${x}, Y: ${y})`,
-              desc: `Meseta interior de piso ${curH} con terrazas próximas`,
-              subtype: 'multi_tier',
-              mountainSubtype: 'multi_tier',
-              priority: MOUNTAIN_ELEVATED_PLATEAU_PRIORITY,
-              elev: curH
-            });
-          }
+        }
+        if (hasLowerNear) {
+          multiTier.push({
+            x,
+            y,
+            title: `🏔️ Meseta Elevada Piso ${curH} (X: ${x}, Y: ${y})`,
+            desc: `Meseta interior de piso ${curH} con terrazas próximas`,
+            subtype: 'multi_tier',
+            mountainSubtype: 'multi_tier',
+            priority: MOUNTAIN_ELEVATED_PLATEAU_PRIORITY,
+            elev: curH
+          });
         }
         continue;
       }

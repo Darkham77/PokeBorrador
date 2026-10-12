@@ -3,7 +3,7 @@ import type { ItemId } from '@/data/inventory/items';
 import { GAME_RATIOS } from '@/data/system/constants';
 
 /**
- * Probabilidades de items equipados en estado salvaje
+ * Wild held item probabilities
  */
 export const WILD_HELD_ITEMS: Partial<Record<PokemonSpeciesId, { common?: ItemId; rare?: ItemId }>> = {
   butterfree: { rare: 'silverpowder' },

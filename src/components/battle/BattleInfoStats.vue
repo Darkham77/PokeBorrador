@@ -123,7 +123,7 @@ function getSpeciesBaseStat(key: string): number {
     }
 
     .stat-iv-col {
-      color: var(--cyan, #38BDF8);
+      color: var(--cyan, var(--sky));
     }
 
     .stat-ev-col {

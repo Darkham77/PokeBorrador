@@ -206,12 +206,17 @@ export function isCombatantFaintedOrCapturing(
   return false;
 }
 
+interface WildSilhouetteOptions {
+  isSearchWild: boolean;
+  isWildEntryAnimation: boolean;
+}
+
 function evaluateWildSilhouette(
-  isSearchWild: boolean,
+  options: WildSilhouetteOptions,
   state: string | null | undefined,
-  sub: string | null | undefined,
-  isWildEntryAnimation: boolean
+  sub: string | null | undefined
 ): boolean {
+  const { isSearchWild, isWildEntryAnimation } = options;
   if (state === 'SEARCH_PHASE') return true;
   if (isSearchWild && state) {
     if (SEARCH_WILD_PRE_STATES_SET.has(state)) return true;
@@ -220,12 +225,17 @@ function evaluateWildSilhouette(
   return Boolean(sub && SILHOUETTE_SUBSTATES_SET.has(sub));
 }
 
+export interface BushBehindOptions {
+  isEmerging: boolean;
+  isWildEntryAnimation: boolean;
+}
+
 export function isBushBehindCheck(
-  isEmerging: boolean,
-  isWildEntryAnimation: boolean,
+  options: BushBehindOptions,
   state: string | null | undefined,
   sub: string | null | undefined
 ): boolean {
+  const { isEmerging, isWildEntryAnimation } = options;
   if (isEmerging || isWildEntryAnimation) return true;
   if (state && BUSH_BEHIND_STATES_SET.has(state)) return true;
   return Boolean(sub && BUSH_BEHIND_SUBSTATES_SET.has(sub));
@@ -240,18 +250,23 @@ export function isPlayerTechHiddenCheck(isTrainer: boolean, sub: string | null |
   return Boolean(isTrainer && sub && PLAYER_TECH_HIDDEN_SET.has(sub));
 }
 
+export interface EncounterLayersFlags {
+  hasEnemy: boolean;
+  isCaptureSequenceActive: boolean;
+  isFaintInProgress: boolean;
+  isEnemyFloating: boolean;
+  isWildEncounter: boolean;
+  isSearching: boolean;
+  wildRevealActive: boolean;
+}
+
 export function shouldShowEncounterLayersCheck(
-  hasEnemy: boolean,
+  flags: EncounterLayersFlags,
   state: string | null | undefined,
   animState: string | null | undefined,
-  isCaptureSequenceActive: boolean,
-  isFaintInProgress: boolean,
-  isEnemyFloating: boolean,
-  fsmSub: string | null | undefined,
-  isWildEncounter: boolean,
-  isSearching: boolean,
-  wildRevealActive: boolean
+  fsmSub: string | null | undefined
 ): boolean {
+  const { hasEnemy, isCaptureSequenceActive, isFaintInProgress, isEnemyFloating, isWildEncounter, isSearching, wildRevealActive } = flags;
   if (!hasEnemy) return false;
   if (state && ENCOUNTER_EXCLUDE_STATES_SET.has(state)) return false;
   if (animState && ENCOUNTER_ANIM_STATES_SET.has(animState)) return false;
@@ -260,16 +275,21 @@ export function shouldShowEncounterLayersCheck(
   return isWildEncounter && (isSearching || wildRevealActive);
 }
 
+export interface EnemyHudSuppressionFlags {
+  isTrainer: boolean;
+  isFaintInProgress: boolean;
+}
+
 export function isEnemyHudSuppressedCheck(
   minigame: string | null | undefined,
   fsmState: string | null | undefined,
   fsmSub: string | null | undefined,
-  isTrainer: boolean,
+  flags: EnemyHudSuppressionFlags,
   seat2: unknown,
   enemy: Pokemon | null | undefined,
-  isFaintInProgress: boolean,
   faintedSide: string | undefined
 ): boolean {
+  const { isTrainer, isFaintInProgress } = flags;
   if (minigame === 'archaeology') return true;
   if (fsmState === 'CONTEXT_SETUP' || fsmState === 'INITIALIZING') return true;
   if (isTrainerHudBlocked(isTrainer, fsmState, fsmSub)) return true;
@@ -306,21 +326,26 @@ export function buildActiveEnemyData(
   return activeEnemyHud;
 }
 
+export interface EnemySilhouetteFlags {
+  isTrainer: boolean;
+  isGym: boolean;
+  isPvP: boolean;
+  isWildSilhouette: boolean;
+  isSilhouetteMode: boolean;
+  wasSearching: boolean;
+  isSearching: boolean;
+  isWildEntryAnimation: boolean;
+}
+
 export function buildActiveEnemyIsSilhouette(
-  isTrainer: boolean,
-  isGym: boolean,
-  isPvP: boolean,
-  isWildSilhouette: boolean,
-  isSilhouetteMode: boolean,
-  wasSearching: boolean,
-  isSearching: boolean,
+  flags: EnemySilhouetteFlags,
   state: string | null | undefined,
-  sub: string | null | undefined,
-  isWildEntryAnimation: boolean
+  sub: string | null | undefined
 ): boolean {
+  const { isTrainer, isGym, isPvP, isWildSilhouette, isSilhouetteMode, wasSearching, isSearching, isWildEntryAnimation } = flags;
   if (isTrainer || isGym || isPvP) return false;
   if (isWildSilhouette || isSilhouetteMode) return true;
   const isSearchWild = Boolean(wasSearching || isSearching);
-  return evaluateWildSilhouette(isSearchWild, state, sub, isWildEntryAnimation);
+  return evaluateWildSilhouette({ isSearchWild, isWildEntryAnimation }, state, sub);
 }
 

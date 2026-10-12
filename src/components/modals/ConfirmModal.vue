@@ -168,10 +168,10 @@ const handleCancel = () => {
     padding: 14px; 
 
     &.is-danger {
-      background: Linear-Gradient(135deg, var(--red), #dc2626);
+      background: Linear-Gradient(135deg, var(--red), var(--red-600));
       box-shadow: var(--shadow-md);
       &:hover {
-        background: Linear-Gradient(135deg, #ef4444, #b91c1c);
+        background: Linear-Gradient(135deg, var(--red-light), var(--red-600));
         box-shadow: var(--shadow-card);
       }
     }

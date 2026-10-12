@@ -208,6 +208,9 @@ function handleApproveAndIncorporate(): void {
               :src="sprite.dataUrl"
               :alt="sprite.name"
               class="preview-img"
+            
+              width="32"
+              height="32"
             >
           </div>
           <div class="sprite-info">
@@ -324,7 +327,7 @@ function handleApproveAndIncorporate(): void {
   gap: $spacing-xs;
   padding: 3px;
   border-radius: $radius-md;
-  background: #090d16;
+  background: var(--slate-900);
 
   .tab-btn {
     padding: 4px 10px;
@@ -367,7 +370,7 @@ function handleApproveAndIncorporate(): void {
   align-items: center;
   height: 90px;
   padding: 6px;
-  background: repeating-conic-gradient(#1a202c 0% 25%, #2d3748 0% 50%) 50% / 16px 16px;
+  background: repeating-conic-gradient(var(--slate-800) 0% 25%, var(--slate-700) 0% 50%) 50% / 16px 16px;
 
   .preview-img {
     max-width: 100%;
@@ -427,7 +430,7 @@ function handleApproveAndIncorporate(): void {
     padding: 8px 16px;
     border: none;
     border-radius: $radius-md;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, var(--emerald-500) 0%, var(--emerald-500) 100%);
     color: var(--white);
     font-size: var(--font-12);
     font-weight: 700;

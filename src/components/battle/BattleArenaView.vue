@@ -75,7 +75,7 @@ const atmosphereSeed = computed(() => {
   return getWeatherAnimSeed(mapStore.currentMap)
 })
 
-// Forzar Alta Fidelidad en el Combate
+// Force High Fidelity in Battle
 provide('forceHighFidelity', true)
 provide('isModalFastMode', computed(() => false))
 provide('isModalPerformanceMode', computed(() => false))
@@ -94,8 +94,8 @@ const player = computed(() => battle.value?.player)
 const p1Pos = computed(() => getCombatantPosition('player'))
 const p2Pos = computed(() => getCombatantPosition('enemy'))
 
-// Semilla única por encuentro: se regenera al inicio de cada combate para que
-// los arbustos (CombatGrass) sean visualmente distintos en cada batalla.
+// Unique encounter seed: regenerated at the start of each battle so that
+// bushes (CombatGrass) are visually distinct across encounters.
 const grassSeed = ref(Math.floor(Math.random() * MAX_PRNG_SEED_RANGE))
 watch(() => battle.value?.enemy?.uid, (newUid, oldUid) => {
   if (newUid && newUid !== oldUid) {
@@ -177,10 +177,10 @@ const arenaContentStyles = computed(() => {
   }
 })
 
-// Watchers de Sincronización
-// Watcher para sincronizar sombras (Jugador y Enemigo)
+// Synchronization Watchers
+// Watcher to synchronize shadows (Player and Enemy)
 watch([enemy, p2Pos, () => enemyAnimState.value], ([data, pos, anim]) => {
-  // El Pokémon es visible si el asiento está ocupado
+  // Pokémon is visible if the slot is occupied
   const visible = !!data
   syncEnemyShadow(visible, data || null, pos, anim)
 }, { immediate: true, deep: true })
@@ -256,12 +256,11 @@ watch(trainerAnimState, async (newState) => {
   playTrainerAnimation(
     newState,
     el,
-    !!battle.value?.isRival,
+    { isRival: !!battle.value?.isRival, isRocket },
     showRivalAlert,
     rivalFlickerRef,
     rivalExclamationRef,
-    audioStore,
-    isRocket
+    audioStore
   )
 }, { immediate: true })
 
@@ -283,7 +282,7 @@ watch(() => battleStore.currentSubState, async (sub) => {
   if (sub === 'PRELOAD_FINAL_COORDS') await triggerPreloadCoords()
 })
 
-// Forzar actualización de cámara cuando el combate se activa para evitar el glitch de "pantalla negra"
+// Force camera update when battle activates to avoid "black screen" glitch
 watch(() => battleStore.isBattleActive, (active) => {
   if (active) {
     const tl = gsap.timeline()

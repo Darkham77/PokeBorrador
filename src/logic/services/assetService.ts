@@ -61,12 +61,16 @@ export interface AssetOptions {
  * Global Asset Service / Router
  * Centralizes asset path construction and LOD application.
  */
+interface AssetSpriteFlags {
+  isShiny: boolean
+  isBack: boolean
+}
+
 function resolvePokemonAsset(
   id: string | number,
   options: AssetOptions,
   extension: string,
-  isShiny: boolean,
-  isBack: boolean
+  { isShiny, isBack }: AssetSpriteFlags
 ): string {
   const stringId = String(id).toLowerCase() // text-ok: UI text display localization string
   if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`) // text-ok: UI text display localization string
@@ -215,14 +219,13 @@ type AssetResolverFn = (
   id: string | number,
   options: AssetOptions,
   extension: string,
-  isShiny: boolean,
-  isBack: boolean
+  flags: AssetSpriteFlags
 ) => string
 
 const ASSET_RESOLVERS: Record<string, AssetResolverFn> = {
   [ASSET_TYPES.POKEMON]: resolvePokemonAsset,
   [ASSET_TYPES.MAP]: (id, options, ext) => resolveMapAsset(id, options, ext),
-  [ASSET_TYPES.TRAINER]: (id, options, ext, _, isBack) => resolveTrainerAsset(id, options, ext, isBack),
+  [ASSET_TYPES.TRAINER]: (id, options, ext, { isBack }) => resolveTrainerAsset(id, options, ext, isBack),
   [ASSET_TYPES.ENVIRONMENT]: (id) => resolveAsset(`/assets/environment/${id}.webp`),
   [ASSET_TYPES.FX]: (id) => resolveAsset(`/assets/fx/${id}.webp`),
   [ASSET_TYPES.BANNER]: (id, _, ext) => resolveBannerAsset(id, ext),
@@ -281,7 +284,7 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
 
     const resolver = ASSET_RESOLVERS[type];
     if (resolver) {
-      return resolver(id, options, extension, isShiny, isBack);
+      return resolver(id, options, extension, { isShiny, isBack });
     }
 
     return String(id);

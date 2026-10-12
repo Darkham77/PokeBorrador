@@ -82,13 +82,13 @@ const handleUseItem = (item: BattleItem) => {
   const dbItem = getItemById(item.id)
   if (!dbItem) return
 
-  // 1. Pokéballs: Uso directo
+  // 1. Pokéballs: Direct usage
   if (dbItem.cat === 'pokeballs') {
     battleStore.useItemInBattle(dbItem.id)
     return
   }
 
-  // 2. Objetos de Selección: Buscar objetivos válidos
+  // 2. Target Selection Items: Search for valid targets
   const validTargets = (gameStore.state.team || []).filter(p => isValidTarget(dbItem.id, p))
   
   if (validTargets.length === 0) {
@@ -96,7 +96,7 @@ const handleUseItem = (item: BattleItem) => {
     return
   }
 
-  // 3. Abrir modal de selección
+  // 3. Open target selection modal
   modalStore.open('PokemonSelection', {
     title: `USAR ${dbItem.name?.toUpperCase()}`,
     isBattleSwitch: false, 
@@ -152,7 +152,8 @@ const getTierColor = (t?: string) => {
                 :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
                 class="item-sprite"
                 :alt="item.name"
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                width="32"
+                height="32"
               >
             </div>
             <div class="item-qty-badge">

@@ -19,7 +19,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor, parseVueSfc, hasLineSuppression } from '@francogp/auditor';
+import { BaseAuditor, FileScanAuditor, parseVueSfc, hasLineSuppression, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -50,17 +50,17 @@ const FORBIDDEN_STATE_PATTERNS = [
 export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingRuleId> {
   constructor(roots: readonly string[] = ['src/components/battle']) {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(BATTLE_UI_BRANCHING_RULES, {
         fix: false,
         fixPriority: false,
-        lint: false,
+        lint: true,
         md: false,
         ast: false,
         changedSince: false,
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_battle_ui_branching',
       configKey: 'architecture.battleUiBranching',
       defaultConfig: {
@@ -83,9 +83,6 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
   }
 
   protected override scanFile(relPath: string, content: string): void {
-    this.markRuleEvaluated('ui-branching-raw-flag');
-    this.markRuleEvaluated('ui-branching-escape');
-
     const sfc = parseVueSfc(content);
     if (!sfc.template) return;
 
@@ -93,35 +90,37 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
     const templateStartIndex = sfc.template.contentStartIndex;
     const fullLines = content.split('\n');
 
-    let match: RegExpExecArray | null;
-    const directiveRegex = new RegExp(DIRECTIVE_REGEX.source, 'g');
+    for (const pattern of FORBIDDEN_STATE_PATTERNS) {
+      this.runSubAuditorSync(pattern.ruleId, () => {
+        let match: RegExpExecArray | null;
+        const directiveRegex = new RegExp(DIRECTIVE_REGEX.source, 'g');
 
-    while ((match = directiveRegex.exec(templateContent)) !== null) {
-      const directive = match[1] || '';
-      const expression = match[2] || '';
+        while ((match = directiveRegex.exec(templateContent)) !== null) {
+          const directive = match[1] || '';
+          const expression = match[2] || '';
 
-      // Skip expressions already consuming uiConfig
-      if (expression.includes('uiConfig.')) continue;
+          // Skip expressions already consuming uiConfig
+          if (expression.includes('uiConfig.')) continue;
 
-      for (const pattern of FORBIDDEN_STATE_PATTERNS) {
-        if (pattern.regex.test(expression)) {
-          const matchOffsetInTemplate = match.index;
-          const matchOffsetInFull = templateStartIndex + matchOffsetInTemplate;
-          const lineInFull = content.substring(0, matchOffsetInFull).split('\n').length;
+          if (pattern.regex.test(expression)) {
+            const matchOffsetInTemplate = match.index;
+            const matchOffsetInFull = templateStartIndex + matchOffsetInTemplate;
+            const lineInFull = content.substring(0, matchOffsetInFull).split('\n').length;
 
-          // Check for suppression
-          if (!this.hasSuppression(fullLines, lineInFull - 1)) {
-            this.addViolation({
-              ruleId: pattern.ruleId,
-              severity: 'error',
-              file: relPath,
-              line: lineInFull,
-              message: `[${directive}="${expression}"] ${pattern.message}`,
-              context: expression
-            });
+            // Check for suppression
+            if (!this.hasSuppression(fullLines, lineInFull - 1)) {
+              this.addViolation({
+                ruleId: pattern.ruleId,
+                severity: 'error',
+                file: relPath,
+                line: lineInFull,
+                message: `[${directive}="${expression}"] ${pattern.message}`,
+                context: expression
+              });
+            }
           }
         }
-      }
+      });
     }
   }
 

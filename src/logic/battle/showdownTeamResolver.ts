@@ -13,7 +13,7 @@ interface RequestPokemonWithUid {
 
 export class ShowdownTeamResolver {
   /**
-   * Resuelve el orden actual de los Pokémon según Showdown (activo primero).
+   * Resolves current Pokémon order according to Showdown (active first).
    */
   static getShowdownOrder(team: Pokemon[], request: ShowdownPlayerRequest | null | undefined): Pokemon[] {
     if (!request || !request.side || !Array.isArray(request.side.pokemon)) {
@@ -29,7 +29,7 @@ export class ShowdownTeamResolver {
       }
     });
     
-    // Agregar Pokémon restantes por seguridad
+    // Append remaining Pokémon for safety
     team.forEach((p) => {
       if (p && !resolved.some(r => r.uid === p.uid)) {
         resolved.push(p);
@@ -40,7 +40,7 @@ export class ShowdownTeamResolver {
   }
 
   /**
-   * Encuentra un Pokémon en el equipo reactivo por su UID.
+   * Finds a Pokémon in the reactive team by its UID.
    */
   static getPokemonByUid(team: Pokemon[], uid: string): Pokemon | null {
     if (!uid) return null;
@@ -52,14 +52,14 @@ export class ShowdownTeamResolver {
   }
 
   /**
-   * Encuentra un Pokémon en el equipo reactivo por su índice en la lista de Showdown (1-based).
+   * Finds a Pokémon in the reactive team by its Showdown list index (1-based).
    */
   static getPokemonByShowdownSlot(team: Pokemon[], request: ShowdownPlayerRequest | null | undefined, slotNum: number): Pokemon | null {
     return ShowdownSlotResolver.getPokemonByShowdownSlot(team, request, slotNum, ShowdownTeamResolver.getPokemonByUid);
   }
 
   /**
-   * Obtiene el slot (1-based index) de Showdown para un Pokémon por su UID.
+   * Gets the Showdown slot (1-based index) for a Pokémon by its UID.
    */
   static getShowdownSlotForUid(request: ShowdownPlayerRequest | null | undefined, uid: string): number {
     return ShowdownSlotResolver.getShowdownSlotForUid(request, uid);

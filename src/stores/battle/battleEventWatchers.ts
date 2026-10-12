@@ -51,11 +51,15 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
     },
   );
 
+interface BattleBusyFlags {
+  processing: boolean;
+  intro: boolean;
+}
+
 function checkBattleInputReadiness(
   subState: BattleReadySubState | undefined,
   currentState: string,
-  processing: boolean,
-  intro: boolean,
+  { processing, intro }: BattleBusyFlags,
   req: ShowdownPlayerRequest | null | undefined,
   enemyReq: ShowdownPlayerRequest | null | undefined,
   activeBattleVal: BattleState | null | undefined
@@ -138,8 +142,7 @@ function dispatchReadyForInputCustomEvent(
       const readiness = checkBattleInputReadiness(
         subState,
         fsm.currentState.value,
-        processing,
-        intro,
+        { processing, intro },
         req,
         enemyReq,
         activeBattle.value

@@ -70,7 +70,7 @@
 
 .nt-admin, .nick-style-admin {
   display: inline-block !important;
-  background: Linear-Gradient(90deg, #f05, #9e00ff, #00a2ff, #0f7, #ff9e00, #f05) !important;
+  background: linear-gradient(90deg, var(--rainbow-1, #f05), var(--rainbow-2, #9e00ff), var(--rainbow-3, #00a2ff), var(--rainbow-4, #0f7), var(--rainbow-5, #ff9e00), var(--rainbow-6, #f05)) !important;
   color: transparent !important;
   font-weight: 900 !important;
   background-size: 200% auto !important;

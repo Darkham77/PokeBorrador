@@ -28,13 +28,15 @@ async function validateWorkerAndTransition(ctx: BattleContext): Promise<void> {
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
 }
 
+type DecideEnemyMoveFn = (enemy: Pokemon, player: Pokemon, stages: BattleStages, isWild?: boolean, store?: BattleContext) => Move | null
+
 function resolveEnemyReactionMove(
   enemy: Pokemon,
   player: Pokemon,
   playerStages: BattleStages,
   isWild: boolean,
   ctx: BattleContext,
-  decideMoveFn: (enemy: Pokemon, player: Pokemon, stages: BattleStages, isWild?: boolean, store?: BattleContext) => Move | null
+  decideMoveFn: DecideEnemyMoveFn
 ): Move | null {
   const isLocked = (enemy.volatileCounters?.['lockedmove'] ?? 0) > 0
   if (isLocked && enemy.lastMove) {
@@ -66,7 +68,7 @@ async function resolveInitialSwitchChoices(
       ctx,
       decideEnemyMove
     )
-    const p2Choice = await computeP2Choice(ctx, active.player, active.enemy, isWild, false, eMove)
+    const p2Choice = await computeP2Choice(ctx, active.player, active.enemy, eMove, { isWild, p2Skip: false })
     return {
       p1Choice: `switch ${slot}`,
       p2Choice

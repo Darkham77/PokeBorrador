@@ -129,7 +129,7 @@ describe('Unified Theme Presentation Engine', () => {
 
     const row = renderAuditTaskRow(dummyResult);
     expect(row).toContain('Item Database Integrity');
-    expect(row).toContain('42ms');
+    expect(row).toContain('42 ms');
     expect(row).toContain('215 Items');
     expect(row).toContain('0 ❌');
     expect(row).toContain('0 ⚠️');
@@ -148,7 +148,7 @@ describe('Unified Theme Presentation Engine', () => {
 
     const row = renderAuditTaskRow(incompleteResult);
     expect(row).toContain('Fallback Incomplete Task');
-    expect(row).toContain('120ms');
+    expect(row).toContain('120 ms');
     expect(row).toContain('FAIL');
   });
 
@@ -189,7 +189,7 @@ describe('Unified Theme Presentation Engine', () => {
     expect(md).toContain('# 🛡️ Reporte Consolidado de Auditoría Global');
     expect(md).toContain('| Estado | Auditoría | Duración | Métrica Principal | Errores | Advertencias |');
     expect(md).toContain('Item Database Integrity');
-    expect(md).toContain('`15ms`');
+    expect(md).toContain('`15 ms`');
     expect(md).toContain('✅ Pass');
   });
 });

@@ -293,12 +293,12 @@ describe('Modal & Card Helpers Domain Suite', () => {
 
     describe('resolveEventCardClasses', () => {
       it('returns correct class mappings', () => {
-        expect(resolveEventCardClasses(true, false)).toEqual({
+        expect(resolveEventCardClasses({ hasBanner: true, isUpcoming: false })).toEqual({
           'has-banner': true,
           'is-upcoming-card': false,
           'is-active-card': true
         })
-        expect(resolveEventCardClasses(false, true)).toEqual({
+        expect(resolveEventCardClasses({ hasBanner: false, isUpcoming: true })).toEqual({
           'has-banner': false,
           'is-upcoming-card': true,
           'is-active-card': false

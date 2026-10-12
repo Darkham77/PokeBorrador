@@ -213,6 +213,9 @@ watch(activeSort, () => {
               :alt="player.tierName"
               class="ranked-medal-mini pixel-art"
               :title="`Rango: ${player.tierName}`"
+            
+              width="32"
+              height="32"
             >
           </div>
 
@@ -297,7 +300,7 @@ watch(activeSort, () => {
       align-items: center;
       gap: $spacing-sm-alt;
       margin: 0;
-      color: var(--yellow, #fbbf24);
+      color: var(--yellow, var(--amber));
       font-size: var(--font-13);
       font-weight: 900;
       letter-spacing: 0.5px;
@@ -341,7 +344,7 @@ watch(activeSort, () => {
     letter-spacing: 0.5px;
 
     &.active {
-      background: var(--yellow, #fbbf24);
+      background: var(--yellow, var(--amber));
       color: var(--black);
       font-weight: bold;
       box-shadow: var(--shadow-glow-amber);
@@ -372,7 +375,7 @@ watch(activeSort, () => {
   height: 24px;
   border: 2px solid Rgb(251 191 36 / 20%);
   border-radius: 50%;
-  border-top-color: var(--yellow, #fbbf24);
+  border-top-color: var(--yellow, var(--amber));
 }
 
 .leaderboard-list {

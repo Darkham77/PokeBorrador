@@ -145,7 +145,7 @@ const defaultTitle = computed(() => {
   // MALE
   &.male {
     border: 1px solid Rgb(255 255 255 / 20%);
-    background: Linear-Gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+    background: Linear-Gradient(135deg, var(--sky-dark) 0%, var(--sky-dark) 100%);
     color: var(--white);
     box-shadow: var(--shadow-glow-blue-sm);
   }
@@ -153,7 +153,7 @@ const defaultTitle = computed(() => {
   // FEMALE
   &.female {
     border: 1px solid Rgb(255 255 255 / 20%);
-    background: Linear-Gradient(135deg, #db2777 0%, #ec4899 100%);
+    background: Linear-Gradient(135deg, var(--pink-600) 0%, var(--pink-500) 100%);
     color: var(--white);
     box-shadow: var(--shadow-glow-rose);
   }

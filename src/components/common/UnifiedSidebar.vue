@@ -53,7 +53,7 @@ const setCategory = (id: string) => {
   emit('update:activeCategory', id)
 }
 
-// Asegurar que la categoría activa sea siempre válida al cambiar de pestaña principal
+// Ensure active category is always valid when changing main tabs
 watch(() => categories.value, (newCats) => {
   if (!newCats.find(c => c.id === props.activeCategory)) {
     emit('update:activeCategory', 'todos')

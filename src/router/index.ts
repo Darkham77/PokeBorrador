@@ -96,10 +96,9 @@ router.beforeEach(async (to, _from) => {
       logger.warn('Router', 'Usuario logueado intentando entrar a /login de forma directa. Forzando logout limpio.');
       authStore.logout(); // Deep logout handles clean redirect via page reload
       return true;
-    } else {
-      safeStorage.removeItem('pokevicio_local_user');
-      safeStorage.removeItem('pokevicio_session_mode');
     }
+    safeStorage.removeItem('pokevicio_local_user');
+    safeStorage.removeItem('pokevicio_session_mode');
   }
   
   // 4. Auth guard for protected routes

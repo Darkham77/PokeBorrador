@@ -31,14 +31,19 @@ function isReplayExecutionComplete(
   return isEnded || (Array.isArray(history) && typeof certifiedHistoryIndex === 'number' && certifiedHistoryIndex >= history.length);
 }
 
+export interface ReplayChoiceFlags {
+  p1Skip?: boolean;
+  p2Skip?: boolean;
+  p1UsedBattleItem?: boolean;
+}
+
 function recordReplayTrace(
   debugObj: Record<string, unknown>,
   p1Choice: string,
   p2Choice?: string,
-  p1Skip?: boolean,
-  p2Skip?: boolean,
-  p1UsedBattleItem?: boolean
+  options: ReplayChoiceFlags = {}
 ): void {
+  const { p1Skip, p2Skip, p1UsedBattleItem } = options;
   const trace = Reflect.get(debugObj, 'certifiedReplaySubmissionTrace');
   const entries = (Array.isArray(trace) ? trace : []) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
   entries.push({
@@ -73,10 +78,9 @@ function serializeReplayContext(args: ReplayTraceContextArgs): string {
 export function validateAndTraceSimulationReplay(
   p1Choice: string,
   p2Choice?: string,
-  p1Skip?: boolean,
-  p2Skip?: boolean,
-  p1UsedBattleItem?: boolean
+  options: ReplayChoiceFlags = {}
 ): SimulationValidationResult {
+  const { p1Skip, p2Skip, p1UsedBattleItem } = options;
   const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
   const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
   const history = debugObj?.history;
@@ -95,7 +99,7 @@ export function validateAndTraceSimulationReplay(
 
   const certifiedHistoryStep = typeof certifiedHistoryIndex === 'number' ? certifiedHistoryIndex + 1 : undefined;
   if (isSimulation && debugObj) {
-    recordReplayTrace(debugObj, p1Choice, p2Choice, p1Skip, p2Skip, p1UsedBattleItem);
+    recordReplayTrace(debugObj, p1Choice, p2Choice, { p1Skip, p2Skip, p1UsedBattleItem });
   }
 
   const replayContext = serializeReplayContext({

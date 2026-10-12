@@ -125,8 +125,8 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
   },
   
   'flinch': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
-    // No puede provocar retroceso si el objetivo ya atacó en este turno.
-    // battleFlow.ts se encargará de limpiar el flag al inicio del siguiente turno.
+    // Cannot flinch if the target has already acted this turn.
+    // battleFlow.ts will clear this flag at the start of the next turn.
     if (tgt.flinched) return;
     tgt.flinched = true;
     addLogFn(`¡${tgt.name} retrocedió y no puede atacar!`, 'log-info', tgt);

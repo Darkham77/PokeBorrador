@@ -61,7 +61,8 @@ const handleConfirm = () => {
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
           :alt="item.name || 'Objeto'"
           class="item-mini-sprite"
-          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+          width="32"
+          height="32"
         >
         <div class="title-wrap">
           <div class="main-title">

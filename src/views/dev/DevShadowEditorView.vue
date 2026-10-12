@@ -66,7 +66,7 @@ const shadowWidthPercent = computed(() => formatRatioPercent(globalShadowConfig.
 const shadowHeightPercent = computed(() => formatRatioPercent(globalShadowConfig.value.heightRatio));
 const spriteZoomPercent = computed(() => formatRatioPercent(spriteZoom.value));
 const isProgressVisible = computed(() => isRebuildProgressActive(isRebuilding.value, rebuildProgress.value));
-const saveButtonState = computed(() => resolveSaveButtonState(isSaving.value, hasUnsavedChanges.value));
+const saveButtonState = computed(() => resolveSaveButtonState({ isSaving: isSaving.value, hasUnsavedChanges: hasUnsavedChanges.value }));
 const paginationRangeText = computed(() => formatPaginationRange(currentPage.value, DEFAULT_PAGE_SIZE, totalEntities.value));
 const canGoPrev = computed(() => currentPage.value > 1);
 const canGoNext = computed(() => currentPage.value < totalPages.value);

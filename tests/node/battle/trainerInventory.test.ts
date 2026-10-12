@@ -11,17 +11,17 @@ import {
 describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
   describe('calculateNPCBaseBudget', () => {
     it('calculates the correct base budget for Gym Leaders', () => {
-      const budget = calculateNPCBaseBudget(50, true, false);
+      const budget = calculateNPCBaseBudget(50, { isGym: true, isSpecial: false });
       assert.strictEqual(budget, (50 * 100 + 1000) * 2);
     });
 
     it('calculates the correct base budget for special NPCs (Rivals/Rockets/Police)', () => {
-      const budget = calculateNPCBaseBudget(30, false, true);
+      const budget = calculateNPCBaseBudget(30, { isGym: false, isSpecial: true });
       assert.strictEqual(budget, (30 * 60 + 500) * 2);
     });
 
     it('calculates the correct base budget for normal Route NPCs', () => {
-      const budget = calculateNPCBaseBudget(20, false, false);
+      const budget = calculateNPCBaseBudget(20, { isGym: false, isSpecial: false });
       assert.strictEqual(budget, (20 * 25 + 200) * 2);
     });
   });
@@ -50,18 +50,18 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
 
   describe('calculateNPCMaxItems', () => {
     it('determines the correct max item slots for Gym Leaders under different difficulties', () => {
-      assert.strictEqual(calculateNPCMaxItems(50, 'hard', true, false), 8);
-      assert.strictEqual(calculateNPCMaxItems(50, 'normal', true, false), 6);
-      assert.strictEqual(calculateNPCMaxItems(50, 'easy', true, false), 4);
+      assert.strictEqual(calculateNPCMaxItems(50, 'hard', { isGym: true, isSpecial: false }), 8);
+      assert.strictEqual(calculateNPCMaxItems(50, 'normal', { isGym: true, isSpecial: false }), 6);
+      assert.strictEqual(calculateNPCMaxItems(50, 'easy', { isGym: true, isSpecial: false }), 4);
     });
 
     it('determines the correct max item slots for special NPCs', () => {
-      assert.strictEqual(calculateNPCMaxItems(30, 'normal', false, true), 6);
+      assert.strictEqual(calculateNPCMaxItems(30, 'normal', { isGym: false, isSpecial: true }), 6);
     });
 
     it('determines the correct max item slots for normal NPCs', () => {
-      assert.strictEqual(calculateNPCMaxItems(45, 'easy', false, false), 4);
-      assert.strictEqual(calculateNPCMaxItems(10, 'easy', false, false), 2);
+      assert.strictEqual(calculateNPCMaxItems(45, 'easy', { isGym: false, isSpecial: false }), 4);
+      assert.strictEqual(calculateNPCMaxItems(10, 'easy', { isGym: false, isSpecial: false }), 2);
     });
   });
 

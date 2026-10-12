@@ -109,12 +109,16 @@ function aggregatePokemonMatchups(
   return { speedAdvantageCount, canKOCount, coverageScore, defensiveScore, threats };
 }
 
+interface WinScoreFlags {
+  hasSetup: boolean
+  hasPriority: boolean
+}
+
 function computeWinScore(
   pokemon: HeuristicBattleSnapshot['mySide']['pokemon'][number],
   m: AggregatedMatchups,
   oppCount: number,
-  hasSetup: boolean,
-  hasPriority: boolean
+  { hasSetup, hasPriority }: WinScoreFlags
 ): number {
   const n = Math.max(oppCount, 1);
   return Math.min(1.0,
@@ -141,7 +145,7 @@ function evaluateSingleWinCondition(
   const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);
 
   const matchups = aggregatePokemonMatchups(pokemon, oppAlive, mySpeed, oppSide, snapshot, calc, inference);
-  const score = computeWinScore(pokemon, matchups, oppAlive.length, hasSetup, hasPriority);
+  const score = computeWinScore(pokemon, matchups, oppAlive.length, { hasSetup, hasPriority });
 
   return {
     pokemon: pokemon.name,

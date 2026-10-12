@@ -247,40 +247,38 @@ export function generateProceduralRiverDrainage(
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      if (terrainMatrix[y]![x] === 'water' && !visitedOcean[y]![x] && !lakeVisited[y]![x]) {
-        const cells: { x: number; y: number }[] = [];
-        const lq: { x: number; y: number }[] = [{ x, y }];
-        lakeVisited[y]![x] = true;
-        let lHead = 0;
-        let hasElevGe1 = false;
-        let maxElev = 0;
+      if (terrainMatrix[y]![x] !== 'water' || visitedOcean[y]![x] || lakeVisited[y]![x]) continue;
+      const cells: { x: number; y: number }[] = [];
+      const lq: { x: number; y: number }[] = [{ x, y }];
+      lakeVisited[y]![x] = true;
+      let lHead = 0;
+      let hasElevGe1 = false;
+      let maxElev = 0;
 
-        while (lHead < lq.length) {
-          const pt = lq[lHead++]!;
-          cells.push(pt);
-          const ptElev = heightmap[pt.y]?.[pt.x] ?? 0;
-          if (ptElev > maxElev) maxElev = ptElev;
-          if (ptElev >= 1) hasElevGe1 = true;
+      while (lHead < lq.length) {
+        const pt = lq[lHead++]!;
+        cells.push(pt);
+        const ptElev = heightmap[pt.y]?.[pt.x] ?? 0;
+        if (ptElev > maxElev) maxElev = ptElev;
+        if (ptElev >= 1) hasElevGe1 = true;
 
-          for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-            const nx = pt.x + dx!;
-            const ny = pt.y + dy!;
-            if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-              const neighborElev = heightmap[ny]?.[nx] ?? 0;
-              if (neighborElev > maxElev) maxElev = neighborElev;
-              if (neighborElev >= 1) hasElevGe1 = true;
+        for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          const nx = pt.x + dx!;
+          const ny = pt.y + dy!;
+          if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+          const neighborElev = heightmap[ny]?.[nx] ?? 0;
+          if (neighborElev > maxElev) maxElev = neighborElev;
+          if (neighborElev >= 1) hasElevGe1 = true;
 
-              if (!visitedOcean[ny]![nx] && !lakeVisited[ny]![nx] && terrainMatrix[ny]![nx] === 'water') {
-                lakeVisited[ny]![nx] = true;
-                lq.push({ x: nx, y: ny });
-              }
-            }
+          if (!visitedOcean[ny]![nx] && !lakeVisited[ny]![nx] && terrainMatrix[ny]![nx] === 'water') {
+            lakeVisited[ny]![nx] = true;
+            lq.push({ x: nx, y: ny });
           }
         }
+      }
 
-        if (cells.length >= minLakeSize) {
-          lakes.push({ cells, hasElevGe1, maxElevation: maxElev });
-        }
+      if (cells.length >= minLakeSize) {
+        lakes.push({ cells, hasElevGe1, maxElevation: maxElev });
       }
     }
   }

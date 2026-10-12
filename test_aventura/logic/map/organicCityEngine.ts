@@ -535,14 +535,12 @@ export function generateOrganicCityLayout(
       for (let r = 0; r <= Math.max(W, H); r++) {
         for (let dy = -r; dy <= r; dy++) {
           for (let dx = -r; dx <= r; dx++) {
-            if (r === 0 || Math.abs(dx) === r || Math.abs(dy) === r) {
-              const candX = preferredX + dx;
-              const candY = preferredY + dy;
-              if (candX >= minX && candX <= maxX && candY >= minY && candY <= maxY) {
-                if (placeBuildingDirect(bId, type, candX, candY, metaId)) {
-                  return true;
-                }
-              }
+            if (r !== 0 && Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+            const candX = preferredX + dx;
+            const candY = preferredY + dy;
+            if (candX < minX || candX > maxX || candY < minY || candY > maxY) continue;
+            if (placeBuildingDirect(bId, type, candX, candY, metaId)) {
+              return true;
             }
           }
         }
@@ -767,11 +765,12 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
         if (isStarterOrTier0) {
           placeBuildingWithSearch(`${node.id}_lab`, 'lab', bx + TOWN_REGIONAL_LAB_X, by + TOWN_REGIONAL_LAB_Y, 'lab_oak');
         } else if (/lavender|lavanda/i.test(node.id) || /lavender|lavanda/i.test(node.name)) {
-          if (H >= TOWN_TOWER_MIN_H && W >= TOWN_TOWER_MIN_W) {
-            placeBuildingWithSearch(`${node.id}_tower`, 'house', bx + Math.max(TOWN_TOWER_MIN_X, W - TOWN_TOWER_OFFSET_W), by + 1, 'poke_pokemon_tower');
-          } else {
-            placeBuildingWithSearch(`${node.id}_landmark`, 'house', bx + TOWN_REGIONAL_LANDMARK_X, by + TOWN_REGIONAL_LANDMARK_Y, 'house_lavender_purple');
-          }
+          const isBigTown = H >= TOWN_TOWER_MIN_H && W >= TOWN_TOWER_MIN_W;
+          const towerId = isBigTown ? `${node.id}_tower` : `${node.id}_landmark`;
+          const towerX = isBigTown ? bx + Math.max(TOWN_TOWER_MIN_X, W - TOWN_TOWER_OFFSET_W) : bx + TOWN_REGIONAL_LANDMARK_X;
+          const towerY = isBigTown ? by + 1 : by + TOWN_REGIONAL_LANDMARK_Y;
+          const towerMeta = isBigTown ? 'poke_pokemon_tower' : 'house_lavender_purple';
+          placeBuildingWithSearch(towerId, 'house', towerX, towerY, towerMeta);
           addProp('statue', bx + 4, by + 4, getAssetFilename('poke_statue_gym'));
           addProp('statue', bx + TOWN_REGIONAL_STATUE_B_X, by + 4, getAssetFilename('poke_statue_gym'));
         } else {

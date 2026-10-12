@@ -64,6 +64,9 @@ function handleImageError(e: Event) {
         :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
         :alt="item.name"
         class="bm-item-sprite"
+        width="32"
+      
+        height="32"
         @error="handleImageError"
       >
       <div

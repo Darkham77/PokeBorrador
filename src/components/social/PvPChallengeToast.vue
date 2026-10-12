@@ -223,7 +223,7 @@ async function handleDecline() {
   right: 0;
   left: 0;
   height: 3px;
-  background: Linear-Gradient(90deg, #f59e0b, #ef4444, #f59e0b);
+  background: Linear-Gradient(90deg, var(--amber-dark), var(--red-light), var(--amber-dark));
 }
 
 .toast-content {

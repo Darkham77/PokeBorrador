@@ -334,6 +334,9 @@ const handleCloseModal = () => {
               :src="fossilSprite"
               class="fossil-sprite pixelated"
               alt="Fósil"
+            
+              width="32"
+              height="32"
             >
             <span
               v-else-if="tile.clue === 'HOT'"
@@ -437,7 +440,7 @@ const handleCloseModal = () => {
   overflow: hidden;
 
   &:hover:not(.is-dug) {
-    background: #92400e;
+    background: var(--amber-dark);
   }
 
   .rock-texture {
@@ -449,7 +452,7 @@ const handleCloseModal = () => {
   }
 
   &.is-dug {
-    background: #451a03;
+    background: var(--darker);
     border-color: var(--dark);
     cursor: default;
   }

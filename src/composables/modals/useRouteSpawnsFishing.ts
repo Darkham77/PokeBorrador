@@ -100,7 +100,7 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
       const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0
       const isBlocked = multiplier === 0
 
-      const { spawnType: initialSpawnType, statusClass } = getSpawnStatus(isVisitor, isExclusive, isBlocked, true, isBuffed, isDebuffed)
+      const { spawnType: initialSpawnType, statusClass } = getSpawnStatus({ isVisitor, isExclusive, isBlocked, isInCurrentCycle: true, isBuffed, isDebuffed })
       const spawnType = initialSpawnType === 'Común' ? 'Pesca' : initialSpawnType
 
       const speciesBonuses = eventStore.getSpeciesBonuses(id)

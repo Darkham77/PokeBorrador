@@ -150,8 +150,8 @@ export const useGameStore = defineStore('game', () => {
 
     let changed = false
 
-    // 1. Rocket: limpiar extortedRouteId cuando pasan las 24h activas.
-    //    El timestamp se limpia cuando pasan las 24h COMPLETAS (permite re-extorsionar).
+    // 1. Rocket: clear extortedRouteId when active 24h expires.
+    //    Timestamp clears when FULL 24h passes (allows re-extortion).
     if (state.classData.extortedRouteTimestamp) {
       const timestamp = Number(state.classData.extortedRouteTimestamp)
       if ((now - timestamp) > DURATION_24_HOURS_MS) {
@@ -162,9 +162,9 @@ export const useGameStore = defineStore('game', () => {
       }
     }
 
-    // 2. Trainer: limpiar officialRouteId cuando pasan los 30min activos.
-    //    El timestamp persiste otras 23.5h para el cooldown de 24h.
-    //    Cuando pasan las 24h COMPLETAS desde el timestamp, también limpiamos el timestamp.
+    // 2. Trainer: clear officialRouteId when active 30min expires.
+    //    Timestamp persists for another 23.5h for the 24h cooldown.
+    //    When FULL 24h passes from timestamp, clear the timestamp as well.
     if (state.classData.officialRouteTimestamp) {
       const timestamp = Number(state.classData.officialRouteTimestamp)
       if (state.classData.officialRouteId && (now - timestamp) > BUFF_DURATION_30_MIN_MS) {
@@ -173,7 +173,7 @@ export const useGameStore = defineStore('game', () => {
         changed = true
       }
       if ((now - timestamp) > DURATION_24_HOURS_MS) {
-        // Cooldown completo de 24h: liberar el timestamp para permitir nuevo establecimiento
+        // Full 24h cooldown: release timestamp to allow establishing a new route
         state.classData.officialRouteTimestamp = null
         changed = true
       }
@@ -194,7 +194,7 @@ export const useGameStore = defineStore('game', () => {
     if (isSandboxActive.value) return
     realStateBackup.value = structuredClone(state) as GameState
     
-    // Limpiar el estado actual y cargar el guardado del sandbox si existe
+    // Clear current state and load sandbox save if it exists
     Object.keys(state).forEach(key => {
       delete (state as Record<string, unknown>)[key] // open-record: Generic key-value data dictionary container
     })
@@ -217,10 +217,10 @@ export const useGameStore = defineStore('game', () => {
   function exitSandboxMode() {
     if (!isSandboxActive.value) return
     
-    // Guardar el estado del sandbox localmente antes de salir
+    // Save sandbox state locally before exiting
     saveSandboxLocalState(state)
     
-    // Limpiar y restaurar la partida real
+    // Clear and restore real save
     Object.keys(state).forEach(key => {
       delete (state as Record<string, unknown>)[key] // open-record: Generic key-value data dictionary container
     })

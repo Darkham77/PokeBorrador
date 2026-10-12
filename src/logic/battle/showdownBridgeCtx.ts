@@ -1,7 +1,7 @@
 import type { BattleContext } from '../../types/battle/battleContext.ts';
 import type { Pokemon } from '../../types/pokemon/pokemon.ts';
 
-/** Contexto inmutable que se pasa a cada sub-handler de showdownBridge. */
+/** Immutable context passed to each showdownBridge sub-handler. */
 export interface SBCtx {
   store: BattleContext;
   type: string;

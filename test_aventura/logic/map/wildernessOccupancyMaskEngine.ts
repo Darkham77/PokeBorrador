@@ -26,6 +26,61 @@ export interface WildernessOccupancyMasks {
   readonly stairBlocked: boolean[][];
 }
 
+interface BlockAreaTargets {
+  readonly treeBlocked: boolean[][];
+  readonly urbanBlocked: boolean[][];
+}
+
+function blockArea(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  width: number,
+  height: number,
+  targets: BlockAreaTargets
+): void {
+  const minX = Math.max(0, x1);
+  const maxX = Math.min(width - 1, x2);
+  const minY = Math.max(0, y1);
+  const maxY = Math.min(height - 1, y2);
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      targets.treeBlocked[y]![x] = true;
+      targets.urbanBlocked[y]![x] = true;
+    }
+  }
+}
+
+function blockPoiLayoutElements(
+  poi: POINode,
+  width: number,
+  height: number,
+  targets: BlockAreaTargets
+): void {
+  if (poi.urbanLayout?.buildings) {
+    for (const b of poi.urbanLayout.buildings) {
+      blockArea(b.x - 1, b.y - 1, b.x + b.width, b.y + b.height, width, height, targets);
+    }
+  }
+  if (poi.urbanLayout?.internalStreets) {
+    for (const pt of poi.urbanLayout.internalStreets) {
+      if (pt.y >= 0 && pt.y < height && pt.x >= 0 && pt.x < width) {
+        targets.treeBlocked[pt.y]![pt.x] = true;
+        targets.urbanBlocked[pt.y]![pt.x] = true;
+      }
+    }
+  }
+  if (poi.urbanLayout?.props) {
+    for (const p of poi.urbanLayout.props) {
+      if (p.y >= 0 && p.y < height && p.x >= 0 && p.x < width) {
+        targets.treeBlocked[p.y]![p.x] = true;
+        targets.urbanBlocked[p.y]![p.x] = true;
+      }
+    }
+  }
+}
+
 /**
  * Builds treeBlocked, urbanBlocked, and stairBlocked clearance matrices.
  */
@@ -92,94 +147,57 @@ export function buildWildernessOccupancyMasks(
     }
   }
 
+  const targetMasks: BlockAreaTargets = { treeBlocked, urbanBlocked };
+
   for (const poi of pois) {
-    if (poi.type === 'dungeon_forest' || poi.type === 'route_gate') {
-      if (poi.urbanLayout?.buildings) {
-        for (const b of poi.urbanLayout.buildings) {
-          for (let dy = -1; dy <= b.height; dy++) {
-            for (let dx = -1; dx <= b.width; dx++) {
-              const ny = b.y + dy;
-              const nx = b.x + dx;
-              if (ny >= 0 && ny < H && nx >= 0 && nx < W) {
-                treeBlocked[ny]![nx] = true;
-                urbanBlocked[ny]![nx] = true;
-              }
-            }
-          }
-        }
-      }
-      if (poi.urbanLayout?.internalStreets) {
-        for (const pt of poi.urbanLayout.internalStreets) {
-          if (pt.y >= 0 && pt.y < H && pt.x >= 0 && pt.x < W) {
-            treeBlocked[pt.y]![pt.x] = true;
-            urbanBlocked[pt.y]![pt.x] = true;
-          }
-        }
-      }
-      if (poi.urbanLayout?.props) {
-        for (const p of poi.urbanLayout.props) {
-          if (p.y >= 0 && p.y < H && p.x >= 0 && p.x < W) {
-            treeBlocked[p.y]![p.x] = true;
-            urbanBlocked[p.y]![p.x] = true;
-          }
-        }
-      }
+    blockPoiLayoutElements(poi, W, H, targetMasks);
 
-      if (poi.type === 'route_gate') {
-        const isHoriz = poi.facing === 'east' || poi.facing === 'west';
-        const b = poi.urbanLayout?.buildings[0];
-        if (isHoriz) {
-          const doorY = b ? b.y + b.height - 1 : poi.gridY + 6;
-          const gateMinX = b ? b.x : poi.gridX + 1;
-          const gateMaxX = b ? b.x + b.width : poi.gridX + 9;
-          for (let x = Math.max(0, gateMinX - ROUTE_GATE_CORRIDOR_LENGTH); x <= Math.min(W - 1, gateMaxX + ROUTE_GATE_CORRIDOR_LENGTH); x++) {
-            for (let y = Math.max(0, doorY - ROUTE_GATE_CORRIDOR_HALF_WIDTH); y <= Math.min(H - 1, doorY + ROUTE_GATE_CORRIDOR_HALF_WIDTH); y++) {
-              treeBlocked[y]![x] = true;
-              urbanBlocked[y]![x] = true;
-            }
-          }
-        } else {
-          const midX = b ? Math.floor(b.x + b.width / 2) : poi.gridX + 5;
-          const gateMinY = b ? b.y : poi.gridY + 1;
-          const gateMaxY = b ? b.y + b.height : poi.gridY + 8;
-          for (let y = Math.max(0, gateMinY - ROUTE_GATE_CORRIDOR_LENGTH); y <= Math.min(H - 1, gateMaxY + ROUTE_GATE_CORRIDOR_LENGTH); y++) {
-            for (let x = Math.max(0, midX - ROUTE_GATE_CORRIDOR_HALF_WIDTH); x <= Math.min(W - 1, midX + 1); x++) {
-              treeBlocked[y]![x] = true;
-              urbanBlocked[y]![x] = true;
-            }
-          }
-        }
+    if (poi.type === 'route_gate') {
+      const isHoriz = poi.facing === 'east' || poi.facing === 'west';
+      const b = poi.urbanLayout?.buildings[0];
+      if (isHoriz) {
+        const doorY = b ? b.y + b.height - 1 : poi.gridY + 6;
+        const gateMinX = b ? b.x : poi.gridX + 1;
+        const gateMaxX = b ? b.x + b.width : poi.gridX + 9;
+        blockArea(
+          gateMinX - ROUTE_GATE_CORRIDOR_LENGTH,
+          doorY - ROUTE_GATE_CORRIDOR_HALF_WIDTH,
+          gateMaxX + ROUTE_GATE_CORRIDOR_LENGTH,
+          doorY + ROUTE_GATE_CORRIDOR_HALF_WIDTH,
+          W,
+          H,
+          targetMasks
+        );
+      } else {
+        const midX = b ? Math.floor(b.x + b.width / 2) : poi.gridX + 5;
+        const gateMinY = b ? b.y : poi.gridY + 1;
+        const gateMaxY = b ? b.y + b.height : poi.gridY + 8;
+        blockArea(
+          midX - ROUTE_GATE_CORRIDOR_HALF_WIDTH,
+          gateMinY - ROUTE_GATE_CORRIDOR_LENGTH,
+          midX + 1,
+          gateMaxY + ROUTE_GATE_CORRIDOR_LENGTH,
+          W,
+          H,
+          targetMasks
+        );
       }
-
       continue;
     }
 
-    if (poi.urbanLayout?.buildings) {
-      for (const b of poi.urbanLayout.buildings) {
-        for (let dy = -1; dy <= b.height; dy++) {
-          for (let dx = -1; dx <= b.width; dx++) {
-            const ny = b.y + dy;
-            const nx = b.x + dx;
-            if (ny >= 0 && ny < H && nx >= 0 && nx < W) {
-              treeBlocked[ny]![nx] = true;
-              urbanBlocked[ny]![nx] = true;
-            }
-          }
-        }
-      }
+    if (poi.type === 'dungeon_forest') {
+      continue;
     }
 
-    const minX = Math.max(0, poi.gridX - 2);
-    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + 1);
-    const minY = Math.max(0, poi.gridY - 2);
-    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + 1);
-
-    for (let y = minY; y <= maxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        treeBlocked[y]![x] = true;
-        urbanBlocked[y]![x] = true;
-      }
-    }
+    blockArea(
+      poi.gridX - 2,
+      poi.gridY - 2,
+      poi.gridX + poi.footprint.width + 1,
+      poi.gridY + poi.footprint.height + 1,
+      W,
+      H,
+      targetMasks
+    );
   }
 
   // 1.4 Path Corridors

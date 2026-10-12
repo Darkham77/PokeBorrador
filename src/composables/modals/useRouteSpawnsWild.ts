@@ -100,7 +100,7 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
       
       const isInCurrentCycle = wildList.includes(id)
       
-      const { spawnType, statusClass } = getSpawnStatus(isVisitor, isExclusive, isBlocked, isInCurrentCycle, isBuffed, isDebuffed)
+      const { spawnType, statusClass } = getSpawnStatus({ isVisitor, isExclusive, isBlocked, isInCurrentCycle, isBuffed, isDebuffed })
 
       const speciesBonuses = eventStore.getSpeciesBonuses(id)
 

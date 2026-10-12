@@ -4,12 +4,12 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex, evaluateAndUseNPCItem } from '../ai/battleAI.ts'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
 import { getShowdownWorker, executeTurnInWorker, syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts'
-import { filterShowdownLogs, parseShowdownLogLine } from '../showdownBridge.ts'
+import { filterShowdownLogs } from '../showdownBridge.ts'
 import { requireCertifiedBagItemResponse } from './certifiedBagItemActionResolver.ts'
 import { ShowdownBattleRunner } from './showdownBattleRunner.ts'
 import { handleForceSwitch } from '../resolution.ts'
 import { isRevivingForceSwitchRequest } from './requestHelper.ts'
-import type { SideID } from '@pkmn/sim'
+import { parseLogsWithSkip } from '../battleTurnLogHelper.ts'
 
 function resolveEnemySwitchUid(store: BattleContext, p: Pokemon, e: Pokemon, isWild: boolean): string {
   if (isWild || !store.activeBattle.value) return '';
@@ -84,14 +84,19 @@ function resolveCertifiedReplayBagResponse(
   return requireCertifiedBagItemResponse(replayDebug, bagAction.itemId, bagAction.targetSlot);
 }
 
+interface WorkerEnemyActionOptions {
+  p2Skip: boolean;
+  isCertifiedReplay: boolean;
+  bagAction?: CertifiedBattleGameAction;
+}
+
 async function executeWorkerEnemyAction(
   store: BattleContext,
   initialP2Choice: string,
-  p2Skip: boolean,
-  isCertifiedReplay: boolean,
   replayDebug: NonNullable<typeof window.__VITE_DEBUG__> | undefined,
-  bagAction?: CertifiedBattleGameAction
+  options: WorkerEnemyActionOptions
 ): Promise<void> {
+  const { p2Skip, isCertifiedReplay, bagAction } = options;
   const active = store.activeBattle.value;
   const enemyRequest = active?.enemyRequest as ShowdownPlayerRequest | undefined;
   let p2Choice = initialP2Choice;
@@ -106,7 +111,7 @@ async function executeWorkerEnemyAction(
 
   console.debug(`[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`);
 
-  const result = await executeTurnInWorker('', p2Choice, true, p2Skip, true);
+  const result = await executeTurnInWorker('', p2Choice, { p1Skip: true, p2Skip, p1UsedBattleItem: true });
   if (isCertifiedReplay) {
     if (!replayDebug) {
       throw new Error('[BattleTurn] Certified replay state disappeared before advancing the history cursor.');
@@ -118,7 +123,7 @@ async function executeWorkerEnemyAction(
     active.enemyRequest = result.p2Request;
   }
   const filteredLogs = filterShowdownLogs(result.logs);
-  await parseLogsWithSkip(store, filteredLogs, true, p2Skip);
+  await parseLogsWithSkip(store, filteredLogs, { p1Skip: true, p2Skip });
 
   await syncTeamsFromLastWorkerState();
 
@@ -144,68 +149,17 @@ export async function runEnemyAction(store: BattleContext, bagAction?: Certified
     : await resolveEnemyTurnChoice(store, p, e, isWild);
 
   if (getShowdownWorker()) {
-    await executeWorkerEnemyAction(store, p2Choice, p2Skip, isCertifiedReplay, replayDebug, bagAction);
+    await executeWorkerEnemyAction(store, p2Choice, replayDebug, { p2Skip, isCertifiedReplay, bagAction });
   }
 }
 
-interface SkipTracker {
-  skipP1: boolean;
-  skipP2: boolean;
+interface PostTurnFaintsOptions {
+  playerFainted: boolean;
+  enemyFainted: boolean;
 }
 
-function evaluateSideSkip(
-  type: string | undefined,
-  target: string | undefined,
-  sidePrefix: SideID,
-  oppPrefix: SideID,
-  isSkipping: boolean
-): { shouldSkip: boolean; nextSkipping: boolean } {
-  if (type === 'move' && target?.startsWith(sidePrefix)) {
-    return { shouldSkip: true, nextSkipping: true };
-  }
-  if (isSkipping) {
-    if (type === '-damage' && target?.startsWith(oppPrefix)) {
-      return { shouldSkip: true, nextSkipping: true };
-    }
-    if (type === 'move' && !target?.startsWith(sidePrefix)) {
-      return { shouldSkip: false, nextSkipping: false };
-    }
-    return { shouldSkip: false, nextSkipping: true };
-  }
-  return { shouldSkip: false, nextSkipping: false };
-}
-
-function shouldSkipLogLine(type: string | undefined, target: string | undefined, p1Skip: boolean, p2Skip: boolean, tracker: SkipTracker): boolean {
-  if (p1Skip) {
-    const res = evaluateSideSkip(type, target, 'p1', 'p2', tracker.skipP1);
-    tracker.skipP1 = res.nextSkipping;
-    if (res.shouldSkip) return true;
-  }
-  if (p2Skip) {
-    const res = evaluateSideSkip(type, target, 'p2', 'p1', tracker.skipP2);
-    tracker.skipP2 = res.nextSkipping;
-    if (res.shouldSkip) return true;
-  }
-  return false;
-}
-
-export async function parseLogsWithSkip(store: BattleContext, logs: string[], p1Skip: boolean, p2Skip: boolean) {
-  const tracker: SkipTracker = { skipP1: false, skipP2: false };
-  
-  for (const logLine of logs) {
-    const parts = logLine.split('|').map(x => x.trim());
-    const type = parts[1];
-    const target = parts[2];
-    
-    if (shouldSkipLogLine(type, target, p1Skip, p2Skip, tracker)) {
-      continue;
-    }
-    
-    await parseShowdownLogLine(store, logLine, logs);
-  }
-}
-
-async function handlePostTurnFaints(store: BattleContext, playerFainted: boolean, enemyFainted: boolean): Promise<boolean> {
+async function handlePostTurnFaints(store: BattleContext, options: PostTurnFaintsOptions): Promise<boolean> {
+  const { playerFainted, enemyFainted } = options;
   const fsm = store.fsm;
   const { BATTLE_STATES, BATTLE_SUBSTATES } = store;
 
@@ -244,7 +198,7 @@ export async function resolvePostTurnSwitchesAndFaints(
   }
 
   if (playerFainted || enemyFainted) {
-    const isFinished = await handlePostTurnFaints(store, playerFainted, enemyFainted);
+    const isFinished = await handlePostTurnFaints(store, { playerFainted, enemyFainted });
     if (isFinished) return true;
   }
 

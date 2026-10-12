@@ -74,7 +74,7 @@ const filteredEntries = computed(() => {
 });
 
 function getAssetUrl(entry: CanonicalAssetEntry): string {
-  return `/assets/${entry.runtimePath}`;
+  return `/test_aventura/assets/${entry.runtimePath}`;
 }
 </script>
 
@@ -145,6 +145,9 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
               :alt="entry.name"
               class="preview-img"
               loading="lazy"
+            
+              width="32"
+              height="32"
             >
           </div>
 
@@ -205,7 +208,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   flex-direction: column;
   gap: $spacing-md-alt;
   padding: 14px 16px;
-  background: #0b1120;
+  background: var(--slate-900);
   border-bottom: 1px solid Rgb(255 255 255 / 8%);
 }
 
@@ -305,12 +308,12 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   cursor: pointer;
 
   &:hover {
-    background: #273549;
+    background: var(--slate-700);
     border-color: var(--slate-600);
   }
 
   &.selected {
-    background: #182844;
+    background: var(--slate-800);
     border-color: var(--sky);
     box-shadow: var(--shadow-card);
   }

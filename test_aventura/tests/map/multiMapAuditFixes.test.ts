@@ -393,11 +393,11 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
     const fs = await import('node:fs');
 
     const rockFiles = [
-      'public/assets/prefabs/props/poke_rock_stone_gray_medium.png',
-      'public/assets/prefabs/props/poke_boulder_large.png',
-      'public/assets/studio/kanto/prefabs/poke_boulder_gray.png',
-      'public/assets/tiles/poke_rock_boulder_mossy_1.png',
-      'public/assets/tiles/poke_rock_boulder_mossy_2.png'
+      'test_aventura/assets/prefabs/props/poke_rock_stone_gray_medium.png',
+      'test_aventura/assets/prefabs/props/poke_boulder_large.png',
+      'test_aventura/assets/studio/kanto/prefabs/poke_boulder_gray.png',
+      'test_aventura/assets/tiles/poke_rock_boulder_mossy_1.png',
+      'test_aventura/assets/tiles/poke_rock_boulder_mossy_2.png'
     ];
 
     for (const f of rockFiles) {

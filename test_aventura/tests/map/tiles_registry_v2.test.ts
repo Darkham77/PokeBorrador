@@ -10,7 +10,6 @@ import path from 'node:path';
 import {
   TilesRegistryService,
   defaultTilesRegistry,
-  getTilesByCategory,
   getTilesByTag,
   getRandomTile,
   getTileById,
@@ -22,8 +21,8 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
   let registryData: TilesRegistryJson;
 
   beforeAll(() => {
-    const registryPath = path.resolve('public/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'public/assets/tiles_registry.json must exist').toBe(true);
+    const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
+    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(true);
     const raw = fs.readFileSync(registryPath, 'utf-8');
     registryData = JSON.parse(raw) as TilesRegistryJson;
 
@@ -31,7 +30,7 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
     loadTilesRegistry(registryData);
   });
 
-  it('validates schema compliance of public/assets/tiles_registry.json', () => {
+  it('validates schema compliance of test_aventura/assets/tiles_registry.json', () => {
     expect(registryData.version).toBe('2.0');
     expect(Array.isArray(registryData.tiles)).toBe(true);
     expect(registryData.tiles.length).toBeGreaterThan(0);
@@ -42,7 +41,7 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
     const validSources = new Set(['firered', 'emerald', 'ruby_sapphire', 'structures']);
 
     // Build directory cache once O(1) to avoid 116k disk stat calls
-    const tilesDir = path.resolve('public', 'assets', 'tiles');
+    const tilesDir = path.resolve('test_aventura', 'assets', 'tiles');
     const existingRelativePaths = new Set<string>();
     for (const category of fs.readdirSync(tilesDir)) {
       const catDir = path.join(tilesDir, category);
@@ -67,30 +66,30 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
   });
 
   it('retrieves tiles by category with O(1) performance', () => {
-    const elevations = getTilesByCategory('elevation');
+    const elevations = defaultTilesRegistry.getTilesByCategory('elevation');
     expect(elevations.length).toBeGreaterThan(0);
     expect(elevations.every(t => t.category === 'elevation')).toBe(true);
     expect(elevations.every(t => t.collision === true)).toBe(true);
 
-    const terrain = getTilesByCategory('terrain');
+    const terrain = defaultTilesRegistry.getTilesByCategory('terrain');
     expect(terrain.length).toBeGreaterThan(0);
     expect(terrain.every(t => t.category === 'terrain')).toBe(true);
     expect(terrain.every(t => t.collision === false)).toBe(true);
 
-    const water = getTilesByCategory('water');
+    const water = defaultTilesRegistry.getTilesByCategory('water');
     expect(water.length).toBeGreaterThan(0);
     expect(water.every(t => t.category === 'water')).toBe(true);
     expect(water.every(t => t.collision === 'water')).toBe(true);
 
-    const vegetation = getTilesByCategory('vegetation');
+    const vegetation = defaultTilesRegistry.getTilesByCategory('vegetation');
     expect(vegetation.length).toBeGreaterThan(0);
     expect(vegetation.every(t => t.category === 'vegetation')).toBe(true);
 
-    const structures = getTilesByCategory('structures');
+    const structures = defaultTilesRegistry.getTilesByCategory('structures');
     expect(structures.length).toBeGreaterThan(0);
     expect(structures.every(t => t.category === 'structures')).toBe(true);
 
-    const props = getTilesByCategory('objects_props');
+    const props = defaultTilesRegistry.getTilesByCategory('objects_props');
     expect(props.length).toBeGreaterThan(0);
     expect(props.every(t => t.category === 'objects_props')).toBe(true);
   });
@@ -145,7 +144,7 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
   });
 
   it('correctly associates and filters structure category tiles by game source tags', () => {
-    const structuresPath = path.resolve('public/assets/tiles/structures/registry.json');
+    const structuresPath = path.resolve('test_aventura/assets/tiles/structures/registry.json');
     if (fs.existsSync(structuresPath)) {
       const raw = fs.readFileSync(structuresPath, 'utf-8');
       const structData = JSON.parse(raw) as TilesRegistryJson;

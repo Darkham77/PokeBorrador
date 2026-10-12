@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * HatchAnimationModal.vue
- * Rediseño premium en pantalla completa para la eclosión de huevos.
- * Orquestado al 100% con GSAP, sin BaseModal y con auras de alta fidelidad.
+ * Premium fullscreen redesign for egg hatching.
+ * 100% orchestrated with GSAP, without BaseModal and with high-fidelity auras.
  */
 const HATCH_RING_MAX_SCALE = 3.5
 const HATCH_REVEAL_ANIM_DUR_SEC = 0.6
@@ -68,7 +68,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-// Forzar el modo de alta fidelidad a todos los componentes inyectados (como PVSpriteFX)
+// Force high fidelity mode for all injected components (such as PVSpriteFX)
 provide('forceHighFidelity', true)
 
 const gameStore = useGameStore()
@@ -78,18 +78,18 @@ const showParticles = ref(false)
 const showAuras = ref(false)
 const resultPokemon = ref<Pokemon | null>(null)
 
-// DOM Refs para animaciones de GSAP
+// DOM Refs for GSAP animations
 const modalRef = ref<HTMLElement | null>(null)
 let ctx: gsap.Context | null = null
 const particlesRef = ref<HTMLElement[]>([])
 const rareAuraRef = ref<HTMLElement | null>(null)
 const atmosAuraRef = ref<HTMLElement | null>(null)
 
-// Referencias de los activos de brillo premium
+// References for premium flare assets
 const flare1Url = getAssetUrl(ASSET_TYPES.FX, 'flare_1')
 const flare2Url = getAssetUrl(ASSET_TYPES.FX, 'flare_2')
 
-// Almacén de animaciones activas para limpieza limpia al desmontar
+// Active animations registry for clean teardown on unmount
 const activeTweens: gsap.core.Tween[] = []
 let idleTimeline: gsap.core.Timeline | null = null
 
@@ -195,7 +195,7 @@ const initAnimations = async () => {
   await nextTick()
   
   ctx = gsap.context(() => {
-    // Movimiento de levitación suave del huevo en reposo en el contenedor padre
+    // Gentle levitation motion of the idle egg in the parent container
     idleTimeline = gsap.timeline({ repeat: -1, yoyo: true })
     idleTimeline.to('.egg-stage-wrapper', {
       y: EGG_LEVITATION_Y_OFFSET,
@@ -203,14 +203,14 @@ const initAnimations = async () => {
       ease: 'sine.inOut'
     })
 
-    // Animar el anillo de brillo místico al rededor del huevo
+    // Animate mystical glow ring around the egg
     const glow = gsap.fromTo('.glow-ring', 
       { scale: HATCH_GLOW_RING_INITIAL_SCALE, opacity: HATCH_GLOW_RING_PULSE_OPACITY },
       { scale: GLOW_RING_EXPAND_SCALE, opacity: OPACITY_ZERO, duration: GLOW_RING_PULSE_DURATION_SEC, repeat: -1, ease: 'power1.out' }
     )
     activeTweens.push(glow)
 
-    // Destello en el texto de invitación
+    // Pulse effect on invitation text
     const hintPulse = gsap.fromTo('.hatch-hint',
       { opacity: HATCH_HINT_MIN_OPACITY },
       { opacity: HATCH_HINT_MAX_OPACITY, duration: HATCH_HINT_PULSE_DURATION_SEC, repeat: -1, yoyo: true, ease: 'sine.inOut' }
@@ -227,7 +227,7 @@ const handleEggClick = () => {
   ctx = gsap.context(() => {
     if (taps.value === 1) {
       playSound('egg_crack')
-      // wobble suave de toquecito
+      // Gentle tap wobble
       const wobble = gsap.fromTo('.egg-sprite',
         { x: 0, rotation: 0 },
         {
@@ -281,7 +281,7 @@ const handleEggClick = () => {
 
       const hatchTimeline = gsap.timeline()
 
-      // Temblor de eclosión creciente de alta frecuencia
+      // High-frequency rising hatch tremor
       hatchTimeline.fromTo('.egg-sprite',
         { x: 0, rotation: 0 },
         {
@@ -294,21 +294,21 @@ const handleEggClick = () => {
         }
       )
 
-      // El anillo de brillo colapsa hacia el centro y estalla hacia afuera
+      // The glow ring collapses toward center and bursts outwards
       hatchTimeline.fromTo('.glow-ring',
         { scale: 1, opacity: 0.6 },
         { scale: HATCH_RING_MAX_SCALE, opacity: HATCH_GLOW_RING_MAX_OPACITY, duration: GLOW_RING_COLLAPSE_DURATION_SEC, ease: 'power2.inOut' },
         0
       )
 
-      // Gran flash en pantalla completa justo al finalizar el temblor
+      // Fullscreen flash right at the end of the shake
       hatchTimeline.to('.hatch-backdrop', {
         backgroundColor: '#ffffff',
         duration: HATCH_FLASH_DURATION_SEC,
         ease: 'power1.in'
       }, '+=0.05')
 
-      // En el pico del destello (pantalla 100% blanca), realizamos la eclosión
+      // At peak flash (100% white screen), perform the hatch reveal
       hatchTimeline.call(() => {
         stage.value = 'reveal'
         showParticles.value = true
@@ -316,7 +316,7 @@ const handleEggClick = () => {
         playSound('evolution_complete')
         
         nextTick(() => {
-          // Animación de entrada de la tarjeta de Stats y Pokémon
+          // Entry animation for Stats card and Pokémon
           gsap.fromTo('.reveal-info-wrapper',
             { opacity: 0 },
             { opacity: 1, duration: HATCH_REVEAL_ANIM_DUR_SEC, ease: 'power2.out' }
@@ -334,9 +334,9 @@ const handleEggClick = () => {
             }
           )
 
-          // Animaciones de las auras concéntricas en contra-fase
+          // Counter-phase animations for concentric auras
           if (rareAuraRef.value && atmosAuraRef.value) {
-            // Respiración concéntrica de escalas y opacidad (contra-fase)
+            // Concentric scale and opacity breathing (counter-phase)
             gsap.fromTo(rareAuraRef.value,
               { scale: HATCH_RARE_AURA_MIN_SCALE, opacity: HATCH_RARE_AURA_MIN_OPACITY },
               { scale: HATCH_RARE_AURA_MAX_SCALE, opacity: HATCH_RARE_AURA_MAX_OPACITY, duration: HATCH_AURA_ANIM_DUR_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
@@ -347,7 +347,7 @@ const handleEggClick = () => {
             )
           }
 
-          // Explosión de partículas
+          // Particle burst
           particlesRef.value.forEach((el) => {
             if (!el) return
             const angle = Math.random() * Math.PI * 2
@@ -369,7 +369,7 @@ const handleEggClick = () => {
             )
           })
 
-          // Entrada suave de los stats
+          // Smooth stats card entrance
           gsap.fromTo('.stats-card',
             { opacity: 0, y: HATCH_STATS_CARD_INITIAL_Y_OFFSET },
             { opacity: 1, y: 0, duration: HATCH_STATS_CARD_ANIM_DUR_SEC, delay: HATCH_STATS_CARD_ANIM_DELAY_SEC, ease: 'power2.out' }
@@ -382,14 +382,14 @@ const handleEggClick = () => {
         })
       })
 
-      // Desvanecer el flash blanco mientras se revela la nueva criatura
+      // Fade out white flash while revealing new creature
       hatchTimeline.to('.hatch-backdrop', {
         backgroundColor: '',
         duration: HATCH_REVEAL_ANIM_DUR_SEC,
         ease: 'power2.out'
       })
 
-      // Fin de la animación completa
+      // End of full animation
       hatchTimeline.eventCallback('onComplete', () => {
         stage.value = 'final'
       })
@@ -482,7 +482,8 @@ onUnmounted(() => {
                 :src="getSprite(resultPokemon.id, !!resultPokemon.isShiny)"
                 :alt="resultPokemon?.name || 'Pokémon eclosionado'"
                 class="pokemon-sprite"
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                width="32"
+                height="32"
               >
             </PVSpriteFX>
           </div>

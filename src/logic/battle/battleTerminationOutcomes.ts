@@ -1,5 +1,5 @@
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { BattleState } from '@/types/battle/battle'
+import type { BattleState, BattleOutcomeFlags } from '@/types/battle/battle'
 import { gameBus } from '@/logic/events/gameBus'
 import { gsapSleep } from '@/logic/utils/gsapHelpers'
 
@@ -40,8 +40,7 @@ function resolveEnemyExitAnimation(
 export async function handleCombatantsExitAnimations(
   ctx: BattleContext,
   active: BattleState,
-  win: boolean,
-  fled: boolean
+  { win, fled }: BattleOutcomeFlags
 ): Promise<void> {
   if (!active.enemy || active.enemy.hp <= 0 || fled || active.isCapture) {
     return

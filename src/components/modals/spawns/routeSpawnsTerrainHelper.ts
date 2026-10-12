@@ -56,11 +56,16 @@ export function resolveActivityTerrainFeature(
   }
 }
 
+export interface SpecialRouteBonusOptions {
+  isOfficialActive: boolean;
+  isExtortedActive: boolean;
+}
+
 export function resolveSpecialRouteBonus(
-  isOfficialActive: boolean,
-  isExtortedActive: boolean,
+  options: SpecialRouteBonusOptions,
   timeRemainingText: string
 ): SpecialRouteBonus | null {
+  const { isOfficialActive, isExtortedActive } = options;
   if (isOfficialActive) {
     return {
       type: 'official',

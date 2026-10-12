@@ -17,7 +17,7 @@ import {
 } from '../../logic/map/kantoTileEngine';
 import { ChunkManager } from '../../logic/map/kantoChunkManager';
 import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator';
-import { JohtoRegionalWorldGenerator } from '../../data/map/regionRegistry.ts';
+import { JohtoRegionalWorldGenerator } from '../../logic/map/johtoRegionalGenerator.ts';
 import { bakeUrbanMaquette } from '../../logic/map/continentalWorldGenerator';
 import { findValidBuildingPlacementSpot } from '../../logic/map/buildingPlacementSolver';
 import { computeViewportWheelZoom } from '../../logic/utils/svgCoordinateUtils';
@@ -420,74 +420,78 @@ function syncCustomStructuresToGen(gen: KantoRegionalWorldGenerator): void {
   }
 }
 
+function paveCentralCivicSquare(
+  gen: KantoRegionalWorldGenerator,
+  cx: number,
+  cy: number,
+  uScale: string
+): void {
+  if (uScale !== 'metropolis' && uScale !== 'city') return;
+  const plazaRadiusTiles = uScale === 'metropolis' ? METROPOLIS_PLAZA_RADIUS_TILES : CITY_PLAZA_RADIUS_TILES;
+  const centerTx = Math.round(cx / KANTO_TILE_SIZE);
+  const centerTy = Math.round(cy / KANTO_TILE_SIZE);
+  const g = gen.grid;
+
+  for (let dy = -plazaRadiusTiles; dy <= plazaRadiusTiles; dy++) {
+    for (let dx = -plazaRadiusTiles; dx <= plazaRadiusTiles; dx++) {
+      const px = centerTx + dx;
+      const py = centerTy + dy;
+      if (px < 0 || px >= KANTO_GRID_W || py < 0 || py >= KANTO_GRID_H) continue;
+      const row = g[py];
+      if (!row || row[px] === CELL_BIOME.WATER || row[px] === CELL_BIOME.MOUNTAIN_DIRT) continue;
+      row[px] = CELL_BIOME.PLAZA_STONE;
+      gen.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
+    }
+  }
+}
+
 function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
   const g = gen.grid;
   const T = KANTO_TILE_SIZE;
 
   for (const [id, node] of Object.entries(store.nodes)) {
-    if (!node) continue;
-    if (node.urbanScale) {
-      const cx = Math.round(node.x * WORLD_COORDINATE_SCALE_FACTOR);
-      const cy = Math.round(node.y * WORLD_COORDINATE_SCALE_FACTOR);
+    if (!node || !node.urbanScale) continue;
+    const cx = Math.round(node.x * WORLD_COORDINATE_SCALE_FACTOR);
+    const cy = Math.round(node.y * WORLD_COORDINATE_SCALE_FACTOR);
 
-      // Clear default buildings within radius to apply custom urban maquette
-      gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX);
-      gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX);
+    // Clear default buildings within radius to apply custom urban maquette
+    gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX);
+    gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX);
 
-      const maquette = bakeUrbanMaquette({
-        id,
-        name: node.name,
-        type: node.type,
-        x: cx,
-        y: cy,
-        urbanScale: node.urbanScale
-      }, store.seed);
+    const maquette = bakeUrbanMaquette({
+      id,
+      name: node.name,
+      type: node.type,
+      x: cx,
+      y: cy,
+      urbanScale: node.urbanScale
+    }, store.seed);
 
-      const plazaRadius = Math.max(MIN_PLAZA_CLEARANCE_RADIUS_PX, Math.round(maquette.plazaRect.w / 2) + PLAZA_MARGIN_CLEARANCE_PX);
+    const plazaRadius = Math.max(MIN_PLAZA_CLEARANCE_RADIUS_PX, Math.round(maquette.plazaRect.w / 2) + PLAZA_MARGIN_CLEARANCE_PX);
 
-      // Clear default buildings within plaza radius to apply custom urban maquette
-      gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > plazaRadius);
-      gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > plazaRadius);
+    // Clear default buildings within plaza radius to apply custom urban maquette
+    gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > plazaRadius);
+    gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > plazaRadius);
 
-      // 1. Organic paving: 1-tile sidewalk directly under building footprints
-      for (const b of maquette.buildings) {
-        const bx = Math.floor(b.x / T);
-        const by = Math.floor(b.y / T);
-        const bw = Math.ceil(b.w / T);
-        const bh = Math.ceil(b.h / T);
-        for (let y = by - 1; y <= by + bh; y++) {
-          for (let x = bx - 1; x <= bx + bw; x++) {
-            if (x >= 0 && x < KANTO_GRID_W && y >= 0 && y < KANTO_GRID_H) {
-              const row = g[y];
-              if (row && row[x] !== CELL_BIOME.WATER) {
-                row[x] = CELL_BIOME.PLAZA_STONE;
-                gen.occupancy.set(x, y, OCCUPANCY_FLAGS.ROAD);
-              }
-            }
-          }
+    // 1. Organic paving: 1-tile sidewalk directly under building footprints
+    for (const b of maquette.buildings) {
+      const bx = Math.floor(b.x / T);
+      const by = Math.floor(b.y / T);
+      const bw = Math.ceil(b.w / T);
+      const bh = Math.ceil(b.h / T);
+      for (let y = by - 1; y <= by + bh; y++) {
+        for (let x = bx - 1; x <= bx + bw; x++) {
+          if (x < 0 || x >= KANTO_GRID_W || y < 0 || y >= KANTO_GRID_H) continue;
+          const row = g[y];
+          if (!row || row[x] === CELL_BIOME.WATER) continue;
+          row[x] = CELL_BIOME.PLAZA_STONE;
+          gen.occupancy.set(x, y, OCCUPANCY_FLAGS.ROAD);
         }
       }
+    }
 
-      // 2. Compact central civic square for Metropolises and Cities only (not towns/villages)
-      const uScale = node.urbanScale;
-      if (uScale === 'metropolis' || uScale === 'city') {
-        const plazaRadiusTiles = uScale === 'metropolis' ? METROPOLIS_PLAZA_RADIUS_TILES : CITY_PLAZA_RADIUS_TILES;
-        const centerTx = Math.round(cx / T);
-        const centerTy = Math.round(cy / T);
-        for (let dy = -plazaRadiusTiles; dy <= plazaRadiusTiles; dy++) {
-          for (let dx = -plazaRadiusTiles; dx <= plazaRadiusTiles; dx++) {
-            const px = centerTx + dx;
-            const py = centerTy + dy;
-            if (px >= 0 && px < KANTO_GRID_W && py >= 0 && py < KANTO_GRID_H) {
-              const row = g[py];
-              if (row && row[px] !== CELL_BIOME.WATER && row[px] !== CELL_BIOME.MOUNTAIN_DIRT) {
-                row[px] = CELL_BIOME.PLAZA_STONE;
-                gen.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
-              }
-            }
-          }
-        }
-      }
+    // 2. Compact central civic square for Metropolises and Cities only (not towns/villages)
+    paveCentralCivicSquare(gen, cx, cy, node.urbanScale);
 
       // 2. Place maquette buildings
       for (const b of maquette.buildings) {
@@ -524,7 +528,6 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
       }
     }
   }
-}
 
 function handleStructurePointerDown(e: PointerEvent, index: number): void {
   if (store.activeMode !== 'structures' || store.stampingPrefab) return;
@@ -927,6 +930,9 @@ defineExpose({
           :src="store.stampingPrefab.file_path"
           :alt="store.stampingPrefab.name"
           class="ghost-prefab-img"
+        
+          width="32"
+          height="32"
         >
         <div class="ghost-tag">
           {{ store.stampingPrefab.name }} ({{ store.stampingPrefab.width }}x{{ store.stampingPrefab.height }})

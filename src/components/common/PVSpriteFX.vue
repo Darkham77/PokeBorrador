@@ -6,8 +6,8 @@ const DEFAULT_RADIUS_PX = 40
 <script setup lang="ts">
 /**
  * PVSpriteFX.vue
- * Orquestador centralizado para efectos visuales en sprites de Pokémon.
- * MIGRACIÓN 1:1 - Modularizado pero con idéntica lógica.
+ * Centralized orchestrator for visual effects on Pokémon sprites.
+ * 1:1 MIGRATION - Modularized with identical logic.
  */
 import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted, type PropType } from 'vue'
 import { useUIStore } from '@/stores/ui'
@@ -307,7 +307,21 @@ const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as co
   width: fit-content; height: fit-content;
 
   &.is-simplified {
-    :deep(img:not(.is-silhouette)), :deep(.sprite-layer), :deep(.pokemon-sprite:not(.is-silhouette)) {
+    :deep(img:not(.is-silhouette)) {
+      transform: none;
+      animation: none !important;
+      will-change: filter, transform, opacity;
+      filter: none;
+    }
+
+    :deep(.sprite-layer) {
+      transform: none;
+      animation: none !important;
+      will-change: filter, transform, opacity;
+      filter: none;
+    }
+
+    :deep(.pokemon-sprite:not(.is-silhouette)) {
       transform: none;
       animation: none !important;
       will-change: filter, transform, opacity;

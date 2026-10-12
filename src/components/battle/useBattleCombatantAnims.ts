@@ -49,7 +49,7 @@ export function useBattleCombatantAnims(
       idleTween = null;
     }
     const suppressed = isIdleSuppressed(poke.status, poke.confused, props.animState);
-    idleTween = runCombatantIdleAnimation(el, suppressed, isFloating.value);
+    idleTween = runCombatantIdleAnimation(el, { isSuppressed: suppressed, isFloating: isFloating.value });
   };
 
   watch(() => [props.pokemon?.status, props.pokemon?.confused, props.animState, isFloating.value], () => {
@@ -161,11 +161,11 @@ export function useBattleCombatantAnims(
   });
 
   watch(() => props.isShaking, (shaking) => {
-    handleCombatantShake(pokeballImgRef.value, spriteRef.value, Boolean(props.isCaptureSuccess), props.side === 'player', Boolean(shaking));
+    handleCombatantShake(pokeballImgRef.value, spriteRef.value, { isCaptureSuccess: Boolean(props.isCaptureSuccess), isPlayerSide: props.side === 'player' }, Boolean(shaking));
   });
 
   watch(() => props.isBlinking, (blinking) => {
-    handleCombatantBlink(pokeballImgRef.value, spriteRef.value, Boolean(props.isCaptureSuccess), props.side === 'player', Boolean(blinking));
+    handleCombatantBlink(pokeballImgRef.value, spriteRef.value, { isCaptureSuccess: Boolean(props.isCaptureSuccess), isPlayerSide: props.side === 'player' }, Boolean(blinking));
   });
 
   watch(() => props.isHealing, (val) => {

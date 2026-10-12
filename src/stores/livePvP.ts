@@ -74,6 +74,7 @@ import {
 import {
   resolvePvpTeam as resolvePvpTeamHelper,
   executeStartBattle,
+  type PvpBattleSeatFlags,
   executeHandleOpponentTeam,
   executeHandleOpponentTeamOrder,
   executeSetupBattleChannel,
@@ -157,7 +158,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       isSearching,
       searchPhase,
       killSearchCountdown: () => { if (searchCountdownTween) searchCountdownTween.kill() },
-      onMatched: (invite) => startBattle(invite, true, true)
+      onMatched: (invite) => startBattle(invite, { isHost: true, isRanked: true })
     })
   }
 
@@ -258,7 +259,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       opponentName,
       config,
       notify: (msg, icon) => uiStore.notify(msg, icon),
-      onStartBattle: (data) => startBattle(data, true, false)
+      onStartBattle: (data) => startBattle(data, { isHost: true, isRanked: false })
     })
   }
 
@@ -269,7 +270,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       isRanked,
       activeInvite,
       openOfflineModal: (name) => modalStore.open('PvPOpponentOffline', { opponentName: name }),
-      onStartBattle: (inv) => startBattle(inv, false, isRanked)
+      onStartBattle: (inv) => startBattle(inv, { isHost: false, isRanked })
     })
   }
 
@@ -356,8 +357,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     return resolvePvpTeamHelper(gameStore, format)
   }
 
-  function startBattle(invite: BattleInvite, isHost: boolean, isRanked: boolean) {
-    executeStartBattle(invite, isHost, isRanked, {
+  function startBattle(invite: BattleInvite, flags: PvpBattleSeatFlags) {
+    executeStartBattle(invite, flags, {
       resolvePvpTeam,
       uiStore,
       gameStore,

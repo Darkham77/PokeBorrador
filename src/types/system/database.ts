@@ -97,7 +97,7 @@ export interface SpeciesMetadata {
 
 export interface PokemonAesthetics {
   floating?: boolean;
-  // Añadir más campos según sea necesario (alturas de sprite, etc)
+  // Add more fields as needed (sprite heights, etc.)
 }
 
 export interface NatureBaseData {

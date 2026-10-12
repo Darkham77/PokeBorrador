@@ -74,7 +74,18 @@ function handleCantToken(ctx: SBCtx): boolean {
   return true;
 }
 
-function formatActivateLog(target: Pokemon, cleanEff: string, effect: string, isAbility: boolean, isMove: boolean): string {
+interface ActivateLogOptions {
+  isAbility: boolean;
+  isMove: boolean;
+}
+
+function formatActivateLog(
+  target: Pokemon,
+  cleanEff: string,
+  effect: string,
+  options: ActivateLogOptions
+): string {
+  const { isAbility, isMove } = options;
   if (cleanEff.includes('confusion')) return `¡${target.name} está confundido y se lastimó!`;
   if (cleanEff.includes('mist')) return `¡El Velo Sagrado protegió a ${target.name}!`;
   if (cleanEff.includes('substitute')) return `¡El Sustituto de ${target.name} recibió el golpe!`;
@@ -95,7 +106,7 @@ function handleActivateToken(target: Pokemon | null | undefined, rawEffect: stri
     target.volatileCounters[requireVolatileStatusKey(cleanEff)] = 1;
   }
 
-  const logMsg = formatActivateLog(target, cleanEff, effect, isAbilityEffect, isMoveEffect);
+  const logMsg = formatActivateLog(target, cleanEff, effect, { isAbility: isAbilityEffect, isMove: isMoveEffect });
   if (logMsg) {
     store.addLog(logMsg, 'log-info', target);
   }

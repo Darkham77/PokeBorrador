@@ -1,7 +1,7 @@
 
 /**
- * Módulo de Registro de Combate (Battle Logger)
- * Encargado de procesar y estandarizar los logs de batalla.
+ * Battle Logger Module
+ * Responsible for processing and standardizing battle logs.
  */
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
@@ -31,7 +31,7 @@ interface LogContext {
 let nextLogSequenceId = 0; // singleton-ok: Singleton instance state container
 
 /**
- * Procesa un mensaje de log y devuelve el objeto listo para la cola del store.
+ * Resolves the player avatar icon from game store state.
  */
 function resolvePlayerAvatarIcon(gs: LogContext['gs']): string {
   const pClass = gs.state.playerClass;
@@ -119,12 +119,12 @@ function resolveLogSide(source: BattleSource, ctx: LogContext): BattleSide | nul
 }
 
 /**
- * Formatea una entrada de log de batalla resolviendo automáticamente iconos y alineación lateral.
+ * Formats a battle log entry by automatically resolving icons and side alignment.
  *
- * @param {string} msg Mensaje
- * @param {string} type Tipo de log (log-info, log-player, log-enemy, log-error)
- * @param {Object|string} source Fuente del sprite (Pokemon, 'player', 'enemy_trainer', o nombre de ítem)
- * @param {Object} ctx Contexto necesario (gs, activeBattle, attackerSide)
+ * @param msg Message
+ * @param type Log type (log-info, log-player, log-enemy, log-error)
+ * @param source Sprite source (Pokemon, 'player', 'enemy_trainer', or item name)
+ * @param ctx Required context (gs, activeBattle, attackerSide)
  */
 export function formatBattleLog(msg: string, type: string, source: BattleSource, ctx: LogContext): BattleLog {
   const { icon, iconType } = resolveLogIconAndType(msg, source, ctx);

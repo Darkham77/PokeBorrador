@@ -272,14 +272,18 @@ function evaluatePivotLayer(
   };
 }
 
+interface SetupAndPivotFlags {
+  iOutspeed: boolean
+  isTrapped: boolean
+}
+
 export function evaluateSetupAndPivotLayers(
   matchup: DamageMatchup,
   strategic: StrategicState,
   availableMoves: HeuristicMoveInfo[],
   myActive: HeuristicPokemonState,
   oppActive: HeuristicPokemonState,
-  iOutspeed: boolean,
-  isTrapped: boolean,
+  { iOutspeed, isTrapped }: SetupAndPivotFlags,
   switchOptions: HeuristicPokemonState[]
 ): HeuristicDecision | null {
   return (

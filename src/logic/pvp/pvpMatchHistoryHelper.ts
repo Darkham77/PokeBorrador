@@ -15,7 +15,7 @@ export async function fetchOnlineMatchHistory(
   try {
     const { data: replays } = await db
       .from('battle_replays')
-      .select('*')
+      .select('id, battle_code, p1_user_id, p2_user_id, p1_data, p2_data, winner_side, theme_id, turns_count, created_at')
       .or(`p1_user_id.eq.${userId},p2_user_id.eq.${userId}`)
       .order('created_at', { ascending: false })
       .limit(MAX_HISTORY_FETCH_LIMIT) as { data: Array<Record<string, unknown>> | null };

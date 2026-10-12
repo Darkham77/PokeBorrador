@@ -73,12 +73,12 @@ function parseOrClause(orString: string, params: unknown[]): string {
       const innerParts = inner.split(',');
       const innerSql = innerParts.map(p => parseSingleFilter(p.trim(), params)).filter(Boolean).join(' AND ');
       return `(${innerSql})`;
-    } else if (part.startsWith('or(') && part.endsWith(')')) {
+    }
+    if (part.startsWith('or(') && part.endsWith(')')) {
       const inner = part.slice(3, -1);
       return `(${parseOrClause(inner, params)})`;
-    } else {
-      return parseSingleFilter(part, params);
     }
+    return parseSingleFilter(part, params);
   }).filter(Boolean);
 
   return parsedParts.length > 0 ? `(${parsedParts.join(' OR ')})` : '';

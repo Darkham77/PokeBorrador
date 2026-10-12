@@ -137,6 +137,9 @@ function handleClose() {
             :src="tierInfo.sprite"
             :alt="tierInfo.name"
             class="tier-sprite-badge"
+          
+            width="32"
+            height="32"
           >
           <span
             v-else
@@ -344,7 +347,7 @@ function handleClose() {
     padding: 12px;
     border: none;
     border-radius: $radius-lg;
-    background: Linear-Gradient(135deg, #fde047 0%, #eab308 100%);
+    background: Linear-Gradient(135deg, var(--amber-300) 0%, var(--amber-400) 100%);
     color: var(--slate-900);
     font-size: var(--font-14);
     font-weight: 800;

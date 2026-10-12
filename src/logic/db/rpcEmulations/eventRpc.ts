@@ -89,11 +89,8 @@ function parseAndSortCompetitionEntries(
 
   parsedEntries.sort((a, b) => {
     // 1. Primary: Score based on direction
-    if (direction === 'min') {
-      if (a.score !== b.score) return a.score - b.score;
-    } else {
-      if (b.score !== a.score) return b.score - a.score;
-    }
+    const scoreDiff = direction === 'min' ? a.score - b.score : b.score - a.score;
+    if (scoreDiff !== 0) return scoreDiff;
     // 2. Tiebreaker 1: Shiny Pokémon takes priority over non-shiny
     if (a.is_shiny !== b.is_shiny) {
       return a.is_shiny ? -1 : 1;

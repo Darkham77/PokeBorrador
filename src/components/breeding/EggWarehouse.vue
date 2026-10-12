@@ -179,6 +179,9 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
           :src="getAssetUrl(ASSET_TYPES.POKEMON, 'egg')"
           alt="Huevo"
           class="egg-sprite-empty"
+        
+          width="32"
+          height="32"
         >
       </div>
       <p>El almacén está vacío. ¡Put a criar a tus Pokémon!</p>

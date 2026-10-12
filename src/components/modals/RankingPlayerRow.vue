@@ -101,6 +101,9 @@ const rankCardClass = computed(() => `rank-${props.index + 1}`)
         :alt="eloTier.name"
         class="ranked-medal-mini"
         :title="`Rango: ${eloTier.name}`"
+      
+        width="32"
+        height="32"
       >
     </div>
 

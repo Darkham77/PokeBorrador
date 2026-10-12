@@ -581,32 +581,32 @@ img.event-banner-img {
         display: flex;
         flex-direction: column;
         gap: $spacing-2xs;
+      }
 
-        .reward-tag {
-          @include pixelated;
+      .reward-tag {
+        @include pixelated;
 
-          color: var(--yellow);
-          font-size: var(--font-7);
-          font-weight: bold;
-        }
+        color: var(--yellow);
+        font-size: var(--font-7);
+        font-weight: bold;
+      }
 
-        .reward-name {
+      .reward-name {
+        display: inline-flex;
+        align-items: center;
+        gap: $spacing-xs-5;
+        color: var(--white);
+        font-size: var(--font-9);
+        font-weight: bold;
+        line-height: 1.25;
+        text-transform: uppercase;
+
+        .emoji {
           display: inline-flex;
+          justify-content: center;
           align-items: center;
-          gap: $spacing-xs-5;
-          color: var(--white);
-          font-size: var(--font-9);
-          font-weight: bold;
-          line-height: 1.25;
-          text-transform: uppercase;
-
-          .emoji {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            font-size: var(--font-10);
-            line-height: 1;
-          }
+          font-size: var(--font-10);
+          line-height: 1;
         }
       }
     }

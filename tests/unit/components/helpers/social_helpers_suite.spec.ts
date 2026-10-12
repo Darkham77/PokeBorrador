@@ -481,10 +481,10 @@ describe('Social Component Helpers Domain Suite', () => {
   describe('tradeSidePanelHelper', () => {
     describe('isTradeGiftMode', () => {
       it('returns true only when isGift and isFriendSide are true', () => {
-        expect(isTradeGiftMode(true, true)).toBe(true)
-        expect(isTradeGiftMode(true, false)).toBe(false)
-        expect(isTradeGiftMode(false, true)).toBe(false)
-        expect(isTradeGiftMode(false, false)).toBe(false)
+        expect(isTradeGiftMode({ isGift: true, isFriendSide: true })).toBe(true)
+        expect(isTradeGiftMode({ isGift: true, isFriendSide: false })).toBe(false)
+        expect(isTradeGiftMode({ isGift: false, isFriendSide: true })).toBe(false)
+        expect(isTradeGiftMode({ isGift: false, isFriendSide: false })).toBe(false)
       })
     })
 

@@ -63,7 +63,7 @@ export function classifyNpcArchetype(spriteIdOrName: string): NpcArchetype {
 
   const normalized = spriteIdOrName.toLowerCase().replace(/[-_]/g, ''); // text-ok: UI text display localization string
 
-  // 1. Prioridad Alta: Búsqueda exacta y coincidencia de palabras clave
+  // 1. High Priority: Exact match and keyword search
   for (const [archetype, keywords] of Object.entries(ARCHETYPE_KEYWORDS)) {
     for (const keyword of keywords) {
       if (normalized.includes(keyword)) {
@@ -73,8 +73,8 @@ export function classifyNpcArchetype(spriteIdOrName: string): NpcArchetype {
     }
   }
 
-  // 2. Heurísticas secundarias / personajes conocidos o específicos
-  // (Por si no hay coincidencia directa de palabras clave en nombres especiales)
+  // 2. Secondary heuristics / known or specific characters
+  // (In case there is no direct keyword match on special names)
   if (['acerola', 'allister', 'fantina'].some(n => normalized.includes(n))) {
     return 'medium';
   }

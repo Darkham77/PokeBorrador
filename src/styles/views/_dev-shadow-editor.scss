@@ -268,7 +268,7 @@
   }
 
   &.btn-save {
-    background: #059669;
+    background: var(--emerald-600, #059669);
     color: var(--white);
     border-color: var(--emerald-500);
 
@@ -278,7 +278,7 @@
     }
 
     &.has-unsaved {
-      background: #d97706;
+      background: var(--amber-600, #d97706);
       border-color: var(--amber-dark);
       box-shadow: var(--shadow-glow-yellow-sm);
     }
@@ -290,9 +290,9 @@
   flex-direction: column;
   gap: $spacing-sm-alt;
   padding: 8px 20px;
-  background: #1e1b4b;
+  background: var(--indigo-950, #1e1b4b);
   flex-shrink: 0;
-  border-bottom: 2px solid #6366f1;
+  border-bottom: 2px solid var(--indigo-500, #6366f1);
 }
 
 .progress-meta {
@@ -328,14 +328,14 @@
   width: 100%;
   height: 6px;
   border-radius: $radius-xs-alt;
-  background: #312e81;
+  background: var(--indigo-900, #312e81);
   overflow: hidden;
 }
 
 .progress-fill-bar {
   height: 100%;
   border-radius: $radius-xs-alt;
-  background: Linear-Gradient(90deg, #38bdf8, #6366f1, #10b981);
+  background: linear-gradient(90deg, var(--sky-400, #38bdf8), var(--indigo-500, #6366f1), var(--emerald-500, #10b981));
 }
 
 .filter-toolbar {
@@ -346,7 +346,7 @@
   align-items: center;
   gap: $spacing-md;
   padding: 8px 20px;
-  background: #182234;
+  background: var(--slate-850, #182234);
   flex-shrink: 0;
   border-bottom: 1px solid var(--slate-700);
 }

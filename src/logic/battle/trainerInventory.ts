@@ -116,8 +116,8 @@ function purchasePokeballs(
 }
 
 /**
- * Genera un inventario de consumibles para un NPC o Líder de Gimnasio basado en su nivel,
- * dificultad y rol.
+ * Generates consumable inventory for an NPC or Gym Leader based on their level,
+ * difficulty, and role.
  */
 export function generateNPCInventory(
   maxLevel: number,
@@ -126,19 +126,19 @@ export function generateNPCInventory(
   isRival = false,
   archetype?: string
 ): { inventory: Record<string, number>; remainingMoney: number } {
-  // 1. Determinar el presupuesto (money budget)
+  // 1. Determine money budget
   const isSpecial = isRival || archetype === 'policeman' || archetype === 'rocket';
-  const baseBudget = calculateNPCBaseBudget(maxLevel, isGym, isSpecial);
-  const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 a 1.2
+  const baseBudget = calculateNPCBaseBudget(maxLevel, { isGym, isSpecial });
+  const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
   const budget = calculateNPCFinalBudget(baseBudget, difficulty, randomFactor);
 
-  // 2. Determinar el límite máximo de objetos comprados
-  const maxItems = calculateNPCMaxItems(maxLevel, difficulty, isGym, isSpecial);
+  // 2. Determine maximum item purchase limit
+  const maxItems = calculateNPCMaxItems(maxLevel, difficulty, { isGym, isSpecial });
 
-  // 3. Definir candidatos de compra desbloqueados por nivel
+  // 3. Define purchase candidates unlocked by level
   const candidates = getUnlockedCandidates(maxLevel);
 
-  // 4. Realizar compras inteligentes iterativamente
+  // 4. Perform smart iterative purchases
   const inventory: Record<string, number> = {};
   let pokeballBudget = Math.floor(budget * 0.5);
   if (pokeballBudget < ITEM_PRICES.pokeball! && budget >= ITEM_PRICES.pokeball!) {
@@ -167,10 +167,16 @@ export const NPC_BUDGET_CONFIG = {
   SPECIAL_MAX_ITEMS: 6
 } as const;
 
+export interface NPCBudgetOptions {
+  isGym?: boolean;
+  isSpecial?: boolean;
+}
+
 /**
- * Calcula el presupuesto base de un NPC según su tipo y nivel.
+ * Calculates base budget for an NPC based on their type and level.
  */
-export function calculateNPCBaseBudget(maxLevel: number, isGym: boolean, isSpecial: boolean): number {
+export function calculateNPCBaseBudget(maxLevel: number, options: NPCBudgetOptions = {}): number {
+  const { isGym = false, isSpecial = false } = options;
   if (isGym) {
     return (maxLevel * NPC_BUDGET_CONFIG.GYM_LEVEL_MULT + NPC_BUDGET_CONFIG.GYM_BASE_BONUS) * 2;
   }
@@ -181,7 +187,7 @@ export function calculateNPCBaseBudget(maxLevel: number, isGym: boolean, isSpeci
 }
 
 /**
- * Calcula el presupuesto final aplicando dificultad y factor aleatorio.
+ * Calculates final budget applying difficulty and random factor.
  */
 export function calculateNPCFinalBudget(baseBudget: number, difficulty: BattleDifficulty, randomFactor: number): number {
   let difficultyMult = 1.0;
@@ -191,14 +197,14 @@ export function calculateNPCFinalBudget(baseBudget: number, difficulty: BattleDi
 }
 
 /**
- * Calcula la cantidad máxima de items que un NPC puede comprar.
+ * Calculates maximum item quantity an NPC can purchase.
  */
 export function calculateNPCMaxItems(
   maxLevel: number,
   difficulty: BattleDifficulty,
-  isGym: boolean,
-  isSpecial: boolean
+  options: NPCBudgetOptions = {}
 ): number {
+  const { isGym = false, isSpecial = false } = options;
   if (isGym) {
     return difficulty === 'hard' ? NPC_BUDGET_CONFIG.GYM_MAX_ITEMS_HARD : (difficulty === 'normal' ? NPC_BUDGET_CONFIG.GYM_MAX_ITEMS_NORMAL : 4);
   }

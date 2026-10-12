@@ -102,6 +102,9 @@ const handleItemImageError = (e: Event) => {
               :src="getAssetUrl(ASSET_TYPES.ITEM, badge.itemId || '')" 
               :alt="badge.label || 'Objeto'"
               class="badge-item-img"
+              width="32"
+            
+              height="32"
               @error="handleItemImageError"
             >
             <span

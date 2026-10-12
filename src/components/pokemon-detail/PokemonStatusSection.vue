@@ -313,32 +313,32 @@ const abilityStyle = computed(() => ({
 .level-fill {
   @include will-animate(width);
 
-  background: Linear-Gradient(90deg, #0ea5e9, #38bdf8, #60a5fa);
+  background: Linear-Gradient(90deg, var(--sky-dark), var(--sky), var(--blue-400));
   color: var(--sky);
 }
 
 .friendship-distrust {
-  background: Linear-Gradient(90deg, #475569, #64748b);
+  background: Linear-Gradient(90deg, var(--slate-600), var(--slate-500));
   color: var(--slate-500);
 }
 
 .friendship-sprout {
-  background: Linear-Gradient(90deg, #16a34a, #4ade80);
+  background: Linear-Gradient(90deg, var(--emerald), var(--green-light));
   color: var(--emerald);
 }
 
 .friendship-comrade {
-  background: Linear-Gradient(90deg, #2563eb, #60a5fa);
+  background: Linear-Gradient(90deg, var(--blue-500), var(--blue-400));
   color: var(--blue-500);
 }
 
 .friendship-radiant {
-  background: Linear-Gradient(90deg, #c026d3, #f472b6);
+  background: Linear-Gradient(90deg, var(--purple), var(--purple-light));
   color: var(--purple-400);
 }
 
 .friendship-best-friends {
-  background: Linear-Gradient(90deg, #d97706, #fbbf24, #fef08a);
+  background: Linear-Gradient(90deg, var(--amber-dark), var(--amber), var(--yellow-light));
   color: var(--amber);
 }
 

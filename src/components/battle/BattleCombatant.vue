@@ -66,7 +66,7 @@ const emit = defineEmits<{
   (e: 'animationEnd', type: CombatantAnimTrigger): void
 }>()
 
-// Consumir el estado extraído en el composable
+// Consume state extracted into composable
 const {
   naturalSize,
   isFloating,
@@ -152,7 +152,7 @@ watch(
   { immediate: true, deep: true }
 )
 
-// Watcher para la transformación visual in-situ de un mismo Pokémon (con GSAP)
+// Watcher for in-place visual transformation of the same Pokémon (using GSAP)
 watch(
   [() => props.pokemon?.id, () => props.pokemon?.form, () => props.pokemon?.uid],
   (newVal, oldVal) => {

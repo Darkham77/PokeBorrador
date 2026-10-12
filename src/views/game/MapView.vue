@@ -47,7 +47,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   const targetMap = maps.find(m => m.id === id)
   const mapDisplayName = targetMap ? targetMap.name : id
   
-  // Lógica de extorsión del Team Rocket
+  // Team Rocket extortion logic
   if (gameStore.state.playerClass === 'rocket' && isMapExtortable(targetMap)) {
     const classData = gameStore.state.classData || {}
     const now = Temporal.Now.instant().epochMilliseconds
@@ -86,7 +86,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
     }
   }
 
-  // Lógica de Ruta Oficial del Entrenador
+  // Trainer Official Route logic
   if (gameStore.state.playerClass === 'entrenador' && isMapExtortable(targetMap)) {
     const classData = gameStore.state.classData || {}
     const now = Temporal.Now.instant().epochMilliseconds
@@ -194,7 +194,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 .divider-text {
   @include pixelated;
 
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
   font-size: var(--font-10);
   letter-spacing: 2px;
 }

@@ -367,7 +367,7 @@ onMounted(() => {
       .top10-badge {
         padding: 2px 6px;
         border-radius: $radius-sm;
-        background: #854d0e;
+        background: var(--amber-dark);
         color: var(--yellow-light);
         font-size: var(--font-9);
       }

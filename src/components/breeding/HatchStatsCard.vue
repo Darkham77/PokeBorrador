@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * HatchStatsCard.vue
- * Tarjeta premium de estadísticas del Pokémon eclosionado.
+ * Premium stats card for hatched Pokémon.
  */
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getNatureInfo } from '@/data/battle/natures'

@@ -61,14 +61,16 @@ const onClaim = async () => {
           :src="getSpriteUrl(pokemonAsset.id)"
           :alt="pokemonAsset?.name || 'Pokémon'"
           class="pixel-art pokemon-sprite" 
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          width="32"
+          height="32"
         >
         <img
           v-else
           :src="getAssetIcon(claim.asset_data)"
           :alt="itemAsset?.name || 'Reclamo'"
           class="pixel-art item-sprite" 
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          width="32"
+          height="32"
         >
       </div>
       <div class="claim-info">

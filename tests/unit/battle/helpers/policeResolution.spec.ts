@@ -42,7 +42,7 @@ describe('policeResolution - handlePoliceResolution', () => {
     const activeBattle = createBaseBattleState('Oficial de Policía Roberto', 'policeman');
     const ctx = battleStore.getContext();
 
-    await handlePoliceResolution(ctx, activeBattle, true, false, uiStore);
+    await handlePoliceResolution(ctx, activeBattle, { win: true, fled: false }, uiStore);
 
     expect(gameStore.state.classData.criminality).toBe(0);
     expect(notifySpy).toHaveBeenCalledWith('Tu nivel de criminalidad ha vuelto a cero.', '🚔');
@@ -63,7 +63,7 @@ describe('policeResolution - handlePoliceResolution', () => {
     const activeBattle = createBaseBattleState('Oficial de Policía Pedro', 'policeman');
     const ctx = battleStore.getContext();
 
-    await handlePoliceResolution(ctx, activeBattle, false, false, uiStore);
+    await handlePoliceResolution(ctx, activeBattle, { win: false, fled: false }, uiStore);
 
     expect(gameStore.state.money).toBe(7000); // 10000 - 3000
     expect(gameStore.state.classData.criminality).toBe(0);
@@ -85,7 +85,7 @@ describe('policeResolution - handlePoliceResolution', () => {
     const activeBattle = createBaseBattleState('Joven Carlos', 'default');
     const ctx = battleStore.getContext();
 
-    await handlePoliceResolution(ctx, activeBattle, false, false, uiStore);
+    await handlePoliceResolution(ctx, activeBattle, { win: false, fled: false }, uiStore);
 
     expect(gameStore.state.money).toBe(50000); // No cobró fianza
     expect(gameStore.state.classData.criminality).toBe(150); // No reseteó criminalidad

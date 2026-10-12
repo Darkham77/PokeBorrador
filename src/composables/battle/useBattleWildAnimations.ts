@@ -68,7 +68,7 @@ export function useBattleWildAnimations(
         isEmerging.value = true
       },
       onComplete: () => { 
-        // Pasar de figura/silueta a normal durante el salto en el aire
+        // Transition from silhouette to normal during mid-air jump
         isWildSilhouette.value = false
         wildRevealActive.value = false
       }
@@ -77,7 +77,7 @@ export function useBattleWildAnimations(
     tl.to({}, {
       duration: EMERGE_SETTLE_DURATION_SEC,
       onComplete: () => {
-        // Al tocar el suelo, culmina la animación y queda listo para combate
+        // On landing, conclude animation and ready for combat
         isWildEntryAnimation.value = false
         isEmerging.value = false
         const enemy = toValue(enemyRef)

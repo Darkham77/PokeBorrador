@@ -35,6 +35,7 @@ export type {
 };
 
 import { type MountainPalette } from './mountainAutotileEngine.ts';
+import { resolveAssetWebPath } from './assetWebPathResolver.ts';
 export type { MountainPalette };
 
 export interface MountainTileResolution {
@@ -59,11 +60,12 @@ export class DynamicCatalogLoader {
     this.images.clear();
   }
 
-  async init(basePath = '/assets/tiles/'): Promise<void> {
+  async init(_basePath = '/test_aventura/assets/tiles/'): Promise<void> {
     if (this._isLoaded) return;
 
     try {
-      const res = await fetch('/assets/studio/kanto/tile_catalog.json');
+      let res = await fetch('/test_aventura/assets/studio/kanto/tile_catalog.json');
+      if (!res.ok) res = await fetch('/assets/studio/kanto/tile_catalog.json');
       if (!res.ok) throw new Error(`HTTP error loading catalog: ${res.status}`);
       this.catalog = (await res.json()) as SemanticTileCatalog;
     } catch {
@@ -88,21 +90,29 @@ export class DynamicCatalogLoader {
 
     // Ingest essentials or prefabs manifest if available
     try {
-      let pRes = await fetch('/assets/essentials/manifest.json');
+      let pRes = await fetch('/test_aventura/assets/essentials/manifest.json');
+      if (!pRes.ok) pRes = await fetch('/test_aventura/assets/prefabs/manifest.json');
+      if (!pRes.ok) pRes = await fetch('/test_aventura/assets/studio/kanto/prefabs/manifest.json');
+      if (!pRes.ok) pRes = await fetch('/assets/essentials/manifest.json');
       if (!pRes.ok) pRes = await fetch('/assets/prefabs/manifest.json');
       if (!pRes.ok) pRes = await fetch('/assets/studio/kanto/prefabs/manifest.json');
-      if (pRes.ok) {
-        const pData = await pRes.json();
-        if (pData?.autotiles && Array.isArray(pData.autotiles)) {
-          for (const at of pData.autotiles) sheetFiles.add(at);
-        }
-        if (pData?.prefabs && Array.isArray(pData.prefabs)) {
-          for (const item of pData.prefabs) {
-            if (item.file_path) sheetFiles.add(item.file_path);
-            if (item.id) {
-              sheetFiles.add(item.id);
-              sheetFiles.add(`${item.id}.png`);
+      if (!pRes.ok) return;
+      const pData = await pRes.json();
+      if (pData?.autotiles && Array.isArray(pData.autotiles)) {
+        for (const at of pData.autotiles) sheetFiles.add(at);
+      }
+      if (pData?.prefabs && Array.isArray(pData.prefabs)) {
+        for (const item of pData.prefabs) {
+          if (item.file_path) {
+            sheetFiles.add(item.file_path);
+            const pathStr = item.file_path as string;
+            if (pathStr.startsWith('/assets/')) {
+              sheetFiles.add(`/test_aventura${pathStr}`);
             }
+          }
+          if (item.id) {
+            sheetFiles.add(item.id);
+            sheetFiles.add(`${item.id}.png`);
           }
         }
       }
@@ -113,10 +123,9 @@ export class DynamicCatalogLoader {
     if (this.catalog.prefabs) {
       for (const group of Object.values(this.catalog.prefabs)) {
         for (const prefab of Object.values(group)) {
-          if (prefab.parts) {
-            for (const part of prefab.parts) {
-              if (part.sheet) sheetFiles.add(part.sheet);
-            }
+          if (!prefab.parts) continue;
+          for (const part of prefab.parts) {
+            if (part.sheet) sheetFiles.add(part.sheet);
           }
         }
       }
@@ -200,49 +209,27 @@ export class DynamicCatalogLoader {
       return new Promise<void>((resolve) => {
         const cleanName = sheetFile.replace(/^poke_/, '');
         const noExt = cleanName.replace(/\.png$/i, '');
-        const candidateNames = Array.from(new Set([sheetFile, cleanName, `${noExt}.png`, `poke_${cleanName}`]));
-        const tryPaths = [
-          ...(sheetFile.startsWith('/') ? [sheetFile] : []),
-          ...candidateNames.map((n) => `${basePath}${n}`),
-          ...candidateNames.map((n) => `/assets/tiles/canonical/${n}`),
-          ...candidateNames.map((n) => `/assets/tiles/elevation/${n}`),
-          ...candidateNames.map((n) => `/assets/tiles/elevation/brown/${n}`),
-          ...candidateNames.map((n) => `/assets/tiles/elevation/gray/${n}`),
-          ...candidateNames.map((n) => `/assets/tiles/elevation/rock_tier/${n}`),
-          ...candidateNames.map((n) => `/assets/tiles/water/${n}`),
-          ...candidateNames.map((n) => `/assets/tiles/terrain/${n}`),
-          ...candidateNames.map((n) => `/assets/prefabs/buildings/${n}`),
-          ...candidateNames.map((n) => `/assets/prefabs/vegetation/${n}`),
-          ...candidateNames.map((n) => `/assets/prefabs/elevation/${n}`),
-          ...candidateNames.map((n) => `/assets/essentials/autotiles/${n}`)
-        ];
+        const webPath = resolveAssetWebPath(sheetFile)
+          ?? (sheetFile.startsWith('/') ? sheetFile : undefined);
 
-        let idx = 0;
-        const attempt = () => {
-          if (idx >= tryPaths.length) {
-            resolve();
-            return;
-          }
-          const src = tryPaths[idx++];
-          if (!src) {
-            attempt();
-            return;
-          }
-          const img = new Image();
-          img.onload = () => {
-            this.images.set(sheetFile, img);
-            this.images.set(cleanName, img);
-            this.images.set(`poke_${cleanName}`, img);
-            this.images.set(noExt, img);
-            this.images.set(`poke_${noExt}`, img);
-            resolve();
-          };
-          img.onerror = () => {
-            attempt();
-          };
-          img.src = src;
+        if (!webPath) {
+          resolve();
+          return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          this.images.set(sheetFile, img);
+          this.images.set(cleanName, img);
+          this.images.set(`poke_${cleanName}`, img);
+          this.images.set(noExt, img);
+          this.images.set(`poke_${noExt}`, img);
+          resolve();
         };
-        attempt();
+        img.onerror = () => {
+          resolve();
+        };
+        img.src = webPath;
       });
     });
 

@@ -182,7 +182,8 @@ const handleReorderMoves = (from: number, to: number) => {
               :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
               :alt="targetPokemon?.nickname || species?.name || 'Pokémon'"
               class="main-sprite"
-              @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+              width="32"
+              height="32"
             >
           </PVSpriteFX>
         </div>

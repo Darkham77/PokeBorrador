@@ -44,7 +44,7 @@ export function useBattleCombatantSpriteLoop(params: UseBattleCombatantSpriteLoo
     const imgEl = spriteRef.value.querySelector('.pokemon-combat-image') as HTMLElement
     if (!imgEl) return
 
-    // Si está congelado o dormido, forzar primer frame del idle y detener animación
+    // If frozen or asleep, force first frame of idle and stop animation
     if (props.pokemon?.status === 'frz' || props.pokemon?.status === 'slp') {
       currentMode.value = 'idle'
       const imgEl = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement
@@ -55,7 +55,7 @@ export function useBattleCombatantSpriteLoop(params: UseBattleCombatantSpriteLoo
     }
 
     const playMode = () => {
-      // 1. Limpiar timelines previos y detener todas las llamadas a onComplete
+      // 1. Clean up previous timelines and stop all onComplete callbacks
       if (animTween.value) {
         animTween.value.kill()
         animTween.value = null

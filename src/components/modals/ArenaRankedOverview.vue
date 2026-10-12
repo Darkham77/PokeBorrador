@@ -161,6 +161,9 @@ function handleEmojiLeave(e: MouseEvent) {
               :src="getRankIcon(pvp.eloTier?.id)"
               :alt="tierDisplay.name"
               class="tier-image allow-aliasing"
+              width="32"
+            
+              height="32"
               @error="imageError = true"
             >
             <div

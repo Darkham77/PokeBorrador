@@ -84,7 +84,8 @@ const getPokemonRewardSprite = (species: string, isShiny = true) => {
             :src="getAssetUrl(ASSET_TYPES.BANNER, resolvedTheme.bannerImage)"
             :alt="tournamentTitle"
             class="tournament-banner-img allow-aliasing"
-            @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')"
+            width="32"
+            height="32"
           >
         </div>
 
@@ -155,6 +156,9 @@ const getPokemonRewardSprite = (species: string, isShiny = true) => {
               :src="getPokemonRewardSprite(resolvedTheme.rewardPokemon.maestro.species, true)"
               :alt="resolvedTheme.rewardPokemon.maestro.species"
               class="reward-sprite pixel-art"
+            
+              width="32"
+              height="32"
             >
             <div class="reward-text-group">
               <span class="reward-tag text-outline">RECOMPENSA EXCLUSIVA MAESTRO</span>

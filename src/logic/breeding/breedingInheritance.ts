@@ -11,13 +11,9 @@ import { getBreedingBaseId, getEggSpecies } from './breedingEngine.ts';
 
 const HIDDEN_ABILITY_HERITAGE_PCT = 60;
 
-function getEggMoves(speciesId: PokemonSpeciesId): readonly PokemonMoveId[] {
-  return getSpeciesEggMoves(speciesId);
-}
-
 /**
- * Calcula la herencia de IVs de la cría.
- * Soporta Objetos Recios (force stat) y Lazo Destino (hereda 5 stats).
+ * Calculates offspring IV inheritance.
+ * Supports Power items (force stat) and Destiny Knot (inherits 5 stats).
  */
 export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, itemB: string, playerClass: string = ''): PokemonIVs {
   const ivs: PokemonIVs = generateRandomIVs();
@@ -49,7 +45,7 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
   const hasDestinyKnot = itemA === 'destinyknot' || itemB === 'destinyknot';
   const forcedCount = (forcedA && forcedB && forcedA !== forcedB) ? 2 : ((forcedA || forcedB) ? 1 : 0);
   
-  // Criador hereda +1 stat adicional base
+  // Breeder inherits +1 additional base stat
   let baseInheritCount = hasDestinyKnot ? BREEDING_CONSTANTS.IV_INHERIT_DESTINY_KNOT : BREEDING_CONSTANTS.IV_INHERIT_DEFAULT;
   if (playerClass === 'criador') baseInheritCount++;
   
@@ -67,15 +63,15 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
 }
 
 /**
- * Calcula la herencia de movimientos.
- * Prioridad: Egg Moves > TMs learned by parents > Level-up moves shared.
+ * Calculates move inheritance.
+ * Priority: Egg Moves > TMs learned by parents > Level-up moves shared.
  */
 export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: PokemonSpeciesId): PokemonMoveId[] {
   const babyId = getBreedingBaseId(eggSpeciesId);
-  const possibleEggMoves = getEggMoves(babyId);
+  const possibleEggMoves = getSpeciesEggMoves(babyId);
   const inheritedMoves: PokemonMoveId[] = [];
 
-  // 1. Egg Moves (si el padre o la madre lo conocen Y está en la DB de posibles egg moves)
+  // 1. Egg Moves (if father or mother knows it AND it is in possible egg moves DB)
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])];
   possibleEggMoves.forEach(moveId => {
     if (parentsMoves.some(m => m && m.id === moveId)) {
@@ -83,7 +79,7 @@ export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: PokemonSpec
     }
   });
 
-  // 2. TMs / Movimientos legales compartidos que la cría puede aprender a nivel 1
+  // 2. TMs / Shared legal moves that offspring can learn at level 1
   const sharedMoves = (pA.moves || []).filter(ma => ma?.id && (pB.moves || []).some(mb => mb?.id === ma.id));
   sharedMoves.forEach(m => {
     if (m?.id && !inheritedMoves.includes(m.id) && inheritedMoves.length < 4) {
@@ -93,14 +89,14 @@ export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: PokemonSpec
     }
   });
 
-  // Limitamos a los últimos 4 movimientos encontrados
+  // Limit to the last 4 moves found
   return inheritedMoves.slice(-4);
 }
 
 /**
- * Determina la habilidad heredada.
- * La madre tiene 60% de probabilidad de pasar su habilidad (incluyendo Ocultas).
- * Si hay un Ditto, el otro padre actúa como "madre".
+ * Determines inherited ability.
+ * The mother has a 60% chance to pass down her ability (including Hidden Abilities).
+ * If Ditto is present, the other parent acts as the "mother".
  */
 export function inheritAbility(pA: Pokemon, pB: Pokemon): string | null {
   const isADitto = getBreedingBaseId(pA.id) === 'ditto';
@@ -109,7 +105,7 @@ export function inheritAbility(pA: Pokemon, pB: Pokemon): string | null {
   let source: Pokemon | null;
   if (isADitto) source = pB;
   else if (isBDitto) source = pA;
-  else source = pA.gender === 'f' ? pA : pB; // La madre manda
+  else source = pA.gender === 'f' ? pA : pB; // Mother takes precedence
   
   if (!source) return null;
   
@@ -117,15 +113,15 @@ export function inheritAbility(pA: Pokemon, pB: Pokemon): string | null {
     return source.ability || null;
   }
   
-  return null; // Habilidad aleatoria (slot 1 o 2 estándar)
+  return null; // Random ability (standard slot 1 or 2)
 }
 
 /**
- * Calcula la probabilidad de Shiny considerando el Método Masuda y eventos.
- * standardRate suele ser 1/8192 o 1/4096.
+ * Calculates Shiny probability considering Masuda Method and events.
+ * standardRate is typically 1/8192 or 1/4096.
  */
 export function calculateShinyChance(pA: Pokemon, pB: Pokemon, standardRate: number = (1 / BASE_SHINY_DENOMINATOR), eventShinyMult: number = 1): number {
-  const isForeign = pA.region !== pB.region || pA.ot_id !== pB.ot_id; // Simplificación Método Masuda
+  const isForeign = pA.region !== pB.region || pA.ot_id !== pB.ot_id; // Masuda Method simplification
   const masudaBonus = isForeign ? (BREEDING_CONSTANTS.MASUDA_MULTIPLIER - 1) : 0;
   const eventBonus = eventShinyMult - 1;
   
@@ -134,7 +130,7 @@ export function calculateShinyChance(pA: Pokemon, pB: Pokemon, standardRate: num
 }
 
 /**
- * Determina la naturaleza heredada (Piedra Eterna).
+ * Determines inherited nature (Everstone).
  */
 export function inheritNature(pA: Pokemon, pB: Pokemon, itemA: string, itemB: string): string | null {
   if (itemA === 'everstone' && itemB === 'everstone') {
@@ -143,7 +139,7 @@ export function inheritNature(pA: Pokemon, pB: Pokemon, itemA: string, itemB: st
   if (itemA === 'everstone') return pA.nature;
   if (itemB === 'everstone') return pB.nature;
   
-  // Si no hay piedra, la naturaleza será aleatoria (se manejará al crear el objeto Pokémon)
+  // Without Everstone, nature is random (handled when creating the Pokemon instance)
   return null;
 }
 
@@ -157,8 +153,8 @@ export interface GeneticsForecast {
 }
 
 /**
- * Retorna un resumen de probabilidades para la UI.
- * No revela el resultado final, solo las reglas actuales aplicadas.
+ * Returns a probability summary for the UI.
+ * Does not reveal the final outcome, only current applied rules.
  */
 export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: string = ''): GeneticsForecast {
   const itemA = pA.heldItem || '';
@@ -170,9 +166,9 @@ export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: strin
   
   const ivCount = (hasDestinyKnot ? BREEDING_CONSTANTS.IV_INHERIT_DESTINY_KNOT : BREEDING_CONSTANTS.IV_INHERIT_DEFAULT) + (playerClass === 'criador' ? 1 : 0);
   
-  // Calcular si hay posibles Egg Moves
+  // Calculate if there are potential Egg Moves
   const babyId = getBreedingBaseId(getEggSpecies(pA.id));
-  const possibleEggMoves = getEggMoves(babyId);
+  const possibleEggMoves = getSpeciesEggMoves(babyId);
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])];
   const eggMovesDetected = possibleEggMoves.filter(moveId => parentsMoves.some(m => m && m.id === moveId));
 

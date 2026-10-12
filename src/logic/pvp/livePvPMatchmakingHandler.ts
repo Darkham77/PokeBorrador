@@ -35,6 +35,7 @@ export interface RankedQueueEntry {
 
 const RANKED_QUEUE_FETCH_LIMIT = 10 as const;
 const RANKED_TIER_GAP_TOLERANCE = 1 as const;
+const MATCHMAKING_BATTLE_INVITE_COLUMNS = 'id, sender_id, challenger_id, opponent_id, status, created_at, config';
 
 async function checkUserOnline(db: DBRouter | null, userId: string): Promise<boolean> {
   if (!db) return false;
@@ -69,7 +70,7 @@ export async function executePollMatchmaking(ctx: {
   if (!ctx.isSearching.value || !ctx.db || !ctx.userId) return;
   const res = await ctx.db
     .from('ranked_queue')
-    .select('*')
+    .select('user_id, elo, status, created_at')
     .neq('user_id', ctx.userId)
     .order('created_at', { ascending: true })
     .limit(RANKED_QUEUE_FETCH_LIMIT);
@@ -116,7 +117,7 @@ export function executeInitInvitePoller(ctx: {
     if (!ctx.userId || !ctx.db) return;
     const { data } = await ctx.db
       .from('battle_invites')
-      .select('*')
+      .select(MATCHMAKING_BATTLE_INVITE_COLUMNS)
       .eq('opponent_id', ctx.userId)
       .in('status', ['pending', 'ranked_match'])
       .order('created_at', { ascending: false })
@@ -271,7 +272,7 @@ export async function executeAcceptInvite(ctx: {
   if (!ctx.db) return;
   const { data: invite } = await ctx.db
     .from('battle_invites')
-    .select('*')
+    .select(MATCHMAKING_BATTLE_INVITE_COLUMNS)
     .eq('id', ctx.inviteId)
     .single() as { data: BattleInvite | null };
 

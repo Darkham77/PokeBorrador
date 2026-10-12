@@ -64,11 +64,16 @@ export function getIdleGroundedConfig(): gsap.TweenVars {
   }
 }
 
+export interface CombatantIdleOptions {
+  isSuppressed: boolean;
+  isFloating: boolean;
+}
+
 export function runCombatantIdleAnimation(
   wrapper: HTMLElement,
-  isSuppressed: boolean,
-  isFloating: boolean
+  options: CombatantIdleOptions
 ): gsap.core.Tween | null {
+  const { isSuppressed, isFloating } = options;
   gsap.killTweensOf(wrapper);
   if (isSuppressed) {
     gsap.set(wrapper, { y: 0, rotation: 0, scaleX: 1, scaleY: 1 });

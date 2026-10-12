@@ -297,7 +297,8 @@ describe('Event Awards Validation and Discard System', () => {
             return {
               select: vi.fn().mockReturnThis(),
               eq: vi.fn().mockReturnThis(),
-              is: vi.fn().mockResolvedValue({ data: userAwards, error: null })
+              is: vi.fn().mockReturnThis(),
+              limit: vi.fn().mockResolvedValue({ data: userAwards, error: null })
             }
           }
           if (table === 'competition_results') {

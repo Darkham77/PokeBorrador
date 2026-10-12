@@ -130,6 +130,9 @@ const getPokemonName = (id: string) => {
               :src="getAssetUrl(ASSET_TYPES.ITEM, getStoneInfo(opt.stone).sprite!)" 
               :alt="getStoneInfo(opt.stone).name || 'Piedra evolutiva'"
               class="stone-sprite" 
+              width="32"
+            
+              height="32"
               @error="handleImageError(opt.stone)"
             >
             <span

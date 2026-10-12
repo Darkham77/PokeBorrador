@@ -219,7 +219,7 @@ function exportPng(): void {
   display: flex;
   width: 100dvw;
   height: 100dvh;
-  background: #090d16;
+  background: var(--slate-900);
   color: var(--slate-50);
   overflow: hidden;
   user-select: none;
@@ -228,7 +228,7 @@ function exportPng(): void {
 .studio-viewport-container {
   position: relative;
   height: 100%;
-  background: radial-gradient(circle at center, #0f172a 0%, #060911 100%);
+  background: radial-gradient(circle at center, var(--slate-900) 0%, var(--slate-900) 100%);
   flex: 1;
   overflow: hidden;
   cursor: grab;

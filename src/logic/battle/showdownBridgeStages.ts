@@ -192,7 +192,7 @@ const STAGE_HANDLERS: Record<string, (ctx: SBCtx) => boolean> = {
 };
 
 /**
- * Maneja eventos de cambio de stats (stages):
+ * Handles stat change events (stages):
  * -boost, -setboost, -unboost, -swapboost, -invertboost,
  * -clearboost, -clearallboost, -copyboost,
  * -clearpositiveboost, -clearnegativeboost

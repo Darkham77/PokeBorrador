@@ -119,12 +119,16 @@ function calculateGuardianEncounterChance(
   }
 }
 
+interface BaseTrainerChanceFlags {
+  isRocketMaxCrim: boolean
+  repelActive: boolean
+}
+
 function resolveBaseTrainerChance(
   state: EncounterState,
   trainerBonus: number,
-  isRocketMaxCrim: boolean,
+  { isRocketMaxCrim, repelActive }: BaseTrainerChanceFlags,
   criminality: number,
-  repelActive: boolean,
   debug?: DebugEncounterOverrides
 ): number {
   if (debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null) {
@@ -153,7 +157,7 @@ function calculateTrainerOrPoliceEncounterChance(
   const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= ROCKET_MAX_CRIMINALITY
 
   const hasTrainerOverride = debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null ? true : !!debug?.trainerChance50
-  const baseTrainerChance = resolveBaseTrainerChance(state, trainerBonus, isRocketMaxCrim, criminality, repelActive, debug)
+  const baseTrainerChance = resolveBaseTrainerChance(state, trainerBonus, { isRocketMaxCrim, repelActive }, criminality, debug)
 
   if (isRocketMaxCrim) {
     return {

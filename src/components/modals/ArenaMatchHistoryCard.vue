@@ -161,7 +161,7 @@ const emit = defineEmits<{
     gap: $spacing-sm-alt;
 
     .rival-label {
-      color: var(--gray, #94a3b8);
+      color: var(--gray, var(--slate-400));
       font-family: $font-family-pokemon;
       font-size: var(--font-9);
     }
@@ -183,7 +183,7 @@ const emit = defineEmits<{
       padding: 1px 5px;
       border-radius: $radius-sm;
       background: Rgb(255 255 255 / 8%);
-      color: var(--gray, #94a3b8);
+      color: var(--gray, var(--slate-400));
       font-family: $font-family-pokemon;
       font-size: var(--font-8);
 
@@ -199,7 +199,7 @@ const emit = defineEmits<{
     }
 
     .meta-turns {
-      color: var(--gray, #94a3b8);
+      color: var(--gray, var(--slate-400));
       font-size: var(--font-10);
     }
   }
@@ -217,7 +217,7 @@ const emit = defineEmits<{
     padding: 6px 10px;
     border: 1px solid var(--blue-400);
     border-radius: $radius-lg;
-    background: Linear-Gradient(180deg, #2563eb, #1d4ed8);
+    background: Linear-Gradient(180deg, var(--blue-500), var(--blue-500));
     color: var(--white);
     font-family: $font-family-pokemon;
     font-size: var(--font-10);
@@ -232,7 +232,7 @@ const emit = defineEmits<{
     border: 1px solid Rgb(255 255 255 / 12%);
     border-radius: $radius-lg;
     background: Rgb(255 255 255 / 6%);
-    color: var(--gray, #94a3b8);
+    color: var(--gray, var(--slate-400));
     cursor: pointer;
 
     .code-snippet {

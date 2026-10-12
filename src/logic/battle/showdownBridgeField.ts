@@ -45,8 +45,8 @@ const FIELD_END_MESSAGES: Record<string, string> = {
 };
 
 /**
- * Maneja eventos de campo y efectos persistentes:
- * -weather, -start, -end, -sidestart, -sideend, -fieldstart, -fieldend
+ * Handles weather events:
+ * -weather
  */
 function handleWeatherEvent(ctx: SBCtx, parts: string[], line: string): boolean {
   const { store } = ctx;
@@ -170,7 +170,7 @@ function handleFieldActivate(ctx: SBCtx, parts: string[], line: string): boolean
 }
 
 /**
- * Maneja eventos de campo y efectos persistentes:
+ * Handles field events and persistent effects:
  * -weather, -start, -end, -sidestart, -sideend, -fieldstart, -fieldend
  */
 export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {

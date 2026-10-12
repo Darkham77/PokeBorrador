@@ -446,7 +446,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   height: 100%;
   min-height: 0;
   max-height: 100dvh;
-  background: #090d16;
+  background: var(--slate-900);
   color: var(--slate-100);
   font-family: $font-family-sans;
   overflow: hidden;

@@ -1,5 +1,6 @@
 import { gameBus } from '@/logic/events/gameBus';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { BattleOutcomeFlags } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { useUIStore } from '@/stores/ui';
 import { findBestSwitchIndex } from '../ai/battleAI.ts';
@@ -64,8 +65,7 @@ async function handlePoliceTheft(
 export async function handlePoliceResolution(
   ctx: BattleContext,
   active: NonNullable<BattleContext['activeBattle']['value']>,
-  win: boolean,
-  fled: boolean,
+  { win, fled }: BattleOutcomeFlags,
   uiStore: ReturnType<typeof useUIStore>
 ): Promise<void> {
   if (active.trainerArchetype !== 'policeman') return;

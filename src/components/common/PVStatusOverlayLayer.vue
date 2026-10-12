@@ -79,6 +79,9 @@ const isLayerVisible = computed(() => {
           :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
           class="freeze-asset"
           alt="Freeze"
+        
+          width="32"
+          height="32"
         >
       </span>
       <span
@@ -89,6 +92,9 @@ const isLayerVisible = computed(() => {
           :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
           class="shiny-asset"
           alt="Shiny"
+        
+          width="32"
+          height="32"
         >
       </span>
       <span

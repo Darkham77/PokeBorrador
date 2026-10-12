@@ -55,7 +55,7 @@ export const useChatStore = defineStore('chat', () => {
     if (!db) return
     const { data, error } = await db
       .from('global_chat_messages')
-      .select('*')
+      .select('id, user_id, username, message, player_class, trainer_level, gender, created_at')
       .order('created_at', { ascending: false })
       .limit(CHAT_MAX_MESSAGES_HISTORY) as { data: ChatMessage[] | null, error: unknown }
 
@@ -84,15 +84,15 @@ export const useChatStore = defineStore('chat', () => {
           return
         }
 
-        // Deduplicar por ID real de Supabase
+        // Deduplicate by real Supabase ID
         const alreadyById = globalMessages.value.some(m => m.id !== undefined && m.id === row.id)
         if (alreadyById) return
 
-        // Deduplicar el push optimista propio: mismo user_id + mismo mensaje + timestamp muy cercano (<3s)
+        // Deduplicate own optimistic push: same user_id + same message + close timestamp (<3s)
         const isOwnOptimistic = row.user_id === authStore.user?.id &&
           globalMessages.value.some(m => {
             if (m.user_id !== row.user_id || m.message !== row.message) return false
-            // Si el ID del optimista es un número temporal (epochMs) y no un UUID, es el push optimista
+            // If optimistic ID is a temporary number (epochMs) and not a UUID, it is the optimistic push
             if (typeof m.id === 'number') {
               const diff = Math.abs((m.id as number) - (Temporal.Instant.from(row.created_at as string).epochMilliseconds))
               return diff < CHAT_OPTIMISTIC_DEDUP_WINDOW_MS
@@ -101,7 +101,7 @@ export const useChatStore = defineStore('chat', () => {
           })
 
         if (isOwnOptimistic) {
-          // Reemplazar el mensaje optimista con el definitivo (que tiene el ID real de Supabase)
+          // Replace optimistic message with final one (which has real Supabase ID)
           const idx = globalMessages.value.findIndex(m =>
             typeof m.id === 'number' &&
             m.user_id === row.user_id &&

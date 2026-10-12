@@ -48,12 +48,17 @@ export interface PowerContext {
   currentPower: number;
 }
 
+interface ThunderHurricaneWeatherOptions {
+  isSunny: boolean;
+  isRaining: boolean;
+  isThunderstorm: boolean;
+}
+
 function checkThunderOrHurricane(
   moveId: PokemonMoveId,
-  isSunny: boolean,
-  isRaining: boolean,
-  isThunderstorm: boolean
+  options: ThunderHurricaneWeatherOptions
 ): { type: string; text: string } | null {
+  const { isSunny, isRaining, isThunderstorm } = options;
   if (moveId !== 'thunder' && moveId !== 'hurricane') return null;
   if (isSunny) return { type: 'penalized', text: WEATHER_PENALIZED_ACCURACY_TEXT };
   if (isRaining || isThunderstorm) {
@@ -84,7 +89,7 @@ export function getSpecialMoveModifier(
   const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL;
   const isThunderstorm = weather?.toLowerCase() === 'thunderstorm';
 
-  const thunderRes = checkThunderOrHurricane(moveId, isSunny, isRaining, isThunderstorm);
+  const thunderRes = checkThunderOrHurricane(moveId, { isSunny, isRaining, isThunderstorm });
   if (thunderRes) return thunderRes;
 
   if (moveId === 'blizzard' && isSnowing) {

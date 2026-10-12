@@ -86,7 +86,7 @@ const p2Anchor = getCombatantPosition('enemy')
   pointer-events: none;
 
   &.debug-mode {
-    background-color: rgb(255 0 0 / 5%);
+    background-color: rgb(var(--red-rgb, 255, 69, 58), 0.05);
     outline: 4px solid rgb(255 0 0 / 30%);
   }
 }

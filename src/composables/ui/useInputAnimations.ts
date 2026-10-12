@@ -1,8 +1,8 @@
 import { gsap } from 'gsap'
 
 /**
- * Composable para gestionar micro-animaciones GSAP en inputs al enfocar y pasar el ratón.
- * Cumple con el mandato exclusivo de GSAP para efectos visuales y transiciones de interfaz.
+ * Composable to manage GSAP micro-animations on inputs during focus and hover.
+ * Complies with the GSAP-first mandate for visual effects and UI transitions.
  */
 export function useInputAnimations() {
   const handleInputEnter = (e: MouseEvent) => {

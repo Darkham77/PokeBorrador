@@ -80,17 +80,14 @@ export function useCombatantStatus(
 
     const abilityItem = buildAbilityVolatileItem(
       target,
-      isPlayerVal.value,
-      isIvScannerActive.value,
-      isAdmin.value,
+      { isPlayerVal: isPlayerVal.value, isIvScannerActive: isIvScannerActive.value, isAdmin: isAdmin.value },
       battleStore.state?.weather?.type
     )
     if (abilityItem) list.push(abilityItem)
 
     const enemyInvItem = buildEnemyInventoryVolatileItem(
       target,
-      isPlayerVal.value,
-      isAdmin.value,
+      { isPlayerVal: isPlayerVal.value, isAdmin: isAdmin.value },
       battleStore.state?.enemyInventory,
       battleStore.state?.enemyMoney ?? 0,
       battleStore.state?.enemyMaxLevel,

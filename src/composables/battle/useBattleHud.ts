@@ -31,8 +31,8 @@ function isTrainerMode(state: TrainerModeCheckable | null | undefined): boolean 
 }
 
 /**
- * Composable para gestionar la visibilidad y estados del HUD en combate.
- * Centraliza la lógica de supresión para evitar interferencias entre bandos.
+ * Composable to manage HUD visibility and states in battle.
+ * Centralizes suppression logic to prevent cross-side interference.
  */
 export function useBattleHud(
   animations: ReturnType<typeof useBattleAnimations>, 
@@ -58,10 +58,9 @@ export function useBattleHud(
       s ? s.minigame : undefined,
       fsmState,
       fsmSub,
-      isTrainer.value,
+      { isTrainer: isTrainer.value, isFaintInProgress: isFaintInProgress.value },
       seats.value.seat2,
       s ? s.enemy : undefined,
-      isFaintInProgress.value,
       faintedSide
     );
   });
@@ -137,23 +136,25 @@ export function useBattleHud(
     const wasSearchingVal = s ? Boolean(s.wasSearching) : false;
 
     return buildActiveEnemyIsSilhouette(
-      isTrainerVal,
-      isGymVal,
-      isPvPVal,
-      animations.isWildSilhouette.value,
-      Boolean(toValue(battleStore.isSilhouetteMode)),
-      wasSearchingVal,
-      Boolean(toValue(battleStore.isSearching)),
+      {
+        isTrainer: isTrainerVal,
+        isGym: isGymVal,
+        isPvP: isPvPVal,
+        isWildSilhouette: animations.isWildSilhouette.value,
+        isSilhouetteMode: Boolean(toValue(battleStore.isSilhouetteMode)),
+        wasSearching: wasSearchingVal,
+        isSearching: Boolean(toValue(battleStore.isSearching)),
+        isWildEntryAnimation: animations.isWildEntryAnimation.value
+      },
       toValue(battleStore.currentFsmState) || toValue(battleStore.fsm?.currentState),
-      toValue(battleStore.currentSubState) || toValue(battleStore.fsm?.currentSubState),
-      animations.isWildEntryAnimation.value
+      toValue(battleStore.currentSubState) || toValue(battleStore.fsm?.currentSubState)
     );
   });
 
   const bushIsBehind = computed(() => {
     const state = toValue(battleStore.currentFsmState) || (battleStore.fsm?.currentState ? toValue(battleStore.fsm.currentState) : null);
     const sub = toValue(battleStore.currentSubState) || (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null);
-    return isBushBehindCheck(animations.isEmerging.value, animations.isWildEntryAnimation.value, state, sub ? String(sub) : null);
+    return isBushBehindCheck({ isEmerging: animations.isEmerging.value, isWildEntryAnimation: animations.isWildEntryAnimation.value }, state, sub ? String(sub) : null);
   });
 
   const enemyIsJumping = computed(() => {
@@ -193,16 +194,18 @@ export function useBattleHud(
     const isSearching = Boolean(toValue(battleStore.isSearching));
 
     return shouldShowEncounterLayersCheck(
-      Boolean(activeEnemyData.value),
+      {
+        hasEnemy: Boolean(activeEnemyData.value),
+        isCaptureSequenceActive: animations.isCaptureSequenceActive.value,
+        isFaintInProgress: animations.isFaintInProgress.value,
+        isEnemyFloating: enemyIsFloating.value,
+        isWildEncounter: isWildEncounter.value,
+        isSearching,
+        wildRevealActive: animations.wildRevealActive.value
+      },
       state,
       animState,
-      animations.isCaptureSequenceActive.value,
-      animations.isFaintInProgress.value,
-      enemyIsFloating.value,
-      fsmSub,
-      isWildEncounter.value,
-      isSearching,
-      animations.wildRevealActive.value
+      fsmSub
     );
   });
 

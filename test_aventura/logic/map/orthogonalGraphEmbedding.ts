@@ -204,12 +204,11 @@ function assignNodesToBands(
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          if (!occupied.has(cellKey(c, r))) {
-            const dist = Math.abs(c - currentCell.col) + Math.abs(r - currentCell.row);
-            if (dist < bestDist) {
-              bestDist = dist;
-              candidate = { col: c, row: r };
-            }
+          if (occupied.has(cellKey(c, r))) continue;
+          const dist = Math.abs(c - currentCell.col) + Math.abs(r - currentCell.row);
+          if (dist < bestDist) {
+            bestDist = dist;
+            candidate = { col: c, row: r };
           }
         }
       }

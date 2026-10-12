@@ -79,6 +79,9 @@ const tintStyle = computed(() => {
       :src="eggUrl"
       alt="Huevo Pokémon"
       :style="imgStyle"
+    
+      width="32"
+      height="32"
     >
     <div
       v-if="tint"

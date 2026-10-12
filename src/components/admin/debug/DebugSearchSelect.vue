@@ -96,6 +96,8 @@ onClickOutside(selectRef, () => {
           :src="o.icon"
           :alt="o.name"
           class="item-icon"
+          width="24"
+          height="24"
           @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
         {{ o.name.toUpperCase() }}

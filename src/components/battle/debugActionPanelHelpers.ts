@@ -77,12 +77,17 @@ export function resolveBaseNumber(current: string, pdexOrder: readonly PokemonSp
   return idx !== -1 ? idx + 1 : 1;
 }
 
+export interface AnimatedSpriteKeyOptions {
+  isBack: boolean;
+  isFemale: boolean;
+}
+
 export function resolveAnimatedSpriteKey(
   candIdle: string,
   candSimple: string,
-  isBack: boolean,
-  isFemale: boolean
+  options: AnimatedSpriteKeyOptions
 ): string {
+  const { isBack, isFemale } = options;
   const suffix = isBack ? '_back' : '';
   if (isFemale && hasAnimatedSpriteId(`${candIdle}_f${suffix}`)) return `${candIdle}_f${suffix}`;
   if (hasAnimatedSpriteId(`${candIdle}${suffix}`)) return `${candIdle}${suffix}`;
@@ -139,12 +144,17 @@ function resolveSwapTarget(
   return { targetId, targetBase, variantVal, isFemale };
 }
 
+interface FallbackFeetPointsOptions {
+  isShiny: boolean;
+  isBack: boolean;
+}
+
 function verifyFallbackFeetPoints(
   targetId: PokemonSpeciesId,
-  isShiny: boolean,
-  isBack: boolean,
+  options: FallbackFeetPointsOptions,
   baseUrl: string
 ): void {
+  const { isShiny, isBack } = options;
   const targetUrl = getAssetUrl(ASSET_TYPES.POKEMON, targetId, { isShiny, isBack, isAnimated: false });
   validateSpriteFeetPoints(targetUrl, baseUrl);
 }
@@ -194,11 +204,11 @@ export function executeVisualSwap(params: VisualSwapParams): void {
   const suffix = variantVal ? `_${variantVal}` : '';
   const candIdle = `${targetBase}i${suffix}`;
   const candSimple = `${targetBase}${suffix}`;
-  const animatedKey = resolveAnimatedSpriteKey(candIdle, candSimple, isPlayer, isFemale);
+  const animatedKey = resolveAnimatedSpriteKey(candIdle, candSimple, { isBack: isPlayer, isFemale });
 
   if (!animatedKey) {
     const isShiny = Boolean(isPlayer ? battleStore.state?.player?.isShiny : battleStore.state?.enemy?.isShiny);
-    verifyFallbackFeetPoints(targetId, isShiny, isPlayer, baseUrl);
+    verifyFallbackFeetPoints(targetId, { isShiny, isBack: isPlayer }, baseUrl);
   }
 
   applyVisualSwapToStore(battleStore, isPlayer, targetId);

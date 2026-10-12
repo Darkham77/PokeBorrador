@@ -214,18 +214,18 @@ export function registerPokeTools(debug: DebugSystem) {
       let item = itemName ? requireItemId(itemName) : '' // text-ok: UI text display localization string
 
       if (!target) {
-        // 1. Buscar en tabla de nivel
+        // 1. Search level evolution table
         const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id] // open-record: Generic key-value data dictionary container
         if (levelEvo) {
           target = requirePokemonSpeciesId(levelEvo.to)
         } else {
-          // 2. Buscar en tabla de piedras (eevee y formas con múltiples variantes usan patrón {species}_{disambiguator})
+          // 2. Search stone evolution table (eevee and multiple variant forms use {species}_{disambiguator} pattern)
           const stoneEvo = getStoneEvolution(pokemon.id)
           if (stoneEvo) {
             target = stoneEvo.to
             item = stoneEvo.stone
           } else {
-            // 3. Buscar en tabla de intercambio
+            // 3. Search trade evolution table
             const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id] // open-record: Generic key-value data dictionary container
             if (tradeEvo) {
               target = requirePokemonSpeciesId(tradeEvo)

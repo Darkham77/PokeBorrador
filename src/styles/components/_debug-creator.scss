@@ -93,9 +93,9 @@
     max-width: 24px !important;
     height: 24px !important;
     padding: 0 !important;
-    border: 1.5px solid #7c3aed !important; // default magic wand purple border
+    border: 1.5px solid var(--purple-600, #7c3aed) !important; // default magic wand purple border
     border-radius: $radius-md !important;
-    background: #1e1c1a !important;
+    background: var(--surface-dark, #1e1c1a) !important;
     color: var(--white) !important;
     font-size: var(--font-11) !important;
     transform: none;
@@ -106,7 +106,7 @@
     box-sizing: border-box !important;
 
     &:hover {
-      background: #252220 !important;
+      background: var(--surface-hover, #252220) !important;
       border-color: var(--purple-400) !important;
     }
 
@@ -121,7 +121,7 @@
       box-shadow: var(--shadow-card);
 
       &:hover {
-        background: #252220 !important;
+        background: var(--surface-hover, #252220) !important;
         border-color: var(--amber) !important;
       }
 
@@ -193,7 +193,7 @@
       cursor: pointer;
 
       option {
-        background: #12131a;
+        background: var(--bg-surface-dark, #12131a);
         color: var(--white);
       }
     }
@@ -284,10 +284,11 @@
 
         .anim-toggle.active & {
           background: Rgb(124 58 237 / 40%);
-          &::after {
-            background: var(--vicio-primary);
-            transform: Translatex(16px);
-          }
+        }
+
+        .anim-toggle.active &::after {
+          background: var(--vicio-primary);
+          transform: Translatex(16px);
         }
       }
 

@@ -12,42 +12,42 @@ const RANDOM_DELAY_MAX_SECS_LIMIT = 2
 
 /**
  * useParticleEngine.ts
- * Motor modular para efectos de partículas alrededor de sprites.
- * Gestiona el azar, el escalado relativo y la orquestación de GSAP.
+ * Modular engine for particle effects around sprites.
+ * Handles randomness, relative scaling, and GSAP orchestration.
  */
 
 export interface ParticleSystemOptions {
-  /** Cantidad de partículas a animar (opcional si se pasan elementos) */
+  /** Particle count to animate (optional if elements are passed) */
   count?: number
-  /** Forma de la distribución: 'rect' (caja) o 'circle' (órbita) */
+  /** Distribution shape: 'rect' (box) or 'circle' (orbit) */
   shape?: ParticleShape
-  /** Rango de escala relativa (ej: [0.5, 1.2]) */
+  /** Relative scale range (e.g. [0.5, 1.2]) */
   scaleRange?: [number, number]
-  /** Rango de partículas activas (ej: [2, 5]) */
+  /** Active particle range (e.g. [2, 5]) */
   activeRange?: [number, number]
-  /** Desactivar la aleatorización inicial de posición */
+  /** Disable initial position randomization */
   disableInitialRandomize?: boolean
-  /** Desactivar la aleatorización de posición en cada repetición del loop */
+  /** Disable position randomization on loop repeats */
   disableRandomizeOnRepeat?: boolean
-  /** Semilla para desincronizar animaciones */
+  /** Seed to desynchronize animations */
   seed?: number
   /** 
-   * Rango de aparición en el contenedor (en %)
-   * Si shape='rect': { x: [minX, maxX], y: [minY, maxY] }
-   * Si shape='circle': { x: [minRadius, maxRadius] } -> Radio respecto al centro (50,50)
+   * Spawn area range in container (in %)
+   * If shape='rect': { x: [minX, maxX], y: [minY, maxY] }
+   * If shape='circle': { x: [minRadius, maxRadius] } -> Radius relative to center (50,50)
    */
   area?: { x: [number, number]; y?: [number, number] }
-  /** Offset del centro de aparición (en %, ej: { x: 0, y: -50 }) */
+  /** Spawn center offset (in %, e.g. { x: 0, y: -50 }) */
   offset?: { x: number; y: number }
-  /** Duración base de la vida de una partícula */
+  /** Base particle lifetime duration */
   duration?: number
-  /** Delay entre repeticiones */
+  /** Delay between repetitions */
   repeatDelay?: number
-  /** Callback para inicializar cada partícula (estilos iniciales, etc) */
+  /** Callback to initialize each particle (initial styles, etc.) */
   onInit?: (el: HTMLElement, index: number) => void
-  /** Callback en cada repetición (ideal para re-aleatorizar posición) */
+  /** Callback on each repetition (ideal for re-randomizing position) */
   onRepeat?: (el: HTMLElement, index: number) => void
-  /** Definición de los tweens o timelines principales de GSAP */
+  /** Primary GSAP tweens or timelines creation function */
   createTweens: (el: HTMLElement, index: number, delay: number) => gsap.core.Animation[]
 }
 
@@ -69,25 +69,25 @@ export function useParticleEngine() {
     let baseTop: number
 
     if (shape === 'circle') {
-      // Distribución circular uniforme utilizando coordenadas polares
+      // Uniform circular distribution using polar coordinates
       const rMin = area.x[0]
       const rMax = area.x[1]
       const angle = Math.random() * 2 * Math.PI
       
-      // sqrt para asegurar distribución uniforme del área
+      // sqrt to ensure uniform area distribution
       const r = Math.sqrt(Math.random() * (rMax * rMax - rMin * rMin) + rMin * rMin)
       
       baseLeft = PARTICLE_CENTER_PERCENT + r * Math.cos(angle)
       baseTop = PARTICLE_CENTER_PERCENT + r * Math.sin(angle)
     } else {
-      // Distribución rectangular centrada en el 50%
+      // Rectangular distribution centered at 50%
       const xRange = area.x
       const yRange = area.y || RECT_DEFAULT_Y_RANGE
       baseLeft = PARTICLE_CENTER_PERCENT + xRange[0] + (Math.random() * (xRange[1] - xRange[0]))
       baseTop = PARTICLE_CENTER_PERCENT + yRange[0] + (Math.random() * (yRange[1] - yRange[0]))
     }
     
-    // Aplicamos el offset de forma absoluta
+    // Apply absolute offset
     const finalLeft = baseLeft + (offset?.x || 0)
     const finalTop = baseTop + (offset?.y || 0)
     
@@ -100,10 +100,10 @@ export function useParticleEngine() {
   }
 
   const initSystem = (elements: HTMLElement[], options: ParticleSystemOptions) => {
-    // Matamos todos los tweens y timelines registrados previamente en esta instancia para evitar fugas/acumulación
+    // Kill all previously registered tweens and timelines to avoid leaks/accumulation
     killAll()
     
-    // Y por seguridad matamos cualquier tween individual remanente en los elementos
+    // Kill any remaining individual tweens on elements for safety
     elements.forEach(el => {
       if (el) gsap.killTweensOf(el)
     })
@@ -121,22 +121,22 @@ export function useParticleEngine() {
     elements.forEach((el) => {
       if (!el) return
       
-      // Limpiar tweens previos y ocultar inmediatamente para evitar "flashes" de estados previos
+      // Clear previous tweens and hide immediately to prevent flashing old states
       gsap.killTweensOf(el)
       gsap.set(el, { visibility: 'hidden', opacity: 0, scale: 0 })
 
-      // 1. Posicionamiento y tamaño inicial azaroso (opcional)
+      // 1. Initial random position and size (optional)
       if (!options.disableInitialRandomize) {
         randomizePosition(el, area, shape, options.offset)
-        // Solo aleatorizamos tamaño si NO se van a crear tweens inmediatamente 
-        // o si no estamos usando un sistema de escala animada.
+        // Only randomize size if tweens are NOT created immediately 
+        // or if animated scale system is not used.
         if (options.scaleRange && !options.createTweens) {
           randomizeSize(el, options.scaleRange)
         }
       }
     })
 
-    // 1.1 Visibilidad inicial (Solo al nacer)
+    // 1.1 Initial visibility (spawn only)
     if (options.activeRange) {
       const [min, max] = options.activeRange
       const initialCount = gsap.utils.random(min, max, 1)
@@ -144,7 +144,7 @@ export function useParticleEngine() {
         gsap.set(el, { visibility: i < initialCount ? 'visible' : 'hidden' })
       })
     } else {
-      // Si no hay rango activo, todos son visibles por defecto (ej. Shiny, Tácticos)
+      // If no active range, all are visible by default (e.g. Shiny, Tactical)
       elements.forEach(el => gsap.set(el, { visibility: 'visible' }))
     }
       
@@ -154,12 +154,12 @@ export function useParticleEngine() {
       // 2. Lifecycle hooks
       if (onInit) onInit(el, i)
 
-      // 3. Delay azaroso para desincronizar el "nacimiento"
+      // 3. Random delay to desynchronize spawn
       const randomDelay = Math.random() * RANDOM_DELAY_MAX_SECS_LIMIT
 
-      // 4. Inyectar lógica de re-posicionamiento en el loop si el usuario lo desea
+      // 4. Inject repositioning logic on loop repeat if configured
       const wrappedOnRepeat = () => {
-        // 1. Re-calcular visibilidad INDIVIDUAL para evitar cortes bruscos en el grupo
+        // 1. Recalculate individual visibility to prevent abrupt group cuts
         if (options.activeRange) {
           let shouldBeVisible: boolean
           const [min, max] = options.activeRange
@@ -180,14 +180,14 @@ export function useParticleEngine() {
             opacity: shouldBeVisible ? 1 : 0
           })
 
-          // Si la partícula acaba de "nacer" (pasa de hidden a visible), reiniciamos sus tweens
-          // para que la animación empiece siempre desde el principio.
+          // If particle just spawned (hidden to visible), restart its tweens
+          // so animation starts cleanly from the beginning.
           if (shouldBeVisible && wasHidden) {
             gsap.getTweensOf(el).forEach(t => t.restart())
           }
         }
 
-        // 2. Re-posicionar si no está desactivado
+        // 2. Reposition if not disabled
         if (!options.disableRandomizeOnRepeat) {
           randomizePosition(el, area, shape, options.offset)
           if (options.scaleRange) {
@@ -198,10 +198,10 @@ export function useParticleEngine() {
         if (onRepeat) onRepeat(el, i)
       }
 
-      // 5. Crear y registrar tweens (o timelines)
+      // 5. Create and register tweens (or timelines)
       const tweens = createTweens(el, i, randomDelay)
       
-      // Intentar inyectar el onRepeat en el primer tween si es un loop
+      // Inject onRepeat callback into the primary tween if looping
       if (tweens.length > 0) {
         const primaryTween = tweens[0]
         if (primaryTween) {

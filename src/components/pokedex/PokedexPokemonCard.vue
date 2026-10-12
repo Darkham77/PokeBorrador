@@ -54,7 +54,8 @@ defineEmits<{
               { 'silhouette': !p.isCaught },
               p.aura ? `aura-${p.aura}-mini` : ''
             ]"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+            width="32"
+            height="32"
           >
         </PVSpriteFX>
       </template>

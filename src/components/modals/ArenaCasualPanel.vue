@@ -306,7 +306,7 @@ $gray: #94a3b8;
       @include pixelated;
 
       margin: 0;
-      color: var(--white, #fff);
+      color: var(--white, var(--white));
       font-size: var(--font-9);
       font-weight: 800;
       letter-spacing: 0.5px;
@@ -372,7 +372,7 @@ $gray: #94a3b8;
 
         &.active {
           background: Rgb(59 130 246 / 18%);
-          color: var(--white, #fff);
+          color: var(--white, var(--white));
           border-color: var(--blue-light, #29b6f6);
           box-shadow: var(--shadow-glow-amber);
         }
@@ -437,7 +437,7 @@ $gray: #94a3b8;
         .code-number {
           @include pixelated;
 
-          color: var(--yellow, #ffd700);
+          color: var(--yellow, var(--gold));
           font-size: var(--font-24);
           font-weight: 900;
           letter-spacing: 4px;
@@ -517,7 +517,7 @@ $gray: #94a3b8;
           @include pixelated;
 
           margin: 0;
-          color: var(--white, #fff);
+          color: var(--white, var(--white));
           font-size: var(--font-9);
           letter-spacing: 0.5px;
         }
@@ -550,30 +550,30 @@ $gray: #94a3b8;
         display: flex;
         align-items: center;
         gap: $spacing-sm;
+      }
 
-        .code-input {
-          @include pixelated;
+      .code-input {
+        @include pixelated;
 
-          min-width: 0;
-          height: 32px;
-          padding: 0 8px;
-          border: 1px solid Rgb(255 255 255 / 18%);
-          border-radius: $radius-lg;
-          background: Rgb(0 0 0 / 60%);
-          color: var(--yellow, #ffd700);
-          font-size: var(--font-11);
-          font-weight: 800;
-          text-align: center;
-          flex: 1;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          box-shadow: $shadow-inset-sm;
+        min-width: 0;
+        height: 32px;
+        padding: 0 8px;
+        border: 1px solid Rgb(255 255 255 / 18%);
+        border-radius: $radius-lg;
+        background: Rgb(0 0 0 / 60%);
+        color: var(--yellow, var(--gold));
+        font-size: var(--font-11);
+        font-weight: 800;
+        text-align: center;
+        flex: 1;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        box-shadow: $shadow-inset-sm;
 
-          &:focus {
-            outline: none;
-            border-color: var(--yellow, #ffd700);
-            box-shadow: var(--shadow-glow-yellow);
-          }
+        &:focus {
+          outline: none;
+          border-color: var(--yellow, var(--gold));
+          box-shadow: var(--shadow-glow-yellow);
         }
       }
     }

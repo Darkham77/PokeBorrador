@@ -102,7 +102,7 @@
   .egg-progress-fill {
     height: 100%;
     border-radius: $radius-full;
-    background: Linear-Gradient(90deg, #22c55e, #86efac);
+    background: linear-gradient(90deg, var(--green-500, #22c55e), var(--green-300, #86efac));
     
   }
 }

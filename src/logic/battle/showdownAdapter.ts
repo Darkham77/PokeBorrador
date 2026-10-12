@@ -9,7 +9,7 @@ export { mapToShowdownSet } from './showdownSetMapper.ts';
 const DEFAULT_FALLBACK_BASE_SPEED = 45 as const;
 
 /**
- * Resuelve las estadísticas base de una especie desde la base de datos del juego.
+ * Resolves the base stats of a species from the game database.
  */
 export function resolveBaseStats(speciesId: PokemonSpeciesId): BaseStats {
   const data = pokemonDataProvider.getPokemonData(speciesId, true);
@@ -27,7 +27,7 @@ export const SHOWDOWN_GAME_TYPES = ['singles', 'doubles'] as const;
 export type ShowdownGameType = (typeof SHOWDOWN_GAME_TYPES)[number];
 
 /**
- * Retorna el ID de formato oficial de Pokémon Showdown.
+ * Returns the official Pokémon Showdown format ID.
  */
 export function getShowdownFormatId(gen?: number, gameType?: ShowdownGameType): ID {
   const finalGen = gen !== undefined ? gen : ACTIVE_GENERATION;

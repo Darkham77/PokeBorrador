@@ -14,6 +14,7 @@ Game Prototyping / Adventure Suite.
 ## Key Files
 
 - [`archipelagoConfig.ts`](./archipelagoConfig.ts): Island and archipelago procedural generation thresholds.
+- [`canonicalRegionTerrainConfig.ts`](./canonicalRegionTerrainConfig.ts): Geographical coordinate boundaries, bay radii, and noise configurations for canonical Kanto and Johto.
 - [`canvasRendererConfig.ts`](./canvasRendererConfig.ts): Canvas rendering visual offsets and tile scale factors.
 - [`cityEngineConfig.ts`](./cityEngineConfig.ts): Urban grid layout and road rasterization thresholds.
 - [`continentalEngineConfig.ts`](./continentalEngineConfig.ts): Continental macro-terrain synthesis parameters.

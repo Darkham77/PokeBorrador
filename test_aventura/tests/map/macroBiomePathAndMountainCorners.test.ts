@@ -26,7 +26,7 @@ const GRASS_PALETTE_COLORS = [
 ];
 
 describe('Pattern 3: Macro Biome Path & Mountain Corner Transparency', () => {
-  it('guarantees dirt path transition tiles in public/assets/tiles do not contain opaque grass pixels', async () => {
+  it('guarantees dirt path transition tiles in test_aventura/assets/tiles do not contain opaque grass pixels', async () => {
     const pathTransitionTiles = [
       'poke_path_dirt_edge_n.png',
       'poke_path_dirt_edge_s.png',
@@ -45,7 +45,7 @@ describe('Pattern 3: Macro Biome Path & Mountain Corner Transparency', () => {
     ];
 
     for (const tileName of pathTransitionTiles) {
-      const p = path.resolve(process.cwd(), 'public/assets/tiles', tileName);
+      const p = path.resolve(process.cwd(), 'test_aventura/assets/tiles', tileName);
       expect(fs.existsSync(p), `Tile file should exist: ${tileName}`).toBe(true);
 
       const img = await sharp(p).raw().toBuffer({ resolveWithObject: true });
@@ -71,7 +71,7 @@ describe('Pattern 3: Macro Biome Path & Mountain Corner Transparency', () => {
     ];
 
     for (const tileName of cornerTiles) {
-      const p = path.resolve(process.cwd(), 'public/assets/tiles', tileName);
+      const p = path.resolve(process.cwd(), 'test_aventura/assets/tiles', tileName);
       expect(fs.existsSync(p), `Tile file should exist: ${tileName}`).toBe(true);
 
       const img = await sharp(p).raw().toBuffer({ resolveWithObject: true });

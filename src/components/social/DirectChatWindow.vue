@@ -60,7 +60,7 @@ watch(() => chat.value?.isCollapsed, (collapsed) => {
       scrollToBottom();
       inputField.value?.focus();
     });
-    // Sincronizar el scroll al fondo con la animación de slide-in del modal lateral
+    // Synchronize bottom scroll with side modal slide-in animation
     const SCROLL_SYNC_STEP_1_SEC = 0.1;
     const SCROLL_SYNC_STEP_2_SEC = 0.3;
     const SCROLL_SYNC_STEP_3_SEC = 0.5;

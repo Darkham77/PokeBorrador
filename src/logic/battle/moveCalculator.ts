@@ -127,14 +127,19 @@ const SUN_ACCURACY_PENALIZED_THUNDER_HURRICANE = 50
 const FOG_ACCURACY_MULTIPLIER_MIST = 0.8 as const;
 const FOG_ACCURACY_MULTIPLIER_DEFAULT = 0.6 as const;
 
+interface WeatherAccuracyOptions {
+  isSunActive: boolean;
+  isRainActive: boolean;
+}
+
 function applyWeatherAccuracyModifier(
   baseAcc: number,
   moveId: PokemonMoveId,
   weather: string | null | undefined,
   mechWeather: string,
-  isSunActive: boolean,
-  isRainActive: boolean
+  options: WeatherAccuracyOptions
 ): number {
+  const { isSunActive, isRainActive } = options
   const isThunderstorm = weather === 'thunderstorm'
   if ((isRainActive || isThunderstorm) && (moveId === 'thunder' || moveId === 'hurricane')) {
     return 100
@@ -178,7 +183,7 @@ export function calculateFinalAccuracy(
   const isRainActive = !isGym && !isAclimatacion && (mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk')))
 
   const weatherAcc = md.id
-    ? applyWeatherAccuracyModifier(md.acc, md.id, weather, mechWeather, isSunActive, isRainActive)
+    ? applyWeatherAccuracyModifier(md.acc, md.id, weather, mechWeather, { isSunActive, isRainActive })
     : md.acc
   const multiplier = calculateNetAccuracyStageMultiplier(accStage, evaStage)
   const finalAcc = weatherAcc * multiplier

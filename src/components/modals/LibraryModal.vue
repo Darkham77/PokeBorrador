@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { libraryContent, libraryCategories } from '@/data/system/libraryData'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useGsapTransition } from '@/composables/ui/useGsapTransition'
+import { sanitizeHtml } from '@/logic/utils/sanitizeHtml'
 
 interface Props {
   show?: boolean
@@ -29,7 +30,7 @@ watch(() => props.initialTab, (newTab) => {
 })
 
 const currentContent = computed(() => {
-  return (libraryContent as Record<string, string>)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>' // open-record: Contenedor JSON dinámico de clave-valor genérico
+  return (libraryContent as Record<string, string>)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>' // open-record: Generic dynamic key-value JSON container
 })
 
 const TAB_SWITCH_FADE_DELAY_SEC = 0.15
@@ -86,8 +87,9 @@ const selectTab = (tabId: string) => {
             class="library-article"
           >
             <!-- fallow-ignore-next-line security-sink -->
+            <!-- html-injection-ok: Sanitized library article content -->
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <div v-html="currentContent" />
+            <div v-html="sanitizeHtml(currentContent)" />
           </div>
         </Transition>
       </main>
@@ -105,7 +107,7 @@ const selectTab = (tabId: string) => {
   width: 100%;
   height: 600px;
   max-height: 85dvh;
-  background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  background: Linear-Gradient(180deg, var(--slate-900) 0%, var(--slate-900) 100%);
   overflow: hidden;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -160,7 +162,7 @@ const selectTab = (tabId: string) => {
     padding: 12px 16px; // Ajustado
     border: 1px solid transparent;
     border-radius: $radius-lg-alt;
-    color: var(--gray, #94a3b8);
+    color: var(--gray, var(--slate-400));
     font-size: var(--font-12);
     font-weight: 400;
     line-height: 1.2;

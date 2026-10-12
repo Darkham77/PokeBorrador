@@ -27,16 +27,21 @@ const RIVAL_ALERT_OPACITY_PEAK = 0.8;
 const RIVAL_SLIDE_INITIAL_X_PERCENT = '150%';
 const TRAINER_SOLID_OPACITY = 1;
 
+export interface TrainerAnimationOptions {
+  isRival: boolean;
+  isRocket?: boolean;
+}
+
 export function playTrainerAnimation(
   newState: string,
   el: HTMLElement,
-  isRival: boolean,
+  options: TrainerAnimationOptions,
   showRivalAlert: Ref<boolean>,
   rivalFlickerRef: Ref<HTMLElement | null>,
   rivalExclamationRef: Ref<HTMLElement | null>,
-  audioStore: ReturnType<typeof useAudioStore>,
-  isRocket: boolean = false
+  audioStore: ReturnType<typeof useAudioStore>
 ): void {
+  const { isRival, isRocket = false } = options;
   if (newState === 'entering') {
     gsap.killTweensOf(el);
     if (isRival) {

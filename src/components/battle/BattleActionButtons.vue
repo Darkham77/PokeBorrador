@@ -43,7 +43,7 @@ const isInputReady = computed(() => {
   return battleStore.currentSubState === 'WAIT_INPUT'
 })
 
-// Eliminamos onHoverBtn manual para usar los estados nativos del mixin btn-vicio
+// Remove manual onHoverBtn to rely on native btn-vicio mixin states
 
 </script>
 

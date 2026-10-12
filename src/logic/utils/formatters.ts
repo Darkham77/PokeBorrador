@@ -1,14 +1,14 @@
 /**
- * Utilidades de formateo para el proyecto Poké Vicio
+ * Formatting utilities for Poké Vicio
  */
 
 /**
- * Simplifica valores numéricos grandes usando sufijos (K, M)
- * para ahorrar espacio en la UI.
+ * Simplifies large numeric values using suffixes (K, M)
+ * to save UI space.
  * 
- * @param val El número a formatear
- * @param threshold El umbral a partir del cual se simplifica (defecto 9.999.999)
- * @returns String formateado (ej: "10M", "1.234.567")
+ * @param val Number to format
+ * @param threshold Threshold above which to simplify (default 999,999)
+ * @returns Formatted string (e.g., "10M", "1,234,567")
  */
 const DEFAULT_CURRENCY_FORMAT_THRESHOLD = 999999
 const ONE_MILLION_SCALE = 1000000
@@ -21,7 +21,7 @@ export const formatCurrency = (val: number, threshold: number = DEFAULT_CURRENCY
 }
 
 /**
- * Traduce y formatea el nombre de la clase de entrenador.
+ * Translates and formats player trainer class name.
  */
 export const formatPlayerClass = (playerClass: string | null | undefined): string => {
   if (!playerClass || 
@@ -41,7 +41,7 @@ export const formatPlayerClass = (playerClass: string | null | undefined): strin
 }
 
 /**
- * Traduce y formatea el nombre del bando (facción) del entrenador.
+ * Translates and formats trainer faction name.
  */
 export const formatFaction = (faction: string | null | undefined): string => {
   if (!faction || 

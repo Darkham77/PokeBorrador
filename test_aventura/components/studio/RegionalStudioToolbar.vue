@@ -459,7 +459,7 @@ function handleJsonImport(e: Event): void {
     }
 
     &.success {
-      background: #059669;
+      background: var(--emerald-500);
       border-color: var(--emerald-400);
 
       &:hover:not(:disabled) {

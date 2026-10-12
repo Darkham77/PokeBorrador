@@ -2,7 +2,8 @@ import type { BattleContext } from '@/types/battle/battleContext';
 import type { ShowdownPlayerRequest, WinnerSide } from '@/types/battle/battle';
 import { executeTurnInWorker, syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts';
 import { filterShowdownLogs } from '../showdownBridge.ts';
-import { parseLogsWithSkip, resolvePostTurnSwitchesAndFaints } from './turnActionResolver.ts';
+import { resolvePostTurnSwitchesAndFaints } from './turnActionResolver.ts';
+import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
 
 export interface CanonicalTurnResult {
   logs: string[];

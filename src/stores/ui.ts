@@ -259,8 +259,8 @@ export const useUIStore = defineStore('ui', () => {
 
   /**
    * Returns true if there is any active modal that obscures the background.
-   * Modo Rápido se activa INMEDIATAMENTE al abrir cualquier modal oscurecedor
-   * y se desactiva solo cuando se inicia el cierre.
+   * Fast mode activates IMMEDIATELY upon opening any obscuring modal
+   * and deactivates only when closing begins.
    */
   const isAnyBlockingModalOpen = computed(() => {
     const modalStore = useModalStore()

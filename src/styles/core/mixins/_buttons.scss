@@ -93,7 +93,7 @@
   $text: #000;
 
   @if $variant == 'secondary' {
-    $base-color: #7c3aed;
+    $base-color: $purple-600;
     $shadow: Rgb(91 33 182 / 99%);
     $text: #fff;
   } @else if $variant == 'danger' {

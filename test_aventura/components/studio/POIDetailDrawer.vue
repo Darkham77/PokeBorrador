@@ -469,13 +469,13 @@ function onDrawerLeave(el: Element, done: () => void): void {
         border-radius: 50%;
 
         &.road {
-          background: #f1c40f;
+          background: var(--gold);
         }
         &.mountain_pass {
-          background: #b08968;
+          background: var(--bronze);
         }
         &.water_crossing {
-          background: #00d2d3;
+          background: var(--cyan);
         }
         &.forest_path {
           background: var(--emerald);

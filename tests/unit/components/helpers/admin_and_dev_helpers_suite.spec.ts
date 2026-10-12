@@ -269,16 +269,16 @@ describe('Admin & Dev Views Helpers Domain Suite', () => {
 
     describe('resolveSaveButtonState', () => {
       it('returns saving when isSaving is true', () => {
-        expect(resolveSaveButtonState(true, true)).toBe('saving')
-        expect(resolveSaveButtonState(true, false)).toBe('saving')
+        expect(resolveSaveButtonState({ isSaving: true, hasUnsavedChanges: true })).toBe('saving')
+        expect(resolveSaveButtonState({ isSaving: true, hasUnsavedChanges: false })).toBe('saving')
       })
 
       it('returns unsaved when changes exist and not saving', () => {
-        expect(resolveSaveButtonState(false, true)).toBe('unsaved')
+        expect(resolveSaveButtonState({ isSaving: false, hasUnsavedChanges: true })).toBe('unsaved')
       })
 
       it('returns saved when no unsaved changes', () => {
-        expect(resolveSaveButtonState(false, false)).toBe('saved')
+        expect(resolveSaveButtonState({ isSaving: false, hasUnsavedChanges: false })).toBe('saved')
       })
     })
   })

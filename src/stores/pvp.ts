@@ -51,8 +51,8 @@ import {
 } from './pvpDataHelper.ts'
 
 /**
- * usePvPStore - Gestor de Arena Clasificatoria y Defensa Pasiva.
- * Centraliza el ELO, las temporadas y el registro de equipos competitivos.
+ * usePvPStore - Ranked Arena and Passive Defense manager.
+ * Centralizes ELO, seasons, and competitive team registration.
  */
 export const usePvPStore = defineStore('pvp', () => {
   const authStore = useAuthStore()

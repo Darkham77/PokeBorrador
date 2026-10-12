@@ -71,11 +71,12 @@ function determineIdleSpriteKey(spriteKeyVal: string, isPlayerSide: boolean, gen
       const back = `${cand}_back`;
       if (isFemale && hasAnimatedSpriteId(femaleBack)) return femaleBack;
       if (hasAnimatedSpriteId(back)) return back;
-    } else {
-      const femaleFront = `${cand}_f`;
-      if (isFemale && hasAnimatedSpriteId(femaleFront)) return femaleFront;
-      if (hasAnimatedSpriteId(cand)) return cand;
+      continue;
     }
+
+    const femaleFront = `${cand}_f`;
+    if (isFemale && hasAnimatedSpriteId(femaleFront)) return femaleFront;
+    if (hasAnimatedSpriteId(cand)) return cand;
   }
   return null;
 }

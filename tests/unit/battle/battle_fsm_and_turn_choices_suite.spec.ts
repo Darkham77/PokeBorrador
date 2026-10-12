@@ -269,10 +269,8 @@ describe('battleTurnChoiceHelper - resolveTurnChoices', () => {
       mockPlayer,
       mockEnemy,
       move,
-      false,
-      true,
-      false,
-      eMove
+      eMove,
+      { isStruggle: false, isWild: true, p2Skip: false }
     );
 
     expect(choices.p1Choice).toBe('move thunderbolt');
@@ -311,10 +309,8 @@ describe('battleTurnChoiceHelper - resolveTurnChoices', () => {
       mockPlayer,
       mockEnemy,
       null,
-      true,
-      true,
-      false,
-      null
+      null,
+      { isStruggle: true, isWild: true, p2Skip: false }
     );
 
     expect(choices.p1Choice).toBe('struggle');

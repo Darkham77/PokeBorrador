@@ -1,4 +1,5 @@
 import type { BattleContext } from '@/types/battle/battleContext'
+import type { BattleOutcomeFlags } from '@/types/battle/battle'
 import { calculateBattleRewards } from './rewardsDistributor.ts'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
@@ -86,7 +87,7 @@ async function handleFieldPassiveRewards(ctx: BattleContext, active: NonNullable
   })
 }
 
-export async function processBattleRewardsPhase(ctx: BattleContext, win: boolean, fled: boolean) {
+export async function processBattleRewardsPhase(ctx: BattleContext, { win, fled }: BattleOutcomeFlags) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
   const active = ctx.activeBattle.value

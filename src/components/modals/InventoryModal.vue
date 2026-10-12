@@ -73,13 +73,13 @@ const battleActiveCategory = ref('potions')
 const battleActiveMainTab = ref<'productos' | 'materiales'>('productos')
 const battleSearchQuery = ref('')
 
-// Niveles superiores de categorización (Mochila normal)
+// Top-level categories (standard bag)
 const activeMainTab = computed({
   get: () => inventoryStore.activeMainTab,
   set: (val) => { inventoryStore.activeMainTab = val }
 })
 
-// Observar cambio en pestaña principal para resetear la subcategoría
+// Watch main tab changes to reset subcategory
 watch(activeMainTab, () => {
   if (!props.battleMode) {
     inventoryStore.activeCategory = 'todos'

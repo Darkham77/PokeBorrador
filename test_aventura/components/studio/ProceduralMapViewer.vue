@@ -87,7 +87,7 @@ async function ensureRegistryLoaded(): Promise<void> {
 
   isLoadingRegistry.value = true;
   try {
-    const res = await fetch('/assets/tiles_registry.json');
+    const res = await fetch('/test_aventura/assets/tiles_registry.json');
     if (!res.ok) throw new Error(`HTTP ${res.status} fetching tiles registry`);
     const data = (await res.json()) as TilesRegistryJson;
     loadTilesRegistry(data);
@@ -708,7 +708,7 @@ onMounted(() => {
   padding: 4px 6px;
   border: 1px solid var(--slate-600);
   border-radius: $radius-sm;
-  background: #090d16;
+  background: var(--slate-900);
   color: var(--slate-100);
   font-family: inherit;
   font-size: var(--font-12);
@@ -719,7 +719,7 @@ onMounted(() => {
   padding: 4px 6px;
   border: 1px solid var(--slate-600);
   border-radius: $radius-sm;
-  background: #090d16;
+  background: var(--slate-900);
   color: var(--slate-100);
   font-family: inherit;
   font-size: var(--font-12);
@@ -730,7 +730,7 @@ onMounted(() => {
   padding: 4px 6px;
   border: 1px solid var(--slate-600);
   border-radius: $radius-sm;
-  background: #090d16;
+  background: var(--slate-900);
   color: var(--slate-100);
   font-family: inherit;
   font-size: var(--font-12);
@@ -756,14 +756,14 @@ onMounted(() => {
   padding: 5px 12px;
   border: 1px solid var(--blue-400);
   border-radius: $radius-sm;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-500) 100%);
   color: var(--white);
   font-size: var(--font-12);
   font-weight: bold;
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-500) 100%);
   }
 
   &:disabled {
@@ -822,7 +822,7 @@ onMounted(() => {
     padding: 3px 10px;
     border: 1px solid var(--amber-dark);
     border-radius: $radius-sm;
-    background: #d97706;
+    background: var(--amber-dark);
     color: var(--white);
     font-size: var(--font-11);
     font-weight: bold;
@@ -847,7 +847,7 @@ onMounted(() => {
   padding: 12px;
   border: 1px solid var(--slate-800);
   border-radius: $radius-md;
-  background: #020617;
+  background: var(--slate-900);
   overflow: auto;
 
   .map-canvas {
@@ -868,7 +868,7 @@ onMounted(() => {
   padding: 6px 12px;
   border: 1px solid var(--slate-800);
   border-radius: $radius-md;
-  background: #090d16;
+  background: var(--slate-900);
   font-size: var(--font-11);
 
   .diag-col {

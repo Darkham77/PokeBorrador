@@ -61,11 +61,16 @@ function stealItemsFromEnemy(
   return stolenItemsList
 }
 
+interface RocketStealFlags {
+  isTrainer: boolean;
+  isGym: boolean;
+}
+
 async function executePlayerRocketSteal(
   ctx: BattleContext,
-  isTrainer: boolean,
-  isGym: boolean
+  flags: RocketStealFlags
 ): Promise<void> {
+  const { isTrainer, isGym } = flags;
   if (ctx.gs.state.playerClass !== 'rocket' || !isTrainer || isGym) return
 
   const level = ctx.classStore.classLevel
@@ -132,11 +137,11 @@ function stealPotionsAndBallsFromPlayer(
 
 async function executeEnemyRocketSteal(
   ctx: BattleContext,
-  isTrainer: boolean,
-  isGym: boolean,
   trainerName: string,
-  battleState: BattleState | null
+  battleState: BattleState | null,
+  flags: RocketStealFlags
 ): Promise<void> {
+  const { isTrainer, isGym } = flags;
   if (!isTrainer || isGym || !battleState?.trainerSprite) return
 
   const npcArchetype = classifyNpcArchetype(battleState.trainerSprite || trainerName || '')
@@ -190,13 +195,17 @@ async function executeEnemyRocketSteal(
   }
 }
 
+export interface RocketStealOptions {
+  isTrainer: boolean;
+  isGym: boolean;
+}
+
 export async function processRocketStealMechanics(
   ctx: BattleContext,
-  isTrainer: boolean,
-  isGym: boolean,
   trainerName: string,
-  battleState: BattleState | null
+  battleState: BattleState | null,
+  options: RocketStealOptions
 ): Promise<void> {
-  await executePlayerRocketSteal(ctx, isTrainer, isGym)
-  await executeEnemyRocketSteal(ctx, isTrainer, isGym, trainerName, battleState)
+  await executePlayerRocketSteal(ctx, options)
+  await executeEnemyRocketSteal(ctx, trainerName, battleState, options)
 }

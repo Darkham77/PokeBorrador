@@ -18,6 +18,9 @@ import { ONLINE_PRESENCE_WINDOW_MS, MAX_FRIEND_REQUESTS_PER_MINUTE, BATTLE_INVIT
 import { ONE_MINUTE_MS } from '@/logic/constants/items.ts'
 import { parseFriendsList, parsePendingRequests } from './socialParser.ts'
 
+const SOCIAL_PROFILE_COLUMNS = 'id, username, email, faction, player_class, trainer_level, avatar_style, nick_style, pvp_wins, pvp_losses, elo_rating, created_at, gender, badges'
+const SOCIAL_FRIENDSHIP_COLUMNS = 'id, requester_id, addressee_id, status, created_at'
+const SOCIAL_QUERY_LIMIT = 200
 
 export interface Friend {
   id: string;
@@ -152,9 +155,10 @@ export const useSocialStore = defineStore('social', () => {
         // 1. Obtener amistades confirmadas
         const { data: friendships, error: fErr } = await db
           .from('friendships')
-          .select('*')
+          .select(SOCIAL_FRIENDSHIP_COLUMNS)
           .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
-          .eq('status', 'accepted') as { data: FriendshipRow[] | null; error: unknown }
+          .eq('status', 'accepted')
+          .limit(SOCIAL_QUERY_LIMIT) as { data: FriendshipRow[] | null; error: unknown }
 
         if (fErr) throw fErr
         
@@ -163,7 +167,7 @@ export const useSocialStore = defineStore('social', () => {
             f.requester_id === authStore.user?.id ? f.addressee_id : f.requester_id
           )
 
-          const profRes = await db.from('profiles').select('*').in('id', friendIds) as { data: ProfileRow[] | null; error: unknown }
+          const profRes = await db.from('profiles').select(SOCIAL_PROFILE_COLUMNS).in('id', friendIds).limit(SOCIAL_QUERY_LIMIT) as { data: ProfileRow[] | null; error: unknown }
 
           friends.value = parseFriendsList(friendIds, profRes.data || [])
         } else {
@@ -173,13 +177,14 @@ export const useSocialStore = defineStore('social', () => {
         // 2. Solicitudes pendientes
         const { data: pending } = await db
           .from('friendships')
-          .select('*')
+          .select(SOCIAL_FRIENDSHIP_COLUMNS)
           .eq('addressee_id', authStore.user?.id)
-          .eq('status', 'pending') as { data: PendingRequest[] | null; error: unknown }
+          .eq('status', 'pending')
+          .limit(SOCIAL_QUERY_LIMIT) as { data: PendingRequest[] | null; error: unknown }
 
         if (pending && pending.length > 0) {
           const requesterIds = pending.map((r: PendingRequest) => r.requester_id)
-          const profRes = await db.from('profiles').select('*').in('id', requesterIds) as { data: ProfileRow[] | null; error: unknown }
+          const profRes = await db.from('profiles').select(SOCIAL_PROFILE_COLUMNS).in('id', requesterIds).limit(SOCIAL_QUERY_LIMIT) as { data: ProfileRow[] | null; error: unknown }
 
           pendingRequests.value = parsePendingRequests(pending, profRes.data || [])
         } else {
@@ -267,10 +272,10 @@ export const useSocialStore = defineStore('social', () => {
       res3,
       res4
     ] = await Promise.all([
-      db.from('friendships').select('id', { count: 'exact', head: true }).eq('addressee_id', authStore.user?.id).eq('status', 'pending'),
-      db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('receiver_id', authStore.user?.id).eq('status', 'pending'),
-      db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('sender_id', authStore.user?.id).eq('status', 'accepted'),
-      db.from('battle_invites').select('id', { count: 'exact', head: true }).eq('opponent_id', authStore.user?.id).eq('status', 'pending').gte('created_at', Temporal.Now.instant().subtract({ seconds: BATTLE_INVITE_EXPIRY_SECONDS }).toString())
+      db.from('friendships').select('id', { count: 'exact', head: true }).eq('addressee_id', authStore.user?.id).eq('status', 'pending').limit(1),
+      db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('receiver_id', authStore.user?.id).eq('status', 'pending').limit(1),
+      db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('sender_id', authStore.user?.id).eq('status', 'accepted').limit(1),
+      db.from('battle_invites').select('id', { count: 'exact', head: true }).eq('opponent_id', authStore.user?.id).eq('status', 'pending').gte('created_at', Temporal.Now.instant().subtract({ seconds: BATTLE_INVITE_EXPIRY_SECONDS }).toString()).limit(1)
     ])
 
     notifications.friends = res1.count || 0

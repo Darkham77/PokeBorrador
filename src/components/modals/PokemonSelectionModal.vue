@@ -24,7 +24,8 @@ import {
 import { getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 
 import { isPokemonFilterTagId, type PokemonFilterTagId } from '@/logic/constants/tags'
-import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
+import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter.ts'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
@@ -385,7 +386,7 @@ function openDetail(item: PokemonSelectionItemEntry) {
           :key="item.pokemon.uid"
           :item="item"
           :is-selected="selectedUids.includes(item.pokemon.uid)"
-          :total="getPokemonTotalPower(item.pokemon)"
+          :total="calculateTotalPower(item.pokemon)"
           :is-battle-context="props.isBattleSwitch || props.isItemContext || !!(props.allowedIds && props.allowedIds.length > 0)"
           :auto-confirm="props.autoConfirm"
           :is-daycare-context="props.isDaycareContext"

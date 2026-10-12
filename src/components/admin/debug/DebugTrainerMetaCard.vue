@@ -46,6 +46,9 @@ function onTrainerImgError(e: Event): void {
           :src="getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite)" 
           :alt="trainerName || 'Entrenador'"
           class="trainer-sprite-img"
+          width="64"
+        
+          height="64"
           @error="onTrainerImgError"
         >
       </div>

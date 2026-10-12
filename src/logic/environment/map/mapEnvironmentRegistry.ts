@@ -113,13 +113,13 @@ function createEnvironmentFromBoundaries(boundaries: MapEnvironmentBoundaries): 
 function initializeRegistry(): ReadonlyMap<string, BaseMapEnvironment> {
   const map = new Map<string, BaseMapEnvironment>();
 
-  // 1. Instanciar todas las ubicaciones canónicas de FIRE_RED_MAPS
+  // 1. Instantiate all canonical locations from FIRE_RED_MAPS
   for (const loc of FIRE_RED_MAPS) {
     const boundaries = buildBoundariesFromMapLocation(loc);
     map.set(loc.id, createEnvironmentFromBoundaries(boundaries));
   }
 
-  // 2. Instanciar ubicaciones de MAP_ROUTE_MAPPING no registradas previamente (ej. ciudades)
+  // 2. Instantiate locations from MAP_ROUTE_MAPPING not previously registered (e.g. cities)
   for (const rawKey of Object.keys(MAP_ROUTE_MAPPING)) {
     if (!isMapRouteId(rawKey)) continue;
     const key: MapRouteId = rawKey;
@@ -161,10 +161,10 @@ export function getMapEnvironment(
     throw new Error('[MapEnvironmentRegistry] locationId no especificado o inválido. Se prohíben fallbacks silenciosos.');
   }
 
-  // Si se pasa gym como locationId, mapea canónicamente al estadio
+  // If gym is passed as locationId, canonically map to stadium
   const resolvedId = locationId === 'gym' ? 'stadium' : locationId;
 
-  // Búsqueda canónica directa por el locationId del mapa
+  // Direct canonical lookup by map locationId
   const env = REGISTRY.get(resolvedId);
   if (!env) {
     throw new Error(`[MapEnvironmentRegistry] Entorno no registrado para locationId: "${locationId}". Se rechazan fallbacks silenciosos.`);

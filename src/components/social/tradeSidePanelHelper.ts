@@ -19,8 +19,13 @@ export interface TradeItemEntry {
   tier?: ItemTier;
 }
 
-export function isTradeGiftMode(isGift: boolean, isFriendSide: boolean): boolean {
-  return isGift && isFriendSide;
+export interface TradeGiftModeOptions {
+  isGift: boolean;
+  isFriendSide: boolean;
+}
+
+export function isTradeGiftMode(options: TradeGiftModeOptions): boolean {
+  return options.isGift && options.isFriendSide;
 }
 
 export function resolveTradePokemonButtonText(isFriendSide: boolean): string {

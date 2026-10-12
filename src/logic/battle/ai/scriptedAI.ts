@@ -65,7 +65,7 @@ export class ScriptedAI implements CombatAI {
     return -1
   }
 
-  // Las simulaciones deterministas siguen estrictamente el guion y no utilizan objetos automáticamente
+  // Deterministic simulations strictly follow the script and do not use items automatically
   async evaluateAndUseItem(_ctx: BattleContext, _e: Pokemon): Promise<boolean> {
     console.debug('[DEBUG-AI] [E2E-MOCK] ScriptedAI evaluateAndUseItem returning false (items disabled during E2E simulation)')
     return false

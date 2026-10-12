@@ -82,6 +82,9 @@ const {
         class="auth-btn-icon"
         draggable="false"
         aria-hidden="true"
+      
+        width="16"
+        height="16"
       >
       <span>NUEVA PARTIDA</span>
     </button>

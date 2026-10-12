@@ -11,7 +11,7 @@ import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -143,7 +143,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
     }
   }
 
-  private validateItemCategoryAndUsage(item: ShopItem, tag: string, healingItems: Set<string>): void {
+  private validateCategory(item: ShopItem, tag: string): void {
     if (item.cat && !VALID_CATS.has(item.cat)) {
       this.addViolation({
         ruleId: 'item-unknown-category',
@@ -154,7 +154,9 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         context: item.cat
       });
     }
+  }
 
+  private validateMissingHealing(item: ShopItem, tag: string, healingItems: Set<string>): void {
     if (item.cat && MUST_BE_USABLE.has(item.cat) && item.id && !healingItems.has(item.id)) {
       if (!item.name?.startsWith('MT')) {
         this.addViolation({
@@ -167,7 +169,9 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         });
       }
     }
+  }
 
+  private validateInvalidHealing(item: ShopItem, tag: string, healingItems: Set<string>): void {
     if (item.cat && MUST_NOT_BE_USABLE.has(item.cat) && item.id && healingItems.has(item.id)) {
       if (!ALLOWED_USABLE_HELD.has(item.id)) {
         this.addViolation({
@@ -180,7 +184,9 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         });
       }
     }
+  }
 
+  private validateHeldType(item: ShopItem, tag: string): void {
     if ((item.cat === 'held' || item.cat === 'combat_held') && item.type !== 'held') {
       this.addViolation({
         ruleId: 'item-missing-held-type',
@@ -193,7 +199,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
     }
   }
 
-  private validateItemLanguageLeaks(item: ShopItem, tag: string): void {
+  private validateDescLeak(item: ShopItem, tag: string): void {
     if (item.desc) {
       for (const pattern of FORBIDDEN_DESC_PATTERNS) {
         if (pattern.test(item.desc)) {
@@ -209,7 +215,9 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         }
       }
     }
+  }
 
+  private validateNameLeak(item: ShopItem, tag: string): void {
     if (item.name) {
       for (const pattern of FORBIDDEN_NAME_PATTERNS) {
         if (pattern.test(item.name)) {
@@ -227,16 +235,49 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
     }
   }
 
-  private auditSingleShopItem(item: ShopItem, healingItems: Set<string>): void {
-    const tag = `[${item.id} (line ~${item._line})]`;
-    this.validateRequiredFields(item, tag);
-    this.validateItemSprite(item, tag);
-    this.validateItemCategoryAndUsage(item, tag, healingItems);
-    this.validateItemLanguageLeaks(item, tag);
+  private validatePhantomHealing(shopItemIds: Set<string>, healingItems: Set<string>): void {
+    healingItems.forEach(id => {
+      if (id.startsWith('MT')) return;
+      if (!shopItemIds.has(id)) {
+        this.addViolation({
+          ruleId: 'item-phantom-healing',
+          severity: 'warning',
+          file: 'src/logic/items/itemEffects.ts',
+          line: 1,
+          message: `[PHANTOM] '${id}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`,
+          context: id
+        });
+      }
+    });
+  }
+
+  private validateSpriteCollisions(shopItems: readonly ShopItem[]): void {
+    const spriteToItems = new Map<string, string[]>();
+    shopItems.forEach(item => {
+      const sprite = item.sprite?.trim();
+      if (!sprite) return;
+      if (!spriteToItems.has(sprite)) {
+        spriteToItems.set(sprite, []);
+      }
+      spriteToItems.get(sprite)!.push(item.id);
+    });
+
+    for (const [sprite, ids] of spriteToItems.entries()) {
+      if (ids.length > 1) {
+        this.addViolation({
+          ruleId: 'item-sprite-collision',
+          severity: 'warning',
+          file: 'src/data/inventory/items.json',
+          line: 1,
+          message: `Sprite '${sprite}' is reused by ${ids.length} items (${ids.join(', ')}).`,
+          context: sprite
+        });
+      }
+    }
   }
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(ITEM_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -246,7 +287,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_items',
       configKey: 'domain.items',
       defaultConfig: {
@@ -283,75 +324,70 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
     for (const file of ITEM_EFFECT_FILES) {
       this.recordScanned(file);
     }
-    for (const r of ITEM_RULES) {
-      this.markRuleEvaluated(r);
-    }
 
-    this.context.logStep(1, 2, 'Loading and parsing SHOP_ITEMS and HEALING_ITEMS...');
     const healingItems = new Set<string>();
-    const healingRegex = /^\s*['"]([a-z0-9_]+)['"]\s*:\s*/gm;
+    let shopItems: ShopItem[] = [];
 
-    for (const relPath of ITEM_EFFECT_FILES) {
-      const fullPath = path.resolve(process.cwd(), relPath);
-      if (existsSync(fullPath)) {
-        const fileContent = await fs.readFile(fullPath, 'utf8');
-        let m: RegExpExecArray | null;
-        healingRegex.lastIndex = 0;
-        while ((m = healingRegex.exec(fileContent)) !== null) {
-          healingItems.add(m[1]!);
+    await this.runSubAuditor('item-missing-field', async () => {
+      const healingRegex = /^\s*['"]([a-z0-9_]+)['"]\s*:\s*/gm;
+      for (const relPath of ITEM_EFFECT_FILES) {
+        const fullPath = path.resolve(process.cwd(), relPath);
+        if (existsSync(fullPath)) {
+          const fileContent = await fs.readFile(fullPath, 'utf8');
+          let m: RegExpExecArray | null;
+          healingRegex.lastIndex = 0;
+          while ((m = healingRegex.exec(fileContent)) !== null) {
+            healingItems.add(m[1]!);
+          }
         }
       }
-    }
 
-    const jsonRaw = await fs.readFile(SHOP_FILE, 'utf8');
-    const jsonData = JSON.parse(jsonRaw) as { SHOP_ITEMS?: unknown[] };
-    const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[];
-    const shopItems: ShopItem[] = rawShopItems
-      .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
-      .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
+      const jsonRaw = await fs.readFile(SHOP_FILE, 'utf8');
+      const jsonData = JSON.parse(jsonRaw) as { SHOP_ITEMS?: unknown[] };
+      const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[];
+      shopItems = rawShopItems
+        .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
+        .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
 
-    this.context.logStep(2, 2, `Validating ${shopItems.length} items for fields, categories, sprites, and parity...`);
+      shopItems.forEach(item => this.validateRequiredFields(item, `[${item.id} (line ~${item._line})]`));
+    });
 
-    shopItems.forEach(item => this.auditSingleShopItem(item, healingItems));
+    this.runSubAuditorSync('item-sprite-not-found', () => {
+      shopItems.forEach(item => this.validateItemSprite(item, `[${item.id} (line ~${item._line})]`));
+    });
+
+    this.runSubAuditorSync('item-unknown-category', () => {
+      shopItems.forEach(item => this.validateCategory(item, `[${item.id} (line ~${item._line})]`));
+    });
+
+    this.runSubAuditorSync('item-missing-healing-effect', () => {
+      shopItems.forEach(item => this.validateMissingHealing(item, `[${item.id} (line ~${item._line})]`, healingItems));
+    });
+
+    this.runSubAuditorSync('item-invalid-healing-effect', () => {
+      shopItems.forEach(item => this.validateInvalidHealing(item, `[${item.id} (line ~${item._line})]`, healingItems));
+    });
+
+    this.runSubAuditorSync('item-missing-held-type', () => {
+      shopItems.forEach(item => this.validateHeldType(item, `[${item.id} (line ~${item._line})]`));
+    });
+
+    this.runSubAuditorSync('item-english-desc-leak', () => {
+      shopItems.forEach(item => this.validateDescLeak(item, `[${item.id} (line ~${item._line})]`));
+    });
+
+    this.runSubAuditorSync('item-english-name-leak', () => {
+      shopItems.forEach(item => this.validateNameLeak(item, `[${item.id} (line ~${item._line})]`));
+    });
 
     const shopItemIds = new Set(shopItems.map(i => i.id));
-
-    healingItems.forEach(id => {
-      if (id.startsWith('MT')) return;
-      if (!shopItemIds.has(id)) {
-        this.addViolation({
-          ruleId: 'item-phantom-healing',
-          severity: 'warning',
-          file: 'src/logic/items/itemEffects.ts',
-          line: 1,
-          message: `[PHANTOM] '${id}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`,
-          context: id
-        });
-      }
+    this.runSubAuditorSync('item-phantom-healing', () => {
+      this.validatePhantomHealing(shopItemIds, healingItems);
     });
 
-    const spriteToItems = new Map<string, string[]>();
-    shopItems.forEach(item => {
-      const sprite = item.sprite?.trim();
-      if (!sprite) return;
-      if (!spriteToItems.has(sprite)) {
-        spriteToItems.set(sprite, []);
-      }
-      spriteToItems.get(sprite)!.push(item.id);
+    this.runSubAuditorSync('item-sprite-collision', () => {
+      this.validateSpriteCollisions(shopItems);
     });
-
-    for (const [sprite, ids] of spriteToItems.entries()) {
-      if (ids.length > 1) {
-        this.addViolation({
-          ruleId: 'item-sprite-collision',
-          severity: 'warning',
-          file: 'src/data/inventory/items.json',
-          line: 1,
-          message: `Sprite '${sprite}' is reused by ${ids.length} items (${ids.join(', ')}).`,
-          context: sprite
-        });
-      }
-    }
 
     this.context.setMetric('SHOP_ITEMS scanned', shopItems.length);
     this.context.setMetric('HEALING_ITEMS scanned', healingItems.size);

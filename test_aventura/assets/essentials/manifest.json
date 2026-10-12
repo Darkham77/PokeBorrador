@@ -27,7 +27,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/daycare_cottage.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/daycare_cottage.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -42,7 +42,7 @@
       "category": "buildings",
       "width": 192,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/daycare_long_ranch.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/daycare_long_ranch.png",
       "source": "pokemon_essentials"
     },
     {
@@ -51,7 +51,7 @@
       "category": "buildings",
       "width": 224,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/game_corner.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/game_corner.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -70,7 +70,7 @@
       "category": "buildings",
       "width": 192,
       "height": 224,
-      "file_path": "/assets/essentials/prefabs/buildings/gatehouse_route.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/gatehouse_route.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -85,7 +85,7 @@
       "category": "buildings",
       "width": 256,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/gatehouse_route_horizontal.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/gatehouse_route_horizontal.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -104,7 +104,7 @@
       "category": "buildings",
       "width": 192,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/gym.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/gym.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -123,7 +123,7 @@
       "category": "buildings",
       "width": 192,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/gym_gold.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/gym_gold.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -142,7 +142,7 @@
       "category": "buildings",
       "width": 192,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_blue.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_blue.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -157,7 +157,7 @@
       "category": "buildings",
       "width": 128,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_celadon_brick_2story.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_celadon_brick_2story.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -172,7 +172,7 @@
       "category": "buildings",
       "width": 128,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_celadon_condo.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_celadon_condo.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -187,7 +187,7 @@
       "category": "buildings",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_cerulean_orange.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_cerulean_orange.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -202,7 +202,7 @@
       "category": "buildings",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_gray_small.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_gray_small.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -217,7 +217,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_green.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_green.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -232,7 +232,7 @@
       "category": "buildings",
       "width": 160,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_green_bungalow.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_green_bungalow.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -247,7 +247,7 @@
       "category": "buildings",
       "width": 160,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_green_plain.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_green_plain.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -262,7 +262,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_green_small.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_green_small.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -277,7 +277,7 @@
       "category": "buildings",
       "width": 160,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_lavender_purple.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_lavender_purple.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -292,7 +292,7 @@
       "category": "buildings",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_orange.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_orange.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -307,7 +307,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_orange_gable.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_orange_gable.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -322,7 +322,7 @@
       "category": "buildings",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_orange_planters.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_orange_planters.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -337,7 +337,7 @@
       "category": "buildings",
       "width": 160,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_pallet_blue.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_pallet_blue.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -352,7 +352,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_pallet_red.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_pallet_red.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -367,7 +367,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_pewter_slate.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_pewter_slate.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -382,7 +382,7 @@
       "category": "buildings",
       "width": 160,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_purple.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_purple.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -397,7 +397,7 @@
       "category": "buildings",
       "width": 160,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_purple_cottage.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_purple_cottage.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -412,7 +412,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_purple_dormer.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_purple_dormer.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -427,7 +427,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_red.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_red.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -442,7 +442,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_teal_bungalow.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_teal_bungalow.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -457,7 +457,7 @@
       "category": "buildings",
       "width": 128,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_greenroof.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_twostory_greenroof.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -472,7 +472,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_mint.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_twostory_mint.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -487,7 +487,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_red.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_twostory_red.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -502,7 +502,7 @@
       "category": "buildings",
       "width": 128,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_urban.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_twostory_urban.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -517,7 +517,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/house_twostory_yellow_1.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_twostory_yellow_1.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -532,7 +532,7 @@
       "category": "buildings",
       "width": 192,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_vermilion_ranch.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_vermilion_ranch.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -547,7 +547,7 @@
       "category": "buildings",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_wood_brown.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_wood_brown.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -562,7 +562,7 @@
       "category": "buildings",
       "width": 160,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/house_wood_flowers.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/house_wood_flowers.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -577,7 +577,7 @@
       "category": "buildings",
       "width": 224,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/lab_oak.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/lab_oak.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -592,7 +592,7 @@
       "category": "buildings",
       "width": 224,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/mansion_school.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/mansion_school.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -607,7 +607,7 @@
       "category": "buildings",
       "width": 512,
       "height": 256,
-      "file_path": "/assets/essentials/prefabs/buildings/pewter_museum.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/pewter_museum.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -626,7 +626,7 @@
       "category": "buildings",
       "width": 192,
       "height": 192,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_arena_rock_plateau.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_arena_rock_plateau.png",
       "source": "pokemon_essentials"
     },
     {
@@ -635,7 +635,7 @@
       "category": "buildings",
       "width": 448,
       "height": 288,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_battle_arena.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_battle_arena.png",
       "source": "pokemon_essentials"
     },
     {
@@ -644,7 +644,7 @@
       "category": "buildings",
       "width": 448,
       "height": 288,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_battle_dome.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_battle_dome.png",
       "source": "pokemon_essentials"
     },
     {
@@ -653,7 +653,7 @@
       "category": "buildings",
       "width": 352,
       "height": 224,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_battle_palace.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_battle_palace.png",
       "source": "pokemon_essentials"
     },
     {
@@ -662,7 +662,7 @@
       "category": "buildings",
       "width": 448,
       "height": 352,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_battle_pyramid.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_battle_pyramid.png",
       "source": "pokemon_essentials"
     },
     {
@@ -671,7 +671,7 @@
       "category": "buildings",
       "width": 128,
       "height": 192,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_bike_shop.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_bike_shop.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -686,7 +686,7 @@
       "category": "buildings",
       "width": 128,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_bridge_golden_wood.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_bridge_golden_wood.png",
       "source": "pokemon_essentials"
     },
     {
@@ -695,7 +695,7 @@
       "category": "buildings",
       "width": 224,
       "height": 256,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_condo_block.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_condo_block.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -710,7 +710,7 @@
       "category": "buildings",
       "width": 288,
       "height": 224,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_corp_tower.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_corp_tower.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -725,7 +725,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_daycare.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_daycare.png",
       "source": "pokemon_essentials"
     },
     {
@@ -734,7 +734,7 @@
       "category": "buildings",
       "width": 288,
       "height": 320,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_dept_store.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_dept_store.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -753,7 +753,7 @@
       "category": "buildings",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_dock_pier_water.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_dock_pier_water.png",
       "source": "pokemon_essentials"
     },
     {
@@ -762,7 +762,7 @@
       "category": "buildings",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_dock_pier_wood_small.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_dock_pier_wood_small.png",
       "source": "pokemon_essentials"
     },
     {
@@ -771,7 +771,7 @@
       "category": "buildings",
       "width": 96,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_dock_pier_wood_smooth.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_dock_pier_wood_smooth.png",
       "source": "pokemon_essentials"
     },
     {
@@ -780,7 +780,7 @@
       "category": "buildings",
       "width": 192,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_dojo.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_dojo.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -795,7 +795,7 @@
       "category": "buildings",
       "width": 160,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_fan_club.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_fan_club.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -810,7 +810,7 @@
       "category": "buildings",
       "width": 224,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_game_corner.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_game_corner.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -829,7 +829,7 @@
       "category": "buildings",
       "width": 192,
       "height": 224,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_league_checkpoint_gate.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_league_checkpoint_gate.png",
       "source": "pokemon_essentials"
     },
     {
@@ -838,7 +838,7 @@
       "category": "buildings",
       "width": 160,
       "height": 192,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_league_grand_staircase.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_league_grand_staircase.png",
       "source": "pokemon_essentials"
     },
     {
@@ -847,7 +847,7 @@
       "category": "buildings",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_market_produce_stall.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_market_produce_stall.png",
       "source": "pokemon_essentials"
     },
     {
@@ -856,7 +856,7 @@
       "category": "buildings",
       "width": 96,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_market_yellow_awning.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_market_yellow_awning.png",
       "source": "pokemon_essentials"
     },
     {
@@ -865,7 +865,7 @@
       "category": "buildings",
       "width": 512,
       "height": 256,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_museum.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_museum.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -884,7 +884,7 @@
       "category": "buildings",
       "width": 224,
       "height": 480,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_pokemon_tower.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_pokemon_tower.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -899,7 +899,7 @@
       "category": "buildings",
       "width": 64,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/buildings/poke_silph_radio_tower.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/poke_silph_radio_tower.png",
       "source": "pokemon_essentials"
     },
     {
@@ -908,7 +908,7 @@
       "category": "buildings",
       "width": 160,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/buildings/pokecenter.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/pokecenter.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -923,7 +923,7 @@
       "category": "buildings",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/buildings/pokemart.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/pokemart.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -938,7 +938,7 @@
       "category": "buildings",
       "width": 352,
       "height": 256,
-      "file_path": "/assets/essentials/prefabs/buildings/pokemon_league.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/pokemon_league.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -953,7 +953,7 @@
       "category": "buildings",
       "width": 320,
       "height": 224,
-      "file_path": "/assets/essentials/prefabs/buildings/power_plant.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/power_plant.png",
       "source": "pokemon_essentials"
     },
     {
@@ -962,7 +962,7 @@
       "category": "buildings",
       "width": 288,
       "height": 224,
-      "file_path": "/assets/essentials/prefabs/buildings/silph_tower.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/buildings/silph_tower.png",
       "source": "pokemon_essentials",
       "doorOffsets": [
         {
@@ -977,7 +977,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_fern_wild_bush.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_fern_wild_bush.png",
       "source": "pokemon_essentials"
     },
     {
@@ -986,7 +986,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_hedge_wall_block.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_hedge_wall_block.png",
       "source": "pokemon_essentials"
     },
     {
@@ -995,7 +995,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_log_fallen_trio.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_log_fallen_trio.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1004,7 +1004,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_cuttable.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_tree_cuttable.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1013,7 +1013,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_oak_clean.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_tree_oak_clean.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1022,7 +1022,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_oak_yellow.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_tree_oak_yellow.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1031,7 +1031,7 @@
       "category": "vegetation",
       "width": 64,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_pine_small.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_tree_pine_small.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1040,7 +1040,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_poke.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_tree_poke.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1049,7 +1049,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_tree_sapling.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_tree_sapling.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1058,7 +1058,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/vegetation/poke_viridian_forest_trunk_lip.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/poke_viridian_forest_trunk_lip.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1067,7 +1067,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/vegetation/tree_cuttable.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/tree_cuttable.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1076,7 +1076,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/vegetation/tree_oak_clean.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/tree_oak_clean.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1085,7 +1085,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/vegetation/tree_oak_yellow.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/tree_oak_yellow.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1094,7 +1094,7 @@
       "category": "vegetation",
       "width": 64,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/tree_pine_small.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/tree_pine_small.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1103,7 +1103,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/vegetation/tree_poke.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/tree_poke.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1112,7 +1112,7 @@
       "category": "vegetation",
       "width": 64,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/tree_viridian_forest.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/tree_viridian_forest.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1121,7 +1121,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_dense_block.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_canopy_dense_block.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1130,7 +1130,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_e_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_canopy_e_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1139,7 +1139,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_mid.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_canopy_mid.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1148,7 +1148,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_overhang_l.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_canopy_overhang_l.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1157,7 +1157,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_overhang_r.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_canopy_overhang_r.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1166,7 +1166,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_shadow_lip.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_canopy_shadow_lip.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1175,7 +1175,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_canopy_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1184,7 +1184,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_canopy_w_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_canopy_w_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1193,7 +1193,7 @@
       "category": "vegetation",
       "width": 64,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_edge_outer_se.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_edge_outer_se.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1202,7 +1202,7 @@
       "category": "vegetation",
       "width": 64,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_edge_outer_sw.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_edge_outer_sw.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1211,7 +1211,7 @@
       "category": "vegetation",
       "width": 32,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_tree_tall_pinnacle.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_tree_tall_pinnacle.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1220,7 +1220,7 @@
       "category": "vegetation",
       "width": 96,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_trunk_base.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_trunk_base.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1229,7 +1229,7 @@
       "category": "vegetation",
       "width": 64,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_trunk_roots_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_trunk_roots_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1238,7 +1238,7 @@
       "category": "vegetation",
       "width": 64,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/vegetation/viridian_forest_trunk_roots_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/vegetation/viridian_forest_trunk_roots_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1247,7 +1247,7 @@
       "category": "elevation",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_canyon_stairs_brown_complex.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_canyon_stairs_brown_complex.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1256,7 +1256,7 @@
       "category": "elevation",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_canyon_stairs_gray_complex.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_canyon_stairs_gray_complex.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1265,7 +1265,7 @@
       "category": "elevation",
       "width": 192,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cave_tunnel_entrance_complex.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cave_tunnel_entrance_complex.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1274,7 +1274,7 @@
       "category": "elevation",
       "width": 64,
       "height": 160,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cave_wall_ladder_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cave_wall_ladder_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1283,7 +1283,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_bottom.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_bottom.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1292,7 +1292,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1301,7 +1301,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1310,7 +1310,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1319,7 +1319,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_corner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1328,7 +1328,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_face.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_face.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1337,7 +1337,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_grass_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_grass_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1346,7 +1346,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1355,7 +1355,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1364,7 +1364,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1373,7 +1373,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_inner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1382,7 +1382,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1391,7 +1391,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_peak.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_peak.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1400,7 +1400,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_plateau.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_plateau.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1409,7 +1409,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_plateau_rock.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_plateau_rock.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1418,7 +1418,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1427,7 +1427,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1436,7 +1436,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_bl_lower.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_bl_lower.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1445,7 +1445,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1454,7 +1454,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_br_lower.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_br_lower.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1463,7 +1463,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1472,7 +1472,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_corner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1481,7 +1481,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_face.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_face.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1490,7 +1490,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_face_bottom.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_face_bottom.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1499,7 +1499,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1508,7 +1508,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1517,7 +1517,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1526,7 +1526,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_inner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1535,7 +1535,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1544,7 +1544,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_plateau.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_plateau.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1553,7 +1553,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1562,7 +1562,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_stairs_bottom.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_stairs_bottom.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1571,7 +1571,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_stairs_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_stairs_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1580,7 +1580,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_rock_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1589,7 +1589,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_sand_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_sand_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1598,7 +1598,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_sand_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_sand_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1607,7 +1607,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_stairs_l.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_stairs_l.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1616,7 +1616,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_stairs_r.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_stairs_r.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1625,7 +1625,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_brown_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_brown_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1634,7 +1634,7 @@
       "category": "elevation",
       "width": 128,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_canyon_brown_extra_walls.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_canyon_brown_extra_walls.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1643,7 +1643,7 @@
       "category": "elevation",
       "width": 128,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_canyon_gray_extra_walls.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_canyon_gray_extra_walls.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1652,7 +1652,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_cone_brown.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_cone_brown.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1661,7 +1661,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_cone_gray.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_cone_gray.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1670,7 +1670,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1679,7 +1679,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1688,7 +1688,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_corner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_corner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1697,7 +1697,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_corner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_corner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1706,7 +1706,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_edge_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_edge_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1715,7 +1715,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_edge_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_edge_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1724,7 +1724,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_face_vertical.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_face_vertical.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1733,7 +1733,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_bottom.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_bottom.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1742,7 +1742,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1751,7 +1751,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1760,7 +1760,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1769,7 +1769,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_corner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1778,7 +1778,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_face.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_face.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1787,7 +1787,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_grass_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_grass_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1796,7 +1796,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1805,7 +1805,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1814,7 +1814,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1823,7 +1823,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_inner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1832,7 +1832,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1841,7 +1841,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_peak.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_peak.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1850,7 +1850,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_plateau.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_plateau.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1859,7 +1859,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_plateau_rock.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_plateau_rock.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1868,7 +1868,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1877,7 +1877,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1886,7 +1886,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_bl_lower.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_bl_lower.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1895,7 +1895,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1904,7 +1904,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_br_lower.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_br_lower.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1913,7 +1913,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1922,7 +1922,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_corner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1931,7 +1931,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_face.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_face.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1940,7 +1940,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_face_bottom.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_face_bottom.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1949,7 +1949,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1958,7 +1958,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1967,7 +1967,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1976,7 +1976,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_inner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1985,7 +1985,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -1994,7 +1994,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_plateau.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_plateau.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2003,7 +2003,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2012,7 +2012,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_stairs_bottom.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_stairs_bottom.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2021,7 +2021,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_stairs_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_stairs_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2030,7 +2030,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_rock_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2039,7 +2039,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_sand_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_sand_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2048,7 +2048,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_sand_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_sand_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2057,7 +2057,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_stairs_l.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_stairs_l.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2066,7 +2066,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_stairs_r.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_stairs_r.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2075,7 +2075,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_gray_top.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_gray_top.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2084,7 +2084,7 @@
       "category": "elevation",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_mossy_forest_plateau.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_mossy_forest_plateau.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2093,7 +2093,7 @@
       "category": "elevation",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_mossy_stairs_complex.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_mossy_stairs_complex.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2102,7 +2102,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_plateau_rock.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_plateau_rock.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2111,7 +2111,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_plateau_rock_gray.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_plateau_rock_gray.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2120,7 +2120,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_rim_north.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_rim_north.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2129,7 +2129,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_sand_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_sand_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2138,7 +2138,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_cliff_sand_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_cliff_sand_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2147,7 +2147,7 @@
       "category": "elevation",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_desert_canyon_sand_caves.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_desert_canyon_sand_caves.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2156,7 +2156,7 @@
       "category": "elevation",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_desert_cave_sinkhole.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_desert_cave_sinkhole.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2165,7 +2165,7 @@
       "category": "elevation",
       "width": 64,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_desert_crater_hole_impact.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_desert_crater_hole_impact.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2174,7 +2174,7 @@
       "category": "elevation",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_desert_rocky_stairs_ridge.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_desert_rocky_stairs_ridge.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2183,7 +2183,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_grass_elevated_brown.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_grass_elevated_brown.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2192,7 +2192,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_grass_elevated_gray.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_grass_elevated_gray.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2201,7 +2201,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_mountain_dirt.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_mountain_dirt.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2210,7 +2210,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_mountain_dirt_brown.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_mountain_dirt_brown.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2219,7 +2219,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_mountain_dirt_gray.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_mountain_dirt_gray.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2228,7 +2228,7 @@
       "category": "elevation",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_mountain_dirt_moss.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_mountain_dirt_moss.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2237,7 +2237,7 @@
       "category": "elevation",
       "width": 64,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_stairs_mtmoon.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_stairs_mtmoon.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2246,7 +2246,7 @@
       "category": "elevation",
       "width": 128,
       "height": 128,
-      "file_path": "/assets/essentials/prefabs/elevation/poke_tanoby_ruins_red_crater_plateau.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/elevation/poke_tanoby_ruins_red_crater_plateau.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2255,7 +2255,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/fence_picket.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/fence_picket.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2264,7 +2264,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/flowers_red.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/flowers_red.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2273,7 +2273,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/mailbox.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/mailbox.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2282,7 +2282,7 @@
       "category": "props",
       "width": 64,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bench.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bench.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2291,7 +2291,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bench_concrete_white.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bench_concrete_white.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2300,7 +2300,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_bench_park_concrete.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bench_park_concrete.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2309,7 +2309,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_bench_v_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bench_v_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2318,7 +2318,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_bench_v_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bench_v_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2327,7 +2327,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_billboard_gym_mart.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_billboard_gym_mart.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2336,7 +2336,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_boulder_large.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_boulder_large.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2345,7 +2345,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_center.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_center.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2354,7 +2354,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_ne.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_ne.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2363,7 +2363,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_nw.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_nw.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2372,7 +2372,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_se.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_se.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2381,7 +2381,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_sw.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_corner_inner_sw.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2390,7 +2390,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_ne.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_ne.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2399,7 +2399,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_nw.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_nw.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2408,7 +2408,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_se.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_se.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2417,7 +2417,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_sw.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_corner_outer_sw.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2426,7 +2426,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_edge_e.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_edge_e.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2435,7 +2435,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_edge_n.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_edge_n.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2444,7 +2444,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_edge_s.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_edge_s.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2453,7 +2453,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bridge_railings_edge_w.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bridge_railings_edge_w.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2462,7 +2462,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bulletin_board_wood.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bulletin_board_wood.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2471,7 +2471,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_bush_round.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_bush_round.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2480,7 +2480,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_cave_entrance_mtmoon.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_cave_entrance_mtmoon.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2489,7 +2489,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_counter_register_blue.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_counter_register_blue.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2498,7 +2498,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_counter_register_red.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_counter_register_red.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2507,7 +2507,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_crate_stack_wood.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_crate_stack_wood.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2516,7 +2516,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_crate_vegetables_box.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_crate_vegetables_box.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2525,7 +2525,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_crate_wood_lidded.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_crate_wood_lidded.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2534,7 +2534,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_crate_wood_single.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_crate_wood_single.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2543,7 +2543,7 @@
       "category": "props",
       "width": 64,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_cycling_arch_blue.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_cycling_arch_blue.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2552,7 +2552,7 @@
       "category": "props",
       "width": 96,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_cycling_road_overhead_signs.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_cycling_road_overhead_signs.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2561,7 +2561,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_picket.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_picket.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2570,7 +2570,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_corner_bl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_corner_bl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2579,7 +2579,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_corner_br.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_corner_br.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2588,7 +2588,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_corner_tl.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_corner_tl.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2597,7 +2597,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_corner_tr.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_corner_tr.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2606,7 +2606,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_gate_post_l.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_gate_post_l.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2615,7 +2615,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_gate_post_r.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_gate_post_r.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2624,7 +2624,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_h_bottom.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_h_bottom.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2633,7 +2633,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_h_mid.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_h_mid.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2642,7 +2642,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_v_left.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_v_left.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2651,7 +2651,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_white_v_right.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_white_v_right.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2660,7 +2660,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_wood_h.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_wood_h.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2669,7 +2669,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_wood_posts_l.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_wood_posts_l.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2678,7 +2678,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_wood_posts_m.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_wood_posts_m.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2687,7 +2687,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_fence_wood_posts_r.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fence_wood_posts_r.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2696,7 +2696,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_flower_pot_circular.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_flower_pot_circular.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2705,7 +2705,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_flowers_red.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_flowers_red.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2714,7 +2714,7 @@
       "category": "props",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/props/poke_fountain.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fountain.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2723,7 +2723,7 @@
       "category": "props",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_1.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fountain_anim_1.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2732,7 +2732,7 @@
       "category": "props",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_2.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fountain_anim_2.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2741,7 +2741,7 @@
       "category": "props",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_3.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fountain_anim_3.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2750,7 +2750,7 @@
       "category": "props",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_4.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fountain_anim_4.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2759,7 +2759,7 @@
       "category": "props",
       "width": 96,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/props/poke_fountain_anim_5.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_fountain_anim_5.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2768,7 +2768,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_gym_sign.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_gym_sign.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2777,7 +2777,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_lamp_festival_post_l.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_lamp_festival_post_l.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2786,7 +2786,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_lamp_festival_post_r.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_lamp_festival_post_r.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2795,7 +2795,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_ledge_jump.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_ledge_jump.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2804,7 +2804,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_mailbox.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_mailbox.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2813,7 +2813,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_mailbox_post_white.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_mailbox_post_white.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2822,7 +2822,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_pedestal_concrete_round.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_pedestal_concrete_round.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2831,7 +2831,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_pot_clay_urn.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_pot_clay_urn.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2840,7 +2840,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_rock_boulder_brown_large.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_rock_boulder_brown_large.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2849,7 +2849,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_rock_boulder_mossy_1.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_rock_boulder_mossy_1.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2858,7 +2858,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_rock_boulder_mossy_2.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_rock_boulder_mossy_2.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2867,7 +2867,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_rock_small.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_rock_small.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2876,7 +2876,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_rock_stone_gray_medium.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_rock_stone_gray_medium.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2885,7 +2885,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_sign_blue_metal.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_sign_blue_metal.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2894,7 +2894,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_sign_bulletin_small.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_sign_bulletin_small.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2903,7 +2903,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_sign_danger_tnt.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_sign_danger_tnt.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2912,7 +2912,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_signpost.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_signpost.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2921,7 +2921,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_signpost_wood.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_signpost_wood.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2930,16 +2930,16 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_signpost_wood_small.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_signpost_wood_small.png",
       "source": "pokemon_essentials"
     },
     {
-      "id": "poke_stairs_mtmoon",
-      "name": "Escaleras Talladas de Mt. Moon",
+      "id": "poke_stairs_mtmoon_prop",
+      "name": "Escaleras Talladas de Mt. Moon (Props)",
       "category": "props",
       "width": 64,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_stairs_mtmoon.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_stairs_mtmoon.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2948,7 +2948,7 @@
       "category": "props",
       "width": 32,
       "height": 64,
-      "file_path": "/assets/essentials/prefabs/props/poke_statue_gym.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_statue_gym.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2957,7 +2957,7 @@
       "category": "props",
       "width": 32,
       "height": 96,
-      "file_path": "/assets/essentials/prefabs/props/poke_street_lamp.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_street_lamp.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2966,7 +2966,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/poke_trainer_tips_sign.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/poke_trainer_tips_sign.png",
       "source": "pokemon_essentials"
     },
     {
@@ -2975,7 +2975,7 @@
       "category": "props",
       "width": 32,
       "height": 32,
-      "file_path": "/assets/essentials/prefabs/props/signpost.png",
+      "file_path": "/test_aventura/assets/essentials/prefabs/props/signpost.png",
       "source": "pokemon_essentials"
     }
   ]

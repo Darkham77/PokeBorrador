@@ -26,7 +26,7 @@ const ROOT_DIR = process.cwd();
 
 describe('urbanPropsIntegrity (Error 6)', () => {
   it('guarantees poke_street_lamp.png is 32x96 px authentic GBA red lamp (not cut logs)', async () => {
-    const lampPath = path.resolve(ROOT_DIR, 'public/assets/canon/props/poke_street_lamp.png');
+    const lampPath = path.resolve(ROOT_DIR, 'test_aventura/assets/canon/props/poke_street_lamp.png');
     expect(fs.existsSync(lampPath)).toBe(true);
 
     const meta = await sharp(lampPath).metadata();
@@ -55,7 +55,7 @@ describe('urbanPropsIntegrity (Error 6)', () => {
   });
 
   it('guarantees poke_bush_round.png is 32x32 px authentic green foliage (not gray metal posts)', async () => {
-    const bushPath = path.resolve(ROOT_DIR, 'public/assets/canon/props/poke_bush_round.png');
+    const bushPath = path.resolve(ROOT_DIR, 'test_aventura/assets/canon/props/poke_bush_round.png');
     expect(fs.existsSync(bushPath)).toBe(true);
 
     const meta = await sharp(bushPath).metadata();

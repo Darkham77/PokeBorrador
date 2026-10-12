@@ -146,12 +146,12 @@ const getSourceLabel = (item: UnifiedRewardItem): { icon: string; text: string }
 .award-name {
   @include pixelated;
 
-  color: var(--white, #fff);
+  color: var(--white, var(--white));
   font-size: var(--font-10);
 }
 
 .award-sub-meta {
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
   font-size: var(--font-8);
   line-height: 1.25;
 }
@@ -210,14 +210,14 @@ const getSourceLabel = (item: UnifiedRewardItem): { icon: string; text: string }
 
   &.claim-action-btn {
     border: 1px solid var(--green-light);
-    background: Linear-Gradient(180deg, #22c55e 0%, #16a34a 100%);
+    background: Linear-Gradient(180deg, var(--emerald) 0%, var(--emerald) 100%);
     color: var(--white);
     box-shadow: var(--shadow-card);
   }
 
   &.discard-action-btn {
     border: 1px solid var(--rose);
-    background: Linear-Gradient(180deg, #ef4444 0%, #dc2626 100%);
+    background: Linear-Gradient(180deg, var(--red-light) 0%, var(--red-600) 100%);
     color: var(--white);
     box-shadow: var(--shadow-card);
   }

@@ -214,6 +214,9 @@ onMounted(() => {
           :src="itemIcon"
           :alt="item.name"
           class="item-sprite"
+          width="32"
+        
+          height="32"
           @error="hasError = true"
         >
         <span
@@ -369,7 +372,7 @@ onMounted(() => {
       padding: clamp(1px, 2cqw, 2px) clamp(4px, 6cqw, 8px);
       border: 1px solid var(--yellow);
       border-radius: $radius-md;
-      background: Linear-Gradient(135deg, #1e293b, #0f172a);
+      background: Linear-Gradient(135deg, var(--slate-800), var(--slate-900));
       box-shadow: var(--shadow-card);
       box-sizing: border-box;
 
@@ -433,7 +436,7 @@ onMounted(() => {
     padding: clamp(2px, 2cqw, 3px) clamp(6px, 8cqw, 10px);
     border: 1px solid var(--emerald);
     border-radius: $radius-full;
-    background: Linear-Gradient(135deg, #15803d, #166534);
+    background: Linear-Gradient(135deg, var(--emerald-500), var(--emerald-500));
     transform: Translatex(-50%);
     box-shadow: var(--shadow-xl);
     white-space: nowrap;

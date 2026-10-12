@@ -96,7 +96,7 @@
   border-color: Rgb(59 139 255 / 30%);
 
   &:hover {
-    background: #3b8bff;
+    background: var(--blue-500, #3b8bff);
     color: var(--white);
   }
 }
@@ -252,7 +252,7 @@
     cursor: pointer;
     
     option {
-      background: #12131a;
+      background: var(--slate-900, #12131a);
       color: var(--white);
     }
   }
@@ -289,7 +289,7 @@
   @include btn-vicio('danger', 'sm', true);
 
   border: 1px solid Rgb(255 255 255 / 20%);
-  background: Linear-Gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  background: Linear-Gradient(135deg, var(--red-light, #ef4444) 0%, var(--red-600, #b91c1c) 100%);
   color: var(--white);
   box-shadow: var(--shadow-card);
 

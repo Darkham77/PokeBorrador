@@ -51,7 +51,7 @@
   padding: 10px 16px;
   border: 2px solid var(--cyan);
   border-radius: $radius-lg;
-  background: Linear-Gradient(180deg, #2a3444, #151b26);
+  background: linear-gradient(180deg, var(--slate-700, #2a3444), var(--slate-900, #151b26));
   color: var(--white);
   font-family: var(--font-pixel);
   font-size: var(--font-10);
@@ -124,7 +124,7 @@
   padding: 8px 12px;
   border: 2px solid var(--cyan);
   border-radius: $radius-lg;
-  background: Linear-Gradient(180deg, #2a3444, #151b26);
+  background: linear-gradient(180deg, var(--slate-700, #2a3444), var(--slate-900, #151b26));
   color: var(--slate-300);
   font-family: var(--font-pixel);
   cursor: pointer;

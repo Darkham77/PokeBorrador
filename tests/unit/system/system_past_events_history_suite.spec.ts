@@ -207,9 +207,11 @@ describe('System Past Events & Rewards Claiming Suite', () => {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            is: vi.fn().mockResolvedValue({
-              data: [mockPastEvents[0]!.myAward],
-              error: null
+            is: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue({
+                data: [mockPastEvents[0]!.myAward],
+                error: null
+              })
             })
           })
         })

@@ -60,12 +60,16 @@ function calculateDayCycleBonus(dayCycle: DayPhase | undefined, moveType: string
   return 1;
 }
 
+interface WeatherDamageFlags {
+  isSolarMove: boolean
+  isGym: boolean
+  isMoveWeather: boolean
+}
+
 function calculateSolarMovePenalty(
-  isSolarMove: boolean,
   weather: PureBattleWeather | null | undefined,
   mechWeather: string,
-  isGym: boolean,
-  isMoveWeather: boolean
+  { isSolarMove, isGym, isMoveWeather }: WeatherDamageFlags
 ): number {
   if (!isSolarMove) return 1;
   if (!weather || weather.turns === 0) return 1;
@@ -81,11 +85,10 @@ function calculateWeatherDamageMultiplier(
   weather: PureBattleWeather | null | undefined,
   mechWeather: string,
   moveType: string,
-  isGym: boolean,
-  isMoveWeather: boolean,
-  isSolarMove = false,
+  flags: WeatherDamageFlags,
   dayCycle?: DayPhase
 ): number {
+  const { isGym, isMoveWeather } = flags;
   let weatherMult = 1;
   if ((!isGym || isMoveWeather) && weather && weather.turns !== 0) {
     weatherMult = calculateActiveWeatherBonus(weather, mechWeather, moveType);
@@ -93,7 +96,7 @@ function calculateWeatherDamageMultiplier(
     weatherMult = calculateDayCycleBonus(dayCycle, moveType);
   }
 
-  const solarPenalty = calculateSolarMovePenalty(isSolarMove, weather, mechWeather, isGym, isMoveWeather);
+  const solarPenalty = calculateSolarMovePenalty(weather, mechWeather, flags);
   return weatherMult * solarPenalty;
 }
 
@@ -117,7 +120,7 @@ export function resolveEnvironmentModifiers(
 ): { weatherMult: number; finalEff: number; terrainMult: number } {
   const isMoveWeather = Boolean(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
   const isSolarMove = move.id === 'solarbeam' || move.id === 'solarblade';
-  const weatherMult = calculateWeatherDamageMultiplier(weather, mechWeather || '', moveType, isGym, isMoveWeather, isSolarMove, dayCycle);
+  const weatherMult = calculateWeatherDamageMultiplier(weather, mechWeather || '', moveType, { isGym, isMoveWeather, isSolarMove }, dayCycle);
 
   const isStrongWinds = Boolean((!isGym || isMoveWeather) && weather && weather.turns !== 0 && weather.type === 'strong_winds');
   const finalEff = calculateDeltaStreamTypeEff(eff, defender, moveType, isStrongWinds);

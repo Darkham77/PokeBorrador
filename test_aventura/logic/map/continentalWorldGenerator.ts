@@ -786,11 +786,10 @@ function stampUrbanPlazasOnTerrain(
 
       for (let y = pty; y < pty + pth; y++) {
         for (let x = ptx; x < ptx + ptw; x++) {
-          if (x >= 0 && x < gridW && y >= 0 && y < gridH) {
-            const key = `${x}_${y}`;
-            if (terrain[key] !== CELL_BIOME.WATER) {
-              terrain[key] = CELL_BIOME.PLAZA_STONE;
-            }
+          if (x < 0 || x >= gridW || y < 0 || y >= gridH) continue;
+          const key = `${x}_${y}`;
+          if (terrain[key] !== CELL_BIOME.WATER) {
+            terrain[key] = CELL_BIOME.PLAZA_STONE;
           }
         }
       }

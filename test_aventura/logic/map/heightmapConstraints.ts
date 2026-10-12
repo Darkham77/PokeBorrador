@@ -466,6 +466,22 @@ export function rectifyHeightmap(
     if (!passChanged) break;
   }
 
+  const pruneShortWallRun = (
+    y: number,
+    start: number,
+    end: number,
+    z: number
+  ): boolean => {
+    let modified = false;
+    for (let k = start; k < end; k++) {
+      if (matrix[y]![k]! === z) {
+        matrix[y]![k] = matrix[y + 1]![k]!;
+        modified = true;
+      }
+    }
+    return modified;
+  };
+
   // Pass 2: Enforce minimum South Wall run-length >= 3 (>= 2 for apex summits Z >= 4)
   for (let z = 1; z <= maxElev; z++) {
     const minRun = z >= 4 ? 2 : 3;
@@ -475,33 +491,49 @@ export function rectifyHeightmap(
         const isSouthDrop = matrix[y]![x]! >= z && matrix[y + 1]![x]! < z;
         if (isSouthDrop) {
           if (runStart === -1) runStart = x;
-        } else {
-          if (runStart !== -1) {
-            const len = x - runStart;
-            if (len < minRun) {
-              for (let k = runStart; k < x; k++) {
-                if (matrix[y]![k]! === z) {
-                  matrix[y]![k] = matrix[y + 1]![k]!;
-                  anyChanged = true;
-                }
-              }
-            }
-            runStart = -1;
+          continue;
+        }
+
+        if (runStart !== -1) {
+          const len = x - runStart;
+          if (len < minRun && pruneShortWallRun(y, runStart, x, z)) {
+            anyChanged = true;
           }
+          runStart = -1;
         }
       }
       if (runStart !== -1 && (W - runStart) < minRun) {
-        for (let k = runStart; k < W; k++) {
-          if (matrix[y]![k]! === z) {
-            matrix[y]![k] = matrix[y + 1]![k]!;
-            anyChanged = true;
-          }
+        if (pruneShortWallRun(y, runStart, W, z)) {
+          anyChanged = true;
         }
       }
     }
   }
 
   return anyChanged;
+}
+
+function tryMergeCrampedTerraceInColumn(
+  sanitized: number[][],
+  x: number,
+  yFoot: number,
+  height: number,
+  minTerraceBuffer: number
+): boolean {
+  const maxSearchY = Math.min(height - 1, yFoot + minTerraceBuffer + 2);
+  for (let yNext = yFoot; yNext < maxSearchY; yNext++) {
+    if (sanitized[yNext]![x]! <= sanitized[yNext + 1]![x]!) continue;
+    const buffer = yNext - yFoot;
+    if (buffer < minTerraceBuffer) {
+      // Merge: eliminate intermediate terrace, creating a direct multi-tier cliff
+      const targetElev = sanitized[yNext + 1]![x]!;
+      for (let k = yFoot; k <= yNext; k++) {
+        sanitized[k]![x] = targetElev;
+      }
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -601,24 +633,9 @@ export function sanitizeHeightmapMatrix(
     if (options.minTerraceBuffer > 0) {
       for (let x = 0; x < W; x++) {
         for (let y = 0; y < H - 1; y++) {
-          const e1 = sanitized[y]![x]!;
-          const e2 = sanitized[y + 1]![x]!;
-          if (e1 > e2) {
-            const yFoot = y + 1;
-            // Look ahead for next drop in column x
-            for (let yNext = yFoot; yNext < Math.min(H - 1, yFoot + options.minTerraceBuffer + 2); yNext++) {
-              if (sanitized[yNext]![x]! > sanitized[yNext + 1]![x]!) {
-                const buffer = yNext - yFoot;
-                if (buffer < options.minTerraceBuffer) {
-                  // Merge: eliminate intermediate terrace, creating a direct multi-tier cliff
-                  for (let k = yFoot; k <= yNext; k++) {
-                    sanitized[k]![x] = sanitized[yNext + 1]![x]!;
-                  }
-                  changed = true;
-                  break;
-                }
-              }
-            }
+          if (sanitized[y]![x]! <= sanitized[y + 1]![x]!) continue;
+          if (tryMergeCrampedTerraceInColumn(sanitized, x, y + 1, H, options.minTerraceBuffer)) {
+            changed = true;
           }
         }
       }

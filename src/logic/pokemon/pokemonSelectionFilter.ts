@@ -1,6 +1,4 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { PokemonFilterTagId } from '@/logic/constants/tags';
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
 import { getPokemonSortMetric, type FilterablePokemonItem } from './pokemonSortMetric.ts';
 import { matchesPokemonCriteria } from './pokemonFilterMatcher.ts';
 
@@ -17,10 +15,6 @@ export interface PokemonFilterCriteria {
   isBattleSwitch?: boolean;
   activePokemonUid?: string | null;
   allowDead?: boolean;
-}
-
-export function getPokemonTotalPower(p: Pokemon): number {
-  return calculateTotalPower(p);
 }
 
 export function filterAndSortPokemon(

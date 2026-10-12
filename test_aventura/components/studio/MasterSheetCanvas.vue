@@ -29,6 +29,14 @@ const MAX_CANVAS_ZOOM = 10;
 const MIN_CANVAS_ZOOM = 0.5;
 const ENTRY_STROKE_WIDTH = 1.5 as const;
 
+const LARGE_ASSET_THRESHOLD_PX = 200 as const;
+const MEDIUM_ASSET_THRESHOLD_PX = 100 as const;
+const LARGE_ASSET_ZOOM = 2.0 as const;
+const MEDIUM_ASSET_ZOOM = 3.0 as const;
+const SMALL_ASSET_ZOOM = 4.0 as const;
+const DEFAULT_VIEWPORT_WIDTH_FALLBACK = 800 as const;
+const DEFAULT_VIEWPORT_HEIGHT_FALLBACK = 600 as const;
+
 const props = defineProps<{
   sheetUrl: string;
   sheetFilename: string;
@@ -77,7 +85,11 @@ function loadSheetImage(): void {
   img.onload = (): void => {
     sheetImage.value = img;
     isImageLoading.value = false;
-    redrawCanvas();
+    if (props.selectedRect) {
+      centerOnRect(props.selectedRect);
+    } else {
+      redrawCanvas();
+    }
   };
   img.onerror = (): void => {
     isImageLoading.value = false;
@@ -329,10 +341,18 @@ function resetZoom(): void {
 function centerOnRect(rect: SelectionRect): void {
   const container = viewportRef.value;
   if (!container) return;
-  const cw = container.clientWidth;
-  const ch = container.clientHeight;
+  const cw = container.clientWidth || DEFAULT_VIEWPORT_WIDTH_FALLBACK;
+  const ch = container.clientHeight || DEFAULT_VIEWPORT_HEIGHT_FALLBACK;
 
-  zoom.value = 4.0;
+  const maxDim = Math.max(rect.w, rect.h);
+  if (maxDim > LARGE_ASSET_THRESHOLD_PX) {
+    zoom.value = LARGE_ASSET_ZOOM;
+  } else if (maxDim > MEDIUM_ASSET_THRESHOLD_PX) {
+    zoom.value = MEDIUM_ASSET_ZOOM;
+  } else {
+    zoom.value = SMALL_ASSET_ZOOM;
+  }
+
   panX.value = Math.round(cw / 2 - (rect.x + rect.w / 2) * zoom.value);
   panY.value = Math.round(ch / 2 - (rect.y + rect.h / 2) * zoom.value);
   redrawCanvas();
@@ -583,7 +603,7 @@ onUnmounted(() => {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: #090d16;
+  background: var(--slate-900);
   overflow: hidden;
 }
 

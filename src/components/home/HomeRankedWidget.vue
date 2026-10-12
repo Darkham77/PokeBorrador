@@ -86,7 +86,7 @@ import HomeWidgetMinimizeBtn from "./HomeWidgetMinimizeBtn.vue";
 
     .card-subtitle {
       margin: 0;
-      color: var(--gray, #94a3b8);
+      color: var(--gray, var(--slate-400));
       font-size: var(--font-9);
       line-height: 1.35;
     }

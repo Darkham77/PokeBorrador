@@ -39,14 +39,17 @@ export const useTradeStore = defineStore('trade', () => {
   const pendingOutgoing = ref<TradeOffer[]>([])
   const pendingAccepted = ref<TradeOffer[]>([])
 
+  const TRADE_OFFER_COLUMNS = 'id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status, created_at'
+  const TRADE_QUERY_LIMIT = 100
+
   async function refreshPendingTrades() {
     if (!authStore.user) return
 
     const db = gameStore.db
     const [incRes, outRes, accRes] = await Promise.all([
-      db.from('trade_offers').select('*').eq('receiver_id', authStore.user.id).eq('status', 'pending'),
-      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'pending'),
-      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'accepted')
+      db.from('trade_offers').select(TRADE_OFFER_COLUMNS).eq('receiver_id', authStore.user.id).eq('status', 'pending').limit(TRADE_QUERY_LIMIT),
+      db.from('trade_offers').select(TRADE_OFFER_COLUMNS).eq('sender_id', authStore.user.id).eq('status', 'pending').limit(TRADE_QUERY_LIMIT),
+      db.from('trade_offers').select(TRADE_OFFER_COLUMNS).eq('sender_id', authStore.user.id).eq('status', 'accepted').limit(TRADE_QUERY_LIMIT)
     ])
 
     const incomingRes = { data: incRes.data as TradeOffer[] | null } // domain-ok: Open dynamic text or non-domain string payload
@@ -210,11 +213,11 @@ function rollbackTradeEscrow(
     if (!error && tradeId) {
       uiStore.notify(`¡Oferta enviada a ${tradeTarget.value.username}!`, '🔄')
       audioStore.play('sentMsg') 
-      await gameStore.loadGame() // <-- OBLIGATORIO: Actualizar cliente post-escrow
+      await gameStore.loadGame() // <-- MANDATORY: Refresh client post-escrow
       refreshPendingTrades()
       return true
     } else {
-      // ROLLBACK LOCAL: Si falla, devolver los items
+      // LOCAL ROLLBACK: If it fails, refund items
       rollbackTradeEscrow(gameStore.state.inventory, tradeOfferItems, offerMoney, gameStore.state)
       logger.error('TRADE', `Error al enviar oferta: ${(error as Error).message}`)
       uiStore.notify('Error al enviar oferta: ' + (error as { message: string }).message, '❌')
@@ -279,7 +282,7 @@ function rollbackTradeEscrow(
       
       uiStore.notify('Oferta cancelada/rechazada. Reembolso enviado a Reclamos.', '👋')
       await gameStore.fetchClaimQueue()
-      await gameStore.loadGame() // <-- OBLIGATORIO: Actualizar cliente tras cambios de escrow
+      await gameStore.loadGame() // <-- MANDATORY: Refresh client after escrow changes
       await refreshPendingTrades()
       
       loadingStore.finish('reject_trade')

@@ -271,10 +271,14 @@ export function executeHandleOpponentTeamOrder(
   executeCheckBothTeamsConfirmed(ctx);
 }
 
+export interface PvpBattleSeatFlags {
+  isHost: boolean;
+  isRanked: boolean;
+}
+
 export function executeStartBattle(
   invite: BattleInvite,
-  isHost: boolean,
-  isRanked: boolean,
+  { isHost, isRanked }: PvpBattleSeatFlags,
   ctx: StartBattleContext
 ): void {
   const myTeam = ctx.resolvePvpTeam(invite.config?.format);

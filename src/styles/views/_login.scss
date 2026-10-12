@@ -461,7 +461,7 @@
     position: relative;
     width: 100%;
     height: 12px;
-    border: 2px solid #333;
+    border: 2px solid var(--neutral-700, #333);
     border-radius: $radius-md;
     background: var(--black);
     overflow: hidden;
@@ -469,7 +469,7 @@
 
   .pwa-progress-bar {
     height: 100%;
-    background: Linear-Gradient(90deg, #fa0, #ffd400);
+    background: linear-gradient(90deg, var(--amber-500, #fa0), var(--yellow-400, #ffd400));
     box-shadow: var(--shadow-glow-yellow-sm);
   }
 

@@ -57,9 +57,9 @@ function handleExportPng(): void {
   z-index: var(--z-modal-step);
   display: flex;
   flex-direction: column;
-  width: dvw;
-  height: dvh;
-  background: #090d16;
+  width: 100%;
+  height: 100%;
+  background: var(--slate-900);
   color: var(--slate-50);
   font-family: inherit;
   overflow: hidden;
@@ -67,7 +67,8 @@ function handleExportPng(): void {
 
 .studio-workspace {
   position: relative;
-  height: calc(dvh - 52px);
+  width: 100%;
+  height: 100%;
   min-height: 0;
   flex: 1;
   overflow: hidden;

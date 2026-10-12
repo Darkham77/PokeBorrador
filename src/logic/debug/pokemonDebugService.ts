@@ -1,6 +1,7 @@
 
 
-import { makePokemon, recalcPokemonStats, getExpNeeded } from '@/logic/pokemon/pokemonFactory';
+import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import { getExpNeededPure } from '@/logic/pokemon/statsMath.ts';
 import { useGameStore } from '@/stores/game';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useUIStore } from '@/stores/ui';
@@ -328,7 +329,7 @@ export const pokemonDebugService = {
 
     recalcPokemonStats(p, true);
     p.hp = p.maxHp;
-    p.expNeeded = getExpNeeded(p.level);
+    p.expNeeded = getExpNeededPure(p.level);
 
     return p;
   },

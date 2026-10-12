@@ -92,7 +92,7 @@ const {
     align-items: center;
     gap: $spacing-sm-alt;
     margin: 0;
-    color: var(--green-bright, #4ade80);
+    color: var(--green-bright, var(--green-light));
     font-size: var(--font-10);
     letter-spacing: 0.5px;
   }
@@ -106,7 +106,7 @@ const {
     padding: 5px 12px;
     border: 1px solid var(--green-light);
     border-radius: $radius-md;
-    background: Linear-Gradient(180deg, #22c55e 0%, #15803d 100%);
+    background: Linear-Gradient(180deg, var(--emerald) 0%, var(--emerald-500) 100%);
     color: var(--white);
     font-size: var(--font-8);
     cursor: pointer;

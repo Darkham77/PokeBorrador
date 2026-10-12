@@ -321,7 +321,7 @@ describe('LivePvPStore (Combat Engine)', () => {
     const { executeTurnInWorker } = await import('@/logic/battle/showdownWorkerClient');
 
     // Setup Battle
-    pvp.startBattle({ id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<typeof pvp.startBattle>[0], true, false);
+    pvp.startBattle({ id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<typeof pvp.startBattle>[0], { isHost: true, isRanked: false });
     const rat = makePokemon('rattata', 50)!;
     pvp.battleState.enemyTeam = [rat];
     pvp.battleState.enemyHp = [80];
@@ -346,7 +346,7 @@ describe('LivePvPStore (Combat Engine)', () => {
     const gs = useGameStore();
     vi.spyOn(gs, 'save').mockResolvedValue({ success: true });
     
-    pvp.startBattle({ id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<typeof pvp.startBattle>[0], true, false);
+    pvp.startBattle({ id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<typeof pvp.startBattle>[0], { isHost: true, isRanked: false });
     pvp.battleState.enemyHp = [0];
     pvp.battleState.enemyActiveIdx = 0;
     

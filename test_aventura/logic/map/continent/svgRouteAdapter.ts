@@ -185,41 +185,42 @@ export function importRoutesFromSvg(svgContent: string): SvgImportResult {
 
     if (fromMatch?.[1] && toMatch?.[1] && nodes[fromMatch[1]] && nodes[toMatch[1]]) {
       connections.push([fromMatch[1], toMatch[1]]);
-    } else {
-      // Geometric proximity fallback: find closest nodes to (x1, y1) and (x2, y2)
-      const x1Match = attrs.match(/\bx1=["']([\d.]+)["']/i);
-      const y1Match = attrs.match(/\by1=["']([\d.]+)["']/i);
-      const x2Match = attrs.match(/\bx2=["']([\d.]+)["']/i);
-      const y2Match = attrs.match(/\by2=["']([\d.]+)["']/i);
+      continue;
+    }
 
-      if (x1Match?.[1] && y1Match?.[1] && x2Match?.[1] && y2Match?.[1]) {
-        const p1x = parseFloat(x1Match[1]);
-        const p1y = parseFloat(y1Match[1]);
-        const p2x = parseFloat(x2Match[1]);
-        const p2y = parseFloat(y2Match[1]);
+    // Geometric proximity fallback: find closest nodes to (x1, y1) and (x2, y2)
+    const x1Match = attrs.match(/\bx1=["']([\d.]+)["']/i);
+    const y1Match = attrs.match(/\by1=["']([\d.]+)["']/i);
+    const x2Match = attrs.match(/\bx2=["']([\d.]+)["']/i);
+    const y2Match = attrs.match(/\by2=["']([\d.]+)["']/i);
 
-        let closestA: string | null = null;
-        let minDistA = Infinity;
-        let closestB: string | null = null;
-        let minDistB = Infinity;
+    if (!x1Match?.[1] || !y1Match?.[1] || !x2Match?.[1] || !y2Match?.[1]) continue;
 
-        for (const n of nodeEntries) {
-          const distA = Math.hypot(n.x - p1x, n.y - p1y);
-          if (distA < minDistA) {
-            minDistA = distA;
-            closestA = n.id;
-          }
-          const distB = Math.hypot(n.x - p2x, n.y - p2y);
-          if (distB < minDistB) {
-            minDistB = distB;
-            closestB = n.id;
-          }
-        }
+    const p1x = parseFloat(x1Match[1]);
+    const p1y = parseFloat(y1Match[1]);
+    const p2x = parseFloat(x2Match[1]);
+    const p2y = parseFloat(y2Match[1]);
 
-        if (closestA && closestB && closestA !== closestB) {
-          connections.push([closestA, closestB]);
-        }
+    let closestA: string | null = null;
+    let minDistA = Infinity;
+    let closestB: string | null = null;
+    let minDistB = Infinity;
+
+    for (const n of nodeEntries) {
+      const distA = Math.hypot(n.x - p1x, n.y - p1y);
+      if (distA < minDistA) {
+        minDistA = distA;
+        closestA = n.id;
       }
+      const distB = Math.hypot(n.x - p2x, n.y - p2y);
+      if (distB < minDistB) {
+        minDistB = distB;
+        closestB = n.id;
+      }
+    }
+
+    if (closestA && closestB && closestA !== closestB) {
+      connections.push([closestA, closestB]);
     }
   }
 

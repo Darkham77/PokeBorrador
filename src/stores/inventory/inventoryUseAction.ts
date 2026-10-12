@@ -68,17 +68,16 @@ const POST_EFFECT_HANDLERS: Record<string, (p: PostEffectParams) => boolean> = {
       pokemon.moves.push(moveObj as Move);
       uiStore.notify(`¡${pokemon.name} aprendió ${moveData.name}!`, '📖');
       return true;
-    } else {
-      uiStore.addToLearnQueue({ 
-        pokemon, 
-        move: moveObj as Move,
-        onComplete: () => {
-          consumeItem(gameStore, itemId);
-          gameStore.save(false);
-        }
-      });
-      return false;
     }
+    uiStore.addToLearnQueue({ 
+      pokemon, 
+      move: moveObj as Move,
+      onComplete: () => {
+        consumeItem(gameStore, itemId);
+        gameStore.save(false);
+      }
+    });
+    return false;
   },
   nature_patch: ({ context, index, uiStore }) => {
     uiStore.activePokemonForNature = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
@@ -123,12 +122,16 @@ function validateItemExists(itemName: string): ItemId {
   return itemId;
 }
 
+interface BattleItemUsageFlags {
+  isBattleActive: boolean;
+  nonCombat?: boolean;
+}
+
 function handleBattleItemUsage(
   itemId: ItemId,
   context: PokemonStorageLocation | null,
   index: number | null,
-  isBattleActive: boolean,
-  nonCombat?: boolean
+  { isBattleActive, nonCombat }: BattleItemUsageFlags
 ): ItemEffectResult | null {
   if (!isBattleActive) return null;
 
@@ -215,7 +218,7 @@ export function executeUseItem(
     const itemId = validateItemExists(itemName);
     const dbItem = ITEMS_BY_ID[itemId];
 
-    const battleResult = handleBattleItemUsage(itemId, context, index, uiStore.isBattleActive, dbItem?.nonCombat);
+    const battleResult = handleBattleItemUsage(itemId, context, index, { isBattleActive: uiStore.isBattleActive, nonCombat: dbItem?.nonCombat });
     if (battleResult) return battleResult;
 
     const globalResult = handleGlobalItemUsage(itemId, gameStore);

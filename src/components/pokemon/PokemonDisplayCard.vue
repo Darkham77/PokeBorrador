@@ -62,7 +62,7 @@ const isModalFast = inject<ComputedRef<boolean> | null>('isModalFastMode', null)
 const isModalTop = inject<ComputedRef<boolean> | null>('isModalTop', null)
 
 /**
- * Determina si este componente está en el modal que el usuario tiene activo en primer plano.
+ * Determines whether this component is inside the modal that the user has active in the foreground.
  */
 const isForeground = computed(() => {
   if (isModalTop !== null) return isModalTop.value
@@ -181,7 +181,8 @@ function handleCardClick() {
           :src="spriteUrl"
           :alt="pokemon.name"
           class="pokemon-sprite"
-          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+          width="32"
+          height="32"
         >
       </PVSpriteFX>
     </div>

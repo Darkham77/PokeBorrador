@@ -139,7 +139,7 @@ export const useDebugStore = defineStore('debug', () => {
       Reflect.set(globalTarget.__VITE_DEBUG__, 'multipliers', debugMultipliers.value)
     }
 
-    // Exponer stores y utilidades de depuración requeridas por las simulaciones E2E
+    // Expose stores and debug utilities required by E2E simulations
     Reflect.set(globalTarget.__VITE_DEBUG__, 'useBattleStore', useBattleStore)
     Reflect.set(globalTarget.__VITE_DEBUG__, 'useGameStore', useGameStore)
     Reflect.set(globalTarget.__VITE_DEBUG__, 'useMapStore', useMapStore)

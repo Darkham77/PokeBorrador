@@ -133,15 +133,25 @@ function buildGraphEdgesWithGates(
   return allEdges;
 }
 
-function stampPreExistingSettlementStreets(
-  nodes: readonly POINode[],
-  continentMap: ContinentMapResult,
-  pathGrid: boolean[][],
-  bridgeGrid: boolean[][],
-  portDockBridgeKeys: Set<string>,
-  W: number,
-  H: number
-): void {
+interface SettlementStreetsParams {
+  nodes: readonly POINode[];
+  continentMap: ContinentMapResult;
+  pathGrid: boolean[][];
+  bridgeGrid: boolean[][];
+  portDockBridgeKeys: Set<string>;
+  W: number;
+  H: number;
+}
+
+function stampPreExistingSettlementStreets({
+  nodes,
+  continentMap,
+  pathGrid,
+  bridgeGrid,
+  portDockBridgeKeys,
+  W,
+  H
+}: SettlementStreetsParams): void {
   for (const node of nodes) {
     if (node.type !== 'dungeon_forest' && node.urbanLayout) {
       for (const st of node.urbanLayout.internalStreets) {
@@ -162,14 +172,16 @@ function stampPreExistingSettlementStreets(
   }
 }
 
-function stampCorridorWidthNeighbor(
-  pt: RouteWaypoint,
-  isHorizontal: boolean,
-  continentMap: ContinentMapResult,
-  pathGrid: boolean[][],
-  W: number,
-  H: number
-): void {
+interface CorridorNeighborParams {
+  pt: RouteWaypoint;
+  isHorizontal: boolean;
+  continentMap: ContinentMapResult;
+  pathGrid: boolean[][];
+  W: number;
+  H: number;
+}
+
+function stampCorridorWidthNeighbor({ pt, isHorizontal, continentMap, pathGrid, W, H }: CorridorNeighborParams): void {
   if (isHorizontal) {
     if (pt.y + 1 < H && continentMap.cells[pt.y + 1]![pt.x]!.terrain !== 'water') {
       pathGrid[pt.y + 1]![pt.x] = true;
@@ -201,24 +213,38 @@ function stampLandCorridors(
       const dx = next.x - prev.x;
       const dy = next.y - prev.y;
       const isHorizontal = Math.abs(dx) >= Math.abs(dy);
-      stampCorridorWidthNeighbor(pt, isHorizontal, continentMap, pathGrid, W, H);
+      stampCorridorWidthNeighbor({ pt, isHorizontal, continentMap, pathGrid, W, H });
     }
   }
 }
 
-function traceAllRouteEdges(
-  allEdges: readonly GraphEdgeWithMeta[],
-  nodes: readonly POINode[],
-  continentMap: ContinentMapResult,
-  pathGrid: boolean[][],
-  bridgeGrid: boolean[][],
-  mutableTerrainMatrix: WaterTerrainKind[][],
-  maritimeRockObstacles: MaritimeRockObstacle[],
-  isOceanGrid: readonly (readonly boolean[])[],
-  allowBridges: boolean,
-  W: number,
-  H: number
-): RouteEdge[] {
+interface TraceAllRouteEdgesParams {
+  allEdges: readonly GraphEdgeWithMeta[];
+  nodes: readonly POINode[];
+  continentMap: ContinentMapResult;
+  pathGrid: boolean[][];
+  bridgeGrid: boolean[][];
+  mutableTerrainMatrix: WaterTerrainKind[][];
+  maritimeRockObstacles: MaritimeRockObstacle[];
+  isOceanGrid: readonly (readonly boolean[])[];
+  allowBridges: boolean;
+  W: number;
+  H: number;
+}
+
+function traceAllRouteEdges({
+  allEdges,
+  nodes,
+  continentMap,
+  pathGrid,
+  bridgeGrid,
+  mutableTerrainMatrix,
+  maritimeRockObstacles,
+  isOceanGrid,
+  allowBridges,
+  W,
+  H
+}: TraceAllRouteEdgesParams): RouteEdge[] {
   const resolvedEdges: RouteEdge[] = [];
   const excludedZones = nodes.map((n) => ({
     id: n.id,
@@ -262,12 +288,12 @@ function traceAllRouteEdges(
       let maxWaterRun = 0;
       let curWaterRun = 0;
       for (const pt of pathResult.path) {
-        if (continentMap.cells[pt.y]![pt.x]!.terrain === 'water') {
-          curWaterRun++;
-          if (curWaterRun > maxWaterRun) maxWaterRun = curWaterRun;
-        } else {
+        if (continentMap.cells[pt.y]![pt.x]!.terrain !== 'water') {
           curWaterRun = 0;
+          continue;
         }
+        curWaterRun++;
+        if (curWaterRun > maxWaterRun) maxWaterRun = curWaterRun;
       }
 
       const connectsMaritimePOI =
@@ -347,7 +373,7 @@ export function generateRouteNetwork(
 
   const allEdges = buildGraphEdgesWithGates(nodes, maxDist);
 
-  stampPreExistingSettlementStreets(
+  stampPreExistingSettlementStreets({
     nodes,
     continentMap,
     pathGrid,
@@ -355,9 +381,9 @@ export function generateRouteNetwork(
     portDockBridgeKeys,
     W,
     H
-  );
+  });
 
-  const resolvedEdges = traceAllRouteEdges(
+  const resolvedEdges = traceAllRouteEdges({
     allEdges,
     nodes,
     continentMap,
@@ -369,7 +395,7 @@ export function generateRouteNetwork(
     allowBridges,
     W,
     H
-  );
+  });
 
   connectMountainPlateauTrails({
     continentMap,

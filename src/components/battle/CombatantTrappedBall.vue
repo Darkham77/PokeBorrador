@@ -62,6 +62,9 @@ defineExpose({
         :src="getAssetUrl(ASSET_TYPES.ITEM, internalBallId)"
         alt="Pokeball"
         :style="{ filter: 'var(--atmosphere-filter)' }"
+        width="32"
+      
+        height="32"
         @error="emit('ballError')"
       >
 
@@ -106,6 +109,9 @@ defineExpose({
             :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
             class="shiny-asset-mini"
             alt="Sparkle"
+          
+            width="16"
+            height="16"
           >
         </span>
       </TransitionGroup>
@@ -148,6 +154,9 @@ defineExpose({
         :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
         class="shiny-asset-mini"
         alt="Sparkle"
+      
+        width="16"
+        height="16"
       >
     </span>
   </TransitionGroup>

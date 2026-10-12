@@ -103,7 +103,13 @@ export function resolveCardElementId(prefix?: string, eventId?: string, startIns
   return `${basePrefix}event-card-${idStr}${timeSuffix}`;
 }
 
-export function resolveEventCardClasses(hasBanner: boolean, isUpcoming: boolean): Record<string, boolean> {
+export interface EventCardClassesOptions {
+  hasBanner: boolean;
+  isUpcoming: boolean;
+}
+
+export function resolveEventCardClasses(options: EventCardClassesOptions): Record<string, boolean> {
+  const { hasBanner, isUpcoming } = options;
   return {
     'has-banner': hasBanner,
     'is-upcoming-card': isUpcoming,

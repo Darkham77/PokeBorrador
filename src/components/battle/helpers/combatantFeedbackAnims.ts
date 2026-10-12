@@ -312,13 +312,18 @@ export function animateCombatantTransform(
 
 const POKEBALL_SEPIA_RATIO = 0.5;
 
+export interface CombatantFeedbackOptions {
+  isCaptureSuccess: boolean;
+  isPlayerSide: boolean;
+}
+
 export function handleCombatantShake(
   pokeballEl: HTMLElement | null,
   spriteEl: HTMLElement | null,
-  isCaptureSuccess: boolean,
-  isPlayerSide: boolean,
+  options: CombatantFeedbackOptions,
   shaking: boolean
 ): void {
+  const { isCaptureSuccess, isPlayerSide } = options;
   if (!shaking) return;
   if (pokeballEl) {
     animatePokeballWobble(pokeballEl);
@@ -332,10 +337,10 @@ export function handleCombatantShake(
 export function handleCombatantBlink(
   pokeballEl: HTMLElement | null,
   spriteEl: HTMLElement | null,
-  isCaptureSuccess: boolean,
-  isPlayerSide: boolean,
+  options: CombatantFeedbackOptions,
   blinking: boolean
 ): void {
+  const { isCaptureSuccess, isPlayerSide } = options;
   if (!blinking) return;
   if (pokeballEl) {
     animatePokeballBlink(pokeballEl);

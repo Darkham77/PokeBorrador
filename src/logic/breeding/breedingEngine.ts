@@ -6,11 +6,11 @@ import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/p
 
 /**
  * breedingEngine.ts
- * Motor lógico de crianza: compatibilidad y generación de especies.
+ * Breeding logic engine: compatibility and species generation.
  */
 
 /**
- * Retorna el ID base de un Pokémon (remueve sufijos de género si existen).
+ * Returns the base ID of a Pokémon (removes gender suffixes if any).
  */
 export function getBreedingBaseId(id: string): PokemonSpeciesId {
   return requirePokemonSpeciesId(id)
@@ -19,8 +19,8 @@ export function getBreedingBaseId(id: string): PokemonSpeciesId {
 export { getFirstEvolution };
 
 /**
- * Determina qué especie nacerá de un huevo.
- * Considera si la forma base tiene una forma "Bebé".
+ * Determines which species will hatch from an egg.
+ * Considers whether the base form has a "Baby" form.
  */
 export function getEggSpecies(motherSpeciesId: PokemonSpeciesId): PokemonSpeciesId {
   const cleanId = toID(motherSpeciesId);
@@ -33,7 +33,7 @@ export function getEggSpecies(motherSpeciesId: PokemonSpeciesId): PokemonSpecies
 }
 
 /**
- * Evalúa la compatibilidad entre dos Pokémon.
+ * Evaluates compatibility between two Pokémon.
  */
 export function checkCompatibility(pA: Pokemon, pB: Pokemon): BreedingCompatibility {
   const idA = getBreedingBaseId(pA.id)
@@ -43,7 +43,7 @@ export function checkCompatibility(pA: Pokemon, pB: Pokemon): BreedingCompatibil
   
   const shared = gA.filter(g => gB.includes(g) && g !== 'ditto')
   
-  // Validar "no-eggs" (Babies, Legendaries)
+  // Validate "no-eggs" (Babies, Legendaries)
   if (gA.includes('no-eggs') || gB.includes('no-eggs')) {
     return { level: 0, reason: 'Uno de los Pokémon no puede criar', sharedGroups: [] }
   }

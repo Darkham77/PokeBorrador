@@ -24,6 +24,9 @@ defineProps<{
           :alt="p.name"
           class="mini-sprite"
           :title="p.name"
+        
+          width="32"
+          height="32"
         >
       </div>
     </div>
@@ -40,6 +43,9 @@ defineProps<{
           :alt="p.name"
           class="mini-sprite"
           :title="p.name"
+        
+          width="32"
+          height="32"
         >
       </div>
     </div>

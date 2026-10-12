@@ -246,7 +246,7 @@ onUnmounted(() => {
     padding: 4px 8px;
     border: 1px solid var(--amber-dark);
     border-radius: $radius-sm;
-    background: #854d0e;
+    background: var(--amber-dark);
     color: var(--yellow-light);
     font-size: var(--font-10);
   }
@@ -285,13 +285,13 @@ onUnmounted(() => {
     cursor: pointer;
 
     &.primary {
-      background: Linear-Gradient(180deg, #3b82f6, #1d4ed8);
+      background: Linear-Gradient(180deg, var(--blue-500), var(--blue-500));
       color: var(--white);
       border-color: var(--blue-400);
     }
 
     &.action {
-      background: Linear-Gradient(180deg, #10b981, #047857);
+      background: Linear-Gradient(180deg, var(--emerald-500), var(--emerald-500));
       color: var(--white);
       border-color: var(--emerald-400);
 
@@ -312,7 +312,7 @@ onUnmounted(() => {
     padding: 6px 12px;
     border: 1px solid var(--slate-800);
     border-radius: $radius-md;
-    background: #020617;
+    background: var(--slate-900);
 
     .turn-val {
       color: var(--amber-400);

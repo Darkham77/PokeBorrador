@@ -39,7 +39,7 @@ import {
   getKantoDefaultProject,
   getJohtoDefaultProject,
   getBlankDefaultProject
-} from '../data/map/regionRegistry.ts';
+} from '../logic/map/adventureProjectFactory.ts';
 import { CELL_BIOME, type CellBiomeType } from '../types/map/kantoGridModel.ts';
 import type { PlacedStructure } from '../types/map/kantoTileEngineTypes.ts';
 import type { GeneratedMap } from '../logic/map/proceduralMapGenerator.ts';

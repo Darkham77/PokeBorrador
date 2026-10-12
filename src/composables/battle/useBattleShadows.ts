@@ -82,7 +82,13 @@ function getEffectiveSpriteId(pokemon: SpriteResolutionTarget): PokemonSpeciesId
   return requirePokemonSpeciesId(pokemon.id)
 }
 
-function getFinalSpriteUrl(pokemon: SpriteResolutionTarget, isShiny: boolean, isBack: boolean): string {
+interface SpriteUrlOptions {
+  isShiny?: boolean
+  isBack?: boolean
+}
+
+function getFinalSpriteUrl(pokemon: SpriteResolutionTarget, options: SpriteUrlOptions = {}): string {
+  const { isShiny = false, isBack = false } = options
   const spriteId = getEffectiveSpriteId(pokemon)
   const isAnim = checkAnimated(spriteId, pokemon.gender)
   const url = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, { isShiny, isBack, isAnimated: isAnim })
@@ -128,7 +134,7 @@ export function computeShadowCoords(pokemon: Pokemon | null | undefined, isBack 
   }
 
   // Fallback to static feet database
-  const url = getFinalSpriteUrl(pokemon as SpriteResolutionTarget, !!pokemon.isShiny, isBack)
+  const url = getFinalSpriteUrl(pokemon as SpriteResolutionTarget, { isShiny: !!pokemon.isShiny, isBack })
   const coords = getPokemonFeetCoords(url)
   return { x: coords.feetX, y: coords.feetY }
 }
@@ -171,14 +177,14 @@ export function useBattleShadows() {
   const shadowStore = useCombatShadowStore()
 
 
-  // Claves únicas para las sombras en el store
+  // Unique keys for shadows in the store
   const currentPlayerShadowKey = ref<string | null>(null)
   const currentEnemyShadowKey = ref<string | null>(null)
 
   const lastEnemyShadowId = ref<string | null>(null)
   const lastPlayerShadowId = ref<string | null>(null)
 
-  // Coordenadas de "suelo" persistentes para evitar saltos
+  // Persistent ground coordinates to prevent jumps
   const stableEnemyGroundY = ref(DEFAULT_STABLE_GROUND_Y_PCT)
   const stablePlayerGroundY = ref(DEFAULT_STABLE_GROUND_Y_PCT)
 
@@ -195,25 +201,25 @@ export function useBattleShadows() {
 
 
 
-  // Sincronizar visibilidad y posición de la sombra enemiga
+  // Synchronize enemy shadow visibility and position
   const syncEnemyShadow = async (visible: boolean, data: Pokemon | null, pos: Position, animState: unknown) => {
     const shadowId = getStableShadowId(data, 'enemy')
     
-    // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
+    // Initialize coordinates immediately if seat is occupied by a pokemon
     if (data) {
       const url = getFinalSpriteUrl(data, !!data.isShiny, false)
       getPokemonFeetCoords(url)
       stableEnemyGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
     }
 
-    // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
+    // Clean up orphan shadows if ID changes (prevents duplicates when catching/switching)
     if (lastEnemyShadowId.value && lastEnemyShadowId.value !== shadowId) {
       if (lastEnemyShadowId.value) shadowStore.hideShadow(lastEnemyShadowId.value)
     }
     lastEnemyShadowId.value = shadowId
     currentEnemyShadowKey.value = shadowId
 
-    // Ocultar sombra si está en cualquier estado de transición de Poké Ball (energía)
+    // Hide shadow if in any Poké Ball energy transition state
     const isEnergyState = !!animState 
     if (!visible || !data || isEnergyState) {
       if (shadowId) shadowStore.hideShadow(shadowId)
@@ -237,25 +243,25 @@ export function useBattleShadows() {
     }
   }
 
-  // Sincronizar visibilidad y posición de la sombra del jugador
+  // Synchronize player shadow visibility and position
   const syncPlayerShadow = async (pokemon: Pokemon | null, pos: Position, animState: unknown) => {
     const shadowId = getStableShadowId(pokemon, 'player')
 
-    // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
+    // Initialize coordinates immediately if seat is occupied by a pokemon
     if (pokemon) {
       const url = getFinalSpriteUrl(pokemon, !!pokemon.isShiny, true)
       getPokemonFeetCoords(url)
       stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
     }
 
-    // Limpieza de sombras huérfanas
+    // Clean up orphan shadows
     if (lastPlayerShadowId.value && lastPlayerShadowId.value !== shadowId) {
       if (lastPlayerShadowId.value) shadowStore.hideShadow(lastPlayerShadowId.value)
     }
     lastPlayerShadowId.value = shadowId
     currentPlayerShadowKey.value = shadowId
 
-    // Ocultar sombra durante transiciones de energía
+    // Hide shadow during energy transitions
     const isEnergyState = !!animState
     if (!pokemon || isEnergyState) {
       if (shadowId) shadowStore.hideShadow(shadowId)
@@ -308,7 +314,7 @@ export function useBattleShadows() {
   ) => {
     const tasks = []
     
-    // Pre-cargar puntos de pies de TODOS los equipos para evitar el lag de la "primera vez"
+    // Preload feet points of ALL teams to avoid first-time lag
     if (p1Team) tasks.push(preloadTeamFeet(p1Team, 'player'))
     if (p2Team) tasks.push(preloadTeamFeet(p2Team, 'enemy'))
 

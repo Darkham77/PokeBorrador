@@ -182,7 +182,8 @@ function handlePillLeave(e: MouseEvent) {
               :src="getItemSpriteUrl(requireItemId(name))"
               class="pixel-art milestone-sprite"
               :alt="name"
-              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+              width="32"
+              height="32"
               @mouseenter="handleSpriteEnter"
               @mouseleave="handleSpriteLeave"
             >
@@ -207,7 +208,8 @@ function handlePillLeave(e: MouseEvent) {
                   :src="getItemSpriteUrl(requireItemId(name))"
                   class="pixel-art pill-sprite"
                   :alt="name"
-                  @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                  width="32"
+                  height="32"
                 >
                 {{ name }} <span class="qty">x{{ qty }}</span>
               </span>

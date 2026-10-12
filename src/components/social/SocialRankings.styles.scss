@@ -49,7 +49,7 @@
 .matchmaking-cta-box { display: flex; justify-content: center; width: 100%; }
 
 .btn-ranked-search {
-  width: 100%; padding: 12px; border: 1px solid var(--amber); border-radius: $radius-lg; background: Linear-Gradient(135deg, #f59e0b, #d97706);
+  width: 100%; padding: 12px; border: 1px solid var(--amber); border-radius: $radius-lg; background: linear-gradient(135deg, var(--amber-500, #f59e0b), var(--amber-600, #d97706));
   color: var(--slate-900); font-family: var(--font-pixel); font-size: var(--font-10); font-weight: bold; cursor: pointer; box-shadow: var(--shadow-card);
 }
 

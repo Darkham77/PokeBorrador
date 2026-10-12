@@ -100,30 +100,30 @@
       align-items: center;
       gap: $spacing-sm-alt;
 
-      .ps-name-stack {
-        display: flex;
-        flex-direction: column;
-        gap: $spacing-1px;
-
-        .name {
-          @include pixelated;
-
-          color: var(--white);
-          font-size: var(--font-8);
-          font-weight: 800;
-          
-          &.is-species {
-            text-transform: uppercase;
-          }
-        }
-      }
-
       .sel-species-subtitle {
         @include pixelated;
 
         color: Rgb(255 255 255 / 30%);
         font-size: var(--font-8);
         text-transform: uppercase;
+      }
+    }
+
+    .ps-name-stack {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-1px;
+
+      .name {
+        @include pixelated;
+
+        color: var(--white);
+        font-size: var(--font-8);
+        font-weight: 800;
+        
+        &.is-species {
+          text-transform: uppercase;
+        }
       }
     }
 

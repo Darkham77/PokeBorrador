@@ -255,63 +255,63 @@ body .selection-container {
         .ps-tag-label {
           color: var(--white);
         }
+      }
 
-        &.ps-tag-fav {
-          background: Rgb(255 217 61 / 5%);
-          color: var(--tag-fav);
-          border-color: var(--tag-fav);
-          box-shadow: var(--shadow-glow-yellow-sm);
-          .ps-tag-label { color: var(--tag-fav); }
-        }
-        &.ps-tag-breed {
-          background: Rgb(255 77 77 / 5%);
-          color: var(--tag-breed);
-          border-color: var(--tag-breed);
-          box-shadow: var(--shadow-glow-yellow-sm);
-          .ps-tag-label { color: var(--tag-breed); }
-        }
-        &.ps-tag-competitive {
-          background: Rgb(52 199 89 / 5%);
-          color: var(--tag-competitive);
-          border-color: var(--tag-competitive);
-          box-shadow: var(--shadow-glow-yellow-sm);
-          .ps-tag-label { color: var(--tag-competitive); }
-        }
-        &.ps-tag-trade {
-          background: Rgb(175 82 222 / 5%);
-          color: var(--tag-trade);
-          border-color: var(--tag-trade);
-          box-shadow: var(--shadow-glow-yellow-sm);
-          .ps-tag-label { color: var(--tag-trade); }
-        }
-        &.ps-tag-iv31 {
-          background: Rgb(0 229 255 / 5%);
-          color: var(--tag-iv31);
-          border-color: var(--tag-iv31);
-          box-shadow: var(--shadow-glow-yellow-sm);
-          .ps-tag-label { color: var(--tag-iv31); }
-        }
-        &.ps-tag-shiny {
-          background: Rgb(255 179 0 / 5%);
-          color: var(--tag-shiny);
-          border-color: var(--tag-shiny);
-          box-shadow: var(--shadow-glow-yellow-sm);
-          .ps-tag-label { color: var(--tag-shiny); }
-        }
-        &.ps-tag-compatible {
-          background: Rgb(255 45 85 / 8%);
-          color: var(--tag-compatible);
-          border-color: var(--tag-compatible);
-          box-shadow: var(--shadow-glow-yellow-sm);
-          .ps-tag-label { color: var(--tag-compatible); }
-        }
-        &.ps-tag-hatched {
-          background: Rgb(255 149 0 / 5%);
-          color: var(--tag-hatched);
-          border-color: var(--tag-hatched);
-          box-shadow: var(--shadow-glow-yellow-sm);
-          .ps-tag-label { color: var(--tag-hatched); }
-        }
+      &.active.ps-tag-fav {
+        background: Rgb(255 217 61 / 5%);
+        color: var(--tag-fav);
+        border-color: var(--tag-fav);
+        box-shadow: var(--shadow-glow-yellow-sm);
+        .ps-tag-label { color: var(--tag-fav); }
+      }
+      &.active.ps-tag-breed {
+        background: Rgb(255 77 77 / 5%);
+        color: var(--tag-breed);
+        border-color: var(--tag-breed);
+        box-shadow: var(--shadow-glow-yellow-sm);
+        .ps-tag-label { color: var(--tag-breed); }
+      }
+      &.active.ps-tag-competitive {
+        background: Rgb(52 199 89 / 5%);
+        color: var(--tag-competitive);
+        border-color: var(--tag-competitive);
+        box-shadow: var(--shadow-glow-yellow-sm);
+        .ps-tag-label { color: var(--tag-competitive); }
+      }
+      &.active.ps-tag-trade {
+        background: Rgb(175 82 222 / 5%);
+        color: var(--tag-trade);
+        border-color: var(--tag-trade);
+        box-shadow: var(--shadow-glow-yellow-sm);
+        .ps-tag-label { color: var(--tag-trade); }
+      }
+      &.active.ps-tag-iv31 {
+        background: Rgb(0 229 255 / 5%);
+        color: var(--tag-iv31);
+        border-color: var(--tag-iv31);
+        box-shadow: var(--shadow-glow-yellow-sm);
+        .ps-tag-label { color: var(--tag-iv31); }
+      }
+      &.active.ps-tag-shiny {
+        background: Rgb(255 179 0 / 5%);
+        color: var(--tag-shiny);
+        border-color: var(--tag-shiny);
+        box-shadow: var(--shadow-glow-yellow-sm);
+        .ps-tag-label { color: var(--tag-shiny); }
+      }
+      &.active.ps-tag-compatible {
+        background: Rgb(255 45 85 / 8%);
+        color: var(--tag-compatible);
+        border-color: var(--tag-compatible);
+        box-shadow: var(--shadow-glow-yellow-sm);
+        .ps-tag-label { color: var(--tag-compatible); }
+      }
+      &.active.ps-tag-hatched {
+        background: Rgb(255 149 0 / 5%);
+        color: var(--tag-hatched);
+        border-color: var(--tag-hatched);
+        box-shadow: var(--shadow-glow-yellow-sm);
+        .ps-tag-label { color: var(--tag-hatched); }
       }
     }
 

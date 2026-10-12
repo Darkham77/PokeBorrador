@@ -210,6 +210,9 @@ watch(extraSacrifices, () => {
                 :src="getAssetUrl(ASSET_TYPES.ITEM, fossil.id)"
                 :alt="fossil.name"
                 class="fossil-sprite"
+              
+                width="32"
+                height="32"
               >
               <div 
                 class="fossil-count"

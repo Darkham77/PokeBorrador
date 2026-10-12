@@ -6,7 +6,7 @@ import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue'
 import PokemonSelectionFilters from '@/components/modals/PokemonSelectionFilters.vue'
 import MarketItemFilters from './MarketItemFilters.vue'
 import MarketItemCard from './MarketItemCard.vue'
-import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts'
 import { GTS_ITEMS_PER_PAGE, type MarketListingType } from '@/logic/economy/market'
 import type { SortOrder, ItemSortKey } from '@/types/system/game'
 import type { PokemonTagId } from '@/logic/constants/tags'
@@ -137,7 +137,7 @@ function handleNextPage() {
           :key="item.pokemon.uid"
           :item="item"
           :is-selected="selectedItemUid === item.pokemon.uid"
-          :total="getPokemonTotalPower(item.pokemon)"
+          :total="calculateTotalPower(item.pokemon)"
           auto-confirm
           @select="emit('select', item.pokemon)"
         />

@@ -166,11 +166,16 @@ function isElementOrParentScrollable(el: HTMLElement | null): boolean {
   return false;
 }
 
+export interface GlobalBlockOptions {
+  isAnyBlockingModalOpen: boolean;
+  isStandaloneDevPage: boolean;
+}
+
 export function handleGlobalBlockEvent(
   e: Event,
-  isAnyBlockingModalOpen: boolean,
-  isStandaloneDevPage: boolean
+  options: GlobalBlockOptions
 ): void {
+  const { isAnyBlockingModalOpen, isStandaloneDevPage } = options;
   if (isStandaloneDevPage) return;
   const target = e.target as HTMLElement | null;
   if (!target || typeof target.closest !== 'function') return;

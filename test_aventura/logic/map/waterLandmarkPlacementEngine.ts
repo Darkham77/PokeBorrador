@@ -78,15 +78,13 @@ export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
             for (let dx = -MAX_SHORE_SEARCH_RADIUS; dx <= tmpl.width + MAX_SHORE_SEARCH_RADIUS; dx++) {
               const ny = y + dy;
               const nx = x + dx;
-              if (ny >= 0 && ny < H && nx >= 0 && nx < W) {
-                const terr = continentMap.terrainMatrix[ny]![nx]!;
-                if (terr === 'grass' || terr === 'sand') {
-                  const cdx = nx < x - isletMargin ? (x - isletMargin) - nx : nx > x + tmpl.width - 1 + isletMargin ? nx - (x + tmpl.width - 1 + isletMargin) : 0;
-                  const cdy = ny < y - isletMargin ? (y - isletMargin) - ny : ny > y + tmpl.height - 1 + isletMargin ? ny - (y + tmpl.height - 1 + isletMargin) : 0;
-                  const dist = Math.hypot(cdx, cdy);
-                  if (dist < edgeDistToShore) edgeDistToShore = dist;
-                }
-              }
+              if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
+              const terr = continentMap.terrainMatrix[ny]![nx]!;
+              if (terr !== 'grass' && terr !== 'sand') continue;
+              const cdx = nx < x - isletMargin ? (x - isletMargin) - nx : nx > x + tmpl.width - 1 + isletMargin ? nx - (x + tmpl.width - 1 + isletMargin) : 0;
+              const cdy = ny < y - isletMargin ? (y - isletMargin) - ny : ny > y + tmpl.height - 1 + isletMargin ? ny - (y + tmpl.height - 1 + isletMargin) : 0;
+              const dist = Math.hypot(cdx, cdy);
+              if (dist < edgeDistToShore) edgeDistToShore = dist;
             }
           }
 
@@ -138,12 +136,7 @@ export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
             (ix === isletX1 && iy === isletY2) ||
             (ix === isletX2 && iy === isletY2);
 
-          if (isLakeLandmark) {
-            if (isOuterCorner) continue;
-          } else {
-            // For ocean islets, round outer sand corners so island is naturally curved
-            if (isOuterCorner) continue;
-          }
+          if (isOuterCorner) continue;
 
           // Round the grass core at corners into sand so no grass cell touches ocean water
           const isGrassCorner =

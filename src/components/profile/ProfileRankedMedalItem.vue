@@ -92,6 +92,9 @@ const podiumTagClass = computed(() => ({
         :alt="tierDisplay.name"
         class="medal-sprite"
         loading="lazy"
+      
+        width="32"
+        height="32"
       >
       <span
         v-else

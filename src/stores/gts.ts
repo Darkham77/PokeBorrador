@@ -15,6 +15,8 @@ import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 import { isPokemonBusy } from '@/logic/constants/tags.ts'
 import { GTS_MAX_PRICE_FILTER, MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay.ts'
 
+const MARKET_LISTING_COLUMNS = 'id, seller_id, seller_name, buyer_id, listing_type, price, status, data, created_at'
+
 export const useGTSStore = defineStore('gts', () => {
   const auth = useAuthStore()
   const game = useGameStore()
@@ -88,7 +90,7 @@ export const useGTSStore = defineStore('gts', () => {
     inFlightPromise = (async () => {
       try {
         const { data, error } = await game.db.from('market_listings')
-          .select('*')
+          .select(MARKET_LISTING_COLUMNS)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(GTS_EXPLORE_LISTINGS_LIMIT) as { data: MarketListing[] | null, error: { message: string } | null }
@@ -112,12 +114,13 @@ export const useGTSStore = defineStore('gts', () => {
     try {
       await game.fetchClaimQueue()
       const mineRes = await game.db.from('market_listings')
-        ?.select('*')
+        ?.select(MARKET_LISTING_COLUMNS)
         ?.eq('seller_id', currentUserUid)
         ?.neq('status', 'sold')
-        ?.order('created_at', { ascending: false });
+        ?.order('created_at', { ascending: false })
+        ?.limit(GTS_EXPLORE_LISTINGS_LIMIT);
       const histRes = await game.db.from('market_listings')
-        ?.select('*')
+        ?.select(MARKET_LISTING_COLUMNS)
         ?.eq('seller_id', currentUserUid)
         ?.eq('status', 'sold')
         ?.order('created_at', { ascending: false })

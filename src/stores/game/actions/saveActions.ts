@@ -404,9 +404,10 @@ async function syncCommittedSaveIdAfterClaim(
     if (isSandboxActive.value) return
     if (!authStore.user || !db.value) return
     const claimRes = await db.value.from('claim_queue')
-      .select('*')
+      .select('id, user_id, type, asset_data, source_type, source_id, created_at')
       .eq('user_id', authStore.user.id)
       .order('created_at', { ascending: true })
+      .limit(100)
     const data = claimRes.data as ClaimItem[] | null // domain-ok: Open dynamic text or non-domain string payload
     const error = claimRes.error
     if (!error) state.claimQueue = data || []

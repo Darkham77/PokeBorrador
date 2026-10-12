@@ -183,7 +183,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
     align-items: center;
     gap: $spacing-sm-alt;
     margin: 0 0 10px;
-    color: var(--green-bright, #4ade80);
+    color: var(--green-bright, var(--green-light));
     font-size: var(--font-9);
   }
 
@@ -259,7 +259,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
     }
 
     .award-name {
-      color: var(--white, #fff);
+      color: var(--white, var(--white));
       font-size: var(--font-11);
       font-weight: bold;
     }

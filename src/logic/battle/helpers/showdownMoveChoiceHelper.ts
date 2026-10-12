@@ -1,8 +1,8 @@
 /**
  * showdownMoveChoiceHelper.ts
  *
- * Helper centralizado para validar y normalizar elecciones de movimiento
- * en Showdown (recharge, movimientos deshabilitados/sin PP, slots alternativos).
+ * Centralized helper to validate and normalize move choices
+ * in Showdown (recharge, disabled/out of PP moves, alternative slots).
  */
 
 export interface ActiveRequestMove {
@@ -14,8 +14,8 @@ export interface ActiveRequestMove {
 }
 
 /**
- * Normaliza y valida una elección de movimiento contra los movimientos activos en el request.
- * Si el movimiento elegido está deshabilitado o sin PP, selecciona el primer movimiento legal disponible.
+ * Normalizes and validates a move choice against active moves in the request.
+ * If the chosen move is disabled or out of PP, selects the first available legal move.
  */
 export function resolveValidMoveChoice(
   choiceStr: string,
@@ -53,7 +53,7 @@ export function resolveValidMoveChoice(
 }
 
 /**
- * Obtiene el primer movimiento legal de una lista de movimientos activos.
+ * Retrieves the first legal move from an active moves list.
  */
 export function getFirstValidMoveSlot(
   activeMoves: ActiveRequestMove[] | undefined,

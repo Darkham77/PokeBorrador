@@ -44,7 +44,7 @@ const emit = defineEmits<{
   (e: 'update:money', val: number): void
 }>()
 
-const isGiftMode = computed(() => isTradeGiftMode(props.isGift, props.isFriendSide))
+const isGiftMode = computed(() => isTradeGiftMode({ isGift: props.isGift, isFriendSide: props.isFriendSide }))
 const showTradeSections = computed(() => !isGiftMode.value)
 const pokemonBtnText = computed(() => resolveTradePokemonButtonText(props.isFriendSide))
 const creditsLabel = computed(() => resolveTradeCreditsLabel(props.isFriendSide))

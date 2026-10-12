@@ -12,14 +12,16 @@ import { generateRoomCode, isValidRoomCode, formatRoomCode } from '@/logic/pvp/p
 import { buildSpectateSyncPayload, type PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { DBRouter } from '@/logic/db/dbRouter'
+import type { PvpBattleSeatFlags } from '@/logic/pvp/livePvPBattleSetupHandler'
 
 const ROOM_HOST_POLL_INTERVAL_SEC = 2;
+const ROOM_BATTLE_INVITE_COLUMNS = 'id, sender_id, challenger_id, opponent_id, status, created_at, config, room_code';
 
 interface RoomActionsContext {
   db: DBRouter
   userId: string
   notify: (msg: string, icon?: string) => void
-  onBattleStart: (invite: BattleInvite, isHost: boolean, isRanked: boolean) => void
+  onBattleStart: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void
 }
 
 async function executeCreateRoom(
@@ -64,12 +66,12 @@ function startRoomHostPoller(
     if (!ctx.db) return
     const { data } = await ctx.db
       .from('battle_invites')
-      .select('*')
+      .select(ROOM_BATTLE_INVITE_COLUMNS)
       .eq('id', inviteId)
       .single() as { data: BattleInvite | null }
 
     if (data && data.status === 'accepted' && data.opponent_id) {
-      ctx.onBattleStart(data, true, false)
+      ctx.onBattleStart(data, { isHost: true, isRanked: false })
       return
     }
 
@@ -102,7 +104,7 @@ async function executeJoinRoom(
   }
 
   const { data: invite, error } = await ctx.db.from('battle_invites')
-    .select('*')
+    .select(ROOM_BATTLE_INVITE_COLUMNS)
     .eq('room_code', formatted)
     .eq('status', 'pending')
     .maybeSingle() as { data: BattleInvite | null; error: unknown }
@@ -121,7 +123,7 @@ async function executeJoinRoom(
     .update({ opponent_id: ctx.userId, status: 'accepted' })
     .eq('id', invite.id)
 
-  ctx.onBattleStart(invite, false, false)
+  ctx.onBattleStart(invite, { isHost: false, isRanked: false })
   return true
 }
 
@@ -140,7 +142,7 @@ export interface CreateRoomActionContext {
   activeRoomCode: { value: PvpRoomCode | null }
   getRoomHostPoller: () => { kill: () => void } | null
   setRoomHostPoller: (poller: { kill: () => void } | null) => void
-  startBattle: (invite: BattleInvite, isHost: boolean, isRanked: boolean) => void
+  startBattle: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void
 }
 
 export async function createRoomAction(
@@ -154,9 +156,9 @@ export async function createRoomAction(
       db: ctx.db,
       userId: ctx.userId,
       notify: ctx.notify,
-      onBattleStart: (invite, isHost, isRanked) => {
+      onBattleStart: (invite, flags) => {
         ctx.activeRoomCode.value = null
-        ctx.startBattle(invite, isHost, isRanked)
+        ctx.startBattle(invite, flags)
       }
     },
     (poller) => {
@@ -190,7 +192,7 @@ export async function joinRoomAction(
     userId?: string
     db: DBRouter | null
     notify: (msg: string, icon?: string) => void
-    startBattle: (invite: BattleInvite, isHost: boolean, isRanked: boolean) => void
+    startBattle: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void
   }
 ): Promise<boolean> {
   if (!ctx.userId || !ctx.db) return false

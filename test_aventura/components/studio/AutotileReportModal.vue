@@ -512,7 +512,7 @@ async function copyToClipboard(): Promise<void> {
   padding: 14px;
   border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: $radius-md;
-  background: #020617;
+  background: var(--slate-900);
   color: var(--sky);
   font-family: monospace;
   font-size: var(--font-11);

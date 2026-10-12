@@ -40,7 +40,7 @@ import {
 import {
   buildCanonicalRegionMap,
   type CanonicalPresetId
-} from '../data/map/canonicalRegionPresets.ts';
+} from '../logic/map/continent/canonicalRegionPresets.ts';
 
 const DEFAULT_DEBOUNCE_DELAY_MS = 250;
 const MAX_SEED_RANDOM_VALUE = 999999;

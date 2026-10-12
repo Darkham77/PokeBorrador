@@ -167,7 +167,8 @@ const handleMouseLeave = (event: MouseEvent) => {
             :src="getAssetUrl(ASSET_TYPES.POKEMON, starter.id)"
             :alt="starter.name"
             class="starter-sprite"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+            width="32"
+            height="32"
           >
         </div>
         <div class="starter-name">

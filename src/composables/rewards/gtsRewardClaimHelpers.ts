@@ -47,7 +47,7 @@ async function fetchMissingGtsListing(sourceId: string, gameStore: ReturnType<ty
     const numId = Number(sourceId)
     const { data } = await gameStore.db
       .from('market_listings')
-      .select('*')
+      .select('id, seller_id, seller_name, buyer_id, listing_type, price, status, data, created_at')
       .eq('id', isNaN(numId) ? sourceId : numId)
       .maybeSingle()
     if (data) {

@@ -151,6 +151,8 @@ onMounted(() => {
               :src="getPokeSpriteUrl(p.id, p.isShiny)" 
               :alt="p.name || p.id"
               class="poke-sprite"
+              width="96"
+              height="96"
               @error="(e) => handleSpriteError(e, p.id, p.isShiny)"
             >
             <button

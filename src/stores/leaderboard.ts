@@ -27,7 +27,7 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
     try {
       const { data, error } = await db
         .from('profiles')
-        .select('*')
+        .select('id, username, elo_rating, trainer_level, badges, player_class, faction, nick_style, avatar_style, gender')
         .order(sortBy, { ascending: false })
         .limit(LEADERBOARD_LIMIT) as { data: ProfileRow[] | null; error: unknown }
 

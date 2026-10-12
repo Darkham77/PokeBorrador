@@ -147,7 +147,8 @@ const heldItemSprite = computed(() => {
           :src="getSprite(pokemon.id, !!pokemon.isShiny)"
           :alt="pokemon.name || 'Pokémon'"
           class="pixel-sprite"
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          width="32"
+          height="32"
         >
       </div>
       <div class="poke-info">
@@ -237,7 +238,8 @@ const heldItemSprite = computed(() => {
           :src="heldItemSprite"
           :alt="pokemon.heldItem || 'Objeto equipado'"
           class="item-mini-sprite"
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          width="32"
+          height="32"
         >
         <span
           v-else

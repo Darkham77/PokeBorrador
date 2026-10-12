@@ -15,7 +15,7 @@ class TestGsapAuditor extends ValidateGsapAnimationsAuditor {
     if (!this.roots.some(r => relPath.startsWith(r))) {
       return
     }
-    this.scanFile(relPath, content)
+    this.testScanFile(relPath, content)
   }
 }
 

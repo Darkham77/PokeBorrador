@@ -394,7 +394,7 @@ function handleApplyAndRegenerate(): void {
     padding: 8px 16px;
     border: none;
     border-radius: $radius-md;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, var(--emerald-500) 0%, var(--emerald-500) 100%);
     color: var(--white);
     font-size: var(--font-12);
     font-weight: 700;

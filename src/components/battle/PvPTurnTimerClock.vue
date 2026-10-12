@@ -147,7 +147,7 @@ watch(isUrgent, (urgent) => {
     box-shadow: var(--shadow-card);
 
     .ring-progress {
-      stroke: #ef4444;
+      stroke: var(--red-light);
     }
 
     .timer-number {
@@ -160,7 +160,7 @@ watch(isUrgent, (urgent) => {
     box-shadow: var(--shadow-card);
 
     .ring-progress {
-      stroke: #f59e0b;
+      stroke: var(--amber-dark);
     }
 
     .timer-number {
@@ -197,7 +197,7 @@ watch(isUrgent, (urgent) => {
 
 .ring-progress {
   fill: none;
-  stroke: #38bdf8;
+  stroke: var(--sky);
   stroke-width: 3.5;
   stroke-linecap: round;
 }
@@ -223,7 +223,7 @@ watch(isUrgent, (urgent) => {
 .timer-subtext {
   @include pixelated;
 
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
   font-size: var(--font-9);
   letter-spacing: 0.5px;
   text-transform: uppercase;

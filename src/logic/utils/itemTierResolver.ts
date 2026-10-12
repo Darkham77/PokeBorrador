@@ -1,8 +1,8 @@
 /**
  * src/logic/utils/itemTierResolver.ts
  * 
- * Centraliza la lógica de etiquetas de tier y colores de items del juego
- * para evitar duplicación de código y mantener consistencia visual.
+ * Centralizes item tier label and color logic across the game
+ * to avoid code duplication and maintain visual consistency.
  */
 
 export const ITEM_TIER_LABELS: Record<string, string> = {

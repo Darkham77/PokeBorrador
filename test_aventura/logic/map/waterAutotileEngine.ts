@@ -216,38 +216,28 @@ export function classify2DAutotileRole(foreignMask: number): AutotileRoleClassif
   return { role: 'center', innerOverlays: [] };
 }
 
+const ROLE_BRUSH_PROP_MAP: Readonly<Record<WaterAutotileRole, keyof WaterCoastBrushSet>> = {
+  center: 'center',
+  edge_north: 'edgeNorth',
+  edge_south: 'edgeSouth',
+  edge_west: 'edgeWest',
+  edge_east: 'edgeEast',
+  corner_outer_nw: 'cornerOuterNW',
+  corner_outer_ne: 'cornerOuterNE',
+  corner_outer_sw: 'cornerOuterSW',
+  corner_outer_se: 'cornerOuterSE',
+  corner_inner_nw: 'cornerInnerNW',
+  corner_inner_ne: 'cornerInnerNE',
+  corner_inner_sw: 'cornerInnerSW',
+  corner_inner_se: 'cornerInnerSE'
+};
+
 /**
  * Maps a WaterAutotileRole to the appropriate tile asset from a WaterCoastBrushSet.
  */
 export function getTileForRole(brush: WaterCoastBrushSet, role: WaterAutotileRole): string {
-  switch (role) {
-    case 'center':
-      return brush.center;
-    case 'edge_north':
-      return brush.edgeNorth;
-    case 'edge_south':
-      return brush.edgeSouth;
-    case 'edge_west':
-      return brush.edgeWest;
-    case 'edge_east':
-      return brush.edgeEast;
-    case 'corner_outer_nw':
-      return brush.cornerOuterNW;
-    case 'corner_outer_ne':
-      return brush.cornerOuterNE;
-    case 'corner_outer_sw':
-      return brush.cornerOuterSW;
-    case 'corner_outer_se':
-      return brush.cornerOuterSE;
-    case 'corner_inner_nw':
-      return brush.cornerInnerNW;
-    case 'corner_inner_ne':
-      return brush.cornerInnerNE;
-    case 'corner_inner_sw':
-      return brush.cornerInnerSW;
-    case 'corner_inner_se':
-      return brush.cornerInnerSE;
-  }
+  const prop = ROLE_BRUSH_PROP_MAP[role];
+  return prop ? brush[prop] : brush.center;
 }
 
 /**
@@ -352,34 +342,31 @@ export function resolveWaterCoastGrid(
     return false;
   };
 
+  const cellTouchesSand = (cx: number, cy: number): boolean => {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const nx = cx + dx;
+        const ny = cy + dy;
+        if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+        if (matrix[ny]![nx] === 'sand') return true;
+      }
+    }
+    return false;
+  };
+
   // Find all water cells that directly touch sand (ocean coastline seeds) but do not touch grass
   const oceanQueue: { x: number; y: number }[] = [];
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const t = matrix[y]![x]!;
-      if (t === 'water' || t === 'water_deep') {
-        if (!cellTouchesGrass(x, y)) {
-          let touchesSand = false;
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              if (dx === 0 && dy === 0) continue;
-              const nx = x + dx;
-              const ny = y + dy;
-              if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-                if (matrix[ny]![nx] === 'sand') {
-                  touchesSand = true;
-                  break;
-                }
-              }
-            }
-            if (touchesSand) break;
-          }
-          if (touchesSand) {
-            isOceanGrid[y]![x] = true;
-            visited[y]![x] = true;
-            oceanQueue.push({ x, y });
-          }
-        }
+      if (t !== 'water' && t !== 'water_deep') continue;
+      if (cellTouchesGrass(x, y)) continue;
+
+      if (cellTouchesSand(x, y)) {
+        isOceanGrid[y]![x] = true;
+        visited[y]![x] = true;
+        oceanQueue.push({ x, y });
       }
     }
   }
@@ -407,6 +394,28 @@ export function resolveWaterCoastGrid(
       }
     }
   }
+
+  const computeAbyssalMinDistance = (cx: number, cy: number): number => {
+    let minDist = Number.POSITIVE_INFINITY;
+    for (let dy = -ABYSSAL_SEARCH_RADIUS; dy <= ABYSSAL_SEARCH_RADIUS; dy++) {
+      for (let dx = -ABYSSAL_SEARCH_RADIUS; dx <= ABYSSAL_SEARCH_RADIUS; dx++) {
+        const ny = cy + dy;
+        const nx = cx + dx;
+        const isLandOrOOB =
+          nx < 0 ||
+          nx >= W ||
+          ny < 0 ||
+          ny >= H ||
+          matrix[ny]![nx]! === 'grass' ||
+          matrix[ny]![nx]! === 'sand';
+        if (isLandOrOOB) {
+          const d = Math.hypot(dx, dy);
+          if (d < minDist) minDist = d;
+        }
+      }
+    }
+    return minDist;
+  };
 
   const cellDetails: (ResolvedWaterCell | null)[][] = Array.from({ length: H }, () =>
     Array(W).fill(null)
@@ -585,28 +594,8 @@ export function resolveWaterCoastGrid(
 
         // Priority 2: Interior of Inland Freshwater Lake / River (surrounded by water, not grass)
         // Abyssal Depth (Option 4): Center cells with distance to land >= MIN_ABYSSAL_LAKE_DISTANCE resolve to deep water
-        let isAbyssalCenter = false;
-        let minDist = Number.POSITIVE_INFINITY;
-        for (let dy = -ABYSSAL_SEARCH_RADIUS; dy <= ABYSSAL_SEARCH_RADIUS; dy++) {
-          for (let dx = -ABYSSAL_SEARCH_RADIUS; dx <= ABYSSAL_SEARCH_RADIUS; dx++) {
-            const ny = y + dy;
-            const nx = x + dx;
-            if (
-              nx < 0 ||
-              nx >= W ||
-              ny < 0 ||
-              ny >= H ||
-              matrix[ny]![nx]! === 'grass' ||
-              matrix[ny]![nx]! === 'sand'
-            ) {
-              const d = Math.hypot(dx, dy);
-              if (d < minDist) minDist = d;
-            }
-          }
-        }
-        if (minDist >= MIN_ABYSSAL_LAKE_DISTANCE) {
-          isAbyssalCenter = true;
-        }
+        const minDist = computeAbyssalMinDistance(x, y);
+        const isAbyssalCenter = minDist >= MIN_ABYSSAL_LAKE_DISTANCE;
 
         const isDeepWater = isAbyssalCenter || terrain === 'water_deep';
         const primaryTile =

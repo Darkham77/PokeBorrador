@@ -21,7 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { BaseAuditor, SharedAstContext, normalizePosixPath } from '@francogp/auditor';
+import { BaseAuditor, SharedAstContext, normalizePosixPath , createRuleCapabilities} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -144,7 +144,7 @@ export const CANONICAL_SHOWDOWN_PROTOCOL_TOKENS = {
 export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(SHOWDOWN_PARITY_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -154,7 +154,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_showdown_parity',
       configKey: 'fsm.showdownParity',
       defaultConfig: {
@@ -178,88 +178,85 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
   }
 
   public override async runAudit(astContext?: SharedAstContext): Promise<void> {
-    this.markRuleEvaluated('missing-protocol-token');
-
-    const battleFiles = await this.context.collectFiles(['src/logic/battle'], new Set(['.ts']));
-    const bridgeFiles = battleFiles.filter(f => {
-      const base = path.basename(f);
-      return base.startsWith('showdownBridge') && base.endsWith('.ts');
-    });
-
     const handledTokens = new Set<string>();
-    const astEngine = astContext ?? new SharedAstContext();
+    let totalTokensAudited = 0;
 
-    this.context.logStep(1, 2, `Parsing handlers in ${bridgeFiles.length} showdownBridge files...`);
+    await this.runSubAuditor('missing-protocol-token', async () => {
+      const battleFiles = await this.context.collectFiles(['src/logic/battle'], new Set(['.ts']));
+      const bridgeFiles = battleFiles.filter(f => {
+        const base = path.basename(f);
+        return base.startsWith('showdownBridge') && base.endsWith('.ts');
+      });
 
-    for (const relPath of bridgeFiles) {
-      this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, relPath)));
-      const fullPath = path.resolve(this.projectRoot, relPath);
-      const code = fs.readFileSync(fullPath, 'utf-8');
+      const astEngine = astContext ?? new SharedAstContext();
 
-      const sourceFile = astEngine.getSourceFile(fullPath, code);
+      for (const relPath of bridgeFiles) {
+        this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, relPath)));
+        const fullPath = path.resolve(this.projectRoot, relPath);
+        const code = fs.readFileSync(fullPath, 'utf-8');
 
-      const visit = (node: ts.Node) => {
-        // 1. Match Object Literal Keys (CORE_EVENT_DISPATCHER, etc.)
-        if (ts.isPropertyAssignment(node)) {
-          let keyText = '';
-          if (ts.isStringLiteral(node.name) || ts.isIdentifier(node.name)) {
-            keyText = node.name.text;
-          }
-          if (keyText) {
-            handledTokens.add(keyText);
-          }
-        }
+        const sourceFile = astEngine.getSourceFile(fullPath, code);
 
-        // 2. Match Array Literal elements (IGNORED_PROTOCOL_EVENTS)
-        if (ts.isArrayLiteralExpression(node)) {
-          for (const elem of node.elements) {
-            if (ts.isStringLiteral(elem)) {
-              handledTokens.add(elem.text);
+        const visit = (node: ts.Node) => {
+          // 1. Match Object Literal Keys (CORE_EVENT_DISPATCHER, etc.)
+          if (ts.isPropertyAssignment(node)) {
+            let keyText = '';
+            if (ts.isStringLiteral(node.name) || ts.isIdentifier(node.name)) {
+              keyText = node.name.text;
+            }
+            if (keyText) {
+              handledTokens.add(keyText);
             }
           }
-        }
 
-        // 3. Match switch case clauses (case '-weather':)
-        if (ts.isCaseClause(node) && ts.isStringLiteral(node.expression)) {
-          handledTokens.add(node.expression.text);
-        }
+          // 2. Match Array Literal elements (IGNORED_PROTOCOL_EVENTS)
+          if (ts.isArrayLiteralExpression(node)) {
+            for (const elem of node.elements) {
+              if (ts.isStringLiteral(elem)) {
+                handledTokens.add(elem.text);
+              }
+            }
+          }
 
-        // 4. Match binary equality checks (type === 'switch')
-        if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken) {
-          if (ts.isStringLiteral(node.right)) {
-            handledTokens.add(node.right.text);
-          } else if (ts.isStringLiteral(node.left)) {
-            handledTokens.add(node.left.text);
+          // 3. Match switch case clauses (case '-weather':)
+          if (ts.isCaseClause(node) && ts.isStringLiteral(node.expression)) {
+            handledTokens.add(node.expression.text);
+          }
+
+          // 4. Match binary equality checks (type === 'switch')
+          if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken) {
+            if (ts.isStringLiteral(node.right)) {
+              handledTokens.add(node.right.text);
+            } else if (ts.isStringLiteral(node.left)) {
+              handledTokens.add(node.left.text);
+            }
+          }
+
+          ts.forEachChild(node, visit);
+        };
+
+        visit(sourceFile);
+      }
+
+      // Filtered tokens like 'split'
+      handledTokens.add('split');
+
+      for (const [category, tokens] of Object.entries(CANONICAL_SHOWDOWN_PROTOCOL_TOKENS)) {
+        for (const token of tokens) {
+          totalTokensAudited++;
+          if (!handledTokens.has(token)) {
+            this.addViolation({
+              ruleId: 'missing-protocol-token',
+              severity: 'error',
+              file: bridgeFiles[0] || 'src/logic/battle/showdownBridge.ts',
+              line: 1,
+              message: `El token de protocolo Showdown '${token}' (${category}) carece de manejador, dispatcher o mapeo en src/logic/battle/showdownBridge*.ts.`,
+              context: token
+            });
           }
         }
-
-        ts.forEachChild(node, visit);
-      };
-
-      visit(sourceFile);
-    }
-
-    // Filtered tokens like 'split'
-    handledTokens.add('split');
-
-    this.context.logStep(2, 2, 'Checking canonical protocol token coverage...');
-
-    let totalTokensAudited = 0;
-    for (const [category, tokens] of Object.entries(CANONICAL_SHOWDOWN_PROTOCOL_TOKENS)) {
-      for (const token of tokens) {
-        totalTokensAudited++;
-        if (!handledTokens.has(token)) {
-          this.addViolation({
-            ruleId: 'missing-protocol-token',
-            severity: 'error',
-            file: bridgeFiles[0] || 'src/logic/battle/showdownBridge.ts',
-            line: 1,
-            message: `El token de protocolo Showdown '${token}' (${category}) carece de manejador, dispatcher o mapeo en src/logic/battle/showdownBridge*.ts.`,
-            context: token
-          });
-        }
       }
-    }
+    });
 
     this.context.setMetric('Bridge Files Scanned', this.filesScannedCount);
     this.context.setMetric('Tokens Audited', totalTokensAudited);

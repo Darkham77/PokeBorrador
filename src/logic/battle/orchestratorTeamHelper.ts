@@ -46,13 +46,18 @@ export function cleanTeamVolatileStatus(team: Pokemon[], isPvP: boolean, ctx: Ba
   })
 }
 
+export interface SeatsProtocolOptions {
+  isTrainer: boolean;
+  isGym: boolean;
+}
+
 export function setupSeatsProtocol(
   ctx: BattleContext,
-  isTrainer: boolean,
-  isGym: boolean,
   finalEnemyPoke: Pokemon,
-  effectivePlayerTeam: Pokemon[]
+  effectivePlayerTeam: Pokemon[],
+  options: SeatsProtocolOptions
 ): void {
+  const { isTrainer, isGym } = options;
   if (!ctx.activeBattle.value) return
   ctx.activeBattle.value.enemy = (!isTrainer && !isGym) ? finalEnemyPoke : null
   const currentP = ctx.activeBattle.value.player

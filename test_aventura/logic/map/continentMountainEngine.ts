@@ -204,6 +204,69 @@ function findBestMassifPeak(
   return bestPeak;
 }
 
+function findHighestScoreMassifCell(
+  massif: readonly { readonly x: number; readonly y: number }[],
+  mountainScores: readonly (readonly number[])[]
+): { readonly x: number; readonly y: number } | null {
+  let bestCell: { readonly x: number; readonly y: number } | null = null;
+  let bestScore = -1;
+  for (const c of massif) {
+    const s = mountainScores[c.y]![c.x]!;
+    if (s > bestScore) {
+      bestScore = s;
+      bestCell = c;
+    }
+  }
+  return bestCell;
+}
+
+function computeLakeMaxNearScore(
+  lakeCells: readonly { readonly x: number; readonly y: number }[],
+  mountainScores: readonly (readonly number[])[],
+  validZone: readonly (readonly boolean[])[],
+  width: number,
+  height: number
+): number {
+  const LAKE_SCAN_RADIUS = 3 as const;
+  let maxNearScore = 0;
+  for (const pt of lakeCells) {
+    for (let dy = -LAKE_SCAN_RADIUS; dy <= LAKE_SCAN_RADIUS; dy++) {
+      for (let dx = -LAKE_SCAN_RADIUS; dx <= LAKE_SCAN_RADIUS; dx++) {
+        const nx = pt.x + dx;
+        const ny = pt.y + dy;
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height || !validZone[ny]![nx]) continue;
+        const s = mountainScores[ny]![nx]!;
+        if (s > maxNearScore) maxNearScore = s;
+      }
+    }
+  }
+  return maxNearScore;
+}
+
+function applyLakeBasinRimRelief(
+  lakeCells: readonly { readonly x: number; readonly y: number }[],
+  rawHeightmap: number[][],
+  mountainScores: readonly (readonly number[])[],
+  validZone: readonly (readonly boolean[])[],
+  rimThreshold: number,
+  width: number,
+  height: number
+): void {
+  const LAKE_RIM_RELIEF_RADIUS = 2 as const;
+  for (const pt of lakeCells) {
+    for (let dy = -LAKE_RIM_RELIEF_RADIUS; dy <= LAKE_RIM_RELIEF_RADIUS; dy++) {
+      for (let dx = -LAKE_RIM_RELIEF_RADIUS; dx <= LAKE_RIM_RELIEF_RADIUS; dx++) {
+        const nx = pt.x + dx;
+        const ny = pt.y + dy;
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height || !validZone[ny]![nx]) continue;
+        if (mountainScores[ny]![nx]! >= rimThreshold) {
+          rawHeightmap[ny]![nx] = Math.max(1, rawHeightmap[ny]![nx]!);
+        }
+      }
+    }
+  }
+}
+
 /**
  * Prunes isolated pits, tiny depressions, and orphan U/L wall fragments inside mountain plateaus.
  */
@@ -497,61 +560,35 @@ export function generateContinentalMountains(
   const visitedLake: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      if (terrainMatrix[y]![x] === 'water' && !visitedOcean[y]![x] && !visitedLake[y]![x]) {
-        const q = [{ x, y }];
-        visitedLake[y]![x] = true;
-        const lakeCells: { x: number; y: number }[] = [];
-        let maxNearScore = 0;
+      if (terrainMatrix[y]![x] !== 'water' || visitedOcean[y]![x] || visitedLake[y]![x]) {
+        continue;
+      }
+      const q = [{ x, y }];
+      visitedLake[y]![x] = true;
+      const lakeCells: { x: number; y: number }[] = [];
 
-        while (q.length > 0) {
-          const cur = q.pop()!;
-          lakeCells.push(cur);
-          for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-            const nx = cur.x + dx!;
-            const ny = cur.y + dy!;
-            if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-              if (terrainMatrix[ny]![nx] === 'water' && !visitedOcean[ny]![nx] && !visitedLake[ny]![nx]) {
-                visitedLake[ny]![nx] = true;
-                q.push({ x: nx, y: ny });
-              }
-            }
+      while (q.length > 0) {
+        const cur = q.pop()!;
+        lakeCells.push(cur);
+        for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          const nx = cur.x + dx!;
+          const ny = cur.y + dy!;
+          if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+          if (terrainMatrix[ny]![nx] === 'water' && !visitedOcean[ny]![nx] && !visitedLake[ny]![nx]) {
+            visitedLake[ny]![nx] = true;
+            q.push({ x: nx, y: ny });
           }
         }
+      }
 
-        // Check if this lake is situated in an elevated/mountain massif sector
-        const LAKE_SCAN_RADIUS = 3 as const;
-        for (const pt of lakeCells) {
-          for (let dy = -LAKE_SCAN_RADIUS; dy <= LAKE_SCAN_RADIUS; dy++) {
-            for (let dx = -LAKE_SCAN_RADIUS; dx <= LAKE_SCAN_RADIUS; dx++) {
-              const nx = pt.x + dx;
-              const ny = pt.y + dy;
-              if (nx >= 0 && nx < W && ny >= 0 && ny < H && validZone[ny]![nx]) {
-                const s = mountainScores[ny]![nx]!;
-                if (s > maxNearScore) maxNearScore = s;
-              }
-            }
-          }
-        }
+      // Check if this lake is situated in an elevated/mountain massif sector
+      const maxNearScore = computeLakeMaxNearScore(lakeCells, mountainScores, validZone, W, H);
 
-        // If mountain lake: ensure orographic rim relief surrounding the basin
-        // strictly for cells with high mountain noise (>= t1Threshold * 0.85) in the lake's immediate perimeter (radius <= 2)
-        if (maxNearScore >= t1Threshold) {
-          const rimThreshold = t1Threshold * LAKE_RIM_THRESHOLD_RATIO;
-          const LAKE_RIM_RELIEF_RADIUS = 2 as const;
-          for (const pt of lakeCells) {
-            for (let dy = -LAKE_RIM_RELIEF_RADIUS; dy <= LAKE_RIM_RELIEF_RADIUS; dy++) {
-              for (let dx = -LAKE_RIM_RELIEF_RADIUS; dx <= LAKE_RIM_RELIEF_RADIUS; dx++) {
-                const nx = pt.x + dx;
-                const ny = pt.y + dy;
-                if (nx >= 0 && nx < W && ny >= 0 && ny < H && validZone[ny]![nx]) {
-                  if (mountainScores[ny]![nx]! >= rimThreshold) {
-                    rawHeightmap[ny]![nx] = Math.max(1, rawHeightmap[ny]![nx]!);
-                  }
-                }
-              }
-            }
-          }
-        }
+      // If mountain lake: ensure orographic rim relief surrounding the basin
+      // strictly for cells with high mountain noise (>= t1Threshold * 0.85) in the lake's immediate perimeter (radius <= 2)
+      if (maxNearScore >= t1Threshold) {
+        const rimThreshold = t1Threshold * LAKE_RIM_THRESHOLD_RATIO;
+        applyLakeBasinRimRelief(lakeCells, rawHeightmap, mountainScores, validZone, rimThreshold, W, H);
       }
     }
   }
@@ -719,17 +756,9 @@ export function generateContinentalMountains(
       }
 
       if (!hasTier2) {
-        let bestPeak = findBestMassifPeak(massif, mtnClearance, mountainScores, 1);
-        if (!bestPeak) {
-          let bestScore = -1;
-          for (const c of massif) {
-            const s = mountainScores[c.y]![c.x]!;
-            if (s > bestScore) {
-              bestScore = s;
-              bestPeak = c;
-            }
-          }
-        }
+        const bestPeak =
+          findBestMassifPeak(massif, mtnClearance, mountainScores, 1) ??
+          findHighestScoreMassifCell(massif, mountainScores);
 
         if (bestPeak) {
           const px = bestPeak.x;

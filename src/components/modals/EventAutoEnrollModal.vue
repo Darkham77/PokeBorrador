@@ -100,6 +100,9 @@ const handleConfirm = async () => {
             :alt="pokemon.name"
             class="pokemon-sprite pixelated"
             draggable="false"
+          
+            width="32"
+            height="32"
           >
           <span
             v-if="pokemon.isShiny"
@@ -481,7 +484,7 @@ const handleConfirm = async () => {
     padding: 10px 14px;
     border: none;
     border-radius: $radius-lg;
-    background: Linear-Gradient(135deg, #f59e0b, #d97706);
+    background: Linear-Gradient(135deg, var(--amber-dark), var(--amber-dark));
     color: var(--slate-900);
     font-size: var(--font-9);
     font-weight: bold;

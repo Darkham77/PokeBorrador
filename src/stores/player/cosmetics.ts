@@ -109,7 +109,7 @@ function checkCosmeticRequirement(
   async function equipNickStyle(styleId?: NickStyleId) {
     if (!authStore.user || !gameStore.db) return
     
-    // Validación de seguridad antes de equipar
+    // Security validation before equipping
     if (styleId && isNickStyleId(styleId)) {
       const userClass = gameStore.state.playerClass || ''
       const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
@@ -141,7 +141,7 @@ function checkCosmeticRequirement(
   async function equipAvatarStyle(styleId?: AvatarStyleId) {
     if (!authStore.user || !gameStore.db) return
     
-    // Validación de seguridad antes de equipar
+    // Security validation before equipping
     if (styleId && isAvatarStyleId(styleId)) {
       const userClass = gameStore.state.playerClass || ''
       const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)

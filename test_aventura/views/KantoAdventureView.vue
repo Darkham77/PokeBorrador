@@ -677,8 +677,8 @@ function preloadTrainerSprites() {
       for (let f = 0; f < 3; f++) {
         const img = new Image()
         img.src = type === 'walk'
-          ? `./assets/sprites/trainers/red_walk_${dir}_${f}.png`
-          : `./assets/sprites/trainers/red_${type}_${dir}_${f}_v3.png`
+          ? `/test_aventura/assets/sprites/trainers/red_walk_${dir}_${f}.png`
+          : `/test_aventura/assets/sprites/trainers/red_${type}_${dir}_${f}_v3.png`
       }
     }
   }
@@ -1220,6 +1220,9 @@ onMounted(() => {
               alt="Companion"
               class="pixel-art h-8 w-auto max-w-none"
               :class="{ 'anim-bounce-companion': isMoving }"
+            
+              width="32"
+              height="32"
             >
           </div>
           <div
@@ -1231,30 +1234,42 @@ onMounted(() => {
             <!-- If flying -->
             <img
               v-if="isMoving && currentPlanPaths[selectedPlanIndex]?.isFly"
-              :src="`./assets/sprites/trainers/red_fly_${playerDirection}_${walkFrame}_v3.png`"
+              :src="`/test_aventura/assets/sprites/trainers/red_fly_${playerDirection}_${walkFrame}_v3.png`"
               class="pixel-art h-12 w-auto max-w-none"
               alt="Volando"
+            
+              width="32"
+              height="32"
             >
             <!-- If surfing -->
             <img
               v-else-if="isSurfing"
-              :src="`./assets/sprites/trainers/red_surf_${playerDirection}_${walkFrame}_v3.png`"
+              :src="`/test_aventura/assets/sprites/trainers/red_surf_${playerDirection}_${walkFrame}_v3.png`"
               class="pixel-art h-12 w-auto max-w-none"
               alt="Surf"
+            
+              width="32"
+              height="32"
             >
             <!-- If riding a bike -->
             <img
               v-else-if="playerInventory['Bicicleta']"
-              :src="`./assets/sprites/trainers/red_bike_${playerDirection}_${walkFrame}_v3.png`"
+              :src="`/test_aventura/assets/sprites/trainers/red_bike_${playerDirection}_${walkFrame}_v3.png`"
               class="pixel-art h-12 w-auto max-w-none"
               alt="Bici"
+            
+              width="32"
+              height="32"
             >
             <!-- If walking (dynamic local sprite!) -->
             <img
               v-else
-              :src="`./assets/sprites/trainers/red_walk_${playerDirection}_${walkFrame}.png`"
+              :src="`/test_aventura/assets/sprites/trainers/red_walk_${playerDirection}_${walkFrame}.png`"
               class="pixel-art h-12 w-auto max-w-none"
               alt="Caminando"
+            
+              width="32"
+              height="32"
             >
           </div>
         </div>

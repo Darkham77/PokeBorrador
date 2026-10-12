@@ -73,7 +73,7 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     transform: `translate(${tx.value}px, ${ty.value}px) scale(${scale.value})`,
     transformOrigin: '0 0',
     willChange: 'transform',
-    // Inyectamos escalas estandarizadas para uso en CSS
+    // Inject standardized scales for CSS usage
     '--camera-scale': scale.value,
     '--obj-scale': WORLD_CONSTANTS.OBJECT_SCALE,
     '--bush-size': WORLD_CONSTANTS.BUSH_SIZE,
@@ -81,13 +81,13 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
   }))
 
   const updateCamera = (width: number, height: number) => {
-    // Filtro de Estabilidad: Ignoramos dimensiones nulas o valores de inicialización del navegador (0 o window.innerWidth exacto si no es fullscreen)
+    // Stability Filter: Ignore zero dimensions or browser initialization values
     if (!width || !height || width < MIN_VIEWPORT_SIZE_PX || height < MIN_VIEWPORT_SIZE_PX) return
 
     let cw = width
     let ch = height
 
-    // Mantener la proporción dentro de los límites del manual
+    // Keep aspect ratio within manual boundaries
     const ratio = cw / ch
     if (ratio > WORLD_CONSTANTS.RATIO_MAX) {
       cw = ch * WORLD_CONSTANTS.RATIO_MAX
@@ -98,12 +98,12 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     camWidth.value = cw
     camHeight.value = ch
 
-    // Cálculo de escala basado estrictamente en el manual (VisibleX/Y)
+    // Scale calculation strictly based on manual specifications (VisibleX/Y)
     const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X
     const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y
     const baseScale = Math.min(scaleX, scaleY)
 
-    // Acotación dinámica para que el zoom mínimo nunca descubra barras negras
+    // Dynamic clamping so minimum zoom never reveals letterboxing
     const minScaleX = cw / WORLD_CONSTANTS.MAP_WIDTH
     const minScaleY = ch / (WORLD_CONSTANTS.TARGET_Y * 2)
     const coverScale = Math.max(minScaleX, minScaleY) * COVER_SAFETY_MARGIN
@@ -119,8 +119,8 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     scale.value = currentScale
 
     // Focal Point (Bottom-Alignment Centering)
-    // El desplazamiento Tx/Ty centra el TARGET_X/Y del coordinador en el centro del viewport físico,
-    // con acotación estricta de límites para garantizar que el mapa cubra siempre el 100% del viewport
+    // Tx/Ty displacement centers coordinator TARGET_X/Y in physical viewport center,
+    // with strict boundary clamping to guarantee map always covers 100% of viewport
     const desiredTx = (cw / 2) - (WORLD_CONSTANTS.TARGET_X * currentScale)
     const desiredTy = (ch / 2) - (WORLD_CONSTANTS.TARGET_Y * currentScale)
     const minTx = cw - (WORLD_CONSTANTS.MAP_WIDTH * currentScale)
@@ -146,8 +146,8 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
 
   onMounted(() => {
     if (viewportRef.value) {
-      // Evitamos getBoundingClientRect() para prevenir Forced Reflows.
-      // Usamos clientWidth/clientHeight como inicialización estática no-bloqueante.
+      // Avoid getBoundingClientRect() to prevent Forced Reflows.
+      // Use clientWidth/clientHeight for static non-blocking initialization.
       const w = viewportRef.value.clientWidth || DEFAULT_INITIAL_WIDTH_PX
       const h = viewportRef.value.clientHeight || DEFAULT_INITIAL_HEIGHT_PX
       vpWidth.value = w

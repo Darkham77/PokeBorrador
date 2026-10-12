@@ -73,7 +73,7 @@ export function getRouteWeather(
 }
 
 /**
- * Determina el multiplicador de spawn de una especie basado en el clima actual.
+ * Determines spawn multiplier of a species based on current weather.
  */
 export function getWeatherMultiplier(id: string, weather: string): number {
   let pData: (PokemonData & { type: string | string[] });

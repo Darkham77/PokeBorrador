@@ -204,7 +204,8 @@ function setFaction(f: string) {
               :src="getAssetUrl(ASSET_TYPES.BADGE, g.id)"
               :alt="g.badgeName"
               class="badge-sprite"
-              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+              width="32"
+              height="32"
             >
             <span class="badge-lbl">{{ g.leader }}</span>
           </div>

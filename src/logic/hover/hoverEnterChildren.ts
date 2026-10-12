@@ -44,7 +44,12 @@ function handleCloseButtonHoverEnter(el: HTMLElement): gsap.TweenVars {
   return { scale: CLOSE_BTN_SCALE, y: 0, duration: CLOSE_BTN_DURATION_SEC, ease: 'power2.out' }
 }
 
-function handle3DOrRetroButtonHoverEnter(el: HTMLElement, isConfirm: boolean, isRetro: boolean): gsap.TweenVars {
+interface ButtonHoverEnterFlags {
+  isConfirm: boolean
+  isRetro: boolean
+}
+
+function handle3DOrRetroButtonHoverEnter(el: HTMLElement, { isConfirm, isRetro }: ButtonHoverEnterFlags): gsap.TweenVars {
   const shadowInfo = getElementShadowColorAndDepth(el)
   if (isRetro) {
     return {
@@ -86,7 +91,7 @@ export function calculateButtonHoverEnterVars(el: HTMLElement): gsap.TweenVars {
   const isRetro = !!el.closest('.variant-retro') && !Array.from(el.classList).some(cls => cls.startsWith('btn-vicio'))
 
   if (isConfirm || (isCancel && isRetro)) {
-    return handle3DOrRetroButtonHoverEnter(el, isConfirm, isRetro)
+    return handle3DOrRetroButtonHoverEnter(el, { isConfirm, isRetro })
   }
 
   if (el.classList.contains('accordion-toggle') || el.classList.contains('no-scale-hover')) {

@@ -17,7 +17,7 @@
       "width": 160,
       "height": 160,
       "file": "house_red.png",
-      "file_path": "/assets/prefabs/buildings/house_red.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/house_red.png",
       "source": "pokegba"
     },
     {
@@ -27,7 +27,7 @@
       "width": 160,
       "height": 160,
       "file": "house_blue.png",
-      "file_path": "/assets/prefabs/buildings/house_blue.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/house_blue.png",
       "source": "pokegba"
     },
     {
@@ -37,7 +37,7 @@
       "width": 160,
       "height": 160,
       "file": "house_green.png",
-      "file_path": "/assets/prefabs/buildings/house_green.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/house_green.png",
       "source": "pokegba"
     },
     {
@@ -47,7 +47,7 @@
       "width": 160,
       "height": 160,
       "file": "house_pewter_slate.png",
-      "file_path": "/assets/prefabs/buildings/house_pewter_slate.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/house_pewter_slate.png",
       "source": "pokegba"
     },
     {
@@ -57,7 +57,7 @@
       "width": 224,
       "height": 192,
       "file": "lab_oak.png",
-      "file_path": "/assets/prefabs/buildings/lab_oak.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/lab_oak.png",
       "source": "pokegba"
     },
     {
@@ -67,7 +67,7 @@
       "width": 160,
       "height": 160,
       "file": "pokecenter.png",
-      "file_path": "/assets/prefabs/buildings/pokecenter.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/pokecenter.png",
       "source": "pokegba"
     },
     {
@@ -77,7 +77,7 @@
       "width": 128,
       "height": 128,
       "file": "pokemart.png",
-      "file_path": "/assets/prefabs/buildings/pokemart.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/pokemart.png",
       "source": "pokegba"
     },
     {
@@ -87,7 +87,7 @@
       "width": 192,
       "height": 160,
       "file": "gym.png",
-      "file_path": "/assets/prefabs/buildings/gym.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/gym.png",
       "source": "pokegba"
     },
     {
@@ -97,7 +97,7 @@
       "width": 512,
       "height": 256,
       "file": "pewter_museum.png",
-      "file_path": "/assets/prefabs/buildings/pewter_museum.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/pewter_museum.png",
       "source": "pokegba"
     },
     {
@@ -107,7 +107,7 @@
       "width": 224,
       "height": 256,
       "file": "mansion_school.png",
-      "file_path": "/assets/prefabs/buildings/mansion_school.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/mansion_school.png",
       "source": "pokegba"
     },
     {
@@ -117,7 +117,7 @@
       "width": 192,
       "height": 224,
       "file": "gatehouse_route.png",
-      "file_path": "/assets/prefabs/buildings/gatehouse_route.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/gatehouse_route.png",
       "source": "pokegba"
     },
     {
@@ -127,7 +127,7 @@
       "width": 256,
       "height": 160,
       "file": "gatehouse_route_horizontal.png",
-      "file_path": "/assets/prefabs/buildings/gatehouse_route_horizontal.png",
+      "file_path": "/test_aventura/assets/prefabs/buildings/gatehouse_route_horizontal.png",
       "source": "pokegba"
     },
     {
@@ -137,7 +137,7 @@
       "width": 64,
       "height": 96,
       "file": "tree_poke.png",
-      "file_path": "/assets/prefabs/vegetation/tree_poke.png",
+      "file_path": "/test_aventura/assets/prefabs/vegetation/tree_poke.png",
       "source": "pokegba"
     },
     {
@@ -147,7 +147,7 @@
       "width": 64,
       "height": 96,
       "file": "tree_viridian_forest.png",
-      "file_path": "/assets/prefabs/vegetation/tree_viridian_forest.png",
+      "file_path": "/test_aventura/assets/prefabs/vegetation/tree_viridian_forest.png",
       "source": "pokegba"
     },
     {
@@ -157,7 +157,7 @@
       "width": 32,
       "height": 32,
       "file": "tree_cuttable.png",
-      "file_path": "/assets/prefabs/vegetation/tree_cuttable.png",
+      "file_path": "/test_aventura/assets/prefabs/vegetation/tree_cuttable.png",
       "source": "pokegba"
     },
     {
@@ -167,7 +167,7 @@
       "width": 64,
       "height": 96,
       "file": "tree_pine_small.png",
-      "file_path": "/assets/prefabs/vegetation/tree_pine_small.png",
+      "file_path": "/test_aventura/assets/prefabs/vegetation/tree_pine_small.png",
       "source": "pokegba"
     },
     {
@@ -177,7 +177,7 @@
       "width": 32,
       "height": 32,
       "file": "flowers_red.png",
-      "file_path": "/assets/prefabs/props/flowers_red.png",
+      "file_path": "/test_aventura/assets/prefabs/props/flowers_red.png",
       "source": "pokegba"
     },
     {
@@ -187,7 +187,7 @@
       "width": 32,
       "height": 32,
       "file": "fence_picket.png",
-      "file_path": "/assets/prefabs/props/fence_picket.png",
+      "file_path": "/test_aventura/assets/prefabs/props/fence_picket.png",
       "source": "pokegba"
     },
     {
@@ -197,7 +197,7 @@
       "width": 32,
       "height": 32,
       "file": "signpost.png",
-      "file_path": "/assets/prefabs/props/signpost.png",
+      "file_path": "/test_aventura/assets/prefabs/props/signpost.png",
       "source": "pokegba"
     },
     {
@@ -207,7 +207,7 @@
       "width": 32,
       "height": 32,
       "file": "mailbox.png",
-      "file_path": "/assets/prefabs/props/mailbox.png",
+      "file_path": "/test_aventura/assets/prefabs/props/mailbox.png",
       "source": "pokegba"
     },
     {
@@ -217,7 +217,7 @@
       "width": 32,
       "height": 32,
       "file": "poke_ledge_jump.png",
-      "file_path": "/assets/prefabs/props/poke_ledge_jump.png",
+      "file_path": "/test_aventura/assets/prefabs/props/poke_ledge_jump.png",
       "source": "pokegba"
     }
   ]

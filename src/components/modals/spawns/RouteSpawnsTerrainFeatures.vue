@@ -40,7 +40,7 @@ const emit = defineEmits<{
 }>();
 
 const specialBonus = computed(() =>
-  resolveSpecialRouteBonus(props.isOfficialRouteActive, props.isExtortedRouteActive, props.timeRemainingText)
+  resolveSpecialRouteBonus({ isOfficialActive: props.isOfficialRouteActive, isExtortedActive: props.isExtortedRouteActive }, props.timeRemainingText)
 );
 
 const fishingFeature = computed(() =>

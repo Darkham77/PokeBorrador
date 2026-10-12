@@ -17,9 +17,9 @@ export function defineResilientAsyncComponent<T extends Component = Component>(
     onError(_error, retry, fail, attempts) {
       if (attempts <= maxRetries) {
         gsap.delayedCall((attempts * RETRY_BACKOFF_BASE_MS) / MS_PER_SECOND, retry);
-      } else {
-        fail();
+        return;
       }
+      fail();
     },
   });
 }

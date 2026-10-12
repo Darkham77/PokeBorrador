@@ -317,10 +317,7 @@ export class TilesRegistryService {
 // Global Singleton for application & map engine use
 export const defaultTilesRegistry = new TilesRegistryService();
 
-// Standalone Helper functions delegating to defaultTilesRegistry
-export function getTilesByCategory(category: TileCategory): readonly TileMetadata[] {
-  return defaultTilesRegistry.getTilesByCategory(category);
-}
+
 
 export function getTilesByTag(tag: string, filterOptions?: TileFilterOptions): readonly TileMetadata[] {
   return defaultTilesRegistry.getTilesByTag(tag, filterOptions);

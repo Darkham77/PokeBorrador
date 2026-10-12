@@ -12,7 +12,7 @@ interface RequestPokemonWithUid {
 
 export class ShowdownSlotResolver {
   /**
-   * Encuentra un Pokémon en el equipo reactivo por su índice en la lista de Showdown (1-based).
+   * Finds a Pokémon in the reactive team by its Showdown list index (1-based).
    */
   static getPokemonByShowdownSlot(
     team: Pokemon[],
@@ -35,7 +35,7 @@ export class ShowdownSlotResolver {
   }
 
   /**
-   * Obtiene el slot (1-based index) de Showdown para un Pokémon por su UID.
+   * Gets the Showdown slot (1-based index) for a Pokémon by its UID.
    */
   static getShowdownSlotForUid(request: ShowdownPlayerRequest | null | undefined, uid: string): number {
     if (!request || !request.side || !Array.isArray(request.side.pokemon)) {

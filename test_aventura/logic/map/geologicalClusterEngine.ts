@@ -42,6 +42,36 @@ export interface GeologicalClusterResult {
   readonly massifIdMatrix: readonly (readonly (string | null)[])[];
 }
 
+function resolveMassifPalette(
+  options: GeologicalClusterOptions,
+  cells: readonly { x: number; y: number }[],
+  count: number,
+  centroidX: number,
+  worldWidth: number
+): MountainPalette {
+  if (options.defaultPalette) {
+    return options.defaultPalette;
+  }
+  let volcanicCellCount = 0;
+  let desertCellCount = 0;
+  if (options.macroBiomeGrid) {
+    for (const cell of cells) {
+      const mb = options.macroBiomeGrid[cell.y]?.[cell.x];
+      if (mb === 'volcanic_plateau') volcanicCellCount++;
+      else if (mb === 'arid_desert') desertCellCount++;
+    }
+  }
+
+  const DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO = 0.25 as const;
+  if (volcanicCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
+    return 'volcanic';
+  }
+  if (desertCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
+    return 'brown';
+  }
+  return centroidX < worldWidth * 0.5 ? 'brown' : 'gray';
+}
+
 /**
  * Clusters mountain elevation cells (Z >= 1) into discrete massifs using 8-connected CCL,
  * and assigns a single continuous geological palette to each massif.
@@ -114,32 +144,7 @@ export function clusterMountainMassifs(
       const centroidY = Math.round(sumY / count);
 
       // Determine single geological palette for the entire massif
-      let palette: MountainPalette;
-      if (options.defaultPalette) {
-        // Explicitly passed palette overrides automatic geographic splitting
-        palette = options.defaultPalette;
-      } else {
-        // Automatic geographical / ecological resolution
-        let volcanicCellCount = 0;
-        let desertCellCount = 0;
-        for (const cell of cells) {
-          if (options.macroBiomeGrid) {
-            const mb = options.macroBiomeGrid[cell.y]?.[cell.x];
-            if (mb === 'volcanic_plateau') volcanicCellCount++;
-            else if (mb === 'arid_desert') desertCellCount++;
-          }
-        }
-
-        const DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO = 0.25 as const;
-        if (volcanicCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
-          palette = 'volcanic';
-        } else if (desertCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
-          palette = 'brown';
-        } else {
-          // Western ridges -> brown (Mt. Moon), Eastern ridges -> gray (Granite Highland)
-          palette = centroidX < W * 0.5 ? 'brown' : 'gray';
-        }
-      }
+      const palette = resolveMassifPalette(options, cells, count, centroidX, W);
 
       const id = `massif_${massifIndex}`;
       const massif: MountainMassif = {

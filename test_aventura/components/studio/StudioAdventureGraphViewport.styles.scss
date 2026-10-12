@@ -138,10 +138,10 @@
     font-size: var(--font-16);
   }
 
-  &.type-city { background: #1e3a8a; border-color: var(--blue-400); }
-  &.type-league { background: #581c87; border-color: var(--purple-400); }
+  &.type-city { background: var(--blue-900, #1e3a8a); border-color: var(--blue-400); }
+  &.type-league { background: var(--purple-900, #581c87); border-color: var(--purple-400); }
   &.type-poi { background: var(--amber-dark); border-color: var(--amber); }
-  &.type-route { background: #064e3b; border-color: var(--emerald-400); }
+  &.type-route { background: var(--emerald-900, #064e3b); border-color: var(--emerald-400); }
 
   .pc-badge {
     position: absolute;

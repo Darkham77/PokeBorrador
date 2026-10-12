@@ -63,7 +63,7 @@
   }
 
   &.badge-back {
-    background: #7c3aed;
+    background: var(--purple-600, #7c3aed);
     color: var(--white);
   }
 }
@@ -99,7 +99,7 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  background: Radial-Gradient(ellipse at 50% 65%, #f1f5f9 0%, #e2e8f0 60%, #cbd5e1 100%);
+  background: radial-gradient(ellipse at 50% 65%, var(--slate-100, #f1f5f9) 0%, var(--slate-200, #e2e8f0) 60%, var(--slate-300, #cbd5e1) 100%);
   aspect-ratio: 1 / 1;
   cursor: grab;
   overflow: hidden;

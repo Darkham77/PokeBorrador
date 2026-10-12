@@ -10,7 +10,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import path, { resolve } from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -137,7 +137,7 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
   constructor() {
     const itemsPath = resolve(process.cwd(), 'src/data/inventory/items.json');
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(ITEM_SPRITE_COLLISION_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -147,7 +147,7 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'audit_item_sprite_collisions',
       configKey: 'assets.itemSpriteCollisions',
       defaultConfig: {
@@ -174,55 +174,59 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
 
   public override async runAudit(): Promise<void> {
     this.recordScanned('src/data/inventory/items.json');
-    this.markRuleEvaluated('item-missing-sprite');
-    this.markRuleEvaluated('item-sprite-collision');
 
-    this.context.logStep(1, 2, 'Reading inventory item catalog...');
-    const raw = readFileSync(this.itemsJsonPath, 'utf-8');
-    const parsed = JSON.parse(raw) as { SHOP_ITEMS?: ShopItem[] };
-    const shopItems = parsed.SHOP_ITEMS || [];
+    let shopItems: ShopItem[] = [];
+    let missingSpritesCount = 0;
+    this.runSubAuditorSync('item-missing-sprite', () => {
+      const raw = readFileSync(this.itemsJsonPath, 'utf-8');
+      const parsed = JSON.parse(raw) as { SHOP_ITEMS?: ShopItem[] };
+      shopItems = parsed.SHOP_ITEMS || [];
 
-    this.context.logStep(2, 2, `Auditing ${shopItems.length} items for missing sprites and collisions...`);
-    const missingSprites = findMissingSprites(shopItems);
-    const collisions = findSpriteCollisions(shopItems);
+      const missingSprites = findMissingSprites(shopItems);
+      missingSpritesCount = missingSprites.length;
+      for (const err of missingSprites) {
+        if (err.reason === 'missing_property') {
+          this.addViolation({
+            ruleId: 'item-missing-sprite',
+            severity: 'error',
+            file: 'src/data/inventory/items.json',
+            line: 1,
+            message: `${err.name} (${err.id}) - Missing 'sprite' property.`,
+            context: err.id
+          });
+        } else {
+          this.addViolation({
+            ruleId: 'item-missing-sprite',
+            severity: 'error',
+            file: 'src/data/inventory/items.json',
+            line: 1,
+            message: `${err.name} (${err.id}) - Physical sprite file not found: '${err.expectedPath}'`,
+            context: err.sprite || 'unknown'
+          });
+        }
+      }
+    });
 
-    for (const err of missingSprites) {
-      if (err.reason === 'missing_property') {
+    let collisionsCount = 0;
+    this.runSubAuditorSync('item-sprite-collision', () => {
+      const collisions = findSpriteCollisions(shopItems);
+      collisionsCount = collisions.length;
+      for (const group of collisions) {
+        const itemNames = group.items.map(i => i.id).join(', ');
         this.addViolation({
-          ruleId: 'item-missing-sprite',
-          severity: 'error',
+          ruleId: 'item-sprite-collision',
+          severity: 'warning',
           file: 'src/data/inventory/items.json',
           line: 1,
-          message: `${err.name} (${err.id}) - Missing 'sprite' property.`,
-          context: err.id
-        });
-      } else {
-        this.addViolation({
-          ruleId: 'item-missing-sprite',
-          severity: 'error',
-          file: 'src/data/inventory/items.json',
-          line: 1,
-          message: `${err.name} (${err.id}) - Physical sprite file not found: '${err.expectedPath}'`,
-          context: err.sprite || 'unknown'
+          message: `Sprite '${group.sprite}' reused by ${group.count} items (${itemNames}).`,
+          context: group.sprite
         });
       }
-    }
-
-    for (const group of collisions) {
-      const itemNames = group.items.map(i => i.id).join(', ');
-      this.addViolation({
-        ruleId: 'item-sprite-collision',
-        severity: 'warning',
-        file: 'src/data/inventory/items.json',
-        line: 1,
-        message: `Sprite '${group.sprite}' reused by ${group.count} items (${itemNames}).`,
-        context: group.sprite
-      });
-    }
+    });
 
     this.context.setMetric('Items audited', shopItems.length);
-    this.context.setMetric('Sprite collisions', collisions.length);
-    this.context.setMetric('Missing sprites', missingSprites.length);
+    this.context.setMetric('Sprite collisions', collisionsCount);
+    this.context.setMetric('Missing sprites', missingSpritesCount);
   }
 }
 

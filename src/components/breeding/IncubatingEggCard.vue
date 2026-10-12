@@ -272,11 +272,11 @@ const progress = computed(() => {
 .progress-bar {
   height: 100%;
   border-radius: $radius-full;
-  background: Linear-Gradient(90deg, #f36 0%, #a855f7 100%);
+  background: Linear-Gradient(90deg, var(--pokecenter-pink) 0%, var(--purple-400) 100%);
 }
 
 .ready .progress-bar {
-  background: Linear-Gradient(90deg, #22c55e 0%, #10b981 100%);
+  background: Linear-Gradient(90deg, var(--emerald) 0%, var(--emerald-500) 100%);
 }
 
 .progress-text {
@@ -311,7 +311,7 @@ const progress = computed(() => {
   @include pixelated;
 
   display: inline-block;
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
   font-size: var(--font-8);
   text-align: center;
   opacity: 0.8;

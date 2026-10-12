@@ -211,11 +211,11 @@ describe('System App Lifecycle & Core Stores Suite', () => {
         const stopPropSpy = vi.spyOn(event, 'stopPropagation')
         const preventDefaultSpy = vi.spyOn(event, 'preventDefault')
 
-        handleGlobalBlockEvent(event, true, false)
+        handleGlobalBlockEvent(event, { isAnyBlockingModalOpen: true, isStandaloneDevPage: false })
         expect(stopPropSpy).not.toHaveBeenCalled()
 
         Object.defineProperty(event, 'target', { value: innerButton })
-        handleGlobalBlockEvent(event, true, false)
+        handleGlobalBlockEvent(event, { isAnyBlockingModalOpen: true, isStandaloneDevPage: false })
         expect(stopPropSpy).toHaveBeenCalled()
         expect(preventDefaultSpy).not.toHaveBeenCalled()
 
@@ -232,7 +232,7 @@ describe('System App Lifecycle & Core Stores Suite', () => {
         const preventDefaultSpy = vi.spyOn(event, 'preventDefault')
         const stopImmediateSpy = vi.spyOn(event, 'stopImmediatePropagation')
 
-        handleGlobalBlockEvent(event, true, false)
+        handleGlobalBlockEvent(event, { isAnyBlockingModalOpen: true, isStandaloneDevPage: false })
         expect(preventDefaultSpy).toHaveBeenCalled()
         expect(stopImmediateSpy).toHaveBeenCalled()
 
@@ -245,7 +245,7 @@ describe('System App Lifecycle & Core Stores Suite', () => {
         Object.defineProperty(event, 'target', { value: outsideEl })
         const preventDefaultSpy = vi.spyOn(event, 'preventDefault')
 
-        handleGlobalBlockEvent(event, true, true)
+        handleGlobalBlockEvent(event, { isAnyBlockingModalOpen: true, isStandaloneDevPage: true })
         expect(preventDefaultSpy).not.toHaveBeenCalled()
       })
     })

@@ -45,7 +45,7 @@ export function isBattleMoveDisabled(
 ): boolean {
   if (isProcessing) return true
   if (!move) return true
-  // 1. Prioridad Absoluta: Consultar el request de Showdown
+  // 1. Absolute Priority: Consult the Showdown request
   if (playerRequest && playerRequest.active?.[0]?.moves) {
     const reqMoves = playerRequest.active[0].moves
     if (reqMoves.length > 0) {
@@ -59,19 +59,19 @@ export function isBattleMoveDisabled(
 
   if (move.disabled === true) return true
 
-  // 2. Si el Pokémon está en estado bloqueado (lockedmove, twoturnmove, thrash)
+  // 2. If Pokémon is in a locked state (lockedmove, twoturnmove, thrash)
   if (isPokemonLocked(playerInfo) && playerInfo?.lastMove) {
     if (move.id !== playerInfo.lastMove.id) {
       return true
     }
   }
 
-  // 3. Validación de Choice Items (Choice Band, Specs, Scarf)
+  // 3. Choice Items validation (Choice Band, Specs, Scarf)
   if (isChoiceLocked(playerInfo, move)) {
     return true
   }
 
-  // 4. PP agotados
+  // 4. Exhausted PP
   if (move.id !== 'struggle' && move.pp <= 0) {
     return true
   }

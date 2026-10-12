@@ -48,12 +48,18 @@ export {
   type TeamGeneratorType
 } from './showdownTeamGeneratorClient.ts';
 
+export interface ExecuteTurnWorkerOptions {
+  p1Skip?: boolean;
+  p2Skip?: boolean;
+  p1UsedBattleItem?: boolean;
+}
+
 export async function executeTurnInWorker(
   p1Choice: string,
   p2Choice?: string,
-  p1Skip?: boolean,
-  p2Skip?: boolean,
-  p1UsedBattleItem?: boolean
+  optionsOrP1Skip?: ExecuteTurnWorkerOptions | boolean,
+  p2SkipParam?: unknown,
+  p1UsedBattleItemParam?: unknown
 ): Promise<{
   logs: string[];
   isOver: boolean;
@@ -64,13 +70,18 @@ export async function executeTurnInWorker(
   p1Request?: ShowdownPlayerRequest;
   p2Request?: ShowdownPlayerRequest;
 }> {
+  const isOptionsObject = typeof optionsOrP1Skip === 'object' && optionsOrP1Skip !== null;
+  const p1Skip = isOptionsObject ? optionsOrP1Skip.p1Skip : Boolean(optionsOrP1Skip);
+  const p2Skip = isOptionsObject ? optionsOrP1Skip.p2Skip : Boolean(p2SkipParam);
+  const p1UsedBattleItem = isOptionsObject ? optionsOrP1Skip.p1UsedBattleItem : Boolean(p1UsedBattleItemParam);
+
   const worker = getShowdownWorker();
   if (!worker) {
     throw new Error('showdownWorker is null');
   }
 
   const finalP2Choice = p2Choice;
-  const simCheck = validateAndTraceSimulationReplay(p1Choice, finalP2Choice, p1Skip, p2Skip, p1UsedBattleItem);
+  const simCheck = validateAndTraceSimulationReplay(p1Choice, finalP2Choice, { p1Skip, p2Skip, p1UsedBattleItem });
   if (simCheck.shouldBypass) {
     return { logs: [], isOver: true, winner: null };
   }

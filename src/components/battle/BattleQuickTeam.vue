@@ -38,7 +38,7 @@ const canSwitch = computed(() => {
   const p = battleStore.state?.player
   if (!p) return false
   
-  if (p.hp <= 0) return true // Si el activo está debilitado, siempre se puede cambiar
+  if (p.hp <= 0) return true // If active Pokémon is fainted, switching is always allowed
   
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
   if (battleStore.isPlayerTrapped || p.volatileCounters?.['partiallytrapped'] || p.trapped) return false

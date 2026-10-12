@@ -106,7 +106,7 @@ const updateGlow = () => {
   // - Neutral (eff === 1) resets
   let glowType: MoveSlotGlowType | null = null
   if (isStatus) {
-    if (eff === 0) glowType = 'red' // Inmune al tipo del movimiento de estado
+    if (eff === 0) glowType = 'red' // Immune to the status move type
   } else {
     if (eff > 1) glowType = 'gold'
     else if (eff < 1) glowType = 'red'

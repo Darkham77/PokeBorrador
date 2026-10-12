@@ -29,10 +29,6 @@ export { getWildHeldItem, WILD_HELD_ITEMS } from './pokemonWildHeldItems.ts';
 export { validatePokemon } from './pokemonValidator.ts';
 export type { PokemonCreationOptions } from './pokemonCreationHelper.ts';
 
-export function getExpNeeded(level: number): number {
-  return getExpNeededPure(level);
-}
-
 export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   if (!p) return;
 
@@ -125,7 +121,7 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
     id, name: base.name, type: base.type, type2: base.type2,
     isFloating: base.isFloating,
     catchRate: base.catchRate,
-    level, exp: 0, expNeeded: getExpNeeded(level),
+    level, exp: 0, expNeeded: getExpNeededPure(level),
     ivs, nature, ability, gender, isShiny,
     moves: getMovesAtLevel(id, level, bypass) as Move[],
     status: '', sleepTurns: 0, friendship: DEFAULT_FRIENDSHIP_VALUE,

@@ -312,7 +312,7 @@ export const useBattleStore = defineStore('battle', () => {
   )
 
   const executeMove = async (moveIndex: number) => {
-    if (!canExecuteMove(isProcessing.value, isBattleActive.value, activeBattle.value)) return
+    if (!canExecuteMove({ isProc: isProcessing.value, isAct: isBattleActive.value }, activeBattle.value)) return
     if (isPvP.value) {
       gameBus.emit('PVP_COMMIT_PICK', {
         type: 'move',
@@ -366,7 +366,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const executeStruggle = async () => {
-    if (!canExecuteMove(isProcessing.value, isBattleActive.value, activeBattle.value)) return
+    if (!canExecuteMove({ isProc: isProcessing.value, isAct: isBattleActive.value }, activeBattle.value)) return
     isProcessing.value = true
     try {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
@@ -417,7 +417,18 @@ export const useBattleStore = defineStore('battle', () => {
       isProcessing.value = false
     }
   }
-  const endBattle = async (win: boolean, fled: boolean) => {
+
+  interface EndBattleOptions {
+    win?: boolean
+    fled?: boolean
+  }
+
+  const endBattle = async (
+    winOrOptions: EndBattleOptions | boolean,
+    fledParam = false
+  ) => {
+    const win = typeof winOrOptions === 'boolean' ? winOrOptions : Boolean(winOrOptions.win)
+    const fled = typeof winOrOptions === 'boolean' ? fledParam : Boolean(winOrOptions.fled)
     logger.info('BattleStore', `endBattle called. Win: ${win}, Fled: ${fled}`)
     return terminateBattle(getContext(), win, fled)
   }

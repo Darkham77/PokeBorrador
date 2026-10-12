@@ -106,7 +106,7 @@ const toggle = () => {
   border: none;
   border-radius: $radius-lg;
   background: transparent;
-  color: var(--white, #fff);
+  color: var(--white, var(--white));
   font-size: var(--font-11);
   font-weight: 600;
   outline: none;
@@ -156,7 +156,7 @@ const toggle = () => {
     .collapse-title {
       @include pixelated;
 
-      color: var(--white, #fff);
+      color: var(--white, var(--white));
       font-size: var(--font-11);
       letter-spacing: 0.5px;
     }
@@ -178,7 +178,7 @@ const toggle = () => {
     }
 
     .collapse-sub {
-      color: var(--gray, #94a3b8);
+      color: var(--gray, var(--slate-400));
       font-size: var(--font-10);
       font-weight: normal;
     }
@@ -188,7 +188,7 @@ const toggle = () => {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    color: var(--gray, #94a3b8);
+    color: var(--gray, var(--slate-400));
     font-size: var(--font-9);
     flex-shrink: 0;
     margin-left: 8px;

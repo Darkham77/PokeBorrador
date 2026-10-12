@@ -235,7 +235,7 @@ onUnmounted(() => {
 }
 
 .notif-time {
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
   font-size: var(--font-9);
 }
 
@@ -246,7 +246,7 @@ onUnmounted(() => {
   align-items: center;
   gap: $spacing-sm;
   padding: 30px 16px;
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
 
   .empty-icon {
     font-size: var(--font-24);

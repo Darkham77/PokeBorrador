@@ -102,6 +102,9 @@ function handleImageError(e: Event) {
                 :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
                 :alt="item.name"
                 class="bm-mini-sprite"
+                width="32"
+              
+                height="32"
                 @error="handleImageError"
               >
               <div
@@ -205,7 +208,7 @@ function handleImageError(e: Event) {
       }
 
       .widget-sub {
-        color: var(--gray, #94a3b8);
+        color: var(--gray, var(--slate-400));
         font-size: var(--font-9);
         font-weight: 500;
         line-height: 1.35;
@@ -339,7 +342,7 @@ function handleImageError(e: Event) {
   padding: 12px;
   border-radius: $radius-md;
   background: Rgb(0 0 0 / 20%);
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
   font-size: var(--font-10);
 }
 
@@ -350,7 +353,7 @@ function handleImageError(e: Event) {
   padding: 6px 10px;
   border: 1px solid var(--rose);
   border-radius: $radius-md;
-  background: Linear-Gradient(180deg, #ef4444 0%, #b91c1c 100%);
+  background: Linear-Gradient(180deg, var(--red-light) 0%, var(--red-600) 100%);
   color: var(--white);
   font-size: var(--font-9);
   line-height: 1.35;
@@ -358,7 +361,7 @@ function handleImageError(e: Event) {
   letter-spacing: 0.5px;
 
   &:hover {
-    background: Linear-Gradient(180deg, #f87171 0%, #dc2626 100%);
+    background: Linear-Gradient(180deg, var(--rose) 0%, var(--red-600) 100%);
   }
 }
 </style>

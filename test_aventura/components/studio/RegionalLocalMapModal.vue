@@ -86,9 +86,9 @@ const localSeed = computed(() => {
 .local-editor-modal {
   display: flex;
   flex-direction: column;
-  width: dvw;
+  width: 95dvw;
   max-width: 1450px;
-  height: dvh;
+  height: 90dvh;
   border: 1px solid Rgb(56 189 248 / 30%);
   border-radius: $radius-xl;
   background: var(--slate-900);
@@ -144,7 +144,7 @@ const localSeed = computed(() => {
 
   .modal-body {
     position: relative;
-    background: #090d16;
+    background: var(--slate-900);
     flex: 1;
     overflow: auto;
   }

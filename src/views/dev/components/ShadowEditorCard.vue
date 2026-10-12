@@ -454,6 +454,9 @@ const handleReset = () => {
           class="static-sprite-image"
           :src="entity.spriteUrl"
           alt=""
+        
+          width="32"
+          height="32"
         >
       </div>
     </div>

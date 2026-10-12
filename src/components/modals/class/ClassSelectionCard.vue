@@ -137,6 +137,9 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
           :src="getTrainerSprite(cls.spriteId)"
           :alt="cls.name || 'Entrenador'"
           class="trainer-pixel-art"
+          width="32"
+        
+          height="32"
           @error="handleImageError"
         >
       </div>
@@ -353,29 +356,29 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
           width: 100%;
           line-height: 1.4 !important;
         }
+      }
+    }
 
-        .bullet-item-flex {
-          display: flex;
-          align-items: flex-start;
-          gap: $spacing-sm-alt;
-          width: 100%;
-          line-height: 1.4;
+    .bullet-item-flex {
+      display: flex;
+      align-items: flex-start;
+      gap: $spacing-sm-alt;
+      width: 100%;
+      line-height: 1.4;
 
-          .bullet-icon {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 16px;
-            height: 16px;
-            font-size: var(--font-13);
-            line-height: 1.4;
-            flex-shrink: 0;
-          }
+      .bullet-icon {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 16px;
+        height: 16px;
+        font-size: var(--font-13);
+        line-height: 1.4;
+        flex-shrink: 0;
+      }
 
-          .bullet-text {
-            flex: 1;
-          }
-        }
+      .bullet-text {
+        flex: 1;
       }
     }
   }

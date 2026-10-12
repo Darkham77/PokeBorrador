@@ -1,13 +1,13 @@
 /**
  * showdownUidMapper.ts
  *
- * Estandariza la asociación de identificadores únicos (UIDs) de los Pokémon
- * con los nombres/apodos utilizados en el simulador oficial Pokémon Showdown.
+ * Standardizes the association of Pokémon unique identifiers (UIDs)
+ * with the names/nicknames used in the official Pokémon Showdown simulator.
  */
 
 /**
- * Retorna el nickname único acotado que Pokémon Showdown utilizará para mapear el UID.
- * Utiliza los primeros 8 caracteres del UID para evitar truncamiento destructivo.
+ * Returns the short unique nickname that Pokémon Showdown will use to map the UID.
+ * Uses the first 8 characters of the UID to prevent destructive truncation.
  */
 export function getShowdownNickname(uid: string): string {
   if (!uid) return '';
@@ -15,7 +15,7 @@ export function getShowdownNickname(uid: string): string {
 }
 
 /**
- * Compara dos UIDs (completos o prefijos de 8 caracteres de Showdown) para determinar si coinciden.
+ * Compares two UIDs (full or 8-character Showdown prefixes) to determine if they match.
  */
 export function isMatchingUid(uidA: string | undefined | null, uidB: string | undefined | null): boolean {
   if (!uidA || !uidB) return false;
@@ -28,7 +28,7 @@ export function isMatchingUid(uidA: string | undefined | null, uidB: string | un
 }
 
 /**
- * Busca un Pokémon en una lista usando la utilidad centralizada de coincidencia de UIDs.
+ * Finds a Pokémon in a list using the centralized UID matching utility.
  */
 export function findMatchingPokemon<T extends { uid?: string }>(
   targetUid: string,
@@ -39,7 +39,7 @@ export function findMatchingPokemon<T extends { uid?: string }>(
 }
 
 /**
- * Alias de compatibilidad para buscar un Pokémon por su apodo / prefijo de Showdown en una lista.
+ * Compatibility alias to find a Pokémon by its Showdown nickname / prefix in a list.
  */
 export function findPokemonByShowdownName<T extends { uid?: string }>(
   expectedName: string,
@@ -49,7 +49,7 @@ export function findPokemonByShowdownName<T extends { uid?: string }>(
 }
 
 /**
- * Busca un valor en un mapa Record<string, T> donde las llaves pueden ser UIDs completos o de Showdown.
+ * Finds a value in a Record<string, T> map where keys may be full or Showdown UIDs.
  */
 export function findMatchingValue<T>(
   targetUid: string,

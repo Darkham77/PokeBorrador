@@ -13,7 +13,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { enableCompileCache } from 'node:module';
 import { translatePostgresToSqlite, splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
 
 enableCompileCache();
@@ -58,7 +58,7 @@ export const SQL_MIGRATION_RULES: readonly SqlMigrationRuleId[] = [
 export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(SQL_MIGRATION_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -68,7 +68,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_sql_migrations',
       configKey: 'persistence.sqlMigrations',
       defaultConfig: {
@@ -113,117 +113,6 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
           context: sqliteFile
         });
       }
-    }
-  }
-
-  private validateTimestampHeader(file: string, seenTimestamps: Set<string>, lastTimestamp: string): string | null {
-    const match = file.match(TIMESTAMP_REGEX);
-    if (!match || !match[1]) {
-      this.addViolation({
-        ruleId: 'sql-migration-invalid-timestamp',
-        severity: 'error',
-        file: `database/migrations/${file}`,
-        line: 1,
-        message: `Formato de timestamp inválido en archivo '${file}'. Debe iniciar con un timestamp de 14 dígitos (YYYYMMDDHHmmss_...).`,
-        context: file
-      });
-      return null;
-    }
-
-    const timestamp = match[1];
-    if (seenTimestamps.has(timestamp)) {
-      this.addViolation({
-        ruleId: 'sql-migration-duplicate-timestamp',
-        severity: 'error',
-        file: `database/migrations/${file}`,
-        line: 1,
-        message: `Timestamp duplicado detectado: '${timestamp}' en archivo '${file}'. Todos los timestamps deben ser estrictamente únicos.`,
-        context: timestamp
-      });
-    }
-    seenTimestamps.add(timestamp);
-
-    if (lastTimestamp && timestamp <= lastTimestamp) {
-      this.addViolation({
-        ruleId: 'sql-migration-broken-monotonicity',
-        severity: 'error',
-        file: `database/migrations/${file}`,
-        line: 1,
-        message: `Monotonicidad rota: El timestamp '${timestamp}' (${file}) no es estrictamente mayor que el anterior '${lastTimestamp}'.`,
-        context: `${lastTimestamp} -> ${timestamp}`
-      });
-    }
-    return timestamp;
-  }
-
-  private validatePostgresDbVersion(file: string, timestamp: string, content: string): boolean {
-    const pgVersionMatch = content.match(DB_VERSION_SQL_REGEX);
-    if (pgVersionMatch) {
-      const sqlVersion = pgVersionMatch[1] || pgVersionMatch[2] || pgVersionMatch[3];
-      if (sqlVersion && sqlVersion !== timestamp) {
-        this.addViolation({
-          ruleId: 'sql-migration-dbversion-desync',
-          severity: 'error',
-          file: `database/migrations/${file}`,
-          line: 1,
-          message: `Desincronización de db_version en PostgreSQL '${file}': El SQL declara versión '${sqlVersion}' pero el timestamp del nombre de archivo es '${timestamp}'.`,
-          context: `${sqlVersion} !== ${timestamp}`
-        });
-        return false;
-      }
-      return true;
-    }
-    if (timestamp >= MANDATORY_DB_VERSION_TIMESTAMP) {
-      this.addViolation({
-        ruleId: 'sql-migration-missing-dbversion',
-        severity: 'error',
-        file: `database/migrations/${file}`,
-        line: 1,
-        message: `Migración PostgreSQL '${file}' sin sentencia obligatoria de db_version en system_config.`,
-        context: file
-      });
-    }
-    return false;
-  }
-
-  private async validateCompanionSqlite(file: string, timestamp: string, dirEntries: readonly string[]): Promise<void> {
-    const companionSqliteName = file.replace(/\.sql$/, '.sqlite.sql');
-    const hasCompanionSqlite = dirEntries.includes(companionSqliteName);
-
-    if (hasCompanionSqlite) {
-      const sqliteContent = await fs.readFile(path.join(MIGRATIONS_DIR, companionSqliteName), 'utf-8');
-      const sqliteVersionMatch = sqliteContent.match(DB_VERSION_SQL_REGEX);
-      if (sqliteVersionMatch) {
-        const sqliteVersion = sqliteVersionMatch[1] || sqliteVersionMatch[2] || sqliteVersionMatch[3];
-        if (sqliteVersion && sqliteVersion !== timestamp) {
-          this.addViolation({
-            ruleId: 'sql-migration-dbversion-desync',
-            severity: 'error',
-            file: `database/migrations/${companionSqliteName}`,
-            line: 1,
-            message: `Desincronización de db_version en SQLite '${companionSqliteName}': El SQL declara versión '${sqliteVersion}' pero el timestamp del nombre de archivo es '${timestamp}'.`,
-            context: `${sqliteVersion} !== ${timestamp}`
-          });
-        }
-      } else if (timestamp >= MANDATORY_DB_VERSION_TIMESTAMP) {
-        this.addViolation({
-          ruleId: 'sql-migration-sqlite-missing-dbversion',
-          severity: 'error',
-          file: `database/migrations/${companionSqliteName}`,
-          line: 1,
-          message: `Migración SQLite '${companionSqliteName}' sin sentencia obligatoria de db_version en system_config.`,
-          context: companionSqliteName
-        });
-      }
-    } else if (timestamp >= MANDATORY_SQLITE_COMPANION_TIMESTAMP) {
-      this.addViolation({
-        ruleId: 'sql-migration-missing-sqlite-companion',
-        severity: 'error',
-        file: `database/migrations/${file}`,
-        line: 1,
-        message: `Migración PostgreSQL '${file}' sin archivo compañero SQLite obligatorio: '${companionSqliteName}'.`,
-        context: companionSqliteName
-      });
     }
   }
 
@@ -273,47 +162,207 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
   }
 
   public override async runAudit(): Promise<void> {
-    for (const rule of SQL_MIGRATION_RULES) {
-      this.markRuleEvaluated(rule);
-    }
+    let dirEntries: string[] = [];
+    let baseSqlFiles: string[] = [];
+    const migrationFileContents = new Map<string, string>();
+    const sqliteCompanionContents = new Map<string, string>();
 
-    const dirEntries = await fs.readdir(MIGRATIONS_DIR);
-    for (const file of dirEntries) {
-      if (file.endsWith('.sql')) {
-        this.recordScanned(path.posix.join('database/migrations', file));
-      }
-    }
-
-    const baseSqlFiles = dirEntries
-      .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
-      .sort((a, b) => a.localeCompare(b));
-
-    this.context.logStep(1, 2, `Validating timestamps and db_version sync across ${baseSqlFiles.length} migrations...`);
-    this.validateOrphanSqliteFiles(dirEntries);
-
-    const seenTimestamps = new Set<string>();
-    let lastTimestamp = '';
-    let validatedDbVersionStatements = 0;
-
-    for (const file of baseSqlFiles) {
-      const timestamp = this.validateTimestampHeader(file, seenTimestamps, lastTimestamp);
-      if (!timestamp) continue;
-      lastTimestamp = timestamp;
-
-      const content = await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8');
-      if (this.validatePostgresDbVersion(file, timestamp, content)) {
-        validatedDbVersionStatements++;
+    // Rule 1: Orphan sqlite files
+    await this.runSubAuditor('sql-migration-orphan-sqlite', async () => {
+      dirEntries = await fs.readdir(MIGRATIONS_DIR);
+      for (const file of dirEntries) {
+        if (file.endsWith('.sql')) {
+          this.recordScanned(path.posix.join('database/migrations', file));
+        }
       }
 
-      await this.validateCompanionSqlite(file, timestamp, dirEntries);
-    }
+      baseSqlFiles = dirEntries
+        .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
+        .sort((a, b) => a.localeCompare(b));
 
-    this.context.logStep(2, 2, `Executing incremental SQL migrations on in-memory SQLite (${DATABASE_MIGRATIONS.length} migrations)...`);
-    this.executeInMemoryMigrations();
+      for (const file of baseSqlFiles) {
+        migrationFileContents.set(file, await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8'));
+      }
+      for (const file of dirEntries.filter(f => f.endsWith('.sqlite.sql'))) {
+        sqliteCompanionContents.set(file, await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8'));
+      }
+
+      this.validateOrphanSqliteFiles(dirEntries);
+    });
+
+    // Rule 2: Invalid timestamps
+    this.runSubAuditorSync('sql-migration-invalid-timestamp', () => {
+      for (const file of baseSqlFiles) {
+        const match = file.match(TIMESTAMP_REGEX);
+        if (!match || !match[1]) {
+          this.addViolation({
+            ruleId: 'sql-migration-invalid-timestamp',
+            severity: 'error',
+            file: `database/migrations/${file}`,
+            line: 1,
+            message: `Formato de timestamp inválido en archivo '${file}'. Debe iniciar con un timestamp de 14 dígitos (YYYYMMDDHHmmss_...).`,
+            context: file
+          });
+        }
+      }
+    });
+
+    // Rule 3: Duplicate timestamps
+    this.runSubAuditorSync('sql-migration-duplicate-timestamp', () => {
+      const seen = new Set<string>();
+      for (const file of baseSqlFiles) {
+        const match = file.match(TIMESTAMP_REGEX);
+        if (!match || !match[1]) continue;
+        const timestamp = match[1];
+        if (seen.has(timestamp)) {
+          this.addViolation({
+            ruleId: 'sql-migration-duplicate-timestamp',
+            severity: 'error',
+            file: `database/migrations/${file}`,
+            line: 1,
+            message: `Timestamp duplicado detectado: '${timestamp}' en archivo '${file}'. Todos los timestamps deben ser estrictamente únicos.`,
+            context: timestamp
+          });
+        }
+        seen.add(timestamp);
+      }
+    });
+
+    // Rule 4: Broken monotonicity
+    this.runSubAuditorSync('sql-migration-broken-monotonicity', () => {
+      let lastTimestamp = '';
+      for (const file of baseSqlFiles) {
+        const match = file.match(TIMESTAMP_REGEX);
+        if (!match || !match[1]) continue;
+        const timestamp = match[1];
+        if (lastTimestamp && timestamp <= lastTimestamp) {
+          this.addViolation({
+            ruleId: 'sql-migration-broken-monotonicity',
+            severity: 'error',
+            file: `database/migrations/${file}`,
+            line: 1,
+            message: `Monotonicidad rota: El timestamp '${timestamp}' (${file}) no es estrictamente mayor que el anterior '${lastTimestamp}'.`,
+            context: `${lastTimestamp} -> ${timestamp}`
+          });
+        }
+        lastTimestamp = timestamp;
+      }
+    });
+
+    // Rule 5: Missing dbversion in Postgres
+    this.runSubAuditorSync('sql-migration-missing-dbversion', () => {
+      for (const file of baseSqlFiles) {
+        const match = file.match(TIMESTAMP_REGEX);
+        if (!match || !match[1]) continue;
+        const timestamp = match[1];
+        const content = migrationFileContents.get(file) ?? '';
+        const pgVersionMatch = content.match(DB_VERSION_SQL_REGEX);
+        if (!pgVersionMatch && timestamp >= MANDATORY_DB_VERSION_TIMESTAMP) {
+          this.addViolation({
+            ruleId: 'sql-migration-missing-dbversion',
+            severity: 'error',
+            file: `database/migrations/${file}`,
+            line: 1,
+            message: `Migración PostgreSQL '${file}' sin sentencia obligatoria de db_version en system_config.`,
+            context: file
+          });
+        }
+      }
+    });
+
+    // Rule 6: Missing sqlite companion
+    this.runSubAuditorSync('sql-migration-missing-sqlite-companion', () => {
+      for (const file of baseSqlFiles) {
+        const match = file.match(TIMESTAMP_REGEX);
+        if (!match || !match[1]) continue;
+        const timestamp = match[1];
+        const companionSqliteName = file.replace(/\.sql$/, '.sqlite.sql');
+        const hasCompanionSqlite = dirEntries.includes(companionSqliteName);
+        if (!hasCompanionSqlite && timestamp >= MANDATORY_SQLITE_COMPANION_TIMESTAMP) {
+          this.addViolation({
+            ruleId: 'sql-migration-missing-sqlite-companion',
+            severity: 'error',
+            file: `database/migrations/${file}`,
+            line: 1,
+            message: `Migración PostgreSQL '${file}' sin archivo compañero SQLite obligatorio: '${companionSqliteName}'.`,
+            context: companionSqliteName
+          });
+        }
+      }
+    });
+
+    // Rule 7: SQLite missing dbversion
+    this.runSubAuditorSync('sql-migration-sqlite-missing-dbversion', () => {
+      for (const file of baseSqlFiles) {
+        const match = file.match(TIMESTAMP_REGEX);
+        if (!match || !match[1]) continue;
+        const timestamp = match[1];
+        const companionSqliteName = file.replace(/\.sql$/, '.sqlite.sql');
+        if (dirEntries.includes(companionSqliteName)) {
+          const sqliteContent = sqliteCompanionContents.get(companionSqliteName) ?? '';
+          const sqliteVersionMatch = sqliteContent.match(DB_VERSION_SQL_REGEX);
+          if (!sqliteVersionMatch && timestamp >= MANDATORY_DB_VERSION_TIMESTAMP) {
+            this.addViolation({
+              ruleId: 'sql-migration-sqlite-missing-dbversion',
+              severity: 'error',
+              file: `database/migrations/${companionSqliteName}`,
+              line: 1,
+              message: `Migración SQLite '${companionSqliteName}' sin sentencia obligatoria de db_version en system_config.`,
+              context: companionSqliteName
+            });
+          }
+        }
+      }
+    });
+
+    // Rule 8: dbversion desync
+    this.runSubAuditorSync('sql-migration-dbversion-desync', () => {
+      for (const file of baseSqlFiles) {
+        const match = file.match(TIMESTAMP_REGEX);
+        if (!match || !match[1]) continue;
+        const timestamp = match[1];
+        const content = migrationFileContents.get(file) ?? '';
+        const pgVersionMatch = content.match(DB_VERSION_SQL_REGEX);
+        if (pgVersionMatch) {
+          const sqlVersion = pgVersionMatch[1] || pgVersionMatch[2] || pgVersionMatch[3];
+          if (sqlVersion && sqlVersion !== timestamp) {
+            this.addViolation({
+              ruleId: 'sql-migration-dbversion-desync',
+              severity: 'error',
+              file: `database/migrations/${file}`,
+              line: 1,
+              message: `Desincronización de db_version en PostgreSQL '${file}': El SQL declara versión '${sqlVersion}' pero el timestamp del nombre de archivo es '${timestamp}'.`,
+              context: `${sqlVersion} !== ${timestamp}`
+            });
+          }
+        }
+        const companionSqliteName = file.replace(/\.sql$/, '.sqlite.sql');
+        if (dirEntries.includes(companionSqliteName)) {
+          const sqliteContent = sqliteCompanionContents.get(companionSqliteName) ?? '';
+          const sqliteVersionMatch = sqliteContent.match(DB_VERSION_SQL_REGEX);
+          if (sqliteVersionMatch) {
+            const sqliteVersion = sqliteVersionMatch[1] || sqliteVersionMatch[2] || sqliteVersionMatch[3];
+            if (sqliteVersion && sqliteVersion !== timestamp) {
+              this.addViolation({
+                ruleId: 'sql-migration-dbversion-desync',
+                severity: 'error',
+                file: `database/migrations/${companionSqliteName}`,
+                line: 1,
+                message: `Desincronización de db_version en SQLite '${companionSqliteName}': El SQL declara versión '${sqliteVersion}' pero el timestamp del nombre de archivo es '${timestamp}'.`,
+                context: `${sqliteVersion} !== ${timestamp}`
+              });
+            }
+          }
+        }
+      }
+    });
+
+    this.runSubAuditorSync('sql-migration-sqlite-exec-failure', () => {
+      this.executeInMemoryMigrations();
+    });
 
     this.context.setMetric('SQL migrations verified', baseSqlFiles.length);
-    this.context.setMetric('Monotonic timestamps', seenTimestamps.size);
-    this.context.setMetric('db_version synced', validatedDbVersionStatements);
+    this.context.setMetric('Monotonic timestamps', baseSqlFiles.length);
   }
 }
 

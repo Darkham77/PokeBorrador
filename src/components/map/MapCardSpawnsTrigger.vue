@@ -82,6 +82,9 @@ const onMouseLeave = () => {
           :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
           class="pokeball-icon"
           alt="Spawns"
+        
+          width="32"
+          height="32"
         >
       </div>
     </div>

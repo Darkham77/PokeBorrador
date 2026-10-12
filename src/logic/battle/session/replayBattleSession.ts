@@ -2,7 +2,7 @@ import { BaseBattleSession } from './baseBattleSession.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { ITacticalReplayEngine } from '../replay/tacticalReplayEngine.ts';
 import { filterShowdownLogs } from '../showdownBridge.ts';
-import { parseLogsWithSkip } from '../helpers/turnActionResolver.ts';
+import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
 import { syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts';
 
 export interface ReplaySessionOptions {

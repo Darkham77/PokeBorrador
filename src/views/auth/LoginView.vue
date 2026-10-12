@@ -282,6 +282,9 @@ const handleServerChange = () => {
         ref="logoImgRef"
         :src="logoUrl"
         alt="Poké Vicio Logo"
+      
+        width="32"
+        height="32"
       >
     </div>
 

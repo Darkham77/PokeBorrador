@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import { STAMPING_PREFABS_CATALOG } from '../../data/map/regionRegistry.ts';
 import {
   getKantoDefaultProject,
   getJohtoDefaultProject,
-  getBlankDefaultProject,
-  STAMPING_PREFABS_CATALOG,
-  JohtoRegionalWorldGenerator
-} from '../../data/map/regionRegistry.ts';
+  getBlankDefaultProject
+} from '../../logic/map/adventureProjectFactory.ts';
+import { JohtoRegionalWorldGenerator } from '../../logic/map/johtoRegionalGenerator.ts';
 import {
   CELL_BIOME,
   OCCUPANCY_FLAGS,

@@ -10,7 +10,7 @@ import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic';
 import { isEnabledPokemonId } from '@/data/system/constants';
 
 /**
- * Realiza la evolución de los datos de un Pokémon.
+ * Evolves a Pokémon's data.
  * @returns {Object} { pendingMoves, fromId, toId }
  */
 export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
@@ -21,14 +21,14 @@ export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
   const fromId = pokemon.id;
   const oldMaxHp = pokemon.maxHp;
 
-  // Actualizar especie
+  // Update species
   pokemon.id = targetSpeciesId;
   pokemon.name = toData.name;
   pokemon.type = toData.type;
   pokemon.type2 = toData.type2;
   pokemon.isFloating = toData.isFloating;
   
-  // Actualizar habilidad si no es compatible
+  // Update ability if incompatible
   const abilityList = pokemonDataProvider.getSpeciesAbilities(targetSpeciesId);
   if (!pokemon.ability || !abilityList.includes(pokemon.ability)) {
     const ability = abilityList[Math.floor(Math.random() * abilityList.length)];
@@ -38,12 +38,12 @@ export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
     pokemon.ability = requireAbilityId(ability);
   }
   
-  // Recalcular stats
+  // Recalculate stats
   recalcPokemonStats(pokemon);
-  // Sanar proporcionalmente
+  // Heal proportionally
   pokemon.hp = Math.min(pokemon.hp + (pokemon.maxHp - oldMaxHp), pokemon.maxHp);
   
-  // Movimientos pendientes del nuevo learnset para el nivel actual
+  // Pending moves from the new learnset for current level
   const pendingMoves: Move[] = [];
   if (toData.learnset) {
     (toData.learnset as LearnsetMove[]).filter(m => m.lv === pokemon.level).forEach(m => {
@@ -82,7 +82,7 @@ export const FRIENDSHIP_EVOLUTION_MAP: Readonly<Record<string, string>> = Object
 });
 
 /**
- * Comprueba si un Pokémon puede evolucionar por nivel o amistad.
+ * Checks whether a Pokémon can evolve via level-up or friendship.
  */
 export function checkLevelUpEvolution(pokemon: Pokemon): PokemonSpeciesId | null {
   // Tyrogue special case
@@ -112,7 +112,7 @@ export function checkLevelUpEvolution(pokemon: Pokemon): PokemonSpeciesId | null
 }
 
 /**
- * Comprueba si un Pokémon puede evolucionar por intercambio.
+ * Checks whether a Pokémon can evolve via trade.
  */
 export function checkTradeEvolution(pokemon: Pokemon): PokemonSpeciesId | null {
   const toId = getTradeEvolution(pokemon.id);
@@ -198,7 +198,7 @@ function advanceWildEvolution(evolved: PokemonSpeciesId, level: number): Pokemon
 }
 
 /**
- * Obtiene la forma evolucionada ideal para un nivel dado (backtracking hasta base).
+ * Gets the ideal evolved form for a given level (backtracking to base form).
  */
 export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
   let evolved = backtrackToBaseSpecies(id);
@@ -215,7 +215,7 @@ export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
 }
 
 /**
- * Comprueba si un Pokémon puede evolucionar con una piedra específica.
+ * Checks whether a Pokémon can evolve using a specific evolutionary stone.
  * @param stoneId - Official Showdown item ID (e.g. 'waterstone', 'thunderstone')
  */
 export function checkStoneEvolution(pokemon: Pokemon, stoneId: ItemId): PokemonSpeciesId | null {

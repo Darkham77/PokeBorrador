@@ -161,11 +161,16 @@ function resolveTrainerDetails(cfg: ReturnType<typeof extractBattleConfig>, opti
   return { sprite, gender, name, quote }
 }
 
-function resolveReturnTab(options: BattleOptions, ctx: BattleContext, isGym: boolean, isPvP: boolean): string {
+interface ReturnTabOptions {
+  isGym: boolean;
+  isPvP: boolean;
+}
+
+function resolveReturnTab(options: BattleOptions, ctx: BattleContext, flags: ReturnTabOptions): string {
   if (options.returnTab) return options.returnTab
   if (ctx.uiStore?.activeTab) return ctx.uiStore.activeTab
-  if (isGym) return 'gyms'
-  if (isPvP) return 'arena'
+  if (flags.isGym) return 'gyms'
+  if (flags.isPvP) return 'arena'
   return 'map'
 }
 
@@ -201,7 +206,7 @@ export function buildInitialBattleState(p: BuildBattleStateParams): BattleState 
   const { battleOptions } = cfg
   const trainer = resolveTrainerDetails(cfg, options)
   const locationMap = loc.locationMap
-  const returnTab = resolveReturnTab(options, ctx, cfg.isGym, cfg.isPvP)
+  const returnTab = resolveReturnTab(options, ctx, { isGym: cfg.isGym, isPvP: cfg.isPvP })
 
   return {
     ...battleOptions,

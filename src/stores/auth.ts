@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const currentUserId = computed<string>(() => user.value?.id || 'local_user')
 
-  // Monitoreo de Conectividad (Solo para modo Online)
+  // Connectivity monitoring (Online mode only)
   if (typeof window !== 'undefined') {
     window.addEventListener('online', () => {
       isOnline.value = true
@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     })
 
-    // Escuchar conflictos de sesión única
+    // Listen for unique session conflicts
     window.addEventListener('session-conflict', () => {
       logger.error('AuthStore', 'Conflicto de sesión detectado. Bloqueando acceso.')
       sessionConflict.value = true
@@ -59,7 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
         logger.error('AuthStore', `Failed to open SessionConflict modal: ${(e as Error).message}`)
       }
     })
-    // Escuchar errores de conexión a la base de datos (Supabase unreachability)
+    // Listen for database connection errors (Supabase unreachability)
     window.addEventListener('db-connection-error', () => {
       if (sessionMode.value === 'online') {
         logger.warn('AuthStore', 'Error de conexión a DB detectado.')
@@ -68,12 +68,12 @@ export const useAuthStore = defineStore('auth', () => {
     })
   }
 
-  // Guardar modo de sesión para persistencia en recarga
+  // Save session mode for persistence across reload
   watch(sessionMode, (newMode) => {
     safeStorage.setItem('pokevicio_session_mode', newMode)
   })
 
-  // Persistir cambios en el usuario local (como db_version) para evitar re-migraciones
+  // Persist local user changes (like db_version) to avoid re-migrations
   watch(user, (newUser) => {
     if (sessionMode.value === 'offline' && newUser) {
       safeStorage.setItem('pokevicio_local_user', JSON.stringify(newUser))
@@ -319,7 +319,7 @@ export const useAuthStore = defineStore('auth', () => {
   function startSessionMonitoring() {
     if (!user.value || sessionMode.value === 'offline') return
     
-    // Suscribirse al canal para monitorear el estado de la conexión
+    // Subscribe to channel to monitor connection status
     supabase.channel(`session_check_${user.value.id}`)
       .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED') {
@@ -336,7 +336,7 @@ export const useAuthStore = defineStore('auth', () => {
               logger.info('SESSION', 'Conexión HTTP activa. Desconectando Realtime para evitar spam y continuando en modo degradado.')
               connectionLost.value = false
               
-              // Desconectar Realtime para detener intentos fallidos recurrentes de WebSocket
+              // Disconnect Realtime to stop recurrent failed WebSocket attempts
               try {
                 const client = supabase.realClient
                 if (client && client.realtime) {
@@ -378,7 +378,7 @@ export const useAuthStore = defineStore('auth', () => {
       // Sync time will handle offline state internally
       syncServerTime()
 
-      // En modo local no hay monitoreo de sesión online
+      // In local mode there is no online session monitoring
       sessionConflict.value = false
     } finally {
       loading.value = false

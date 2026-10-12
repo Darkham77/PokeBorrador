@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { recalcPokemonStats, getExpNeeded, getLegalSpeciesMoves, getRandomLegalMoves } from '@/logic/pokemon/pokemonFactory'
+import { recalcPokemonStats, getLegalSpeciesMoves, getRandomLegalMoves } from '@/logic/pokemon/pokemonFactory'
+import { getExpNeededPure } from '@/logic/pokemon/statsMath'
 import { generateRandomIVs, getMovesAtLevel } from '@/logic/pokemon/pokemonUtils'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items'
@@ -200,7 +201,7 @@ watch(() => activePoke.value?.level, (newLv) => {
     activePoke.value.exp = 0
     activePoke.value.expNeeded = 0
   } else {
-    activePoke.value.expNeeded = getExpNeeded(newLv)
+    activePoke.value.expNeeded = getExpNeededPure(newLv)
     if (activePoke.value.exp >= activePoke.value.expNeeded) {
       activePoke.value.exp = activePoke.value.expNeeded - 1
     }

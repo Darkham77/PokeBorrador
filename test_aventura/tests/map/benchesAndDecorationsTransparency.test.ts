@@ -7,7 +7,7 @@ import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 
 describe('Benches & Decoration Assets Transparency (Phase 3)', () => {
   it('guarantees poke_flowers_red.png has 100% alpha transparency (no baked-in green background)', async () => {
-    const assetPath = path.resolve(process.cwd(), 'public/assets/canon/props/poke_flowers_red.png');
+    const assetPath = path.resolve(process.cwd(), 'test_aventura/assets/canon/props/poke_flowers_red.png');
     const { data, info } = await sharp(assetPath).raw().toBuffer({ resolveWithObject: true });
     expect(info.channels).toBe(4);
     expect(data[3]).toBe(0);
@@ -30,7 +30,7 @@ describe('Benches & Decoration Assets Transparency (Phase 3)', () => {
   });
 
   it('guarantees poke_fence_wood_h.png and poke_bush_round.png have alpha transparency', async () => {
-    const fencePath = path.resolve(process.cwd(), 'public/assets/canon/props/poke_fence_wood_h.png');
+    const fencePath = path.resolve(process.cwd(), 'test_aventura/assets/canon/props/poke_fence_wood_h.png');
     const { data: fenceData } = await sharp(fencePath).raw().toBuffer({ resolveWithObject: true });
     let fenceTransparent = 0;
     for (let i = 3; i < fenceData.length; i += 4) {
@@ -38,7 +38,7 @@ describe('Benches & Decoration Assets Transparency (Phase 3)', () => {
     }
     expect(fenceTransparent).toBeGreaterThan(100);
 
-    const bushPath = path.resolve(process.cwd(), 'public/assets/canon/props/poke_bush_round.png');
+    const bushPath = path.resolve(process.cwd(), 'test_aventura/assets/canon/props/poke_bush_round.png');
     const { data: bushData } = await sharp(bushPath).raw().toBuffer({ resolveWithObject: true });
     let bushTransparent = 0;
     for (let i = 3; i < bushData.length; i += 4) {
@@ -48,8 +48,8 @@ describe('Benches & Decoration Assets Transparency (Phase 3)', () => {
   });
 
   it('guarantees vertical benches (poke_bench_v_left and poke_bench_v_right) exist, are 32x64px, and transparent', async () => {
-    const leftPath = path.resolve(process.cwd(), 'public/assets/canon/props/poke_bench_v_left.png');
-    const rightPath = path.resolve(process.cwd(), 'public/assets/canon/props/poke_bench_v_right.png');
+    const leftPath = path.resolve(process.cwd(), 'test_aventura/assets/canon/props/poke_bench_v_left.png');
+    const rightPath = path.resolve(process.cwd(), 'test_aventura/assets/canon/props/poke_bench_v_right.png');
     expect(fs.existsSync(leftPath)).toBe(true);
     expect(fs.existsSync(rightPath)).toBe(true);
 

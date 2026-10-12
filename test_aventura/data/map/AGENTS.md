@@ -19,10 +19,11 @@ oute29, goldenrod).
 
 ## Key Files
 
+- [`assetFilesIndex.ts`](./assetFilesIndex.ts): Auto-generated static web path index mapping sprites, tiles, and prefabs to canonical web assets.
 - [`canonicalAssetsManifest.ts`](./canonicalAssetsManifest.ts): Manifest and metadata definitions for authentic GBA tiles and building prefabs.
-- [`canonicalRegionPresets.ts`](./canonicalRegionPresets.ts): Authentic regional geography presets and blueprints for Kanto and Johto overworlds.
+- [`canonicalRegionData.ts`](./canonicalRegionData.ts): Pure tabular node blueprints, route definitions, and urban archetypes for Kanto and Johto overworlds.
 - [`johtoAdventureMapData.ts`](./johtoAdventureMapData.ts): Canonical node topology and route connections for the Johto regional map.
-- [`regionRegistry.ts`](./regionRegistry.ts): Stamping prefabs catalog and regional adventure project dispatchers.
+- [`regionRegistry.ts`](./regionRegistry.ts): Pure static stamping prefabs catalog with named dimension constants.
 
 ## Work Guidance
 

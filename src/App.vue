@@ -210,7 +210,7 @@ onMounted(async () => {
   document.addEventListener('keydown', initAudio, { once: true, capture: true })
 })
 
-// Sincronizar estado de la partida reactivamente al cambiar de ruta o usuario
+// Synchronize game session state reactively on route or user change
 watch(
   () => [authStore.user, isLoginPage.value, isStandaloneDevPage.value],
   async () => {
@@ -226,21 +226,24 @@ watch(() => authStore.user, (newUser) => {
     logger.info('App', 'Usuario detectado, re-aplicando escala visual...')
     uiStore.setZoom(uiStore.appZoom)
   } else {
-    // Detener pings de presencia si el usuario cierra sesión
+    // Stop presence pings if the user logs out
     socialStore.stopPresence()
   }
 })
 
 // Intercept low-level events to prevent them from reaching background interactions when modals are open
 const blockEvents = (e: Event) => {
-  handleGlobalBlockEvent(e, uiStore.isAnyBlockingModalOpen, isStandaloneDevPage.value)
+  handleGlobalBlockEvent(e, {
+    isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen,
+    isStandaloneDevPage: isStandaloneDevPage.value
+  })
 }
 
 // Managed Window Listeners (Safe Lifecycle)
 useWindowListener('wheel', blockEvents, { capture: true, passive: false }); // [PureVue-Ignore]
 useWindowListener('touchmove', blockEvents, { capture: true, passive: false }); // [PureVue-Ignore]
 
-// Bloqueo de Scroll Global para Modales (Pure Vue Managed)
+// Global scroll lock for modals (Pure Vue Managed)
 useBodyClass('modal-open', () => uiStore.isAnyBlockingModalOpen)
 
 const handleRetry = () => {

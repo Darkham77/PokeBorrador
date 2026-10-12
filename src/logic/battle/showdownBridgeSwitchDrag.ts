@@ -121,13 +121,18 @@ function resetSideCombatantStages(
   }
 }
 
+interface SendOutMessageOptions {
+  isDrag?: boolean;
+  isSilent?: boolean;
+}
+
 function logSendOutMessage(
   store: SBCtx['store'],
   side: BattleSide,
   target: Pokemon,
-  isDrag: boolean,
-  isSilent: boolean
+  options: SendOutMessageOptions = {}
 ): void {
+  const { isDrag = false, isSilent = false } = options;
   const active = store.activeBattle?.value;
   if (isDrag) {
     const logStyle = side === 'player' ? 'log-player' : 'log-enemy';
@@ -159,7 +164,7 @@ async function performSideSendOut(
     await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.OCCUPY_SEAT);
   }
 
-  logSendOutMessage(store, side, target, type === 'drag', isSilent);
+  logSendOutMessage(store, side, target, { isDrag: type === 'drag', isSilent });
 
   if (store.animations?.handleReleaseRequest) {
     await store.animations.handleReleaseRequest({ side, pokemon: target });

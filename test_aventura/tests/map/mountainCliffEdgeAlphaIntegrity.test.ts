@@ -37,7 +37,7 @@ const CLIFF_EDGE_TILES = [
 describe('mountainCliffEdgeAlphaIntegrity (Pattern C)', () => {
   it('guarantees cliff side edges and bottom foot corners do not contain opaque green grass pixels', async () => {
     for (const filename of CLIFF_EDGE_TILES) {
-      const p = path.resolve(process.cwd(), 'public/assets/tiles', filename);
+      const p = path.resolve(process.cwd(), 'test_aventura/assets/tiles', filename);
       expect(fs.existsSync(p), `Tile must exist: ${filename}`).toBe(true);
 
       const { data } = await sharp(p).raw().toBuffer({ resolveWithObject: true });

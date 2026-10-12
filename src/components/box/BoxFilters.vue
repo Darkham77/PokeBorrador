@@ -80,7 +80,7 @@ const onRangeInput = (key: keyof BoxFilters, e: Event) => {
   updateFilter(key, val as BoxFilters[keyof BoxFilters]) // domain-ok: Open dynamic text or non-domain string payload
 }
 
-// Colores de estadísticas estandarizados (Corregidos con Hexadecimales)
+// Standardized stat colors (Corrected with Hexadecimal values)
 const STAT_COLORS: Record<string, string> = {
   HP: '#4ade80',
   ATK: '#f87171',

@@ -332,12 +332,12 @@
     
     &.base-fill {
       border-radius: $radius-xs-alt 0 0 $radius-xs-alt;
-      background: #3a86ff; // Azul base para probabilidad estándar no alterada
+      background: var(--blue-500, #3a86ff); // Azul base para probabilidad estándar no alterada
     }
 
     &.base-fill-reduced {
       border-radius: $radius-xs-alt 0 0 $radius-xs-alt;
-      background: #3a86ff; // Azul base reducido por penalización
+      background: var(--blue-500, #3a86ff); // Azul base reducido por penalización
     }
 
     &.extra-fill {

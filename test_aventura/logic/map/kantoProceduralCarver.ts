@@ -18,6 +18,7 @@ import {
 } from '../../types/map/kantoGridModel.ts';
 import { SimplexNoise } from './noise/simplexNoise.ts';
 import { findValidBuildingPlacementSpot } from './buildingPlacementSolver.ts';
+import { defaultPrefabsRegistry } from './prefabsRegistry.ts';
 import {
   CONTINENT_DEFAULT_SEED
 } from '../../config/studioConstants.ts';
@@ -72,15 +73,13 @@ export function carveSettlementClearings(
         for (let dx = MT_MOON_FOOT_RECT.minDx; dx <= MT_MOON_FOOT_RECT.maxDx; dx++) {
           const gx = tx + dx;
           const gy = ty + dy;
-          if (gx >= 0 && gx < W && gy >= 0 && gy < H) {
-            const row = g[gy];
-            const eRow = elev[gy];
-            if (row && row[gx] !== CELL_BIOME.WATER && row[gx] !== CELL_BIOME.MOUNTAIN_DIRT) {
-              row[gx] = CELL_BIOME.GRASS;
-              if (eRow) eRow[gx] = 1;
-              gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.CLIFF);
-            }
-          }
+          if (gx < 0 || gx >= W || gy < 0 || gy >= H) continue;
+          const row = g[gy];
+          const eRow = elev[gy];
+          if (!row || row[gx] === CELL_BIOME.WATER || row[gx] === CELL_BIOME.MOUNTAIN_DIRT) continue;
+          row[gx] = CELL_BIOME.GRASS;
+          if (eRow) eRow[gx] = 1;
+          gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.CLIFF);
         }
       }
       return;
@@ -100,22 +99,19 @@ export function carveSettlementClearings(
       for (let dx = -halfW; dx <= halfW; dx++) {
         const gx = tx + dx;
         const gy = ty + dy;
-        if (gx >= 0 && gx < W && gy >= 0 && gy < H) {
-          // Classic GBA modular rectangular clearing: crisp rectangular borders
-          const normDist = Math.max(Math.abs(dx) / halfW, Math.abs(dy) / halfH);
-          if (normDist <= 1.0) {
-            const row = g[gy];
-            const eRow = elev[gy];
-            // Never carve away mountains or water
-            if (row && row[gx] !== CELL_BIOME.WATER && row[gx] !== CELL_BIOME.MOUNTAIN_DIRT) {
-              row[gx] = CELL_BIOME.GRASS;
-              if (eRow) {
-                eRow[gx] = 1;
-              }
-              gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.CLIFF);
-            }
-          }
+        if (gx < 0 || gx >= W || gy < 0 || gy >= H) continue;
+        // Classic GBA modular rectangular clearing: crisp rectangular borders
+        const normDist = Math.max(Math.abs(dx) / halfW, Math.abs(dy) / halfH);
+        if (normDist > 1.0) continue;
+        const row = g[gy];
+        const eRow = elev[gy];
+        // Never carve away mountains or water
+        if (!row || row[gx] === CELL_BIOME.WATER || row[gx] === CELL_BIOME.MOUNTAIN_DIRT) continue;
+        row[gx] = CELL_BIOME.GRASS;
+        if (eRow) {
+          eRow[gx] = 1;
         }
+        gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.CLIFF);
       }
     }
   });

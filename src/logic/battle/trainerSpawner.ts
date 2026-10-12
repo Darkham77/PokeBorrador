@@ -13,10 +13,10 @@ import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
 import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
 import { generateNpcName } from '@/logic/utils/npcNameGenerator';
 
-// Configuración genérica por defecto de probabilidades y pesos
+// Default generic configuration of probabilities and weights
 const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
-  rival: 0.001,      // 0.1% de probabilidad absoluta
-  policeman: 0.0,    // 0% (solo policía con criminalidad, o vía customChances/overrides)
+  rival: 0.001,      // 0.1% absolute probability
+  policeman: 0.0,    // 0% (policeman only with criminality, or via customChances/overrides)
   caza_bichos: 1.0,
   ornitologo: 1.0,
   cientifico: 1.0,
@@ -37,9 +37,9 @@ const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
 };
 
 /**
- * Selecciona un arquetipo de entrenador usando probabilidades.
- * Los chances absolutos (valores muy pequeños o específicos como rival y policeman) se evalúan primero.
- * El resto de la probabilidad se distribuye proporcionalmente según sus pesos relativos.
+ * Selects a trainer archetype using probabilities.
+ * Absolute chances (very small or specific values like rival and policeman) are evaluated first.
+ * The remainder of probability is distributed proportionally according to relative weights.
  */
 function selectTrainerArchetype(
   customChances?: Partial<Record<TrainerTypeKey, number>>,
@@ -59,7 +59,7 @@ function selectTrainerArchetype(
 
   const r = Math.random();
 
-  // 1. Evaluar probabilidades absolutas
+  // 1. Evaluate absolute probabilities
   if (r < rivalChance) {
     return 'rival';
   }
@@ -67,8 +67,8 @@ function selectTrainerArchetype(
     return 'policeman';
   }
 
-  // 2. Si no cayó en los absolutos, distribuir el resto (1 - absoluteSum)
-  // proporcionalmente entre todos los demás arquetipos relativos
+  // 2. If not within absolutes, distribute the remainder (1 - absoluteSum)
+  // proportionally among all other relative archetypes
   const absoluteSum = rivalChance + policemanChance;
   if (absoluteSum >= 1.0) {
     return rivalChance > 0 ? 'rival' : 'policeman';
@@ -83,7 +83,7 @@ function selectTrainerArchetype(
     return 'default';
   }
 
-  // Escalamos la tirada restante dentro del rango total de pesos relativos
+  // Scale remaining roll within total relative weight range
   const remainingRoll = Math.random() * totalRelativeWeight;
   let currentSum = 0;
   for (const key of relativeKeys) {
@@ -121,14 +121,14 @@ export async function buildRivalEncounter(playerTeam: Pokemon[] = []): Promise<R
   const tName = generateNpcName({ spriteId: tSprite, archetype: 'rival', includeTitle: true });
   const tQuote = getRandomQuoteForTrainer('rival');
 
-  // Nivel del rival: Promedio del equipo del jugador + 5 (tope en MAX_POKEMON_LEVEL)
+  // Rival level: Player team average + 5 (capped at MAX_POKEMON_LEVEL)
   const safeTeam = playerTeam || [];
   const avgLevel = safeTeam.length > 0
     ? safeTeam.reduce((acc, p) => acc + (p.level || 5), 0) / safeTeam.length
     : 5;
   const rivalLevel = Math.min(MAX_POKEMON_LEVEL, Math.floor(avgLevel) + 5);
 
-  // Tamaño del equipo: mínimo 3 o igual al tamaño del equipo del jugador si tiene más de 3
+  // Team size: minimum 3 or equal to player team size if they have more than 3
   const targetTeamSize = Math.max(3, safeTeam.length);
 
   // 1. Pick ace from the rival archetype pool (SSoT: TRAINER_TYPES)
@@ -168,7 +168,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[] = []): Promise<R
 }
 
 /**
- * Función principal para generar el encuentro completo de un entrenador salvaje / mapa.
+ * Main function to generate a full wild / map trainer encounter.
  */
 export async function buildTrainerEncounter(
   gsState: {

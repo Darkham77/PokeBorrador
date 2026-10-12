@@ -22,7 +22,9 @@ const FALLBACK_TILE_MAP: Record<string, string> = {
   'poke_sand_water_corner_nw.png': 'poke_water_ocean_edge_n.png',
   'poke_sand_water_corner_ne.png': 'poke_water_ocean_edge_n.png',
   'poke_sand_water_corner_sw.png': 'poke_water_ocean_edge_s.png',
-  'poke_sand_water_corner_se.png': 'poke_water_ocean_edge_s.png'
+  'poke_sand_water_corner_se.png': 'poke_water_ocean_edge_s.png',
+  'poke_lighthouse.png': 'poke_port_lighthouse_beacon.png',
+  'poke_item_ball.png': 'poke_signpost.png'
 };
 
 /**

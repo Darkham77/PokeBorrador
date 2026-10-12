@@ -25,7 +25,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 import { ENABLED_POKEMON_IDS_SET } from '../../../src/data/system/constants.ts';
 import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { GYMS, type Gym, type GymId } from '../../../src/data/world/gyms.ts';
@@ -51,7 +51,7 @@ const GYM_REMATCHES_FILE_PATH = 'src/data/world/gymRematches.ts';
 export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(SPAWN_WHITELIST_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -61,7 +61,7 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_spawns_whitelist',
       configKey: 'domain.spawnsWhitelist',
       defaultConfig: {
@@ -116,12 +116,10 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     }
   }
 
-  private auditMapWildSpawns(map: MapLocation, mapLine: number): void {
+  private auditMapSpecies(map: MapLocation, mapLine: number): void {
     const times = ['morning', 'day', 'dusk', 'night'] as const;
     for (const time of times) {
       const speciesList = map.wild?.[time] || [];
-      const ratesList = map.rates?.[time] || [];
-
       for (const sp of speciesList) {
         if (!ENABLED_POKEMON_IDS_SET.has(sp)) {
           this.addViolation({
@@ -134,6 +132,14 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
           });
         }
       }
+    }
+  }
+
+  private auditMapEncounterRates(map: MapLocation, mapLine: number): void {
+    const times = ['morning', 'day', 'dusk', 'night'] as const;
+    for (const time of times) {
+      const speciesList = map.wild?.[time] || [];
+      const ratesList = map.rates?.[time] || [];
 
       if (speciesList.length !== ratesList.length) {
         this.addViolation({
@@ -184,16 +190,7 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     }
   }
 
-  private auditMaps(maps: readonly MapLocation[], lineMap: Map<string, number>): void {
-    for (const map of maps) {
-      const mapLine = lineMap.get(map.id) || 1;
-      this.auditMapLevelRange(map, mapLine);
-      this.auditMapWildSpawns(map, mapLine);
-      this.auditMapWeather(map, mapLine);
-    }
-  }
-
-  private auditGymRoster(gymId: GymId, pokemon: string[], levels: number[], diffName?: string): void {
+  private auditGymSpecies(gymId: GymId, pokemon: string[], diffName?: string): void {
     const label = diffName ? `Gym '${gymId}' (${diffName})` : `Gym '${gymId}'`;
     const ctx = diffName ? `id: '${gymId}', difficulty: '${diffName}'` : `id: '${gymId}'`;
 
@@ -209,6 +206,11 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
         });
       }
     }
+  }
+
+  private auditGymLevels(gymId: GymId, pokemon: string[], levels: number[], diffName?: string): void {
+    const label = diffName ? `Gym '${gymId}' (${diffName})` : `Gym '${gymId}'`;
+    const ctx = diffName ? `id: '${gymId}', difficulty: '${diffName}'` : `id: '${gymId}'`;
 
     if (pokemon.length !== levels.length) {
       this.addViolation({
@@ -219,24 +221,6 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
         message: `${label} has mismatched pokemon count (${pokemon.length}) vs levels count (${levels.length}).`,
         context: ctx
       });
-    }
-  }
-
-  private auditGymDifficulties(gym: Gym): void {
-    if (!gym.difficulties) return;
-    for (const [diffName, diff] of Object.entries(gym.difficulties)) {
-      this.auditGymRoster(gym.id, diff.pokemon, diff.levels, diffName);
-    }
-  }
-
-  private auditSingleGym(gym: Gym): void {
-    this.auditGymRoster(gym.id, gym.pokemon, gym.levels);
-    this.auditGymDifficulties(gym);
-  }
-
-  private auditGyms(gyms: readonly Gym[]): void {
-    for (const gym of gyms) {
-      this.auditSingleGym(gym);
     }
   }
 
@@ -271,17 +255,48 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     this.recordScanned(MAPS_FILE_PATH);
     this.recordScanned(GYMS_FILE_PATH);
     this.recordScanned(GYM_REMATCHES_FILE_PATH);
-    this.markRuleEvaluated('spawns-species-whitelist');
-    this.markRuleEvaluated('spawns-level-range-integrity');
-    this.markRuleEvaluated('spawns-encounter-rates-parity');
 
     const { maps, lineMap } = this.parseMaps();
-    this.auditMaps(maps, lineMap);
-
     const gyms = this.parseGyms();
-    this.auditGyms(gyms);
 
-    this.auditGymRematches();
+    this.runSubAuditorSync('spawns-species-whitelist', () => {
+      for (const map of maps) {
+        const mapLine = lineMap.get(map.id) || 1;
+        this.auditMapSpecies(map, mapLine);
+        this.auditMapWeather(map, mapLine);
+      }
+      for (const gym of gyms) {
+        this.auditGymSpecies(gym.id, gym.pokemon);
+        if (gym.difficulties) {
+          for (const [diffName, diff] of Object.entries(gym.difficulties)) {
+            this.auditGymSpecies(gym.id, diff.pokemon, diffName);
+          }
+        }
+      }
+      this.auditGymRematches();
+    });
+
+    this.runSubAuditorSync('spawns-level-range-integrity', () => {
+      for (const map of maps) {
+        const mapLine = lineMap.get(map.id) || 1;
+        this.auditMapLevelRange(map, mapLine);
+      }
+      for (const gym of gyms) {
+        this.auditGymLevels(gym.id, gym.pokemon, gym.levels);
+        if (gym.difficulties) {
+          for (const [diffName, diff] of Object.entries(gym.difficulties)) {
+            this.auditGymLevels(gym.id, diff.pokemon, diff.levels, diffName);
+          }
+        }
+      }
+    });
+
+    this.runSubAuditorSync('spawns-encounter-rates-parity', () => {
+      for (const map of maps) {
+        const mapLine = lineMap.get(map.id) || 1;
+        this.auditMapEncounterRates(map, mapLine);
+      }
+    });
 
     this.context.setMetric('Maps Scanned', maps.length);
     this.context.setMetric('Gyms Scanned', gyms.length);

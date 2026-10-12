@@ -21,7 +21,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor } from '@francogp/auditor';
+import { BaseAuditor, FileScanAuditor , createRuleCapabilities} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -40,7 +40,7 @@ const BINARY_SEAT_BRANCH_REGEX = /\b(?:seat|sideID|side|targetSide)\s*===\s*['"]
 export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(COMBAT_INVARIANTS_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -50,7 +50,7 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_combat_invariants',
       configKey: 'fsm.combatInvariants',
       defaultConfig: {
@@ -73,14 +73,13 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
   }
 
   protected override scanFile(relPath: string, content: string): void {
-    this.markRuleEvaluated('showdown-healthy-status-null-prohibition');
-    this.markRuleEvaluated('battle-multi-seat-hardcoding');
+    this.runSubAuditorSync('showdown-healthy-status-null-prohibition', () => {
+      this.auditStatusNull(relPath, content);
+    });
 
-    // 1. Audit status null assignments
-    this.auditStatusNull(relPath, content);
-
-    // 2. Audit binary seat hardcoding
-    this.auditBinarySeats(relPath, content);
+    this.runSubAuditorSync('battle-multi-seat-hardcoding', () => {
+      this.auditBinarySeats(relPath, content);
+    });
   }
 
   private auditStatusNull(relPath: string, content: string): void {

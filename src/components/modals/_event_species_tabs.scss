@@ -80,11 +80,11 @@
           background: Rgb(250 204 21 / 15%);
           border-color: Rgb(250 204 21 / 85%);
           box-shadow: var(--shadow-glow-yellow-sm);
+        }
 
-          .species-tab-name {
-            color: var(--yellow);
-            font-weight: bold;
-          }
+        &.active .species-tab-name {
+          color: var(--yellow);
+          font-weight: bold;
         }
 
         .species-tab-icon {

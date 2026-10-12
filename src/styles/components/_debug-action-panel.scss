@@ -340,7 +340,7 @@
   }
 
   option {
-    background: #14141e;
+    background: var(--bg-surface-dark, #14141e);
     color: var(--white);
   }
 }

@@ -65,7 +65,7 @@ export function calculateRocketSellPrice(p: Pokemon): number {
 }
 
 /**
- * Determina si un Pokémon está en un estado forzado/bloqueado de ataque (lockedmove, twoturnmove, thrash).
+ * Determines whether a Pokémon is in a forced/locked attack state (lockedmove, twoturnmove, thrash).
  */
 export function isPokemonLocked(p: Pokemon | null | undefined): boolean {
   if (!p) return false;

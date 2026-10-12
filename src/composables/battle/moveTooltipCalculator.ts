@@ -106,17 +106,22 @@ function buildFieldConditionsList(
   return list
 }
 
+interface TooltipSmogonFlags {
+  isStatus: boolean
+  isGym: boolean
+}
+
 function resolveTooltipSmogonCalc(
   attacker: Pokemon,
   defender: Pokemon | null,
   move: Move,
-  isStatus: boolean,
+  flags: TooltipSmogonFlags,
   basePower: number,
-  isGym: boolean,
   battleState: BattleState | null | undefined,
   playerStages: Partial<BattleStages>,
   enemyStages: Partial<BattleStages>
 ) {
+  const { isStatus, isGym } = flags
   if (isStatus || !defender || basePower <= 0) {
     return null
   }
@@ -197,16 +202,21 @@ export function buildKoText(ko: { chance: number | undefined; n: number }): stri
   return ''
 }
 
+export interface TooltipStatDisplayFlags {
+  isPhysical: boolean
+  isSpecial: boolean
+  isGym: boolean
+}
+
 export function calculateAttackerStatDisplay(
   attacker: PurePokemon,
   defender: PurePokemon | null,
-  isPhysical: boolean,
-  isSpecial: boolean,
+  flags: TooltipStatDisplayFlags,
   playerStages: Partial<BattleStages> | undefined,
   weather: PureBattleWeather | null,
-  cycle: DayPhase | undefined,
-  isGym: boolean
+  cycle: DayPhase | undefined
 ): TooltipStatDisplay | null {
+  const { isPhysical, isSpecial, isGym } = flags
   if (!isPhysical && !isSpecial) return null
   const statKey = isPhysical ? 'atk' : 'spa'
   const stages = playerStages ?? {}
@@ -227,13 +237,12 @@ export function calculateAttackerStatDisplay(
 
 function calculateDefenderStatDisplay(
   defender: PurePokemon | null,
-  isPhysical: boolean,
-  isSpecial: boolean,
+  flags: TooltipStatDisplayFlags,
   enemyStages: Partial<BattleStages> | undefined,
   weather: PureBattleWeather | null,
-  cycle: DayPhase | undefined,
-  isGym: boolean
+  cycle: DayPhase | undefined
 ): TooltipStatDisplay | null {
+  const { isPhysical, isSpecial, isGym } = flags
   if (!defender || (!isPhysical && !isSpecial)) return null
   const statKey = isPhysical ? 'def' : 'spd'
   const stages = enemyStages ?? {}
@@ -382,9 +391,8 @@ export function computeMoveActiveDetails(
     attacker,
     defender,
     move,
-    isStatus,
+    { isStatus, isGym },
     basePower,
-    isGym,
     battleState ?? undefined,
     playerStageFull,
     enemyStageFull
@@ -397,8 +405,8 @@ export function computeMoveActiveDetails(
     effectiveness,
     critChance,
     damageRange: buildTooltipDamageRange(smogonResult),
-    attackerStat: calculateAttackerStatDisplay(attacker as PurePokemon, defender as PurePokemon | null, isPhysical, isSpecial, playerStages, weatherInfo, cycle, isGym),
-    defenderStat: calculateDefenderStatDisplay(defender as PurePokemon | null, isPhysical, isSpecial, enemyStages, weatherInfo, cycle, isGym),
+    attackerStat: calculateAttackerStatDisplay(attacker as PurePokemon, defender as PurePokemon | null, { isPhysical, isSpecial, isGym }, playerStages, weatherInfo, cycle),
+    defenderStat: calculateDefenderStatDisplay(defender as PurePokemon | null, { isPhysical, isSpecial, isGym }, enemyStages, weatherInfo, cycle),
     recovery: smogonResult?.recovery ?? null,
     recoil: smogonResult?.recoil ?? null,
     fieldConditions: buildFieldConditionsList(battleState?.playerSideConditions, battleState?.enemySideConditions, battleState?.terrain),

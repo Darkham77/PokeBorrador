@@ -1,10 +1,10 @@
 /**
  * src/logic/environment/bushLibrary.ts
  * 
- * BIBLIOTECA DINÁMICA DE COBERTURAS AMBIENTALES (EX-ARBUSTOS)
+ * DYNAMIC ENVIRONMENTAL COVERAGE LIBRARY (FORMERLY BUSHES)
  * 
- * Encapsula la lógica pura de selección por bioma y doble tirada de dados
- * utilizando un PRNG determinista (mulberry32).
+ * Encapsulates pure biome selection and two-stage dice roll logic
+ * using a deterministic PRNG (mulberry32).
  */
 
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
@@ -57,9 +57,9 @@ export interface ResolvedBushConfig {
   id: number;
   cls: string;
   assetId: string; // domain-ok: Procedural visual bush asset file identifier
-  family: BushFamily; // La familia seleccionada dinámicamente del catálogo
-  animationType: BushAnimationType; // Tipo de animación
-  tintClass: string;  // 'tint-desert', 'tint-swamp', 'tint-arctic', 'tint-cave', o ''
+  family: BushFamily; // Dynamically selected family from catalog
+  animationType: BushAnimationType; // Animation type
+  tintClass: string;  // 'tint-desert', 'tint-swamp', 'tint-arctic', 'tint-cave', or ''
   randomScale: number;
   flip: number;
   offsetX: number;
@@ -148,8 +148,8 @@ export const FRONT_LAYER_SEED_OFFSET = 1000;
 export const BACK_LAYER_SEED_OFFSET = 2000;
 
 /**
- * Normaliza las propiedades de un arbusto aplicando la doble tirada de dados
- * determinista basada en sessionSeed y layer.
+ * Normalizes bush properties applying deterministic two-stage dice roll
+ * based on sessionSeed and layer.
  */
 export function resolveBushesForLayer(
   baseBushes: Array<{ id: number; cls: string; tx: number; ty: number; ad: string; ay: string }>,
@@ -159,17 +159,17 @@ export function resolveBushesForLayer(
 ): ResolvedBushConfig[] {
   const biomeConfig = getBiomeConfigForMap(mapId);
 
-  // 2. Iterar sobre los arbustos base y realizar la doble tirada de dados
+  // 2. Iterate over base bushes and perform two-stage dice roll
   return baseBushes.map(b => {
-    // Semilla combinada única por arbusto y capa
+    // Combined unique seed per bush and layer
     const layerOffset = layer === 'front' ? FRONT_LAYER_SEED_OFFSET : BACK_LAYER_SEED_OFFSET;
     const prng = mulberry32(sessionSeed ^ (b.id * BUSH_SEED_MULTIPLIER) ^ layerOffset);
 
-    // Tirada 1: Elegir familia dinámica según los pesos del bioma actual
+    // Roll 1: Pick dynamic family according to current biome weights
     const activeWeights = biomeConfig.weights;
     const availableFamilies = Object.keys(activeWeights).filter(isBushFamily);
 
-    let selectedFamily: BushFamily = 'bush'; // Fallback por defecto
+    let selectedFamily: BushFamily = 'bush'; // Default fallback
 
     let totalWeight = 0;
     for (const fam of availableFamilies) {
@@ -187,17 +187,17 @@ export function resolveBushesForLayer(
         }
       }
     } else {
-      // Fallback: Elegir cualquier familia que exista en el catálogo
+      // Fallback: Pick any family existing in catalog
       const allFamilies = Object.keys(BUSH_FAMILIES).filter(isBushFamily);
       selectedFamily = allFamilies[Math.floor(prng() * allFamilies.length)] ?? 'bush';
     }
 
-    // Tirada 2: Elegir un asset específico dentro de la familia elegida
+    // Roll 2: Pick specific asset within selected family
     const assets = BUSH_FAMILIES[selectedFamily];
     const roll2 = Math.floor(prng() * assets.length);
     const assetId = assets[roll2] ?? assets[0] ?? 'grass-1';
 
-    // Tinte aplicable según configuración del bioma y familia de la cobertura
+    // Applicable tint according to biome configuration and coverage family
     let tintClass = '';
     if (biomeConfig.tint) {
       const tintConf = biomeConfig.tint;
@@ -206,7 +206,7 @@ export function resolveBushesForLayer(
       }
     }
 
-    // Transformaciones aleatorias deterministas
+    // Deterministic random transformations
     const scaleFactor = BUSH_BASE_SCALE + (prng() * BUSH_VAR_SCALE) + (b.id * BUSH_ID_SCALE_STEP);
     const flip = prng() < (FLIP_CHANCE_PERCENT / 100) ? -1 : 1;
     const offsetX = Math.floor(prng() * BUSH_OFFSET_X_RANGE) - BUSH_OFFSET_X_BIAS;

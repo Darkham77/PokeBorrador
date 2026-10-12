@@ -5,7 +5,7 @@ import type { MarketListing, MarketItemData } from '@/logic/economy/market'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { formatDisplayDate } from '@/logic/utils/timeUtils'
-import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts'
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import {
   resolveItemTier,
@@ -70,7 +70,7 @@ function onImageError(e: Event) {
           _source: 'market',
           index: 0
         }"
-        :total="getPokemonTotalPower(pokemon)"
+        :total="calculateTotalPower(pokemon)"
         auto-confirm
         class="listing-card-override"
       />
@@ -89,6 +89,9 @@ function onImageError(e: Event) {
             :src="getAssetUrl(ASSET_TYPES.ITEM, item.name || '')"
             :alt="itemDisplayName"
             class="i-sprite pixelated"
+            width="32"
+          
+            height="32"
             @error="onImageError"
           >
         </div>
@@ -236,7 +239,7 @@ function onImageError(e: Event) {
     border: 1px solid var(--tier-color, #94a3b8);
     border-radius: $radius-sm;
     background: Rgb(0 0 0 / 40%);
-    color: var(--tier-color, #94a3b8);
+    color: var(--tier-color, var(--slate-400));
     font-size: var(--font-7);
     font-weight: bold;
     letter-spacing: 0.5px;

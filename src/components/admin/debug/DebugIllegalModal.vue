@@ -70,7 +70,7 @@ const emit = defineEmits<{
   padding: 1.5rem;
   border: 2px solid var(--red-light);
   border-radius: $radius-lg;
-  background: #1e232d;
+  background: var(--slate-800);
   color: var(--white);
   box-shadow: var(--shadow-glow-red-lg);
 }

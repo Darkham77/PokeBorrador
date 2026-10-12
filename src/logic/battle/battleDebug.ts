@@ -658,7 +658,7 @@ export function setupBattleDebug(ctx: BattleContext) {
         (active.player as Pokemon & { confused?: number; seeded?: boolean }).confused = 0;
         (active.player as Pokemon & { confused?: number; seeded?: boolean }).seeded = false
         
-        // Sincronizar el HP del equipo en el gameStore
+        // Synchronize team HP in the gameStore
         const team = ctx.gs.state.team
         if (team && team[active.playerTeamIndex]) {
           const tp = team[active.playerTeamIndex]

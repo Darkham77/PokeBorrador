@@ -45,7 +45,7 @@ function reportInitStage(stage: string): void {
 
 let isDeterministicSimulation = false; // singleton-ok: Singleton instance state container
 
-// Aplicar el monkey-patch unificado de spreadModify
+// Apply the unified spreadModify monkey-patch
 patchShowdownSpreadModify(() => isDeterministicSimulation);
 
 let currentBattle: Battle | null = null; // singleton-ok: Singleton instance state container
@@ -495,7 +495,7 @@ let lastLogIndex = 0; // singleton-ok: Singleton instance state container
 
 function getNewLogs(): string[] {
   if (!currentBattle) return [];
-  // En Gen 3 obtenemos el log acumulado y devolvemos la porción nueva del turno
+  // In Gen 3, retrieve the cumulative log and return the new portion for this turn
   const allLogs = currentBattle.log;
   const newLogs = allLogs.slice(lastLogIndex);
   lastLogIndex = allLogs.length;

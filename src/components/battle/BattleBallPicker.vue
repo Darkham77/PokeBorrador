@@ -184,7 +184,8 @@ defineExpose({
                 :src="getAssetUrl(ASSET_TYPES.ITEM, ball.sprite)" 
                 :alt="ball.name" 
                 class="ball-icon-mini" 
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                width="20"
+                height="20"
               >
             </span>
             <span class="ball-info">

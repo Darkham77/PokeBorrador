@@ -195,7 +195,7 @@ describe('building_and_props_cut_detector', () => {
     ]);
 
     for (const b of buildings) {
-      const fullPath = path.resolve(ROOT_DIR, 'public/assets', b.runtimePath);
+      const fullPath = path.resolve(ROOT_DIR, 'test_aventura/assets', b.runtimePath);
       expect(fs.existsSync(fullPath), `Building file must exist: ${b.runtimePath}`).toBe(true);
 
       const meta = await sharp(fullPath).metadata();

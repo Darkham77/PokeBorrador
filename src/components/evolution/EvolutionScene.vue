@@ -55,7 +55,7 @@ const activeTweens: gsap.core.Tween[] = [];
 const containerRef = ref<HTMLElement | null>(null);
 let ctx: gsap.Context | null = null;
 
-// DOM Refs para las auras combinadas de destellos (flare 1 y 2)
+// DOM Refs for combined flare auras (flare 1 and 2)
 const flare1Ref = ref<HTMLElement | null>(null);
 const flare2Ref = ref<HTMLElement | null>(null);
 
@@ -70,8 +70,8 @@ const auraStyles = computed(() => {
   return {
     '--flare-1-url': `url(${flare1Url})`,
     '--flare-2-url': `url(${flare2Url})`,
-    '--aura-color-1': 'rgba(96, 165, 250, 0.75)', // Azul
-    '--aura-color-2': 'rgba(251, 191, 36, 0.75)'  // Oro
+    '--aura-color-1': 'rgba(96, 165, 250, 0.75)', // Blue
+    '--aura-color-2': 'rgba(251, 191, 36, 0.75)'  // Gold
   };
 });
 
@@ -150,13 +150,13 @@ const startSequence = () => {
     // 1. Intro Wait
     timeline.to({}, { duration: EVOLUTION_INTRO_DELAY_SEC });
 
-    // 2. Flashing & Swapping Phase (Intercambio visual de sprites rápido en flashes)
+    // 2. Flashing & Swapping Phase (Rapid sprite swap during flashes)
     timeline.add(() => { step.value = 'flashing'; });
     
     for (let i = 0; i < FLASH_COUNT; i++) {
       timeline.add(() => { 
         flashesDone.value = i + 1; 
-        // Intercambia el sprite mostrado: de forma alternada a medida que avanza el parpadeo
+        // Swap displayed sprite alternately as flashing progresses
         if (i > EVOLUTION_FLASH_SPRITE_SWAP_THRESHOLD) {
           currentShowingSprite.value = currentShowingSprite.value === 'from' ? 'to' : 'from';
         }
@@ -169,7 +169,7 @@ const startSequence = () => {
       step.value = 'transformed';
       currentShowingSprite.value = 'to';
       
-      // Reproducir grito del Pokémon evolucionado
+      // Play evolved Pokémon cry
       if (evolutionStore.targetId) {
         gameBus.emit('PLAY_CRY', { name: evolutionStore.targetId });
       }

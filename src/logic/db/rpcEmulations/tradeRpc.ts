@@ -341,7 +341,7 @@ export async function emulateRejectTrade(
     return { data: null, error: { message: 'No autorizado.' } };
   }
 
-  // Devolver activos al emisor (trade.sender_id) en su claim_queue
+  // Return assets to sender (trade.sender_id) in their claim_queue
   const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
   const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record: Generic key-value data dictionary container
 

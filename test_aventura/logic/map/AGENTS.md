@@ -53,7 +53,9 @@ Frontend Developers / Systems Engineers.
 
 ## Key Files
 
+- [`adventureProjectFactory.ts`](./adventureProjectFactory.ts): Canonical adventure project factory generating Kanto, Johto, and blank regional world projects.
 - [`archipelagoGenerator.ts`](./archipelagoGenerator.ts): Module implementation.
+- [`assetWebPathResolver.ts`](./assetWebPathResolver.ts): Canonical web path resolver for test_aventura sprites, tiles, and prefabs.
 - [`autotileMatrixGenerator.ts`](./autotileMatrixGenerator.ts): Module implementation.
 - [`biomeDistributionEngine.ts`](./biomeDistributionEngine.ts): Module implementation.
 - [`buildingPlacementSolver.ts`](./buildingPlacementSolver.ts): Module implementation.
@@ -82,6 +84,7 @@ Frontend Developers / Systems Engineers.
 - [`geologicalClusterEngine.ts`](./geologicalClusterEngine.ts): Module implementation.
 - [`heightmapConstraints.ts`](./heightmapConstraints.ts): Module implementation.
 - [`inBrowserTileProcessor.ts`](./inBrowserTileProcessor.ts): Module implementation.
+- [`johtoRegionalGenerator.ts`](./johtoRegionalGenerator.ts): Canonical Johto regional procedural world generator extending Kanto regional generator.
 - [`kantoChunkManager.ts`](./kantoChunkManager.ts): Chunk management and spatial partition lifecycle for Kanto overworld tiles.
 - [`kantoProceduralCarver.ts`](./kantoProceduralCarver.ts): Module implementation.
 - [`kantoRegionalGenerator.ts`](./kantoRegionalGenerator.ts): Module implementation.

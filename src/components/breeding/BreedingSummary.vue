@@ -103,7 +103,7 @@ const formatMs = (ms: number | null): string => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 }
 
-// Ticker GSAP: actualiza el display del timer cada frame sin setInterval
+// GSAP Ticker: updates timer display every frame without setInterval
 const displayTime = ref(formatMs(breedingStore.nextEggTime))
 
 const tickerFn = () => {

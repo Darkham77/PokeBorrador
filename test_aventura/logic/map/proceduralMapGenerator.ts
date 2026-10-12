@@ -566,7 +566,7 @@ export class ProceduralMapGenerator {
         const rightTile = palette.cliff.right ?? topTile;
 
         // Stamp 2-tile high south-facing cliff terraces along mountainMask
-        for (let y = 2; y <= height - 4; y += 3) {
+        const stampCliffRow = (y: number) => {
           let runStart = -1;
           for (let x = 2; x <= width - 3; x++) {
             const isMountain = biomeDist.mountainMask[y]![x] && biomeDist.mountainMask[y + 1]![x];
@@ -580,19 +580,20 @@ export class ProceduralMapGenerator {
 
             if (isMountain && isClear) {
               if (runStart === -1) runStart = x;
-            } else {
-              if (runStart !== -1 && x - runStart >= 3) {
-                const runEnd = x - 1;
-                for (let cx = runStart; cx <= runEnd; cx++) {
-                  const tId = cx === runStart ? leftTile : cx === runEnd ? rightTile : topTile;
-                  elevationLayer[y]![cx] = this.makeCell(tId, true);
-                  elevationLayer[y + 1]![cx] = this.makeCell(faceTile, true);
-                  collisionGrid[y]![cx] = true;
-                  collisionGrid[y + 1]![cx] = true;
-                }
-              }
-              runStart = -1;
+              continue;
             }
+
+            if (runStart !== -1 && x - runStart >= 3) {
+              const runEnd = x - 1;
+              for (let cx = runStart; cx <= runEnd; cx++) {
+                const tId = cx === runStart ? leftTile : cx === runEnd ? rightTile : topTile;
+                elevationLayer[y]![cx] = this.makeCell(tId, true);
+                elevationLayer[y + 1]![cx] = this.makeCell(faceTile, true);
+                collisionGrid[y]![cx] = true;
+                collisionGrid[y + 1]![cx] = true;
+              }
+            }
+            runStart = -1;
           }
           if (runStart !== -1 && width - 2 - runStart >= 3) {
             for (let cx = runStart; cx < width - 2; cx++) {
@@ -602,6 +603,10 @@ export class ProceduralMapGenerator {
               collisionGrid[y + 1]![cx] = true;
             }
           }
+        };
+
+        for (let y = 2; y <= height - 4; y += 3) {
+          stampCliffRow(y);
         }
       } else {
         const cone = palette.mountainCone2x3;
@@ -610,13 +615,12 @@ export class ProceduralMapGenerator {
 
         for (let y = 1; y <= height - cone.height - 1; y += 2) {
           for (let x = 1; x <= width - cone.width - 1; x += 2) {
-            if (biomeDist.mountainMask[y]![x] && !isPathCell[y]![x]) {
-              if (this.canStamp(objectLayer, elevationLayer, isPathCell, cone.width, cone.height, x, y)) {
-                this.stampMultitile(elevationLayer, collisionGrid, cone, x, y, width, height);
-                placedCones++;
-                if (placedCones >= maxCones) break;
-              }
-            }
+            if (!biomeDist.mountainMask[y]![x] || isPathCell[y]![x]) continue;
+            if (!this.canStamp(objectLayer, elevationLayer, isPathCell, cone.width, cone.height, x, y)) continue;
+
+            this.stampMultitile(elevationLayer, collisionGrid, cone, x, y, width, height);
+            placedCones++;
+            if (placedCones >= maxCones) break;
           }
           if (placedCones >= maxCones) break;
         }
@@ -658,19 +662,21 @@ export class ProceduralMapGenerator {
       if (mapType === 'route') {
         const corridorRadius = 4;
         const isCorridor: boolean[][] = Array.from({ length: height }, () => Array(width).fill(false));
+        const markCorridorCell = (px: number, py: number, dx: number, dy: number) => {
+          const cy = py + dy;
+          const cx = px + dx;
+          if (cx < 0 || cx >= width || cy < 0 || cy >= height) return;
+          if (Math.abs(dx) + Math.abs(dy) <= corridorRadius + 1) {
+            isCorridor[cy]![cx] = true;
+          }
+        };
+
         for (let py = 0; py < height; py++) {
           for (let px = 0; px < width; px++) {
-            if (isPathCell[py]![px]) {
-              for (let dy = -corridorRadius; dy <= corridorRadius; dy++) {
-                for (let dx = -corridorRadius; dx <= corridorRadius; dx++) {
-                  const cy = py + dy;
-                  const cx = px + dx;
-                  if (cx >= 0 && cx < width && cy >= 0 && cy < height) {
-                    if (Math.abs(dx) + Math.abs(dy) <= corridorRadius + 1) {
-                      isCorridor[cy]![cx] = true;
-                    }
-                  }
-                }
+            if (!isPathCell[py]![px]) continue;
+            for (let dy = -corridorRadius; dy <= corridorRadius; dy++) {
+              for (let dx = -corridorRadius; dx <= corridorRadius; dx++) {
+                markCorridorCell(px, py, dx, dy);
               }
             }
           }
@@ -703,13 +709,12 @@ export class ProceduralMapGenerator {
         let placedInteriorTrees = 0;
         for (let y = 4; y <= height - standaloneTpl.height - 4; y += 4) {
           for (let x = 4; x <= width - standaloneTpl.width - 4; x += 4) {
-            if (biomeDist.forestMask[y]![x]) {
-              if (this.canStamp(objectLayer, elevationLayer, isPathCell, standaloneTpl.width, standaloneTpl.height, x, y)) {
-                this.stampMultitile(objectLayer, collisionGrid, standaloneTpl, x, y, width, height);
-                placedInteriorTrees++;
-                if (placedInteriorTrees >= 3) break;
-              }
-            }
+            if (!biomeDist.forestMask[y]![x]) continue;
+            if (!this.canStamp(objectLayer, elevationLayer, isPathCell, standaloneTpl.width, standaloneTpl.height, x, y)) continue;
+
+            this.stampMultitile(objectLayer, collisionGrid, standaloneTpl, x, y, width, height);
+            placedInteriorTrees++;
+            if (placedInteriorTrees >= 3) break;
           }
           if (placedInteriorTrees >= 3) break;
         }
@@ -721,6 +726,46 @@ export class ProceduralMapGenerator {
         const ledgeY2 = Math.floor(height * ROUTE_LEDGE_SOUTH_RATIO);
         const candidateLedgeRows = [ledgeY1, ledgeY1 + 1, ledgeY1 - 1, ledgeY2, ledgeY2 + 1, ledgeY2 - 1];
 
+        const tryStampLedgeSegment = (ly: number, startX: number, endX: number): boolean => {
+          if (endX - startX < 3) return false;
+          let currentRunStart = -1;
+          let bestRun: { start: number; end: number } | null = null;
+
+          for (let x = startX; x <= endX; x++) {
+            const isBlocked =
+              isPathCell[ly]![x] ||
+              isPathCell[ly - 1]?.[x] ||
+              isPathCell[ly + 1]?.[x] ||
+              elevationLayer[ly]![x] !== null ||
+              elevationLayer[ly + 1]?.[x] !== null ||
+              objectLayer[ly]![x] !== null;
+
+            if (isBlocked) {
+              if (bestRun) break;
+              currentRunStart = -1;
+              continue;
+            }
+
+            if (currentRunStart === -1) currentRunStart = x;
+            const runLength = x - currentRunStart + 1;
+            if (runLength >= 3) {
+              bestRun = { start: currentRunStart, end: x };
+            }
+          }
+
+          if (!bestRun) return false;
+
+          for (let x = bestRun.start; x <= bestRun.end; x++) {
+            const tileId =
+              prng() < ROUTE_LEDGE_ALT_CHANCE && palette.ledge!.centerAlt
+                ? palette.ledge!.centerAlt
+                : palette.ledge!.center;
+            baseLayer[ly]![x] = this.makeCell(tileId, 'ledge');
+            collisionGrid[ly]![x] = 'ledge';
+          }
+          return true;
+        };
+
         let placedLedgeCount = 0;
         for (const ly of candidateLedgeRows) {
           if (ly < 4 || ly >= height - 4) continue;
@@ -730,45 +775,9 @@ export class ProceduralMapGenerator {
           ];
 
           for (const seg of segments) {
-            if (seg.endX - seg.startX < 3) continue;
-
-            // Find a continuous clear stretch of at least 3 tiles
-            let currentRunStart = -1;
-            let bestRun: { start: number; end: number } | null = null;
-
-            for (let x = seg.startX; x <= seg.endX; x++) {
-              const isBlocked =
-                isPathCell[ly]![x] ||
-                isPathCell[ly - 1]?.[x] ||
-                isPathCell[ly + 1]?.[x] ||
-                elevationLayer[ly]![x] !== null ||
-                elevationLayer[ly + 1]?.[x] !== null ||
-                objectLayer[ly]![x] !== null;
-
-              if (!isBlocked) {
-                if (currentRunStart === -1) currentRunStart = x;
-                const runLength = x - currentRunStart + 1;
-                if (runLength >= 3) {
-                  bestRun = { start: currentRunStart, end: x };
-                }
-              } else {
-                if (bestRun) break;
-                currentRunStart = -1;
-              }
-            }
-
-            if (bestRun) {
-              for (let x = bestRun.start; x <= bestRun.end; x++) {
-                const tileId =
-                  prng() < ROUTE_LEDGE_ALT_CHANCE && palette.ledge.centerAlt
-                    ? palette.ledge.centerAlt
-                    : palette.ledge.center;
-                baseLayer[ly]![x] = this.makeCell(tileId, 'ledge');
-                collisionGrid[ly]![x] = 'ledge';
-              }
-              placedLedgeCount++;
-              if (placedLedgeCount >= 2) break;
-            }
+            if (!tryStampLedgeSegment(ly, seg.startX, seg.endX)) continue;
+            placedLedgeCount++;
+            if (placedLedgeCount >= 2) break;
           }
           if (placedLedgeCount >= 2) break;
         }
@@ -780,16 +789,17 @@ export class ProceduralMapGenerator {
         const pathBorderCandidates: { x: number; y: number }[] = [];
         for (let y = 3; y < height - 4; y++) {
           for (let x = 3; x < width - 4; x++) {
-            if (!isPathCell[y]![x] && elevationLayer[y]![x] === null && objectLayer[y]![x] === null && collisionGrid[y]![x] !== 'ledge') {
-              const hasAdjacentPath = [
-                isPathCell[y - 1]?.[x],
-                isPathCell[y + 1]?.[x],
-                isPathCell[y]?.[x - 1],
-                isPathCell[y]?.[x + 1]
-              ].some(Boolean);
-              if (hasAdjacentPath) {
-                pathBorderCandidates.push({ x, y });
-              }
+            if (isPathCell[y]![x] || elevationLayer[y]![x] !== null || objectLayer[y]![x] !== null || collisionGrid[y]![x] === 'ledge') {
+              continue;
+            }
+            const hasAdjacentPath = [
+              isPathCell[y - 1]?.[x],
+              isPathCell[y + 1]?.[x],
+              isPathCell[y]?.[x - 1],
+              isPathCell[y]?.[x + 1]
+            ].some(Boolean);
+            if (hasAdjacentPath) {
+              pathBorderCandidates.push({ x, y });
             }
           }
         }

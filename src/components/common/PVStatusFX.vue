@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * PVStatusFX.vue
- * Gestiona las partículas de estados alterados (Emoji particles).
- * MIGRACIÓN 1:1 DESDE PVSPRITEFX.VUE
+ * Manages status condition particles (Emoji particles).
+ * 1:1 MIGRATION FROM PVSPRITEFX.VUE
  */
 import { onUnmounted, watch, nextTick, ref } from 'vue'
 import { useParticleEngine, type ParticleSystemOptions } from '@/composables/effects/useParticleEngine'

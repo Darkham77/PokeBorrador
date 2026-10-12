@@ -147,8 +147,8 @@ describe('PrefabsRegistryService', () => {
     }
   });
 
-  it('validates public/assets/prefabs/manifest.json against disk and verifies new zone prefabs', () => {
-    const manifestPath = path.resolve('public/assets/prefabs/manifest.json');
+  it('validates test_aventura/assets/prefabs/manifest.json against disk and verifies new zone prefabs', () => {
+    const manifestPath = path.resolve('test_aventura/assets/prefabs/manifest.json');
     expect(fs.existsSync(manifestPath), 'manifest.json must exist').toBe(true);
     const raw = fs.readFileSync(manifestPath, 'utf-8');
     const manifest = JSON.parse(raw) as { version: string; prefabs: Array<{ id: string; name: string; category: string; width: number; height: number; file: string }> };
@@ -163,7 +163,7 @@ describe('PrefabsRegistryService', () => {
       ids.add(p.id);
 
       // Verify file exists on disk
-      const fullPath = path.resolve('public/assets/prefabs', p.category, p.file);
+      const fullPath = path.resolve('test_aventura/assets/prefabs', p.category, p.file);
       expect(fs.existsSync(fullPath), `Prefab file must exist: ${fullPath}`).toBe(true);
     }
 
@@ -175,8 +175,8 @@ describe('PrefabsRegistryService', () => {
     expect(ids.has('tree_viridian_forest')).toBe(true);
   });
 
-  it('verifies 0 duplicate files exist in public/assets/tiles/ across categories', () => {
-    const tilesDir = path.resolve('public/assets/tiles');
+  it('verifies 0 duplicate files exist in test_aventura/assets/tiles/ across categories', () => {
+    const tilesDir = path.resolve('test_aventura/assets/tiles');
     const fileToCategoryMap = new Map<string, string>();
 
     for (const category of fs.readdirSync(tilesDir)) {

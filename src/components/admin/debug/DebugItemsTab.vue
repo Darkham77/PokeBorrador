@@ -133,7 +133,7 @@ function onBtnDown(e: Event) {
   padding: 12px;
   border: 1px solid Rgb(255 255 255 / 20%);
   border-radius: $radius-xl;
-  background: Linear-Gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  background: Linear-Gradient(135deg, var(--purple-400) 0%, var(--purple-600) 100%);
   color: var(--white);
   font-size: var(--font-14);
   font-weight: bold;
@@ -141,7 +141,7 @@ function onBtnDown(e: Event) {
   box-shadow: var(--shadow-card);
 
   &:hover {
-    background: Linear-Gradient(135deg, #b55fe6 0%, #8b2ad6 100%);
+    background: Linear-Gradient(135deg, var(--purple-400) 0%, var(--purple-600) 100%);
     box-shadow: var(--shadow-card);
   }
 }

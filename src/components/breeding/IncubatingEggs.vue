@@ -79,13 +79,13 @@ const hatchEgg = (egg: PokemonEgg) => {
   h3 {
     @include pixelated;
 
-    color: var(--daycare-pink, #f36);
+    color: var(--daycare-pink, var(--pokecenter-pink));
     font-size: var(--font-10);
     margin-bottom: 6px;
   }
   p {
     max-width: 500px;
-    color: var(--gray, #94a3b8);
+    color: var(--gray, var(--slate-400));
     font-size: var(--font-12);
     line-height: 1.4;
   }
@@ -123,7 +123,7 @@ const hatchEgg = (egg: PokemonEgg) => {
 
   &.empty {
     background: Rgb(148 163 184 / 10%);
-    color: var(--gray, #94a3b8);
+    color: var(--gray, var(--slate-400));
     border-color: Rgb(148 163 184 / 20%);
   }
 }

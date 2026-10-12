@@ -20,8 +20,8 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   let registryService: TilesRegistryService;
 
   beforeAll(() => {
-    const registryPath = path.resolve('public/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'public/assets/tiles_registry.json must exist').toBe(true);
+    const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
+    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(true);
     const raw = fs.readFileSync(registryPath, 'utf-8');
     const data = JSON.parse(raw) as TilesRegistryJson;
     registryService = new TilesRegistryService(data);

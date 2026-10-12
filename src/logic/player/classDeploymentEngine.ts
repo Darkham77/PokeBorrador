@@ -240,7 +240,7 @@ export function generateBugExpeditionPokemon(missionId: MissionId, badgeCount = 
 }
 
 /**
- * Calculates Cazabichos capture streak progression and Kit de Campo balls.
+ * Calculates Bug Catcher capture streak progression and Field Kit balls.
  */
 export function calculateCazabichosStreak(
   currentStreak: number,

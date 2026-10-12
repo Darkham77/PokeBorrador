@@ -66,7 +66,7 @@ const cardRef = ref<HTMLElement | null>(null)
 
 import BattleInfoCardHeader from './BattleInfoCardHeader.vue'
 
-// --- GESTIÓN DE XP Y LEVEL UP (Phase 3) ---
+// --- XP MANAGEMENT AND LEVEL UP (Phase 3) ---
 const isLevelingUp = ref(false)
 
 const GSAP_LEVEL_UP_CARD_SCALE_BOOST = 1.05
@@ -74,7 +74,7 @@ const GSAP_LEVEL_UP_FLASH_DURATION_SEC = 0.15
 
 watch(() => p.value.level, (newLevel, oldLevel) => {
   if (oldLevel && newLevel > oldLevel) {
-    // 1. Efecto de Destello (Flash) con GSAP
+    // 1. Flash effect with GSAP
     if (cardRef.value) {
       gsap.fromTo(cardRef.value, 
         { filter: 'Brightness(1) contrast(1)', scale: 1 },
@@ -96,7 +96,7 @@ watch(() => p.value.level, (newLevel, oldLevel) => {
   }
 }, { immediate: false })
 
-// Hook de orquestación de estados y etapas de combate
+// Combat states and stages orchestration hook
 const { unifiedStatuses, volatileStatuses } = useCombatantStatus(p, battleStore, computed(() => props.isPlayer))
 
 defineExpose({
@@ -128,7 +128,7 @@ const getBreakdown = (key: string) => {
 }
 
 const showTeamBalls = computed(() => {
-  // En combates contra entrenador, gimnasio o PvP se muestra la fila de Pokéballs disponibles.
+  // In trainer, gym, or PvP battles, show the available Pokéballs row.
   if (battleStore.uiConfig) {
     return !battleStore.uiConfig.isWild
   }

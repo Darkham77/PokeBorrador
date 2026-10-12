@@ -185,7 +185,8 @@ const handleBtnLeave = (e: MouseEvent) => {
             :src="leaderSpriteUrl"
             :alt="gym.name"
             class="leader-sprite"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+            width="32"
+            height="32"
           >
         </div>
       </div>

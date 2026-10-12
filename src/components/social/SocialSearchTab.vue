@@ -247,7 +247,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   }
 
   option {
-    background: #161a2e;
+    background: var(--slate-900);
     color: var(--white);
   }
 }

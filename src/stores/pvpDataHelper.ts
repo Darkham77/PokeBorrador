@@ -42,7 +42,7 @@ export async function fetchActiveSeasonRules(
   try {
     const { data: rulesConfig } = await db
       .from('ranked_rules_config')
-      .select('*')
+      .select('id, season_name, config')
       .eq('id', 'current')
       .maybeSingle() as { data: { season_name?: string; config?: SeasonRules } | null }
 

@@ -126,18 +126,16 @@ export function collectStandingDepthEntities(
           zPriority: CANVAS_RENDERER.Z_PRIORITY_OBSTACLES
         });
       }
-      if (obs.flankingProps) {
-        for (const fp of obs.flankingProps) {
-          if (!buildingFootprintMask[fp.y]?.[fp.x]) {
-            standingEntities.push({
-              file: fp.prefabFile,
-              px: fp.x * CANVAS_TILE_SIZE,
-              py: fp.y * CANVAS_TILE_SIZE,
-              ySort: (fp.y + 1) * CANVAS_TILE_SIZE,
-              zPriority: CANVAS_RENDERER.Z_PRIORITY_OBSTACLES
-            });
-          }
-        }
+      if (!obs.flankingProps) continue;
+      for (const fp of obs.flankingProps) {
+        if (buildingFootprintMask[fp.y]?.[fp.x]) continue;
+        standingEntities.push({
+          file: fp.prefabFile,
+          px: fp.x * CANVAS_TILE_SIZE,
+          py: fp.y * CANVAS_TILE_SIZE,
+          ySort: (fp.y + 1) * CANVAS_TILE_SIZE,
+          zPriority: CANVAS_RENDERER.Z_PRIORITY_OBSTACLES
+        });
       }
     }
   }

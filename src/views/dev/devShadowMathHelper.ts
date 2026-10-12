@@ -76,10 +76,12 @@ export function isRebuildProgressActive(isRebuilding: boolean, progress: number)
 const _SAVE_BUTTON_STATES = ['saving', 'unsaved', 'saved'] as const;
 export type SaveButtonState = (typeof _SAVE_BUTTON_STATES)[number];
 
-export function resolveSaveButtonState(
-  isSaving: boolean,
+export interface SaveButtonFlags {
+  isSaving: boolean
   hasUnsavedChanges: boolean
-): SaveButtonState {
+}
+
+export function resolveSaveButtonState({ isSaving, hasUnsavedChanges }: SaveButtonFlags): SaveButtonState {
   if (isSaving) return 'saving';
   if (hasUnsavedChanges) return 'unsaved';
   return 'saved';

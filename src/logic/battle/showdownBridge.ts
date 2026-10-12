@@ -14,9 +14,9 @@ export { filterShowdownLogs } from './showdownLogFilter.ts';
 import './showdownWeatherInjection.ts';
 
 /**
- * Traduce y procesa una sola línea del log estructurado de Showdown,
- * actualizando el estado reactivo del combate y disparando logs/UI.
- * Delega el handling a los sub-módulos por categoría de evento.
+ * Translates and processes a single line from Showdown's structured log,
+ * updating reactive battle state and triggering logs/UI.
+ * Delegates handling to sub-modules by event category.
  */
 export async function parseShowdownLogLine(store: BattleContext, line: string, turnLogs?: string[]) {
   if (!line || !line.startsWith('|')) return;

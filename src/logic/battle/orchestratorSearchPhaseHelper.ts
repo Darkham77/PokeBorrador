@@ -46,13 +46,18 @@ async function runAutoBattleCheck(ctx: BattleContext, isTrainer: boolean): Promi
   }
 }
 
+export interface SearchPhaseOptions {
+  isTrainer: boolean;
+  isGym: boolean;
+}
+
 export async function processSearchPhaseSequence(
   ctx: BattleContext,
   finalEnemyPoke: Pokemon,
   minigame: BattleMinigame | null,
-  isTrainer: boolean,
-  isGym: boolean
+  options: SearchPhaseOptions
 ): Promise<boolean> {
+  const { isTrainer, isGym } = options;
   if (minigame) {
     return handleMinigameSequence(ctx, finalEnemyPoke, minigame)
   }

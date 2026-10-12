@@ -210,7 +210,7 @@ export function registerStatsTools(debug: DebugSystem) {
         }
       }
 
-      // Guardar progreso específico por dificultad
+      // Save difficulty-specific progress
       if (!game.state.gymProgress[resolvedGymId] || typeof game.state.gymProgress[resolvedGymId] !== 'object') {
         game.state.gymProgress[resolvedGymId] = { easy: false, normal: false, hard: false, attempts: 0 }
       }
@@ -218,7 +218,7 @@ export function registerStatsTools(debug: DebugSystem) {
       progress[difficulty] = true
       progress.attempts++
 
-      // Simular recompensas adicionales basadas en dificultad (EXP y Dinero aproximado)
+      // Simulate additional rewards based on difficulty (approximate EXP and Money)
       const diffLevels: Record<string, number> = {
         easy: GYM_DIFFICULTY_LEVEL_EASY,
         normal: GYM_DIFFICULTY_LEVEL_NORMAL,

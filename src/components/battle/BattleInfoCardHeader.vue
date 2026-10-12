@@ -38,7 +38,8 @@ const hasNameGender = computed(() => {
       :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
       alt="Capturado"
       class="caught-icon"
-      @error="e => (e.target as HTMLImageElement).style.display = 'none'"
+      width="16"
+      height="16"
     >
   </div>
 </template>

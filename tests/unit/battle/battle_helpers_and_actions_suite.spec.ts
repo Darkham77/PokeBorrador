@@ -307,7 +307,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
 
     it('handles minigame encounter by setting enemy, minigame, and transitioning to MINIGAME_CHECK', async () => {
       const minigame: BattleMinigame = 'fishing'
-      const handled = await processSearchPhaseSequence(mockCtx, dummyPokemon, minigame, false, false)
+      const handled = await processSearchPhaseSequence(mockCtx, dummyPokemon, minigame, { isTrainer: false, isGym: false })
 
       expect(handled).toBe(true)
       expect(mockCtx.isIntroAnimating.value).toBe(false)
@@ -320,7 +320,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
     })
 
     it('handles wild pokemon encounter without minigame', async () => {
-      const handled = await processSearchPhaseSequence(mockCtx, dummyPokemon, null, false, false)
+      const handled = await processSearchPhaseSequence(mockCtx, dummyPokemon, null, { isTrainer: false, isGym: false })
 
       expect(handled).toBe(true)
       expect(mockCtx.isIntroAnimating.value).toBe(false)
@@ -338,7 +338,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
         mockCtx.activeBattle.value.trainerArchetype = 'policeman'
       }
 
-      const handled = await processSearchPhaseSequence(mockCtx, dummyPokemon, null, true, false)
+      const handled = await processSearchPhaseSequence(mockCtx, dummyPokemon, null, { isTrainer: true, isGym: false })
 
       expect(handled).toBe(true)
       expect(mockCtx.animations?.triggerTrainerEntry).toHaveBeenCalled()
@@ -381,7 +381,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
     })
 
     it('correctly resolves animated sprite key candidates', () => {
-      const key = resolveAnimatedSpriteKey('25i', '25', false, false)
+      const key = resolveAnimatedSpriteKey('25i', '25', { isBack: false, isFemale: false })
       expect(typeof key).toBe('string')
     })
 

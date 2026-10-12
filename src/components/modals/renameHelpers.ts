@@ -14,13 +14,18 @@ export interface RenameValidationError {
   icon: string
 }
 
+export interface RenameChangeOptions {
+  genderChanged: boolean
+  nameChanged: boolean
+  canRename: boolean
+}
+
 export function validateRenameRequest(
   targetName: string,
-  genderChanged: boolean,
-  nameChanged: boolean,
-  canRename: boolean,
+  changes: RenameChangeOptions,
   daysUntilRename: number
 ): RenameValidationError | null {
+  const { genderChanged, nameChanged, canRename } = changes
   const validation = validateTrainerName(targetName)
   if (!validation.success) {
     return {

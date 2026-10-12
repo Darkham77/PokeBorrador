@@ -396,17 +396,17 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
     stroke-width: 6;
 
     &.road {
-      stroke: #f1c40f;
+      stroke: var(--gold);
     }
     &.mountain_pass {
-      stroke: #b08968;
+      stroke: var(--bronze);
       stroke-dasharray: 8, 6;
     }
     &.water_crossing {
-      stroke: #00d2d3;
+      stroke: var(--cyan);
     }
     &.forest_path {
-      stroke: #2ecc71;
+      stroke: var(--green);
     }
   }
 }

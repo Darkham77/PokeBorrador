@@ -98,6 +98,18 @@ const slotRefs = ref<HTMLElement[]>([])
 const auraRefs = ref<HTMLElement[]>([])
 const spriteRefs = ref<HTMLElement[]>([])
 
+function setAuraRef(index: number) {
+  return (el: unknown) => {
+    if (el) auraRefs.value[index] = el as HTMLElement;
+  };
+}
+
+function setSpriteRef(index: number) {
+  return (el: unknown) => {
+    if (el) spriteRefs.value[index] = el as HTMLElement;
+  };
+}
+
 const activeTweensMap = new Map<number, gsap.core.Tween[]>()
 
 function clearSlotAnimations(index: number) {
@@ -221,7 +233,7 @@ async function handleHeal() {
 
   const tl = gsap.timeline({
     onUpdate: () => {
-      // Sincronizar el conteo de curados con el progreso
+      // Synchronize healed count with progress
       const targetCount = Math.floor((progress.value / PERCENTAGE_FULL) * team.value.length)
       if (targetCount > healedCount.value) {
         healedCount.value = targetCount
@@ -390,12 +402,14 @@ onUnmounted(() => {
 
               <!-- Type Glow Aura -->
               <div 
-                :ref="(el) => { if (el) auraRefs[i] = el as HTMLElement }"
+                :ref="setAuraRef(i)"
                 class="type-aura" 
               />
 
               <img 
-                :ref="(el) => { if (el) spriteRefs[i] = el as HTMLElement }"
+                :ref="setSpriteRef(i)"
+                width="32"
+                height="32"
                 :src="slot.spriteUrl" 
                 class="poke-sprite"
                 :alt="slot.pokemon.name"

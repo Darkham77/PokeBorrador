@@ -7,7 +7,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, normalizePosixPath } from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath , createRuleCapabilities} from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
@@ -36,7 +36,7 @@ export const POKEMON_DB_RULES: readonly PokemonDbRuleId[] = [
 export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(POKEMON_DB_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -46,7 +46,7 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_pokemon',
       configKey: 'domain.pokemon',
       defaultConfig: {
@@ -112,78 +112,91 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
     }
   }
 
-  private validateLearnset(corePoke: PokemonBaseData, coreId: string, tag: string): void {
-    if (!corePoke.learnset || !Array.isArray(corePoke.learnset)) {
-      this.addViolation({
-        ruleId: 'pokemon-missing-learnset',
-        severity: 'error',
-        file: 'src/data/pokemon/pokemonDB.ts',
-        line: 1,
-        message: `${tag} Missing or invalid 'learnset' property.`,
-        context: coreId
-      });
-      return;
-    }
-
-    for (const moveEntry of corePoke.learnset) {
-      const moveId = toID(moveEntry.id);
-      const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId);
-
-      if (!moveData || !moveData.exists) {
-        this.addViolation({
-          ruleId: 'pokemon-invalid-learnset-move',
-          severity: 'error',
-          file: 'src/data/pokemon/pokemonDB.ts',
-          line: 1,
-          message: `${tag} Move '${moveEntry.id}' does not exist in Showdown Dex.`,
-          context: moveEntry.id
-        });
-      }
-    }
-  }
-
-  private validateSinglePokemon(coreId: string, corePoke: PokemonBaseData): boolean {
-    if (!isEnabledPokemonId(coreId)) return false;
-    const tag = `[${corePoke.name} (${coreId})]`;
-    const species = Dex.forGen(ACTIVE_GENERATION).species.get(coreId);
-
-    if (!species || !species.exists) {
-      this.addViolation({
-        ruleId: 'pokemon-invalid-species',
-        severity: 'error',
-        file: 'src/data/pokemon/pokemonDB.ts',
-        line: 1,
-        message: `${tag} Does not exist in official Showdown Dex.`,
-        context: coreId
-      });
-      return false;
-    }
-
-    this.validateBaseStats(corePoke, species, tag);
-    this.validateTypes(corePoke, species, tag);
-    this.validateLearnset(corePoke, coreId, tag);
-    return true;
-  }
-
   public override async runAudit(): Promise<void> {
     const pokemonDataFiles = await this.context.collectFiles(['src/data/pokemon'], new Set(['.ts', '.json']));
     for (const f of pokemonDataFiles) {
       this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, f)));
     }
-    for (const r of POKEMON_DB_RULES) {
-      this.markRuleEvaluated(r);
-    }
 
-    this.context.logStep(1, 2, 'Validating base stats and types against Showdown Dex...');
-    let count = 0;
+    type ShowdownSpecies = ReturnType<ReturnType<typeof Dex.forGen>['species']['get']>;
+    const validSpeciesMap = new Map<string, ShowdownSpecies>();
+    let enabledPokemon: Array<[string, PokemonBaseData]> = [];
 
-    for (const [coreId, corePoke] of Object.entries(POKEMON_DB) as Array<[string, PokemonBaseData]>) {
-      if (this.validateSinglePokemon(coreId, corePoke)) {
-        count++;
+    this.runSubAuditorSync('pokemon-invalid-species', () => {
+      enabledPokemon = (Object.entries(POKEMON_DB) as Array<[string, PokemonBaseData]>)
+        .filter(([id]) => isEnabledPokemonId(id));
+
+      for (const [coreId, corePoke] of enabledPokemon) {
+        const tag = `[${corePoke.name} (${coreId})]`;
+        const species = Dex.forGen(ACTIVE_GENERATION).species.get(coreId);
+        if (!species || !species.exists) {
+          this.addViolation({
+            ruleId: 'pokemon-invalid-species',
+            severity: 'error',
+            file: 'src/data/pokemon/pokemonDB.ts',
+            line: 1,
+            message: `${tag} Does not exist in official Showdown Dex.`,
+            context: coreId
+          });
+        } else {
+          validSpeciesMap.set(coreId, species);
+        }
       }
-    }
+    });
 
-    this.context.setMetric('Enabled Pokemon validated', count);
+    this.runSubAuditorSync('pokemon-base-stat-mismatch', () => {
+      for (const [coreId, corePoke] of enabledPokemon) {
+        const species = validSpeciesMap.get(coreId);
+        if (!species) continue;
+        this.validateBaseStats(corePoke, species as { baseStats: Record<string, number> }, `[${corePoke.name} (${coreId})]`);
+      }
+    });
+
+    this.runSubAuditorSync('pokemon-type-mismatch', () => {
+      for (const [coreId, corePoke] of enabledPokemon) {
+        const species = validSpeciesMap.get(coreId);
+        if (!species) continue;
+        this.validateTypes(corePoke, species as { types: string[] }, `[${corePoke.name} (${coreId})]`);
+      }
+    });
+
+    this.runSubAuditorSync('pokemon-missing-learnset', () => {
+      for (const [coreId, corePoke] of enabledPokemon) {
+        if (!corePoke.learnset || !Array.isArray(corePoke.learnset)) {
+          this.addViolation({
+            ruleId: 'pokemon-missing-learnset',
+            severity: 'error',
+            file: 'src/data/pokemon/pokemonDB.ts',
+            line: 1,
+            message: `[${corePoke.name} (${coreId})] Missing or invalid 'learnset' property.`,
+            context: coreId
+          });
+        }
+      }
+    });
+
+    this.runSubAuditorSync('pokemon-invalid-learnset-move', () => {
+      const gDex = Dex.forGen(ACTIVE_GENERATION);
+      for (const [coreId, corePoke] of enabledPokemon) {
+        if (!corePoke.learnset || !Array.isArray(corePoke.learnset)) continue;
+        for (const moveEntry of corePoke.learnset) {
+          const moveId = toID(moveEntry.id);
+          const moveData = gDex.moves.get(moveId);
+          if (!moveData || !moveData.exists) {
+            this.addViolation({
+              ruleId: 'pokemon-invalid-learnset-move',
+              severity: 'error',
+              file: 'src/data/pokemon/pokemonDB.ts',
+              line: 1,
+              message: `[${corePoke.name} (${coreId})] Move '${moveEntry.id}' does not exist in Showdown Dex.`,
+              context: moveEntry.id
+            });
+          }
+        }
+      }
+    });
+
+    this.context.setMetric('Enabled Pokemon validated', enabledPokemon.length);
   }
 }
 

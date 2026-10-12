@@ -141,9 +141,9 @@ describe('wildernessTreeBiomeAndShoreIntegrity', () => {
 
     const uniqueTiles = Array.from(new Set(brushTiles));
     const searchDirs = [
-      'public/assets/tiles/water',
-      'public/assets/tiles',
-      'public/assets/tiles/elevation/brown'
+      'test_aventura/assets/tiles/water',
+      'test_aventura/assets/tiles',
+      'test_aventura/assets/tiles/elevation/brown'
     ];
 
     for (const tileName of uniqueTiles) {

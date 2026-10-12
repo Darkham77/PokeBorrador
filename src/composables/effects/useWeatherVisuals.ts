@@ -138,7 +138,13 @@ function resolveCycleBase(cycle: string, weatherOnly: boolean): VisualModifiers 
   return { ...DEFAULT_MODIFIERS }
 }
 
-function resolveStormModifiers(cleanWeather: string, isNight: boolean, isDusk: boolean): VisualModifiers {
+interface WeatherCycleLightingOptions {
+  isNight?: boolean;
+  isDusk?: boolean;
+}
+
+function resolveStormModifiers(cleanWeather: string, options: WeatherCycleLightingOptions = {}): VisualModifiers {
+  const { isNight = false, isDusk = false } = options
   const darknessFactor = isNight ? 1.0 : (isDusk ? WEATHER_EFFECT_PRESETS.STORM_DUSK_FACTOR : WEATHER_EFFECT_PRESETS.STORM_DAY_FACTOR)
   const isThunder = cleanWeather === 'thunderstorm'
   return {
@@ -244,7 +250,7 @@ function resolveSunModifiers(cleanWeather: string): VisualModifiers {
   }
 }
 
-const WEATHER_DYNAMIC_HANDLERS: Readonly<Record<string, (weather: string, isNight: boolean, isDusk: boolean) => VisualModifiers>> = {
+const WEATHER_DYNAMIC_HANDLERS: Readonly<Record<string, (weather: string, options: WeatherCycleLightingOptions) => VisualModifiers>> = {
   storm: resolveStormModifiers,
   thunderstorm: resolveStormModifiers,
   snow: (w) => resolveSnowModifiers(w),
@@ -255,8 +261,8 @@ const WEATHER_DYNAMIC_HANDLERS: Readonly<Record<string, (weather: string, isNigh
   rain: (w) => resolveRainModifiers(w),
   heavy_rain: (w) => resolveRainModifiers(w),
   raindance: (w) => resolveRainModifiers(w),
-  fog: (w, n) => resolveFogMistModifiers(w, n),
-  mist: (w, n) => resolveFogMistModifiers(w, n),
+  fog: (w, opt) => resolveFogMistModifiers(w, Boolean(opt.isNight)),
+  mist: (w, opt) => resolveFogMistModifiers(w, Boolean(opt.isNight)),
   sandstorm: (w) => resolveSandstormModifiers(w),
   dust_storm: (w) => resolveSandstormModifiers(w),
   strong_winds: (w) => resolveSandstormModifiers(w),
@@ -266,14 +272,14 @@ const WEATHER_DYNAMIC_HANDLERS: Readonly<Record<string, (weather: string, isNigh
   sunnyday: (w) => resolveSunModifiers(w),
 }
 
-function resolveWeatherModifiers(cleanWeather: string, isNight: boolean, isDusk: boolean): VisualModifiers {
+function resolveWeatherModifiers(cleanWeather: string, options: WeatherCycleLightingOptions = {}): VisualModifiers {
   const staticMatch = STATIC_WEATHER_MODIFIERS[cleanWeather]
   if (staticMatch) {
     return staticMatch
   }
   const handler = WEATHER_DYNAMIC_HANDLERS[cleanWeather]
   if (handler) {
-    return handler(cleanWeather, isNight, isDusk)
+    return handler(cleanWeather, options)
   }
   return { ...DEFAULT_MODIFIERS }
 }
@@ -284,7 +290,7 @@ function calculateAtmosphereFilter(cycle: string, weather: string, weatherOnly: 
   const cleanWeather = (weather || '').toLowerCase()
 
   const base = resolveCycleBase(cycle, weatherOnly)
-  const wm = resolveWeatherModifiers(cleanWeather, isNight, isDusk)
+  const wm = resolveWeatherModifiers(cleanWeather, { isNight, isDusk })
 
   const finalBrightness = (!weatherOnly && isNight)
     ? Math.max(MIN_NIGHT_BRIGHTNESS_CAP, base.brightness * wm.brightness)

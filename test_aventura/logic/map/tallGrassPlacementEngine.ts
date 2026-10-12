@@ -175,10 +175,9 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
     }
   }
 
-  // 2.5 Seed dense tall grass encounter patches along dungeon_forest trails
   for (const poi of pois) {
-    if (poi.type === 'dungeon_forest' && poi.urbanLayout?.internalStreets) {
-      const trailCells = poi.urbanLayout.internalStreets;
+    if (poi.type !== 'dungeon_forest' || !poi.urbanLayout?.internalStreets) continue;
+    const trailCells = poi.urbanLayout.internalStreets;
       const trailSet = new Set(trailCells.map((c) => `${c.x}_${c.y}`));
       const bSet = new Set<string>();
       if (poi.urbanLayout.buildings) {
@@ -224,22 +223,17 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
           for (let dy = -FOREST_DUNGEON_TRAIL_MARGIN_RADIUS; dy <= FOREST_DUNGEON_TRAIL_MARGIN_RADIUS; dy++) {
             for (let dx = -FOREST_DUNGEON_TRAIL_MARGIN_RADIUS; dx <= FOREST_DUNGEON_TRAIL_MARGIN_RADIUS; dx++) {
               const d = Math.hypot(dx, dy);
-              if (d >= FOREST_DUNGEON_TRAIL_DIST_MIN && d <= FOREST_DUNGEON_TRAIL_DIST_MAX) {
-                const nx = cell.x + dx;
-                const ny = cell.y + dy;
-                if (
-                  ny >= 0 && ny < H && nx >= 0 && nx < W &&
-                  !trailSet.has(`${nx}_${ny}`) &&
-                  !bSet.has(`${nx}_${ny}`) &&
-                  !propSet.has(`${nx}_${ny}`) &&
-                  isCellEligibleForTallGrass(nx, ny)
-                ) {
-                  const noiseVal = prng.noise2D(nx * FOREST_DUNGEON_TRAIL_MARGIN_NOISE_SCALE, ny * FOREST_DUNGEON_TRAIL_MARGIN_NOISE_SCALE);
-                  if (noiseVal > FOREST_DUNGEON_TRAIL_MARGIN_NOISE_THRESHOLD) {
-                    tallGrassGrid[ny]![nx] = true;
-                    treeBlocked[ny]![nx] = true;
-                  }
-                }
+              if (d < FOREST_DUNGEON_TRAIL_DIST_MIN || d > FOREST_DUNGEON_TRAIL_DIST_MAX) continue;
+              const nx = cell.x + dx;
+              const ny = cell.y + dy;
+              if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
+              if (trailSet.has(`${nx}_${ny}`) || bSet.has(`${nx}_${ny}`) || propSet.has(`${nx}_${ny}`)) continue;
+              if (!isCellEligibleForTallGrass(nx, ny)) continue;
+
+              const noiseVal = prng.noise2D(nx * FOREST_DUNGEON_TRAIL_MARGIN_NOISE_SCALE, ny * FOREST_DUNGEON_TRAIL_MARGIN_NOISE_SCALE);
+              if (noiseVal > FOREST_DUNGEON_TRAIL_MARGIN_NOISE_THRESHOLD) {
+                tallGrassGrid[ny]![nx] = true;
+                treeBlocked[ny]![nx] = true;
               }
             }
           }
@@ -264,4 +258,3 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
       }
     }
   }
-}

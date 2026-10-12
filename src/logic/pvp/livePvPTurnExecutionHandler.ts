@@ -247,7 +247,7 @@ export async function executeHandleTurnStream(
   if (ctx.battleState.isHost && !ctx.isSpectator) return;
 
   const { filterShowdownLogs } = await import('@/logic/battle/showdownBridge');
-  const { parseLogsWithSkip } = await import('@/logic/battle/helpers/turnActionResolver');
+  const { parseLogsWithSkip } = await import('@/logic/battle/battleTurnLogHelper');
   const { syncTeamsFromLastWorkerState } = await import('@/logic/battle/showdownWorkerClient');
 
   const streamLines = ctx.isSpectator

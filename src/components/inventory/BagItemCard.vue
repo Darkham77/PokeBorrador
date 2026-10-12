@@ -62,7 +62,8 @@ const onItemMouseLeave = (event: MouseEvent) => {
         :src="getItemSpriteUrl(item.id || item.name)"
         :alt="item.name"
         class="item-sprite"
-        @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+        width="32"
+        height="32"
       >
     </div>
 

@@ -284,7 +284,8 @@ const factionAssetUrl = computed(() => {
                 :src="factionAssetUrl"
                 :alt="factionLabel || 'Bando'"
                 class="faction-img"
-                @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
+                width="32"
+                height="32"
               >
               {{ factionLabel }}
             </div>

@@ -32,7 +32,7 @@ describe('buildingPrefabsIntegrity', () => {
     const gymGold = CANONICAL_BUILDINGS['gym_gold'];
     expect(gymGold).toBeDefined();
 
-    const assetPath = path.resolve(ROOT_DIR, 'public/assets', gymGold!.runtimePath);
+    const assetPath = path.resolve(ROOT_DIR, 'test_aventura/assets', gymGold!.runtimePath);
     expect(fs.existsSync(assetPath), `Asset path must exist: ${assetPath}`).toBe(true);
 
     const { data, info } = await sharp(assetPath)
@@ -74,7 +74,7 @@ describe('buildingPrefabsIntegrity', () => {
     expect(buildings.length).toBeGreaterThan(0);
 
     for (const b of buildings) {
-      const assetPath = path.resolve(ROOT_DIR, 'public/assets', b.runtimePath);
+      const assetPath = path.resolve(ROOT_DIR, 'test_aventura/assets', b.runtimePath);
       expect(fs.existsSync(assetPath), `Building file must exist: ${b.runtimePath}`).toBe(true);
 
       const { data, info } = await sharp(assetPath)
@@ -112,7 +112,7 @@ describe('buildingPrefabsIntegrity', () => {
       const b = CANONICAL_BUILDINGS[id];
       expect(b, `Building ${id} must exist in CANONICAL_BUILDINGS`).toBeDefined();
 
-      const assetPath = path.resolve(ROOT_DIR, 'public/assets', b!.runtimePath);
+      const assetPath = path.resolve(ROOT_DIR, 'test_aventura/assets', b!.runtimePath);
       const { data, info } = await sharp(assetPath)
         .ensureAlpha()
         .raw()
@@ -132,11 +132,11 @@ describe('buildingPrefabsIntegrity', () => {
   });
 
   it('guarantees poke_statue is permanently eradicated and canonical replacements are valid', async () => {
-    const statuePath = path.resolve(ROOT_DIR, 'public/assets/canon/props/poke_statue.png');
+    const statuePath = path.resolve(ROOT_DIR, 'test_aventura/assets/canon/props/poke_statue.png');
     expect(fs.existsSync(statuePath), `Statue must be eradicated from ${statuePath}`).toBe(false);
 
     // Verify left-facing street lamp has pristine alpha transparency
-    const lampLeftPath = path.resolve(ROOT_DIR, 'public/assets/canon/props/poke_street_lamp_left.png');
+    const lampLeftPath = path.resolve(ROOT_DIR, 'test_aventura/assets/canon/props/poke_street_lamp_left.png');
     expect(fs.existsSync(lampLeftPath), `Lamp left must exist at ${lampLeftPath}`).toBe(true);
 
     const { data: lampData, info: lampInfo } = await sharp(lampLeftPath)
@@ -156,7 +156,7 @@ describe('buildingPrefabsIntegrity', () => {
     // Verify canonical wooden dock pier prefab exists and has exact 48x64 px (3x4 tiles)
     const dockPierPath = path.resolve(
       ROOT_DIR,
-      'public/assets/canon/infrastructure/poke_dock_wood_pier_canonical.png'
+      'test_aventura/assets/canon/infrastructure/poke_dock_wood_pier_canonical.png'
     );
     expect(fs.existsSync(dockPierPath), `Canonical dock pier must exist at ${dockPierPath}`).toBe(true);
     const dockMeta = await sharp(dockPierPath).metadata();

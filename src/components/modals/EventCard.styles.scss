@@ -340,20 +340,20 @@
         flex-wrap: wrap;
         align-items: center;
         gap: $spacing-xs;
+      }
 
-        .card-mini-sprite {
-          width: 20px;
-          height: 20px;
-          object-fit: contain;
-          filter: Drop-Shadow(0 1px 2px Rgb(0 0 0 / 50%));
-          cursor: pointer;
-          user-select: none;
-          -webkit-user-drag: none;
+      .card-mini-sprite {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        filter: Drop-Shadow(0 1px 2px Rgb(0 0 0 / 50%));
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-drag: none;
 
-          &:hover {
-            transform: Scale(1.3);
-            filter: Drop-Shadow(0 0 4px Rgb(250 204 21 / 80%));
-          }
+        &:hover {
+          transform: Scale(1.3);
+          filter: Drop-Shadow(0 0 4px Rgb(250 204 21 / 80%));
         }
       }
     }

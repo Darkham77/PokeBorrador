@@ -178,12 +178,8 @@ export function isNewEntryBetter(
   const newScore = parseEntryScore(newData, sortBy);
 
   // 1. Primary: Score comparison based on order
-  if (order === 'min') {
-    if (newScore < oldScore) return true;
-    if (newScore > oldScore) return false;
-  } else {
-    if (newScore > oldScore) return true;
-    if (newScore < oldScore) return false;
+  if (newScore !== oldScore) {
+    return order === 'min' ? newScore < oldScore : newScore > oldScore;
   }
 
   // 2. Tiebreaker 1: Shiny advantage (Shiny always beats non-Shiny)

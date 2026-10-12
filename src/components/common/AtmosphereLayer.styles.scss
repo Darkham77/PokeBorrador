@@ -16,7 +16,7 @@
   width: clamp(6px, 2.5cqmin, 14px);
   height: clamp(5px, 1.9cqmin, 11px);
   border-radius: 50% 0;
-  background: Linear-Gradient(135deg, #4ade80, #166534);
+  background: Linear-Gradient(135deg, var(--green-light, #4ade80), var(--green-dark, #166534));
   opacity: 0; // Default invisible until explicitly animated by GSAP
   transform: Translate3d(0,0,0); // GPU Promotion
   pointer-events: none;

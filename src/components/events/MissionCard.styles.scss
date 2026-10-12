@@ -411,7 +411,7 @@
     .operation-progress-fill {
       height: 100%;
       border-radius: $radius-xs;
-      background: Linear-Gradient(90deg, #eab308, #22c55e);
+      background: Linear-Gradient(90deg, var(--yellow, #eab308), var(--emerald, #22c55e));
     }
   }
 

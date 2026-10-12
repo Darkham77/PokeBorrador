@@ -29,9 +29,14 @@ const displayLevel = computed(() => {
   return activePokemon.value?.level ?? DEFAULT_COMBATANT_LEVEL;
 });
 
-function getBallPipEmoji(fainted: boolean, active: boolean): string {
-  if (fainted) return '💀';
-  if (active) return '⭐';
+interface BallPipStatus {
+  fainted: boolean;
+  active: boolean;
+}
+
+function getBallPipEmoji(options: BallPipStatus): string {
+  if (options.fainted) return '💀';
+  if (options.active) return '⭐';
   return '⚪';
 }
 </script>
@@ -61,7 +66,7 @@ function getBallPipEmoji(fainted: boolean, active: boolean): string {
         :class="{ fainted: p.isFainted, active: p.isActive }"
         :title="p.name"
       >
-        <span class="emoji">{{ getBallPipEmoji(p.isFainted, p.isActive) }}</span>
+        <span class="emoji">{{ getBallPipEmoji({ fainted: p.isFainted, active: p.isActive }) }}</span>
       </span>
     </div>
 

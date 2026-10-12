@@ -270,14 +270,14 @@ export function createBattleStateMachine() {
         }
         currentState.value = newState;
       } else if (newState && isBattleSubStateName(newState)) {
-        // Si recibimos un sub-estado como primer argumento, mantenemos el estado actual 
+        // If a sub-state is received as the first argument, maintain current state
         newSubState = newState;
       }
 
       if (newSubState) {
         currentSubState.value = newSubState;
       } else if (newState && currentState.value !== BATTLE_STATES.ACTIVE_BATTLE) {
-        currentSubState.value = null; // Solo limpiamos substate si estamos cambiando de fase principal
+        currentSubState.value = null; // Only clear substate when transitioning between main phases
       }
 
       logger.debug('Battle FSM', `Transitioned to ${currentState.value}${currentSubState.value ? ' (' + currentSubState.value + ')' : ''}`);

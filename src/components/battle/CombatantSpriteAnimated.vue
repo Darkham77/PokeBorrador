@@ -32,11 +32,15 @@ const variationStyle = computed(() => ({
   filter: filterStyle.value,
   width: `${(props.variationMeta?.frames || 1) * PERCENT_MULTIPLIER}%`
 }))
+
+const hasVariationFrames = computed(() => (props.variationMeta?.frames ?? 0) > 1);
 </script>
 
 <template>
   <!-- Imagen IDLE (i) -->
   <img
+    width="96"
+    height="96"
     class="pokemon-combat-image pokemon-image-idle"
     :class="{ 
       'is-silhouette': props.isSilhouette,
@@ -51,7 +55,9 @@ const variationStyle = computed(() => ({
 
   <!-- Imagen VARIACIÓN (v) -->
   <img
-    v-if="props.variationMeta && props.variationMeta.frames > 1"
+    v-if="hasVariationFrames"
+    width="96"
+    height="96"
     class="pokemon-combat-image pokemon-image-variation"
     :class="{ 
       'is-silhouette': props.isSilhouette,

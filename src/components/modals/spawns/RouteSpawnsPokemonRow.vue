@@ -97,6 +97,9 @@ function handleClick() {
           :alt="poke.isSeen ? poke.name : 'Pokémon desconocido'"
           class="mini-sprite"
           :class="{ 'spawn-silhouette': !poke.isCaught }"
+        
+          width="32"
+          height="32"
         >
         <div
           v-else

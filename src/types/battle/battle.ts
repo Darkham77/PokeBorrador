@@ -365,3 +365,9 @@ export interface ShowdownPlayerRequest {
   teamPreview?: boolean;
   rqid?: number;
 }
+
+/** Terminal battle outcome flags shared by resolution and reward phases. */
+export interface BattleOutcomeFlags {
+  win: boolean;
+  fled: boolean;
+}

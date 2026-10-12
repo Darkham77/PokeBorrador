@@ -42,6 +42,9 @@ defineProps<{
           :alt="badge.name"
           class="badge-img"
           :class="{ 'locked-badge': !isGymDefeated(badge.id) }"
+        
+          width="32"
+          height="32"
         >
         <span class="badge-title">{{ badge.name }}</span>
       </div>

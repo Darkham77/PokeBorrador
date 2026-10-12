@@ -106,7 +106,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const fsm = ctx.fsm
 
   ctx.isIntroAnimating.value = true
-  setupSeatsProtocol(ctx, cfg.isTrainer, cfg.isGym, finalEnemyPoke, effectivePlayerTeam)
+  setupSeatsProtocol(ctx, finalEnemyPoke, effectivePlayerTeam, { isTrainer: cfg.isTrainer, isGym: cfg.isGym })
   ctx.clearLogs()
 
   logger.debug('Orchestrator', 'Transitions starting...')
@@ -132,7 +132,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   if (wasSearching) {
     const { processSearchPhaseSequence } = await import('./orchestratorSearchPhaseHelper.ts')
-    const handled = await processSearchPhaseSequence(ctx, finalEnemyPoke, cfg.minigame, cfg.isTrainer, cfg.isGym)
+    const handled = await processSearchPhaseSequence(ctx, finalEnemyPoke, cfg.minigame, { isTrainer: cfg.isTrainer, isGym: cfg.isGym })
     if (handled) return
   }
 

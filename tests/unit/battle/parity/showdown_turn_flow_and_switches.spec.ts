@@ -734,7 +734,7 @@ describe('Audit Parity - BUG-084: trapped enemy choice helper validation', () =>
     };
     const p = { uid: 'p-1', name: 'Pikachu', hp: 100 } as any;
     const e = { uid: 'e-1', name: 'Charizard', hp: 100 } as any;
-    const choice = await computeP2Choice(store as any, p, e, false, false, null);
+    const choice = await computeP2Choice(store as any, p, e, null, { isWild: false, p2Skip: false });
     expect(choice.startsWith('switch')).toBe(false);
   });
 });

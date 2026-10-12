@@ -154,9 +154,10 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     const myId = authStore.user.id
     
     const { data, error } = await gameStore.db.from('chat_messages')
-      .select('*')
+      .select('id, type, senderId, senderName, message, created_at')
       .or(`type.eq.private:${myId},senderId.eq.${myId}`)
       .order('created_at', { ascending: true })
+      .limit(PRIVATE_CHAT_MAX_MESSAGES)
 
     if (error) {
       logger.error('Chat', `Private history load error: ${(error as Error).message}`)

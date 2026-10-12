@@ -14,9 +14,9 @@
  */
 
 import fs from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { BaseAuditor, normalizePosixPath, parseVueSfc } from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath, parseVueSfc , createRuleCapabilities} from '@francogp/auditor';
 
 export type AssetUsageRuleId =
   | 'asset-hardcoded-path-template'
@@ -55,7 +55,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
 
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(ASSET_USAGE_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -65,7 +65,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_asset_usage',
       configKey: 'assets.assetUsage',
       defaultConfig: {
@@ -124,42 +124,50 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       if (!sfc.template) continue;
       const template = sfc.template.content;
 
-      const staticSrcRegex = /(?:<img|<source|<video)[^>]*\s+src=["']\/(?:assets|sprites|public)\/[^"']+["']/gi;
-      let match: RegExpExecArray | null;
-      while ((match = staticSrcRegex.exec(template)) !== null) {
-        this.addViolation({
-          ruleId: 'asset-hardcoded-path-template',
-          severity: 'error',
-          file: relFile,
-          line: 1,
-          message: `Hardcoded static asset path in template: '${match[0]}'. Must use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead.`,
-          context: match[0]
-        });
-      }
+      this.runSubAuditorSync('asset-hardcoded-path-template', () => {
+        const staticSrcRegex = /(?:<img|<source|<video)[^>]*\s+src=["']\/(?:assets|sprites|public)\/[^"']+["']/gi;
+        let match: RegExpExecArray | null;
+        while ((match = staticSrcRegex.exec(template)) !== null) {
+          this.addViolation({
+            ruleId: 'asset-hardcoded-path-template',
+            severity: 'error',
+            file: relFile,
+            line: 1,
+            message: `Hardcoded static asset path in template: '${match[0]}'. Must use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead.`,
+            context: match[0]
+          });
+        }
+      });
 
-      const literalBoundSrcRegex = /:src=["']'(\/(?:assets|sprites|public)\/[^']+)'["']/gi;
-      while ((match = literalBoundSrcRegex.exec(template)) !== null) {
-        this.addViolation({
-          ruleId: 'asset-literal-bound-src',
-          severity: 'error',
-          file: relFile,
-          line: 1,
-          message: `Hardcoded literal asset path in binding: '${match[1]}'. Must use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead.`,
-          context: match[0]
-        });
-      }
+      this.runSubAuditorSync('asset-literal-bound-src', () => {
+        const literalBoundSrcRegex = /:src=["']'(\/(?:assets|sprites|public)\/[^']+)'["']/gi;
+        let match: RegExpExecArray | null;
+        while ((match = literalBoundSrcRegex.exec(template)) !== null) {
+          this.addViolation({
+            ruleId: 'asset-literal-bound-src',
+            severity: 'error',
+            file: relFile,
+            line: 1,
+            message: `Hardcoded literal asset path in binding: '${match[1]}'. Must use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead.`,
+            context: match[0]
+          });
+        }
+      });
 
-      const rawBannerBindingRegex = /:src=["'](?:currentTheme|resolvedTheme|theme)\.bannerImage["']/gi;
-      while ((match = rawBannerBindingRegex.exec(template)) !== null) {
-        this.addViolation({
-          ruleId: 'asset-direct-banner-binding',
-          severity: 'error',
-          file: relFile,
-          line: 1,
-          message: `Direct binding of bannerImage without getAssetUrl: '${match[0]}'. Must wrap with getAssetUrl(ASSET_TYPES.BANNER, ...).`,
-          context: match[0]
-        });
-      }
+      this.runSubAuditorSync('asset-direct-banner-binding', () => {
+        const rawBannerBindingRegex = /:src=["'](?:currentTheme|resolvedTheme|theme)\.bannerImage["']/gi;
+        let match: RegExpExecArray | null;
+        while ((match = rawBannerBindingRegex.exec(template)) !== null) {
+          this.addViolation({
+            ruleId: 'asset-direct-banner-binding',
+            severity: 'error',
+            file: relFile,
+            line: 1,
+            message: `Direct binding of bannerImage without getAssetUrl: '${match[0]}'. Must wrap with getAssetUrl(ASSET_TYPES.BANNER, ...).`,
+            context: match[0]
+          });
+        }
+      });
     }
   }
 
@@ -173,23 +181,25 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       const content = await fs.readFile(file, 'utf-8');
       const lines = content.split('\n');
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line || line.includes('// asset-url-ok')) continue;
+      this.runSubAuditorSync('asset-hardcoded-style-path', () => {
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line || line.includes('// asset-url-ok')) continue;
 
-        const styleUrlRegex = /url\(\s*["']?\/(?:assets|sprites)\/[^"')]+["']?\s*\)/gi;
-        let match: RegExpExecArray | null;
-        while ((match = styleUrlRegex.exec(line)) !== null) {
-          this.addViolation({
-            ruleId: 'asset-hardcoded-style-path',
-            severity: 'error',
-            file: relFile,
-            line: i + 1,
-            message: `Hardcoded asset path in stylesheet: '${match[0]}'. Stylesheets must use CSS variables or centralized theme tokens instead of raw asset URLs.`,
-            context: line.trim()
-          });
+          const styleUrlRegex = /url\(\s*["']?\/(?:assets|sprites)\/[^"')]+["']?\s*\)/gi;
+          let match: RegExpExecArray | null;
+          while ((match = styleUrlRegex.exec(line)) !== null) {
+            this.addViolation({
+              ruleId: 'asset-hardcoded-style-path',
+              severity: 'error',
+              file: relFile,
+              line: i + 1,
+              message: `Hardcoded asset path in stylesheet: '${match[0]}'. Stylesheets must use CSS variables or centralized theme tokens instead of raw asset URLs.`,
+              context: line.trim()
+            });
+          }
         }
-      }
+      });
     }
   }
 
@@ -197,69 +207,73 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
     const logicDirs = ['src/components', 'src/views', 'src/stores', 'src/composables'];
     const tsLogicFiles = this.context.collectFiles(logicDirs, new Set(['.ts']));
 
-    for (const file of tsLogicFiles) {
-      const filename = path.basename(file);
-      if (EXEMPT_LOGIC_FILES.has(filename)) continue;
+    this.runSubAuditorSync('asset-unmediated-logic-path', () => {
+      for (const file of tsLogicFiles) {
+        const filename = path.basename(file);
+        if (EXEMPT_LOGIC_FILES.has(filename)) continue;
 
-      this.scannedLogicFiles++;
-      const relFile = normalizePosixPath(path.relative(this.projectRoot, file));
-      this.recordScanned(relFile);
-      const content = await fs.readFile(file, 'utf-8');
-      const lines = content.split('\n');
+        this.scannedLogicFiles++;
+        const relFile = normalizePosixPath(path.relative(this.projectRoot, file));
+        this.recordScanned(relFile);
+        const content = readFileSync(file, 'utf-8');
+        const lines = content.split('\n');
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line || line.includes('// asset-url-ok') || line.includes('// domain-ok:')) continue;
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line || line.includes('// asset-url-ok') || line.includes('// domain-ok:')) continue;
 
-        if (
-          /(?:return|=)\s*[`'"]\/?(?:public\/)?assets\/(?:sprites|ui|maps)/i.test(line) &&
-          !line.includes('getAssetUrl(')
-        ) {
-          this.addViolation({
-            ruleId: 'asset-unmediated-logic-path',
-            severity: 'error',
-            file: relFile,
-            line: i + 1,
-            message: `Unmediated asset path string construction without getAssetUrl: ${line.trim()}`,
-            context: line.trim()
-          });
+          if (
+            /(?:return|=)\s*[`'"]\/?(?:public\/)?assets\/(?:sprites|ui|maps)/i.test(line) &&
+            !line.includes('getAssetUrl(')
+          ) {
+            this.addViolation({
+              ruleId: 'asset-unmediated-logic-path',
+              severity: 'error',
+              file: relFile,
+              line: i + 1,
+              message: `Unmediated asset path string construction without getAssetUrl: ${line.trim()}`,
+              context: line.trim()
+            });
+          }
         }
       }
-    }
+    });
   }
 
   private async auditDataFiles(): Promise<void> {
     const tsDataFiles = this.context.collectFiles(['src/data'], new Set(['.ts']));
     const jsonDataFiles = this.context.collectFiles(['src/data'], new Set(['.json']));
 
-    for (const file of [...tsDataFiles, ...jsonDataFiles]) {
-      const filename = path.basename(file);
-      if (EXEMPT_DATA_FILES.has(filename)) continue;
+    this.runSubAuditorSync('asset-hardcoded-data-path', () => {
+      for (const file of [...tsDataFiles, ...jsonDataFiles]) {
+        const filename = path.basename(file);
+        if (EXEMPT_DATA_FILES.has(filename)) continue;
 
-      this.scannedDataFiles++;
-      const relFile = normalizePosixPath(path.relative(this.projectRoot, file));
-      this.recordScanned(relFile);
-      const content = await fs.readFile(file, 'utf-8');
+        this.scannedDataFiles++;
+        const relFile = normalizePosixPath(path.relative(this.projectRoot, file));
+        this.recordScanned(relFile);
+        const content = readFileSync(file, 'utf-8');
 
-      const lines = content.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line || line.includes('// asset-url-ok') || line.includes('// domain-ok: Asset path URI string')) {
-          continue;
-        }
+        const lines = content.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line || line.includes('// asset-url-ok') || line.includes('// domain-ok: Asset path URI string')) {
+            continue;
+          }
 
-        if (/:\s*['"]\/(?:assets|sprites)\/[^'"]+['"]/i.test(line)) {
-          this.addViolation({
-            ruleId: 'asset-hardcoded-data-path',
-            severity: 'error',
-            file: relFile,
-            line: i + 1,
-            message: `Static data stores hardcoded asset path instead of canonical ID: ${line.trim()}`,
-            context: line.trim()
-          });
+          if (/:\s*['"]\/(?:assets|sprites)\/[^'"]+['"]/i.test(line)) {
+            this.addViolation({
+              ruleId: 'asset-hardcoded-data-path',
+              severity: 'error',
+              file: relFile,
+              line: i + 1,
+              message: `Static data stores hardcoded asset path instead of canonical ID: ${line.trim()}`,
+              context: line.trim()
+            });
+          }
         }
       }
-    }
+    });
   }
 
   private async auditTournamentBanners(): Promise<void> {
@@ -271,38 +285,32 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
 
       const eventsDir = path.resolve(this.projectRoot, 'public/assets/ui/events');
 
-      for (const bMatch of bannerMatches) {
-        this.verifiedAssets++;
-        const rawBanner = bMatch[1];
-        if (!rawBanner) continue;
-        const cleanBanner = rawBanner.replace(/^\/?assets\/ui\/events\//, '').replace(/\.webp$/, '');
-        const bannerPath = path.join(eventsDir, `${cleanBanner}.webp`);
+      this.runSubAuditorSync('asset-physical-file-missing', () => {
+        for (const bMatch of bannerMatches) {
+          this.verifiedAssets++;
+          const rawBanner = bMatch[1];
+          if (!rawBanner) continue;
+          const cleanBanner = rawBanner.replace(/^\/?assets\/ui\/events\//, '').replace(/\.webp$/, '');
+          const bannerPath = path.join(eventsDir, `${cleanBanner}.webp`);
 
-        if (!existsSync(bannerPath)) {
-          this.addViolation({
-            ruleId: 'asset-physical-file-missing',
-            severity: 'error',
-            file: 'src/data/system/rankedData.ts',
-            line: 1,
-            message: `Physical asset file missing: '${bannerPath}' (referenced in rankedData.ts as '${rawBanner}')`,
-            context: rawBanner
-          });
+          if (!existsSync(bannerPath)) {
+            this.addViolation({
+              ruleId: 'asset-physical-file-missing',
+              severity: 'error',
+              file: 'src/data/system/rankedData.ts',
+              line: 1,
+              message: `Physical asset file missing: '${bannerPath}' (referenced in rankedData.ts as '${rawBanner}')`,
+              context: rawBanner
+            });
+          }
         }
-      }
+      });
     } catch (err) {
       this.context.addWarning(`Could not verify seasonal tournament banners: ${(err as Error).message}`);
     }
   }
 
   public override async runAudit(): Promise<void> {
-    this.markRuleEvaluated('asset-hardcoded-path-template');
-    this.markRuleEvaluated('asset-literal-bound-src');
-    this.markRuleEvaluated('asset-direct-banner-binding');
-    this.markRuleEvaluated('asset-hardcoded-style-path');
-    this.markRuleEvaluated('asset-unmediated-logic-path');
-    this.markRuleEvaluated('asset-hardcoded-data-path');
-    this.markRuleEvaluated('asset-physical-file-missing');
-
     await this.auditVueTemplates();
     await this.auditStylesheets();
     await this.auditTsLogic();

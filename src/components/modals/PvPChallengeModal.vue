@@ -221,7 +221,8 @@ async function handleSendChallenge() {
           :src="getAssetUrl(ASSET_TYPES.BANNER, currentTheme.bannerImage)"
           :alt="currentTheme.name"
           class="theme-banner-img"
-          @error="(e: Event) => { if (e.target) (e.target as HTMLElement).style.display = 'none' }"
+          width="32"
+          height="32"
         >
         <div class="theme-banner-overlay">
           <div class="theme-badge-row">
@@ -325,6 +326,9 @@ async function handleSendChallenge() {
                 :src="getSpriteUrl(activeTeam[index - 1])"
                 :alt="activeTeam[index - 1]?.name || 'Pokemon'"
                 class="slot-sprite"
+              
+                width="32"
+                height="32"
               >
               <span class="slot-name">{{ activeTeam[index - 1]?.name }}</span>
             </template>

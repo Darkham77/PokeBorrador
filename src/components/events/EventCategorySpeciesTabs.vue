@@ -40,6 +40,9 @@ const emit = defineEmits<{
         class="tab-poke-sprite"
         :alt="tab.name"
         draggable="false"
+      
+        width="96"
+        height="96"
       >
       <span
         v-else

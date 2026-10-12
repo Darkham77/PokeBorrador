@@ -101,7 +101,7 @@ export const useEventStore = defineStore('events', () => {
       }
       try {
         // 1. Fetch from config (DBRouter handles source)
-        const res = await db.from('events_config').select('*')
+        const res = await db.from('events_config').select('id, name, description, type, icon, active, manual, start_at, end_at, schedule, config').limit(100)
         const events = res.data as GameEvent[] | null // domain-ok: Open dynamic text or non-domain string payload
         allEvents.value = events || []
         
@@ -293,7 +293,7 @@ async function autoAwardConcludedEvents(
   synchronizedDate: Temporal.Instant
 ): Promise<void> {
   try {
-    const { data: rawEntries } = await db.from('competition_entries').select('event_id')
+    const { data: rawEntries } = await db.from('competition_entries').select('event_id').limit(1000)
     if (!rawEntries || !Array.isArray(rawEntries) || rawEntries.length === 0) return
 
     const unAwardedEventIds = new Set<string>()

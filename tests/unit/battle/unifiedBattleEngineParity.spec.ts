@@ -29,8 +29,11 @@ vi.mock('@/logic/battle/showdownBridge.ts', () => ({
 }))
 
 vi.mock('@/logic/battle/helpers/turnActionResolver.ts', () => ({
-  parseLogsWithSkip: vi.fn(async () => {}),
   resolvePostTurnSwitchesAndFaints: vi.fn(async () => false)
+}))
+
+vi.mock('@/logic/battle/battleTurnLogHelper.ts', () => ({
+  parseLogsWithSkip: vi.fn(async () => {})
 }))
 
 function createMockBattleContext(): BattleContext {
@@ -107,7 +110,7 @@ describe('Unified Battle Engine Parity', () => {
     expect(stepped).toBe(true)
     expect(mockEngine.nextTurn).toHaveBeenCalled()
 
-    const { parseLogsWithSkip } = await import('@/logic/battle/helpers/turnActionResolver')
+    const { parseLogsWithSkip } = await import('@/logic/battle/battleTurnLogHelper')
     expect(parseLogsWithSkip).toHaveBeenCalled()
   })
 
@@ -127,7 +130,7 @@ describe('Unified Battle Engine Parity', () => {
       winnerSide: undefined
     })
 
-    const { parseLogsWithSkip } = await import('@/logic/battle/helpers/turnActionResolver')
+    const { parseLogsWithSkip } = await import('@/logic/battle/battleTurnLogHelper')
     expect(parseLogsWithSkip).toHaveBeenCalled()
   })
 })

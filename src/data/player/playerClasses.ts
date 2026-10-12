@@ -1,7 +1,7 @@
 /**
- * PLAYER_CLASSES: Definiciones estáticas de las clases de jugador.
- * Incluye bonos, penalizaciones, modificadores de batalla y sprites.
- * Los sprites se resuelven dinámicamente mediante el AssetService.
+ * PLAYER_CLASSES: Static definitions of player classes.
+ * Includes bonuses, penalties, battle modifiers, and sprites.
+ * Sprites are resolved dynamically via AssetService.
  */
 
 export const PLAYER_CLASSES = {
@@ -188,7 +188,7 @@ export function requirePlayerClassId(value: string): PlayerClassId {
 }
 
 /**
- * CLASS_MISSIONS: Definiciones de misiones idle según la duración.
+ * CLASS_MISSIONS: Idle mission definitions by duration.
  */
 export const CLASS_MISSIONS = [
   { id: 'mission_6h',  durationHs: 6,  reqLv: 1,  name: 'Misión Básica (6h)',     color: '#22c55e' },

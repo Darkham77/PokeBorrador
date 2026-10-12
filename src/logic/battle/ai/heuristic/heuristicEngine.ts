@@ -67,7 +67,7 @@ export function heuristicDecision(
   if (hazardDecision) return hazardDecision;
 
   // 5. Setup & Pivot Layers
-  const setupPivotDecision = evaluateSetupAndPivotLayers(matchup, strategic, availableMoves, myActive, oppActive, iOutspeed, isTrapped, switchOptions);
+  const setupPivotDecision = evaluateSetupAndPivotLayers(matchup, strategic, availableMoves, myActive, oppActive, { iOutspeed, isTrapped }, switchOptions);
   if (setupPivotDecision) return setupPivotDecision;
 
   // 6. Best Attack & Bad Matchup Switch

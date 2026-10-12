@@ -9,8 +9,8 @@ import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
 
 describe('Universal Tileset Extractor & Canonical Metatiles Integrity', () => {
   const rootDir = process.cwd();
-  const rawSheet2 = path.resolve(rootDir, 'public/assets/raw/firered_leafgreen/firered_tileset_2.png');
-  const tilesDir = path.resolve(rootDir, 'public/assets/tiles');
+  const rawSheet2 = path.resolve(rootDir, 'test_aventura/assets/raw/firered_leafgreen/firered_tileset_2.png');
+  const tilesDir = path.resolve(rootDir, 'test_aventura/assets/tiles');
 
   it('correctly auto-detects the 17px grid layout on firered_tileset_2.png', async () => {
     expect(fs.existsSync(rawSheet2)).toBe(true);

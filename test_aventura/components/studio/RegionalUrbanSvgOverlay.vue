@@ -446,7 +446,7 @@ function getPropIconY(p: UrbanPropPlacement): number {
 
 .perimeter-rect {
   fill: Rgb(56 189 248 / 4%);
-  stroke: #38bdf8;
+  stroke: var(--sky);
   stroke-width: 2;
   stroke-dasharray: 6 4;
 }
@@ -454,21 +454,21 @@ function getPropIconY(p: UrbanPropPlacement): number {
 .perimeter-name-badge {
   font-size: var(--font-11);
   font-weight: 700;
-  fill: #38bdf8;
+  fill: var(--sky);
   letter-spacing: 0.5px;
 }
 
 .building-group {
   .building-rect {
     fill: Rgb(30 41 59 / 70%);
-    stroke: #0284c7;
+    stroke: var(--sky-dark);
     stroke-width: 2;
     stroke-dasharray: 4 2;
   }
 
   .building-door-marker {
-    fill: #f59e0b;
-    stroke: #fff;
+    fill: var(--amber-dark);
+    stroke: var(--white);
     stroke-width: 1.5;
   }
 
@@ -480,27 +480,27 @@ function getPropIconY(p: UrbanPropPlacement): number {
   .building-title-label {
     font-size: var(--font-10);
     font-weight: 700;
-    fill: #f8fafc;
+    fill: var(--slate-50);
     pointer-events: none;
   }
 
   .building-coords-label {
     font-size: var(--font-9);
     font-weight: 600;
-    fill: #94a3b8;
+    fill: var(--slate-400);
     pointer-events: none;
   }
 
   .building-collision-label {
     font-size: var(--font-9);
     font-weight: 700;
-    fill: #ef4444;
+    fill: var(--red-light);
     pointer-events: none;
   }
 
   &.is-selected {
     .building-rect {
-      stroke: #fbbf24;
+      stroke: var(--amber);
       stroke-width: 2.5;
       stroke-dasharray: none;
       fill: Rgb(245 158 11 / 25%);
@@ -510,14 +510,14 @@ function getPropIconY(p: UrbanPropPlacement): number {
   &.is-dragging {
     opacity: 0.9;
     .building-rect {
-      stroke: #22c55e;
+      stroke: var(--emerald);
       stroke-width: 2.5;
       fill: Rgb(34 197 94 / 30%);
     }
 
     &.is-colliding {
       .building-rect {
-        stroke: #ef4444;
+        stroke: var(--red-light);
         stroke-width: 3;
         fill: Rgb(239 68 68 / 45%);
       }
@@ -540,7 +540,7 @@ function getPropIconY(p: UrbanPropPlacement): number {
 
   &.is-selected {
     .prop-rect {
-      stroke: #fbbf24;
+      stroke: var(--amber);
       stroke-width: 2;
       stroke-dasharray: none;
       fill: Rgb(245 158 11 / 30%);
@@ -549,14 +549,14 @@ function getPropIconY(p: UrbanPropPlacement): number {
 
   &.is-dragging {
     .prop-rect {
-      stroke: #22c55e;
+      stroke: var(--emerald);
       stroke-width: 2;
       fill: Rgb(34 197 94 / 40%);
     }
 
     &.is-colliding {
       .prop-rect {
-        stroke: #ef4444;
+        stroke: var(--red-light);
         stroke-width: 2.5;
         fill: Rgb(239 68 68 / 50%);
       }

@@ -1,7 +1,7 @@
 /**
  * fx-configs.ts
- * Centraliza las reglas visuales para todos los efectos de partículas.
- * MIGRACIÓN 1:1 DESDE PVSPRITEFX.VUE
+ * Centralizes visual rules for all particle effects.
+ * 1:1 MIGRATION FROM PVSPRITEFX.VUE
  */
 
 export interface ParticleArea {
@@ -145,13 +145,18 @@ function resolveWobbleConfig(typeKey: string): WobbleConfig | boolean {
   return false
 }
 
+interface EffectPlacementOptions {
+  isField?: boolean;
+  isFeetEffect?: boolean;
+  isHeadEffect?: boolean;
+}
+
 function resolveEffectAreaAndOffset(
   typeKey: string, // domain-ok: Open dynamic text or non-domain string payload
   ar: number,
-  isField: boolean,
-  isFeetEffect: boolean,
-  isHeadEffect: boolean,
+  options: EffectPlacementOptions = {},
 ): { area: ParticleArea; offset: { x: number; y: number } } {
+  const { isField = false, isFeetEffect = false, isHeadEffect = false } = options
   const factor = isHeadEffect ? HEAD_EFFECT_RADIUS_FACTOR : 1.0
   const maxRadius = isField ? (typeKey === 'mist' ? FIELD_MIST_MAX_RADIUS : FIELD_DEFAULT_MAX_RADIUS) : ar * factor
 
@@ -186,7 +191,7 @@ export const resolveEffectSettings = (
 
   const activeRange = computeDynamicRange(staticConfig.baseRange, scaleFactor)
   const wobbleConfig = resolveWobbleConfig(typeKey)
-  const { area, offset } = resolveEffectAreaAndOffset(typeKey, ar, isField, isFeetEffect, isHeadEffect)
+  const { area, offset } = resolveEffectAreaAndOffset(typeKey, ar, { isField, isFeetEffect, isHeadEffect })
 
   const isPrimary = PRIMARY_STATUS_SET.has(typeKey)
   const isTactical = TACTICAL_STATUS_SET.has(typeKey)

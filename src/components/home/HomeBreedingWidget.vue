@@ -328,7 +328,7 @@ const isThreeColumns = computed(() => props.columns === 3)
   @include pixelated;
 
   min-width: 0;
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
   font-size: var(--font-7);
   line-height: 1.45;
   white-space: nowrap;
@@ -364,18 +364,18 @@ const isThreeColumns = computed(() => props.columns === 3)
 .progress-fill {
   height: 100%;
   border-radius: $radius-xs;
-  background: Linear-Gradient(90deg, #38bdf8, #818cf8);
+  background: Linear-Gradient(90deg, var(--sky), var(--blue-300));
   overflow: hidden;
 
   &.fill-ready {
-    background: Linear-Gradient(90deg, #22c55e, #4ade80);
+    background: Linear-Gradient(90deg, var(--emerald), var(--green-light));
   }
 }
 
 .steps-remaining {
   @include pixelated;
 
-  color: var(--gray, #94a3b8);
+  color: var(--gray, var(--slate-400));
   font-size: var(--font-6);
   line-height: 1.45;
   white-space: nowrap;

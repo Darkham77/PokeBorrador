@@ -68,6 +68,9 @@ const emit = defineEmits<{
             :src="itemSpriteUrl"
             class="item-icon"
             alt="item"
+          
+            width="32"
+            height="32"
           >
           <span class="val">{{ selection.name }}</span>
         </div>

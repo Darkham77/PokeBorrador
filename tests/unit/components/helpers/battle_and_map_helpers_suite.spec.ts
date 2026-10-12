@@ -387,12 +387,12 @@ describe('Battle & Map Helpers Domain Suite', () => {
   describe('routeSpawnsCalculationHelper', () => {
     describe('calculateFishingWeight', () => {
       it('returns 0 when map has no fishing', () => {
-        const res = calculateFishingWeight(false, 'clear', false)
+        const res = calculateFishingWeight({ hasFishing: false, weather: 'clear', hasFishingRod: false })
         expect(res).toEqual({ active: 0, base: 0 })
       })
 
       it('calculates boosted weight on rainy weather and equipped rod', () => {
-        const res = calculateFishingWeight(true, 'rain' as WeatherId, true, 1.5)
+        const res = calculateFishingWeight({ hasFishing: true, weather: 'rain' as WeatherId, hasFishingRod: true, eventFishingBonus: 1.5 })
         expect(res.base).toBeGreaterThan(0)
         expect(res.active).toBeGreaterThan(res.base)
         expect(res.active).toBeGreaterThan(EQUIPPED_TOOL_WEIGHT_BONUS)
@@ -401,18 +401,18 @@ describe('Battle & Map Helpers Domain Suite', () => {
 
     describe('calculateArchaeologyWeight', () => {
       it('returns 0 when map has no archaeology', () => {
-        const res = calculateArchaeologyWeight(false, true, false, false)
+        const res = calculateArchaeologyWeight({ hasArchaeology: false, isCave: true, isMountain: false, hasPickaxeOrBrush: false })
         expect(res).toEqual({ active: 0, base: 0 })
       })
 
       it('returns cave base weight and tool bonus when equipped', () => {
-        const res = calculateArchaeologyWeight(true, true, false, true)
+        const res = calculateArchaeologyWeight({ hasArchaeology: true, isCave: true, isMountain: false, hasPickaxeOrBrush: true })
         expect(res.base).toBe(ARCHAEOLOGY_CAVE_BASE_WEIGHT)
         expect(res.active).toBe(ARCHAEOLOGY_CAVE_BASE_WEIGHT + EQUIPPED_TOOL_WEIGHT_BONUS)
       })
 
       it('returns mountain base weight when mountain', () => {
-        const res = calculateArchaeologyWeight(true, false, true, false)
+        const res = calculateArchaeologyWeight({ hasArchaeology: true, isCave: false, isMountain: true, hasPickaxeOrBrush: false })
         expect(res.base).toBe(ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT)
         expect(res.active).toBe(ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT)
       })
@@ -428,7 +428,7 @@ describe('Battle & Map Helpers Domain Suite', () => {
     describe('computeActiveWeights', () => {
       it('computes ground weight only when no fishing or archaeology', () => {
         const map = createMockLocation()
-        const res = computeActiveWeights(map, 'clear' as WeatherId, false, false)
+        const res = computeActiveWeights(map, 'clear' as WeatherId, { hasFishingRod: false, hasPickaxeOrBrush: false })
         expect(res.ground).toBe(BASE_GROUND_WEIGHT)
         expect(res.fishing).toBe(0)
         expect(res.archaeology).toBe(0)
@@ -498,21 +498,21 @@ describe('Battle & Map Helpers Domain Suite', () => {
 
     describe('resolveSpecialRouteBonus', () => {
       it('returns official route bonus', () => {
-        const bonus = resolveSpecialRouteBonus(true, false, '10m')
+        const bonus = resolveSpecialRouteBonus({ isOfficialActive: true, isExtortedActive: false }, '10m')
         expect(bonus?.type).toBe('official')
         expect(bonus?.label).toContain('Ruta Oficial')
         expect(bonus?.description).toContain('+1 REP')
       })
 
       it('returns extorted route bonus', () => {
-        const bonus = resolveSpecialRouteBonus(false, true, '5m')
+        const bonus = resolveSpecialRouteBonus({ isOfficialActive: false, isExtortedActive: true }, '5m')
         expect(bonus?.type).toBe('extorted')
         expect(bonus?.label).toContain('Extorsionada')
         expect(bonus?.description).toContain('x1.5 ₽')
       })
 
       it('returns null when no special route bonus is active', () => {
-        expect(resolveSpecialRouteBonus(false, false, '')).toBeNull()
+        expect(resolveSpecialRouteBonus({ isOfficialActive: false, isExtortedActive: false }, '')).toBeNull()
       })
     })
 

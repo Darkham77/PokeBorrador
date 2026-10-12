@@ -3,7 +3,7 @@ import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemById } from '@/data/inventory/items'
-import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts'
 import type { MarketListing } from '@/logic/economy/market'
 
 defineProps<{
@@ -31,7 +31,7 @@ function onListingItemImgError(e: Event): void {
           _source: 'market',
           index: 0
         }"
-        :total="getPokemonTotalPower(item.data)"
+        :total="calculateTotalPower(item.data)"
         auto-confirm
         class="listing-card-override"
       />
@@ -55,6 +55,9 @@ function onListingItemImgError(e: Event): void {
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')" 
           :alt="getItemById(item.data.name || '')?.name || item.data.name || 'Objeto'"
           class="i-sprite pixelated"
+          width="32"
+        
+          height="32"
           @error="onListingItemImgError"
         >
       </div>

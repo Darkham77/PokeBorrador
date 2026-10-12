@@ -12,6 +12,11 @@ import { WEATHER_TILE_HAIL_L1_PX, WEATHER_TILE_HAIL_L2_PX } from '@/logic/consta
 
 type GsapTimeline = ReturnType<typeof import('gsap').gsap.timeline>
 
+interface SnowLayersOptions {
+  isBlizzard: boolean
+  isLowPower: boolean
+}
+
 const SNOW_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['snow', 'blizzard', 'hail']) // runtime-set: Fast O(1) membership lookup set
 
 export function useAtmosphereSnowAnim(
@@ -23,10 +28,10 @@ export function useAtmosphereSnowAnim(
     weatherTimeline: GsapTimeline,
     seed1: number,
     seed2: number,
-    isBlizzard: boolean,
-    isLowPower: boolean,
+    options: SnowLayersOptions,
     speedVar: number
   ): void {
+    const { isBlizzard, isLowPower } = options
     if (layer1Ref.value) {
       const config1 = computeSnowLayer1Config(seed1, isBlizzard, speedVar)
       applySnowLayerAnimation(weatherTimeline, layer1Ref.value, config1, seed1)
@@ -91,7 +96,7 @@ export function useAtmosphereSnowAnim(
     if (!SNOW_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return
 
     if (w !== 'hail') {
-      handleSnowLayers(weatherTimeline, seed1, seed2, w === 'blizzard', isLowPower, speedVar)
+      handleSnowLayers(weatherTimeline, seed1, seed2, { isBlizzard: w === 'blizzard', isLowPower }, speedVar)
     } else {
       handleHailLayers(weatherTimeline, seed1, seed2, animSeed, isLowPower, speedVar)
     }

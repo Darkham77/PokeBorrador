@@ -120,7 +120,7 @@ export async function fetchAndFormatDefenseReports(
   try {
     const { data: reports } = await db
       .from('passive_battle_reports')
-      .select('*')
+      .select('id, user_id, opponent_id, result, report_data, created_at')
       .eq('user_id', userUid)
       .order('created_at', { ascending: false })
       .limit(MAX_DEFENSE_REPORTS_LIMIT) as { data: RawDefenseReportRow[] | null };

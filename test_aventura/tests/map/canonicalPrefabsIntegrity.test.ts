@@ -4,7 +4,7 @@
  * CANONICAL PREFABS & CERTIFIED ASSETS INTEGRITY TEST (Tier 1 RED-to-GREEN)
  *
  * Asserts:
- * 1. 100% of certified canonical buildings and props exist on disk in public/assets/prefabs/buildings/ and public/assets/canon/buildings/.
+ * 1. 100% of certified canonical buildings and props exist on disk in test_aventura/assets/prefabs/buildings/ and test_aventura/assets/canon/buildings/.
  * 2. Dimensions are strict multiples of 32px (Pokemon Essentials & Poke Vicio standard).
  * 3. Alpha channel is present with 0% opacity (transparent) on outer top corners.
  * 4. Zero black or gray background artifacts.
@@ -56,7 +56,7 @@ const CERTIFIED_CANONICAL_PROPS = [
 describe('Canonical Prefabs & Certified Buildings Integrity (SSoT)', () => {
   it('should verify all certified canonical buildings exist on disk with valid 32px geometry', async () => {
     for (const bldg of CERTIFIED_CANONICAL_BUILDINGS) {
-      const targetPath = path.resolve(ROOT_DIR, 'public/assets/prefabs/buildings', bldg.file);
+      const targetPath = path.resolve(ROOT_DIR, 'test_aventura/assets/prefabs/buildings', bldg.file);
       expect(fs.existsSync(targetPath), `Missing building file: ${bldg.file}`).toBe(true);
 
       const meta = await sharp(targetPath).metadata();
@@ -75,7 +75,7 @@ describe('Canonical Prefabs & Certified Buildings Integrity (SSoT)', () => {
 
   it('should verify all certified canonical props exist on disk with valid geometry', async () => {
     for (const prop of CERTIFIED_CANONICAL_PROPS) {
-      const targetPath = path.resolve(ROOT_DIR, 'public/assets/prefabs/props', prop.file);
+      const targetPath = path.resolve(ROOT_DIR, 'test_aventura/assets/prefabs/props', prop.file);
       expect(fs.existsSync(targetPath), `Missing prop file: ${prop.file}`).toBe(true);
 
       const meta = await sharp(targetPath).metadata();

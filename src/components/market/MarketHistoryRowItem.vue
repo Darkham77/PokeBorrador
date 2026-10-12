@@ -47,7 +47,9 @@ const badgeText = computed(() => {
           :alt="soldName"
           class="sale-sprite pixelated"
           :class="visual.type"
-          @error="(e: Event) => (e.target as HTMLImageElement).src = visual.fallbackUrl"
+          width="32"
+          height="32"
+          @error="(e: Event) => { (e.target as HTMLImageElement).src = visual.fallbackUrl; }"
         >
       </div>
       <div class="sale-info">

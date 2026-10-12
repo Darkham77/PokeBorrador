@@ -47,11 +47,16 @@ let _initPromise: Promise<SQLiteDatabase | null> | null = null
 let _sqliteKey = 'pokevicio_sqlite_v2'
 let _isInMemory = false
 
-export function canUseDevDatabaseBridge(isDevelopment: boolean, _isE2E: boolean): boolean {
+export interface DatabaseBridgeFlags {
+  isDevelopment: boolean
+  isE2E: boolean
+}
+
+export function canUseDevDatabaseBridge({ isDevelopment }: DatabaseBridgeFlags): boolean {
   return isDevelopment && (typeof window !== 'undefined' && window.__GTS_SIMULATION__ === true)
 }
 
-export function canRefreshCleanDatabaseTemplate(isDevelopment: boolean, isE2E: boolean): boolean {
+export function canRefreshCleanDatabaseTemplate({ isDevelopment, isE2E }: DatabaseBridgeFlags): boolean {
   return isDevelopment && isE2E
 }
 
@@ -133,7 +138,7 @@ export async function persistSQLite(): Promise<void> {
     }
 
     const isE2E = typeof window !== 'undefined' && window.__E2E__ === true
-    if (canUseDevDatabaseBridge(import.meta.env.DEV, isE2E)) {
+    if (canUseDevDatabaseBridge({ isDevelopment: import.meta.env.DEV, isE2E })) {
       try {
         await devFetch('/api/dev-export-db', _sqliteKey, {
           method: 'POST',
@@ -237,7 +242,7 @@ async function tryLoadIdbInMemoryDb(SQL: SqlJsStatic, sqliteKey: string, isE2E: 
   _sqliteDb = db
   await ensureSchemaIntegrity(db, persistSQLite)
   const appliedMigrations = await runMigrations()
-  if (appliedMigrations && canRefreshCleanDatabaseTemplate(import.meta.env.DEV, isE2E)) {
+  if (appliedMigrations && canRefreshCleanDatabaseTemplate({ isDevelopment: import.meta.env.DEV, isE2E })) {
     await publishCleanDatabaseTemplate(db)
   }
   return db
@@ -274,7 +279,7 @@ async function initializeFreshInMemoryDb(SQL: SqlJsStatic): Promise<SQLiteDataba
 }
 
 async function initInMemoryDatabase(SQL: SqlJsStatic, sqliteKey: string, isE2E: boolean): Promise<SQLiteDatabase> {
-  if (canUseDevDatabaseBridge(import.meta.env.DEV, isE2E)) {
+  if (canUseDevDatabaseBridge({ isDevelopment: import.meta.env.DEV, isE2E })) {
     const simDb = await tryLoadSimulationDb(SQL, sqliteKey)
     if (simDb) return simDb
   }

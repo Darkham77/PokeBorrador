@@ -37,6 +37,53 @@ export interface HarborPlacementContext {
   readonly nextRng: () => number;
 }
 
+function countInlandClearCells(
+  continentMap: ContinentMapResult,
+  dir: CardinalDirection,
+  x: number,
+  y: number,
+  candW: number,
+  candH: number,
+  W: number,
+  H: number
+): number {
+  let inlandCount = 0;
+  if (dir === 'south') {
+    const cy = y - 1;
+    if (cy >= 0) {
+      for (let dx = 0; dx < candW; dx++) {
+        const c = continentMap.cells[cy]?.[x + dx];
+        if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[cy]?.[x + dx] && continentMap.terrainMatrix[cy]?.[x + dx] !== 'water') inlandCount++;
+      }
+    }
+  } else if (dir === 'north') {
+    const cy = y + candH;
+    if (cy < H) {
+      for (let dx = 0; dx < candW; dx++) {
+        const c = continentMap.cells[cy]?.[x + dx];
+        if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[cy]?.[x + dx] && continentMap.terrainMatrix[cy]?.[x + dx] !== 'water') inlandCount++;
+      }
+    }
+  } else if (dir === 'east') {
+    const cx = x - 1;
+    if (cx >= 0) {
+      for (let dy = 0; dy < candH; dy++) {
+        const c = continentMap.cells[y + dy]?.[cx];
+        if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[cx] && continentMap.terrainMatrix[y + dy]?.[cx] !== 'water') inlandCount++;
+      }
+    }
+  } else if (dir === 'west') {
+    const cx = x + candW;
+    if (cx < W) {
+      for (let dy = 0; dy < candH; dy++) {
+        const c = continentMap.cells[y + dy]?.[cx];
+        if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[cx] && continentMap.terrainMatrix[y + dy]?.[cx] !== 'water') inlandCount++;
+      }
+    }
+  }
+  return inlandCount;
+}
+
 /**
  * Places coastal harbor port docks with ferry piers facing open ocean waters.
  */
@@ -183,41 +230,7 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
             continue;
           }
 
-          // 4. Count inland clear cells
-          let inlandCount = 0;
-          if (dir === 'south') {
-            const cy = y - 1;
-            if (cy >= 0) {
-              for (let dx = 0; dx < candW; dx++) {
-                const c = continentMap.cells[cy]?.[x + dx];
-                if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[cy]?.[x + dx] && continentMap.terrainMatrix[cy]?.[x + dx] !== 'water') inlandCount++;
-              }
-            }
-          } else if (dir === 'north') {
-            const cy = y + candH;
-            if (cy < H) {
-              for (let dx = 0; dx < candW; dx++) {
-                const c = continentMap.cells[cy]?.[x + dx];
-                if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[cy]?.[x + dx] && continentMap.terrainMatrix[cy]?.[x + dx] !== 'water') inlandCount++;
-              }
-            }
-          } else if (dir === 'east') {
-            const cx = x - 1;
-            if (cx >= 0) {
-              for (let dy = 0; dy < candH; dy++) {
-                const c = continentMap.cells[y + dy]?.[cx];
-                if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[cx] && continentMap.terrainMatrix[y + dy]?.[cx] !== 'water') inlandCount++;
-              }
-            }
-          } else if (dir === 'west') {
-            const cx = x + candW;
-            if (cx < W) {
-              for (let dy = 0; dy < candH; dy++) {
-                const c = continentMap.cells[y + dy]?.[cx];
-                if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[cx] && continentMap.terrainMatrix[y + dy]?.[cx] !== 'water') inlandCount++;
-              }
-            }
-          }
+          const inlandCount = countInlandClearCells(continentMap, dir, x, y, candW, candH, W, H);
 
           const d = getMinDistanceToPlaced(x, y);
           const totalScore = d + (dir === 'south' ? 6 : 0) + depth + inlandCount * 3;

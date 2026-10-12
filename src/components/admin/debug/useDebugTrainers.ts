@@ -54,7 +54,7 @@ interface ExtendedBattleOptions {
 // TRAINER_SPRITES removed — use ARCHETYPE_SPRITES from npcSpriteCatalog for dynamic selection.
 // Use getSpritesForArchetype(archetype) to get the full list for a given archetype.
 
-// Derivado de TRAINER_TYPES para evitar duplicación — si se añade un arquetipo allí, aparece aquí automáticamente
+// Derived from TRAINER_TYPES to avoid duplication — adding an archetype there automatically includes it here
 export const ARCHETYPE_PRESETS = [
   { id: 'random', name: 'Al Azar (Total)' },
   ...Object.entries(TRAINER_TYPES).map(([id, def]) => ({ id, name: def.name }))

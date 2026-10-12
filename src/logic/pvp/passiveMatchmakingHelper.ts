@@ -80,14 +80,6 @@ export function selectPassiveOpponent(
   return pool[randomIndex] ?? pool[0] ?? null;
 }
 
-/**
- * Parses and deserializes a team snapshot from the passive_teams database table,
- * reusing the canonical 1:1 save deserialization format.
- */
-export function parsePassiveTeamSnapshot(rawTeamData: unknown): Pokemon[] {
-  return deserializePokemonTeam(rawTeamData);
-}
-
 export interface PassiveFallbackResult {
   opponentId: string;
   opponentName: string;
@@ -113,7 +105,7 @@ function validateAndFilterCandidates(
   const validCandidates: PassiveTeamCandidate[] = [];
   for (const candidate of candidates) {
     if (!candidate || !candidate.team_data) continue;
-    const team = parsePassiveTeamSnapshot(candidate.team_data);
+    const team = deserializePokemonTeam(candidate.team_data);
     if (team.length === 0) continue;
 
     // Validate that every combatant has required battle properties (species id, ability, valid moves)
@@ -179,8 +171,9 @@ export async function executePassiveMatchmakingFallback(params: {
   try {
     const res = await db
       .from('passive_teams')
-      .select('*')
-      .eq('is_active', true);
+      .select('user_id, elo_rating, team_data, is_active, trainer_name, player_class')
+      .eq('is_active', true)
+      .limit(100);
     const candidates = (res?.data || []) as PassiveTeamCandidate[];
 
     const validCandidates = validateAndFilterCandidates(candidates, db, seasonRules);
@@ -190,7 +183,7 @@ export async function executePassiveMatchmakingFallback(params: {
       return null;
     }
 
-    const enemyTeam = parsePassiveTeamSnapshot(selected.team_data);
+    const enemyTeam = deserializePokemonTeam(selected.team_data);
     if (enemyTeam.length === 0) {
       notify('Error al cargar la alineación del rival pasivo.', '⚠️');
       return null;

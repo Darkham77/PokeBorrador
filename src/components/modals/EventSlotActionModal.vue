@@ -83,6 +83,9 @@ const handleWithdraw = () => {
             :src="pokemonSpriteUrl"
             :alt="participant.name"
             class="pokemon-sprite-img"
+          
+            width="32"
+            height="32"
           >
           <span
             v-if="participant.isShiny"
@@ -221,7 +224,7 @@ const handleWithdraw = () => {
       gap: $spacing-sm;
 
       .pokemon-name {
-        color: var(--white, #fff);
+        color: var(--white, var(--white));
         font-size: var(--font-12);
         font-weight: bold;
       }
@@ -249,7 +252,7 @@ const handleWithdraw = () => {
       .metric-val {
         @include pixelated;
 
-        color: var(--green-bright, #4ade80);
+        color: var(--green-bright, var(--green-light));
         font-size: var(--font-8);
       }
     }

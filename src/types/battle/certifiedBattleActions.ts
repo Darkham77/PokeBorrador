@@ -22,14 +22,10 @@ function isRecord(value: unknown): value is object {
   return typeof value === 'object' && value !== null;
 }
 
-function read(value: object, key: string): unknown {
-  return Reflect.get(value, key);
-}
-
 export function isCertifiedBattleGameAction(value: unknown): value is CertifiedBattleGameAction {
-  if (!isRecord(value) || read(value, 'kind') !== 'bag-item') return false;
-  const itemId = read(value, 'itemId');
-  const targetSlot = read(value, 'targetSlot');
+  if (!isRecord(value) || Reflect.get(value, 'kind') !== 'bag-item') return false;
+  const itemId = Reflect.get(value, 'itemId');
+  const targetSlot = Reflect.get(value, 'targetSlot');
   return typeof itemId === 'string'
     && isItemId(itemId)
     && CERTIFIED_BATTLE_TEAM_SLOTS.some((slot) => slot === targetSlot);

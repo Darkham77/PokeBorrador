@@ -62,7 +62,8 @@ const effectiveSprite = computed(() => {
           'is-pre-rendered': !!processedSprite 
         }"
         :style="{ '--spawn-seed': guardian.seed }"
-        @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+        width="32"
+        height="32"
       >
     </div>
     <span :class="['guardian-label', { captured: guardian.captured }]">

@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.8-build.20261010-165345",
+  "version": "0.6.9-build.20261012-174544",
   "private": true,
   "type": "module",
   "engines": {
@@ -66,6 +66,8 @@
     "sim:e2e:events": "playwright test scripts/e2e/events/",
     "sim:e2e:pokemon": "playwright test scripts/e2e/pokemon/",
     "sim:e2e:system": "playwright test scripts/e2e/system/",
+    "sim:aventura": "npx tsx scripts/testing/test_aventura_e2e.ts",
+    "studio:index-assets": "npx tsx scripts/build/generate_test_aventura_asset_index.ts",
     "test:populate-inventory": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. .agents/skills/populate-tester-inventory/scripts/populate_inventory.ts",
     "test:combat:switch": "npm run test:unit tests/unit/battle/battle_switch_action_suite.spec.ts",
     "test:combat:weather": "npm run test:unit tests/unit/battle/battle_weather_and_field_suite.spec.ts",
@@ -207,7 +209,12 @@
     "auditor:stylelint-config": "auditor task=validate_stylelint_config",
     "auditor:fallow:suppressions": "auditor-fallow category=suppressions",
     "auditor:fallow:flags": "auditor-fallow category=flags",
-    "auditor:fallow:viz": "auditor-fallow category=viz"
+    "auditor:fallow:viz": "auditor-fallow category=viz",
+    "auditor:code-simplification": "auditor task=validate_code_simplification",
+    "auditor:scss-architecture": "auditor task=validate_scss_architecture",
+    "auditor:query-performance": "auditor task=validate_query_performance",
+    "auditor:web-performance": "auditor task=validate_web_performance",
+    "auditor:security-hardening": "auditor task=validate_security_hardening"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",
@@ -223,7 +230,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@francogp/auditor": "github:francogp/auditor#v6.12.2",
+    "@francogp/auditor": "github:francogp/auditor#v7.1.0",
     "@pkmn/sim": "^0.10.11",
     "@playwright/test": "^1.63.0",
     "@rolldown/binding-wasm32-wasi": "^1.2.9",

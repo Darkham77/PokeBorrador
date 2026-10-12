@@ -188,21 +188,25 @@ function resolveSpeAbilityModifier(
   return 1.0
 }
 
+interface AbilityModifierEnvironment {
+  isSun: boolean;
+  isRain: boolean;
+  mechWeather: WeatherMechanical;
+  isElectricTerrain: boolean;
+  isGrassyTerrain: boolean;
+}
+
 function resolveAbilityModifier(
   statKey: StatIDExceptHP,
   abId: AbilityId,
   pokemon: PurePokemon,
-  isSun: boolean,
-  isRain: boolean,
-  mechWeather: WeatherMechanical,
-  isElectricTerrain: boolean,
-  isGrassyTerrain: boolean,
+  env: AbilityModifierEnvironment,
   sources: StatModifierDetail[]
 ): number {
   if (statKey === 'atk') return resolveAtkAbilityModifier(abId, pokemon, sources)
-  if (statKey === 'def') return resolveDefAbilityModifier(abId, pokemon, isGrassyTerrain, sources)
-  if (statKey === 'spa') return resolveSpaAbilityModifier(abId, pokemon, isSun, sources)
-  if (statKey === 'spe') return resolveSpeAbilityModifier(abId, pokemon, { isSun, isRain, mechWeather, isElectricTerrain, isGrassyTerrain }, sources)
+  if (statKey === 'def') return resolveDefAbilityModifier(abId, pokemon, env.isGrassyTerrain, sources)
+  if (statKey === 'spa') return resolveSpaAbilityModifier(abId, pokemon, env.isSun, sources)
+  if (statKey === 'spe') return resolveSpeAbilityModifier(abId, pokemon, env, sources)
   return 1.0
 }
 
@@ -392,7 +396,7 @@ export function calculateDetailedStatBreakdown(
   const isRain = (!isGym || isMoveWeather) && mechWeather === 'rain';
   const isElectricTerrain = Boolean(fieldConditions['electricterrain']);
   const isGrassyTerrain = Boolean(fieldConditions['grassyterrain']);
-  const abilityMult = pokemon.ability ? resolveAbilityModifier(statKey, pokemon.ability, pokemon, isSun, isRain, mechWeather, isElectricTerrain, isGrassyTerrain, sources) : 1.0;
+  const abilityMult = pokemon.ability ? resolveAbilityModifier(statKey, pokemon.ability, pokemon, { isSun, isRain, mechWeather, isElectricTerrain, isGrassyTerrain }, sources) : 1.0;
 
   // 5. Held Item Multipliers
   const itemMult = pokemon.heldItem ? resolveItemModifier(statKey, pokemon.heldItem, pokemon, sources) : 1.0;

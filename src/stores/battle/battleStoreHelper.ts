@@ -72,7 +72,12 @@ export function syncBattleMapWeather(
   battle.weather.visual = newWeather || 'clear'
 }
 
-export function canExecuteMove(isProc: boolean, isAct: boolean, battle: BattleState | null): boolean {
+export interface MoveExecutionFlags {
+  isProc: boolean
+  isAct: boolean
+}
+
+export function canExecuteMove({ isProc, isAct }: MoveExecutionFlags, battle: BattleState | null): boolean {
   if (isProc || !isAct || !battle) return false
   return !battle.over && Boolean(battle.player && battle.enemy)
 }

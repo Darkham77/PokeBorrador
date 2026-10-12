@@ -34,7 +34,9 @@ describe('Passive Defense Eligibility & Matchmaking', () => {
             select: vi.fn(() => ({
               eq: vi.fn((col: string, val: unknown) => {
                 if (col === 'is_active' && val === true) {
-                  return Promise.resolve({ data: [] });
+                  return {
+                    limit: vi.fn().mockResolvedValue({ data: [] })
+                  };
                 }
                 return {
                   maybeSingle: vi.fn().mockResolvedValue({ data: { is_active: false } })
@@ -294,9 +296,11 @@ describe('Passive Defense Eligibility & Matchmaking', () => {
         if (table === 'passive_teams') {
           return {
             select: vi.fn(() => ({
-              eq: vi.fn().mockResolvedValue({
-                data: [invalidCandidate, validCandidate]
-              })
+              eq: vi.fn(() => ({
+                limit: vi.fn().mockResolvedValue({
+                  data: [invalidCandidate, validCandidate]
+                })
+              }))
             })),
             update: updateSpy
           };

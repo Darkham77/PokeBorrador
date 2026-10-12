@@ -52,7 +52,7 @@
   max-height: 90dvh;
   border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: $radius-4xl;
-  background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  background: linear-gradient(180deg, var(--bg-modal-top, #161a2e) 0%, var(--bg-modal-bottom, #0a0c14) 100%);
   overflow: hidden;
   box-shadow: var(--shadow-2xl);
   

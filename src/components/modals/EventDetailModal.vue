@@ -174,6 +174,9 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, sp, { isShiny: Boolean(cfg.speciesShinyMult || cfg.shinyMult) })"
                   :alt="sp"
                   class="pixelated participant-sprite"
+                
+                  width="32"
+                  height="32"
                 >
               </PVSpriteFX>
               <span class="participant-name">{{ sp }}</span>

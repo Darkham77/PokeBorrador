@@ -27,6 +27,65 @@ export interface MountainPlateauTrailsContext {
   readonly H: number;
 }
 
+function stampPath(
+  path: readonly { readonly x: number; readonly y: number }[],
+  pathGrid: boolean[][]
+): void {
+  for (const pt of path) {
+    pathGrid[pt.y]![pt.x] = true;
+  }
+}
+
+function findNearestStairToCave(
+  cx: number,
+  cy: number,
+  stairs: readonly MountainStairLocation[]
+): MountainStairLocation | null {
+  let bestStair: MountainStairLocation | null = null;
+  let minD = Infinity;
+  for (const st of stairs) {
+    const d = Math.hypot(st.x - cx, st.y - cy);
+    if (d < minD && d <= MAX_ELEVATED_CAVE_STAIR_DISTANCE) {
+      minD = d;
+      bestStair = st;
+    }
+  }
+  return bestStair;
+}
+
+function findNearestGroundTarget(
+  cx: number,
+  cy: number,
+  pathGrid: readonly (readonly boolean[])[],
+  stairs: readonly MountainStairLocation[],
+  width: number,
+  height: number
+): { x: number; y: number } | null {
+  let bestTarget: { x: number; y: number } | null = null;
+  let minD = Infinity;
+
+  for (let r = 0; r < height; r++) {
+    for (let c = 0; c < width; c++) {
+      if (!pathGrid[r]?.[c]) continue;
+      const d = Math.hypot(c - cx, r - cy);
+      if (d < minD && d <= MAX_CAVE_TRAIL_DISTANCE) {
+        minD = d;
+        bestTarget = { x: c, y: r };
+      }
+    }
+  }
+
+  for (const st of stairs) {
+    const d = Math.hypot(st.x - cx, st.y + 2 - cy);
+    if (d < minD && d <= MAX_CAVE_TRAIL_DISTANCE) {
+      minD = d;
+      bestTarget = { x: st.x, y: st.y + 2 };
+    }
+  }
+
+  return bestTarget;
+}
+
 /**
  * Traces mountain stairs access paths, plateau inter-stair trails, and cave entrance trails.
  */
@@ -113,80 +172,44 @@ export function connectMountainPlateauTrails(ctx: MountainPlateauTrailsContext):
 
   // Connect cave entrances to nearest stairs or road network
   for (const poi of nodes) {
-    if (poi.type === 'cave_entrance') {
-      const cx = poi.gridX;
-      const cy = poi.gridY + 1;
-      const doorElev = continentMap.heightmap[cy]?.[cx] ?? 0;
+    if (poi.type !== 'cave_entrance') continue;
+    const cx = poi.gridX;
+    const cy = poi.gridY + 1;
+    const doorElev = continentMap.heightmap[cy]?.[cx] ?? 0;
 
-      if (doorElev > 0) {
-        let bestStair: MountainStairLocation | null = null;
-        let minD = Infinity;
-        for (const st of stairs) {
-          const d = Math.hypot(st.x - cx, st.y - cy);
-          if (d < minD && d <= MAX_ELEVATED_CAVE_STAIR_DISTANCE) {
-            minD = d;
-            bestStair = st;
-          }
-        }
-        if (bestStair) {
-          const caveTrail = findPathAStar(
-            continentMap,
-            cx,
-            cy,
-            bestStair.x,
-            bestStair.y - 1,
-            pathGrid,
-            false,
-            []
-          );
-          if (caveTrail && caveTrail.path.length > 0) {
-            for (const pt of caveTrail.path) {
-              pathGrid[pt.y]![pt.x] = true;
-            }
-          }
-        }
-      } else {
-        let bestTarget: { x: number; y: number } | null = null;
-        let minD = Infinity;
-
-        for (let r = 0; r < H; r++) {
-          for (let c = 0; c < W; c++) {
-            if (pathGrid[r]?.[c]) {
-              const d = Math.hypot(c - cx, r - cy);
-              if (d < minD && d <= MAX_CAVE_TRAIL_DISTANCE) {
-                minD = d;
-                bestTarget = { x: c, y: r };
-              }
-            }
-          }
-        }
-
-        for (const st of stairs) {
-          const d = Math.hypot(st.x - cx, (st.y + 2) - cy);
-          if (d < minD && d <= MAX_CAVE_TRAIL_DISTANCE) {
-            minD = d;
-            bestTarget = { x: st.x, y: st.y + 2 };
-          }
-        }
-
-        if (bestTarget) {
-          const caveTrail = findPathAStar(
-            continentMap,
-            cx,
-            cy,
-            bestTarget.x,
-            bestTarget.y,
-            pathGrid,
-            false,
-            []
-          );
-          if (caveTrail && caveTrail.path.length > 0) {
-            for (const pt of caveTrail.path) {
-              pathGrid[pt.y]![pt.x] = true;
-            }
-          }
-        }
+    if (doorElev > 0) {
+      const bestStair = findNearestStairToCave(cx, cy, stairs);
+      if (!bestStair) continue;
+      const caveTrail = findPathAStar(
+        continentMap,
+        cx,
+        cy,
+        bestStair.x,
+        bestStair.y - 1,
+        pathGrid,
+        false,
+        []
+      );
+      if (caveTrail && caveTrail.path.length > 0) {
+        stampPath(caveTrail.path, pathGrid);
       }
+      continue;
+    }
+
+    const bestTarget = findNearestGroundTarget(cx, cy, pathGrid, stairs, W, H);
+    if (!bestTarget) continue;
+    const caveTrail = findPathAStar(
+      continentMap,
+      cx,
+      cy,
+      bestTarget.x,
+      bestTarget.y,
+      pathGrid,
+      false,
+      []
+    );
+    if (caveTrail && caveTrail.path.length > 0) {
+      stampPath(caveTrail.path, pathGrid);
     }
   }
 }

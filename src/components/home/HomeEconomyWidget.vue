@@ -117,7 +117,8 @@ const getListingTitle = (listing: MarketListing): string => {
               :src="getListingSprite(item)"
               :alt="getListingTitle(item)"
               class="item-thumb"
-              @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')"
+              width="32"
+              height="32"
             >
           </div>
 
@@ -312,7 +313,7 @@ const getListingTitle = (listing: MarketListing): string => {
     .item-title {
       @include pixelated;
 
-      color: var(--white, #fff);
+      color: var(--white, var(--white));
       font-size: var(--font-8);
       line-height: 1.45;
       padding-bottom: 2px;
@@ -324,7 +325,7 @@ const getListingTitle = (listing: MarketListing): string => {
     .item-seller {
       @include pixelated;
 
-      color: var(--gray, #94a3b8);
+      color: var(--gray, var(--slate-400));
       font-size: var(--font-7);
       line-height: 1.4;
       padding-bottom: 1px;
@@ -362,7 +363,7 @@ const getListingTitle = (listing: MarketListing): string => {
   }
 
   .empty-gts-text {
-    color: var(--gray, #94a3b8);
+    color: var(--gray, var(--slate-400));
     font-size: var(--font-9);
   }
 }

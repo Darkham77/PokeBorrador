@@ -163,7 +163,7 @@
 .pokedex-bar-progress {
   height: 100%;
   border-radius: $radius-sm;
-  background: Linear-Gradient(90deg, #ef4444, #eab308, #22c55e);
+  background: linear-gradient(90deg, var(--red-500, #ef4444), var(--yellow-500, #eab308), var(--green-500, #22c55e));
   box-shadow: var(--shadow-glow-green);
 }
 

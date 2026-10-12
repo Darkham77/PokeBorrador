@@ -143,6 +143,9 @@ function selectCollisionType(code: CollisionType): void {
             :src="selectedTileEntry.file_path"
             alt="Tile Activo"
             class="tile-img"
+          
+            width="32"
+            height="32"
           >
           <div class="tile-details">
             <span class="tile-id">{{ store.selectedTileId }}</span>
@@ -329,7 +332,7 @@ function selectCollisionType(code: CollisionType): void {
     flex-direction: column;
     padding: 4px 6px;
     border-radius: $radius-sm;
-    background: #090d16;
+    background: var(--slate-900);
     color: var(--slate-400);
     font-size: var(--font-10);
   }
@@ -382,7 +385,7 @@ function selectCollisionType(code: CollisionType): void {
   padding: 6px;
   border: 1px solid var(--slate-800);
   border-radius: $radius-sm;
-  background: #090d16;
+  background: var(--slate-900);
 
   .tile-img {
     width: 32px;
@@ -420,7 +423,7 @@ function selectCollisionType(code: CollisionType): void {
   padding: 6px;
   border: 1px solid var(--slate-800);
   border-radius: $radius-sm;
-  background: #090d16;
+  background: var(--slate-900);
 
   .coord-header {
     display: flex;

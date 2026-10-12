@@ -8,7 +8,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 import { Dex } from '@pkmn/sim';
 
 enableCompileCache();
@@ -106,7 +106,7 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
 
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(SPRITE_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -116,7 +116,7 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_sprites',
       configKey: 'assets.sprites',
       defaultConfig: {
@@ -140,22 +140,19 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
   }
 
   public override async runAudit(): Promise<void> {
-    this.markRuleEvaluated('sprite-missing-asset');
+    await this.runSubAuditor('sprite-missing-asset', async () => {
+      const itemsToValidate = this.collectItemsToValidate();
 
-    this.context.logStep(1, 2, 'Collecting unique species across Gen 1-9...');
-    const itemsToValidate = this.collectItemsToValidate();
+      let missingCount = 0;
+      for (const item of itemsToValidate) {
+        const isValid = await this.validateSingleSpriteSet(item);
+        if (!isValid) missingCount++;
+      }
 
-    this.context.logStep(2, 2, `Validating ${itemsToValidate.length} sprite sets...`);
-
-    let missingCount = 0;
-    for (const item of itemsToValidate) {
-      const isValid = await this.validateSingleSpriteSet(item);
-      if (!isValid) missingCount++;
-    }
-
-    this.context.setMetric('Total species checked', itemsToValidate.length);
-    this.context.setMetric('Complete sprite sets', itemsToValidate.length - missingCount);
-    this.context.setMetric('Incomplete sprite sets', missingCount);
+      this.context.setMetric('Total species checked', itemsToValidate.length);
+      this.context.setMetric('Complete sprite sets', itemsToValidate.length - missingCount);
+      this.context.setMetric('Incomplete sprite sets', missingCount);
+    });
   }
 }
 

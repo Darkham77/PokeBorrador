@@ -49,6 +49,9 @@ const activeCompanionBtn = (comp: string) => {
           <img
             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
             class="w-8 h-8 pixel-art"
+            width="32"
+            height="32"
+            decoding="async"
             alt="Pikachu"
           >
         </button>
@@ -62,6 +65,9 @@ const activeCompanionBtn = (comp: string) => {
           <img
             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png"
             class="w-8 h-8 pixel-art"
+            width="32"
+            height="32"
+            decoding="async"
             alt="Meowth"
           >
         </button>
@@ -75,6 +81,9 @@ const activeCompanionBtn = (comp: string) => {
           <img
             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
             class="w-8 h-8 pixel-art"
+            width="32"
+            height="32"
+            decoding="async"
             alt="Squirtle"
           >
         </button>

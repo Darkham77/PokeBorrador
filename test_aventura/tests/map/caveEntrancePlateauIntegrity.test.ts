@@ -34,8 +34,8 @@ describe('Cave Entrance Mountain Integration & Plateau Integrity (Seed #777480)'
 
   it('guarantees cave entrance prefabs have plateau rock on top, avoiding loose wall tiles on the 2nd floor', async () => {
     // Top 32x32 of gray cave entrance must match gray plateau rock
-    const grayCaveBuf = await sharp(path.resolve(ROOT_DIR, 'public/assets/prefabs/elevation/poke_cave_entrance_gray.png')).raw().toBuffer();
-    const grayPlateauBuf = await sharp(path.resolve(ROOT_DIR, 'public/assets/tiles/poke_cliff_gray_plateau_rock.png')).raw().toBuffer();
+    const grayCaveBuf = await sharp(path.resolve(ROOT_DIR, 'test_aventura/assets/prefabs/elevation/poke_cave_entrance_gray.png')).raw().toBuffer();
+    const grayPlateauBuf = await sharp(path.resolve(ROOT_DIR, 'test_aventura/assets/tiles/poke_cliff_gray_plateau_rock.png')).raw().toBuffer();
 
     let diffGray = 0;
     for (let i = 0; i < 32 * 32 * 4; i++) {
@@ -44,8 +44,8 @@ describe('Cave Entrance Mountain Integration & Plateau Integrity (Seed #777480)'
     expect(diffGray, 'Top 32x32 of poke_cave_entrance_gray must match poke_cliff_gray_plateau_rock').toBe(0);
 
     // Top 32x32 of brown cave entrance must match brown plateau rock
-    const brownCaveBuf = await sharp(path.resolve(ROOT_DIR, 'public/assets/prefabs/elevation/poke_cave_entrance_brown.png')).raw().toBuffer();
-    const brownPlateauBuf = await sharp(path.resolve(ROOT_DIR, 'public/assets/prefabs/elevation/poke_cliff_brown_plateau_rock.png')).raw().toBuffer();
+    const brownCaveBuf = await sharp(path.resolve(ROOT_DIR, 'test_aventura/assets/prefabs/elevation/poke_cave_entrance_brown.png')).raw().toBuffer();
+    const brownPlateauBuf = await sharp(path.resolve(ROOT_DIR, 'test_aventura/assets/prefabs/elevation/poke_cliff_brown_plateau_rock.png')).raw().toBuffer();
 
     let diffBrown = 0;
     for (let i = 0; i < 32 * 32 * 4; i++) {

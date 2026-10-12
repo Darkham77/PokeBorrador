@@ -201,7 +201,7 @@ const description = computed(() => {
   padding: 18px 24px;
   border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: $radius-2xl-alt;
-  background: Rgb(from var(--move-accent, #fff) r g b / 10%);
+  background: Rgb(from var(--move-accent, var(--white)) r g b / 10%);
   overflow: hidden;
 
   &::before {

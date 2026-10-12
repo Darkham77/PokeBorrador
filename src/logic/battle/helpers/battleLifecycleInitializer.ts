@@ -33,20 +33,25 @@ function clearBattleVolatiles(ctx: BattleContext, initialEnemy: Pokemon | null):
   }
 }
 
+interface ExecuteIntroOptions {
+  isTrainer: boolean;
+  wasSearching: boolean;
+  trainerName?: string;
+  battleState?: BattleState | null;
+}
+
 async function executeIntroByMode(
   ctx: BattleContext,
   initialPlayer: Pokemon,
   initialEnemy: Pokemon,
-  isTrainer: boolean,
-  wasSearching: boolean,
-  trainerName: string | undefined,
-  battleState: BattleState | null | undefined
+  options: ExecuteIntroOptions
 ): Promise<void> {
+  const { isTrainer, wasSearching, trainerName, battleState } = options;
   const currentPlayer = ctx.activeBattle.value?.player
   const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
 
   if (isTrainer) {
-    await runTrainerIntroSequence(ctx, initialPlayer, initialEnemy, wasSearching, trainerName, battleState, needsCall)
+    await runTrainerIntroSequence(ctx, initialPlayer, initialEnemy, { wasSearching, trainerName, battleState, needsCall })
   } else if (wasSearching) {
     await runWildSearchIntroSequence(ctx, initialPlayer, initialEnemy, needsCall)
   } else {
@@ -54,13 +59,18 @@ async function executeIntroByMode(
   }
 }
 
+interface ActiveBattleEnemyOptions {
+  isTrainer: boolean;
+  isGym: boolean;
+  wasSearching: boolean;
+}
+
 function setupActiveBattleEnemy(
   ctx: BattleContext,
   initialEnemy: Pokemon,
-  isTrainer: boolean,
-  isGym: boolean,
-  wasSearching: boolean
+  options: ActiveBattleEnemyOptions
 ): void {
+  const { isTrainer, isGym, wasSearching } = options;
   const activeBattle = ctx.activeBattle.value
   if (!activeBattle) return
 
@@ -79,16 +89,21 @@ async function runPreIntroTransitions(ctx: BattleContext, wasSearching: boolean)
   }
 }
 
+interface PostIntroSetupOptions {
+  isTrainer: boolean;
+  isGym: boolean;
+  trainerName?: string;
+  battleState?: BattleState | null;
+}
+
 async function applyPostIntroSetup(
   ctx: BattleContext,
   initialPlayer: Pokemon,
   initialEnemy: Pokemon,
   locationId: MapRouteId,
-  isTrainer: boolean,
-  isGym: boolean,
-  trainerName: string | undefined,
-  battleState: BattleState | null
+  options: PostIntroSetupOptions
 ): Promise<void> {
+  const { isTrainer, isGym, trainerName, battleState } = options;
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('resize'))
   }
@@ -103,7 +118,7 @@ async function applyPostIntroSetup(
 
   if (isTrainer) await ctx.gs.scheduleSave()
 
-  await processRocketStealMechanics(ctx, isTrainer, isGym, trainerName || '', battleState)
+  await processRocketStealMechanics(ctx, trainerName || '', battleState, { isTrainer, isGym })
 }
 
 async function finalizeBattleInitialization(ctx: BattleContext, workerInitPromise: Promise<void>): Promise<void> {
@@ -135,21 +150,21 @@ export async function initBattleSequence(
   const trainerName = battleState.trainerName
 
   await resetActiveBattleState(ctx, initialPlayer, isGym)
-  setupActiveBattleEnemy(ctx, initialEnemy, isTrainer, isGym, wasSearching)
+  setupActiveBattleEnemy(ctx, initialEnemy, { isTrainer, isGym, wasSearching })
 
   if (!wasSearching && ctx.animations?.resetAll) {
     ctx.animations.resetAll()
   }
 
-  // Inicialización del Web Worker de Showdown en paralelo con la intro visual
+  // Showdown Web Worker initialization in parallel with visual intro
   const workerInitPromise = initWorkerForBattle(ctx, initialPlayer, initialEnemy)
 
   clearBattleVolatiles(ctx, initialEnemy)
 
   await runPreIntroTransitions(ctx, wasSearching)
-  await executeIntroByMode(ctx, initialPlayer, initialEnemy, isTrainer, wasSearching, trainerName, battleState)
+  await executeIntroByMode(ctx, initialPlayer, initialEnemy, { isTrainer, wasSearching, trainerName, battleState })
   await ctx.fsm.transition(ctx.BATTLE_STATES.REORDER_TEAM, null)
 
-  await applyPostIntroSetup(ctx, initialPlayer, initialEnemy, locationId, isTrainer, isGym, trainerName, battleState)
+  await applyPostIntroSetup(ctx, initialPlayer, initialEnemy, locationId, { isTrainer, isGym, trainerName, battleState })
   await finalizeBattleInitialization(ctx, workerInitPromise)
 }

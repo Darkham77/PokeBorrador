@@ -27,7 +27,7 @@ export const useMapStore = defineStore('map', () => {
     set: (val: MapRouteId) => { if (gs.state.map) gs.state.map.currentMap = val }
   })
 
-  const globalWeather = ref<WeatherId | null>(null) // Si está forzado anula el determinístico
+  const globalWeather = ref<WeatherId | null>(null) // If forced, overrides deterministic weather
   const forcedCycle = ref<DayPhase | null>(null)
   const forcedSeason = ref<Season | null>(null)
   const isTimeTickerFrozen = ref(false)

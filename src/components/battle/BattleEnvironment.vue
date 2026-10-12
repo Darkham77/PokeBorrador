@@ -40,6 +40,8 @@ const handleBackgroundError = (e: Event) => {
       :src="bgData.url" 
       alt="Fondo de arena de combate"
       class="arena-bg" 
+      width="1920"
+      height="1080"
       @error="handleBackgroundError"
     >
   </div>

@@ -35,7 +35,12 @@ function handleCloseButtonLeave(el: HTMLElement): void {
   gsap.to(wrapper, tweenVars)
 }
 
-function resolveButtonLeaveShadow(el: HTMLElement, isConfirm: boolean, isRetro: boolean): string | null {
+interface ButtonLeaveShadowFlags {
+  isConfirm: boolean
+  isRetro: boolean
+}
+
+function resolveButtonLeaveShadow(el: HTMLElement, { isConfirm, isRetro }: ButtonLeaveShadowFlags): string | null {
   const shadowInfo = getElementShadowColorAndDepth(el)
   if (isRetro) {
     return isConfirm ? `4px 4px 1.5px ${shadowInfo.color}` : null
@@ -198,7 +203,7 @@ export function triggerLeave(el: HTMLElement) {
     handleCloseButtonLeave(el)
   } else if (isConfirm || (isCancel && isRetro)) {
     propsToClear += ',boxShadow'
-    targetBoxShadow = resolveButtonLeaveShadow(el, isConfirm, isRetro)
+    targetBoxShadow = resolveButtonLeaveShadow(el, { isConfirm, isRetro })
   }
 
   if (hasVisualBorders(el)) {

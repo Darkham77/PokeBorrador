@@ -190,9 +190,11 @@ export function useAssetAtlas() {
   });
 
   const selectedAssetId = ref<string | null>('poke_road_asphalt');
+  const overrideSheetUrl = ref<string | null>(null);
 
   const activeSheetUrl = computed<string>(() => {
-    return `/assets/raw/firered_leafgreen/${activeSheet.value.filename}`;
+    if (overrideSheetUrl.value) return overrideSheetUrl.value;
+    return `/test_aventura/assets/raw/firered_leafgreen/${activeSheet.value.filename}`;
   });
 
   const allManifestEntries = computed<readonly CanonicalAssetEntry[]>(() => {
@@ -200,11 +202,26 @@ export function useAssetAtlas() {
   });
 
   const currentSheetEntries = computed<readonly CanonicalAssetEntry[]>(() => {
+    if (overrideSheetUrl.value && selectedAssetId.value) {
+      const match = allManifestEntries.value.find((e) => e.id === selectedAssetId.value);
+      if (match) {
+        return [{
+          ...match,
+          sourceRect: {
+            x: 0,
+            y: 0,
+            w: match.pixelDimensions.w,
+            h: match.pixelDimensions.h
+          }
+        }];
+      }
+    }
     const currentFn = activeSheet.value.filename;
     return allManifestEntries.value.filter((e) => e.sourceImage === currentFn);
   });
 
   function selectSheet(sheetId: string): void {
+    overrideSheetUrl.value = null;
     activeSheetId.value = sheetId;
     const target = MASTER_SHEETS.find((s) => s.id === sheetId);
     if (target) {
@@ -220,16 +237,26 @@ export function useAssetAtlas() {
   function selectRegisteredAsset(asset: CanonicalAssetEntry): void {
     const sheet = MASTER_SHEETS.find((s) => s.filename === asset.sourceImage);
     if (sheet) {
+      overrideSheetUrl.value = null;
       activeSheetId.value = sheet.id;
       currentGrid.value = { ...sheet.grid };
+      selectedAssetId.value = asset.id;
+      selectedRect.value = {
+        x: asset.sourceRect.x,
+        y: asset.sourceRect.y,
+        w: asset.sourceRect.w,
+        h: asset.sourceRect.h
+      };
+    } else {
+      overrideSheetUrl.value = `/test_aventura/assets/${asset.runtimePath}`;
+      selectedAssetId.value = asset.id;
+      selectedRect.value = {
+        x: 0,
+        y: 0,
+        w: asset.pixelDimensions.w,
+        h: asset.pixelDimensions.h
+      };
     }
-    selectedAssetId.value = asset.id;
-    selectedRect.value = {
-      x: asset.sourceRect.x,
-      y: asset.sourceRect.y,
-      w: asset.sourceRect.w,
-      h: asset.sourceRect.h
-    };
   }
 
   /**

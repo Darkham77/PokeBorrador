@@ -1,6 +1,6 @@
 /**
- * Módulo de gestión de Estados Alterados y Efectos de Turno
- * Portado de js/07_battle.js para cumplir con el estándar modular v6.
+ * Status Conditions and Turn Effects Management Module
+ * Ported from js/07_battle.js to comply with modular standard v6.
  */
 
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -56,33 +56,33 @@ async function processSideConditions(
 }
 
 /**
- * Procesa los efectos permanentes y temporales al final del turno.
- * @returns {boolean} True si el Pokémon sigue en combate, False si se debilitó
+ * Processes permanent and temporary effects at end of turn.
+ * @returns True if Pokémon remains in battle, false if fainted
  */
 export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: BattleSide | 'info' = 'info') {
   if (!pokemon) return false;
 
-  // 0. Procesar Contadores Volátiles (ej: yawn, partiallytrapped)
+  // 0. Process Volatile Counters (e.g. yawn, partiallytrapped)
   await processVolatileCounters(pokemon, ctx, role);
 
-  // 0.5 Procesar Condiciones de Bando (ej: wish)
+  // 0.5 Process Side Conditions (e.g. wish)
   await processSideConditions(pokemon, ctx, role);
 
-  // 1. Efectos de control temporal (disabled, encore, taunt, thrash)
+  // 1. Temporary control effects (disabled, encore, taunt, thrash)
   processControlTurns(pokemon, ctx.addLog);
   
-  // 2. Estados alterados persistentes (Daño)
+  // 2. Persistent status conditions (Damage)
   const hasPrimaryDamage = await processPrimaryStatusDamage(pokemon, ctx, role);
   if (hasPrimaryDamage) return true;
 
-  // 3. Daño por atadura, arraigo, canto mortal y maldición
+  // 3. Binding damage, ingrain, perish song, and curse
   await processVolatileDamageAndHeal(pokemon, ctx, role);
 
   return false;
 }
 
 /**
- * Procesa efectos de campo como Drenadoras.
+ * Processes field effects like Leech Seed.
  */
 export async function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, ctx: BattleContext) {
   if (!pokemon || !pokemon.seeded || pokemon.hp <= 0) return false;
@@ -217,7 +217,7 @@ function revertCastformForm(poke: Pokemon): void {
 }
 
 /**
- * Limpia todos los estados temporales/volátiles de un Pokémon al salir o entrar en combate.
+ * Clears all temporary/volatile statuses from a Pokémon upon switching out or entering battle.
  */
 export function clearVolatileStatus(poke: Pokemon) {
   if (!poke) return;

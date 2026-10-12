@@ -1,7 +1,7 @@
 import { gameBus } from '@/logic/events/gameBus'
 import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { BattleSide } from '@/types/battle/battle'
+import type { BattleSide, BattleOutcomeFlags } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
 import { clearVolatileStatus } from './battleStatus.ts'
@@ -73,8 +73,7 @@ interface PreTerminationOutcome {
 async function recordPreTerminationState(
   ctx: BattleContext,
   active: ActiveBattleInstance,
-  winParam: boolean,
-  fled: boolean
+  { win: winParam, fled }: BattleOutcomeFlags
 ): Promise<PreTerminationOutcome> {
   // If Showdown's protocol provided an explicit winnerResult, rely on it over local heuristics
   const win = active.winnerResult ? (active.winnerResult === 'player') : winParam;
@@ -82,7 +81,7 @@ async function recordPreTerminationState(
   active.over = true;
   ctx.faintedSides.value.clear();
 
-  // Limpiar todos los estados volátiles del equipo al terminar la batalla
+  // Clear all volatile statuses from the team when the battle ends
   if (ctx.gs.state.team) {
     ctx.gs.state.team.forEach((p: Pokemon | null) => {
       if (p) clearVolatileStatus(p);
@@ -97,7 +96,7 @@ async function recordPreTerminationState(
   const uiStore = useUIStore();
   uiStore.isBattleSwitchForced = false;
 
-  await handlePoliceResolution(ctx, active, win, fled, uiStore);
+  await handlePoliceResolution(ctx, active, { win, fled }, uiStore);
 
   const persistenceMode = (active.persistenceMode as string) || 'PERSISTENT';
   const isSingle = Boolean(persistenceMode === 'SINGLE' || active.isGym || active.isPvP);
@@ -109,14 +108,13 @@ async function recordPreTerminationState(
 async function handleCombatantVacation(
   ctx: BattleContext,
   active: ActiveBattleInstance,
-  win: boolean,
-  fled: boolean
+  outcome: BattleOutcomeFlags
 ): Promise<boolean> {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
   const fsm = ctx.fsm;
 
   if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-    await handleCombatantsExitAnimations(ctx, active, win, fled);
+    await handleCombatantsExitAnimations(ctx, active, outcome);
     if (!isCurrentBattle(ctx, active)) return false;
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL);
@@ -212,15 +210,15 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
 
   TERMINATING_BATTLES.add(active);
   try {
-    const { win, isSingle } = await recordPreTerminationState(ctx, active, winParam, fled);
+    const { win, isSingle } = await recordPreTerminationState(ctx, active, { win: winParam, fled });
 
     // 1. Salida y vaciado de asientos
-    const vacated = await handleCombatantVacation(ctx, active, win, fled);
+    const vacated = await handleCombatantVacation(ctx, active, { win, fled });
     if (!vacated || !isCurrentBattle(ctx, active)) return;
 
     // 2. Procesar recompensas (Transición a REWARDS_PHASE)
     const { processBattleRewardsPhase } = await import('./battleRewardsPhase.ts');
-    await processBattleRewardsPhase(ctx, win, fled);
+    await processBattleRewardsPhase(ctx, { win, fled });
     if (!isCurrentBattle(ctx, active)) return;
 
     const isTrainerEncounter = Boolean(active.isTrainer || active.isRival || active.trainerName || active.isGym);

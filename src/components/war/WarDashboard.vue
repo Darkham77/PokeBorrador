@@ -67,7 +67,8 @@ onMounted(async () => {
         <img
           :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
           alt="Union"
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          width="32"
+          height="32"
         >
         <div class="count">
           {{ globalScore.union }}
@@ -83,7 +84,8 @@ onMounted(async () => {
         <img
           :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
           alt="Poder"
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          width="32"
+          height="32"
         >
         <div class="count">
           {{ globalScore.poder }}

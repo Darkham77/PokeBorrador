@@ -473,14 +473,23 @@ function applyMountainCellProperties(
   return { mtnRole, isStair, isWalkable };
 }
 
-function applyProjectedNorthCliffFoot(
-  layerStack: string[],
-  northMtn: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number] | undefined,
-  isRiverChannel: boolean,
-  terrain: WaterTerrainKind,
-  currentWalkable: boolean,
-  currentStair: boolean
-): { readonly isWalkable: boolean; readonly isStair: boolean } {
+interface NorthCliffFootParams {
+  layerStack: string[];
+  northMtn: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number] | undefined;
+  isRiverChannel: boolean;
+  terrain: WaterTerrainKind;
+  currentWalkable: boolean;
+  currentStair: boolean;
+}
+
+function applyProjectedNorthCliffFoot({
+  layerStack,
+  northMtn,
+  isRiverChannel,
+  terrain,
+  currentWalkable,
+  currentStair
+}: NorthCliffFootParams): { readonly isWalkable: boolean; readonly isStair: boolean } {
   if (isRiverChannel || !northMtn?.projectedFoot) {
     return { isWalkable: currentWalkable, isStair: currentStair };
   }
@@ -513,7 +522,7 @@ function composeContinentCell(params: CellCompositionParams): ContinentCellDetai
 
   const isRiverChannel = riverDrainage?.riverGrid?.[y]?.[x] ?? false;
   const northMtn = y > 0 ? mountainResult.cellDetails[y - 1]![x] : undefined;
-  const footProps = applyProjectedNorthCliffFoot(layerStack, northMtn, isRiverChannel, terrain, mtnProps.isWalkable, mtnProps.isStair);
+  const footProps = applyProjectedNorthCliffFoot({ layerStack, northMtn, isRiverChannel, terrain, currentWalkable: mtnProps.isWalkable, currentStair: mtnProps.isStair });
 
   return {
     x,

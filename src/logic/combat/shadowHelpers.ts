@@ -1,5 +1,5 @@
 import { gsap } from 'gsap'
-import { requireFeetDatabasePath, requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
+import { requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
 import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase'
 
@@ -47,11 +47,11 @@ export function getPokemonFeetCoords(spriteUrl: string): FeetPoints {
   } catch (e) {
     throw new Error(`[shadowHelpers] Error decoding spriteUrl '${dbKey}': ${String(e)}`, { cause: e })
   }
-  return requireFeetPoints(requireFeetDatabasePath(dbKey))
+  return requireFeetPoints(dbKey)
 }
 
 /**
- * Animación de entrada y oscilación para efectos en el suelo (Púas/Drenadoras)
+ * Entry and oscillation animation for ground effects (Spikes/Leech Seed)
  */
 const SPIKES_ENTRY_Y = 10
 const OTHER_GROUND_ENTRY_Y = 20

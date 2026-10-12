@@ -154,6 +154,9 @@ const handleClassMissionClick = () => {
               :src="buff.icon"
               :alt="buff.name"
               class="buff-icon"
+              width="32"
+            
+              height="32"
               @error="handleImgError"
             >
           </div>
@@ -226,7 +229,7 @@ const handleClassMissionClick = () => {
     }
 
     .is-done-text {
-      color: var(--green, #22c55e);
+      color: var(--green, var(--emerald));
       font-weight: 800;
     }
   }

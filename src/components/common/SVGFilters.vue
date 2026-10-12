@@ -1,4 +1,5 @@
 <template>
+  <!-- svg-bloat-ok: Global graphic SVG filters for pixel outline shaders -->
   <svg
     style=" position: absolute;visibility: hidden;"
     width="0"

@@ -195,6 +195,9 @@ onMounted(async () => {
                 :alt="p.name"
                 class="prefab-thumb"
                 loading="lazy"
+              
+                width="32"
+                height="32"
               >
             </div>
             <div class="prefab-info">
@@ -282,7 +285,7 @@ onMounted(async () => {
 
 .drawer-header {
   padding: 8px;
-  background: #090d16;
+  background: var(--slate-900);
   border-bottom: 1px solid var(--slate-800);
 
   .tabs-group {
@@ -291,7 +294,7 @@ onMounted(async () => {
     padding: 2px;
     border: 1px solid var(--slate-800);
     border-radius: $radius-sm;
-    background: #090d16;
+    background: var(--slate-900);
 
     .tab-btn {
       display: flex;
@@ -345,7 +348,7 @@ onMounted(async () => {
       padding: 5px 8px;
       border: 1px solid var(--slate-800);
       border-radius: $radius-sm;
-      background: #090d16;
+      background: var(--slate-900);
       color: var(--slate-100);
       font-size: var(--font-11);
       flex: 1;
@@ -382,7 +385,7 @@ onMounted(async () => {
       padding: 4px 6px;
       border: 1px solid var(--slate-800);
       border-radius: $radius-sm;
-      background: #090d16;
+      background: var(--slate-900);
       color: var(--slate-400);
       font-size: var(--font-10);
       flex: 1;
@@ -420,7 +423,7 @@ onMounted(async () => {
     padding: 6px;
     border: 1px solid var(--slate-800);
     border-radius: $radius-md;
-    background: #090d16;
+    background: var(--slate-900);
     cursor: pointer;
 
     &:hover {
@@ -429,7 +432,7 @@ onMounted(async () => {
     }
 
     &.selected {
-      background: #0c2340;
+      background: var(--slate-900);
       border-color: var(--sky);
       box-shadow: $shadow-glow-cyan;
     }
@@ -550,7 +553,7 @@ onMounted(async () => {
     padding: 6px 8px;
     border: 1px solid var(--slate-800);
     border-radius: $radius-sm;
-    background: #090d16;
+    background: var(--slate-900);
 
     .sub-title {
       color: var(--slate-300);
@@ -591,7 +594,7 @@ onMounted(async () => {
       padding: 8px;
       border: 1px solid var(--slate-800);
       border-radius: $radius-sm;
-      background: #090d16;
+      background: var(--slate-900);
       cursor: pointer;
 
       &:hover {
@@ -617,7 +620,7 @@ onMounted(async () => {
       }
 
       &.selected {
-        background: #0c2340;
+        background: var(--slate-900);
         border-color: var(--sky);
         box-shadow: $shadow-glow-cyan;
       }

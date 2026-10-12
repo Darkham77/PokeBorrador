@@ -103,6 +103,9 @@ function onDashboardEnter(el: Element, done: () => void): void {
                 :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'union')"
                 class="faction-logo union-logo"
                 alt="Team Unión"
+                width="32"
+              
+                height="32"
                 @error="handleImgError"
               >
               <span class="vs-text">VS</span>
@@ -111,6 +114,9 @@ function onDashboardEnter(el: Element, done: () => void): void {
                 :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'poder')"
                 class="faction-logo poder-logo"
                 alt="Team Poder"
+                width="32"
+              
+                height="32"
                 @error="handleImgError"
               >
             </div>
@@ -225,7 +231,7 @@ function onDashboardEnter(el: Element, done: () => void): void {
     right: 0;
     left: 0;
     height: 4px;
-    background: Linear-Gradient(90deg, #3b82f6, var(--yellow), #ef4444);
+    background: Linear-Gradient(90deg, var(--blue-500), var(--yellow), var(--red-light));
   }
 
   .card-inner {

@@ -60,7 +60,8 @@ onMounted(() => {
             :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
             alt="Unión"
             class="faction-logo"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+            width="32"
+            height="32"
           >
           <div class="score-data">
             <span class="team-name">UNIÓN</span>
@@ -95,7 +96,8 @@ onMounted(() => {
             :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
             alt="Poder"
             class="faction-logo"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+            width="32"
+            height="32"
           >
         </div>
       </div>
@@ -320,12 +322,12 @@ onMounted(() => {
 
   .union-fill {
     height: 100%;
-    background: Linear-Gradient(90deg, #3b82f6, #60a5fa);
+    background: Linear-Gradient(90deg, var(--blue-500), var(--blue-400));
   }
 
   .poder-fill {
     height: 100%;
-    background: Linear-Gradient(90deg, #ef4444, #f87171);
+    background: Linear-Gradient(90deg, var(--red-light), var(--rose));
   }
 }
 
@@ -360,7 +362,7 @@ onMounted(() => {
     display: inline-flex;
     align-items: center;
     gap: $spacing-xs;
-    color: var(--white, #fff);
+    color: var(--white, var(--white));
     font-size: var(--font-8);
 
     &.union {

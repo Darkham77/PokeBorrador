@@ -11,8 +11,8 @@ const resolveModalComponent = (modal: Modal) => {
 }
 
 /**
- * El modal que se considera "Superior" para restaurar efectos.
- * Es el último modal que NO se está cerrando.
+ * The modal considered "Top" for restoring effects.
+ * It is the last modal that is NOT currently closing.
  */
 const topActiveModalId = computed(() => {
   const activeModals = modalStore.stack.filter((m: Modal) => !m.closing)
@@ -20,8 +20,8 @@ const topActiveModalId = computed(() => {
 })
 
 const blockingModalIndex = computed(() => {
-  // El "principal" es el último modal que NO se está cerrando.
-  // Simplificamos todo lo que esté debajo del modal más alto activo para ahorrar recursos durante las animaciones.
+  // The "main" modal is the last modal that is NOT closing.
+  // We simplify everything underneath the highest active modal to save resources during animations.
   for (let i = modalStore.stack.length - 1; i >= 0; i--) {
     const m = modalStore.stack[i]
     if (m && !m.closing) return i

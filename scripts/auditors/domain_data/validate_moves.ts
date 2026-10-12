@@ -10,7 +10,7 @@ import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
-import { BaseAuditor } from '@francogp/auditor';
+import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { MOVE_TRANSLATIONS_ES, type PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
@@ -146,7 +146,7 @@ function resolveSelfBoostEffect(self: { boosts?: Partial<Record<string, number>>
 export class MoveAuditor extends BaseAuditor<MoveRuleId> {
   constructor() {
     super({
-      capabilities: {
+      ruleCapabilities: createRuleCapabilities(MOVE_RULES, {
         fix: false,
         fixPriority: false,
         lint: false,
@@ -156,7 +156,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
         heavy: false,
         requiresBuild: false,
         postRun: false
-      },
+      }),
       id: 'validate_moves',
       configKey: 'domain.moves',
       defaultConfig: {
@@ -225,71 +225,74 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
     this.recordScanned('src/data/battle/moves.json');
     this.recordScanned('src/data/battle/movesData.json');
     this.recordScanned('src/logic/pokemon/pokemonUtils.ts');
-    for (const r of MOVE_RULES) {
-      this.markRuleEvaluated(r);
-    }
 
-    this.context.logStep(1, 2, 'Extracting unique learnset moves from POKEMON_DB...');
     const learnsetMoves = new Set<string>();
-    for (const [pokeId, poke] of Object.entries(POKEMON_DB)) {
-      if (!isEnabledPokemonId(pokeId)) continue;
-      if (poke.learnset && Array.isArray(poke.learnset)) {
-        poke.learnset.forEach((m: { id: string }) => {
-          if (m.id && m.id !== 'Unknown') {
-            learnsetMoves.add(toID(m.id));
-          }
-        });
-      }
-    }
+    let g3 = Dex.forGen(ACTIVE_GENERATION);
 
-    this.context.logStep(2, 2, `Validating ${learnsetMoves.size} moves against Gen ${ACTIVE_GENERATION} Dex and translations...`);
-
-    const g3 = Dex.forGen(ACTIVE_GENERATION);
-
-    learnsetMoves.forEach(moveId => {
-      const move = g3.moves.get(moveId);
-      const tag = `[${moveId}]`;
-
-      if (!move || !move.exists) {
-        this.addViolation({
-          ruleId: 'move-invalid-showdown',
-          severity: 'error',
-          file: 'src/data/pokemon/pokemonDB.ts',
-          line: 1,
-          message: `${tag} Present in learnset but does NOT exist in Showdown Gen 3 Dex.`,
-          context: moveId
-        });
-        return;
+    this.runSubAuditorSync('move-invalid-showdown', () => {
+      g3 = Dex.forGen(ACTIVE_GENERATION);
+      for (const [pokeId, poke] of Object.entries(POKEMON_DB)) {
+        if (!isEnabledPokemonId(pokeId)) continue;
+        if (poke.learnset && Array.isArray(poke.learnset)) {
+          poke.learnset.forEach((m: { id: string }) => {
+            if (m.id && m.id !== 'Unknown') {
+              learnsetMoves.add(toID(m.id));
+            }
+          });
+        }
       }
 
-      if (!hasMoveTranslation(moveId)) {
-        this.addViolation({
-          ruleId: 'move-missing-translation',
-          severity: 'error',
-          file: 'src/data/battle/moves.ts',
-          line: 1,
-          message: `${tag} Missing official Spanish translation in moves.ts.`,
-          context: moveId
-        });
-      }
+      learnsetMoves.forEach(moveId => {
+        const move = g3.moves.get(moveId);
+        if (!move || !move.exists) {
+          this.addViolation({
+            ruleId: 'move-invalid-showdown',
+            severity: 'error',
+            file: 'src/data/pokemon/pokemonDB.ts',
+            line: 1,
+            message: `[${moveId}] Present in learnset but does NOT exist in Showdown Gen 3 Dex.`,
+            context: moveId
+          });
+        }
+      });
     });
 
-    try {
-      const utilsContent = await fs.readFile(UTILS_FILE, 'utf8');
-      const effectsMatch = utilsContent.match(/const effects:.* = {([\s\S]+?)};/);
-      if (effectsMatch) {
-        const registeredEffects = new Set<string>();
-        const keyRegex = /'([^']+)':/g;
-        let k;
-        while ((k = keyRegex.exec(effectsMatch[1]!)) !== null) {
-          registeredEffects.add(k[1]!);
-        }
+    this.runSubAuditorSync('move-missing-translation', () => {
+      learnsetMoves.forEach(moveId => {
+        const move = g3.moves.get(moveId);
+        if (!move || !move.exists) return;
 
-        learnsetMoves.forEach(moveId => this.validateMoveEffectDescription(moveId as PokemonMoveId, g3, registeredEffects));
+        if (!hasMoveTranslation(moveId)) {
+          this.addViolation({
+            ruleId: 'move-missing-translation',
+            severity: 'error',
+            file: 'src/data/battle/moves.ts',
+            line: 1,
+            message: `[${moveId}] Missing official Spanish translation in moves.ts.`,
+            context: moveId
+          });
+        }
+      });
+    });
+
+    await this.runSubAuditor('move-missing-effect-desc', async () => {
+      try {
+        const utilsContent = await fs.readFile(UTILS_FILE, 'utf8');
+        const effectsMatch = utilsContent.match(/const effects:.* = {([\s\S]+?)};/);
+        if (effectsMatch) {
+          const registeredEffects = new Set<string>();
+          const keyRegex = /'([^']+)':/g;
+          let k;
+          while ((k = keyRegex.exec(effectsMatch[1]!)) !== null) {
+            registeredEffects.add(k[1]!);
+          }
+
+          learnsetMoves.forEach(moveId => this.validateMoveEffectDescription(moveId as PokemonMoveId, g3, registeredEffects));
+        }
+      } catch { // catch-ok: optional dex data parsing error fallback
+        // Ignored
       }
-    } catch { // catch-ok: optional dex data parsing error fallback
-      // Ignored
-    }
+    });
 
     this.context.setMetric('Learnset moves checked', learnsetMoves.size);
   }

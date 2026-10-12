@@ -106,13 +106,18 @@ const WEATHER_ABILITY_BOOST_MAP: Readonly<Record<string, { weathers: ReadonlySet
   slushrush: { weathers: new Set([WEATHER_MECHANICAL.SNOW, WEATHER_MECHANICAL.HAIL]), status: ' (Activa por Nieve)' },
 }
 
+export interface AbilityVolatileFlags {
+  isPlayerVal: boolean
+  isIvScannerActive: boolean
+  isAdmin: boolean
+}
+
 export function buildAbilityVolatileItem(
   target: Pokemon,
-  isPlayerVal: boolean,
-  isIvScannerActive: boolean,
-  isAdmin: boolean,
+  flags: AbilityVolatileFlags,
   weatherType?: string
 ): VolatileStatusItem | null {
+  const { isPlayerVal, isIvScannerActive, isAdmin } = flags
   if (!target.ability) return null
   const showAbility = isPlayerVal || isIvScannerActive || isAdmin
   if (!showAbility) return null
@@ -149,15 +154,20 @@ export function buildAbilityVolatileItem(
   }
 }
 
+export interface EnemyInventoryVolatileFlags {
+  isPlayerVal: boolean
+  isAdmin: boolean
+}
+
 export function buildEnemyInventoryVolatileItem(
   target: Pokemon,
-  isPlayerVal: boolean,
-  isAdmin: boolean,
+  flags: EnemyInventoryVolatileFlags,
   enemyInv?: Record<string, number>,
   enemyMoney = 0,
   enemyMaxLevel?: number,
   enemyTeam: Pokemon[] = []
 ): VolatileStatusItem | null {
+  const { isPlayerVal, isAdmin } = flags
   if (isPlayerVal || !isAdmin || !enemyInv) return null
 
   const itemKeys = Object.keys(enemyInv).filter(isItemId).filter(k => (enemyInv[k] ?? 0) > 0)

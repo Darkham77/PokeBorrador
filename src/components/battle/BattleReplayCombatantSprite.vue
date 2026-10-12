@@ -15,6 +15,9 @@ defineProps<{
       :alt="pokemon.name || 'Pokemon'"
       class="combatant-sprite"
       :class="isPlayer ? 'player-sprite' : 'enemy-sprite'"
+    
+      width="96"
+      height="96"
     >
     <span
       v-else

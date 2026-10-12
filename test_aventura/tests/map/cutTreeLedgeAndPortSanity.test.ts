@@ -22,7 +22,7 @@ import type { ContinentMapResult } from '../../logic/map/continentGenerator.ts';
 
 describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
   it('verifies that the Cut Tree asset is the authentic GBA FireRed sprite with transparent alpha', async () => {
-    const cutTreePath = path.resolve('public/assets/prefabs/vegetation/tree_cuttable.png');
+    const cutTreePath = path.resolve('test_aventura/assets/prefabs/vegetation/tree_cuttable.png');
     expect(fs.existsSync(cutTreePath)).toBe(true);
 
     const img = sharp(cutTreePath);
@@ -60,9 +60,9 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
 
   it('verifies that poke_ledge_jump, poke_ledge_left, and poke_ledge_right have alpha transparency on top', async () => {
     const ledgeFiles = [
-      'public/assets/tiles/poke_ledge_jump.png',
-      'public/assets/tiles/poke_ledge_left.png',
-      'public/assets/tiles/poke_ledge_right.png'
+      'test_aventura/assets/tiles/poke_ledge_jump.png',
+      'test_aventura/assets/tiles/poke_ledge_left.png',
+      'test_aventura/assets/tiles/poke_ledge_right.png'
     ];
 
     for (const relPath of ledgeFiles) {
@@ -187,9 +187,9 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
 
   it('verifies that poke_fence_wood_h has no anomalous brown block on top and has transparent alpha', async () => {
     const fenceFiles = [
-      'public/assets/canon/props/poke_fence_wood_h.png',
-      'public/assets/prefabs/props/poke_fence_wood_h.png',
-      'public/assets/tiles/poke_fence_wood_posts_m.png'
+      'test_aventura/assets/canon/props/poke_fence_wood_h.png',
+      'test_aventura/assets/prefabs/props/poke_fence_wood_h.png',
+      'test_aventura/assets/tiles/poke_fence_wood_posts_m.png'
     ];
 
     for (const relPath of fenceFiles) {

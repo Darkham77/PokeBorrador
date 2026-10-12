@@ -187,11 +187,11 @@ export function handleEvBerry(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
 
   if (evRes.success && friendshipGained) {
     return { success: true, message: `se volvió más amigable y sus EVs de ${statNameEs} disminuyeron` };
-  } else if (evRes.success) {
-    return { success: true, message: `sus EVs de ${statNameEs} disminuyeron` };
-  } else {
-    return { success: true, message: 'se volvió más amigable' };
   }
+  if (evRes.success) {
+    return { success: true, message: `sus EVs de ${statNameEs} disminuyeron` };
+  }
+  return { success: true, message: 'se volvió más amigable' };
 }
 
 

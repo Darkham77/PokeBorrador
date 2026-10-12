@@ -4,7 +4,8 @@ import { ref } from 'vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { executePollMatchmaking, getMatchmakingTimeoutSec } from '@/logic/pvp/livePvPMatchmakingHandler';
-import { executePassiveMatchmakingFallback, parsePassiveTeamSnapshot } from '@/logic/pvp/passiveMatchmakingHelper';
+import { executePassiveMatchmakingFallback } from '@/logic/pvp/passiveMatchmakingHelper';
+import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 import { executeStartPassiveBattle } from '@/logic/pvp/livePvPPassiveFallbackHandler';
 import { createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper';
 import { useDebugStore } from '@/stores/debug';
@@ -146,7 +147,9 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
           if (table === 'passive_teams') {
             return {
               select: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({ data: [] })
+                eq: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: [] })
+                })
               })
             };
           }
@@ -262,7 +265,7 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
       expect(serializedJson).toContain('"ability":"intimidate"');
       expect(serializedJson).toContain('"nature":"adamant"');
 
-      const deserializedTeam = parsePassiveTeamSnapshot(serializedJson);
+      const deserializedTeam = deserializePokemonTeam(serializedJson);
       expect(deserializedTeam).toHaveLength(1);
       const restored = deserializedTeam[0];
       expect(restored).toBeDefined();
@@ -293,15 +296,17 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
           if (table === 'passive_teams') {
             return {
               select: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({
-                  data: [
-                    {
-                      user_id: 'user-with-corrupt-team',
-                      elo_rating: 1000,
-                      team_data: corruptPokeJson,
-                      is_active: true
-                    }
-                  ]
+                eq: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({
+                    data: [
+                      {
+                        user_id: 'user-with-corrupt-team',
+                        elo_rating: 1000,
+                        team_data: corruptPokeJson,
+                        is_active: true
+                      }
+                    ]
+                  })
                 })
               }),
               update: vi.fn().mockImplementation((payload: any) => ({

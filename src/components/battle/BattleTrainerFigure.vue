@@ -72,6 +72,9 @@ onUnmounted(() => {
           :src="props.spriteUrl" 
           :alt="props.altText"
           :class="['trainer-image', props.imageClass]"
+          width="32"
+        
+          height="32"
           @error="emit('error', $event)"
         >
       </div>

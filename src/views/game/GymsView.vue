@@ -106,6 +106,9 @@ const handleBadgeLeave = (e: MouseEvent) => {
                 :src="getAssetUrl(ASSET_TYPES.BADGE, gym.id)" 
                 :alt="gym.badgeName"
                 class="badge-img"
+              
+                width="32"
+                height="32"
               >
             </button>
           </PVTooltip>
@@ -170,7 +173,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: #e63946;
+        background: var(--red);
         box-shadow: var(--shadow-glow-yellow-sm);
       }
     }

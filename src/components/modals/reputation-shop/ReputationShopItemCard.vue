@@ -100,6 +100,9 @@ const handleImageError = () => {
         <img
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite || item.givesId)"
           :alt="item.name"
+          width="32"
+        
+          height="32"
           @error="handleImageError"
         >
       </div>

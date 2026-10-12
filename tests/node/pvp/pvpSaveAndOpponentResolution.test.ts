@@ -112,7 +112,9 @@ describe('PvP Save Validation & Opponent Resolution (Tier 1)', () => {
           if (table === 'passive_teams') {
             return {
               select: () => ({
-                eq: () => Promise.resolve({ data: [mockCandidate], error: null })
+                eq: () => ({
+                  limit: () => Promise.resolve({ data: [mockCandidate], error: null })
+                })
               })
             };
           }

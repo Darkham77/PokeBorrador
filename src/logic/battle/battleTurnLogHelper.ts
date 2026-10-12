@@ -1,6 +1,12 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 
-function shouldSkipP1Log(type: string, parts: string[], p1Skip: boolean, skipLogsForP1: boolean): { skip: boolean; newSkipState: boolean } {
+interface SkipLogStateOptions {
+  shouldSkipSide: boolean;
+  isCurrentlySkipping: boolean;
+}
+
+function shouldSkipP1Log(type: string, parts: string[], options: SkipLogStateOptions): { skip: boolean; newSkipState: boolean } {
+  const { shouldSkipSide: p1Skip, isCurrentlySkipping: skipLogsForP1 } = options
   if (!p1Skip) return { skip: false, newSkipState: skipLogsForP1 }
   if (type === 'move' && parts[2]?.startsWith('p1')) {
     return { skip: true, newSkipState: true }
@@ -16,7 +22,8 @@ function shouldSkipP1Log(type: string, parts: string[], p1Skip: boolean, skipLog
   return { skip: false, newSkipState: skipLogsForP1 }
 }
 
-function shouldSkipP2Log(type: string, parts: string[], p2Skip: boolean, skipLogsForP2: boolean): { skip: boolean; newSkipState: boolean } {
+function shouldSkipP2Log(type: string, parts: string[], options: SkipLogStateOptions): { skip: boolean; newSkipState: boolean } {
+  const { shouldSkipSide: p2Skip, isCurrentlySkipping: skipLogsForP2 } = options
   if (!p2Skip) return { skip: false, newSkipState: skipLogsForP2 }
   if (type === 'move' && parts[2]?.startsWith('p2')) {
     return { skip: true, newSkipState: true }
@@ -32,7 +39,19 @@ function shouldSkipP2Log(type: string, parts: string[], p2Skip: boolean, skipLog
   return { skip: false, newSkipState: skipLogsForP2 }
 }
 
-export async function parseLogsWithSkip(store: BattleContext, logs: string[], p1Skip: boolean, p2Skip: boolean) {
+export interface ParseLogsSkipOptions {
+  p1Skip?: boolean;
+  p2Skip?: boolean;
+}
+
+export async function parseLogsWithSkip(
+  store: BattleContext,
+  logs: string[],
+  skipOptions?: ParseLogsSkipOptions | boolean,
+  p2SkipParam = false
+) {
+  const p1Skip = typeof skipOptions === 'boolean' ? skipOptions : Boolean(skipOptions?.p1Skip)
+  const p2Skip = typeof skipOptions === 'boolean' ? p2SkipParam : Boolean(skipOptions?.p2Skip)
   let skipLogsForP1 = false
   let skipLogsForP2 = false
 
@@ -42,11 +61,11 @@ export async function parseLogsWithSkip(store: BattleContext, logs: string[], p1
     const parts = logLine.split('|').map(x => x.trim())
     const type = parts[1]
 
-    const p1Result = shouldSkipP1Log(type || '', parts, p1Skip, skipLogsForP1)
+    const p1Result = shouldSkipP1Log(type || '', parts, { shouldSkipSide: p1Skip, isCurrentlySkipping: skipLogsForP1 })
     skipLogsForP1 = p1Result.newSkipState
     if (p1Result.skip) continue
 
-    const p2Result = shouldSkipP2Log(type || '', parts, p2Skip, skipLogsForP2)
+    const p2Result = shouldSkipP2Log(type || '', parts, { shouldSkipSide: p2Skip, isCurrentlySkipping: skipLogsForP2 })
     skipLogsForP2 = p2Result.newSkipState
     if (p2Result.skip) continue
 

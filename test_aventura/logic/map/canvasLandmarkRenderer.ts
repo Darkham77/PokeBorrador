@@ -212,310 +212,323 @@ export function resolvePoiLandmarksAndBuildings(
           });
         }
       } else if (poi.type === 'port_dock') {
-        const facing = poi.facing ?? 'south';
-        const gx = poi.gridX;
-        const gy = poi.gridY;
+        const renderPortDockLandmark = () => {
+          const facing = poi.facing ?? 'south';
+          const gx = poi.gridX;
+          const gy = poi.gridY;
 
-        const isPureDryLand = (x: number, y: number, wTiles = 1, hTiles = 1, buffer = 1): boolean => {
-          for (let dy = -buffer; dy < hTiles + buffer; dy++) {
-            for (let dx = -buffer; dx < wTiles + buffer; dx++) {
-              const cx = x + dx;
-              const cy = y + dy;
-              if (cx < 0 || cx >= W || cy < 0 || cy >= H) return false;
-              const t = continent.terrainMatrix[cy]?.[cx];
-              if (t === 'water' || t === 'water_deep') return false;
+          const isPureDryLand = (x: number, y: number, wTiles = 1, hTiles = 1, buffer = 1): boolean => {
+            for (let dy = -buffer; dy < hTiles + buffer; dy++) {
+              for (let dx = -buffer; dx < wTiles + buffer; dx++) {
+                const cx = x + dx;
+                const cy = y + dy;
+                if (cx < 0 || cx >= W || cy < 0 || cy >= H) return false;
+                const t = continent.terrainMatrix[cy]?.[cx];
+                if (t === 'water' || t === 'water_deep') return false;
+              }
             }
-          }
-          return true;
-        };
+            return true;
+          };
 
-        const isDryUnpavedLand = (x: number, y: number, wTiles = 1, hTiles = 1, buffer = 1): boolean => {
-          if (!isPureDryLand(x, y, wTiles, hTiles, buffer)) return false;
-          for (let dy = 0; dy < hTiles; dy++) {
-            for (let dx = 0; dx < wTiles; dx++) {
-              const cx = x + dx;
-              const cy = y + dy;
-              if (unifiedPathGrid?.[cy]?.[cx] || bridgeGrid?.[cy]?.[cx]) return false;
+          const isDryUnpavedLand = (x: number, y: number, wTiles = 1, hTiles = 1, buffer = 1): boolean => {
+            if (!isPureDryLand(x, y, wTiles, hTiles, buffer)) return false;
+            for (let dy = 0; dy < hTiles; dy++) {
+              for (let dx = 0; dx < wTiles; dx++) {
+                const cx = x + dx;
+                const cy = y + dy;
+                if (unifiedPathGrid?.[cy]?.[cx] || bridgeGrid?.[cy]?.[cx]) return false;
+              }
             }
-          }
-          return true;
-        };
+            return true;
+          };
 
-        if (facing === 'south') {
-          // 1. Authentic Vermilion Port Gate (7x6 tiles)
-          const gateFile = resolvePortGateAsset('south', poi.buildingFile);
-          buildingsToStamp.push({
-            file: gateFile,
-            px,
-            py,
-            ySort: py + poi.footprint.height * tileSize
-          });
-
-          // 2. Famous Vermilion Dock Truck (3x2 tiles) parked on dry beach next to the gate
-          if (gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W && gy + 2 < H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 2, PORT_TRUCK_WIDTH, 2, 1)) {
+          if (facing === 'south') {
+            // 1. Authentic Vermilion Port Gate (7x6 tiles)
+            const gateFile = resolvePortGateAsset('south', poi.buildingFile);
             buildingsToStamp.push({
-              file: 'poke_port_dock_truck.png',
-              px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
-              py: (gy + 2) * tileSize,
-              ySort: (gy + 4) * tileSize
+              file: gateFile,
+              px,
+              py,
+              ySort: py + poi.footprint.height * tileSize
             });
-          }
 
-          // 3. Double Cargo Crates Stack (2x1 tiles) on left side of gate
-          if (gx >= 3 && gy + 2 < H && isDryUnpavedLand(gx - PORT_CARGO_DOUBLE_WIDTH - 1, gy + 2, PORT_CARGO_DOUBLE_WIDTH, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_cargo_crates_double.png',
-              px: (gx - PORT_CARGO_DOUBLE_WIDTH - 1) * tileSize,
-              py: (gy + 2) * tileSize,
-              ySort: (gy + 4) * tileSize
-            });
-          }
-
-          // 4. Single Cargo Crates Stack (3x2 tiles) on right esplanade
-          if (gx + PORT_GATE_SIDE_OFFSET + PORT_CARGO_STACK_WIDTH <= W && gy >= 2 && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy - 1, PORT_CARGO_STACK_WIDTH, 2, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_cargo_crates_stack.png',
-              px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
-              py: (gy - 1) * tileSize,
-              ySort: (gy + 1) * tileSize
-            });
-          }
-
-          // 5. Pier bollard chains flanking gate entrance strictly on dry ground (at least 1 tile clear from water)
-          if (gx >= 2 && gy + 4 < H && isDryUnpavedLand(gx - 2, gy + 4, 2, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_bollard_chains.png',
-              px: (gx - 2) * tileSize,
-              py: (gy + 4) * tileSize,
-              ySort: (gy + 5) * tileSize
-            });
-          }
-          if (gx + PORT_GATE_SIDE_OFFSET + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 4, 2, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_bollard_chains.png',
-              px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
-              py: (gy + 4) * tileSize,
-              ySort: (gy + 5) * tileSize
-            });
-          }
-
-          // 6. Moored Passenger Ferry at the south pier tip
-          let endPierY = gy + poi.footprint.height;
-          if (bridgeGrid) {
-            while (endPierY < H && bridgeGrid[endPierY]?.[gx + 2]) {
-              endPierY++;
+            // 2. Famous Vermilion Dock Truck (3x2 tiles) parked on dry beach next to the gate
+            if (gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W && gy + 2 < H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 2, PORT_TRUCK_WIDTH, 2, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_dock_truck.png',
+                px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
+                py: (gy + 2) * tileSize,
+                ySort: (gy + 4) * tileSize
+              });
             }
-            endPierY--;
-          }
-          const shipY = Math.min(endPierY, H - PORT_FERRY_BEAM);
-          if (shipY >= gy + poi.footprint.height && gx >= 0 && gx + PORT_FERRY_LENGTH <= W) {
-            buildingsToStamp.push({
-              file: resolvePortFerryAsset('south'),
-              px: gx * tileSize,
-              py: shipY * tileSize,
-              ySort: (shipY + PORT_FERRY_BEAM) * tileSize
-            });
-          }
-        } else if (facing === 'east') {
-          // 1. Upright Lighthouse Beacon Columns framing the pier entrance on the shore (rows gy+2..gy+4 reserved for pier walkway)
-          // Top column sits above the pier: rows gy-2..gy+1 (base at gy+1, pier begins at gy+2: zero walkway overlap)
-          // Bottom column sits below the pier: rows gy+5..gy+8 (pier ends at gy+4: zero walkway overlap)
-          const postX = gx + poi.footprint.width - 2;
-          tryStampLighthouseBeacons(buildingsToStamp, postX, gy, tileSize, W, H, unifiedPathGrid);
 
-          // 2. East-facing horizontal pier extending East (rows gy+2..gy+4)
-          let endPierX = gx + poi.footprint.width;
-          if (bridgeGrid) {
-            while (endPierX < W && bridgeGrid[gy + 2]?.[endPierX]) {
-              endPierX++;
+            // 3. Double Cargo Crates Stack (2x1 tiles) on left side of gate
+            if (gx >= 3 && gy + 2 < H && isDryUnpavedLand(gx - PORT_CARGO_DOUBLE_WIDTH - 1, gy + 2, PORT_CARGO_DOUBLE_WIDTH, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_cargo_crates_double.png',
+                px: (gx - PORT_CARGO_DOUBLE_WIDTH - 1) * tileSize,
+                py: (gy + 2) * tileSize,
+                ySort: (gy + 4) * tileSize
+              });
             }
-            endPierX--;
-          }
 
-          // 3. Moored Seagallop Catamaran at east pierhead (5x3 tiles, genuine 2.5D profile)
-          const shipEastX = Math.min(endPierX, W - 5);
-          if (shipEastX >= gx && gy + 2 >= 0 && gy + 5 <= H) {
-            buildingsToStamp.push({
-              file: resolvePortFerryAsset('east'),
-              px: shipEastX * tileSize,
-              py: (gy + 2) * tileSize,
-              ySort: (gy + 5) * tileSize + 10
-            });
-          }
-
-          // 4. Shoreline props & bollards strictly on dry land with 1-tile clearance from water
-          if (gx >= 4 && gy >= 2 && isDryUnpavedLand(gx - 4, gy - 2, PORT_TRUCK_WIDTH, 2, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_dock_truck.png',
-              px: (gx - 4) * tileSize,
-              py: (gy - 2) * tileSize,
-              ySort: gy * tileSize
-            });
-          }
-          if (gx >= 4 && gy + 5 < H && isDryUnpavedLand(gx - 4, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_cargo_crates_stack.png',
-              px: (gx - 4) * tileSize,
-              py: (gy + 5) * tileSize,
-              ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
-            });
-          }
-          if (gx >= 2 && gy >= 2 && isDryUnpavedLand(gx - 2, gy - 2, 2, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_bollard_chains.png',
-              px: (gx - 2) * tileSize,
-              py: (gy - 2) * tileSize,
-              ySort: (gy - 1) * tileSize
-            });
-          }
-          if (gx >= 2 && gy + PORT_BOLLARD_OFFSET_Y < H && isDryUnpavedLand(gx - 2, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_bollard_chains.png',
-              px: (gx - 2) * tileSize,
-              py: (gy + PORT_BOLLARD_OFFSET_Y) * tileSize,
-              ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
-            });
-          }
-        } else if (facing === 'west') {
-          // 1. Upright Lighthouse Beacon Columns framing the pier entrance on the shore (rows gy+2..gy+4 reserved for pier walkway)
-          const postX = gx;
-          tryStampLighthouseBeacons(buildingsToStamp, postX, gy, tileSize, W, H, unifiedPathGrid);
-
-          // 2. West-facing horizontal pier extending West (rows gy+2..gy+4)
-          let endPierX = gx - 1;
-          if (bridgeGrid) {
-            while (endPierX >= 0 && bridgeGrid[gy + 2]?.[endPierX]) {
-              endPierX--;
+            // 4. Single Cargo Crates Stack (3x2 tiles) on right esplanade
+            if (gx + PORT_GATE_SIDE_OFFSET + PORT_CARGO_STACK_WIDTH <= W && gy >= 2 && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy - 1, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_cargo_crates_stack.png',
+                px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
+                py: (gy - 1) * tileSize,
+                ySort: (gy + 1) * tileSize
+              });
             }
-            endPierX++;
-          }
 
-          // 3. Moored Seagallop Catamaran at west pierhead (5x3 tiles, genuine 2.5D profile facing West)
-          const shipWestX = Math.max(0, endPierX - 5);
-          if (shipWestX + 5 <= W && gy + 2 >= 0 && gy + 5 <= H) {
-            buildingsToStamp.push({
-              file: resolvePortFerryAsset('west'),
-              px: shipWestX * tileSize,
-              py: (gy + 2) * tileSize,
-              ySort: (gy + 5) * tileSize + 10
-            });
-          }
+            // 5. Pier bollard chains flanking gate entrance strictly on dry ground (at least 1 tile clear from water)
+            if (gx >= 2 && gy + 4 < H && isDryUnpavedLand(gx - 2, gy + 4, 2, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_bollard_chains.png',
+                px: (gx - 2) * tileSize,
+                py: (gy + 4) * tileSize,
+                ySort: (gy + 5) * tileSize
+              });
+            }
+            if (gx + PORT_GATE_SIDE_OFFSET + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 4, 2, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_bollard_chains.png',
+                px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
+                py: (gy + 4) * tileSize,
+                ySort: (gy + 5) * tileSize
+              });
+            }
 
-          // 4. Shoreline props & bollards strictly on dry land with 1-tile clearance from water
-          const inlandX = gx + poi.footprint.width + 1;
-          if (inlandX + PORT_TRUCK_WIDTH <= W && gy >= 2 && isDryUnpavedLand(inlandX, gy - 2, PORT_TRUCK_WIDTH, 2, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_dock_truck.png',
-              px: inlandX * tileSize,
-              py: (gy - 2) * tileSize,
-              ySort: gy * tileSize
-            });
-          }
-          if (inlandX + PORT_CARGO_STACK_WIDTH <= W && gy + 5 < H && isDryUnpavedLand(inlandX, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_cargo_crates_stack.png',
-              px: inlandX * tileSize,
-              py: (gy + 5) * tileSize,
-              ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
-            });
-          }
-          const bollardWestX = gx + poi.footprint.width;
-          if (bollardWestX + 2 <= W && gy >= 2 && isDryUnpavedLand(bollardWestX, gy - 2, 2, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_bollard_chains.png',
-              px: bollardWestX * tileSize,
-              py: (gy - 2) * tileSize,
-              ySort: (gy - 1) * tileSize
-            });
-          }
-          if (bollardWestX + 2 <= W && gy + PORT_BOLLARD_OFFSET_Y < H && isDryUnpavedLand(bollardWestX, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_bollard_chains.png',
-              px: bollardWestX * tileSize,
-              py: (gy + PORT_BOLLARD_OFFSET_Y) * tileSize,
-              ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
-            });
-          }
-        } else if (facing === 'north') {
-          // 1. Upright Lighthouse Beacon Columns framing the pier entrance on dry sand (cols gx+2..gx+4 reserved for pier)
-          // Left post at gx-1..gx (1-tile gap to pier gx+2: zero walkway overlap)
-          // Right post at gx+5..gx+6 (1-tile gap to pier gx+4: zero walkway overlap)
-          const leftPostX = gx - 1;
-          const rightPostX = gx + 5;
-          const postY = gy - 1;
-
-          if (leftPostX >= 0 && isDryUnpavedLand(leftPostX, gy + 2, 2, 1, 0)) {
-            buildingsToStamp.push({
-              file: 'poke_port_lighthouse_beacon.png',
-              px: leftPostX * tileSize,
-              py: postY * tileSize,
-              ySort: (gy + 3) * tileSize
-            });
-          }
-          if (rightPostX + 2 <= W && isDryUnpavedLand(rightPostX, gy + 2, 2, 1, 0)) {
-            buildingsToStamp.push({
-              file: 'poke_port_lighthouse_beacon.png',
-              px: rightPostX * tileSize,
-              py: postY * tileSize,
-              ySort: (gy + 3) * tileSize
-            });
-          }
-
-          // 2. North-facing vertical pier extending North
-          let endPierY = gy - 1;
-          if (bridgeGrid) {
-            while (endPierY >= 0 && bridgeGrid[endPierY]?.[gx + 2]) {
+            // 6. Moored Passenger Ferry at the south pier tip
+            let endPierY = gy + poi.footprint.height;
+            if (bridgeGrid) {
+              while (endPierY < H && bridgeGrid[endPierY]?.[gx + 2]) {
+                endPierY++;
+              }
               endPierY--;
             }
-            endPierY++;
+            const shipY = Math.min(endPierY, H - PORT_FERRY_BEAM);
+            if (shipY >= gy + poi.footprint.height && gx >= 0 && gx + PORT_FERRY_LENGTH <= W) {
+              buildingsToStamp.push({
+                file: resolvePortFerryAsset('south'),
+                px: gx * tileSize,
+                py: shipY * tileSize,
+                ySort: (shipY + PORT_FERRY_BEAM) * tileSize
+              });
+            }
+            return;
           }
 
-          // 3. Moored Seagallop Catamaran at northern pierhead (5x3 tiles, moored horizontally)
-          const shipNorthX = gx + 1;
-          const shipNorthY = Math.max(0, endPierY - 3);
-          if (shipNorthX >= 0 && shipNorthX + 5 <= W && endPierY >= 0) {
-            buildingsToStamp.push({
-              file: resolvePortFerryAsset('north'),
-              px: shipNorthX * tileSize,
-              py: shipNorthY * tileSize,
-              ySort: endPierY * tileSize
-            });
+          if (facing === 'east') {
+            // 1. Upright Lighthouse Beacon Columns framing the pier entrance on the shore (rows gy+2..gy+4 reserved for pier walkway)
+            // Top column sits above the pier: rows gy-2..gy+1 (base at gy+1, pier begins at gy+2: zero walkway overlap)
+            // Bottom column sits below the pier: rows gy+5..gy+8 (pier ends at gy+4: zero walkway overlap)
+            const postX = gx + poi.footprint.width - 2;
+            tryStampLighthouseBeacons(buildingsToStamp, postX, gy, tileSize, W, H, unifiedPathGrid);
+
+            // 2. East-facing horizontal pier extending East (rows gy+2..gy+4)
+            let endPierX = gx + poi.footprint.width;
+            if (bridgeGrid) {
+              while (endPierX < W && bridgeGrid[gy + 2]?.[endPierX]) {
+                endPierX++;
+              }
+              endPierX--;
+            }
+
+            // 3. Moored Seagallop Catamaran at east pierhead (5x3 tiles, genuine 2.5D profile)
+            const shipEastX = Math.min(endPierX, W - 5);
+            if (shipEastX >= gx && gy + 2 >= 0 && gy + 5 <= H) {
+              buildingsToStamp.push({
+                file: resolvePortFerryAsset('east'),
+                px: shipEastX * tileSize,
+                py: (gy + 2) * tileSize,
+                ySort: (gy + 5) * tileSize + 10
+              });
+            }
+
+            // 4. Shoreline props & bollards strictly on dry land with 1-tile clearance from water
+            if (gx >= 4 && gy >= 2 && isDryUnpavedLand(gx - 4, gy - 2, PORT_TRUCK_WIDTH, 2, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_dock_truck.png',
+                px: (gx - 4) * tileSize,
+                py: (gy - 2) * tileSize,
+                ySort: gy * tileSize
+              });
+            }
+            if (gx >= 4 && gy + 5 < H && isDryUnpavedLand(gx - 4, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_cargo_crates_stack.png',
+                px: (gx - 4) * tileSize,
+                py: (gy + 5) * tileSize,
+                ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
+              });
+            }
+            if (gx >= 2 && gy >= 2 && isDryUnpavedLand(gx - 2, gy - 2, 2, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_bollard_chains.png',
+                px: (gx - 2) * tileSize,
+                py: (gy - 2) * tileSize,
+                ySort: (gy - 1) * tileSize
+              });
+            }
+            if (gx >= 2 && gy + PORT_BOLLARD_OFFSET_Y < H && isDryUnpavedLand(gx - 2, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_bollard_chains.png',
+                px: (gx - 2) * tileSize,
+                py: (gy + PORT_BOLLARD_OFFSET_Y) * tileSize,
+                ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
+              });
+            }
+            return;
           }
 
-          // 4. Props & bollards to the south on dry land with 1-tile clearance from water
-          if (gx >= 2 && gy + 4 < H && isDryUnpavedLand(gx - 2, gy + 4, 2, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_bollard_chains.png',
-              px: (gx - 2) * tileSize,
-              py: (gy + 4) * tileSize,
-              ySort: (gy + 5) * tileSize
-            });
+          if (facing === 'west') {
+            // 1. Upright Lighthouse Beacon Columns framing the pier entrance on the shore (rows gy+2..gy+4 reserved for pier walkway)
+            const postX = gx;
+            tryStampLighthouseBeacons(buildingsToStamp, postX, gy, tileSize, W, H, unifiedPathGrid);
+
+            // 2. West-facing horizontal pier extending West (rows gy+2..gy+4)
+            let endPierX = gx - 1;
+            if (bridgeGrid) {
+              while (endPierX >= 0 && bridgeGrid[gy + 2]?.[endPierX]) {
+                endPierX--;
+              }
+              endPierX++;
+            }
+
+            // 3. Moored Seagallop Catamaran at west pierhead (5x3 tiles, genuine 2.5D profile facing West)
+            const shipWestX = Math.max(0, endPierX - 5);
+            if (shipWestX + 5 <= W && gy + 2 >= 0 && gy + 5 <= H) {
+              buildingsToStamp.push({
+                file: resolvePortFerryAsset('west'),
+                px: shipWestX * tileSize,
+                py: (gy + 2) * tileSize,
+                ySort: (gy + 5) * tileSize + 10
+              });
+            }
+
+            // 4. Shoreline props & bollards strictly on dry land with 1-tile clearance from water
+            const inlandX = gx + poi.footprint.width + 1;
+            if (inlandX + PORT_TRUCK_WIDTH <= W && gy >= 2 && isDryUnpavedLand(inlandX, gy - 2, PORT_TRUCK_WIDTH, 2, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_dock_truck.png',
+                px: inlandX * tileSize,
+                py: (gy - 2) * tileSize,
+                ySort: gy * tileSize
+              });
+            }
+            if (inlandX + PORT_CARGO_STACK_WIDTH <= W && gy + 5 < H && isDryUnpavedLand(inlandX, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_cargo_crates_stack.png',
+                px: inlandX * tileSize,
+                py: (gy + 5) * tileSize,
+                ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
+              });
+            }
+            const bollardWestX = gx + poi.footprint.width;
+            if (bollardWestX + 2 <= W && gy >= 2 && isDryUnpavedLand(bollardWestX, gy - 2, 2, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_bollard_chains.png',
+                px: bollardWestX * tileSize,
+                py: (gy - 2) * tileSize,
+                ySort: (gy - 1) * tileSize
+              });
+            }
+            if (bollardWestX + 2 <= W && gy + PORT_BOLLARD_OFFSET_Y < H && isDryUnpavedLand(bollardWestX, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_bollard_chains.png',
+                px: bollardWestX * tileSize,
+                py: (gy + PORT_BOLLARD_OFFSET_Y) * tileSize,
+                ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
+              });
+            }
+            return;
           }
-          if (gx + PORT_GATE_EAST_OFFSET + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + PORT_GATE_EAST_OFFSET, gy + 4, 2, 1, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_bollard_chains.png',
-              px: (gx + PORT_GATE_EAST_OFFSET) * tileSize,
-              py: (gy + 4) * tileSize,
-              ySort: (gy + 5) * tileSize
-            });
+
+          if (facing === 'north') {
+            // 1. Upright Lighthouse Beacon Columns framing the pier entrance on dry sand (cols gx+2..gx+4 reserved for pier)
+            // Left post at gx-1..gx (1-tile gap to pier gx+2: zero walkway overlap)
+            // Right post at gx+5..gx+6 (1-tile gap to pier gx+4: zero walkway overlap)
+            const leftPostX = gx - 1;
+            const rightPostX = gx + 5;
+            const postY = gy - 1;
+
+            if (leftPostX >= 0 && isDryUnpavedLand(leftPostX, gy + 2, 2, 1, 0)) {
+              buildingsToStamp.push({
+                file: 'poke_port_lighthouse_beacon.png',
+                px: leftPostX * tileSize,
+                py: postY * tileSize,
+                ySort: (gy + 3) * tileSize
+              });
+            }
+            if (rightPostX + 2 <= W && isDryUnpavedLand(rightPostX, gy + 2, 2, 1, 0)) {
+              buildingsToStamp.push({
+                file: 'poke_port_lighthouse_beacon.png',
+                px: rightPostX * tileSize,
+                py: postY * tileSize,
+                ySort: (gy + 3) * tileSize
+              });
+            }
+
+            // 2. North-facing vertical pier extending North
+            let endPierY = gy - 1;
+            if (bridgeGrid) {
+              while (endPierY >= 0 && bridgeGrid[endPierY]?.[gx + 2]) {
+                endPierY--;
+              }
+              endPierY++;
+            }
+
+            // 3. Moored Seagallop Catamaran at northern pierhead (5x3 tiles, moored horizontally)
+            const shipNorthX = gx + 1;
+            const shipNorthY = Math.max(0, endPierY - 3);
+            if (shipNorthX >= 0 && shipNorthX + 5 <= W && endPierY >= 0) {
+              buildingsToStamp.push({
+                file: resolvePortFerryAsset('north'),
+                px: shipNorthX * tileSize,
+                py: shipNorthY * tileSize,
+                ySort: endPierY * tileSize
+              });
+            }
+
+            // 4. Props & bollards to the south on dry land with 1-tile clearance from water
+            if (gx >= 2 && gy + 4 < H && isDryUnpavedLand(gx - 2, gy + 4, 2, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_bollard_chains.png',
+                px: (gx - 2) * tileSize,
+                py: (gy + 4) * tileSize,
+                ySort: (gy + 5) * tileSize
+              });
+            }
+            if (gx + PORT_GATE_EAST_OFFSET + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + PORT_GATE_EAST_OFFSET, gy + 4, 2, 1, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_bollard_chains.png',
+                px: (gx + PORT_GATE_EAST_OFFSET) * tileSize,
+                py: (gy + 4) * tileSize,
+                ySort: (gy + 5) * tileSize
+              });
+            }
+            if (gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W && gy + poi.footprint.height + 2 <= H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + poi.footprint.height, PORT_TRUCK_WIDTH, 2, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_dock_truck.png',
+                px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
+                py: (gy + poi.footprint.height) * tileSize,
+                ySort: (gy + poi.footprint.height + 2) * tileSize
+              });
+            }
+            if (gx >= 3 && gy + poi.footprint.height + 2 <= H && isDryUnpavedLand(gx - 3, gy + poi.footprint.height, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+              buildingsToStamp.push({
+                file: 'poke_port_cargo_crates_stack.png',
+                px: (gx - 3) * tileSize,
+                py: (gy + poi.footprint.height) * tileSize,
+                ySort: (gy + poi.footprint.height + 2) * tileSize
+              });
+            }
           }
-          if (gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W && gy + poi.footprint.height + 2 <= H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + poi.footprint.height, PORT_TRUCK_WIDTH, 2, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_dock_truck.png',
-              px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
-              py: (gy + poi.footprint.height) * tileSize,
-              ySort: (gy + poi.footprint.height + 2) * tileSize
-            });
-          }
-          if (gx >= 3 && gy + poi.footprint.height + 2 <= H && isDryUnpavedLand(gx - 3, gy + poi.footprint.height, PORT_CARGO_STACK_WIDTH, 2, 1)) {
-            buildingsToStamp.push({
-              file: 'poke_port_cargo_crates_stack.png',
-              px: (gx - 3) * tileSize,
-              py: (gy + poi.footprint.height) * tileSize,
-              ySort: (gy + poi.footprint.height + 2) * tileSize
-            });
-          }
-        }
+        };
+
+        renderPortDockLandmark();
       } else if (poi.type === 'route_gate') {
         const isHoriz = poi.facing === 'east' || poi.facing === 'west';
         const gw = isHoriz ? ROUTE_GATE_HORIZONTAL_WIDTH : ROUTE_GATE_WIDTH;
@@ -544,7 +557,8 @@ export function resolvePoiLandmarksAndBuildings(
         });
 
         // Dressing for islet sanctuary/cottage: signpost and flowers
-        if (file !== 'poke_port_lighthouse_beacon.png') {
+        const dressWaterLandmark = () => {
+          if (file === 'poke_port_lighthouse_beacon.png') return;
           const signGx = poi.gridX + 1;
           const signGy = poi.gridY + poi.footprint.height - 1;
           if (signGx < W && signGy < H && continent.terrainMatrix[signGy]?.[signGx] === 'grass' && !unifiedPathGrid[signGy]?.[signGx]) {
@@ -565,7 +579,9 @@ export function resolvePoiLandmarksAndBuildings(
               ySort: (flowerGy + 1) * tileSize
             });
           }
-        }
+        };
+
+        dressWaterLandmark();
       }
     }
   }

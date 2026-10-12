@@ -1,16 +1,16 @@
 /**
  * src/logic/utils/math.ts
  * 
- * HERRAMIENTAS MATEMÁTICAS GLOBALES Y PRNG
+ * GLOBAL MATHEMATICAL TOOLS AND PRNG
  * 
- * Centraliza funciones puras de generación de números pseudoaleatorios (PRNG)
- * y algoritmos de hashing para evitar duplicación en dominios específicos (clima, combate, etc.).
+ * Centralizes pure pseudorandom number generation (PRNG) functions
+ * and hashing algorithms to prevent duplication across domains (weather, combat, etc.).
  */
 
 /**
- * Mulberry32 PRNG — rápido, de alta calidad y determinista según semilla.
- * @param a - La semilla inicial (número entero)
- * @returns Una función que genera un número flotante en el intervalo [0, 1)
+ * Mulberry32 PRNG — fast, high-quality, and deterministic based on seed.
+ * @param a - Initial seed (integer)
+ * @returns A function that generates a float in the range [0, 1)
  */
 const MULBERRY32_SCALE_DENOMINATOR = 4294967296;
 const MULBERRY32_PRIMARY_SHIFT_BITS = 15;
@@ -29,8 +29,8 @@ export function mulberry32(a: number): () => number {
 }
 
 /** 
- * DJB2 hash: Convierte una cadena de texto en un número entero sin signo de 32 bits.
- * Ideal para generar semillas numéricas a partir de identificadores de texto (ej. mapId).
+ * DJB2 hash: Converts a string into an unsigned 32-bit integer.
+ * Ideal for generating numeric seeds from string identifiers (e.g. mapId).
  */
 export function hashString(str: string): number {
   let hash = DJB2_INITIAL_HASH_SEED;

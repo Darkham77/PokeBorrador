@@ -196,6 +196,9 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
                 :alt="winnerSpeciesName"
                 draggable="false"
                 class="winner-poke-sprite pixelated"
+              
+                width="96"
+                height="96"
               >
               <span
                 class="entry-poke"

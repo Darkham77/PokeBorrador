@@ -39,6 +39,33 @@ interface WorldPoint {
   readonly y: number;
 }
 
+function countMountainNeighbors(grid: readonly (readonly CellBiomeType[])[], x: number, y: number): number {
+  let count = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      if (grid[y + dy]?.[x + dx] === CELL_BIOME.MOUNTAIN_DIRT) count++;
+    }
+  }
+  return count;
+}
+
+function checkMountainTier2Margin(
+  grid: readonly (readonly CellBiomeType[])[],
+  x: number,
+  y: number,
+  radius: number
+): boolean {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (grid[y + dy]?.[x + dx] !== CELL_BIOME.MOUNTAIN_DIRT) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 const store = useContinentStudioStore();
 
 const zoomPercentText = computed(() => `${Math.round(store.zoom * PERCENT_BASE_MULTIPLIER)}% Zoom`);
@@ -155,13 +182,11 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
       const ph = Math.ceil(maquette.plazaRect.h / KANTO_TILE_SIZE);
       for (let y = pyStart; y < pyStart + ph; y++) {
         for (let x = pxStart; x < pxStart + pw; x++) {
-          if (x >= 0 && x < KANTO_GRID_W && y >= 0 && y < KANTO_GRID_H) {
-            const row = g[y];
-            if (row && row[x] !== CELL_BIOME.WATER && row[x] !== CELL_BIOME.MOUNTAIN_DIRT) {
-              row[x] = CELL_BIOME.DIRT_PATH;
-              gen.occupancy.set(x, y, OCCUPANCY_FLAGS.ROAD);
-            }
-          }
+          if (x < 0 || x >= KANTO_GRID_W || y < 0 || y >= KANTO_GRID_H) continue;
+          const row = g[y];
+          if (!row || row[x] === CELL_BIOME.WATER || row[x] === CELL_BIOME.MOUNTAIN_DIRT) continue;
+          row[x] = CELL_BIOME.DIRT_PATH;
+          gen.occupancy.set(x, y, OCCUPANCY_FLAGS.ROAD);
         }
       }
     }
@@ -303,17 +328,10 @@ async function bakeWorld(): Promise<void> {
       // 1. Fill 1x1 holes inside mountain massifs (non-mountain cells with >= 6 mountain neighbors)
       for (let y = 1; y < H - 1; y++) {
         for (let x = 1; x < W - 1; x++) {
-          if (gen.grid[y]?.[x] !== CELL_BIOME.MOUNTAIN_DIRT && gen.grid[y]?.[x] !== CELL_BIOME.WATER) {
-            let mtNeighbors = 0;
-            for (let dy = -1; dy <= 1; dy++) {
-              for (let dx = -1; dx <= 1; dx++) {
-                if (dx === 0 && dy === 0) continue;
-                if (gen.grid[y + dy]?.[x + dx] === CELL_BIOME.MOUNTAIN_DIRT) mtNeighbors++;
-              }
-            }
-            if (mtNeighbors >= MOUNTAIN_INFILL_NEIGHBOR_THRESHOLD) {
-              gen.grid[y]![x] = CELL_BIOME.MOUNTAIN_DIRT;
-            }
+          const cell = gen.grid[y]?.[x];
+          if (cell === CELL_BIOME.MOUNTAIN_DIRT || cell === CELL_BIOME.WATER) continue;
+          if (countMountainNeighbors(gen.grid, x, y) >= MOUNTAIN_INFILL_NEIGHBOR_THRESHOLD) {
+            gen.grid[y]![x] = CELL_BIOME.MOUNTAIN_DIRT;
           }
         }
       }
@@ -382,20 +400,9 @@ async function bakeWorld(): Promise<void> {
       const tier2Candidates = new Set<number>();
       for (let y = 2; y < H - 2; y++) {
         for (let x = 2; x < W - 2; x++) {
-          if (gen.grid[y]?.[x] === CELL_BIOME.MOUNTAIN_DIRT) {
-            let hasMargin = true;
-            for (let dy = -MOUNTAIN_TIER2_SETBACK_RADIUS; dy <= MOUNTAIN_TIER2_SETBACK_RADIUS; dy++) {
-              for (let dx = -MOUNTAIN_TIER2_SETBACK_RADIUS; dx <= MOUNTAIN_TIER2_SETBACK_RADIUS; dx++) {
-                if (gen.grid[y + dy]?.[x + dx] !== CELL_BIOME.MOUNTAIN_DIRT) {
-                  hasMargin = false;
-                  break;
-                }
-              }
-              if (!hasMargin) break;
-            }
-            if (hasMargin) {
-              tier2Candidates.add(y * W + x);
-            }
+          if (gen.grid[y]?.[x] !== CELL_BIOME.MOUNTAIN_DIRT) continue;
+          if (checkMountainTier2Margin(gen.grid, x, y, MOUNTAIN_TIER2_SETBACK_RADIUS)) {
+            tier2Candidates.add(y * W + x);
           }
         }
       }
@@ -698,7 +705,7 @@ defineExpose({
   position: relative;
   width: 100%;
   height: 100%;
-  background: #090d16;
+  background: var(--slate-900);
   overflow: hidden;
   user-select: none;
   cursor: grab;

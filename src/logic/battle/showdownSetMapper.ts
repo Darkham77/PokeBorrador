@@ -9,22 +9,22 @@ const DEFAULT_HAPPINESS = 255 as const;
 const DEFAULT_PERFECT_IV = 31 as const;
 const DEFAULT_ZERO_EV = 0 as const;
 
-// Mapa inverso: número → nombre Showdown (construido una sola vez)
+// Inverse map: number → Showdown name (built once)
 const _numericToSpecies: Record<string, string> = Object.fromEntries(
   Object.entries(POKEMON_SPRITE_IDS).map(([name, num]) => [String(num), name])
 );
 
 /**
- * Resuelve un ID de Pokémon (numérico string "29", string Showdown "nidoran_f", etc.)
- * al nombre de especie que acepta @pkmn/sim.
+ * Resolves a Pokémon ID (numeric string "29", Showdown string "nidoran_f", etc.)
+ * to the species name accepted by @pkmn/sim.
  */
 function resolveShowdownSpecies(raw: string | undefined): string {
   if (!raw) {
     throw new Error("[resolveShowdownSpecies] ID de especie inválido o indefinido.");
   }
-  // Si es puramente numérico, buscar en mapa inverso
+  // If purely numeric, lookup in inverse map
   if (/^\d+$/.test(raw)) return _numericToSpecies[raw] ?? raw;
-  // Si ya es nombre Showdown, devolverlo tal cual
+  // If already a Showdown name, return as is
   return raw;
 }
 
@@ -78,7 +78,7 @@ function mapShowdownStats(poke: GamePokemon): Record<string, number> {
 }
 
 /**
- * Mapea un Pokémon de Poké Vicio al formato oficial de Pokémon Showdown (PokemonSet).
+ * Maps a Poké Vicio Pokémon to official Pokémon Showdown format (PokemonSet).
  */
 export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   if (!poke.ability) {

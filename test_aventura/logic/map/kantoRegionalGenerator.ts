@@ -11,7 +11,7 @@ import {
   placeAllBridges
 } from './kantoProceduralCarver.ts';
 import { SimplexNoise } from './noise/simplexNoise.ts';
-import { CONTINENT_DEFAULT_SEED } from '../../config/studioConstants.ts';
+import { CONTINENT_DEFAULT_SEED, MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS } from '../../config/studioConstants.ts';
 import {
   MAX_CANONICAL_COORD_THRESHOLD,
   DEFAULT_ROAD_WIDTH,
@@ -45,6 +45,7 @@ import {
   KANTO_CANONICAL_BUILDINGS,
   KANTO_LEDGES_OFFSETS
 } from '../../config/kantoRegionalConfig.ts';
+import { DOOR_PATH_EXTENSION_STEPS } from '../../config/kantoCarverConfig.ts';
 import { DynamicCatalogLoader } from './kantoTileEngine.ts';
 import type {
   PlacedStructure,
@@ -1047,34 +1048,31 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
       const xOffset = ((gy / 2) % 2 === 1) ? 1 : 0;
       for (let gx = xOffset; gx < KANTO_GRID_W - 1; gx += 2) {
         const row = g[gy];
-        if (row && row[gx] === CELL_BIOME.FOREST_WALL) {
-          if (!this.occupancy.has(gx, gy, OCCUPANCY_FLAGS.ROAD | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.WATER)) {
-            // Buffer around cliffs: trees must not overlap cliff perimeters (1 tile horizontal, 2 tiles vertical)
-            let nearCliff = false;
-            for (let cdy = -BIOME_LATITUDE_TRANSITION.cliffBufferVert; cdy <= BIOME_LATITUDE_TRANSITION.cliffBufferVert; cdy++) {
-              for (let cdx = -1; cdx <= BIOME_LATITUDE_TRANSITION.cliffBufferHoriz; cdx++) {
-                const cx = gx + cdx;
-                const cy = gy + cdy;
-                if (cx >= 0 && cx < KANTO_GRID_W && cy >= 0 && cy < KANTO_GRID_H) {
-                  if (this.occupancy.has(cx, cy, OCCUPANCY_FLAGS.CLIFF) || g[cy]?.[cx] === CELL_BIOME.MOUNTAIN_DIRT) {
-                    nearCliff = true;
-                    break;
-                  }
-                }
-              }
-              if (nearCliff) break;
-            }
-            if (nearCliff) continue;
+        if (!row || row[gx] !== CELL_BIOME.FOREST_WALL) continue;
+        if (this.occupancy.has(gx, gy, OCCUPANCY_FLAGS.ROAD | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.WATER)) continue;
 
-            // Organic biome species assignment:
-            const elevVal = this.elevation[gy]?.[gx] ?? 1;
-            const latitudeFactor = (BIOME_LATITUDE_TRANSITION.centerGy - gy) / BIOME_LATITUDE_TRANSITION.divisor;
-            const noiseVal = simplex.noise2D(gx * BIOME_LATITUDE_TRANSITION.noiseFreq, gy * BIOME_LATITUDE_TRANSITION.noiseFreq) * BIOME_LATITUDE_TRANSITION.noiseAmp;
-            const isAlpine = elevVal >= 2 || (latitudeFactor + noiseVal > BIOME_LATITUDE_TRANSITION.alpineThreshold);
-            const style = isAlpine ? 'poke_tree_pine_small' : 'poke_tree_oak_clean';
-            this.trees.push({ style, x: gx * T, y: gy * T });
+        // Buffer around cliffs: trees must not overlap cliff perimeters (1 tile horizontal, 2 tiles vertical)
+        let nearCliff = false;
+        for (let cdy = -BIOME_LATITUDE_TRANSITION.cliffBufferVert; cdy <= BIOME_LATITUDE_TRANSITION.cliffBufferVert && !nearCliff; cdy++) {
+          for (let cdx = -1; cdx <= BIOME_LATITUDE_TRANSITION.cliffBufferHoriz; cdx++) {
+            const cx = gx + cdx;
+            const cy = gy + cdy;
+            if (cx < 0 || cx >= KANTO_GRID_W || cy < 0 || cy >= KANTO_GRID_H) continue;
+            if (this.occupancy.has(cx, cy, OCCUPANCY_FLAGS.CLIFF) || g[cy]?.[cx] === CELL_BIOME.MOUNTAIN_DIRT) {
+              nearCliff = true;
+              break;
+            }
           }
         }
+        if (nearCliff) continue;
+
+        // Organic biome species assignment:
+        const elevVal = this.elevation[gy]?.[gx] ?? 1;
+        const latitudeFactor = (BIOME_LATITUDE_TRANSITION.centerGy - gy) / BIOME_LATITUDE_TRANSITION.divisor;
+        const noiseVal = simplex.noise2D(gx * BIOME_LATITUDE_TRANSITION.noiseFreq, gy * BIOME_LATITUDE_TRANSITION.noiseFreq) * BIOME_LATITUDE_TRANSITION.noiseAmp;
+        const isAlpine = elevVal >= 2 || (latitudeFactor + noiseVal > BIOME_LATITUDE_TRANSITION.alpineThreshold);
+        const style = isAlpine ? 'poke_tree_pine_small' : 'poke_tree_oak_clean';
+        this.trees.push({ style, x: gx * T, y: gy * T });
       }
     }
 
@@ -1096,19 +1094,16 @@ export class KantoRegionalWorldGenerator implements IRegionalWorldRendererSource
 
     // 4. Viridian Forest & Pewter alpine pine framing
     const isCanonicalKanto = Boolean(nodes.pallet || nodes.viridian || nodes.pewter);
-    if (isCanonicalKanto) {
+    if (isCanonicalKanto && nodes.viridianforest) {
       const vfNode = nodes.viridianforest;
-      if (vfNode) {
-        const vf = this.nodeToPx(vfNode.x, vfNode.y);
-        for (let dy = VIRIDIAN_FOREST_FRAMING.minDy; dy <= VIRIDIAN_FOREST_FRAMING.maxDy; dy += VIRIDIAN_FOREST_FRAMING.stepPx) {
-          for (let dx = VIRIDIAN_FOREST_FRAMING.minDx; dx <= VIRIDIAN_FOREST_FRAMING.maxDx; dx += VIRIDIAN_FOREST_FRAMING.stepPx) {
-            const gx = Math.floor((vf.px + dx) / T);
-            const gy = Math.floor((vf.py + dy) / T);
-            if (gx >= 0 && gx < KANTO_GRID_W && gy >= 0 && gy < KANTO_GRID_H) {
-              if (g[gy]?.[gx] === CELL_BIOME.GRASS && !this.occupancy.has(gx, gy, OCCUPANCY_FLAGS.ROAD | OCCUPANCY_FLAGS.BUILDING)) {
-                this.trees.push({ style: 'poke_tree_oak_clean', x: gx * T, y: gy * T });
-              }
-            }
+      const vf = this.nodeToPx(vfNode.x, vfNode.y);
+      for (let dy = VIRIDIAN_FOREST_FRAMING.minDy; dy <= VIRIDIAN_FOREST_FRAMING.maxDy; dy += VIRIDIAN_FOREST_FRAMING.stepPx) {
+        for (let dx = VIRIDIAN_FOREST_FRAMING.minDx; dx <= VIRIDIAN_FOREST_FRAMING.maxDx; dx += VIRIDIAN_FOREST_FRAMING.stepPx) {
+          const gx = Math.floor((vf.px + dx) / T);
+          const gy = Math.floor((vf.py + dy) / T);
+          if (gx < 0 || gx >= KANTO_GRID_W || gy < 0 || gy >= KANTO_GRID_H) continue;
+          if (g[gy]?.[gx] === CELL_BIOME.GRASS && !this.occupancy.has(gx, gy, OCCUPANCY_FLAGS.ROAD | OCCUPANCY_FLAGS.BUILDING)) {
+            this.trees.push({ style: 'poke_tree_oak_clean', x: gx * T, y: gy * T });
           }
         }
       }

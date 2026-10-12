@@ -62,48 +62,48 @@
         display: flex;
         justify-content: center;
         align-items: center;
+      }
 
-        .trainer-big-img {
-          @include pixelated;
+      .trainer-big-img {
+        @include pixelated;
 
-          height: 220px;
+        height: 220px;
+        will-change: transform, filter, opacity;
+        filter: Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
+        cursor: pointer;
+
+        &:not(:first-child) {
+          margin-left: -50px;
+        }
+
+        &.active {
+          z-index: calc(var(--z-base) + 2);
+          opacity: 1;
+          filter: Drop-Shadow(0 0 15px var(--cls-color)) Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
+        }
+
+        &.inactive {
+          opacity: 0.65;
           will-change: transform, filter, opacity;
-          filter: Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
-          cursor: pointer;
+          filter: Grayscale(0.4) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
 
-          &:not(:first-child) {
-            margin-left: -50px;
-          }
-
-          &.active {
-            z-index: calc(var(--z-base) + 2);
+          &:hover {
             opacity: 1;
-            filter: Drop-Shadow(0 0 15px var(--cls-color)) Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
+            will-change: transform, filter, opacity;
+            filter: Grayscale(0) Drop-Shadow(0 0 10px var(--yellow)) Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
           }
+        }
 
-          &.inactive {
+        &.inactive.locked {
+          opacity: 0.45;
+          will-change: transform, filter, opacity;
+          filter: Grayscale(0.8) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
+          cursor: not-allowed;
+
+          &:hover {
             opacity: 0.65;
             will-change: transform, filter, opacity;
-            filter: Grayscale(0.4) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
-
-            &:hover {
-              opacity: 1;
-              will-change: transform, filter, opacity;
-              filter: Grayscale(0) Drop-Shadow(0 0 10px var(--yellow)) Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
-            }
-
-            &.locked {
-              opacity: 0.45;
-              will-change: transform, filter, opacity;
-              filter: Grayscale(0.8) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
-              cursor: not-allowed;
-
-              &:hover {
-                opacity: 0.65;
-                will-change: transform, filter, opacity;
-                filter: Grayscale(0.6) Drop-Shadow(0 0 8px #ef4444) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
-              }
-            }
+            filter: Grayscale(0.6) Drop-Shadow(0 0 8px $red-light) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
           }
         }
       }

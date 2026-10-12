@@ -356,7 +356,7 @@ function handleCanvasClick(e: MouseEvent) {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #060911;
+  background: var(--slate-900);
   overflow: hidden;
   user-select: none;
   cursor: grab;
@@ -399,7 +399,7 @@ function handleCanvasClick(e: MouseEvent) {
   font-family: sans-serif;
   font-size: var(--font-13);
   font-weight: 700;
-  fill: #fff;
+  fill: var(--white);
   text-shadow: 0 2px 4px Rgb(0 0 0 / 90%);
   pointer-events: none;
 }

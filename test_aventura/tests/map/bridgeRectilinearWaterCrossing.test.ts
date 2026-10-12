@@ -175,9 +175,9 @@ describe('bridgeRectilinearWaterCrossing', () => {
 
   it('guarantees decorative rock assets have transparent alpha backgrounds', async () => {
     const rockFiles = [
-      'public/assets/tiles/poke_cave_boulder_rock.png',
-      'public/assets/tiles/poke_cave_rubble_stones.png',
-      'public/assets/tiles/poke_rock_boulder_brown_large.png'
+      'test_aventura/assets/tiles/poke_cave_boulder_rock.png',
+      'test_aventura/assets/tiles/poke_cave_rubble_stones.png',
+      'test_aventura/assets/tiles/poke_rock_boulder_brown_large.png'
     ];
 
     for (const relPath of rockFiles) {

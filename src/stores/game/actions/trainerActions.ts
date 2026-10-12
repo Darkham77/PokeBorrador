@@ -24,7 +24,7 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
     
     state.trainerExp += amount
     
-    // Sumar XP a la clase activa también via bus
+    // Add XP to active class via bus as well
     gameBus.emit('TRAINER_EXP_GAINED', { amount })
     
     let currentRank = getTrainerRank()

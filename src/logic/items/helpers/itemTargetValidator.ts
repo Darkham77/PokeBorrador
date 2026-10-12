@@ -89,7 +89,12 @@ function validateEvolutionTarget(resolvedId: ItemId, pokemon: Pokemon): boolean 
   return null;
 }
 
-function validateTmOrHeldTarget(resolvedId: ItemId, pokemon: Pokemon, isTM: boolean, itemExists: boolean): boolean {
+interface TmOrHeldTargetFlags {
+  isTM: boolean
+  itemExists: boolean
+}
+
+function validateTmOrHeldTarget(resolvedId: ItemId, pokemon: Pokemon, { isTM, itemExists }: TmOrHeldTargetFlags): boolean {
   if (isTM) {
     const dynamicRes = getDynamicItemEffect(resolvedId, pokemon);
     return !!(dynamicRes && dynamicRes.success);
@@ -118,5 +123,5 @@ export const isValidTarget = (itemId: ItemId | (string & {}), pokemon: Pokemon):
   const evResult = validateEvTarget(resolvedId, pokemon);
   if (evResult !== null) return evResult;
 
-  return validateTmOrHeldTarget(resolvedId, pokemon, isTM, itemExists);
+  return validateTmOrHeldTarget(resolvedId, pokemon, { isTM, itemExists });
 };

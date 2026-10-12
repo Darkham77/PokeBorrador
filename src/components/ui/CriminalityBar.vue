@@ -21,7 +21,7 @@ const isRocket = computed(() => classStore.playerClass === 'rocket')
 const criminality = computed(() => classStore.classData.criminality || 0)
 const activeTab = computed(() => uiStore.activeTab)
 
-// Solo se muestra en la pestaña de mapa para el equipo rocket y si no estamos en modo rápido
+// Only shown in the map tab for Team Rocket when fast mode is not active
 const isVisible = computed(() => isRocket.value && activeTab.value === 'map' && !isFastMode.value)
 const isMax = computed(() => criminality.value >= 100)
 const percentLabelText = computed(() => {
