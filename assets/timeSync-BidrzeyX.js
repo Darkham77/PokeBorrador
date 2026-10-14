@@ -1,0 +1,1 @@
+export{t as syncServerTime}from"./timeSync-B3ixTXJ5.js";
