@@ -112,7 +112,8 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_sprites',
       configKey: 'assets.sprites',

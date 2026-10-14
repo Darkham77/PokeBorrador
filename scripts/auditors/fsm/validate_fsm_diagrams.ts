@@ -99,7 +99,8 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_fsm_diagrams',
       configKey: 'fsm.diagrams',

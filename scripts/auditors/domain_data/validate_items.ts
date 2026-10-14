@@ -283,7 +283,8 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_items',
       configKey: 'domain.items',

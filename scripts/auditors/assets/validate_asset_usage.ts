@@ -61,7 +61,8 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_asset_usage',
       configKey: 'assets.assetUsage',

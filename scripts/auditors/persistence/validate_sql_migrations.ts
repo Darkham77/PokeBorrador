@@ -64,7 +64,8 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_sql_migrations',
       configKey: 'persistence.sqlMigrations',

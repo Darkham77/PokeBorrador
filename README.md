@@ -249,6 +249,7 @@ The repository features a unified static/dynamic audit ecosystem, domain validat
 | `npm run auditor:similar` | **Semantic Discovery**: Detects semantically similar functions or blocks via Fallow AST embeddings. |
 | `npm run auditor:review` | **Intelligent Review Brief**: Generates graph-grounded report with blast radius and structural risk for code reviews. |
 | `npm run auditor:post-build` | **Bundle Budget**: Audits production chunk sizes and client decoupling. |
+| `npm run auditor:critical` | **Critical Rules Audit**: Executes high-priority verification rules that bypass speed ceilings. |
 | `npm run build:analyze` | **Interactive Bundle Treemap**: Triggers production build with visual bundle map in `scratch/bundle_stats.html`. |
 
 ---

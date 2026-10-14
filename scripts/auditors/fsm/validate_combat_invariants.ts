@@ -46,7 +46,8 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_combat_invariants',
       configKey: 'fsm.combatInvariants',

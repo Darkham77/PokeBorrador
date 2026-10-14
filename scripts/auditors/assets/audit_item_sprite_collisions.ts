@@ -143,7 +143,8 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'audit_item_sprite_collisions',
       configKey: 'assets.itemSpriteCollisions',

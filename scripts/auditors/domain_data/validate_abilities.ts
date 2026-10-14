@@ -42,7 +42,8 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_abilities',
       configKey: 'domain.abilities',

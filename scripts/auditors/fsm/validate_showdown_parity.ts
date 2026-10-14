@@ -150,7 +150,8 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_showdown_parity',
       configKey: 'fsm.showdownParity',

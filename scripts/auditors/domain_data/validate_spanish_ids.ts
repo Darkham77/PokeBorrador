@@ -63,7 +63,8 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_spanish_ids',
       configKey: 'domain.spanishIds',

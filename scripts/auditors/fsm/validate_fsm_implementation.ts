@@ -164,7 +164,8 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
         fix: 'none',
         md: false,
         ast: true,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_fsm_implementation',
       configKey: 'fsm.implementation',

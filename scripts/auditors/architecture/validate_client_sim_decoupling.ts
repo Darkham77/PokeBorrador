@@ -241,7 +241,8 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
         fix: 'none',
         md: false,
         ast: true,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_client_sim_decoupling',
       configKey: 'architecture.clientSimDecoupling',

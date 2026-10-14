@@ -56,7 +56,8 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
         fix: 'none',
         md: false,
         ast: true,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_battle_ui_branching',
       configKey: 'architecture.battleUiBranching',

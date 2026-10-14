@@ -42,7 +42,8 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_pokemon',
       configKey: 'domain.pokemon',

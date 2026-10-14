@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.11-build.20261014-023740",
+  "version": "0.6.12-build.20261014-092411",
   "private": true,
   "type": "module",
   "engines": {
@@ -216,7 +216,8 @@
     "auditor:dependency-minimums": "auditor task=validate_dependency_minimums",
     "auditor:full": "auditor speed=full",
     "auditor:post-build": "auditor phase=post-build",
-    "build:deploy": "auditor-build-deploy"
+    "build:deploy": "auditor-build-deploy",
+    "auditor:critical": "auditor critical"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",

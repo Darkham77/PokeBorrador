@@ -82,7 +82,8 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
         fix: 'none',
         md: false,
         ast: false,
-        changedSince: false
+        changedOnly: false,
+        critical: false
       }),
       id: 'validate_fsm_flow_parity',
       configKey: 'fsm.flowParity',
