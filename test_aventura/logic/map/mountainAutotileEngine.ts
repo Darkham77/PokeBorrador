@@ -224,7 +224,7 @@ export interface MountainAutotileGridOptions {
 /**
  * Computes the 8-bit neighbor bitmask for same-or-higher elevation relative to (gx, gy).
  */
-function compute8NeighborElevationMask(
+export function compute8NeighborElevationMask(
   matrix: ElevationMatrix,
   gx: number,
   gy: number,

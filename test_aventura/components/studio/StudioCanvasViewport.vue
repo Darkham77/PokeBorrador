@@ -21,6 +21,7 @@ const isDrawing = ref<boolean>(false);
 const IMAGE_LOAD_TIMEOUT_SEC = 1.5;
 const DEFAULT_CONTAINER_WIDTH = 800;
 const DEFAULT_CONTAINER_HEIGHT = 600;
+const MIN_CANVAS_CENTER_PADDING = 20 as const;
 const GHOST_HOVER_BRUSH_ALPHA = 0.6 as const;
 const GHOST_HOVER_LINE_WIDTH = 1.5 as const;
 

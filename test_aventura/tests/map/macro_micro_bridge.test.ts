@@ -11,8 +11,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useMapAdventureStudioStore } from '../../../src/stores/mapAdventureStudio.ts';
-import { useMapStudioStore } from '../../../src/stores/mapStudio.ts';
+import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio.ts';
+import { useMapStudioStore } from '../../stores/mapStudio.ts';
 import { generateLocalMapForNode } from '../../logic/map/nodeLocalMapGenerator.ts';
 
 describe('Macro-Graph ↔ Local Map Bidirectional Bridge', () => {

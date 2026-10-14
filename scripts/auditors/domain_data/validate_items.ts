@@ -278,15 +278,12 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(ITEM_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_items',
       configKey: 'domain.items',
@@ -300,6 +297,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
       family: 'domain_data',
       ruleIds: ITEM_RULES,
       packageName: 'Ítems',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'item-missing-field': 'Campo faltante en ítem',
         'item-sprite-not-found': 'Sprite de ítem no encontrado',
@@ -311,6 +309,18 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         'item-english-name-leak': 'Nombre en inglés filtrado',
         'item-phantom-healing': 'Efecto curativo fantasma sin ítem',
         'item-sprite-collision': 'Colisión de sprites en ítems'
+      },
+      ruleRemediations: {
+        'item-missing-field': 'Add required field (id, name, cat, sprite, icon, desc, price) in items.json',
+        'item-sprite-not-found': 'Add missing sprite webp asset or update sprite property',
+        'item-unknown-category': 'Use an allowed category from VALID_CATS in items.json',
+        'item-missing-healing-effect': 'Register item handler in itemEffects.ts or itemEffectsRegistry.ts',
+        'item-invalid-healing-effect': 'Correct healing effect implementation signature',
+        'item-missing-held-type': 'Define held item type or category',
+        'item-english-desc-leak': 'Translate English terms in description into Spanish',
+        'item-english-name-leak': 'Translate English item name into Spanish',
+        'item-phantom-healing': 'Remove unused healing entry or register corresponding item in items.json',
+        'item-sprite-collision': 'Assign unique sprite path to resolve duplicate sprite usage'
       },
       requiredFiles: [SHOP_FILE, BATTLE_FILE, ...ITEM_EFFECT_FILES.map(f => path.resolve(process.cwd(), f))],
       coverage: {

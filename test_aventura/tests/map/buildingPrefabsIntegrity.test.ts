@@ -89,13 +89,13 @@ describe('buildingPrefabsIntegrity', () => {
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i]!;
         const g = data[i + 1]!;
-        const b = data[i + 2]!;
+        const blueCh = data[i + 2]!;
         const a = data[i + 3]!;
 
         if (a > 50) {
           if (
-            (Math.abs(r - 153) <= 10 && Math.abs(g - 51) <= 10 && Math.abs(b - 204) <= 10) ||
-            (r >= 235 && g <= 25 && b >= 235)
+            (Math.abs(r - 153) <= 10 && Math.abs(g - 51) <= 10 && Math.abs(blueCh - 204) <= 10) ||
+            (r >= 235 && g <= 25 && blueCh >= 235)
           ) {
             unkeyedChroma++;
           }

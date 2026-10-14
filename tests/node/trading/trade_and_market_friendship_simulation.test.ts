@@ -53,7 +53,7 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
     market_listings: Record<string | number, any>;
     claim_queue: Record<string, any>;
   };
-  let currentListingId = '';
+  const currentListingId = '';
 
   beforeEach(() => {
     vi.clearAllMocks();

@@ -71,8 +71,7 @@ function toggleFastRanked() {
         <PVTooltip title="Elimina todos los cooldowns de clases (Rutas preferidas, Extorsión, Escáner IVs, etc.), Centro Pokémon y perfil">
           <button
             id="debug-class-tab-btn-eliminar-cooldowns"
-            class="small-btn"
-            style="background-color: var(--red-light); color: var(--white);"
+            class="btn-vicio-danger btn-vicio-sm"
             @click.stop="clearClassCooldowns"
           >
             <span class="emoji">⚡</span> ELIMINAR COOLDOWNS

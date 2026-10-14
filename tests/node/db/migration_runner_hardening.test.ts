@@ -41,7 +41,7 @@ describeWithDatabase('Database Migration Runner Hardening & Fail-Fast Parity', (
         const rows = await db.query('SELECT * FROM temp_hardening_probe');
         probeTableExists = rows !== undefined && rows.length > 0;
       } catch {
-        probeTableExists = false;
+        // Query failed as expected when table does not exist
       }
       assert.strictEqual(probeTableExists, false, 'Table from aborted transaction must not exist after rollback in PostgreSQL');
 

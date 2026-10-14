@@ -78,7 +78,7 @@ export const CANONICAL_ASSETS_BY_ID: Record<string, CanonicalAssetEntry> = Objec
   }, {})
 );
 
-const CANONICAL_BUILDINGS: Record<string, CanonicalAssetEntry> = Object.freeze(
+export const CANONICAL_BUILDINGS: Record<string, CanonicalAssetEntry> = Object.freeze(
   RAW_MANIFEST.filter((e) => e.category === 'buildings').reduce<Record<string, CanonicalAssetEntry>>(
     (acc, entry) => {
       acc[entry.id] = entry;

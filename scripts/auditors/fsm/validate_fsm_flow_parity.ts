@@ -77,15 +77,12 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(FSM_FLOW_PARITY_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_fsm_flow_parity',
       configKey: 'fsm.flowParity',
@@ -99,8 +96,12 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
       family: 'fsm',
       ruleIds: FSM_FLOW_PARITY_RULES,
       packageName: 'FSM',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'fsm-flow-sequence-missing': 'Secuencia FSM ausente en código'
+      },
+      ruleRemediations: {
+        'fsm-flow-sequence-missing': 'Align battle execution sequence order with documented Mermaid sequence in manual'
       },
       requiredFiles: [PARITY_MANUAL_PATH],
       coverage: {

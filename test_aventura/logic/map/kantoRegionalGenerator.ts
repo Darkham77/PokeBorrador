@@ -11,7 +11,7 @@ import {
   placeAllBridges
 } from './kantoProceduralCarver.ts';
 import { SimplexNoise } from './noise/simplexNoise.ts';
-import { CONTINENT_DEFAULT_SEED, MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS } from '../../config/studioConstants.ts';
+import { CONTINENT_DEFAULT_SEED, MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS, DEFAULT_STRUCTURE_PX_SIZE } from '../../config/studioConstants.ts';
 import {
   MAX_CANONICAL_COORD_THRESHOLD,
   DEFAULT_ROAD_WIDTH,

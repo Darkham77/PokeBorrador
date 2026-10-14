@@ -16,14 +16,12 @@
 import { describe, it, expect } from 'vitest';
 import { generateOrganicCityLayout } from '../../logic/map/organicCityEngine.ts';
 import { synthesizeCityGenes } from '../../logic/map/cityGeneSynthesizer.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
+import { type POINode, SETTLEMENT_SCALES } from '../../types/map/poiTypes.ts';
 
 describe('organicCityEngine (100-Seed Fuzzer Suite)', () => {
   it('strictly validates 100% Doorstep Clearance across 100 random seeds in Metropolis, City, and Town', () => {
-    const scales: ('metropolis' | 'city' | 'town')[] = ['metropolis', 'city', 'town'];
-
     for (let seed = 1; seed <= 100; seed++) {
-      const scale = scales[seed % scales.length]!;
+      const scale = SETTLEMENT_SCALES[seed % SETTLEMENT_SCALES.length]!;
       const width = scale === 'metropolis' ? 26 + (seed % 5) : scale === 'city' ? 16 + (seed % 3) : 10 + (seed % 3);
       const height = scale === 'metropolis' ? 22 + (seed % 3) : scale === 'city' ? 14 + (seed % 3) : 10 + (seed % 3);
 
@@ -57,10 +55,8 @@ describe('organicCityEngine (100-Seed Fuzzer Suite)', () => {
   });
 
   it('strictly validates Zero Building Overlaps and >= 1 tile physical clearance across 100 random seeds', () => {
-    const scales: ('metropolis' | 'city' | 'town')[] = ['metropolis', 'city', 'town'];
-
     for (let seed = 101; seed <= 200; seed++) {
-      const scale = scales[seed % scales.length]!;
+      const scale = SETTLEMENT_SCALES[seed % SETTLEMENT_SCALES.length]!;
       const width = scale === 'metropolis' ? 28 : scale === 'city' ? 18 : 12;
       const height = scale === 'metropolis' ? 24 : scale === 'city' ? 16 : 12;
 

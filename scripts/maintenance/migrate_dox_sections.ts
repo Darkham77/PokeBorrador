@@ -34,25 +34,25 @@ function isTestFile(fileName: string): boolean {
   return fileName.includes('.spec.') || fileName.includes('.test.') || fileName.includes('.simulation.');
 }
 
-function collectAgentsFiles(dir: string, list: string[] = []): string[] {
-  const dirName = path.basename(dir);
-  if (IGNORED_DIRS.has(dirName) || (dirName.startsWith('.') && dirName !== '.')) {
-    return list;
-  }
-
+// walker-ok: Maintenance script collecting AGENTS.md files across repository
+function collectAgentsFiles(dir: string): string[] {
   let entries: fs.Dirent[];
   try {
-    entries = fs.readdirSync(dir, { withFileTypes: true });
+    entries = fs.readdirSync(dir, { recursive: true, withFileTypes: true });
   } catch {
-    return list;
+    return [];
   }
 
+  const list: string[] = [];
   for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      collectAgentsFiles(fullPath, list);
-    } else if (entry.isFile() && entry.name === 'AGENTS.md') {
-      list.push(fullPath);
+    if (entry.isFile() && entry.name === 'AGENTS.md') {
+      const parent = entry.parentPath ?? dir;
+      const rel = path.relative(dir, parent).replace(/\\/g, '/');
+      const parts = rel.split('/');
+      const isIgnored = parts.some(p => IGNORED_DIRS.has(p) || (p.startsWith('.') && p !== '.'));
+      if (!isIgnored) {
+        list.push(path.join(parent, entry.name));
+      }
     }
   }
 
@@ -112,6 +112,8 @@ interface ParsedRawSection {
   normalizedTitle: string;
   lines: string[];
 }
+
+type ParsedSection = ParsedRawSection;
 
 function parseSections(content: string): ParsedRawSection[] {
   const lines = content.split('\n');

@@ -122,18 +122,23 @@ export function useTrainerProfileStats(
   );
 
   const longestStreak = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.pvpStats?.streak, profile.value?.longest_streak, saveState.value?.pvpStats?.streak, 0)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.stats?.longestStreak ?? gameStore.state.classData?.longestStreak,
+      profile.value?.longest_streak,
+      saveState.value?.stats?.longestStreak ?? saveState.value?.classData?.longestStreak,
+      0
+    )
   );
 
   const shinyCount = computed(() => {
     const team = isOwnProfile.value ? gameStore.state.team : saveState.value?.team;
     const box = isOwnProfile.value ? gameStore.state.box : saveState.value?.box;
-    const savedShinies = (isOwnProfile.value ? gameStore.state.stats?.shiniesCaught : saveState.value?.stats?.shiniesCaught) ?? 0;
-    return computeShiniesCount(team, box, savedShinies);
+    return computeShiniesCount(isOwnProfile.value, team, box, profile.value?.shiny_count);
   });
 
   const maxDamage = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.stats?.highestDamageDealt, profile.value?.max_damage, saveState.value?.stats?.highestDamageDealt, 0)
+    resolveStatField(isOwnProfile.value, gameStore.state.stats?.maxDamage, profile.value?.max_damage, saveState.value?.stats?.maxDamage, 0)
   );
 
   const totalBattles = computed(() => {

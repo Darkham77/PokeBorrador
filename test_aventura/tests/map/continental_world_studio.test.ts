@@ -20,7 +20,7 @@ import {
   validateAntiFrankensteinPalette,
 } from '../../logic/map/continentalWorldGenerator.ts';
 import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
-import type { AdventureProject, UrbanScale, CanonicalThemeSource } from '../../types/map/adventureWorldTypes.ts';
+import { CANONICAL_THEME_SOURCES, type AdventureProject, type UrbanScale } from '../../types/map/adventureWorldTypes.ts';
 
 describe('Continental World Generator (Overworld Studio)', () => {
   const TEST_WIDTH = 1600;
@@ -257,8 +257,7 @@ describe('Continental World Generator (Overworld Studio)', () => {
 
   describe('Anti-Frankenstein & GBA Theme Isolation', () => {
     it('strictly isolates canonical GBA palettes and rejects cross-game mixing', () => {
-      const themes: CanonicalThemeSource[] = ['firered', 'emerald', 'ruby_sapphire'];
-      for (const theme of themes) {
+      for (const theme of CANONICAL_THEME_SOURCES) {
         expect(validateAntiFrankensteinPalette(theme)).toBe(true);
 
         const result = generateCompleteContinentalWorld({

@@ -165,7 +165,7 @@ const animateEntry = () => {
         { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
       )
     }
-  }, tradeGridRef.value)
+  }, tradeGridRef.value ?? undefined)
 }
 
 onUnmounted(() => {

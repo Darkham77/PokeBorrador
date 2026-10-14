@@ -18,12 +18,10 @@ import { describe, it, expect } from 'vitest';
 import { resolvePoiLandmarksAndBuildings, resolvePortFerryAsset } from '../../logic/map/canvasLandmarkRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
-import type { POINode, CardinalDirection } from '../../types/map/poiTypes.ts';
+import { type POINode, GEO_CARDINAL_DIRECTIONS } from '../../types/map/poiTypes.ts';
 
 describe('portDockTerminalRotation', () => {
-  const directions: readonly CardinalDirection[] = ['south', 'north', 'west', 'east'] as const;
-
-  for (const dir of directions) {
+  for (const dir of GEO_CARDINAL_DIRECTIONS) {
     it(`guarantees port_dock stamps canonical 2.5D architecture for facing: ${dir}`, () => {
       const W = 64;
       const H = 64;

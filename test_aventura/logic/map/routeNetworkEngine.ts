@@ -27,7 +27,9 @@ import {
   findPathAStar,
   getBestGateway
 } from './routePathfinding.ts';
+export { computeOceanGrid };
 import { buildRouteChain } from './routeChainTopology.ts';
+export { buildRouteChain };
 import { traceWaterSpansAndBridges } from './routeBridgeTracer.ts';
 import { connectMountainPlateauTrails } from './mountainPlateauTrailEngine.ts';
 import { finalizeRouteGrids } from './routeGridFinalizer.ts';
@@ -37,7 +39,7 @@ export interface RouteNetworkOptions {
   readonly allowBridges?: boolean;
 }
 
-const MAX_CANONICAL_BRIDGE_SPAN = 6 as const;
+export const MAX_CANONICAL_BRIDGE_SPAN = 6 as const;
 const MAX_ROUTE_GATE_DETOUR_TILES = 30 as const;
 const MARITIME_POI_BRIDGE_SPAN = 12 as const;
 const DEFAULT_CONNECTION_DIST_FACTOR = 0.55 as const;

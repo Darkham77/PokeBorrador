@@ -1,6 +1,6 @@
-import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
-import type { BattleState } from '../../../types/battle/battle.ts';
-import type { BattleContext } from '../../../types/battle/battleContext.ts';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 import type { AIConfig, HeuristicMoveInfo, HeuristicBattleSnapshot } from './types.ts';
 import { AI_CONFIG_PRESETS } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';

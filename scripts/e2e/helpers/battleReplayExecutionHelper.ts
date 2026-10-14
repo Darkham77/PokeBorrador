@@ -105,10 +105,13 @@ export async function resolveVoluntarySwitchTargetUid(
 ): Promise<string> {
   const switchSlot = Number(choice.slice('switch '.length));
   const target = lastBattleReady?.playerSwitchSlots?.find((slot) => slot.showdownSlot === switchSlot);
-  const candidateUid = p1ActiveUid || target?.pokemonUid;
+  const candidateUid = p1ActiveUid ? p1ActiveUid : target?.pokemonUid;
+  if (!candidateUid) {
+    throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for Showdown switch slot ${switchSlot}. Available slots: ${JSON.stringify(lastBattleReady?.playerSwitchSlots)}`);
+  }
   const targetUid = (await isHealthyBenchUidHelper(page, candidateUid)) ? candidateUid : await getHealthyBenchUidHelper(page);
   if (!targetUid) {
-    throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for Showdown switch slot ${switchSlot}. Available slots: ${JSON.stringify(lastBattleReady?.playerSwitchSlots)}`);
+    throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve healthy Pokémon UID for Showdown switch slot ${switchSlot}. Available slots: ${JSON.stringify(lastBattleReady?.playerSwitchSlots)}`);
   }
   return targetUid;
 }

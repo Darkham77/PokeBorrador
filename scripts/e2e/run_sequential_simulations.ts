@@ -488,9 +488,8 @@ function resolveMasterSuiteCheckpoint(): { startSuiteIndex: number; startingDriv
   if (resumeIdx !== -1) {
     logger.progress('--------------------------------------------------');
     logger.progress(`🔄 Checkpoint maestro detectado: reanudando corrida desde Suite ${resumeIdx + 1}/${activeTargets.length} [${activeTargets[resumeIdx]!.name}] (${masterCp.driver.toUpperCase()})...`);
-    logger.progress(`💡 Tip: Usa 'clean=true' o 'reset=true' para forzar la ejecución desde la Suite 1.`);
-    logger.progress('--------------------------------------------------\n');
-    return { startSuiteIndex: resumeIdx, startingDriverForFirstSuite: masterCp.driver };
+    const startingDriver: 'sqlite' | 'postgres' | null = masterCp.driver === 'dual' ? null : masterCp.driver;
+    return { startSuiteIndex: resumeIdx, startingDriverForFirstSuite: startingDriver };
   }
   return null;
 }

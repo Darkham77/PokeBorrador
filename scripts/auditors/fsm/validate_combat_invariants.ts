@@ -41,15 +41,12 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(COMBAT_INVARIANTS_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_combat_invariants',
       configKey: 'fsm.combatInvariants',
@@ -63,9 +60,14 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
       family: 'fsm',
       ruleIds: COMBAT_INVARIANTS_RULES,
       packageName: 'Combate',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'showdown-healthy-status-null-prohibition': 'status null en vez de vacío',
         'battle-multi-seat-hardcoding': 'Bifurcación binaria p1/p2'
+      },
+      ruleRemediations: {
+        'showdown-healthy-status-null-prohibition': 'Use empty string \'\' instead of null for healthy Pokemon status',
+        'battle-multi-seat-hardcoding': 'Use dynamic seat helper methods instead of binary p1/p2 ternary expressions'
       },
       roots: ['src/logic/battle'],
       allowedExtensions: new Set(['.ts', '.vue'])

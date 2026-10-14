@@ -181,7 +181,7 @@ To inspect chunk size distribution and detect bundle bottlenecks:
 npm run build:analyze
 ```
 
-Generates an interactive visual treemap at `scratch/bundle_stats.html` and feeds the `npm run auditor:build` suite.
+Generates an interactive visual treemap at `scratch/bundle_stats.html` and feeds the `npm run auditor:post-build` suite.
 
 ### 2. Hosting Options
 
@@ -248,7 +248,7 @@ The repository features a unified static/dynamic audit ecosystem, domain validat
 | `npm run auditor:stylelint` | **Styles & Classes Audit**: Audits SCSS stylesheets and Vue `<style>` blocks via in-memory Stylelint. |
 | `npm run auditor:similar` | **Semantic Discovery**: Detects semantically similar functions or blocks via Fallow AST embeddings. |
 | `npm run auditor:review` | **Intelligent Review Brief**: Generates graph-grounded report with blast radius and structural risk for code reviews. |
-| `npm run auditor:build` | **Bundle Budget**: Audits production chunk sizes and client decoupling. |
+| `npm run auditor:post-build` | **Bundle Budget**: Audits production chunk sizes and client decoupling. |
 | `npm run build:analyze` | **Interactive Bundle Treemap**: Triggers production build with visual bundle map in `scratch/bundle_stats.html`. |
 
 ---

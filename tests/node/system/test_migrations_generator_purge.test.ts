@@ -70,7 +70,7 @@ function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: s
     const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
     const isMissing = msg.includes('no such column');
     if (!isDuplicate && !isMissing) {
-      throw new Error(`Migration ${migrationId} failed during in-memory SQLite execution: ${(err as Error).message}`);
+      throw new Error(`Migration ${migrationId} failed during in-memory SQLite execution: ${(err as Error).message}`, { cause: err });
     }
   }
 }

@@ -104,7 +104,12 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
   public async getTeamMember(index: number): Promise<Pokemon> {
     return await this.page.evaluate(async (idx) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      return JSON.parse(JSON.stringify(useGameStore().state.team[idx]));
+      const { cloneReactive } = await import('../../../src/logic/utils/cloneUtils.ts');
+      const member = useGameStore().state.team[idx];
+      if (!member) {
+        throw new Error(`[E2E] No Pokémon found at team index ${idx}`);
+      }
+      return cloneReactive(member);
     }, index);
   }
 

@@ -12,7 +12,7 @@ Game Prototyping / Adventure Suite.
 
 ## Key Files
 
-(No top-level code files)
+- [useAdventureCapabilities.ts](./useAdventureCapabilities.ts): Reactive composable managing player adventure capabilities (Surf, Cut) and movement constraints.
 
 ## Work Guidance
 

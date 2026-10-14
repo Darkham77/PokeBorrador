@@ -72,7 +72,7 @@ describe('PrefabsRegistryService', () => {
     globalThis.fetch = async () => ({
       ok: true,
       json: async () => mockManifest
-    } as unknown as Response);
+    } as unknown as Response); // cast-ok: mock Response in test
 
     try {
       const loaded = await service.loadManifest('/mock/manifest.json');
@@ -104,7 +104,7 @@ describe('PrefabsRegistryService', () => {
     globalThis.fetch = async () => ({
       ok: true,
       json: async () => mockManifest
-    } as unknown as Response);
+    } as unknown as Response); // cast-ok: mock Response in test
 
     try {
       await service.loadManifest();
@@ -136,7 +136,7 @@ describe('PrefabsRegistryService', () => {
     globalThis.fetch = async () => ({
       ok: false,
       status: 404
-    } as unknown as Response);
+    } as unknown as Response); // cast-ok: mock Response in test
 
     try {
       const loaded = await service.loadManifest('/non_existent/manifest.json');

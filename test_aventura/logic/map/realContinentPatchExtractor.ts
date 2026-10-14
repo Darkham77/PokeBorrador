@@ -521,8 +521,8 @@ function buildPatch(
   const H = continent.height;
   const cells: ResolvedPatchCell[][] = [];
 
-  let minElev = SENTINEL_MIN_ELEVATION;
-  let maxElev = SENTINEL_MAX_ELEVATION;
+  let minElev: number = SENTINEL_MIN_ELEVATION;
+  let maxElev: number = SENTINEL_MAX_ELEVATION;
 
   for (let dy = -radius; dy <= radius; dy++) {
     const row: ResolvedPatchCell[] = [];

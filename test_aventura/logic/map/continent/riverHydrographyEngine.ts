@@ -34,8 +34,8 @@ export function carveOrganicLake(
   cx: number,
   cy: number,
   radius: number,
-  roughness = RIVER_HYDRO.LAKE_DEFAULT_ROUGHNESS,
-  seed = RIVER_HYDRO.LAKE_DEFAULT_SEED
+  roughness: number = RIVER_HYDRO.LAKE_DEFAULT_ROUGHNESS,
+  seed: number = RIVER_HYDRO.LAKE_DEFAULT_SEED
 ): void {
   const H = matrix.length;
   const W = matrix[0]?.length ?? 0;
@@ -82,7 +82,7 @@ export function carveOrganicLake(
 export function carveRiverSystem(
   matrix: WaterTerrainKind[][],
   river: RiverSpec,
-  seed = RIVER_HYDRO.RIVER_DEFAULT_SEED
+  seed: number = RIVER_HYDRO.RIVER_DEFAULT_SEED
 ): void {
   const H = matrix.length;
   const W = matrix[0]?.length ?? 0;

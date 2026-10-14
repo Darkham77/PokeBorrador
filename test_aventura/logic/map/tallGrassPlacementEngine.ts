@@ -240,7 +240,6 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
         }
       }
     }
-  }
 
   // Prune any isolated 1-cell or 2-cell tall grass fragments to guarantee contiguous groups >= 3x3
   for (let iter = 0; iter < TALL_GRASS_PRUNE_ITERATIONS; iter++) {
@@ -258,3 +257,4 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
       }
     }
   }
+}

@@ -74,16 +74,12 @@ function padLeft(str: string, length: number): string {
 }
 
 async function getAllFiles(dir: string): Promise<string[]> {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const entries = await fs.readdir(dir, { recursive: true, withFileTypes: true });
   const files: string[] = [];
 
   for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      const nested = await getAllFiles(fullPath);
-      files.push(...nested);
-    } else if (entry.isFile()) {
-      files.push(fullPath);
+    if (entry.isFile()) {
+      files.push(path.join(entry.parentPath ?? dir, entry.name));
     }
   }
 

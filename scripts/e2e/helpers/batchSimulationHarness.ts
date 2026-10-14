@@ -33,7 +33,7 @@ export function resolveBatchResumptionIndex(params: {
   startFromIndex?: string;
   startFromCaseId?: string;
   checkpointBatchIndex?: number;
-  batches?: Array<{ id?: string }>;
+  batches?: readonly { id?: string }[];
 }): number {
   if (params.startFromCaseId && params.batches) {
     const foundIdx = params.batches.findIndex((b) => b.id === params.startFromCaseId!.trim());
@@ -58,7 +58,7 @@ export function resolveBatchResumptionIndex(params: {
  * Algoritmo de interleaving matemático uniforme para distribuir lotes pesados
  * (como batallas 6v6) equitativamente entre los workers paralelos.
  */
-export function interleaveHeavyBatches<T>(batches: T[], isHeavy: (item: T) => boolean): T[] {
+export function interleaveHeavyBatches<T>(batches: readonly T[], isHeavy: (item: T) => boolean): readonly T[] {
   const heavy: T[] = [];
   const normal: T[] = [];
 
@@ -71,7 +71,7 @@ export function interleaveHeavyBatches<T>(batches: T[], isHeavy: (item: T) => bo
   }
 
   if (heavy.length === 0 || normal.length === 0) {
-    return [...batches];
+    return batches;
   }
 
   const result: T[] = [...normal];

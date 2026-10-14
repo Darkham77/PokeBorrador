@@ -18,6 +18,8 @@ Poké Vicio Development Team.
 ## Key Files
 
 - `continentalEngine.ts`: Core orchestrator for continental terrain synthesis, biome masks, urban clearances, and the master `generatePokemonContinentalWorld` pipeline.
+- [`continentalCorridorCarver.ts`](./continentalCorridorCarver.ts): Terrain-aware route, path, bridge, and harbor pier carving sub-engine for parametric continents.
+- [`continentalSettlementCompiler.ts`](./continentalSettlementCompiler.ts): Procedural POI, urban settlement layout compilation, and route gate placement sub-engine for parametric continents.
 - `parametricContinentGenerator.ts`: Parametric continent generator computing Simplex elevation/moisture grids, biome distribution, urban node placement, and Kruskal MST roads.
 - `routeGatePlacementEngine.ts`: Procedural route gatehouse checkpoint locator, clearance validator, and corridor splicing engine for regional highways.
 - `autotileEngine.ts`: Bitmask calculation and tile selection for contiguous terrain boundaries.

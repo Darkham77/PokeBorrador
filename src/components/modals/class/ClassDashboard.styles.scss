@@ -62,19 +62,23 @@
         display: flex;
         justify-content: center;
         align-items: center;
+
+        :deep(.pv-tooltip-wrapper:not(:first-child)),
+        > :not(:first-child) {
+          margin-left: -50px;
+        }
       }
 
       .trainer-big-img {
         @include pixelated;
 
+        width: auto;
         height: 220px;
+        aspect-ratio: 1 / 1;
+        object-fit: contain;
         will-change: transform, filter, opacity;
         filter: Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
         cursor: pointer;
-
-        &:not(:first-child) {
-          margin-left: -50px;
-        }
 
         &.active {
           z-index: calc(var(--z-base) + 2);
@@ -319,11 +323,15 @@
       margin-bottom: 24px;
 
       .trainers-wrap {
+        :deep(.pv-tooltip-wrapper:not(:first-child)),
+        > :not(:first-child) {
+          margin-left: -35px;
+        }
+
         .trainer-big-img {
+          width: auto;
           height: 150px;
-          &:not(:first-child) {
-            margin-left: -35px;
-          }
+          aspect-ratio: 1 / 1;
         }
       }
 

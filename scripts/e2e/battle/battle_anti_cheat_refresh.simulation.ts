@@ -156,7 +156,7 @@ class AntiCheatRefreshSimWrapper extends BaseBattleSimulation {
       }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
     } catch (err: unknown) {
       const debugInfo = await this.page.evaluate(() => {
-        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.() as any; // any-ok: Playwright window debug store evaluation
         const active = store?.state || store?.activeBattle;
         return {
           fsmState: store?.currentFsmState,
@@ -169,8 +169,8 @@ class AntiCheatRefreshSimWrapper extends BaseBattleSimulation {
           isRival: active?.isRival,
           wasSearching: active?.wasSearching,
           enemy: active?.enemy ? { name: active.enemy.name, hp: active.enemy.hp, fainted: active.enemy.fainted } : null,
-          enemyTeam: active?.enemyTeam?.map(p => ({ name: p.name, hp: p.hp, fainted: p.fainted })),
-          recentLogs: store?.battleLogs?.slice(-10)?.map(l => l.text),
+          enemyTeam: active?.enemyTeam?.map((p: any) => ({ name: p.name, hp: p.hp, fainted: p.fainted })),
+          recentLogs: store?.battleLogs?.slice(-10)?.map((l: any) => l.text ?? l.message),
           recentShowdownLogs: active?.rawShowdownLogs?.slice(-15),
         };
       });

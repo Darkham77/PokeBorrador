@@ -278,6 +278,18 @@ interface MarketListingRow {
   data: string;
 }
 
+function isClaimQueueRow(row: unknown): row is ClaimQueueRow {
+  if (!row || typeof row !== 'object') return false;
+  const candidate = row as { id?: unknown; asset_data?: unknown };
+  return typeof candidate.id === 'string' && typeof candidate.asset_data === 'string';
+}
+
+function isMarketListingRow(row: unknown): row is MarketListingRow {
+  if (!row || typeof row !== 'object') return false;
+  const candidate = row as { id?: unknown; data?: unknown };
+  return typeof candidate.id === 'string' && typeof candidate.data === 'string';
+}
+
 function repairSingleClaimQueueItem(
   claimRow: ClaimQueueRow,
   db: DatabaseSync,
@@ -307,7 +319,8 @@ function repairSingleClaimQueueItem(
 
 function repairSqliteClaimQueue(db: DatabaseSync, isSilent: boolean, summary: RepairSummary): void {
   try {
-    const claimRows = db.prepare("SELECT id, asset_data FROM claim_queue").all() as ClaimQueueRow[];
+    const rawRows = db.prepare("SELECT id, asset_data FROM claim_queue").all() as unknown[]; // open-record: raw sqlite records
+    const claimRows: ClaimQueueRow[] = rawRows.filter(isClaimQueueRow);
     if (!isSilent) console.log(`📦 Auditando claim_queue (${claimRows.length} registros)...`);
     for (const claimRow of claimRows) {
       repairSingleClaimQueueItem(claimRow, db, isSilent, summary);
@@ -343,7 +356,8 @@ function repairSingleMarketListingItem(
 
 function repairSqliteMarketListings(db: DatabaseSync, isSilent: boolean, summary: RepairSummary): void {
   try {
-    const marketRows = db.prepare("SELECT id, data FROM market_listings WHERE listing_type = 'pokemon'").all() as MarketListingRow[];
+    const rawRows = db.prepare("SELECT id, data FROM market_listings WHERE listing_type = 'pokemon'").all() as unknown[]; // open-record: raw sqlite records
+    const marketRows: MarketListingRow[] = rawRows.filter(isMarketListingRow);
     for (const mRow of marketRows) {
       repairSingleMarketListingItem(mRow, db, isSilent, summary);
     }
@@ -407,7 +421,7 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
 
   if (rows.length === 0) {
     if (!isSilent) {
-      console.log(targetUserId ? `⚠️ No se encontró ninguna partida para el usuario "${targetUserId}".` : '⚠️ La tabla game_saves está vacía.');
+      console.log(targetUserUid ? `⚠️ No se encontró ninguna partida para el usuario "${targetUserUid}".` : '⚠️ La tabla game_saves está vacía.');
     }
     return summary;
   }

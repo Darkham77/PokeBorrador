@@ -191,7 +191,21 @@ export const CONTINENTAL_MAQUETTE_LAYOUTS: Record<string, {
   }
 };
 
-export const CONTINENTAL_MAQUETTE_CONFIG = {
+export interface ContinentalMaquetteConfig {
+  readonly plazaSize: {
+    readonly default: number;
+    readonly metropolis: number;
+    readonly city: number;
+  };
+  readonly hashMultipliers: {
+    readonly x: number;
+    readonly y: number;
+    readonly seed: number;
+  };
+  readonly sidewalkMaxSteps: number;
+}
+
+export const CONTINENTAL_MAQUETTE_CONFIG: ContinentalMaquetteConfig = {
   plazaSize: {
     default: 64,
     metropolis: 128,
@@ -203,9 +217,19 @@ export const CONTINENTAL_MAQUETTE_CONFIG = {
     seed: 101
   },
   sidewalkMaxSteps: 2
-} as const;
+};
 
-export const CONTINENTAL_PIPELINE_DEFAULTS = {
+export interface ContinentalPipelineDefaults {
+  readonly treeDensity: number;
+  readonly roadWidth: number;
+  readonly waterPercent: number;
+  readonly mountainPercent: number;
+  readonly forestPercent: number;
+  readonly cityCount: number;
+  readonly defaultSeed: number;
+}
+
+export const CONTINENTAL_PIPELINE_DEFAULTS: ContinentalPipelineDefaults = {
   treeDensity: 0.7,
   roadWidth: 2,
   waterPercent: 22,
@@ -213,4 +237,4 @@ export const CONTINENTAL_PIPELINE_DEFAULTS = {
   forestPercent: 25,
   cityCount: 12,
   defaultSeed: 42
-} as const;
+};

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { Dex } from '@pkmn/sim';
 import { HeuristicDamageCalculator } from '../../../src/logic/battle/ai/heuristic/damageCalculator.ts';
 import type { HeuristicBattleSnapshot } from '../../../src/logic/battle/ai/heuristic/types.ts';
-import { requirePokemonMoveId, type PokemonMoveId } from '../../../src/data/battle/moves.ts';
+import { requirePokemonMoveId } from '../../../src/data/battle/moves.ts';
 
 describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () => {
   let calc: HeuristicDamageCalculator;

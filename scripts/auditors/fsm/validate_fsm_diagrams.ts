@@ -13,9 +13,14 @@ const DIAGRAM_SRC_ROOT = path.resolve(process.cwd(), 'src');
 const DIAGRAM_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
 const DIAGRAM_FSM_PATH = path.join(DIAGRAM_SRC_ROOT, 'logic/battle/battleStateMachine.ts');
 
+export interface FsmTransition {
+  from: string;
+  to: string;
+}
+
 export function parseMermaid(manualCode: string) {
   const states = new Set<string>();
-  const transitions: { from: string; to: string }[] = []; 
+  const transitions: FsmTransition[] = []; 
 
   const blockRx = /```mermaid\n([\s\S]*?)```/g;
   let blockMatch: RegExpExecArray | null;
@@ -89,15 +94,12 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(FSM_DIAGRAM_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'light',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_fsm_diagrams',
       configKey: 'fsm.diagrams',
@@ -111,10 +113,16 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
       family: 'fsm',
       ruleIds: FSM_DIAGRAM_RULES,
       packageName: 'FSM',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'fsm-state-missing-in-js': 'Estado Mermaid no definido en TS',
         'fsm-undocumented-js-state': 'Estado en TS no documentado en Mermaid',
         'fsm-transition-missing-in-js': 'Transición Mermaid ausente en TS'
+      },
+      ruleRemediations: {
+        'fsm-state-missing-in-js': 'Define missing state in battleStateMachine.ts or remove from Mermaid diagram',
+        'fsm-undocumented-js-state': 'Document TypeScript FSM state in Mermaid architecture diagram',
+        'fsm-transition-missing-in-js': 'Add missing transition in battleStateMachine validTransitions map'
       },
       requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH],
       coverage: {
@@ -128,9 +136,9 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
     this.recordScanned('src/logic/battle/battleStateMachine.ts');
 
     let mermaidStates = new Set<string>();
-    let mermaidTransitions: Transition[] = [];
+    let mermaidTransitions: FsmTransition[] = [];
     let jsKeys = new Set<string>();
-    let jsTransitions: Record<string, string[]> = {};
+    let jsTransitions: FsmTransition[] = [];
     let fsmCode = '';
 
     // [CHECK 1] Nodos Mermaid -> Constantes JS

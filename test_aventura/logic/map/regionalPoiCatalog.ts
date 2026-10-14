@@ -24,6 +24,8 @@ export interface POITemplate {
   readonly progressionIndex?: number;
 }
 
+export type RegionalPOITemplate = POITemplate;
+
 const DEFAULT_METROPOLIS_DIMENSIONS = { width: 30, height: 24 } as const;
 const DEFAULT_CITY_DIMENSIONS = { width: 16, height: 14 } as const;
 const DEFAULT_TOWN_DIMENSIONS = { width: 12, height: 12 } as const;

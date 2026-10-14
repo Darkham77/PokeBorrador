@@ -62,7 +62,8 @@ describe('LocalDebugPanel.vue - Component and Navigation Suite', () => {
     wrapper.unmount()
   })
 
-  it('navigates to shadow editor route when #debug-shadow-editor-btn is clicked', async () => {
+  it('opens shadow editor in new tab when #debug-shadow-editor-btn is clicked', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
     const wrapper = mountPanel()
 
     const triggerBtn = wrapper.find('#debug-trigger-btn')
@@ -72,7 +73,8 @@ describe('LocalDebugPanel.vue - Component and Navigation Suite', () => {
     expect(shadowBtn.exists()).toBe(true)
     await shadowBtn.trigger('click')
 
-    expect(mockPush).toHaveBeenCalledWith('/dev/shadow-editor')
+    expect(openSpy).toHaveBeenCalledWith('/dev/shadow-editor', '_blank')
+    openSpy.mockRestore()
     wrapper.unmount()
   })
 

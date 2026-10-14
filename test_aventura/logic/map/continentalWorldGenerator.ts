@@ -282,7 +282,7 @@ export function scatterUrbanNodes(
   height: number,
   seed: number,
   terrain: Record<string, CellBiomeType>,
-  targetCount = CONTINENTAL_URBAN_SCATTER_CONFIG.defaultTargetCount
+  targetCount: number = CONTINENTAL_URBAN_SCATTER_CONFIG.defaultTargetCount
 ): Record<string, AdventureProjectNode> {
   const prng = mulberry32(seed + CONTINENTAL_SEED_OFFSETS.urbanScatter);
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
@@ -496,7 +496,7 @@ export function rasterizeRoadsOnTerrain(
   connections: readonly (readonly [string, string])[],
   gridW: number,
   gridH: number,
-  roadWidth = CONTINENTAL_ROAD_NETWORK_CONFIG.defaultRoadWidth
+  roadWidth: number = CONTINENTAL_ROAD_NETWORK_CONFIG.defaultRoadWidth
 ): void {
   const rCfg = CONTINENTAL_ROAD_NETWORK_CONFIG;
   const roadNoise = new SimplexNoise(CONTINENTAL_SEED_OFFSETS.roadNoise + gridW);
@@ -688,7 +688,7 @@ export interface BakedUrbanMaquette {
 
 export function bakeUrbanMaquette(
   node: AdventureProjectNode,
-  _seed = CONTINENTAL_PIPELINE_DEFAULTS.defaultSeed
+  _seed: number = CONTINENTAL_PIPELINE_DEFAULTS.defaultSeed
 ): BakedUrbanMaquette {
   const scale = node.urbanScale ?? 'town';
   const cx = node.x;

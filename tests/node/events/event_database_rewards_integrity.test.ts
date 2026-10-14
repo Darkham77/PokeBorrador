@@ -92,7 +92,7 @@ function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: s
     const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
     const isMissing = msg.includes('no such column');
     if (!isDuplicate && !isMissing) {
-      throw new Error(`[Migration Error] Failed in migration "${migrationId}": ${(err as Error).message}\nSQL: ${sql}`);
+      throw new Error(`[Migration Error] Failed in migration "${migrationId}": ${(err as Error).message}\nSQL: ${sql}`, { cause: err });
     }
   }
 }
@@ -236,7 +236,7 @@ describe('Event Database Rewards & Species Integrity', () => {
     try {
       config = typeof evt.config === 'string' ? JSON.parse(evt.config) as RawEventConfig : evt.config;
     } catch (err) {
-      throw new Error(`[${ctx}] Invalid JSON in config column: ${(err as Error).message}`);
+      throw new Error(`[${ctx}] Invalid JSON in config column: ${(err as Error).message}`, { cause: err });
     }
 
     validateTopLevelPrizes(config, ctx);

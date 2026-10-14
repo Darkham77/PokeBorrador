@@ -207,7 +207,7 @@ export function useBattleShadows() {
     
     // Initialize coordinates immediately if seat is occupied by a pokemon
     if (data) {
-      const url = getFinalSpriteUrl(data, !!data.isShiny, false)
+      const url = getFinalSpriteUrl(data, { isShiny: !!data.isShiny, isBack: false })
       getPokemonFeetCoords(url)
       stableEnemyGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
     }
@@ -227,7 +227,7 @@ export function useBattleShadows() {
     }
 
     if (shadowId) {
-      const spriteUrl = data ? getFinalSpriteUrl(data, !!data.isShiny, false) : ''
+      const spriteUrl = data ? getFinalSpriteUrl(data, { isShiny: !!data.isShiny, isBack: false }) : ''
       const feetCoords = spriteUrl ? getPokemonFeetCoords(spriteUrl) : null
       await shadowStore.requestShadow(shadowId, {
         side: 'enemy',
@@ -249,7 +249,7 @@ export function useBattleShadows() {
 
     // Initialize coordinates immediately if seat is occupied by a pokemon
     if (pokemon) {
-      const url = getFinalSpriteUrl(pokemon, !!pokemon.isShiny, true)
+      const url = getFinalSpriteUrl(pokemon, { isShiny: !!pokemon.isShiny, isBack: true })
       getPokemonFeetCoords(url)
       stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
     }
@@ -269,7 +269,7 @@ export function useBattleShadows() {
     }
 
     if (shadowId) {
-      const spriteUrl = pokemon ? getFinalSpriteUrl(pokemon, !!pokemon.isShiny, true) : ''
+      const spriteUrl = pokemon ? getFinalSpriteUrl(pokemon, { isShiny: !!pokemon.isShiny, isBack: true }) : ''
       const feetCoords = spriteUrl ? getPokemonFeetCoords(spriteUrl) : null
       await shadowStore.requestShadow(shadowId, {
         side: 'player',
@@ -298,7 +298,7 @@ export function useBattleShadows() {
     if (!team || !Array.isArray(team)) return
     const tasks = team.map(p => {
       const isBack = side === 'player'
-      const url = getFinalSpriteUrl(p, !!p.isShiny, isBack)
+      const url = getFinalSpriteUrl(p, { isShiny: !!p.isShiny, isBack })
       return shadowStore.detectFeetPoints(url)
     })
     return Promise.all(tasks)
@@ -321,7 +321,7 @@ export function useBattleShadows() {
     if (p1Data) {
       const shadowId = getStableShadowId(p1Data, 'player')
       currentPlayerShadowKey.value = shadowId
-      const url = getFinalSpriteUrl(p1Data, !!p1Data.isShiny, true)
+      const url = getFinalSpriteUrl(p1Data, { isShiny: !!p1Data.isShiny, isBack: true })
       const feetCoords = url ? getPokemonFeetCoords(url) : null
       if (shadowId) {
         tasks.push(shadowStore.requestShadow(shadowId, {
@@ -341,7 +341,7 @@ export function useBattleShadows() {
     if (p2Data) {
       const shadowId = getStableShadowId(p2Data, 'enemy')
       currentEnemyShadowKey.value = shadowId
-      const url = getFinalSpriteUrl(p2Data, !!p2Data.isShiny, false)
+      const url = getFinalSpriteUrl(p2Data, { isShiny: !!p2Data.isShiny, isBack: false })
       const feetCoords = url ? getPokemonFeetCoords(url) : null
       if (shadowId) {
         tasks.push(shadowStore.requestShadow(shadowId, {

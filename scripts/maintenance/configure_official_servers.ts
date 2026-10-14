@@ -26,7 +26,7 @@ const CONFIGURATOR_TARGET_NODE_VERSION_LABEL = '26';
 
 function buildOfficialServerEntry(
   profile: string,
-  conf: Record<string, string>,
+  conf: Record<string, string | undefined>,
   hasExplicitDefault: boolean
 ): OfficialServer | null {
   const id = conf.ID || profile;

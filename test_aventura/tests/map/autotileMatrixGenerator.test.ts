@@ -5,7 +5,7 @@ import {
   grid3x3ToBitmask,
   resolveCanonicalPatch
 } from '../../logic/map/autotileMatrixGenerator.ts';
-import type { AutotileEngineId } from '../../types/map/autotileStudioTypes.ts';
+import { AUTOTILE_ENGINE_IDS } from '../../types/map/autotileStudioTypes.ts';
 
 describe('autotileMatrixGenerator', () => {
   it('defines exactly 47 canonical bitmask cases without duplicates', () => {
@@ -28,9 +28,7 @@ describe('autotileMatrixGenerator', () => {
     }
   });
 
-  const engines: AutotileEngineId[] = ['water', 'path', 'macro_biome', 'mountain'];
-
-  for (const engineId of engines) {
+  for (const engineId of AUTOTILE_ENGINE_IDS) {
     it(`resolves all 47 canonical patches cleanly for ${engineId} engine`, () => {
       for (const caseItem of CANONICAL_47_BITMASKS) {
         const patch = resolveCanonicalPatch(caseItem, engineId);

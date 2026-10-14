@@ -51,15 +51,12 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
   constructor(roots: readonly string[] = ['src/components/battle']) {
     super({
       ruleCapabilities: createRuleCapabilities(BATTLE_UI_BRANCHING_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: true,
+        speed: 'light',
+        phase: 'normal',
+        fix: 'none',
         md: false,
-        ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        ast: true,
+        changedSince: false
       }),
       id: 'validate_battle_ui_branching',
       configKey: 'architecture.battleUiBranching',
@@ -71,11 +68,16 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
       description: 'Valida uso de uiConfig declarativo en UI de combate',
       icon: '⚔️',
       family: 'architecture',
+      usesThirdPartyTool: false,
       ruleIds: BATTLE_UI_BRANCHING_RULES,
       packageName: 'Combate',
       ruleDescriptions: {
         'ui-branching-raw-flag': 'Ramificación con flags primitivos',
         'ui-branching-escape': 'cannotEscape en template'
+      },
+      ruleRemediations: {
+        'ui-branching-raw-flag': 'Reemplaza banderas primitivas booleanas (isTrainer, isGym, isPvP, isWild) por battleStore.uiConfig (allowFlee, allowItems, etc.).',
+        'ui-branching-escape': 'Reemplaza cannotEscape por la propiedad declarativa uiConfig.allowFlee.'
       },
       roots,
       allowedExtensions: new Set(['.vue'])

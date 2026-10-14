@@ -13,11 +13,9 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 import { useDebugStore } from '@/stores/debug'
-import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
 const debugStore = useDebugStore()
-const router = useRouter()
 const canAccess = computed(() => debugStore.canAccess)
 
 const isOpen = ref(false)
@@ -25,7 +23,7 @@ const selectedCategory = ref('stats')
 
 const openShadowEditor = () => {
   isOpen.value = false
-  router.push('/dev/shadow-editor')
+  window.open('/dev/shadow-editor', '_blank')
 }
 
 const openAdventureSuite = () => {
@@ -97,7 +95,8 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
             title="Abrir editor visual de sombras"
             @click.stop="openShadowEditor"
           >
-            <span class="emoji">🎨</span> SOMBRAS
+            <span class="emoji">🎨</span>
+            <span class="badge-text">SOMBRAS</span>
           </button>
           <button
             id="debug-adventure-suite-btn"
@@ -105,7 +104,8 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
             title="Abrir Suite Aventura y Studios"
             @click.stop="openAdventureSuite"
           >
-            <span class="emoji">🗺️</span> AVENTURA
+            <span class="emoji">🗺️</span>
+            <span class="badge-text">AVENTURA</span>
           </button>
         </div>
 
@@ -187,14 +187,18 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 
 .badge {
   @include pixelated;
-  @include pixelated;
 
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: $spacing-xs-alt;
   width: fit-content;
   margin: 0;
   padding: 4px 8px;
   border-radius: $radius-md;
   font-size: var(--font-8);
   font-weight: 800;
+  line-height: 1;
   text-transform: uppercase;
 
   &.offline { border: 1px solid Rgb(52 211 153 / 20%); background: Rgb(52 211 153 / 10%); color: $green; }
@@ -219,6 +223,15 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
       background: Rgb(59 130 246 / 25%);
       border-color: Rgb(59 130 246 / 50%);
     }
+  }
+
+  .emoji {
+    font-size: var(--font-10);
+    line-height: 1;
+  }
+
+  .badge-text {
+    line-height: 1.2;
   }
 }
 

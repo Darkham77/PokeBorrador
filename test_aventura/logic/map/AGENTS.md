@@ -46,6 +46,11 @@ Frontend Developers / Systems Engineers.
 - `continentGenerator.ts`: Macro-regional continental procedural world generator synthesizing 256x256 / 320x320 overworld maps, coordinating geological sculpting, hydrography, biomes, mountain massifs, regional routes, and settlement placements under the 1000-line SRP architectural limit.
 - `continentSculptingEngine.ts`: Continental landmass sculpting, graph dilation, perimeter beach distribution, orphan tile cleaning, and inland freshwater lake carving sub-engine.
 - `geologicalAutotilingEngine.ts`: Geological autotiling compilation engine translating raw continental biomes and elevation matrices into authentic GBA terrain, autotiled cliff faces, sandy shorelines, and water bodies.
+- `proceduralAutotileEngine.ts`: Dedicated procedural autotiling engine resolving orthogonal path connections and multitile collision stamps.
+- `proceduralTopographyEngine.ts`: Dedicated topography and elevation stamping engine for procedural water bodies and mountain massifs.
+- `proceduralFloraEngine.ts`: Dedicated procedural flora, tall grass encounter patches, jumpable ledges, and scenic props dressing engine.
+- `proceduralForestEngine.ts`: Dedicated procedural forest border and dense wilderness canopy stamping engine.
+- `proceduralMapHelpers.ts`: Dedicated procedural helper engine managing route corridor carving, collision matrix compilation, spawn point resolution, and path clearance invariants.
 
 ### Reference Manuals
 
@@ -86,6 +91,7 @@ Frontend Developers / Systems Engineers.
 - [`inBrowserTileProcessor.ts`](./inBrowserTileProcessor.ts): Module implementation.
 - [`johtoRegionalGenerator.ts`](./johtoRegionalGenerator.ts): Canonical Johto regional procedural world generator extending Kanto regional generator.
 - [`kantoChunkManager.ts`](./kantoChunkManager.ts): Chunk management and spatial partition lifecycle for Kanto overworld tiles.
+- [`kantoCatalogLoader.ts`](./kantoCatalogLoader.ts): Dedicated catalog loader and image prefetch manager for semantic tilesets and prefabs.
 - [`kantoProceduralCarver.ts`](./kantoProceduralCarver.ts): Module implementation.
 - [`kantoRegionalGenerator.ts`](./kantoRegionalGenerator.ts): Module implementation.
 - [`kantoTileEngine.ts`](./kantoTileEngine.ts): Module implementation.
@@ -104,8 +110,13 @@ Frontend Developers / Systems Engineers.
 - [`portDockPierEngine.ts`](./portDockPierEngine.ts): Reusable port dock stone pier stamping engine for water edges.
 - [`pokemonGraphTopology.ts`](./pokemonGraphTopology.ts): Module implementation.
 - [`prefabsRegistry.ts`](./prefabsRegistry.ts): Module implementation.
+- [`proceduralAutotileEngine.ts`](./proceduralAutotileEngine.ts): Procedural path autotiling and multi-tile collision stamping engine.
+- [`proceduralBiomePalettes.ts`](./proceduralBiomePalettes.ts): Canonical theme and biome tile palettes for procedural map generation.
 - [`proceduralCityEngine.ts`](./proceduralCityEngine.ts): Module implementation.
+- [`proceduralFloraEngine.ts`](./proceduralFloraEngine.ts): Procedural flora, tall grass encounter patches, jumpable ledges, and scenic props dressing engine.
+- [`proceduralForestEngine.ts`](./proceduralForestEngine.ts): Procedural forest border and dense wilderness canopy stamping engine.
 - [`proceduralMapGenerator.ts`](./proceduralMapGenerator.ts): Module implementation.
+- [`proceduralTopographyEngine.ts`](./proceduralTopographyEngine.ts): Topography and elevation stamping engine for procedural water bodies and mountain massifs.
 - [`progressionBarrierEngine.ts`](./progressionBarrierEngine.ts): Module implementation.
 - [`progressionObstacleEngine.ts`](./progressionObstacleEngine.ts): Module implementation.
 - [`propsPlacementEngine.ts`](./propsPlacementEngine.ts): Module implementation.
@@ -122,10 +133,12 @@ Frontend Developers / Systems Engineers.
 - [`routePathPruning.ts`](./routePathPruning.ts): Module implementation.
 - [`settlementPlacementHelper.ts`](./settlementPlacementHelper.ts): Module implementation.
 - [`settlementPlainPlacementEngine.ts`](./settlementPlainPlacementEngine.ts): Module implementation.
+- [`structureStamper.ts`](./structureStamper.ts): Multitile structure template stamping engine managing layer elevation, collision masks, and warp registration.
 - [`tallGrassPlacementEngine.ts`](./tallGrassPlacementEngine.ts): Module implementation.
 - [`tilesRegistry.ts`](./tilesRegistry.ts): Module implementation.
 - [`transitableGridEngine.ts`](./transitableGridEngine.ts): Module implementation.
 - [`treeMassPlacementEngine.ts`](./treeMassPlacementEngine.ts): Module implementation.
+- [`universalAutotiler.ts`](./universalAutotiler.ts): Dedicated autotiling engine resolving 48-combination RMXP subtiles, mountain cliffs, and terrain pieces.
 - [`urbanPavingEngine.ts`](./urbanPavingEngine.ts): Module implementation.
 - [`urbanZoningEngine.ts`](./urbanZoningEngine.ts): Module implementation.
 - [`waterAutotileEngine.ts`](./waterAutotileEngine.ts): Module implementation.

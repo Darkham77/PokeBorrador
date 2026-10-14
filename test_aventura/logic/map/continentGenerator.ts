@@ -30,7 +30,8 @@ import {
   sanitizeWaterTerrainMatrix,
   type WaterTerrainKind,
   type WaterTerrainMatrix,
-  type ResolvedWaterMapResult
+  type ResolvedWaterMapResult,
+  type ResolvedWaterCell
 } from './waterAutotileEngine.ts';
 import {
   synthesizeMacroBiomes,
@@ -40,13 +41,22 @@ import {
 import type { GeologicalClusterResult } from './geologicalClusterEngine.ts';
 import {
   resolveMacroBiomeAutotile,
-  type ResolvedMacroBiomeMapResult
+  type ResolvedMacroBiomeMapResult,
+  type ResolvedMacroBiomeCell
 } from './macroBiomeAutotileEngine.ts';
+export type {
+  ResolvedMountainMapResult,
+  MountainPalette,
+  MountainStairLocation,
+  MountainRole
+} from './mountainAutotileEngine.ts';
+export { computeTransitableGrid } from './transitableGridEngine.ts';
 import {
   generateProceduralRiverDrainage,
   type ProceduralRiverDrainageResult
 } from './continent/riverHydrographyEngine.ts';
 import { generateContinentalMountains } from './continentMountainEngine.ts';
+export { generateContinentalMountains };
 
 import {
   generateArchipelagoIslands,
@@ -91,6 +101,7 @@ import {
   removeOrphanTiles,
   carveInlandLakes
 } from './continentSculptingEngine.ts';
+export { removeOrphanTiles, distributePerimeterBeach, carveInlandLakes };
 
 export interface ContinentMapResult {
   readonly width: number;
@@ -221,7 +232,7 @@ export function generateRadialLandmassMask(
   width: number,
   height: number,
   seed: number,
-  oceanRatio = CONTINENT_GEN.DEFAULT_OCEAN_RATIO
+  oceanRatio: number = CONTINENT_GEN.DEFAULT_OCEAN_RATIO
 ): WaterTerrainKind[][] {
   const noise = new SimplexNoise(seed);
   const cx = (width - 1) / 2;
@@ -400,9 +411,9 @@ interface CellCompositionParams {
   readonly y: number;
   readonly terrain: WaterTerrainKind;
   readonly elev: number;
-  readonly waterCell?: ResolvedWaterCell;
-  readonly mtnCell?: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number];
-  readonly mBiome?: MacroBiomeType;
+  readonly waterCell?: ResolvedWaterCell | null;
+  readonly mtnCell?: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number] | null;
+  readonly mBiome?: MacroBiome | null;
   readonly resolvedMacroBiomes: ReturnType<typeof resolveMacroBiomeAutotile>;
   readonly geologicalClusters: ReturnType<typeof generateContinentalMountains>['geologicalClusters'];
   readonly mountainPalette?: MountainPalette;
@@ -414,8 +425,8 @@ function pushBaseGroundLayer(
   layerStack: string[],
   elev: number,
   terrain: WaterTerrainKind,
-  waterCell: ResolvedWaterCell | undefined,
-  mCell: ResolvedMacroBiomeCell | undefined,
+  waterCell: ResolvedWaterCell | null | undefined,
+  mCell: ResolvedMacroBiomeCell | null | undefined,
   mtnPal: MountainPalette
 ): void {
   if (elev > 0) {
@@ -529,7 +540,7 @@ function composeContinentCell(params: CellCompositionParams): ContinentCellDetai
     y,
     terrain,
     elevation: elev,
-    macroBiome: mBiome,
+    macroBiome: mBiome ?? undefined,
     mountainPalette: mtnPal,
     waterRole: waterCell?.role,
     mountainRole: mtnProps.mtnRole,

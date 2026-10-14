@@ -9,7 +9,9 @@
  */
 
 import type { ContinentMapResult, MountainStairLocation, ResolvedMountainMapResult } from './continentGenerator.ts';
-import type { POINode, POIGateway, POITemplate, POIPlacementOptions } from '../../types/map/poiTypes.ts';
+import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
+import type { POITemplate } from './regionalPoiCatalog.ts';
+import type { POIPlacementOptions } from './poiPlacementEngine.ts';
 import { generateSettlementLayout, type SettlementTerrainContext } from './cityLayoutEngine.ts';
 import { clusterMountainMassifs, type GeologicalClusterResult } from './geologicalClusterEngine.ts';
 import { resolveMountainMapGrid } from './mountainAutotileEngine.ts';

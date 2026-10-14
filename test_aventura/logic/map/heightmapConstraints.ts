@@ -276,7 +276,7 @@ export function validateHeightmapConstraints(
         width: reg.width,
         height: reg.height,
         walkableCoreCount,
-        message: `Plateau tier ${reg.elevation} at (${reg.minX}, ${reg.minY}) does not contain a contiguous ${req}x${req} walkable floor core (only ${walkableCoreCount} core cells found).`
+        message: `Plateau tier ${reg.elevation} at (${reg.minX}, ${reg.minY}) does not contain a contiguous ${minCore}x${minCore} walkable floor core (only ${walkableCoreCount} core cells found).`
       });
     }
   }

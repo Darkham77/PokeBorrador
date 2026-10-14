@@ -21,7 +21,7 @@ import {
 import {
   useMapStudioStore,
   DEFAULT_GROUND_TILE
-} from '../../../src/stores/mapStudio.ts';
+} from '../../stores/mapStudio.ts';
 import { STUDIO_MAX_HISTORY_STEPS } from '../../config/studioConstants.ts';
 
 describe('Map Studio Pinia Store (useMapStudioStore)', () => {

@@ -15,13 +15,13 @@ import { ref, computed } from 'vue';
 import { cloneReactive } from '@/logic/utils/cloneUtils';
 import {
   type MapNode,
-  rawNodes as defaultRawNodes,
   connections as defaultConnections,
   officialMapIdMap as defaultOfficialMapIdMap
 } from '../logic/adventure/mapData.ts';
 import { dijkstra } from '../logic/adventure/adventurePathfinding.ts';
 import {
   type AdventureProject,
+  type AdventureProjectNode,
   type RegionArchetype,
   type StudioMode,
   type BrushSize,
@@ -99,7 +99,7 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   const activeEditingNodeId = ref<string | null>(null);
 
   // 3. Core Graph Data (Synched to Active Project)
-  const nodes = ref<Record<string, MapNode>>(cloneReactive(defaultRawNodes));
+  const nodes = ref<Record<string, AdventureProjectNode>>(cloneReactive(projects.value[activeProjectId.value]!.nodes));
   const connections = ref<[string, string][]>(cloneReactive(defaultConnections));
   const officialMapMapping = ref<Record<string, string>>(cloneReactive(defaultOfficialMapIdMap));
 
@@ -372,7 +372,8 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     pushHistory();
     const timestamp = Temporal.Now.instant().epochMilliseconds.toString(36);
     const newId = `node_${timestamp}`;
-    const newNode: MapNode = {
+    const newNode: AdventureProjectNode = {
+      id: newId,
       name: partialData?.name || `Parada ${Object.keys(nodes.value).length + 1}`,
       type: partialData?.type || 'route',
       x: Math.round(x),

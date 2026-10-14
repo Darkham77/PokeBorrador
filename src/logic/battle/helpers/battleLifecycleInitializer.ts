@@ -118,7 +118,7 @@ async function applyPostIntroSetup(
 
   if (isTrainer) await ctx.gs.scheduleSave()
 
-  await processRocketStealMechanics(ctx, trainerName || '', battleState, { isTrainer, isGym })
+  await processRocketStealMechanics(ctx, trainerName || '', battleState ?? null, { isTrainer, isGym })
 }
 
 async function finalizeBattleInitialization(ctx: BattleContext, workerInitPromise: Promise<void>): Promise<void> {

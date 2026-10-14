@@ -11,6 +11,7 @@ import { syncUserProfileData } from '@/logic/auth/profileSyncHelper';
 import type { SaveDataDto } from '@/logic/validation/schemas';
 import { safeStorage } from '@/logic/utils/storage';
 import { saveCoordinator } from '@/logic/auth/saveCoordinator';
+import type { DBRouter } from '@/logic/db/dbRouter';
 
 export { serializeState, isValidState, validateAndSanitize };
 

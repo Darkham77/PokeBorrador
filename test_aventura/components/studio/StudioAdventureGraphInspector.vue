@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
 import { CELL_BIOME, type CellBiomeType } from '../../types/map/kantoGridModel';
 import { STAMPING_PREFABS_CATALOG } from '../../data/map/regionRegistry.ts';
-import type { StampingPrefabDefinition, UrbanScale } from '../../types/map/adventureWorldTypes';
+import type { StampingPrefabDefinition, UrbanScale, AdventureProjectNode } from '../../types/map/adventureWorldTypes';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 
 const store = useMapAdventureStudioStore();
@@ -22,7 +22,7 @@ function getBrushPixelSize(brushSize: number): number {
 }
 
 // --- 1. Graph Mode Inspector State ---
-const selectedNode = computed<MapNode | null>(() => {
+const selectedNode = computed<AdventureProjectNode | null>(() => {
   if (!store.selectedNodeId) return null;
   return store.nodes[store.selectedNodeId] || null;
 });

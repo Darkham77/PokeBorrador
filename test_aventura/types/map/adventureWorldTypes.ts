@@ -1,9 +1,11 @@
 import type { CellBiomeType } from './kantoGridModel.ts';
 import type { PlacedStructure } from './kantoTileEngineTypes.ts';
-import type { GeneratedMap } from '../../logic/map/proceduralMapGenerator.ts';
+import type { GeneratedMap } from './proceduralMapTypes.ts';
+export type { GeneratedMap };
 import type { TileMetadata } from '../../logic/map/tilesRegistry.ts';
 import type { StructureTemplate } from '../../config/mapStructures.ts';
 import type { UrbanScale } from './continentTypes.ts';
+export type { UrbanScale };
 
 export type RegionArchetype = 'kanto' | 'johto' | 'blank' | 'agnostic';
 export type StudioMode = 'graph' | 'terrain' | 'structures' | 'tile';
@@ -20,7 +22,8 @@ export interface CityGenerationConfig {
   includeFences?: boolean; // default: true
 }
 
-export type CanonicalThemeSource = 'firered' | 'emerald' | 'ruby_sapphire';
+export const CANONICAL_THEME_SOURCES = ['firered', 'emerald', 'ruby_sapphire'] as const;
+export type CanonicalThemeSource = (typeof CANONICAL_THEME_SOURCES)[number];
 
 export interface ProceduralGenerationConfig {
   themeSource?: CanonicalThemeSource; // default: 'firered'
@@ -52,6 +55,8 @@ export interface AdventureProjectNode {
   localMap?: GeneratedMap;
   cityConfig?: CityGenerationConfig;
 }
+
+export type MapNode = AdventureProjectNode;
 
 export interface ContinentalRoutesExportBundle {
   readonly version: string; // domain-ok: Identificador o estructura procedural de aventura

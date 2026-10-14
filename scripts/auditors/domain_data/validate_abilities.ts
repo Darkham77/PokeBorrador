@@ -37,15 +37,12 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(ABILITY_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_abilities',
       configKey: 'domain.abilities',
@@ -59,10 +56,16 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
       family: 'domain_data',
       ruleIds: ABILITY_RULES,
       packageName: 'Habilidades',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'ability-invalid-showdown': 'Habilidad no válida en Showdown',
         'ability-missing-translation': 'Traducción faltante en habilidad',
         'ability-empty-field': 'Campo obligatorio vacío en habilidad'
+      },
+      ruleRemediations: {
+        'ability-invalid-showdown': 'Use a valid Pokémon Showdown ability ID or remove from DB',
+        'ability-missing-translation': 'Add Spanish translation in src/data/battle/abilities.ts',
+        'ability-empty-field': 'Fill required name/description fields in abilities.ts'
       },
       requiredFiles: [DATA_FILE],
       coverage: {

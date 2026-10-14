@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export type SimDriver = 'sqlite' | 'postgres';
+export type SimDriver = 'sqlite' | 'postgres' | 'dual';
 
 export interface E2ESuiteFailureCheckpoint {
   suiteName: string;

@@ -557,7 +557,10 @@ function verifyFinalStateTeam(
   clientState: { p1: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string; fainted: boolean }>; p2: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string; fainted: boolean }> }
 ): void {
   expectedTeam.forEach((expected) => {
-    const targetUid = expected.uid || expected.name;
+    const targetUid = expected.uid;
+    if (!targetUid) {
+      throw new Error(`[E2E-PARITY] ${seat} Pokémon ${expected.name} is missing mandatory UID in verification.`);
+    }
     const clientPoke = clientState[seat].find(p => isMatchingUid(p.uid, targetUid));
     if (clientPoke) {
       if (clientPoke.fainted !== expected.fainted) {

@@ -272,7 +272,7 @@ function connectDoorsToStreets(
  */
 export function generateOrganicCityLayout(
   node: POINode,
-  rngSeed = CITY_DEFAULT_SEED,
+  rngSeed: number = CITY_DEFAULT_SEED,
   context?: SettlementTerrainContext
 ): SettlementLayoutResult {
   const bx = node.gridX;
@@ -293,7 +293,7 @@ export function generateOrganicCityLayout(
     reservedDoorsteps.add(`${x}_${y}`);
   };
 
-  let seed = rngSeed;
+  let seed: number = rngSeed;
   for (let i = 0; i < node.id.length; i++) {
     seed = (seed * CITY_RNG_PRIME + node.id.charCodeAt(i)) | 0;
   }

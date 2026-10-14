@@ -93,8 +93,8 @@ ${citiesMarkup}  </g>
  */
 export function importRoutesFromSvg(svgContent: string): SvgImportResult {
   // 1. Extract Dimensions from viewBox or width/height
-  let width = DEFAULT_SVG_VIEWPORT_DIMENSION;
-  let height = DEFAULT_SVG_VIEWPORT_DIMENSION;
+  let width: number = DEFAULT_SVG_VIEWPORT_DIMENSION;
+  let height: number = DEFAULT_SVG_VIEWPORT_DIMENSION;
 
   const viewBoxMatch = svgContent.match(/viewBox=["']\s*([-\d.]+)\s+([-\d.]+)\s+([\d.]+)\s+([\d.]+)\s*["']/i);
   if (viewBoxMatch?.[3] && viewBoxMatch[4]) {

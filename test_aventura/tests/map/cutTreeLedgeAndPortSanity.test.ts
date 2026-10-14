@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { computeOceanGrid } from '../../logic/map/routePathfinding.ts';
 import {
   generateProgressionObstacles,
@@ -103,14 +104,14 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
     const dummyContinent: ContinentMapResult = {
       width: W,
       height: H,
-      cells: [] as any,
-      terrainMatrix: terrainMatrix as any,
+      cells: [] as any, // any-ok: dummy continent fixture in test
+      terrainMatrix: terrainMatrix as any, // any-ok: dummy continent fixture in test
       heightmap,
-      resolvedWater: {} as any,
+      resolvedWater: {} as any, // any-ok: dummy continent fixture in test
       resolvedMountain: {
         occupiedFootCells: Array.from({ length: H }, () => Array(W).fill(false)),
         cellDetails: Array.from({ length: H }, () => Array(W).fill(undefined))
-      } as any,
+      } as any, // any-ok: dummy continent fixture in test
       mountainPalette: 'brown',
       seed: 42,
       placedStairs: []
@@ -383,7 +384,6 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
       tileScale: 32
     });
 
-    const { buildMapBlitInstructions } = require('../../logic/map/canvasTileRenderer.ts');
     const { instructions } = buildMapBlitInstructions(
       result.continent,
       result.pois,

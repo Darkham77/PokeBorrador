@@ -78,7 +78,7 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
       defeated_gyms: string;
     }
 
-    const row = db.prepare('SELECT * FROM trainer_public_profiles WHERE id = ?').get('ash_test_1') as PublicProfileResult;
+    const row = db.prepare('SELECT * FROM trainer_public_profiles WHERE id = ?').get('ash_test_1') as unknown as PublicProfileResult;
 
     assert.ok(row, 'Profile should be found in trainer_public_profiles view');
     assert.strictEqual(row.username, 'AshKetchum');
@@ -144,6 +144,7 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
 
         assert.strictEqual(viewRows.length, 1, 'Should return exactly 1 row from trainer_public_profiles view');
         const viewRow = viewRows[0];
+        assert.ok(viewRow, 'View row should exist');
         assert.strictEqual(viewRow.username, 'AshPgTest');
         assert.strictEqual(viewRow.badges, 7);
         assert.strictEqual(viewRow.pokedex_caught, 2);

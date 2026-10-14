@@ -27,6 +27,7 @@ Frontend Engineers / Map Systems Architects.
 - [`mapLenses.ts`](./mapLenses.ts): Module implementation.
 - [`poiTypes.ts`](./poiTypes.ts): Module implementation.
 - [`pokemonGraphTypes.ts`](./pokemonGraphTypes.ts): Module implementation.
+- [`proceduralMapTypes.ts`](./proceduralMapTypes.ts): Canonical type contracts for procedural map generation, tiles, layers, collision matrices, spawns, and warps.
 
 ## Work Guidance
 

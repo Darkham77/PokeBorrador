@@ -107,7 +107,7 @@ export function getKantoDefaultProject(): AdventureProject {
       autoBuildings: true
     },
     nodes,
-    connections: [...KANTO_CANONICAL_CONNECTIONS],
+    connections: KANTO_CANONICAL_CONNECTIONS.map(([a, b]) => [a, b]),
     updatedAt: Temporal.Now.instant().toString()
   };
 }

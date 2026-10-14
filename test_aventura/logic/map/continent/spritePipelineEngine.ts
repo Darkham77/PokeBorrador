@@ -40,7 +40,7 @@ export interface ClassificationResult {
 /**
  * Strips solid background colors via adaptive corner-pixel chroma-keying.
  */
-export function stripBackground(image: RawImageBuffer, tolerance = SPRITE_PIPELINE.DEFAULT_CHROMA_TOLERANCE): RawImageBuffer {
+export function stripBackground(image: RawImageBuffer, tolerance: number = SPRITE_PIPELINE.DEFAULT_CHROMA_TOLERANCE): RawImageBuffer {
   const { width, height } = image;
   const outData = new Uint8ClampedArray(image.data);
 
@@ -85,7 +85,7 @@ export function stripBackground(image: RawImageBuffer, tolerance = SPRITE_PIPELI
 /**
  * Slices contiguous non-transparent pixel clusters into tight bounding boxes.
  */
-export function sliceConnectedSprites(image: RawImageBuffer, minArea = SPRITE_PIPELINE.MIN_CLUSTER_AREA): BoundingBox[] {
+export function sliceConnectedSprites(image: RawImageBuffer, minArea: number = SPRITE_PIPELINE.MIN_CLUSTER_AREA): BoundingBox[] {
   const { width, height, data } = image;
   const visited = new Uint8Array(width * height);
   const boxes: BoundingBox[] = [];

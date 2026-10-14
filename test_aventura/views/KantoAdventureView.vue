@@ -31,7 +31,7 @@ const modalStore = useModalStore()
 uiStore.lowPowerMode = 'disabled'
 
 // Disable modal openings in this test view to prevent cards from hiding their contents 
-modalStore.open = () => {}
+modalStore.open = () => null
 
 // Ported constants
 const SPACING_MULTIPLIER = 2.5;
@@ -184,7 +184,6 @@ const planningTarget = ref<string | null>(null)
 const worldContainer = ref<HTMLElement | null>(null)
 const viewport = ref<HTMLElement | null>(null)
 const playerToken = ref<HTMLElement | null>(null)
-const playerSprite = ref<HTMLElement | null>(null)
 const previewLinesSvg = ref<SVGElement | null>(null)
 
 const mapNodes = computed(() => {
@@ -389,14 +388,20 @@ function enterParkedMode() {
   setStatus("Estacionado", false)
   
   const targetScale = getOptimalParkedScale()
-  centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, true, targetScale)
+  const node = mapNodes.value[currentNode.value]
+  if (node) {
+    centerCameraOn(node.x, node.y, true, targetScale)
+  }
 }
 
 function exitParkedMode() {
   isZoomedIn.value = false
   setStatus("Modo Libre", true)
   const targetScale = getOptimalMapScale()
-  centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, true, targetScale)
+  const node = mapNodes.value[currentNode.value]
+  if (node) {
+    centerCameraOn(node.x, node.y, true, targetScale)
+  }
 }
 
 // Drag logic
@@ -441,9 +446,10 @@ function endDrag() {
 function travelToAdjacent(targetId: string) {
   if (isMoving.value) return
   const targetNode = mapNodes.value[targetId]
+  if (!targetNode) return
 
   if (targetNode.requiresMO && !playerInventory.value[targetNode.requiresMO]) { 
-    showActionAlert(targetNode.blockMsg)
+    showActionAlert(targetNode.blockMsg ?? 'Ruta bloqueada.')
     return
   }
 
@@ -463,6 +469,7 @@ function planTravel(targetId: string) {
   }
   
   const targetNode = mapNodes.value[targetId]
+  if (!targetNode) return
 
   if (!discoveredNodes.value.includes(targetId)) {
     const isAdjacent = getAdjacentNodes(currentNode.value, connections).includes(targetId)
@@ -473,11 +480,11 @@ function planTravel(targetId: string) {
   }
 
   if (targetNode.requiresMO && !playerInventory.value[targetNode.requiresMO]) {
-    showActionAlert(targetNode.blockMsg)
+    showActionAlert(targetNode.blockMsg ?? 'Ruta bloqueada.')
     return
   }
 
-  let canFly = playerInventory.value['Vuelo'] && (targetNode.type === 'city' || targetNode.type === 'league')
+  let canFly = !!(playerInventory.value['Vuelo'] && (targetNode.type === 'city' || targetNode.type === 'league'))
   if (canFly && !discoveredNodes.value.includes(targetId)) canFly = false
 
   const groundPaths = getAlternativePaths(currentNode.value, targetId, mapNodes.value, playerInventory.value, discoveredNodes.value, connections)
@@ -506,14 +513,16 @@ function planTravel(targetId: string) {
 function calculateRouteStats(nodesInPath: string[]) {
   const sums = { t: 0, w: 0, m: 0, f: 0 }
   for (let i = 1; i < nodesInPath.length; i++) {
-    const node = mapNodes.value[nodesInPath[i]]
+    const routeNodeId = nodesInPath[i]
+    if (!routeNodeId) continue
+    const node = mapNodes.value[routeNodeId]
     if (!node) continue
     const f = node.farm || { t: 0, w: 0, m: 0, f: 0 }
     sums.t = Math.max(sums.t, f.t)
     sums.w = Math.max(sums.w, f.w)
     sums.m = Math.max(sums.m, f.m)
     sums.f = Math.max(sums.f, f.f)
-    if (nodesInPath[i] === currentSwarmRoute.value) sums.w = Math.min(MAX_FARM_STAT_PERCENT, sums.w + SWARM_WATER_BOOST)
+    if (routeNodeId === currentSwarmRoute.value) sums.w = Math.min(MAX_FARM_STAT_PERCENT, sums.w + SWARM_WATER_BOOST)
   }
   if (activeCompanion.value === 'pikachu') sums.t = Math.min(MAX_FARM_STAT_PERCENT, Math.floor(sums.t * COMPANION_FARM_MULTIPLIER))
   if (activeCompanion.value === 'meowth') sums.m = Math.min(MAX_FARM_STAT_PERCENT, Math.floor(sums.m * COMPANION_FARM_MULTIPLIER))
@@ -525,7 +534,7 @@ function updatePlanUI() {
   const currentPath = currentPlanPaths.value[selectedPlanIndex.value]
   if (!currentPath) return
 
-  drawPreviewPath(currentPath.nodes, currentPath.isFly)
+  drawPreviewPath(currentPath.nodes, !!currentPath.isFly)
   zoomToFitPath(currentPath.nodes)
 }
 
@@ -534,6 +543,7 @@ function zoomToFitPath(nodesIds: string[]) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
   nodesIds.forEach(id => {
     const n = mapNodes.value[id]
+    if (!n) return
     if (n.x < minX) minX = n.x; if (n.x > maxX) maxX = n.x
     if (n.y < minY) minY = n.y; if (n.y > maxY) maxY = n.y
   })
@@ -551,11 +561,10 @@ function zoomToFitPath(nodesIds: string[]) {
   // Exact screen padding in pixels to avoid UI collisions
   const screenPaddingTop = SCREEN_PADDING_TOP_PX     // Clears header + margin
   const screenPaddingBottom = SCREEN_PADDING_BOTTOM_PX  // Clears bottom planning panel
-  const screenPaddingLeft = SCREEN_PADDING_SIDE_PX
-  const screenPaddingRight = SCREEN_PADDING_SIDE_PX
+  const screenPaddingSide = SCREEN_PADDING_SIDE_PX
 
   // Calculate available screen space
-  const availWidth = Math.max(MIN_VIEWPORT_AVAILABLE_SPACE_PX, viewport.value.clientWidth - (screenPaddingLeft + screenPaddingRight))
+  const availWidth = Math.max(MIN_VIEWPORT_AVAILABLE_SPACE_PX, viewport.value.clientWidth - (screenPaddingSide * 2))
   const availHeight = Math.max(MIN_VIEWPORT_AVAILABLE_SPACE_PX, viewport.value.clientHeight - (screenPaddingTop + screenPaddingBottom))
 
   // Calculate scale needed to fit the path within the available space
@@ -571,7 +580,7 @@ function zoomToFitPath(nodesIds: string[]) {
 
   // Determine if the destination is closer to the top (north) or bottom (south) of the path
   const destNodeId = nodesIds[nodesIds.length - 1]
-  const destNode = mapNodes.value[destNodeId]
+  const destNode = destNodeId ? mapNodes.value[destNodeId] : undefined
   const isDestAtTop = destNode ? Math.abs(destNode.y - minY) < Math.abs(destNode.y - maxY) : true
 
   let y_center: number
@@ -601,8 +610,11 @@ function drawPreviewPath(nodeIds: string[], isFly: boolean) {
   if (!previewLinesSvg.value) return
   previewLinesSvg.value.innerHTML = ''
   for (let i = 0; i < nodeIds.length - 1; i++) {
-    const nA = mapNodes.value[nodeIds[i]]
-    const nB = mapNodes.value[nodeIds[i + 1]]
+    const fromId = nodeIds[i]
+    const toId = nodeIds[i + 1]
+    if (!fromId || !toId) continue
+    const nA = mapNodes.value[fromId]
+    const nB = mapNodes.value[toId]
     if (!nA || !nB) continue
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
     line.setAttribute('x1', String(nA.x))
@@ -628,8 +640,10 @@ async function confirmTravel() {
   const pathData = currentPlanPaths.value[selectedPlanIndex.value]
   if (!pathData || !pathData.nodes || pathData.nodes.length < 2) return
 
-  const firstNode = mapNodes.value[pathData.nodes[0]]
-  const secondNode = mapNodes.value[pathData.nodes[1]]
+  const firstNodeId = pathData.nodes[0]
+  const secondNodeId = pathData.nodes[1]
+  const firstNode = firstNodeId ? mapNodes.value[firstNodeId] : undefined
+  const secondNode = secondNodeId ? mapNodes.value[secondNodeId] : undefined
   if (firstNode && secondNode) {
     const initDx = secondNode.x - firstNode.x
     const initDy = secondNode.y - firstNode.y
@@ -660,11 +674,14 @@ async function confirmTravel() {
   if (pathData.isFly) updatePlayerVisuals()
 
   const finalNode = pathData.nodes[pathData.nodes.length - 1]
-  currentNode.value = finalNode
-  safeSetStorage(STORAGE_LOCATION_KEY, finalNode)
+  if (finalNode) {
+    currentNode.value = finalNode
+    safeSetStorage(STORAGE_LOCATION_KEY, finalNode)
 
-  if (mapNodes.value[finalNode]?.hasEvent) {
-    gsap.delayedCall(EVENT_ALERT_DELAY_SEC, () => showActionAlert(`¡Oye! Tienes un evento pendiente en ${mapNodes.value[finalNode].name}.`))
+    const finalNodeObj = mapNodes.value[finalNode]
+    if (finalNodeObj?.hasEvent) {
+      gsap.delayedCall(EVENT_ALERT_DELAY_SEC, () => showActionAlert(`¡Oye! Tienes un evento pendiente en ${finalNodeObj.name}.`))
+    }
   }
   enterParkedMode()
 }
@@ -739,6 +756,7 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
     for (let i = 0; i < nodes.length - 1; i++) {
       const startId = nodes[i]
       const endId = nodes[i + 1]
+      if (!startId || !endId) continue
       const start = mapNodes.value[startId]
       const end = mapNodes.value[endId]
       if (!start || !end) continue
@@ -784,8 +802,11 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
     }
 
     // Set initial direction and terrain immediately
-    playerDirection.value = legs[0].dir
-    activeTravelTerrain.value = legs[0].terrain
+    const firstLeg = legs[0]
+    if (firstLeg) {
+      playerDirection.value = firstLeg.dir
+      activeTravelTerrain.value = firstLeg.terrain
+    }
 
     // Clean up any residual tweens
     if (playerToken.value) gsap.killTweensOf(playerToken.value)
@@ -825,8 +846,9 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
         const currentTime = animState.t
         let activeLeg = legs[legs.length - 1]
         for (let i = 0; i < legs.length; i++) {
-          if (currentTime <= legs[i].endTime) {
-            activeLeg = legs[i]
+          const leg = legs[i]
+          if (leg && currentTime <= leg.endTime) {
+            activeLeg = leg
             break
           }
         }
@@ -871,13 +893,13 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
         const step = Math.floor((currentTime / totalTime) * totalSteps) % 4
         if (isBike) {
           const bikeCycle = [0, 1, 0, 2]
-          walkFrame.value = bikeCycle[step]
+          walkFrame.value = bikeCycle[step] ?? 0
         } else if (activeTravelTerrain.value === 'water') {
           const surfCycle = [0, 1, 2, 1]
-          walkFrame.value = surfCycle[step]
+          walkFrame.value = surfCycle[step] ?? 0
         } else {
           const walkCycle = [0, 1, 2, 1]
-          walkFrame.value = walkCycle[step]
+          walkFrame.value = walkCycle[step] ?? 0
         }
       }
     })
@@ -886,12 +908,19 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
 
 // Swarms
 const triggerSwarm = () => {
-  const routes = Object.keys(mapNodes.value).filter(id => mapNodes.value[id].type.includes('route'))
-  currentSwarmRoute.value = routes[Math.floor(Math.random() * routes.length)]
+  const routes = Object.keys(mapNodes.value).filter(id => mapNodes.value[id]?.type.includes('route'))
+  const selectedRoute = routes[Math.floor(Math.random() * routes.length)]
+  if (selectedRoute) {
+    currentSwarmRoute.value = selectedRoute
+  }
 }
 
 // Explore & Heal
-const exploreZone = () => showActionAlert(`La hierba alta de ${mapNodes.value[currentNode.value].name} se mueve... ¡Prepárate!`)
+const exploreZone = () => {
+  const current = mapNodes.value[currentNode.value]
+  const zoneName = current ? current.name : 'la zona'
+  showActionAlert(`La hierba alta de ${zoneName} se mueve... ¡Prepárate!`)
+}
 
 function healPokemon() {
   showActionAlert('Turururu-ru~\n\nTus Pokémon están completamente sanos y listos para seguir luchando.')
@@ -913,7 +942,8 @@ function debugGiveAllMOs() {
 
 const debugTriggerSwarm = () => {
   triggerSwarm()
-  showActionAlert("⚙️ Enjambre forzado en: " + mapNodes.value[currentSwarmRoute.value!].name)
+  const routeName = currentSwarmRoute.value ? (mapNodes.value[currentSwarmRoute.value]?.name ?? currentSwarmRoute.value) : 'Desconocido'
+  showActionAlert("⚙️ Enjambre forzado en: " + routeName)
 }
 
 function debugHardReset() {
@@ -943,8 +973,9 @@ const adjacentButtons = computed(() => {
   if (!current) return []
   
   const adjIds = getAdjacentNodes(currentNode.value, connections)
-  return adjIds.map(id => {
+  return adjIds.flatMap(id => {
     const adj = mapNodes.value[id]
+    if (!adj) return []
     const dx = adj.x - current.x
     const dy = adj.y - current.y
     
@@ -953,19 +984,22 @@ const adjacentButtons = computed(() => {
       : (dy > 0 ? 'S' : 'N')
 
     
-    return {
+    return [{
       id,
       name: adj.name,
       direction,
       discovered: discoveredNodes.value.includes(id)
-    }
+    }]
   })
 })
 
 function handleResize() {
   if (isZoomedIn.value && !isMoving.value && !isPlanning.value) {
     const targetScale = getOptimalParkedScale()
-    centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, false, targetScale)
+    const current = mapNodes.value[currentNode.value]
+    if (current) {
+      centerCameraOn(current.x, current.y, false, targetScale)
+    }
   } else if (isPlanning.value) {
     const currentPath = currentPlanPaths.value[selectedPlanIndex.value]
     if (currentPath) zoomToFitPath(currentPath.nodes)
@@ -988,9 +1022,10 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
 
   // Position player token initially
-  if (playerToken.value && mapNodes.value[currentNode.value]) {
-    playerToken.value.style.left = `${mapNodes.value[currentNode.value].x}px`
-    playerToken.value.style.top = `${mapNodes.value[currentNode.value].y}px`
+  const currentInitialNode = mapNodes.value[currentNode.value]
+  if (playerToken.value && currentInitialNode) {
+    playerToken.value.style.left = `${currentInitialNode.x}px`
+    playerToken.value.style.top = `${currentInitialNode.y}px`
   }
 
   // Initial draw connections
@@ -1146,7 +1181,7 @@ onMounted(() => {
 
                 <MapCard 
                   :map="mapLocationsById[id]"
-                  :is-locked="node.requiresMO && !playerInventory[node.requiresMO]"
+                  :is-locked="Boolean(node.requiresMO && !playerInventory[node.requiresMO])"
                   :cycle="currentCycle"
                   :weather="getWeatherForMap(id as string)"
                   :badge-count="8"
@@ -1227,7 +1262,6 @@ onMounted(() => {
           </div>
           <div
             id="player-sprite"
-            ref="playerSprite"
             :class="{ 'anim-bounce': isMoving && !playerInventory['Bicicleta'] && !isSurfing && !currentPlanPaths[selectedPlanIndex]?.isFly }"
             :style="{ transform: playerSpriteTransform }"
           >
@@ -1387,7 +1421,7 @@ onMounted(() => {
             <span>{{ planningTarget ? (discoveredNodes.includes(planningTarget) ? mapNodes[planningTarget]?.name : "Zona Desconocida") : "Destino" }}</span>
           </h3>
           <span class="planning-badge">
-            {{ currentPlanPaths[selectedPlanIndex] ? (currentPlanPaths[selectedPlanIndex].isFly ? '🦅 Vuelo' : `Opción ${selectedPlanIndex + 1}/${currentPlanPaths.length}`) : '...' }}
+            {{ currentPlanPaths[selectedPlanIndex] ? (currentPlanPaths[selectedPlanIndex]?.isFly ? '🦅 Vuelo' : `Opción ${selectedPlanIndex + 1}/${currentPlanPaths.length}`) : '...' }}
           </span>
         </div>
 
@@ -1405,36 +1439,36 @@ onMounted(() => {
               <span class="planning-stat-icon">⚔️</span>
               <span
                 class="planning-stat-val"
-                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).t >= 70 }"
+                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex]?.nodes ?? []).t >= 70 }"
               >
-                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).t }}%
+                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex]?.nodes ?? []).t }}%
               </span>
             </div>
             <div class="planning-stat-item">
               <span class="planning-stat-icon">🌿</span>
               <span
                 class="planning-stat-val"
-                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).w >= 70 }"
+                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex]?.nodes ?? []).w >= 70 }"
               >
-                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).w }}%
+                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex]?.nodes ?? []).w }}%
               </span>
             </div>
             <div class="planning-stat-item">
               <span class="planning-stat-icon">⛏️</span>
               <span
                 class="planning-stat-val"
-                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).m >= 70 }"
+                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex]?.nodes ?? []).m >= 70 }"
               >
-                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).m }}%
+                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex]?.nodes ?? []).m }}%
               </span>
             </div>
             <div class="planning-stat-item">
               <span class="planning-stat-icon">🎣</span>
               <span
                 class="planning-stat-val"
-                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).f >= 70 }"
+                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex]?.nodes ?? []).f >= 70 }"
               >
-                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).f }}%
+                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex]?.nodes ?? []).f }}%
               </span>
             </div>
           </div>
@@ -1519,7 +1553,7 @@ onMounted(() => {
             @click="() => {
               toggleRadarModal()
               if (isZoomedIn) exitParkedMode()
-              centerCameraOn(mapNodes[id].x, mapNodes[id].y, true, getOptimalMapScale())
+              centerCameraOn(mapNodes[id]?.x ?? 0, mapNodes[id]?.y ?? 0, true, getOptimalMapScale())
             }"
           >
             📍 {{ mapNodes[id]?.name }}

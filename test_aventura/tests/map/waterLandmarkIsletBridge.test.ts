@@ -16,6 +16,7 @@ import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
+import { resolveWaterCoastGrid, type WaterTerrainMatrix } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('waterLandmarkIsletBridge', () => {
   const continent = generateContinentMap({
@@ -166,8 +167,7 @@ describe('waterLandmarkIsletBridge', () => {
   });
 
   it('guarantees a 3x3 grass block surrounded by sand has rounded corners in all 4 corners', () => {
-    const { resolveWaterCoastGrid } = require('../../logic/map/waterAutotileEngine.ts');
-    const matrix = [
+    const matrix: WaterTerrainMatrix = [
       ['sand', 'sand', 'sand', 'sand', 'sand'],
       ['sand', 'grass', 'grass', 'grass', 'sand'],
       ['sand', 'grass', 'grass', 'grass', 'sand'],
@@ -177,20 +177,20 @@ describe('waterLandmarkIsletBridge', () => {
     const res = resolveWaterCoastGrid(matrix);
 
     // North-West outer corner of grass -> surrounding sand at (0, 0) has corner_inner_se (poke_sand_inner_br.png)
-    expect(res.cellDetails[0][0].role).toBe('corner_inner_se');
-    expect(res.cellDetails[0][0].primaryTile).toBe('poke_sand_inner_br.png');
+    expect(res.cellDetails[0]![0]!.role).toBe('corner_inner_se');
+    expect(res.cellDetails[0]![0]!.primaryTile).toBe('poke_sand_inner_br.png');
 
     // North-East outer corner of grass -> surrounding sand at (4, 0) has corner_inner_sw (poke_sand_inner_bl.png)
-    expect(res.cellDetails[0][4].role).toBe('corner_inner_sw');
-    expect(res.cellDetails[0][4].primaryTile).toBe('poke_sand_inner_bl.png');
+    expect(res.cellDetails[0]![4]!.role).toBe('corner_inner_sw');
+    expect(res.cellDetails[0]![4]!.primaryTile).toBe('poke_sand_inner_bl.png');
 
     // South-West outer corner of grass -> surrounding sand at (0, 4) has corner_inner_ne (poke_sand_inner_tr.png)
-    expect(res.cellDetails[4][0].role).toBe('corner_inner_ne');
-    expect(res.cellDetails[4][0].primaryTile).toBe('poke_sand_inner_tr.png');
+    expect(res.cellDetails[4]![0]!.role).toBe('corner_inner_ne');
+    expect(res.cellDetails[4]![0]!.primaryTile).toBe('poke_sand_inner_tr.png');
 
     // South-East outer corner of grass -> surrounding sand at (4, 4) has corner_inner_nw (poke_sand_inner_tl.png)
-    expect(res.cellDetails[4][4].role).toBe('corner_inner_nw');
-    expect(res.cellDetails[4][4].primaryTile).toBe('poke_sand_inner_tl.png');
+    expect(res.cellDetails[4]![4]!.role).toBe('corner_inner_nw');
+    expect(res.cellDetails[4]![4]!.primaryTile).toBe('poke_sand_inner_tl.png');
   });
 
   it('guarantees lake bridges connecting grass shores preserve grass and allow dirt path connection', () => {

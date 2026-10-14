@@ -270,7 +270,7 @@ function backfillVariationIdleFeet(
 function shouldSkipRedundantBaseTuple(
   key: string,
   baseKey: string,
-  tuple: [number, number, number, number],
+  tuple: PackedFeetTuple,
   pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
   overridesMap: Record<string, SpriteShadowOverride>
 ): boolean {

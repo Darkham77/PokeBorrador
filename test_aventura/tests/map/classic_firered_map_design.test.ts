@@ -208,8 +208,9 @@ describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () 
   });
 
   it('incorporates gatehouses and modular rectangular clearings in regional world generation', async () => {
-    const { KantoRegionalWorldGenerator, DynamicCatalogLoader } = await import('../../logic/map/kantoRegionalGenerator.ts');
-    const { rawNodes, connections } = await import('../../../src/components/map/adventure/adventureMapData.ts');
+    const { KantoRegionalWorldGenerator } = await import('../../logic/map/kantoRegionalGenerator.ts');
+    const { DynamicCatalogLoader } = await import('../../logic/map/kantoTileEngine.ts');
+    const { rawNodes, connections } = await import('../../logic/adventure/mapData.ts');
 
     const loader = new DynamicCatalogLoader();
     const worldGen = new KantoRegionalWorldGenerator(loader);

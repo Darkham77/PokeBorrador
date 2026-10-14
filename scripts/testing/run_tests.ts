@@ -12,7 +12,8 @@ import {
   inspectDocker,
   ensurePostgresTestContainerReady,
   stopPostgresTestContainer,
-  POSTGRES_URL
+  POSTGRES_URL,
+  type DockerDiscovery
 } from './postgres_test_container.ts';
 
 /**
@@ -41,7 +42,7 @@ function syncPublicVersionJson(): void {
 /**
  * Main execution routine.
  */
-async function setupTestEnvironment(dockerInfo: DockerInspectionResult): Promise<{
+async function setupTestEnvironment(dockerInfo: DockerDiscovery): Promise<{
   postgresReady: boolean;
   cleanupContainer: () => void;
 }> {

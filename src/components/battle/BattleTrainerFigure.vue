@@ -3,13 +3,13 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import CombatShadow from './CombatShadow.vue'
 import { getTrainerIdleConfig } from './helpers/trainerIdleAnims.ts'
-import type { SpriteCoordinates } from '@/types/pokemon/spriteShadows'
+import type { FeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
 const props = withDefaults(defineProps<{
   spriteUrl: string
   altText: string
   size: number
-  feetCoords?: SpriteCoordinates | null
+  feetCoords?: FeetPoints | null
   shadowKey?: string
   showGuide?: boolean
   guideWidth?: number

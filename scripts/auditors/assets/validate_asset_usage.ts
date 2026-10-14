@@ -56,15 +56,12 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(ASSET_USAGE_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'light',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_asset_usage',
       configKey: 'assets.assetUsage',
@@ -78,6 +75,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       family: 'assets',
       ruleIds: ASSET_USAGE_RULES,
       packageName: 'Asset',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'asset-hardcoded-path-template': 'Ruta cableada en template',
         'asset-literal-bound-src': ':src con ruta literal',
@@ -86,6 +84,15 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         'asset-hardcoded-data-path': 'Ruta en datos en vez de ID',
         'asset-hardcoded-style-path': 'Ruta cableada en estilos',
         'asset-physical-file-missing': 'Archivo no encontrado en disco'
+      },
+      ruleRemediations: {
+        'asset-hardcoded-path-template': 'Use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead of hardcoding asset path in templates',
+        'asset-literal-bound-src': 'Use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead of literal asset path in :src',
+        'asset-direct-banner-binding': 'Wrap banner image access through getAssetUrl()',
+        'asset-unmediated-logic-path': 'Resolve asset paths via assetService rather than direct string paths',
+        'asset-hardcoded-data-path': 'Store domain asset IDs instead of hardcoded file paths in data files',
+        'asset-hardcoded-style-path': 'Use CSS variables or dynamic background bindings with getAssetUrl()',
+        'asset-physical-file-missing': 'Provide the missing asset file in public/assets or verify file path'
       },
       requiredFiles: [
         path.resolve(process.cwd(), 'src/logic/services/assetService.ts')

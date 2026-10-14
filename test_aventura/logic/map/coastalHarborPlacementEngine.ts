@@ -12,18 +12,9 @@
 
 import { GEO_CARDINAL_DIRECTIONS, type POINode, type CardinalDirection, type POIGateway } from '../../types/map/poiTypes.ts';
 import { resolvePortGateAsset } from './canvasLandmarkRenderer.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
 
-export interface PortBuildingOption {
-  readonly file: string;
-  readonly width: number;
-  readonly height: number;
-}
 
-const _PORT_DOCK_BUILDINGS: readonly PortBuildingOption[] = [
-  { file: 'house_wood_brown.png', width: 4, height: 4 },
-  { file: 'house_purple.png', width: 5, height: 4 },
-  { file: 'house_blue.png', width: 6, height: 4 }
-] as const;
 
 const MAX_OCEAN_DEPTH_SCAN = 14 as const;
 const MIN_OCEAN_DEPTH_REQUIRED = 6 as const;

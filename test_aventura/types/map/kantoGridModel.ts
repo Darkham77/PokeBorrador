@@ -7,6 +7,7 @@
  */
 
 import type { PlacedStructure } from './kantoTileEngineTypes.ts';
+import type { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 
 export const KANTO_WORLD_WIDTH = 3600;
 export const KANTO_WORLD_HEIGHT = 4600;
@@ -119,6 +120,7 @@ export interface IKantoCarverWorldContext {
   props: PlacedStructure[];
   nature: PlacedStructure[];
   seed: number;
+  hash(x: number, y: number, seed?: number): number;
   nodeToTile(x: number, y: number): { tx: number; ty: number };
   nodeToPx(x: number, y: number): { px: number; py: number };
 }

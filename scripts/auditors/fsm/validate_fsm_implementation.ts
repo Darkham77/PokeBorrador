@@ -159,15 +159,12 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(FSM_IMPLEMENTATION_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
-        ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        ast: true,
+        changedSince: false
       }),
       id: 'validate_fsm_implementation',
       configKey: 'fsm.implementation',
@@ -181,6 +178,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
       family: 'fsm',
       ruleIds: FSM_IMPLEMENTATION_RULES,
       packageName: 'FSM',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'fsm-mermaid-missing-in-js': 'Estado Mermaid no implementado',
         'fsm-unused-constant': 'Constante de estado sin uso',
@@ -193,6 +191,19 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
         'fsm-missing-persistence-mode': 'Modo sin persistencia asociada',
         'fsm-nonexistent-state-reference': 'Referencia a estado inexistente',
         'fsm-invalid-suppression': 'Supresión inválida en FSM'
+      },
+      ruleRemediations: {
+        'fsm-mermaid-missing-in-js': 'Implement Mermaid state in battleStateMachine or update manual diagram',
+        'fsm-unused-constant': 'Remove unused FSM constant or integrate it into battle transition logic',
+        'fsm-orphan-substate': 'Connect substate to valid parent states in transition map',
+        'fsm-non-atomic-timer': 'Replace raw setTimeout with atomic GSAP tweens or battle timeline',
+        'fsm-unawaited-substate': 'Add await to async substate handler calls',
+        'fsm-missing-idempotency-guard': 'Add idempotency guard to prevent re-entrant transition execution',
+        'fsm-missing-seat-rule': 'Ensure dynamic seat dispatch handles all active battle seats',
+        'fsm-missing-level-up-cycle': 'Include level-up check in post-battle victory/reward handler',
+        'fsm-missing-persistence-mode': 'Map battle mode to corresponding persistence save routine',
+        'fsm-nonexistent-state-reference': 'Fix reference to undefined state key in battleStateMachine',
+        'fsm-invalid-suppression': 'Provide descriptive reason for fsm suppression comment'
       },
       requiredFiles: [IMPL_MANUAL_PATH, IMPL_FSM_PATH],
       coverage: {

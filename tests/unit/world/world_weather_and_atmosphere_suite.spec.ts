@@ -335,14 +335,16 @@ function collectPhaseWeathers(weatherProbs: Record<string, number | undefined>, 
 function collectSeasonWeathers(phases: Record<string, Record<string, number | undefined>>, usedWeatherKeys: Set<string>): void {
   for (const rawPhaseName in phases) {
     const phaseName = requireDayPhase(rawPhaseName)
-    collectPhaseWeathers(phases[phaseName], usedWeatherKeys)
+    const phase = phases[phaseName]
+    if (phase) collectPhaseWeathers(phase, usedWeatherKeys)
   }
 }
 
 function collectRouteWeathers(seasons: Record<string, Record<string, Record<string, number | undefined>>>, usedWeatherKeys: Set<string>): void {
   for (const rawSeasonName in seasons) {
     const seasonName = requireWeatherSeasonId(rawSeasonName)
-    collectSeasonWeathers(seasons[seasonName], usedWeatherKeys)
+    const season = seasons[seasonName]
+    if (season) collectSeasonWeathers(season, usedWeatherKeys)
   }
 }
 
@@ -538,9 +540,12 @@ function extractPossibleWeathersForRoute(seasons: Record<string, Record<string, 
   for (const rawSeason in seasons) {
     const season = requireWeatherSeasonId(rawSeason)
     const phases = seasons[season]
-    for (const rawPhase in phases) {
-      const phase = requireDayPhase(rawPhase)
-      collectActiveWeathersForPhase(phases[phase], possibleWeathers)
+    if (phases) {
+      for (const rawPhase in phases) {
+        const phase = requireDayPhase(rawPhase)
+        const p = phases[phase]
+        if (p) collectActiveWeathersForPhase(p, possibleWeathers)
+      }
     }
   }
   return possibleWeathers

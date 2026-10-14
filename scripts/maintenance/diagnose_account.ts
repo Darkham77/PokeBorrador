@@ -29,7 +29,7 @@ import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { parseArgs, styleText } from 'node:util';
 import { DatabaseSync } from 'node:sqlite';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { validateSaveData } from '../../src/logic/validation/schemas.ts';
 import { checkPokemonLegality } from '../../src/logic/pokemon/pokemonLegality.ts';
@@ -51,7 +51,7 @@ enableCompileCache();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_VERBOSE_ACCOUNTS_LIMIT = 10;
 
-export type DiagnosticFindingCategory = 'valibot' | 'legality' | 'inventory' | 'daycare' | 'pokemon';
+export type DiagnosticFindingCategory = 'valibot' | 'legality' | 'inventory' | 'daycare' | 'pokemon' | 'system';
 
 export interface DiagnosticFinding {
   severity: FindingSeverity;
@@ -82,21 +82,36 @@ interface BackupSaveRow {
   last_save_id?: string;
 }
 
+interface AuthUserCandidate {
+  email?: string;
+  id?: string;
+}
+
+interface SupabaseSaveDataRow {
+  save_data: unknown;
+  last_save_id?: string;
+}
+
 async function findUserInAuthFallback(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   userInput: string,
   serverName: string
 ): Promise<LoadedAccountData | null> {
   console.log(styleText('yellow', `⚠️ No se encontró perfil directo con "${userInput}". Buscando en auth.users...`));
   const { data: authUsers } = await supabase.auth.admin.listUsers();
   const cleanId = toID(userInput);
-  const foundAuth = authUsers?.users.find(u => (u.email && toID(u.email) === cleanId) || u.id === userInput);
+  const foundAuth = authUsers?.users.find((u: AuthUserCandidate) => (u.email && toID(u.email) === cleanId) || u.id === userInput);
   if (!foundAuth) {
     console.error(styleText('red', `❌ Usuario "${userInput}" no encontrado en el servidor ${serverName}.`));
     return null;
   }
   const userId = foundAuth.id;
-  const { data: saveRow, error: saveErr } = await supabase.from('game_saves').select('save_data, last_save_id').eq('user_id', userId).single();
+  const { data: rawSaveRow, error: saveErr } = await supabase
+    .from('game_saves')
+    .select('save_data, last_save_id')
+    .eq('user_id', userId)
+    .single();
+  const saveRow = rawSaveRow as SupabaseSaveDataRow | null;
   if (saveErr || !saveRow) {
     console.error(styleText('red', `❌ No se encontró partida (game_saves) para el usuario "${userId}" (${foundAuth.email}).`));
     return null;
@@ -547,6 +562,7 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   fixedCount: number;
   remainingFindings: DiagnosticFinding[];
 } {
+  const findings: DiagnosticFinding[] = [];
   using db = new DatabaseSync(':memory:');
   initTestDatabaseSchema(db);
 
@@ -601,9 +617,9 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   const fixedCount = Math.max(0, errorBefore - errorAfter);
 
   return {
-    success: errorAfter === 0,
+    success: errorAfter === 0 && findings.length === 0,
     fixedCount,
-    remainingFindings
+    remainingFindings: [...findings, ...remainingFindings]
   };
 }
 

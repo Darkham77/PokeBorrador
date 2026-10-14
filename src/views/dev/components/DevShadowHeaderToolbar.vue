@@ -43,7 +43,6 @@ interface Props {
 defineProps<Props>();
 
 defineEmits<{
-  (e: 'return'): void;
   (e: 'update:columns', val: number): void;
   (e: 'update:spriteZoom', val: number): void;
   (e: 'update:widthRatio', val: number): void;
@@ -63,14 +62,6 @@ defineEmits<{
   <!-- Top Header & Action Toolbar -->
   <header class="editor-header">
     <div class="header-left">
-      <button
-        id="dev-shadow-header-toolbar-btn-volver-al-juego"
-        type="button"
-        class="action-button btn-back"
-        @click="$emit('return')"
-      >
-        <span class="emoji">←</span> Volver al Juego
-      </button>
       <div class="header-title-box">
         <h1 class="header-title">
           CALIBRADOR DE SOMBRAS (DEV)

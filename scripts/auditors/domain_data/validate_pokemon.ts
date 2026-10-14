@@ -37,15 +37,12 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(POKEMON_DB_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_pokemon',
       configKey: 'domain.pokemon',
@@ -59,12 +56,20 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       family: 'domain_data',
       ruleIds: POKEMON_DB_RULES,
       packageName: 'Pokémon',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'pokemon-invalid-species': 'Especie no válida en catálogo',
         'pokemon-base-stat-mismatch': 'Discrepancia en stats base',
         'pokemon-type-mismatch': 'Discrepancia de tipos elementales',
         'pokemon-invalid-learnset-move': 'Movimiento inválido en learnset',
         'pokemon-missing-learnset': 'Learnset vacío o no definido'
+      },
+      ruleRemediations: {
+        'pokemon-invalid-species': 'Verify pokemon ID exists in Showdown Gen 3 Dex or remove from enabled list',
+        'pokemon-base-stat-mismatch': 'Update base stats in pokemonDB.ts to match Showdown canonical stats',
+        'pokemon-type-mismatch': 'Align pokemon primary and secondary types with Showdown canonical types',
+        'pokemon-invalid-learnset-move': 'Replace or remove invalid move ID from pokemon learnset array',
+        'pokemon-missing-learnset': 'Define at least one valid move entry in pokemon learnset'
       },
       requiredFiles: [DB_FILE],
       coverage: {

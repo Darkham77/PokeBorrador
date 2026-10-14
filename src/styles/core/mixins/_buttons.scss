@@ -6,6 +6,10 @@
 @use "shell" as *;
 @forward "buttons_special";
 
+$btn-shadow-blur: 1.5px;
+$btn-active-glow-blur: 15px;
+$btn-hover-glow-blur: 20px;
+
 // ── PREMIUM BUTTONS (Vicio Design System) ────────────────────────────────────
 
 // 1. BASE: The structural skeleton
@@ -130,9 +134,11 @@
     $depth: 3px;
   }
 
+  $btn-variant-shadow: 0 $depth $btn-shadow-blur $shadow;
+
   background: $bg-render;
   color: $text;
-  box-shadow: var(--shadow-xl);
+  box-shadow: $btn-variant-shadow;
 
   @if $text == #fff {
     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
@@ -149,15 +155,21 @@
   }
 
   &.active {
+    $btn-active-shadow: 
+      0 $depth $btn-shadow-blur $shadow,
+      0 0 $btn-active-glow-blur color.change($base-color, $alpha: 0.4);
+
     border: 2px solid Rgb(255 255 255 / 80%);
     background: color.scale($base-color, $lightness: 15%);
     transform: none;
-    box-shadow: var(--shadow-card);
+    box-shadow: $btn-active-shadow;
     
     &:hover:not(:disabled) {
+      $btn-hover-active-shadow: 0 ($depth + 1px) $btn-shadow-blur $shadow, 0 0 $btn-hover-glow-blur color.change($base-color, $alpha: 0.6);
+
       background: color.scale($base-color, $lightness: 20%);
       transform: Translatey(-1px);
-      box-shadow: var(--shadow-2xl);
+      box-shadow: $btn-hover-active-shadow;
     }
   }
 }

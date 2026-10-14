@@ -1,8 +1,9 @@
 import type { MapNode, DijkstraPath } from './mapData.ts'
 
-export function getAdjacentNodes(nodeId: string, connections: string[][]): string[] {
+export function getAdjacentNodes(nodeId: string, connections: readonly (readonly [string, string])[] | string[][]): string[] {
   const adj: string[] = [] // domain-ok: Dynamic graph path node identifiers
   connections.forEach(([a, b]) => {
+    if (!a || !b) return
     if (a === nodeId) adj.push(b)
     if (b === nodeId) adj.push(a)
   })
@@ -15,7 +16,7 @@ export function dijkstra(
   mapNodes: Record<string, MapNode>,
   playerInventory: Record<string, boolean>,
   discoveredNodes: string[],
-  connections: string[][],
+  connections: readonly (readonly [string, string])[] | string[][],
   blockedEdge: string[] | null = null
 ): DijkstraPath | null {
   const dist: Record<string, number> = {}
@@ -32,8 +33,9 @@ export function dijkstra(
     let u: string | null = null
     let minDist = Infinity
     for (const id of pq) {
-      if (dist[id] < minDist) {
-        minDist = dist[id]
+      const d = dist[id] ?? Infinity
+      if (d < minDist) {
+        minDist = d
         u = id
       }
     }
@@ -43,17 +45,19 @@ export function dijkstra(
     const neighbors = getAdjacentNodes(u, connections)
     for (const v of neighbors) {
       const nodeData = mapNodes[v]
-      if (!nodeData) continue
+      const nodeU = mapNodes[u]
+      if (!nodeData || !nodeU) continue
       const reqMO = nodeData.requiresMO
       if (reqMO && !playerInventory[reqMO]) continue
       if (blockedEdge && ((u === blockedEdge[0] && v === blockedEdge[1]) || (u === blockedEdge[1] && v === blockedEdge[0]))) continue
       if (!discoveredNodes.includes(v) && v !== targetId) continue
 
-      const dx = mapNodes[u].x - mapNodes[v].x
-      const dy = mapNodes[u].y - mapNodes[v].y
+      const dx = nodeU.x - nodeData.x
+      const dy = nodeU.y - nodeData.y
       const weight = Math.sqrt(dx * dx + dy * dy)
-      const alt = dist[u] + weight
-      if (alt < dist[v]) {
+      const distU = dist[u] ?? Infinity
+      const alt = distU + weight
+      if (alt < (dist[v] ?? Infinity)) {
         dist[v] = alt
         prev[v] = u
       }
@@ -66,9 +70,9 @@ export function dijkstra(
   let curr: string | null = targetId
   while (curr !== null) {
     path.unshift(curr)
-    curr = prev[curr]
+    curr = prev[curr] ?? null
   }
-  return { nodes: path, cost: dist[targetId] }
+  return { nodes: path, cost: dist[targetId] ?? 0 }
 }
 
 export function getAlternativePaths(
@@ -77,7 +81,7 @@ export function getAlternativePaths(
   mapNodes: Record<string, MapNode>,
   playerInventory: Record<string, boolean>,
   discoveredNodes: string[],
-  connections: string[][]
+  connections: readonly (readonly [string, string])[] | string[][]
 ): DijkstraPath[] {
   const paths: DijkstraPath[] = []
   const p1 = dijkstra(startId, targetId, mapNodes, playerInventory, discoveredNodes, connections)
@@ -85,7 +89,10 @@ export function getAlternativePaths(
   paths.push(p1)
 
   for (let i = 0; i < p1.nodes.length - 1; i++) {
-    const pAlt = dijkstra(startId, targetId, mapNodes, playerInventory, discoveredNodes, connections, [p1.nodes[i], p1.nodes[i + 1]])
+    const nodeA = p1.nodes[i]
+    const nodeB = p1.nodes[i + 1]
+    if (!nodeA || !nodeB) continue
+    const pAlt = dijkstra(startId, targetId, mapNodes, playerInventory, discoveredNodes, connections, [nodeA, nodeB])
     if (pAlt) {
       const isNew = !paths.some(p => p.nodes.join(',') === pAlt.nodes.join(','))
       if (isNew) paths.push(pAlt)

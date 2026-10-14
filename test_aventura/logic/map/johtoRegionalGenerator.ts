@@ -225,7 +225,7 @@ export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
     }
   }
 
-  private rasterizePathLocal(x0: number, y0: number, x1: number, y1: number, width = JOHTO_DEFAULT_ROAD_WIDTH): void {
+  private rasterizePathLocal(x0: number, y0: number, x1: number, y1: number, width: number = JOHTO_DEFAULT_ROAD_WIDTH): void {
     const dx = Math.abs(x1 - x0);
     const sx = x0 < x1 ? 1 : -1;
     const dy = -Math.abs(y1 - y0);

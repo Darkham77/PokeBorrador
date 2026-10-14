@@ -12,7 +12,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useRegionalContinentStudioStore } from '../../../src/stores/continentStudioStore.ts';
+import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
 
 describe('useRegionalContinentStudioStore', () => {
   beforeEach(() => {
@@ -99,7 +99,7 @@ describe('useRegionalContinentStudioStore', () => {
     // Visual override must be cleared
     expect(store.dragVisualPositions[firstPoi.id]).toBeUndefined();
     // Grid coordinate must be updated
-    const updated = store.pois.find((p) => p.id === firstPoi.id);
+    const updated = store.pois.find((p: any) => p.id === firstPoi.id);
     expect(updated!.gridX).toBe(originalGridX + 2);
     expect(updated!.gridY).toBe(originalGridY + 2);
   });

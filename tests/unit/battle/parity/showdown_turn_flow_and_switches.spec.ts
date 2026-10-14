@@ -69,7 +69,6 @@ describe('Audit Parity - BUG-026: win token must parse multi-battle "Name1 & Nam
 // --- From test_bug027_activate_toID_normalization.spec.ts ---
 describe('Audit Parity - BUG-027: -activate uses forbidden .replace() normalization instead of toID()', () => {
   it('should use toID()-equivalent normalization — "Speed Boost" must map to "speedboost" consistently', () => {
-    let recordedKey: string | null = null;
     const mockPoke = { volatileCounters: {}, name: 'Yanmega', ability: '' };
     const ctx = {
       store: { activeBattle: { value: {} }, addLog: (_msg: string, _style: string, _src: unknown) => {} },
@@ -85,7 +84,7 @@ describe('Audit Parity - BUG-027: -activate uses forbidden .replace() normalizat
 
     // The resulting volatileCounters key must be 'speedboost' (toID output), not any ad-hoc transform
     // If normalization is correct, the key should be 'speedboost'
-    recordedKey = Object.keys(mockPoke.volatileCounters)[0] ?? null;
+    const recordedKey = Object.keys(mockPoke.volatileCounters)[0] ?? null;
     expect(recordedKey).toBe('speedboost');
   });
 });

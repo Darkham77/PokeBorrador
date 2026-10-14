@@ -18,6 +18,7 @@ export interface ProfileRow {
   faction?: string | null
   player_class?: string | null
   trainer_level?: number | null
+  badges?: number | null
   avatar_style?: string | null
   nick_style?: string | null
   pvp_wins?: number | null
@@ -81,6 +82,8 @@ export interface SaveStateData {
     eventMedalsSecond?: number
     eventMedalsThird?: number
     eventMedalsTotal?: number
+    longestStreak?: number
+    shinyCount?: number
   }
   pvpStats?: {
     wins?: number

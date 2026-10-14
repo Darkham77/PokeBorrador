@@ -1,17 +1,13 @@
-import { readdirSync, statSync, existsSync } from 'node:fs';
+import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 export function getFilesRecursively(dir: string): string[] {
-  let results: string[] = []; // no-domain: Non-domain utility collection or data structure
-  if (!existsSync(dir)) return results;
-  const list = readdirSync(dir);
-  for (const file of list) {
-    const filePath = join(dir, file);
-    const stat = statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(getFilesRecursively(filePath));
-    } else {
-      results.push(filePath);
+  if (!existsSync(dir)) return [];
+  const entries = readdirSync(dir, { recursive: true, withFileTypes: true });
+  const results: string[] = [];
+  for (const entry of entries) {
+    if (entry.isFile()) {
+      results.push(join(entry.parentPath ?? dir, entry.name));
     }
   }
   return results;

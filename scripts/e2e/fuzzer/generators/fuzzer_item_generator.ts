@@ -42,60 +42,64 @@ const TYPE_TRIGGER_MOVES = {
   rock: 'powergem', ghost: 'shadowball', dragon: 'dragonpulse', dark: 'darkpulse', steel: 'flashcannon', fairy: 'moonblast',
 } as const satisfies Record<PokemonType, PokemonMoveId>;
 
-const STATUS_CURE_TRIGGER_MOVES = {
+const STATUS_CURE_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
   aspearberry: 'icebeam', cheriberry: 'thunderwave', chestoberry: 'spore', lumberry: 'toxic', pechaberry: 'toxic',
   persimberry: 'confuseray', rawstberry: 'willowisp',
-} as const satisfies Partial<Record<ItemId, PokemonMoveId>>;
+};
 
-const TERRAIN_SEED_TRIGGER_MOVES = {
+const TERRAIN_SEED_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
   electricseed: 'electricterrain', grassyseed: 'grassyterrain', mistyseed: 'mistyterrain', psychicseed: 'psychicterrain',
-} as const satisfies Partial<Record<ItemId, PokemonMoveId>>;
+};
 
-const SELF_FIELD_TRIGGER_MOVES = {
+const SELF_FIELD_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
   bigroot: 'gigadrain', bindingband: 'bind', choiceband: 'closecombat', choicescarf: 'closecombat', damprock: 'raindance', expertbelt: 'shadowball', gripclaw: 'bind', heatrock: 'sunnyday', icyrock: 'snowscape',
   leppaberry: 'sketch', lightclay: 'reflect', loadeddice: 'bulletseed', muscleband: 'closecombat', normalgem: 'tackle', powerherb: 'solarbeam', protectivepads: 'tackle', punchingglove: 'drainpunch', razorclaw: 'slash', roomservice: 'trickroom',
   scopelens: 'slash', smoothrock: 'sandstorm', terrainextender: 'electricterrain', throatspray: 'bugbuzz', widelens: 'zapcannon',
-} as const satisfies Partial<Record<ItemId, PokemonMoveId>>;
+};
 
-const ENEMY_HIT_TRIGGER_MOVES = {
+const ENEMY_HIT_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
   aguavberry: 'falseswipe', apicotberry: 'falseswipe', cellbattery: 'thunderbolt', custapberry: 'falseswipe', ejectbutton: 'tackle', figyberry: 'falseswipe', floatstone: 'lowkick', ganlonberry: 'falseswipe', iapapaberry: 'falseswipe', ironball: 'earthquake', jabocaberry: 'closecombat', keeberry: 'closecombat', lansatberry: 'falseswipe', magoberry: 'falseswipe', micleberry: 'falseswipe', oranberry: 'falseswipe', petayaberry: 'falseswipe', redcard: 'tackle', ringtarget: 'shadowball', rockyhelmet: 'tackle', sitrusberry: 'falseswipe', snowball: 'icebeam', starfberry: 'falseswipe', wikiberry: 'falseswipe',
-} as const satisfies Partial<Record<ItemId, PokemonMoveId>>;
+};
 
-const ENEMY_STATUS_TRIGGER_MOVES = {
+const ENEMY_STATUS_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
   abilityshield: 'worryseed', ejectpack: 'charm', heavydutyboots: 'stealthrock', mentalherb: 'taunt', mirrorherb: 'swordsdance', safetygoggles: 'spore', utilityumbrella: 'sunnyday',
-} as const satisfies Partial<Record<ItemId, PokemonMoveId>>;
+};
 
 const PLAYER_BENCH_TRIGGER_ITEM_IDS = ['ejectbutton', 'ejectpack', 'heavydutyboots', 'shedshell'] as const satisfies readonly ItemId[];
 const ENEMY_BENCH_TRIGGER_ITEM_IDS = ['redcard'] as const satisfies readonly ItemId[];
 
-const ENEMY_SUPER_EFFECTIVE_TRIGGER_MOVES = {
+const ENEMY_SUPER_EFFECTIVE_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
   enigmaberry: 'flamethrower', focussash: 'flamethrower', weaknesspolicy: 'flamethrower',
-} as const satisfies Partial<Record<ItemId, PokemonMoveId>>;
+};
 
-const REQUIRED_HOLDER_SPECIES = {
+const REQUIRED_HOLDER_SPECIES: Readonly<Partial<Record<ItemId, PokemonSpeciesId>>> = {
   adrenalineorb: 'pinsir', aguavberry: 'abra', apicotberry: 'abra', boosterenergy: 'fluttermane', choicescarf: 'lucario', cornerstonemask: 'ogerponcornerstone', custapberry: 'abra', eviolite: 'porygon2', expertbelt: 'mew', figyberry: 'abra', floatstone: 'aggron', ganlonberry: 'abra', griseouscore: 'giratina', griseousorb: 'giratina', heavydutyboots: 'charizard', iapapaberry: 'abra', ironball: 'charizard', lansatberry: 'abra', leppaberry: 'smeargle', magoberry: 'abra', micleberry: 'abra', oranberry: 'abra', petayaberry: 'abra', ringtarget: 'snorlax', shedshell: 'scizor', sitrusberry: 'abra', starfberry: 'abra', wikiberry: 'abra',
   hearthflamemask: 'ogerponhearthflame', lightball: 'pikachu', rustedshield: 'zamazenta', rustedsword: 'zacian',
   utilityumbrella: 'charizard', wellspringmask: 'ogerponwellspring',
-} as const satisfies Partial<Record<ItemId, PokemonSpeciesId>>;
+};
 
-const REQUIRED_HOLDER_ABILITIES = {
+const REQUIRED_HOLDER_ABILITIES: Readonly<Partial<Record<ItemId, AbilityId>>> = {
   adrenalineorb: 'hypercutter', boosterenergy: 'protosynthesis', utilityumbrella: 'solarpower',
-} as const satisfies Partial<Record<ItemId, AbilityId>>;
+};
 
-const REQUIRED_ENEMY_ABILITIES = {
+const REQUIRED_ENEMY_ABILITIES: Readonly<Partial<Record<ItemId, AbilityId>>> = {
   adrenalineorb: 'intimidate', clearamulet: 'intimidate', shedshell: 'magnetpull',
-} as const satisfies Partial<Record<ItemId, AbilityId>>;
+};
 
-const REQUIRED_ENEMY_SPECIES = {
+const REQUIRED_ENEMY_SPECIES: Readonly<Partial<Record<ItemId, PokemonSpeciesId>>> = {
   adrenalineorb: 'gyarados', aguavberry: 'kartana', apicotberry: 'kartana', choicescarf: 'jolteon', clearamulet: 'gyarados', custapberry: 'kartana', expertbelt: 'gengar', figyberry: 'kartana', focussash: 'charizard', ganlonberry: 'kartana', iapapaberry: 'kartana', lansatberry: 'kartana', magoberry: 'kartana', micleberry: 'kartana', oranberry: 'kartana', petayaberry: 'kartana', shedshell: 'magnezone', sitrusberry: 'kartana', starfberry: 'kartana', utilityumbrella: 'mew', wikiberry: 'kartana',
-} as const satisfies Partial<Record<ItemId, PokemonSpeciesId>>;
+};
 
-const REQUIRED_ENEMY_ITEMS = {
+const REQUIRED_ENEMY_ITEMS: Readonly<Partial<Record<ItemId, ItemId>>> = {
   protectivepads: 'rockyhelmet',
-} as const satisfies Partial<Record<ItemId, ItemId>>;
+};
 
-const MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS = ['focussash'] as const satisfies readonly ItemId[];
-const MAX_ATTACK_ENEMY_ITEM_IDS = ['aguavberry', 'apicotberry', 'custapberry', 'figyberry', 'ganlonberry', 'iapapaberry', 'lansatberry', 'magoberry', 'micleberry', 'oranberry', 'petayaberry', 'sitrusberry', 'starfberry', 'wikiberry'] as const satisfies readonly ItemId[];
+const MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set(['focussash']);
+const MAX_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set([
+  'aguavberry', 'apicotberry', 'custapberry', 'figyberry', 'ganlonberry',
+  'iapapaberry', 'lansatberry', 'magoberry', 'micleberry', 'oranberry',
+  'petayaberry', 'sitrusberry', 'starfberry', 'wikiberry'
+]);
 
 function getSpeciesLegalGender(speciesId: string): GenderName {
   const s = Dex.species.get(speciesId);
@@ -108,33 +112,33 @@ function getSpeciesLegalGender(speciesId: string): GenderName {
 }
 
 function getRequiredHolderAbility(itemId: ItemId, speciesId: PokemonSpeciesId): AbilityId {
-  const explicit = Object.entries(REQUIRED_HOLDER_ABILITIES).find(([candidateId]) => candidateId === itemId)?.[1];
+  const explicit = REQUIRED_HOLDER_ABILITIES[itemId];
   if (explicit) return explicit;
   const legal = pokemonDataProvider.getSpeciesAbilities(speciesId);
   return (legal[0] ?? 'synchronize') as AbilityId;
 }
 
 function getRequiredEnemyAbility(itemId: ItemId, enemySpeciesId: PokemonSpeciesId): AbilityId {
-  const explicit = Object.entries(REQUIRED_ENEMY_ABILITIES).find(([candidateId]) => candidateId === itemId)?.[1];
+  const explicit = REQUIRED_ENEMY_ABILITIES[itemId];
   if (explicit) return explicit;
   const legal = pokemonDataProvider.getSpeciesAbilities(enemySpeciesId);
   return (legal[0] ?? 'naturalcure') as AbilityId;
 }
 
 function getRequiredEnemySpecies(itemId: ItemId, fallback: PokemonSpeciesId): PokemonSpeciesId {
-  return Object.entries(REQUIRED_ENEMY_SPECIES).find(([candidateId]) => candidateId === itemId)?.[1] ?? fallback;
+  return REQUIRED_ENEMY_SPECIES[itemId] ?? fallback;
 }
 
 function getRequiredEnemyItem(itemId: ItemId): ItemId | '' {
-  return Object.entries(REQUIRED_ENEMY_ITEMS).find(([candidateId]) => candidateId === itemId)?.[1] ?? '';
+  return REQUIRED_ENEMY_ITEMS[itemId] ?? '';
 }
 
 function requiresMaxEnemySpecialAttack(itemId: ItemId): boolean {
-  return MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS.some(triggerItemId => triggerItemId === itemId);
+  return MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS.has(itemId);
 }
 
 function requiresMaxEnemyAttack(itemId: ItemId): boolean {
-  return MAX_ATTACK_ENEMY_ITEM_IDS.some(triggerItemId => triggerItemId === itemId);
+  return MAX_ATTACK_ENEMY_ITEM_IDS.has(itemId);
 }
 
 const DEFENSIVE_TRIGGER_SPECIES_BY_ATTACK_TYPE = {
@@ -180,7 +184,7 @@ function requireHookTargetSpecies(itemId: ItemId, hook: unknown): PokemonSpecies
 }
 
 function getRestrictedOrDefaultSpecies(itemId: ItemId, hook: unknown): PokemonSpeciesId {
-  const requiredSpecies = Object.entries(REQUIRED_HOLDER_SPECIES).find(([candidateId]) => candidateId === itemId)?.[1];
+  const requiredSpecies = REQUIRED_HOLDER_SPECIES[itemId];
   if (requiredSpecies) return requiredSpecies;
   const restrictedSpecies = requireHookTargetSpecies(itemId, hook);
   if (restrictedSpecies) return restrictedSpecies;
@@ -231,8 +235,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
       playerPriorityMove: 'zapcannon',
     };
   }
-  const statusEntry = Object.entries(STATUS_CURE_TRIGGER_MOVES).find(([candidateId]) => candidateId === itemId);
-  const statusMove = statusEntry?.[1];
+  const statusMove = STATUS_CURE_TRIGGER_MOVES[itemId];
   if (statusMove) {
     return {
       playerMoves: [...DEFAULT_PLAYER_MOVES],
@@ -243,8 +246,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
     };
   }
 
-  const terrainSeedEntry = Object.entries(TERRAIN_SEED_TRIGGER_MOVES).find(([candidateId]) => candidateId === itemId);
-  const terrainSeedMove = terrainSeedEntry?.[1];
+  const terrainSeedMove = TERRAIN_SEED_TRIGGER_MOVES[itemId];
   if (terrainSeedMove) {
     return {
       playerMoves: [...DEFAULT_PLAYER_MOVES],
@@ -255,8 +257,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
     };
   }
 
-  const selfFieldEntry = Object.entries(SELF_FIELD_TRIGGER_MOVES).find(([candidateId]) => candidateId === itemId);
-  const selfFieldMove = selfFieldEntry?.[1];
+  const selfFieldMove = SELF_FIELD_TRIGGER_MOVES[itemId];
   if (selfFieldMove) {
     return {
       playerMoves: prioritizeMove(selfFieldMove, DEFAULT_PLAYER_MOVES),
@@ -267,8 +268,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
     };
   }
 
-  const enemyHitEntry = Object.entries(ENEMY_HIT_TRIGGER_MOVES).find(([candidateId]) => candidateId === itemId);
-  const enemyHitMove = enemyHitEntry?.[1];
+  const enemyHitMove = ENEMY_HIT_TRIGGER_MOVES[itemId];
   if (enemyHitMove) {
     const isPinchBerry = itemId === 'magoberry' || itemId === 'starfberry' || itemId === 'wikiberry';
     return {
@@ -281,8 +281,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
     };
   }
 
-  const enemyStatusEntry = Object.entries(ENEMY_STATUS_TRIGGER_MOVES).find(([candidateId]) => candidateId === itemId);
-  const enemyStatusMove = enemyStatusEntry?.[1];
+  const enemyStatusMove = ENEMY_STATUS_TRIGGER_MOVES[itemId];
   if (enemyStatusMove) {
     return {
       playerMoves: [...DEFAULT_PLAYER_MOVES],
@@ -293,8 +292,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
     };
   }
 
-  const enemySuperEffectiveEntry = Object.entries(ENEMY_SUPER_EFFECTIVE_TRIGGER_MOVES).find(([candidateId]) => candidateId === itemId);
-  const enemySuperEffectiveMove = enemySuperEffectiveEntry?.[1];
+  const enemySuperEffectiveMove = ENEMY_SUPER_EFFECTIVE_TRIGGER_MOVES[itemId];
   if (enemySuperEffectiveMove) {
     return {
       playerMoves: [...DEFAULT_PLAYER_MOVES],
@@ -408,7 +406,7 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
         item: itemId,
         ability: pHolderAbility,
         nature: 'serious',
-        evs: (MAX_ATTACK_ENEMY_ITEM_IDS as readonly string[]).includes(itemId) // no-domain: Non-domain utility collection or data structure
+        evs: MAX_ATTACK_ENEMY_ITEM_IDS.has(itemId)
           ? { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
           : { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },

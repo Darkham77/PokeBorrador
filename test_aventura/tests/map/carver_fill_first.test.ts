@@ -29,8 +29,6 @@ describe('Fill-First Regional Map Generator & Carver Pipeline', () => {
 
     let forestCount = 0;
     let grassCount = 0;
-    let waterCount = 0;
-    let mountainCount = 0;
 
     for (let y = 0; y < KANTO_GRID_H; y++) {
       const row = generator.grid[y];
@@ -39,8 +37,6 @@ describe('Fill-First Regional Map Generator & Carver Pipeline', () => {
         const cell = row[x];
         if (cell === (CELL_BIOME as Record<string, number>).FOREST_WALL) forestCount++;
         else if (cell === CELL_BIOME.GRASS) grassCount++;
-        else if (cell === CELL_BIOME.WATER) waterCount++;
-        else if (cell === CELL_BIOME.MOUNTAIN_DIRT) mountainCount++;
       }
     }
 

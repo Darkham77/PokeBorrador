@@ -120,7 +120,7 @@ function validateDaycareItems(items: unknown[]): number {
     if (typeof item === 'object' && ('isEgg' in item || 'steps' in item)) {
       const egg = item as { nature?: string };
       if (egg.nature) {
-        expect(() => toNatureId(egg.nature)).not.toThrow();
+        expect(() => toNatureId(egg.nature!)).not.toThrow();
       }
     } else {
       expect(() => validatePokemon(item as Pokemon)).not.toThrow();
@@ -139,7 +139,7 @@ function validateDaycareSlots(rawSave: unknown): number {
       const p = slot.pokemon;
       if ('isEgg' in p || 'steps' in p) {
         if (p.nature) {
-          expect(() => toNatureId(p.nature)).not.toThrow();
+          expect(() => toNatureId(p.nature!)).not.toThrow();
         }
       } else {
         expect(() => validatePokemon(p as Pokemon)).not.toThrow();
@@ -312,13 +312,13 @@ async function clonePublicSchemaToTestSchema(sql: ReturnType<typeof postgres>, s
   }
 }
 
-function parseJsonOrNull(sql: ReturnType<typeof postgres>, val: unknown): unknown {
+function parseJsonOrNull(sql: any, val: unknown): unknown {
   if (!val) return null;
   const parsed = typeof val === 'string' ? JSON.parse(val) : val;
   return sql.json(parsed);
 }
 
-async function seedPostgresGameSaves(sql: ReturnType<typeof postgres>, rows: Record<string, unknown>[]): Promise<void> {
+async function seedPostgresGameSaves(sql: any, rows: any[]): Promise<void> {
   for (const row of rows) {
     const saveDataJson = typeof row.save_data === 'string' ? JSON.parse(row.save_data) : row.save_data;
     await sql`
@@ -328,7 +328,7 @@ async function seedPostgresGameSaves(sql: ReturnType<typeof postgres>, rows: Rec
   }
 }
 
-async function seedPostgresTradeOffers(sql: ReturnType<typeof postgres>, rows: Record<string, unknown>[]): Promise<void> {
+async function seedPostgresTradeOffers(sql: any, rows: any[]): Promise<void> {
   for (const row of rows) {
     await sql`
       INSERT INTO trade_offers (id, sender_id, receiver_id, offer_pokemon, request_pokemon, offer_items, request_items, offer_money, request_money, status)
@@ -344,12 +344,12 @@ async function seedPostgresTradeOffers(sql: ReturnType<typeof postgres>, rows: R
   }
 }
 
-async function seedPostgresSavesAndTrades(sql: ReturnType<typeof postgres>, bData: Record<string, Record<string, unknown>[]>): Promise<void> {
+async function seedPostgresSavesAndTrades(sql: any, bData: Record<string, any[]>): Promise<void> {
   await seedPostgresGameSaves(sql, bData.game_saves || []);
   await seedPostgresTradeOffers(sql, bData.trade_offers || []);
 }
 
-async function seedPostgresCommerceAndDefenders(sql: ReturnType<typeof postgres>, bData: Record<string, Record<string, unknown>[]>): Promise<void> {
+async function seedPostgresCommerceAndDefenders(sql: any, bData: Record<string, any[]>): Promise<void> {
   for (const row of (bData.claim_queue || [])) {
     await sql`
       INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data)

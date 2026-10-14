@@ -7,7 +7,6 @@
  */
 
 import { ref, computed, onMounted, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
 import {
   useShadowEditor,
   DEFAULT_SPRITE_ZOOM
@@ -24,7 +23,6 @@ import DevShadowHeaderToolbar from './components/DevShadowHeaderToolbar.vue';
 import DevShadowFilterBar from './components/DevShadowFilterBar.vue';
 import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts';
 
-const router = useRouter();
 const mainScrollRef = ref<HTMLElement | null>(null);
 
 const {
@@ -70,10 +68,6 @@ const saveButtonState = computed(() => resolveSaveButtonState({ isSaving: isSavi
 const paginationRangeText = computed(() => formatPaginationRange(currentPage.value, DEFAULT_PAGE_SIZE, totalEntities.value));
 const canGoPrev = computed(() => currentPage.value > 1);
 const canGoNext = computed(() => currentPage.value < totalPages.value);
-
-const handleReturn = () => {
-  router.push('/');
-};
 
 const handleUpdateWidthRatio = (widthRatio: number) => {
   globalShadowConfig.value = { ...globalShadowConfig.value, widthRatio };
@@ -145,7 +139,6 @@ onMounted(() => {
       :is-progress-visible="isProgressVisible"
       :rebuild-message="rebuildMessage"
       :rebuild-progress="rebuildProgress"
-      @return="handleReturn"
       @update:width-ratio="handleUpdateWidthRatio"
       @update:height-ratio="handleUpdateHeightRatio"
       @update:pixelation="handleUpdatePixelation"

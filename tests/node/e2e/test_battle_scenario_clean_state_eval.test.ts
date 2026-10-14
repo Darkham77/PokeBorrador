@@ -10,7 +10,7 @@ describe('resetSimulationToCleanState evaluate argument parity', () => {
     let evalFnString = '';
 
     const mockPage = {
-      evaluate: vi.fn(async (fn: Function, arg: unknown) => {
+      evaluate: vi.fn(async (fn: (...args: any[]) => any, arg: unknown) => {
         capturedArg = arg;
         evalFnString = fn.toString();
       })

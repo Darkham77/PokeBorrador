@@ -1,4 +1,5 @@
 // Static Kanto Map Data
+import type { UrbanScale, GeneratedMap, CityGenerationConfig } from '../../types/map/adventureWorldTypes.ts';
 
 export interface MapFarm {
   t: number
@@ -8,16 +9,20 @@ export interface MapFarm {
 }
 
 export interface MapNode {
+  id?: string
   name: string
   type: string
   x: number
   y: number
-  hasCenter: boolean
-  farm: MapFarm
+  hasCenter?: boolean
+  farm?: MapFarm
   requiresMO?: string
   blockMsg?: string
   hasEvent?: boolean
   weather?: string
+  urbanScale?: UrbanScale
+  localMap?: GeneratedMap
+  cityConfig?: CityGenerationConfig
 }
 
 export interface DijkstraPath {
@@ -77,7 +82,7 @@ export const rawNodes: Record<string, MapNode> = {
   'mansion': { name: 'Mansión Pkmn', type: 'poi', x: 200, y: 1600, hasCenter: false, farm: {t:30, w:70, m:0, f:0} },
 }
 
-export const connections = [
+export const connections: [string, string][] = [
   ['indigo', 'victoryroad'], ['victoryroad', 'route23'], ['route23', 'route22'], ['route22', 'viridian'],
   ['pallet', 'route1'], ['route1', 'viridian'], ['viridian', 'route2_s'],
   ['route2_s', 'viridianforest'], ['viridianforest', 'route2_n'], ['route2_n', 'pewter'],

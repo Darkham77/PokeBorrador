@@ -57,7 +57,7 @@ import {
 
 const CORDILLERA_TIER_4_MIN_CELLS = 240 as const;
 const MASSIF_TIER_3_MIN_CELLS = 130 as const;
-const MASSIF_TIER_2_MIN_CELLS = 25 as const;
+export const MASSIF_TIER_2_MIN_CELLS = 25 as const;
 const CAVE_MASSIF_LATERAL_RADIUS = 6 as const;
 const MASSIF_TIER_2_RADIUS = 6 as const;
 const DEFAULT_MOUNTAIN_RATIO = 0.20 as const;

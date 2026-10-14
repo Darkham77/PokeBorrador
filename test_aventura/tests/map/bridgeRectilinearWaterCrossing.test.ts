@@ -13,12 +13,21 @@
 
 import { describe, it, expect } from 'vitest';
 import path from 'node:path';
+import fs from 'node:fs';
 import sharp from 'sharp';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { resolveCanonicalBridges } from '../../logic/map/canonicalBridgeEngine.ts';
-import manifestJson from '../../data/map/canonical_assets_manifest.json' with { type: 'json' };
+
+const manifestPath = path.resolve(import.meta.dirname, '../../data/map/canonical_assets_manifest.json');
+const manifestJson = JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as Array<{
+  id: string;
+  runtimePath: string;
+  pixelDimensions: { w: number; h: number };
+  tileDimensions: { w: number; h: number };
+  collisionMask: number[][];
+}>;
 
 const ROOT_DIR = process.cwd();
 

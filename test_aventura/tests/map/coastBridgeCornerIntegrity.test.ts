@@ -52,12 +52,12 @@ describe('coastBridgeCornerIntegrity', () => {
   });
 
   it('ensures all bridge segments correctly span over water elevation in the continent', () => {
-    expect(routeNetwork.routes.length).toBeGreaterThan(0);
+    expect(routeNetwork.edges.length).toBeGreaterThan(0);
 
     // Verify bridge cell at (x: 76, y: 17) corresponds to water elevation (0)
     const bridgeY = 17;
     const bridgeX = 76;
-    expect(continent.elevation[bridgeY]?.[bridgeX]).toBe(0);
+    expect(continent.heightmap[bridgeY]?.[bridgeX]).toBe(0);
     expect(continent.resolvedWater.cellDetails[bridgeY]?.[bridgeX]?.terrain).toBe('water');
   });
 });

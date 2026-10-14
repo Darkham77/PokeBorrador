@@ -104,8 +104,8 @@ function extractProtocolCommands(protocolContent: string): Set<string> {
 async function verifyCommandHandled(
   cmdName: string,
   mockStore: BattleContext,
-  playerMon: BattlePokemon,
-  enemyMon: BattlePokemon
+  playerMon: Pokemon,
+  enemyMon: Pokemon
 ): Promise<boolean> {
   if (IGNORED_PROTOCOL_COMMANDS.has(cmdName)) return true;
 

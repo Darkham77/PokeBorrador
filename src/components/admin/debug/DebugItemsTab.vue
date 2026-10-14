@@ -65,7 +65,7 @@ function onBtnDown(e: Event) {
   <div class="items-debug">
     <button
       id="debug-items-tab-btn-agregar-10-de-cada-uno"
-      class="add-all-btn"
+      class="btn-vicio-secondary btn-vicio-full add-all-btn"
       @click.stop="addTenOfEach"
       @mouseenter="onBtnEnter"
       @mouseleave="onBtnLeave"
@@ -127,23 +127,7 @@ function onBtnDown(e: Event) {
 }
 
 .add-all-btn {
-  @include pixelated;
-
-  width: 100%;
-  padding: 12px;
-  border: 1px solid Rgb(255 255 255 / 20%);
-  border-radius: $radius-xl;
-  background: Linear-Gradient(135deg, var(--purple-400) 0%, var(--purple-600) 100%);
-  color: var(--white);
-  font-size: var(--font-14);
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: var(--shadow-card);
-
-  &:hover {
-    background: Linear-Gradient(135deg, var(--purple-400) 0%, var(--purple-600) 100%);
-    box-shadow: var(--shadow-card);
-  }
+  @include btn-vicio('secondary', 'md', true);
 }
 
 .items-grid {

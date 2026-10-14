@@ -87,19 +87,11 @@ function parseCliArgs(): InjectionOptions {
 function getAllVueFiles(dir: string): string[] {
   if (!fs.existsSync(dir)) return [];
   const results: string[] = [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name !== 'node_modules' && entry.name !== 'dist' && entry.name !== '.git') {
-        results.push(...getAllVueFiles(fullPath));
-      }
-    } else if (entry.isFile() && entry.name.endsWith('.vue')) {
-      results.push(fullPath);
+  for (const entry of fs.readdirSync(dir, { recursive: true, withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith('.vue')) {
+      results.push(path.join(entry.parentPath ?? dir, entry.name));
     }
   }
-
   return results;
 }
 

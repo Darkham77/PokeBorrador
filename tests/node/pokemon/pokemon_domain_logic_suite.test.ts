@@ -38,7 +38,7 @@ import { calcStatsPure, getExpNeededPure, type NatureData } from '@/logic/pokemo
 import { getTypeEffectivenessMsg, getMoveDescriptionPure } from '@/logic/pokemon/pokemonMath.ts';
 import type { MoveBaseData } from '@/types/system/database.ts';
 import { calculateEvBonusIvs, EVS_PER_STAT_POINT } from '@/logic/pokemon/evMath.ts';
-import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts';
+import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter.ts';
 
 interface MockPokemon {
   type: string;

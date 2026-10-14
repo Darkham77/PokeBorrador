@@ -43,7 +43,7 @@ function applySqliteMigration(db: DatabaseSync, migration: (typeof DATABASE_MIGR
         const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
         const isMissing = msg.includes('no such column');
         if (!isDuplicate && !isMissing) {
-          throw new Error(`CRITICAL: Error al aplicar migración oficial ${migration.id}: ${(e as Error).message}`);
+          throw new Error(`CRITICAL: Error al aplicar migración oficial ${migration.id}: ${(e as Error).message}`, { cause: e });
         }
       }
     }
@@ -109,7 +109,7 @@ function auditMigratedSaves(migratedSaves: Array<{ user_id: string; save_data: s
   const warnings: string[] = [];
 
   for (const row of migratedSaves) {
-    let saveData: { team?: AuditPokemon[]; box?: AuditPokemon[] } | null = null;
+    let saveData: { team?: AuditPokemon[]; box?: AuditPokemon[] };
     try {
       saveData = JSON.parse(row.save_data);
     } catch {

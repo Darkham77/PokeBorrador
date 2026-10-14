@@ -26,6 +26,7 @@ import type { LedgeRun } from './routeLedgeEngine.ts';
 
 import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+export { CANVAS_TILE_SIZE };
 import type { TileBlitInstruction } from '../../types/map/autotileStudioTypes.ts';
 
 export interface BuildMapBlitOptions {

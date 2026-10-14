@@ -145,15 +145,12 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(SHOWDOWN_PARITY_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
-        ast: true,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        ast: false,
+        changedSince: false
       }),
       id: 'validate_showdown_parity',
       configKey: 'fsm.showdownParity',
@@ -167,8 +164,12 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
       family: 'fsm',
       ruleIds: SHOWDOWN_PARITY_RULES,
       packageName: 'Showdown',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'missing-protocol-token': 'Token de protocolo sin handler'
+      },
+      ruleRemediations: {
+        'missing-protocol-token': 'Add protocol token handler in showdownBridge or register token in ignore list'
       },
       requiresAst: true,
       coverage: {

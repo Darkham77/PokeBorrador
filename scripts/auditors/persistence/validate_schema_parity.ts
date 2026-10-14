@@ -94,15 +94,12 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(SCHEMA_PARITY_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_schema_parity',
       configKey: 'persistence.schemaParity',
@@ -116,9 +113,14 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
       family: 'persistence',
       ruleIds: SCHEMA_PARITY_RULES,
       packageName: 'Esquema',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'schema-parity-missing-table': 'Tabla Postgres ausente en SQLite',
         'schema-parity-missing-column': 'Columna ausente en SQLite'
+      },
+      ruleRemediations: {
+        'schema-parity-missing-table': 'Add matching CREATE TABLE statement in companion .sqlite.sql migration',
+        'schema-parity-missing-column': 'Add matching column definition in companion .sqlite.sql migration'
       },
       coverage: {
         include: ['database/migrations/*.sql']

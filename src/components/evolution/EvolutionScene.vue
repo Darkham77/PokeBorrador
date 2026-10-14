@@ -229,7 +229,7 @@ const startSequence = () => {
 
     // 6. Final Message Wait
     timeline.to({}, { duration: EVOLUTION_FINAL_WAIT_DURATION_SEC });
-  }, containerRef.value);
+  }, containerRef.value ?? undefined);
 };
 
 const cancelEvolution = () => {

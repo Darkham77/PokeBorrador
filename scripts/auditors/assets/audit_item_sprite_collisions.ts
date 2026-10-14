@@ -138,15 +138,12 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
     const itemsPath = resolve(process.cwd(), 'src/data/inventory/items.json');
     super({
       ruleCapabilities: createRuleCapabilities(ITEM_SPRITE_COLLISION_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'light',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'audit_item_sprite_collisions',
       configKey: 'assets.itemSpriteCollisions',
@@ -160,9 +157,14 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
       family: 'assets',
       packageName: 'Sprites',
       ruleIds: ITEM_SPRITE_COLLISION_RULES,
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'item-missing-sprite': 'Sprite de ítem no encontrado',
         'item-sprite-collision': 'Colisión en sprite de ítem'
+      },
+      ruleRemediations: {
+        'item-missing-sprite': 'Add missing sprite file to public/assets/sprites or correct sprite path in items.json',
+        'item-sprite-collision': 'Assign unique sprite assets to items sharing duplicate sprite paths'
       },
       requiredFiles: [itemsPath],
       coverage: {

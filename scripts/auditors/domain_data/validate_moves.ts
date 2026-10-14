@@ -147,15 +147,12 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(MOVE_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_moves',
       configKey: 'domain.moves',
@@ -169,10 +166,16 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
       family: 'domain_data',
       ruleIds: MOVE_RULES,
       packageName: 'Movimientos',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'move-invalid-showdown': 'Movimiento no válido en Showdown',
         'move-missing-translation': 'Traducción faltante en movimiento',
         'move-missing-effect-desc': 'Descripción de efecto faltante'
+      },
+      ruleRemediations: {
+        'move-invalid-showdown': 'Ensure move ID exists in Pokemon Showdown Dex Gen 3 moves',
+        'move-missing-translation': 'Add Spanish translation for move in src/data/battle/moves.ts',
+        'move-missing-effect-desc': 'Register move secondary effect description in pokemonUtils.ts'
       },
       requiredFiles: [UTILS_FILE],
       coverage: {

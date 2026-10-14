@@ -23,10 +23,10 @@ vi.mock('vue-router', () => ({
 // Mock modal registry
 vi.mock('@/logic/modals/registry', () => ({
   MODAL_REGISTRY: {
-    TestModal: defineComponent({
+    TestModal: {
       name: 'TestModal',
       template: '<div>Test</div>'
-    }),
+    },
     TestA: { name: 'TestA' },
     TestB: { name: 'TestB' },
     DebugStackTest: { name: 'DebugStackTest' },

@@ -6,7 +6,7 @@ import os from 'node:os';
 import assert from 'node:assert/strict';
 import { validateAndSanitize } from '../../../src/logic/auth/saveService.ts';
 import { validatePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
-import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
+import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
 
 const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 
@@ -104,7 +104,9 @@ describe('Local Ash DB Diagnostics', () => {
     } finally {
       try {
         fs.unlinkSync(tempDbPath);
-      } catch {}
+      } catch {
+        // Ignore file cleanup errors if already removed
+      }
     }
   });
 });

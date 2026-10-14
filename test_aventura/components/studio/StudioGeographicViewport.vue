@@ -39,7 +39,7 @@ interface WorldPoint {
   readonly y: number;
 }
 
-function countMountainNeighbors(grid: readonly (readonly CellBiomeType[])[], x: number, y: number): number {
+function countMountainNeighbors(grid: readonly (ArrayLike<number> | undefined)[], x: number, y: number): number {
   let count = 0;
   for (let dy = -1; dy <= 1; dy++) {
     for (let dx = -1; dx <= 1; dx++) {
@@ -51,7 +51,7 @@ function countMountainNeighbors(grid: readonly (readonly CellBiomeType[])[], x: 
 }
 
 function checkMountainTier2Margin(
-  grid: readonly (readonly CellBiomeType[])[],
+  grid: readonly (ArrayLike<number> | undefined)[],
   x: number,
   y: number,
   radius: number

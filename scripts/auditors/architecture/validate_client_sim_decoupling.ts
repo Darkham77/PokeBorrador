@@ -236,15 +236,12 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(CLIENT_SIM_DECOUPLING_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'light',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: true,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_client_sim_decoupling',
       configKey: 'architecture.clientSimDecoupling',
@@ -257,8 +254,15 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
       icon: '🔌',
       family: 'architecture',
       packageName: 'Showdown',
+      usesThirdPartyTool: false,
       ruleIds: CLIENT_SIM_DECOUPLING_RULES,
       ruleDescriptions: CLIENT_SIM_DECOUPLING_DESCRIPTIONS,
+      ruleRemediations: {
+        'client-sim-value-import': 'Reemplaza imports de valor de @pkmn/sim por import type o comunícate a través del Web Worker de combate.',
+        'client-randoms-value-import': 'Reemplaza imports de @pkmn/randoms por import type o delega su ejecución al Worker.',
+        'client-sim-chunk-configured': 'Configura manualChunks en vite.config.ts aislando @pkmn/sim fuera del bundle principal de la aplicación.',
+        'client-sim-chunk-present': 'Verifica que dist/ no incluya código directo de simulación en el hilo principal.'
+      },
       requiresAst: true,
       coverage: {
         include: ['src/**/*.{ts,vue,js}', 'vite.config.ts']

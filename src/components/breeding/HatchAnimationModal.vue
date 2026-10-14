@@ -216,7 +216,7 @@ const initAnimations = async () => {
       { opacity: HATCH_HINT_MAX_OPACITY, duration: HATCH_HINT_PULSE_DURATION_SEC, repeat: -1, yoyo: true, ease: 'sine.inOut' }
     )
     activeTweens.push(hintPulse)
-  }, modalRef.value)
+  }, modalRef.value ?? undefined)
 }
 
 const handleEggClick = () => {
@@ -394,7 +394,7 @@ const handleEggClick = () => {
         stage.value = 'final'
       })
     }
-  }, modalRef.value)
+  }, modalRef.value ?? undefined)
 }
 
 const handleClose = async () => {

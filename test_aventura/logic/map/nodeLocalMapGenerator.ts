@@ -110,7 +110,7 @@ export function generateLocalMapForNode(
   const isCity = node.type === 'city' || node.type === 'league';
   const cityConfig = options?.cityConfig ?? (isCity ? inferCanonicalCityConfig(node) : undefined);
 
-  const defaultDims = cityConfig ? SCALE_DIMENSIONS[cityConfig.scale] : { width: DEFAULT_LOCAL_MAP_WIDTH, height: DEFAULT_LOCAL_MAP_HEIGHT };
+  const defaultDims = (cityConfig ? SCALE_DIMENSIONS[cityConfig.scale] : undefined) ?? { width: DEFAULT_LOCAL_MAP_WIDTH, height: DEFAULT_LOCAL_MAP_HEIGHT };
   const width = options?.width ?? defaultDims.width;
   const height = options?.height ?? defaultDims.height;
   const theme: CanonicalThemeSource = options?.theme ?? 'firered';

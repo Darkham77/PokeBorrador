@@ -69,7 +69,8 @@ const selectTab = (tabId: string) => {
             :class="{ active: selectedTab === cat.id }"
             @click.stop="selectTab(cat.id)"
           >
-            {{ cat.label }}
+            <span class="emoji">{{ cat.icon }}</span>
+            <span class="nav-label">{{ cat.label }}</span>
           </div>
         </nav>
       </aside>
@@ -154,12 +155,11 @@ const selectTab = (tabId: string) => {
 
   .library-nav-item {
     @include pixelated;
-    @include pixelated;
 
     display: flex;
     align-items: center;
     gap: $spacing-md;
-    padding: 12px 16px; // Ajustado
+    padding: 12px 16px;
     border: 1px solid transparent;
     border-radius: $radius-lg-alt;
     color: var(--gray, var(--slate-400));
@@ -192,6 +192,16 @@ const selectTab = (tabId: string) => {
       white-space: nowrap;
       margin-bottom: 0;
       margin-right: 8px;
+    }
+
+    .emoji {
+      font-size: var(--font-14);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .nav-label {
+      line-height: 1.2;
     }
   }
 }

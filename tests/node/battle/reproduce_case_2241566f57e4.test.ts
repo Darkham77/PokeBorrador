@@ -1,5 +1,6 @@
 import { describe, it } from "vitest";
 import assert from "node:assert";
+import fs from "node:fs";
 import { ShowdownBattleEngine } from "@/logic/battle/engine/showdownBattleEngine.ts";
 import { createShowdownBattle } from "@/logic/battle/helpers/showdownBattleFactory.ts";
 import { ShowdownTeamResolver } from "@/logic/battle/showdownTeamResolver.ts";
@@ -106,7 +107,6 @@ describe("Reproduce Fuzzer Case 2241566f57e4 (Turn 53-58 Faint & Switch Chains)"
   });
 
   it("replays all 91 certified turns of case-2241566f57e4 end-to-end", async () => {
-    const fs = require("fs");
     const cases = JSON.parse(fs.readFileSync("scripts/e2e/results/fuzzer_certified_cases.json", "utf8"));
     const c13 = cases.battle.find((c: { id: string }) => c.id === "case-2241566f57e4");
     if (!c13) return;

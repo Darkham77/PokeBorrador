@@ -2,9 +2,9 @@ import { describe, it, beforeEach } from 'vitest'
 import assert from 'node:assert/strict'
 import { setActivePinia, createPinia } from 'pinia'
 import { useGameStore } from '../../../src/stores/game.ts'
-import { useAdventureCapabilities } from '../../../src/components/map/adventure/useAdventureCapabilities.ts'
+import { useAdventureCapabilities } from '../../composables/useAdventureCapabilities.ts'
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts'
-import type { MapNode } from '../../../src/components/map/adventure/adventureMapData.ts'
+import type { MapNode } from '../../logic/adventure/mapData.ts'
 import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts'
 import { requirePokemonMoveId } from '../../../src/data/battle/moves.ts'
 
@@ -14,7 +14,6 @@ function createMockPokemon(moves: string[], speciesName = 'squirtle'): Pokemon {
     uid: 'mock-uid-1',
     id: species,
     name: speciesName,
-    species,
     level: 25,
     exp: 100,
     expNeeded: 200,

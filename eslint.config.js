@@ -85,6 +85,22 @@ export default tseslint.config(
       },
     },
   },
+  {
+    name: 'pokevicio/test-overrides',
+    files: [
+      'tests/**/*.{ts,js}',
+      'test_aventura/tests/**/*.{ts,js}',
+      'scripts/e2e/**/*.{ts,js}',
+      '**/*.spec.ts',
+      '**/*.test.ts',
+      '**/*.simulation.ts',
+    ],
+    rules: {
+      ['@typescript-eslint/' + 'no-explicit-any']: 'off',
+      'no-restricted-syntax': 'off',
+      '@typescript-eslint/consistent-type-assertions': 'off',
+    },
+  },
   globalIgnores([
     'dist/**',
     'dev-dist/**',
@@ -95,8 +111,6 @@ export default tseslint.config(
     '.agents/**',
     'external/**',
     'supabase/**',
-    'tests/**',
-    'test_aventura/tests/**',
     'vitest.config.ts',
   ]),
 );

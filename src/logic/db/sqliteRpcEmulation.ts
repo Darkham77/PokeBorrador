@@ -1,4 +1,4 @@
-import { initSQLite } from './sqliteEngine.ts';
+import { initSQLite, type SQLiteDatabase } from './sqliteEngine.ts';
 import { logger } from '../utils/logger.ts';
 import { safeStorage } from '../utils/storage.ts';
 import type { DBResponse } from '@/types/system/database';
@@ -47,7 +47,7 @@ export async function emulateOfflineRpc(name: string, params: Record<string, unk
   
   const context = { userId, username };
 
-  type RpcHandler = (db: SqliteDatabase, params: unknown, ctx: { userId: string; username: string }) => Promise<unknown> | unknown;
+  type RpcHandler = (db: SQLiteDatabase, params: Record<string, unknown>, ctx: { userId: string; username: string }) => Promise<DBResponse>;
 
   const RPC_DISPATCH_TABLE: Readonly<Record<string, RpcHandler>> = {
     change_username: (db, p, ctx) => emulateChangeUsername(db, p, ctx),
@@ -70,7 +70,7 @@ export async function emulateOfflineRpc(name: string, params: Record<string, unk
 
   const handler = RPC_DISPATCH_TABLE[name];
   if (handler) {
-    return handler(sqliteDb, params, context);
+    return await handler(sqliteDb, params, context);
   }
 
   // Default mock success for other RPCs in offline mode

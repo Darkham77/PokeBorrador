@@ -165,7 +165,7 @@ describe('Fase 5: Map Props Registry & Placement Engine', () => {
           decorations: Array.from({ length: 10 }, () => Array(10).fill(null))
         },
         collisionMatrix: Array.from({ length: 10 }, () => Array(10).fill(0))
-      } as unknown as GeneratedMap;
+      } as unknown as GeneratedMap; // cast-ok: mock map fixture in test
 
       const outOfBounds = stampProp(mockMap, BENCH_WOODEN, 9, 0);
       expect(outOfBounds).toBe(false);

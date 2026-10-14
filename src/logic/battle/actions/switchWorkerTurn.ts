@@ -331,3 +331,55 @@ export async function processNonForcedSwitchWorkerTurn(
   await applyTurnLogsAndSync(ctx, active, result, newPoke, side)
   await handlePostSwitchResolution(ctx)
 }
+
+export async function processForcedSwitchWorkerTurn(
+  ctx: BattleContext,
+  newPoke: NonNullable<BattleContext['activeBattle']['value']>['player'],
+  isRevivingTarget = false
+): Promise<void> {
+  const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+  if (!activeBattle.value || !newPoke) return
+  const active = activeBattle.value
+  try {
+    const { executeTurnInWorker } = await import('../showdownWorkerClient.ts')
+    const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
+    const p1Choice = `switch ${slot}`
+    const p2Choice = ''
+    const p2Skip = true
+    const switchResult = await executeTurnInWorker(p1Choice, p2Choice, false, p2Skip)
+    if (switchResult) {
+      active.playerRequest = switchResult.p1Request
+      active.enemyRequest = switchResult.p2Request
+
+      const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts')
+      const filteredLogs = filterShowdownLogs(switchResult.logs)
+      for (const logLine of filteredLogs) {
+        await parseShowdownLogLine(ctx, logLine, filteredLogs)
+      }
+
+      const { syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
+      await syncTeamsFromLastWorkerState()
+      if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+        const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
+        ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+      }
+
+      const { handleForceSwitch } = await import('../resolution.ts')
+      const { isRevivingForceSwitchRequest } = await import('../helpers/requestHelper.ts')
+      const p2Force = !!switchResult.p2Request?.forceSwitch?.some((x: boolean) => !!x) && !isRevivingForceSwitchRequest(switchResult.p2Request)
+      if (p2Force) {
+        await handleForceSwitch(ctx, 'enemy')
+      }
+    }
+
+    if (!isRevivingTarget && newPoke.hp <= 0) {
+      const { processFaint } = await import('../resolution.ts')
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+      await processFaint(ctx, 'player')
+    }
+  } catch (forcedErr) {
+    console.error('[switchAction] CRITICAL error in forced executeSwitch:', forcedErr)
+    throw forcedErr
+  }
+}
+

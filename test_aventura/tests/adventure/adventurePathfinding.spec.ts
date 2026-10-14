@@ -50,7 +50,7 @@ describe('Adventure Pathfinding Logic', () => {
 
     expect(path).not.toBeNull()
     expect(path?.nodes).toEqual(['pallet'])
-    expect(path?.distance).toBe(0)
+    expect(path?.cost).toBe(0)
   })
 
   it('returns empty array for non-existent node in getAdjacentNodes', () => {

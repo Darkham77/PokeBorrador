@@ -58,15 +58,12 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
   ]) {
     super({
       ruleCapabilities: createRuleCapabilities(SPANISH_ID_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'light',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_spanish_ids',
       configKey: 'domain.spanishIds',
@@ -80,8 +77,12 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
       family: 'domain_data',
       ruleIds: SPANISH_ID_RULES,
       packageName: 'Dominio',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'spanish-logic-id': 'ID en español en vez del inglés'
+      },
+      ruleRemediations: {
+        'spanish-logic-id': 'Use English canonical IDs in code logic, keeping Spanish text strictly for UI display'
       },
       roots,
       allowedExtensions: new Set(['.ts', '.vue'])

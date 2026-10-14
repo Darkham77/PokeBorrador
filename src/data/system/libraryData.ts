@@ -386,17 +386,20 @@ export const libraryContent = {
 }
 
 export const libraryCategories = [
-  { id: 'gimnasios', label: '🏆 Gimnasios' },
-  { id: 'evs', label: '💪 Puntos de Esfuerzo (EVs)' },
-  { id: 'captura', label: '🔴 Captura' },
-  { id: 'clases', label: '🎭 Clases' },
-  { id: 'crianza', label: '🥚 Crianza' },
-  { id: 'misiones', label: '📋 Misiones' },
-  { id: 'encuentros', label: '🗺️ Encuentros' },
-  { id: 'shinys', label: '✨ Shinys' },
-  { id: 'combate', label: '⚔️ Combate' },
-  { id: 'guerra', label: '🛡️ Guerra' },
-  { id: 'eventos', label: '📅 Eventos' },
-  { id: 'clima', label: '🌦️ Clima' },
-  { id: 'arqueologia', label: '⛏️ Arqueología' }
-]
+  { id: 'gimnasios', icon: '🏆', label: 'Gimnasios' },
+  { id: 'evs', icon: '💪', label: 'Puntos de Esfuerzo (EVs)' },
+  { id: 'captura', icon: '🔴', label: 'Captura' },
+  { id: 'clases', icon: '🎭', label: 'Clases' },
+  { id: 'crianza', icon: '🥚', label: 'Crianza' },
+  { id: 'misiones', icon: '📋', label: 'Misiones' },
+  { id: 'encuentros', icon: '🗺️', label: 'Encuentros' },
+  { id: 'shinys', icon: '✨', label: 'Shinys' },
+  { id: 'combate', icon: '⚔️', label: 'Combate' },
+  { id: 'guerra', icon: '🛡️', label: 'Guerra' },
+  { id: 'eventos', icon: '📅', label: 'Eventos' },
+  { id: 'clima', icon: '🌦️', label: 'Clima' },
+  { id: 'arqueologia', icon: '⛏️', label: 'Arqueología' }
+] as const;
+
+export type LibraryCategoryId = typeof libraryCategories[number]['id'];
+export type LibraryCategory = typeof libraryCategories[number];

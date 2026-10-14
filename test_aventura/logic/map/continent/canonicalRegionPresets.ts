@@ -464,11 +464,12 @@ function sculptJohtoTerrain(
 // ---------------------------------------------------------------------------
 
 export function buildCanonicalRegionMap(
-  presetId: CanonicalPresetId
+  presetId: CanonicalPresetId,
+  customSeed?: number
 ): RegionalGenerationPipelineResult {
   const W = presetId === 'kanto' ? KANTO_MAP_DIMENSION : JOHTO_MAP_DIMENSION;
   const H = presetId === 'kanto' ? KANTO_MAP_DIMENSION : JOHTO_MAP_DIMENSION;
-  const seed = presetId === 'kanto' ? KANTO_PRESET_SEED : JOHTO_PRESET_SEED;
+  const seed = customSeed ?? (presetId === 'kanto' ? KANTO_PRESET_SEED : JOHTO_PRESET_SEED);
   const blueprints = presetId === 'kanto' ? KANTO_BLUEPRINTS : JOHTO_BLUEPRINTS;
   const routeBlueprints = presetId === 'kanto' ? KANTO_ROUTES : JOHTO_ROUTES;
 

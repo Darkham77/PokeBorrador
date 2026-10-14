@@ -8,7 +8,7 @@ import { safeStorage } from '../../../src/logic/utils/storage.ts';
 declare global {
   interface Window {
     __E2E__?: boolean;
-    __E2E_DRIVER__?: string;
+    __E2E_DRIVER__?: 'sqlite' | 'postgres';
   }
 }
 

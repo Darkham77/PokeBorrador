@@ -10,6 +10,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import { execSync } from 'node:child_process';
 import { OFFICIAL_SERVERS, DEFAULT_SERVER, OFFICIAL_SERVERS_BY_ID } from '../../../src/data/system/official_servers.ts';
 
 describe('Official Servers Missing Local Reproduction', () => {
@@ -139,7 +140,6 @@ describe('Official Servers Missing Local Reproduction', () => {
       fs.writeFileSync(localJsonPath, '[]', 'utf-8');
       let errorThrown = false;
       try {
-        const { execSync } = require('node:child_process');
         execSync('node --experimental-strip-types -e "import(\'./src/data/system/official_servers.ts\')"', {
           cwd: process.cwd(),
           stdio: 'pipe'

@@ -474,9 +474,9 @@ describe('cityLayoutEngine', () => {
       {
         id: 'node_dungeon',
         name: 'Wilderness Cave',
-        type: 'dungeon_cave',
+        type: 'cave_entrance',
         footprint: { width: 8, height: 8 },
-        terrainPreference: 'rocky',
+        terrainPreference: 'mountain_wall',
         gridX: 20,
         gridY: 20,
         elevation: 1

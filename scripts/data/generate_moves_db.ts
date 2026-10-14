@@ -9,7 +9,7 @@ import path from 'node:path';
 import { Dex } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 import movesJson from '../../src/data/battle/moves.json' with { type: 'json' };
-import type { PokemonMoveId, MoveCategory } from '../../src/data/battle/moves.ts';
+import { requirePokemonMoveId, type PokemonMoveId, type MoveCategory } from '../../src/data/battle/moves.ts';
 
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/data/battle/movesData.json');
 
@@ -121,7 +121,7 @@ function applySpecialMoveFlags(id: string, entry: StaticMoveEntry, move: Showdow
   }
   if (move.drain) entry.drain = true;
   if (move.multihit) {
-    entry.hits = Array.isArray(move.multihit) ? [move.multihit[0], move.multihit[1]] : move.multihit;
+    entry.hits = Array.isArray(move.multihit) ? [move.multihit[0] ?? 2, move.multihit[1] ?? 5] : move.multihit;
   }
   if (move.ohko) entry.ohko = true;
   if (move.damage === 'level') {

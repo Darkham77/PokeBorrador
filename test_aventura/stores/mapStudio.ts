@@ -122,7 +122,7 @@ const AUTOSAVE_STORAGE_KEY = 'pokevicio_map_studio_autosave';
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 4.0;
 const ZOOM_STEP = 0.25;
-const DEFAULT_GROUND_TILE = 'tile_vegetation_184ee2f2ca';
+export const DEFAULT_GROUND_TILE = 'tile_vegetation_184ee2f2ca';
 
 export const useMapStudioStore = defineStore('mapStudio', () => {
   // Map Data

@@ -123,7 +123,7 @@ for (let n = 0; n < CRC_TABLE_SIZE; n++) {
 }
 
 function crc32(buf: Uint8Array, offset = 0, length = buf.length - offset): number {
-  let c = CRC_INITIAL_MASK;
+  let c: number = CRC_INITIAL_MASK;
   for (let i = offset; i < offset + length; i++) {
     const b = buf[i] ?? 0;
     c = (CRC_TABLE[(c ^ b) & 0xff] ?? 0) ^ (c >>> BITS_PER_BYTE);
@@ -319,11 +319,11 @@ export function isDiscardableTile(
   let chromaCount = 0;
   let visibleCount = 0;
 
-  let minR = MAX_CHANNEL_VALUE;
+  let minR: number = MAX_CHANNEL_VALUE;
   let maxR = 0;
-  let minG = MAX_CHANNEL_VALUE;
+  let minG: number = MAX_CHANNEL_VALUE;
   let maxG = 0;
-  let minB = MAX_CHANNEL_VALUE;
+  let minB: number = MAX_CHANNEL_VALUE;
   let maxB = 0;
 
   for (let i = 0; i < pixelCount; i++) {

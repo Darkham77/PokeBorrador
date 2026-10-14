@@ -85,11 +85,10 @@ const handleImageError = (e: Event) => {
             alt="Entrenador Masculino"
             class="trainer-big-img"
             :class="{ active: currentGender === 'h', inactive: currentGender === 'm', locked: currentGender !== 'h' && !canChangeGender }"
-            width="32"
-            height="32"
+            width="220"
+            height="220"
             @click.stop="emit('select-gender', 'h')"
             @mouseenter="onTrainerMouseEnter"
-          
             @mouseleave="onTrainerMouseLeave"
             @error="handleImageError"
           >
@@ -101,11 +100,10 @@ const handleImageError = (e: Event) => {
             alt="Entrenadora Femenina"
             class="trainer-big-img"
             :class="{ active: currentGender === 'm', inactive: currentGender === 'h', locked: currentGender !== 'm' && !canChangeGender }"
-            width="32"
-            height="32"
+            width="220"
+            height="220"
             @click.stop="emit('select-gender', 'm')"
             @mouseenter="onTrainerMouseEnter"
-          
             @mouseleave="onTrainerMouseLeave"
             @error="handleImageError"
           >

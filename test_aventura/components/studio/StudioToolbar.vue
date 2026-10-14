@@ -125,17 +125,6 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   <header class="studio-toolbar">
     <!-- Cluster 1: Vistas y Herramientas Contextuales -->
     <div class="toolbar-cluster cluster-views-tools">
-      <router-link
-        id="btn-return-game"
-        to="/"
-        class="brand-link"
-        title="Volver al Juego"
-      >
-        ◀ PokéVicio
-      </router-link>
-
-      <div class="divider" />
-
       <!-- View Selector -->
       <div class="view-toggle-group">
         <button
@@ -455,20 +444,6 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   display: flex;
   align-items: center;
   gap: $spacing-sm-alt;
-}
-
-.brand-link {
-  padding: 5px 8px;
-  border-radius: $radius-md;
-  background: Rgb(56 189 248 / 8%);
-  color: var(--sky);
-  font-size: var(--font-13);
-  font-weight: bold;
-  text-decoration: none;
-
-  &:hover {
-    background: Rgb(56 189 248 / 16%);
-  }
 }
 
 .divider {

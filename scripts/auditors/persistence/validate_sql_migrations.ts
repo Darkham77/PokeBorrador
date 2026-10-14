@@ -59,15 +59,12 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(SQL_MIGRATION_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'heavy',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_sql_migrations',
       configKey: 'persistence.sqlMigrations',
@@ -81,6 +78,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
       family: 'persistence',
       ruleIds: SQL_MIGRATION_RULES,
       packageName: 'Migración',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'sql-migration-orphan-sqlite': '.sqlite.sql huérfano',
         'sql-migration-invalid-timestamp': 'Timestamp inválido',
@@ -91,6 +89,17 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         'sql-migration-sqlite-missing-dbversion': 'SQLite sin db_version',
         'sql-migration-dbversion-desync': 'Desincronización db_version',
         'sql-migration-sqlite-exec-failure': 'Fallo en SQLite en memoria'
+      },
+      ruleRemediations: {
+        'sql-migration-orphan-sqlite': 'Remove orphan .sqlite.sql file or add matching .sql migration',
+        'sql-migration-invalid-timestamp': 'Use valid 14-digit YYYYMMDDHHmmss timestamp prefix for migration file',
+        'sql-migration-duplicate-timestamp': 'Ensure migration timestamp is unique across all migrations',
+        'sql-migration-broken-monotonicity': 'Ensure migration timestamps are strictly increasing',
+        'sql-migration-missing-dbversion': 'Update system_config.db_version to match the migration timestamp',
+        'sql-migration-missing-sqlite-companion': 'Create companion .sqlite.sql migration for SQLite engine parity',
+        'sql-migration-sqlite-missing-dbversion': 'Update system_config.db_version in companion .sqlite.sql file',
+        'sql-migration-dbversion-desync': 'Synchronize db_version value between PostgreSQL and SQLite migrations',
+        'sql-migration-sqlite-exec-failure': 'Fix SQL syntax or schema mismatch causing in-memory SQLite execution error'
       },
       requiredFiles: [MIGRATIONS_DIR],
       coverage: {

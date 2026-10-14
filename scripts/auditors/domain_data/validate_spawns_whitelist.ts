@@ -52,15 +52,12 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
   constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(SPAWN_WHITELIST_RULES, {
-        fix: false,
-        fixPriority: false,
-        lint: false,
+        speed: 'light',
+        phase: 'normal',
+        fix: 'none',
         md: false,
         ast: false,
-        changedSince: false,
-        heavy: false,
-        requiresBuild: false,
-        postRun: false
+        changedSince: false
       }),
       id: 'validate_spawns_whitelist',
       configKey: 'domain.spawnsWhitelist',
@@ -74,10 +71,16 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
       family: 'domain_data',
       ruleIds: SPAWN_WHITELIST_RULES,
       packageName: 'Spawns',
+      usesThirdPartyTool: false,
       ruleDescriptions: {
         'spawns-species-whitelist': 'Pokémon fuera de la whitelist',
         'spawns-level-range-integrity': 'Rango de niveles inválido',
         'spawns-encounter-rates-parity': 'Discrepancia en probabilidades'
+      },
+      ruleRemediations: {
+        'spawns-species-whitelist': 'Ensure all spawnable Pokemon are included in ENABLED_POKEMON_IDS whitelist',
+        'spawns-level-range-integrity': 'Verify level ranges satisfy min/max constraints and match Pokemon counts',
+        'spawns-encounter-rates-parity': 'Ensure encounter rates sum to expected percentages across time slots'
       },
       requiredFiles: [
         path.resolve(process.cwd(), MAPS_FILE_PATH),
@@ -190,7 +193,7 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     }
   }
 
-  private auditGymSpecies(gymId: GymId, pokemon: string[], diffName?: string): void {
+  private auditGymSpecies(gymId: GymId, pokemon: readonly string[], diffName?: string): void {
     const label = diffName ? `Gym '${gymId}' (${diffName})` : `Gym '${gymId}'`;
     const ctx = diffName ? `id: '${gymId}', difficulty: '${diffName}'` : `id: '${gymId}'`;
 
@@ -208,7 +211,7 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     }
   }
 
-  private auditGymLevels(gymId: GymId, pokemon: string[], levels: number[], diffName?: string): void {
+  private auditGymLevels(gymId: GymId, pokemon: readonly string[], levels: readonly number[], diffName?: string): void {
     const label = diffName ? `Gym '${gymId}' (${diffName})` : `Gym '${gymId}'`;
     const ctx = diffName ? `id: '${gymId}', difficulty: '${diffName}'` : `id: '${gymId}'`;
 
