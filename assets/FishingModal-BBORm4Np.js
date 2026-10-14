@@ -1,1 +1,0 @@
-export{t as default}from"./FishingModal-D11Kcndh.js";

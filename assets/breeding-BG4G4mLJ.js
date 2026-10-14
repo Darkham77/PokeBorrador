@@ -1,1 +1,0 @@
-export{t as useBreedingStore}from"./breeding-BGdcKt-c.js";

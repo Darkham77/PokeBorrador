@@ -1,0 +1,1 @@
+export{t as default}from"./FishingModal-C8iGwWor.js";

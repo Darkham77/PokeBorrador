@@ -1,0 +1,1 @@
+export{t as eggFactory}from"./eggFactory-BymMoQqm.js";
