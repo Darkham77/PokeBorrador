@@ -27,7 +27,7 @@ Poké Vicio Development Team.
 - `organize_item_sprites_by_tier.ts`: Re-tiering script that moves item sprites into `crafting/tier[0-3]/` based on `item.craftingTier` and synchronizes `items.json`.
 - `download_assets.ts`: Downloads missing official sprites from CDN/Bulbapedia/Serebii (`npm run assets:download:items`).
 - `download_ranked_medals.ts`: Downloads the 6 official rank medals from Bulbapedia Archives into `_raw-assets/public/assets/sprites/ranked_medals/` (`npm run assets:download:medals`).
-- `audit_item_assets.ts`: Compares database items against physical images in `public/assets/sprites/` to ensure zero missing assets.
+- `audit_item_assets.ts`: Compares database items against physical images in `public/assets/sprites/` to ensure zero missing assets (`npm run assets:audit:items`).
 - `audit_item_sprite_collisions.ts`: Scans `items.json` to detect duplicate sprite usages across items and emits structured warnings.
 - `optimize_sprites.ts`: Sprite optimization and compression.
 

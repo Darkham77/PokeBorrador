@@ -280,6 +280,7 @@ Every architectural and domain standard has its own dedicated sub-auditor execut
 | `npm run auditor:audit-headers` | Bars file-level escape hatches (`fallow-ignore-file`, `@ts-nocheck`, etc.). |
 | `npm run auditor:test-hygiene` | Audits test suites against tautological assertions and excessive mocking. |
 | `npm run auditor:test-fragmentation` | Prevents micro-files (<60 LOC) and encourages cohesive test suites (300-800 LOC). |
+| `npm run auditor:script-commands` | Validates that all npm run scripts, npx binaries, and npm commands executed across code and scripts exist in package.json.scripts. |
 
 #### 📚 Documentation & Links
 

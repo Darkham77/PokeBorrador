@@ -5,7 +5,7 @@
  * Compares src/data/inventory/items.ts entries against physical webp images in the public folder.
  * Categorizes and audits both Poké Market (Local Shop) and Battle Club (BC Shop) items.
  *
- * Usage: node --experimental-strip-types scripts/assets/audit_item_assets.ts
+ * Usage: npm run assets:audit:items
  */
 
 import fs from 'node:fs/promises';
@@ -180,7 +180,7 @@ function printMissingItemsDetail(allMissing: readonly AuditResult[], isSummary: 
   });
   if (allMissing.length > limit) {
     console.log(styleText('cyan', `\n[INFO] Se muestran solo las primeras ${limit} de un total de ${allMissing.length} imágenes faltantes para evitar saturar la terminal.`));
-    console.log(styleText('cyan', `👉 Para guardar el reporte completo a un archivo: npm run audit --output=scratch/item_assets_report.txt`));
+    console.log(styleText('cyan', `👉 Para guardar el reporte completo a un archivo: npm run assets:audit:items -- --output=scratch/item_assets_report.txt`));
   }
 }
 
