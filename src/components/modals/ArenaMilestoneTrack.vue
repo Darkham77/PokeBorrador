@@ -12,8 +12,7 @@ const MILESTONE_SPRITE_DURATION_SEC = 0.3
 import { ref, onMounted, nextTick } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
 import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
+import { RANKED_REWARD_MILESTONES, isRankedRewardMilestoneId } from '@/data/system/rankedData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -22,13 +21,21 @@ import { gsap } from 'gsap'
 
 const pvp = usePvPStore()
 const uiStore = useUIStore()
-const modalStore = useModalStore()
 const listRef = ref<HTMLElement | null>(null)
 const milestones = RANKED_REWARD_MILESTONES
+const claimingMilestoneId = ref<string | null>(null)
 
-const goToHomeRewards = () => {
-  modalStore.closeAll()
-  uiStore.activeTab = 'home'
+async function handleClaimMilestone(milestoneId: string) {
+  if (claimingMilestoneId.value) return
+  if (!isRankedRewardMilestoneId(milestoneId)) return
+  claimingMilestoneId.value = milestoneId
+  try {
+    await pvp.claimReward(milestoneId)
+  } catch (_err) {
+    uiStore.notify('Error al reclamar la recompensa.', '❌')
+  } finally {
+    claimingMilestoneId.value = null
+  }
 }
 
 onMounted(() => {
@@ -218,11 +225,12 @@ function handlePillLeave(e: MouseEvent) {
         </div>
         <button
           v-if="isUnlocked(m.elo) && !isClaimed(m.id)"
-          id="arena-milestone-track-btn-reclamar-en-inicio"
+          :id="'arena-milestone-track-btn-claim-' + m.id"
           class="btn-vicio-claim"
-          @click.stop="goToHomeRewards"
+          :disabled="claimingMilestoneId === m.id"
+          @click.stop="handleClaimMilestone(m.id)"
         >
-          RECLAMAR EN INICIO
+          {{ claimingMilestoneId === m.id ? 'RECLAMANDO...' : 'RECLAMAR' }}
         </button>
         <span
           v-else-if="isClaimed(m.id)"

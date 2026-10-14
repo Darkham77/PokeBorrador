@@ -7,6 +7,10 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { RANKED_TIERS, type RankedTierCode } from '@/logic/pvp/rankedEngine'
 import { calculateSoftResetElo } from '@/logic/pvp/eloRatingMath'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { RankedSeasonMedal } from '@/types/battle/pvp'
+import type { RankedTierId } from '@/data/system/rankedData'
 
 interface AwardItem {
   id: string
@@ -76,19 +80,67 @@ watch(
   { immediate: true }
 )
 
+function applyLocalAward(award: AwardItem, finalElo: number) {
+  if (!award.prize) return
+  const prize = award.prize as {
+    type?: string
+    season?: string
+    tier?: RankedTierId
+    species?: string
+    level?: number
+    shiny?: boolean
+    battleCoins?: number
+    amount?: number
+  }
+
+  if (prize.type === 'ranked_medal' && prize.season && prize.tier) {
+    const existingMedals = gameStore.state.rankedMedals || []
+    const hasMedal = existingMedals.some(m => m.seasonName === prize.season && m.tier === prize.tier)
+    if (!hasMedal) {
+      const newMedal: RankedSeasonMedal = {
+        id: `medal_${award.id}`,
+        seasonName: prize.season,
+        tournamentName: prize.season,
+        tier: prize.tier,
+        finalElo,
+        awardedAt: Temporal.Now.instant().toString()
+      }
+      gameStore.state.rankedMedals = [...existingMedals, newMedal]
+    }
+    return
+  }
+
+  if (prize.type === 'pokemon' && prize.species && isPokemonSpeciesId(prize.species)) {
+    const hasPoke = (gameStore.state.box || []).some(p => p?.id === prize.species && p?.isShiny === prize.shiny)
+    if (hasPoke) return
+    const newPoke = makePokemon(prize.species, prize.level || 50)
+    if (newPoke) {
+      newPoke.isShiny = Boolean(prize.shiny)
+      gameStore.state.box = [...(gameStore.state.box || []), newPoke]
+    }
+    return
+  }
+
+  if (prize.type === 'bc' || prize.battleCoins) {
+    const amount = prize.battleCoins || prize.amount || 0
+    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + amount
+  }
+}
+
 async function handleClaimAll() {
   if (isClaiming.value || isClaimed.value) return
 
   isClaiming.value = true
   try {
-    if (gameStore.db) {
-      for (const award of props.awards) {
-        if (award.id && !award.id.startsWith('local_')) {
-          await gameStore.db.rpc('claim_award', { p_award_id: award.id })
-        }
+    for (const award of props.awards) {
+      if (award.id && !award.id.startsWith('local_') && gameStore.db) {
+        await gameStore.db.rpc('claim_award', { p_award_id: award.id })
+      } else {
+        applyLocalAward(award, props.finalElo)
       }
     }
 
+    await gameStore.save(true)
     isClaimed.value = true
     uiStore.notify('¡Recompensas de temporada reclamadas con éxito!', '🎉')
     emit('claimed')

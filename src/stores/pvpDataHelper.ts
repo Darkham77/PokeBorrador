@@ -3,7 +3,7 @@ import type { SeasonRules, PvPStats, PersonalPvPMatchSummary } from '@/types/bat
 import type { DBRouter } from '@/logic/db/dbRouter'
 import { DEFAULT_INITIAL_ELO, DEFAULT_PVP_LEVEL_CAP, MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay.ts'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
-import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
+import { getSeasonalThemeForMonth, SEASONAL_ANNUAL_THEMES } from '@/data/system/rankedData'
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter'
 import { fetchOnlineMatchHistory, mergeMatchHistories } from '@/logic/pvp/pvpMatchHistoryHelper'
 
@@ -46,21 +46,28 @@ export async function fetchActiveSeasonRules(
       .eq('id', 'current')
       .maybeSingle() as { data: { season_name?: string; config?: SeasonRules } | null }
 
-    if (!rulesConfig?.config) return null
-
     const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)
-    const endStr = rulesConfig.config.endDate || rulesConfig.config.seasonEndDate
-    const isExpired = endStr ? Temporal.ZonedDateTime.compare(parseZonedTime(endStr, now.toString()), now) <= 0 : false
+    const currentTheme = getSeasonalThemeForMonth(now.month)
 
-    if (!isExpired) {
-      return rulesConfig.config
+    if (rulesConfig?.config) {
+      const endStr = rulesConfig.config.endDate || rulesConfig.config.seasonEndDate
+      const isExpired = endStr ? Temporal.ZonedDateTime.compare(parseZonedTime(endStr, now.toString()), now) <= 0 : false
+
+      const configTheme = SEASONAL_ANNUAL_THEMES.find(
+        t => t.name.toLowerCase() === rulesConfig.config?.name?.toLowerCase()
+      )
+      const isStaleCalendarTheme = Boolean(configTheme && configTheme.monthIndex !== now.month)
+      const isStale = isExpired || isStaleCalendarTheme
+
+      if (!isStale) {
+        return rulesConfig.config
+      }
     }
 
     // Stale database record from a past expired season; fall back to annual calendar theme
-    const currentTheme = getSeasonalThemeForMonth(now.month)
     return {
       name: currentTheme.name,
-      levelCap: DEFAULT_PVP_LEVEL_CAP,
+      levelCap: currentTheme.levelCap || DEFAULT_PVP_LEVEL_CAP,
       maxPokemon: MAX_POKEMON_TEAM_SIZE,
       allowedTypes: currentTheme.allowedTypes ? [...currentTheme.allowedTypes] : [],
       bannedPokemonIds: currentTheme.bannedPokemonIds ? [...currentTheme.bannedPokemonIds] : []

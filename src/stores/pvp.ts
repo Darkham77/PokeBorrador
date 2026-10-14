@@ -161,7 +161,7 @@ export const usePvPStore = defineStore('pvp', () => {
           )
         }
 
-        checkSeasonRollover()
+        await checkSeasonRollover()
         isLoaded.value = true
       } finally {
         inFlightPromise = null
@@ -171,9 +171,10 @@ export const usePvPStore = defineStore('pvp', () => {
     return inFlightPromise
   }
 
-  function checkSeasonRollover() {
+  async function checkSeasonRollover() {
     try {
       const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)
+      const prevResolvedId = gameStore.state.lastResolvedSeasonId
       const resolution = checkAndResolveSeasonEnd(gameStore.state, now.month)
       if (resolution.resolved) {
         if (resolution.newElo !== undefined) {
@@ -184,6 +185,10 @@ export const usePvPStore = defineStore('pvp', () => {
         } else if (gameStore.db && authStore.user) {
           void gameStore.db.from('passive_teams').update({ is_active: false }).eq('user_id', authStore.user.id)
         }
+        if (gameStore.db && authStore.user && resolution.newElo !== undefined) {
+          void gameStore.db.from('profiles').update({ elo_rating: resolution.newElo }).eq('id', authStore.user.id)
+        }
+        await gameStore.save(false)
         if (resolution.rewardPokemon || resolution.medal) {
           const modalStore = useModalStore()
           const awards = []
@@ -215,6 +220,8 @@ export const usePvPStore = defineStore('pvp', () => {
             awards
           })
         }
+      } else if (!prevResolvedId && gameStore.state.lastResolvedSeasonId) {
+        await gameStore.save(false)
       }
       return resolution
     } catch (err) {

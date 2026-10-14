@@ -578,5 +578,11 @@ export const DATABASE_MIGRATIONS = [
     "sql": "",
     "sqlite_sql": "DROP VIEW IF EXISTS trainer_public_profiles;\nCREATE VIEW trainer_public_profiles AS\nSELECT\np.*,\nCOALESCE(CAST(json_extract(s.save_data, '$.classXP') AS INTEGER), 0) AS class_xp,\nCOALESCE(json_array_length(json_extract(s.save_data, '$.pokedex')), 0) AS pokedex_caught,\nCOALESCE(json_array_length(json_extract(s.save_data, '$.seenPokedex')), 0) AS pokedex_seen,\nCOALESCE(CAST(json_extract(s.save_data, '$.stats.trainersDefeated') AS INTEGER), 0) AS trainers_defeated,\nCOALESCE(CAST(json_extract(s.save_data, '$.stats.wins') AS INTEGER), 0) AS wild_wins,\nCOALESCE(CAST(json_extract(s.save_data, '$.warCoins') AS INTEGER), 0) AS war_coins,\nCOALESCE(json_extract(s.save_data, '$.defeatedGyms'), '[]') AS defeated_gyms\nFROM profiles p\nLEFT JOIN game_saves s ON p.id = s.user_id;\nCREATE INDEX IF NOT EXISTS idx_profiles_elo_rating ON profiles(elo_rating DESC);\nCREATE INDEX IF NOT EXISTS idx_chat_messages_type_created ON chat_messages(type, created_at ASC);\nINSERT INTO system_config (key, value, updated_at)\nVALUES ('db_version', '20261008080000', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))\nON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at;",
     "check": null
+  },
+  {
+    "id": "20261014190000_fix_fn_award_grant_and_update_ranked_october",
+    "sql": "",
+    "sqlite_sql": "INSERT INTO ranked_rules_config (id, season_name, config, updated_at)\nVALUES (\n'current',\n'Noche de Brujas',\n'{\"name\":\"Noche de Brujas\",\"maxPokemon\":6,\"levelCap\":50,\"allowedTypes\":[\"ghost\",\"dark\",\"poison\"],\"bannedPokemonIds\":[],\"startDate\":\"2026-10-01T00:00:00\",\"endDate\":\"2026-10-31T23:59:59\",\"seasonStartDate\":\"2026-10-01T00:00:00\",\"seasonEndDate\":\"2026-10-31T23:59:59\"}',\nCURRENT_TIMESTAMP\n)\nON CONFLICT (id) DO UPDATE SET\nseason_name = excluded.season_name,\nconfig = excluded.config,\nupdated_at = CURRENT_TIMESTAMP;\nINSERT INTO system_config (key, value, updated_at)\nVALUES ('db_version', '20261014190000', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))\nON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at;",
+    "check": null
   }
 ];

@@ -52,9 +52,11 @@ const currentTheme = computed(() => {
   return getSeasonalThemeForMonth(Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month);
 });
 
-const allowedTypes = computed<PokemonType[]>(() =>
-  (pvp.currentSeasonRules?.allowedTypes || currentTheme.value.allowedTypes || []).map(toPokemonType)
-);
+const allowedTypes = computed<PokemonType[]>(() => {
+  const rulesTypes = pvp.currentSeasonRules?.allowedTypes;
+  const types = rulesTypes && rulesTypes.length > 0 ? rulesTypes : (currentTheme.value.allowedTypes || []);
+  return types.map(toPokemonType);
+});
 
 const levelCap = computed(() => pvp.currentSeasonRules?.levelCap || '50');
 

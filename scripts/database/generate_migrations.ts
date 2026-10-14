@@ -192,7 +192,7 @@ async function runDirectCliPipeline(): Promise<void> {
 
   const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
-  const validateProc = spawnSync(npmCmd, ['run', 'validate:sql'], {
+  const validateProc = spawnSync(npmCmd, ['run', 'auditor:sql-migrations'], {
     stdio: 'inherit',
     shell: true
   });

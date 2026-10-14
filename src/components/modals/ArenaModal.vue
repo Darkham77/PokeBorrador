@@ -17,7 +17,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  show: false,
+  show: true,
   initialTab: 'ranked'
 });
 

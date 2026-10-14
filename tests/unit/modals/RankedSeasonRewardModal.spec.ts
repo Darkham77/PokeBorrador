@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import RankedSeasonRewardModal from '@/components/modals/RankedSeasonRewardModal.vue'
 import { useGameStore } from '@/stores/game'
@@ -109,6 +109,7 @@ describe('RankedSeasonRewardModal.vue', () => {
     expect(claimBtn.exists()).toBe(true)
 
     await claimBtn.trigger('click')
+    await flushPromises()
 
     // Expect claim_award called for each award
     expect(claimedAwards).toContain('aw_poke')
@@ -146,5 +147,46 @@ describe('RankedSeasonRewardModal.vue', () => {
 
     expect(wrapper.text()).toContain('Medalla Maestro')
     expect(wrapper.text()).toContain('500 Monedas de Batalla')
+  })
+
+  it('claims local awards and adds medal and pokemon to gameStore state', async () => {
+    const gameStore = useGameStore()
+    gameStore.state.rankedMedals = []
+    gameStore.state.box = []
+    gameStore.state.battleCoins = 0
+
+    const localAwards = [
+      {
+        id: 'local_medal_123',
+        prize: { type: 'ranked_medal', tier: 'bronce', season: 'Frontera Kanto & Johto' }
+      },
+      {
+        id: 'local_bc_123',
+        prize: { type: 'bc', amount: 50 }
+      }
+    ]
+
+    const wrapper = mount(RankedSeasonRewardModal, {
+      props: {
+        show: true,
+        seasonName: 'Frontera Kanto & Johto',
+        tier: 'bronce',
+        finalElo: 1072,
+        awards: localAwards
+      },
+      global: {
+        stubs: { Teleport: true }
+      }
+    })
+
+    const claimBtn = wrapper.find('.claim-rewards-btn')
+    await claimBtn.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.emitted('claimed')).toBeTruthy()
+    expect(wrapper.emitted('close')).toBeTruthy()
+    expect(gameStore.state.rankedMedals?.length).toBe(1)
+    expect(gameStore.state.rankedMedals?.[0]?.seasonName).toBe('Frontera Kanto & Johto')
+    expect(gameStore.state.battleCoins).toBe(50)
   })
 })

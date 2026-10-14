@@ -123,6 +123,13 @@ export function checkAndResolveSeasonEnd(
   }
 
   const medal = createCommemorativeMedal(concludedTheme, tier, finalElo);
+  if (medal) {
+    const existingMedals = gameState.rankedMedals || [];
+    const isDuplicate = existingMedals.some(m => m.seasonName === medal.seasonName && m.tier === medal.tier);
+    if (!isDuplicate) {
+      gameState.rankedMedals = [...existingMedals, medal];
+    }
+  }
 
   const newElo = calculateEloSoftReset(gameState.eloRating || BASE_RANKED_ELO);
   gameState.eloRating = newElo;
