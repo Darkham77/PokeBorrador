@@ -1,0 +1,1 @@
+export{t as default}from"./ArchaeologyModal-9X2ALSTv.js";

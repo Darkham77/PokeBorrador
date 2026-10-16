@@ -1,1 +1,0 @@
-export{t as pokemonDataProvider}from"./pokemonDataProvider-CoPzmZr2.js";
